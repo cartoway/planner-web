@@ -5,6 +5,7 @@ controller.js(
   map_lat: @position.lat,
   map_lng: @position.lng,
   map_attribution: current_user.layer.map_attribution,
-  ids: @stores.collect(&:id)
+  ids: @stores.collect(&:id),
+  display_home: true
 )
 %>
