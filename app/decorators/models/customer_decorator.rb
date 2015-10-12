@@ -22,4 +22,22 @@ Customer.class_eval do
     distances = router.matrix(starts, dests, speed_multiplicator || 1, &matrix_progress)[0]
     stores.zip(distances)
   end
+
+  def destinations_inside_time_distance(position, distance, time, &matrix_progress)
+    starts = [[position.lat, position.lng]]
+    dest_with_pos = self.destinations.select{ |d| !d.lat.nil? && !d.lng.nil? }
+    dests = dest_with_pos.collect{ |d| [d.lat, d.lng] }
+    distances = router.matrix(starts, dests, speed_multiplicator || 1, 'distance', &matrix_progress)[0]
+    times = router.matrix(starts, dests, speed_multiplicator || 1, 'time', &matrix_progress)[0]
+    dest_with_pos.zip(distances, times).select{ |dest, dist, t|
+      check_distance, check_time = true, true
+      if distance
+        check_distance = (dist[0] <= distance)
+      end
+      if time
+        check_time = (t[0] <= time)
+      end
+      check_time && check_distance
+    }.collect{ |dest, d, t| dest }
+  end
 end
