@@ -1,4 +1,4 @@
-Mapotempo-Web Plugin stores by distance
+Mapotempo-Web Plugin by time/distance
 =======================================
 Add api-web and api end-point to show the closest stores to [Mapotempo-web](https://github.com/Mapotempo/mapotempo-web).
 
@@ -13,7 +13,7 @@ Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'mapotempo_web_stores_by_distance', path: '../mapotempo_web_stores_by_distance'
+    gem 'mapotempo_web_by_time_distance', path: '../mapotempo_web_by_time_distance'
 
 And then execute:
 
@@ -24,7 +24,7 @@ Usage
 
 Add the following JavaScript file to `app/assets/javascripts/application.js`:
 
-    //= require mapotempo_web_stores_by_distance
+    //= require mapotempo_web_by_time_distance
 
 License
 =======

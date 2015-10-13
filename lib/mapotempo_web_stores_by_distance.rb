@@ -1,4 +1,0 @@
-require "mapotempo_web_stores_by_distance/engine"
-
-module MapotempoWebStoresByDistance
-end

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mapotempo_web_stores_by_distance (0.0.1)
+    mapotempo_web_by_time_distance (0.0.1)
 
 GEM
   remote: https://rubygems.org/
@@ -11,4 +11,4 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  mapotempo_web_stores_by_distance!
+  mapotempo_web_by_time_distance!

@@ -28,4 +28,4 @@
 // Read Sprockets README (https://github.com/sstephenson/sprockets#sprockets-directives) for details
 // about supported directives.
 //
-//= require_tree './mapotempo_web_stores_by_distance'
+//= require_tree './mapotempo_web_by_time_distance'
