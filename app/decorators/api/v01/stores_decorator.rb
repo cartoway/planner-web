@@ -27,9 +27,7 @@ V01::Stores.class_eval do
   end
   get :stores_by_distance do
     position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
-    stores = current_customer.stores_by_distance(position)
-    stores = stores.sort_by{ |store, distance| distance }
-    stores = stores[0..[Float(params[:n]), stores.size].min - 1].collect{ |store, distance| store }
+    stores = current_customer.stores_by_distance(position, Integer(params[:n]))
     present stores, with: V01::Entities::Store
   end
 end

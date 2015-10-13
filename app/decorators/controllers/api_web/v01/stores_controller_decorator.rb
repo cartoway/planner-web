@@ -28,8 +28,6 @@ ApiWeb::V01::StoresController.class_eval do
   def by_distance
     @customer = current_user.customer
     @position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
-    stores = @customer.stores_by_distance(@position)
-    @stores = stores.sort_by{ |store, distance| distance }
-    @stores = @stores[0..[Float(params[:n]), @stores.size].min - 1].collect{ |store, distance| store }
+    @stores = @customer.stores_by_distance(@position, Integer(params[:n]))
   end
 end

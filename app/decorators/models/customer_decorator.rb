@@ -16,11 +16,13 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 Customer.class_eval do
-  def stores_by_distance(position, &matrix_progress)
+  def stores_by_distance(position, n, &matrix_progress)
     starts = [[position.lat, position.lng]]
     dests = self.stores.select{ |store| !store.lat.nil? && !store.lng.nil? }.collect{ |store| [store.lat, store.lng] }
     distances = router.matrix(starts, dests, speed_multiplicator || 1, &matrix_progress)[0]
-    stores.zip(distances)
+    stores.zip(distances).sort_by{ |store, distance|
+      distance
+    }[0..[n, stores.size].min - 1].collect{ |store, distance| store }
   end
 
   def destinations_inside_time_distance(position, distance, time, &matrix_progress)
