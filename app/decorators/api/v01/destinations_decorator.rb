@@ -23,7 +23,7 @@ V01::Destinations.class_eval do
   params do
     requires :lat, type: Float, desc: 'Point latitude.'
     requires :lng, type: Float, desc: 'Point longitude.'
-    optional :distance, type: Integer, desc: 'Maximum distance in km.'
+    optional :distance, type: Integer, desc: 'Maximum distance in meter.'
     optional :time, type: Integer, desc: 'Maximum time in seconds.'
     at_least_one_of :time, :distance
   end
