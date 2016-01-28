@@ -1,4 +1,4 @@
-# Copyright © Mapotempo, 2015
+# Copyright © Mapotempo, 2015-2016
 #
 # This file is part of Mapotempo.
 #
@@ -24,10 +24,16 @@ V01::Stores.class_eval do
     requires :lat, type: Float, desc: 'Point latitude.'
     requires :lng, type: Float, desc: 'Point longitude.'
     requires :n, type: Integer, desc: 'Number of results.'
+    optional :vehicle_usage_id, type: Integer, desc: 'Vehicle Usage uses in place of default router and speed multiplicator.'
   end
   get :stores_by_distance do
     position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
-    stores = current_customer.stores_by_distance(position, Integer(params[:n]))
-    present stores, with: V01::Entities::Store
+    vehicle_usage = VehicleUsage.joins(:vehicle_usage_set).where(vehicle_usage_sets: {customer_id: current_customer.id}, id: params[:vehicle_usage_id]).first
+    if params.key?(:vehicle_usage_id) && vehicle_usage.nil?
+      error! 'VehicleUsage not found', 404
+    else
+      stores = current_customer.stores_by_distance(position, Integer(params[:n]), vehicle_usage)
+      present stores, with: V01::Entities::Store
+    end
   end
 end

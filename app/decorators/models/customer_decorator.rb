@@ -1,4 +1,4 @@
-# Copyright © Mapotempo, 2015
+# Copyright © Mapotempo, 2015-2016
 #
 # This file is part of Mapotempo.
 #
@@ -16,21 +16,27 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 Customer.class_eval do
-  def stores_by_distance(position, n, &matrix_progress)
+  def stores_by_distance(position, n, vehicle_usage = nil, &matrix_progress)
     starts = [[position.lat, position.lng]]
     dests = self.stores.select{ |store| !store.lat.nil? && !store.lng.nil? }.collect{ |store| [store.lat, store.lng] }
-    distances = router.matrix(starts, dests, speed_multiplicator || 1, &matrix_progress)[0]
-    stores.zip(distances).sort_by{ |store, distance|
+    r = (vehicle_usage && vehicle_usage.vehicle.default_router) || router
+    sm = (vehicle_usage && vehicle_usage.vehicle.default_speed_multiplicator) || speed_multiplicator || 1
+
+    distances = r.matrix(starts, dests, sm, &matrix_progress)[0]
+    stores.select{ |store, distance| !distance.nil? }.zip(distances).sort_by{ |store, distance|
       distance
     }[0..[n, stores.size].min - 1].collect{ |store, distance| store }
   end
 
-  def destinations_inside_time_distance(position, distance, time, &matrix_progress)
+  def destinations_inside_time_distance(position, distance, time, vehicle_usage = nil, &matrix_progress)
     starts = [[position.lat, position.lng]]
     dest_with_pos = self.destinations.select{ |d| !d.lat.nil? && !d.lng.nil? }
     dests = dest_with_pos.collect{ |d| [d.lat, d.lng] }
-    distances = !distance.nil? && router.distance? ? router.matrix(starts, dests, speed_multiplicator || 1, :distance, &matrix_progress)[0] : []
-    times = !time.nil? && router.time? ? router.matrix(starts, dests, speed_multiplicator || 1, :time, &matrix_progress)[0] : []
+    r = (vehicle_usage && vehicle_usage.vehicle.default_router) || router
+    sm = (vehicle_usage && vehicle_usage.vehicle.default_speed_multiplicator) || speed_multiplicator || 1
+
+    distances = !distance.nil? && r.distance? ? r.matrix(starts, dests, sm, :distance, &matrix_progress)[0] : []
+    times = !time.nil? && r.time? ? r.matrix(starts, dests, sm, :time, &matrix_progress)[0] : []
     dest_with_pos.zip(distances, times).select{ |dest, dist, t|
       (!dist || dist[0] <= distance) && (!t || t[0] <= time)
     }.collect{ |dest, d, t| dest }
