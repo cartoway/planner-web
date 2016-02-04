@@ -15,11 +15,13 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
+require_relative '../../../api/v01/entities/destination_id'
+
 V01::Destinations.class_eval do
   desc 'Fetch customer\'s destinations inside time/distance.',
     nickname: 'getDestinationsInsideTimeAndDistance',
     is_array: true,
-    entity: V01::Entities::Destination
+    entity: V01::Entities::DestinationId
   params do
     requires :lat, type: Float, desc: 'Point latitude.'
     requires :lng, type: Float, desc: 'Point longitude.'
@@ -35,7 +37,7 @@ V01::Destinations.class_eval do
       error! 'VehicleUsage not found', 404
     else
       destinations = current_customer.destinations_inside_time_distance(position, params[:distance], params[:time], vehicle_usage) || []
-      present destinations, with: V01::Entities::Destination
+      present destinations, with: V01::Entities::DestinationId
     end
   end
 end
