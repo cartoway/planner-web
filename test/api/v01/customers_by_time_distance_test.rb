@@ -14,7 +14,7 @@ class V01::CustomerTestByTimeDistance < ActiveSupport::TestCase
   end
 
   def around
-    Routers::Osrm.stub_any_instance(:matrix, lambda{ |url, vector| Array.new(vector.size, Array.new(vector.size, 0)) }) do
+    Routers::RouterWrapper.stub_any_instance(:matrix, lambda{ |url, mode, dimensions, row, column, options| [Array.new(row.size) { Array.new(column.size, 0) }] }) do
       yield
     end
   end
