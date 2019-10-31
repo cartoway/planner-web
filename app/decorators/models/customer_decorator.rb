@@ -22,6 +22,7 @@ Customer.class_eval do
     r = (vehicle_usage && vehicle_usage.vehicle.default_router) || router
     d = (vehicle_usage && vehicle_usage.vehicle.default_router_dimension) || router_dimension
     options = (vehicle_usage && vehicle_usage.vehicle.default_router_options || router_options).symbolize_keys
+    options[:geometry] = false
     options[:speed_multiplier] = (vehicle_usage && vehicle_usage.vehicle.default_speed_multiplier) || speed_multiplier || 1
 
     distances = r.matrix(starts, dests, :distance, options, &matrix_progress)[0]
@@ -37,6 +38,7 @@ Customer.class_eval do
     r = (vehicle_usage && vehicle_usage.vehicle.default_router) || router
     d = (vehicle_usage && vehicle_usage.vehicle.default_router_dimension) || router_dimension
     options = (vehicle_usage && vehicle_usage.vehicle.default_router_options || router_options).symbolize_keys
+    options[:geometry] = false
     options[:speed_multiplier] = (vehicle_usage && vehicle_usage.vehicle.default_speed_multiplier) || speed_multiplier || 1
 
     distances = !distance.nil? && r.distance? ? r.matrix(starts, dests, :distance, options, &matrix_progress)[0] : []
