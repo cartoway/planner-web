@@ -18,13 +18,6 @@
 require 'ostruct'
 
 ApiWeb::V01::StoresController.class_eval do
-  swagger_api :by_distance do
-    summary 'Display the N closest stores of a point.'
-    param :query, :lat, :float, :required, 'Point latitude.'
-    param :query, :lng, :float, :required, 'Point longitude.'
-    param :query, :n, :integer, :required, 'Number of results.'
-  end
-
   def by_distance
     @customer = current_user.customer
     @position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
