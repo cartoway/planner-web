@@ -199,6 +199,24 @@ class V01::Visits < Grape::API
   end
 
   resource :visits do
+    desc 'Update multiple visits.',
+      nickname: 'updateVisits'
+    params do
+      requires :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
+      optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+    end
+    put do
+      Visit.transaction do
+        visits = current_customer.visits.select{ |visit|
+          params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
+        }.each{ |visit|
+          visit.assign_attributes(tag_ids: params[:tag_ids])
+          visit.save!
+        }
+        present visits, with: V01::Entities::Visit
+      end
+    end
+
     desc 'Delete multiple visits.',
       nickname: 'deleteVisits',
       success: V01::Status.success(:code_204),
