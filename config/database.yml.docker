@@ -2,13 +2,13 @@ default: &default
   adapter: postgresql
   pool: 5
   timeout: 5000
-  username: <%= ENV['POSTGRES_USERNAME'] || 'mapotempo' %>
-  # password: <%= ENV['POSTGRES_PASSWORD'] || 'mapotempo' %>
+  username: <%= ENV['POSTGRES_USERNAME'] || 'postgres' %>
+  # password: <%= ENV['POSTGRES_PASSWORD'] || 'postgres' %>
   # host: db
 
 development:
   <<: *default
-  database: <%= ENV['POSTGRES_DATABASE'] || 'mapotempo-dev' %>
+  database: <%= ENV['POSTGRES_DATABASE'] || 'dev' %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run
@@ -16,8 +16,8 @@ development:
 # production.
 test:
   <<: *default
-  database: <%= ENV['POSTGRES_DATABASE'] || 'mapotempo-test' %>
+  database: <%= ENV['POSTGRES_DATABASE'] || 'test' %>
 
 production:
   <<: *default
-  database: <%= ENV['POSTGRES_DATABASE'] || 'mapotempo-prod' %>
+  database: <%= ENV['POSTGRES_DATABASE'] || 'postgres' %>

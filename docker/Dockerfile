@@ -1,6 +1,8 @@
-FROM mapotempo/nginx-passenger:2.0.1
-
-LABEL maintainer="Mapotempo <contact@mapotempo.com>"
+# Ruby 2.6 limited by rails 4 version
+# Debian bullseye limited by Ruby 2.6
+FROM ruby:2.6-bullseye
+ENTRYPOINT []
+CMD ["/bin/bash"]
 
 ARG TAG
 ENV TAG ${TAG:-master}
@@ -9,45 +11,31 @@ ENV RAILS_ENV production
 ENV NODE_ENV production
 ENV REDIS_HOST redis-cache
 
-ADD . /srv/app/
-
-ADD vendor/bundle vendor/bundle
-
-# Install dependencies
-RUN apt-get update && \
-    apt-get install -y apt-transport-https curl && \
-    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    apt-get update && \
-    apt-get install -y git build-essential zlib1g-dev libicu-dev g++ libgeos-dev libgeos++-dev libpq-dev\
-    zlib1g libicu57 libgeos-3.5.1 libpq5 postgresql-client && \
-    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-    apt-get install -y nodejs yarn && \
-    \
-# Install app
-    cd /srv/app && \
-    mkdir ../watch && \
-    rm -Rf docker && \
-    bundle check --path vendor/bundle --without test development || bundle install --full-index --without test development --path vendor/bundle && \
-    npm install && \
-    bundle exec rake i18n:js:export && \
-    bundle exec rake assets:precompile && \
-    \
-# Prepare configuration files
-    cp config/database.yml.docker config/database.yml && \
-    \
-# Fix permissions
-    chown -R www-data:www-data . && \
-    \
-# Cleanup Debian packages
-    apt-get remove -y git build-essential zlib1g-dev libicu-dev g++ libgeos++-dev libpq-dev && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    echo -n > /var/lib/apt/extended_states && \
-    rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
-
-ADD docker/env.d/* /etc/nginx/env.d/
-ADD docker/snippets/* /etc/nginx/snippets/
-
-VOLUME /srv/app/public/uploads
+RUN apt update && \
+    apt install -y \
+        git build-essential \
+        zlib1g-dev libicu-dev g++ libgeos-dev libgeos++-dev libpq-dev \
+        zlib1g libicu67 libgeos-3.9.0 libpq5 postgresql-client \
+        nodejs yarnpkg && \
+    ln -s /usr/bin/yarnpkg /usr/bin/yarn
 
 WORKDIR /srv/app
+
+ADD ./package.json /srv/app/
+RUN yarn install
+
+ADD ./Gemfile /srv/app/
+ADD ./Gemfile.lock /srv/app/
+
+RUN bundle config git.allow_insecure true && \
+    bundle install --full-index --without test development
+
+ADD . /srv/app/
+
+RUN bundle exec rake i18n:js:export && \
+    bundle exec rake assets:precompile
+
+# Prepare configuration files
+ADD ./config/database.yml.docker config/database.yml
+
+VOLUME /srv/app/public/uploads

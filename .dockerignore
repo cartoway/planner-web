@@ -4,3 +4,4 @@ docker/postgres
 docker/postgres-run
 docker/uploads
 .git
+node_modules

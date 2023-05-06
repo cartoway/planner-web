@@ -142,8 +142,8 @@ As postgres user:
 Create user and databases:
 
     createuser -s [username]
-    createdb -E UTF8 -T template0 -O [username] mapotempo-dev
-    createdb -E UTF8 -T template0 -O [username] mapotempo-test
+    createdb -E UTF8 -T template0 -O [username] dev
+    createdb -E UTF8 -T template0 -O [username] test
 
 Create a `config/application.yml` file and set variables:
 
