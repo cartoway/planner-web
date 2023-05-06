@@ -34,6 +34,12 @@ class V01::Entities::Stop < V01::Entities::StopStatus
   expose(:distance, documentation: { type: Float, desc: 'Distance between the stop and previous one.' })
   expose(:drive_time, documentation: { type: Integer, desc: 'Time in seconds between the stop and previous one.' })
   expose(:visit_id, documentation: { type: Integer })
+  expose(:route_id, documentation: { type: Integer }) { |stop|
+    stop.route_id
+  }
+  expose(:planning_id, documentation: { type: Integer }) { |stop|
+    stop.route.planning_id
+  }
   # Deprecated
   expose(:destination_id, documentation: { type: Integer }) { |m| m.is_a?(StopVisit) ? m.visit.destination.id : nil }
   expose(:wait_time, documentation: { type: DateTime, desc: 'Time before delivery.' }) { |m| m.wait_time && ('%i:%02i:%02i' % [m.wait_time / 60 / 60, m.wait_time / 60 % 60, m.wait_time % 60]) }
