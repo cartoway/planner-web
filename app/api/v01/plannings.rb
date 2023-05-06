@@ -67,6 +67,7 @@ class V01::Plannings < Grape::API
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
       use :params_from_entity, entity: V01::Entities::Planning.documentation.except(:id, :route_ids, :outdated, :tag_ids)
+      optional :routes, type: Array[V01::Entities::Route]
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     put ':id' do
@@ -75,6 +76,15 @@ class V01::Plannings < Grape::API
 
       planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
       planning.update! planning_params
+
+      if params[:routes] && !params[:routes].empty?
+        param_routes = params[:routes].collect { |route| [route[:id], route.to_h.except(:id)] }.to_h
+        routes = planning.routes.select{ |r| param_routes.include? r.id }
+        routes.each do |route|
+          route.update!(param_routes[route.id])
+        end
+      end
+
       present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
     end
 
