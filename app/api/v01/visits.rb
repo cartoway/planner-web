@@ -87,6 +87,19 @@ class V01::Visits < Grape::API
           present current_customer.destinations.includes_visits.where(destination_id).first!.visits.where(id).first!, with: V01::Entities::Visit
         end
 
+        desc 'Fetch visit stops.',
+          nickname: 'getVisitStops',
+          is_array: true,
+          success: V01::Entities::Stop
+        params do
+          requires :id, type: String, desc: SharedParams::ID_DESC
+        end
+        get ':id/stops' do
+          destination_id = ParseIdsRefs.read(params[:destination_id])
+          id = ParseIdsRefs.read(params[:id])
+          present current_customer.destinations.includes_visits.where(destination_id).first!.visits.where(id).first!.stop_visits, with: V01::Entities::Stop
+        end
+
         desc 'Create visit.',
           nickname: 'createVisit',
           success: V01::Status.success(:code_201, V01::Entities::Visit),
