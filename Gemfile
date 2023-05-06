@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+ruby '< 2.7'
 
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
@@ -21,6 +22,8 @@ gem 'rake'
 
 # Make hashes more powerful
 gem 'hashie', '~> 3.4', '>= 3.4.4'
+
+gem 'puma'
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
@@ -49,8 +52,6 @@ group :development do
 end
 
 group :development, :test do
-  gem 'puma'
-
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
 
@@ -76,13 +77,13 @@ group :test do
   gem 'mocha'
   gem 'simplecov', require: false
   gem 'webmock'
-  gem 'tidy-html5', github: 'moneyadviceservice/tidy-html5-gem'
+  gem 'tidy-html5', git: 'https://github.com/moneyadviceservice/tidy-html5-gem.git'
   gem 'html_validation'
 
   gem 'rspec-rails'
 
-  gem 'mapotempo_web_by_time_distance', github: 'Mapotempo/mapotempo_web_by_time_distance'
-  gem 'mapotempo_web_import_vehicle_store', github: 'Mapotempo/mapotempo_web_import_vehicle_store'
+  gem 'mapotempo_web_by_time_distance', git: 'https://github.com/Mapotempo/mapotempo_web_by_time_distance.git'
+  gem 'mapotempo_web_import_vehicle_store', git: 'https://github.com/Mapotempo/mapotempo_web_import_vehicle_store.git'
 
   # Browser tests
   gem 'capybara'
@@ -104,7 +105,7 @@ gem 'devise-i18n'
 gem 'devise-i18n-views'
 gem 'cancancan'
 gem 'lograge'
-gem 'validates_timeliness'
+gem 'validates_timeliness', '< 5'
 gem 'rails_engine_decorators'
 gem 'activerecord-import'
 
@@ -118,21 +119,32 @@ gem 'sprockets'
 gem 'webpacker'
 
 gem 'font-awesome-rails'
-gem 'twitter-bootstrap-rails', github: 'seyhunak/twitter-bootstrap-rails', ref: 'd3776ddd0b89d28fdebfd6e1c1541348cc90e5cc' # FIXME wait for >3.2.2 with drop font-awesome, require Rails 5
-gem 'twitter_bootstrap_form_for', github: 'Mapotempo/twitter_bootstrap_form_for' # FIXME wait for pull request
+gem 'twitter-bootstrap-rails', git: 'https://github.com/seyhunak/twitter-bootstrap-rails.git', ref: 'd3776ddd0b89d28fdebfd6e1c1541348cc90e5cc' # FIXME wait for >3.2.2 with drop font-awesome, require Rails 5
+gem 'twitter_bootstrap_form_for', git: 'https://github.com/Mapotempo/twitter_bootstrap_form_for.git' # FIXME wait for pull request
 gem 'bootstrap-wysihtml5-rails'
 
-gem 'leaflet_numbered_markers-rails', github: 'frodrigo/leaflet_numbered_markers-rails'
-gem 'leaflet-controlledbounds-rails', github: 'Mapotempo/leaflet-controlledbounds-rails'
-gem 'leaflet-pattern-rails', github: 'Mapotempo/leaflet-pattern-rails'
+gem 'leaflet-rails', '> 1.0.2'
+gem 'leaflet-markercluster-rails', git: 'https://github.com/Mapotempo/leaflet-markercluster-rails.git' # FIXME wait for https://github.com/scpike/leaflet-markercluster-rails/pull/8
+gem 'leaflet-draw-rails', git: 'https://github.com/frodrigo/leaflet-draw-rails.git' # FIXME wait for https://github.com/zentrification/leaflet-draw-rails/pull/1
+gem 'leaflet_numbered_markers-rails', git: 'https://github.com/frodrigo/leaflet_numbered_markers-rails.git'
+gem 'leaflet-control-geocoder-rails', git: 'https://github.com/Mapotempo/leaflet-control-geocoder-rails.git'
+gem 'leaflet-controlledbounds-rails', git: 'https://github.com/Mapotempo/leaflet-controlledbounds-rails.git'
+gem 'leaflet-hash-rails', git: 'https://github.com/frodrigo/leaflet-hash-rails.git'
+gem 'leaflet-pattern-rails', git: 'https://github.com/Mapotempo/leaflet-pattern-rails.git'
+gem 'sidebar-v2-gh-pages-rails', git: 'https://github.com/Mapotempo/sidebar-v2-gh-pages-rails.git'
+gem 'leaflet-encoded-rails', git: 'https://github.com/Mapotempo/leaflet-encoded-rails.git'
+gem 'leaflet-responsive-popup-rails', git: 'https://github.com/Mapotempo/leaflet-responsive-popup-rails.git'
 
 gem 'jquery-turbolinks'
-gem 'jquery-timeentry-rails', github: 'frodrigo/jquery-timeentry-rails'
-
-gem 'i18n-js'
+gem 'jquery-ui-rails', '< 6' # FIXME Support IE10 removed in jQuery UI 1.12 + bad performances for large list sortable
+gem 'jquery-tablesorter', '< 1.21.2' # FIXME waiting for a replacement (v59)
+gem 'jquery-simplecolorpicker-rails'
+gem 'jquery-timeentry-rails', git: 'https://github.com/frodrigo/jquery-timeentry-rails.git'
+gem 'select2-rails', '= 4.0.0' # FIXME test compatibility with planning sidebar
+gem 'i18n-js', '< 4'
 gem 'mustache'
 gem 'smt_rails', '0.2.9' # FIXME: JS not working in 0.3.0
-gem 'paloma', github: 'Mapotempo/paloma' # FIXME wait for https://github.com/Mapotempo/paloma/commit/25cbba9f33c7b36f4f4878035ae53541a0036ee9 but paloma not maintained !
+gem 'paloma', git: 'https://github.com/Mapotempo/paloma.git' # FIXME wait for https://github.com/Mapotempo/paloma/commit/25cbba9f33c7b36f4f4878035ae53541a0036ee9 but paloma not maintained !
 gem 'browser'
 gem 'color'
 
@@ -159,6 +171,8 @@ gem 'rest-client'
 gem 'macaddr'
 gem 'rubyzip'
 gem 'barby'
+
+gem 'pnotify-rails'
 
 gem 'nokogiri'
 gem 'addressable'
