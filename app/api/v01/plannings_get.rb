@@ -63,6 +63,9 @@ class V01::PlanningsGet < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     get do
+      params[:geojson] = params[:with_geojson]
+      params.delete(:with_geojson)
+
       plannings = current_customer.plannings
 
       plannings = plannings.where(active: params[:active]) unless params[:active].nil?
@@ -103,10 +106,13 @@ class V01::PlanningsGet < Grape::API
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry, when using json output. For geojson output, param can be only set to `point` to return only points, `polyline` to return with encoded linestring.'
-      optional :with_quantities, type: Boolean, default: false, desc: 'Include the quantities when using geojson output.'
-      optional :with_stores, type: Boolean, default: false, desc: 'Include the stores in geojson output.'
+      optional :quantities, type: Boolean, default: false, desc: 'Include the quantities when using geojson output.'
+      optional :stores, type: Boolean, default: false, desc: 'Include the stores in geojson output.'
     end
     get ':id' do
+      params[:geojson] = params[:with_geojson]
+      params.delete(:with_geojson)
+
       planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
       if env['api.format'] == :ics
         if params.key?(:email)

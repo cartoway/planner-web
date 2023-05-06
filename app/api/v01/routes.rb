@@ -52,8 +52,12 @@ class V01::Routes < Grape::API
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
           use :params_from_entity, entity: V01::Entities::Route.documentation.slice(:ref, :hidden, :locked, :color)
+          optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         put ':id' do
+          params[:geojson] = params[:with_geojson]
+          params.delete(:with_geojson)
+
           get_route.update! route_params
           present get_route, with: V01::Entities::RouteProperties
         end
@@ -69,6 +73,9 @@ class V01::Routes < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         patch ':id/active/:active' do
+          params[:geojson] = params[:with_geojson]
+          params.delete(:with_geojson)
+
           raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
 
           Stop.includes_destinations.scoping do
@@ -123,6 +130,9 @@ class V01::Routes < Grape::API
           optional :ignore_overload_multipliers, type: String, desc: "Deliverable Unit id and whether or not it should be ignored : {'0'=>{'unit_id'=>'7', 'ignore'=>'true'}}"
         end
         patch ':id/optimize' do
+          params[:geojson] = params[:with_geojson]
+          params.delete(:with_geojson)
+
           begin
             raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
@@ -190,6 +200,9 @@ class V01::Routes < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         get ':id' do
+          params[:geojson] = params[:with_geojson]
+          params.delete(:with_geojson)
+
           planning = current_customer.plannings.find_by! ParseIdsRefs.read(params[:planning_id])
           vehicle = current_customer.vehicles.find_by! ParseIdsRefs.read(params[:id])
           route = planning.routes.find{ |route| route.vehicle_usage_id && route.vehicle_usage.vehicle == vehicle }
