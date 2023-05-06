@@ -350,8 +350,8 @@ class V01::Customers < Grape::API
       end
     end
 
-    desc 'Duplicate customer account (admin).',
-      detail: 'Create a copy of customer account. Only available with an admin api_key.',
+    desc 'Duplicate customer.',
+      detail: 'Create a copy of customer. Only available with an admin api_key.',
       nickname: 'duplicateCustomer',
       success: V01::Status.success(:code_201, V01::Entities::CustomerAdmin),
       failure: V01::Status.failures
