@@ -23,6 +23,8 @@ class V01::Entities::Route < V01::Entities::RouteProperties
   expose(:ref, documentation: { type: String })
   expose(:distance, documentation: { type: Float, desc: 'Total route\'s distance.' })
   expose(:emission, documentation: { type: Float })
+  expose(:vehicle_usage_id, documentation: { type: Integer })
+  expose(:force_start, documentation: { type: 'Boolean', desc: 'DEPRECATED. To be configured on vehicle_usage_set.' })
   expose(:start, documentation: { type: DateTime }) { |m|
     (m.planning.date || Time.zone.today).beginning_of_day + m.start if m.start
   }
@@ -50,5 +52,57 @@ class V01::Entities::Route < V01::Entities::RouteProperties
   expose(:optimized_at, documentation: { type: DateTime, desc: 'Last optimized at.'})
   expose(:quantities, using: V01::Entities::DeliverableUnitQuantity, documentation: { type: V01::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
     m.quantities ? m.quantities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
+  }
+  expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
+    if options[:geojson] != :false
+      m.to_geojson(true, true,
+        if options[:geojson] == :polyline
+          :polyline
+        elsif options[:geojson] == :point
+          false
+        else
+          true
+        end)
+    end
+  }
+end
+
+class V01::Entities::RouteStatus < Grape::Entity
+  def self.entity_name
+    'V01_RouteStatus'
+  end
+
+  expose(:id, documentation: { type: Integer })
+  expose(:vehicle_usage_id, documentation: { type: Integer })
+  expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
+  expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
+  expose(:quantities, using: V01::Entities::DeliverableUnitQuantity, documentation: { type: V01::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
+    m.quantities ? m.quantities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
+  }
+  expose(:stops, using: V01::Entities::StopStatus, documentation: { type: V01::Entities::StopStatus, is_array: true })
+end
+
+class V01::Entities::RouteProperties < Grape::Entity
+  def self.entity_name
+    'V01_RouteProperties'
+  end
+
+  expose(:id, documentation: { type: Integer })
+  expose(:vehicle_usage_id, documentation: { type: Integer })
+  expose(:hidden, documentation: { type: 'Boolean' })
+  expose(:locked, documentation: { type: 'Boolean' })
+  expose(:color, documentation: { type: String, desc: 'Color code with #. For instance: #FF0000.' })
+  expose(:force_start, documentation: { type: 'Boolean', desc: 'DEPRECATED. To be configured on vehicle_usage_set.' })
+  expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
+    if options[:geojson] != :false
+      m.to_geojson(true, true,
+        if options[:geojson] == :polyline
+          :polyline
+        elsif options[:geojson] == :point
+          false
+        else
+          true
+        end)
+    end
   }
 end

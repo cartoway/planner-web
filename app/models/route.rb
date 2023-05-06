@@ -311,8 +311,8 @@ class Route < ApplicationRecord
 
         time -= vehicle_usage.default_service_time_start if vehicle_usage.default_service_time_start
 
-        force_start = planning.customer.optimization_force_start.nil? ? Mapotempo::Application.config.optimize_force_start : planning.customer.optimization_force_start
-        if time > start #&& !force_start
+        force_start = !self.force_start.nil? ? self.force_start : planning.customer.optimization_force_start.nil? ? Mapotempo::Application.config.optimize_force_start : planning.customer.optimization_force_start
+        if time > start && !force_start
           # We can sleep a bit more on morning, shift departure
           plan(time, options)
         end

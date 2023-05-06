@@ -649,7 +649,8 @@ CREATE TABLE public.routes (
     departure_eta time without time zone,
     departure_status character varying,
     arrival_eta time without time zone,
-    arrival_status character varying
+    arrival_status character varying,
+    force_start boolean
 );
 
 
@@ -2776,3 +2777,5 @@ INSERT INTO schema_migrations (version) VALUES ('20190315184420');
 INSERT INTO schema_migrations (version) VALUES ('20190417121926');
 
 INSERT INTO schema_migrations (version) VALUES ('20190107081835');
+
+INSERT INTO schema_migrations (version) VALUES ('20230506091330');

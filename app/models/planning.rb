@@ -430,7 +430,8 @@ class Planning < ApplicationRecord
                 overload_multiplier: customer.deliverable_units.find{ |du| du.id == k }.optimization_overload_multiplier || Mapotempo::Application.config.optimize_overload_multiplier
               }
             },
-            skills: vehicle_skills
+            skills: vehicle_skills,
+            force_start: r.force_start,
           }
         }
         # Remove unplanned stops if no global optimization
