@@ -24,7 +24,12 @@ class V01::VehicleUsageSets < Grape::API
     def vehicle_usage_set_params
       p = ActionController::Parameters.new(params)
       p = p[:vehicle_usage_set] if p.key?(:vehicle_usage_set)
-      p.permit(:name, :open, :close, :store_start_id, :store_stop_id, :service_time_start, :service_time_end, :work_time, :rest_start, :rest_stop, :rest_duration, :store_rest_id, :max_distance)
+      p = p.permit(:name, :time_window_start, :time_window_end, :store_start_id, :store_stop_id, :service_time_start, :service_time_end, :work_time, :rest_start, :rest_stop, :rest_duration, :store_rest_id, :max_distance)
+      p[:open] = p[:time_window_start]
+      p.delete(:time_window_start)
+      p[:close] = p[:time_window_end]
+      p.delete(:time_window_end)
+      p
     end
   end
 
@@ -66,8 +71,8 @@ class V01::VehicleUsageSets < Grape::API
     params do
       use :params_from_entity, entity: V01::Entities::VehicleUsageSet.documentation.except(
           :id,
-          :open,
-          :close,
+          :time_window_start,
+          :time_window_end,
           :service_time_start,
           :service_time_end,
           :work_time,
@@ -80,8 +85,8 @@ class V01::VehicleUsageSets < Grape::API
         store_stop_id: { required: true }
       )
 
-      requires :open, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      requires :close, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      requires :time_window_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      requires :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :service_time_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :work_time, type: Integer, documentation: { type: 'string', desc: 'Work time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
@@ -104,8 +109,8 @@ class V01::VehicleUsageSets < Grape::API
       requires :id, type: Integer
       use :params_from_entity, entity: V01::Entities::VehicleUsageSet.documentation.except(
           :id,
-          :open,
-          :close,
+          :time_window_start,
+          :time_window_end,
           :service_time_start,
           :service_time_end,
           :work_time,
@@ -113,8 +118,8 @@ class V01::VehicleUsageSets < Grape::API
           :rest_stop,
           :rest_duration)
 
-      optional :open, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :close, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      optional :time_window_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :service_time_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :work_time, type: Integer, documentation: { type: 'string', desc: 'Work time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
