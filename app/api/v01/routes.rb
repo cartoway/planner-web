@@ -27,7 +27,7 @@ class V01::Routes < Grape::API
     def route_params
       p = ActionController::Parameters.new(params)
       p = p[:route] if p.key?(:route)
-      p.permit(:force_start, :hidden, :locked, :ref, :color)
+      p.permit(:force_start, :start, :hidden, :locked, :ref, :color)
     end
 
     def get_route
@@ -51,7 +51,7 @@ class V01::Routes < Grape::API
           failure: V01::Status.failures
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
-          use :params_from_entity, entity: V01::Entities::Route.documentation.slice(:force_start, :hidden, :locked, :color)
+          use :params_from_entity, entity: V01::Entities::Route.documentation.slice(:force_start, :start, :hidden, :locked, :color)
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         put ':id' do
@@ -59,6 +59,7 @@ class V01::Routes < Grape::API
           params.delete(:with_geojson)
 
           get_route.update! route_params
+          get_route.compute && get_route.save!
           present get_route, with: V01::Entities::RouteProperties
         end
 

@@ -89,9 +89,18 @@ class V01::Entities::RouteProperties < Grape::Entity
 
   expose(:id, documentation: { type: Integer })
   expose(:vehicle_usage_id, documentation: { type: Integer })
+  expose(:start, documentation: { type: DateTime }) { |m|
+    (m.planning.date || Time.zone.today).beginning_of_day + m.start if m.start
+  }
+  expose(:end, documentation: { type: DateTime }) { |m|
+    (m.planning.date || Time.zone.today).beginning_of_day + m.end if m.end
+  }
   expose(:hidden, documentation: { type: 'Boolean' })
   expose(:locked, documentation: { type: 'Boolean' })
   expose(:color, documentation: { type: String, desc: 'Color code with #. For instance: #FF0000.' })
+  expose(:date, documentation: { type: Date, desc: 'DEPRECATED. Get value from the planning.' }) { |m|
+    m.planning.date || Time.zone.today
+  }
   expose(:force_start, documentation: { type: 'Boolean', desc: 'DEPRECATED. To be configured on vehicle_usage_set.' })
   expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
     if options[:geojson] != :false

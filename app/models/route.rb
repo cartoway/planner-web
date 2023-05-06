@@ -62,6 +62,24 @@ class Route < ApplicationRecord
     })
   end
 
+  # FIXME, probaly not in the rails ways
+  # Flag outdated if force_start changes
+  def force_start=(v)
+    if self.force_start != v
+      self.outdated = true
+    end
+    super(v)
+  end
+
+  # FIXME, probaly not in the rails ways
+  # Flag outdated if start changes
+  def start=(v)
+    if self.start != v
+      self.outdated = true
+    end
+    super(v)
+  end
+
   def init_stops(compute = true, ignore_errors = false)
     stops.clear
     if vehicle_usage? && vehicle_usage.default_rest_duration
@@ -284,7 +302,12 @@ class Route < ApplicationRecord
   def compute!(options = {})
     if self.vehicle_usage?
       self.geojson_tracks = nil
-      stops_sort, stops_drive_time, stops_time_windows = plan(vehicle_usage.default_open, options)
+      stops_sort, stops_drive_time, stops_time_windows = plan(
+        # Hack to allow manual set of self.start from the API and keep the value
+        # when used in conjunction with self.force_start
+        self.force_start ? self.start : vehicle_usage.default_open,
+        options
+      )
 
       if stops_sort
         # Try to minimize waiting time by a later begin
