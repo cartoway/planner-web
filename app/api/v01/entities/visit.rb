@@ -50,7 +50,7 @@ class V01::Entities::Visit < Grape::Entity
   expose(:close2, documentation: { type: DateTime }) { |m| m.close2_absolute_time_with_seconds }
   expose(:priority, documentation: { type: Integer, desc: 'Insertion priority when optimizing (-4 to 4, 0 if not defined).' })
   expose(:ref, documentation: { type: String })
-  expose(:take_over, documentation: { type: DateTime, desc: 'Visit duration.' }) { |m| m.take_over_absolute_time_with_seconds }
+  expose(:duration, documentation: { type: DateTime, desc: 'Visit duration.' }) { |m| m.take_over_absolute_time_with_seconds }
   expose(:take_over_default, documentation: { type: DateTime }) { |m| m.destination.customer && m.destination.customer.take_over_absolute_time_with_seconds }
   expose(:tag_ids, documentation: { type: Integer, is_array: true })
 end

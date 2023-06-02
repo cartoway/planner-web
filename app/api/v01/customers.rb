@@ -32,6 +32,12 @@ class V01::Customers < Grape::API
       p[:devices] = p[:devices] ? JSON.parse(p[:devices], symbolize_names: true) : {}
       p[:devices] = customer[:devices].deep_merge(p[:devices]) if customer && customer[:devices].size > 0
 
+      # Rename parameter
+      if p[:visit_duration]
+        p[:take_over] = p[:visit_duration]
+        p.delete(:visit_duration)
+      end
+
       if @current_user.admin?
         p.permit(
           :reseller_id,
@@ -192,7 +198,7 @@ class V01::Customers < Grape::API
         :job_store_geocoding_id,
         :job_optimizer_id,
         :router_options,
-        :take_over,
+        :visit_duration,
         :devices
       )
 
@@ -214,7 +220,7 @@ class V01::Customers < Grape::API
         optional :strict_restriction, type: Boolean
       end
 
-      optional :take_over, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      optional :visit_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
     end
     put ':id' do
       if @current_user.admin?
@@ -244,7 +250,7 @@ class V01::Customers < Grape::API
         :job_store_geocoding_id,
         :job_optimizer_id,
         :router_options,
-        :take_over
+        :visit_duration
       ).deep_merge(
         name: { required: true },
         default_country: { required: true },
@@ -267,7 +273,7 @@ class V01::Customers < Grape::API
         optional :max_walk_distance, type: Float
       end
 
-      optional :take_over, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      optional :visit_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
     end
     post do
       if @current_user.admin?

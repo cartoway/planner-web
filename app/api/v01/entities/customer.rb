@@ -31,7 +31,7 @@ class V01::Entities::Customer < Grape::Entity
 
   expose(:ref, documentation: { type: String, desc: EDIT_ONLY_ADMIN })
   expose(:name, documentation: { type: String, desc: EDIT_ONLY_ADMIN })
-  expose(:take_over, documentation: { type: DateTime, desc: 'Visit duration' }) { |m| m.take_over_time_with_seconds }
+  expose(:visit_duration, documentation: { type: DateTime, desc: 'Visit duration' }) { |m| m.take_over_time_with_seconds }
   expose(:default_country, documentation: { type: String })
   expose(:router_id, documentation: { type: Integer })
   expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys })
