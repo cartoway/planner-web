@@ -16,7 +16,7 @@
     "leaflet-control-geocoder": "1.5.8",
     "leaflet-draw": "0.4.9",
     "leaflet-hash": "0.2.1",
-    "leaflet-pip": "https://github.com/Mapotempo/leaflet-pip.git#1.1.0-mt",
+    "leaflet-pip": "1.1.0",
     "leaflet-polylineoffset": "1.1.1",
     "leaflet-responsive-popup": "0.2.0",
     "leaflet.markercluster": "1.3.0",
@@ -34,5 +34,8 @@
   },
   "devDependencies": {
     "webpack-dev-server": "^2.11.1"
+  },
+  "resolutions": {
+    "node-sass": "link:./node_modules/.cache/null"
   }
 }
