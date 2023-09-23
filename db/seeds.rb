@@ -10,11 +10,6 @@ car = RouterWrapper.create!(
     name: 'RouterWrapper-Car',
     name_locale: {fr: 'Calculateur pour voiture', en: 'Car router'},
     options: {time: true, distance: true, avoid_zones: false, isochrone: true, isodistance: true, approach: true, motorway: true})
-car_urban = RouterWrapper.create!(
-    mode: 'car_urban',
-    name: 'RouterWrapper-Car-Urban',
-    name_locale: {fr: 'Calculateur pour voiture urbaine', en: 'Urban car router'},
-    options: {time: true, distance: true, avoid_zones: false, isochrone: true, isodistance: true, approach: true, motorway: true})
 bicycle = RouterWrapper.create!(
     mode: 'bicycle',
     name: 'RouterWrapper-Bicycle',
@@ -42,14 +37,14 @@ public_transport = RouterWrapper.create!(
     options: {time: true, distance: false, avoid_zones: false, isochrone: true, isodistance: true, max_walk_distance: true})
 
 profile_osm = Profile.create!(name: "1. OSM", layers: [mapnik_fr, mapnik, stamen_bw], routers: [car, bicycle, pedestrian, public_transport])
-profile_all = Profile.create!(name: "2. All", layers: [mapnik_fr, mapnik, stamen_bw, here_layer], routers: [car, car_urban, bicycle, pedestrian, here_car, here_truck, public_transport])
-profile_other = Profile.create!(name: "3. Other", layers: [mapnik_fr, mapnik, stamen_bw], routers: [car_urban])
+profile_all = Profile.create!(name: "2. All", layers: [mapnik_fr, mapnik, stamen_bw, here_layer], routers: [car, bicycle, pedestrian, here_car, here_truck, public_transport])
+profile_other = Profile.create!(name: "3. Other", layers: [mapnik_fr, mapnik, stamen_bw], routers: [car])
 
 reseller = Reseller.create!(host: "localhost:3000", name: "Mapotempo", authorized_fleet_administration: true)
 customer = Customer.create!(reseller: reseller, name: "Toto", default_country: "France", router: car, profile: profile_all, test: true, max_vehicles: 2, devices: {'fleet_demo' => {'enable' => '1'}})
-admin = User.create!(email: "admin@example.com", password: "123456789", reseller: reseller, layer: mapnik)
-test = User.create!(email: "test@example.com", password: "123456789", layer: mapnik, customer: customer)
-toto = User.create!(email: "toto@example.com", password: "123456789", layer: mapnik, customer: customer)
+admin = User.create!(email: "admin@example.com", password: "123", reseller: reseller, layer: mapnik)
+test = User.create!(email: "test@example.com", password: "123", layer: mapnik, customer: customer)
+toto = User.create!(email: "toto@example.com", password: "123", layer: mapnik, customer: customer)
 
 Tag.create!(label: "lundi", customer: customer)
 Tag.create!(label: "jeudi", customer: customer)
