@@ -1,10 +1,8 @@
 version: '3.3'
 
 x-web: &web
-  build:
-    context: ..
-    dockerfile: docker/Dockerfile
-  image: mapotempo/mapotempo-web:${MAPOTEMPO_VERSION:-100.0.0} # Warning, delayed-job must have the same version
+  build: .
+  image: planner-web:${CARTOROUTE_VERSION:-latest}
   environment:
     GEOCODER_URL: ${GEOCODER_URL:-http://localhost:8081/0.1}
     GEOCODER_API_KEY: ${GEOCODER_API_KEY:-demo}
@@ -13,10 +11,10 @@ x-web: &web
     OPTIMIZER_URL: ${OPTIMIZER_URL:-http://localhost:8083/0.1}
     OPTIMIZER_API_KEY: ${OPTIMIZER_API_KEY:-demo}
   volumes:
-    - ..:/srv/app
-    - ../config/database.yml.docker:/srv/app/config/database.yml
-    - ./uploads:/srv/app/public/uploads
-    - ./postgres-run:/var/run/postgresql/
+    - .:/srv/app
+    - ./config/database.yml.docker:/srv/app/config/database.yml
+    - ./docker/uploads:/srv/app/public/uploads
+    - ./docker/postgres-run:/var/run/postgresql/
   links:
     - db
     - redis-cache
@@ -28,8 +26,8 @@ services:
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
-      - ./postgres:/var/lib/postgresql/data/
-      - ./postgres-run:/var/run/postgresql/
+      - ./docker/postgres:/var/lib/postgresql/data/
+      - ./docker/postgres-run:/var/run/postgresql/
     restart: unless-stopped
 
   redis-cache:

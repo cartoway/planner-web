@@ -237,3 +237,25 @@ To be able to generate the image, add the following variable to your CI settings
  - USER (registry user login name)
  - PASSWORD (registry user login password)
  - PRIVATE_TOKEN: user private token
+
+
+# Docker
+
+## Building
+```
+docker-compose build
+```
+
+## Run
+Copie `.env.template` as `.env` and update settings.
+
+``
+docker-compose up -d
+```
+
+## Initializing database
+
+```
+docker-compose exec --user postgres db psql -c "CREATE EXTENSION hstore;"
+docker-compose run --rm web bundle exec rake db:setup
+```

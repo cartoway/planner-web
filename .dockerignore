@@ -1,7 +1,3 @@
-docker/docker-compose.yml
-docker/Dockerfile
-docker/postgres
-docker/postgres-run
-docker/uploads
+docker
 .git
 node_modules
