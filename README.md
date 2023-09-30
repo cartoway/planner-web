@@ -246,16 +246,39 @@ To be able to generate the image, add the following variable to your CI settings
 docker-compose build
 ```
 
-## Run
-Copie `.env.template` as `.env` and update settings.
+## Settings
+Copie and update settings.
+```
+cp .env.template .env
+cp config/environments/production.rb docker/
+```
 
-``
+## Run
+
+```
 docker-compose up -d
 ```
 
 ## Initializing database
 
 ```
-docker-compose exec --user postgres db psql -c "CREATE EXTENSION hstore;"
+docker-compose up -d
+docker-compose exec --user postgres db psql -c "CREATE ROLE mapotempo PASSWORD 'mapotempo' LOGIN;"
+docker-compose exec --user postgres db psql -c "CREATE DATABASE mapotempo OWNER mapotempo ENCODING 'utf-8';"
+docker-compose exec --user postgres db psql mapotempo -c "CREATE EXTENSION hstore;"
 docker-compose run --rm web bundle exec rake db:setup
+```
+
+## Dev in Docker
+For dev in docker add `SUPERUSER`.
+```
+# docker-compose exec --user postgres db psql -c "ALTER USER mapotempo WITH SUPERUSER;"
+```
+
+To reset the instance
+```
+docker-compose down
+docker-compose up -d db
+docker-compose exec --user postgres db psql -c "DROP DATABASE mapotempo;"
+docker-compose exec --user postgres db psql -c "DROP ROLE mapotempo;"
 ```

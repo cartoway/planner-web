@@ -11,7 +11,7 @@ x-web: &web
     OPTIMIZER_URL: ${OPTIMIZER_URL:-http://localhost:8083/0.1}
     OPTIMIZER_API_KEY: ${OPTIMIZER_API_KEY:-demo}
   volumes:
-    - .:/srv/app
+    # - .:/srv/app
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/uploads:/srv/app/public/uploads
     - ./docker/postgres-run:/var/run/postgresql/

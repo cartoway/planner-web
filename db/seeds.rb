@@ -42,9 +42,9 @@ profile_other = Profile.create!(name: "3. Other", layers: [mapnik_fr, mapnik, st
 
 reseller = Reseller.create!(host: "localhost:3000", name: "Mapotempo", authorized_fleet_administration: true)
 customer = Customer.create!(reseller: reseller, name: "Toto", default_country: "France", router: car, profile: profile_all, test: true, max_vehicles: 2, devices: {'fleet_demo' => {'enable' => '1'}})
-admin = User.create!(email: "admin@example.com", password: "123", reseller: reseller, layer: mapnik)
-test = User.create!(email: "test@example.com", password: "123", layer: mapnik, customer: customer)
-toto = User.create!(email: "toto@example.com", password: "123", layer: mapnik, customer: customer)
+admin = User.create!(email: "admin@example.com", password: "12345678", reseller: reseller, layer: mapnik)
+test = User.create!(email: "test@example.com", password: "12345678", layer: mapnik, customer: customer)
+toto = User.create!(email: "toto@example.com", password: "12345678", layer: mapnik, customer: customer)
 
 Tag.create!(label: "lundi", customer: customer)
 Tag.create!(label: "jeudi", customer: customer)
