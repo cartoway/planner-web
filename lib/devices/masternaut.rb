@@ -238,8 +238,8 @@ class Masternaut < DeviceBase
     params = {
       category: {
         logo: 'client_green',
-        name: 'mapotempo',
-        reference: 'mapotempo',
+        name: 'Web Planner',
+        reference: 'Web Planner',
       }
     }
 
@@ -249,7 +249,7 @@ class Masternaut < DeviceBase
   def fetchPOI(customer)
     params = {
       filter: {
-        categoryReference: 'mapotempo',
+        categoryReference: 'Web Planner',
       },
       maxResults: 999999,
     }
@@ -285,8 +285,8 @@ class Masternaut < DeviceBase
         },
         category: {
           logo: 'client_green',
-          name: 'mapotempo',
-          reference: 'mapotempo',
+          name: 'Web Planner',
+          reference: 'Web Planner',
         },
         latitude: waypoint[:lat],
         longitude: waypoint[:lng],

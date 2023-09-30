@@ -113,13 +113,13 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
       json = JSON.parse(last_response.body)
 
       assert_equal 'Véhicule 1', json[0]['name']
-      assert_equal 'vehicle1@mapotempo.com', json[0]['contact_email']
+      assert_equal 'vehicle1@example.com', json[0]['contact_email']
       assert_equal 10, json[0]['consumption']
       assert_equal '08:00:00', json[0]['vehicle_usages'][2]['open']
       assert_equal '16:00:00', json[0]['vehicle_usages'][2]['close']
 
       assert_equal 'Véhicule 2', json[1]['name']
-      assert_equal 'vehicle2@mapotempo.com', json[1]['contact_email']
+      assert_equal 'vehicle2@example.com', json[1]['contact_email']
       assert_equal 15, json[1]['consumption']
       assert_nil json[1]['vehicle_usages'][2]['open']
       assert_equal '16:00:00', json[1]['vehicle_usages'][2]['close']

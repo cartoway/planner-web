@@ -46,12 +46,12 @@ module FleetBase
               users: [
                 {
                   sync_user: 'driver1',
-                  email: 'driver1@mapotempo.com',
+                  email: 'driver1@example.com',
                   color: '#000'
                 },
                 {
                   sync_user: 'driver2',
-                  email: 'driver2@mapotempo.com'
+                  email: 'driver2@example.com'
                 }
               ]
             }.to_json

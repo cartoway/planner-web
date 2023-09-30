@@ -30,7 +30,7 @@ Transfer-Encoding: chunked
                   <status>A</status>
                   <driverCurrentWorkState>FREETIME</driverCurrentWorkState>
                   <coDriverCurrentWorkState>UNKNOWN</coDriverCurrentWorkState>
-                  <driver driverNo="Mapotempo" driverUid="1-44063-8859060249"/>
+                  <driver driverNo="driverNo" driverUid="1-44063-8859060249"/>
                   <coDriver xsi:nil="true"/>
                   <ignitionState>0</ignitionState>
                   <odometer>57721</odometer>
@@ -40,7 +40,7 @@ Transfer-Encoding: chunked
                   <ignitionTime>2016-01-29T15:41:38.329Z</ignitionTime>
                   <pndConnected>1</pndConnected>
                   <orderNo>PARIS-9UUKYTY</orderNo>
-                  <driverName>Mapotempo</driverName>
+                  <driverName>driverName</driverName>
                   <posTime>2016-02-25T09:51:23Z</posTime>
                </resultItem>
                <resultItem xmlns:ns4="http://connect.webfleet.tomtomwork.com/transfer/objects" xsi:type="ns4:ObjectReport" objectNo="004" objectUid="1-44063-666F24630">

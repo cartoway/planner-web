@@ -3,7 +3,7 @@ require 'test_helper'
 class UserTest < ActiveSupport::TestCase
 
   def user_hash(customer, locale)
-    { locale: locale, customer: customer, email: 'julien@mapotempo.com', password: 'dummy_password' }
+    { locale: locale, customer: customer, email: 'julien@example.com', password: 'dummy_password' }
   end
 
   test 'should not save' do

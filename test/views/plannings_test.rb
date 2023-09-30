@@ -28,10 +28,10 @@ class PlanningsTest < ActiveSupport::TestCase
 
   test 'should return devices with json for planning' do
     user = 'driver1'
-    fleet_user = Digest::SHA256.hexdigest("#{user}@mapotempo.com")
+    fleet_user = Digest::SHA256.hexdigest("#{user}@example.com")
     customers(:customer_one).update(job_optimizer_id: nil, devices: { fleet: { enable: true, user: user, api_key: '123456' } }, enable_vehicle_position: true, enable_stop_status: true)
     vehicles(:vehicle_one).update(devices: { fleet_user: fleet_user })
-    
+
     stub_request(:get, %r{/api/0.1/users\?with_vehicle=true}).
     to_return(status: 200, body: "{
       \"users\": [
@@ -41,7 +41,7 @@ class PlanningsTest < ActiveSupport::TestCase
           \"api_key\": \"xwfROQlB1hjao1Z4TKeokAtt\",
           \"sync_user\": \"#{fleet_user}\",
           \"name\": \"#{user}\",
-          \"email\": \"#{user}@mapotempo.com\",
+          \"email\": \"#{user}@example.com\",
           \"vehicle\": true,
           \"color\": \"#fd108e\"
         }

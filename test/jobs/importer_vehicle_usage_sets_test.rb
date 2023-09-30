@@ -87,10 +87,10 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
         imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_one.csv', 'text.csv')).import
 
         assert imported_data
-        assert_equal imported_data.first.contact_email, 'vehicle1@mapotempo.com'
+        assert_equal imported_data.first.contact_email, 'vehicle1@example.com'
         assert_equal imported_data.first.consumption, 10
         assert_equal imported_data.first.phone_number, '0548484953'
-        assert_equal imported_data.second.contact_email, 'vehicle2@mapotempo.com'
+        assert_equal imported_data.second.contact_email, 'vehicle2@example.com'
         assert_equal imported_data.second.consumption, 15
       end
     end
@@ -103,11 +103,11 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
         assert imported_data
         assert_equal @customer.vehicles.first.ref, '001'
-        assert_equal @customer.vehicles.first.contact_email, 'vehicle1@mapotempo.com'
+        assert_equal @customer.vehicles.first.contact_email, 'vehicle1@example.com'
         assert_equal @customer.vehicles.first.color, '#9000EE'
 
         assert_nil @customer.vehicles.second.ref
-        assert_equal @customer.vehicles.second.contact_email, 'vehicle2@mapotempo.com'
+        assert_equal @customer.vehicles.second.contact_email, 'vehicle2@example.com'
       end
     end
   end

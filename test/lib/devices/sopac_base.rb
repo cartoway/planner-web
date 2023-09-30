@@ -4,7 +4,7 @@ module SopacBase
     customer.devices = {
       sopac: {
         enable: 'true',
-        username: 'sebastien.rigolat@mapotempo.com',
+        username: 'sebastien.rigolat@example.com',
         password: '2018'
       }
     }
@@ -24,7 +24,7 @@ module SopacBase
             stubs << stub_request(:get, url).to_return(status: 200, body: expected)
           when :single_device
             expected = File.read(Rails.root.join('test/web_mocks/sopac/single_device.xml'))
-            url = 'https://restservice1.bluconsole.com/bluconsolerest/1.0/resources/devices?id=2000352F&uname=sebastien.rigolat@mapotempo.com&upass=2018'
+            url = 'https://restservice1.bluconsole.com/bluconsolerest/1.0/resources/devices?id=2000352F&uname=sebastien.rigolat@example.com&upass=2018'
             stubs << stub_request(:get, url).to_return(status: 200, body: expected)
           when :auth
             url = 'https://restservice1.bluconsole.com/bluconsolerest/1.0/resources/devices?uname&upass='

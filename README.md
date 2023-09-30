@@ -1,4 +1,4 @@
-Mapotempo [![Build Status](https://travis-ci.org/Mapotempo/mapotempo-web.svg?branch=dev)](https://travis-ci.org/Mapotempo/mapotempo-web)
+Mapotempo
 =========
 Route optimization with numerous stops. Based on [OpenStreetMap](http://www.openstreetmap.org) and [OR-Tools](http://code.google.com).
 
@@ -99,7 +99,7 @@ After setting ruby and gem env, install Bundler Ruby Gem:
 
 ### Install project
 
-For the following installation, your current working directory needs to be the mapotempo-web root directory.
+For the following installation, your current working directory needs to be the Web Planner root directory.
 
 Clone the project:
 
@@ -107,7 +107,7 @@ Clone the project:
 
 Go to project directory:
 
-    cd mapotempo-web
+    cd planner-web
 
 Add the ruby version:
 
