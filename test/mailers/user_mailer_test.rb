@@ -19,7 +19,7 @@ class UserMailerTest < ActionMailer::TestCase
     user_one = users(:user_one)
     reseller = user_one.customer.reseller
     reseller_name = user_one.customer.reseller.name
-    file = Rack::Test::UploadedFile.new(Rails.root.join('test', 'fixtures', 'logo', 'logo_mapotempo.png'), 'image/png')
+    file = Rack::Test::UploadedFile.new(Rails.root.join('test', 'fixtures', 'logo', 'logo.png'), 'image/png')
     reseller.logo_large = file
     reseller.save!
 

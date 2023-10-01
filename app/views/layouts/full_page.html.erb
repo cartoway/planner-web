@@ -11,7 +11,7 @@
           <% if request.env['reseller'].website_url %>
             <a href="<%= request.env['reseller'].website_url.gsub('{LG}', I18n.locale.to_s) %>">
           <% end %>
-          <%= image_tag request.env['reseller'].logo_large.url || 'logo_mapotempo.svg', alt: request.env['reseller'].name, class: 'mapotempo-logo' %>
+          <%= image_tag request.env['reseller'].logo_large.url || 'logo.svg', alt: request.env['reseller'].name, class: 'mapotempo-logo' %>
           <% if request.env['reseller'].website_url %>
             </a>
           <% end %>

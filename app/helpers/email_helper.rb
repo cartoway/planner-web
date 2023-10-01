@@ -25,7 +25,7 @@ module EmailHelper
     elsif reseller.logo_large.url
       url += reseller.logo_large.url
     else
-      url += '/assets/logo_mapotempo.png'
+      url += '/assets/logo.png'
     end
     url
   end
