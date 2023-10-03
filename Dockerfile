@@ -4,9 +4,6 @@ FROM ruby:2.6-bullseye
 ENTRYPOINT []
 CMD ["/bin/bash"]
 
-ARG TAG
-ENV TAG ${TAG:-master}
-
 ENV RAILS_ENV production
 ENV NODE_ENV production
 ENV REDIS_HOST redis-cache
