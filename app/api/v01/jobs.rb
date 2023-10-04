@@ -27,8 +27,9 @@ class V01::Jobs < Grape::API
       p.permit(:label, :ref, :color, :icon, :icon_size)
     end
 
-    ID_DESC = 'Id field value".'.freeze
   end
+
+  ID_DESC = 'Id field value".'.freeze
 
   resource :jobs do
     desc 'Fetch customer\'s jobs.',

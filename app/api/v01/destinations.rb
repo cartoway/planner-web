@@ -91,8 +91,6 @@ class V01::Destinations < Grape::API
         end
       }.compact
     end
-
-    ID_DESC = 'Id or the ref field value, then use "ref:[value]".'.freeze
   end
 
   resource :destinations do
