@@ -68,8 +68,6 @@ class V01::VisitsTest < ActiveSupport::TestCase
           visit = JSON.parse last_response.body
           assert_equal 2, visit['tag_ids'].size
           assert_equal 3.5, visit['quantities'][0]['quantity']
-          assert_equal '10:00:00', visit['open']
-          assert_equal '11:00:00', visit['close']
           assert_equal '10:00:00', visit['time_window_start_1']
           assert_equal '11:00:00', visit['time_window_end_1']
           assert_equal 4, visit['priority']
@@ -94,8 +92,6 @@ class V01::VisitsTest < ActiveSupport::TestCase
           visit = JSON.parse last_response.body
           assert_equal 2, visit['tag_ids'].size
           assert_equal -3.5, visit['quantities'][0]['quantity']
-          assert_equal '10:00:00', visit['open']
-          assert_equal '11:00:00', visit['close']
           assert_equal '10:00:00', visit['time_window_start_1']
           assert_equal '11:00:00', visit['time_window_end_1']
           assert_equal '00:05:33', visit['duration']

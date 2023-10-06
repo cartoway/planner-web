@@ -111,7 +111,9 @@ class V01::Visits < Grape::API
               :duration,
               :time_window_start_2,
               :time_window_end_2,
-              :priority)
+              :priority,
+              :quantities,
+            )
 
           optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
 
@@ -150,7 +152,8 @@ class V01::Visits < Grape::API
             :time_window_end_1,
             :duration,
             :time_window_start_2,
-            :time_window_end_2
+            :time_window_end_2,
+            :quantities,
           )
 
           optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }

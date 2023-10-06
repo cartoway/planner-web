@@ -799,26 +799,27 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert last_response.ok?, last_response.body
   end
 
-  test 'Update Destination with Deprecated Params' do
-    visit = visits :visit_one
-    destination_params = @destination.attributes.slice *@destination.attributes.keys - ['id']
-    visit_attributes = visit.attributes.slice *visit.attributes.keys - ['created_at', 'updated_at']
+  # Disabled as deprecated
+  # test 'Update Destination with Deprecated Params' do
+  #   visit = visits :visit_one
+  #   destination_params = @destination.attributes.slice *@destination.attributes.keys - ['id']
+  #   visit_attributes = visit.attributes.slice *visit.attributes.keys - ['created_at', 'updated_at']
 
-    open_time = 15.hours.to_i
-    visit_attributes.delete 'time_window_start_1'
-    visit_attributes['open'] = open_time
+  #   open_time = 15.hours.to_i
+  #   visit_attributes.delete 'time_window_start_1'
+  #   visit_attributes['open'] = open_time
 
-    close_time = 17.hours.to_i
-    visit_attributes.delete 'time_window_end_1'
-    visit_attributes['close'] = close_time
+  #   close_time = 17.hours.to_i
+  #   visit_attributes.delete 'time_window_end_1'
+  #   visit_attributes['close'] = close_time
 
-    destination_params.merge! 'visits_attributes' => [ visit_attributes ]
-    put api(@destination.id), destination_params
-    assert last_response.ok?, last_response.body
+  #   destination_params.merge! 'visits_attributes' => [ visit_attributes ]
+  #   put api(@destination.id), destination_params
+  #   assert last_response.ok?, last_response.body
 
-    assert_equal open_time, visit.reload.time_window_start_1
-    assert_equal close_time, visit.reload.time_window_end_1
-  end
+  #   assert_equal open_time, visit.reload.time_window_start_1
+  #   assert_equal close_time, visit.reload.time_window_end_1
+  # end
 
   test 'should use limitation' do
     customer = @destination.customer

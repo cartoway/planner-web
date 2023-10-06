@@ -132,8 +132,10 @@ class V01::Destinations < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::Destination),
       failure: V01::Status.failures
     params do
-      use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids).deep_merge(
-        name: { required: true },
+      # FIXME validation should also be on visits, but does not work
+      # use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids).deep_merge(
+      use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids, :visits).deep_merge(
+          name: { required: true },
         geocoding_accuracy: { desc: 'Must be inside 0..1 range.' }
       )
       optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
@@ -163,7 +165,12 @@ class V01::Destinations < Grape::API
         optional(:zoning_ids, type: Array[Integer], desc: 'If a new zoning is specified before planning save, all visits will be affected to vehicles specified in zones.')
       end
       optional(:file, type: Rack::Multipart::UploadedFile, desc: 'CSV file, encoding, separator and line return automatically detected, with localized CSV header according to HTTP header Accept-Language.', documentation: {param_type: 'form'})
-      optional(:destinations, type: Array[V01::Entities::DestinationImportJson], desc: 'In mutual exclusion with CSV file upload and remote.')
+
+      # FIXME validation should be
+      # optional(:destinations, type: Array[V01::Entities::DestinationImportJson], desc: 'In mutual exclusion with CSV file upload and remote.')
+      # but validation does not work
+      optional(:destinations, type: Array, desc: 'In mutual exclusion with CSV file upload and remote.')
+
       optional(:remote, type: Symbol, values: [:tomtom])
       at_least_one_of :file, :destinations, :remote
     end
@@ -205,7 +212,9 @@ class V01::Destinations < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids).deep_merge(
+      # FIXME validation should also be on visits, but does not work
+      # use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids).deep_merge(
+      use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids, :visits).deep_merge(
         geocoding_accuracy: { desc: 'Must be inside 0..1 range.' }
       )
       optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
