@@ -2,8 +2,8 @@
 
 vehicle_usage_set_one:
   name: vehicle_usage_set_one
-  open: 10:00:00
-  close: 15:00:00
+  time_window_start: 10:00:00
+  time_window_end: 15:00:00
   customer: customer_one
   store_start: store_one
   store_stop: store_one
@@ -15,8 +15,8 @@ vehicle_usage_set_one:
 
 vehicle_usage_set_two:
   name: vehicle_usage_set_two
-  open: 10:00:00
-  close: 15:00:00
+  time_window_start: 10:00:00
+  time_window_end: 15:00:00
   customer: customer_two
   store_start: store_two
   store_stop: store_two
@@ -27,8 +27,8 @@ vehicle_usage_set_two:
 
 vehicle_usage_set_three:
   name: vehicle_usage_set_three
-  open: 10:00:00
-  close: 15:00:00
+  time_window_start: 10:00:00
+  time_window_end: 15:00:00
   customer: customer_one
   store_start: store_without_geo
   store_stop:
@@ -39,8 +39,8 @@ vehicle_usage_set_three:
 
 vehicle_usage_set_four:
   name: vehicle_four
-  open: 10:00:00
-  close: 15:00:00
+  time_window_start: 10:00:00
+  time_window_end: 15:00:00
   customer: customer_one_other
   store_start: store_one_other
   store_stop: store_one_other

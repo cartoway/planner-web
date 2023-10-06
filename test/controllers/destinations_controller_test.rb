@@ -88,10 +88,10 @@ class DestinationsControllerTest < ActionController::TestCase
             comment: 'comment',
             phone_number: '+336123456789',
             visits_attributes: [{
-              open1: '10:00',
-              close1: '18:00',
-              open2: '20:00',
-              close2: '21:00',
+              time_window_start_1: '10:00',
+              time_window_end_1: '18:00',
+              time_window_start_2: '20:00',
+              time_window_end_2: '21:00',
               priority: -4,
               quantity1_1: '10',
               tag_ids: [tags(:tag_one).id]
@@ -115,13 +115,13 @@ class DestinationsControllerTest < ActionController::TestCase
             comment: 'comment',
             phone_number: '+336123456789',
             visits_attributes: {'1' => {
-                open1: '18:00',
-                close1: '06:00',
-                close1_day: '1',
-                open2: '10:00',
-                open2_day: '1',
-                close2: '14:00',
-                close2_day: '1'
+                time_window_start_1: '18:00',
+                time_window_end_1: '06:00',
+                time_window_end_1_day: '1',
+                time_window_start_2: '10:00',
+                time_window_start_2_day: '1',
+                time_window_end_2: '14:00',
+                time_window_end_2_day: '1'
             }}
         }
       end
@@ -138,13 +138,13 @@ class DestinationsControllerTest < ActionController::TestCase
             comment: 'comment',
             phone_number: '+336123456789',
             visits_attributes: [{
-                                    open1: '18:00',
-                                    close1: '06:00',
-                                    close1_day: '1',
-                                    open2: '10:00',
-                                    open2_day: '1',
-                                    close2: '14:00',
-                                    close2_day: '1'
+                                    time_window_start_1: '18:00',
+                                    time_window_end_1: '06:00',
+                                    time_window_end_1_day: '1',
+                                    time_window_start_2: '10:00',
+                                    time_window_start_2_day: '1',
+                                    time_window_end_2: '14:00',
+                                    time_window_end_2_day: '1'
                                 }]
         }
       end
@@ -166,10 +166,10 @@ class DestinationsControllerTest < ActionController::TestCase
             comment: 'comment',
             phone_number: '+336123456789',
             visits_attributes: [{
-              open1: '10:00',
-              close1: '18:00',
-              open2: '20:00',
-              close2: '21:00',
+              time_window_start_1: '10:00',
+              time_window_end_1: '18:00',
+              time_window_start_2: '20:00',
+              time_window_end_2: '21:00',
               priority: -4,
               quantity1_1: '10'
             }]
@@ -367,10 +367,10 @@ class DestinationsControllerTest < ActionController::TestCase
         comment: 'comment',
         phone_number: '+336123456789',
         visits_attributes: [{
-          open1: '10:00',
-          close1: '18:00',
-          open2: '20:00',
-          close2: '21:00',
+          time_window_start_1: '10:00',
+          time_window_end_1: '18:00',
+          time_window_start_2: '20:00',
+          time_window_end_2: '21:00',
           quantity1_1: '10',
           tag_ids: [tags(:tag_one).id]
         }]
@@ -387,10 +387,10 @@ class DestinationsControllerTest < ActionController::TestCase
           comment: 'comment',
           phone_number: '+336123456789',
           visits_attributes: [{
-            open1: '10:00',
-            close1: '18:00',
-            open2: '20:00',
-            close2: '21:00',
+            time_window_start_1: '10:00',
+            time_window_end_1: '18:00',
+            time_window_start_2: '20:00',
+            time_window_end_2: '21:00',
             quantity1_1: '10',
             tag_ids: [tags(:tag_one).id]
           }]

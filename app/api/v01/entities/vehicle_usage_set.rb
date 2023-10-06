@@ -22,8 +22,8 @@ class V01::Entities::VehicleUsageSet < Grape::Entity
 
   expose(:id, documentation: { type: Integer })
   expose(:name, documentation: { type: String })
-  expose(:open, documentation: { type: DateTime }) { |m| m.open_absolute_time_with_seconds }
-  expose(:close, documentation: { type: DateTime }) { |m| m.close_absolute_time_with_seconds }
+  expose(:time_window_start, documentation: { type: DateTime }) { |m| m.time_window_start_absolute_time_with_seconds }
+  expose(:time_window_end, documentation: { type: DateTime }) { |m| m.time_window_end_absolute_time_with_seconds }
   expose(:store_start_id, documentation: { type: Integer })
   expose(:store_stop_id, documentation: { type: Integer })
   expose(:service_time_start, documentation: { type: DateTime }) { |m| m.service_time_start_absolute_time_with_seconds }

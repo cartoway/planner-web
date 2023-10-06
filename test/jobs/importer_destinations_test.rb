@@ -438,7 +438,7 @@ class ImporterDestinationsTest < ActionController::TestCase
       end
     end
 
-    assert_equal '15:00', Visit.last.open1_time
+    assert_equal '15:00', Visit.last.time_window_start_1_time
   end
 
   test 'should import destinations with locale number separator (commas in french)' do

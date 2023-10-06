@@ -36,43 +36,43 @@ class StopRest < Stop
     end
   end
 
-  def open1
+  def time_window_start_1
     route.vehicle_usage.default_rest_start
   end
 
-  def open1_time
+  def time_window_start_1_time
     route.vehicle_usage.default_rest_start_time
   end
 
-  def open1_absolute_time
+  def time_window_start_1_absolute_time
     route.vehicle_usage.default_rest_start_absolute_time
   end
 
-  def close1
+  def time_window_end_1
     route.vehicle_usage.default_rest_stop
   end
 
-  def close1_time
+  def time_window_end_1_time
     route.vehicle_usage.default_rest_stop_time
   end
 
-  def close1_absolute_time
+  def time_window_end_1_absolute_time
     route.vehicle_usage.default_rest_stop_absolute_time
   end
 
-  def open2
+  def time_window_start_2
     nil
   end
 
-  def open2_time
+  def time_window_start_2_time
     nil
   end
 
-  def close2
+  def time_window_end_2
     nil
   end
 
-  def close2_time
+  def time_window_end_2_time
     nil
   end
 

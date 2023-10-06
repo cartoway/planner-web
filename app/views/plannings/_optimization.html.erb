@@ -36,7 +36,7 @@
                 <label data-toggle="tooltip" title="<%= t('plannings.edit.dialog.optimization.visits.active_only_false_help') %>"><%= radio_button_tag :active_only, :false, false %> <%= t 'all.value._no' %></label>
               </div>
             </div>
-            <% if !@with_stops || !@planning.routes.all?{ |r| r.stops.loaded? } || @planning.routes.any?{ |r| !r.stops.flat_map{ |s| [s.visit.try(:open1), s.visit.try(:close1), s.visit.try(:open2), s.visit.try(:close2)] }.compact.empty? } %>
+            <% if !@with_stops || !@planning.routes.all?{ |r| r.stops.loaded? } || @planning.routes.any?{ |r| !r.stops.flat_map{ |s| [s.visit.try(:time_window_start_1), s.visit.try(:time_window_end_1), s.visit.try(:time_window_start_2), s.visit.try(:time_window_end_2)] }.compact.empty? } %>
             <div class="row">
               <div class="col-xs-7">
                 <%= t 'plannings.edit.dialog.optimization.visits.cost_late_multiplier' %>

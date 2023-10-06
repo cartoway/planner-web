@@ -129,10 +129,10 @@ class RoutesController < ApplicationController
 
       :ref_visit,
       :duration,
-      :open1,
-      :close1,
-      :open2,
-      :close2,
+      :time_window_start_1,
+      :time_window_end_1,
+      :time_window_start_2,
+      :time_window_end_2,
       :priority,
       :tags_visit
     ] + (@route.planning.customer.enable_orders ?

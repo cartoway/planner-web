@@ -388,7 +388,7 @@ const destinations_form = function(params, api) {
       spinnerImage: ''
     });
 
-    $('[name$=\\[open1\\]], [name$=\\[close1\\]], [name$=\\[open2\\]], [name$=\\[close2\\]]', parent).timeEntry({
+    $('[name$=\\[time_window_start_1\\]], [name$=\\[time_window_end_1\\]], [name$=\\[time_window_start_2\\]], [name$=\\[time_window_end_2\\]]', parent).timeEntry({
       show24Hours: true,
       spinnerImage: '',
       defaultTime: '00:00'
@@ -656,17 +656,17 @@ const destinations_index = function(params, api) {
       destination.visits[i].tags_visit = t;
       destination.visits[i].tags = undefined;
       destination.visits[i].disable_quantity = disableQuantity;
-      if (visit.open1) {
-        destination.visits[i].open1 = visit.open1.split(':').slice(0, 2).join(':');
+      if (visit.time_window_start_1) {
+        destination.visits[i].time_window_start_1 = visit.time_window_start_1.split(':').slice(0, 2).join(':');
       }
-      if (visit.close1) {
-        destination.visits[i].close1 = visit.close1.split(':').slice(0, 2).join(':');
+      if (visit.time_window_end_1) {
+        destination.visits[i].time_window_end_1 = visit.time_window_end_1.split(':').slice(0, 2).join(':');
       }
-      if (visit.open2) {
-        destination.visits[i].open2 = visit.open2.split(':').slice(0, 2).join(':');
+      if (visit.time_window_start_2) {
+        destination.visits[i].time_window_start_2 = visit.time_window_start_2.split(':').slice(0, 2).join(':');
       }
-      if (visit.close2) {
-        destination.visits[i].close2 = visit.close2.split(':').slice(0, 2).join(':');
+      if (visit.time_window_end_2) {
+        destination.visits[i].time_window_end_2 = visit.time_window_end_2.split(':').slice(0, 2).join(':');
       }
       destination.visits[i].take_over_default = take_over_default;
     });

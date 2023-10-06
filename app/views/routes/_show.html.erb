@@ -87,15 +87,15 @@
           <% if route.planning.customer.print_stop_time %>
             <span class="time"><%= stop.time_time + (number_of_days(stop.time) ? " (+#{number_of_days(stop.time)})" : '') if stop.time %></span>
           <% end %>
-          <% if stop.open1 || stop.close1 %>
+          <% if stop.time_window_start_1 || stop.time_window_end_1 %>
             <span class="window">
-              <%= stop.open1_time + (number_of_days(stop.open1) ? " (+#{number_of_days(stop.open1)})" : '') if stop.open1 %>-<%= stop.close1_time + (number_of_days(stop.close1) ? " (+#{number_of_days(stop.close1)})" : '') if stop.close1 %>
+              <%= stop.time_window_start_1_time + (number_of_days(stop.time_window_start_1) ? " (+#{number_of_days(stop.time_window_start_1)})" : '') if stop.time_window_start_1 %>-<%= stop.time_window_end_1_time + (number_of_days(stop.time_window_end_1) ? " (+#{number_of_days(stop.time_window_end_1)})" : '') if stop.time_window_end_1 %>
             </span>
           <% end %>
-          <% if (stop.open1 || stop.close1) && (stop.open2 || stop.close2) %><span>/</span><% end %>
-          <% if stop.open2 || stop.close2 %>
+          <% if (stop.time_window_start_1 || stop.time_window_end_1) && (stop.time_window_start_2 || stop.time_window_end_2) %><span>/</span><% end %>
+          <% if stop.time_window_start_2 || stop.time_window_end_2 %>
             <span class="window">
-              <%= stop.open2_time + (number_of_days(stop.open2) ? " (+#{number_of_days(stop.open2)})" : '') if stop.open2 %>-<%= stop.close2_time + (number_of_days(stop.close2) ? " (+#{number_of_days(stop.close2)})" : '') if stop.close2 %>
+              <%= stop.time_window_start_2_time + (number_of_days(stop.time_window_start_2) ? " (+#{number_of_days(stop.time_window_start_2)})" : '') if stop.time_window_start_2 %>-<%= stop.time_window_end_2_time + (number_of_days(stop.time_window_end_2) ? " (+#{number_of_days(stop.time_window_end_2)})" : '') if stop.time_window_end_2 %>
             </span>
           <% end %>
           <% if stop.is_a?(StopVisit) %>

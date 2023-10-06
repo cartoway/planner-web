@@ -376,8 +376,8 @@ he:
         capacities: מימדים
       vehicle_usage:
         vehicle_id: רכב
-        open: לפתוח
-        close: לסגור
+        time_window_start: לפתוח
+        time_window_end: לסגור
         store_start: להתחיל במחסן
         store_start_id: להתחיל במחסן
         store_stop: עצור במחסן
@@ -392,8 +392,8 @@ he:
         vehicle: רכב
       vehicle_usage_set:
         name: שם
-        open: לפתוח
-        close: לסגור
+        time_window_start: לפתוח
+        time_window_end: לסגור
         store_start: התחל במחסן
         store_start_id: התחל במחסן
         store_stop: עצור במחסן
@@ -410,18 +410,18 @@ he:
         ref_small: מס
         take_over: משך הביקור
         take_over_small: משך
-        open1: חלון זמן 1 פתוח
-        open1_small: לפתוח 1
-        close1: חלון זמן 1 סגור
-        close1_small: סגור 1
-        open_close1_small: פתוח/סגור 1
-        open1_close1_days: D+
-        open2: חלון זמן 2 פתוח
-        open2_small: פתוח 2
-        close2: חלון זמן 2 סגור
-        close2_small: סגור 2
-        open_close2_small: פתוח/סגור 2
-        open2_close2_days: D+
+        time_window_start_1: חלון זמן 1 פתוח
+        time_window_start_1_small: לפתוח 1
+        time_window_end_1: חלון זמן 1 סגור
+        time_window_end_1_small: סגור 1
+        time_window_start_end_1small: פתוח/סגור 1
+        time_window_start_1_time_window_end_1_days: D+
+        time_window_start_2: חלון זמן 2 פתוח
+        time_window_start_2_small: פתוח 2
+        time_window_end_2: חלון זמן 2 סגור
+        time_window_end_2_small: סגור 2
+        time_window_start_end_2small: פתוח/סגור 2
+        time_window_start_2_time_window_end_2_days: D+
         multi_visit: רב
         tag_ids: תגים
         quantities: שאלות
@@ -452,7 +452,7 @@ he:
           at_least_one: צורך ברכב אחד לפחות
         vehicle_usage:
           attributes:
-            close:
+            time_window_end:
               after: חייב להיות לאחר זמן הפתיחה
             rest_stop:
               after: חייב להיות לאחר זמן הפתיחה
@@ -462,7 +462,7 @@ he:
           service_range: לא יכול להיות גדול יותר מאשר טווח עבודה
         vehicle_usage_set:
           attributes:
-            close:
+            time_window_end:
               after: חייב להיות לאחר זמן הפתיחה"
             rest_stop:
               after: חייב להיות לאחר זמן הפתיחה
@@ -471,12 +471,12 @@ he:
           missing_rest_duration: לא יכול להיות ריק אם חלון הזמן מנוחה מלא
         visit:
           attributes:
-            close1:
+            time_window_end_1:
               after: חייב להיות פתוח אחרי חלון זמן 1
               blank: לא יכול להיות ריק כאשר חלון הזמן 2 פתוח
-            open2:
+            time_window_start_2:
               after: חייב להיות אחרי שחלון זמן 1 סגור
-            close2:
+            time_window_end_2:
               after: חייב להיות אחרי שחלון זמן 2 פתוח
             quantities:
               not_float: חייב להיות מספר
@@ -917,14 +917,14 @@ he:
       open_desc: 'הוצא משימוש: השתמש "פתח 1" במקום זאת.'
       close: סגור
       close_desc: 'הוצא משימוש: השתמש "סגור" במקום זאת.'
-      open1: פתוח 1
-      open1_desc: זמן התחלה 1 להגעה ליעד.
-      close1: סגור 1
-      close1_desc: זמן אחרון 1 להגעה ליעד.
-      open2: open 2
-      open2_desc: זמן התחלה 1 להגעה ליעד.
-      close2: סגור 2
-      close2_desc: זמן אחרון 2 להגעה ליעד.
+      time_window_start_1: פתוח 1
+      time_window_start_1_desc: זמן התחלה 1 להגעה ליעד.
+      time_window_end_1: סגור 1
+      time_window_end_1_desc: זמן אחרון 1 להגעה ליעד.
+      time_window_start_2: open 2
+      time_window_start_2_desc: זמן התחלה 1 להגעה ליעד.
+      time_window_end_2: סגור 2
+      time_window_end_2_desc: זמן אחרון 2 להגעה ליעד.
       comment: הערות
       comment_desc: מידע משלים.
       phone_number: טלפון
@@ -1253,12 +1253,12 @@ he:
       vehicle_last_position_time: 'מיקום אחרון:'
       route_change_color_help: שנה צבע מסלול
       popup:
-        open_close1: 'חלון זמן 1:'
-        open1: זמן פתיחה 1
-        close1: זמן סגירה 1
-        open_close2: 'חלון זמן 2:'
-        open2: זמן פתיחה 2
-        close2: זמן סגירה 2
+        time_window_start_end_1: 'חלון זמן 1:'
+        time_window_start_1: זמן פתיחה 1
+        time_window_end_1: זמן סגירה 1
+        time_window_start_end_2: 'חלון זמן 2:'
+        time_window_start_2: זמן פתיחה 2
+        time_window_end_2: זמן סגירה 2
         time: 'תוכנן:'
         quantity: 'כמות:'
         orders: 'הזמנות:'
@@ -1357,10 +1357,10 @@ he:
       quantity: כמות
       orders: הזמנות
       active: פעיל
-      open1: זמן פתיחה 1
-      close1: זמן סגירה 1
-      open2: זמן פתיחה 2
-      close2: זמן סגירה 2
+      time_window_start_1: זמן פתיחה 1
+      time_window_end_1: זמן סגירה 1
+      time_window_start_2: זמן פתיחה 2
+      time_window_end_2: זמן סגירה 2
       tags_visit: תגים לביקור
       out_of_window: חריגה בחלון זמן ביקורים
       out_of_capacity: חריגה מהמיגבלות שהוגדרו

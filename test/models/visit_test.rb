@@ -52,84 +52,84 @@ class VisitTest < ActiveSupport::TestCase
   test 'should set same start and close' do
     destination = destinations(:destination_one)
     visit = destination.visits[0]
-    visit.open1 = visit.close1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
+    visit.time_window_start_1 = visit.time_window_end_1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
     destination.save!
   end
 
   test 'should validate open and close time exceeding one day' do
     destination = destinations(:destination_one)
     visit = destination.visits[0]
-    visit.update open1: '08:00', close1: '12:00'
+    visit.update time_window_start_1: '08:00', time_window_end_1: '12:00'
     assert visit.valid?
-    assert_equal visit.close1, 12 * 3_600
-    visit.update open2: '18:00', close2: '32:00'
+    assert_equal visit.time_window_end_1, 12 * 3_600
+    visit.update time_window_start_2: '18:00', time_window_end_2: '32:00'
     assert visit.valid?
-    assert_equal visit.close2, 32 * 3_600
+    assert_equal visit.time_window_end_2, 32 * 3_600
   end
 
   test 'should validate open and close time from different type' do
     destination = destinations(:destination_one)
     visit = destination.visits[0]
-    visit.update open1: '08:00', close1: 32 * 3_600
+    visit.update time_window_start_1: '08:00', time_window_end_1: 32 * 3_600
     assert visit.valid?
-    assert_equal visit.close1, 32 * 3_600
-    visit.update open1: '08:00', close1: '32:00'
+    assert_equal visit.time_window_end_1, 32 * 3_600
+    visit.update time_window_start_1: '08:00', time_window_end_1: '32:00'
     assert visit.valid?
-    assert_equal visit.close1, 32 * 3_600
-    visit.update open1: '08:00', close1: 115200.0
+    assert_equal visit.time_window_end_1, 32 * 3_600
+    visit.update time_window_start_1: '08:00', time_window_end_1: 115200.0
     assert visit.valid?
-    assert_equal visit.close1, 32 * 3_600
-    visit.update open1: Time.parse('08:00'), close1: '32:00'
+    assert_equal visit.time_window_end_1, 32 * 3_600
+    visit.update time_window_start_1: Time.parse('08:00'), time_window_end_1: '32:00'
     assert visit.valid?
-    assert_equal visit.open1, 8 * 3_600
-    visit.update open1: DateTime.parse('2011-01-01 08:00'), close1: '32:00'
+    assert_equal visit.time_window_start_1, 8 * 3_600
+    visit.update time_window_start_1: DateTime.parse('2011-01-01 08:00'), time_window_end_1: '32:00'
     assert visit.valid?
-    assert_equal visit.open1, 8 * 3_600
-    visit.update open1: 8.hours, close1: '32:00'
+    assert_equal visit.time_window_start_1, 8 * 3_600
+    visit.update time_window_start_1: 8.hours, time_window_end_1: '32:00'
     assert visit.valid?
-    assert_equal visit.open1, 8 * 3_600
+    assert_equal visit.time_window_start_1, 8 * 3_600
 
-    visit.update open1: '06:00', close1: '07:00'
-    visit.update open2: '08:00', close2: 32 * 3_600
+    visit.update time_window_start_1: '06:00', time_window_end_1: '07:00'
+    visit.update time_window_start_2: '08:00', time_window_end_2: 32 * 3_600
     assert visit.valid?
-    assert_equal visit.close2, 32 * 3_600
-    visit.update open2: '08:00', close2: '32:00'
+    assert_equal visit.time_window_end_2, 32 * 3_600
+    visit.update time_window_start_2: '08:00', time_window_end_2: '32:00'
     assert visit.valid?
-    assert_equal visit.close2, 32 * 3_600
-    visit.update open2: '08:00', close2: 115200.0
+    assert_equal visit.time_window_end_2, 32 * 3_600
+    visit.update time_window_start_2: '08:00', time_window_end_2: 115200.0
     assert visit.valid?
-    assert_equal visit.close2, 32 * 3_600
-    visit.update open2: Time.parse('08:00'), close2: '32:00'
+    assert_equal visit.time_window_end_2, 32 * 3_600
+    visit.update time_window_start_2: Time.parse('08:00'), time_window_end_2: '32:00'
     assert visit.valid?
-    assert_equal visit.open2, 8 * 3_600
-    visit.update open2: DateTime.parse('2011-01-01 08:00'), close2: '32:00'
+    assert_equal visit.time_window_start_2, 8 * 3_600
+    visit.update time_window_start_2: DateTime.parse('2011-01-01 08:00'), time_window_end_2: '32:00'
     assert visit.valid?
-    assert_equal visit.open2, 8 * 3_600
-    visit.update open2: 8.hours, close2: '32:00'
+    assert_equal visit.time_window_start_2, 8 * 3_600
+    visit.update time_window_start_2: 8.hours, time_window_end_2: '32:00'
     assert visit.valid?
-    assert_equal visit.open2, 8 * 3_600
+    assert_equal visit.time_window_start_2, 8 * 3_600
   end
 
   test 'should set invalid TW' do
     destination = destinations(:destination_one)
     visit = destination.visits[0]
-    visit.open1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
-    visit.close1 = Time.new(2000, 01, 01, 00, 9, 00, '+00:00')
+    visit.time_window_start_1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
+    visit.time_window_end_1 = Time.new(2000, 01, 01, 00, 9, 00, '+00:00')
     assert !destination.save
 
-    visit.open1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
-    visit.open2 = Time.new(2000, 01, 01, 00, 11, 00, '+00:00')
+    visit.time_window_start_1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
+    visit.time_window_start_2 = Time.new(2000, 01, 01, 00, 11, 00, '+00:00')
     assert !destination.save
 
-    visit.open1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
-    visit.close1 = Time.new(2000, 01, 01, 00, 11, 00, '+00:00')
-    visit.open2 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
+    visit.time_window_start_1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
+    visit.time_window_end_1 = Time.new(2000, 01, 01, 00, 11, 00, '+00:00')
+    visit.time_window_start_2 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
     assert !destination.save
 
-    visit.open1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
-    visit.close1 = Time.new(2000, 01, 01, 00, 11, 00, '+00:00')
-    visit.open1 = Time.new(2000, 01, 01, 00, 12, 00, '+00:00')
-    visit.close2 = Time.new(2000, 01, 01, 00, 11, 00, '+00:00')
+    visit.time_window_start_1 = Time.new(2000, 01, 01, 00, 10, 00, '+00:00')
+    visit.time_window_end_1 = Time.new(2000, 01, 01, 00, 11, 00, '+00:00')
+    visit.time_window_start_1 = Time.new(2000, 01, 01, 00, 12, 00, '+00:00')
+    visit.time_window_end_2 = Time.new(2000, 01, 01, 00, 11, 00, '+00:00')
     assert !destination.save
   end
 
@@ -257,11 +257,11 @@ class VisitTest < ActiveSupport::TestCase
     end
   end
 
-  test 'close2 should not be after open2' do
+  test 'time_window_end_2 should not be after time_window_start_2' do
     visit = visits(:visit_one)
 
     assert_raises ActiveRecord::RecordInvalid do
-      visit.update! close2: '09:00', open2: '10:00'
+      visit.update! time_window_end_2: '09:00', time_window_start_2: '10:00'
     end
   end
 end

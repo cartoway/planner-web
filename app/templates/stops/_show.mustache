@@ -91,20 +91,20 @@
 {{/index_visit}}
 {{#ref}}<b>{{ref}}</b>{{/ref}}
 <ul>
-  {{#open_close1}}
-    <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.open_close1{{/i18n}}
-      {{open1}}{{#open1_day}}&nbsp;(+{{open1_day}}){{/open1_day}} {{^close1}}({{#i18n}}plannings.edit.popup.open1{{/i18n}}){{/close1}}
-      {{#open1}}{{#close1}}-{{/close1}}{{/open1}}
-      {{close1}}{{#close1_day}}&nbsp;(+{{close1_day}}){{/close1_day}} {{^open1}}({{#i18n}}plannings.edit.popup.close1{{/i18n}}){{/open1}}
+  {{#time_window_start_end_1}}
+    <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.time_window_start_end_1{{/i18n}}
+      {{time_window_start_1}}{{#time_window_start_1_day}}&nbsp;(+{{time_window_start_1_day}}){{/time_window_start_1_day}} {{^time_window_end_1}}({{#i18n}}plannings.edit.popup.time_window_start_1{{/i18n}}){{/time_window_end_1}}
+      {{#time_window_start_1}}{{#time_window_end_1}}-{{/time_window_end_1}}{{/time_window_start_1}}
+      {{time_window_end_1}}{{#time_window_end_1_day}}&nbsp;(+{{time_window_end_1_day}}){{/time_window_end_1_day}} {{^time_window_start_1}}({{#i18n}}plannings.edit.popup.time_window_end_1{{/i18n}}){{/time_window_start_1}}
     </li>
-  {{/open_close1}}
-  {{#open_close2}}
-    <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.open_close2{{/i18n}}
-      {{open2}}{{#open2_day}}&nbsp;(+{{open2_day}}){{/open2_day}} {{^close2}}({{#i18n}}plannings.edit.popup.open2{{/i18n}}){{/close2}}
-      {{#open2}}{{#close2}}-{{/close2}}{{/open2}}
-      {{close2}}{{#close2_day}}&nbsp;(+{{close2_day}}){{/close2_day}} {{^open2}}({{#i18n}}plannings.edit.popup.close2{{/i18n}}){{/open2}}
+  {{/time_window_start_end_1}}
+  {{#time_window_start_end_2}}
+    <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.time_window_start_end_2{{/i18n}}
+      {{time_window_start_2}}{{#time_window_start_2_day}}&nbsp;(+{{time_window_start_2_day}}){{/time_window_start_2_day}} {{^time_window_end_2}}({{#i18n}}plannings.edit.popup.time_window_start_2{{/i18n}}){{/time_window_end_2}}
+      {{#time_window_start_2}}{{#time_window_end_2}}-{{/time_window_end_2}}{{/time_window_start_2}}
+      {{time_window_end_2}}{{#time_window_end_2_day}}&nbsp;(+{{time_window_end_2_day}}){{/time_window_end_2_day}} {{^time_window_start_2}}({{#i18n}}plannings.edit.popup.time_window_end_2{{/i18n}}){{/time_window_start_2}}
     </li>
-  {{/open_close2}}
+  {{/time_window_start_end_2}}
   {{#status}}
     <li class="toggle-status"{{^status}} style="display: none;"{{/status}}><i class="fa fa-check fa-fw"></i> {{#i18n}}plannings.edit.popup.status{{/i18n}} <span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"></span><span class="status">{{status}}</span></li>
     <li class="toggle-status-eta"{{^eta_formated}} style="display: none;"{{/eta_formated}}><i class="fa fa-clock-o fa-fw"></i> {{#i18n}}plannings.edit.popup.eta{{/i18n}} <span class="eta">{{eta_formated}}</span></li>

@@ -30,17 +30,17 @@ class Visit < ApplicationRecord
   validates :destination, presence: true
 
   include TimeAttr
-  attribute :open1, ScheduleType.new
-  attribute :close1, ScheduleType.new
-  attribute :open2, ScheduleType.new
-  attribute :close2, ScheduleType.new
+  attribute :time_window_start_1, ScheduleType.new
+  attribute :time_window_end_1, ScheduleType.new
+  attribute :time_window_start_2, ScheduleType.new
+  attribute :time_window_end_2, ScheduleType.new
   attribute :take_over, ScheduleType.new
-  time_attr :open1, :close1, :open2, :close2, :take_over
+  time_attr :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :take_over
 
-  validate :close1_after_open1
-  validates :close1, presence: true, if: ->(visit) { visit.open2 || visit.close2 }
-  validate :close2_after_open2
-  validate :open2_after_close1
+  validate :time_window_end_1_after_time_window_start_1
+  validates :time_window_end_1, presence: true, if: ->(visit) { visit.time_window_start_2 || visit.time_window_end_2 }
+  validate :time_window_end_2_after_time_window_start_2
+  validate :time_window_start_2_after_time_window_end_1
 
   before_validation :nilify_priority
   validates :priority, numericality: { greater_than_or_equal_to: -4, less_than_or_equal_to: 4, message: I18n.t('activerecord.errors.models.visit.attributes.priority') }, allow_nil: true
@@ -189,7 +189,7 @@ class Visit < ApplicationRecord
   end
 
   def update_outdated
-    if @tag_ids_changed || open1_changed? || close1_changed? || open2_changed? || close2_changed? || quantities_changed? || take_over_changed?
+    if @tag_ids_changed || time_window_start_1_changed? || time_window_end_1_changed? || time_window_start_2_changed? || time_window_end_2_changed? || quantities_changed? || take_over_changed?
       outdated
     end
   end
@@ -242,27 +242,27 @@ class Visit < ApplicationRecord
     end
   end
 
-  def close1_after_open1
-    if self.open1.present? && self.close1.present? && self.close1 < self.open1
-      raise Exceptions::CloseAndOpenErrors.new(nil, id, nested_attr: :close1, record: self)
+  def time_window_end_1_after_time_window_start_1
+    if self.time_window_start_1.present? && self.time_window_end_1.present? && self.time_window_end_1 < self.time_window_start_1
+      raise Exceptions::CloseAndOpenErrors.new(nil, id, nested_attr: :time_window_end_1, record: self)
     end
   rescue Exceptions::CloseAndOpenErrors
-    self.errors.add(:close1, :after, s: I18n.t('activerecord.attributes.visit.open1').downcase)
+    self.errors.add(:time_window_end_1, :after, s: I18n.t('activerecord.attributes.visit.time_window_start_1').downcase)
   end
 
-  def close2_after_open2
-    if self.open2.present? && self.close2.present? && self.close2 < self.open2
-      raise Exceptions::CloseAndOpenErrors.new(nil, id, nested_attr: :close2, record: self)
+  def time_window_end_2_after_time_window_start_2
+    if self.time_window_start_2.present? && self.time_window_end_2.present? && self.time_window_end_2 < self.time_window_start_2
+      raise Exceptions::CloseAndOpenErrors.new(nil, id, nested_attr: :time_window_end_2, record: self)
     end
   rescue Exceptions::CloseAndOpenErrors
-    self.errors.add(:close2, :after, s: I18n.t('activerecord.attributes.visit.open2').downcase)
+    self.errors.add(:time_window_end_2, :after, s: I18n.t('activerecord.attributes.visit.time_window_start_2').downcase)
   end
 
-  def open2_after_close1
-    if self.open2.present? && self.close1.present? && self.open2 < self.close1
-      raise Exceptions::CloseAndOpenErrors.new(nil, id, nested_attr: :close2, record: self)
+  def time_window_start_2_after_time_window_end_1
+    if self.time_window_start_2.present? && self.time_window_end_1.present? && self.time_window_start_2 < self.time_window_end_1
+      raise Exceptions::CloseAndOpenErrors.new(nil, id, nested_attr: :time_window_end_2, record: self)
     end
   rescue Exceptions::CloseAndOpenErrors
-    self.errors.add(:open2, :after, s: I18n.t('activerecord.attributes.visit.close1').downcase)
+    self.errors.add(:time_window_start_2, :after, s: I18n.t('activerecord.attributes.visit.time_window_end_1').downcase)
   end
 end

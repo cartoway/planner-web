@@ -431,8 +431,8 @@
         'tag_ids': 'Compétences du véhicule'
       'vehicle_usage':
         'vehicle_id': 'Véhicule'
-        'open': 'Horaire début'
-        'close': 'Horaire fin'
+        'time_window_start': 'Horaire début'
+        'time_window_end': 'Horaire fin'
         'store_start': 'Dépôt départ'
         'store_start_id': 'Dépôt départ'
         'store_stop': 'Dépôt arrivé'
@@ -449,8 +449,8 @@
         'vehicle': 'Véhicule'
       'vehicle_usages':
         'vehicle_id': 'Véhicule'
-        'open': 'Horaire début'
-        'close': 'Horaire fin'
+        'time_window_start': 'Horaire début'
+        'time_window_end': 'Horaire fin'
         'store_start': 'Dépôt départ'
         'store_start_id': 'Dépôt départ'
         'store_stop': 'Dépôt arrivé'
@@ -467,8 +467,8 @@
         'vehicle': 'Véhicule'
       'vehicle_usage_set':
         'name': 'Nom'
-        'open': 'Horaire début'
-        'close': 'Horaire fin'
+        'time_window_start': 'Horaire début'
+        'time_window_end': 'Horaire fin'
         'store_start': 'Dépôt départ'
         'store_start_id': 'Dépôt départ'
         'store_stop': 'Dépôt arrivée'
@@ -486,18 +486,18 @@
         'ref_small': 'Réf.'
         'take_over': 'Durée de visite'
         'take_over_small': 'Durée'
-        'open1': 'Début de Plage horaire 1'
-        'open1_small': 'Début 1'
-        'close1': 'Fin de Plage horaire 1'
-        'close1_small': 'Fin 1'
-        'open_close1_small': 'Début/Fin 1'
-        'open1_close1_days': 'J+'
-        'open2': 'Début de Plage horaire 2'
-        'open2_small': 'Début 2'
-        'close2': 'Fin de Plage horaire 2'
-        'close2_small': 'Fin 2'
-        'open_close2_small': 'Début/Fin 2'
-        'open2_close2_days': 'J+'
+        'time_window_start_1': 'Début de Plage horaire 1'
+        'time_window_start_1_small': 'Début 1'
+        'time_window_end_1': 'Fin de Plage horaire 1'
+        'time_window_end_1_small': 'Fin 1'
+        'time_window_start_end_1small': 'Début/Fin 1'
+        'time_window_start_1_time_window_end_1_days': 'J+'
+        'time_window_start_2': 'Début de Plage horaire 2'
+        'time_window_start_2_small': 'Début 2'
+        'time_window_end_2': 'Fin de Plage horaire 2'
+        'time_window_end_2_small': 'Fin 2'
+        'time_window_start_end_2small': 'Début/Fin 2'
+        'time_window_start_2_time_window_end_2_days': 'J+'
         'priority': 'Priorité'
         'multi_visit': 'Multi'
         'tags': 'Libellés'
@@ -508,18 +508,18 @@
         'ref_small': 'Réf.'
         'take_over': 'Durée de visite'
         'take_over_small': 'Durée'
-        'open1': 'Début de Plage horaire 1'
-        'open1_small': 'Début 1'
-        'close1': 'Fin de Plage horaire 1'
-        'close1_small': 'Fin 1'
-        'open_close1_small': 'Début/Fin 1'
-        'open1_close1_days': 'J+'
-        'open2': 'Début de Plage horaire 2'
-        'open2_small': 'Début 2'
-        'close2': 'Fin de Plage horaire 2'
-        'close2_small': 'Fin 2'
-        'open_close2_small': 'Début/Fin 2'
-        'open2_close2_days': 'J+'
+        'time_window_start_1': 'Début de Plage horaire 1'
+        'time_window_start_1_small': 'Début 1'
+        'time_window_end_1': 'Fin de Plage horaire 1'
+        'time_window_end_1_small': 'Fin 1'
+        'time_window_start_end_1small': 'Début/Fin 1'
+        'time_window_start_1_time_window_end_1_days': 'J+'
+        'time_window_start_2': 'Début de Plage horaire 2'
+        'time_window_start_2_small': 'Début 2'
+        'time_window_end_2': 'Fin de Plage horaire 2'
+        'time_window_end_2_small': 'Fin 2'
+        'time_window_start_end_2small': 'Début/Fin 2'
+        'time_window_start_2_time_window_end_2_days': 'J+'
         'priority': 'Priorité'
         'multi_visit': 'Multi'
         'tags': 'Libellés'
@@ -555,7 +555,7 @@
           'at_least_one': 'Au moins un véhicule est requis'
         'vehicle_usage':
           'attributes':
-            'close':
+            'time_window_end':
               'after': 'doit être après l''horaire de début'
             'rest_stop':
               'after': 'doit être après l''horaire de début qui doit alors être présent'
@@ -568,7 +568,7 @@
             de travail'
         'vehicle_usage_set':
           'attributes':
-            'close':
+            'time_window_end':
               'after': 'doit être après l''horaire de début'
             'rest_stop':
               'after': 'doit être après l''horaire de début'
@@ -579,13 +579,13 @@
             de travail'
         'visit':
           'attributes':
-            'close1':
+            'time_window_end_1':
               'after': 'doit être après le %{s}'
               'blank': 'doit être rempli(e) si un début ou une fin de Plage horaire
                 2 est renseigné'
-            'open2':
+            'time_window_start_2':
               'after': 'doit être après la fin de %{s}'
-            'close2':
+            'time_window_end_2':
               'after': 'doit être après le %{s}'
             'priority': 'doit être comprise entre -4 et 4'
             'quantities':
@@ -1215,17 +1215,17 @@
       'open_desc': 'déprécié : utiliser « horaire début 1 » à la place.'
       'close': 'horaire fin'
       'close_desc': 'déprécié : utiliser « horaire fin 1 » à la place.'
-      'open1': 'horaire début 1'
-      'open1_desc': 'début de la plage horaire 1 (peut dépasser 24:00) conseillée
+      'time_window_start_1': 'horaire début 1'
+      'time_window_start_1_desc': 'début de la plage horaire 1 (peut dépasser 24:00) conseillée
         pour la visite.'
-      'close1': 'horaire fin 1'
-      'close1_desc': 'fin de la plage horaire 1 (peut dépasser 24:00) conseillée pour
+      'time_window_end_1': 'horaire fin 1'
+      'time_window_end_1_desc': 'fin de la plage horaire 1 (peut dépasser 24:00) conseillée pour
         la visite.'
-      'open2': 'horaire début 2'
-      'open2_desc': 'début de la plage horaire 2 (peut dépasser 24:00) conseillée
+      'time_window_start_2': 'horaire début 2'
+      'time_window_start_2_desc': 'début de la plage horaire 2 (peut dépasser 24:00) conseillée
         pour la visite.'
-      'close2': 'horaire fin 2'
-      'close2_desc': 'fin de la plage horaire 2 (peut dépasser 24:00) conseillée pour
+      'time_window_end_2': 'horaire fin 2'
+      'time_window_end_2_desc': 'fin de la plage horaire 2 (peut dépasser 24:00) conseillée pour
         la visite.'
       'priority': 'priorité'
       'priority_desc': 'priorité d''inclusion lors de l''optimisation, de -4 (min)
@@ -1718,12 +1718,12 @@
       'popup':
         'outdated': 'Tracé de la tournée obsolète. Veuillez recalculer votre plan
           de tournées (bouton Actualiser).'
-        'open_close1': 'Plage horaire 1 : '
-        'open1': 'début 1'
-        'close1': 'fin 1'
-        'open_close2': 'Plage horaire 2 :'
-        'open2': 'début 2'
-        'close2': 'fin 2'
+        'time_window_start_end_1': 'Plage horaire 1 : '
+        'time_window_start_1': 'début 1'
+        'time_window_end_1': 'fin 1'
+        'time_window_start_end_2': 'Plage horaire 2 :'
+        'time_window_start_2': 'début 2'
+        'time_window_end_2': 'fin 2'
         'time': 'Planifié : '
         'quantity': 'Quantité : '
         'orders': 'Commandes : '
@@ -1880,10 +1880,10 @@
       'quantity_operation': 'opération'
       'orders': 'commandes'
       'active': 'livré'
-      'open1': 'horaire début 1'
-      'close1': 'horaire fin 1'
-      'open2': 'horaire début 2'
-      'close2': 'horaire fin 2'
+      'time_window_start_1': 'horaire début 1'
+      'time_window_end_1': 'horaire fin 1'
+      'time_window_start_2': 'horaire début 2'
+      'time_window_end_2': 'horaire fin 2'
       'priority': 'priorité'
       'tags_visit': 'libellés visite'
       'out_of_window': 'hors créneau visite'
@@ -2249,14 +2249,14 @@
         'legend': 'Configuration du véhicule : « %{s} »'
         'help': 'Les informations ci-dessous sont spécifiques à la configuration du
           véhicule.'
-      'open':
+      'time_window_start':
         'default': '%{n} (défaut)'
-      'close':
+      'time_window_end':
         'default': '%{n} (défaut)'
-      'open_close_days':
+      'time_window_start_end_days':
         'default': '%{n}'
-      'open_close': 'Amplitude horaire'
-      'open_close_help': 'Plage horaire de travail du livreur'
+      'time_window_start_end': 'Amplitude horaire'
+      'time_window_start_end_help': 'Plage horaire de travail du livreur'
       'stores': 'Départ / Arrivée'
       'store':
         'default': 'Défaut'
@@ -2354,10 +2354,10 @@
             par défaut et enlevée pour chaque véhicule'
       'name_vehicle_usage_set': 'nom configuration'
       'name_desc': 'nom de la configuration par défaut'
-      'open': 'horaire début'
-      'open_desc': 'début de l''horaire de travail du livreur'
-      'close': 'horaire fin'
-      'close_desc': 'fin de l''horaire de travail du livreur'
+      'time_window_start': 'horaire début'
+      'time_window_start_desc': 'début de l''horaire de travail du livreur'
+      'time_window_end': 'horaire fin'
+      'time_window_end_desc': 'fin de l''horaire de travail du livreur'
       'store_start_ref': 'référence dépôt départ'
       'store_start_desc': 'référence du dépôt de départ du livreur'
       'store_stop_ref': 'référence dépôt arrivée'
@@ -2401,13 +2401,13 @@
       'too_many_lines': 'Import stoppé, trop de lignes (max: %{n}).'
       'none_column': 'Aucune colonne trouvée'
       'missing_name': '« nom » de la configuration par défaut manquant'
-      'missing_open_close': 'heure de début ou de fin de la configuration par défaut
+      'missing_time_window_start_end': 'heure de début ou de fin de la configuration par défaut
         manquantes'
       'invalid_numeric_value': 'valeur numérique « %{value} » invalide.'
       'check_custom_columns': 'Vérifiez votre définition des colonnes à importer.'
     'form':
-      'open_close': 'Amplitude horaire'
-      'open_close_help': 'Plage horaire de travail du livreur'
+      'time_window_start_end': 'Amplitude horaire'
+      'time_window_start_end_help': 'Plage horaire de travail du livreur'
       'stores': 'Départ / Arrivée'
       'store':
         'none': 'Aucun'
@@ -2444,8 +2444,8 @@
           valeur elle sera un minimum à remplir / vider.'
       'take_over_default': 'défaut'
       'take_over_help': 'Si vide utilise la valeur par défaut, format hh:mm:ss'
-      'open_close1': 'Plage horaire 1'
-      'open_close2': 'Plage horaire 2'
+      'time_window_start_end_1': 'Plage horaire 1'
+      'time_window_start_end_2': 'Plage horaire 2'
       'priority': 'Priorité'
       'priority_help': 'Priorité d’insertion lors de l’optimisation (utile lorsque
         vous savez que votre flotte de véhicules ne pourra pas visiter tous les clients)'

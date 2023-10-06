@@ -53,8 +53,8 @@ class ImporterVehicleUsageSets < ImporterBase
 
   def columns_vehicle_usage_set
     {
-      open: { title: I18n.t('vehicle_usage_sets.import.open'), desc: I18n.t('vehicle_usage_sets.import.open_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      close: { title: I18n.t('vehicle_usage_sets.import.close'), desc: I18n.t('vehicle_usage_sets.import.close_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
+      time_window_start: { title: I18n.t('vehicle_usage_sets.import.time_window_start'), desc: I18n.t('vehicle_usage_sets.import.time_window_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
+      time_window_end: { title: I18n.t('vehicle_usage_sets.import.time_window_end'), desc: I18n.t('vehicle_usage_sets.import.time_window_end_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
       store_start_ref: { title: I18n.t('vehicle_usage_sets.import.store_start_ref'), desc: I18n.t('vehicle_usage_sets.import.store_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.string') },
       store_stop_ref: { title: I18n.t('vehicle_usage_sets.import.store_stop_ref'), desc: I18n.t('vehicle_usage_sets.import.store_stop_desc'), format: I18n.t('vehicle_usage_sets.import.format.string') },
       rest_start: { title: I18n.t('vehicle_usage_sets.import.rest_start'), desc: I18n.t('vehicle_usage_sets.import.rest_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
@@ -147,8 +147,8 @@ class ImporterVehicleUsageSets < ImporterBase
   end
 
   def import_row(_name, row, options)
-    if (row[:open].nil? || row[:close].nil?) && @vehicle_usage_set.nil?
-      raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.missing_open_close'))
+    if (row[:time_window_start].nil? || row[:time_window_end].nil?) && @vehicle_usage_set.nil?
+      raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.missing_time_window_start_end'))
     elsif row[:name_vehicle].nil? && !@vehicle_usage_set.nil?
       raise ImportInvalidRow.new(I18n.t('vehicles.import.missing_name'))
     end
@@ -209,8 +209,8 @@ class ImporterVehicleUsageSets < ImporterBase
   def after_import(_name, _options)
     # If all vehicles have the same parameters, set the parameter to the default configuration and remove it from vehicle
     # Exclude required configuration (rest, service, ...) if all fields not in common
-    unless @common_configuration[:open] && @common_configuration[:close]
-      @common_configuration[:open] = @common_configuration[:close] = nil
+    unless @common_configuration[:time_window_start] && @common_configuration[:time_window_end]
+      @common_configuration[:time_window_start] = @common_configuration[:time_window_end] = nil
     end
     unless @common_configuration[:rest_start] && @common_configuration[:rest_stop] && @common_configuration[:rest_duration]
       @common_configuration[:rest_start] = @common_configuration[:rest_stop] = @common_configuration[:rest_duration] = nil

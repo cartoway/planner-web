@@ -126,22 +126,22 @@ class RouteTest < ActiveSupport::TestCase
 
     route.stops.each { |stop|
       if stop.is_a?(StopVisit)
-        stop.visit.open1 = stop.visit.close1 = nil
-        stop.visit.open2 = stop.visit.close2 = nil
+        stop.visit.time_window_start_1 = stop.visit.time_window_end_1 = nil
+        stop.visit.time_window_start_2 = stop.visit.time_window_end_2 = nil
         stop.visit.save!
       else
-        stop.time = stop.open1
+        stop.time = stop.time_window_start_1
         stop.save!
       end
     }
-    route.vehicle_usage.open = 0
-    route.planning.customer.take_over = 0
+    route.vehicle_usage.time_window_start = 0
+    route.planning.customer.visit_duration = 0
     route.planning.customer.save!
 
     assert_equal 0, route.sum_out_of_window
 
-    route.stops[1].visit.open1 = 0
-    route.stops[1].visit.close1 = 0
+    route.stops[1].visit.time_window_start_1 = 0
+    route.stops[1].visit.time_window_end_1 = 0
     route.stops[1].visit.save!
     assert_equal 30, route.sum_out_of_window
   end
@@ -189,14 +189,14 @@ class RouteTest < ActiveSupport::TestCase
 
     stops = route.stops.select{ |s| s.is_a?(StopVisit) }
     stops[0].time = '10:30:00'
-    stops[0].visit.open1 = '11:00:00'
-    stops[0].visit.close1 = '11:30:00'
+    stops[0].visit.time_window_start_1 = '11:00:00'
+    stops[0].visit.time_window_end_1 = '11:30:00'
     stops[1].time = '11:00:00'
-    stops[1].visit.open1 = '10:00:00'
-    stops[1].visit.close1 = '11:30:00'
+    stops[1].visit.time_window_start_1 = '10:00:00'
+    stops[1].visit.time_window_end_1 = '11:30:00'
     stops[2].time = '11:30:00'
-    stops[2].visit.open1 = '12:00:00'
-    stops[2].visit.close1 = '14:00:00'
+    stops[2].visit.time_window_start_1 = '12:00:00'
+    stops[2].visit.time_window_end_1 = '14:00:00'
 
     route.outdated = true
     route.compute

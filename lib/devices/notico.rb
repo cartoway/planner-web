@@ -74,8 +74,8 @@ class Notico < DeviceBase
           country: stop.country || customer.default_country,
           phone: stop.phone_number || '',
 
-          dt_firststart: p_time(route, stop.open1 || stop.open2 || stop.time).strftime('%F %H:%M'),
-          dt_firstend: p_time(route, stop.close1 || stop.close2 || (stop.duration ? stop.time + stop.duration.seconds : stop.time)).strftime('%F %H:%M'),
+          dt_firststart: p_time(route, stop.time_window_start_1 || stop.time_window_start_2 || stop.time).strftime('%F %H:%M'),
+          dt_firstend: p_time(route, stop.time_window_end_1 || stop.time_window_end_2 || (stop.duration ? stop.time + stop.duration.seconds : stop.time)).strftime('%F %H:%M'),
 
           items: [{
                     col_1: stop.visit.ref,

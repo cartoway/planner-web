@@ -192,7 +192,7 @@ class ZoningsControllerTest < ActionController::TestCase
         patch isowhat, format: :json, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id, departure_date: Date.today.to_s, zoning_id: @zoning
         assert_response :success
         assert_equal 1, JSON.parse(response.body)['zoning'].length
-        assert_includes JSON.parse(response.body)['zoning'][0]['name'], vehicle_usages(:vehicle_usage_one_one).default_open_absolute_time
+        assert_includes JSON.parse(response.body)['zoning'][0]['name'], vehicle_usages(:vehicle_usage_one_one).default_time_window_start_absolute_time
       ensure
         remove_request_stub(stub_table)
       end

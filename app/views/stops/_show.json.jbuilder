@@ -13,16 +13,16 @@ end
 
 json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_work_time, :out_of_max_distance, :no_path, :active
 json.ref stop.ref if stop.route.planning.customer.enable_references
-json.open_close1 !!stop.open1 || !!stop.close1
-(json.open1 stop.open1_time) if stop.open1
-(json.open1_day number_of_days(stop.open1)) if stop.open1
-(json.close1 stop.close1_time) if stop.close1
-(json.close1_day number_of_days(stop.close1)) if stop.close1
-json.open_close2 !!stop.open2 || !!stop.close2
-(json.open2 stop.open2_time) if stop.open2
-(json.open2_day number_of_days(stop.open2)) if stop.open2
-(json.close2 stop.close2_time) if stop.close2
-(json.close2_day number_of_days(stop.close2)) if stop.close2
+json.time_window_start_end_1 !!stop.time_window_start_1 || !!stop.time_window_end_1
+(json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1
+(json.time_window_start_1_day number_of_days(stop.time_window_start_1)) if stop.time_window_start_1
+(json.time_window_end_1 stop.time_window_end_1_time) if stop.time_window_end_1
+(json.time_window_end_1_day number_of_days(stop.time_window_end_1)) if stop.time_window_end_1
+json.time_window_start_end_2 !!stop.time_window_start_2 || !!stop.time_window_end_2
+(json.time_window_start_2 stop.time_window_start_2_time) if stop.time_window_start_2
+(json.time_window_start_2_day number_of_days(stop.time_window_start_2)) if stop.time_window_start_2
+(json.time_window_end_2 stop.time_window_end_2_time) if stop.time_window_end_2
+(json.time_window_end_2_day number_of_days(stop.time_window_end_2)) if stop.time_window_end_2
 (json.priority stop.priority) if stop.priority
 (json.priority_text stop.priority_text) if stop.priority
 (json.wait_time '%i:%02i' % [stop.wait_time / 60 / 60, stop.wait_time / 60 % 60]) if stop.wait_time && stop.wait_time > 60

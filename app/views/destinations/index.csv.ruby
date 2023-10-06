@@ -18,10 +18,10 @@ CSV.generate { |csv|
     I18n.t('destinations.import_file.without_visit'),
     I18n.t('destinations.import_file.ref_visit'),
     I18n.t('destinations.import_file.take_over'),
-    I18n.t('destinations.import_file.open1'),
-    I18n.t('destinations.import_file.close1'),
-    I18n.t('destinations.import_file.open2'),
-    I18n.t('destinations.import_file.close2'),
+    I18n.t('destinations.import_file.time_window_start_1'),
+    I18n.t('destinations.import_file.time_window_end_1'),
+    I18n.t('destinations.import_file.time_window_start_2'),
+    I18n.t('destinations.import_file.time_window_end_2'),
     I18n.t('destinations.import_file.priority'),
     I18n.t('destinations.import_file.tags_visit')
   ] + (@customer.enable_orders ?
@@ -54,10 +54,10 @@ CSV.generate { |csv|
           '',
           visit.ref,
           visit.take_over_absolute_time_with_seconds,
-          visit.open1_absolute_time,
-          visit.close1_absolute_time,
-          visit.open2_absolute_time,
-          visit.close2_absolute_time,
+          visit.time_window_start_1_absolute_time,
+          visit.time_window_end_1_absolute_time,
+          visit.time_window_start_2_absolute_time,
+          visit.time_window_end_2_absolute_time,
           visit.priority,
           visit.tags.collect(&:label).join(',')
         ] + (@customer.enable_orders ?

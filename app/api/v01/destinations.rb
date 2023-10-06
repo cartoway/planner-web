@@ -31,9 +31,6 @@ class V01::Destinations < Grape::API
         p[:visits_attributes].each do |hash|
           hash[:quantities] = Hash[hash[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }] if hash[:quantities] && hash[:quantities].is_a?(Array)
 
-          # Deals with deprecated open and close
-          hash[:open1] = hash.delete(:open) if !hash.key?(:open1) && hash.key?(:open)
-          hash[:close1] = hash.delete(:close) if !hash.key?(:close1) && hash.key?(:close)
           # Deals with deprecated quantity
           if !hash[:quantities]
             # hash[:quantities] keys must be string here because of permit below
@@ -47,7 +44,7 @@ class V01::Destinations < Grape::API
         end
       end
 
-      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :take_over, :open1, :close1, :open2, :close2, :priority, tag_ids: [], quantities: current_customer.deliverable_units.map{ |du| du.id.to_s }])
+      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :take_over, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, tag_ids: [], quantities: current_customer.deliverable_units.map{ |du| du.id.to_s }])
     end
 
     def present_geojson_destinations(params)

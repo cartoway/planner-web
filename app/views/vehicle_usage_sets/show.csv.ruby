@@ -19,8 +19,8 @@ CSV.generate { |csv|
     I18n.t('vehicles.import.tags'),
     I18n.t('vehicles.import.devices'),
 
-    I18n.t('vehicle_usage_sets.import.open'),
-    I18n.t('vehicle_usage_sets.import.close'),
+    I18n.t('vehicle_usage_sets.import.time_window_start'),
+    I18n.t('vehicle_usage_sets.import.time_window_end'),
     I18n.t('vehicle_usage_sets.import.store_start_ref'),
     I18n.t('vehicle_usage_sets.import.store_stop_ref'),
     I18n.t('vehicle_usage_sets.import.rest_start'),
@@ -71,8 +71,8 @@ CSV.generate { |csv|
     vehicle_columns << enabled_devices.select { |key, value| !value.to_s.empty? }.to_json
 
     vehicle_usage_columns = [
-      vehicle_usage.default_open_absolute_time,
-      vehicle_usage.default_close_absolute_time,
+      vehicle_usage.default_time_window_start_absolute_time,
+      vehicle_usage.default_time_window_end_absolute_time,
       vehicle_usage.default_store_start.try(:ref),
       vehicle_usage.default_store_stop.try(:ref),
       vehicle_usage.default_rest_start_absolute_time,

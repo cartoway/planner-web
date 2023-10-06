@@ -3,8 +3,8 @@
 vehicle_usage_one_one:
   vehicle_usage_set: vehicle_usage_set_one
   vehicle: vehicle_one # customer_one
-  open:
-  close: 15:00:00
+  time_window_start:
+  time_window_end: 15:00:00
   store_start: store_one
   store_stop: store_one
   rest_start: 12:00:00
@@ -15,8 +15,8 @@ vehicle_usage_one_one:
 vehicle_usage_two_one:
   vehicle_usage_set: vehicle_usage_set_two
   vehicle: vehicle_two # customer_two
-  open:
-  close: 15:00:00
+  time_window_start:
+  time_window_end: 15:00:00
   store_start: store_two
   store_stop: store_two
   rest_start: 12:00:00
@@ -27,8 +27,8 @@ vehicle_usage_two_one:
 vehicle_usage_one_three:
   vehicle_usage_set: vehicle_usage_set_one
   vehicle: vehicle_three # customer_one
-  open:
-  close: 15:00:00
+  time_window_start:
+  time_window_end: 15:00:00
   store_start: store_without_geo
   store_stop: store_without_geo
   rest_start: 12:00:00
@@ -39,8 +39,8 @@ vehicle_usage_one_three:
 vehicle_usage_three_one:
   vehicle_usage_set: vehicle_usage_set_three
   vehicle: vehicle_one # customer_one
-  open:
-  close: 15:00:00
+  time_window_start:
+  time_window_end: 15:00:00
   store_start: store_two
   store_stop: store_one
   rest_start: 12:00:00
@@ -51,8 +51,8 @@ vehicle_usage_three_one:
 vehicle_usage_three_two:
   vehicle_usage_set: vehicle_usage_set_three
   vehicle: vehicle_three # customer_one
-  open:
-  close: 15:00:00
+  time_window_start:
+  time_window_end: 15:00:00
   store_start: store_without_geo
   store_stop: store_without_geo
   rest_start: 12:00:00
@@ -64,8 +64,8 @@ vehicle_usage_three_two:
 vehicle_usage_four_one:
   vehicle_usage_set: vehicle_usage_set_four
   vehicle: vehicle_four # customer_one_other
-  open:
-  close:
+  time_window_start:
+  time_window_end:
   store_start:
   store_stop:
   rest_start:

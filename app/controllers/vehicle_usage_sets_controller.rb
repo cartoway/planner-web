@@ -56,7 +56,7 @@ class VehicleUsageSetsController < ApplicationController
   def create
     respond_to do |format|
       p = vehicle_usage_set_params
-      time_with_day_params(params, p, [:open, :close, :rest_start, :rest_stop, :work_time])
+      time_with_day_params(params, p, [:time_window_start, :time_window_end, :rest_start, :rest_stop, :work_time])
       @vehicle_usage_set = current_user.customer.vehicle_usage_sets.build(p)
 
       if @vehicle_usage_set.save
@@ -70,7 +70,7 @@ class VehicleUsageSetsController < ApplicationController
   def update
     respond_to do |format|
       p = vehicle_usage_set_params
-      time_with_day_params(params, p, [:open, :close, :rest_start, :rest_stop, :work_time])
+      time_with_day_params(params, p, [:time_window_start, :time_window_end, :rest_start, :rest_stop, :work_time])
       @vehicle_usage_set.assign_attributes(p)
 
       if @vehicle_usage_set.save
@@ -176,8 +176,8 @@ class VehicleUsageSetsController < ApplicationController
   # Never trust parameters from the scary internet, only allow the white list through.
   def vehicle_usage_set_params
     parameters = params.require(:vehicle_usage_set).permit(:name,
-                                              :open,
-                                              :close,
+                                              :time_window_start,
+                                              :time_window_end,
                                               :store_start_id,
                                               :store_stop_id,
                                               :rest_start,

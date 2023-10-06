@@ -31,22 +31,22 @@ class VehicleUsageSet < ApplicationRecord
   auto_strip_attributes :name
 
   include TimeAttr
-  attribute :open, ScheduleType.new
-  attribute :close, ScheduleType.new
+  attribute :time_window_start, ScheduleType.new
+  attribute :time_window_end, ScheduleType.new
   attribute :rest_start, ScheduleType.new
   attribute :rest_stop, ScheduleType.new
   attribute :rest_duration, ScheduleType.new
   attribute :service_time_start, ScheduleType.new
   attribute :service_time_end, ScheduleType.new
   attribute :work_time, ScheduleType.new
-  time_attr :open, :close, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
+  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
 
   validates :customer, presence: true
   validates :name, presence: true
 
-  validates :open, presence: true
-  validates :close, presence: true
-  validate :close_after_open
+  validates :time_window_start, presence: true
+  validates :time_window_end, presence: true
+  validate :time_window_end_after_end
   validate :rest_stop_after_rest_start
   validate :work_time_inside_window
   validates :rest_start, presence: {if: :rest_duration?, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_window') }}
@@ -92,8 +92,8 @@ class VehicleUsageSet < ApplicationRecord
   end
 
   def assign_defaults
-    self.open ||= 8 * 3600 unless open
-    self.close ||= 18 * 3600 unless close
+    self.time_window_start ||= 8 * 3600 unless time_window_start
+    self.time_window_end ||= 18 * 3600 unless time_window_end
     create_vehicle_usages
   end
 
@@ -106,10 +106,10 @@ class VehicleUsageSet < ApplicationRecord
       vehicle_usages.each(&:update_rest)
     end
 
-    if open_changed? || close_changed? || store_start_id_changed? || store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? || store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed?
+    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? || store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? || store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed?
       vehicle_usages.each{ |vehicle_usage|
-        if (open_changed? && vehicle_usage.default_open == open) ||
-          (close_changed? && vehicle_usage.default_close == close) ||
+        if (time_window_start_changed? && vehicle_usage.default_time_window_start == time_window_start) ||
+          (time_window_end_changed? && vehicle_usage.default_time_window_end == time_window_end) ||
 
           (store_start_id_changed? && vehicle_usage.default_store_start == store_start) ||
           (store_stop_id_changed? && vehicle_usage.default_store_stop == store_stop) ||
@@ -147,9 +147,9 @@ class VehicleUsageSet < ApplicationRecord
     end
   end
 
-  def close_after_open
-    if self.open.present? && self.close.present? && self.close <= self.open
-      errors.add(:close, I18n.t('activerecord.errors.models.vehicle_usage_set.attributes.close.after'))
+  def time_window_end_after_end
+    if self.time_window_start.present? && self.time_window_end.present? && self.time_window_end <= self.time_window_start
+      errors.add(:time_window_end, I18n.t('activerecord.errors.models.vehicle_usage_set.attributes.time_window_end.after'))
     end
   end
 
@@ -160,7 +160,7 @@ class VehicleUsageSet < ApplicationRecord
   end
 
   def work_time_inside_window
-    if self.work_time.present? && self.open.present? && self.close.present? && self.work_time > (self.close - self.open) - ((self.service_time_start || 0) + (self.service_time_end || 0))
+    if self.work_time.present? && self.time_window_start.present? && self.time_window_end.present? && self.work_time > (self.time_window_end - self.time_window_start) - ((self.service_time_start || 0) + (self.service_time_end || 0))
       errors.add(:work_time, I18n.t('activerecord.errors.models.vehicle_usage_set.work_time_inside_window'))
     end
   end

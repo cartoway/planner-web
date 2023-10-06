@@ -430,8 +430,8 @@ en:
         tag_ids: Vehicle skills
       vehicle_usage:
         vehicle_id: Vehicle
-        open: Open
-        close: Close
+        time_window_start: Open
+        time_window_end: Close
         store_start: Store Start
         store_start_id: Store Start
         store_stop: Store Stop
@@ -448,8 +448,8 @@ en:
         vehicle: Vehicle
       vehicle_usages:
         vehicle_id: Vehicle
-        open: Open
-        close: Close
+        time_window_start: Open
+        time_window_end: Close
         store_start: Store Start
         store_start_id: Store Start
         store_stop: Store Stop
@@ -466,8 +466,8 @@ en:
         vehicle: Vehicle
       vehicle_usage_set:
         name: Name
-        open: Open
-        close: Close
+        time_window_start: Open
+        time_window_end: Close
         store_start: Store Start
         store_start_id: Store Start
         store_stop: Store Stop
@@ -485,18 +485,18 @@ en:
         ref_small: Ref.
         take_over: Visit duration
         take_over_small: Duration
-        open1: Time window 1 open
-        open1_small: Open 1
-        close1: Time window 1 close
-        close1_small: Close 1
-        open_close1_small: Open/Close 1
-        open1_close1_days: D+
-        open2: Time window 2 open
-        open2_small: Open 2
-        close2: Time window 2 close
-        close2_small: Close 2
-        open_close2_small: Open/Close 2
-        open2_close2_days: D+
+        time_window_start_1: Time window 1 open
+        time_window_start_1_small: Open 1
+        time_window_end_1: Time window 1 close
+        time_window_end_1_small: Close 1
+        time_window_start_end_1small: Open/Close 1
+        time_window_start_1_time_window_end_1_days: D+
+        time_window_start_2: Time window 2 open
+        time_window_start_2_small: Open 2
+        time_window_end_2: Time window 2 close
+        time_window_end_2_small: Close 2
+        time_window_start_end_2small: Open/Close 2
+        time_window_start_2_time_window_end_2_days: D+
         priority: Priority
         multi_visit: Multi
         tags: Tags
@@ -507,18 +507,18 @@ en:
         ref_small: Ref.
         take_over: Visit duration
         take_over_small: Duration
-        open1: Time window 1 open
-        open1_small: Open 1
-        close1: Time window 1 close
-        close1_small: Close 1
-        open_close1_small: Open/Close 1
-        open1_close1_days: D+
-        open2: Time window 2 open
-        open2_small: Open 2
-        close2: Time window 2 close
-        close2_small: Close 2
-        open_close2_small: Open/Close 2
-        open2_close2_days: D+
+        time_window_start_1: Time window 1 open
+        time_window_start_1_small: Open 1
+        time_window_end_1: Time window 1 close
+        time_window_end_1_small: Close 1
+        time_window_start_end_1small: Open/Close 1
+        time_window_start_1_time_window_end_1_days: D+
+        time_window_start_2: Time window 2 open
+        time_window_start_2_small: Open 2
+        time_window_end_2: Time window 2 close
+        time_window_end_2_small: Close 2
+        time_window_start_end_2small: Open/Close 2
+        time_window_start_2_time_window_end_2_days: D+
         priority: Priority
         multi_visit: Multi
         tags: Tags
@@ -554,7 +554,7 @@ en:
           at_least_one: At least one vehicle needed
         vehicle_usage:
           attributes:
-            close:
+            time_window_end:
               after: must be after opening time
             rest_stop:
               after: must be after opening time which must be present
@@ -565,7 +565,7 @@ en:
           work_time_inside_window: must be less or equal than working time window
         vehicle_usage_set:
           attributes:
-            close:
+            time_window_end:
               after: must be after opening time
             rest_stop:
               after: must be after opening time
@@ -575,12 +575,12 @@ en:
           work_time_inside_window: must be less or equal than working time window
         visit:
           attributes:
-            close1:
+            time_window_end_1:
               after: must be after %{s}
               blank: can't be blank when Time window 2 open or close is set
-            open2:
+            time_window_start_2:
               after: must be after %{s}
-            close2:
+            time_window_end_2:
               after: must be after %{s}
             priority: must be between -4 and 4
             quantities:
@@ -1156,14 +1156,14 @@ en:
       open_desc: 'deprecated: use "open 1" instead.'
       close: close
       close_desc: 'deprecated: use "close 1" instead.'
-      open1: open 1
-      open1_desc: start time 1 (can go beyond 24:00) to visit destination.
-      close1: close 1
-      close1_desc: end time 1 (can go beyond 24:00) to visit destination.
-      open2: open 2
-      open2_desc: start time 2 (can go beyond 24:00) to visit destination.
-      close2: close 2
-      close2_desc: end time 2 (can go beyond 24:00) to visit destination.
+      time_window_start_1: open 1
+      time_window_start_1_desc: start time 1 (can go beyond 24:00) to visit destination.
+      time_window_end_1: close 1
+      time_window_end_1_desc: end time 1 (can go beyond 24:00) to visit destination.
+      time_window_start_2: open 2
+      time_window_start_2_desc: start time 2 (can go beyond 24:00) to visit destination.
+      time_window_end_2: close 2
+      time_window_end_2_desc: end time 2 (can go beyond 24:00) to visit destination.
       priority: priority
       priority_desc: inclusion priority when optimizing, from -4 (lowest) to 4 (highest).
       comment: comment
@@ -1599,12 +1599,12 @@ en:
       send_sms_success: Succeed to send %{c} SMS
       popup:
         outdated: Route trace outdated. Refresh your plan (Refresh button).
-        open_close1: 'Time window 1:'
-        open1: open 1
-        close1: close 1
-        open_close2: 'Time window 2:'
-        open2: open 2
-        close2: close 2
+        time_window_start_end_1: 'Time window 1:'
+        time_window_start_1: open 1
+        time_window_end_1: close 1
+        time_window_start_end_2: 'Time window 2:'
+        time_window_start_2: open 2
+        time_window_end_2: close 2
         time: 'Planned:'
         quantity: 'Quantity:'
         orders: 'Orders:'
@@ -1758,10 +1758,10 @@ en:
       quantity_operation: operation
       orders: orders
       active: active
-      open1: open 1
-      close1: close 1
-      open2: open 2
-      close2: close 2
+      time_window_start_1: open 1
+      time_window_end_1: close 1
+      time_window_start_2: open 2
+      time_window_end_2: close 2
       priority: priority
       tags_visit: tags visit
       out_of_window: out of visit time window
@@ -2112,14 +2112,14 @@ en:
         legend: 'Vehicle configuration: "%{s}"'
         help: The following informations are specific to the configuration of the
           vehicle.
-      open:
+      time_window_start:
         default: '%{n} (default)'
-      close:
+      time_window_end:
         default: '%{n} (default)'
-      open_close_days:
+      time_window_start_end_days:
         default: '%{n}'
-      open_close: Time shift
-      open_close_help: Deliveryman's working hours
+      time_window_start_end: Time shift
+      time_window_start_end_help: Deliveryman's working hours
       stores: Start / End
       store:
         default: Default
@@ -2204,10 +2204,10 @@ en:
           columns_vehicle_usage_set_default: If a column has the same data for all vehicles so this data will be used for the default cinfiguration and removed for each vehicle
       name_vehicle_usage_set: name configuration
       name_desc: default configuration name
-      open: open
-      open_desc: start time for delivery man
-      close: close
-      close_desc: end time for delivery man
+      time_window_start: open
+      time_window_start_desc: start time for delivery man
+      time_window_end: close
+      time_window_end_desc: end time for delivery man
       store_start_ref: store start reference
       store_start_desc: store start reference for delivery man
       store_stop_ref: store stop reference
@@ -2246,12 +2246,12 @@ en:
       too_many_lines: 'Stop import, too many lines (max: %{n}).'
       none_column: None found column
       missing_name: « name » of the default configuration missing
-      missing_open_close: begin or end time of the default configuration missing
+      missing_time_window_start_end: begin or end time of the default configuration missing
       invalid_numeric_value: Invalid numeric value "%{value}".
       check_custom_columns: Check your columns definition.
     form:
-      open_close: Time shift
-      open_close_help: Deliveryman's working hours
+      time_window_start_end: Time shift
+      time_window_start_end_help: Deliveryman's working hours
       stores: Start / End
       store:
         none: None
@@ -2285,8 +2285,8 @@ en:
           to fill / empty.
       take_over_default: default
       take_over_help: If empty, use the default value, format hh:mm:ss
-      open_close1: Time window 1
-      open_close2: Time window 2
+      time_window_start_end_1: Time window 1
+      time_window_start_end_2: Time window 2
       priority: Priority
       priority_help: Insertion priority when optimizing (useful when you know all your vehicles will not be able to visit all clients)
       close_help: Without taking into account visit duration

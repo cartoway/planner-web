@@ -420,8 +420,8 @@ de:
         tag_ids: Fahrzeugfertigkeiten
       vehicle_usage:
         vehicle_id: Fahrzeug
-        open: Öffnen
-        close: Schließen
+        time_window_start: Öffnen
+        time_window_end: Schließen
         store_start: Filiale für Start
         store_start_id: Filiale für Start
         store_stop: Filiale für Ende
@@ -438,8 +438,8 @@ de:
         vehicle: Fahrzeug
       vehicle_usages:
         vehicle_id: Fahrzeug
-        open: Öffnen
-        close: Schließen
+        time_window_start: Öffnen
+        time_window_end: Schließen
         store_start: Filiale für Start
         store_start_id: Filiale für Start
         store_stop: Filiale für Ende
@@ -456,8 +456,8 @@ de:
         vehicle: Fahrzeug
       vehicle_usage_set:
         name: Name
-        open: Öffnen
-        close: Schließen
+        time_window_start: Öffnen
+        time_window_end: Schließen
         store_start: Filiale für Start
         store_start_id: Filiale für Start
         store_stop: Filiale für Ende
@@ -475,18 +475,18 @@ de:
         ref_small: Nr.
         take_over: Verweildauer
         take_over_small: Dauer
-        open1: Zeitfenster 1 öffnen
-        open1_small: Öffnen 1
-        close1: Zeitfenster 1 schließen
-        close1_small: Schließen 1
-        open_close1_small: Öffnen/Schließen 1
-        open1_close1_days: D+
-        open2: Zeitfenster 2 öffnen
-        open2_small: Öffnen 2
-        close2: Zeitfenster 2 schließen
-        close2_small: Schließen 2
-        open_close2_small: Öffnen/Schließen 2
-        open2_close2_days: D+
+        time_window_start_1: Zeitfenster 1 öffnen
+        time_window_start_1_small: Öffnen 1
+        time_window_end_1: Zeitfenster 1 schließen
+        time_window_end_1_small: Schließen 1
+        time_window_start_end_1small: Öffnen/Schließen 1
+        time_window_start_1_time_window_end_1_days: D+
+        time_window_start_2: Zeitfenster 2 öffnen
+        time_window_start_2_small: Öffnen 2
+        time_window_end_2: Zeitfenster 2 schließen
+        time_window_end_2_small: Schließen 2
+        time_window_start_end_2small: Öffnen/Schließen 2
+        time_window_start_2_time_window_end_2_days: D+
         priority: Priorität
         multi_visit: Multi
         tags: Tags
@@ -497,18 +497,18 @@ de:
         ref_small: Nr.
         take_over: Verweildauer
         take_over_small: Dauer
-        open1: Zeitfenster 1 öffnen
-        open1_small: Öffnen 1
-        close1: Zeitfenster 1 schließen
-        close1_small: Schließen 1
-        open_close1_small: Öffnen/Schließen 1
-        open1_close1_days: D+
-        open2: Zeitfenster 2 öffnen
-        open2_small: Öffnen 2
-        close2: Zeitfenster 2 schließen
-        close2_small: Schließen 2
-        open_close2_small: Öffnen/Schließen 2
-        open2_close2_days: D+
+        time_window_start_1: Zeitfenster 1 öffnen
+        time_window_start_1_small: Öffnen 1
+        time_window_end_1: Zeitfenster 1 schließen
+        time_window_end_1_small: Schließen 1
+        time_window_start_end_1small: Öffnen/Schließen 1
+        time_window_start_1_time_window_end_1_days: D+
+        time_window_start_2: Zeitfenster 2 öffnen
+        time_window_start_2_small: Öffnen 2
+        time_window_end_2: Zeitfenster 2 schließen
+        time_window_end_2_small: Schließen 2
+        time_window_start_end_2small: Öffnen/Schließen 2
+        time_window_start_2_time_window_end_2_days: D+
         priority: Priorität
         multi_visit: Multi
         tags: Tags
@@ -543,7 +543,7 @@ de:
           at_least_one: Mindestens ein Fahrzeug erforderlich
         vehicle_usage:
           attributes:
-            close:
+            time_window_end:
               after: muss hinter der Öffnungszeit liegen
             rest_stop:
               after: muss hinter der Öffnungszeit liegen, die vorhanden sein muss.
@@ -554,7 +554,7 @@ de:
           work_time_inside_window: muss kleiner oder gleich dem Arbeitszeitfenster sein
         vehicle_usage_set:
           attributes:
-            close:
+            time_window_end:
               after: muss hinter der Öffnungszeit liegen
             rest_stop:
               after: muss hinter der Öffnungszeit liegen
@@ -564,12 +564,12 @@ de:
           work_time_inside_window: muss kleiner oder gleich dem Arbeitszeitfenster sein
         visit:
           attributes:
-            close1:
+            time_window_end_1:
               after: muss nach %{s} sein
               blank: darf nicht leer sein, wenn das Zeitfenster 2 öffnen oder schließen eingestellt ist
-            open2:
+            time_window_start_2:
               after: muss nach %{s} sein
-            close2:
+            time_window_end_2:
               after: muss nach %{s} sein
             priority: muss zwischen -4 und 4 liegen
             quantities:
@@ -1045,14 +1045,14 @@ de:
       open_desc: 'veraltet: Verwenden Sie stattdessen "öffnen 1".'
       close: schließen
       close_desc: 'veraltet: Verwenden Sie stattdessen "schließen 1".'
-      open1: öffnen 1
-      open1_desc: Startzeit 1 (kann über 24:00 hinausgehen), um Zielort zu besuchen.
-      close1: schließen 1
-      close1_desc: Endzeit 1 (kann über 24:00 Uhr hinausgehen), um Zielort zu besuchen.
-      open2: öffnen 2
-      open2_desc: Startzeit 2 (kann über 24:00 hinausgehen), um Zielort zu besuchen.
-      close2: schließen 2
-      close2_desc: Endzeit 2 (kann über 24:00 Uhr hinausgehen), um Zielort zu besuchen.
+      time_window_start_1: öffnen 1
+      time_window_start_1_desc: Startzeit 1 (kann über 24:00 hinausgehen), um Zielort zu besuchen.
+      time_window_end_1: schließen 1
+      time_window_end_1_desc: Endzeit 1 (kann über 24:00 Uhr hinausgehen), um Zielort zu besuchen.
+      time_window_start_2: öffnen 2
+      time_window_start_2_desc: Startzeit 2 (kann über 24:00 hinausgehen), um Zielort zu besuchen.
+      time_window_end_2: schließen 2
+      time_window_end_2_desc: Endzeit 2 (kann über 24:00 Uhr hinausgehen), um Zielort zu besuchen.
       priority: Priorität
       priority_desc: Einschlusspriorität bei der Optimierung, von -4 (niedrigste) bis 4 (höchste).
       comment: Bemerkung
@@ -1475,12 +1475,12 @@ de:
       send_sms_success: Senden von %{c} SMS erfolgreich
       popup:
         outdated: Streckenverfolgung veraltet. Aktualisieren Sie Ihren Plan (Schaltfläche „Aktualisieren“).
-        open_close1: 'Zeitfenster 1:'
-        open1: öffnen 1
-        close1: schließen 1
-        open_close2: 'Zeitfenster 2:'
-        open2: öffnen 2
-        close2: schließen 2
+        time_window_start_end_1: 'Zeitfenster 1:'
+        time_window_start_1: öffnen 1
+        time_window_end_1: schließen 1
+        time_window_start_end_2: 'Zeitfenster 2:'
+        time_window_start_2: öffnen 2
+        time_window_end_2: schließen 2
         time: 'Geplant:'
         quantity: 'Menge:'
         orders: 'Aufträge:'
@@ -1616,10 +1616,10 @@ de:
       quantity_operation: Vorgang
       orders: Aufträge
       active: aktiv
-      open1: öffnen 1
-      close1: schließen 1
-      open2: öffnen 2
-      close2: schließen 2
+      time_window_start_1: öffnen 1
+      time_window_end_1: schließen 1
+      time_window_start_2: öffnen 2
+      time_window_end_2: schließen 2
       priority: Priorität
       tags_visit: Tags des Besuchs
       out_of_window: außerhalb des Besuchszeitfensters
@@ -1934,14 +1934,14 @@ de:
       vehicle_usage:
         legend: 'Fahrzeugkonfiguration: "%{s}"'
         help: Die folgenden Angaben sind spezifisch für die Konfiguration des Fahrzeugs.
-      open:
+      time_window_start:
         default: '%{n} (Standard)'
-      close:
+      time_window_end:
         default: '%{n} (Standard)'
-      open_close_days:
+      time_window_start_end_days:
         default: '%{n}'
-      open_close: Zeitverschiebung
-      open_close_help: Arbeitszeiten des Auslieferungsfahrers
+      time_window_start: Zeitverschiebung
+      time_window_start_end_help: Arbeitszeiten des Auslieferungsfahrers
       stores: Start / Ende
       store:
         default: Standard
@@ -2021,10 +2021,10 @@ de:
           columns_vehicle_usage_set_default: Wenn eine Spalte für alle Fahrzeuge die gleichen Daten hat, werden diese Daten als Standardkonfiguration verwendet und für jedes Fahrzeug entfernt.
       name_vehicle_usage_set: Namenskonfiguration
       name_desc: Standardkonfigurationsname
-      open: öffnen
-      open_desc: Startzeit für Auslieferungsfahrer
-      close: schließen
-      close_desc: Endzeit für Auslieferungsfahrer
+      time_window_start: öffnen
+      time_window_start_desc: Startzeit für Auslieferungsfahrer
+      time_window_end: schließen
+      time_window_end_desc: Endzeit für Auslieferungsfahrer
       store_start_ref: Startfilialen-Referenz
       store_start_desc: Filialstart-Referenz für Auslieferungsfahrer
       store_stop_ref: Halt-Referenz der Filiale
@@ -2063,12 +2063,12 @@ de:
       too_many_lines: 'Import stoppen, zu viele Zeilen (max.: %{n}).'
       none_column: Keine Spalte gefunden
       missing_name: '"Name" der fehlenden Standardkonfiguration'
-      missing_open_close: Beginn- oder Endzeit der Standardkonfiguration fehlt
+      missing_time_window_start_end: Beginn- oder Endzeit der Standardkonfiguration fehlt
       invalid_numeric_value: Ungültiger numerischer Wert "%{value}".
       check_custom_columns: Prüfen Sie Ihre Spaltendefinition.
     form:
-      open_close: Zeitverschiebung
-      open_close_help: Arbeitszeiten des Auslieferungsfahrers
+      time_window_start_end: Zeitverschiebung
+      time_window_start_end_help: Arbeitszeiten des Auslieferungsfahrers
       stores: Start / Ende
       store:
         none: Keines
@@ -2098,8 +2098,8 @@ de:
         help: Zu liefernde Mengen. Im Falle von Füllen / Entleeren entscheidet die Optimierungsfunktion selbst über die Mengen. Wenn Sie einen Wert angeben, wird er als Mindestwert zum Füllen / Entleeren verwendet.
       take_over_default: Standard
       take_over_help: Wenn das Feld leer ist, verwenden Sie den Standardwert
-      open_close1: Zeitfenster 1
-      open_close2: Zeitfenster 2
+      time_window_start_end_1: Zeitfenster 1
+      time_window_start_end_2: Zeitfenster 2
       priority: Priorität
       priority_help: Einfügungspriorität bei der Optimierung (nützlich, wenn Sie wissen, dass sämtliche Ihrer Fahrzeuge nicht alle Kunden besuchen können).
       close_help: Ohne Berücksichtigung der Besuchsdauer

@@ -417,38 +417,38 @@
         <% end %>
       </div>
     <% end %>
-    <div id="vehicle_usage_open_close_input" class="form-group">
-      <label class="sr-only" for="vehicle_usage_open"><%= t 'activerecord.attributes.vehicle_usage.open' %></label>
-      <label class="sr-only" for="vehicle_usage_close"><%= t 'activerecord.attributes.vehicle_usage.close' %></label>
-      <label class="col-md-2 control-label"><%= t '.open_close' %></label>
+    <div id="vehicle_usage_time_window_start_time_window_end_input" class="form-group">
+      <label class="sr-only" for="vehicle_usage_open"><%= t 'activerecord.attributes.vehicle_usage.time_window_start' %></label>
+      <label class="sr-only" for="vehicle_usage_close"><%= t 'activerecord.attributes.vehicle_usage.time_window_end' %></label>
+      <label class="col-md-2 control-label"><%= t '.time_window_start_end' %></label>
       <div class="col-md-6">
         <div class="input-group">
           <span class="input-group-addon"><%= t 'web.form.from_time' %></span>
-          <%= text_field :vehicle_usage, :open,
+          <%= text_field :vehicle_usage, :time_window_start,
                          class: 'form-control',
-                         placeholder: t('vehicle_usages.form.open.default', n: @vehicle_usage.vehicle_usage_set.open_time),
-                         value: @vehicle_usage.open_time %>
+                         placeholder: t('vehicle_usages.form.time_window_start.default', n: @vehicle_usage.vehicle_usage_set.time_window_start_time),
+                         value: @vehicle_usage.time_window_start_time %>
           <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
-          <%= number_field :vehicle_usage, :open_day,
+          <%= number_field :vehicle_usage, :time_window_start_day,
                            class: 'form-control number-of-days',
-                           placeholder: @vehicle_usage.open.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.open) ? t('vehicle_usages.form.open_close_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.open)) : 0,
+                           placeholder: @vehicle_usage.time_window_start.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.time_window_start) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.time_window_start)) : 0,
                            min: 0,
-                           value: number_of_days(@vehicle_usage.open) %>
+                           value: number_of_days(@vehicle_usage.time_window_start) %>
           <span class="input-group-addon"><%= t 'web.form.to_time' %></span>
-          <%= text_field :vehicle_usage, :close,
+          <%= text_field :vehicle_usage, :time_window_end,
                          class: 'form-control',
-                         placeholder: t('vehicle_usages.form.close.default', n: @vehicle_usage.vehicle_usage_set.close_time),
+                         placeholder: t('vehicle_usages.form.time_window_end.default', n: @vehicle_usage.vehicle_usage_set.time_window_end_time),
                          min: 0,
-                         value: @vehicle_usage.close_time %>
+                         value: @vehicle_usage.time_window_end_time %>
           <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
-          <%= number_field :vehicle_usage, :close_day,
+          <%= number_field :vehicle_usage, :time_window_end_day,
                            class: 'form-control number-of-days',
-                           placeholder: @vehicle_usage.close.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.close) ? t('vehicle_usages.form.open_close_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.close)) : 0,
+                           placeholder: @vehicle_usage.time_window_end.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.time_window_end) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.time_window_end)) : 0,
                            min: 0,
-                           value: number_of_days(@vehicle_usage.close) %>
+                           value: number_of_days(@vehicle_usage.time_window_end) %>
           <span class="input-group-addon"><i class="fa fa-arrows-h fa-fw"></i></span>
         </div>
-        <p class="help-block"><%= t '.open_close_help' %></p>
+        <p class="help-block"><%= t '.time_window_start_end_help' %></p>
       </div>
     </div>
     <div id="vehicle_usage_service_time_input" class="form-group">
@@ -518,7 +518,7 @@
           <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
           <%= number_field :vehicle_usage, :rest_start_day,
                            class: 'form-control number-of-days',
-                           placeholder: @vehicle_usage.rest_start.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_start) ? t('vehicle_usages.form.open_close_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_start)) : 0,
+                           placeholder: @vehicle_usage.rest_start.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_start) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_start)) : 0,
                            min: 0,
                            value: number_of_days(@vehicle_usage.rest_start) %>
           <span class="input-group-addon"><%= t 'web.form.to_time' %></span>
@@ -530,7 +530,7 @@
           <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
           <%= number_field :vehicle_usage, :rest_stop_day,
                            class: 'form-control number-of-days',
-                           placeholder: @vehicle_usage.rest_stop.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop) ? t('vehicle_usages.form.open_close_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop)) : 0,
+                           placeholder: @vehicle_usage.rest_stop.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop)) : 0,
                            min: 0,
                            value: number_of_days(@vehicle_usage.rest_stop) %>
           <span class="input-group-addon"><i class="fa fa-arrows-h fa-fw"></i></span>

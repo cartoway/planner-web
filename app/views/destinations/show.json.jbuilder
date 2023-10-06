@@ -10,16 +10,16 @@ json.visits @destination.visits do |visit|
   take_over = visit.default_take_over_time_with_seconds
   json.take_over take_over
   json.duration take_over
-  json.open_close1 !!visit.open1 || !!visit.close1
-  json.open1 visit.open1_time
-  (json.open1_day number_of_days(visit.open1)) if visit.open1
-  json.close1 visit.close1_time
-  (json.close1_day number_of_days(visit.close1)) if visit.close1
-  json.open_close2 !!visit.open2 || !!visit.close2
-  json.open2 visit.open2_time
-  (json.open2_day number_of_days(visit.open2)) if visit.open2
-  json.close2 visit.close2_time
-  (json.close2_day number_of_days(visit.close2)) if visit.close2
+  json.time_window_start_end_1 !!visit.time_window_start_1 || !!visit.time_window_end_1
+  json.time_window_start_1 visit.time_window_start_1_time
+  (json.time_window_start_1_day number_of_days(visit.time_window_start_1)) if visit.time_window_start_1
+  json.time_window_end_1 visit.time_window_end_1_time
+  (json.time_window_end_1_day number_of_days(visit.time_window_end_1)) if visit.time_window_end_1
+  json.time_window_start_end_2 !!visit.time_window_start_2 || !!visit.time_window_end_2
+  json.time_window_start_2 visit.time_window_start_2_time
+  (json.time_window_start_2_day number_of_days(visit.time_window_start_2)) if visit.time_window_start_2
+  json.time_window_end_2 visit.time_window_end_2_time
+  (json.time_window_end_2_day number_of_days(visit.time_window_end_2)) if visit.time_window_end_2
   json.priority visit.priority
   tags = visit.tags | @destination.tags
   unless tags.empty?

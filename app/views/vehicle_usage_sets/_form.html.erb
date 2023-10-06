@@ -16,39 +16,39 @@
       <p class="help-block"><%= t '.stores_help' %></p>
     </div>
   </div>
-  <div id="vehicle_usage_set_open_close_input" class="form-group">
-    <label class="sr-only" for="vehicle_usage_set_open"><%= t 'activerecord.attributes.vehicle_usage_set.open' %></label>
-    <label class="sr-only" for="vehicle_usage_set_close"><%= t 'activerecord.attributes.vehicle_usage_set.close' %></label>
-    <label class="col-md-2 control-label"><%= t '.open_close' %></label>
+  <div id="vehicle_usage_set_time_window_start_time_window_end_input" class="form-group">
+    <label class="sr-only" for="vehicle_usage_set_open"><%= t 'activerecord.attributes.vehicle_usage_set.time_window_start' %></label>
+    <label class="sr-only" for="vehicle_usage_set_close"><%= t 'activerecord.attributes.vehicle_usage_set.time_window_end' %></label>
+    <label class="col-md-2 control-label"><%= t '.time_window_start_end' %></label>
     <div class="col-md-6">
       <div class="input-group">
         <span class="input-group-addon"><%= t 'web.form.from_time' %></span>
-        <%= text_field :vehicle_usage_set, :open,
+        <%= text_field :vehicle_usage_set, :time_window_start,
           class: 'form-control',
           placeholder: t('all.unit.hour_minute'),
-          value: @vehicle_usage_set.open_time,
+          value: @vehicle_usage_set.time_window_start_time,
           required: true %>
         <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
-        <%= number_field :vehicle_usage_set, :open_day,
+        <%= number_field :vehicle_usage_set, :time_window_start_day,
                          class: 'form-control number-of-days',
                          placeholder: '0',
                          min: 0,
-                         value: number_of_days(@vehicle_usage_set.open) %>
+                         value: number_of_days(@vehicle_usage_set.time_window_start) %>
         <span class="input-group-addon"><%= t 'web.form.to_time' %></span>
-        <%= text_field :vehicle_usage_set, :close,
+        <%= text_field :vehicle_usage_set, :time_window_end,
           class: 'form-control',
           placeholder: t('all.unit.hour_minute'),
-          value: @vehicle_usage_set.close_time,
+          value: @vehicle_usage_set.time_window_end_time,
           required: true %>
         <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
-        <%= number_field :vehicle_usage_set, :close_day,
+        <%= number_field :vehicle_usage_set, :time_window_end_day,
                          class: 'form-control number-of-days',
                          placeholder: '0',
                          min: 0,
-                         value: number_of_days(@vehicle_usage_set.close) %>
+                         value: number_of_days(@vehicle_usage_set.time_window_end) %>
         <span class="input-group-addon"><i class="fa fa-arrows-h fa-fw"></i></span>
       </div>
-      <p class="help-block"><%= t '.open_close_help' %></p>
+      <p class="help-block"><%= t '.time_window_start_end_help' %></p>
     </div>
   </div>
   <div id="vehicle_usage_set_service_time_input" class="form-group">

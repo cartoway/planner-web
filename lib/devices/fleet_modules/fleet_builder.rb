@@ -47,13 +47,13 @@ module FleetBuilder
 
       time_windows = []
       time_windows << {
-        start: p_time(route, stop.open1).strftime('%FT%T.%L%:z'),
-        end: p_time(route, stop.close1).strftime('%FT%T.%L%:z')
-      } if is_visit && stop.open1 && stop.close1
+        start: p_time(route, stop.time_window_start_1).strftime('%FT%T.%L%:z'),
+        end: p_time(route, stop.time_window_end_1).strftime('%FT%T.%L%:z')
+      } if is_visit && stop.time_window_start_1 && stop.time_window_end_1
       time_windows << {
-        start: p_time(route, stop.open2).strftime('%FT%T.%L%:z'),
-        end: p_time(route, stop.close2).strftime('%FT%T.%L%:z')
-      } if is_visit && stop.open2 && stop.close2
+        start: p_time(route, stop.time_window_start_2).strftime('%FT%T.%L%:z'),
+        end: p_time(route, stop.time_window_end_2).strftime('%FT%T.%L%:z')
+      } if is_visit && stop.time_window_start_2 && stop.time_window_end_2
 
       {
         mission_type: is_visit ? 'mission' : 'rest',

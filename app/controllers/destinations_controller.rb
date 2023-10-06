@@ -69,7 +69,7 @@ class DestinationsController < ApplicationController
   def create
     respond_to do |format|
       p = destination_params
-      time_with_day_params(params, p, [:open1, :close1, :open2, :close2])
+      time_with_day_params(params, p, [:time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2])
       @destination = current_user.customer.destinations.build(p)
 
       if @destination.save && current_user.customer.save
@@ -85,7 +85,7 @@ class DestinationsController < ApplicationController
     respond_to do |format|
       Destination.transaction do
         p = destination_params
-        time_with_day_params(params, p, [:open1, :close1, :open2, :close2])
+        time_with_day_params(params, p, [:time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2])
         @destination.assign_attributes(p)
 
         if @destination.save && @destination.customer.save
@@ -233,10 +233,10 @@ class DestinationsController < ApplicationController
         :id,
         :ref,
         :take_over,
-        :open1,
-        :close1,
-        :open2,
-        :close2,
+        :time_window_start_1,
+        :time_window_end_1,
+        :time_window_start_2,
+        :time_window_end_2,
         :priority,
         :_destroy,
         tag_ids: [],

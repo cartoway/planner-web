@@ -37,7 +37,7 @@ class Stop < ApplicationRecord
 
   # Return best fit time window, and late (positive) time or waiting time (negative).
   def best_open_close(time)
-    [[open1, close1], [open2, close2]].select{ |open, close|
+    [[time_window_start_1, time_window_end_1], [time_window_start_2, time_window_end_2]].select{ |open, close|
       open || close
     }.collect{ |open, close|
       [open, close, eval_open_close(open, close, time)]

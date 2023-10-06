@@ -79,17 +79,17 @@ class V01::VehicleUsagesTest < ActiveSupport::TestCase
   end
 
   test 'should update a vehicle_usage with time exceeding one day' do
-    @vehicle_usage.open = '12:00:00'
+    @vehicle_usage.time_window_start = '12:00:00'
     @vehicle_usage.rest_start = '22:00:00'
     @vehicle_usage.rest_stop = '30:00:00'
-    @vehicle_usage.close = '34:00:00'
+    @vehicle_usage.time_window_end = '34:00:00'
     put api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id), @vehicle_usage.attributes
     assert last_response.ok?, last_response.body
 
     @vehicle_usage.reload
-    assert_equal @vehicle_usage.open_absolute_time_with_seconds, JSON.parse(last_response.body)['open']
+    assert_equal @vehicle_usage.time_window_start_absolute_time_with_seconds, JSON.parse(last_response.body)['time_window_start']
     assert_equal @vehicle_usage.rest_start_absolute_time_with_seconds, JSON.parse(last_response.body)['rest_start']
     assert_equal @vehicle_usage.rest_stop_absolute_time_with_seconds, JSON.parse(last_response.body)['rest_stop']
-    assert_equal @vehicle_usage.close_absolute_time_with_seconds, JSON.parse(last_response.body)['close']
+    assert_equal @vehicle_usage.time_window_end_absolute_time_with_seconds, JSON.parse(last_response.body)['time_window_end']
   end
 end

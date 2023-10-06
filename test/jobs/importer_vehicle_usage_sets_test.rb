@@ -53,15 +53,15 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
           assert imported_data
 
           assert_equal imported_data.first.name, 'Véhicule 1'
-          assert_nil imported_data.first.vehicle_usages.first.open
-          assert_nil imported_data.first.vehicle_usages.first.close
+          assert_nil imported_data.first.vehicle_usages.first.time_window_start
+          assert_nil imported_data.first.vehicle_usages.first.time_window_end
 
           assert_equal imported_data.second.name, 'Véhicule 2'
-          assert_nil imported_data.second.vehicle_usages.first.open
-          assert_nil imported_data.second.vehicle_usages.first.close
+          assert_nil imported_data.second.vehicle_usages.first.time_window_start
+          assert_nil imported_data.second.vehicle_usages.first.time_window_end
 
-          assert_equal @customer.vehicle_usage_sets.last.open, 26800
-          assert_equal @customer.vehicle_usage_sets.last.close, 57600
+          assert_equal @customer.vehicle_usage_sets.last.time_window_start, 26800
+          assert_equal @customer.vehicle_usage_sets.last.time_window_end, 57600
           assert_equal @customer.vehicle_usage_sets.last.store_start.ref, 'b'
         end
       end

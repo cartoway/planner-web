@@ -75,11 +75,6 @@ class ImporterDestinations < ImporterBase
   def columns_visit
     {
       ref_visit: {title: I18n.t('destinations.import_file.ref_visit'), desc: I18n.t('destinations.import_file.ref_visit_desc'), format: I18n.t('destinations.import_file.format.string')},
-      # Deals with deprecated open1/2 and close1/2
-      open1: {title: I18n.t('destinations.import_file.open1'), desc: I18n.t('destinations.import_file.open1_desc'), format: I18n.t('destinations.import_file.format.hour'), required: I18n.t('destinations.import_file.format.deprecated')},
-      close1: {title: I18n.t('destinations.import_file.close1'), desc: I18n.t('destinations.import_file.close1_desc'), format: I18n.t('destinations.import_file.format.hour'), required: I18n.t('destinations.import_file.format.deprecated')},
-      open2: {title: I18n.t('destinations.import_file.open2'), desc: I18n.t('destinations.import_file.open2_desc'), format: I18n.t('destinations.import_file.format.hour'), required: I18n.t('destinations.import_file.format.deprecated')},
-      close2: {title: I18n.t('destinations.import_file.close2'), desc: I18n.t('destinations.import_file.close2_desc'), format: I18n.t('destinations.import_file.format.hour'), required: I18n.t('destinations.import_file.format.deprecated')},
       time_window_start_1: {title: I18n.t('destinations.import_file.time_window_start_1'), desc: I18n.t('destinations.import_file.time_window_start_1_desc'), format: I18n.t('destinations.import_file.format.hour')},
       time_window_end_1: {title: I18n.t('destinations.import_file.time_window_end_1'), desc: I18n.t('destinations.import_file.time_window_end_1_desc'), format: I18n.t('destinations.import_file.format.hour')},
       time_window_start_2: {title: I18n.t('destinations.import_file.time_window_start_2'), desc: I18n.t('destinations.import_file.time_window_start_2_desc'), format: I18n.t('destinations.import_file.format.hour')},
@@ -265,14 +260,14 @@ class ImporterDestinations < ImporterBase
     return unless is_visit?(row[:stop_type])
 
     # Deals with deprecated open and close
-    row[:open1] = row.delete(:open) if !row.key?(:open1) && row.key?(:open)
-    row[:close1] = row.delete(:close) if !row.key?(:close1) && row.key?(:close)
+    row[:time_window_start_1] = row.delete(:open) if !row.key?(:time_window_start_1) && row.key?(:open)
+    row[:time_window_end_1] = row.delete(:close) if !row.key?(:time_window_end_1) && row.key?(:close)
 
-    # Deals with deprecated open1/2 and close1/2
-    row[:open1] = row.delete(:time_window_start_1) if !row.key?(:open1) && row.key?(:time_window_start_1)
-    row[:close1] = row.delete(:time_window_end_1) if !row.key?(:close1) && row.key?(:time_window_end_1)
-    row[:open2] = row.delete(:time_window_start_2) if !row.key?(:open2) && row.key?(:time_window_start_2)
-    row[:close2] = row.delete(:time_window_end_2) if !row.key?(:close2) && row.key?(:time_window_end_2)
+    # Deals with deprecated time_window_start_1/2 and time_window_end_1/2
+    row[:time_window_start_1] = row.delete(:time_window_start_1) if !row.key?(:time_window_start_1) && row.key?(:time_window_start_1)
+    row[:time_window_end_1] = row.delete(:time_window_end_1) if !row.key?(:time_window_end_1) && row.key?(:time_window_end_1)
+    row[:time_window_start_2] = row.delete(:time_window_start_2) if !row.key?(:time_window_start_2) && row.key?(:time_window_start_2)
+    row[:time_window_end_2] = row.delete(:time_window_end_2) if !row.key?(:time_window_end_2) && row.key?(:time_window_end_2)
 
     # Deals with deprecated take_over
     row[:take_over] = row.delete(:duration) if !row.key?(:take_over) && row.key?(:duration)

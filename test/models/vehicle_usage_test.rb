@@ -69,63 +69,63 @@ class VehicleUsageTest < ActiveSupport::TestCase
 
   test 'should validate rest range in relation to the working time range' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
-    vehicle_usage.update rest_start: '12:00', rest_stop: '14:00', open: '08:00', close: '18:00', service_time_start: '00:30', service_time_end: '00:15'
+    vehicle_usage.update rest_start: '12:00', rest_stop: '14:00', time_window_start: '08:00', time_window_end: '18:00', service_time_start: '00:30', service_time_end: '00:15'
     assert vehicle_usage.valid?
-    vehicle_usage.update rest_start: '07:00', rest_stop: '14:00', open: '08:00', close: '18:00', service_time_start: '00:45', service_time_end: '00:30'
+    vehicle_usage.update rest_start: '07:00', rest_stop: '14:00', time_window_start: '08:00', time_window_end: '18:00', service_time_start: '00:45', service_time_end: '00:30'
     assert_equal [:base], vehicle_usage.errors.keys
   end
 
   test 'should validate service working day start/end in relation to the working time range' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
-    vehicle_usage.update open: '08:00', close: '18:00', service_time_start: '00:30', service_time_end: '00:15'
+    vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '00:30', service_time_end: '00:15'
     assert vehicle_usage.valid?
-    vehicle_usage.update open: '08:00', close: '18:00', service_time_start: '18:00', service_time_end: '1:00'
+    vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '18:00', service_time_end: '1:00'
     assert_equal [:service_time_start], vehicle_usage.errors.keys
-    vehicle_usage.update open: '08:00', close: '18:00', service_time_start: '08:00', service_time_end: '18:00'
+    vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '08:00', service_time_end: '18:00'
     assert_equal [:service_time_end], vehicle_usage.errors.keys
-    vehicle_usage.update open: '08:00', close: '18:00', service_time_start: '08:00', service_time_end: '08:00'
+    vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '08:00', service_time_end: '08:00'
     assert_equal [:base], vehicle_usage.errors.keys
   end
 
   test 'should validate work time in relation to the working time range and service range' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
-    vehicle_usage.update open: '08:00', close: '18:00', work_time: '09:00'
+    vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', work_time: '09:00'
     assert vehicle_usage.valid?
-    vehicle_usage.update open: '08:00', close: '18:00', work_time: '12:00'
+    vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', work_time: '12:00'
     assert_not vehicle_usage.valid?
     assert_equal [:work_time], vehicle_usage.errors.keys
-    vehicle_usage.update open: '08:00', close: '18:00', service_time_start: '01:00', service_time_end: '01:00', work_time: '09:00'
+    vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '01:00', service_time_end: '01:00', work_time: '09:00'
     assert_not vehicle_usage.valid?
     assert_equal [:work_time], vehicle_usage.errors.keys
   end
 
-  test 'should validate open and close time exceeding one day' do
+  test 'should validate time_window_start and time_window_end time exceeding one day' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
-    vehicle_usage.update open: '08:00', close: '32:00'
+    vehicle_usage.update time_window_start: '08:00', time_window_end: '32:00'
     assert vehicle_usage.valid?
-    assert_equal vehicle_usage.close, 32 * 3_600
+    assert_equal vehicle_usage.time_window_end, 32 * 3_600
   end
 
-  test 'should validate open and close time from different type' do
+  test 'should validate time_window_start and time_window_end time from different type' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
-    vehicle_usage.update open: '08:00', close: 32 * 3_600
+    vehicle_usage.update time_window_start: '08:00', time_window_end: 32 * 3_600
     assert vehicle_usage.valid?
-    assert_equal vehicle_usage.close, 32 * 3_600
-    vehicle_usage.update open: '08:00', close: '32:00'
+    assert_equal vehicle_usage.time_window_end, 32 * 3_600
+    vehicle_usage.update time_window_start: '08:00', time_window_end: '32:00'
     assert vehicle_usage.valid?
-    assert_equal vehicle_usage.close, 32 * 3_600
-    vehicle_usage.update open: '08:00', close: 115200.0
+    assert_equal vehicle_usage.time_window_end, 32 * 3_600
+    vehicle_usage.update time_window_start: '08:00', time_window_end: 115200.0
     assert vehicle_usage.valid?
-    assert_equal vehicle_usage.close, 32 * 3_600
-    vehicle_usage.update open: Time.parse('08:00'), close: '32:00'
+    assert_equal vehicle_usage.time_window_end, 32 * 3_600
+    vehicle_usage.update time_window_start: Time.parse('08:00'), time_window_end: '32:00'
     assert vehicle_usage.valid?
-    assert_equal vehicle_usage.open, 8 * 3_600
-    vehicle_usage.update open: DateTime.parse('2011-01-01 08:00'), close: '32:00'
+    assert_equal vehicle_usage.time_window_start, 8 * 3_600
+    vehicle_usage.update time_window_start: DateTime.parse('2011-01-01 08:00'), time_window_end: '32:00'
     assert vehicle_usage.valid?
-    assert_equal vehicle_usage.open, 8 * 3_600
-    vehicle_usage.update open: 8.hours, close: '32:00'
+    assert_equal vehicle_usage.time_window_start, 8 * 3_600
+    vehicle_usage.update time_window_start: 8.hours, time_window_end: '32:00'
     assert vehicle_usage.valid?
-    assert_equal vehicle_usage.open, 8 * 3_600
+    assert_equal vehicle_usage.time_window_start, 8 * 3_600
   end
 
   test 'should have tags' do
@@ -216,11 +216,11 @@ class VehicleUsageTest < ActiveSupport::TestCase
     end
   end
 
-  test 'open should not be after close' do
+  test 'time_window_start should not be after time_window_end' do
     vehicle_usage = vehicle_usage_sets(:vehicle_usage_set_one)
 
     assert_raises ActiveRecord::RecordInvalid do
-      vehicle_usage.update! close: '09:00', open: '10:00'
+      vehicle_usage.update! time_window_end: '09:00', time_window_start: '10:00'
     end
   end
 end

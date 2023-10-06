@@ -23,10 +23,10 @@ $destinations_str = "
   \"tag_ids\": [],
   \"visits\": [
     {
-      \"open1\": \"08:00\",
-      \"close1\": \"12:00\",
-      \"open2\": \"14:00\",
-      \"close2\": \"18:00\",
+      \"time_window_start_1\": \"08:00\",
+      \"time_window_end_1\": \"12:00\",
+      \"time_window_start_2\": \"14:00\",
+      \"time_window_end_2\": \"18:00\",
       \"take_over\": \"00:10:00\"
     }
   ]
@@ -59,10 +59,10 @@ $destinations_str_with_route = "
   \"visits\": [
     {
       \"quantities\": [{\"deliverable_unit_id\": !!!one_of_your_deliverable_unit_id!!!, \"quantity\": 1.0}],
-      \"open1\": \"08:00\",
-      \"close1\": \"12:00\",
-      \"open2\": \"14:00\",
-      \"close2\": \"18:00\",
+      \"time_window_start_1\": \"08:00\",
+      \"time_window_end_1\": \"12:00\",
+      \"time_window_start_2\": \"14:00\",
+      \"time_window_end_2\": \"18:00\",
       \"take_over\": \"00:10:00\",
       \"route\": \"string\",
       \"active\": true

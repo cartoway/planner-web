@@ -131,7 +131,7 @@ class Route < ApplicationRecord
     if vehicle_usage? && !stops.empty?
       service_time_start = service_time_start_value
       service_time_end = service_time_end_value
-      self.end = self.start = departure || vehicle_usage.default_open
+      self.end = self.start = departure || vehicle_usage.default_time_window_start
       speed_multiplier = vehicle_usage.vehicle.default_speed_multiplier
       if vehicle_usage.default_store_stop.try(&:position?)
         last_lat, last_lng = vehicle_usage.default_store_stop.lat, vehicle_usage.default_store_stop.lng
@@ -149,7 +149,7 @@ class Route < ApplicationRecord
 
       # Collect route legs
       segments = stops_sort.select{ |stop|
-        stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.open1 && stop.close1) || (stop.open2 && stop.close2)) && stop.duration))
+        stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
       }.reverse.collect{ |stop|
         if stop.position?
           ret = [stop.lat, stop.lng, last_lat, last_lng] if !last_lat.nil? && !last_lng.nil?
@@ -194,7 +194,7 @@ class Route < ApplicationRecord
       quantities_ = {}
       previous_with_pos = vehicle_usage.default_store_start.try(:position?)
       stops_sort.each{ |stop|
-        if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.open1 && stop.close1) || (stop.open2 && stop.close2)) && stop.duration))
+        if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
           stop.distance, stop.drive_time, trace = traces.shift
           stop.no_path = previous_with_pos && stop.position? && trace.nil?
           previous_with_pos = stop if stop.position?
@@ -241,7 +241,7 @@ class Route < ApplicationRecord
             self.end = stop.time + stop.duration
             self.visits_duration = (self.visits_duration || 0) + stop.duration if stop.is_a?(StopVisit)
 
-            stop.out_of_drive_time = stop.time > vehicle_usage.default_close
+            stop.out_of_drive_time = stop.time > vehicle_usage.default_time_window_end
             stop.out_of_work_time = vehicle_usage.outside_default_work_time?(self.start, stop.time)
             max_distance = vehicle_usage.vehicle.max_distance || planning.vehicle_usage_set.max_distance
             stop.out_of_max_distance = max_distance ? self.distance > max_distance : false
@@ -285,7 +285,7 @@ class Route < ApplicationRecord
       end
 
       self.geojson_tracks = geojson_tracks unless options[:no_geojson]
-      self.stop_out_of_drive_time = self.end > vehicle_usage.default_close
+      self.stop_out_of_drive_time = self.end > vehicle_usage.default_time_window_end
       self.stop_out_of_work_time = vehicle_usage.outside_default_work_time?(self.start, self.end)
       max_distance = vehicle_usage.vehicle.max_distance || planning.vehicle_usage_set.max_distance
       self.stop_out_of_max_distance = max_distance ? self.distance > max_distance : false
@@ -305,7 +305,7 @@ class Route < ApplicationRecord
       stops_sort, stops_drive_time, stops_time_windows = plan(
         # Hack to allow manual set of self.start from the API and keep the value
         # when used in conjunction with self.force_start
-        self.force_start ? self.start : vehicle_usage.default_open,
+        self.force_start ? self.start : vehicle_usage.default_time_window_start,
         options
       )
 

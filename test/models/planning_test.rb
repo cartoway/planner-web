@@ -1,7 +1,7 @@
 require 'test_helper'
 require 'routers/router_wrapper'
 
-class D < Struct.new(:lat, :lng, :id, :open1, :close1, :open2, :close2, :priority, :duration, :vehicle_usage, :quantities, :quantities_operations, :tags)
+class D < Struct.new(:lat, :lng, :id, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :duration, :vehicle_usage, :quantities, :quantities_operations, :tags)
   def visit
     # self
     destination = Struct.new(:tags).new([])
@@ -409,8 +409,8 @@ class PlanningTest < ActiveSupport::TestCase
 
     # Change time window
     r.stops[0].visit.update!(
-      open1: v.service_time_start + 5.minutes.to_i,
-      close1: v.service_time_start + 10.minutes.to_i
+      time_window_start_1: v.service_time_start + 5.minutes.to_i,
+      time_window_end_1: v.service_time_start + 10.minutes.to_i
     )
 
     # Compute a last time, this stop should be out of time window
@@ -588,7 +588,7 @@ class PlanningTest < ActiveSupport::TestCase
     # stop lat and lng should be the same
     customers(:customer_one).destinations.each{ |dest| dest.update!(lat: 44.82641, lng: -0.55674) }
     # Visits must have no open and close
-    customers(:customer_one).destinations.map{ |d| d.visits.each{ |v| v.update!(open1: nil, close1: nil, open2: nil, close2: nil) } }
+    customers(:customer_one).destinations.map{ |d| d.visits.each{ |v| v.update!(time_window_start_1: nil, time_window_end_1: nil, time_window_start_2: nil, time_window_end_2: nil) } }
     # Create a new VehicleUsageSet
     vus = VehicleUsageSet.create(customer_id: customers(:customer_one).id, name: 'VUS test')
     # Create planning
@@ -600,7 +600,7 @@ class PlanningTest < ActiveSupport::TestCase
     # should be [nil]
     assert_equal [nil], stops.collect{ |s| s.route.vehicle_usage_id }.uniq
     # should be nil
-    assert_nil stops.find{ |stop| stop.is_a?(StopRest) || stop.open1 || stop.close1 || stop.open2 || stop.close2 }
+    assert_nil stops.find{ |stop| stop.is_a?(StopRest) || stop.time_window_start_1 || stop.time_window_end_1 || stop.time_window_start_2 || stop.time_window_end_2 }
 
     planning.optimize(planning.routes, { global: false }) do |positions, services, vehicles|
       assert_equal stops.count, services.count

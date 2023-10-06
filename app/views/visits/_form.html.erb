@@ -45,55 +45,55 @@
         input_group: content_tag('i', '', class: 'fa fa-clock-o fa-fw')} do %>
         <p class="help-block"><%= t '.take_over_help' %></p>
       <% end %>
-      <div id="visit_open_close_input" class="form-group <%= nested_has_error?(:close1, visit.id) %>">
-        <label class="sr-only" for="destination_visits_attributes_#{i}_open1"><%= t 'activerecord.attributes.visit.open1' %></label>
-        <label class="sr-only" for="destination_visits_attributes_#{i}_close1"><%= t 'activerecord.attributes.visit.close1' %></label>
-        <label class="col-md-2 control-label"><%= t '.open_close1' %></label>
+      <div id="visit_open_close_input" class="form-group <%= nested_has_error?(:time_window_end_1, visit.id) %>">
+        <label class="sr-only" for="destination_visits_attributes_#{i}_time_window_start_1"><%= t 'activerecord.attributes.visit.time_window_start_1' %></label>
+        <label class="sr-only" for="destination_visits_attributes_#{i}_time_window_end_1"><%= t 'activerecord.attributes.visit.time_window_end_1' %></label>
+        <label class="col-md-2 control-label"><%= t '.time_window_start_end_1' %></label>
         <div class="col-md-6">
           <div class="input-group">
             <span class="input-group-addon"><%= t 'web.form.from_time' %></span>
-            <%= text_field "destination[visits_attributes][#{i}]", :open1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.open1_time %>
+            <%= text_field "destination[visits_attributes][#{i}]", :time_window_start_1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_1_time %>
             <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
-            <%= number_field "destination[visits_attributes][#{i}]", :open1_day,
+            <%= number_field "destination[visits_attributes][#{i}]", :time_window_start_1_day,
                              class: 'form-control number-of-days',
                              placeholder: '0',
                              min: 0,
-                             value: number_of_days(visit.open1) %>
+                             value: number_of_days(visit.time_window_start_1) %>
             <span class="input-group-addon"><%= t 'web.form.to_time' %></span>
-            <%= text_field "destination[visits_attributes][#{i}]", :close1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.close1_time %>
+            <%= text_field "destination[visits_attributes][#{i}]", :time_window_end_1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_end_1_time %>
             <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
-            <%= number_field "destination[visits_attributes][#{i}]", :close1_day,
+            <%= number_field "destination[visits_attributes][#{i}]", :time_window_end_1_day,
                              class: 'form-control number-of-days',
                              placeholder: '0',
                              min: 0,
-                             value: number_of_days(visit.close1) %>
+                             value: number_of_days(visit.time_window_end_1) %>
             <span class="input-group-addon"><i class="fa fa-arrows-h fa-fw"></i></span>
           </div>
           <p class="help-block"><%= t '.close_help' %></p>
         </div>
       </div>
-      <div id="visit_open_close_input" class="form-group <%= nested_has_error?(:close2, visit.id) %>">
-        <label class="sr-only" for="destination_visits_attributes_#{i}_open2"><%= t 'activerecord.attributes.visit.open2' %></label>
-        <label class="sr-only" for="destination_visits_attributes_#{i}_close2"><%= t 'activerecord.attributes.visit.close2' %></label>
-        <label class="col-md-2 control-label"><%= t '.open_close2' %></label>
+      <div id="visit_open_close_input" class="form-group <%= nested_has_error?(:time_window_end_2, visit.id) %>">
+        <label class="sr-only" for="destination_visits_attributes_#{i}_time_window_start_2"><%= t 'activerecord.attributes.visit.time_window_start_2' %></label>
+        <label class="sr-only" for="destination_visits_attributes_#{i}_time_window_end_2"><%= t 'activerecord.attributes.visit.time_window_end_2' %></label>
+        <label class="col-md-2 control-label"><%= t '.time_window_start_end_2' %></label>
         <div class="col-md-6">
           <div class="input-group">
             <span class="input-group-addon"><%= t 'web.form.from_time' %></span>
-            <%= text_field "destination[visits_attributes][#{i}]", :open2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.open2_time %>
+            <%= text_field "destination[visits_attributes][#{i}]", :time_window_start_2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_2_time %>
             <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
-            <%= number_field "destination[visits_attributes][#{i}]", :open2_day,
+            <%= number_field "destination[visits_attributes][#{i}]", :time_window_start_2_day,
                              class: 'form-control number-of-days',
                              placeholder: '0',
                              min: 0,
-                             value: number_of_days(visit.open2) %>
+                             value: number_of_days(visit.time_window_start_2) %>
             <span class="input-group-addon"><%= t 'web.form.to_time' %></span>
-            <%= text_field "destination[visits_attributes][#{i}]", :close2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.close2_time %>
+            <%= text_field "destination[visits_attributes][#{i}]", :time_window_end_2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_end_2_time %>
             <span class="input-group-addon input-group-borderless"><%= t 'web.form.days' %></span>
-            <%= number_field "destination[visits_attributes][#{i}]", :close2_day,
+            <%= number_field "destination[visits_attributes][#{i}]", :time_window_end_2_day,
                              class: 'form-control number-of-days',
                              placeholder: '0',
                              min: 0,
-                             value: number_of_days(visit.close2) %>
+                             value: number_of_days(visit.time_window_end_2) %>
             <span class="input-group-addon"><i class="fa fa-arrows-h fa-fw"></i></span>
           </div>
           <p class="help-block"><%= t '.close_help' %></p>

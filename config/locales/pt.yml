@@ -409,8 +409,8 @@
         'max_distance': 'Distância máxima'
       'vehicle_usage':
         'vehicle_id': 'Veículo'
-        'open': 'Hora de início'
-        'close': 'Hora de fim'
+        'time_window_start': 'Hora de início'
+        'time_window_end': 'Hora de fim'
         'store_start': 'Partida do armazém'
         'store_start_id': 'Partida do armazém'
         'store_stop': 'Chegada ao armazém'
@@ -427,8 +427,8 @@
         'tag_ids': 'Atribuições'
       'vehicle_usage_set':
         'name': 'Nome'
-        'open': 'Abertura'
-        'close': 'Fecho'
+        'time_window_start': 'Abertura'
+        'time_window_end': 'Fecho'
         'store_start': 'Armazém de partida'
         'store_start_id': 'Armazém de partida'
         'store_stop': 'Armazém de chegada'
@@ -446,18 +446,18 @@
         'ref_small': 'Ref.ª'
         'take_over': 'Duração da visita'
         'take_over_small': 'Duração'
-        'open1': 'Início de período 1'
-        'open1_small': 'Início 1'
-        'close1': 'Fim de período 1'
-        'close1_small': 'Fim 1'
-        'open_close1_small': 'Início/Fim 1'
-        'open1_close1_days': 'D+'
-        'open2': 'Início de período 2'
-        'open2_small': 'Início 2'
-        'close2': 'Fim de período 2'
-        'close2_small': 'Fim 2'
-        'open_close2_small': 'Início/Fim 2'
-        'open2_close2_days': 'D+'
+        'time_window_start_1': 'Início de período 1'
+        'time_window_start_1_small': 'Início 1'
+        'time_window_end_1': 'Fim de período 1'
+        'time_window_end_1_small': 'Fim 1'
+        'time_window_start_end_1small': 'Início/Fim 1'
+        'time_window_start_1_time_window_end_1_days': 'D+'
+        'time_window_start_2': 'Início de período 2'
+        'time_window_start_2_small': 'Início 2'
+        'time_window_end_2': 'Fim de período 2'
+        'time_window_end_2_small': 'Fim 2'
+        'time_window_start_end_2small': 'Início/Fim 2'
+        'time_window_start_2_time_window_end_2_days': 'D+'
         'multi_visit': 'Multi'
         'tags': 'Marcadores'
         'tag_ids': 'Marcadores'
@@ -468,18 +468,18 @@
         'ref_small': 'Ref.ª'
         'take_over': 'Duração da visita'
         'take_over_small': 'Duração'
-        'open1': 'Início de período 1'
-        'open1_small': 'Início 1'
-        'close1': 'Fim de período 1'
-        'close1_small': 'Fim 1'
-        'open_close1_small': 'Início/Fim 1'
-        'open1_close1_days': 'D+'
-        'open2': 'Início de período 2'
-        'open2_small': 'Início 2'
-        'close2': 'Fim de período 2'
-        'close2_small': 'Fim 2'
-        'open_close2_small': 'Início/Fim 2'
-        'open2_close2_days': 'D+'
+        'time_window_start_1': 'Início de período 1'
+        'time_window_start_1_small': 'Início 1'
+        'time_window_end_1': 'Fim de período 1'
+        'time_window_end_1_small': 'Fim 1'
+        'time_window_start_end_1small': 'Início/Fim 1'
+        'time_window_start_1_time_window_end_1_days': 'D+'
+        'time_window_start_2': 'Início de período 2'
+        'time_window_start_2_small': 'Início 2'
+        'time_window_end_2': 'Fim de período 2'
+        'time_window_end_2_small': 'Fim 2'
+        'time_window_start_end_2small': 'Início/Fim 2'
+        'time_window_start_2_time_window_end_2_days': 'D+'
         'multi_visit': 'Multi'
         'tags': 'Marcadores'
         'tag_ids': 'Marcadores'
@@ -547,7 +547,7 @@
           'at_least_one': 'Necessário pelo menos um veículo'
         'vehicle_usage':
           'attributes':
-            'close':
+            'time_window_end':
               'after': 'deve ser posterior à hora de abertura'
             'rest_stop':
               'after': 'deve ser posterior à hora de abertura, que deve ser especificada'
@@ -562,7 +562,7 @@
             trabalho'
         'vehicle_usage_set':
           'attributes':
-            'close':
+            'time_window_end':
               'after': 'deve ser após a hora de abertura'
             'rest_stop':
               'after': 'deve ser após a hora de fecho'
@@ -575,12 +575,12 @@
             trabalho'
         'visit':
           'attributes':
-            'close1':
+            'time_window_end_1':
               'after': 'deve ser após %{s}'
               'blank': 'deve ser preenchido se um início ou fim de período 2 for definido'
-            'open2':
+            'time_window_start_2':
               'after': 'deve ser após %{s}'
-            'close2':
+            'time_window_end_2':
               'after': 'deve ser após %{s}'
             'quantities':
               'not_float': 'deve ser um número'
@@ -1104,7 +1104,7 @@
       'too_many_lines': 'Importação abortada, demasiadas linhas (máx: %{n}).'
       'none_column': 'Nenhuma coluna encontrada'
       'missing_name': '"nome" da configuração por defeito em falta'
-      'missing_open_close': 'Falta hora de início ou fim na configuração por defeito'
+      'missing_time_window_start_end': 'Falta hora de início ou fim na configuração por defeito'
       'invalid_numeric_value': 'Valor numérico inválido "%{value}".'
       'invalid_stop': 'O tipo de parada é inválido'
       'check_custom_columns': 'Verifique a definição das colunas a importar.'
@@ -1125,8 +1125,8 @@
     'new':
       'title': 'Nova configuração de veículos'
     'form':
-      'open_close': 'Janela temporal'
-      'open_close_help': 'Horário de trabalho do estafeta'
+      'time_window_start_end': 'Janela temporal'
+      'time_window_start_end_help': 'Horário de trabalho do estafeta'
       'stores': 'Partida / Chegada'
       'store':
         'none': 'Nenhum'
@@ -1387,17 +1387,17 @@
       'open_desc': 'rejeitado: utilizar antes "horário de abertura 1".'
       'close': 'horário de fecho'
       'close_desc': 'rejeitado: utilizar antes "horário de fecho 1".'
-      'open1': 'horário de abertura 1'
-      'open1_desc': 'início do período de tempo 1 (pode ultrapassar 24:00h) sugerido
+      'time_window_start_1': 'horário de abertura 1'
+      'time_window_start_1_desc': 'início do período de tempo 1 (pode ultrapassar 24:00h) sugerido
         para a visita.'
-      'close1': 'horário de fecho 1'
-      'close1_desc': 'horário de fecho 1 (pode ultrapassar as 24:00h) sugerido para
+      'time_window_end_1': 'horário de fecho 1'
+      'time_window_end_1_desc': 'horário de fecho 1 (pode ultrapassar as 24:00h) sugerido para
         a visita.'
-      'open2': 'horário de abertura 2'
-      'open2_desc': 'início do período de tempo 2 (pode ultrapassar 24:00h) sugerido
+      'time_window_start_2': 'horário de abertura 2'
+      'time_window_start_2_desc': 'início do período de tempo 2 (pode ultrapassar 24:00h) sugerido
         para a visita.'
-      'close2': 'horário de fecho 2'
-      'close2_desc': 'fim do período de tempo 2 (pode ultrapassar 24:00h) sugerido
+      'time_window_end_2': 'horário de fecho 2'
+      'time_window_end_2_desc': 'fim do período de tempo 2 (pode ultrapassar 24:00h) sugerido
         para a visita.'
       'comment': 'comentário'
       'comment_desc': 'informações complementares para a visita.'
@@ -1864,12 +1864,12 @@
       'vehicle_last_position_time': 'Ultima posição:'
       'route_change_color_help': 'Alterar cor da rota'
       'popup':
-        'open_close1': 'Intervalo de tempo 1:'
-        'open1': 'início 1'
-        'close1': 'fecho 1'
-        'open_close2': 'Intervalo de tempo 2:'
-        'open2': 'início 2'
-        'close2': 'fim 2'
+        'time_window_start_end_1': 'Intervalo de tempo 1:'
+        'time_window_start_1': 'início 1'
+        'time_window_end_1': 'fecho 1'
+        'time_window_start_end_2': 'Intervalo de tempo 2:'
+        'time_window_start_2': 'início 2'
+        'time_window_end_2': 'fim 2'
         'time': 'Planeado:'
         'quantity': 'Quantidade:'
         'orders': 'Encomendas:'
@@ -1970,10 +1970,10 @@
       'quantity': 'quantidade'
       'orders': 'encomendas'
       'active': 'ativo'
-      'open1': 'horário de abertura 1'
-      'close1': 'horário de fecho 1'
-      'open2': 'horário de abertura 2'
-      'close2': 'horário de fecho 2'
+      'time_window_start_1': 'horário de abertura 1'
+      'time_window_end_1': 'horário de fecho 1'
+      'time_window_start_2': 'horário de abertura 2'
+      'time_window_end_2': 'horário de fecho 2'
       'tags_visit': 'etiquetas da visita'
       'out_of_window': 'fora do período da visita'
       'out_of_capacity': 'para além da capacidade do veículo'
@@ -2166,14 +2166,14 @@
       'vehicle_usage':
         'legend': 'Configuração do veículo: "%{s}"'
         'help': 'As informações abaixo são específicas para a configuração do veículo.'
-      'open':
+      'time_window_start':
         'default': '%{n} (defeito)'
-      'close':
+      'time_window_end':
         'default': '%{n} (defeito)'
-      'open_close_days':
+      'time_window_start_end_days':
         'default': '%{n}'
-      'open_close': 'Periodo temporal'
-      'open_close_help': 'Horário de trabalho do estafeta'
+      'time_window_start_end': 'Periodo temporal'
+      'time_window_start_end_help': 'Horário de trabalho do estafeta'
       'stores': 'Partida / Chegada'
       'store':
         'default': 'Defeito'
@@ -2216,8 +2216,8 @@
           serà utilizado como quantidade mínima a preencher/esvaziar.'
       'take_over_default': 'defeito'
       'take_over_help': 'Se em branco, utiliza o valor por defeito'
-      'open_close1': 'Período horário 1'
-      'open_close2': 'Período horário 2'
+      'time_window_start_end_1': 'Período horário 1'
+      'time_window_start_end_2': 'Período horário 2'
       'close_help': 'Sem tomar em conta a duração da visita'
       'tags_help': 'Categorias de visita'
       'delete': 'Marcar para eliminar'

@@ -18,33 +18,33 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     vehicle_usage_set.save!
   end
 
-  test 'should validate open and close time exceeding one day' do
+  test 'should validate time_window_start and time_window_end time exceeding one day' do
     vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
-    vehicle_usage_set.update open: '08:00', close: '32:00'
+    vehicle_usage_set.update time_window_start: '08:00', time_window_end: '32:00'
     assert vehicle_usage_set.valid?
-    assert_equal vehicle_usage_set.close, 32 * 3_600
+    assert_equal vehicle_usage_set.time_window_end, 32 * 3_600
   end
 
-  test 'should validate open and close time from different type' do
+  test 'should validate time_window_start and time_window_end time from different type' do
     vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
-    vehicle_usage_set.update open: '08:00', close: 32 * 3_600
+    vehicle_usage_set.update time_window_start: '08:00', time_window_end: 32 * 3_600
     assert vehicle_usage_set.valid?
-    assert_equal vehicle_usage_set.close, 32 * 3_600
-    vehicle_usage_set.update open: '08:00', close: '32:00'
+    assert_equal vehicle_usage_set.time_window_end, 32 * 3_600
+    vehicle_usage_set.update time_window_start: '08:00', time_window_end: '32:00'
     assert vehicle_usage_set.valid?
-    assert_equal vehicle_usage_set.close, 32 * 3_600
-    vehicle_usage_set.update open: '08:00', close: 115200.0
+    assert_equal vehicle_usage_set.time_window_end, 32 * 3_600
+    vehicle_usage_set.update time_window_start: '08:00', time_window_end: 115200.0
     assert vehicle_usage_set.valid?
-    assert_equal vehicle_usage_set.close, 32 * 3_600
-    vehicle_usage_set.update open: Time.parse('08:00'), close: '32:00'
+    assert_equal vehicle_usage_set.time_window_end, 32 * 3_600
+    vehicle_usage_set.update time_window_start: Time.parse('08:00'), time_window_end: '32:00'
     assert vehicle_usage_set.valid?
-    assert_equal vehicle_usage_set.open, 8 * 3_600
-    vehicle_usage_set.update open: DateTime.parse('2011-01-01 08:00'), close: '32:00'
+    assert_equal vehicle_usage_set.time_window_start, 8 * 3_600
+    vehicle_usage_set.update time_window_start: DateTime.parse('2011-01-01 08:00'), time_window_end: '32:00'
     assert vehicle_usage_set.valid?
-    assert_equal vehicle_usage_set.open, 8 * 3_600
-    vehicle_usage_set.update open: 8.hours, close: '32:00'
+    assert_equal vehicle_usage_set.time_window_start, 8 * 3_600
+    vehicle_usage_set.update time_window_start: 8.hours, time_window_end: '32:00'
     assert vehicle_usage_set.valid?
-    assert_equal vehicle_usage_set.open, 8 * 3_600
+    assert_equal vehicle_usage_set.time_window_start, 8 * 3_600
   end
 
   test 'should update outdated for rest' do
@@ -70,9 +70,9 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     end
   end
 
-  test 'should update outdated for open' do
+  test 'should update outdated for time_window_start' do
     vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
-    vehicle_usage_set.open = '09:00:00'
+    vehicle_usage_set.time_window_start = '09:00:00'
     assert_not vehicle_usage_set.vehicle_usages[0].routes[-1].outdated
     vehicle_usage_set.save!
     assert vehicle_usage_set.vehicle_usages[0].routes[-1].outdated
@@ -117,12 +117,12 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
 
   test 'should validate work time in relation to the working time range and service range' do
     vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
-    vehicle_usage_set.update open: '08:00', close: '18:00', work_time: '09:00'
+    vehicle_usage_set.update time_window_start: '08:00', time_window_end: '18:00', work_time: '09:00'
     assert vehicle_usage_set.valid?
-    vehicle_usage_set.update open: '08:00', close: '18:00', work_time: '12:00'
+    vehicle_usage_set.update time_window_start: '08:00', time_window_end: '18:00', work_time: '12:00'
     assert_not vehicle_usage_set.valid?
     assert_equal [:work_time], vehicle_usage_set.errors.keys
-    vehicle_usage_set.update open: '08:00', close: '18:00', service_time_start: '01:00', service_time_end: '01:00', work_time: '09:00'
+    vehicle_usage_set.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '01:00', service_time_end: '01:00', work_time: '09:00'
     assert_not vehicle_usage_set.valid?
     assert_equal [:work_time], vehicle_usage_set.errors.keys
   end
@@ -135,11 +135,11 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     end
   end
 
-  test 'close should not be after open' do
+  test 'time_window_end should not be after time_window_start' do
     vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
 
     assert_raises ActiveRecord::RecordInvalid do
-      vehicle_usage_set.update! close: '09:00', open: '10:00'
+      vehicle_usage_set.update! time_window_end: '09:00', time_window_start: '10:00'
     end
   end
 end

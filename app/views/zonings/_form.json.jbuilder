@@ -25,10 +25,10 @@ if @planning
         end
       end
       (json.duration visit.default_take_over_time_with_seconds) if visit.default_take_over_time_with_seconds
-      (json.open1 stop.open1_time) if stop.open1
-      (json.close1 stop.close1_time) if stop.close1
-      (json.open2 stop.open2_time) if stop.open2
-      (json.close2 stop.close2_time) if stop.close2
+      (json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1
+      (json.time_window_end_1 stop.time_window_end_1_time) if stop.time_window_end_1
+      (json.time_window_start_2 stop.time_window_start_2_time) if stop.time_window_start_2
+      (json.time_window_end_2 stop.time_window_end_2_time) if stop.time_window_end_2
       (json.priority stop.priority) if stop.priority
       (json.color visit.color) if visit.color
       (json.icon visit.icon) if visit.icon

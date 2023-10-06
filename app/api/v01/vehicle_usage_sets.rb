@@ -25,10 +25,6 @@ class V01::VehicleUsageSets < Grape::API
       p = ActionController::Parameters.new(params)
       p = p[:vehicle_usage_set] if p.key?(:vehicle_usage_set)
       p = p.permit(:name, :time_window_start, :time_window_end, :store_start_id, :store_stop_id, :service_time_start, :service_time_end, :work_time, :rest_start, :rest_stop, :rest_duration, :store_rest_id, :max_distance)
-      p[:open] = p[:time_window_start]
-      p.delete(:time_window_start)
-      p[:close] = p[:time_window_end]
-      p.delete(:time_window_end)
       p
     end
   end

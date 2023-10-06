@@ -29,7 +29,7 @@ class VehicleUsagesController < ApplicationController
   def update
     respond_to do |format|
       p = vehicle_usage_params
-      time_with_day_params(params, p, [:open, :close], [:rest_start, :rest_stop, :work_time])
+      time_with_day_params(params, p, [:time_window_start, :time_window_end], [:rest_start, :rest_stop, :work_time])
       @vehicle_usage.assign_attributes(p)
 
       if @vehicle_usage.save
@@ -81,8 +81,8 @@ class VehicleUsagesController < ApplicationController
     end
     parse_router_options(params[:vehicle_usage][:vehicle]) if params[:vehicle_usage].key?(:vehicle) && params[:vehicle_usage][:vehicle][:router_options]
     parameters = params.require(:vehicle_usage).permit(
-      :open,
-      :close,
+      :time_window_start,
+      :time_window_end,
       :store_start_id,
       :store_stop_id,
       :rest_start,

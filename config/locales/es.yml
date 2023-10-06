@@ -381,8 +381,8 @@ es:
         capacities: Capacidades
       vehicle_usage:
         vehicle_id: Vehículo
-        open: Horario inicio
-        close: Horario fin
+        time_window_start: Horario inicio
+        time_window_end: Horario fin
         store_start: Deposito salida
         store_start_id: Deposito salida
         store_stop: Deposito llegada
@@ -397,8 +397,8 @@ es:
         vehicle: Vehículo
       vehicle_usage_set:
         name: Nombre
-        open: Horario inicio
-        close: Horario fin
+        time_window_start: Horario inicio
+        time_window_end: Horario fin
         store_start: Deposito salida
         store_start_id: Deposito salida
         store_stop: Deposito llegada
@@ -415,18 +415,18 @@ es:
         ref_small: Ref.
         take_over: Duración de visita
         take_over_small: Duración
-        open1: Inicio de Franja horario 1
-        open1_small: Inicio 1
-        close1: Fin de Franja horario 1
-        close1_small: Fin 1
-        open_close1_small: Inicio/Fin 1
-        open1_close1_days: D+
-        open2: Inicio de Franja horario 2
-        open2_small: Inicio 2
-        close2: Fin de Franja horario 2
-        close2_small: Fin 2
-        open_close2_small: Inicio/Fin 2
-        open2_close2_days: D+
+        time_window_start_1: Inicio de Franja horario 1
+        time_window_start_1_small: Inicio 1
+        time_window_end_1: Fin de Franja horario 1
+        time_window_end_1_small: Fin 1
+        time_window_start_end_1small: Inicio/Fin 1
+        time_window_start_1_time_window_end_1_days: D+
+        time_window_start_2: Inicio de Franja horario 2
+        time_window_start_2_small: Inicio 2
+        time_window_end_2: Fin de Franja horario 2
+        time_window_end_2_small: Fin 2
+        time_window_start_end_2small: Inicio/Fin 2
+        time_window_start_2_time_window_end_2_days: D+
         multi_visit: Multi
         tags: Etiquetas
         tag_ids: Etiquetas
@@ -436,18 +436,18 @@ es:
         ref_small: Ref.
         take_over: Duración de visita
         take_over_small: Duración
-        open1: Inicio de Franja horario 1
-        open1_small: Inicio 1
-        close1: Fin de Franja horario 1
-        close1_small: Fin 1
-        open_close1_small: Inicio/Fin 1
-        open1_close1_days: D+
-        open2: Inicio de Franja horario 2
-        open2_small: Inicio 2
-        close2: Fin de Franja horario 2
-        close2_small: Fin 2
-        open_close2_small: Inicio/Fin 2
-        open2_close2_days: D+
+        time_window_start_1: Inicio de Franja horario 1
+        time_window_start_1_small: Inicio 1
+        time_window_end_1: Fin de Franja horario 1
+        time_window_end_1_small: Fin 1
+        time_window_start_end_1small: Inicio/Fin 1
+        time_window_start_1_time_window_end_1_days: D+
+        time_window_start_2: Inicio de Franja horario 2
+        time_window_start_2_small: Inicio 2
+        time_window_end_2: Fin de Franja horario 2
+        time_window_end_2_small: Fin 2
+        time_window_start_end_2small: Inicio/Fin 2
+        time_window_start_2_time_window_end_2_days: D+
         multi_visit: Multi
         tags: Etiquetas
         tag_ids: Etiquetas
@@ -479,7 +479,7 @@ es:
           rest_range: La franja de descanso debe estar entre %{start} y %{end}
           service_range: no puede ser superior o igual al tiempo de trabajo
           attributes:
-            close:
+            time_window_end:
               after: debe ser después del horario de inicio
           missing_rest_duration: debe ser cumplimentado(a) si una franja de descanso
             esta cuplimentada
@@ -488,7 +488,7 @@ es:
           missing_rest_window: debe ser cumplimentado(a) si la duración de descanso
             esta cumplimentada
           attributes:
-            close:
+            time_window_end:
               after: debe ser después el horario de inicio
             rest_stop:
               after: debe ser después el horario de inicio
@@ -496,13 +496,13 @@ es:
             esta cuplimentada
         visit:
           attributes:
-            close1:
+            time_window_end_1:
               blank: debe ser cumplimentado(a) si un inicio o una fin de Franja horario
                 2 esta indicado(a)
               after: debe ser después el %{s}
-            open2:
+            time_window_start_2:
               after: debe ser después del fin de %{s}
-            close2:
+            time_window_end_2:
               after: debe ser después de %{s}
             quantities:
               not_float: debe ser un numero
@@ -565,7 +565,7 @@ es:
       other_icons: Otros
     import_file:
       ref: referencia
-      open: horario inicio
+      time_window_start: horario inicio
       format:
         optionnal: opcional
   errors:
@@ -912,13 +912,13 @@ es:
         o no
       open_desc: 'depreciado : utilizar mas bien "horario inicio 1".'
       close_desc: 'depreciado : utilizar mas bien "horario fin 1".'
-      open1_desc: inicio de la franja horaria 1 (puede superar 24:00) aconsejada para
+      time_window_start_1_desc: inicio de la franja horaria 1 (puede superar 24:00) aconsejada para
         la visita.
-      close1_desc: fin de la franja horaria 1 (puede superar 24:00) aconsejada para
+      time_window_end_1_desc: fin de la franja horaria 1 (puede superar 24:00) aconsejada para
         la visita.
-      open2_desc: inicio de la franja horaria 2 (puede superar 24:00) aconsejada para
+      time_window_start_2_desc: inicio de la franja horaria 2 (puede superar 24:00) aconsejada para
         la visita.
-      close2_desc: fin de la franja horaria 2 (puede superar 24:00) aconsejada para
+      time_window_end_2_desc: fin de la franja horaria 2 (puede superar 24:00) aconsejada para
         la visita.
       comment_desc: informaciones necesarias para la visita.
       phone_number_desc: numero de teléfono de cliente que se debe contactar.
@@ -964,10 +964,10 @@ es:
       active: entregado
       open: horario inicio
       close: horario fin
-      open1: horario inicio 1
-      close1: horario fin 1
-      open2: horario inicio 2
-      close2: horario fin 2
+      time_window_start_1: horario inicio 1
+      time_window_end_1: horario fin 1
+      time_window_start_2: horario inicio 2
+      time_window_end_2: horario fin 2
       comment: comentario
       phone_number: teléfono
       tags: etiquetas
@@ -1189,15 +1189,15 @@ es:
       customer_external_callback_url:
         action: Aplicación externa
       popup:
-        open1: inicio 1
-        open2: inicio 2
+        time_window_start_1: inicio 1
+        time_window_start_2: inicio 2
     menu:
       plannings: Planes
     export_file:
       ref: referencia
       ref_visit: referencia visita
-      open1: horario inicio 1
-      open2: horario inicio 2
+      time_window_start_1: horario inicio 1
+      time_window_start_2: horario inicio 2
     form:
       ref_help: Referencia libre
   vehicles:
@@ -1261,11 +1261,11 @@ es:
         deprecated: depreciado
       none_column: Ninguna columna encontrada
       missing_name: « nombre » de la configuracion predeterminada faltante
-      missing_open_close: hora de inicio o de fin de la configuracion predeterminada
+      missing_time_window_start_end: hora de inicio o de fin de la configuracion predeterminada
         faltante
       vehicle_usage_set: Configuración de vehículos
-      open: horario inicio
-      close: horario fin
+      time_window_start: horario inicio
+      time_window_end: horario fin
       not_csv: El fichero importado no esta en formato CSV
       empty_file: no contiene ningún dato
       too_many_lines: 'Importe parado, demasiadas líneas (max: %{n}).'
@@ -1274,7 +1274,7 @@ es:
     form:
       service_times_help: Duraciones añadidas antes de la primera parada y después
         de la ultima parada.
-      open_close_help: Horario de trabajo repartidor
+      time_window_start_end_help: Horario de trabajo repartidor
       stores: Salida / Llegada
       store:
         none: Ninguno
@@ -1300,8 +1300,8 @@ es:
         con importe/exporte en particular
       take_over_default: Defecto
       take_over_help: Si vacio utilisa el valor predeterminado
-      open_close1: Franja horaria 1
-      open_close2: Franja horaria 2
+      time_window_start_end_1: Franja horaria 1
+      time_window_start_end_2: Franja horaria 2
       close_help: Sin tener en cuenta la duración de visita
       tags_help: Categorias de la visita
       delete: Marcar para suprimir

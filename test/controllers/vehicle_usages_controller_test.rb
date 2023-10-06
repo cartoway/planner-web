@@ -27,7 +27,7 @@ class VehicleUsagesControllerTest < ActionController::TestCase
   end
 
   test 'should update vehicle_usage' do
-    patch :update, id: @vehicle_usage, vehicle_usage: {vehicle: {capacities: {'1' => 123, '2' => 456}, color: @vehicle_usage.vehicle.color, consumption: @vehicle_usage.vehicle.consumption, emission: @vehicle_usage.vehicle.emission, name: @vehicle_usage.vehicle.name, max_distance: 200, router_options: {motorway: 'true', trailers: 2, weight: 10, width: '3,55', hazardous_goods: 'gas'}}, open: @vehicle_usage.open}
+    patch :update, id: @vehicle_usage, vehicle_usage: {vehicle: {capacities: {'1' => 123, '2' => 456}, color: @vehicle_usage.vehicle.color, consumption: @vehicle_usage.vehicle.consumption, emission: @vehicle_usage.vehicle.emission, name: @vehicle_usage.vehicle.name, max_distance: 200, router_options: {motorway: 'true', trailers: 2, weight: 10, width: '3,55', hazardous_goods: 'gas'}}, time_window_start: @vehicle_usage.time_window_start}
     assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
     assert_equal [123, 456], @vehicle_usage.vehicle.reload.capacities.values
     # FIXME: replace each assertion by one which checks if hash is included in another
@@ -57,10 +57,10 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     end
   end
 
-  test 'should update vehicle_usage with default close' do
-    patch :update, id: @vehicle_usage, vehicle_usage: { open: '07:00', close_day: '1' }
-    assert_equal @vehicle_usage.reload.open, 7 * 3_600
-    assert_equal @vehicle_usage.reload.close, @vehicle_usage.default_close
+  test 'should update vehicle_usage with default time_window_end' do
+    patch :update, id: @vehicle_usage, vehicle_usage: { time_window_start: '07:00', time_window_end_day: '1' }
+    assert_equal @vehicle_usage.reload.time_window_start, 7 * 3_600
+    assert_equal @vehicle_usage.reload.time_window_end, @vehicle_usage.default_time_window_end
   end
 
   test 'should update vehicle usage and vehicle with tags' do
@@ -70,16 +70,16 @@ class VehicleUsagesControllerTest < ActionController::TestCase
   end
 
   test 'should update vehicle_usage with time exceeding one day' do
-    patch :update, id: @vehicle_usage, vehicle_usage: { open: '20:00', close: '08:00', close_day: '1', rest_start: '22:00', rest_stop: '23:00' }
+    patch :update, id: @vehicle_usage, vehicle_usage: { time_window_start: '20:00', time_window_end: '08:00', time_window_end_day: '1', rest_start: '22:00', rest_stop: '23:00' }
     assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
     @vehicle_usage.reload
-    assert_equal @vehicle_usage.close, 32 * 3_600
+    assert_equal @vehicle_usage.time_window_end, 32 * 3_600
 
-    patch :update, id: @vehicle_usage, vehicle_usage: { open: '08:00', open_day: '1', close: '12:00', close_day: '1', rest_start: '10:00', rest_start_day: '1', rest_stop: '11:00', rest_stop_day: '1', rest_duration: '01:00' }
+    patch :update, id: @vehicle_usage, vehicle_usage: { time_window_start: '08:00', time_window_start_day: '1', time_window_end: '12:00', time_window_end_day: '1', rest_start: '10:00', rest_start_day: '1', rest_stop: '11:00', rest_stop_day: '1', rest_duration: '01:00' }
     assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
     @vehicle_usage.reload
-    assert_equal @vehicle_usage.open, 32 * 3_600
-    assert_equal @vehicle_usage.close, 36 * 3_600
+    assert_equal @vehicle_usage.time_window_start, 32 * 3_600
+    assert_equal @vehicle_usage.time_window_end, 36 * 3_600
     assert_equal @vehicle_usage.rest_start, 34 * 3_600
     assert_equal @vehicle_usage.rest_stop, 35 * 3_600
   end

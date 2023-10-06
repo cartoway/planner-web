@@ -920,8 +920,8 @@ CREATE TABLE public.vehicle_usage_sets (
     store_rest_id integer,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    open integer NOT NULL,
-    close integer NOT NULL,
+    time_window_start integer NOT NULL,
+    time_window_end integer NOT NULL,
     rest_start integer,
     rest_stop integer,
     rest_duration integer,
@@ -965,8 +965,8 @@ CREATE TABLE public.vehicle_usages (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     active boolean DEFAULT true,
-    open integer,
-    close integer,
+    time_window_start integer,
+    time_window_end integer,
     rest_start integer,
     rest_stop integer,
     rest_duration integer,
@@ -1052,11 +1052,11 @@ CREATE TABLE public.visits (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     quantities public.hstore,
-    open1 integer,
-    close1 integer,
+    time_window_start_1 integer,
+    time_window_end_1 integer,
     take_over integer,
-    open2 integer,
-    close2 integer,
+    time_window_start_2 integer,
+    time_window_end_2 integer,
     quantities_operations public.hstore,
     priority integer
 );
@@ -2779,3 +2779,5 @@ INSERT INTO schema_migrations (version) VALUES ('20190417121926');
 INSERT INTO schema_migrations (version) VALUES ('20190107081835');
 
 INSERT INTO schema_migrations (version) VALUES ('20230506091330');
+
+INSERT INTO schema_migrations (version) VALUES ('20230506091331');

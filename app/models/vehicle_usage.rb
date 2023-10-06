@@ -33,17 +33,17 @@ class VehicleUsage < ApplicationRecord
   nilify_blanks
 
   include TimeAttr
-  attribute :open, ScheduleType.new
-  attribute :close, ScheduleType.new
+  attribute :time_window_start, ScheduleType.new
+  attribute :time_window_end, ScheduleType.new
   attribute :rest_start, ScheduleType.new
   attribute :rest_stop, ScheduleType.new
   attribute :rest_duration, ScheduleType.new
   attribute :service_time_start, ScheduleType.new
   attribute :service_time_end, ScheduleType.new
   attribute :work_time, ScheduleType.new
-  time_attr :open, :close, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
+  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
 
-  validate :close_after_open
+  validate :time_window_end_after_end
   validate :rest_stop_after_rest_start
   validate :rest_duration_range
   validate :work_time_inside_window
@@ -73,28 +73,28 @@ class VehicleUsage < ApplicationRecord
     })
   end
 
-  def default_open
-    open || vehicle_usage_set.open
+  def default_time_window_start
+    time_window_start || vehicle_usage_set.time_window_start
   end
 
-  def default_open_time
-    open_time || vehicle_usage_set.open_time
+  def default_time_window_start_time
+    time_window_start_time || vehicle_usage_set.time_window_start_time
   end
 
-  def default_open_absolute_time
-    open_absolute_time || vehicle_usage_set.open_absolute_time
+  def default_time_window_start_absolute_time
+    time_window_start_absolute_time || vehicle_usage_set.time_window_start_absolute_time
   end
 
-  def default_close
-    close || vehicle_usage_set.close
+  def default_time_window_end
+    time_window_end || vehicle_usage_set.time_window_end
   end
 
-  def default_close_time
-    close_time || vehicle_usage_set.close_time
+  def default_time_window_end_time
+    time_window_end_time || vehicle_usage_set.time_window_end_time
   end
 
-  def default_close_absolute_time
-    close_absolute_time || vehicle_usage_set.close_absolute_time
+  def default_time_window_end_absolute_time
+    time_window_end_absolute_time || vehicle_usage_set.time_window_end_absolute_time
   end
 
   def default_store_start
@@ -204,7 +204,7 @@ class VehicleUsage < ApplicationRecord
   end
 
   def work_or_window_time
-    ChronicDuration.output(default_work_time || (default_close - default_open), limit_to_hours: true, format: :chrono, units: 5)
+    ChronicDuration.output(default_work_time || (default_time_window_end - default_time_window_start), limit_to_hours: true, format: :chrono, units: 5)
   end
 
   def update_rest
@@ -269,7 +269,7 @@ class VehicleUsage < ApplicationRecord
       update_rest
     end
 
-    if open_changed? || close_changed? || store_start_id_changed? || store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? || store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed?
+    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? || store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? || store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed?
       routes.each{ |route|
         route.outdated = true
       }
@@ -284,9 +284,9 @@ class VehicleUsage < ApplicationRecord
     routes.destroy_all
   end
 
-  def close_after_open
-    if self.default_open.present? && self.default_close.present? && self.default_close <= self.default_open
-      errors.add(:close, I18n.t('activerecord.errors.models.vehicle_usage.attributes.close.after'))
+  def time_window_end_after_end
+    if self.default_time_window_start.present? && self.default_time_window_end.present? && self.default_time_window_end <= self.default_time_window_start
+      errors.add(:time_window_end, I18n.t('activerecord.errors.models.vehicle_usage.attributes.time_window_end.after'))
     end
   end
 
@@ -301,19 +301,19 @@ class VehicleUsage < ApplicationRecord
     errors.add(:rest_stop, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_window')) if self.default_rest_duration && self.default_rest_stop.nil?
     errors.add(:rest_duration, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_duration')) if self.default_rest_duration.nil? && (self.default_rest_start || self.default_rest_stop)
 
-    open_duration = self.default_open || 0
+    time_window_start_duration = self.default_time_window_start || 0
     service_time_start_duration = self.default_service_time_start || 0
-    close_duration = self.default_close || 0
+    time_window_end_duration = self.default_time_window_end || 0
     service_time_end_duration = self.default_service_time_end || 0
 
-    working_day_start = open_duration + service_time_start_duration
-    working_day_end = close_duration - service_time_end_duration
+    working_day_start = time_window_start_duration + service_time_start_duration
+    working_day_end = time_window_end_duration - service_time_end_duration
 
-    if (close_duration - open_duration) <= service_time_start_duration && service_time_start_duration > 0
+    if (time_window_end_duration - time_window_start_duration) <= service_time_start_duration && service_time_start_duration > 0
       errors.add(:service_time_start, I18n.t('activerecord.errors.models.vehicle_usage.service_range'))
-    elsif (close_duration - open_duration) <= service_time_end_duration && service_time_start_duration > 0
+    elsif (time_window_end_duration - time_window_start_duration) <= service_time_end_duration && service_time_start_duration > 0
       errors.add(:service_time_end, I18n.t('activerecord.errors.models.vehicle_usage.service_range'))
-    elsif (close_duration - open_duration) <= (service_time_start_duration + service_time_end_duration) && service_time_start_duration + service_time_end_duration > 0
+    elsif (time_window_end_duration - time_window_start_duration) <= (service_time_start_duration + service_time_end_duration) && service_time_start_duration + service_time_end_duration > 0
       errors.add(:base, "#{I18n.t('activerecord.attributes.vehicle_usage.service_time_start')} / #{I18n.t('activerecord.attributes.vehicle_usage.service_time_end')} #{I18n.t('activerecord.errors.models.vehicle_usage.service_range')}")
     elsif self.default_rest_start && self.default_rest_stop
       if !(self.default_rest_start >= working_day_start) || !(self.default_rest_stop <= working_day_end)
@@ -325,7 +325,7 @@ class VehicleUsage < ApplicationRecord
   end
 
   def work_time_inside_window
-    if self.work_time.present? && self.default_open.present? && self.default_close.present? && self.work_time > (self.default_close - self.default_open) - ((self.default_service_time_start || 0) + (self.default_service_time_end || 0))
+    if self.work_time.present? && self.default_time_window_start.present? && self.default_time_window_end.present? && self.work_time > (self.default_time_window_end - self.default_time_window_start) - ((self.default_service_time_start || 0) + (self.default_service_time_end || 0))
       errors.add(:work_time, I18n.t('activerecord.errors.models.vehicle_usage.work_time_inside_window'))
     end
   end

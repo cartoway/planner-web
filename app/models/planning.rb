@@ -372,7 +372,7 @@ class Planning < ApplicationRecord
 
     o = amalgamate_stops_same_position(stops_on, option[:global], routes_with_vehicle.map(&:vehicle_usage)) { |positions|
       services_and_rests = positions.collect{ |position|
-        stop_id, open1, close1, open2, close2, priority, duration, vehicle_usage_id, quantities, quantities_operations, skills, rest = position[2..13]
+        stop_id, time_window_start_1, time_window_end_1, time_window_start_2, time_window_end_2, priority, duration, vehicle_usage_id, quantities, quantities_operations, skills, rest = position[2..13]
         if option[:ignore_overload_multipliers] && quantities
           quantities.select!{ |id, _val|
             option[:ignore_overload_multipliers].find{ |iom| iom[:unit_id] == id if iom[:ignore] }.nil?
@@ -381,10 +381,10 @@ class Planning < ApplicationRecord
 
         {
           stop_id: stop_id,
-          start1: open1,
-          end1: close1,
-          start2: open2,
-          end2: close2,
+          start1: time_window_start_1,
+          end1: time_window_end_1,
+          start2: time_window_start_2,
+          end2: time_window_end_2,
           priority: priority,
           duration: duration,
           vehicle_usage_id: vehicle_usage_id,
@@ -403,9 +403,9 @@ class Planning < ApplicationRecord
           # TODO: simplify positions without duplications (for instance same start and stop stores)
           positions = (positions + [position_start, position_stop]).compact
 
-          vehicle_open = r.vehicle_usage.default_open
+          vehicle_open = r.vehicle_usage.default_time_window_start
           vehicle_open += r.vehicle_usage.default_service_time_start if r.vehicle_usage.default_service_time_start
-          vehicle_close = r.vehicle_usage.default_close
+          vehicle_close = r.vehicle_usage.default_time_window_end
           vehicle_close -= r.vehicle_usage.default_service_time_end if r.vehicle_usage.default_service_time_end
           vehicle_skills = [r.vehicle_usage.tags, r.vehicle_usage.vehicle.tags].flatten.compact.map(&:label)
           vehicle_time = r.vehicle_usage.default_work_time(true)
@@ -705,7 +705,7 @@ class Planning < ApplicationRecord
   # To reduce matrix computation with only one route... remove code?
   def amalgamate_stops_same_position(stops, global, vehicle_usages)
     tws_or_quantities = stops.find{ |stop|
-      stop.is_a?(StopRest) || stop.open1 || stop.close1 || stop.open2 || stop.close2
+      stop.is_a?(StopRest) || stop.time_window_start_1 || stop.time_window_end_1 || stop.time_window_start_2 || stop.time_window_end_2
     }
     units_with_default = stops.flat_map{ |stop| stop.is_a?(StopVisit) && stop.visit.default_quantities.try(:keys) }.compact
     multiples_vehicles_with_capacities = vehicle_usages.size > 1 || vehicle_usages.any? { |v| v.vehicle.default_capacities.any? { |k, v| units_with_default.include?(k) && v } }
@@ -716,10 +716,10 @@ class Planning < ApplicationRecord
         [stop.lat,
          stop.lng,
          stop.id,
-         stop.open1.try(:to_f),
-         stop.close1.try(:to_f),
-         stop.open2.try(:to_f),
-         stop.close2.try(:to_f),
+         stop.time_window_start_1.try(:to_f),
+         stop.time_window_end_1.try(:to_f),
+         stop.time_window_start_2.try(:to_f),
+         stop.time_window_end_2.try(:to_f),
          stop.priority,
          stop.duration,
          !global || stop.is_a?(StopRest) ? stop.route.vehicle_usage_id : nil,

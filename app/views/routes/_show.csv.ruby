@@ -37,10 +37,10 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
 
     ref_visit: nil,
     duration: nil,
-    open1: nil,
-    close1: nil,
-    open2: nil,
-    close2: nil,
+    time_window_start_1: nil,
+    time_window_end_1: nil,
+    time_window_start_2: nil,
+    time_window_end_2: nil,
     priority: nil,
     tags_visit: nil
   })
@@ -99,10 +99,10 @@ route.stops.each { |stop|
 
       ref_visit: (stop.visit.ref if stop.is_a?(StopVisit)),
       duration: stop.is_a?(StopVisit) ? (stop.visit.take_over ? stop.visit.take_over_absolute_time_with_seconds : nil) : (route.vehicle_usage.default_rest_duration ? route.vehicle_usage.default_rest_duration_time_with_seconds : nil),
-      open1: (stop.open1_absolute_time if stop.open1),
-      close1: (stop.close1_absolute_time if stop.close1),
-      open2: (stop.open2_absolute_time if stop.open2),
-      close2: (stop.close2_absolute_time if stop.close2),
+      time_window_start_1: (stop.time_window_start_1_absolute_time if stop.time_window_start_1),
+      time_window_end_1: (stop.time_window_end_1_absolute_time if stop.time_window_end_1),
+      time_window_start_2: (stop.time_window_start_2_absolute_time if stop.time_window_start_2),
+      time_window_end_2: (stop.time_window_end_2_absolute_time if stop.time_window_end_2),
       priority: (stop.priority if stop.priority),
       tags_visit: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
     })
@@ -158,10 +158,10 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
 
     ref_visit: nil,
     duration: nil,
-    open1: nil,
-    close1: nil,
-    open2: nil,
-    close2: nil,
+    time_window_start_1: nil,
+    time_window_end_1: nil,
+    time_window_start_2: nil,
+    time_window_end_2: nil,
     priority: nil,
     tags_visit: nil
   })

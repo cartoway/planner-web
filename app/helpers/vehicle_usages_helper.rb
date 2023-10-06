@@ -70,22 +70,22 @@ module VehicleUsagesHelper
 
   def vehicle_usage_store_hours(vehicle_usage)
     capture do
-      if vehicle_usage.open
-        concat vehicle_usage.open_time
-        concat ('&nbsp;(+' + number_of_days(vehicle_usage.open).to_s + ')').html_safe if number_of_days(vehicle_usage.open)
+      if vehicle_usage.time_window_start
+        concat vehicle_usage.time_window_start_time
+        concat ('&nbsp;(+' + number_of_days(vehicle_usage.time_window_start).to_s + ')').html_safe if number_of_days(vehicle_usage.time_window_start)
         concat ' - '
-      elsif vehicle_usage.vehicle_usage_set.open
-        concat span_tag(vehicle_usage.vehicle_usage_set.open_time)
-        concat span_tag(('&nbsp;(+' + number_of_days(vehicle_usage.vehicle_usage_set.open).to_s + ')').html_safe) if number_of_days(vehicle_usage.vehicle_usage_set.open)
+      elsif vehicle_usage.vehicle_usage_set.time_window_start
+        concat span_tag(vehicle_usage.vehicle_usage_set.time_window_start_time)
+        concat span_tag(('&nbsp;(+' + number_of_days(vehicle_usage.vehicle_usage_set.time_window_start).to_s + ')').html_safe) if number_of_days(vehicle_usage.vehicle_usage_set.time_window_start)
         concat span_tag(' - ')
       end
 
-      if vehicle_usage.close
-        concat vehicle_usage.close_time
-        concat ('&nbsp;(+' + number_of_days(vehicle_usage.close).to_s + ')').html_safe if number_of_days(vehicle_usage.close)
-      elsif vehicle_usage.vehicle_usage_set.close
-        concat span_tag(vehicle_usage.vehicle_usage_set.close_time)
-        concat span_tag(('&nbsp;(+' + number_of_days(vehicle_usage.vehicle_usage_set.close).to_s + ')').html_safe) if number_of_days(vehicle_usage.vehicle_usage_set.close)
+      if vehicle_usage.time_window_end
+        concat vehicle_usage.time_window_end_time
+        concat ('&nbsp;(+' + number_of_days(vehicle_usage.time_window_end).to_s + ')').html_safe if number_of_days(vehicle_usage.time_window_end)
+      elsif vehicle_usage.vehicle_usage_set.time_window_end
+        concat span_tag(vehicle_usage.vehicle_usage_set.time_window_end_time)
+        concat span_tag(('&nbsp;(+' + number_of_days(vehicle_usage.vehicle_usage_set.time_window_end).to_s + ')').html_safe) if number_of_days(vehicle_usage.vehicle_usage_set.time_window_end)
       end
     end
   end

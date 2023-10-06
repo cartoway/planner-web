@@ -216,7 +216,7 @@ class V01::Zonings < Grape::API
         size = Integer(params[:size])
         if vehicle_usage
           # Use Time.zone.parse to preserve time zone from user (instead of to_time)
-          zoning.isochrone(size, vehicle_usage, nil, !params[:departure_date].blank? && Time.zone.parse(params[:departure_date].to_s) + vehicle_usage.default_open)
+          zoning.isochrone(size, vehicle_usage, nil, !params[:departure_date].blank? && Time.zone.parse(params[:departure_date].to_s) + vehicle_usage.default_time_window_start)
           zoning.save!
           present zoning.zones.find{ |z| z.vehicle == vehicle_usage.vehicle }, with: V01::Entities::Zone
         else
@@ -281,7 +281,7 @@ class V01::Zonings < Grape::API
         if vehicle_usage
           zoning.prefered_unit = @current_user.prefered_unit
           # Use Time.zone.parse to preserve time zone from user (instead of to_time)
-          zoning.isodistance(size, vehicle_usage, nil, !params[:departure_date].blank? && Time.zone.parse(params[:departure_date].to_s) + vehicle_usage.default_open)
+          zoning.isodistance(size, vehicle_usage, nil, !params[:departure_date].blank? && Time.zone.parse(params[:departure_date].to_s) + vehicle_usage.default_time_window_start)
           zoning.save!
           present zoning.zones.find{ |z| z.vehicle == vehicle_usage.vehicle }, with: V01::Entities::Zone
         else

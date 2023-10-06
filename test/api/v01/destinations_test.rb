@@ -65,10 +65,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
           post api(), @destination.attributes.update({tag_ids: tags}).merge(visits: [{
             ref: 'v1',
             quantity1_1: 1,
-            open1: '08:00',
-            close1: '12:00',
-            open2: '13:00',
-            close2: '14:00',
+            time_window_start_1: '08:00',
+            time_window_end_1: '12:00',
+            time_window_start_2: '13:00',
+            time_window_end_2: '14:00',
             take_over: nil,
             route: '1',
             active: '1'
@@ -76,10 +76,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
           {
             quantity1_1: 2,
             ref: 'v2',
-            open1: '14:00',
-            close1: '18:00',
-            open2: '20:00',
-            close2: '21:00',
+            time_window_start_1: '14:00',
+            time_window_end_1: '18:00',
+            time_window_start_2: '20:00',
+            time_window_end_2: '21:00',
             take_over: nil,
             route: '1',
             active: '1'
@@ -161,10 +161,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               visits: [{
                 ref: 'v1',
                 quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, quantity: 1}],
-                open1: '08:00',
-                close1: '12:00',
-                open2: '14:00',
-                close2: '18:00',
+                time_window_start_1: '08:00',
+                time_window_end_1: '12:00',
+                time_window_start_2: '14:00',
+                time_window_end_2: '18:00',
                 take_over: nil,
                 route: 'useless_because_of_zoning_ids',
                 active: '1'
@@ -172,10 +172,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               {
                 ref: 'v2',
                 quantity1_1: 2,
-                open1: '14:00',
-                close1: '18:00',
-                open2: '20:00',
-                close2: '21:00',
+                time_window_start_1: '14:00',
+                time_window_end_1: '18:00',
+                time_window_start_2: '20:00',
+                time_window_end_2: '21:00',
                 priority: 0,
                 take_over: nil,
                 route: 'useless_because_of_zoning_ids',
@@ -242,10 +242,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             visits: [{
               ref: 'v1',
               quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, quantity: 1}],
-              open1: '20:00',
-              close1: '32:00',
-              open2: '38:00',
-              close2: '44:00',
+              time_window_start_1: '20:00',
+              time_window_end_1: '32:00',
+              time_window_start_2: '38:00',
+              time_window_end_2: '44:00',
               take_over: nil,
               route: 'useless_because_of_zoning_ids',
               active: '1'
@@ -253,10 +253,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             {
               ref: 'v2',
               quantity1_1: 2,
-              open1: '12:00',
-              close1: '18:00',
-              open2: '32:00',
-              close2: '36:00',
+              time_window_start_1: '12:00',
+              time_window_end_1: '18:00',
+              time_window_start_2: '32:00',
+              time_window_end_2: '36:00',
               priority: -4,
               take_over: nil,
               route: 'useless_because_of_zoning_ids',
@@ -268,15 +268,15 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
         visits = JSON.parse(last_response.body)[0]['visits']
 
-        assert_equal '20:00:00', visits[0]['open1']
-        assert_equal '32:00:00', visits[0]['close1']
-        assert_equal '38:00:00', visits[0]['open2']
-        assert_equal '44:00:00', visits[0]['close2']
+        assert_equal '20:00:00', visits[0]['time_window_start_1']
+        assert_equal '32:00:00', visits[0]['time_window_end_1']
+        assert_equal '38:00:00', visits[0]['time_window_start_2']
+        assert_equal '44:00:00', visits[0]['time_window_end_2']
 
-        assert_equal '12:00:00', visits[1]['open1']
-        assert_equal '18:00:00', visits[1]['close1']
-        assert_equal '32:00:00', visits[1]['open2']
-        assert_equal '36:00:00', visits[1]['close2']
+        assert_equal '12:00:00', visits[1]['time_window_start_1']
+        assert_equal '18:00:00', visits[1]['time_window_end_1']
+        assert_equal '32:00:00', visits[1]['time_window_start_2']
+        assert_equal '36:00:00', visits[1]['time_window_end_2']
       end
     end
   end
@@ -311,10 +311,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               visits: [{
                 ref: 'v1',
                 quantity1_1: 1,
-                open1: '08:00',
-                close1: '12:00',
-                open2: '14:00',
-                close2: '18:00',
+                time_window_start_1: '08:00',
+                time_window_end_1: '12:00',
+                time_window_start_2: '14:00',
+                time_window_end_2: '18:00',
                 take_over: nil,
                 route: '1',
                 ref_vehicle: '003',
@@ -323,10 +323,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               {
                 ref: 'v2',
                 quantity1_1: 2,
-                open1: '14:00',
-                close1: '18:00',
-                open2: '20:00',
-                close2: '21:00',
+                time_window_start_1: '14:00',
+                time_window_end_1: '18:00',
+                time_window_start_2: '20:00',
+                time_window_end_2: '21:00',
                 take_over: nil,
                 route: '1',
                 ref_vehicle: '003',
@@ -374,10 +374,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
         visits: [{
           ref: 'v1',
           quantity1_1: 1,
-          open1: '08:00',
-          close1: '12:00',
-          open2: '14:00',
-          close2: '18:00',
+          time_window_start_1: '08:00',
+          time_window_end_1: '12:00',
+          time_window_start_2: '14:00',
+          time_window_end_2: '18:00',
           take_over: nil,
           route: '1',
           ref_vehicle: '003',
@@ -386,10 +386,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
         {
           ref: 'v2',
           quantity1_1: 2,
-          open1: '14:00',
-          close1: '18:00',
-          open2: '20:00',
-          close2: '21:00',
+          time_window_start_1: '14:00',
+          time_window_end_1: '18:00',
+          time_window_start_2: '20:00',
+          time_window_end_2: '21:00',
           take_over: nil,
           route: '1',
           ref_vehicle: '003',
@@ -428,20 +428,20 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             visits: [{
               ref: 'v1',
               quantity1_1: nil,
-              open1: nil,
-              close1: nil,
-              open2: nil,
-              close2: nil,
+              time_window_start_1: nil,
+              time_window_end_1: nil,
+              time_window_start_2: nil,
+              time_window_end_2: nil,
               take_over: nil,
               route: '1',
               active: '1'
             },{
               ref: 'v2',
               quantity1_1: nil,
-              open1: nil,
-              close1: nil,
-              open2: nil,
-              close2: nil,
+              time_window_start_1: nil,
+              time_window_end_1: nil,
+              time_window_start_2: nil,
+              time_window_end_2: nil,
               take_over: nil,
               route: '1',
               active: '1'
@@ -483,10 +483,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               #to keep the same behavior between destinations refs and visits refs. visit can't be validated if no visit_ref have been settled.
               ref: 'v1',
               quantity1_1: 1,
-              open1: '08:00',
-              close1: '12:00',
-              open2: '13:00',
-              close2: '14:00',
+              time_window_start_1: '08:00',
+              time_window_end_1: '12:00',
+              time_window_start_2: '13:00',
+              time_window_end_2: '14:00',
               take_over: nil,
               route: '1',
               active: '1'
@@ -494,10 +494,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             {
               quantity1_1: 2,
               ref: 'v2',
-              open1: '14:00',
-              close1: '18:00',
-              open2: '20:00',
-              close2: '21:00',
+              time_window_start_1: '14:00',
+              time_window_end_1: '18:00',
+              time_window_start_2: '20:00',
+              time_window_end_2: '21:00',
               take_over: nil,
               route: '1',
               active: '1'
@@ -672,20 +672,20 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             visits: [{
               ref: 'v1',
               quantity1_1: nil,
-              open1: nil,
-              close1: nil,
-              open2: nil,
-              close2: nil,
+              time_window_start_1: nil,
+              time_window_end_1: nil,
+              time_window_start_2: nil,
+              time_window_end_2: nil,
               take_over: nil,
               route: '1',
               active: '1'
             },{
               ref: 'v1',
               quantity1_1: nil,
-              open1: nil,
-              close1: nil,
-              open2: nil,
-              close2: nil,
+              time_window_start_1: nil,
+              time_window_end_1: nil,
+              time_window_start_2: nil,
+              time_window_end_2: nil,
               take_over: nil,
               route: '1',
               active: '1'
@@ -812,19 +812,19 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     visit_attributes = visit.attributes.slice *visit.attributes.keys - ['created_at', 'updated_at']
 
     open_time = 15.hours.to_i
-    visit_attributes.delete 'open1'
+    visit_attributes.delete 'time_window_start_1'
     visit_attributes['open'] = open_time
 
     close_time = 17.hours.to_i
-    visit_attributes.delete 'close1'
+    visit_attributes.delete 'time_window_end_1'
     visit_attributes['close'] = close_time
 
     destination_params.merge! 'visits_attributes' => [ visit_attributes ]
     put api(@destination.id), destination_params
     assert last_response.ok?, last_response.body
 
-    assert_equal open_time, visit.reload.open1
-    assert_equal close_time, visit.reload.close1
+    assert_equal open_time, visit.reload.time_window_start_1
+    assert_equal close_time, visit.reload.time_window_end_1
   end
 
   test 'should use limitation' do
