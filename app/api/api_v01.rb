@@ -22,7 +22,7 @@ class ApiV01 < Grape::API
   content_type :geojson, 'application/vnd.geo+json; charset=UTF-8'
   content_type :xml, 'application/xml'
 
-  # As rails utils 'status()' works with Fixnum, we need to set a special formatter for XML object
+  # As rails utils 'status()' works with Integer, we need to set a special formatter for XML object
   xml_custom_formatter = ->(object, env) {
     object.is_a?(Integer) ? object.to_s : object.to_xml
   }

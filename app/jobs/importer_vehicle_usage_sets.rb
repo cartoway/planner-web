@@ -133,7 +133,7 @@ class ImporterVehicleUsageSets < ImporterBase
       end
 
       row[key] = row[key].collect{ |tag|
-        if tag.is_a?(Fixnum)
+        if tag.is_a?(Integer)
           @tag_ids[tag]
         else
           tag = tag.strip

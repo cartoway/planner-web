@@ -17,7 +17,7 @@
 #
 class ParseIdsRefs
   def self.read(raw_id)
-    if !raw_id.is_a?(Fixnum) && raw_id.start_with?('ref:')
+    if !raw_id.is_a?(Integer) && raw_id.start_with?('ref:')
       {ref: raw_id[4..-1]}
     else
       {id: Integer(raw_id)}
