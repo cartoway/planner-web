@@ -61,11 +61,11 @@ class StopVisit < Stop
   end
 
   def duration
-    visit.take_over || visit.destination.customer.take_over || 0
+    visit.duration || visit.destination.customer.visit_duration || 0
   end
 
   def duration_time_with_seconds
-    visit.take_over_time_with_seconds || visit.destination.customer.take_over_time_with_seconds || 0
+    visit.duration_time_with_seconds || visit.destination.customer.visit_duration_time_with_seconds || 0
   end
 
   def base_id

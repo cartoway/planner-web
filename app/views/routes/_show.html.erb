@@ -107,8 +107,8 @@
                 <% } %>
               </div>
             <% end %>
-            <% if stop.visit.take_over %>
-              <span class="duration">(<%= stop.visit.take_over_time_with_seconds %>)</span>
+            <% if stop.visit.duration %>
+              <span class="duration">(<%= stop.visit.duration_time_with_seconds %>)</span>
             <% end %>
             <% if route.planning.customer.enable_orders %>
               <% if stop.order && !stop.order.products.empty? %>

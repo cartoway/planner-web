@@ -4,7 +4,7 @@ visit_unaffected_one:
   destination: destination_unaffected_one # customer_one
   ref: a
   quantities:
-  take_over: 00:01:00
+  duration: 00:01:00
   time_window_start_1: 10:00:00
   time_window_end_1: 11:00:00
   tags: tag_one
@@ -14,7 +14,7 @@ visit_one:
   destination: destination_one # customer_one
   ref: b
   quantities:
-  take_over: 00:05:33
+  duration: 00:05:33
   time_window_start_1: 10:00:00
   time_window_end_1: 11:00:00
   priority: 4

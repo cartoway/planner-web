@@ -135,7 +135,7 @@
         'enable_external_callback': 'Ativar URL de chamada'
         'end_subscription': 'Fim de subscrição'
         'max_vehicles': 'Nùmero de veículos'
-        'take_over': 'Duração da visita'
+        'visit_duration': 'Duração da visita'
         'name': 'Nome'
         'destinations': 'Pontos'
         'router': 'Calculador de itinerário'
@@ -444,8 +444,8 @@
       'visit':
         'ref': 'Referência'
         'ref_small': 'Ref.ª'
-        'take_over': 'Duração da visita'
-        'take_over_small': 'Duração'
+        'duration': 'Duração da visita'
+        'duration_small': 'Duração'
         'time_window_start_1': 'Início de período 1'
         'time_window_start_1_small': 'Início 1'
         'time_window_end_1': 'Fim de período 1'
@@ -466,8 +466,8 @@
       'visits':
         'ref': 'Referência'
         'ref_small': 'Ref.ª'
-        'take_over': 'Duração da visita'
-        'take_over_small': 'Duração'
+        'duration': 'Duração da visita'
+        'duration_small': 'Duração'
         'time_window_start_1': 'Início de período 1'
         'time_window_start_1_small': 'Início 1'
         'time_window_end_1': 'Fim de período 1'
@@ -823,7 +823,7 @@
       'router_options_truck_restriction_penalty': 'Se não selecionado, o calculador
         tentará respeitar estritamente as limitações, ignorando estas caso não exista
         outra forma.'
-      'take_over_help': 'Duração média da visita por cliente'
+      'duration_help': 'Duração média da visita por cliente'
       'optimization_cluster_size_default': '%{n} (valor por defeito)'
       'optimization_cluster_size_help': 'Valor em segundos entre pontos a agrupar
         antes da otimização. Um valor demasiado alto degradará a qualidade da otimização
@@ -1373,8 +1373,8 @@
       'geocoding_level': 'nível de geocodificação'
       'geocoding_level_desc': 'nível de precisão alcançado após conversão da modada
         do destino em coordenadas geográficas, expresso de forma descritiva.'
-      'take_over': 'duração da visita'
-      'take_over_desc': 'duração antecipada da visita'
+      'duration': 'duração da visita'
+      'duration_desc': 'duração antecipada da visita'
       'quantity': 'quantidade'
       'quantity_desc': 'numero de unidades a despachar.'
       'quantity1_1': 'quantidade 1_1'
@@ -2214,8 +2214,8 @@
         'help': 'Quantidades a despachar. Em caso de preenchimento/esvaziamento, o
           motor de otimização decidirà as quantidades. Se um valor for especificado,
           serà utilizado como quantidade mínima a preencher/esvaziar.'
-      'take_over_default': 'defeito'
-      'take_over_help': 'Se em branco, utiliza o valor por defeito'
+      'duration_default': 'defeito'
+      'duration_help': 'Se em branco, utiliza o valor por defeito'
       'time_window_start_end_1': 'Período horário 1'
       'time_window_start_end_2': 'Período horário 2'
       'close_help': 'Sem tomar em conta a duração da visita'

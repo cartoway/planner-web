@@ -71,7 +71,7 @@ class CustomerTest < ActiveSupport::TestCase
 
   test 'should update_outdated' do
     customer = customers(:customer_one)
-    customer.take_over = '00::10:00'
+    customer.visit_duration = '00::10:00'
     customer.plannings.each { |p|
       p.routes.select { |r| r.vehicle_usage }.each { |r|
         assert_not r.outdated

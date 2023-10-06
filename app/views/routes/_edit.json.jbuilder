@@ -133,7 +133,7 @@ if @with_stops
       json.visits true
       visit = stop.visit
       json.visit_id visit.id
-      json.take_over visit.default_take_over
+      json.duration visit.default_duration
       json.destination do
         json.destination_id visit.destination.id
         (json.color visit.color) if visit.color

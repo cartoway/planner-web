@@ -44,7 +44,7 @@ class V01::Destinations < Grape::API
         end
       end
 
-      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :take_over, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, tag_ids: [], quantities: current_customer.deliverable_units.map{ |du| du.id.to_s }])
+      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, tag_ids: [], quantities: current_customer.deliverable_units.map{ |du| du.id.to_s }])
     end
 
     def present_geojson_destinations(params)

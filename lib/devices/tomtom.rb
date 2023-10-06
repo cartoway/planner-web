@@ -191,7 +191,7 @@ class Tomtom < DeviceBase
             '',
             stop.name,
             stop.is_a?(StopVisit) ? (customer.enable_orders ? (stop.order ? stop.order.products.collect(&:code).join(',') : '') : customer.deliverable_units.map{ |du| stop.visit.default_quantities[du.id] && "x#{stop.visit.default_quantities[du.id]}#{du.label}" }.compact.join(' ')) : nil,
-            stop.is_a?(StopVisit) ? (stop.visit.take_over ? '(' + stop.visit.take_over_time_with_seconds + ')' : nil) : route.vehicle_usage.default_rest_duration_time_with_seconds,
+            stop.is_a?(StopVisit) ? (stop.visit.duration ? '(' + stop.visit.duration_time_with_seconds + ')' : nil) : route.vehicle_usage.default_rest_duration_time_with_seconds,
             stop.time_window_start_1 || stop.time_window_end_1 ? (stop.time_window_start_1 ? stop.time_window_start_1_time + number_of_days(stop.time_window_start_1) : '') + (stop.time_window_start_1 && stop.time_window_end_1 ? '-' : '') + (stop.time_window_end_1 ? (stop.time_window_end_1_time + number_of_days(stop.time_window_end_1) || '') : '') : nil,
             stop.time_window_start_2 || stop.time_window_end_2 ? (stop.time_window_start_2 ? stop.time_window_start_2_time + number_of_days(stop.time_window_start_2) : '') + (stop.time_window_start_2 && stop.time_window_end_2 ? '-' : '') + (stop.time_window_end_2 ? (stop.time_window_end_2_time + number_of_days(stop.time_window_end_2) || '') : '') : nil,
             stop.detail,

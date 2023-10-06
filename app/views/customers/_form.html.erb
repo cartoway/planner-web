@@ -279,8 +279,8 @@
       </div>
     </div>
 
-    <%= f.text_field :take_over, {placeholder: t('all.unit.hour_minute_second'), value: @customer.take_over_time_with_seconds, input_group: content_tag('i', '', class: 'fa fa-clock-o fa-fw')} do %>
-      <p class="help-block"><%= t '.take_over_help' %></p>
+    <%= f.text_field :visit_duration, {placeholder: t('all.unit.hour_minute_second'), value: @customer.visit_duration_time_with_seconds, input_group: content_tag('i', '', class: 'fa fa-clock-o fa-fw')} do %>
+      <p class="help-block"><%= t '.visit_duration_help' %></p>
     <% end %>
 
     <%= f.text_field :default_country, required: true %>

@@ -34,7 +34,7 @@ class V01::Customers < Grape::API
 
       # Rename parameter
       if p[:visit_duration]
-        p[:take_over] = p[:visit_duration]
+        p[:visit_duration] = p[:visit_duration]
         p.delete(:visit_duration)
       end
 
@@ -46,7 +46,7 @@ class V01::Customers < Grape::API
           :description,
           :end_subscription,
           :test,
-          :take_over,
+          :visit_duration,
           :default_country,
           :with_state,
           :max_vehicles,
@@ -88,7 +88,7 @@ class V01::Customers < Grape::API
           devices: permit_recursive_params(p[:devices]))
       else
         p.permit(
-          :take_over,
+          :visit_duration,
           :default_country,
           :optimization_max_split_size,
           :optimization_cluster_size,

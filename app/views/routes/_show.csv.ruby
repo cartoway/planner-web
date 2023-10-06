@@ -98,7 +98,7 @@ route.stops.each { |stop|
       tags: (stop.visit.destination.tags.collect(&:label).join(',') if stop.is_a?(StopVisit)),
 
       ref_visit: (stop.visit.ref if stop.is_a?(StopVisit)),
-      duration: stop.is_a?(StopVisit) ? (stop.visit.take_over ? stop.visit.take_over_absolute_time_with_seconds : nil) : (route.vehicle_usage.default_rest_duration ? route.vehicle_usage.default_rest_duration_time_with_seconds : nil),
+      duration: stop.is_a?(StopVisit) ? (stop.visit.duration ? stop.visit.duration_absolute_time_with_seconds : nil) : (route.vehicle_usage.default_rest_duration ? route.vehicle_usage.default_rest_duration_time_with_seconds : nil),
       time_window_start_1: (stop.time_window_start_1_absolute_time if stop.time_window_start_1),
       time_window_end_1: (stop.time_window_end_1_absolute_time if stop.time_window_end_1),
       time_window_start_2: (stop.time_window_start_2_absolute_time if stop.time_window_start_2),

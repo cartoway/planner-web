@@ -24,7 +24,7 @@ if @planning
           json.extract! quantity, :deliverable_unit_id, :quantity, :unit_icon
         end
       end
-      (json.duration visit.default_take_over_time_with_seconds) if visit.default_take_over_time_with_seconds
+      (json.duration visit.default_duration_time_with_seconds) if visit.default_duration_time_with_seconds
       (json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1
       (json.time_window_end_1 stop.time_window_end_1_time) if stop.time_window_end_1
       (json.time_window_start_2 stop.time_window_start_2_time) if stop.time_window_start_2

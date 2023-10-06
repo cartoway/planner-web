@@ -144,7 +144,7 @@ de:
         max_zonings: Maximale Zoneneinteilungen
         max_destinations: Maximale Zielorte
         max_vehicle_usage_sets: Maximale Grundeinstellungen der Fahrzeuge
-        take_over: Verweildauer
+        visit_duration: Verweildauer
         default_country: Standardland
         with_state: Statusfeld in Adressen hinzufügen
         optimization_max_split_size: Splitgröße für Optimierung
@@ -473,8 +473,8 @@ de:
       visit:
         ref: Referenz
         ref_small: Nr.
-        take_over: Verweildauer
-        take_over_small: Dauer
+        duration: Verweildauer
+        duration_small: Dauer
         time_window_start_1: Zeitfenster 1 öffnen
         time_window_start_1_small: Öffnen 1
         time_window_end_1: Zeitfenster 1 schließen
@@ -495,8 +495,8 @@ de:
       visits:
         ref: Referenz
         ref_small: Nr.
-        take_over: Verweildauer
-        take_over_small: Dauer
+        duration: Verweildauer
+        duration_small: Dauer
         time_window_start_1: Zeitfenster 1 öffnen
         time_window_start_1_small: Öffnen 1
         time_window_end_1: Zeitfenster 1 schließen
@@ -802,7 +802,7 @@ de:
       router_options_approach_help: An- und Abreise mit Kontrollpunkt in der aktuellen Verkehrsrichtung
       router_options_snap_range: Maximale Entfernung bis zum Halt an einer Kreuzung, ansonsten Halt am Auslieferungsort.
       router_options_strict_restriction: Wenn nicht angekreuzt, wird der Router versuchen, die Einschränkungen streng einzuhalten und Einschränkungen nur dann aufzuheben, falls dies der einzige Weg ist.
-      take_over_help: Durchschnittliche Zeit pro Benutzerkonto
+      visit_duration_help: Durchschnittliche Zeit pro Benutzerkonto
       max_plannings_default: '%{n} (Standardwert)'
       max_plannings_help: Maximale Anzahl der zulässigen Pläne auf dem Benutzerkonto.
       max_zonings_default: '%{n} (Standardwert)'
@@ -1026,8 +1026,8 @@ de:
       geocoding_accuracy_format: Gleitkommazahl zwischen 0 und 1
       geocoding_level: Geokodierungsebene
       geocoding_level_desc: Präzision, die bei der Umwandlung der Straßenadresse des Ziels in geografische Koordinaten erreicht wird, ausgedrückt durch für den Benutzer verständliche Ebenen.
-      take_over: Verweildauer
-      take_over_desc: Verweildauer
+      duration: Verweildauer
+      duration_desc: Verweildauer
       quantity: Menge
       quantity_desc: Anzahl der zu liefernden Einheiten.
       quantity_operation: Vorgang
@@ -2096,8 +2096,8 @@ de:
         quantities_operations_title: 'Befüllen/Leeren'
         quantities_operations_help: 'Nur auswählen, wenn Sie die gesamte Menge in das Fahrzeug füllen bzw. aus dem Fahrzeug laden müssen'
         help: Zu liefernde Mengen. Im Falle von Füllen / Entleeren entscheidet die Optimierungsfunktion selbst über die Mengen. Wenn Sie einen Wert angeben, wird er als Mindestwert zum Füllen / Entleeren verwendet.
-      take_over_default: Standard
-      take_over_help: Wenn das Feld leer ist, verwenden Sie den Standardwert
+      duration_default: Standard
+      duration_help: Wenn das Feld leer ist, verwenden Sie den Standardwert
       time_window_start_end_1: Zeitfenster 1
       time_window_start_end_2: Zeitfenster 2
       priority: Priorität

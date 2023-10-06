@@ -40,7 +40,7 @@ class V01::Visits < Grape::API
       end
 
       deliverable_unit_ids = current_customer.deliverable_units.map{ |du| du.id.to_s }
-      p.permit(:ref, :take_over, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, tag_ids: [], quantities: deliverable_unit_ids, quantities_operations: deliverable_unit_ids)
+      p.permit(:ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, tag_ids: [], quantities: deliverable_unit_ids, quantities_operations: deliverable_unit_ids)
     end
   end
 
@@ -108,7 +108,7 @@ class V01::Visits < Grape::API
               :tag_ids,
               :time_window_start_1,
               :time_window_end_1,
-              :take_over,
+              :duration,
               :time_window_start_2,
               :time_window_end_2,
               :priority)
@@ -122,7 +122,7 @@ class V01::Visits < Grape::API
 
           optional :time_window_start_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
           optional :time_window_end_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :take_over, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+          optional :duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
           optional :time_window_start_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
           optional :time_window_end_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
         end
@@ -148,7 +148,7 @@ class V01::Visits < Grape::API
             :tag_ids,
             :time_window_start_1,
             :time_window_end_1,
-            :take_over,
+            :duration,
             :time_window_start_2,
             :time_window_end_2
           )
@@ -162,7 +162,7 @@ class V01::Visits < Grape::API
 
           optional :time_window_start_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
           optional :time_window_end_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :take_over, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+          optional :duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
           optional :time_window_start_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
           optional :time_window_end_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
         end

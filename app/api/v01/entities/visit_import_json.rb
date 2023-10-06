@@ -21,7 +21,7 @@ class V01::Entities::VisitImportJson < V01::Entities::Visit
   end
 
   unexpose(:destination_id)
-  unexpose(:take_over_default)
+  unexpose(:duration_default)
   expose(:route, documentation: { type: String, desc: 'Route reference. If route reference is specified, a new planning will be created with a route using the specified reference' })
   expose(:ref_vehicle, documentation: { type: String, desc: 'Vehicle reference. If vehicle reference is specified, a new planning will be created with a route using the vehicle with specified reference' })
   expose(:active, documentation: { type: 'Boolean', desc: 'In order to specify is stop is active in planning or not' })

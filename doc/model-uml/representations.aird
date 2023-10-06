@@ -1974,7 +1974,7 @@
           </ownedStyle>
           <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.obeonetwork.dsl.uml2.design/description/uml2.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Class%20Diagram']/@defaultLayer/@containerMappings[name='CD_ReusedMappingForFeatures']/@subNodeMappings[name='CD_Property']"/>
         </ownedElements>
-        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_gHv60O33EeKlQaI670NIjw" name="take_over : Time [0..1]" tooltipText="take_over : Time [0..1]">
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_gHv60O33EeKlQaI670NIjw" name="visit_duration : Time [0..1]" tooltipText=" : Time [0..1]">
           <target xmi:type="uml:Property" href="Model.uml#_ysezkO3yEeKlQaI670NIjw"/>
           <semanticElements xmi:type="uml:Property" href="Model.uml#_ysezkO3yEeKlQaI670NIjw"/>
           <ownedStyle xmi:type="diagram:Square" xmi:id="_gHxwAO33EeKlQaI670NIjw" labelAlignment="LEFT">
@@ -3818,7 +3818,7 @@
           </ownedStyle>
           <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.obeonetwork.dsl.uml2.design/description/uml2.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Class%20Diagram']/@defaultLayer/@containerMappings[name='CD_ReusedMappingForFeatures']/@subNodeMappings[name='CD_Property']"/>
         </ownedElements>
-        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_IvLHQLwnEeSytckrctURsg" name="take_over : Time [0..1]">
+        <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_IvLHQLwnEeSytckrctURsg" name=" : Time [0..1]">
           <target xmi:type="uml:Property" href="Model.uml#_IuqJ4LwnEeSytckrctURsg"/>
           <semanticElements xmi:type="uml:Property" href="Model.uml#_IuqJ4LwnEeSytckrctURsg"/>
           <ownedStyle xmi:type="diagram:Square" xmi:id="_IvMVYLwnEeSytckrctURsg" labelAlignment="LEFT">

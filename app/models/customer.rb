@@ -55,8 +55,8 @@ class Customer < ApplicationRecord
   auto_strip_attributes :name, :print_header, :default_country, :print_barcode, :sms_template
 
   include TimeAttr
-  attribute :take_over, ScheduleType.new
-  time_attr :take_over
+  attribute :visit_duration, ScheduleType.new
+  time_attr :visit_duration
 
   attr_reader :layer_id # used for importation
 
@@ -399,7 +399,7 @@ class Customer < ApplicationRecord
   end
 
   def update_outdated
-    if optimization_force_start_changed? || take_over_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || @deliverable_units_updated
+    if optimization_force_start_changed? || visit_duration_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || @deliverable_units_updated
       plannings.each { |planning|
         planning.routes.each { |route|
           route.outdated = true

@@ -55,7 +55,7 @@ def destination_hash index
       time_window_end_1: "12:00",
       time_window_start_2: "14:00",
       time_window_end_2: "18:00",
-      take_over: "00:10:00"
+      : "00:10:00"
     }]
   }
 end
@@ -82,7 +82,7 @@ def destination_hash_with_route index
       time_window_end_1: "12:00",
       time_window_start_2: "14:00",
       time_window_end_2: "18:00",
-      take_over: "00:10:00",
+      : "00:10:00",
       route: "string",
       active: true
     }]

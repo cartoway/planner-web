@@ -11,7 +11,7 @@
       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_iPmTEOyBEeKRt-1z4jg3Ag" value="1"/>
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_iPm6IOyBEeKRt-1z4jg3Ag" value="1"/>
     </ownedAttribute>
-    <ownedAttribute xmi:id="_ysezkO3yEeKlQaI670NIjw" name="take_over">
+    <ownedAttribute xmi:id="_ysezkO3yEeKlQaI670NIjw" name="visit_duration">
       <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/XMLPrimitiveTypes.library.uml#Time"/>
       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_ysk6MO3yEeKlQaI670NIjw"/>
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_yslhQO3yEeKlQaI670NIjw" value="1"/>
@@ -783,7 +783,7 @@
       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_GFP0gO3yEeKlQaI670NIjw"/>
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_GFQbkO3yEeKlQaI670NIjw" value="1"/>
     </ownedAttribute>
-    <ownedAttribute xmi:id="_IuqJ4LwnEeSytckrctURsg" name="take_over">
+    <ownedAttribute xmi:id="_IuqJ4LwnEeSytckrctURsg" name="">
       <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/XMLPrimitiveTypes.library.uml#Time"/>
       <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_IuvpcLwnEeSytckrctURsg"/>
       <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_IuwQgLwnEeSytckrctURsg" value="1"/>

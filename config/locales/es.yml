@@ -135,7 +135,7 @@ es:
         enable_external_callback: Activar URL de recordatorio
         end_subscription: Fin de suscripción
         max_vehicles: Paquete
-        take_over: Duración de visita de los clientes
+        visit_duration: Duración de visita de los clientes
         destinations: Clientes
         router: Calculador de itinerario
         router_id: Calculador de itinerario
@@ -413,8 +413,8 @@ es:
       visit:
         ref: Referencia
         ref_small: Ref.
-        take_over: Duración de visita
-        take_over_small: Duración
+        duration: Duración de visita
+        duration_small: Duración
         time_window_start_1: Inicio de Franja horario 1
         time_window_start_1_small: Inicio 1
         time_window_end_1: Fin de Franja horario 1
@@ -434,8 +434,8 @@ es:
       visits:
         ref: Referencia
         ref_small: Ref.
-        take_over: Duración de visita
-        take_over_small: Duración
+        duration: Duración de visita
+        duration_small: Duración
         time_window_start_1: Inicio de Franja horario 1
         time_window_start_1_small: Inicio 1
         time_window_end_1: Fin de Franja horario 1
@@ -713,7 +713,7 @@ es:
       router_options_strict_restriction: Si no marcado el calculador intentara respetar
         las prohibiciones a lo mas cerca y pasara por encima la prohibición solo si
         no puede hacerlo de otra manera.
-      take_over_help: Duración de visita media por cliente
+      visit_duration_help: Duración de visita media por cliente
       optimization_time_help: La optimización se para por defecto automáticamente.
         Sin embargo puede precisar aquí un valor limite, por vehículo, que no se debe
         sobrepasar.
@@ -956,8 +956,8 @@ es:
       lng_format: numero de coma entre -180 y 180
       geocoding_accuracy: calidad geocodificacion
       geocoding_level: nivel geocodificacion
-      take_over: duración visita
-      take_over_desc: duración anticipada de la visita
+      duration: duración visita
+      duration_desc: duración anticipada de la visita
       quantity: Cantidad
       quantity1_1_desc: 'depreciado : utilizar mas bien  "cantidades".'
       quantity1_2_desc: 'depreciado : utilizar mas bien "cantidades".'
@@ -1298,8 +1298,8 @@ es:
         para anular.
       ref_help: Referencia libre. IMPORTANTE si no quiere sobrescribir sus visitas
         con importe/exporte en particular
-      take_over_default: Defecto
-      take_over_help: Si vacio utilisa el valor predeterminado
+      duration_default: Defecto
+      duration_help: Si vacio utilisa el valor predeterminado
       time_window_start_end_1: Franja horaria 1
       time_window_start_end_2: Franja horaria 2
       close_help: Sin tener en cuenta la duración de visita

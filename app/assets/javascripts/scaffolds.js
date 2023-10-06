@@ -107,7 +107,7 @@ $(document).on('ready page:load', function() {
 
   /**
    * @param {[capacity:, ​​​id:, ​​​label:, ​​​unitIcon:]} vehicleCapacities
-   * @param {[take_over:, quantities:[deliverable_unit_id:,​​​​​quantity:,​​​​​unit_icon:]]} stops
+   * @param {[:, quantities:[deliverable_unit_id:,​​​​​quantity:,​​​​​unit_icon:]]} stops
    * @param {[{ capacity:, id:, label:, quantity:, unit_icon:}]} controllerParamsQuantities
    * @param {boolean} withCapacity
    * @param {boolean} withDuration
@@ -202,7 +202,7 @@ $(document).on('ready page:load', function() {
             value: value
           };
         });
-        result.duration = result.duration + stop.take_over;
+        result.duration = result.duration + stop.duration;
       });
 
       result.quantities.forEach(function(quantity) {

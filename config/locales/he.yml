@@ -133,7 +133,7 @@ he:
         enable_external_callback: הפעל כתובת אתר
         end_subscription: סיים מנוי
         max_vehicles: מקסימום רכבים
-        take_over: משך השהייה
+        visit_duration: משך השהייה
         name: שם
         destinations: יעדים
         orange_user: Orange משתמש
@@ -408,8 +408,8 @@ he:
       visit:
         ref: הפניה
         ref_small: מס
-        take_over: משך הביקור
-        take_over_small: משך
+        duration: משך הביקור
+        duration_small: משך
         time_window_start_1: חלון זמן 1 פתוח
         time_window_start_1_small: לפתוח 1
         time_window_end_1: חלון זמן 1 סגור
@@ -669,7 +669,7 @@ he:
       router_options_height_range: ערכי גובה בין%{from} לבין%{to} מטרים
       router_options_width_range: ערכי רחב בין%{from} לבין%{to} מטרים
       router_options_length_range: ערכי אורך בין%{from} לבין%{to} מטרים
-      take_over_help: זמן ממוצע לחשבון
+      duration_help: זמן ממוצע לחשבון
       tomtom: TomTom WEBFLEET
       tomtom_help: מאפשר לשלוח תוכניות TomTom Pro עם WEBFLEET.
       teksat: איתורן
@@ -903,8 +903,8 @@ he:
       geocoding_level: רמת הגאוקודינג
       geocoding_level_desc: רמת הדיוק הגיע בעת המרת כתובת הרחוב של היעד לתוך קואורדינטות
         גיאוגרפיות, לידי ביטוי ברמות ידידותיות אנושיות.
-      take_over: משך הביקור
-      take_over_desc: משך הביקור
+      duration: משך הביקור
+      duration_desc: משך הביקור
       quantity: כמות
       quantity_desc: מספר יחידות להעברה.
       quantity1_1: כמות 1_1

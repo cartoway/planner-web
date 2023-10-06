@@ -380,7 +380,7 @@ const destinations_form = function(params, api) {
       $("div.form-group", fieldset).toggle(200);
     });
 
-    $('[name$=\\[take_over\\]]', parent).timeEntry({
+    $('[name$=\\[duration\\]]', parent).timeEntry({
       show24Hours: true,
       showSeconds: true,
       initialField: 1,
@@ -546,7 +546,7 @@ const destinations_import = function(params, api) {
 const destinations_index = function(params, api) {
   var default_city = params.default_city,
     default_country = params.default_country,
-    take_over_default = params.take_over_default,
+    duration_default = params.duration_default,
     url_click2call = params.url_click2call,
     enable_references = params.enable_references,
     enable_multi_visits = params.enable_multi_visits,
@@ -668,7 +668,7 @@ const destinations_index = function(params, api) {
       if (visit.time_window_end_2) {
         destination.visits[i].time_window_end_2 = visit.time_window_end_2.split(':').slice(0, 2).join(':');
       }
-      destination.visits[i].take_over_default = take_over_default;
+      destination.visits[i].duration_default = duration_default;
     });
 
     if (destination.phone_number) {
@@ -931,7 +931,7 @@ const destinations_index = function(params, api) {
         default_country: default_country,
         lat: center.lat,
         lng: center.lng,
-        take_over_default: take_over_default,
+        duration_default: duration_default,
         visits_attributes: [{}]
       };
       $.ajax({

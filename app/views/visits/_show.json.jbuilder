@@ -32,4 +32,4 @@ unless @visit.destination.customer.enable_orders
     json.unit_icon units[:unit_icon]
   end
 end
-json.duration = @visit.default_take_over_time_with_seconds
+json.duration = @visit.default_duration_time_with_seconds

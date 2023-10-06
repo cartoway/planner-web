@@ -81,8 +81,6 @@ class ImporterDestinations < ImporterBase
       time_window_end_2: {title: I18n.t('destinations.import_file.time_window_end_2'), desc: I18n.t('destinations.import_file.time_window_end_2_desc'), format: I18n.t('destinations.import_file.format.hour')},
       priority: {title: I18n.t('destinations.import_file.priority'), desc: I18n.t('destinations.import_file.priority_desc'), format: I18n.t('destinations.import_file.format.integer')},
       tags_visit: {title: I18n.t('destinations.import_file.tags_visit'), desc: I18n.t('destinations.import_file.tags_visit_desc'), format: I18n.t('destinations.import_file.tags_format')},
-      # Deals with deprecated take_over
-      take_over: {title: I18n.t('destinations.import_file.take_over'), desc: I18n.t('destinations.import_file.take_over_desc'), format: I18n.t('destinations.import_file.format.second'), required: I18n.t('destinations.import_file.format.deprecated')},
       duration: {title: I18n.t('destinations.import_file.duration'), desc: I18n.t('destinations.import_file.duration_desc'), format: I18n.t('destinations.import_file.format.hour')},
     }.merge(Hash[@customer.deliverable_units.flat_map{ |du|
       [["quantity#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity') + (du.label ? '[' + du.label + ']' : ''), desc: I18n.t('destinations.import_file.quantity_desc'), format: I18n.t('destinations.import_file.format.float')}],
@@ -270,7 +268,7 @@ class ImporterDestinations < ImporterBase
     row[:time_window_end_2] = row.delete(:time_window_end_2) if !row.key?(:time_window_end_2) && row.key?(:time_window_end_2)
 
     # Deals with deprecated take_over
-    row[:take_over] = row.delete(:duration) if !row.key?(:take_over) && row.key?(:duration)
+    row[:duration] = row.delete(:duration) if !row.key?(:duration) && row.key?(:duration)
 
     prepare_quantities row
     [:tags, :tags_visit].each{ |key| prepare_tags row, key }

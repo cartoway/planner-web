@@ -89,7 +89,7 @@ CREATE TABLE public.customers (
     enable_stop_status boolean DEFAULT false NOT NULL,
     router_options jsonb DEFAULT '{}'::jsonb NOT NULL,
     optimization_cost_waiting_time double precision,
-    take_over integer,
+    visit_duration integer,
     with_state boolean DEFAULT false,
     devices jsonb DEFAULT '{}'::jsonb NOT NULL,
     optimization_force_start boolean DEFAULT false NOT NULL,
@@ -1054,7 +1054,7 @@ CREATE TABLE public.visits (
     quantities public.hstore,
     time_window_start_1 integer,
     time_window_end_1 integer,
-    take_over integer,
+    duration integer,
     time_window_start_2 integer,
     time_window_end_2 integer,
     quantities_operations public.hstore,
@@ -2781,3 +2781,5 @@ INSERT INTO schema_migrations (version) VALUES ('20190107081835');
 INSERT INTO schema_migrations (version) VALUES ('20230506091330');
 
 INSERT INTO schema_migrations (version) VALUES ('20230506091331');
+
+INSERT INTO schema_migrations (version) VALUES ('20230506091332');

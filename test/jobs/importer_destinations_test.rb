@@ -208,7 +208,7 @@ class ImporterDestinationsTest < ActionController::TestCase
 
     stops = Planning.where(name: 'text').first.routes.find{ |route| route.ref == '1' }.stops
     assert_equal 'z', stops[1].visit.destination.ref
-    assert stops[1].visit.take_over
+    assert stops[1].visit.duration
     assert stops[1].active
     assert_equal 'x', stops[2].visit.destination.ref
     assert_not stops[2].active
@@ -346,7 +346,7 @@ class ImporterDestinationsTest < ActionController::TestCase
 
     stops = Planning.where(name: 'text').first.routes.find{ |route| route.ref == '1' }.stops
     assert_equal 'z', stops[1].visit.destination.ref
-    assert stops[1].visit.take_over
+    assert stops[1].visit.duration
     assert stops[1].active
     assert_equal 'x', stops[2].visit.destination.ref
     assert_not stops[2].active

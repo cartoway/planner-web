@@ -34,8 +34,8 @@ class Visit < ApplicationRecord
   attribute :time_window_end_1, ScheduleType.new
   attribute :time_window_start_2, ScheduleType.new
   attribute :time_window_end_2, ScheduleType.new
-  attribute :take_over, ScheduleType.new
-  time_attr :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :take_over
+  attribute :duration, ScheduleType.new
+  time_attr :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :duration
 
   validate :time_window_end_1_after_time_window_start_1
   validates :time_window_end_1, presence: true, if: ->(visit) { visit.time_window_start_2 || visit.time_window_end_2 }
@@ -121,12 +121,12 @@ class Visit < ApplicationRecord
     # end
   end
 
-  def default_take_over
-    take_over || destination.customer.take_over
+  def default_duration
+    duration || destination.customer.visit_duration
   end
 
-  def default_take_over_time_with_seconds
-    take_over_time_with_seconds || destination.customer.take_over_time_with_seconds
+  def default_duration_time_with_seconds
+    duration_time_with_seconds || destination.customer.visit_duration_time_with_seconds
   end
 
   def default_quantities
@@ -189,7 +189,7 @@ class Visit < ApplicationRecord
   end
 
   def update_outdated
-    if @tag_ids_changed || time_window_start_1_changed? || time_window_end_1_changed? || time_window_start_2_changed? || time_window_end_2_changed? || quantities_changed? || take_over_changed?
+    if @tag_ids_changed || time_window_start_1_changed? || time_window_end_1_changed? || time_window_start_2_changed? || time_window_end_2_changed? || quantities_changed? || duration_changed?
       outdated
     end
   end

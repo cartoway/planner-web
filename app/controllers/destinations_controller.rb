@@ -232,7 +232,7 @@ class DestinationsController < ApplicationController
       visits_attributes: [
         :id,
         :ref,
-        :take_over,
+        :duration,
         :time_window_start_1,
         :time_window_end_1,
         :time_window_start_2,

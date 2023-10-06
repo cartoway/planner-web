@@ -161,7 +161,7 @@ const customers_edit = function (params) {
     zIndexOffset: 1000
   });
 
-  $('#customer_take_over').timeEntry({
+  $('#customer_visit_duration').timeEntry({
     show24Hours: true,
     showSeconds: true,
     initialField: 1,
