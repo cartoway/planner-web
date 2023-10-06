@@ -21,12 +21,14 @@ task :test do
   Rake::Task['test'].invoke
 end
 
-begin
-  Rake::Task['test'].enhance do
-    if !ENV.key?('BRAKEMAN') || ENV['BRAKEMAN'] != 'false'
-      require 'brakeman'
-      Brakeman.run app_path: '.', print_report: true
-    end
-  end
-rescue Gem::LoadError
-end
+# # Disable brakeman as causin test issue with Ruby 2.6
+#
+# begin
+#   Rake::Task['test'].enhance do
+#     if !ENV.key?('BRAKEMAN') || ENV['BRAKEMAN'] != 'false'
+#       require 'brakeman'
+#       Brakeman.run app_path: '.', print_report: true
+#     end
+#   end
+# rescue Gem::LoadError
+# end
