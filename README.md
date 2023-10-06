@@ -282,3 +282,17 @@ docker-compose up -d db
 docker-compose exec --user postgres db psql -c "DROP DATABASE mapotempo;"
 docker-compose exec --user postgres db psql -c "DROP ROLE mapotempo;"
 ```
+
+## Tests in Docker
+
+Prepare for tests:
+```
+docker-compose exec --user postgres db psql -c "CREATE DATABASE test OWNER mapotempo;"
+RAILS_ENV=test docker-compose -f docker-compose.yml -f docker-compose-dev.yml  run web bundle exec rake i18n:js:export
+RAILS_ENV=test docker-compose -f docker-compose.yml -f docker-compose-dev.yml  run web bundle exec rake assets:precompile
+```
+
+Run tests:
+```
+RAILS_ENV=test docker-compose -f docker-compose.yml -f docker-compose-dev.yml run web rake test I18N=false COVERAGE=false
+```

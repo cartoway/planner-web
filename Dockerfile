@@ -25,7 +25,7 @@ ADD ./Gemfile /srv/app/
 ADD ./Gemfile.lock /srv/app/
 
 RUN bundle config git.allow_insecure true && \
-    bundle install --full-index --without test development
+    bundle install --full-index
 
 ADD . /srv/app/
 

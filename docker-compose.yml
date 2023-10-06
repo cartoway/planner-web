@@ -4,6 +4,7 @@ x-web: &web
   build: .
   image: planner-web:${CARTOROUTE_VERSION:-latest}
   environment:
+    RAILS_ENV: ${RAILS_ENV:-production}
     GEOCODER_URL: ${GEOCODER_URL:-http://localhost:8081/0.1}
     GEOCODER_API_KEY: ${GEOCODER_API_KEY:-demo}
     ROUTER_URL: ${ROUTER_URL:-http://localhost:8082/0.1}
@@ -11,7 +12,6 @@ x-web: &web
     OPTIMIZER_URL: ${OPTIMIZER_URL:-http://localhost:8083/0.1}
     OPTIMIZER_API_KEY: ${OPTIMIZER_API_KEY:-demo}
   volumes:
-    # - .:/srv/app
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/uploads:/srv/app/public/uploads
     - ./docker/postgres-run:/var/run/postgresql/
