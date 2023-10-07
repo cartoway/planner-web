@@ -83,7 +83,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     planning = plannings(:planning_four)
 
     assert_difference('Planning.count', 1) do
-      post '/api/0.1/plannings.json?api_key=testkey3', planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'and'})
+      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'and'}).to_json, CONTENT_TYPE: 'application/json'
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal 2, response['tag_ids'].size
@@ -97,7 +97,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
 
     assert_difference('Planning.count', 1) do
-      post '/api/0.1/plannings.json?api_key=testkey3', planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'or'})
+      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'or'}).to_json, CONTENT_TYPE: 'application/json'
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal 2, response['tag_ids'].size
@@ -210,7 +210,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
       unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
-      patch api("#{@planning.id}/automatic_insert"), { stop_ids: [unassigned_stop.id], out_of_zone: true }
+      patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], out_of_zone: true }.to_json, CONTENT_TYPE: 'application/json'
       if mode
         assert_equal 409, last_response.status, last_response.body
       else
@@ -229,7 +229,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
       last_stop = routes(:route_one_one).stops.select(&:position?).last
       last_stop.update! active: false
 
-      patch api("ref:#{@planning.ref}/automatic_insert"), { stop_ids: [last_stop.id], out_of_zone: true }
+      patch api("ref:#{@planning.ref}/automatic_insert"), nil, input: { stop_ids: [last_stop.id], out_of_zone: true }.to_json, CONTENT_TYPE: 'application/json'
       if mode
         assert_equal 409, last_response.status, last_response.body
       else
@@ -251,7 +251,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
 
     # 1. First insert with active_only = true
-    patch api("#{@planning.id}/automatic_insert"), { stop_ids: [unassigned_stop.id], out_of_zone: true, active_only: false }
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], out_of_zone: true, active_only: false }.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 204, last_response.status
     assert @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id) }
 
@@ -269,7 +269,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     unassigned_stop = @planning.reload.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
 
     # 4. Second insert with active_only = false
-    patch api("#{@planning.id}/automatic_insert"), { stop_ids: [unassigned_stop.id], out_of_zone: true, active_only: true }
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], out_of_zone: true, active_only: true }.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 204, last_response.status
     assert @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id) }
 
@@ -282,11 +282,11 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     customers(:customer_one).update(job_optimizer_id: nil)
     unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
 
-    patch api("#{@planning.id}/automatic_insert"), { stop_ids: [unassigned_stop.id], max_time: 50_000 }
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_time: 50_000 }.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 400, last_response.status
     assert_not @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id)}
 
-    patch api("#{@planning.id}/automatic_insert"), { stop_ids: [unassigned_stop.id], max_time: 100_000 }
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_time: 100_000 }.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 204, last_response.status
     assert @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id) }
   end
@@ -295,11 +295,11 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     customers(:customer_one).update(job_optimizer_id: nil)
     unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
 
-    patch api("#{@planning.id}/automatic_insert"), { stop_ids: [unassigned_stop.id], max_distance: 500}
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 500}.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 400, last_response.status
     assert_not @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id)}
 
-    patch api("#{@planning.id}/automatic_insert"), { stop_ids: [unassigned_stop.id], max_distance: 1_000}
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 1_000}.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 204, last_response.status
     assert @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id) }
   end
@@ -309,7 +309,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     Route.stub_any_instance(:compute, lambda{ |*a| raise }) do
       unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
       assert_no_difference('Stop.count') do
-        patch api("#{@planning.id}/automatic_insert"), { stop_ids: [unassigned_stop.id], out_of_zone: true }
+        patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], out_of_zone: true }.to_json, CONTENT_TYPE: 'application/json'
         assert_equal 500, last_response.status
         assert @planning.routes.reload.detect{ |route| !route.vehicle_usage }.stop_ids.include?(unassigned_stop.id)
       end

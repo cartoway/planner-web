@@ -62,7 +62,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
       assert_difference('Stop.count', 0) do
         assert_difference('Visit.count', 2) do
           @destination.name = 'new dest'
-          post api(), @destination.attributes.update({tag_ids: tags}).merge(visits: [{
+          post api(), nil, input: @destination.attributes.update({tag_ids: tags}).merge(visits: [{
             ref: 'v1',
             quantity1_1: 1,
             time_window_start_1: '08:00',
@@ -83,7 +83,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             duration: nil,
             route: '1',
             active: '1'
-          }])
+          }]).to_json, CONTENT_TYPE: 'application/json'
 
           assert last_response.created?, last_response.body
           assert_equal @destination.name, JSON.parse(last_response.body)['name']
@@ -135,7 +135,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
         assert_difference('Stop.count',
           @customer.plannings.select{ |p| p.tags_compatible?([tags(:tag_one), tags(:tag_two)]) }.size * 2 +
           2 + @customer.vehicle_usage_sets[1].vehicle_usages.select{ |v| v.default_rest_duration }.size) do
-          put api(), {
+          put api(), nil, input: {
             planning: {
               name: 'Hey',
               ref: 'Hop',
@@ -182,8 +182,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                 active: '1'
               }]
             }]
-          }.to_json,
-          'CONTENT_TYPE' => 'application/json'
+          }.to_json, CONTENT_TYPE: 'application/json'
           assert last_response.ok?, last_response.body
           assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
 
@@ -216,7 +215,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   test 'should create bulk from json with time exceeding one day' do
     assert_difference('Destination.count', 1) do
       assert_difference('Planning.count', 1) do
-        put api(), {
+        put api(), nil, input: {
           planning: {
             name: 'Hey',
             ref: 'Hop',
@@ -263,7 +262,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               active: '1'
             }]
           }]
-        }, as: :json
+        }.to_json, CONTENT_TYPE: 'application/json'
         assert last_response.ok?, last_response.body
 
         visits = JSON.parse(last_response.body)[0]['visits']
@@ -287,7 +286,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
         assert_difference('Stop.count',
           @customer.plannings.select{ |p| p.tags_compatible?([tags(:tag_one), tags(:tag_two)]) }.size * 2 +
           2 + vehicle_usage_sets(:vehicle_usage_set_one).vehicle_usages.select{ |v| v.default_rest_duration }.size) do
-          put api(), {
+          put api(), nil, input: {
             planning: {
               name: 'Hey',
               ref: 'Hop',
@@ -333,8 +332,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                 active: true
               }]
             }]
-          }.to_json,
-          'CONTENT_TYPE' => 'application/json'
+          }.to_json, CONTENT_TYPE: 'application/json'
           assert last_response.ok?, last_response.body
           assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
 
@@ -349,7 +347,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   end
 
   test 'should save route after import' do
-    put api(), {
+    put api(), nil, input: {
       planning: {
         ref: 'r1',
         name: 'Hey',
@@ -396,8 +394,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
           active: true
         }]
       }]
-    }.to_json,
-    'CONTENT_TYPE' => 'application/json'
+    }.to_json, CONTENT_TYPE: 'application/json'
     assert last_response.ok?, last_response.body
 
     planning = Planning.last
@@ -464,7 +461,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
         assert_difference('Stop.count',
           @customer.plannings.select{ |p| p.tags_compatible?([tags(:tag_one), tags(:tag_two)]) }.size * 2 +
           2 + @customer.vehicle_usage_sets[0].vehicle_usages.select{ |v| v.active && v.default_rest_duration }.size) do
-          put api(), {destinations: [{
+          put api(), nil, input: {destinations: [{
             name: 'Nouveau client',
             street: nil,
             postalcode: nil,
@@ -502,8 +499,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               route: '1',
               active: '1'
             }]
-          }]}.to_json,
-          'CONTENT_TYPE' => 'application/json'
+          }]}.to_json, CONTENT_TYPE: 'application/json'
           assert last_response.ok?, last_response.body
           assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
 
@@ -518,7 +514,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert_difference('Destination.count', 1) do
       assert_no_difference('Visit.count') do
         assert_no_difference('Planning.count') do
-          put api(), {destinations: [{
+          put api(), nil, input: {destinations: [{
             name: 'Nouveau client',
             street: nil,
             postalcode: nil,
@@ -534,8 +530,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             geocoding_accuracy: nil,
             foo: 'bar',
             visits: []
-          }]}.to_json,
-          'CONTENT_TYPE' => 'application/json'
+          }]}.to_json, CONTENT_TYPE: 'application/json'
           assert last_response.ok?, last_response.body
           assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
 
@@ -565,7 +560,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert_difference('Destination.count', 1) do
       assert_difference('Visit.count', 1) do
         assert_difference('Planning.count', 1) do
-          put api(), {
+          put api(), nil, input: {
             planning: {
               name: 'Hey'
             },
@@ -592,8 +587,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                 active: '1'
               }]
             }]
-          }.to_json,
-          'CONTENT_TYPE' => 'application/json'
+          }.to_json, CONTENT_TYPE: 'application/json'
           assert last_response.ok?, last_response.body
           assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
 
@@ -608,7 +602,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert_no_difference('Destination.count') do
       assert_no_difference('Visit.count') do
         assert_no_difference('Stop.count') do
-          put api(), {destinations: [{
+          put api(), nil, input: {destinations: [{
             name: 'N1',
             city: 'Tule',
             lat: 43.5710885456786,
@@ -639,8 +633,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               route: '4',
               active: '1'
             }]
-          }]}.to_json,
-          'CONTENT_TYPE' => 'application/json'
+          }]}.to_json, CONTENT_TYPE: 'application/json'
           assert !last_response.ok?, last_response.body
           assert_not_nil JSON.parse(last_response.body)['error'], 'Bad response: ' + last_response.body.inspect
         end
@@ -720,7 +713,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
       []
     ].each do |tags|
       @destination.name = 'new name'
-      put api(@destination.id), @destination.attributes.merge(tag_ids: tags, visits: [ref: 'api', quantity: 5]).to_json, 'CONTENT_TYPE' => 'application/json'
+      put api(@destination.id), nil, input: @destination.attributes.merge(tag_ids: tags, visits: [ref: 'api', quantity: 5]).to_json, CONTENT_TYPE: 'application/json'
       assert last_response.ok?, last_response.body
       destination = JSON.parse(last_response.body)
       assert_equal @destination.name, destination['name']

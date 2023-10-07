@@ -201,10 +201,11 @@ class V01::Vehicles < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
       use :params_from_entity, entity: V01::Entities::Vehicle.documentation.except(
           :id,
-          :router_options
+          :router_options,
+          :capacities,
       )
 
-      optional :quantities, type: Array do
+      optional :capacities, type: Array do
         requires :deliverable_unit_id, type: Integer
         requires :quantity, type: Float
       end
@@ -250,7 +251,8 @@ class V01::Vehicles < Grape::API
       use :params_from_entity, entity: V01::Entities::Vehicle.documentation.except(
           :id,
           :router_options,
-          :tag_ids
+          :tag_ids,
+          :capacities,
       ).deep_merge(
         name: { required: true }
       ).deep_merge(V01::Entities::VehicleUsage.documentation.except(

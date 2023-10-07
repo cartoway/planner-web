@@ -68,7 +68,7 @@ class V01::VehicleUsagesTest < ActiveSupport::TestCase
       [tags(:tag_one).id, tags(:tag_two).id],
       tags_str
     ].each { |tags|
-      put api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id), tag_ids: tags
+      put api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id), nil, input: {tag_ids: tags}.to_json, CONTENT_TYPE: 'application/json'
       assert last_response.ok?, last_response.body
 
       get api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id)

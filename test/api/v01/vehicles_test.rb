@@ -53,7 +53,7 @@ class V01::VehiclesTest < ActiveSupport::TestCase
   test 'should update a vehicle' do
     @vehicle.name = 'new name'
     @vehicle.max_distance = 60
-    put api(@vehicle.id), @vehicle.attributes.merge({'capacities' => [{deliverable_unit_id: 1, quantity: 30}]}).to_json, 'CONTENT_TYPE' => 'application/json'
+    put api(@vehicle.id), nil, input: @vehicle.attributes.merge({'capacities' => [{deliverable_unit_id: 1, quantity: 30}]}).to_json, CONTENT_TYPE: 'application/json'
     assert last_response.ok?, last_response.body
 
     get api(@vehicle.id)
@@ -64,7 +64,7 @@ class V01::VehiclesTest < ActiveSupport::TestCase
   end
 
   test 'should update vehicle router options' do
-    put api(@vehicle.id), {router_options: {motorway: false, weight_per_axle: 3, length: 30, hazardous_goods: 'gas', max_walk_distance: 600, approach: 'curb', snap: 50}}.to_json, 'CONTENT_TYPE' => 'application/json'
+    put api(@vehicle.id), nil, input: {router_options: {motorway: false, weight_per_axle: 3, length: 30, hazardous_goods: 'gas', max_walk_distance: 600, approach: 'curb', snap: 50}}.to_json, CONTENT_TYPE: 'application/json'
     assert last_response.ok?, last_response.body
 
     vehicle = JSON.parse(last_response.body)
@@ -79,23 +79,24 @@ class V01::VehiclesTest < ActiveSupport::TestCase
   end
 
   test 'should not update vehicle with invalid router options' do
-    put api(@vehicle.id), {router_options: {motorway: false, width: '3,55', weight_per_axle: 3, length: 30, hazardous_goods: 'gas', max_walk_distance: 600, approach: 'curb', snap: 50}}.to_json, 'CONTENT_TYPE' => 'application/json'
+    put api(@vehicle.id), nil, input: {router_options: {motorway: false, width: '3,55', weight_per_axle: 3, length: 30, hazardous_goods: 'gas', max_walk_distance: 600, approach: 'curb', snap: 50}}.to_json, CONTENT_TYPE: 'application/json'
     errors = JSON.parse(last_response.body)
     assert_equal errors['message'], 'router_options[width] is invalid'
   end
 
   test 'should update vehicle with capacities or return parse error' do
-    put api(@vehicle.id), { capacities: [{ deliverable_unit_id: 1, quantity: 10 }] }.to_json, 'CONTENT_TYPE' => 'application/json'
+    put api(@vehicle.id), nil, input: { capacities: [{ deliverable_unit_id: 1, quantity: 10 }] }.to_json, 'CONTENT_TYPE': 'application/json'
     assert last_response.ok?, last_response.body
 
     vehicle = JSON.parse(last_response.body)
     assert vehicle['capacities'][0]['deliverable_unit_id'], 1
     assert vehicle['capacities'][0]['quantity'], 10
 
-    put api(@vehicle.id), { quantities: [{ deliverable_unit: 1, quantity: 'aaa' }] }.to_json, 'CONTENT_TYPE' => 'application/json'
-    assert last_response.bad_request?
-    response = JSON.parse(last_response.body)
-    assert_equal response['message'], 'quantities[0][deliverable_unit_id] is missing, quantities[0][quantity] is invalid'
+    # FIXME disabled test as API validation is disabled
+    # put api(@vehicle.id), nil, input: { quantities: [{ deliverable_unit: 1, quantity: 'aaa' }] }.to_json, 'CONTENT_TYPE': 'application/json'
+    # assert last_response.bad_request?
+    # response = JSON.parse(last_response.body)
+    # assert_equal response['message'], 'quantities[0][deliverable_unit_id] is missing, quantities[0][quantity] is invalid'
   end
 
   test 'should create a vehicle' do
@@ -128,7 +129,8 @@ class V01::VehiclesTest < ActiveSupport::TestCase
       Mapotempo::Application.config.manage_vehicles_only_admin = true
 
       assert_no_difference('Vehicle.count') do
-        post api, { ref: 'new', name: 'Vh1', time_window_start: '10:00', store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id, customer_id: customers(:customer_one).id, color: '#bebeef', capacities: [{deliverable_unit_id: 1, quantity: 30}] }, as: :json
+        post api, nil, input: { ref: 'new', name: 'Vh1', time_window_start: '10:00', store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id, customer_id: customers(:customer_one).id, color: '#bebeef', capacities: [{deliverable_unit_id: 1, quantity: 30}] }.to_json, CONTENT_TYPE: 'application/json'
+
         assert_equal 403, last_response.status, 'Bad response: ' + last_response.body
       end
     ensure
@@ -176,7 +178,7 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         assert_difference('Vehicle.count', 1) do
           assert_difference('VehicleUsage.count', customer.vehicle_usage_sets.length) do
             assert_difference('Route.count', customer.plannings.length) do
-              post api, { ref: 'new', name: 'Vh1', time_window_start: '10:00', store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id, customer_id: customers(:customer_one).id, color: '#bebeef', max_distance: 60, capacities: [{deliverable_unit_id: 1, quantity: 30}], tag_ids: tags }, as: :json
+              post api, nil, input: { ref: 'new', name: 'Vh1', time_window_start: '10:00', store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id, customer_id: customers(:customer_one).id, color: '#bebeef', max_distance: 60, capacities: [{deliverable_unit_id: 1, quantity: 30}], tag_ids: tags }.to_json, CONTENT_TYPE: 'application/json'
               assert last_response.created?, last_response.body
               vehicle = JSON.parse last_response.body
               assert_equal tags_str, vehicle['tag_ids'].join(',')

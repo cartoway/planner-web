@@ -106,7 +106,9 @@ class V01::Stores < Grape::API
       success: V01::Status.success(:code_200, V01::Entities::Store),
       failure: V01::Status.failures(is_array: true, add: [:code_422])
     params do
-      use :params_from_entity, entity: V01::Entities::StoresImport.documentation
+      use :params_from_entity, entity: V01::Entities::StoresImport.documentation.except(:stores)
+      # FIXME Should be from StoresImport, but does not work.
+      optional :stores, Array[type: V01::Entities::Store]
     end
     put do
       import = if params[:stores]
