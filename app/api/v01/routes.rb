@@ -55,9 +55,6 @@ class V01::Routes < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         put ':id' do
-          params[:geojson] = params[:with_geojson]
-          params.delete(:with_geojson)
-
           get_route.update! route_params
           get_route.compute && get_route.save!
           present get_route, with: V01::Entities::RouteProperties
@@ -74,15 +71,12 @@ class V01::Routes < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         patch ':id/active/:active' do
-          params[:geojson] = params[:with_geojson]
-          params.delete(:with_geojson)
-
           raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
 
           Stop.includes_destinations.scoping do
             get_route.active(params[:active].to_s.to_sym) && get_route.compute
             get_route.save!
-            present get_route, with: V01::Entities::Route, geojson: params[:geojson] || params[:with_geojson]
+            present get_route, with: V01::Entities::Route, geojson: params[:with_geojson]
           end
         end
 
@@ -131,9 +125,6 @@ class V01::Routes < Grape::API
           optional :ignore_overload_multipliers, type: String, desc: "Deliverable Unit id and whether or not it should be ignored : {'0'=>{'unit_id'=>'7', 'ignore'=>'true'}}"
         end
         patch ':id/optimize' do
-          params[:geojson] = params[:with_geojson]
-          params.delete(:with_geojson)
-
           begin
             raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
@@ -143,7 +134,7 @@ class V01::Routes < Grape::API
               else
                 get_route.planning.customer.save!
                 if params[:details]
-                  present get_route, with: V01::Entities::Route, geojson: params[:geojson] || params[:with_geojson]
+                  present get_route, with: V01::Entities::Route, geojson: params[:with_geojson]
                 else
                   status 204
                 end
@@ -201,13 +192,10 @@ class V01::Routes < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         get ':id' do
-          params[:geojson] = params[:with_geojson]
-          params.delete(:with_geojson)
-
           planning = current_customer.plannings.find_by! ParseIdsRefs.read(params[:planning_id])
           vehicle = current_customer.vehicles.find_by! ParseIdsRefs.read(params[:id])
           route = planning.routes.find{ |route| route.vehicle_usage_id && route.vehicle_usage.vehicle == vehicle }
-          present route, with: V01::Entities::Route, geojson: params[:geojson] || params[:with_geojson]
+          present route, with: V01::Entities::Route, geojson: params[:with_geojson]
         end
       end
     end

@@ -40,7 +40,7 @@ class V01::RoutesGetTest < ActiveSupport::TestCase
     assert geojson['features'][0]['geometry']['coordinates']
     assert_nil geojson['features'][0]['geometry']['polylines']
 
-    get api("/plannings/#{@route.planning_id}/routes.geojson", api_key: @user.api_key, ids: [@route.id].join(''), geojson: :polyline)
+    get api("/plannings/#{@route.planning_id}/routes.geojson", api_key: @user.api_key, ids: [@route.id].join(''), with_geojson: :polyline)
     assert last_response.ok?, last_response.body
     geojson = JSON.parse(last_response.body)
     assert geojson['features'].size > 0
@@ -49,7 +49,7 @@ class V01::RoutesGetTest < ActiveSupport::TestCase
 
     n_features = geojson['features'].size
 
-    get api("/plannings/#{@route.planning_id}/routes.geojson", api_key: @user.api_key, ids: [@route.id].join(''), geojson: :polyline, stores: true)
+    get api("/plannings/#{@route.planning_id}/routes.geojson", api_key: @user.api_key, ids: [@route.id].join(''), with_geojson: :polyline, stores: true)
     assert last_response.ok?, last_response.body
     geojson = JSON.parse(last_response.body)
     assert_equal n_features + 1, geojson['features'].size
@@ -63,7 +63,7 @@ class V01::RoutesGetTest < ActiveSupport::TestCase
     assert geojson['features'][0]['geometry']['coordinates']
     assert_nil geojson['features'][0]['geometry']['polylines']
 
-    get api("/plannings/#{@route.planning_id}/routes/#{@route.id}.geojson", api_key: @user.api_key, geojson: :polyline)
+    get api("/plannings/#{@route.planning_id}/routes/#{@route.id}.geojson", api_key: @user.api_key, with_geojson: :polyline)
     assert last_response.ok?, last_response.body
     geojson = JSON.parse(last_response.body)
     assert geojson['features'].size > 0

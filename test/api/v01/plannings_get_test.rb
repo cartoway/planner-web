@@ -84,7 +84,7 @@ class V01::PlanningsGetTest < ActiveSupport::TestCase
     assert geojson['features'][0]['geometry']['coordinates']
     assert_nil geojson['features'][0]['geometry']['polylines']
 
-    get api("/plannings/#{@planning.id}.geojson", api_key: @user.api_key, geojson: :polyline)
+    get api("/plannings/#{@planning.id}.geojson", api_key: @user.api_key, with_geojson: :polyline)
     assert last_response.ok?, last_response.body
     geojson = JSON.parse(last_response.body)
     assert geojson['features'].size > 0

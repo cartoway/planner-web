@@ -63,9 +63,6 @@ class V01::PlanningsGet < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     get do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       plannings = current_customer.plannings
 
       plannings = plannings.where(active: params[:active]) unless params[:active].nil?
@@ -93,7 +90,7 @@ class V01::PlanningsGet < Grape::API
           plannings_calendar(plannings).to_ical
         end
       else
-        present plannings, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+        present plannings, with: V01::Entities::Planning, geojson: params[:with_geojson]
       end
     end
 
@@ -110,9 +107,6 @@ class V01::PlanningsGet < Grape::API
       optional :stores, type: Boolean, default: false, desc: 'Include the stores in geojson output.'
     end
     get ':id' do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
       if env['api.format'] == :ics
         if params.key?(:email)
@@ -126,9 +120,9 @@ class V01::PlanningsGet < Grape::API
         planning.to_geojson(
           params[:stores] || params[:with_stores],
           true,
-          if params[:geojson] == 'polyline' || params[:with_geojson] == :polyline
+          if params[:with_geojson] == :polyline
             :polyline
-          elsif params[:geojson] == 'point' || params[:with_geojson] == :point
+          elsif params[:with_geojson] == :point
             false
           else
             true
@@ -136,7 +130,7 @@ class V01::PlanningsGet < Grape::API
           params[:quantities] || params[:with_quantities]
         )
       else
-        present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+        present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
       end
     end
   end

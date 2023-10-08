@@ -50,14 +50,11 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     post do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       planning = current_customer.plannings.build(planning_params)
       planning.default_routes
       planning.compute
       planning.save_import!
-      present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+      present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
     end
 
     desc 'Update planning.',
@@ -71,9 +68,6 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     put ':id' do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
       planning.update! planning_params
 
@@ -85,7 +79,7 @@ class V01::Plannings < Grape::API
         end
       end
 
-      present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+      present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
     end
 
     desc 'Delete planning.',
@@ -130,16 +124,13 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     get ':id/refresh' do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       Route.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
         planning.compute
         planning.save!
-        present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+        present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
       end
     end
 
@@ -158,9 +149,6 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     patch ':id/switch' do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       Stop.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
@@ -170,7 +158,7 @@ class V01::Plannings < Grape::API
         Planning.transaction do
           if route && vehicle_usage && planning.switch(route, vehicle_usage) && planning.save! && planning.compute && planning.save!
             if params[:details] || params[:with_details]
-              present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+              present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
             else
               status 204
             end
@@ -232,9 +220,6 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     get ':id/apply_zonings' do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       Route.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
@@ -244,7 +229,7 @@ class V01::Plannings < Grape::API
         planning.compute
         planning.save!
         if params[:details] || params[:with_details]
-          present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+          present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
         else
           status 204
         end
@@ -269,9 +254,6 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     get ':id/optimize' do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       Route.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if planning.customer.job_optimizer
@@ -283,7 +265,7 @@ class V01::Plannings < Grape::API
           error! V01::Status.code_response(:code_304), 304
         end
         if params[:details] || params[:with_details]
-          present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+          present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
         else
           status 204
         end
@@ -299,14 +281,11 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     patch ':id/duplicate' do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       Route.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         planning = planning.duplicate
         planning.save! validate: Mapotempo::Application.config.validate_during_duplication
-        present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+        present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
       end
     end
 
@@ -322,9 +301,6 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     patch ':id/order_array' do
-      params[:geojson] = params[:with_geojson]
-      params.delete(:with_geojson)
-
       Route.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
@@ -333,7 +309,7 @@ class V01::Plannings < Grape::API
         shift = Integer(params[:shift])
         planning.apply_orders(order_array, shift)
         planning.save!
-        present planning, with: V01::Entities::Planning, geojson: params[:geojson] || params[:with_geojson]
+        present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
       end
     end
 
