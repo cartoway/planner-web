@@ -149,7 +149,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   test 'should force recompute the planning after parameter update' do
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
-      get api("#{@planning.id}/refresh")
+      patch api("#{@planning.id}/refresh")
       if mode
         assert_equal 409, last_response.status, last_response.body
       else
