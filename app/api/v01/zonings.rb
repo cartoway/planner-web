@@ -339,6 +339,27 @@ class V01::Zonings < Grape::API
       present zoning, with: V01::Entities::Zoning
     end
 
+    desc 'Fetch the destinations by zonning.',
+      detail: 'Fetch the destinations by zonning.',
+      nickname: 'destinationsByZonning',
+      is_array: true,
+      http_codes: [
+        V01::Status.success(:code_200, V01::Entities::ZoningDestinations),
+        V01::Status.success(:code_204)
+      ].concat(V01::Status.failures)
+    params do
+      requires :id, type: Integer
+    end
+    get ':id/destinations' do
+      zoning = current_customer.zonings.find(params[:id])
+
+      zones_destinations = zoning.apply(current_customer.visits).select{ |zone, visits| !zone.nil? }.collect{ |zone, visits|
+        OpenStruct.new(zone.attributes.merge(destinations: visits.collect(&:destination).uniq))
+      }
+      zoning_destinations = OpenStruct.new(zoning.attributes.merge(zones: zones_destinations))
+      present zoning_destinations, with: V01::Entities::ZoningDestinations
+    end
+
     desc 'Find the zone where a point belongs to.',
       detail: 'Find the closest zone for the specified coordinates.',
       nickname: 'polygonByPoint',

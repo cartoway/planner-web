@@ -148,6 +148,15 @@ class V01::ZoningsTest < ActiveSupport::TestCase
     }
   end
 
+  test 'should return destinations by zone' do
+    get api("#{@zoning.id}/destinations")
+    assert last_response.ok?, last_response.body
+    zoning_destinations = JSON.parse(last_response.body)
+    assert_not_nil zoning_destinations
+    assert_equal @zoning.id, zoning_destinations['id']
+    assert_equal 1, zoning_destinations['zones'][0]['destinations'].size
+  end
+
   test 'should return if a point is inside a polygone' do
     # Check for coordinates inside zone
     get api("#{@zoning.id}/polygon_by_point", 'lat' => 49.23123, 'lng' => -0.335083)
