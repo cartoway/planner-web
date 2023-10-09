@@ -74,9 +74,9 @@ class V01::CustomerTest < ActiveSupport::TestCase
     assert_equal 'user_abcd', customer_response[:devices][:tomtom][:user], last_response.body
 
     # FIXME: replace each assertion by one which checks if hash is included in another
-    assert_equal '10', customer_response[:router_options][:weight]
-    assert_equal 'true', customer_response[:router_options][:motorway]
-    assert_equal '2', customer_response[:router_options][:trailers]
+    assert_equal 10, customer_response[:router_options][:weight]
+    assert_equal true, customer_response[:router_options][:motorway]
+    assert_equal 2, customer_response[:router_options][:trailers]
     assert_equal 'gas', customer_response[:router_options][:hazardous_goods]
 
     assert_equal 3, customer_response[:optimization_minimal_time]

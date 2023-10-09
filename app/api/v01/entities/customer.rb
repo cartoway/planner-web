@@ -23,6 +23,7 @@ class V01::Entities::Customer < Grape::Entity
 
   expose(:id, documentation: { type: Integer })
   expose(:end_subscription, documentation: { type: Date, desc: EDIT_ONLY_ADMIN })
+  expose(:max_vehicles, documentation: { type: Integer, desc: EDIT_ONLY_ADMIN })
 
   # Default
   expose(:store_ids, documentation: { type: Integer, is_array: true })
@@ -50,6 +51,7 @@ class V01::Entities::Customer < Grape::Entity
   expose(:optimization_max_split_size, documentation: { type: Integer, desc: 'Maximum number of visits to split problem', default: Mapotempo::Application.config.optimize_max_split_size })
   expose(:optimization_cluster_size, documentation: { type: Integer, desc: 'Time in seconds to group near visits', default: Mapotempo::Application.config.optimize_cluster_size })
   expose(:optimization_time, documentation: { type: Float, desc: 'Maximum optimization time (by vehicle)', default: Mapotempo::Application.config.optimize_time })
+  expose(:optimization_minimal_time, documentation: { type: Float, desc: 'Minimum optimization time (by vehicle)', default: Mapotempo::Application.config.optimize_minimal_time })
   expose(:optimization_stop_soft_upper_bound, documentation: { type: Float, desc: 'Stops delay coefficient, 0 to avoid delay', default: Mapotempo::Application.config.optimize_stop_soft_upper_bound })
   expose(:optimization_vehicle_soft_upper_bound, documentation: { type: Float, desc: 'Vehicles delay coefficient, 0 to avoid delay', default: Mapotempo::Application.config.optimize_vehicle_soft_upper_bound })
   expose(:optimization_cost_waiting_time, documentation: { type: Float, desc: 'Coefficient to manage waiting time', default: Mapotempo::Application.config.optimize_cost_waiting_time })
