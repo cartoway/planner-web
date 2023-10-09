@@ -32,12 +32,6 @@ class V01::Customers < Grape::API
       p[:devices] = p[:devices] ? JSON.parse(p[:devices], symbolize_names: true) : {}
       p[:devices] = customer[:devices].deep_merge(p[:devices]) if customer && customer[:devices].size > 0
 
-      # Rename parameter
-      if p[:visit_duration]
-        p[:visit_duration] = p[:visit_duration]
-        p.delete(:visit_duration)
-      end
-
       if @current_user.admin?
         p.permit(
           :reseller_id,
