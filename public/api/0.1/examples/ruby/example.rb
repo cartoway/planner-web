@@ -22,7 +22,6 @@ require 'csv'
 require 'json'
 
 API_KEY = '!!!your_secret_api_key!!!'
-# URL = 'http://app.beta.mapotempo.com'
 URL = 'http://0.0.0.0:3000'
 
 def destinations_url

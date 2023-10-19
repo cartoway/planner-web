@@ -1,6 +1,5 @@
 <?php
 $api_key = '!!!your_secret_api_key!!!';
-// $url = 'https://app.mapotempo.com';
 $url = 'http://localhost:3000'
 
 // EXAMPLE 1

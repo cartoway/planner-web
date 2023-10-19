@@ -49,10 +49,10 @@ class ActiveSupport::TestCase
     }.to_return(File.new(File.expand_path('../', __FILE__) + '/fixtures/gpp3-wxs.ign.fr/LocationUtilityService.xml').read)
 
     @stub_GeocodeMapotempo = stub_request(:get, %r{/0.1/geocode.json}).with(:query => hash_including({})).
-      to_return(File.new(File.expand_path('../', __FILE__) + '/fixtures/geocode.mapotempo.com/geocode.json').read)
+      to_return(File.new(File.expand_path('../', __FILE__) + '/fixtures/geocoder/geocode.json').read)
 
     @stub_GeocodeComplete = stub_request(:patch, %r{/0.1/geocode.json}).with(:query => hash_including({})).
-    to_return(File.new(File.expand_path('../', __FILE__) + '/fixtures/geocode.mapotempo.com/geocode_complete.json').read)
+    to_return(File.new(File.expand_path('../', __FILE__) + '/fixtures/geocoder/geocode_complete.json').read)
 
     @stub_Analytics = stub_request(:post, %r{analytics}).to_return(status: 200)
 

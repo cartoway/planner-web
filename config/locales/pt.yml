@@ -699,24 +699,24 @@
         'name_help': 'Marca do revendedor'
         'welcome_url_help': 'Endereço da página web html incluído como  "iframe" na
           página de boas-vindas. Poderá utilizar "{LG}" o qual será substituído  pela
-          língua como « en », « fr » (ie: https://www.mapotempo.com/{LG}/app-news).'
+          língua como « en », « fr » (ie: https://cartoroute.com/{LG}/app-news).'
         'help_url_help': 'Endereço da página web da ajuda. Poderá utilizar "{LG}"
-          o qual será substituído  pela língua como « en », « fr » (ie: https://www.mapotempo.com/{LG}/help-center).'
+          o qual será substituído  pela língua como « en », « fr » (ie: https://cartoroute.com/{LG}/help-center).'
         'contact_url_help': 'Endereço da página web com o formulário de contacto.
           Poderá utilizar "{LG}" o qual será substituído  pela língua como « en »,
-          « fr » (ie: https://www.mapotempo.com/{LG}/contact-support/).'
+          « fr » (ie: https://cartoroute.com/{LG}/contact-support/).'
         'logo_large_help': 'Logo de página inteira redimensionável, preferencialmente
           em formato SVG ou, alternativamente, em PNG.'
         'logo_small_help': 'Logo do menu, 150x40 pixels em SVG ou PNG.'
         'favicon_help': 'Icon do website , 16x16 pixels em formato PNG ou ICO.'
         'website_url_help': 'Endereço do website. Poderá utilizar "{LG}" o qual será
-          substituído pela língua como « en », « fr » (ie: https://www.mapotempo.com/{LG}/).'
+          substituído pela língua como « en », « fr » (ie: https://cartoroute.com/{LG}/).'
         'protocol_url_http': 'HTTP'
         'protocol_url_https': 'HTTPS'
         'application_name_help': 'Sítio Web do revendedor'
         'subscription_url_help': 'Endereço da página web contendo o formulário de
           ubscrição para uma conta de teste. Poderá utilizar "{LG}" o qual será substituído  pela
-          língua como « en », « fr » (ie: https://www.mapotempo.com/{LG}/mapotempo-web-subscription-request).'
+          língua como « en », « fr » (ie: https://cartoroute.com/{LG}/mapotempo-web-subscription-request).'
         'facebook_url_help': 'Link do Facebook do revendedor'
         'twitter_url_help': 'Link do Twitter do revendedor'
         'linkedin_url_help': 'Link do Linkedin do revendedor'

@@ -686,11 +686,11 @@ de:
         name_help: Markenname des Resellers
         application_name_help: Website-Name des Resellers
         sms_api_key_help: API-Schlüssel, um SMS senden zu können
-        website_url_help: 'Adresse der Website. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://www.mapotempo.com/{LG}/).'
-        welcome_url_help: 'Die Adresse der Internetseite wurde als HTML als "iframe" auf der Startseite eingefügt. "{LG}" kann durch einen Sprachcode wie "en", "fr" usw. ersetzt werden (z. B.: https://www.mapotempo.com/{LG}/app-news).'
-        help_url_help: 'Adresse der Internetseite mit Hilfeinhalt. Es kann "{LG}" verwendet werden, das durch einen Sprachcode wie beispielsweise "en", "fr" usw. ersetzt wird (z. B.: https://www.mapotempo.com/{LG}/help-center).'
-        contact_url_help: 'Adresse der Internetseite mit Kontaktformular. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://www.mapotempo.com/{LG}/contact-support/).'
-        subscription_url_help: 'Adresse der Internetseite mit Abonnementinhalten für einen Testkunden. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://www.mapotempo.com/{LG}/mapotempo-web-subscription-request).'
+        website_url_help: 'Adresse der Website. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoroute.com/{LG}/).'
+        welcome_url_help: 'Die Adresse der Internetseite wurde als HTML als "iframe" auf der Startseite eingefügt. "{LG}" kann durch einen Sprachcode wie "en", "fr" usw. ersetzt werden (z. B.: https://cartoroute.com/{LG}/app-news).'
+        help_url_help: 'Adresse der Internetseite mit Hilfeinhalt. Es kann "{LG}" verwendet werden, das durch einen Sprachcode wie beispielsweise "en", "fr" usw. ersetzt wird (z. B.: https://cartoroute.com/{LG}/help-center).'
+        contact_url_help: 'Adresse der Internetseite mit Kontaktformular. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoroute.com/{LG}/contact-support/).'
+        subscription_url_help: 'Adresse der Internetseite mit Abonnementinhalten für einen Testkunden. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoroute.com/{LG}/mapotempo-web-subscription-request).'
         audience_url_help: 'Adresse der Internetseite, die das Zielgruppen-Dashboard enthält. Es kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.mapotempo.com/public/dashboard/123456789?id={ID})'
         behavior_url_help: 'Adresse der Internetseite, die das Verhaltens-Dashboard enthält. Es kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.mapotempo.com/public/dashboard/123456789?id={ID})'
         customer_audience_url_help: 'Adresse der Internetseite, die das Zielgruppen-Dashboard für einen Kunden enthält. Es kann "{ID}" verwendet werden, das durch die Kundennummer ersetzt wird (z.B.: https://analytics.mapotempo.com/public/dashboard/123456789?id={ID}).'

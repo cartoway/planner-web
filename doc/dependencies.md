@@ -628,7 +628,7 @@ Gyoku translates Ruby Hashes to XML
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> whitelisted
 
- HashDiff is a diff lib to compute the smallest difference between two hashes. 
+ HashDiff is a diff lib to compute the smallest difference between two hashes.
 
 <a name="hashie"></a>
 ### <a href="https://github.com/intridea/hashie">hashie</a> v3.4.3
@@ -857,7 +857,7 @@ Leaflet-pattern plugin packaged for the rails 3 asset pipeline
 
 <a name="leaflet-pip"></a>
 ### leaflet-pip v
-#### 
+####
 
 PD whitelisted
 
@@ -946,7 +946,7 @@ cross platform mac address determination for ruby
 A really Ruby Mail handler.
 
 <a name="mapotempo_web_by_time_distance"></a>
-### <a href="http://mapotempo.com">mapotempo_web_by_time_distance</a> v0.0.1 (test)
+### mapotempo_web_by_time_distance v0.0.1 (test)
 #### Mapotempo-Web destinations by time/distance.
 
 AGPL whitelisted
@@ -954,7 +954,7 @@ AGPL whitelisted
 Mapotempo-Web to expose destinations and stores by time/distance from a point.
 
 <a name="mapotempo_web_import_vehicle_store"></a>
-### <a href="http://mapotempo.com">mapotempo_web_import_vehicle_store</a> v0.0.1 (test)
+### mapotempo_web_import_vehicle_store v0.0.1 (test)
 #### Mapotempo-Web import vehicles and stores.
 
 AGPL whitelisted
@@ -1107,7 +1107,7 @@ Inspired by https://github.com/seattlerb/minitest/issues/213
 
 <a name="minitest-stub_any_instance"></a>
 ### <a href="https://github.com/codeodor/minitest-stub_any_instance">minitest-stub_any_instance</a> v1.0.1 (test)
-#### 
+####
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> whitelisted
 
@@ -1352,7 +1352,7 @@ Ruby on Rails is a full-stack web framework optimized for programmer happiness a
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> whitelisted
 
- This gem can compare doms and assert certain elements exists in doms using Nokogiri. 
+ This gem can compare doms and assert certain elements exists in doms using Nokogiri.
 
 <a name="rails-html-sanitizer"></a>
 ### <a href="https://github.com/rails/rails-html-sanitizer">rails-html-sanitizer</a> v1.0.3

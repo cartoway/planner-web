@@ -720,19 +720,19 @@
         'application_name_help': 'Nom du site Web du revendeur'
         'sms_api_key_help': 'Clé d''API pour envoi de SMS'
         'website_url_help': 'Adresse du site web. Vous pouvez utiliser « {LG} » qui
-          sera remplacé par la langue telle que « en », « fr » (par ex : https://www.mapotempo.com/{LG}/).'
+          sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoroute.com/{LG}/).'
         'welcome_url_help': 'Adresse de la page web html incluse comme « iframe »
           dans la page de bienvenue. Vous pouvez utiliser « {LG} » qui sera remplacé
-          par la langue telle que « en », « fr » (par ex : https://www.mapotempo.com/{LG}/app-news).'
+          par la langue telle que « en », « fr » (par ex : https://cartoroute.com/{LG}/app-news).'
         'help_url_help': 'Adresse de la page web contenant l''aide. Vous pouvez utiliser
           « {LG} » qui sera remplacé par la langue telle que « en », « fr » (par ex :
-          https://www.mapotempo.com/{LG}/help-center).'
+          https://cartoroute.com/{LG}/help-center).'
         'contact_url_help': 'Adresse de la page web contenant le formulaire de contact.
           Vous pouvez utiliser « {LG} » qui sera remplacé par la langue telle que
-          « en », « fr » (par ex : https://www.mapotempo.com/{LG}/contact-support/).'
+          « en », « fr » (par ex : https://cartoroute.com/{LG}/contact-support/).'
         'subscription_url_help': 'Adresse de la page web contenant le formulaire de
           souscription dans le cas d''un compte test. Vous pouvez utiliser « {LG} »
-          qui sera remplacé par la langue telle que « en », « fr » (par ex : https://www.mapotempo.com/{LG}/mapotempo-web-subscription-request).'
+          qui sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoroute.com/{LG}/mapotempo-web-subscription-request).'
         'facebook_url_help': 'Lien Facebook du revendeur'
         'twitter_url_help': 'Lien Twitter du revendeur'
         'linkedin_url_help': 'Lien linkedIn du revendeur'

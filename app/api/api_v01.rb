@@ -72,7 +72,7 @@ A route is a track between all destinations reached by a vehicle (a new route is
 This REST API is described with Swagger. The Swagger descriptor defines the request end-points, the parameters and the return values. The API can be addressed by HTTP request or with a generated client using the Swagger descriptor.
 ### API key
 All access to the API are subject to an `api_key` parameter in order to authenticate the user.
-This parameter can be sent with a query string on each available operation: `https://app.mapotempo.com/api/0.1/{objects}?api_key={your_personal_api_key}`
+This parameter can be sent with a query string on each available operation: `https://planner.cartoroute.com/api/0.1/{objects}?api_key={your_personal_api_key}`
 ### Return
 The API supports several return formats: `json` and `xml` which depend of the requested extension used in url.
 ### I18n

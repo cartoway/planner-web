@@ -1,5 +1,4 @@
-Mapotempo
-=========
+# Planner
 Route optimization with numerous stops. Based on [OpenStreetMap](http://www.openstreetmap.org) and [OR-Tools](http://code.google.com).
 
 ## Installation

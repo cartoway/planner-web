@@ -48,8 +48,8 @@ class UserMailerTest < ActionMailer::TestCase
 
   test 'should ensure data validity for automation_dispatcher method' do
     user_one = users(:user_one)
-    user_one.customer.reseller.help_url = 'https://www.mapotempo.com/{LG}/help-center'
-    user_one.customer.reseller.contact_url = 'https://www.mapotempo.com/{LG}/help-center'
+    user_one.customer.reseller.help_url = 'https://cartoroute.com/{LG}/help-center'
+    user_one.customer.reseller.contact_url = 'https://cartoroute.com/{LG}/help-center'
 
     raw_subjects = %w[accompanying_team features advanced_options]
 
@@ -84,7 +84,7 @@ class UserMailerTest < ActionMailer::TestCase
 
     user_one.update(created_at: Time.zone.today - 9.days)
     user_one.customer.update(test: true)
-    user_one.customer.reseller.update(contact_url: "https://www.mapotempo.com/{LG}/contact-support/", help_url: "https://www.mapotempo.com/{LG}/help-center")
+    user_one.customer.reseller.update(contact_url: "https://cartoroute.com/{LG}/contact-support/", help_url: "https://cartoroute.com/{LG}/help-center")
 
     user_one.reload
 
@@ -100,8 +100,8 @@ class UserMailerTest < ActionMailer::TestCase
 
   test 'should not use attachments for images'  do
     user_one = users(:user_one)
-    user_one.customer.reseller.help_url = 'https://www.mapotempo.com/{LG}/help-center'
-    user_one.customer.reseller.contact_url = 'https://www.mapotempo.com/{LG}/help-center'
+    user_one.customer.reseller.help_url = 'https://cartoroute.com/{LG}/help-center'
+    user_one.customer.reseller.contact_url = 'https://cartoroute.com/{LG}/help-center'
 
     email = UserMailer.automation_dispatcher(user_one, I18n.locale, 'accompanying_team').deliver_now
 
@@ -110,8 +110,8 @@ class UserMailerTest < ActionMailer::TestCase
 
   test "should use the resller data in email links" do
     user = users(:user_one)
-    user.customer.reseller.help_url = 'https://www.mapotempo.com/{LG}/help-center'
-    user.customer.reseller.contact_url = 'https://www.mapotempo.com/{LG}/help-center'
+    user.customer.reseller.help_url = 'https://cartoroute.com/{LG}/help-center'
+    user.customer.reseller.contact_url = 'https://cartoroute.com/{LG}/help-center'
 
     %w(host url_protocol).each do |prop|
       email = UserMailer.automation_dispatcher(user, :fr, 'features').deliver_now
