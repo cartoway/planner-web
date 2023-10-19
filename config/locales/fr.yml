@@ -738,17 +738,17 @@
         'linkedin_url_help': 'Lien linkedIn du revendeur'
         'audience_url_help': 'Adresse de la page web contenant votre tableau de bord
           d''audience. Vous pouvez utiliser « {ID} »  qui sera remplacé par le nombre
-          de jours (par ex: https://analytics.mapotempo.com/public/dashboard/123456789?id={ID}'
+          de jours (par ex: https://analytics.cartoroute.com?id={ID}'
         'behavior_url_help': 'Adresse de la page web contenant votre tableau de bord
           de comportement. Vous pouvez utiliser « {ID} »  qui sera remplacé par le
-          nombre de jours (par ex: https://analytics.mapotempo.com/public/dashboard/123456789?id={ID}'
+          nombre de jours (par ex: https://analytics.cartoroute.com?id={ID}'
         'customer_audience_url_help': 'Adresse de la page web contenant votre tableau
           de bord d''audience pour un compte spécifique. Vous pouvez utiliser « {ID} »  qui
-          sera remplacé par l''identifiant du compte client (par ex: https://analytics.mapotempo.com/public/dashboard/123456789?id={ID}'
+          sera remplacé par l''identifiant du compte client (par ex: https://analytics.cartoroute.com?id={ID}'
         'customer_behavior_url_help': 'Adresse de la page web contenant votre tableau
           de bord de comportement pour un compte spécifique. Vous pouvez utiliser
           « {ID} »  qui sera remplacé par l''identifiant du compte client (par ex:
-          https://analytics.mapotempo.com/public/dashboard/123456789?id={ID}'
+          https://analytics.cartoroute.com?id={ID}'
         'logo_large_help': 'Logo pleine page redimensionnable, de préférence au format
           SVG, à défaut en PNG.'
         'logo_small_help': 'Logo du menu, 150×40 pixels en SVG ou PNG.'

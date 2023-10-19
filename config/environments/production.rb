@@ -146,7 +146,7 @@ Rails.application.configure do
   )
   config.router.url = ENV['ROUTER_URL'] || 'http://localhost:4899/0.1'
 
-  config.devices.fleet.api_url = 'https://fleet.mapotempo.com'
+  config.devices.fleet.api_url = 'https://fleet.cartoroute.com'
   config.devices.fleet.admin_api_key = ENV['DEVICE_FLEET_ADMIN_API_KEY']
   config.devices.alyacom.api_url = 'http://app.alyacom.fr/ws'
   config.devices.masternaut.api_url = 'http://gc.api.geonaut.masternaut.com/MasterWS/services'

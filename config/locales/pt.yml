@@ -721,16 +721,16 @@
         'twitter_url_help': 'Link do Twitter do revendedor'
         'linkedin_url_help': 'Link do Linkedin do revendedor'
         'audience_url_help': 'Página web que contém o painel de audiência. Pode utilizar
-          "{ID}" que serà substituído pelo nùmero de dias (ie: https://analytics.mapotempo.com/public/dashboard/{ID}'
+          "{ID}" que serà substituído pelo nùmero de dias (ie: https://analytics.cartoroute.com/public/dashboard/{ID}'
         'customer_audience_url_help': 'Página web que contém o painel de audiência
           par um cliente. Pode utilizar "{ID}" que serà substituído pelo identificador
-          da conta cliente (ie: https://analytics.mapotempo.com/public/dashboard/123456789?id={ID}'
+          da conta cliente (ie: https://analytics.cartoroute.com?id={ID}'
         'customer_behavior_url_help': 'Página web que contém o painel de comportamento
           de um cliente. Pode utilizar "{ID}" que serà substituído pelo identificador
-          da conta cliente (ie: https://analytics.mapotempo.com/public/dashboard/123456789?id={ID}'
+          da conta cliente (ie: https://analytics.cartoroute.com?id={ID}'
         'sms_api_key_help': 'Chave da API para envio de SMS'
         'behavior_url_help': 'Página web que contém o painel de audiência. Pode utilizar
-          "{ID}" que serà substituído pelo nùmero de dias (ie: https://analytics.mapotempo.com/public/dashboard/123456789?id={ID}'
+          "{ID}" que serà substituído pelo nùmero de dias (ie: https://analytics.cartoroute.com?id={ID}'
     'users':
       'menu':
         'users': 'Utilizadores'
