@@ -66,65 +66,6 @@ If a npm package includes assets, they must be declared in the _config/initializ
 
     Rails.application.config.assets.paths += Dir["#{Rails.root}/node_modules/package/asset_dir"]
 
-## Requirements for all systems
-
-### Install Bundler Gem
-
-Bundler provides a consistent environment for Ruby projects by tracking and installing the exact gems and versions that are needed.
-For more informations see [Bundler website](http://bundler.io).
-
-You can use rbenv or rvm before installing Bundler.
-In other cases, you have to define some variables. Add Environement Variables into the end of your `~/.bashrc` file:
-
-    nano ~/.bashrc
-
-Add following code:
-
-    # RUBY GEM CONFIG
-    export GEM_HOME=~/.gem/ruby/2.3.7
-    export PATH=$PATH:~/.gem/ruby/2.3.7/bin
-
-The GEM_HOME variable is the place who are stored Ruby gems.
-
-Save changes and Quit
-
-Run this command to activate your modifications:
-
-    source ~/.bashrc
-
-After setting ruby and gem env, install Bundler Ruby Gem:
-
-    gem install bundler
-
-### Install project
-
-For the following installation, your current working directory needs to be the Web Planner root directory.
-
-Clone the project:
-
-    git clone git@github.com:Mapotempo/mapotempo-web.git
-
-Go to project directory:
-
-    cd planner-web
-
-Add the ruby version:
-
-    echo '2.3.7' >> .ruby-version
-
-On Mac OS only you may need:
-
-    bundle config build.charlock_holmes --with-icu-dir=/usr/local/opt/icu4c
-
-And finally install gem project dependencies with:
-
-    bundle install
-
-If you have this message:
->Important: You may need to add a javascript runtime to your Gemfile in order for bootstrap's LESS files to compile to CSS.
-
-Don't worry, we use SASS to compile CSS and not LESS.
-
 ## Configuration
 
 ### Background Tasks
@@ -144,23 +85,6 @@ Create user and databases:
     createdb -E UTF8 -T template0 -O [username] dev
     createdb -E UTF8 -T template0 -O [username] test
 
-Create a `config/application.yml` file and set variables:
-
-```
-PG_USERNAME: "[username]"
-PG_PASSWORD: "[userpassword]"
-```
-
-If postgres username is the system user, you can keep blank password. By default, the *user*/*password* variables are set to *mapotempo*/*mapotempo*
-
-For informations, to __delete a user__ use:
-
-    dropuser [username]
-
-Or to __delete a database__:
-
-    dropdb [database]
-
 As normal user, we call rake to initialize databases (load schema and demo data):
 
     rake db:setup
@@ -169,9 +93,9 @@ As normal user, we call rake to initialize databases (load schema and demo data)
 Default project configuration is in `config/application.rb` you can override any setting by create a `config/initializers/your_config.rb` file and override any variable.
 
 External resources can be configured trough environment variables:
-* PG_USERNAME, default: 'mapotempo'
-* PG_PASSWORD, default: 'mapotempo'
-* PG_DATABASE', default: 'mapotempo-test', 'mapotempo-dev' or 'mapotempo-prod'
+* POSTGRES_USER, default: 'planner'
+* POSTGRES_PASSWORD, default: 'planner'
+* POSTGRES_DB', default: 'planner-test', 'planner-dev' or 'planner-prod'
 * REDIS_HOST', default: 'localhost', production environment only
 * OPTIMIZER_URL, default: 'http://localhost:1791/0.1'
 * OPTIMIZER_API_KEY, default: 'demo'
@@ -262,31 +186,31 @@ docker-compose up -d
 
 ```
 docker-compose up -d
-docker-compose exec --user postgres db psql -c "CREATE ROLE mapotempo PASSWORD 'mapotempo' LOGIN;"
-docker-compose exec --user postgres db psql -c "CREATE DATABASE mapotempo OWNER mapotempo ENCODING 'utf-8';"
-docker-compose exec --user postgres db psql mapotempo -c "CREATE EXTENSION hstore;"
+docker-compose exec --user postgres db psql -c "CREATE ROLE planner PASSWORD 'planner' LOGIN;"
+docker-compose exec --user postgres db psql -c "CREATE DATABASE v OWNER planner ENCODING 'utf-8';"
+docker-compose exec --user postgres db psql planner -c "CREATE EXTENSION hstore;"
 docker-compose run --rm web bundle exec rake db:setup
 ```
 
 ## Dev in Docker
 For dev in docker add `SUPERUSER`.
 ```
-# docker-compose exec --user postgres db psql -c "ALTER USER mapotempo WITH SUPERUSER;"
+# docker-compose exec --user postgres db psql -c "ALTER USER planner WITH SUPERUSER;"
 ```
 
 To reset the instance
 ```
 docker-compose down
 docker-compose up -d db
-docker-compose exec --user postgres db psql -c "DROP DATABASE mapotempo;"
-docker-compose exec --user postgres db psql -c "DROP ROLE mapotempo;"
+docker-compose exec --user postgres db psql -c "DROP DATABASE planner;"
+docker-compose exec --user postgres db psql -c "DROP ROLE planner;"
 ```
 
 ## Tests in Docker
 
 Prepare for tests:
 ```
-docker-compose exec --user postgres db psql -c "CREATE DATABASE test OWNER mapotempo;"
+docker-compose exec --user postgres db psql -c "CREATE DATABASE test OWNER planner;"
 RAILS_ENV=test docker-compose -f docker-compose.yml -f docker-compose-dev.yml  run web bundle exec rake i18n:js:export
 RAILS_ENV=test docker-compose -f docker-compose.yml -f docker-compose-dev.yml  run web bundle exec rake assets:precompile
 ```

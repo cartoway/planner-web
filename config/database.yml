@@ -4,17 +4,17 @@ default: &default
   timeout: 5000
   checkout_timeout: 300
   host: <%= ENV['POSTGRES_HOST'] %>
-  username: <%= ENV['POSTGRES_USER'] || ENV['PG_USERNAME'] || 'mapotempo' %>
-  password: <%= ENV['POSTGRES_PASSWORD'] || ENV['PG_PASSWORD'] || 'mapotempo' %>
+  username: <%= ENV['POSTGRES_USER'] || 'planner' %>
+  password: <%= ENV['POSTGRES_PASSWORD'] || 'planner' %>
 
 development:
   <<: *default
-  database: <%= ENV['POSTGRES_DB'] || 'mapotempo-dev' %>
+  database: <%= ENV['POSTGRES_DB'] || 'planner-dev' %>
 
 test:
   <<: *default
-  database: <%= ENV['POSTGRES_DB'] || 'mapotempo-test' %>
+  database: <%= ENV['POSTGRES_DB'] || 'planner-test' %>
 
 production:
   <<: *default
-  database: <%= ENV['POSTGRES_DB'] || 'mapotempo-prod' %>
+  database: <%= ENV['POSTGRES_DB'] || 'planner' %>
