@@ -73,10 +73,10 @@ en:
       vehicle:
         devices:
           fleet_demo:
-            title: Fleet (Demo)
+            title: Cartoroute Field (demo)
           fleet:
-            title: Mapotempo Live
-            fleet_user: "Mapotempo Live user name"
+            title: Cartoroute Field
+            fleet_user: "Cartoroute Field user name"
           locster:
             title: Locster
             locster_ref: "Locster vehicle Ref."
@@ -109,11 +109,11 @@ en:
       invalid_account: User invalid (does not exist)
       list: Can't list devices
       create_company:
-        no_admin_api_key: No Mapotempo Live admin API key given
+        no_admin_api_key: No Cartoroute Field admin API key given
         already_created: Company already created
         error: Cannot create company
       create_drivers:
-        no_api_key: No Mapotempo Live API key given for this customer
+        no_api_key: No Cartoroute Field API key given for this customer
         already_created: Users already created
       update_drivers:
         update_failed: Failed to update user
@@ -182,10 +182,10 @@ en:
           help: "(DEMO ONY) Simulate vehicles' position and visit status (if these options are activated)
             for the last updated plan."
         fleet:
-          help: "Allows sending routes to Mapotempo Live mobile app."
-          company_created: "Mapotempo Live company created:"
-          drivers_created: "Mapotempo Live drivers created:"
-          drivers_updated: "Mapotempo Live drivers updated:"
+          help: "Allows sending routes to Cartoroute Field mobile app."
+          company_created: "Cartoroute Field company created:"
+          drivers_created: "Cartoroute Field drivers created:"
+          drivers_updated: "Cartoroute Field drivers updated:"
         alyacom:
           help: "Allows sending routes to AlyaCom application."
         tomtom:
@@ -204,29 +204,29 @@ en:
     edit:
       all_plannings_related: Relates to all routes
       fleet_demo_send:
-        action: Send to Fleet Demo
-        success: Sent to Fleet Demo successfully
-        fail: Failed to send to Fleet Demo
+        action: Send to Cartoroute Field demo
+        success: Sent to Cartoroute Field demo successfully
+        fail: Failed to send to Cartoroute Field demo
       fleet_demo_clear:
-        action: Clear Fleet (Demo)
-        success: Fleet (Demo) interventions have been cleared successfully
-        fail: Failed to clear Fleet (Demo) interventions
+        action: Clear Cartoroute Field (demo)
+        success: Cartoroute Field (demo) interventions have been cleared successfully
+        fail: Failed to clear Cartoroute Field (demo) interventions
       fleet_send:
-        action: Send to Mapotempo Live mobile app
-        success: Sent to Mapotempo Live mobile app successfully
-        fail: Failed to send to Mapotempo Live mobile app
+        action: Send to Cartoroute Field mobile app
+        success: Sent to Cartoroute Field mobile app successfully
+        fail: Failed to send to Cartoroute Field mobile app
       fleet_clear:
-        action: Clear Mapotempo Live mobile app
-        success: Mapotempo Live mobile app trip has been cleared successfully
-        fail: Failed to clear Mapotempo Live mobile app
+        action: Clear Cartoroute Field mobile app
+        success: Cartoroute Field mobile app trip has been cleared successfully
+        fail: Failed to clear Cartoroute Field mobile app
         button: Clear Selection
         button_empty: Close
-        empty: No Routes found on Mapotempo Live
+        empty: No Routes found on Cartoroute Field
         route:
           name: Route name
           number: Route number
       fleet_fetch_routes:
-        action: Clear Mapotempo Live mobile app
+        action: Clear Cartoroute Field mobile app
       teksat_send:
         action: Send to Teksat
         success: Sent to Teksat successfully
@@ -298,10 +298,10 @@ en:
         fail: Failed to clear Praxedo interventions
       dialog:
         fleet_demo:
-          title: Fleet (Demo)
+          title: Cartoroute Field (demo)
           in_progress: Please wait
         fleet:
-          title: Mapotempo Live mobile app
+          title: Cartoroute Field mobile app
           in_progress: Please wait
         orange:
           title: Orange Fleet Performance

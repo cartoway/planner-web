@@ -779,8 +779,8 @@
         'success': 'Email envoyé à l''utilisateur avec succès'
     'vehicles':
       'devices':
-        'create_company': 'Initialiser le compte Mapotempo Live'
-        'create_drivers': 'Mettre à jour ou créer les utilisateurs Mapotempo Live'
+        'create_company': 'Initialiser le compte Cartoroute Field'
+        'create_drivers': 'Mettre à jour ou créer les utilisateurs Cartoroute Field'
   'customers':
     'duplicate':
       'success': 'Compte client dupliqué avec succès'
@@ -1327,7 +1327,7 @@
       'no_content': 'Aucun rapport durant cette période'
     'index':
       'title': 'Rapports'
-      'head': 'Téléchargement du rapport des tournées réalisées avec l’application mobile Mapotempo Live'
+      'head': 'Téléchargement du rapport des tournées réalisées avec l’application mobile Cartoroute Field'
       'submit': 'Télécharger'
       'downloading': 'Téléchargement en cours...'
       'default_begin_date': 'J-8 par défaut'

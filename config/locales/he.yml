@@ -1014,7 +1014,7 @@ he:
       no_content: אין דיווח בתקופה זו
     index:
       title: יחסים
-      head: הורד דוח של סיורים שנעשו עם היישום הנייד Mapotempo Live
+      head: הורד דוח של סיורים שנעשו עם היישום הנייד Cartoroute Field
       submit: הורדה
       downloading: מוריד ...
       default_begin_date: היום פחות 8 ימים כברירת מחדל

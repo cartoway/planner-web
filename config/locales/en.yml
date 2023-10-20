@@ -754,8 +754,8 @@ en:
         success: E-Mail sent to user successfully
     vehicles:
       devices:
-        create_company: 'Initialize Mapotempo Live Account'
-        create_drivers: 'Update or create mobile drivers on Mapotempo Live'
+        create_company: 'Initialize Cartoroute Field Account'
+        create_drivers: 'Update or create mobile drivers on Cartoroute Field'
   customers:
     duplicate:
       success: Customer account duplicated successfully
@@ -1213,7 +1213,7 @@ en:
       no_content: No report during this period
     index:
       title: Reporting
-      head: Download report of routes executed with Mapotempo Live mobile application
+      head: Download report of routes executed with Cartoroute Field mobile application
       submit: Download
       downloading: Downloading...
       default_begin_date: D-8 by default

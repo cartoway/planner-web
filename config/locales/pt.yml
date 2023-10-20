@@ -1498,7 +1498,7 @@
       'no_content': 'Nenhum relatório durante este período'
     'index':
       'title': 'relações'
-      'head': 'Baixe o relatório de passeios feitos com o aplicativo móvel Mapotempo Live'
+      'head': 'Baixe o relatório de passeios feitos com o aplicativo móvel Cartoroute Field'
       'submit': 'Baixar'
       'downloading': 'Download em andamento...'
       'default_begin_date': 'D-8 por padrão'

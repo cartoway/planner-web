@@ -73,10 +73,10 @@ fr:
       vehicle:
         devices:
           fleet_demo:
-            title: Fleet (Demo)
+            title: Cartoroute Field (demo)
           fleet:
-            title: Mapotempo Live
-            fleet_user: "Nom de l'utilisateur Mapotempo Live"
+            title: Cartoroute Field
+            fleet_user: "Nom de l'utilisateur Cartoroute Field"
           locster:
             title: Locster
             locster_ref: "Ref. véhicule Locster"
@@ -109,11 +109,11 @@ fr:
       invalid_account: Utilisateur invalide (non existant)
       list: Impossible de lister les appareils
       create_company:
-        no_admin_api_key: Pas de clé admin API Mapotempo Live renseignée
+        no_admin_api_key: Pas de clé admin API Cartoroute Field renseignée
         already_created: Compagnie déjà existante
         error: Impossible de créer la compagnie
       create_drivers:
-        no_api_key: Pas de clé API Mapotempo Live renseignée pour ce compte client
+        no_api_key: Pas de clé API Cartoroute Field renseignée pour ce compte client
         already_created: Utilisateurs déjà existants
       update_drivers:
         update_failed: Échec lors de la mise à jour de l'utilisateur
@@ -184,10 +184,10 @@ fr:
           help: "(DEMONSTRATEUR) Simule la position des véhicules et le statut des visites (si ces options sont actives)
             pour le dernier plan modifié."
         fleet:
-          help: "Permet d'envoyer les tournées vers l'app mobile Mapotempo Live."
-          company_created: "Compagnie créée dans Mapotempo Live :"
-          drivers_created: "Utilisateurs créés dans Mapotempo Live :"
-          drivers_updated: "Utilisateurs mis à jour dans Mapotempo Live:"
+          help: "Permet d'envoyer les tournées vers l'app mobile Cartoroute Field."
+          company_created: "Compagnie créée dans Cartoroute Field :"
+          drivers_created: "Utilisateurs créés dans Cartoroute Field :"
+          drivers_updated: "Utilisateurs mis à jour dans Cartoroute Field:"
         alyacom:
           help: "Permet d'envoyer les tournées vers l'application AlyaCom."
         tomtom:
@@ -206,29 +206,29 @@ fr:
     edit:
       all_plannings_related: Concerne toutes les tournées
       fleet_demo_send:
-        action: Envoyer à Fleet (Demo)
-        success: Envoyé à Fleet (Demo) avec succès
-        fail: Échec lors de l'envoi vers Fleet (Demo)
+        action: Envoyer à Cartoroute Field (demo)
+        success: Envoyé à Cartoroute Field (demo) avec succès
+        fail: Échec lors de l'envoi vers Cartoroute Field (demo)
       fleet_demo_clear:
-        action: Vider Fleet (Demo)
-        success: Les interventions Fleet (Demo) ont été vidées avec succès
-        fail: Échec lors de la suppression des interventions Fleet (Demo)
+        action: Vider Cartoroute Field (demo)
+        success: Les interventions Cartoroute Field (demo) ont été vidées avec succès
+        fail: Échec lors de la suppression des interventions Cartoroute Field (demo)
       fleet_send:
-        action: "Envoyer à l'app mobile Mapotempo Live"
-        success: "Envoyé à l'app mobile Mapotempo Live avec succès"
-        fail: "Échec lors de l'envoi vers Mapotempo l'app mobile Mapotempo Live"
+        action: "Envoyer à l'app mobile Cartoroute Field"
+        success: "Envoyé à l'app mobile Cartoroute Field avec succès"
+        fail: "Échec lors de l'envoi vers Mapotempo l'app mobile Cartoroute Field"
       fleet_clear:
-        action: "Vider l'app mobile Mapotempo Live"
-        success: "L'app mobile Mapotempo Live a été vidée avec succès"
-        fail: "Échec lors de la suppression dans l'app mobile Mapotempo Live"
+        action: "Vider l'app mobile Cartoroute Field"
+        success: "L'app mobile Cartoroute Field a été vidée avec succès"
+        fail: "Échec lors de la suppression dans l'app mobile Cartoroute Field"
         button: "Vider la sélection"
         button_empty: "Fermer"
-        empty: "Aucune tournée trouvée sur Mapotempo Live"
+        empty: "Aucune tournée trouvée sur Cartoroute Field"
         route:
           name: Nom de tournée
           number: Numéro de tournée
       fleet_fetch_routes:
-        action: "Vider l'app mobile Mapotempo Live"
+        action: "Vider l'app mobile Cartoroute Field"
       teksat_send:
         action: Envoyer à Teksat
         success: Envoi vers Teksat terminé avec succès
@@ -300,10 +300,10 @@ fr:
         fail: Échec lors de la suppression des interventions Praxedo
       dialog:
         fleet_demo:
-          title: Fleet (Demo)
+          title: Cartoroute Field (demo)
           in_progress: Veuillez patienter
         fleet:
-          title: App mobile Mapotempo Live
+          title: App mobile Cartoroute Field
           in_progress: Veuillez patienter
         orange:
           title: Orange Fleet Performance

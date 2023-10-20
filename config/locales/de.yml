@@ -727,8 +727,8 @@ de:
         success: E-Mail an den Benutzer erfolgreich versendet
     vehicles:
       devices:
-        create_company: 'Mapotempo Live-Benutzerkonto initialisieren'
-        create_drivers: 'Aktualisieren oder Erstellen von mobilen Fahrern in Mapotempo Live'
+        create_company: 'Cartoroute Field-Benutzerkonto initialisieren'
+        create_drivers: 'Aktualisieren oder Erstellen von mobilen Fahrern in Cartoroute Field'
   customers:
     duplicate:
       success: Kundenkonto erfolgreich dupliziert
@@ -1145,7 +1145,7 @@ de:
       no_content: Kein Bericht während dieser Zeit
     index:
       title: Verhältnis
-      head: Laden Sie den Bericht über Touren herunter, die mit der mobilen Anwendung Mapotempo Live erstellt wurden
+      head: Laden Sie den Bericht über Touren herunter, die mit der mobilen Anwendung Cartoroute Field erstellt wurden
       submit: Download
       downloading: Download läuft...
       default_begin_date: T-8 standardmäßig
