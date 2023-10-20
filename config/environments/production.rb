@@ -87,7 +87,7 @@ Rails.application.configure do
 
   config.swagger_docs_base_path = 'http://localhost:3000/'
   config.api_contact_email = 'tech@cartoroute.com'
-  config.api_contact_url = 'https://github.com/Mapotempo/mapotempo-web'
+  config.api_contact_url = 'https://github.com/cartoroute/planner-web'
 
   def cache_factory(namespace, expires_in)
     ActiveSupport::Cache::RedisStore.new(host: ENV['REDIS_HOST'] || 'localhost', namespace: namespace, expires_in: expires_in, raise_errors: true)
