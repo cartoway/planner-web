@@ -21,6 +21,9 @@ class V01::Entities::Route < V01::Entities::RouteProperties
   end
 
   expose(:ref, documentation: { type: String })
+  expose(:vehicle_ref, documentation: { type: String, desc: 'Vehicle ref' }) { |m|
+    m.vehicle_usage&.vehicle&.ref
+  }
   expose(:distance, documentation: { type: Float, desc: 'Total route\'s distance.' })
   expose(:emission, documentation: { type: Float })
   expose(:vehicle_usage_id, documentation: { type: Integer })
