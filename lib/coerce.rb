@@ -23,6 +23,8 @@ class CoerceArrayInteger
       str.split(',').collect{ |i| Integer(i) }
     elsif str.nil?
       []
+    elsif str.is_a? Array
+      str.collect{ |i| Integer(i) }
     else
       str
     end
