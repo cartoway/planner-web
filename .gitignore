@@ -31,9 +31,12 @@ docker/postgres/
 
 # Ignore application configuration
 /config/application.yml
+/public/assets
+/public/javascripts
 /public/packs
 /public/packs-test
 /node_modules
+server.pid
 yarn-debug.log*
 yarn-error.log*
 .yarn-integrity

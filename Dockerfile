@@ -4,8 +4,8 @@ FROM ruby:2.6-bullseye
 ENTRYPOINT []
 CMD ["/bin/bash"]
 
-ENV RAILS_ENV production
-ENV NODE_ENV production
+ARG RAILS_ENV
+ARG NODE_ENV
 ENV REDIS_HOST redis-cache
 
 RUN apt update && \
