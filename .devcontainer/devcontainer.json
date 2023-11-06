@@ -32,7 +32,7 @@
 		"RAILS_ENV": "development",
 		"NODE_ENV": "development"
 	},
-	"initializeCommand": "echo RAILS_ENV=development > .env && cp ./.dockerignore-development ./.dockerignore"
+	"initializeCommand": "cp ./.dockerignore-development ./.dockerignore"
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],
 	// Uncomment the next line if you want to keep your containers running after VS Code shuts down.
