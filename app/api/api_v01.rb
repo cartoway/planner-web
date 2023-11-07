@@ -50,15 +50,19 @@ class ApiV01 < Grape::API
     security_definitions: {
       api_key_query_param: {
         type: 'apiKey',
-        name: 'query_api_key',
+        name: 'api_key',
         in: 'query'
       },
-      api_key_headers_param: {
+      api_key_header_param: {
         type: 'apiKey',
-        name: 'header_api_key',
+        name: 'Api-Key',
         in: 'header'
       },
     },
+    security: [{
+        api_key_query_param: [],
+        api_key_header_param: []
+    }],
     info: {
       title: 'API',
       contact_email: Mapotempo::Application.config.api_contact_email,
