@@ -163,6 +163,9 @@ To be able to generate the image, add the following variable to your CI settings
 
 
 # Docker
+## Prerequisite
+
+Install Docker Engine : [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
 
 ## Building
 ```
@@ -210,6 +213,14 @@ docker-compose up -d db
 docker-compose exec --user postgres db psql -c "DROP DATABASE planner;"
 docker-compose exec --user postgres db psql -c "DROP ROLE planner;"
 ```
+
+## Dev in Docker through VSCode
+
+* Install [https://code.visualstudio.com/download](Visual Studio Code)
+* Install the following extensions : Docker & Dev Containers
+* Press F1 > Select command "Dev Containers: Open Folder in Container..."
+* Select this repository
+* You should now be able to edit, commit and push from the container
 
 ## Tests in Docker
 
