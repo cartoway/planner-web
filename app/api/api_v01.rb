@@ -47,6 +47,18 @@ class ApiV01 < Grape::API
       'application/xml',
     ],
     doc_version: nil,
+    security_definitions: {
+      api_key_query_param: {
+        type: 'apiKey',
+        name: 'query_api_key',
+        in: 'query'
+      },
+      api_key_headers_param: {
+        type: 'apiKey',
+        name: 'header_api_key',
+        in: 'header'
+      },
+    },
     info: {
       title: 'API',
       contact_email: Mapotempo::Application.config.api_contact_email,
