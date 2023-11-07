@@ -58,15 +58,8 @@ class OptimizerJob < Job.new(:planning_id, :route_id, :global, :active_only, :ig
             force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
             optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
             relations: planning.stop_relations
-          ) { |bar, computed, count|
-            if bar
-              if computed
-                (0..bar).to_a.each { |i| bars[i] = (computed - 1) * 100 / count }
-              else
-                (0..(bar-1)).to_a.each { |i| bars[i] = 100 } if bar > 0
-                bars[bar] = bar == 1 && (@@optimize_time_force || planning.customer.optimization_time) ? "#{(@@optimize_time_force || optimize_time) * 1000}ms0" : -1
-              end
-            end
+          ) { |job_id, matrix_bar, resolution_bar|
+            bars = [matrix_bar, resolution_bar, nil] if resolution_bar
             job_progress_save bars.join(';')
             Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
           }

@@ -1,0 +1,66 @@
+{
+  "solutions": null,
+  "geojsons": null,
+  "job": {
+    "id": "tjzpum50n4oreb0q44h3t1rnd1td2t5u",
+    "status": "working",
+    "avancement": "run optimization, iterations 501 cost: 40400.0",
+    "graph": [
+      {
+        "iteration": 0,
+        "time": 100.2,
+        "cost": 42000.0
+      },
+      {
+        "iteration": 1,
+        "time": 200.1,
+        "cost": 41500.0
+      },
+      {
+        "iteration": 2,
+        "time": 300.0,
+        "cost": 41250.0
+      },
+      {
+        "iteration": 4,
+        "time": 400.9,
+        "cost": 41000.0
+      },
+      {
+        "iteration": 8,
+        "time": 800.8,
+        "cost": 40800.0
+      },
+      {
+        "iteration": 16,
+        "time": 1600.7,
+        "cost": 40600.0
+      },
+      {
+        "iteration": 32,
+        "time": 3200.6,
+        "cost": 40500.0
+      },
+      {
+        "iteration": 64,
+        "time": 6400.5,
+        "cost": 40300.0
+      },
+      {
+        "iteration": 128,
+        "time": 12800.4,
+        "cost": 40300.0
+      },
+      {
+        "iteration": 256,
+        "time": 25600.3,
+        "cost": 40100.0
+      },
+      {
+        "iteration": 501,
+        "time": 5100.2,
+        "cost": 40400.0
+      }
+    ]
+  }
+}

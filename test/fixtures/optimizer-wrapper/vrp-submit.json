@@ -1,7 +1,6 @@
 {
   "job": {
     "id": "fef5b9ff546d2fa0d605caec7026e8aa",
-    "status": "queued",
-    "retry": null
+    "status": "queued"
   }
 }
