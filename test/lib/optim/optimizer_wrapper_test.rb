@@ -11,6 +11,17 @@ class OptimizerWrapperTest < ActionController::TestCase
 
     uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
     @stub_VrpJob = stub_request(:get, uri_template).to_return(status: 200, body: File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/vrp-job.json').read)
+
+    @positions = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]]
+    @services = [
+        {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 1, quantities: {}},
+        {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 2, quantities: {}},
+        {start1: 28800, end1: 36000, start2: nil, end2: nil, duration: 500.0, stop_id: 3},
+        {start1: 0, end1: 7200, start2: nil, end2: nil, duration: 300.0, stop_id: 4},
+    ]
+    @vehicles = [
+        {start1: 28800, end1: 36000, duration: 500.0, stop_id: 5, work_time: 0, stores: [:start], rests: []},
+    ]
   end
 
   test 'should optimize' do
@@ -47,23 +58,87 @@ class OptimizerWrapperTest < ActionController::TestCase
       uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
       @stub_VrpFail = stub_request(:get, uri_template).to_return(status: 417, body: File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/vrp-fail.json').read)
 
-      positions = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]]
-      services = [
-          {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 1, quantities: {}},
-          {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 2, quantities: {}},
-          {start1: 28800, end1: 36000, start2: nil, end2: nil, duration: 500.0, stop_id: 3},
-          {start1: 0, end1: 7200, start2: nil, end2: nil, duration: 300.0, stop_id: 4},
-      ]
-      vehicles = [
-          {start1: 28800, end1: 36000, duration: 500.0, stop_id: 5, work_time: 0, stores: [:start], rests: []},
-      ]
-
       assert_raises VRPUnprocessableError do
-        assert_match '/assert_vehicles_no_zero_duration/', optim.optimize(positions, services, vehicles, optimize_minimal_time: 3)
+        assert_match '/assert_vehicles_no_zero_duration/', optim.optimize(@positions, @services, @vehicles, optimize_minimal_time: 3)
       end
     ensure
       remove_request_stub(@stub_VrpSubmit)
       remove_request_stub(@stub_VrpFail)
     end
+  end
+
+  test 'simple progress call should return correct progression' do
+    uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
+
+    # Simple progression
+    progress = lambda{ |job_id, matrix_bar, resolution_bar|
+      if matrix_bar && resolution_bar
+        assert_equal 100.0, matrix_bar
+        assert_equal 43.0, resolution_bar
+      end
+    }
+    vrp_simple_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-simple-progression.json')).read
+    vrp_complete_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-completed.json')).read
+
+    # Multiple responses for repeated requests
+    stub_vrp_job = stub_request(:get, uri_template).to_return({
+      status: 200, body: vrp_simple_progression_file
+    }, {
+      status: 200, body: vrp_complete_file, headers: {content_type: 'json'}
+    })
+
+    @optim.optimize(@positions, @services, @vehicles, optimize_time: 30000, &progress)
+  ensure
+    remove_request_stub(stub_vrp_job) if stub_vrp_job
+  end
+
+  test 'Max split progress call should return correct progression' do
+    uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
+
+    # Max split progression
+    progress = lambda{ |job_id, matrix_bar, resolution_bar|
+      if matrix_bar && resolution_bar
+        assert_equal 75.0, matrix_bar
+        assert_equal 50.0, resolution_bar
+      end
+    }
+    vrp_max_split_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-max-split-progression.json')).read
+    vrp_complete_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-completed.json')).read
+
+    # Multiple responses for repeated requests
+    stub_vrp_job = stub_request(:get, uri_template).to_return({
+      status: 200, body: vrp_max_split_progression_file
+    }, {
+      status: 200, body: vrp_complete_file, headers: {content_type: 'json'}
+    })
+
+    @optim.optimize(@positions, @services, @vehicles, optimize_time: 30000, &progress)
+  ensure
+    remove_request_stub(stub_vrp_job) if stub_vrp_job
+  end
+
+  test 'dicho progress call should return correct progression' do
+    uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
+
+    # Dicho progression
+    progress = lambda{ |job_id, matrix_bar, resolution_bar|
+      if matrix_bar && resolution_bar
+        assert_equal 100.0, matrix_bar
+        assert_equal 87.5, resolution_bar
+      end
+    }
+    vrp_dicho_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-dicho-progression.json')).read
+    vrp_complete_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-completed.json')).read
+
+    # Multiple responses for repeated requests
+    stub_vrp_job = stub_request(:get, uri_template).to_return({
+      status: 200, body: vrp_dicho_progression_file
+    }, {
+      status: 200, body: vrp_complete_file, headers: {content_type: 'json'}
+    })
+
+    @optim.optimize(@positions, @services, @vehicles, optimize_time: 30000, &progress)
+  ensure
+    remove_request_stub(stub_vrp_job) if stub_vrp_job
   end
 end

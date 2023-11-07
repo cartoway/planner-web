@@ -20,6 +20,8 @@ require 'rest_client'
 class VRPNoSolutionError < StandardError; end
 class VRPUnprocessableError < StandardError; end
 
+PROGRESSION_KEYS = ['split independent process', 'solution', 'repetition', 'split partition process', 'max split process', 'dichotomous process']
+
 class OptimizerWrapper
 
   attr_accessor :cache, :url, :api_key
@@ -183,21 +185,23 @@ class OptimizerWrapper
       result = nil
       while json
         result = JSON.parse(json)
-        if result['job']['status'] == 'completed'
+        job_details = result['job']
+        job_id = result.dig('job', 'id')
+        if result.dig('job', 'status') == 'completed'
           @cache.write(key, json.body)
           break
-        elsif ['queued', 'working'].include?(result['job']['status'])
-          if progress && m = /^(process ([0-9]+)\/([0-9]+) \- )?([a-z ]+)/.match(result['job']['avancement'])
-            progress.call(m[4].start_with?('compute matrix') ? 0 : m[4].start_with?('run optimization') ? 1 : nil, m[1] && m[2].to_i, m[2] && m[3].to_i)
+        elsif ['queued', 'working'].include?(result.dig('job', 'status'))
+          if progress && job_details
+            matrix, resolution = compute_progression(vrp, job_details)
+            progress.call(job_id, matrix, resolution)
           end
           sleep(2)
-          job_id = result['job']['id']
           json = RestClient.get(@url + "/vrp/jobs/#{job_id}.json", params: {api_key: @api_key})
         else
-          if /No solution provided/.match result['job']['avancement']
+          if /No solution provided/.match result.dig('job', 'avancement')
             raise VRPNoSolutionError.new
           else
-            raise RuntimeError.new(result['job']['avancement'] || 'Optimizer return unknown error')
+            raise RuntimeError.new(result.dig('job', 'avancement') || 'Optimizer return unknown error')
           end
         end
       end
@@ -258,5 +262,68 @@ class OptimizerWrapper
       type: :never_first,
       linked_ids: services_with_negative_quantities
     }]
+  end
+  # Resolutions might contain multiple steps in a hierachical order :
+  # - split independent process -> The problem is split in independant sub problems regarding sticky vehicles or skills
+  # - solution                  -> Some resolutions might require multiple solutions from a single problem with some perturbations
+  # - repetition                -> Multiple Resolutions of a single problem but only return the best solution
+  # - split partition process   -> Partitions by vehicle or workday
+  # - max split process         -> The max_split_size parameter requires for the problem to be split recursively in two sub problems
+  #                                until each sub problem has a size inferior to max_split_size
+  # - dichotomous process       -> The dichotomous split follows a similar logic to max_split_size, but also generates subproblems when the recursion
+  #                                goes up
+  #
+  # If the problem is simple, the progression is directly related to the time elapsed as there is only one matrix to compute
+  def compute_progression(vrp, job_details)
+    progression = job_details.dig('avancement')
+    return nil unless progression
+
+    if PROGRESSION_KEYS.any?{ |key| progression.include?(key) }
+      multiple_steps_progression(progression)
+    elsif progression.include?('run optimization')
+      single_step_progression(vrp, job_details)
+    end
+  end
+
+  def single_step_progression(vrp, job_details)
+    # Resolution graph may not be available. i.e: VROOM did not return intermediate solutions
+    @optimization_start ||=  Time.now.to_f - (job_details.dig('graph')&.any? && job_details.dig('graph').last['time'].to_f / 1000 || 0)
+    maximum_duration = vrp[:configuration][:resolution][:duration] / 1000
+
+    current_elapsed = Time.now.to_f - @optimization_start
+    [100, 100 * (current_elapsed/maximum_duration).round(2)]
+  end
+
+  # Each couple a/b give the progression of the considered step identified by a key
+  # By multiplying the current denominator with all the previous ones we are sure that the ratio of the current step
+  # will have a smaller impact on the total ratio than the previous steps. This prevents the progress bar to go back
+  # and forth. The progression key order defines the hierarchical order of contribution in the total progression.
+  def multiple_steps_progression(progression)
+    scores = []
+    matrix_scores = []
+    denominators = []
+
+    PROGRESSION_KEYS.each{ |key|
+      a, b = parse_progression(progression, key)
+      denominators << b
+      scores << 100.0 * a / denominators.reduce(&:*)
+      matrix_scores << 100.0 * a / denominators.reduce(&:*) unless key == 'dichotomous process'
+    }
+    resolution_bar = scores.sum.round(2)
+    matrix_bar = matrix_scores.sum.round(2)
+
+    # Remove dicho from denominators as Matrix computation is performed at the end of the steps but before dicho
+    denominators.pop
+    matrix_bar += progression.include?('run optimization') ? (100.0 / denominators.reduce(&:*)) : 0
+    [matrix_bar, resolution_bar]
+  end
+
+  def parse_progression(progression, key)
+    parts = progression.split(' - ')
+    section_index = parts.index{ |part| part.include?(key)}
+    return [0, 1] unless section_index
+
+    ratio = parts[section_index].split(' ').last
+    a, b = ratio.split('/').map(&:to_i)
   end
 end
