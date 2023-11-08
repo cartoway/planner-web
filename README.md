@@ -201,6 +201,9 @@ docker-compose run --rm web bundle exec rake db:setup
 ```
 
 ## Dev in Docker
+
+It is recommanded to use postgres:9.6 (change in `docker-compose.yml`). The folder `docker/postgres` should be empty to avoid any conflict between postgres versions.
+
 For dev in docker add `SUPERUSER`.
 ```
 # docker-compose exec --user postgres db psql -c "ALTER USER planner WITH SUPERUSER;"
@@ -216,7 +219,7 @@ docker-compose exec --user postgres db psql -c "DROP ROLE planner;"
 
 ## Dev in Docker through VSCode
 
-* Install [https://code.visualstudio.com/download](Visual Studio Code)
+* Install [Visual Studio Code](https://code.visualstudio.com/download)
 * Install the following extensions : Docker & Dev Containers
 * Press F1 > Select command "Dev Containers: Open Folder in Container..."
 * Select this repository
