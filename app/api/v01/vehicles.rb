@@ -206,8 +206,9 @@ class V01::Vehicles < Grape::API
       )
 
       optional :capacities, type: Array do
-        requires :deliverable_unit_id, type: Integer
-        requires :quantity, type: Float
+        optional :deliverable_unit_id, type: Integer
+        optional :quantity, type: Float
+        all_or_none_of :deliverable_unit_id, :quantity
       end
 
       optional :router_options, type: Hash do
@@ -270,8 +271,9 @@ class V01::Vehicles < Grape::API
       ).except(:vehicle_usage_set))
 
       optional :capacities, type: Array do
-        requires :deliverable_unit_id, type: Integer
-        requires :quantity, type: Float
+        optional :deliverable_unit_id, type: Integer
+        optional :quantity, type: Float
+        all_or_none_of :deliverable_unit_id, :quantity
       end
 
       optional :router_options, type: Hash do
