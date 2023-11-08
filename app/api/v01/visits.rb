@@ -118,8 +118,9 @@ class V01::Visits < Grape::API
           optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
 
           optional :quantities, type: Array do
-            requires :deliverable_unit_id, type: Integer
-            requires :quantity, type: Float
+            optional :deliverable_unit_id, type: Integer
+            optional :quantity, type: Float
+            all_or_none_of :deliverable_unit_id, :quantity
           end
 
           optional :time_window_start_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
@@ -159,8 +160,9 @@ class V01::Visits < Grape::API
           optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
 
           optional :quantities, type: Array do
-            requires :deliverable_unit_id, type: Integer
-            requires :quantity, type: Float
+            optional :deliverable_unit_id, type: Integer
+            optional :quantity, type: Float
+            all_or_none_of :deliverable_unit_id, :quantity
           end
 
           optional :time_window_start_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
