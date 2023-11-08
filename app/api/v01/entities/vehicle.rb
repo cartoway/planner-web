@@ -54,6 +54,7 @@ class V01::Entities::VehicleWithoutVehicleUsage < Grape::Entity
   # Devices
   # add auth for : orange_id, teksat_id, tomtom_id
   expose(:devices, documentation: {type: Hash})
+  expose(:custom_attributes, documentation: {type: Hash, desc: 'Additional properties'})
 end
 
 class V01::Entities::Vehicle < V01::Entities::VehicleWithoutVehicleUsage

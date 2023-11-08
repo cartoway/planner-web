@@ -1018,7 +1018,8 @@ CREATE TABLE public.vehicles (
     router_options jsonb DEFAULT '{}'::jsonb NOT NULL,
     devices jsonb DEFAULT '{}'::jsonb NOT NULL,
     max_distance integer,
-    phone_number character varying
+    phone_number character varying,
+    custom_attributes jsonb
 );
 
 
@@ -2783,3 +2784,6 @@ INSERT INTO schema_migrations (version) VALUES ('20230506091330');
 INSERT INTO schema_migrations (version) VALUES ('20230506091331');
 
 INSERT INTO schema_migrations (version) VALUES ('20230506091332');
+
+INSERT INTO schema_migrations (version) VALUES ('20230506091333');
+
