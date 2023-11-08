@@ -14,7 +14,6 @@ x-web: &web
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/uploads:/srv/app/public/uploads
-    - ./docker/postgres-run:/var/run/postgresql/
   links:
     - db
     - redis-cache
@@ -26,8 +25,7 @@ services:
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
-      - ./docker/postgres:/var/lib/postgresql/data/
-      - ./docker/postgres-run:/var/run/postgresql/
+      - pg_data:/var/lib/postgresql/data
     restart: unless-stopped
 
   redis-cache:
@@ -44,3 +42,6 @@ services:
   delayed-job:
     <<: *web
     command: bundle exec bin/delayed_job run -n 4
+
+volumes:
+  pg_data:
