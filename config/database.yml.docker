@@ -3,8 +3,8 @@ default: &default
   pool: 5
   timeout: 5000
   username: <%= ENV['POSTGRES_USERNAME'] || 'postgres' %>
-  # password: <%= ENV['POSTGRES_PASSWORD'] || 'postgres' %>
-  # host: db
+  password: <%= ENV['POSTGRES_PASSWORD'] || 'postgres' %>
+  host: db
 
 development:
   <<: *default

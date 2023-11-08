@@ -176,6 +176,11 @@ cp .env.template .env
 cp config/environments/production.rb docker/
 ```
 
+For dev setup, enable the `docker-compose-dev.yml` by enabling it in .env file.
+```yaml
+COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml
+```
+
 ## Run
 
 ```
@@ -187,7 +192,7 @@ docker-compose up -d
 ```
 docker-compose up -d
 docker-compose exec --user postgres db psql -c "CREATE ROLE planner PASSWORD 'planner' LOGIN;"
-docker-compose exec --user postgres db psql -c "CREATE DATABASE v OWNER planner ENCODING 'utf-8';"
+docker-compose exec --user postgres db psql -c "CREATE DATABASE planner OWNER planner ENCODING 'utf-8';"
 docker-compose exec --user postgres db psql planner -c "CREATE EXTENSION hstore;"
 docker-compose run --rm web bundle exec rake db:setup
 ```
@@ -211,11 +216,11 @@ docker-compose exec --user postgres db psql -c "DROP ROLE planner;"
 Prepare for tests:
 ```
 docker-compose exec --user postgres db psql -c "CREATE DATABASE test OWNER planner;"
-RAILS_ENV=test docker-compose -f docker-compose.yml -f docker-compose-dev.yml  run web bundle exec rake i18n:js:export
-RAILS_ENV=test docker-compose -f docker-compose.yml -f docker-compose-dev.yml  run web bundle exec rake assets:precompile
+RAILS_ENV=test docker-compose run --rm web bundle exec rake i18n:js:export
+RAILS_ENV=test docker-compose run --rm web bundle exec rake assets:precompile
 ```
 
 Run tests:
 ```
-RAILS_ENV=test docker-compose -f docker-compose.yml -f docker-compose-dev.yml run web rake test I18N=false COVERAGE=false
+RAILS_ENV=test docker-compose run --rm web rake test I18N=false COVERAGE=false
 ```
