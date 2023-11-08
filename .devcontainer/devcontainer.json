@@ -30,7 +30,10 @@
   "remoteEnv": {
     "PATH": "${containerEnv:PATH}",
     "RAILS_ENV": "development",
-    "NODE_ENV": "development"
+    "NODE_ENV": "development",
+    "POSTGRES_USER": "planner",
+    "POSTGRES_PASSWORD": "planner",
+    "POSTGRES_DATABASE": "planner"
   },
   "initializeCommand": "cp ./.dockerignore-development ./.dockerignore"
   // Uncomment the next line if you want start specific services in your Docker Compose config.
