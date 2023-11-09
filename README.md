@@ -163,6 +163,9 @@ To be able to generate the image, add the following variable to your CI settings
 
 
 # Docker
+## Prerequisite
+
+Install Docker Engine : [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
 
 ## Building
 ```
@@ -198,6 +201,7 @@ docker-compose run --rm web bundle exec rake db:setup
 ```
 
 ## Dev in Docker
+
 For dev in docker add `SUPERUSER`.
 ```
 # docker-compose exec --user postgres db psql -c "ALTER USER planner WITH SUPERUSER;"
@@ -210,6 +214,14 @@ docker-compose up -d db
 docker-compose exec --user postgres db psql -c "DROP DATABASE planner;"
 docker-compose exec --user postgres db psql -c "DROP ROLE planner;"
 ```
+
+## Dev in Docker through VSCode
+
+* Install [Visual Studio Code](https://code.visualstudio.com/download)
+* Install the following extensions : Docker & Dev Containers
+* Press F1 > Select command "Dev Containers: Open Folder in Container..."
+* Select this repository
+* You should now be able to edit, commit and push from the container
 
 ## Tests in Docker
 

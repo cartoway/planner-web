@@ -5,6 +5,7 @@ x-web: &web
   image: planner-web:${CARTOROUTE_VERSION:-latest}
   environment:
     RAILS_ENV: ${RAILS_ENV:-production}
+    NODE_ENV: ${NODE_ENV:-production}
     GEOCODER_URL: ${GEOCODER_URL:-http://localhost:8081/0.1}
     GEOCODER_API_KEY: ${GEOCODER_API_KEY:-demo}
     ROUTER_URL: ${ROUTER_URL:-http://localhost:8082/0.1}
