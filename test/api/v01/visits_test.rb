@@ -136,7 +136,6 @@ class V01::VisitsTest < ActiveSupport::TestCase
 
   test 'should update a visit with quantities or return parse error' do
 
-
     put api_destination(@destination.id, @visit.id), { quantities: [{ deliverable_unit_id: 1, quantity: 10 }] }.to_json, 'CONTENT_TYPE' => 'application/json'
     assert last_response.ok?, last_response.body
 
@@ -154,7 +153,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
     put api_destination(@destination.id, @visit.id), { quantities: [{ deliverable_unit: 1, quantity: 'aaa' }] }.to_json, 'CONTENT_TYPE' => 'application/json'
     assert last_response.bad_request?
     response = JSON.parse(last_response.body)
-    assert_equal response['message'], 'quantities[0][deliverable_unit_id] is missing, quantities[0][quantity] is invalid'
+    assert_equal response['message'], 'quantities[0][quantity] is invalid, quantities[0][deliverable_unit_id], quantities[0][quantity] provide all or none of parameters'
   end
 
   test 'should destroy a visit' do
