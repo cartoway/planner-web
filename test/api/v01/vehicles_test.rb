@@ -115,7 +115,6 @@ class V01::VehiclesTest < ActiveSupport::TestCase
             vehicle = JSON.parse last_response.body
             assert_equal '#bebeef', vehicle['color']
             assert_equal 30, vehicle['capacities'][0]['quantity']
-            assert_equal { foo: true }, vehicle['custom_attributes']
           end
         end
       end
@@ -190,6 +189,38 @@ class V01::VehiclesTest < ActiveSupport::TestCase
           end
         end
       }
+    ensure
+      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+    end
+  end
+
+  test 'should create a vehicle with restricted list of custom_attributes' do
+    begin
+      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
+      Mapotempo::Application.config.manage_vehicles_only_admin = false
+
+      customer = customers(:customer_one)
+      valid_custom_attribute_names = customer.custom_attributes.map(&:name)
+      unknown_custom_attribute_names = ['foo', 'additional']
+
+      custom_attributes = Hash[(valid_custom_attribute_names + unknown_custom_attribute_names).map{ |key| [key, 1] }]
+
+      # test creation and callbacks
+      assert_difference('Vehicle.count', 1) do
+        assert_difference('VehicleUsage.count', customer.vehicle_usage_sets.length) do
+          assert_difference('Route.count', customer.plannings.length) do
+            post api, {
+              ref: 'new', name: 'Vh1', time_window_start: '10:00', store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id,
+              customer_id: customers(:customer_one).id, color: '#bebeef', max_distance: 60, capacities: [{deliverable_unit_id: 1, quantity: 30}],
+              custom_attributes: custom_attributes }, as: :json
+            assert last_response.created?, last_response.body
+            vehicle = JSON.parse last_response.body
+            assert_equal '#bebeef', vehicle['color']
+            assert_equal 30, vehicle['capacities'][0]['quantity']
+            assert_equal({ "custom_attribute_three"=>"1", "custom_attribute_one"=>1, "custom_attribute_two"=>true }, vehicle['custom_attributes'])
+          end
+        end
+      end
     ensure
       Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end

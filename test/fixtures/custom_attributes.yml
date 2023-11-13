@@ -1,0 +1,36 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+custom_attribute_one:
+  name: custom_attribute_one
+  object_type: 2 # integer
+  object_class: 0 # vehicle
+  description: 'description one'
+  customer: customer_one
+
+custom_attribute_two:
+  name: custom_attribute_two
+  object_type: 1 # string
+  object_class: 0 # vehicle
+  description: 'description two'
+  customer: customer_tow
+
+custom_attribute_two:
+  name: custom_attribute_two
+  object_type: 0 # boolean
+  object_class: 0 # vehicle
+  description: 'description two'
+  customer: customer_one
+
+custom_attribute_three:
+  name: custom_attribute_three
+  object_type: 1 # string
+  object_class: 0 # vehicle
+  description: 'description three'
+  customer: customer_one
+
+custom_attribute_four:
+  name: custom_attribute_four
+  object_type: 3 # float
+  object_class: 0 # vehicle
+  description: 'description four'
+  customer: customer_two

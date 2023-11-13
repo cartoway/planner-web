@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.6.11
--- Dumped by pg_dump version 9.6.11
+-- Dumped from database version 9.6.24
+-- Dumped by pg_dump version 13.11 (Debian 13.11-0+deb11u1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -12,22 +12,9 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
+SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
 
 --
 -- Name: hstore; Type: EXTENSION; Schema: -; Owner: -
@@ -45,7 +32,41 @@ COMMENT ON EXTENSION hstore IS 'data type for storing sets of (key, value) pairs
 
 SET default_tablespace = '';
 
-SET default_with_oids = false;
+--
+-- Name: custom_attributes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.custom_attributes (
+    id integer NOT NULL,
+    name character varying,
+    object_type integer DEFAULT 0 NOT NULL,
+    object_class integer DEFAULT 0 NOT NULL,
+    default_value character varying,
+    description text,
+    customer_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+--
+-- Name: custom_attributes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.custom_attributes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: custom_attributes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.custom_attributes_id_seq OWNED BY public.custom_attributes.id;
+
 
 --
 -- Name: customers; Type: TABLE; Schema: public; Owner: -
@@ -1019,7 +1040,7 @@ CREATE TABLE public.vehicles (
     devices jsonb DEFAULT '{}'::jsonb NOT NULL,
     max_distance integer,
     phone_number character varying,
-    custom_attributes jsonb
+    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -1147,6 +1168,13 @@ CREATE SEQUENCE public.zonings_id_seq
 --
 
 ALTER SEQUENCE public.zonings_id_seq OWNED BY public.zonings.id;
+
+
+--
+-- Name: custom_attributes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.custom_attributes ALTER COLUMN id SET DEFAULT nextval('public.custom_attributes_id_seq'::regclass);
 
 
 --
@@ -1308,6 +1336,14 @@ ALTER TABLE ONLY public.zones ALTER COLUMN id SET DEFAULT nextval('public.zones_
 --
 
 ALTER TABLE ONLY public.zonings ALTER COLUMN id SET DEFAULT nextval('public.zonings_id_seq'::regclass);
+
+
+--
+-- Name: custom_attributes custom_attributes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.custom_attributes
+    ADD CONSTRAINT custom_attributes_pkey PRIMARY KEY (id);
 
 
 --
@@ -1660,6 +1696,13 @@ CREATE INDEX fk__zones_zoning_id ON public.zones USING btree (zoning_id);
 --
 
 CREATE INDEX fk__zonings_customer_id ON public.zonings USING btree (customer_id);
+
+
+--
+-- Name: index_custom_attributes_on_customer_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_custom_attributes_on_customer_id ON public.custom_attributes USING btree (customer_id);
 
 
 --
@@ -2773,11 +2816,11 @@ INSERT INTO schema_migrations (version) VALUES ('20181220135439');
 
 INSERT INTO schema_migrations (version) VALUES ('20181227141833');
 
+INSERT INTO schema_migrations (version) VALUES ('20190107081835');
+
 INSERT INTO schema_migrations (version) VALUES ('20190315184420');
 
 INSERT INTO schema_migrations (version) VALUES ('20190417121926');
-
-INSERT INTO schema_migrations (version) VALUES ('20190107081835');
 
 INSERT INTO schema_migrations (version) VALUES ('20230506091330');
 

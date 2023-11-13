@@ -118,6 +118,7 @@ class V01::Api < Grape::API
   end
 
   mount V01::Customers
+  mount V01::CustomAttributes
   mount V01::DeliverableUnits
   mount V01::Destinations
   mount V01::Jobs

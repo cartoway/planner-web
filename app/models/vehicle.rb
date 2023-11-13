@@ -67,6 +67,9 @@ class Vehicle < ApplicationRecord
 
   scope :for_reseller_id, ->(reseller_id) { joins(:customer).where(customers: {reseller_id: reseller_id}) }
 
+  include TypedAttribute
+  typed_attr :custom_attributes
+
   def capacities_validator
     !capacities || capacities.values.each do |q|
       raise Exceptions::NegativeErrors.new(q, id) if Float(q) < 0 # Raise both Float && NegativeErrors type
