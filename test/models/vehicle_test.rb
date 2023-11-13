@@ -198,4 +198,10 @@ class VehicleTest < ActiveSupport::TestCase
       vehicle_usage.update(tags: [tags(:tag_one), new_tag])
     end
   end
+
+  test 'should type custom_attributes' do
+    vehicle = vehicles(:vehicle_one)
+    assert vehicle.valid?
+    assert_equal [2, true], vehicle.custom_attributes_typed_values
+  end
 end

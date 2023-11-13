@@ -61,6 +61,7 @@ class Ability
           can :manage, DeliverableUnit, customer_id: user.customer.id
           # can [:new, :create], DeliverableUnit
         end
+        can :manage, CustomAttribute, customer_id: user.customer.id
       end
     else
       can [:password, :set_password], User
