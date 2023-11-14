@@ -202,6 +202,7 @@ class VehicleTest < ActiveSupport::TestCase
   test 'should type custom_attributes' do
     vehicle = vehicles(:vehicle_one)
     assert vehicle.valid?
-    assert_equal [2, true], vehicle.custom_attributes_typed_values
+    assert_equal({ "custom_attribute_three" => "there", "custom_attribute_one" => 2, "custom_attribute_two" => true },
+                 vehicle.custom_attributes_typed_hash)
   end
 end

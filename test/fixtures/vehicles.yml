@@ -14,7 +14,7 @@ vehicle_one:
   router_options:
     traffic: true
   custom_attributes:
-    { custom_attribute_one: "2", custom_attribute_two: "true" }
+    { 'custom_attribute_one': "2", 'custom_attribute_two': "true" }
 
 vehicle_two:
   ref: '002'
