@@ -2012,6 +2012,7 @@ en:
       consumption_desc: average fuel consumption in liters per 100 km
       capacities: capacities
       capacities_desc: maximun vehicle's capacities
+      custom_attributes: attributes
       router_mode: routing engine
       router_mode_desc: force use of a specific routing engine
       router_dimension: router objective

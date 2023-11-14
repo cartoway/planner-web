@@ -3,12 +3,16 @@ CSV.generate { |csv|
     I18n.t('vehicles.import.ref_vehicle'),
     I18n.t('vehicles.import.name_vehicle'),
     I18n.t('vehicles.import.contact_email'),
+    I18n.t('vehicles.import.phone_number'),
     I18n.t('vehicles.import.emission'),
     I18n.t('vehicles.import.consumption'),
     I18n.t('vehicles.import.max_distance')
   ] +
     @vehicle_usage_set.customer.deliverable_units.map { |du|
       I18n.t('vehicles.import.capacities') + (du.label ? '[' + du.label + ']' : '')
+    } +
+    @vehicle_usage_set.customer.custom_attributes.map { |ca|
+      I18n.t('vehicles.import.custom_attributes') + '[' + ca.name + ']'
     } +
   [
     I18n.t('vehicles.import.router_mode'),
@@ -48,12 +52,16 @@ CSV.generate { |csv|
       vehicle_usage.vehicle.ref,
       vehicle_usage.vehicle.name,
       vehicle_usage.vehicle.contact_email,
+      vehicle_usage.vehicle.phone_number,
       vehicle_usage.vehicle.emission,
       vehicle_usage.vehicle.consumption,
       vehicle_usage.vehicle.max_distance || @vehicle_usage_set.max_distance
     ] +
     @vehicle_usage_set.customer.deliverable_units.map { |du|
       vehicle_usage.vehicle.capacities[du.id]
+    } +
+    @vehicle_usage_set.customer.custom_attributes.map{ |c_a|
+      vehicle_usage.vehicle.custom_attributes_typed_hash[c_a.name]
     } +
     [
       vehicle_usage.vehicle.router.try(:mode),

@@ -48,7 +48,9 @@ class ImporterVehicleUsageSets < ImporterBase
       color: { title: I18n.t('vehicles.import.color'), desc: I18n.t('vehicles.import.color_desc'), format: I18n.t('vehicles.import.format.string') },
       tags_vehicle: { title: I18n.t('vehicles.import.tags'), desc: I18n.t('vehicles.import.tags_desc'), format: I18n.t('vehicles.import.tags_format') },
       devices: { title: I18n.t('vehicles.import.devices'), desc: I18n.t('vehicles.import.devices_desc'), format: I18n.t('vehicles.import.format.string') }
-    )
+    ).merge(Hash[@customer.custom_attributes.map { |ca|
+      ["custom_attributes[#{ca.name}]", { title: "#{I18n.t('vehicles.import.custom_attributes')}[#{ca.name}]", format: I18n.t("vehicles.import.format.#{ca.object_type}")}]
+    }])
   end
 
   def columns_vehicle_usage_set
@@ -146,6 +148,16 @@ class ImporterVehicleUsageSets < ImporterBase
     end
   end
 
+  def prepare_custom_attributes(row)
+    custom_attributes = {}
+    row.each{ |key, _value|
+      Regexp.new("^custom_attributes\\[(.*)\\]$").match(key.to_s) { |m|
+        custom_attributes[m[1]] = row.delete(m[0])
+      }
+    }
+    row[:custom_attributes] = custom_attributes if custom_attributes.any?
+  end
+
   def import_row(_name, row, options)
     if (row[:time_window_start].nil? || row[:time_window_end].nil?) && @vehicle_usage_set.nil?
       raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.missing_time_window_start_end'))
@@ -154,6 +166,7 @@ class ImporterVehicleUsageSets < ImporterBase
     end
 
     prepare_capacities(row)
+    prepare_custom_attributes(row)
     [:tags, :tags_vehicle].each{ |key| prepare_tags(row, key) }
 
     # For each vehicle, create vehicle and vehicle usage
@@ -164,7 +177,7 @@ class ImporterVehicleUsageSets < ImporterBase
     end
 
     if options[:replace_vehicles]
-      vehicle_attributes = row.slice(*columns_vehicle.keys, :capacities)
+      vehicle_attributes = row.slice(*columns_vehicle.keys, :capacities, :custom_attributes)
       vehicle_attributes[:ref] = vehicle_attributes.delete(:ref_vehicle)
       vehicle_attributes[:name] = vehicle_attributes.delete(:name_vehicle)
       vehicle_attributes[:color] = vehicle_attributes.delete(:color) || vehicle.color
