@@ -173,6 +173,25 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     }
   end
 
+  test 'should export vehicle usage set to csv whith custom attributes' do
+    get :show, id: @vehicle_usage_set, format: :csv
+    assert_response :success
+    assert_valid response
+    assert_equal response.content_type, 'text/csv'
+
+    csv = CSV.new(response.body)
+    headers = csv.first
+    vehicles = [vehicles(:vehicle_three), vehicles(:vehicle_one)]
+    csv.each.with_index{ |line, index|
+      vehicle = vehicles(line[1].to_sym)
+      ['one', 'two', 'three'].each { |key|
+        attr_index = headers.index{ |header| header.include?("[custom_attribute_#{key}]") }
+        assert attr_index
+        assert_equal vehicle.custom_attributes_typed_hash["custom_attribute_#{key}"].to_s, line[attr_index]
+      }
+    }
+  end
+
   test 'should upload' do
     file = ActionDispatch::Http::UploadedFile.new(
       tempfile: File.new(Rails.root.join('test/fixtures/files/import_vehicle_usage_sets_one.csv')),
