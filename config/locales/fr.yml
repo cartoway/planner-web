@@ -1016,7 +1016,7 @@
       'import_stores': 'Importer sites'
       'tags': 'Libellés'
       'clear': 'Supprimer toutes les adresses'
-      'clear_confirm': 'Êtes-vous sûr de vouloir supprimer toutes les adresses? Vos
+      'clear_confirm': 'Êtes-vous sûr de vouloir supprimer toutes les adresses ? Vos
         tournées existantes seront perdues.'
     'form':
       'ref_help': 'Référence libre'
@@ -1062,10 +1062,10 @@
       'replace_no_help': 'Une mise à jour des adresses existantes (référence client
         inchangée) est faite et les nouveaux sont ajoutés à l''application.'
       'replace_yes': 'Supprimer anciennes adresses'
-      'replace_yes_help': 'Efface et remplace toutes les anciennes adresses par ceux de
+      'replace_yes_help': 'Efface et remplace toutes les anciennes adresses par celles de
         l''import. Les anciennes tournées seront également perdues.'
-      'replace_confirm': 'Le fait de supprimer les adresses affectera vos plans des
-        anciennes tournées qui ne comporteront plus que des nouvelles adresses non planifiés.
+      'replace_confirm': 'Le fait de supprimer les adresses affectera vos anciens
+        plans de tournées qui ne comporteront plus que des nouvelles adresses non planifiés.
         Êtes-vous sûr ?'
       'plannings': 'Plans'
       'delete_plannings': 'Supprimer anciens plans'
@@ -1470,7 +1470,7 @@
           les données adresses..'
         'time': '⏱9min.'
         'doc_link': 'Doc - Gestion des adresses'
-        'doc_href': '/manual/04-adresseshtml'
+        'doc_href': '/manual/04-adresses.html'
       'panel_three':
         'title': 'Gestion des sectorisations'
         'content': 'créer manuellement une sectorisation. Créer automatiquement une sectorisation
