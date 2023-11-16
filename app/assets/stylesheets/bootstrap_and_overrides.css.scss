@@ -621,6 +621,16 @@ div.grid-container {
   white-space: nowrap;
 }
 
+.accordion-menu > li > p.padding-list {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: #333;
+  white-space: nowrap;
+}
+
 // Prevent ellipsis on [TextField/Btn] elements when media queries under 767px
 @media screen and (max-width: 767px) {
   .input-group-btn:last-child>.btn, .input-group-btn:last-child>.btn-group {

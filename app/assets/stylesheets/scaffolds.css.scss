@@ -26,9 +26,9 @@
     font-style: normal;
 }
 
-$navbar-height: 50px;
+$navbar-height: 0px;
 $sidebar-width: 350px;
-$sidebar-margins: 10px;
+$sidebar-margins: 0px;
 $focus-background-color: #89C53F;
 $focus-font-color: white;
 
@@ -438,11 +438,11 @@ span.color[data-color=''][data-selected]:after {
       width: 40px !important;
       height: 40px !important;
       right: $sidebar-margins !important;
-      border-radius: 4px !important;
+      border-radius: 0px !important;
     }
     .sidebar-tabs {
       width: 100%;
-      border-radius: 4px !important;
+      border-radius: 0px !important;
     }
     .sidebar-content {
       right: 500px;
