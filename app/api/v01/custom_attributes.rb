@@ -91,5 +91,18 @@ class V01::CustomAttributes < Grape::API
       current_customer.save!
       present custom_attribute, with: V01::Entities::CustomAttribute
     end
+
+    desc 'Delete custom_attribute.',
+      nickname: 'deleteCustomAttribute',
+      success: V01::Status.success(:code_204),
+      failure: V01::Status.failures
+    params do
+      requires :id, type: Integer
+    end
+    delete ':id' do
+      id = ParseIdsRefs.read(params[:id])
+      current_customer.custom_attributes.where(id).first!.destroy
+      status 204
+    end
   end
 end

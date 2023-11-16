@@ -1,6 +1,8 @@
 class CustomAttribute < ApplicationRecord
   default_scope { order(:id) }
 
+  validates :name, uniqueness: { scope: [:object_class, :customer_id] }
+
   belongs_to :customer
 
   enum object_type: {
