@@ -44,7 +44,7 @@ const routesByVehicleShow = function(params) {
 
   // sidebar has to be created before map
   var sidebar = L.control.sidebar('show-routes-by-vehicle', {
-    position: 'right'
+    position: 'left'
   });
   sidebar.open('routes-by-vehicle-pane');
 

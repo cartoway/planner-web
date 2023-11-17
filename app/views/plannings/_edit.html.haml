@@ -2,13 +2,13 @@
 
 #edit-planning.sidebar
   .sidebar-tabs
-    %ul{role: "tablist", style: "list-style-type: none;"}
+    %ul{role: "tablist"}
       %li
-        %a.btn.btn-default.btn-sm{href: "#planning-pane", role: "tab"}
+        %a.btn{href: "#planning-pane", role: "tab"}
           %i.fa.fa-caret-right
   .sidebar-content
     #planning-pane.sidebar-pane
-      .extend_close_panel.pull-right
+      #extend_close_panel.pull-right
         %button.btn.btn-default.btn-sm.extend{title: t('.open_planning_panel'), type: "button"}
           %i.fa.fa-arrows-alt
         %button.btn.btn-default.btn-sm.sidebar-close{title: t('.collapse_planning_panel'), type: "button"}
@@ -132,7 +132,7 @@
           - if @manage_planning[:manage_print]
             = link_to api_web_v01_print_planning_path(@planning), class: 'btn btn-default btn-sm', title: t('.export.print') do
               %i.fa.fa-print.fa-fw"
-        #planning
+      #planning
 
 #map.sidebar-map
 

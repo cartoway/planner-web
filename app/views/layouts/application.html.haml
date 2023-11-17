@@ -1,272 +1,245 @@
 !!!
-%html{:lang => "#{I18n.locale}"}
+%html{lang: "#{I18n.locale}"}
   %head
-    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+    %meta{content: "text/html; charset=UTF-8", "http-equiv": "Content-Type"}/
     = render partial: 'layouts/head'
-  %body{"data-action" => "#{controller.action_name}", "data-controller" => "#{controller.controller_path.gsub('/', '_')}"}
-    #wrapper
-      .navbar.navbar-default.navbar-static-top
-        .navbar-header
-          =# .navbar-toggle is used as the toggle for collapsed navbar content
-          %button.navbar-toggle{"data-target" => ".navbar-responsive-collapse", "data-toggle" => "collapse", :type => "button"}
-            %span.fa.fa-bars.fa-fw
-          -# Be sure to leave the brand out there if you want it shown
-          %a.navbar-brand{:href => "/"}= image_tag request.env['reseller'].logo_small.url || "logo.svg", width: 150, height: 40, alt: request.env['reseller'].name
-        -# Place everything within .navbar-collapse to hide it until above 768px
-        .collapse.navbar-collapse.navbar-responsive-collapse
-          %ul.nav.navbar-nav
-            - if user_signed_in? && current_user.admin?
-              - if can?(:manage, Customer)
-                %li
-                  = link_to edit_admin_reseller_path(current_user.reseller) do
-                    %i.fa.fa-bank.fa-fw
-                    = t 'admin.resellers.menu.reseller'
-                %li
-                  = link_to customers_path do
-                    %i.fa.fa-user.fa-fw
-                    = t 'customers.menu.customers'
-                %li
-                  = link_to admin_users_path do
-                    %i.fa.fa-user.fa-fw
-                    = t 'admin.users.menu.users'
-                %li
-                  = link_to admin_profiles_path do
-                    %i.fa.fa-gear.fa-fw
-                    = t 'admin.profiles.menu.profiles'
-            - if user_signed_in? && current_user.customer
-              - if !@unsubscribed
-                %li#navbar-plan.dropdown
-                  = link_to plannings_path, :class=>"dropdown-toggle", 'data-toggle'=>"dropdown" do
-                    %i.fa.fa-calendar-o.fa-fw
-                    %span.menu_label= t 'plannings.menu.plannings'
-                    %span.caret
-                  %ul.dropdown-menu
-                    %li{class: ('disabled' if current_user.customer.too_many_plannings?)}
-                      = link_to new_planning_path do
-                        %i.fa.fa-plus.fa-fw
-                        = t 'all.verb.new'
-                    %li
-                      = link_to plannings_path do
-                        %i.fa.fa-calendar-o.fa-fw
-                        = t 'all.verb.list'
-                    %li.divider
-                    %li
-                      = link_to zonings_path do
-                        %i.fa.fa-object-ungroup.fa-fw
-                        = t 'zonings.menu.zonings'
-                    %li.divider
-                    - if current_user.customer.default_max_plannings
+  %body{"data-controller": "#{controller.controller_path.gsub('/', '_')}", "data-action": "#{controller.action_name}"}
+    #wrapper.container-fluid
+      .row
+        .menu-left.pull-left.col-xs-1.col-md-2.flex-direction.flex-shrink-0{style: "overflow: hidden;"}
+          %a#logo.d-flex.justify-content-center{href: "/"}= image_tag request.env['reseller'].logo_small.url || "logo.svg", width: 150, height: 40, alt: request.env['reseller'].name
+          -# Place everything within .menu-collapse to hide it until above 768px
+          #accordion.panel-group
+            %ul.menu.nav
+              %li.divider
+              - if user_signed_in? && current_user.admin?
+                - if can?(:manage, Customer)
+                  %li
+                    = link_to edit_admin_reseller_path(current_user.reseller) do
+                      %i.fa.fa-bank.fa-fw
+                      = t 'admin.resellers.menu.reseller'
+                  %li
+                    = link_to customers_path do
+                      %i.fa.fa-user.fa-fw
+                      = t 'customers.menu.customers'
+                  %li
+                    = link_to admin_users_path do
+                      %i.fa.fa-user.fa-fw
+                      = t 'admin.users.menu.users'
+                  %li
+                    = link_to admin_profiles_path do
+                      %i.fa.fa-gear.fa-fw
+                      = t 'admin.profiles.menu.profiles'
+              - if user_signed_in? && current_user.customer
+                - if !@unsubscribed
+                  %li#menu-plan.accordion-section
+                    %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#planningsCollpase'}
+                      %i.fa.fa-calendar-o.fa-fw
+                      %span.menu_label= t 'plannings.menu.plannings'
+                      %span.caret
+                    %ul#planningsCollpase.accordion-menu.collapse
+                      %li{ class: ("disabled" if current_user.customer.too_many_plannings?) }
+                        = link_to new_planning_path do
+                          %i.fa.fa-plus.fa-fw
+                          = t 'all.verb.new'
                       %li
-                        .dropdown-spacing
+                        = link_to plannings_path do
+                          %i.fa.fa-calendar-o.fa-fw
+                          = t 'all.verb.list'
+                      %li.divider
+                      %li
+                        = link_to zonings_path do
+                          %i.fa.fa-object-ungroup.fa-fw
+                          = t 'zonings.menu.zonings'
+                      %li.divider
+                      - if current_user.customer.default_max_plannings
+                        %li
                           - if current_user.customer.too_many_plannings?
-                            %i.fa.text-warning.fa-calendar-times-o{"aria-hidden" => "true"}
-                            %span.text-warning= current_user.customer.plannings.length
+                            %i.fa.text-warning.fa-calendar-times-o{"aria-hidden": "true"}
+                            %span.text-warning
+                              = current_user.customer.plannings.length
                             \/
-                            %span= current_user.customer.default_max_plannings
+                            %span
+                              = current_user.customer.default_max_plannings
                             \- #{t 'plannings.menu.plannings'}
                           - else
-                            %i.fa.fa-calendar-check-o{"aria-hidden" => "true"}
-                            %span= current_user.customer.plannings.length
+                            %i.fa.fa-calendar-check-o{"aria-hidden": "true"}
+                            %span
+                              = current_user.customer.plannings.length
                             \/
-                            %span= current_user.customer.default_max_plannings
+                            %span
+                              = current_user.customer.default_max_plannings
                             \- #{t 'plannings.menu.plannings'}
-                    %li
-                      - current_user.customer.plannings.select(&:id).each do |planning|
-                        = link_to edit_planning_path(planning) do
-                          %i.fa.fa-calendar.fa-fw
-                          = planning.name
-              - else
-                %li#navbar-plan.disabled
-                  %a{:href => "#"}
-                    %i.fa.fa-calendar-o.fa-fw
-                    = t 'plannings.menu.plannings'
-              - if can?(:manage, OrderArray)
-                %li#navbar-orderarray.dropdown
-                  = link_to order_arrays_path, :class=>"dropdown-toggle", 'data-toggle'=>"dropdown" do
-                    %i.fa.fa-check-square-o.fa-fw
-                    %span.menu_label= t 'order_arrays.menu.order_arrays'
+                        - current_user.customer.plannings.select(&:id).each do |planning|
+                          %li{style: "display: inline;" }
+                            = link_to edit_planning_path(planning) do
+                              %i.fa.fa-calendar.fa-fw
+                              = planning.name
+                - else
+                  %li#menu-plan.disabled.accordion-section
+                    %a{href: "#"}
+                      %i.fa.fa-calendar-o.fa-fw
+                      = t 'plannings.menu.plannings'
+                %li#menu-destination.accordion-section
+                  %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#destinationsCollpase'}
+                    %i.fa.fa-map-marker.fa-fw
+                    %span.menu_label= t 'destinations.menu.destinations'
                     %span.caret
-                  %ul.dropdown-menu
-                    %li
-                      = link_to new_order_array_path do
+                  %ul#destinationsCollpase.accordion-menu.collapse
+                    %li{ class: ("disabled" if current_user.customer.too_many_destinations?) }
+                      = link_to new_destination_path do
                         %i.fa.fa-plus.fa-fw
                         = t 'all.verb.new'
                     %li
-                      = link_to order_arrays_path do
-                        %i.fa.fa-check-square-o.fa-fw
+                      = link_to destinations_path do
+                        %i.fa.fa-map-marker.fa-fw
                         = t 'all.verb.list'
                     %li.divider
                     %li
-                      = link_to products_path do
-                        %i.fa.fa-cubes.fa-fw
-                        = t 'products.menu.products'
+                      = link_to tags_path do
+                        %i.fa.fa-tags.fa-fw
+                        = t 'destinations.menu.tags'
                     %li.divider
-                    - current_user.customer.order_arrays.select(&:id).each do |order_array|
-                      %li
-                        = link_to edit_order_array_path(order_array) do
-                          %i.fa.fa-check-square-o.fa-fw
-                          = order_array.name
-              %li#navbar-destination.dropdown
-                = link_to destinations_path, :class=>"dropdown-toggle", 'data-toggle'=>"dropdown" do
-                  %i.fa.fa-map-marker.fa-fw
-                  %span.menu_label= t 'destinations.menu.destinations'
-                  %span.caret
-                %ul.dropdown-menu
-                  %li{ class: ('disabled' if current_user.customer.too_many_destinations?)}
-                    = link_to new_destination_path do
-                      %i.fa.fa-plus.fa-fw
-                      = t 'all.verb.new'
-                  %li
-                    = link_to destinations_path do
-                      %i.fa.fa-map-marker.fa-fw
-                      = t 'all.verb.list'
-                  %li.divider
-                  %li
-                    = link_to tags_path do
-                      %i.fa.fa-tags.fa-fw
-                      = t 'destinations.menu.tags'
-                  %li.divider
-                  %li
-                    = link_to destination_import_path do
-                      %i.fa.fa-upload.fa-fw
-                      = t 'destinations.menu.import'
-                  %li
-                    = link_to destinations_path({format: :csv}) do
-                      %i.fa.fa-download.fa-fw
-                      = t 'destinations.menu.export_spreadsheet_standard'
-                  %li
-                    = link_to destinations_path({format: :excel}) do
-                      %i.fa.fa-download.fa-fw
-                      = t 'destinations.menu.export_spreadsheet_excel'
-                  %li.divider
-                  %li
-                    = link_to destinations_path, method: :delete, data: { confirm: t('destinations.menu.clear_confirm') } do
-                      %i.fa.fa-trash-o.fa-fw
-                      = t 'destinations.menu.clear'
-              %li#navbar-vehicle.dropdown
-                = link_to vehicle_usage_sets_path, :class=>"dropdown-toggle", 'data-toggle'=>"dropdown" do
-                  %i.fa.fa-truck.fa-fw
-                  %span.menu_label= t 'vehicle_usage_sets.menu.vehicle_usage_sets'
-                  %span.caret
-                %ul.dropdown-menu
-                  %li
-                    = link_to vehicle_usage_sets_path do
-                      %i.fa.fa-truck.fa-fw
-                      = t 'all.verb.list'
-                  %li
-                    = link_to import_vehicle_usage_sets_path do
-                      %i.fa.fa-upload.fa-fw
-                      = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
-                  %li.divider
-                  - unless can?(:manage, OrderArray)
+                    %li
+                      = link_to destination_import_path do
+                        %i.fa.fa-upload.fa-fw
+                        = t 'destinations.menu.import'
+                    %li
+                      = link_to destinations_path({format: :csv}) do
+                        %i.fa.fa-download.fa-fw
+                        = t 'destinations.menu.export_spreadsheet_standard'
+                    %li
+                      = link_to destinations_path({format: :excel}) do
+                        %i.fa.fa-download.fa-fw
+                        = t 'destinations.menu.export_spreadsheet_excel'
+                    %li.divider
+                    %li
+                      = link_to destinations_path, method: :delete, data: { confirm: t('destinations.menu.clear_confirm') } do
+                        %i.fa.fa-trash-o.fa-fw
+                        = t 'destinations.menu.clear'
+                %li.pannel.panel-default
+                  %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#vehiclesCollpase'}
+                    %i.fa.fa-truck.fa-fw
+                    %span.menu_label= t 'vehicle_usage_sets.menu.vehicle_usage_sets'
+                    %span.caret
+                  %ul#vehiclesCollpase.accordion-menu.collapse
+                    %li
+                      = link_to vehicle_usage_sets_path do
+                        %i.fa.fa-truck.fa-fw
+                        = t 'all.verb.list'
+                    %li
+                      = link_to import_vehicle_usage_sets_path do
+                        %i.fa.fa-upload.fa-fw
+                        = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
+                    %li.divider
                     %li
                       = link_to deliverable_units_path do
                         %i.fa.fa-archive.fa-fw
                         = t 'vehicle_usage_sets.menu.deliverable_units'
+                    %li
+                      = link_to stores_path do
+                        %i.fa.fa-home.fa-fw
+                        = t 'destinations.menu.stores'
+                    %li
+                      = link_to store_import_path do
+                        %i.fa.fa-upload.fa-fw
+                        = t 'destinations.menu.import_stores'
+                    - if @vehicle_usage_sets.try(:length) == 1
+                      %li.divider
+                      - @vehicle_usage_sets[0].vehicle_usages.each do |vehicle_usage|
+                        %li
+                          = link_to edit_vehicle_usage_path(vehicle_usage) do
+                            %i.fa.fa-truck.fa-fw
+                            = vehicle_usage.vehicle.name
+                  - if current_user.customer.device.configured? :fleet
+                    %li
+                      = link_to reporting_index_path do
+                        %i.fa.fa-line-chart.fa-fw
+                        %span.menu_label= t('reporting.index.title')
+              - if user_signed_in?
+                - if current_user.customer && request.env['reseller'].subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
+                  %li#menu-subscription.subscription.accordion-section
+                    = link_to request.env['reseller'].subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                      %i.fa.fa-rocket.fa-fw
+                      %span.menu_label= t 'web.subscription'
+                - if request.env['reseller'].help_url
+                  %li#menu-help.dropdown.help.accordion-section
+                    = link_to request.env['reseller'].help_url.gsub('{LG}', I18n.locale.to_s), class: 'dropdown-toggle', 'data-toggle': "dropdown" do
+                      %i.fa.fa-info-circle.fa-fw
+                      %span.menu_label= t 'web.help_menu'
+                      %span.caret
+                    %ul.dropdown-menu
+                - if request.env['reseller'].help_search_url
+                  %li{style: "padding-left: 10px; padding-right: 15px;"}
+                    = form_tag request.env['reseller'].help_search_url, method: 'get', target: '_blank' do
+                      = text_field_tag :q, nil, class: 'form-control', placeholder: t('web.help_search_placeholder')
+                - if request.env['reseller'].help_url
+                  %li{ class: ("disabled" if !request.env['reseller'].help_search_url && !request.env['reseller'].contact_urlcurrent_user.customer.too_many_destinations?) }
+                    = link_to request.env['reseller'].help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                      %i.fa.fa-info-circle.fa-fw
+                      = t 'web.help'
+                - if request.env['reseller'].contact_url
                   %li
-                    = link_to stores_path do
-                      %i.fa.fa-home.fa-fw
-                      = t 'destinations.menu.stores'
-                  %li
-                    = link_to store_import_path do
-                      %i.fa.fa-upload.fa-fw
-                      = t 'destinations.menu.import_stores'
-                  - if @vehicle_usage_sets.try(:length) == 1
-                    %li.divider
-                    - @vehicle_usage_sets[0].vehicle_usages.each do |vehicle_usage|
+                    = link_to request.env['reseller'].contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                      %i.fa.fa-phone.fa-fw
+                      = t 'web.contact'
+
+                %li.divider
+
+                %li#menu-settings.dropdown.accordion-section
+                  - if current_user.customer
+                    %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
+                      %i.fa.fa-user.fa-fw
+                      %span.menu_label= current_user.customer.name
+                      %span.caret
+                  - else
+                    %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
+                      %i.fa.fa-user.fa-fw
+                      %span.menu_label= current_user.email
+                      %span.caret
+                  %ul#customerCollpase.accordion-menu.collapse
+                    - if current_user.customer
                       %li
-                        = link_to edit_vehicle_usage_path(vehicle_usage) do
-                          %i.fa.fa-truck.fa-fw
-                          = vehicle_usage.vehicle.name
-                - if current_user.customer.device.configured? :fleet
+                        = link_to edit_customer_path(current_user.customer) do
+                          %i.fa.fa-wrench.fa-fw
+                          = t 'customers.menu.customer'
+                    %li
+                      = link_to edit_user_path(current_user) do
+                        %i.fa.fa-user.fa-fw
+                        = t 'customers.menu.user_settings'
+                    %li.divider
+                    %li
+                      = link_to destroy_user_session_path, method: :delete do
+                        %i.fa.fa-power-off.fa-fw
+                        = t 'users.menu.sign_out'
+              - else
+                %li
+                  = link_to new_user_session_path, class: 'btn' do
+                    %i.fa.fa-user.fa-fw
+                    = t 'devise.sessions.new.sign_in'
+                - if Mapotempo::Application.config.self_care
                   %li
-                    = link_to reporting_index_path do
-                      %i.fa.fa-line-chart.fa-fw
-                      %span.menu_label= t('reporting.index.title')
-          %ul.nav.navbar-nav.pull-right
-            - if user_signed_in?
-              - if current_user.customer && request.env['reseller'].subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
-                %li#navbar-subscription.subscription
-                  = link_to request.env['reseller'].subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                    %i.fa.fa-rocket.fa-fw
-                    %span.menu_label= t 'web.subscription'
-              - if [request.env['reseller'].help_url, request.env['reseller'].help_search_url, request.env['reseller'].contact_url].compact.size > 1
-                %li#navbar-help.dropdown.help
-                  = link_to request.env['reseller'].help_url.gsub('{LG}', I18n.locale.to_s), class: 'dropdown-toggle', 'data-toggle' => "dropdown" do
-                    %i.fa.fa-info-circle.fa-fw
-                    %span.menu_label= t 'web.help_menu'
-                    %span.caret
-                  %ul.dropdown-menu
-              - if request.env['reseller'].help_search_url
-                %li{:style => "padding-left: 10px; padding-right: 15px;"}
-                  = form_tag request.env['reseller'].help_search_url, method: 'get', target: '_blank' do
-                    = text_field_tag :q, nil, class: 'form-control', placeholder: t('web.help_search_placeholder')
-              - if request.env['reseller'].help_url
-                %li{}
-                  if !request.env['reseller'].help_search_url && !request.env['reseller'].contact_url
-                    class="help"
-                  \&gt;
-                  \#{link_to request.env['reseller'].help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do}
-                    %i.fa.fa-info-circle.fa-fw
-                    = t 'web.help'
-              - if request.env['reseller'].contact_url
-                %li
-                  = link_to request.env['reseller'].contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                    %i.fa.fa-phone.fa-fw
-                    = t 'web.contact'
-              - if [request.env['reseller'].help_url, request.env['reseller'].help_search_url, request.env['reseller'].contact_url].compact.size > 1
-          %li#navbar-settings.dropdown
-            - if current_user.customer
-              = link_to [:edit, current_user.customer], class: 'dropdown-toggle', 'data-toggle' => 'dropdown' do
-                %i.fa.fa-user.fa-fw
-                %span.menu_label= current_user.customer.name
-                %span.caret
-            - else
-              %a.dropdown-toggle{"data-toggle" => "dropdown"}
-                %i.fa.fa-user.fa-fw
-                %span.menu_label= current_user.email
-                %span.caret
-            %ul.dropdown-menu.pull-right
-              - if current_user.customer
-                %li
-                  = link_to edit_customer_path(current_user.customer) do
-                    %i.fa.fa-wrench.fa-fw
-                    = t 'customers.menu.customer'
-              %li
-                = link_to edit_user_path(current_user) do
-                  %i.fa.fa-user.fa-fw
-                  = t 'customers.menu.user_settings'
-              %li.divider
-              %li
-                = link_to destroy_user_session_path, method: :delete do
-                  %i.fa.fa-power-off.fa-fw
-                  = t 'users.menu.sign_out'
-          - else
-            %li
-              = link_to new_user_session_path, class: 'btn' do
-                %i.fa.fa-user.fa-fw
-                = t 'devise.sessions.new.sign_in'
-            - if Mapotempo::Application.config.self_care
-              %li
-                = link_to new_user_registration_path, class: 'btn' do
-                  %i.fa.fa-user.fa-fw
-                  = t 'devise.registrations.new.sign_up'
-      .main.container
-        %div
-          %iframe{:name => "click2call_iframe", :style => "display: none"}
-        = yield
-      %footer.hidden-print
+                    = link_to new_user_registration_path, class: 'btn' do
+                      %i.fa.fa-user.fa-fw
+                      = t 'devise.registrations.new.sign_up'
+
+        .main.col-xs-11.col-md-10
+          %div
+            %iframe{name: "click2call_iframe", style: "display: none"}
+          = yield
+      %footer.hidden-print.row
         .col-md-12
-    #default-modal.modal.bootstrap-dialog.type-primary.fade.size-small.in{"aria-hidden" => "false", "data-backdrop" => "static", "data-toggle" => "modal", :role => "dialog", :style => "display:none;", :tabindex => "-1"}
+    #default-modal.modal.bootstrap-dialog.type-primary.fade.size-small.in{"aria-hidden": "false", "data-backdrop": "static", "data-toggle": "modal", role: "dialog", style: "display:none;", tabindex: "-1"}
       .modal-dialog
         .modal-content
           .modal-header
             %h4
-              %i.fa.fa-2.modal-icon{:style => "display:none;"}
+              %i.fa.fa-2.modal-icon{style: "display:none;"}
               %span.modal-title
-              %button.close{"data-dismiss" => "modal", :style => "display:none;", :type => "button"} ×
+              %button.close{"data-dismiss": "modal", style: "display:none;", type: "button"} ×
           .modal-body
           .modal-footer
-            %button.btn.btn-primary{"data-dismiss" => "modal", :style => "display:none;", :type => "button"}= t 'web.dialog.close'
+            %button.btn.btn-primary{"data-dismiss": "modal", style: "display:none;", type: "button"}
+              = t('web.dialog.close')
     = render 'shared/flash_messages'
     = render 'layouts/javascript'

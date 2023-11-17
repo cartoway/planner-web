@@ -15,6 +15,9 @@
 // along with Mapotempo. If not, see:
 // <http://www.gnu.org/licenses/agpl.html>
 //
+
+@import "variables";
+
 @font-face {
     font-family: 'mapotempo';
     src: url(font_path('mapotempo-webfont.eot'));
@@ -30,11 +33,11 @@ $navbar-height: 0px;
 $sidebar-width: 350px;
 $sidebar-margins: 0px;
 $focus-background-color: #89C53F;
-$focus-font-color: white;
+$menu-width: 200px;
 
 body {
   background-color: #fff;
-  color: #333;
+  color: $text-black;
   font-family: verdana, arial, helvetica, sans-serif;
   font-size: 13px;
 
@@ -391,7 +394,7 @@ span.color[data-color=''][data-selected]:after {
   }
 
   .sidebar.leaflet-touch {
-    border: 2px solid rgba(0,0,0,0.2);
+    border: 0px solid rgba(0,0,0,0.2);
   }
 
   .sidebar {
@@ -402,7 +405,7 @@ span.color[data-color=''][data-selected]:after {
       width: 0;
     }
     .sidebar-content {
-      right: 0;
+      left: 0;
       background-color: white;
 
       .sidebar-pane {
@@ -482,10 +485,10 @@ span.color[data-color=''][data-selected]:after {
     top: $navbar-height;
   }
   .sidebar {
-    top: $navbar-height + $sidebar-margins;
+    top: $sidebar-margins;
 
     &.collapsed {
-      top: $navbar-height + $sidebar-margins !important;
+      top: $sidebar-margins !important;
     }
   }
   @media(max-width:768px) {
@@ -660,4 +663,40 @@ input.form-control.number-of-days {
 
 .flash-content {
   display: none;
+}
+
+.menu-left {
+  padding-right: 0;
+  padding-left: 0;
+  border-right: 2px solid $divider-color;
+  height: 100vh;
+
+  .accordion-section {
+    border-bottom:2px solid $divider-color;
+  }
+
+  ul, li {
+    list-style-type: none;
+  }
+}
+
+.main {
+  height: 100vh;
+  padding: 0;
+  border: 0;
+}
+
+#menu-settings {
+  bottom: 0;
+  position: absolute;
+  border-top: 2px solid $divider-color;
+  width: 100%;
+}
+
+#edit-planning {
+  height: 100vh;
+}
+
+#logo {
+  margin: 5px;
 }

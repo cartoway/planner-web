@@ -20,6 +20,8 @@
   To use Glyphicons instead of Font Awesome, replace with "require twitter-bootstrap-static/bootstrap-glyphicons"
   */
 
+@import "variables";
+
 /* FIX */
 
 .container:after {
@@ -35,10 +37,10 @@
 $navbar-height: 50px;
 
 .navbar {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  -o-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: $box-shadow;
+  -moz-box-shadow: $box-shadow;
+  -webkit-box-shadow: $box-shadow;
+  -o-box-shadow: $box-shadow;
   margin-bottom: 10px;
 }
 
@@ -92,7 +94,7 @@ button {
 }
 
 a.btn-default {
-  color: #333;
+  color: $text-black;
 }
 
 .dropdown-menu {
@@ -617,7 +619,7 @@ div.grid-container {
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;
-  color: #333;
+  color: $text-black;
   white-space: nowrap;
 }
 
@@ -627,7 +629,7 @@ div.grid-container {
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;
-  color: #333;
+  color: $text-black;
   white-space: nowrap;
 }
 
@@ -667,4 +669,18 @@ div.grid-container {
 }
 .has-warning .input-group-addon{
   border-color: #8a6d3b !important; // otherwise it's overrided by scaffold css
+}
+
+// Backport
+.d-flex {
+  display: -webkit-box !important;
+  display: -ms-flexbox !important;
+  display: flex !important;
+}
+
+// Backport
+.justify-content-center{
+  -webkit-box-pack: center !important;
+  -ms-flex-pack: center !important;
+  justify-content: center !important;
 }

@@ -19,6 +19,8 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+@import "variables";
+
 $navbar-height: 0px;
 $sidebar-width: 350px;
 $sidebar-margins: 10px;
@@ -202,7 +204,7 @@ $sidebar-margins: 10px;
   }
 
   #map {
-    min-height: 250px;
+    height: 100vh;
 
     .label {
       pointer-events: none;
@@ -220,6 +222,10 @@ $sidebar-margins: 10px;
       color: #FF7F00;
       text-shadow: black 0 1px;
     }
+  }
+
+  .sidebar-left {
+    left: 0 !important;
   }
 
   .sidebar {
@@ -395,7 +401,7 @@ $sidebar-margins: 10px;
   }
 
   #planning_zoning_ids_input a {
-    color: #333;
+    color: $text-black;
   }
 
   .routes {
@@ -542,7 +548,7 @@ $sidebar-margins: 10px;
           padding: 2px 2px 2px 6px;
 
           .fa-reorder {
-            color: #333;
+            color: $text-black;
           }
 
           .fa-reorder:hover {
@@ -749,7 +755,7 @@ $sidebar-margins: 10px;
   display: inline-block;
 }
 
-.extended .extend_close_panel {
+.extended #extend_close_panel {
   position: fixed;
   right: 5px;
   padding-top: 5px;

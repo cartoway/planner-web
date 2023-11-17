@@ -19,6 +19,7 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+@import "variables";
 
 [data-controller='destinations'] {
 
@@ -332,7 +333,7 @@
         }
 
         a.column-edit {
-          color: #333;
+          color: $text-black;
           cursor: pointer;
         }
         .column-def {

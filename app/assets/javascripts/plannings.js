@@ -335,7 +335,7 @@ export const plannings_edit = function(params) {
   L.controlTouchScreenCompliance();
   // sidebar has to be created before map
   var sidebar = L.control.sidebar('edit-planning', {
-    position: 'right'
+    position: 'left'
   });
 
   sidebar.open('planning-pane');
