@@ -23,19 +23,12 @@
     "vscode": {
       "extensions": [
         "donjayamanne.git-extension-pack",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "vayan.haml"
       ]
     }
   },
-  "remoteEnv": {
-    "PATH": "${containerEnv:PATH}",
-    "RAILS_ENV": "development",
-    "NODE_ENV": "development",
-    "POSTGRES_USER": "planner",
-    "POSTGRES_PASSWORD": "planner",
-    "POSTGRES_DATABASE": "planner"
-  },
-  "initializeCommand": "cp ./.dockerignore-development ./.dockerignore"
+  "initializeCommand": "cp ./.dockerignore-development ./.dockerignore && cp ./docker/production.rb.devcontainer config/environments/production.rb"
   // Uncomment the next line if you want start specific services in your Docker Compose config.
   // "runServices": [],
   // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
