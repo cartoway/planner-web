@@ -1,0 +1,46 @@
+/*
+// Copyright © Mapotempo, 2013-2017
+//
+// This file is part of Mapotempo.
+//
+// Mapotempo is free software. You can redistribute it and/or
+// modify since you respect the terms of the GNU Affero General
+// Public License as published by the Free Software Foundation,
+// either version 3 of the License, or (at your option) any later version.
+//
+// Mapotempo is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE.  See the Licenses for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with Mapotempo. If not, see:
+// <http://www.gnu.org/licenses/agpl.html>
+//
+*/
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the top of the
+ * compiled file, but it's generally better to create a new file per style scope.
+ *
+
+ * From gem
+ *= require jquery.timeentry
+ *= require leaflet_numbered_markers
+ *= require bootstrap-wysihtml5
+ *= require twitter-bootstrap-static/bootstrap
+
+ * font awesome must be after bootstrap to overwrite glyphicons
+ *= require bootstrap_and_overrides
+ *= require jquery-ui-overrides
+
+ * From local
+ *= require_self
+ *= require_tree .
+ */
+
+ @import "font-awesome";

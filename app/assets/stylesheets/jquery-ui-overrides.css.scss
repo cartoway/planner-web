@@ -1,9 +1,12 @@
+
+@import "variables";
+
 .list-group-item {
   position: relative;
   display: block;
   padding: 10px 15px;
   margin-bottom: -1px;
-  background-color: #fff;
+  background-color: $white-background;
   border: 1px solid #ddd !important;
 }
 
@@ -14,7 +17,7 @@
  }
 
  .ui-autocomplete {
-  background-color: white;
+  background-color: $white-background;;
   color: black;
   border: 1px solid #cccccc;
   overflow-y: auto;
