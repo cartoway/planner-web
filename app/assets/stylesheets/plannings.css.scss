@@ -22,7 +22,7 @@
 @import "variables";
 
 $navbar-height: 0px;
-$sidebar-width: 350px;
+$sidebar-width: 400px;
 $sidebar-margins: 10px;
 
 [data-controller='plannings'][data-action='edit'] {
@@ -101,7 +101,7 @@ $sidebar-margins: 10px;
 
 [data-controller='plannings'] {
   .sidebar.extended {
-    top: $navbar-height !important;
+    top: $planbar-height + $navbar-height !important;
   }
 }
 [data-controller='api_web_v01_plannings'] {
@@ -226,6 +226,8 @@ $sidebar-margins: 10px;
 
   .sidebar-left {
     left: 0 !important;
+    top: $planbar-height !important;
+    bottom: 0;
   }
 
   .sidebar {
@@ -384,7 +386,7 @@ $sidebar-margins: 10px;
           display: inline-block;
           vertical-align: top;
           margin: 2px;
-          max-width: 350px;
+          max-width: 400px;
 
           .stops {
             display: block !important;
@@ -759,4 +761,34 @@ $sidebar-margins: 10px;
   position: fixed;
   right: 5px;
   padding-top: 5px;
+}
+
+.sidebar-left ~ .sidebar-map .leaflet-left {
+  left: $sidebar-width;
+}
+
+.sidebar-left ~ .sidebar-map .leaflet-top {
+  top: $planbar-height;
+}
+
+.planbar{
+  width: 100%;
+  position: absolute;
+  height: $planbar-height;
+  z-index: 1;
+  padding-left: 5px;
+  background-color: $white-background;
+  border-bottom: 1px solid $divider-color;
+
+  .col {
+    padding: 3px;
+    align-items: flex-end;
+  }
+  .form-group {
+    margin-bottom: 0px;
+
+    .label {
+      margin-bottom: 2px;
+    }
+  }
 }

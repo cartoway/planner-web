@@ -24,9 +24,9 @@
     <legend class="scheduler-border">
       <%= t '.limits' %>
     </legend>
-    <%= f.number_field :max_vehicles, min: 1, required: (Mapotempo::Application.config.manage_vehicles_only_admin && current_user.admin?), disabled: (Mapotempo::Application.config.manage_vehicles_only_admin && !current_user.admin?), input_group: content_tag('i', '', class: 'fa fa-truck fa-fw') %>
+    <%= f.number_field :max_vehicles, min: 1, required: (Mapotempo::Application.config.manage_vehicles_only_admin && current_user.admin?), disabled: (Mapotempo::Application.config.manage_vehicles_only_admin && !current_user.admin?), input_group: content_tag('i', '', class: 'fa fa-truck-field fa-fw') %>
     <% if current_user.admin? %>
-      <%= f.number_field :max_plannings, placeholder: (Mapotempo::Application.config.max_plannings_default || Mapotempo::Application.config.max_plannings) && t('.max_plannings_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.max_plannings_default || Mapotempo::Application.config.max_plannings)), min: 1, input_group: content_tag('i', '', class: 'fa fa-calendar-o fa-fw') do %>
+      <%= f.number_field :max_plannings, placeholder: (Mapotempo::Application.config.max_plannings_default || Mapotempo::Application.config.max_plannings) && t('.max_plannings_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.max_plannings_default || Mapotempo::Application.config.max_plannings)), min: 1, input_group: content_tag('i', '', class: 'fa fa-map-location fa-fw') do %>
         <p class="help-block"><%= t '.max_plannings_help' %></p>
       <% end %>
       <%= f.number_field :max_zonings, placeholder: (Mapotempo::Application.config.max_zonings_default || Mapotempo::Application.config.max_zonings) && t('.max_zonings_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.max_zonings_default || Mapotempo::Application.config.max_zonings)), min: 1, input_group: content_tag('i', '', class: 'fa fa-object-ungroup fa-fw') do %>
@@ -35,7 +35,7 @@
       <%= f.number_field :max_destinations, placeholder: (Mapotempo::Application.config.max_destinations_default || Mapotempo::Application.config.max_destinations) && t('.max_destinations_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.max_destinations_default || Mapotempo::Application.config.max_destinations)), min: 1, input_group: content_tag('i', '', class: 'fa fa-map-marker fa-fw') do %>
         <p class="help-block"><%= t '.max_destinations_help' %></p>
       <% end %>
-      <%= f.number_field :max_vehicle_usage_sets, placeholder: (Mapotempo::Application.config.max_vehicle_usage_sets_default || Mapotempo::Application.config.max_vehicle_usage_sets) && t('.max_vehicle_usage_sets_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.max_vehicle_usage_sets_default || Mapotempo::Application.config.max_vehicle_usage_sets)), min: 1, input_group: content_tag('i', '', class: 'fa fa-truck fa-fw') do %>
+      <%= f.number_field :max_vehicle_usage_sets, placeholder: (Mapotempo::Application.config.max_vehicle_usage_sets_default || Mapotempo::Application.config.max_vehicle_usage_sets) && t('.max_vehicle_usage_sets_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.max_vehicle_usage_sets_default || Mapotempo::Application.config.max_vehicle_usage_sets)), min: 1, input_group: content_tag('i', '', class: 'fa fa-truck-field fa-fw') do %>
         <p class="help-block"><%= t '.max_vehicle_usage_sets_help' %></p>
       <% end %>
     <% end %>
@@ -128,7 +128,7 @@
       <div class="col-md-6">
         <div class="input-group">
           <%= number_field_tag 'customer[router_options][trailers]', @customer.router_options['trailers'], min: 0, max: 4, step: 1, class: 'form-control' %>
-          <span class="input-group-addon"><i class="fa fa-truck fa-fw"></i> </span>
+          <span class="input-group-addon"><i class="fa fa-truck-field fa-fw"></i> </span>
         </div>
         <p class="help-block"><%= t('customers.form.router_options_trailers_range', from: 0, to: 4) %></p>
       </div>
@@ -507,7 +507,7 @@
                       <%= link_to '#', id: 'create-customer-device',  class: "btn btn-default btn-sm", disabled: @customer.users.empty?, remote: true do %><i class="fa fa-plus-square fa-fw"></i> <%= t('admin.vehicles.devices.create_company') %><% end %>
                     <% end %>
                     <% if definition[:has_create_user] %>
-                      <%= link_to '#', id: 'create-user-device',  class: "btn btn-default btn-sm", disabled: 'disabled', remote: true do %><i class="fa fa-user-plus fa-fw"></i> <%= t('admin.vehicles.devices.create_drivers') %><% end %>
+                      <%= link_to '#', id: 'create-user-device',  class: "btn btn-default btn-sm", disabled: 'disabled', remote: true do %><i class="fa fa-user-gear-plus fa-fw"></i> <%= t('admin.vehicles.devices.create_drivers') %><% end %>
                     <% end %>
                   <% end %>
                 </div>

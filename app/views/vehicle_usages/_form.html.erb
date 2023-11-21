@@ -196,7 +196,7 @@
           <div class="col-md-6">
             <div class="input-group">
               <%= number_field_tag 'vehicle_usage[vehicle][router_options][trailers]', @vehicle_usage.vehicle.router_options['trailers'], { min: 0, max: 4, placeholder: !@vehicle_usage.vehicle.customer.trailers.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.trailers) : '', class: 'form-control' } %>
-              <span class="input-group-addon"><i class="fa fa-truck fa-fw"></i> </span>
+              <span class="input-group-addon"><i class="fa fa-truck-field fa-fw"></i> </span>
             </div>
             <p class="help-block"><%= t('customers.form.router_options_trailers_range', from: 0, to: 4) %></p>
           </div>
@@ -405,7 +405,7 @@
           <%= collection_select :vehicle_usage, :store_stop_id, @vehicle_usage.vehicle.customer.stores, :id, :name, {
             include_blank: t('vehicle_usages.form.store.default') + ' (' + (@vehicle_usage.vehicle_usage_set.store_stop ? @vehicle_usage.vehicle_usage_set.store_stop.name : t('vehicle_usages.form.store.none')) + ')'}, {
                                   class: 'form-control width_1_2' } %>
-          <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-home fa-fw') %></span>
+          <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-store fa-fw') %></span>
         </div>
         <p class="help-block"><%= t '.stores_help' %></p>
       </div>

@@ -7,7 +7,7 @@
         <% if visit.destination.customer.enable_multi_visits || !current_page?(action: 'new') %>
           <div class="form-group destroy-block">
             <div class="col-md-3">
-              <button type="button" class="btn btn-default btn-sm flag-destroy" title="<%= t('.delete_help') %>"><i class="fa fa-trash-o fa-fw"></i> <%= t('.delete') %></button>
+              <button type="button" class="btn btn-default btn-sm flag-destroy" title="<%= t('.delete_help') %>"><i class="fa fa-trash fa-fw"></i> <%= t('.delete') %></button>
             </div>
           </div>
         <% end %>

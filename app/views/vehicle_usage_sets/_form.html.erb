@@ -11,7 +11,7 @@
           class: 'form-control width_1_2' } %>
         <%= collection_select :vehicle_usage_set, :store_stop_id, @vehicle_usage_set.customer.stores, :id, :name, { include_blank: t('vehicle_usage_sets.form.store.none')}, {
           class: 'form-control width_1_2' } %>
-        <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-home fa-fw') %></span>
+        <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-store fa-fw') %></span>
       </div>
       <p class="help-block"><%= t '.stores_help' %></p>
     </div>

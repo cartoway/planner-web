@@ -43,7 +43,7 @@ module DeliverableByVehiclesHelper
 
       {
         label: du.label,
-        icon: du.icon ? du.icon : 'fa-archive',
+        icon: du.icon ? du.icon : 'fa-dumpster',
         average: average,
         quantities: quantities_map
       }

@@ -14,13 +14,13 @@
       </li>
       <li role="users">
         <a href="#users" aria-controls="users" role="tab" data-toggle="tab">
-          <i class="fa fa-users" aria-hidden="true"></i>
+          <i class="fa fa-user-gears" aria-hidden="true"></i>
           <%= t '.user.list' %>
         </a>
       </li>
       <li role="vehicles">
         <a href="#vehicles" aria-controls="vehicles" role="tab" data-toggle="tab">
-          <i class="fa fa-truck" aria-hidden="true"></i>
+          <i class="fa fa-truck-field" aria-hidden="true"></i>
           <%= t '.vehicles.list' %>
         </a>
       </li>
@@ -79,7 +79,7 @@
                       <%= t 'all.verb.edit' %>
                     <% end %>
                     <%= link_to admin_user_path(user), class: 'btn btn-danger btn-sm', method: :delete, data: {confirm: t('all.verb.destroy_confirm') } do %>
-                      <i class="fa fa-trash-o fa-fw"></i>
+                      <i class="fa fa-trash fa-fw"></i>
                       <%= t 'all.verb.destroy' %>
                     <% end %>
                   </div>
@@ -119,7 +119,7 @@
             <td class="text-right"><%= vehicle_devices vehicle %></td>
             <td class="text-right">
             <%= link_to delete_vehicle_customer_path(@customer, vehicle_id: vehicle.id), class: 'btn btn-danger btn-sm', method: :delete, data: {confirm: t('all.verb.destroy_confirm') } do %>
-            <i class="fa fa-trash-o fa-fw"></i>
+            <i class="fa fa-trash fa-fw"></i>
             <%= t 'all.verb.destroy' %>
             <% end %>
             </td>
@@ -129,7 +129,7 @@
       </table>
       <div id="delete-action">
         <div class="form-inline">
-          <%= button_tag type: :submit, class: "btn btn-danger btn-sm form-group" do %><i class="fa fa-trash-o fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+          <%= button_tag type: :submit, class: "btn btn-danger btn-sm form-group" do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
         </div>
       </div>
       </div>

@@ -79,13 +79,13 @@ class V01::DeliverableUnitsTest < ActiveSupport::TestCase
 
   test 'should update a deliverable unit' do
     @deliverable_unit.label = 'new label'
-    put api(@deliverable_unit.id), label: 'riri', icon: 'fa-home'
+    put api(@deliverable_unit.id), label: 'riri', icon: 'fa-store'
     assert last_response.ok?, last_response.body
 
     get api(@deliverable_unit.id)
     assert last_response.ok?, last_response.body
     assert_equal 'riri', JSON.parse(last_response.body)['label']
-    assert_equal 'fa-home', JSON.parse(last_response.body)['icon']
+    assert_equal 'fa-store', JSON.parse(last_response.body)['icon']
   end
 
   test 'should destroy a deliverable unit' do

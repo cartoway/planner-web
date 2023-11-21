@@ -49,7 +49,7 @@
             <% end %>
           </div>
           <div class="">
-            <h5><i class="fa fa-truck fa-fw"></i> <%= t 'plannings.edit.dialog.optimization.vehicles.title' %></h5>
+            <h5><i class="fa fa-truck-field fa-fw"></i> <%= t 'plannings.edit.dialog.optimization.vehicles.title' %></h5>
             <div class="row">
               <div class="col-xs-7">
                 <%= t 'plannings.edit.dialog.optimization.vehicles.router_dimension' %>
@@ -79,7 +79,7 @@
           </div>
           <% if current_user.customer.deliverable_units.any?{ |du| current_user.customer.vehicles.any?{ |v| v.default_capacities[du.id] } } %>
           <div class="">
-            <h5><i class="fa fa-archive fa-fw"></i> <%= t 'plannings.edit.dialog.optimization.deliverable_units.title' %></h5>
+            <h5><i class="fa fa-dumpster fa-fw"></i> <%= t 'plannings.edit.dialog.optimization.deliverable_units.title' %></h5>
             <% current_user.customer.deliverable_units.each do |du| %>
               <% if current_user.customer.vehicles.any?{ |v| v.default_capacities[du.id] } %>
               <div class="row">

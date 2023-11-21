@@ -73,7 +73,7 @@ h1 {
 }
 
 .input-group-btn .btn-default {
-  color: #428bca;
+  color: $primary-color;
 }
 
 .input-group-addon.input-sm, .input-group-sm .input-group-btn .btn {
@@ -130,26 +130,6 @@ select.form-control[required]:not(:disabled) {
 
 label .popover {
   font-weight: normal;
-}
-
-@media(min-width: 992px) {
-  .sidebar-pane form {
-    .col-md-2 {
-      width: 21.41%;
-      padding-left: 10px;
-    }
-
-    .col-md-10 {
-      width: 78.59%;
-      padding-right: 12px;
-      padding-left: 6px;
-    }
-
-    .col-md-offset-2 {
-      margin-left: 21.41%;
-      padding-left: 7px;
-    }
-  }
 }
 
 /** External look-like **/
@@ -384,7 +364,7 @@ body.api-web {
   }
   #map {
     position: absolute;
-    z-index: -1;
+    z-index: 0;
     top: 0px;
     left: 0;
     right: 0;
@@ -669,6 +649,12 @@ div.grid-container {
 }
 .has-warning .input-group-addon{
   border-color: #8a6d3b !important; // otherwise it's overrided by scaffold css
+}
+
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 // Backport

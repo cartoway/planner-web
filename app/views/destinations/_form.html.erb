@@ -62,7 +62,7 @@
         <div id="geocoding_level"<% unless @destination.geocoding_level %> style="display: none"<% end %>>
           <input type="hidden" name="destination[geocoding_level]" value="<%= @destination.geocoding_level %>">
           <i id="geocoding-level-point" class="fa fa-map-marker fa-fw geocoding-level"<% unless @destination.point? %> style="display: none"<% end %>></i>
-          <i id="geocoding-level-house" class="fa fa-home fa-fw geocoding-level"<% unless @destination.house? %> style="display: none"<% end %>></i>
+          <i id="geocoding-level-house" class="fa fa-store fa-fw geocoding-level"<% unless @destination.house? %> style="display: none"<% end %>></i>
           <i id="geocoding-level-intersection" class="fa fa-times fa-fw geocoding-level"<% unless @destination.intersection? %> style="display: none"<% end %>></i>
           <i id="geocoding-level-street" class="fa fa-road fa-fw geocoding-level"<% unless @destination.street? %> style="display: none"<% end %>></i>
           <i id="geocoding-level-city" class="fa fa-exclamation-triangle fa-fw geocoding-level"<% unless @destination.city? %> style="display: none"<% end %>></i>

@@ -65,7 +65,7 @@
         <td class="text-right">
           <%= link_to planning_duplicate_path(planning), disabled: current_user.customer.too_many_plannings?, :class => "btn btn-default btn-sm", method: :patch do %><i class="fa fa-copy fa-fw"></i> <%= t 'all.verb.duplicate' %><% end %>
           <%= link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
-          <%= link_to planning, :class => "btn btn-danger btn-sm", method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash-o fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <%= link_to planning, :class => "btn btn-danger btn-sm", method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
         </td>
       </tr>
     <% end %>
@@ -74,10 +74,10 @@
 
 <div id="multiple_plannings_actions">
   <div class="form-inline">
-    <%= button_tag type: :submit, class: "btn btn-danger btn-sm form-group", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash-o fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm form-group", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
     <div class="dropdown form-group">
       <button id="btn-export" class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-        <i class="fa fa-share-square-o fa-fw"></i> <%= t('.export_selection') %> <span class="caret"></span>
+        <i class="fa fa-share-nodes fa-fw"></i> <%= t('.export_selection') %> <span class="caret"></span>
       </button>
       <ul class="dropdown-menu" role="menu">
         <li>
@@ -104,8 +104,8 @@
     <div class="vehicle-action">
       <h4><%= t('.vehicle_action')%></h4>
       <%= select_tag 'vehicle_id', options_from_collection_for_select(@customer.vehicles, 'id', 'name'), include_blank: true, class: 'form-control' %>
-      <button id="routes-by-vehicle" class="btn btn-default btn-sm"><i class="fa fa-truck fa-wd"></i> <%= t('.routes_by_vehicles') %></button>
-      <button id="deliverables-by-vehicle" class="btn btn-default btn-sm"><i class="fa fa-archive fa-wd"></i>  <%= t('.deliverables_by_vehicles') %></button>
+      <button id="routes-by-vehicle" class="btn btn-default btn-sm"><i class="fa fa-truck-field fa-wd"></i> <%= t('.routes_by_vehicles') %></button>
+      <button id="deliverables-by-vehicle" class="btn btn-default btn-sm"><i class="fa fa-dumpster fa-wd"></i>  <%= t('.deliverables_by_vehicles') %></button>
     </div>
   </div>
 </div>

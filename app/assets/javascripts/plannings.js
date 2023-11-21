@@ -353,8 +353,8 @@ export const plannings_edit = function(params) {
           var isMoving = pos.speed && (Date.parse(pos.time) > Date.now() - 600 * 1000);
           var direction_icon = pos.direction ? '<i class="fa fa-location-arrow fa-stack-1x vehicle-direction" style="transform: rotate(' + (parseInt(pos.direction) - 45) + 'deg);" />' : '';
           var iconContent = isMoving ?
-            '<span class="fa-stack" data-route_id="' + route.route_id + '"><i class="fa fa-truck fa-stack-2x vehicle-icon pulse" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>' + direction_icon + '</span>' :
-            '<i class="fa fa-truck fa-lg vehicle-icon" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>';
+            '<span class="fa-stack" data-route_id="' + route.route_id + '"><i class="fa fa-truck-field fa-stack-2x vehicle-icon pulse" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>' + direction_icon + '</span>' :
+            '<i class="fa fa-truck-field fa-lg vehicle-icon" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>';
           vehicleLayer.removeLayer(vehicleMarkers[pos.vehicle_id]);
 
           var icon = new L.divIcon({

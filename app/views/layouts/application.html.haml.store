@@ -19,11 +19,11 @@
                       = t 'admin.resellers.menu.reseller'
                   %li
                     = link_to customers_path do
-                      %i.fa.fa-user.fa-fw
+                      %i.fa.fa-user-gear.fa-fw
                       = t 'customers.menu.customers'
                   %li
                     = link_to admin_users_path do
-                      %i.fa.fa-user.fa-fw
+                      %i.fa.fa-user-gear.fa-fw
                       = t 'admin.users.menu.users'
                   %li
                     = link_to admin_profiles_path do
@@ -33,7 +33,7 @@
                 - if !@unsubscribed
                   %li#sidebar-plan
                     %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#planningsCollpase'}
-                      %i.fa.fa-calendar-o.fa-fw
+                      %i.fa.fa-map-location.fa-fw
                       %span.menu_label= t 'plannings.menu.plannings'
                       %span.caret
                     %ul#planningsCollpase.accordion-menu.collapse
@@ -43,7 +43,7 @@
                           = t 'all.verb.new'
                       %li
                         = link_to plannings_path do
-                          %i.fa.fa-calendar-o.fa-fw
+                          %i.fa.fa-map-location.fa-fw
                           = t 'all.verb.list'
                       %li.divider
                       %li
@@ -73,7 +73,7 @@
                 - else
                   %li#sidebar-plan.disabled
                     %a{href: "#"}
-                      %i.fa.fa-calendar-o.fa-fw
+                      %i.fa.fa-map-location.fa-fw
                       = t 'plannings.menu.plannings'
                 %li#sidebar-destination
                   %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#destinationsCollpase'}
@@ -110,17 +110,17 @@
                     %li.divider
                     %li
                       = link_to destinations_path, method: :delete, data: { confirm: t('destinations.menu.clear_confirm') } do
-                        %i.fa.fa-trash-o.fa-fw
+                        %i.fa.fa-trash.fa-fw
                         = t 'destinations.menu.clear'
                 %li.pannel.panel-default
                   %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#vehiclesCollpase'}
-                    %i.fa.fa-truck.fa-fw
+                    %i.fa.fa-truck-field.fa-fw
                     %span.menu_label= t 'vehicle_usage_sets.menu.vehicle_usage_sets'
                     %span.caret
                   %ul#vehiclesCollpase.accordion-menu.collapse
                     %li
                       = link_to vehicle_usage_sets_path do
-                        %i.fa.fa-truck.fa-fw
+                        %i.fa.fa-truck-field.fa-fw
                         = t 'all.verb.list'
                     %li
                       = link_to import_vehicle_usage_sets_path do
@@ -129,11 +129,11 @@
                     %li.divider
                     %li
                       = link_to deliverable_units_path do
-                        %i.fa.fa-archive.fa-fw
+                        %i.fa.fa-dumpster.fa-fw
                         = t 'vehicle_usage_sets.menu.deliverable_units'
                     %li
                       = link_to stores_path do
-                        %i.fa.fa-home.fa-fw
+                        %i.fa.fa-store.fa-fw
                         = t 'destinations.menu.stores'
                     %li
                       = link_to store_import_path do
@@ -144,7 +144,7 @@
                       - @vehicle_usage_sets[0].vehicle_usages.each do |vehicle_usage|
                         %li
                           = link_to edit_vehicle_usage_path(vehicle_usage) do
-                            %i.fa.fa-truck.fa-fw
+                            %i.fa.fa-truck-field.fa-fw
                             = vehicle_usage.vehicle.name
                   - if current_user.customer.device.configured? :fleet
                     %li
@@ -181,12 +181,12 @@
                 %li#sidebar-settings.dropdown
                   - if current_user.customer
                     %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
-                      %i.fa.fa-user.fa-fw
+                      %i.fa.fa-user-gear.fa-fw
                       %span.menu_label= current_user.customer.name
                       %span.caret
                   - else
                     %a{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
-                      %i.fa.fa-user.fa-fw
+                      %i.fa.fa-user-gear.fa-fw
                       %span.menu_label= current_user.email
                       %span.caret
                   %ul#customerCollpase.accordion-menu.collapse
@@ -197,7 +197,7 @@
                           = t 'customers.menu.customer'
                     %li
                       = link_to edit_user_path(current_user) do
-                        %i.fa.fa-user.fa-fw
+                        %i.fa.fa-user-gear.fa-fw
                         = t 'customers.menu.user_settings'
                     %li.divider
                     %li
@@ -207,12 +207,12 @@
               - else
                 %li
                   = link_to new_user_session_path, class: 'btn' do
-                    %i.fa.fa-user.fa-fw
+                    %i.fa.fa-user-gear.fa-fw
                     = t 'devise.sessions.new.sign_in'
                 - if Mapotempo::Application.config.self_care
                   %li
                     = link_to new_user_registration_path, class: 'btn' do
-                      %i.fa.fa-user.fa-fw
+                      %i.fa.fa-user-gear.fa-fw
                       = t 'devise.registrations.new.sign_up'
         .col-xs-11.col-md-10
           .main.row

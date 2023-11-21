@@ -59,7 +59,7 @@
         <div id="geocoding_level"<% if ! @store.geocoding_level %> style="display: none"<% end %>>
           <input type="hidden" name="store[geocoding_level]" value="<%= @store.geocoding_level %>">
           <i id="geocoding-level-point" class="fa fa-map-marker fa-fw geocoding-level"<% if ! @store.point? %> style="display: none"<% end %>></i>
-          <i id="geocoding-level-house" class="fa fa-home fa-fw geocoding-level"<% if ! @store.house? %> style="display: none"<% end %>></i>
+          <i id="geocoding-level-house" class="fa fa-store fa-fw geocoding-level"<% if ! @store.house? %> style="display: none"<% end %>></i>
           <i id="geocoding-level-intersection" class="fa fa-times fa-fw geocoding-level"<% if ! @store.intersection? %> style="display: none"<% end %>></i>
           <i id="geocoding-level-street" class="fa fa-road fa-fw geocoding-level"<% if ! @store.street? %> style="display: none"<% end %>></i>
           <i id="geocoding-level-city" class="fa fa-exclamation-triangle fa-fw geocoding-level"<% if ! @store.city? %> style="display: none"<% end %>></i>
@@ -105,9 +105,9 @@
              [t('stores.form.other_icons'),
               @grouped_icons[1].map{ |icon| [icon, icon, {:data => {:content => "<i class='fa fa-fw #{icon}'></i> #{icon}"}, :selected => (@store.icon == icon) ? true : nil }]}
             ]
-          ]), include_blank: t('web.form.default', n: 'fa-home'), class: 'form-control width_1_2 selectpicker', 'data-live-search' => true  %>
+          ]), include_blank: t('web.form.default', n: 'fa-store'), class: 'form-control width_1_2 selectpicker', 'data-live-search' => true  %>
           <%= select_tag 'store[icon_size]', options_for_select([[t('.icon_size.small'), :small], [t('.icon_size.medium'), :medium], [t('.icon_size.large'), :large]], @store.icon_size), include_blank: t('web.form.default', n: t('.icon_size.large')), class: 'form-control width_1_2' %>
-          <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-home fa-fw') %></span>
+          <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-store fa-fw') %></span>
         </div>
       </div>
     </div>

@@ -30,7 +30,7 @@
 }
 
 $navbar-height: 0px;
-$sidebar-width: 350px;
+$sidebar-width: 400px;
 $sidebar-margins: 0px;
 $focus-background-color: #89C53F;
 $menu-width: 200px;
@@ -387,7 +387,7 @@ span.color[data-color=''][data-selected]:after {
 
   #map {
     position: absolute;
-    z-index: -1;
+    z-index: 0;
     left: 0;
     right: 0;
     bottom: 0;
@@ -402,6 +402,7 @@ span.color[data-color=''][data-selected]:after {
     z-index: 3;
 
     .sidebar-tabs {
+      top: $planbar-height;
       width: 0;
     }
     .sidebar-content {
@@ -439,12 +440,13 @@ span.color[data-color=''][data-selected]:after {
   .collapsed {
     &.sidebar {
       width: 40px !important;
-      height: 40px !important;
       right: $sidebar-margins !important;
       border-radius: 0px !important;
     }
     .sidebar-tabs {
       width: 100%;
+      height: 40px;
+      align-content: center;
       border-radius: 0px !important;
     }
     .sidebar-content {
@@ -482,7 +484,7 @@ span.color[data-color=''][data-selected]:after {
 [data-controller='zonings'][data-action='update'],
 [data-controller='routes_by_vehicles'][data-action='show'] {
   #map {
-    top: $navbar-height;
+    top: $navbar-height + $planbar-height;
   }
   .sidebar {
     top: $sidebar-margins;
@@ -541,7 +543,7 @@ span.color[data-color=''][data-selected]:after {
   transform: translateX(-5px);
 }
 #customised_plus_color{
-  color: #428bca;
+  color: $primary-color;
 }
 
 .subscription {
@@ -671,6 +673,10 @@ input.form-control.number-of-days {
   border-right: 2px solid $divider-color;
   height: 100vh;
 
+  .menu-title {
+    font-size: 24px;
+  }
+
   .accordion-section {
     border-bottom:2px solid $divider-color;
   }
@@ -694,7 +700,7 @@ input.form-control.number-of-days {
 }
 
 #edit-planning {
-  height: 100vh;
+  max-height: 100%;
 }
 
 #logo {

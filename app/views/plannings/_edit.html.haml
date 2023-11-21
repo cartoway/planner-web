@@ -1,4 +1,8 @@
 - content_for :title, t('.title')
+%div
+  .planbar.d-flex.align-items-end
+    - if @manage_planning[:manage_edit]
+      = render 'flat_form'
 
 #edit-planning.sidebar
   .sidebar-tabs
@@ -23,8 +27,7 @@
           %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{"data-url": @planning.customer.external_callback_url, type: "button"}
             %i.fa.fa-desktop.fa-fw
             = @planning.customer.default_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
-      - if @manage_planning[:manage_edit]
-        = render 'form'
+
       - if @manage_planning[:manage_zoning]
         = twitter_bootstrap_form_for [:apply_zonings, @planning], { layout: :horizontal, default_div_class: 'col-lg-10 col-md-10', html: { id: "planning_zoning_#{@planning.id}", class: 'form-horizontal update-zonings-form', title: t('plannings.edit.zonings.label') }} do |f|
           = zoning_select f, @planning, t('plannings.edit.zonings.label')
@@ -73,7 +76,7 @@
         - if @manage_planning[:manage_export]
           .dropdown.btn-group
             %a.btn.btn-default.btn-sm.right.export.dropdown-toggle{"data-toggle": "dropdown", title: t('.exports'), type: "button"}
-              %i.fa.fa-share-square-o
+              %i.fa.fa-share-nodes
               %span.caret
             %ul.dropdown-menu
               %li.dropdown-header

@@ -132,7 +132,7 @@ module Mapotempo
     config.route_color_default = config.destination_color_default
 
     config.store_color_default = '#000000'.freeze
-    config.store_icon_default = 'fa-home'.freeze
+    config.store_icon_default = 'fa-store'.freeze
     config.store_icon_size_default = 'large'.freeze
   end
 end
@@ -154,7 +154,7 @@ class TwitterBootstrapFormFor::FormBuilder
     value ||= submit_default_value
     @template.button_tag(options) {
       if icon != nil
-        icon ||= 'fa-floppy-o'
+        icon ||= 'fa-floppy-disk'
         @template.concat @template.content_tag('i', nil, class: "fa #{icon} fa-fw")
       end
       @template.concat ' '

@@ -4,7 +4,7 @@
     <% if route.ref %>
       <%= route.ref %> -
     <% end %>
-    <i class="fa fa-truck fa-fw"></i><%= route.vehicle_usage.vehicle.name %>
+    <i class="fa fa-truck-field fa-fw"></i><%= route.vehicle_usage.vehicle.name %>
     <% if route.planning.customer.enable_orders && route.planning.order_array %>
       -
       <i class="fa fa-check-square-o fa-fw"></i>
@@ -182,7 +182,7 @@
               <span><i class="fa fa-clock-o fa-fw"></i> <%= t 'plannings.edit.error.out_of_window' %></span>
             <% end %>
             <% if stop.out_of_capacity %>
-              <span><i class="fa fa-archive fa-fw"></i> <%= t 'plannings.edit.error.out_of_capacity' %></span>
+              <span><i class="fa fa-dumpster fa-fw"></i> <%= t 'plannings.edit.error.out_of_capacity' %></span>
             <% end %>
             <% if stop.out_of_drive_time %>
               <span><i class="fa fa-power-off fa-fw"></i> <%= t 'plannings.edit.error.out_of_drive_time' %></span>
@@ -191,7 +191,7 @@
               <span><i class="fa fa-repeat fa-fw"></i> <%= t 'plannings.edit.error.out_of_work_time' %></span>
             <% end %>
             <% if stop.out_of_max_distance %>
-              <span><i class="fa fa-truck fa-fw"></i> <%= t 'plannings.edit.error.out_of_max_distance' %></span>
+              <span><i class="fa fa-truck-field fa-fw"></i> <%= t 'plannings.edit.error.out_of_max_distance' %></span>
             <% end %>
           </span>
         </div>
@@ -253,7 +253,7 @@
           <div class="row errors">
             <span class="col-md-offset-1 col-md-11 ui-state-error">
               <% if route.stop_out_of_max_distance %>
-                <span><i class="fa fa-truck fa-fw"></i> <%= t 'plannings.edit.error.out_of_max_distance' %></span>
+                <span><i class="fa fa-truck-field fa-fw"></i> <%= t 'plannings.edit.error.out_of_max_distance' %></span>
               <% end %>
             </span>
           </div>

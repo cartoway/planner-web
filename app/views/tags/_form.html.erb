@@ -28,7 +28,7 @@
           ]
         ), include_blank: t('web.form.default', n: 'fa-circle'), class: 'form-control width_1_2 selectpicker', 'data-live-search' => true %>
         <%= select_tag 'tag[icon_size]', options_for_select([[t('.icon_size.small'), :small], [t('.icon_size.medium'), :medium], [t('.icon_size.large'), :large]], @tag.icon_size), include_blank: t('web.form.default', n: t('.icon_size.medium')), class: 'form-control width_1_2' %>
-        <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-home fa-fw') %></span>
+        <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-store fa-fw') %></span>
       </div>
     </div>
   </div>

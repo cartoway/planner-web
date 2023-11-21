@@ -35,7 +35,7 @@ options.merge!(default_div_class: 'col-lg-10 col-md-10') if @zoning.id %>
         </div>
       <% else %>
         <div class="col-md-12">
-          <label><input type="checkbox" name="all-destinations"> <%= t '.all_destinations' %> <i class="fa fa-lightbulb-o fa-fw" title="<%= t '.from_planning_help' %>"></i></label>
+          <label><input type="checkbox" name="all-destinations"> <%= t '.all_destinations' %> <i class="fa fa-bolt fa-fw" title="<%= t '.from_planning_help' %>"></i></label>
         </div>
       <% end %>
       <% if @manage_zoning[:manage_organize] %>
