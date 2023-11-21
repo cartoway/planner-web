@@ -19,7 +19,7 @@
  .ui-autocomplete {
   background-color: $white-background;;
   color: black;
-  border: 1px solid #cccccc;
+  border: 1px solid $grey-color;
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 150px;
@@ -34,7 +34,7 @@
   }
 
   .ui-menu-item:hover {
-    background-color: #d8d8d8;
+    background-color: $lightgrey-color;
     cursor: pointer;
    }
  }

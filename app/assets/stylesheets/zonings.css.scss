@@ -19,6 +19,8 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+@import "variables";
+
 $sidebar-width: 350px;
 $sidebar-margins: 10px;
 
@@ -42,7 +44,7 @@ $sidebar-margins: 10px;
         max-width: 200px;
       }
       .disabled {
-        color: #ccc;
+        color: $grey-color;
       }
     }
 

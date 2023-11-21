@@ -296,7 +296,7 @@ $sidebar-margins: 10px;
             .route-skills-item {
               color: #555555;
               background: #fff;
-              border: 1px solid #ccc;
+              border: 1px solid $grey-color;
               border-radius: 4px;
               cursor: default;
               float: left;
@@ -606,7 +606,7 @@ $sidebar-margins: 10px;
     }
     li:hover {
       cursor: move;
-      background-color: #ccc;
+      background-color: $grey-color;
     }
     &#columns-skip {
 
@@ -639,7 +639,7 @@ $sidebar-margins: 10px;
     padding-left: 0px;
 
     .optim-duration-title {
-      background-color: $white-background; !important;
+      background-color: $white-background !important;
       margin-top: 0px;
       padding-left: 0px !important;
       margin-bottom: 5px !important;
@@ -778,7 +778,7 @@ $sidebar-margins: 10px;
   z-index: 1;
   padding-left: 5px;
   background-color: $white-background;
-  border-bottom: 1px solid $divider-color;
+  border-bottom: 1px solid $grey-color;
 
   .col {
     padding: 3px;
