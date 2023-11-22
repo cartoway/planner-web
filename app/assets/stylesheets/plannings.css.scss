@@ -206,6 +206,10 @@ $planbar-height: 70px;
     }
   }
 
+  .main {
+    padding-left: 0;
+  }
+
   #map {
     .label {
       pointer-events: none;
