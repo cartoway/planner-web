@@ -54,13 +54,13 @@
                       - if current_user.customer.default_max_plannings
                         %li
                           - if current_user.customer.too_many_plannings?
-                            %i.fa.text-warning.fa-calendar-times-o{"aria-hidden": "true"}
+                            %i.fa.text-warning.fa-calendar-xmark{"aria-hidden": "true"}
                             %span.text-warning= current_user.customer.plannings.length
                             \/
                             %span= current_user.customer.default_max_plannings
                             \- #{t 'plannings.menu.plannings'}
                           - else
-                            %i.fa.fa-calendar-check-o{"aria-hidden": "true"}
+                            %i.fa.fa-calendar-check{"aria-hidden": "true"}
                             %span= current_user.customer.plannings.length
                             \/
                             %span= current_user.customer.default_max_plannings

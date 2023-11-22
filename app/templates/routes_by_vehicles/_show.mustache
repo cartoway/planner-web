@@ -30,10 +30,10 @@
           </div>
         </div>
         <!-------------------------------- progress-bar ? ------------------------->
-        <span class="route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i>{{duration}}/{{work_or_window_time}}</span>
+        <span class="route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}/{{work_or_window_time}}</span>
         {{#route_averages}}
           (<span title="{{#i18n}}plannings.edit.route_driving_time_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{route_averages.drive_time}}</span><!--
-          -->{{#route_averages.visits_duration}} <span title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i>{{route_averages.visits_duration}}</span>{{/route_averages.visits_duration}}<!--
+          -->{{#route_averages.visits_duration}} <span title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{route_averages.visits_duration}}</span>{{/route_averages.visits_duration}}<!--
           -->{{#route_averages.wait_time}} <span title="{{#i18n}}plannings.edit.route_wait_time_help{{/i18n}}"><i class="fa fa-hourglass-half fa-fw"></i>{{route_averages.wait_time}}</span>{{/route_averages.wait_time}})
         {{/route_averages}}
         <span class="route-info" title="{{#i18n}}plannings.edit.route_distance_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{distance}}</span>
@@ -51,7 +51,7 @@
               <li title="{{#i18n}}plannings.edit.error.no_geolocalization_help{{/i18n}}"><i class="fa fa-map-marker fa-fw"></i> {{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}</li>
             {{/route_no_geolocalization}}
             {{#route_out_of_window}}
-              <li title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_window{{/i18n}}</li>
+              <li title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_window{{/i18n}}</li>
             {{/route_out_of_window}}
             {{^route_unmanageable_capacity}}
               {{#route_out_of_capacity}}
@@ -124,7 +124,7 @@
       {{#stops}}
         {{#wait_time}}
           <li class="wait ui-state-disabled list-group-item">
-            <i class="fa fa-clock-o fa-fw"></i> {{#i18n}}plannings.edit.wait{{/i18n}} {{wait_time}}
+            <i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.wait{{/i18n}} {{wait_time}}
           </li>
         {{/wait_time}}
         {{#rest}}
@@ -134,7 +134,7 @@
           <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
           <div class="title">
             {{#out_of_window}}
-              <i class="fa fa-clock-o fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
+              <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
             {{/out_of_window}}
             {{#out_of_drive_time}}
               <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
@@ -170,7 +170,7 @@
               <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
             {{/geocoded}}
             {{#out_of_window}}
-              <i class="fa fa-clock-o fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
+              <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
             {{/out_of_window}}
             {{^unmanageable_capacity}}
               {{#out_of_capacity}}

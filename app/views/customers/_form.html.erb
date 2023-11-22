@@ -279,7 +279,7 @@
       </div>
     </div>
 
-    <%= f.text_field :visit_duration, {placeholder: t('all.unit.hour_minute_second'), value: @customer.visit_duration_time_with_seconds, input_group: content_tag('i', '', class: 'fa fa-clock-o fa-fw')} do %>
+    <%= f.text_field :visit_duration, {placeholder: t('all.unit.hour_minute_second'), value: @customer.visit_duration_time_with_seconds, input_group: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} do %>
       <p class="help-block"><%= t '.visit_duration_help' %></p>
     <% end %>
 

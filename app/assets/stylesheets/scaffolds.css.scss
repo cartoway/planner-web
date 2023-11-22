@@ -33,7 +33,6 @@ $navbar-height: 0px;
 $sidebar-width: 400px;
 $sidebar-margins: 0px;
 $focus-background-color: #89C53F;
-$menu-width: 200px;
 
 body {
   background-color: $white-background;
@@ -383,7 +382,6 @@ span.color[data-color=''][data-selected]:after {
 [data-controller='zonings'][data-action='update'],
 [data-controller='api_web_v01_zonings'][data-action='update'],
 [data-controller='routes_by_vehicles'][data-action='show'] {
-  $transition-duration: 0.5s;
 
   #map {
     position: absolute;
@@ -668,17 +666,46 @@ input.form-control.number-of-days {
 }
 
 .menu-left {
-  padding-right: 0;
-  padding-left: 0;
-  border-right: 2px solid $grey-color;
+  flex-shrink: 0;
+  width: $menu-width;
+  border-right: 1px solid $lightgrey-color;
+  background-color: $primary-color;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
+  padding-top: 1rem;
+  align-items: center;
+  justify-content: stretch;
+  transition: width $transition-duration $transition-timing-curve;
+  position: sticky;
+  left: 0;
 
-  .menu-title {
+  .menu-section {
+    color: white;
     font-size: 24px;
+
+    &:hover, &:focus {
+      background-color: $primary-color;
+      border-left: 3px solid $focus-menu-border;
+    }
   }
 
-  .accordion-section {
-    border-bottom:2px solid $grey-color;
+  .menu-content {
+    li {
+      color: white !important;
+    }
+
+    li > a {
+      color: white !important;
+      display: block;
+      padding: 3px 15px;
+
+      &:hover, &:focus {
+        color: darken(white, 20%);
+        border-left:4px solid $focus-menu-border;
+        text-decoration: none;
+      }
+    }
   }
 
   ul, li {
@@ -686,19 +713,129 @@ input.form-control.number-of-days {
   }
 }
 
+.accordion-menu {
+  transition: height $transition-duration $transition-timing-curve-delayed;
+}
+
+.menu-left .hidden-menu {
+  opacity: 0;
+  width: 0;
+  transition: opacity $transition-duration $transition-timing-curve;
+}
+
+
+.menu-left.open .hidden-menu {
+  width: 100%;
+  height: auto;
+  opacity: 1;
+  margin-left: 1rem;
+}
+.menu-left .top-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-left .logo {
+  display: block;
+  width: 40px;
+  height: 40px;
+  transition: $transition-duration $transition-timing-curve;
+}
+
+.menu-left.open .logo {
+  width: 140px;
+  height: 40px;
+}
+
+.menu-left .logo > img {
+  width: 100%;
+  height: 100%;
+}
+
+.menu-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-grow: 1;
+  margin: 1rem 0;
+}
+
+.menu-content,
+.bottom-menu {
+  width: 100%;
+}
+
+#wrapper {
+  display: flex;
+}
+
+.menu-list {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  list-style: none;
+}
+
+.menu-left.open .menu-list-item {
+  justify-content: flex-start;
+}
+
+.menu-icon {
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+}
+
+.menu-list .hidden-menu {
+  white-space: nowrap;
+}
+
+.menu-link {
+  display: flex;
+  width: 100%;
+  padding: .5rem 0;
+  color: var(--light-gray);
+  text-decoration: none;
+  align-items: center;
+  padding-left: 25px;
+}
+
+.menu-list-item {
+  position: relative;
+  width: 100%;
+}
+
+.menu-list-item.active::before {
+  content: "";
+  background-color: var(--accent-color);
+  height: 100%;
+  left: 0;
+  width: 3px;
+  position: absolute;
+}
+
+.menu-left.open {
+  width: 250px;
+}
+
+
 .main {
   height: 100vh;
+  max-height: 100vh;
   padding: 0;
   padding-left: 10px;
   padding-right: 10px;
   border: 0;
+  position: relative;
+  width: 100%;
+  overflow-y: scroll;
 }
-
 
 #menu-settings {
   bottom: 0;
   position: absolute;
-  border-top: 2px solid $grey-color;
   width: 100%;
 }
 

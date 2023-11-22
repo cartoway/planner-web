@@ -2,13 +2,13 @@
 <div id="edit-zoning" class="sidebar">
   <div class="sidebar-tabs">
     <ul role="tablist">
-      <li><a href="#zoning" role="tab"><i class="fa fa-caret-left"></i></a></li>
+      <li><a href="#zoning" role="tab"><i class="fa fa-caret-right"></i></a></li>
     </ul>
   </div>
   <div class="sidebar-content">
     <div class="sidebar-pane" id="zoning">
       <div class="pull-right">
-        <button type="button" class="btn btn-default btn-sm sidebar-close" title="<%= t '.collapse_zoning_panel' %>"><i class="fa fa-caret-right"></i></button>
+        <button type="button" class="btn btn-default btn-sm sidebar-close" title="<%= t '.collapse_zoning_panel' %>"><i class="fa fa-caret-left"></i></button>
       </div>
       <h1><% if @manage_zoning[:manage_edit] %><%= t '.title' %><% else %><%= @zoning.name %><% end %></h1>
 

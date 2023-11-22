@@ -665,8 +665,20 @@ div.grid-container {
 }
 
 // Backport
-.justify-content-center{
+.justify-content-center {
   -webkit-box-pack: center !important;
   -ms-flex-pack: center !important;
   justify-content: center !important;
+}
+
+// Backport
+.align-items-center {
+  -webkit-box-align: center !important;
+  -ms-flex-align: center !important;
+  align-items: center !important;
+}
+
+.btn-primary {
+  background-color: $primary-color;
+  border-color: darken($primary-color, 10%);
 }

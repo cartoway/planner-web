@@ -22,7 +22,7 @@
 @import "variables";
 
 $sidebar-width: 350px;
-$sidebar-margins: 10px;
+$sidebar-margins: 0px;
 
 [data-controller='zonings'],
 [data-controller='api_web_v01_zonings'] {
@@ -55,6 +55,12 @@ $sidebar-margins: 10px;
       }
     }
   }
+
+  .sidebar-left {
+    left: 0 !important;
+    bottom: 0;
+  }
+
   #edit-zoning ul.dropdown-menu {
     max-width: $sidebar-width - 100px;
   }

@@ -24,7 +24,7 @@ x-web: &web
 
 services:
   db:
-    image: postgres:15
+    image: postgres:9.6
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:

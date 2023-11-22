@@ -221,7 +221,7 @@ const plannings_form = function() {
 const plannings_new = function(params) {
   var onPlanningCreateModal = bootstrap_dialog({
     title: I18n.t('plannings.new.title'),
-    icon: 'fa-calendar-check-o',
+    icon: 'fa-calendar-check',
     message: SMT['modals/default_with_progress']({
       msg: I18n.t('plannings.new.dialog.new_planning')
     })

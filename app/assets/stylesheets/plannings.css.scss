@@ -25,6 +25,9 @@ $navbar-height: 0px;
 $sidebar-width: 400px;
 $sidebar-margins: 10px;
 
+// override
+$planbar-height: 70px;
+
 [data-controller='plannings'][data-action='edit'] {
   @media screen and (min-width: 768px) {
     .ui-pnotify {
@@ -204,8 +207,6 @@ $sidebar-margins: 10px;
   }
 
   #map {
-    height: 100vh;
-
     .label {
       pointer-events: none;
       text-shadow: 1px 1px 3px rgba(0,0,0,0.3);

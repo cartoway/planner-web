@@ -133,7 +133,7 @@ $(document).on('ready page:load', function() {
     if ($this.find('[class="duration"]').length == 0) {
       var input = '<div class="duration" style="display: block !important">' +
         '<span class="route-info" title="' + I18n.t('plannings.edit.route_visits_duration_help') + '" data-toggle="tooltip">' +
-        '<i class="fa fa-clock-o fa-fw"></i>' +
+        '<i class="fa fa-stopwatch fa-fw"></i>' +
         '<span class="duration"></span>' +
         '</span>' +
         '</div>';
