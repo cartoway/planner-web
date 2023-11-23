@@ -211,8 +211,8 @@ span.color[data-color='']:after,
 span.color[data-color=''][data-selected]:after,
 .color_small[data-color='']:after,
 .color_small[data-color=''][data-selected]:after {
-  content: "";
-  font-family: "FontAwesome";
+  font: var(--fa-font-solid);
+  content: "\f00D";
   color: inherit;
 }
 

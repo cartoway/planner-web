@@ -50,13 +50,14 @@
   }
 
   .panel-heading .accordion-toggle:after {
-    font-family: 'FontAwesome';
-    content: "\f078";
+    font: var(--fa-font-solid);
+    content: "\f077";
     float: right;
     color: grey;
   }
   .panel-heading .accordion-toggle.collapsed:after {
-    content: "\f054";
+    font: var(--fa-font-solid);
+    content: "\f078";
   }
 }
 

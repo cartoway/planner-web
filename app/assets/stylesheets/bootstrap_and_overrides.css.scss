@@ -179,13 +179,14 @@ label .popover {
 }
 /* Add Open and Close cheron to accordion */
 .panel-heading .accordion-toggle:after {
-    font-family: 'FontAwesome';
-    content: "";
+    font: var(--fa-font-solid);
+    content: "\f077";
     float: right;
     color: black;
 }
 .panel-heading .accordion-toggle.collapsed:after {
-    content: "";
+    font: var(--fa-font-solid);
+    content: "\f078";
 }
 
 /* Table sorter */
@@ -701,4 +702,9 @@ div.grid-container {
     border-top-left-radius: 0;
     border-bottom: 1px solid #ddd !important;
   }
+}
+
+.simplecolorpicker.fontawesome span.color[data-selected]::after {
+  font: var(--fa-font-solid);
+  content: "\f00C";
 }
