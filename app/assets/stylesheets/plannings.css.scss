@@ -778,6 +778,13 @@ $planbar-height: 70px;
   display: inline-block;
 }
 
+#extend_close_panel {
+  padding-right: 5px;
+}
+
+#global_tools {
+  padding-right: 5px;
+}
 .extended #extend_close_panel {
   position: fixed;
   right: 5px;

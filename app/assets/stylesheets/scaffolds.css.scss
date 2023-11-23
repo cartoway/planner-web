@@ -408,7 +408,7 @@ span.color[data-color=''][data-selected]:after {
       background-color: $white-background;;
 
       .sidebar-pane {
-        padding: 5px;
+        padding: 0px;
         min-width: 100%;
 
         h1 {
@@ -454,6 +454,7 @@ span.color[data-color=''][data-selected]:after {
   @media(min-width:768px) {
     .sidebar {
       width: $sidebar-width;
+      border-radius: 0 !important;
     }
   }
   .sidebar-tabs > li:hover, .sidebar-tabs > ul > li:hover, .sidebar-tabs > ul > li > a:hover, .sidebar-tabs > ul > li > a > i:hover,
@@ -668,7 +669,6 @@ input.form-control.number-of-days {
 .menu-left {
   flex-shrink: 0;
   width: $menu-width;
-  border-right: 1px solid $lightgrey-color;
   background-color: $primary-color;
   display: flex;
   flex-direction: column;

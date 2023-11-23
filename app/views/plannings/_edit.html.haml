@@ -31,8 +31,9 @@
       - if @manage_planning[:manage_zoning]
         = twitter_bootstrap_form_for [:apply_zonings, @planning], { layout: :horizontal, default_div_class: 'col-lg-10 col-md-10', html: { id: "planning_zoning_#{@planning.id}", class: 'form-horizontal update-zonings-form', title: t('plannings.edit.zonings.label') }} do |f|
           = zoning_select f, @planning, t('plannings.edit.zonings.label')
-          = f.actions do
-            = f.submit t('plannings.edit.zonings.action'), id: 'planning_zoning_button', class: 'btn' + (@planning.zoning_outdated ? 'btn-warning' : 'btn-default'), title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil)
+          .d-flex.justify-content-center
+            = f.actions do
+              = f.submit t('plannings.edit.zonings.action'), id: 'planning_zoning_button', class: 'btn ' + (@planning.zoning_outdated ? 'btn-warning' : 'btn-default'), title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil)
       %h4#planning_name_extended
       #global_tools.btn-group.pull-right
         %button#optimize_all.btn.btn-primary.btn-sm.optimize{title: t('.optimize'), type: "button", "data-toggle": "modal", "data-target": "#optimization-modal" }
