@@ -21,7 +21,7 @@
         <div class="input-group">
           <%= text_field :destination, :postalcode, maxlength: 17, class: 'form-control width_1_2' %>
           <%= text_field :destination, :city, class: 'form-control width_1_2' %>
-          <span class="input-group-addon"><i class="fa fa-map-o fa-fw"></i></span>
+          <span class="input-group-addon"><i class="fa fa-map fa-fw"></i></span>
         </div>
       </div>
     </div>
@@ -33,7 +33,7 @@
           <div class="input-group">
             <%= text_field :destination, :state, class: 'form-control width_1_2' %>
             <%= text_field :destination, :country, placeholder: t('.country_default', n: @destination.customer.default_country), class: 'form-control width_1_2' %>
-            <span class="input-group-addon"><i class="fa fa-map-o fa-fw"></i></span>
+            <span class="input-group-addon"><i class="fa fa-map fa-fw"></i></span>
           </div>
         </div>
       </div>
