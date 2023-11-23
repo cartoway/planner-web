@@ -31,7 +31,7 @@ $planbar-height: 70px;
 [data-controller='plannings'][data-action='edit'] {
   @media screen and (min-width: 768px) {
     .ui-pnotify {
-      margin-right: $sidebar-width + $sidebar-margins; // not possible to use right because it's overloaded by pnotify
+      margin-right: $sidebar-margins; // not possible to use right because it's overloaded by pnotify
     }
   }
   .modal-body {
@@ -236,6 +236,22 @@ $planbar-height: 70px;
   }
 
   .sidebar {
+    .sidebar-tabs {
+      top: $planbar-height !important;
+      background-color: transparent;
+      a {
+        border: 2px solid rgba(0,0,0,.2);
+        background-clip: padding-box;
+        width: 34px;
+        height: 34px;
+        background-color: #fff;
+        border-bottom: 1px solid #ccc;
+      }
+
+      ul > li:hover{
+        background-color: transparent;
+      }
+    }
     .sidebar-content {
       overflow-y: scroll; // important for select2
 
@@ -768,12 +784,25 @@ $planbar-height: 70px;
   padding-top: 5px;
 }
 
+.sidebar-left ~ .sidebar-map {
+  margin-left: 0px;
+}
+
 .sidebar-left ~ .sidebar-map .leaflet-left {
   left: $sidebar-width;
 }
 
+.sidebar.sidebar-left.collapsed {
+  margin-left: $sidebar-margins;
+  height: $planbar-height + 40px;
+}
+
 .sidebar-left ~ .sidebar-map .leaflet-top {
   top: $planbar-height;
+}
+.sidebar-left.collapsed ~ .sidebar-map .leaflet-top {
+  top: $planbar-height + 40px;
+  left: 0;
 }
 
 .planbar{

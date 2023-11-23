@@ -8,13 +8,13 @@
   .sidebar-tabs
     %ul{role: "tablist"}
       %li
-        %a.btn{href: "#planning-pane", role: "tab"}
+        %a.d-flex.align-items-center.justify-content-center.btn{href: "#planning-pane", role: "tab"}
           %i.fa.fa-caret-right
   .sidebar-content
     #planning-pane.sidebar-pane
       #extend_close_panel.pull-right
         %button.btn.btn-default.btn-sm.extend{title: t('.open_planning_panel'), type: "button"}
-          %i.fa.fa-arrows-alt
+          %i.fa.fa-maximize
         %button.btn.btn-default.btn-sm.sidebar-close{title: t('.collapse_planning_panel'), type: "button"}
           %i.fa.fa-caret-left
       %h1

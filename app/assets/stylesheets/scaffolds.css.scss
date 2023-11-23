@@ -681,6 +681,7 @@ input.form-control.number-of-days {
   left: 0;
 
   .menu-section {
+    margin-top: 24px !important;
     color: white;
     font-size: 24px;
 
@@ -714,13 +715,13 @@ input.form-control.number-of-days {
 }
 
 .accordion-menu {
-  transition: height $transition-duration $transition-timing-curve-delayed;
+  transition: height $transition-duration $transition-timing-curve;
 }
 
 .menu-left .hidden-menu {
   opacity: 0;
   width: 0;
-  transition: opacity $transition-duration $transition-timing-curve;
+  transition: height $transition-duration $transition-timing-curve;
 }
 
 
@@ -834,7 +835,7 @@ input.form-control.number-of-days {
 }
 
 #menu-settings {
-  bottom: 0;
+  bottom: 24px;
   position: absolute;
   width: 100%;
 }
@@ -849,4 +850,11 @@ input.form-control.number-of-days {
 
 .white-background {
   background-color: $white-background;
+}
+
+.divider.solid {
+  border-top: 1px solid white;
+  border-radius: 1px;
+  width: 80%;
+  margin: auto;
 }

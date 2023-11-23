@@ -8,6 +8,8 @@
       .menu-left{style: "overflow: hidden;"}
         .top-menu
           %a#logo.logo{href: "/"}= image_tag request.env['reseller'].logo_small.url || "logo.svg", width: 150, height: 40, alt: request.env['reseller'].name
+
+        .divider.solid
         #accordion.menu-content.panel-group
           %ul.menu.menu-list
             %li.divider
@@ -200,50 +202,53 @@
                     .hidden-menu
                       = t 'web.contact'
 
-              %li.divider
+              #menu-settings
+                .divider.solid
 
-              %li#menu-settings.dropdown.menu-list-item
-                - if current_user.customer
-                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
-                    .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-user-gear.fa-fw
-                      .hidden-menu
-                        %span.menu_label
-                          = current_user.customer.name
-                - else
-                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
-                    .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-user-gear.fa-fw
-                      .hidden-menu
-                        %span.menu_label
-                          = current_user.email
-                %ul#customerCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                %li.dropdown.menu-list-item
                   - if current_user.customer
+                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-user-gear.fa-fw
+                        .hidden-menu
+                          %span.menu_label
+                            = current_user.customer.name
+                  - else
+                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-user-gear.fa-fw
+                        .hidden-menu
+                          %span.menu_label
+                            = current_user.email
+                  %ul#customerCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                    - if current_user.customer
+                      %li
+                        = link_to edit_customer_path(current_user.customer) do
+                          %i.fa.fa-wrench.fa-fw
+                          = t 'customers.menu.customer'
                     %li
-                      = link_to edit_customer_path(current_user.customer) do
-                        %i.fa.fa-wrench.fa-fw
-                        = t 'customers.menu.customer'
-                  %li
-                    = link_to edit_user_path(current_user) do
-                      %i.fa.fa-user-gear.fa-fw
-                      = t 'customers.menu.user_settings'
-                  %li.divider
-                  %li
-                    = link_to destroy_user_session_path, method: :delete do
-                      %i.fa.fa-power-off.fa-fw
-                      = t 'users.menu.sign_out'
+                      = link_to edit_user_path(current_user) do
+                        %i.fa.fa-user-gear.fa-fw
+                        = t 'customers.menu.user_settings'
+                    %li.divider
+                    %li
+                      = link_to destroy_user_session_path, method: :delete do
+                        %i.fa.fa-power-off.fa-fw
+                        = t 'users.menu.sign_out'
             - else
-              %li.menu-list-item
-                = link_to new_user_session_path, class: 'btn' do
-                  %i.fa.fa-user-gear.fa-fw
-                  .hidden-menu
-                    = t 'devise.sessions.new.sign_in'
-              - if Mapotempo::Application.config.self_care
+              #menu-settings
+                .divider.solid
                 %li.menu-list-item
-                  = link_to new_user_registration_path, class: 'btn' do
+                  = link_to new_user_session_path, class: 'btn' do
                     %i.fa.fa-user-gear.fa-fw
                     .hidden-menu
-                      = t 'devise.registrations.new.sign_up'
+                      = t 'devise.sessions.new.sign_in'
+                - if Mapotempo::Application.config.self_care
+                  %li.menu-list-item
+                    = link_to new_user_registration_path, class: 'btn' do
+                      %i.fa.fa-user-gear.fa-fw
+                      .hidden-menu
+                        = t 'devise.registrations.new.sign_up'
 
       .main
         %div

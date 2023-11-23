@@ -347,6 +347,7 @@ html.turbolinks-progress-bar::before {
   PNotify
 */
 .ui-pnotify {
+  top: inherit;
   margin-top: $navbar-height; // not possible to use top because it's overloaded by pnotify
   z-index: 10 !important;
 }
