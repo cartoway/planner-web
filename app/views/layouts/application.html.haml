@@ -279,6 +279,10 @@
     menuLeft.addClass("open")
   });
 
+  $('.menu-content').on('show.bs.collapse', function () {
+    $('.menu-content.in').removeClass('in');
+  });
+
   mainContent.on("click", () => {
     menuLeft.removeClass("open")
     $('.menu-section').collapse('hide');
