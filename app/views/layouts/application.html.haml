@@ -53,11 +53,6 @@
                         %i.fa.fa-map-location.fa-fw
                         = t 'all.verb.list'
                     %li.divider
-                    %li
-                      = link_to zonings_path do
-                        %i.fa.fa-object-ungroup.fa-fw
-                        = t 'zonings.menu.zonings'
-                    %li.divider
                     - if current_user.customer.default_max_plannings
                       %li
                         - if current_user.customer.too_many_plannings?
@@ -87,7 +82,49 @@
                   %a{href: "#"}
                     %i.fa.fa-map-location.fa-fw
                     .hidden-menu
-                      = t 'plannings.menu.plannings'
+                      = t 'zonings.menu.plannings'
+
+              %li#menu-zoning.menu-list-item
+                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#zoningsCollpase'}
+                  .d-flex.align-items-center.justify-content-center
+                    %i.fa.fa-draw-polygon.fa-fw
+                    .hidden-menu.menu_label
+                      = t 'zonings.menu.zonings'
+                %ul#zoningsCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                  %li{ class: ("disabled" if current_user.customer.too_many_zonings?) }
+                    = link_to new_zoning_path do
+                      %i.fa.fa-plus.fa-fw
+                      = t 'all.verb.new'
+                  %li
+                    = link_to zonings_path do
+                      %i.fa.fa-map-location.fa-fw
+                      = t 'all.verb.list'
+                  %li.divider
+                  - if current_user.customer.default_max_zonings
+                    %li
+                      - if current_user.customer.too_many_zonings?
+                        %i.fa.text-warning.fa-calendar-xmark{"aria-hidden": "true"}
+                        %span.text-warning
+                          = current_user.customer.zonings.length
+                        \/
+                        %span
+                          = current_user.customer.default_max_zonings
+                        \- #{t 'zonings.menu.zonings'}
+                      - else
+                        %i.fa.fa-calendar-check{"aria-hidden": "true"}
+                        %span
+                          = current_user.customer.zonings.length
+                        \/
+                        %span
+                          = current_user.customer.default_max_zonings
+                        \- #{t 'zonings.menu.zonings'}
+                    - current_user.customer.zonings.select(&:id).each do |zoning|
+                      %li{style: "display: inline;" }
+                        = link_to edit_planning_path(zoning) do
+                          .text-overflow
+                            %i.fa.fa-circle-nodes.fa-fw
+                            = zoning.name
+
               %li#menu-destination.menu-list-item
                 %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#destinationsCollpase'}
                   .d-flex.align-items-center.justify-content-center
