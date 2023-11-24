@@ -22,10 +22,11 @@
 @import "variables";
 
 $sidebar-width: 0px;
-$sidebar-margins: 0px;
+$sidebar-margins: 10px;
 
 [data-controller='zonings'],
 [data-controller='api_web_v01_zonings'] {
+  $planbar-height: 0px;
   .zone-name {
     width: 270px;
     display: inline-block;
@@ -63,5 +64,22 @@ $sidebar-margins: 0px;
 
   #edit-zoning ul.dropdown-menu {
     max-width: $sidebar-width - 100px;
+  }
+
+  #close_panel {
+    padding-right: 5px;
+  }
+
+  .sidebar.sidebar-left.collapsed {
+    margin-left: $sidebar-margins;
+    height: $planbar-height + 40px;
+  }
+
+  .sidebar-left ~ .sidebar-map .leaflet-top {
+    top: $planbar-height;
+  }
+  .sidebar-left.collapsed ~ .sidebar-map .leaflet-top {
+    top: $planbar-height + 40px;
+    left: 0;
   }
 }

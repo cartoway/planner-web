@@ -120,7 +120,7 @@
                         \- #{t 'zonings.menu.zonings'}
                     - current_user.customer.zonings.select(&:id).each do |zoning|
                       %li{style: "display: inline;" }
-                        = link_to edit_planning_path(zoning) do
+                        = link_to edit_zoning_path(zoning) do
                           .text-overflow
                             %i.fa.fa-circle-nodes.fa-fw
                             = zoning.name

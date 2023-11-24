@@ -400,7 +400,6 @@ span.color[data-color=''][data-selected]:after {
     z-index: 3;
 
     .sidebar-tabs {
-      top: $planbar-height;
       width: 0;
     }
     .sidebar-content {
@@ -420,6 +419,8 @@ span.color[data-color=''][data-selected]:after {
         }
         .panel .panel-heading {
             padding: 2px 5px;
+            border-top-right-radius: 0;
+            border-top-left-radius: 0;
         }
         .control-label {
           overflow      : hidden;
@@ -463,6 +464,23 @@ span.color[data-color=''][data-selected]:after {
   }
   .sidebar-map {
     margin-right: 0px !important;
+  }
+
+  .sidebar-tabs {
+    top: ($planbar-height + 5px);
+    background-color: transparent;
+    a {
+      border: 2px solid rgba(0,0,0,.2);
+      background-clip: padding-box;
+      width: 34px;
+      height: 34px;
+      background-color: #fff;
+      border-bottom: 1px solid #ccc;
+    }
+
+    ul > li:hover{
+      background-color: transparent !important;
+    }
   }
 
   .flash {

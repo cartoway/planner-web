@@ -7,7 +7,18 @@
   padding: 10px 15px;
   margin-bottom: -1px;
   background-color: $white-background;
-  border: 1px solid #ddd !important;
+  border: unset;
+  border-top: 1px solid #ddd !important;
+
+  &:last-child {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  &:first-child {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    border-bottom: 1px solid #ddd !important;
+  }
 }
 
 .ui-state-error {

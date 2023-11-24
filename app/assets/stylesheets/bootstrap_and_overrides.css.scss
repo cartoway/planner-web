@@ -689,21 +689,6 @@ div.grid-container {
   border-radius: 0;
 }
 
-.list-group-item {
-  border: unset;
-  border-top: 1px solid #ddd !important;
-
-  &:last-child {
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-  }
-  &:first-child {
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
-    border-bottom: 1px solid #ddd !important;
-  }
-}
-
 .simplecolorpicker.fontawesome span.color[data-selected]::after {
   font: var(--fa-font-solid);
   content: "\f00C";
