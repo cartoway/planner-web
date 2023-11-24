@@ -22,10 +22,11 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "donjayamanne.git-extension-pack",
-        "ms-azuretools.vscode-docker",
-        "vayan.haml"
-      ]
+    "donjayamanne.git-extension-pack",
+    "ms-azuretools.vscode-docker",
+    "vayan.haml",
+    "imgildev.vscode-mustache-snippets"
+  ]
     }
   },
   "initializeCommand": "cp ./.dockerignore-development ./.dockerignore && cp ./docker/production.rb.devcontainer config/environments/production.rb"

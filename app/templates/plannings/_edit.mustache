@@ -7,9 +7,11 @@
 </p>
 {{/outdated}}
 <ol class="routes">
-{{#routes}}
-<li class="route" data-route_id="{{route_id}}"{{#vehicle}} data-color="{{color}}" {{/vehicle}}>
-  {{> routes/edit}}
-</li>
-{{/routes}}
+  {{#routes}}
+    {{> routes/edit}}
+  {{/routes}}
+
+  {{#routes}}
+    {{> routes/out_of_route}}
+  {{/routes}}
 </ol>

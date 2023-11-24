@@ -1,278 +1,264 @@
-<div class="panel panel-default"{{^vehicle}} id="out_of_route"{{/vehicle}}>
-  <div class="panel-heading">
-    <i class="fa fa-arrows-left-right"></i>
-    {{^vehicle}}
-      {{#i18n}}plannings.edit.out_of_route{{/i18n}}
-      <div class="btn-group pull-right">
-        <button type="button" class="automatic_insert_all btn btn-default btn-xs" title="{{#i18n}}plannings.edit.automatic_insert_help_multiple{{/i18n}}"><i class="fa fa-bolt"></i></button>
-        <button type="button" class="toggle btn btn-default btn-xs" title="{{#i18n}}plannings.edit.toggle_help{{/i18n}}"><i class="fa fa-eye{{#hidden}}-slash{{/hidden}}"></i></button>
-        <button type="button" class="lock btn {{^locked}}btn-default{{/locked}}{{#locked}}btn-warning{{/locked}} btn-xs" title="{{#i18n}}plannings.edit.locked_unplanned_help{{/i18n}}"><i class="fa fa-{{^locked}}un{{/locked}}lock"></i></button>
-        <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.move_stops{{/i18n}}"><i class="fa fa-share-nodes"></i><span class="caret"></span></button>
-        <ul class="dropdown-menu pull-right" role="menu">
-          <li>
-            <a href="#" data-toggle="modal" data-target="#planning-move-stops-modal" data-route-id="{{route_id}}"><i class="fa fa-external-link fa-fw"></i> {{#i18n}}plannings.edit.move_stops{{/i18n}}</a>
-          </li>
-        </ul>
+{{#vehicle}}
+  <li class="route" data-route_id="{{route_id}}" data-color="{{color}}">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <i class="fa fa-arrows-left-right"></i>
+        <input id="route_ref" class="form-control" type="text" value="{{ref}}" name="route[ref]" placeholder="{{#i18n}}plannings.edit.route_placeholder{{/i18n}}" />
+        <select name="route[color]" class="color_select select2-xs" value="{{color}}" style="display:none">
+          {{#colors}}
+            <option value="{{color}}"{{#selected}} selected="selected"{{/selected}}>{{color}}</option>
+          {{/colors}}
+        </select>
+        {{! Change default title from fake select2 generated code }}
+        <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="display: inline-block;"><span class="selection" title="{{#i18n}}plannings.edit.route_change_color_help{{/i18n}}"><span aria-labelledby="select2-route[color]-uj-container" tabindex="0" class="select2-selection select2-selection--single" role="combobox" aria-autocomplete="list" aria-haspopup="true" aria-expanded="false"><span id="select2-route[color]-uj-container" class="select2-selection__rendered"><span class="color_small" style="background:{{color_fake}};vertical-align: top;">{{^color_fake}}<i class="fa fa-paint-brush" style="color: $grey-color;"></i>{{/color_fake}}</span></span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+        <select name="route[vehicle]" class="vehicle_select select2-xs" value="{{vehicle_id}}" data-initial-value="{{vehicle_id}}" style="display:none">
+          <option value="{{vehicle_id}}" selected="selected">{{vehicle_id}}</option>
+        </select>
+        <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="display: inline-block;"><span class="selection"><span aria-labelledby="select2-route[vehicle]-uj-container" tabindex="0" class="select2-selection select2-selection--single" role="combobox" aria-autocomplete="list" aria-haspopup="true" aria-expanded="false"><span title="{{vehicle_id}}" id="select2-route[vehicle]-uj-container" class="select2-selection__rendered"><span><span class="color_small" style="background:{{color}};{{#color_fake}} display: none;{{/color_fake}}"></span>&nbsp;<span>{{name}}</span></span></span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+        <div class="btn-group route-btn-group pull-right">
+          {{#manage_vehicle}}
+          <a href="{{path}}" class="btn btn-primary btn-xs" title="{{#i18n}}plannings.edit.vehicle_help{{/i18n}}"><i class="fa fa-truck-field"></i></a>
+          {{/manage_vehicle}}
+          <button type="button" data-toggle="modal" data-target="#optimization-modal" data-keyboard="true" class="btn btn-primary btn-xs optimize" title="{{#i18n}}plannings.edit.optimize_help{{/i18n}}"{{#locked}}disabled="disabled"{{/locked}}><i class="fa fa-gear"></i></button>
+          <button type="button" class="toggle btn btn-default btn-xs" title="{{#i18n}}plannings.edit.toggle_help{{/i18n}}"><i class="fa fa-eye{{#hidden}}-slash{{/hidden}}"></i></button>
+          <button type="button" class="lock btn {{^locked}}btn-default{{/locked}}{{#locked}}btn-warning{{/locked}} btn-xs" title="{{#i18n}}plannings.edit.locked_help{{/i18n}}"><i class="fa fa-{{^locked}}un{{/locked}}lock"></i></button>
+          {{#manage_export}}
+          <div class="btn-group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.export_help{{/i18n}}"><i class="fa fa-share-nodes"></i><span class="caret"></span></button>
+            <ul class="dropdown-menu pull-right" role="menu">
+              {{^callback_button}}
+                {{#customer_enable_external_callback}}
+                  {{#customer_external_callback_url}}
+                    <li class="link customer_external_callback_url" data-url="{{customer_external_callback_url}}">
+                      <i class="fa fa-desktop fa-fw"></i>
+                      {{#customer_external_callback_name}}
+                        {{customer_external_callback_name}}
+                      {{/customer_external_callback_name}}
+                      {{^customer_external_callback_name}}
+                        {{#i18n}}plannings.edit.customer_external_callback_url.action{{/i18n}}
+                      {{/customer_external_callback_name}}
+                    </li>
+                    <li role="separator" class="divider"></li>
+                  {{/customer_external_callback_url}}
+                {{/customer_enable_external_callback}}
+              {{/callback_button}}
+              {{#fleet_demo}}
+                <li class="link device-operation" data-service="fleet_demo" data-operation="send" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.fleet_demo_send.action{{/i18n}}
+                </li>
+                <li class="link device-operation" data-service="fleet_demo" data-operation="fetch_routes" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.fleet_demo_clear.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/fleet_demo}}
+              {{#fleet}}
+                <div class="dropdown-spacing">
+                  {{#i18n}}plannings.edit.dialog.fleet.title{{/i18n}} :
+                  {{#devices.fleet_user}} {{devices.fleet_user.text}} {{/devices.fleet_user}}
+                </div>
+                <li class="link device-operation" data-service="fleet" data-operation="send" data-route-id="{{route_id}}">
+                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                  {{#i18n}}plannings.edit.fleet_send.action{{/i18n}}
+                </li>
+                <li class="link device-operation" data-service="fleet" data-operation="fetch_routes" data-sync-user="{{devices.fleet_user.id}}" >
+                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                  {{#i18n}}plannings.edit.fleet_clear.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/fleet}}
+              {{#tomtom}}
+                <div class="dropdown-spacing">
+                  {{#i18n}}plannings.edit.dialog.tomtom.title{{/i18n}} :
+                  {{#devices.tomtom_id}} {{devices.tomtom_id.text}} {{/devices.tomtom_id}}
+                </div>
+                <li class="link device-operation" data-service="tomtom" data-operation="send" data-type="orders" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.tomtom_send_orders.action{{/i18n}}
+                </li>
+                <li class="link device-operation" title="{{#i18n}}plannings.edit.tomtom_send_waypoints.title{{/i18n}}" data-service="tomtom" data-operation="send" data-type="waypoints" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.tomtom_send_waypoints.action{{/i18n}}
+                </li>
+                <li class="link device-operation" data-service="tomtom" data-operation="clear" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.tomtom_clear.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/tomtom}}
+              {{#teksat}}
+                <div class="dropdown-spacing">
+                    {{#i18n}}plannings.edit.dialog.teksat.title{{/i18n}} :
+                    {{#devices.teksat_id}} {{devices.teksat_id.text}} {{/devices.teksat_id}}
+                </div>
+                <li class="link device-operation" data-service="teksat" data-operation="send" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.teksat_send.action{{/i18n}}
+                </li>
+                <li class="link device-operation" data-service="teksat" data-operation="clear" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.teksat_clear.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/teksat}}
+              {{#orange}}
+                <div class="dropdown-spacing">
+                  {{#i18n}}plannings.edit.dialog.orange.title{{/i18n}} :
+                  {{#devices.orange_id}} {{devices.orange_id.text}} {{/devices.orange_id}}
+                </div>
+                <li class="link device-operation" data-service="orange" data-operation="send" data-route-id="{{route_id}}">
+                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                  {{#i18n}}plannings.edit.orange_send.action{{/i18n}}
+                </li>
+                <li class="link device-operation" data-service="orange" data-operation="clear" data-route-id="{{route_id}}">
+                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                  {{#i18n}}plannings.edit.orange_clear.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/orange}}
+              {{#masternaut}}
+                <div class="dropdown-spacing">
+                  {{#i18n}}plannings.edit.dialog.orange.title{{/i18n}} :
+                  {{#devices.masternaut_ref}} {{devices.masternaut_ref.text}} {{/devices.masternaut_ref}}
+                </div>
+                <li class="link device-operation" data-service="masternaut" data-operation="send" data-route-id="{{route_id}}">
+                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                  {{#i18n}}plannings.edit.masternaut_send.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/masternaut}}
+              {{#alyacom}}
+                <li class="link device-operation" data-service="alyacom" data-operation="send" data-route-id="{{route_id}}">
+                  <i class="fa fa-mobile fa-fw"></i>
+                  {{#i18n}}plannings.edit.alyacom_send.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/alyacom}}
+              {{#trimble}}
+                <div class="dropdown-spacing">
+                  {{#i18n}}plannings.edit.dialog.orange.title{{/i18n}} :
+                  {{#devices.trimble_ref}} {{devices.trimble_ref.text}} {{/devices.trimble_ref}}
+                </div>
+                <li class="link device-operation" data-service="trimble" data-operation="send" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.trimble_send.action{{/i18n}}
+                </li>
+                <li class="link device-operation" data-service="trimble" data-operation="clear" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.trimble_clear.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/trimble}}
+              {{#notico}}
+                <div class="dropdown-spacing">
+                  {{#i18n}}plannings.edit.dialog.orange.title{{/i18n}} :
+                  {{#devices.agent_id}} {{devices.agent_id.text}} {{/devices.agent_id}}
+                </div>
+                <li class="link device-operation" data-service="notico" data-operation="send" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.notico_send.action{{/i18n}}
+                </li>
+                <li class="link device-operation" data-service="notico" data-operation="clear" data-route-id="{{route_id}}">
+                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                  {{#i18n}}plannings.edit.notico_clear.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/notico}}
+              {{#praxedo}}
+                <div class="dropdown-spacing">
+                  {{#i18n}}plannings.edit.dialog.praxedo.title{{/i18n}} :
+                  {{#devices.praxedo_agent_id}} {{devices.praxedo_agent_id.text}} {{/devices.praxedo_agent_id}}
+                </div>
+                <li class="link device-operation" data-service="praxedo" data-operation="send" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.praxedo_send.action{{/i18n}}
+                </li>
+                <li class="link device-operation" data-service="praxedo" data-operation="clear" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.praxedo_clear.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/praxedo}}
+              <li><a href="/routes/{{route_id}}"><i class="fa fa-print fa-fw"></i> {{#i18n}}plannings.edit.export.print{{/i18n}}</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a class="export_spreadsheet"><i class="fa fa-table fa-fw"></i> {{#i18n}}plannings.edit.export.spreadsheet{{/i18n}}</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="/routes/{{route_id}}.gpx"><i class="fa fa-mobile fa-fw"></i> {{#i18n}}plannings.edit.export.gpx_route{{/i18n}}</a></li>
+              <li><a href="/routes/{{route_id}}.gpx?track=true"><i class="fa fa-mobile fa-fw"></i> {{#i18n}}plannings.edit.export.gpx_track{{/i18n}}</a></li>
+              <li><a href="/routes/{{route_id}}.kmz"><i class="fa fa-mobile fa-fw"></i> {{#i18n}}plannings.edit.export.kmz_track{{/i18n}}</a></li>
+              {{#contact_email}}
+                <li class="kmz_email"><a href="/routes/{{route_id}}.kmz?email=1"><i class="fa fa-envelope fa-fw"></i> {{#i18n}}plannings.edit.export.kmz_email.action{{/i18n}}</a></li>
+              {{/contact_email}}
+              <li role="separator" class="divider"></li>
+              <li><a href="{{calendar_url_api_key}}"><i class="fa fa-calendar fa-fw"></i> {{#i18n}}plannings.edit.export.icalendar.action{{/i18n}}</a></li>
+              {{#contact_email}}
+                <li class="icalendar_email" data-email="true"><a href="{{calendar_url}}"><i class="fa fa-envelope fa-fw"></i> {{#i18n}}plannings.edit.export.icalendar.action_email{{/i18n}}</a></li>
+              {{/contact_email}}
+              {{#customer_enable_sms}}
+                <li role="separator" class="divider"></li>
+                <li>
+                  <a class="send_sms" href="/api/0.1/plannings/{{planning_id}}/routes/{{route_id}}/send_sms"><i class="fa fa-mobile fa-fw"></i> {{#i18n}}plannings.edit.send_sms{{/i18n}}</a>
+                </li>
+              {{/customer_enable_sms}}
+                <li role="separator" class="divider"></li>
+                <li><a class="reverse_order" href="/plannings/{{planning_id}}/{{route_id}}/reverse_order"><i class="fa fa-random fa-fw"></i> {{#i18n}}plannings.edit.reverse_order{{/i18n}}</a></li>
+                <li>
+                  <a href="#" data-toggle="modal" data-target="#planning-move-stops-modal" data-route-id="{{route_id}}"><i class="fa fa-external-link fa-fw"></i> {{#i18n}}plannings.edit.move_stops{{/i18n}}</a>
+                </li>
+            </ul>
+          </div>
+          {{/manage_export}}
 
-      </div>
-    {{/vehicle}}
-    {{#vehicle}}
-      <input id="route_ref" class="form-control" type="text" value="{{ref}}" name="route[ref]" placeholder="{{#i18n}}plannings.edit.route_placeholder{{/i18n}}" />
-      <select name="route[color]" class="color_select select2-xs" value="{{color}}" style="display:none">
-        {{#colors}}
-          <option value="{{color}}"{{#selected}} selected="selected"{{/selected}}>{{color}}</option>
-        {{/colors}}
-      </select>
-      {{! Change default title from fake select2 generated code }}
-      <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="display: inline-block;"><span class="selection" title="{{#i18n}}plannings.edit.route_change_color_help{{/i18n}}"><span aria-labelledby="select2-route[color]-uj-container" tabindex="0" class="select2-selection select2-selection--single" role="combobox" aria-autocomplete="list" aria-haspopup="true" aria-expanded="false"><span id="select2-route[color]-uj-container" class="select2-selection__rendered"><span class="color_small" style="background:{{color_fake}};vertical-align: top;">{{^color_fake}}<i class="fa fa-paint-brush" style="color: $grey-color;"></i>{{/color_fake}}</span></span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
-      <select name="route[vehicle]" class="vehicle_select select2-xs" value="{{vehicle_id}}" data-initial-value="{{vehicle_id}}" style="display:none">
-        <option value="{{vehicle_id}}" selected="selected">{{vehicle_id}}</option>
-      </select>
-      <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="display: inline-block;"><span class="selection"><span aria-labelledby="select2-route[vehicle]-uj-container" tabindex="0" class="select2-selection select2-selection--single" role="combobox" aria-autocomplete="list" aria-haspopup="true" aria-expanded="false"><span title="{{vehicle_id}}" id="select2-route[vehicle]-uj-container" class="select2-selection__rendered"><span><span class="color_small" style="background:{{color}};{{#color_fake}} display: none;{{/color_fake}}"></span>&nbsp;<span>{{name}}</span></span></span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
-      <div class="btn-group route-btn-group pull-right">
-        {{#manage_vehicle}}
-        <a href="{{path}}" class="btn btn-primary btn-xs" title="{{#i18n}}plannings.edit.vehicle_help{{/i18n}}"><i class="fa fa-truck-field"></i></a>
-        {{/manage_vehicle}}
-        <button type="button" data-toggle="modal" data-target="#optimization-modal" data-keyboard="true" class="btn btn-primary btn-xs optimize" title="{{#i18n}}plannings.edit.optimize_help{{/i18n}}"{{#locked}}disabled="disabled"{{/locked}}><i class="fa fa-gear"></i></button>
-        <button type="button" class="toggle btn btn-default btn-xs" title="{{#i18n}}plannings.edit.toggle_help{{/i18n}}"><i class="fa fa-eye{{#hidden}}-slash{{/hidden}}"></i></button>
-        <button type="button" class="lock btn {{^locked}}btn-default{{/locked}}{{#locked}}btn-warning{{/locked}} btn-xs" title="{{#i18n}}plannings.edit.locked_help{{/i18n}}"><i class="fa fa-{{^locked}}un{{/locked}}lock"></i></button>
-        {{#manage_export}}
-        <div class="btn-group">
-          <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.export_help{{/i18n}}"><i class="fa fa-share-nodes"></i><span class="caret"></span></button>
-          <ul class="dropdown-menu pull-right" role="menu">
-            {{^callback_button}}
-              {{#customer_enable_external_callback}}
-                {{#customer_external_callback_url}}
-                  <li class="link customer_external_callback_url" data-url="{{customer_external_callback_url}}">
-                    <i class="fa fa-desktop fa-fw"></i>
-                    {{#customer_external_callback_name}}
-                      {{customer_external_callback_name}}
-                    {{/customer_external_callback_name}}
-                    {{^customer_external_callback_name}}
-                      {{#i18n}}plannings.edit.customer_external_callback_url.action{{/i18n}}
-                    {{/customer_external_callback_name}}
-                  </li>
-                  <li role="separator" class="divider"></li>
-                {{/customer_external_callback_url}}
-              {{/customer_enable_external_callback}}
-            {{/callback_button}}
-            {{#fleet_demo}}
-              <li class="link device-operation" data-service="fleet_demo" data-operation="send" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.fleet_demo_send.action{{/i18n}}
+          {{^manage_export}}
+            {{#manage_print}}
+              <a href="/api-web/0.1/plannings/{{planning_id}}/routes/{{route_id}}/print" class="btn btn-default btn-xs" title="{{#i18n}}plannings.edit.export.print{{/i18n}}"><i class="fa fa-print fa-fw"></i></a>
+            {{/manage_print}}
+          {{/manage_export}}
+        </div>
+
+        <div class="route-skills">
+          <ul class="route-skills-list">
+            {{#skills}}
+              <li class="route-skills-item">
+                <span>
+                  <i style="color: {{color}}" class="fa {{icon}}"></i>&nbsp;<span>{{label}}</span>
+                </span>
               </li>
-              <li class="link device-operation" data-service="fleet_demo" data-operation="fetch_routes" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.fleet_demo_clear.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/fleet_demo}}
-            {{#fleet}}
-              <div class="dropdown-spacing">
-                {{#i18n}}plannings.edit.dialog.fleet.title{{/i18n}} :
-                {{#devices.fleet_user}} {{devices.fleet_user.text}} {{/devices.fleet_user}}
-              </div>
-              <li class="link device-operation" data-service="fleet" data-operation="send" data-route-id="{{route_id}}">
-                <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                {{#i18n}}plannings.edit.fleet_send.action{{/i18n}}
-              </li>
-              <li class="link device-operation" data-service="fleet" data-operation="fetch_routes" data-sync-user="{{devices.fleet_user.id}}" >
-                <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                {{#i18n}}plannings.edit.fleet_clear.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/fleet}}
-            {{#tomtom}}
-              <div class="dropdown-spacing">
-                {{#i18n}}plannings.edit.dialog.tomtom.title{{/i18n}} :
-                {{#devices.tomtom_id}} {{devices.tomtom_id.text}} {{/devices.tomtom_id}}
-              </div>
-              <li class="link device-operation" data-service="tomtom" data-operation="send" data-type="orders" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.tomtom_send_orders.action{{/i18n}}
-              </li>
-              <li class="link device-operation" title="{{#i18n}}plannings.edit.tomtom_send_waypoints.title{{/i18n}}" data-service="tomtom" data-operation="send" data-type="waypoints" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.tomtom_send_waypoints.action{{/i18n}}
-              </li>
-              <li class="link device-operation" data-service="tomtom" data-operation="clear" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.tomtom_clear.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/tomtom}}
-            {{#teksat}}
-              <div class="dropdown-spacing">
-                  {{#i18n}}plannings.edit.dialog.teksat.title{{/i18n}} :
-                  {{#devices.teksat_id}} {{devices.teksat_id.text}} {{/devices.teksat_id}}
-              </div>
-              <li class="link device-operation" data-service="teksat" data-operation="send" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.teksat_send.action{{/i18n}}
-              </li>
-              <li class="link device-operation" data-service="teksat" data-operation="clear" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.teksat_clear.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/teksat}}
-            {{#orange}}
-              <div class="dropdown-spacing">
-                {{#i18n}}plannings.edit.dialog.orange.title{{/i18n}} :
-                {{#devices.orange_id}} {{devices.orange_id.text}} {{/devices.orange_id}}
-              </div>
-              <li class="link device-operation" data-service="orange" data-operation="send" data-route-id="{{route_id}}">
-                <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                {{#i18n}}plannings.edit.orange_send.action{{/i18n}}
-              </li>
-              <li class="link device-operation" data-service="orange" data-operation="clear" data-route-id="{{route_id}}">
-                <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                {{#i18n}}plannings.edit.orange_clear.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/orange}}
-            {{#masternaut}}
-              <div class="dropdown-spacing">
-                {{#i18n}}plannings.edit.dialog.orange.title{{/i18n}} :
-                {{#devices.masternaut_ref}} {{devices.masternaut_ref.text}} {{/devices.masternaut_ref}}
-              </div>
-              <li class="link device-operation" data-service="masternaut" data-operation="send" data-route-id="{{route_id}}">
-                <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                {{#i18n}}plannings.edit.masternaut_send.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/masternaut}}
-            {{#alyacom}}
-              <li class="link device-operation" data-service="alyacom" data-operation="send" data-route-id="{{route_id}}">
-                <i class="fa fa-mobile fa-fw"></i>
-                {{#i18n}}plannings.edit.alyacom_send.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/alyacom}}
-            {{#trimble}}
-              <div class="dropdown-spacing">
-                {{#i18n}}plannings.edit.dialog.orange.title{{/i18n}} :
-                {{#devices.trimble_ref}} {{devices.trimble_ref.text}} {{/devices.trimble_ref}}
-              </div>
-              <li class="link device-operation" data-service="trimble" data-operation="send" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.trimble_send.action{{/i18n}}
-              </li>
-              <li class="link device-operation" data-service="trimble" data-operation="clear" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.trimble_clear.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/trimble}}
-            {{#notico}}
-              <div class="dropdown-spacing">
-                {{#i18n}}plannings.edit.dialog.orange.title{{/i18n}} :
-                {{#devices.agent_id}} {{devices.agent_id.text}} {{/devices.agent_id}}
-              </div>
-              <li class="link device-operation" data-service="notico" data-operation="send" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.notico_send.action{{/i18n}}
-              </li>
-              <li class="link device-operation" data-service="notico" data-operation="clear" data-route-id="{{route_id}}">
-                <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                {{#i18n}}plannings.edit.notico_clear.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/notico}}
-            {{#praxedo}}
-              <div class="dropdown-spacing">
-                {{#i18n}}plannings.edit.dialog.praxedo.title{{/i18n}} :
-                {{#devices.praxedo_agent_id}} {{devices.praxedo_agent_id.text}} {{/devices.praxedo_agent_id}}
-              </div>
-              <li class="link device-operation" data-service="praxedo" data-operation="send" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.praxedo_send.action{{/i18n}}
-              </li>
-              <li class="link device-operation" data-service="praxedo" data-operation="clear" data-route-id="{{route_id}}">
-                  <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                  {{#i18n}}plannings.edit.praxedo_clear.action{{/i18n}}
-              </li>
-              <li role="separator" class="divider"></li>
-            {{/praxedo}}
-            <li><a href="/routes/{{route_id}}"><i class="fa fa-print fa-fw"></i> {{#i18n}}plannings.edit.export.print{{/i18n}}</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a class="export_spreadsheet"><i class="fa fa-table fa-fw"></i> {{#i18n}}plannings.edit.export.spreadsheet{{/i18n}}</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="/routes/{{route_id}}.gpx"><i class="fa fa-mobile fa-fw"></i> {{#i18n}}plannings.edit.export.gpx_route{{/i18n}}</a></li>
-            <li><a href="/routes/{{route_id}}.gpx?track=true"><i class="fa fa-mobile fa-fw"></i> {{#i18n}}plannings.edit.export.gpx_track{{/i18n}}</a></li>
-            <li><a href="/routes/{{route_id}}.kmz"><i class="fa fa-mobile fa-fw"></i> {{#i18n}}plannings.edit.export.kmz_track{{/i18n}}</a></li>
-            {{#contact_email}}
-              <li class="kmz_email"><a href="/routes/{{route_id}}.kmz?email=1"><i class="fa fa-envelope fa-fw"></i> {{#i18n}}plannings.edit.export.kmz_email.action{{/i18n}}</a></li>
-            {{/contact_email}}
-            <li role="separator" class="divider"></li>
-            <li><a href="{{calendar_url_api_key}}"><i class="fa fa-calendar fa-fw"></i> {{#i18n}}plannings.edit.export.icalendar.action{{/i18n}}</a></li>
-            {{#contact_email}}
-              <li class="icalendar_email" data-email="true"><a href="{{calendar_url}}"><i class="fa fa-envelope fa-fw"></i> {{#i18n}}plannings.edit.export.icalendar.action_email{{/i18n}}</a></li>
-            {{/contact_email}}
-            {{#customer_enable_sms}}
-              <li role="separator" class="divider"></li>
-              <li>
-                <a class="send_sms" href="/api/0.1/plannings/{{planning_id}}/routes/{{route_id}}/send_sms"><i class="fa fa-mobile fa-fw"></i> {{#i18n}}plannings.edit.send_sms{{/i18n}}</a>
-              </li>
-            {{/customer_enable_sms}}
-              <li role="separator" class="divider"></li>
-              <li><a class="reverse_order" href="/plannings/{{planning_id}}/{{route_id}}/reverse_order"><i class="fa fa-random fa-fw"></i> {{#i18n}}plannings.edit.reverse_order{{/i18n}}</a></li>
-              <li>
-                <a href="#" data-toggle="modal" data-target="#planning-move-stops-modal" data-route-id="{{route_id}}"><i class="fa fa-external-link fa-fw"></i> {{#i18n}}plannings.edit.move_stops{{/i18n}}</a>
-              </li>
+            {{/skills}}
           </ul>
         </div>
-        {{/manage_export}}
-
-        {{^manage_export}}
-          {{#manage_print}}
-            <a href="/api-web/0.1/plannings/{{planning_id}}/routes/{{route_id}}/print" class="btn btn-default btn-xs" title="{{#i18n}}plannings.edit.export.print{{/i18n}}"><i class="fa fa-print fa-fw"></i></a>
-          {{/manage_print}}
-        {{/manage_export}}
       </div>
-
-      <div class="route-skills">
-        <ul class="route-skills-list">
-          {{#skills}}
-            <li class="route-skills-item">
-              <span>
-                <i style="color: {{color}}" class="fa {{icon}}"></i>&nbsp;<span>{{label}}</span>
-              </span>
-            </li>
-          {{/skills}}
-        </ul>
+      <div>
+        {{#devices}}
+          {{#sopac_ids}}
+          <div class="temperature-info">
+            <h6>{{#i18n}}plannings.edit.sopac_title{{/i18n}}</h6>
+            {{#items}}
+            <hr>
+              <div>
+                <span id="label-{{vehicle_id}}-{{id}}">
+                  <i class="fa fa-wifi fa-fw"></i><span>{{#i18n}}plannings.edit.device_name_label{{/i18n}} {{text}}</span>
+                </span>
+              </div>
+              <div>
+                <span id="temperature-{{vehicle_id}}-{{id}}">
+                  <i class="fa fa-thermometer-half fa-fw"></i><span>{{#i18n}}plannings.edit.temperature_label{{/i18n}}</span>
+                </span>
+              </div>
+              <div>
+                <span id="last-date-{{vehicle_id}}-{{id}}">
+                  <i class="fa fa-stopwatch fa-fw"></i><span>{{#i18n}}plannings.edit.last_temperature_statement_label{{/i18n}}</span>
+                </span>
+              </div>
+              {{/items}}
+          </div>
+          {{/sopac_ids}}
+        {{/devices}}
+        <div class="route-details">
+        {{> stops/list}}
+        </div>
       </div>
-    {{/vehicle}}
-  </div>
-  <div>
-    {{#devices}}
-      {{#sopac_ids}}
-      <div class="temperature-info">
-        <h6>{{#i18n}}plannings.edit.sopac_title{{/i18n}}</h6>
-        {{#items}}
-        <hr>
-          <div>
-            <span id="label-{{vehicle_id}}-{{id}}">
-              <i class="fa fa-wifi fa-fw"></i><span>{{#i18n}}plannings.edit.device_name_label{{/i18n}} {{text}}</span>
-            </span>
-          </div>
-          <div>
-            <span id="temperature-{{vehicle_id}}-{{id}}">
-              <i class="fa fa-thermometer-half fa-fw"></i><span>{{#i18n}}plannings.edit.temperature_label{{/i18n}}</span>
-            </span>
-          </div>
-          <div>
-            <span id="last-date-{{vehicle_id}}-{{id}}">
-              <i class="fa fa-stopwatch fa-fw"></i><span>{{#i18n}}plannings.edit.last_temperature_statement_label{{/i18n}}</span>
-            </span>
-          </div>
-          {{/items}}
-      </div>
-      {{/sopac_ids}}
-    {{/devices}}
-    <div class="route-details">
-    {{> stops/list}}
     </div>
-  </div>
-</div>
-
+  </li>
+{{/vehicle}}

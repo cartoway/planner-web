@@ -714,6 +714,31 @@ $sidebar-margins: 10px;
       margin-left: 5px;
     }
   }
+
+  .ui-sortable-disabled > .ui-sortable-handle {
+    #out_of_route{
+      margin-bottom: 0;
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+
+      .out-header {
+        position: relative;
+      }
+    }
+
+    .out-content {
+      position: relative;
+      max-height: 300px;
+      bottom: 0;
+      overflow: scroll;
+
+      .route-stops {
+        position: relative;
+        top: 0;
+      }
+    }
+  }
 }
 
 .temperature-info {
