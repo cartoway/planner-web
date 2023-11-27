@@ -206,4 +206,31 @@ class V01::VisitsTest < ActiveSupport::TestCase
       assert_equal 204, last_response.status, last_response.body
     end
   end
+
+  test 'should create a visit using deprecated time fields' do
+    assert_difference('Visit.count', 1) do
+      visit_attributes = @visit.attributes
+      visit_attributes['open1'] = visit_attributes.delete 'time_window_start_1'
+      visit_attributes['close1'] = visit_attributes.delete 'time_window_end_1'
+      post api_destination(@destination.id), visit_attributes.except('id', 'quantities'), as: :json
+      assert last_response.created?, last_response.body
+
+      visit = JSON.parse(last_response.body)
+      assert_equal '10:00:00', visit['time_window_start_1']
+      assert_equal '11:00:00', visit['time_window_end_1']
+    end
+  end
+
+  test 'should not create a visit using both current and deprecated time fields' do
+    assert_difference('Visit.count', 0) do
+      visit_attributes = @visit.attributes
+      visit_attributes['open1'] = visit_attributes['time_window_start_1']
+      visit_attributes['close1'] = visit_attributes['time_window_end_1']
+      post api_destination(@destination.id), visit_attributes.except('id', 'quantities'), as: :json
+      refute last_response.created?, last_response.body
+      assert_equal 400, last_response.status, last_response.body
+      assert_match "time_window_start_1, open1 are mutually exclusive", JSON.parse(last_response.body)['message']
+      assert_match "time_window_end_1, close1 are mutually exclusive", JSON.parse(last_response.body)['message']
+    end
+  end
 end
