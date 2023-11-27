@@ -18,6 +18,58 @@
 module SharedParams
   extend Grape::API::Helpers
 
+  params :request_destination do
+    optional :ref, type: String
+    optional :name, type: String
+    optional :street, type: String
+    optional :postalcode, type: String
+    optional :city, type: String
+    optional :state, type: String
+    optional :country, type: String
+    optional :lat, type: Float
+    optional :lng, type: Float
+    optional :detail, type: String
+    optional :comment, type: String
+    optional :phone_number, type: String
+    optional :geocoding_accuracy, type: Float
+    optional :geocoding_level, type: String, values: ['point', 'house', 'street', 'intersection', 'city']
+    optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+    optional :geocoded_at,  type: Time, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(val) { val.is_a?(String) ? Time.parse(val + ' UTC') : val }
+    optional :geocoder_version, type: String
+    optional :visits, type: Array do
+      optional :id, type: Integer, documentation: { desc: 'Required to retrieve an exising visit, if left blank a new visit will be created' }
+      :request_visit
+    end
+    optional :geocoding_accuracy, type: Float, documentation: { desc: 'Must be inside 0..1 range.' }
+  end
+
+  params :request_visit do
+    optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+
+    optional :quantities, type: Array do
+      optional :deliverable_unit_id, type: Integer
+      optional :quantity, type: Float
+      all_or_none_of :deliverable_unit_id, :quantity
+    end
+
+    optional :time_window_start_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :open1, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    mutually_exclusive :visit_duration, :open1
+
+    optional :time_window_end_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :close1, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    mutually_exclusive :visit_duration, :close1
+
+    optional :duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :time_window_start_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :open2, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    mutually_exclusive :visit_duration, :open2
+
+    optional :time_window_end_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :close2, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    mutually_exclusive :visit_duration, :close2
+  end
+
   params :params_from_entity do |options|
     options[:entity].each{ |k, d|
       v = d.dup # Important: use dup not to modify original entity

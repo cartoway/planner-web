@@ -28,6 +28,7 @@ class V01::Customers < Grape::API
 
       # Deals with deprecated speed_multiplicator
       p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator] && !p[:speed_multiplier]
+      p[:visit_duration] ||= p.delete(:take_over)
 
       p[:devices] = p[:devices] ? JSON.parse(p[:devices], symbolize_names: true) : {}
       p[:devices] = customer[:devices].deep_merge(p[:devices]) if customer && customer[:devices].size > 0
@@ -215,6 +216,8 @@ class V01::Customers < Grape::API
       end
 
       optional :visit_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      optional :take_over, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      mutually_exclusive :visit_duration, :take_over
     end
     put ':id' do
       if @current_user.admin?
@@ -268,6 +271,8 @@ class V01::Customers < Grape::API
       end
 
       optional :visit_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      optional :take_over, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      mutually_exclusive :visit_duration, :take_over
     end
     post do
       if @current_user.admin?

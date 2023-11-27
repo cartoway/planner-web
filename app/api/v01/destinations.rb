@@ -132,13 +132,7 @@ class V01::Destinations < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::Destination),
       failure: V01::Status.failures
     params do
-      # FIXME validation should also be on visits, but does not work
-      # use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids).deep_merge(
-      use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids, :visits).deep_merge(
-          name: { required: true },
-        geocoding_accuracy: { desc: 'Must be inside 0..1 range.' }
-      )
-      optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+      use :request_destination
     end
     post do
       destination = current_customer.destinations.build(destination_params)
@@ -212,12 +206,7 @@ class V01::Destinations < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      # FIXME validation should also be on visits, but does not work
-      # use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids).deep_merge(
-      use :params_from_entity, entity: V01::Entities::Destination.documentation.except(:id, :tag_ids, :visits).deep_merge(
-        geocoding_accuracy: { desc: 'Must be inside 0..1 range.' }
-      )
-      optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+      use :request_destination
     end
     put ':id' do
       id = ParseIdsRefs.read(params[:id])
