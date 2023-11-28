@@ -13,6 +13,7 @@ x-web: &web
     ROUTER_API_KEY: ${ROUTER_API_KEY:-demo}
     OPTIMIZER_URL: ${OPTIMIZER_URL:-http://localhost:8083/0.1}
     OPTIMIZER_API_KEY: ${OPTIMIZER_API_KEY:-demo}
+    RETURN_DEPRECATED: ${RETURN_DEPRECATED:-false}
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/uploads:/srv/app/public/uploads
