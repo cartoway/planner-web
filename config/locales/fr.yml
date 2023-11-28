@@ -37,7 +37,7 @@
       'deliverable_unit':
         'quantity':
           'key':
-            'cannot_be_empty': 'La clé de la quantitié d''unité livrable ne peut être vide'
+            'cannot_be_empty': 'L''unité de''capacité ne peut être vide'
       'import_csv': 'Import CSV'
       'import_csvs':
         'one': 'Import CSV'
@@ -55,18 +55,18 @@
         'replace': 'Remplacer'
   'activerecord':
     'models':
-      'customer': 'Compte client'
+      'customer': 'Espace client'
       'customers':
-        'one': 'compte client'
-        'other': 'comptes client'
-      'deliverable_unit': 'Unité livrable'
+        'one': 'espace client'
+        'other': 'espaces client'
+      'deliverable_unit': 'capacité'
       'deliverable_units':
-        'one': 'unité livrable'
-        'other': 'unités livrables'
+        'one': 'capacité'
+        'other': 'capacités'
       'destination': 'Client'
       'destinations':
-        'one': 'client'
-        'other': 'clients'
+        'one': 'destination'
+        'other': 'destinations'
       'layer': 'Fond de carte'
       'layers':
         'one': 'fond de carte'
@@ -91,8 +91,8 @@
       'profiles':
         'one': 'profil'
         'other': 'profils'
-      'reseller': 'Revendeur'
-      'resellers': 'Revendeurs'
+      'reseller': 'Partenaire'
+      'resellers': 'Partenaires'
       'route': 'Tournée'
       'routes':
         'one': 'tournée'
@@ -102,13 +102,13 @@
         'one': 'arrêt'
         'other': 'arrêts'
         'type':
-          'store': 'dépôt'
+          'store': 'site'
           'visit': 'visite'
           'rest': 'pause'
       'store': 'Dépôt'
       'stores':
-        'one': 'dépôt'
-        'other': 'dépôts'
+        'one': 'site'
+        'other': 'sites'
       'tag': 'Libellé'
       'tags':
         'one': 'libellé'
@@ -133,10 +133,10 @@
       'visits':
         'one': 'visite'
         'other': 'visites'
-      'zoning': 'Zonage'
+      'zoning': 'Sectorisation'
       'zonings':
-        'one': 'zonage'
-        'other': 'zonages'
+        'one': 'sectorisation'
+        'other': 'sectorisations'
     'attributes':
       'customer':
         'ref': 'Référence'
@@ -147,12 +147,12 @@
         'description_help': 'Détails sur le compte et les utilisateurs courants'
         'end_subscription': 'Fin de souscription'
         'test': 'Test'
-        'max_vehicles': 'Nombre véhicules'
+        'max_vehicles': 'Nombre livreurs'
         'max_plannings': 'Max plans'
-        'max_zonings': 'Max zonages'
-        'max_destinations': 'Max clients'
+        'max_zonings': 'Max sectorisations'
+        'max_destinations': 'Max destinations'
         'max_vehicle_usage_sets': 'Max configurations des véhicules'
-        'visit_duration': 'Durée de visite des clients'
+        'visit_duration': 'Durée de visite des destinations'
         'default_country': 'Pays par défaut'
         'with_state': 'Ajouter champ État dans les adresses'
         'optimization_max_split_size': 'Découper le problème'
@@ -201,13 +201,13 @@
         'router_options_snap': 'Reporter l''arrêt au carrefour'
         'router_options_strict_restriction': 'Respect strict des limitations poids
           lourd'
-        'destinations': 'Clients'
+        'destinations': 'Adresses'
         'stores': 'Dépôts'
         'jobs': 'Tâches'
         'profile': 'Profil'
         'profile_id': 'Profil'
       'deliverable_unit':
-        'label': 'Libellé'
+        'label': 'Unité'
         'ref': 'Référence'
         'icon': 'Icône'
         'default_quantity': 'Quantité par défaut'
@@ -262,7 +262,7 @@
         'name': 'Nom'
         'base_date': 'Date de base'
         'length': 'Période'
-        'customer_id': 'Compte client'
+        'customer_id': 'Espace client'
       'planning':
         'name': 'Nom'
         'ref': 'Référence'
@@ -385,8 +385,8 @@
         'ref': 'Référence'
       'user':
         'email': 'Email'
-        'customer': 'Compte client'
-        'customer_id': 'Compte client'
+        'customer': 'Espace client'
+        'customer_id': 'Espace client'
         'layer': 'Fond de carte'
         'layer_id': 'Fond de carte'
         'password': 'Mot de passe'
@@ -538,7 +538,7 @@
         'updated': '%{model} a été mis à jour'
     'errors':
       'attributes':
-        'inconsistent_customer': 'n''est pas une valeur autorisée pour ce compte client'
+        'inconsistent_customer': 'n''est pas une valeur autorisée pour cet espace client'
       'models':
         'location':
           'missing_address_or_latlng': 'Le code postal et la ville ne peuvent pas
@@ -594,7 +594,7 @@
         'zone':
           'attributes':
             'vehicle':
-              'bad_customer': 'non associé au compte client'
+              'bad_customer': 'non associé au espace client'
             'polygon':
               'invalid_json': 'n''est pas une chaîne de caractères json valide'
         'customer':
@@ -602,16 +602,16 @@
             'plannings':
               'over_max_limit': 'dépassement du nombre maximal de plans'
             'zonings':
-              'over_max_limit': 'dépassement du nombre maximal de zonages'
+              'over_max_limit': 'dépassement du nombre maximal de sectorisations'
             'destinations':
-              'over_max_limit': 'dépassement du nombre maximal de clients'
+              'over_max_limit': 'dépassement du nombre maximal de destinations'
             'stores':
-              'over_max_limit': 'dépassement du nombre maximal de dépôts'
+              'over_max_limit': 'dépassement du nombre maximal de sites'
             'vehicle_usage_sets':
               'over_max_limit': 'dépassement du nombre maximal de configurations des
                 véhicules'
         'store':
-          'at_least_one': 'Au moins un dépôt est requis'
+          'at_least_one': 'Au moins un site est requis'
           'icon_unknown': 'n''est pas une icône font-awesome autorisée'
           'icon_size_invalid': 'n''est pas une taille valide'
         'route':
@@ -688,7 +688,7 @@
       'record': 'Enregistrement %{s}'
     'empty': 'Rien à importer, vérifiez vos données.'
     'without_stop_type': 'Valeurs vides pour « type arrêt », retirez la colonne/clé
-      ou renseignez une valeur parmi [visite | dépôt | pause].'
+      ou renseignez une valeur parmi [visite | site | pause].'
     'data': 'Vérifiez vos données :'
     'data_erroneous':
       'csv': 'Fichier invalide, ligne %{s}'
@@ -699,11 +699,11 @@
   'admin':
     'profiles':
       'menu':
-        'profiles': 'Profils'
+        'profiles': 'Profils carto'
       'index':
-        'title': 'Liste profils'
-        'avoid_zones': 'Zones de contournement'
-        'speed_multiplier_zones': 'Zones de ralentissement'
+        'title': 'Liste profils cartographiques'
+        'avoid_zones': 'Secteurs de contournement'
+        'speed_multiplier_zones': 'Secteurs de ralentissement'
     'resellers':
       'menu':
         'reseller': 'Revendeur'
@@ -744,10 +744,10 @@
           nombre de jours (par ex: https://analytics.cartoroute.com?id={ID}'
         'customer_audience_url_help': 'Adresse de la page web contenant votre tableau
           de bord d''audience pour un compte spécifique. Vous pouvez utiliser « {ID} »  qui
-          sera remplacé par l''identifiant du compte client (par ex: https://analytics.cartoroute.com?id={ID}'
+          sera remplacé par l''identifiant de l''espace client (par ex: https://analytics.cartoroute.com?id={ID}'
         'customer_behavior_url_help': 'Adresse de la page web contenant votre tableau
           de bord de comportement pour un compte spécifique. Vous pouvez utiliser
-          « {ID} »  qui sera remplacé par l''identifiant du compte client (par ex:
+          « {ID} »  qui sera remplacé par l''identifiant de l'' espace client (par ex:
           https://analytics.cartoroute.com?id={ID}'
         'logo_large_help': 'Logo pleine page redimensionnable, de préférence au format
           SVG, à défaut en PNG.'
@@ -783,15 +783,15 @@
         'create_drivers': 'Mettre à jour ou créer les utilisateurs Cartoroute Field'
   'customers':
     'duplicate':
-      'success': 'Compte client dupliqué avec succès'
+      'success': 'Espace client dupliqué avec succès'
     'import':
-      'success': 'Le compte client %{customer_name} a été importé avec succès.'
+      'success': 'L''espace client %{customer_name} a été importé avec succès.'
     'default':
       'country': 'France'
     'menu':
       'customer': 'Paramétrage global'
       'user_settings': 'Paramètres utilisateur'
-      'customers': 'Comptes client'
+      'customers': 'Espaces clients'
     'edit':
       'title': 'Modifier paramétrage global'
       'send_email': 'Envoyer email de confirmation'
@@ -805,8 +805,8 @@
       'time_zone': 'Fuseau horaire'
       'devices': 'Exports GPS & Mobiles'
     'index':
-      'title': 'Liste comptes client'
-      'new': 'Nouveau compte client'
+      'title': 'Liste espaces clients'
+      'new': 'Nouvel espace client'
       'import': 'Importer'
       'map': 'Carte'
       'no_test': 'hors test'
@@ -815,17 +815,17 @@
       'status_no_sign_in_user': 'Utilisateur jamais connecté'
       'status_inactive_user': 'Utilisateur inactif'
       'created_end_subscription': 'Créé - Fin de souscription'
-      'audience_url': 'Tableau de bord d''audience pour l''ensemble des comptes'
-      'behavior_url': 'Tableau de bord comportemental pour l''ensemble des comptes'
+      'audience_url': 'Tableau de bord d''audience pour l''ensemble des espaces'
+      'behavior_url': 'Tableau de bord comportemental pour l''ensemble des espaces'
     'import':
-      'title': 'Importer un compte client'
-      'label': 'Sélectionner un compte client à partir d''un fichier .dump'
-      'submit': 'Importer le compte client'
+      'title': 'Importer un espace client'
+      'label': 'Sélectionner un espace client à partir d''un fichier .dump'
+      'submit': 'Importer le espace client'
     'upload_dump':
       'success': 'Client importé avec succès'
       'file_empty': 'Un fichier .dump doit être renseigné'
     'new':
-      'title': 'Nouveau compte client'
+      'title': 'Nouvel espace client'
     'destroy':
       'success': 'Client supprimé avec succès'
     'destroy_multiple':
@@ -879,9 +879,9 @@
       'max_plannings_default': '%{n} (valeur par défaut)'
       'max_plannings_help': 'Nombre maximal de plans autorisés dans le compte.'
       'max_zonings_default': '%{n} (valeur par défaut)'
-      'max_zonings_help': 'Nombre maximal de zonages autorisés dans le compte.'
+      'max_zonings_help': 'Nombre maximal de sectorisations autorisés dans le compte.'
       'max_destinations_default': '%{n} (valeur par défaut)'
-      'max_destinations_help': 'Nombre maximal de clients autorisés dans le compte.'
+      'max_destinations_help': 'Nombre maximal de adressesautorisés dans le compte.'
       'max_vehicle_usage_sets_default': '%{n} (valeur par défaut)'
       'max_vehicle_usage_sets_help': 'Nombre maximal de configurations des véhicules
         autorisées dans le compte.'
@@ -954,7 +954,7 @@
       'audience_url_help': 'Se rendre sur le tableau de bord d''audience pour ce compte
         client'
       'behavior_url_help': 'Se rendre sur le tableau de bord comportemental pour ce
-        compte client'
+        espace client'
       'submit': 'Enregistrer paramétrage global'
       'external_callback':
         'title': 'URL de rappel'
@@ -973,12 +973,12 @@
         'enabled': '(Actif sur le compte revendeur)'
   'deliverable_units':
     'edit':
-      'title': 'Modifier unité livrable'
+      'title': 'Modifier capacité'
     'index':
-      'title': 'Liste unités livrables'
-      'new': 'Nouvelle unité livrable'
+      'title': 'Liste capacités'
+      'new': 'Nouvelle capacité'
     'new':
-      'title': 'Nouvelle unité livrable'
+      'title': 'Nouvelle capacité'
     'form':
       'prefered_icons': 'Conseillés'
       'other_icons': 'Autres'
@@ -1008,15 +1008,15 @@
     'upload_tomtom':
       'success': 'Adresses importées avec succès'
     'menu':
-      'destinations': 'Clients'
+      'destinations': 'Adresses'
       'import': 'Importer'
       'export_spreadsheet_standard': 'Export tableur standard'
       'export_spreadsheet_excel': 'Export tableur Excel'
-      'stores': 'Dépôts'
-      'import_stores': 'Importer dépôts'
+      'stores': 'Sites'
+      'import_stores': 'Importer sites'
       'tags': 'Libellés'
-      'clear': 'Supprimer tous les clients'
-      'clear_confirm': 'Êtes-vous sûr de vouloir supprimer tous les clients ? Vos
+      'clear': 'Supprimer toutes les adresses'
+      'clear_confirm': 'Êtes-vous sûr de vouloir supprimer toutes les adresses ? Vos
         tournées existantes seront perdues.'
     'form':
       'ref_help': 'Référence libre'
@@ -1056,16 +1056,16 @@
       'title': 'Modifier client'
       'show_plans_by_destination': 'Afficher les tournées du client'
     'import':
-      'title': 'Importer des clients'
-      'destinations': 'Clients'
+      'title': 'Importer des adresses'
+      'destinations': 'Adresses'
       'replace_no': 'Mise à jour / ajout'
-      'replace_no_help': 'Une mise à jour des clients existants (référence client
+      'replace_no_help': 'Une mise à jour des adresses existantes (référence client
         inchangée) est faite et les nouveaux sont ajoutés à l''application.'
-      'replace_yes': 'Supprimer anciens clients'
-      'replace_yes_help': 'Efface et remplace tous les anciens clients par ceux de
+      'replace_yes': 'Supprimer anciennes adresses'
+      'replace_yes_help': 'Efface et remplace toutes les anciennes adresses par celles de
         l''import. Les anciennes tournées seront également perdues.'
-      'replace_confirm': 'Le fait de supprimer les clients affectera vos plans des
-        anciennes tournées qui ne comporteront plus que des nouveaux clients non planifiés.
+      'replace_confirm': 'Le fait de supprimer les adresses affectera vos anciens
+        plans de tournées qui ne comporteront plus que des nouvelles adresses non planifiés.
         Êtes-vous sûr ?'
       'plannings': 'Plans'
       'delete_plannings': 'Supprimer anciens plans'
@@ -1088,7 +1088,7 @@
           'desc': 'Votre fichier d''import peut contenir l''ensemble des colonnes
             et types de valeurs suivants :'
           'columns_route': 'Colonnes de la tournée'
-          'columns_destination': 'Colonnes de la destination visitée'
+          'columns_destination': 'Colonnes de l''adresse visitée'
           'columns_visit': 'Colonnes de la visite'
           'def_help': 'Si vous souhaitez ne pas utiliser les noms de colonnes par
             défaut, vous pouvez les définir vous-même. Vous pouvez définir une suite
@@ -1100,9 +1100,9 @@
         'title': 'TomTom'
         'help': 'Importe les adresses de TomTom WEBFLEET comme clients'
     'index':
-      'title': 'Liste clients'
-      'new': 'Nouveau client'
-      'default_name': 'Nouveau client'
+      'title': 'Liste adresses'
+      'new': 'Nouvelle adresse'
+      'default_name': 'Nouvelle adresse'
       'columns': 'Colonnes'
       'no_position': 'manquant'
       'geocoding_level': 'Niveau de géocodage'
@@ -1115,8 +1115,8 @@
       'quantity_small': 'Qté.'
       'dialog':
         'import':
-          'title': 'Import des clients'
-          'in_progress': 'Import des clients en cours, merci de patienter'
+          'title': 'Import des adresses'
+          'in_progress': 'Import des adresses en cours, merci de patienter'
         'geocoding':
           'title': 'Géocodage'
           'in_progress': 'Géocodage en cours, merci de patienter.'
@@ -1125,22 +1125,22 @@
           'error': 'Impossible d''effectuer le calcul.'
         'geocoding_danger':
           'title': 'Résultats de géocodage peu fiables'
-          'infos': 'Certains de vos clients semblent être géocodés de manière peu
+          'infos': 'Certaines de vos adresses semblent être géocodées de manière peu
             fiable. Souhaitez-vous les revoir dans la liste ?'
-          'hide_help': 'Pour ne plus voir ce message, sélectionnez les clients ayant
+          'hide_help': 'Pour ne plus voir ce message, sélectionnez les adresses ayant
             un géocodage peu fiable puis :'
           'correct_help': 'Vérifiez l''adresse pour la corriger ou compléter si besoin'
           'move_help': 'Déplacez les points manuellement sur la carte le cas échéant'
           'dismiss': 'Ignorer'
           'sort_geocoding': 'Montrer les géocodages peu fiables d''abord'
-      'over_max_limit': 'Vous avez atteint la limite de clients autorisés pour votre
+      'over_max_limit': 'Vous avez atteint la limite de adresses autorisées pour votre
         compte (Limite : %{limit}), contactez le support si vous avez besoin de plus
-        de clients'
+        d''adresses'
     'new':
       'title': 'Nouveau client'
     'import_file':
       'ref': 'référence'
-      'ref_desc': 'référence client : identifiant stable, constant et unique permettant la
+      'ref_desc': 'référence adresse: identifiant stable, constant et unique permettant la
         mise à jour non-destructrice de cet élément lors du prochain import'
       'route': 'tournée'
       'route_desc': 'numéro ou référence de la tournée dans le plan de tournées créé
@@ -1157,16 +1157,16 @@
       'stop_type_desc': 'type d''arrêt dans la tournée. La valeur par défaut est [visite]'
       'stop_type_visit': 'visite'
       'stop_type_visit_desc': ''
-      'stop_format': '[visite | dépôt | pause]'
+      'stop_format': '[visite | site | pause]'
       'name': 'nom'
-      'name_desc': 'nom du client ou de la destination visitée'
+      'name_desc': 'nom du client, de l''adresse ou du point d''intérêt'
       'street': 'voie'
       'street_desc': 'numéro de l''immeuble, type de voie et nom de la voie (l''orthographe
         doit être correcte pour un géocodage fiable). Note : les détails d''accès
         doivent eux être posés dans le champ « complément »'
       'detail': 'complément'
       'detail_desc': 'détails d''accès complémentaires à la voie permettant à l''agent
-        de terrain d''atteindre le seuil de porte de sa destination. Ex. Bâtiment
+        de terrain d''atteindre le seuil de porte de son adresse Ex. Bâtiment
         d''un complexe, résidence, escalier, étage, numéro de porte…'
       'postalcode': 'code postal'
       'postalcode_desc': 'code postal de la ville ou commune (l''exactitude est importante
@@ -1181,11 +1181,11 @@
       'country_desc': 'nom du pays (l''orthographe doit être correcte pour un géocodage
         fiable)'
       'lat': 'lat'
-      'lat_desc': 'latitude de la destination (en degrés décimaux) comprise entre
+      'lat_desc': 'latitude de l''adresse(en degrés décimaux) comprise entre
         -90° et 90°. Ex. 45,91'
       'lat_format': 'nombre à virgule entre -90 et 90'
       'lng': 'lng'
-      'lng_desc': 'longitude de la destination (en degrés décimaux) comprise entre
+      'lng_desc': 'longitude de l''adresse(en degrés décimaux) comprise entre
         -180° et 180°. Ex. -0,781'
       'lng_format': 'nombre à virgule entre -180 et 180'
       'geocoding_accuracy': 'qualité géocodage'
@@ -1459,25 +1459,25 @@
       'panel_one':
         'title': 'Gestion des véhicules'
         'content': 'configurer les véhicules, leur consommation, leur capacité. Définir
-          le calculateur d’itinéraire selon le type de véhicule, configurer les dépôts.'
+          le calculateur d’itinéraire selon le type de véhicule, configurer les sites.'
         'time': '⏱15min.'
         'doc_link': 'Doc - Gestion des véhicules'
         'doc_href': '/manual/03-vehicles_configuration.html'
       'panel_two':
-        'title': 'Gestion des clients'
-        'content': 'créer ou importer les données clients (référence, quantité, adresses,
+        'title': 'Gestion des adresses'
+        'content': 'créer ou importer les données adresses(référence, quantité, adresses,
           durée de visite, horaires de visite, libellées) et les supprimer. Exporter
-          les données clients...'
+          les données adresses..'
         'time': '⏱9min.'
-        'doc_link': 'Doc - Gestion des clients'
-        'doc_href': '/manual/04-destinations.html'
+        'doc_link': 'Doc - Gestion des adresses'
+        'doc_href': '/manual/04-adresses.html'
       'panel_three':
-        'title': 'Gestion des zonages'
-        'content': 'créer manuellement un zonage. Créer automatiquement un zonage
-          depuis les tournées du planning ou en respectant un nombre de zones. Enfin,
-          modifier un zonage.'
+        'title': 'Gestion des sectorisations'
+        'content': 'créer manuellement une sectorisation. Créer automatiquement une sectorisation
+          depuis les tournées du planning ou en respectant un nombre de secteurs. Enfin,
+          modifier une sectorisation.'
         'time': '⏱5min.'
-        'doc_link': 'Doc - Gestion des zonages'
+        'doc_link': 'Doc - Gestion des sectorisations'
         'doc_href': '/manual/05-zonings.html'
       'footer': 'Vous recevez ce message en tant qu''utilisateur de %{name}'
       'adds':
@@ -1485,8 +1485,8 @@
         'vehicules_params': 'Paramétrage des véhicules'
         'destination_params': 'Paramétrage client'
         'tags': 'Présentation des libellés'
-        'zonage': 'Création zonage'
-        'zonage_update': 'Modification zonage'
+        'zonage': 'Création sectorisation'
+        'zonage_update': 'Modification sectorisation'
     'advanced_options':
       'header': 'Pouvons-nous vous aider à éclaircir certains points ?'
       'main_content': 'Vous utilisez %{name} depuis maintenant 3 jours. Vous avez
@@ -1501,7 +1501,7 @@
       'goal': 'Objectifs :'
       'panel_one':
         'title': 'Gestion des plans et des tournées'
-        'content': 'créer un plan de tournées, appliquer un zonage, optimiser des
+        'content': 'créer un plan de tournées, appliquer une sectorisation, optimiser des
           tournées, exporter des tournées (feuille de route, mobile, gps, agenda,
           tableur).'
         'time': '⏱20min.'
@@ -1589,14 +1589,14 @@
       'zonings':
         'label': 'Zonages'
         'success': 'Zonages appliqués avec succès'
-        'fail': 'Échec lors de l''application des zonages'
+        'fail': 'Échec lors de l''application des sectorisations'
         'action': 'Appliquer Zonages'
-      'zoning_new': 'Créer un nouveau zonage depuis ce plan de tournées'
-      'zoning_edit': 'Modifier ce zonage depuis ce plan de tournées'
+      'zoning_new': 'Créer un nouvelle sectorisation depuis ce plan de tournées'
+      'zoning_edit': 'Modifier cette sectorisation depuis ce plan de tournées'
       'last_sent_to': 'Envoi'
       'title': 'Modifier plan'
       'stops': 'arrêts'
-      'destinations': 'clients'
+      'destinations': 'adresses'
       'without_stops_title': 'Les arrêts de ce plan de tournées volumineux n''ont
         pas été chargés pour améliorer les performances de l''affichage'
       'load_stops_out_of_route': 'Charger les arrêts non planifiés'
@@ -1606,10 +1606,10 @@
       'optimize_complete': 'Optimisation terminée'
       'optimize_failed': 'Échec lors de l''optimisation'
       'optimized_at': 'Optimisé'
-      'zoning_confirm': 'Enregistrer et appliquer le nouveau zonage ? Les tournées
+      'zoning_confirm': 'Enregistrer et appliquer la nouvelle sectorisation ? Les tournées
         du plan vont être modifiées'
       'page_change_zoning_confirm': 'Souhaitez-vous quitter la page et perdre les
-        changements de zonage ?'
+        changements de sectorisation ?'
       'route_placeholder': 'Réf. de la tournée'
       'service_time': 'Durées de service'
       'exports': 'Exporter le plan de tournées'
@@ -1647,9 +1647,9 @@
         'kmz_track': 'Tracé KMZ'
       'zoning':
         'none': 'Aucun'
-        'apply': 'Appliquer zonage'
-        'edit': 'Modifier zonage'
-        'new': 'Nouveau zonage'
+        'apply': 'Appliquer sectorisation'
+        'edit': 'Modifier sectorisation'
+        'new': 'Nouvelle sectorisation'
       'order_array':
         'edit': 'Modifier tableau de commandes'
       'map':
@@ -1660,9 +1660,9 @@
       'open_planning_panel': 'Déployer le panneau du plan de tournées'
       'collapse_planning_panel': 'Minifier le panneau du plan de tournées'
       'refresh': 'Actualiser'
-      'refresh_help': 'Des paramètres ou des clients utilisés par ce plan de tournées
+      'refresh_help': 'Des paramètres ou des adresses utilisés par ce plan de tournées
         ont été modifiés, il est nécessaire de le recalculer'
-      'outdated_zoning': 'Le zonage a été modifié. Appliquez à nouveau pour actualiser.'
+      'outdated_zoning': 'La sectorisation a été modifié. Appliquez à nouveau pour actualiser.'
       'stops_help': 'Arrêts planifiés / total'
       'duration_help': 'Somme des durées des tournées'
       'distance_help': 'Somme des distances des tournées'
@@ -1693,18 +1693,18 @@
       'route_wait_time_help': 'Durée des temps d''attentes'
       'drag_help': 'Glisser-déposer pour ordonner le client dans les tournées'
       'active_help': 'Prendre en compte ou non un client dans la tournée'
-      'edit_store_help': 'Modifier les informations du dépôt'
+      'edit_store_help': 'Modifier les informations du site'
       'edit_visit_help': 'Modifier les informations du client'
       'marker_help': 'Visualiser sur la carte'
       'automatic_insert_help': 'Propose un endroit pour insérer ce client dans une
         tournée (le résultat peut ne plus être optimisé)'
-      'automatic_insert_help_multiple': 'Propose un bon endroit pour insérer les clients
+      'automatic_insert_help_multiple': 'Propose un bon endroit pour insérer les adresses
         dans des tournées (le résultat ne sera plus optimisé)'
       'automatic_insert_confirm': 'Affecter tous les arrêts non planifiés à des tournées ?
-        Le résultat ne sera plus optimisé. Les zonages sont recommandés pour affecter
+        Le résultat ne sera plus optimisé. Les sectorisations sont recommandées pour affecter
         les arrêts de manière plus précise (Ok pour continuer malgré tout).'
-      'automatic_insert_too_many': 'Trop d''arrêts non planifiés. Les zonages sont
-        recommandés pour affecter les arrêts de manière plus précise'
+      'automatic_insert_too_many': 'Trop d''arrêts non planifiés. Les sectorisations sont
+        recommandées pour affecter les arrêts de manière plus précise'
       'active_all': 'Tous'
       'active_reverse': 'Inverser'
       'active_none': 'Aucun'
@@ -1744,8 +1744,8 @@
         'out_of_window_help': 'Planifié en dehors des créneaux horaires définis'
         'out_of_capacity': 'Hors capacité véhicule'
         'out_of_capacity_help': 'Capacité du véhicule dépassée'
-        'unmanageable_capacity': 'Unité livrable non gérée'
-        'unmanageable_capacity_help': 'Unité livrable non gérée par le véhicule'
+        'unmanageable_capacity': 'capacité non gérée'
+        'unmanageable_capacity_help': 'capacité non gérée par le véhicule'
         'out_of_drive_time': 'Hors amplitude horaire véhicule'
         'out_of_drive_time_help': 'Planifié en dehors des amplitudes horaires du véhicule'
         'out_of_work_time': 'Hors durée de travail'
@@ -1753,9 +1753,9 @@
           (service compris)'
         'out_of_max_distance': 'Distance maximale réalisable dépassée'
         'out_of_max_distance_help': 'Distance maximale réalisable dépassée'
-        'no_path': 'Destination inaccessible'
-        'no_path_help': 'Destination inaccessible : pas de voie d''accès ou itinéraire
-          pour aller ou partir de la destination'
+        'no_path': 'Adresse inaccessible'
+        'no_path_help': 'Adresse inaccessible : pas de voie d''accès ou itinéraire
+          pour aller ou partir de l''adresse'
       'dialog':
         'refresh':
           'title': 'Actualiser le plan de tournées'
@@ -1778,14 +1778,14 @@
               qu''elle soient actives ou non (les visites décochées resteront décochées).'
             'cost_late_multiplier': 'Autoriser les retards créneau visite'
           'vehicles':
-            'title': 'Véhicules'
+            'title': 'Flotte'
             'router_dimension': 'Calcul d''itinéraire'
             'time': 'au plus rapide'
             'distance': 'au plus court'
             'cost_late_multiplier': 'Autoriser les retards créneau véhicule'
             'force_start': 'Forcer le départ au début du créneau'
           'deliverable_units':
-            'title': 'Unités livrables'
+            'title': 'Capacités'
             'overload_multiplier': 'Autoriser le dépassement de chargement'
             'overload_multiplier_true_help': 'La capacité du véhicule est limitée'
             'overload_multiplier_ignore_help': 'La capacité du véhicule est illimitée'
@@ -1809,7 +1809,7 @@
           'error': 'Impossible d''effectuer le calcul.'
         'zoning':
           'title': 'Zonage'
-          'in_progress': 'Application du nouveau zonage en cours, merci de patienter'
+          'in_progress': 'Application de la nouvelle sectorisation en cours, merci de patienter'
         'move_stops':
           'title': 'Déplacement des arrêts'
           'move_to': 'Choisir la tournée de destination'
@@ -1831,7 +1831,7 @@
           'title': 'Export vers un tableur'
           'stops': 'Arrêts additionnels'
           'out_of_route': 'non planifiés'
-          'stores': 'dépôts'
+          'stores': 'sites'
           'rests': 'pauses'
           'stops_inactives': 'arrêts inactifs'
           'columns': 'Colonnes'
@@ -1855,7 +1855,7 @@
       'route': 'tournée'
       'order': 'ordre'
       'stop_type': 'type arrêt'
-      'stop_type_store': 'dépôt'
+      'stop_type_store': 'site'
       'stop_type_visit': 'visite'
       'stop_type_rest': 'pause'
       'wait_time': 'attente'
@@ -1898,13 +1898,13 @@
       'begin_end_date': 'Période de validité'
       'begin_end_date_help': 'Période durant laquelle le plan est valide'
       'tags_help': 'Permet de filtrer les visites qui seront présentes sur le plan
-        selon leur libellé. Si «tous » est sélectionné, les visites/clients doivent
+        selon leur libellé. Si «tous » est sélectionné, les visites/adresses doivent
         avoir l’ensemble des libellés. Si « ou » est sélectionné un libellé de la
         liste suffit.'
       'order_array': 'Comm.'
-      'zonings_help': 'Permet d''affecter automatiquement des visites/clients à des
-        véhicules suivant des zones géographiques prédéfinies.'
-      'avoid_zones_help': 'Permet également de définir des zones où ne pas circuler.'
+      'zonings_help': 'Permet d''affecter automatiquement des visites/adresses à des
+        véhicules suivant des secteurs géographiques prédéfinies.'
+      'avoid_zones_help': 'Permet également de définir des secteurs où ne pas circuler.'
       'default_date': 'Date du jour par défaut'
       'default': 'Défaut'
     'show':
@@ -1927,16 +1927,16 @@
   'deliverables_by_vehicles':
     'show':
       'title_page': Etat de charge par tournée
-      'total_quantity': Total des unités livrables
+      'total_quantity': Total quantités
       'total_stops': 'Nombre total d''arrêts'
-      'total_destinations': Nombre total de clients
+      'total_destinations': Nombre total d''adresses
       'visits_duration': Durée de visite (hh:mm)
       'drive_duration': Durée de conduite (hh:mm)
       'route_duration': Durée total de la tournée (hh:mm)
       'average': Moyenne
-      'deliverable_unit': 'Unités livrables'
+      'deliverable_unit': 'Capacités'
       'fail': Impossible de charger les plannings pour ce véhicule
-      'empty': Aucune unité livrable à afficher
+      'empty': Aucune capacité à afficher
   'routes_by_vehicles':
     'show':
       'title_page': 'Tournées par véhicule'
@@ -1970,21 +1970,21 @@
       'prefered_icons': 'Conseillés'
       'other_icons': 'Autres'
     'edit':
-      'title': 'Modifier dépôt'
+      'title': 'Modifier site'
     'import':
-      'title': 'Importer des dépôts'
+      'title': 'Importer des sites'
       'stores': 'Dépôts'
       'replace_no': 'Mise à jour / ajout'
-      'replace_no_help': 'Une mise à jour des dépôts existants (référence dépôt inchangée)
+      'replace_no_help': 'Une mise à jour des sites existants (référence site inchangée)
         est faite et les nouveaux sont ajoutés à l''application.'
-      'replace_yes': 'Supprimer anciens dépôts'
-      'replace_yes_help': 'Efface et remplace tous les anciens dépôts par ceux de
+      'replace_yes': 'Supprimer anciens sites'
+      'replace_yes_help': 'Efface et remplace tous les anciens sites par ceux de
         l''import.'
-      'replace_confirm': 'Supprimer tous les dépôts et leurs modifications pour les
+      'replace_confirm': 'Supprimer tous les sites et leurs modifications pour les
         remplacer par ceux importés ?'
       'csv':
         'title': 'Fichier CSV'
-        'help': 'Importe les dépôts depuis un fichier CSV. Les fichiers CSV peuvent
+        'help': 'Importe les sites depuis un fichier CSV. Les fichiers CSV peuvent
           être exportés à partir de tableurs ou depuis d''autres logiciels.'
         'file_help': 'Import de fichier CSV uniquement'
       'import_template_help': 'Aide'
@@ -1996,33 +1996,33 @@
     'index':
       'dialog':
         'import':
-          'title': 'Import des dépôts'
-          'in_progress': 'Import des dépôts en cours, merci de patienter'
-      'title': 'Liste dépôts'
-      'new': 'Nouveau dépôt'
+          'title': 'Import des sites'
+          'in_progress': 'Import des sites en cours, merci de patienter'
+      'title': 'Liste sites'
+      'new': 'Nouveau site'
     'new':
-      'title': 'Nouveau dépôt'
+      'title': 'Nouveau site'
     'import_file':
       'ref': 'référence'
       'ref_desc': 'un identifiant stable, constant et unique permettant la mise à
         jour non-destructrice de cet élément lors du prochain import'
       'name': 'nom'
-      'name_desc': 'nom du dépôt'
+      'name_desc': 'nom du site'
       'color': 'couleur'
-      'color_desc': 'la couleur de votre icône de dépôt, issue des couleurs du web
+      'color_desc': 'la couleur de votre icône de site, issue des couleurs du web
         https://fr.wikipedia.org/wiki/Couleur_du_Web'
       'color_format': '#000000 ou black'
       'icon': 'icône'
-      'icon_desc': 'nom de l''icône représentant le dépôt sur la carte, issue de la
+      'icon_desc': 'nom de l''icône représentant le site sur la carte, issue de la
         liste officielle de font-awesome http://fontawesome.io/icons préfixé de “fa-”.
         Ex. fa-building.'
       'icon_size': 'taille icône'
-      'icon_size_desc': 'taille de l''icône localisant le dépôt sur la carte. Défaut
+      'icon_size_desc': 'taille de l''icône localisant le site sur la carte. Défaut
         : large.'
       'open': 'horaire début'
-      'open_desc': 'Début des horaires d''activités du dépôt'
+      'open_desc': 'Début des horaires d''activités du site'
       'close': 'horaire fin'
-      'close_desc': 'Fin des horaires d''activités du dépôt'
+      'close_desc': 'Fin des horaires d''activités du site'
       'street': 'voie'
       'street_desc': 'numéro de l''immeuble, type de voie et nom de la voie (l''orthographe
         doit être correcte pour un géocodage fiable).'
@@ -2039,11 +2039,11 @@
       'country_desc': 'nom du pays (l''orthographe doit être correcte pour un géocodage
         fiable).'
       'lat': 'lat'
-      'lat_desc': 'latitude du dépôt (en degrés décimaux) comprise entre -90° et 90°.
+      'lat_desc': 'latitude du site (en degrés décimaux) comprise entre -90° et 90°.
         Ex. 45,91'
       'lat_format': 'nombre à virgule entre -90 et 90'
       'lng': 'lng'
-      'lng_desc': 'longitude du dépôt (en dégrés décimaux) comprise entre -180° et
+      'lng_desc': 'longitude du site (en dégrés décimaux) comprise entre -180° et
         180°. Ex. -0,781'
       'lng_format': 'nombre à virgule entre -180 et 180'
       'geocoding_accuracy': 'qualité géocodage'
@@ -2216,14 +2216,14 @@
     'edit':
       'title': 'Modifier véhicule et configuration'
     'index':
-      'title': 'Liste configurations de véhicules'
+      'title': 'Configurations de véhicules'
       'capacities': 'Capacités'
       'select_unselect_all': 'Sélectionner/Dé-sélectionner tous les véhicules'
       'stores': 'Départ - Arrivée'
       'store':
-        'no_start': 'Pas de dépôt de départ'
-        'no_stop': 'Pas de dépôt d''arrivée : fin de tournée libre'
-        'same_start_stop': 'Véhicule retournant à son dépôt de départ'
+        'no_start': 'Pas de site de départ'
+        'no_stop': 'Pas de site d''arrivée : fin de tournée libre'
+        'same_start_stop': 'Véhicule retournant à son site de départ'
       'time': 'Début - Fin'
       'devices': 'Terminaux mobiles'
       'disable': 'Désactiver'
@@ -2262,7 +2262,7 @@
       'store':
         'default': 'Défaut'
         'none': 'Aucun'
-      'stores_help': 'Dépôts de départ et d''arrivée'
+      'stores_help': 'Sites de départ et d''arrivée'
       'rest_duration_store': 'Durée de repos / lieu'
       'rest_start':
         'default': '%{n} (défaut)'
@@ -2298,22 +2298,22 @@
     'default':
       'name': 'Défaut'
     'menu':
-      'vehicle_usage_sets': 'Véhicules'
+      'vehicle_usage_sets': 'Flotte'
       'import_vehicle_usage_sets': 'Importer configuration'
-      'deliverable_units': 'Unités livrables'
+      'deliverable_units': 'Capacités'
     'edit':
-      'title': 'Modifier configuration des véhicules'
+      'title': 'Modifier configuration de la flotte'
     'index':
-      'title': 'Liste configurations des véhicules'
-      'new': 'Nouvelle configuration des véhicules'
+      'title': 'Configurations de la flotte'
+      'new': 'Nouvelle configuration de la flotte'
       'stores': 'Départ - Arrivée'
       'time': 'Début - Fin'
       'service_time': 'Durées de service'
-      'over_max_limit': 'Vous avez atteint la limite de configurations des véhicules
+      'over_max_limit': 'Vous avez atteint la limite de configurations de la flotte
         autorisées pour votre compte (Limite : %{limit}), contactez le support si
         vous avez besoin de plus de configurations'
     'new':
-      'title': 'Nouvelle configuration des véhicules'
+      'title': 'Nouvelle configuration de la flotte'
     'import':
       'max_distance': 'Distance maximale du véhicule'
       'title': 'Importer une nouvelle configuration de véhicules'
@@ -2359,18 +2359,18 @@
       'time_window_start_desc': 'début de l''horaire de travail du livreur'
       'time_window_end': 'horaire fin'
       'time_window_end_desc': 'fin de l''horaire de travail du livreur'
-      'store_start_ref': 'référence dépôt départ'
-      'store_start_desc': 'référence du dépôt de départ du livreur'
-      'store_stop_ref': 'référence dépôt arrivée'
-      'store_stop_desc': 'référence du dépôt d''arrivé du livreur'
+      'store_start_ref': 'référence site départ'
+      'store_start_desc': 'référence du site de départ du livreur'
+      'store_stop_ref': 'référence site arrivée'
+      'store_stop_desc': 'référence du site d''arrivé du livreur'
       'rest_start': 'début plage repos'
       'rest_start_desc': 'heure du début de la plage de repos'
       'rest_stop': 'fin plage repos'
       'rest_stop_desc': 'heure de fin de la plage de repos'
       'rest_duration': 'durée de repos'
       'rest_duration_desc': 'durée du repos pris par le livreur'
-      'store_rest_ref': 'référence dépôt repos'
-      'store_rest_desc': 'référence du dépôt pour la pause du livreur / requise si
+      'store_rest_ref': 'référence site repos'
+      'store_rest_desc': 'référence du site pour la pause du livreur / requise si
         plage de repos renseigné'
       'service_time_start': 'durée de service avant'
       'service_time_start_desc': 'durée de service avant et sans tenir compte de la
@@ -2449,7 +2449,7 @@
       'time_window_start_end_2': 'Plage horaire 2'
       'priority': 'Priorité'
       'priority_help': 'Priorité d’insertion lors de l’optimisation (utile lorsque
-        vous savez que votre flotte de véhicules ne pourra pas visiter tous les clients)'
+        vous savez que votre flotte de véhicules ne pourra pas visiter toutes les destinations)'
       'close_help': 'Sans tenir compte de la durée de visite'
       'tags_help': 'Catégories de la visite'
       'delete': 'Marquer à supprimer'
@@ -2465,13 +2465,13 @@
       'from_isodistance': 'Isodistance'
       'from': 'depuis'
     'menu':
-      'zonings': 'Zonages'
+      'zonings': 'Sectorisations'
     'edit':
-      'title': 'Modifier zonage'
-      'collapse_zoning_panel': 'Minifier le panneau de zonage'
-      'generate_confirm': 'Ceci réinitialisera toutes vos zones actuelles. Continuer
+      'title': 'Modifier sectorisation'
+      'collapse_zoning_panel': 'Minifier le panneau de sectorisation'
+      'generate_confirm': 'Ceci réinitialisera toutes vos secteurs actuelles. Continuer
         ?'
-      'vehicleless_confirm': 'Confirmer l''enregistrement de zones sans véhicules
+      'vehicleless_confirm': 'Confirmer l''enregistrement de secteurs sans véhicules
         ?'
       'isochrone_missing_vehicle': 'Un isochrone ne peut être généré pour au moins
         un véhicule du fait d''une restriction du calculateur d''itinéraire'
@@ -2480,37 +2480,37 @@
       'failed': 'Échec lors de la génération de l''isochrone'
       'success': 'Isochrone généré avec succès'
     'index':
-      'title': 'Liste zonages'
-      'new': 'Nouveau zonage'
-      'over_max_limit': 'Vous avez atteint la limite de zonages autorisés pour votre
-        compte (Limite : %{limit}), veuillez supprimer vos précédents zonages ou contacter
-        le support si vous avez besoin de plus de zonages'
+      'title': 'Liste sectorisations'
+      'new': 'Nouvelle sectorisation'
+      'over_max_limit': 'Vous avez atteint la limite de sectorisations autorisés pour votre
+        compte (Limite : %{limit}), veuillez supprimer vos précédentes sectorisations ou contacter
+        le support si vous avez besoin de plus de sectorisations'
     'new':
-      'title': 'Nouveau zonage'
+      'title': 'Nouvelle sectorisation'
     'form':
-      'planning_id': 'Clients depuis un plan'
-      'planning_id_help': 'Permet par exemple de filtrer les clients à afficher avec
+      'planning_id': 'Adresse depuis un plan'
+      'planning_id_help': 'Permet par exemple de filtrer les adresses à afficher avec
         certains libellés définis dans le plan de tournées sélectionné.'
-      'hide_out_of_route': 'Cacher les clients non planifiés'
-      'all_destinations': 'Afficher tous les clients'
-      'from_planning_help': 'Vous pouvez aussi afficher les clients d''un unique plan
-        de tournées en modifiant ce zonage depuis le plan en question'
-      'stops_from_planning': 'Clients chargés depuis le plan « %{s} »'
+      'hide_out_of_route': 'Cacher les adresses non planifiées'
+      'all_destinations': 'Afficher toutes les adresses'
+      'from_planning_help': 'Vous pouvez aussi afficher les adresses d''un unique plan
+        de tournées en modifiant ce sectorisation depuis le plan en question'
+      'stops_from_planning': 'Adresses chargées depuis le plan « %{s} »'
       'generate': 'Générer'
       'automatic':
-        'one': 'Automatique : 1 zone'
-        'other': 'Automatique : %{count} zones'
+        'one': 'Automatique : 1 secteur'
+        'other': 'Automatique : %{count} secteurs'
       'from_planning': 'Depuis le plan de tournées'
-      'zone_placeholder': 'Zone'
+      'zone_placeholder': 'Secteur'
       'zone_vehicle': 'Véhicule'
-      'avoid_zone': 'Ne pas circuler dans cette zone'
+      'avoid_zone': 'Ne pas circuler dans ce secteur'
       'isochrone': 'Isochrone par véhicule(s)'
       'isodistance': 'Isodistance par véhicule(s)'
       'dialog':
         'isoline':
           'vehicle_usage_set': 'Configuration des véhicules'
           'vehicle_usage_set_help': 'Configuration des véhicules à prendre en compte,
-            en particulier le dépôt de départ.'
+            en particulier le site de départ.'
           'date': 'Date'
           'default_date': 'Date du jour par défaut'
           'vehicles_open': 'Départs véhicules'
@@ -2518,13 +2518,13 @@
         'isochrone':
           'title': 'Isochrone'
           'size': 'Temps'
-          'size_help': 'Zone accessible depuis le point de départ en ce temps de parcours.'
+          'size_help': 'secteur accessible depuis le point de départ en ce temps de parcours.'
         'isochrone-progress':
           'title': 'Calcul d''isochrones en cours'
         'isodistance':
           'title': 'Isodistance'
           'size': 'Distance'
-          'size_help': 'Zone accessible depuis le point de départ avec cette distance
+          'size_help': 'Secteur accessible depuis le point de départ avec cette distance
             de parcours.'
         'isodistance-progress':
           'title': 'Calcul d''isodistances en cours'
@@ -2570,7 +2570,7 @@
           'button': 'Imprimer'
       'destinations':
         'index':
-          'none_destinations': 'Aucune destination n''a été chargée'
+          'none_destinations': 'Aucune adresse n''a été chargée'
       'routes':
         'index':
           'none_routes': 'Aucune tournée n''a été chargée'
@@ -2580,10 +2580,10 @@
           'button': 'Imprimer'
       'stores':
         'index':
-          'none_stores': 'Aucun dépôt n''a été chargée'
+          'none_stores': 'Aucun site n''a été chargée'
       'zones':
         'index':
-          'none_zones': 'Aucune zone n''a été chargée'
+          'none_zones': 'Aucun secteur n''a été chargée'
           'without_vehicle': 'Sans véhicule'
   'notifications':
     'sms':
