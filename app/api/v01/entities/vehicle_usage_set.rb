@@ -35,8 +35,7 @@ class V01::Entities::VehicleUsageSet < Grape::Entity
   expose(:store_rest_id, documentation: { type: Integer })
   expose(:max_distance, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' })
 
-  if ENV['RETURN_DEPRECATED'] == 'true'
-    expose(:open, documentation: { type: DateTime, desc: 'Deprecated, use `visit_duration` instead' }) { |m| m.time_window_start_absolute_time_with_seconds }
-    expose(:close, documentation: { type: DateTime, desc: 'Deprecated, use `time_window_end` instead.' }) { |m| m.time_window_end_absolute_time_with_seconds }
-  end
+  # Deprecated fields
+  expose(:open, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `visit_duration` instead' }) { |m| m.time_window_start_absolute_time_with_seconds }
+  expose(:close, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_end` instead.' }) { |m| m.time_window_end_absolute_time_with_seconds }
 end

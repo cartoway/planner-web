@@ -35,6 +35,10 @@ class V01::Entities::VehicleUsage < Grape::Entity
   expose(:store_rest_id, documentation: { type: Integer })
   expose(:active, documentation: { type: 'Boolean' })
   expose(:tag_ids, documentation: { type: Integer, is_array: true })
+
+  # Deprecated fields
+  expose(:open, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `visit_duration` instead' }) { |m| m.time_window_start_absolute_time_with_seconds }
+  expose(:close, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_end` instead.' }) { |m| m.time_window_end_absolute_time_with_seconds }
 end
 
 class V01::Entities::VehicleUsageWithVehicle < V01::Entities::VehicleUsage

@@ -52,10 +52,9 @@ class V01::Entities::Visit < Grape::Entity
   expose(:duration_default, documentation: { type: DateTime }) { |m| m.destination.customer && m.destination.customer.visit_duration_absolute_time_with_seconds }
   expose(:tag_ids, documentation: { type: Integer, is_array: true })
 
-  if ENV['RETURN_DEPRECATED'] == 'true'
-    expose(:open1, documentation: { type: DateTime, desc: 'Deprecated, use `time_window_start_1` instead' }) { |m| m.time_window_start_1_absolute_time_with_seconds }
-    expose(:close1, documentation: { type: DateTime, desc: 'Deprecated, use `time_window_end_1` instead.' }) { |m| m.time_window_end_1_absolute_time_with_seconds }
-    expose(:open2, documentation: { type: DateTime, desc: 'Deprecated, use `time_window_start_2` instead' }) { |m| m.time_window_start_2_absolute_time_with_seconds }
-    expose(:close2, documentation: { type: DateTime, desc: 'Deprecated, use `time_window_end_2` instead.' }) { |m| m.time_window_end_2_absolute_time_with_seconds }
-  end
+  # Deprecated fields
+  expose(:open1, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_start_1` instead' }) { |m| m.time_window_start_1_absolute_time_with_seconds }
+  expose(:close1, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_end_1` instead.' }) { |m| m.time_window_end_1_absolute_time_with_seconds }
+  expose(:open2, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_start_2` instead' }) { |m| m.time_window_start_2_absolute_time_with_seconds }
+  expose(:close2, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_end_2` instead.' }) { |m| m.time_window_end_2_absolute_time_with_seconds }
 end

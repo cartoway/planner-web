@@ -194,7 +194,9 @@ class V01::Customers < Grape::API
         :job_optimizer_id,
         :router_options,
         :visit_duration,
-        :devices
+        :devices,
+        :take_over,
+        :speed_multiplicator
       )
 
       optional :router_options, type: Hash do
@@ -247,7 +249,9 @@ class V01::Customers < Grape::API
         :job_store_geocoding_id,
         :job_optimizer_id,
         :router_options,
-        :visit_duration
+        :visit_duration,
+        :take_over,
+        :speed_multiplicator
       ).deep_merge(
         name: { required: true },
         default_country: { required: true },

@@ -40,11 +40,6 @@ class V01::Entities::Customer < Grape::Entity
   expose(:router_options, using: V01::Entities::RouterOptions, documentation: { type: V01::Entities::RouterOptions })
   expose(:speed_multiplier, documentation: { type: Float })
 
-  if ENV['RETURN_DEPRECATED'] == 'true'
-    expose(:take_over, documentation: { type: DateTime, desc: 'Deprecated, use `visit_duration` instead' }) { |m| m.visit_duration_time_with_seconds }
-    expose(:speed_multiplicator, documentation: { type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
-  end
-
   expose(:print_planning_annotating, documentation: { type: 'Boolean' })
   expose(:print_header, documentation: { type: String })
   expose(:print_barcode, documentation: { type: String, values: ::Customer::PRINT_BARCODE, desc: 'Print the Reference as Barcode'})
@@ -68,4 +63,8 @@ class V01::Entities::Customer < Grape::Entity
   expose(:job_optimizer_id, documentation: { type: Integer })
 
   expose(:devices, documentation: { type: Hash, desc: EDIT_ONLY_ADMIN })
+
+  # Deprecated fields
+  expose(:take_over, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `visit_duration` instead' }) { |m| m.visit_duration_time_with_seconds }
+  expose(:speed_multiplicator, documentation: { hidden: true, type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
 end
