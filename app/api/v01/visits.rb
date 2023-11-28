@@ -108,19 +108,6 @@ class V01::Visits < Grape::API
           success: V01::Status.success(:code_201, V01::Entities::Visit),
           failure: V01::Status.failures
         params do
-          use :params_from_entity, entity: V01::Entities::Visit.documentation.except(
-              :id,
-              :destination_id,
-              :tag_ids,
-              :time_window_start_1,
-              :time_window_end_1,
-              :duration,
-              :time_window_start_2,
-              :time_window_end_2,
-              :priority,
-              :quantities,
-            )
-
           use :request_visit
         end
         post do
@@ -139,18 +126,6 @@ class V01::Visits < Grape::API
           failure: V01::Status.failures
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
-          use :params_from_entity, entity: V01::Entities::Visit.documentation.except(
-            :id,
-            :destination_id,
-            :tag_ids,
-            :time_window_start_1,
-            :time_window_end_1,
-            :duration,
-            :time_window_start_2,
-            :time_window_end_2,
-            :quantities,
-          )
-
           use :request_visit
         end
         put ':id' do
