@@ -96,7 +96,7 @@
   }
 
   #destination_box {
-    height: 320px;
+    height: 40%;
     overflow-y: scroll;
 
     .col-md-12 {
@@ -291,14 +291,14 @@
   .map-container {
     padding: 0;
 
-    position: absolute;
+    position: relative;
     top: 0;
     bottom: 0;
     z-index: 0;
+    height: 100%;
 
     #map {
-      position: absolute;
-      top: 501px;
+      position: relative;
       bottom: 0;
       min-height: 250px;
       width: 100%;
@@ -381,6 +381,8 @@
    }
  }
 
-@media (min-width: 768px) { .map-container { max-width: 750px; } }
-@media (min-width: 992px) { .map-container { max-width: 970px; } }
-@media (min-width: 1200px) { .map-container { max-width: 1170px; } }
+ #map_box {
+   height: 40%;
+ }
+
+ @media (max-width: 768px) { .map-container { display: none; }}

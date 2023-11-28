@@ -31,7 +31,7 @@
 
 $navbar-height: 0px;
 $sidebar-width: 400px;
-$sidebar-margins: 0px;
+$sidebar-margins: 10px;
 $focus-background-color: #89C53F;
 
 body {
@@ -382,6 +382,11 @@ span.color[data-color=''][data-selected]:after {
 [data-controller='zonings'][data-action='update'],
 [data-controller='api_web_v01_zonings'][data-action='update'],
 [data-controller='routes_by_vehicles'][data-action='show'] {
+  $sidebar-margins: 0;
+
+  .main {
+    padding: 0;
+  }
 
   #map {
     position: absolute;
@@ -500,6 +505,7 @@ span.color[data-color=''][data-selected]:after {
 [data-controller='zonings'][data-action='edit'],
 [data-controller='zonings'][data-action='update'],
 [data-controller='routes_by_vehicles'][data-action='show'] {
+  $sidebar-margins: 0;
   #map {
     top: $navbar-height + $planbar-height;
   }
@@ -850,6 +856,10 @@ input.form-control.number-of-days {
   position: relative;
   width: 100%;
   overflow-y: scroll;
+
+  .row {
+    margin: 0;
+  }
 }
 
 #menu-settings {

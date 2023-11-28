@@ -17,24 +17,28 @@
               - if can?(:manage, Customer)
                 %li.menu-section.menu-list-item
                   = link_to edit_admin_reseller_path(current_user.reseller) do
-                    %i.fa.fa-bank.fa-fw
-                    .hidden-menu
-                      = t 'admin.resellers.menu.reseller'
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-bank.fa-fw
+                      .hidden-menu
+                        = t 'admin.resellers.menu.reseller'
                 %li.menu-section.menu-list-item
                   = link_to customers_path do
-                    %i.fa.fa-user-gear.fa-fw
-                    .hidden-menu
-                      = t 'customers.menu.customers'
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-user-gear.fa-fw
+                      .hidden-menu
+                        = t 'customers.menu.customers'
                 %li.menu-section.menu-list-item
                   = link_to admin_users_path do
-                    %i.fa.fa-user-gear.fa-fw
-                    .hidden-menu
-                      = t 'admin.users.menu.users'
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-user-gear.fa-fw
+                      .hidden-menu
+                        = t 'admin.users.menu.users'
                 %li.menu-section.menu-list-item
                   = link_to admin_profiles_path do
-                    %i.fa.fa-gear.fa-fw
-                    .hidden-menu
-                      = t 'admin.profiles.menu.profiles'
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-gear.fa-fw
+                      .hidden-menu
+                        = t 'admin.profiles.menu.profiles'
             - if user_signed_in? && current_user.customer
               - if !@unsubscribed
                 %li#menu-plan.menu-list-item
@@ -291,8 +295,7 @@
         %div
           %iframe{name: "click2call_iframe", style: "display: none"}
         = yield
-      %footer.hidden-print.row
-        .col-md-12
+      %footer.hidden-print
     #default-modal.modal.bootstrap-dialog.type-primary.fade.size-small.in{"aria-hidden": "false", "data-backdrop": "static", "data-toggle": "modal", role: "dialog", style: "display:none;", tabindex: "-1"}
       .modal-dialog
         .modal-content

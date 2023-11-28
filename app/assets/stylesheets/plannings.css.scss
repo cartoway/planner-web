@@ -205,10 +205,6 @@ $sidebar-margins: 10px;
     }
   }
 
-  .main {
-    padding-left: 0;
-  }
-
   #map {
     .label {
       pointer-events: none;
@@ -470,6 +466,20 @@ $sidebar-margins: 10px;
     color: $text-black;
   }
 
+  .out_routes {
+    margin-bottom: 0;
+    bottom: 0;
+    position: sticky;
+
+    .out_route {
+      margin-bottom: 0;
+
+      #out_of_route {
+        margin-bottom: 0;
+      }
+    }
+  }
+
   .routes {
     padding: 0px;
     margin: 0px;
@@ -717,10 +727,6 @@ $sidebar-margins: 10px;
 
   .ui-sortable-disabled > .ui-sortable-handle {
     #out_of_route{
-      margin-bottom: 0;
-      position: absolute;
-      width: 100%;
-      bottom: 0;
 
       .out-header {
         position: relative;

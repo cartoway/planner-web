@@ -207,7 +207,7 @@ label .popover {
   }
 
   .tablesorter-header .tablesorter-header-inner:after {
-    font-family: FontAwesome;
+    font: var(--fa-font-solid);
     float: right;
     content: "\f0dc";
   }
