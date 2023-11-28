@@ -83,8 +83,6 @@ module SharedParams
         classes = v[:values].map(&:class).uniq
         v[:type] = classes[0] if classes.size == 1 && v[:type] != classes[0]
       end
-      puts v
-      puts d.inspect
       v[:type] = Array[v[:type]] if v.key?(:is_array)
       send(v[:required] ? :requires : :optional, k, v.except(:required, :is_array, :param_type))
     }
