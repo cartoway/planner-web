@@ -38,7 +38,6 @@ class V01::Entities::Customer < Grape::Entity
   expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys })
   # FIXME: RouterOptions entity can only be used to display results, otherwise swagger-ui interface is broken but tests are ok. Entities are working correctly only with is_array.
   expose(:router_options, using: V01::Entities::RouterOptions, documentation: { type: V01::Entities::RouterOptions })
-  expose(:speed_multiplicator, documentation: { type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
   expose(:speed_multiplier, documentation: { type: Float })
 
   expose(:print_planning_annotating, documentation: { type: 'Boolean' })
@@ -64,4 +63,8 @@ class V01::Entities::Customer < Grape::Entity
   expose(:job_optimizer_id, documentation: { type: Integer })
 
   expose(:devices, documentation: { type: Hash, desc: EDIT_ONLY_ADMIN })
+
+  # Deprecated fields
+  expose(:take_over, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `visit_duration` instead' }) { |m| m.visit_duration_time_with_seconds }
+  expose(:speed_multiplicator, documentation: { hidden: true, type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
 end

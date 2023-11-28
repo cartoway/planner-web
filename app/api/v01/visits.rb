@@ -39,6 +39,12 @@ class V01::Visits < Grape::API
         end
       end
 
+      #Deals with deprecated schedule params
+      p[:time_window_start_1] ||= p.delete(:open1)
+      p[:time_window_end_1] ||= p.delete(:close1)
+      p[:time_window_start_2] ||= p.delete(:open2)
+      p[:time_window_end_2] ||= p.delete(:close2)
+
       deliverable_unit_ids = current_customer.deliverable_units.map{ |du| du.id.to_s }
       p.permit(:ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, tag_ids: [], quantities: deliverable_unit_ids, quantities_operations: deliverable_unit_ids)
     end
@@ -102,32 +108,7 @@ class V01::Visits < Grape::API
           success: V01::Status.success(:code_201, V01::Entities::Visit),
           failure: V01::Status.failures
         params do
-          use :params_from_entity, entity: V01::Entities::Visit.documentation.except(
-              :id,
-              :destination_id,
-              :tag_ids,
-              :time_window_start_1,
-              :time_window_end_1,
-              :duration,
-              :time_window_start_2,
-              :time_window_end_2,
-              :priority,
-              :quantities,
-            )
-
-          optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
-
-          optional :quantities, type: Array do
-            optional :deliverable_unit_id, type: Integer
-            optional :quantity, type: Float
-            all_or_none_of :deliverable_unit_id, :quantity
-          end
-
-          optional :time_window_start_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :time_window_end_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :time_window_start_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :time_window_end_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+          use :request_visit
         end
         post do
           destination_id = ParseIdsRefs.read(params[:destination_id])
@@ -145,31 +126,7 @@ class V01::Visits < Grape::API
           failure: V01::Status.failures
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
-          use :params_from_entity, entity: V01::Entities::Visit.documentation.except(
-            :id,
-            :destination_id,
-            :tag_ids,
-            :time_window_start_1,
-            :time_window_end_1,
-            :duration,
-            :time_window_start_2,
-            :time_window_end_2,
-            :quantities,
-          )
-
-          optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
-
-          optional :quantities, type: Array do
-            optional :deliverable_unit_id, type: Integer
-            optional :quantity, type: Float
-            all_or_none_of :deliverable_unit_id, :quantity
-          end
-
-          optional :time_window_start_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :time_window_end_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :time_window_start_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-          optional :time_window_end_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+          use :request_visit
         end
         put ':id' do
           destination_id = ParseIdsRefs.read(params[:destination_id])

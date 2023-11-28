@@ -74,6 +74,8 @@ class V01::Vehicles < Grape::API
     def vehicle_usage_params
       p = ActionController::Parameters.new(params)
       p = p[:vehicle] if p.key?(:vehicle)
+      p[:time_window_start] ||= p.delete(:open)
+      p[:time_window_end] ||= p.delete(:close)
       p.permit(:time_window_start, :time_window_end, :store_start_id, :store_stop_id, :store_rest_id, :rest_start, :rest_stop, :rest_duration, tag_ids: [])
     end
 
@@ -267,7 +269,9 @@ class V01::Vehicles < Grape::API
           :rest_start,
           :rest_stop,
           :rest_duration,
-          :tag_ids
+          :tag_ids,
+          :open,
+          :close
       ).except(:vehicle_usage_set))
 
       optional :capacities, type: Array do
@@ -301,6 +305,12 @@ class V01::Vehicles < Grape::API
       optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+
+      # Deprecated fields
+      optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      mutually_exclusive :time_window_start, :open
+      optional :close, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      mutually_exclusive :time_window_end, :close
     end
     post do
       if Mapotempo::Application.config.manage_vehicles_only_admin

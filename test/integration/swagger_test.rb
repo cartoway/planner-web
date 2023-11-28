@@ -6,7 +6,9 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     get '/api/0.1/swagger_doc'
 
     assert_response :success
-    assert_kind_of Hash, eval(response.body)
-    assert_equal 'API', eval(response.body)[:info][:title]
+
+    content = JSON.parse(response.body, {:symbolize_names => true})
+    assert_kind_of Hash, content
+    assert_equal 'API', content[:info][:title]
   end
 end

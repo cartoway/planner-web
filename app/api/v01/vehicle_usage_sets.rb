@@ -74,7 +74,9 @@ class V01::VehicleUsageSets < Grape::API
           :work_time,
           :rest_start,
           :rest_stop,
-          :rest_duration
+          :rest_duration,
+          :open,
+          :close
       ).deep_merge(
         name: { required: true },
         store_start_id: { required: true },
@@ -112,7 +114,9 @@ class V01::VehicleUsageSets < Grape::API
           :work_time,
           :rest_start,
           :rest_stop,
-          :rest_duration)
+          :rest_duration,
+          :open,
+          :close)
 
       optional :time_window_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
@@ -123,6 +127,12 @@ class V01::VehicleUsageSets < Grape::API
       optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
       optional :max_distance, type: Integer, documentation: { type: 'integer', desc: 'Maximum achievable distance in meters' }
+
+      # Deprecated fields
+      optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      mutually_exclusive :time_window_start, :open
+      optional :close, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+      mutually_exclusive :time_window_end, :close
     end
     put ':id' do
       vehicle_usage_set = current_customer.vehicle_usage_sets.find(params[:id])
