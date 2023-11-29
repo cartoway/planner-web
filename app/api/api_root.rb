@@ -19,6 +19,7 @@ require 'grape-swagger'
 
 class ApiRootDef < Grape::API
   mount ApiV01
+  mount ApiV2
 end
 
 ApiRoot = Rack::Builder.new do

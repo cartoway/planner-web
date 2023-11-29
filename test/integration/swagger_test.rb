@@ -11,4 +11,14 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_kind_of Hash, content
     assert_equal 'API', content[:info][:title]
   end
+
+  test 'should get v2 swagger api doc' do
+    get '/api/v2/swagger_doc'
+
+    assert_response :success
+
+    content = JSON.parse(response.body, {:symbolize_names => true})
+    assert_kind_of Hash, content
+    assert_equal 'API', content[:info][:title]
+  end
 end
