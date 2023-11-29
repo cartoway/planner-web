@@ -10,14 +10,12 @@ class V2::Entities::Route < V2::Entities::RouteProperties
   expose(:distance, documentation: { type: Float, desc: 'Total route\'s distance.' })
   expose(:emission, documentation: { type: Float })
   expose(:vehicle_usage_id, documentation: { type: Integer })
-  expose(:force_start, documentation: { type: 'Boolean', desc: 'DEPRECATED. To be configured on vehicle_usage_set.' })
   expose(:start, documentation: { type: DateTime }) { |m|
     (m.planning.date || Time.zone.today).beginning_of_day + m.start if m.start
   }
   expose(:end, documentation: { type: DateTime }) { |m|
     (m.planning.date || Time.zone.today).beginning_of_day + m.end if m.end
   }
-  expose(:outdated, as: :out_of_date, documentation: { type: 'Boolean', desc: 'DEPRECATED. Use outdated instead.' })
   expose(:outdated, documentation: { type: 'Boolean' })
 
   expose(:departure_status, documentation: { type: String, desc: 'Departure status of start store.' }) { |route| route.departure_status && I18n.t('plannings.edit.stop_status.' + route.departure_status.downcase, default: route.departure_status) }

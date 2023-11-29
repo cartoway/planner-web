@@ -23,8 +23,6 @@ class V2::Entities::Stop < V2::Entities::StopStatus
   expose(:planning_id, documentation: { type: Integer }) { |stop|
     stop.route.planning_id
   }
-  # Deprecated
-  expose(:destination_id, documentation: { type: Integer }) { |m| m.is_a?(StopVisit) ? m.visit.destination.id : nil }
   expose(:wait_time, documentation: { type: DateTime, desc: 'Time before delivery.' }) { |m| m.wait_time && ('%i:%02i:%02i' % [m.wait_time / 60 / 60, m.wait_time / 60 % 60, m.wait_time % 60]) }
   expose(:time, documentation: { type: DateTime, desc: 'Arrival planned at.' }) { |m|
     (m.route.planning.date || Time.zone.today).beginning_of_day + m.time if m.time
