@@ -1,5 +1,5 @@
-class ApiV2 < Grape::API
-  version 'v2', using: :path
+class ApiV100 < Grape::API
+  version 'v100', using: :path
 
   content_type :json, 'application/json; charset=UTF-8'
   content_type :geojson, 'application/vnd.geo+json; charset=UTF-8'
@@ -14,7 +14,7 @@ class ApiV2 < Grape::API
 
   default_format :json
 
-  mount V2::Api
+  mount V100::Api
 
   add_swagger_documentation(
     base_path: '/api',
@@ -52,7 +52,7 @@ class ApiV2 < Grape::API
       contact_url: Mapotempo::Application.config.api_contact_url,
       license: 'GNU Affero General Public License 3',
       license_url: 'https://raw.githubusercontent.com/cartoroute/planner-web/master/LICENSE',
-      version: '2.0',
+      version: '100.0',
       description: '
 [Simplified view of domain model](' + Mapotempo::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
 ## Model
@@ -71,7 +71,7 @@ A route is a track between all destinations reached by a vehicle (a new route is
 This REST API is described with Swagger. The Swagger descriptor defines the request end-points, the parameters and the return values. The API can be addressed by HTTP request or with a generated client using the Swagger descriptor.
 ### API key
 All access to the API are subject to an `api_key` parameter in order to authenticate the user.
-This parameter can be sent with a query string on each available operation: `https://planner.cartoroute.com/api/v2/{objects}?api_key={your_personal_api_key}`
+This parameter can be sent with a query string on each available operation: `https://planner.cartoroute.com/api/V100/{objects}?api_key={your_personal_api_key}`
 ### Return
 The API supports several return formats: `json` and `xml` which depend of the requested extension used in url.
 ### I18n

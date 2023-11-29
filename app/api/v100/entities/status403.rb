@@ -1,6 +1,6 @@
-class V2::Entities::Status403 < Grape::Entity
+class V100::Entities::Status403 < Grape::Entity
   def self.entity_name
-    'V2_Status403'
+    'V100_Status403'
   end
 
   expose(:message, documentation: { type: String, desc: 'Server rendered messages.', values: ['Forbidden : admin account required.'] })

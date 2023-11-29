@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class V2::PlanningsBaseTest < ActiveSupport::TestCase
+class V100::PlanningsBaseTest < ActiveSupport::TestCase
   include Rack::Test::Methods
 
   def app
@@ -13,11 +13,11 @@ class V2::PlanningsBaseTest < ActiveSupport::TestCase
 
   def api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/v2/plannings#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/v100/plannings#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
   end
 end
 
-class V2::PlanningsTest < V2::PlanningsBaseTest
+class V100::PlanningsTest < V100::PlanningsBaseTest
   def around
     Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 60, '_ibE_seK_seK_seK'] } } ) do
       Routers::RouterWrapper.stub_any_instance(:matrix, lambda{ |url, mode, dimensions, row, column, options| [Array.new(row.size) { Array.new(column.size, 0) }] }) do

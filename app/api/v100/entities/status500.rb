@@ -1,6 +1,6 @@
-class V2::Entities::Status500 < Grape::Entity
+class V100::Entities::Status500 < Grape::Entity
   def self.entity_name
-    'V2_Status500'
+    'V100_Status500'
   end
 
   expose(:message, documentation: { type: String, desc: 'Server rendered messages.', values: ['Internal Server Error.'] })

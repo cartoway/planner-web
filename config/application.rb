@@ -66,7 +66,7 @@ module Mapotempo
         origins '*'
         resource '/api-web/0.1/*', headers: :any, methods: [:get, :post, :options, :put, :delete, :patch]
         resource '/api/0.1/*', headers: :any, methods: [:get, :post, :options, :put, :delete, :patch]
-        resource '/api/v2/*', headers: :any, methods: [:get, :post, :options, :put, :delete, :patch]
+        resource '/api/v100/*', headers: :any, methods: [:get, :post, :options, :put, :delete, :patch]
       end
     end
 

@@ -1,13 +1,13 @@
-class V2::Entities::RouteStatus < Grape::Entity
+class V100::Entities::RouteStatus < Grape::Entity
   def self.entity_name
-    'V2_RouteStatus'
+    'V100_RouteStatus'
   end
 
   expose(:id, documentation: { type: Integer })
   expose(:vehicle_usage_id, documentation: { type: Integer })
   expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
   expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
-  expose(:quantities, using: V2::Entities::DeliverableUnitQuantity, documentation: { type: V2::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
+  expose(:quantities, using: V100::Entities::DeliverableUnitQuantity, documentation: { type: V100::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
     m.quantities ? m.quantities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
   }
 
@@ -21,5 +21,5 @@ class V2::Entities::RouteStatus < Grape::Entity
   expose(:arrival_eta, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device.' })
   expose(:arrival_eta_formated, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device.' }) { |route| route.arrival_eta && I18n.l(route.arrival_eta, format: :hour_minute) }
 
-  expose(:stops, using: V2::Entities::StopStatus, documentation: { type: V2::Entities::StopStatus, is_array: true })
+  expose(:stops, using: V100::Entities::StopStatus, documentation: { type: V100::Entities::StopStatus, is_array: true })
 end

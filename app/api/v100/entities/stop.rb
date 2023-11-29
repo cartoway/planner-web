@@ -1,6 +1,6 @@
-class V2::Entities::Stop < V2::Entities::StopStatus
+class V100::Entities::Stop < V100::Entities::StopStatus
   def self.entity_name
-    'V2_Stop'
+    'V100_Stop'
   end
 
   expose(:visit_ref, documentation: { type: String }) { |stop|

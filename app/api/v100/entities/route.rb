@@ -1,6 +1,6 @@
-class V2::Entities::Route < V2::Entities::RouteProperties
+class V100::Entities::Route < V100::Entities::RouteProperties
   def self.entity_name
-    'V2_Route'
+    'V100_Route'
   end
 
   expose(:ref, documentation: { type: String })
@@ -24,7 +24,7 @@ class V2::Entities::Route < V2::Entities::RouteProperties
   expose(:arrival_status, documentation: { type: String, desc: 'Arrival status of stop store.' }) { |route| route.arrival_status && I18n.t('plannings.edit.stop_status.' + route.arrival_status.downcase, default: route.arrival_status) }
   expose(:arrival_eta, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device for stop store.' })
 
-  expose(:stops, using: V2::Entities::Stop, documentation: { type: V2::Entities::Stop, is_array: true })
+  expose(:stops, using: V100::Entities::Stop, documentation: { type: V100::Entities::Stop, is_array: true })
   expose(:stop_out_of_drive_time, documentation: { type: 'Boolean' })
   expose(:stop_out_of_work_time, documentation: { type: 'Boolean' })
   expose(:stop_out_of_max_distance, documentation: { type: 'Boolean' })
@@ -34,7 +34,7 @@ class V2::Entities::Route < V2::Entities::RouteProperties
   expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
   expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
   expose(:optimized_at, documentation: { type: DateTime, desc: 'Last optimized at.'})
-  expose(:quantities, using: V2::Entities::DeliverableUnitQuantity, documentation: { type: V2::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
+  expose(:quantities, using: V100::Entities::DeliverableUnitQuantity, documentation: { type: V100::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
     m.quantities ? m.quantities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
   }
   expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
@@ -51,17 +51,17 @@ class V2::Entities::Route < V2::Entities::RouteProperties
   }
 end
 
-class V2::Entities::RouteStatus < Grape::Entity
+class V100::Entities::RouteStatus < Grape::Entity
   def self.entity_name
-    'V2_RouteStatus'
+    'V100_RouteStatus'
   end
 
   expose(:id, documentation: { type: Integer })
   expose(:vehicle_usage_id, documentation: { type: Integer })
   expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
   expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
-  expose(:quantities, using: V2::Entities::DeliverableUnitQuantity, documentation: { type: V2::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
+  expose(:quantities, using: V100::Entities::DeliverableUnitQuantity, documentation: { type: V100::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
     m.quantities ? m.quantities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
   }
-  expose(:stops, using: V2::Entities::StopStatus, documentation: { type: V2::Entities::StopStatus, is_array: true })
+  expose(:stops, using: V100::Entities::StopStatus, documentation: { type: V100::Entities::StopStatus, is_array: true })
 end

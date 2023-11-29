@@ -1,6 +1,6 @@
-class V2::Entities::Status402 < Grape::Entity
+class V100::Entities::Status402 < Grape::Entity
   def self.entity_name
-    'V2_Status402'
+    'V100_Status402'
   end
 
   expose(:message, documentation: { type: String, desc: 'Server rendered messages.', values: ['Subscription expired : contact your reseller.'] })

@@ -1,6 +1,6 @@
-class V2::Entities::Status405 < Grape::Entity
+class V100::Entities::Status405 < Grape::Entity
   def self.entity_name
-    'V2_Status405'
+    'V100_Status405'
   end
 
   expose(:message, documentation: { type: String, desc: 'Server rendered messages.', values: ['Method not allowed on the resource.'] })

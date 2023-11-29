@@ -1,6 +1,6 @@
-class V2::Entities::DeliverableUnitQuantity < Grape::Entity
+class V100::Entities::DeliverableUnitQuantity < Grape::Entity
   def self.entity_name
-    'V2_DeliverableUnitQuantity'
+    'V100_DeliverableUnitQuantity'
   end
 
   expose(:deliverable_unit_id, documentation: { type: Integer })

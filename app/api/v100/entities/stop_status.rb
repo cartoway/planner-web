@@ -1,6 +1,6 @@
-class V2::Entities::StopStatus < Grape::Entity
+class V100::Entities::StopStatus < Grape::Entity
   def self.entity_name
-    'V2_StopStatus'
+    'V100_StopStatus'
   end
 
   expose(:id, documentation: { type: Integer })

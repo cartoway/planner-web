@@ -12,8 +12,8 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_equal 'API', content[:info][:title]
   end
 
-  test 'should get v2 swagger api doc' do
-    get '/api/v2/swagger_doc'
+  test 'should get v100 swagger api doc' do
+    get '/api/v100/swagger_doc'
 
     assert_response :success
 

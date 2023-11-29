@@ -1,6 +1,6 @@
 require 'exceptions'
 
-class V2::Api < Grape::API
+class V100::Api < Grape::API
   helpers do
     def session
       env[Rack::Session::Abstract::ENV_SESSION_KEY]
@@ -18,10 +18,10 @@ class V2::Api < Grape::API
     end
 
     def authenticate!
-      error!(V2::Status.code_response(:code_401), 401) unless env
+      error!(V100::Status.code_response(:code_401), 401) unless env
       current_customer
-      error!(V2::Status.code_response(:code_401), 401) unless @current_user
-      error!(V2::Status.code_response(:code_402, after: "Subscription expired (#{@current_customer.end_subscription.to_s}) - Contact your reseller."), 402) if @current_customer && @current_customer.end_subscription && @current_customer.end_subscription < Time.now
+      error!(V100::Status.code_response(:code_401), 401) unless @current_user
+      error!(V100::Status.code_response(:code_402, after: "Subscription expired (#{@current_customer.end_subscription.to_s}) - Contact your reseller."), 402) if @current_customer && @current_customer.end_subscription && @current_customer.end_subscription < Time.now
     end
 
     def authorize!
@@ -67,7 +67,7 @@ class V2::Api < Grape::API
 
   # Generate a properly formatted 404 error for all unmatched routes except '/'
   route :any, '*path' do
-    error! V2::Status.code_response(:code_404, after: "No such route #{request.path}"), 404
+    error! V100::Status.code_response(:code_404, after: "No such route #{request.path}"), 404
   end
 
   rescue_from :all, backtrace: ENV['RAILS_ENV'] != 'production' do |e|
@@ -79,7 +79,7 @@ class V2::Api < Grape::API
 
     response = {message: e.message}
     if e.is_a?(ActiveRecord::RecordNotFound) || e.is_a?(ArgumentError)
-      rack_response(V2::Status.code_response(:code_404), 404)
+      rack_response(V100::Status.code_response(:code_404), 404)
     elsif e.is_a?(ActiveRecord::RecordInvalid) || e.is_a?(RangeError) || e.is_a?(Grape::Exceptions::ValidationErrors) || e.is_a?(Exceptions::StopIndexError)
       rack_response(format_message(response.merge(status: 400), e.backtrace), 400)
     elsif e.is_a?(Exceptions::OverMaxLimitError)
@@ -100,5 +100,5 @@ class V2::Api < Grape::API
     end
   end
 
-  mount V2::Plannings
+  mount V100::Plannings
 end

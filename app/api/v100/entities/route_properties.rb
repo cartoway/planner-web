@@ -1,6 +1,6 @@
-class V2::Entities::RouteProperties < Grape::Entity
+class V100::Entities::RouteProperties < Grape::Entity
   def self.entity_name
-    'V2_RouteProperties'
+    'V100_RouteProperties'
   end
 
   expose(:id, documentation: { type: Integer })
