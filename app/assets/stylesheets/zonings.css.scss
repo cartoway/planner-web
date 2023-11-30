@@ -70,6 +70,10 @@ $sidebar-margins: 10px;
     padding-right: 5px;
   }
 
+  .sidebar-left ~ .sidebar-map {
+    margin-left: 0;
+  }
+
   .sidebar.sidebar-left.collapsed {
     margin-left: $sidebar-margins;
     height: $planbar-height + 40px;
