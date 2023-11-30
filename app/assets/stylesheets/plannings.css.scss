@@ -743,6 +743,11 @@ $sidebar-margins: 10px;
         position: relative;
         top: 0;
       }
+
+      .dropdown-menu {
+        max-height: 200px;
+        bottom: unset;
+      }
     }
   }
 }
