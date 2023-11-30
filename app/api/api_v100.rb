@@ -1,5 +1,5 @@
 class ApiV100 < Grape::API
-  version 'v100', using: :path
+  version '100', using: :path
 
   content_type :json, 'application/json; charset=UTF-8'
   content_type :geojson, 'application/vnd.geo+json; charset=UTF-8'
@@ -29,7 +29,7 @@ class ApiV100 < Grape::API
       'application/vnd.geo+json; charset=UTF-8',
       'application/xml',
     ],
-    doc_version: '1.0',
+    doc_version: '100.0.0',
     security_definitions: {
       api_key_query_param: {
         type: 'apiKey',
@@ -52,7 +52,7 @@ class ApiV100 < Grape::API
       contact_url: Mapotempo::Application.config.api_contact_url,
       license: 'GNU Affero General Public License 3',
       license_url: 'https://raw.githubusercontent.com/cartoroute/planner-web/master/LICENSE',
-      version: '100.0',
+      version: '100',
       description: '
 [Simplified view of domain model](' + Mapotempo::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
 ## Model
