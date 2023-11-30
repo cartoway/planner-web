@@ -326,7 +326,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
         }
 
         return new L.divIcon({
-          html: '<span class="fa-stack"><i class="fa fa-circle cluster-point-border" style="color: ' + color + ';"></i><i class="fa fa-circle cluster-point-icon" style="color: \' + color + \';"></i><span class="fa-stack-1x point-icon-text cluster-point-text">' + n.join(',') + '</span></span>',
+          html: '<span class="fa-stack"><i class="fa fa-location-pin cluster-point-border" style="color: ' + color + ';"></i><i class="fa fa-location-pin cluster-point-icon" style="color: \' + color + \';"></i><span class="fa-stack-1x point-icon-text cluster-point-text">' + n.join(',') + '</span></span>',
           iconSize: new L.Point(24, 24),
           iconAnchor: new L.Point(12, 12),
           className: 'cluster-icon-container'
@@ -481,7 +481,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
             } else {
               driveTime = '';
             }
-            content = '<div><i class="fa fa-circle" style="color:' + route.color + ';"></i> ' +  route.name + '</div>' +
+            content = '<div><i class="fa fa-location-pin" style="color:' + route.color + ';"></i> ' +  route.name + '</div>' +
             (driveTime ? '<div>' + I18n.t('plannings.edit.popup.stop_drive_time') + ' ' + driveTime + '</div>' : '')
              + '<div>' + I18n.t('plannings.edit.popup.stop_distance') + ' ' + distance + '</div>';
           }

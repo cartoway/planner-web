@@ -293,21 +293,21 @@ html.turbolinks-progress-bar::before {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
 
-.fa-stack {
-  width: inherit;
-  height: inherit;
+.point-icon-container {
+  width: unset !important;
+  height: unset !important;
 }
 
-//.point-icon {
-//  font-size: 18px;
-//}
+.fa-stack {
+  width: inherit !important;
+  height: inherit !important;
+  vertical-align: unset !important;
+}
 
 .point-icon-text {
-  font-size: 10px;
   color: white !important;
-  width: 18px;
   font-weight: 600;
-  left: -1px;
+  font-size: 14px;
 }
 
 .cluster-point-border {

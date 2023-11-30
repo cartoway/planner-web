@@ -346,15 +346,15 @@ export const mapInitialize = function(params) {
   map.iconSize = {
     large: {
       name: 'fa-2x',
-      size: 32
+      size: 36
     },
     medium: {
       name: 'fa-lg',
-      size: 20
+      size: 28
     },
     small: {
       name: '',
-      size: 16
+      size: 20
     }
   };
 

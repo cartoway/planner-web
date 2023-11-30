@@ -122,11 +122,11 @@ module Mapotempo
 
     # Default values for icons
     config.tag_color_default = '#000000'.freeze
-    config.tag_icon_default = 'fa-circle'.freeze
+    config.tag_icon_default = 'fa-location-pin'.freeze
     config.tag_icon_size_default = 'medium'.freeze
 
     config.destination_color_default = '#707070'.freeze
-    config.destination_icon_default = 'fa-circle'.freeze
+    config.destination_icon_default = 'fa-location-pin'.freeze
     config.destination_icon_size_default = 'medium'.freeze
 
     config.route_color_default = config.destination_color_default
