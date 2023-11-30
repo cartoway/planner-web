@@ -335,6 +335,20 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal stops_count, planning.routes.select{ |r| r.vehicle_usage }.collect{ |r| r.stops.size }.inject(:+)
   end
 
+  test 'should return a candidate route' do
+    planning = plannings(:planning_one)
+    destination = destinations(:destination_one)
+    planning.zonings = []
+    assert_difference('Stop.count', 0) do
+      data = planning.candidate_insert(destination)
+      assert_kind_of Hash, data
+      assert_kind_of Route, data[:route]
+      assert_kind_of Integer, data[:index]
+      assert_kind_of Integer, data[:time]
+      assert_kind_of Float, data[:distance]
+    end
+  end
+
   test 'should apply orders' do
     o = plannings(:planning_one)
     r = o.routes.find{ |ro| ro.ref == 'route_one' }
