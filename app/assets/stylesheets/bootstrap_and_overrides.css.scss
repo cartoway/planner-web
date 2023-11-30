@@ -566,6 +566,9 @@ body.api-web {
   td.visible-sm {
     display: table-cell !important;
   }
+  .hidden-print {
+    display: none !important;
+  }
 }
 
 .table-valign > tbody > tr > td {

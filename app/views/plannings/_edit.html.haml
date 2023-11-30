@@ -91,7 +91,7 @@
                   %li.divider{role: "separator"}
                   -# Device section removed
               %li
-                = link_to planning_path(@planning) do
+                = link_to api_web_v01_print_planning_path(@planning) do
                   %i.fa.fa-print.fa-fw
                   = t '.export.print'
               %li.divider{role: "separator"}
@@ -135,7 +135,7 @@
                     = t '.send_sms'
           - if @manage_planning[:manage_print]
             = link_to api_web_v01_print_planning_path(@planning), class: 'btn btn-default btn-sm', title: t('.export.print') do
-              %i.fa.fa-print.fa-fw"
+              %i.fa.fa-print.fa-fw
       #planning
 
 #map.sidebar-map
