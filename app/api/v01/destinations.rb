@@ -29,6 +29,12 @@ class V01::Destinations < Grape::API
       end
       if p[:visits_attributes]
         p[:visits_attributes].each do |hash|
+          #Deals with deprecated schedule params
+          p[:time_window_start_1] ||= p.delete(:open1) if p[:open1]
+          p[:time_window_end_1] ||= p.delete(:close1) if p[:close1]
+          p[:time_window_start_2] ||= p.delete(:open2) if p[:open2]
+          p[:time_window_end_2] ||= p.delete(:close2) if p[:close2]
+
           hash[:quantities] = Hash[hash[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }] if hash[:quantities] && hash[:quantities].is_a?(Array)
 
           # Deals with deprecated quantity
