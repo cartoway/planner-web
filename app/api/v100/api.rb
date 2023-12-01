@@ -101,4 +101,5 @@ class V100::Api < Grape::API
   end
 
   mount V100::Plannings
+  mount V100::Destinations
 end

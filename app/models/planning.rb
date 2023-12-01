@@ -232,30 +232,16 @@ class Planning < ApplicationRecord
     end
 
     # If zoning, get appropriate route
-    if available_routes.empty? && !zonings.empty?
-      zone = Zoning.new(zones: zonings.collect(&:zones).flatten).inside(stop.visit.destination)
-      if zone && zone.vehicle
-        route = routes.find{ |route|
-          route.vehicle_usage? && route.vehicle_usage.vehicle == zone.vehicle && !route.locked
-        }
-        (available_routes = [route]) if route
-      end
+    if available_routes.empty?
+      zone_route = get_associated_route_from_zones(stop.visit.destination)
+      available_routes = [zone_route] if zone_route
     end
 
     # If still no route get all routes matching skills
-    tags = stop.is_a?(StopVisit) ? (stop.visit.destination.tags | stop.visit.tags) : nil
-    if available_routes.empty? && options[:out_of_zone]
-      skill_tags = all_skills & tags
-      available_routes = routes.select{ |route|
-        next unless route.vehicle_usage?
-
-        if !skill_tags.empty?
-          common_tags = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten & tags
-          !route.locked && !common_tags.empty?
-        else
-          !route.locked
-        end
-      }
+    if available_routes.empty?
+      tags = stop.is_a?(StopVisit) ? (stop.visit.destination.tags | stop.visit.tags) : nil
+      skills_routes = get_routes_from_skills(tags, options)
+      available_routes = skills_routes if skills_routes
     end
 
     # So, no target route, nothing to do
@@ -270,6 +256,61 @@ class Planning < ApplicationRecord
       stop.active = true
       move_stop(route, stop, index || 1)
       return route
+    end
+  end
+
+  def candidate_insert(destination, options = {})
+    options[:out_of_zone] = true if options[:out_of_zone] == nil
+
+    available_routes = []
+
+    # If zoning, get appropriate route
+    if available_routes.empty?
+      zone_route = get_associated_route_from_zones(destination)
+      available_routes = [zone_route] if zone_route
+    end
+
+    # If still no route get all routes matching skills
+    if available_routes.empty?
+      skills_routes = get_routes_from_skills(destination.tags, options)
+      available_routes = skills_routes if skills_routes
+    end
+
+    # So, no target route, nothing to do
+    if available_routes.empty?
+      return
+    end
+
+    # Take the closest routes visit and eval insert
+    prefered_route_data(available_routes, destination, options)
+  end
+
+  def get_associated_route_from_zones(destination)
+    # If zoning, get appropriate route
+    if zonings.any?
+      zone = Zoning.new(zones: zonings.collect(&:zones).flatten).inside(destination)
+      if zone && zone.vehicle
+        route = routes.find{ |route|
+          route.vehicle_usage? && route.vehicle_usage.vehicle == zone.vehicle && !route.locked
+        }
+        route
+      end
+    end
+  end
+
+  def get_routes_from_skills(tags, options = {})
+    if options[:out_of_zone]
+      skill_tags = all_skills & tags
+      routes.select{ |route|
+        next unless route.vehicle_usage?
+
+        if skill_tags.any?
+          common_tags = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten & tags
+          !route.locked && !common_tags.empty?
+        else
+          !route.locked
+        end
+      }
     end
   end
 
@@ -838,6 +879,70 @@ class Planning < ApplicationRecord
     }.min_by { |ri|
       # Return route with the minimum time
       ri[2]
+    }
+  end
+
+  def prefered_route_from_destination(available_routes, destination, options = {})
+    options[:active_only] = true if options[:active_only].nil?
+    cache_sum_out_of_window = Hash.new{ |h, k| h[k] = k.sum_out_of_window }
+    tmp_routes = {}
+
+    by_distance = available_routes.flat_map { |route|
+      stops = route.stops.select { |s| (options[:active_only] ? s.active? : true) && s.position? }
+      stops.map { |s| [s.position, route, s.index] } +
+        [stops.empty? ? [route.vehicle_usage.try(:default_store_start), route, 1] : nil,
+         route.vehicle_usage.try(:default_store_stop).try(:position?) ? [route.vehicle_usage.default_store_stop, route, route.stops.size + 1] : nil]
+    }.compact.sort_by{ |a|
+      a[0] && a[0].position? ? a[0].distance(destination) : Float::INFINITY
+    }
+
+    tmp_visit = Visit.new(destination_id: destination.id)
+    # If more than one available_routes take at least one stop from second route
+    pos_second_route = by_distance.index{ |s| s[1].id != by_distance[0][1].id } if available_routes.size > 1
+    # Take 5% from nearest stops (min: 3, max: 10) and a stop in second route if it exists
+    (by_distance[0..[9, [2, by_distance.size / 20].max].min] +
+      (pos_second_route ? [by_distance[pos_second_route]] : [])).flat_map{ |dest_route_idx|
+      [[dest_route_idx[1], dest_route_idx[2]], [dest_route_idx[1], dest_route_idx[2] + 1]]
+    }.uniq.map { |ri|
+      ri[0].class.amoeba do
+        clone :stops # Only duplicate 10 stops just for compute evaluation
+        nullify :planning_id
+      end
+
+      tmp_routes[ri[0].id] = ri[0].amoeba_dup if !tmp_routes[ri[0].id]
+      r = tmp_routes[ri[0].id]
+      r.add(tmp_visit, ri[1], true)
+      r.compute(no_geojson: true, no_quantities: true)
+
+      # Difference of total time + difference of sum of out_of_window time
+      ri[2] = ((r.end - r.start) - (ri[0].end && ri[0].start ? ri[0].end - ri[0].start : 0)) + (r.sum_out_of_window - cache_sum_out_of_window[ri[0]])
+      # Delta distance
+      ri[3] = r.distance - ri[0].distance
+
+      r.remove_visit(tmp_visit)
+
+      # Return ri with time and distance added
+      ri
+    }.select { |ri|
+      # Check for max time or distance if any
+      route_available = true
+      route_available = ri[2].abs < options[:max_time] if options[:max_time] && route_available
+      route_available = ri[3].abs < options[:max_distance] if options[:max_distance] && route_available
+      route_available
+    }.min_by { |ri|
+      # Return route with the minimum time
+      ri[2]
+    }
+  end
+
+  def prefered_route_data(available_routes, destination, options = {})
+    data = prefered_route_from_destination(available_routes, destination, options = {})
+
+    {
+      route: data[0],
+      index: data[1],
+      time: data[2].abs,
+      distance: data[3].abs
     }
   end
 
