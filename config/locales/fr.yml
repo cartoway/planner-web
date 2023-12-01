@@ -789,11 +789,11 @@
     'default':
       'country': 'France'
     'menu':
-      'customer': 'Paramétrage global'
+      'customer': 'Paramétrage de l''espace client'
       'user_settings': 'Paramètres utilisateur'
       'customers': 'Espaces clients'
     'edit':
-      'title': 'Modifier paramétrage global'
+      'title': 'Modifier paramétrage de l''espace client'
       'send_email': 'Envoyer email de confirmation'
       'password': 'Changer le mot de passe'
       'user':
@@ -955,7 +955,7 @@
         client'
       'behavior_url_help': 'Se rendre sur le tableau de bord comportemental pour ce
         espace client'
-      'submit': 'Enregistrer paramétrage global'
+      'submit': 'Enregistrer paramétrage de l''espace client'
       'external_callback':
         'title': 'URL de rappel'
         'name': 'Nom'
@@ -1436,13 +1436,13 @@
         'doc_link': 'Doc - Démarrage avec %{name}'
         'doc_href': '/manual/01-start.html'
       'panel_three':
-        'title': 'Paramétrage global et utilisateur'
+        'title': 'Paramétrage de l''espace client et utilisateur'
         'content': 'les paramétrages au niveau de votre compte avec votre mot de passe
           et votre identifiant. Au niveau de votre activité avec le type de véhicules,
           l’ajustement de la vitesse, la durée moyenne des visites. Enfin, au niveau
           de l’export vers des GPS ou sous forme de feuilles de route.'
         'time': '⏱6min.'
-        'doc_link': 'Doc - Paramétrage global et utilisateur'
+        'doc_link': 'Doc - Paramétrage de l''espace client et utilisateur'
         'doc_href': '/manual/02-global_settings_users.html'
       'footer': 'Vous recevez ce message en tant qu''utilisateur de %{name}'
     'features':
