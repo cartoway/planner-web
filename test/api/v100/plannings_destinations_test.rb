@@ -4,9 +4,6 @@ class V100::PlanningsDestinationsTest < ActiveSupport::TestCase
   include Rack::Test::Methods
   include ActionDispatch::TestProcess
 
-  require Rails.root.join("test/lib/devices/tomtom_base")
-  include TomtomBase
-
   def app
     Rails.application
   end
