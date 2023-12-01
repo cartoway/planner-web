@@ -1,4 +1,4 @@
-référence véhicule,nom véhicule,email,émission,consommation,capacités[kg],capacités[l],calculateur d'itinéraire,objectif du calculateur,options du calculateur,ajustement de la vitesse,couleur,appareils,horaire début,horaire fin,référence dépôt départ,référence dépôt arrivée,début plage repos,fin plage repos,durée de repos,référence dépôt repos,durée de service avant,durée de service après
+référence véhicule,nom véhicule,email,émission,consommation,capacités[kg],capacités[l],calculateur d'itinéraire,objectif du calculateur,options du calculateur,ajustement de la vitesse,couleur,appareils,horaire début,horaire fin,référence site départ,référence site arrivée,début plage repos,fin plage repos,durée de repos,référence site repos,durée de service avant,durée de service après
 ,Véhicule 1,,,,,,,,,,,,,,,,,,,,,
 ,Véhicule 2,,,,,,,,,,,,,,,,,,,,,
 ,Véhicule 3,,,,,,,,,,,,,,,,,,,,,
