@@ -103,7 +103,7 @@ class ZoningsControllerTest < ActionController::TestCase
       get :edit, { id: @zoning }.merge(option), locale: 'fr'
       assert_response :success
       assert_valid response
-      assert_match(/Modifier zonage/, response.body)
+      assert_match(/Modifier sectorisation/, response.body)
     end
   end
 

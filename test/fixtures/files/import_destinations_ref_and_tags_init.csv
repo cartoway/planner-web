@@ -1,6 +1,6 @@
 plan,tournée,véhicule,type arrêt,référence,nom,voie,code postal,ville,lat,lng,référence visite,durée visite,horaire début 1,horaire fin 1,libellés visite
 Plan 1,,,visite,102,SOEURS SUCREES (LES),"33, rue coquillière",75001,Paris,48.8642730713,2.3411622047,Samedi,00:03:00,04:00,06:00,praxedo:COLLECTE
 Plan 1,,,visite,SARVAL,SARVAL,"77, rue charles michels",93200,Saint-Denis,48.930527,2.343344,vidage,00:05:00,08:00,18:00,Samedi
-Plan 1,Tournée 1,Véhicle 1,dépôt,Local_technique _Noisy,Local technique Noisy,,,Bordeaux,48.894423,2.439602,,,,,
+Plan 1,Tournée 1,Véhicle 1,site,Local_technique _Noisy,Local technique Noisy,,,Bordeaux,48.894423,2.439602,,,,,
 Plan 1,Tournée 1,Véhicle 1,visite,532,PANAME BREWING COMPANY,90-92 quai de la loire,75019,Paris,48.887404,2.379218,Samedi,00:05:00,00:30,01:30,praxedo:COLLECTE
-Plan 1,Tournée 1,Véhicle 1,dépôt,SARVAL,SARVAL,,,Bordeaux,48.931469,2.342609,,,,,
+Plan 1,Tournée 1,Véhicle 1,site,SARVAL,SARVAL,,,Bordeaux,48.931469,2.342609,,,,,

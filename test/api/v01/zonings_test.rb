@@ -185,7 +185,7 @@ class V01::ZoningsTest < ActiveSupport::TestCase
         @zoning.name = 'new name 2'
         post api(), @zoning.attributes
         assert last_response.forbidden?, last_response.body
-        assert_equal 'dépassement du nombre maximal de zonages', JSON.parse(last_response.body)['message']
+        assert_equal 'dépassement du nombre maximal de sectorisations', JSON.parse(last_response.body)['message']
       end
     end
   end

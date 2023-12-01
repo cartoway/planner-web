@@ -75,7 +75,7 @@ class V01::StoresTest < ActiveSupport::TestCase
   test 'should create bulk from json' do
     assert_difference('Store.count', 1) do
       put api(), nil, input: {stores: [{
-                               name: 'Nouveau dépôt',
+                               name: 'Nouveau site',
                                street: nil,
                                postalcode: nil,
                                city: 'Tule',
