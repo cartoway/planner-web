@@ -246,6 +246,10 @@ $sidebar-margins: 10px;
         vertical-align: bottom;
       }
 
+      .btn-group.pull-right {
+        padding-right: 10px;
+      }
+
       .dropdown-white {
         color: #fff;
       }
@@ -343,9 +347,6 @@ $sidebar-margins: 10px;
     padding-right: 5px;
   }
 
-  #global_tools {
-    padding-right: 5px;
-  }
   .extended #extend_close_panel {
     position: fixed;
     right: 5px;
