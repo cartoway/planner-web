@@ -1,6 +1,6 @@
 def modern_browser?(browser)
   [
-    browser.chrome?(">= 65"),
+    browser.chrome?(">= 45"),
     browser.safari?(">= 10"),
     browser.firefox?(">= 52"),
     browser.ie?(">= 11") && !browser.compatibility_view?,
