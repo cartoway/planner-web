@@ -28,7 +28,7 @@ class V01::Customers < Grape::API
 
       # Deals with deprecated speed_multiplicator
       p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator] && !p[:speed_multiplier]
-      p[:visit_duration] ||= p.delete(:take_over)
+      p[:visit_duration] = p.delete(:take_over) if p.delete(:take_over)
 
       p[:devices] = p[:devices] ? JSON.parse(p[:devices], symbolize_names: true) : {}
       p[:devices] = customer[:devices].deep_merge(p[:devices]) if customer && customer[:devices].size > 0

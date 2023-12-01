@@ -40,10 +40,10 @@ class V01::Visits < Grape::API
       end
 
       #Deals with deprecated schedule params
-      p[:time_window_start_1] ||= p.delete(:open1)
-      p[:time_window_end_1] ||= p.delete(:close1)
-      p[:time_window_start_2] ||= p.delete(:open2)
-      p[:time_window_end_2] ||= p.delete(:close2)
+      p[:time_window_start_1] ||= p.delete(:open1) if p[:open1]
+      p[:time_window_end_1] ||= p.delete(:close1) if p[:close1]
+      p[:time_window_start_2] ||= p.delete(:open2) if p[:open2]
+      p[:time_window_end_2] ||= p.delete(:close2) if p[:close2]
 
       deliverable_unit_ids = current_customer.deliverable_units.map{ |du| du.id.to_s }
       p.permit(:ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, tag_ids: [], quantities: deliverable_unit_ids, quantities_operations: deliverable_unit_ids)
