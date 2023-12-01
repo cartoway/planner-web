@@ -233,7 +233,7 @@ class Planning < ApplicationRecord
 
     # If zoning, get appropriate route
     if available_routes.empty?
-      zone_route =  get_associated_route_from_zones(stop.visit.destination)
+      zone_route = get_associated_route_from_zones(stop.visit.destination)
       available_routes = [zone_route] if zone_route
     end
 
