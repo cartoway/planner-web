@@ -13,7 +13,7 @@ class V100::Destinations < Grape::API
     end
     segment '/:planning_id' do
       resource :destinations do
-        desc 'Compute the  minimum detour induced by the insertion of a destination.',
+        desc 'Compute the minimum detour induced by the insertion of a destination.',
           detail: 'Explore the routes and find a position where the position would have minimal influence on route\'s total time if it were inserted. It returns the potential detour generated (this operation doesn\'t take into account time windows if they exist...).',
           nickname: 'candidateInsertDestination',
           success: V100::Status.success(:code_201, V100::Entities::RouteInsertData),
