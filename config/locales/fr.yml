@@ -270,7 +270,7 @@
         'active': 'Actif'
         'tag_ids': 'Libellés'
         'tags': 'Libellés'
-        'zoning_id': 'Zonage'
+        'zoning_id': 'Sectorisation'
         'created_at': 'Création'
         'updated_at': 'Mise à jour'
         'order_array_id': 'Tableau de commandes'
@@ -1587,10 +1587,10 @@
       'lock_routes': 'Verrouiller les tournées'
       'toggle_routes': 'Masquer les tournées'
       'zonings':
-        'label': 'Zonages'
-        'success': 'Zonages appliqués avec succès'
+        'label': 'Sectorisations'
+        'success': 'Sectorisations appliqués avec succès'
         'fail': 'Échec lors de l''application des sectorisations'
-        'action': 'Appliquer Zonages'
+        'action': 'Appliquer Sectorisations'
       'zoning_new': 'Créer un nouvelle sectorisation depuis ce plan de tournées'
       'zoning_edit': 'Modifier cette sectorisation depuis ce plan de tournées'
       'last_sent_to': 'Envoi'
@@ -1808,7 +1808,7 @@
           'no_solution': 'Pas de solution trouvée pour votre problème'
           'error': 'Impossible d''effectuer le calcul.'
         'zoning':
-          'title': 'Zonage'
+          'title': 'Sectorisation'
           'in_progress': 'Application de la nouvelle sectorisation en cours, merci de patienter'
         'move_stops':
           'title': 'Déplacement des arrêts'
