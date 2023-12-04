@@ -709,6 +709,19 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal optim, planning.routes.map{ |r| r.stops.map(&:id) }
   end
 
+  test 'should destroy optimizer_job on planning destroy' do
+    planning = plannings(:planning_one)
+    customer = planning.customer
+    job_optimizer = delayed_jobs(:job_optimizer)
+    job_optimizer.update(handler: "planning_id:#{planning.id}")
+    planning_id = planning.id
+
+    assert Job.on_planning(planning.customer.job_optimizer, planning_id)
+    planning.destroy
+    customer.reload
+    refute Job.on_planning(planning.customer.job_optimizer, planning_id)
+  end
+
   test 'should set stops with a geoloc rest in unassigned' do
     planning = plannings(:planning_one)
     unassigned = planning.routes.flat_map{ |r| r.stops.map(&:id) }

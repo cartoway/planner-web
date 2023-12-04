@@ -42,6 +42,7 @@ class Planning < ApplicationRecord
   validate_consistency :vehicle_usage_set, :order_array, :zonings, :tags
 
   before_create :update_zonings, :check_max_planning
+  before_destroy :unlink_job_optimizer
   before_save :update_vehicle_usage_set
 
   include RefSanitizer
@@ -976,6 +977,10 @@ class Planning < ApplicationRecord
 
   def check_max_planning
     !self.customer.too_many_plannings? || raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit')))
+  end
+
+  def unlink_job_optimizer
+    customer.job_optimizer.destroy if Job.on_planning(customer.job_optimizer, id)
   end
 
   def update_vehicle_usage_set
