@@ -89,6 +89,12 @@ class V01::Stops < Grape::API
               stop = nil
               planning.routes.find{ |route| stop = route.stops.find{ |stop| stop.id == Integer(params[:id]) } }
               route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
+              raise(ActiveRecord::RecordNotFound.new) if stop.nil? || route.nil?
+
+              if (params[:index] <= 0 || params[:index] > route.stops.length + 1)
+                raise Exceptions::StopIndexError.new(route, "Invalid index #{params[:index]} provided")
+              end
+
               begin
                 planning.move_stop(route, stop, Integer(params[:index]))
                 planning.compute && planning.save!

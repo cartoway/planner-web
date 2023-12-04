@@ -56,4 +56,24 @@ class V01::StopsTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test 'should not move stop position in routes' do
+    customers(:customer_one).update(job_optimizer_id: nil)
+
+    # Index is smaller minimum index
+    patch api(@stop.route.planning.id, @stop.route.id, "#{@stop.route.planning.routes[0].stops[0].id}/move/0")
+    assert_equal 400, last_response.status, last_response.body
+
+    # Index is greater than route size
+    patch api(@stop.route.planning.id, @stop.route.id, "#{@stop.route.planning.routes[0].stops[0].id}/move/#{@stop.route.stops.size + 2}")
+    assert_equal 400, last_response.status, last_response.body
+
+    # Route doesn't exit
+    patch api(@stop.route.planning.id, -1, "#{@stop.route.planning.routes[0].stops[0].id}/move/1")
+    assert_equal 404, last_response.status, last_response.body
+
+    # Stop doesn't exist
+    patch api(@stop.route.planning.id, @stop.route.id, "-1/move/1")
+    assert_equal 404, last_response.status, last_response.body
+  end
 end
