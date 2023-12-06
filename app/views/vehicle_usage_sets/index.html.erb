@@ -115,8 +115,10 @@
 </table>
 
 <% if !@vehicle_usage_sets.empty? && current_user.customer.default_max_vehicle_usage_sets > 1 %>
-<div id="multiple-actions-vehicle-usage-sets">
-  <%= button_tag type: :submit, class: "btn btn-danger btn-sm btn-destroy #{invisible_class}", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+<div id="multiple-actions-vehicle-usage-sets" class="row">
+  <div class="col-md-12">
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm btn-destroy #{invisible_class}", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+  </div>
 </div>
 <% end %>
 

@@ -105,8 +105,8 @@
     </table>
   </div>
 
-  <div id="multiple_plannings_actions">
-    <div class="form-inline">
+  <div id="multiple_plannings_actions" class="row">
+    <div class="form-inline col-md-12">
       <%= t('.select_vehicle') %>
       <%= select_tag 'vehicle-id', options_for_select(active_vehicles.map{ |vehicle|
         [vehicle.name, vehicle.id, {'data-color' => vehicle.color, 'data-id' => vehicle.id}]

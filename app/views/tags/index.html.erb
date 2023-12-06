@@ -45,8 +45,10 @@
 </table>
 
 <% unless @tags.empty? %>
-<div id="multiple-actions">
-  <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+<div id="multiple-actions" class="row">
+  <div class="col-md-12">
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+  </div>
 </div>
 <% end %>
 

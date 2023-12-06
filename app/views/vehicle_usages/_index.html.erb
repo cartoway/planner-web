@@ -63,8 +63,10 @@
   </tbody>
 </table>
 
-<div id="multiple-actions-<%= vehicle_usage_set.id %>">
-  <%= button_tag type: :submit, class: 'btn btn-default btn-sm btn-disable', name: "disable_multiple", value: "#{vehicle_usage_set.id}", disabled: vehicle_usage_set.vehicle_usages.count == 1, data: { confirm: t('vehicle_usages.index.multiple_disable_confirm'), id: vehicle_usage_set.id } do %><i class="fa fa-power-off fa-fw"></i> <%= t('vehicle_usages.index.multiple_disable') %><% end %>
+<div id="multiple-actions-<%= vehicle_usage_set.id %>" class="row">
+  <div class="col-md-12">
+    <%= button_tag type: :submit, class: 'btn btn-default btn-sm btn-disable', name: "disable_multiple", value: "#{vehicle_usage_set.id}", disabled: vehicle_usage_set.vehicle_usages.count == 1, data: { confirm: t('vehicle_usages.index.multiple_disable_confirm'), id: vehicle_usage_set.id } do %><i class="fa fa-power-off fa-fw"></i> <%= t('vehicle_usages.index.multiple_disable') %><% end %>
 
-  <%= button_tag type: :submit, class: 'btn btn-default btn-sm btn-enable', name: "enable_multiple", value: "#{vehicle_usage_set.id}", disabled: vehicle_usage_set.vehicle_usages.count == 1, data: { id: vehicle_usage_set.id } do %><i class="fa fa-truck-field fa-fw"></i> <%= t('vehicle_usages.index.multiple_enable') %><% end %>
+    <%= button_tag type: :submit, class: 'btn btn-default btn-sm btn-enable', name: "enable_multiple", value: "#{vehicle_usage_set.id}", disabled: vehicle_usage_set.vehicle_usages.count == 1, data: { id: vehicle_usage_set.id } do %><i class="fa fa-truck-field fa-fw"></i> <%= t('vehicle_usages.index.multiple_enable') %><% end %>
+  </div>
 </div>
