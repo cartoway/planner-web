@@ -473,7 +473,12 @@ $sidebar-margins: 10px;
     position: sticky;
 
     .out_route {
-      margin-bottom: 0;
+      margin-bottom: 0 !important;
+
+      .panel-heading {
+        background-color: gray;
+        color: white;
+      }
 
       #out_of_route {
         margin-bottom: 0;
