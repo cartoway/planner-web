@@ -1065,7 +1065,7 @@
       'replace_yes_help': 'Efface et remplace toutes les anciennes adresses par celles de
         l''import. Les anciennes tournées seront également perdues.'
       'replace_confirm': 'Le fait de supprimer les adresses affectera vos anciens
-        plans de tournées qui ne comporteront plus que des nouvelles adresses non planifiés.
+        plans de tournées qui ne comporteront plus que des nouvelles adresses non assignés.
         Êtes-vous sûr ?'
       'plannings': 'Plans'
       'delete_plannings': 'Supprimer anciens plans'
@@ -1599,7 +1599,7 @@
       'destinations': 'adresses'
       'without_stops_title': 'Les arrêts de ce plan de tournées volumineux n''ont
         pas été chargés pour améliorer les performances de l''affichage'
-      'load_stops_out_of_route': 'Charger les arrêts non planifiés'
+      'load_stops_out_of_route': 'Charger les arrêts non assignés'
       'load_stops': 'Charger les arrêts de cette tournée'
       'optimize': 'Optimiser toutes les tournées non verrouillées'
       'optimize_help': 'Optimiser la tournée'
@@ -1673,7 +1673,7 @@
       'speed_help': 'Vitesse moyenne pour l''ensemble des tournées'
       'vehicles_used_help': 'Nombre de véhicules utilisés / total'
       'quantity_help': 'Quantités totales / Capacités totales'
-      'out_of_route': 'Non planifiés'
+      'out_of_route': 'Non assignés'
       'out_of_route_quantity_help': 'Quantité'
       'toggle_help': 'Affiche ou cache les arrêts sur la carte'
       'locked_unplanned_help': 'Verrouille les non-planifiés pour les opérations globales
@@ -1700,10 +1700,10 @@
         tournée (le résultat peut ne plus être optimisé)'
       'automatic_insert_help_multiple': 'Propose un bon endroit pour insérer les adresses
         dans des tournées (le résultat ne sera plus optimisé)'
-      'automatic_insert_confirm': 'Affecter tous les arrêts non planifiés à des tournées ?
+      'automatic_insert_confirm': 'Affecter tous les arrêts non assignés à des tournées ?
         Le résultat ne sera plus optimisé. Les sectorisations sont recommandées pour affecter
         les arrêts de manière plus précise (Ok pour continuer malgré tout).'
-      'automatic_insert_too_many': 'Trop d''arrêts non planifiés. Les sectorisations sont
+      'automatic_insert_too_many': 'Trop d''arrêts non assignés. Les sectorisations sont
         recommandées pour affecter les arrêts de manière plus précise'
       'active_all': 'Tous'
       'active_reverse': 'Inverser'
@@ -1796,7 +1796,7 @@
           'optimize_max': 'Au maximum :'
           'optimize_less': 'Moins de'
           'optimize-title': 'Durée du processus d''optimisation. Ne prend pas en compte le temps passé en file d''attente.'
-          'warning': 'Attention : le comportement de l''optimisation a changé. Les arrêts non planifiés seront assignés à un véhicule durant l''optimisation. Si ce comportement n''est pas souhaité, veuillez les verrouiller.'
+          'warning': 'Attention : le comportement de l''optimisation a changé. Les arrêts non assignés seront affectés à un véhicule durant l''optimisation. Si ce comportement n''est pas souhaité, veuillez les verrouiller.'
         'optimizer':
           'title': 'Optimisation'
           'in_progress': 'Processus en cours, merci de patienter.'
@@ -1830,7 +1830,7 @@
         'spreadsheet':
           'title': 'Export vers un tableur'
           'stops': 'Arrêts additionnels'
-          'out_of_route': 'non planifiés'
+          'out_of_route': 'Non assignés'
           'stores': 'sites'
           'rests': 'pauses'
           'stops_inactives': 'arrêts inactifs'
