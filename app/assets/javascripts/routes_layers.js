@@ -765,7 +765,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
           icon = L.divIcon({
             html: '<i class="fa ' + storeIcon + ' ' + this.map.iconSize[storeIconSize].name + ' store-icon" style="color: ' + storeColor + ';"></i>',
             iconSize: new L.Point(this.map.iconSize[storeIconSize].size, this.map.iconSize[storeIconSize].size),
-            iconAnchor: new L.Point(this.map.iconSize[storeIconSize].size / 2, this.map.iconSize[storeIconSize].size / 2),
+            iconAnchor: new L.Point(this.map.iconSize[storeIconSize].size / 2, this.map.iconSize[storeIconSize].size),
             className: 'store-icon-container'
           });
         } else {
@@ -777,7 +777,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
           if (!geoJsonPoint.properties.number) {
             pointColor = 'rgba(' + parseInt(pointColor.substring(1, 3), 16) + ',' + parseInt(pointColor.substring(3, 5), 16) + ',' + parseInt(pointColor.substring(5, 7), 16) + ',0.8)';
           }
-          var pointAnchor = new L.Point(this.map.iconSize[pointIconSize].size / 2, this.map.iconSize[pointIconSize].size / 2);
+          var pointAnchor = new L.Point(this.map.iconSize[pointIconSize].size / 2, this.map.iconSize[pointIconSize].size);
 
           if (overlappingMarkers[overlapKey]) {
             if (overlappingMarkers.routeIds.indexOf(routeId) === -1 || this.options.disableClusters) {
@@ -814,7 +814,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
             overlappingMarkers.routeIds = [];
           }
 
-          var popupAnchor = [-pointAnchor.x + this.map.iconSize[pointIconSize].size / 2, -pointAnchor.y + this.map.iconSize[pointIconSize].size / 2];
+          var popupAnchor = [-pointAnchor.x + this.map.iconSize[pointIconSize].size / 2, -pointAnchor.y + this.map.iconSize[pointIconSize].size];
 
           icon = L.divIcon({
             html: '<span class="fa-stack" style="line-height: ' + this.map.iconSize[pointIconSize].size + 'px"><i class="fa ' + pointIcon + ' point-icon" style="color: ' + pointColor + ' !important; font-size: ' + this.map.iconSize[pointIconSize].size + 'px"></i><span class="fa-stack-1x point-icon-text">' + (geoJsonPoint.properties.number || '') + '</span></span>',
