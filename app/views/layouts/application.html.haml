@@ -310,21 +310,3 @@
               = t('web.dialog.close')
     = render 'shared/flash_messages'
     = render 'layouts/javascript'
-
-:javascript
-  var menuLeft = $('.menu-left');
-  var mainContent = $('.main');
-
-  menuLeft.on("click", () => {
-    menuLeft.addClass("open")
-  });
-
-  $('.menu-content').on('show.bs.collapse', function () {
-    $('.menu-content.in').removeClass('in');
-  });
-
-  mainContent.on("click", () => {
-    menuLeft.removeClass("open")
-    $('.menu-section').collapse('hide');
-    $('.menu-content.in').removeClass('in');
-  })
