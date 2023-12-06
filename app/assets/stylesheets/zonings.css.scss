@@ -21,7 +21,7 @@
 
 @import "variables";
 
-$sidebar-width: 0px;
+$sidebar-width: 400px;
 $sidebar-margins: 10px;
 
 [data-controller='zonings'],
@@ -35,7 +35,7 @@ $sidebar-margins: 10px;
   &[data-action='edit'] {
     @media screen and (min-width: 768px) {
       .ui-pnotify {
-        margin-right: $sidebar-width + $sidebar-margins; // not possible to use right because it's overloaded by pnotify
+        margin-right: $sidebar-margins; // not possible to use right because it's overloaded by pnotify
       }
     }
 
@@ -85,5 +85,9 @@ $sidebar-margins: 10px;
   .sidebar-left.collapsed ~ .sidebar-map .leaflet-top {
     top: $planbar-height + 40px;
     left: 0;
+  }
+
+  .sidebar-left ~ .sidebar-map .leaflet-left {
+    left: $sidebar-width;
   }
 }
