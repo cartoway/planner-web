@@ -750,6 +750,14 @@ $sidebar-margins: 10px;
         top: 0;
       }
 
+      .list-group-item {
+        background-color: #e4e4e4;
+      }
+
+      .panel-body {
+        background-color: #f4f4f4;
+      }
+
       .dropdown-menu {
         max-height: 200px;
         bottom: unset;
