@@ -202,7 +202,7 @@
         'router_options_strict_restriction': 'Respect strict des limitations poids
           lourd'
         'destinations': 'Adresses'
-        'stores': 'Dépôts'
+        'stores': 'Sites'
         'jobs': 'Tâches'
         'profile': 'Profil'
         'profile_id': 'Profil'
@@ -1953,9 +1953,9 @@
   'stores':
     'default':
       'name': 'Site numéro 1'
-      'lat': '44.83423'
-      'lng': '-0.60068'
-      'city': 'Bordeaux'
+      'lat': '48.76269'
+      'lng': '2.35947'
+      'city': 'Rungis'
     'geocoding':
       'geocoding_in_progress': 'Geocodage en cours.'
     'form':
@@ -1973,7 +1973,7 @@
       'title': 'Modifier site'
     'import':
       'title': 'Importer des sites'
-      'stores': 'Dépôts'
+      'stores': 'Sites'
       'replace_no': 'Mise à jour / ajout'
       'replace_no_help': 'Une mise à jour des sites existants (référence site inchangée)
         est faite et les nouveaux sont ajoutés à l''application.'
@@ -2412,7 +2412,7 @@
       'stores': 'Départ / Arrivée'
       'store':
         'none': 'Aucun'
-      'stores_help': 'Dépôts de départ et d''arrivée'
+      'stores_help': 'Sites de départ et d''arrivée'
       'service_times': 'Durées de service'
       'service_time_start_addon': 'avant'
       'service_time_end_addon': 'après'
