@@ -769,7 +769,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
             className: 'store-icon-container'
           });
         } else {
-          var radius, baseAngle, baseMultiplier = 6, baseModulo = 1, lowIndex = false;
+          var rankAngle, radius, currentAngle, minimumShift = 20, baseModulo = 2, lowIndex = false;
 
           var pointIcon = geoJsonPoint.properties.icon || GlobalConfiguration.destinationIconDefault;
           var pointIconSize = geoJsonPoint.properties.icon_size || GlobalConfiguration.destinationIconSizeDefault;
@@ -781,21 +781,29 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
           if (overlappingMarkers[overlapKey]) {
             if (overlappingMarkers.routeIds.indexOf(routeId) === -1 || this.options.disableClusters) {
-              var cycleSize = overlappingMarkers[overlapKey] === (baseMultiplier * Math.pow(overlappingMarkers.modulo, 2));
-
-              if ((overlappingMarkers[overlapKey] % overlappingMarkers.multiplier) === 0 && cycleSize) {
+              // Displays extra point at same coordinates through multiple circle around the original coordinates
+              if (((overlappingMarkers[overlapKey]) % Math.pow(2, overlappingMarkers.modulo)) === 0) {
                 overlappingMarkers.modulo++;
-                overlappingMarkers.multiplier *= overlappingMarkers.modulo;
               }
 
-              radius = 13 * overlappingMarkers.modulo;
-              baseAngle = 10 * overlappingMarkers.modulo;
+              // Radius used for the current circle
+              radius = 18 * (overlappingMarkers.modulo - baseModulo) + minimumShift;
 
-              var x = radius * Math.cos(baseAngle * overlappingMarkers[overlapKey]);
-              var y = radius * Math.sin(baseAngle * overlappingMarkers[overlapKey]);
+              // Compute the angle of the point on the current circle
+              if (overlappingMarkers.modulo === baseModulo) {
+                rankAngle = 2 * Math.PI / (Math.pow(2, baseModulo) - 1); // index 0 is at the center
+                currentAngle = rankAngle * (overlappingMarkers[overlapKey]);
+              } else {
+                rankAngle = 2 * Math.PI / (Math.pow(2, overlappingMarkers.modulo-1));
+                currentAngle = rankAngle * ((overlappingMarkers[overlapKey]) % Math.pow(2, overlappingMarkers.modulo-1));
+              }
+              // 1/(n-1) allows to shift a bit at each new rank
+              var x = radius * Math.cos(1/(overlappingMarkers.modulo-1) + currentAngle);
+              var y = radius * Math.sin(1/(overlappingMarkers.modulo-1) + currentAngle);
 
-              var reducer = this.map.iconSize[pointIconSize].size / 2;
-              pointAnchor = new L.Point(x + reducer, y + reducer);
+              // Compensate the shift due to the size of the icon
+              var reducer = this.map.iconSize[pointIconSize].size;
+              pointAnchor = new L.Point(x + reducer/2, y + reducer);
 
               overlappingMarkers[overlapKey]++;
               overlappingMarkers.routeIds.push(routeId);
@@ -803,14 +811,13 @@ export const RoutesLayer = L.FeatureGroup.extend({
             } else {
               // Reset values if same routes same posXY
               this.clustersByRoute[routeId].getLayers().forEach(function(marker) {
-                var size = this.map.iconSize[pointIconSize].size / 2;
-                marker.options.icon.options.iconAnchor = marker.options.icon.options.popupAnchor = L.Point(size, size);
+                var size = this.map.iconSize[pointIconSize].size;
+                marker.options.icon.options.iconAnchor = marker.options.icon.options.popupAnchor = L.Point(size / 2, size);
               }.bind(this));
             }
           } else {
             overlappingMarkers[overlapKey] = 1;
             overlappingMarkers.modulo = baseModulo;
-            overlappingMarkers.multiplier = baseMultiplier * overlappingMarkers.modulo;
             overlappingMarkers.routeIds = [];
           }
 
