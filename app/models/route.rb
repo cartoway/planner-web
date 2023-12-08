@@ -109,29 +109,55 @@ class Route < ApplicationRecord
     vehicle_usage.default_work_time if vehicle_usage? && vehicle_usage.default_work_time
   end
 
+  def init_route_data
+    {
+      stop_distance: 0,
+      stop_no_path: false,
+      stop_out_of_drive_time: nil,
+      stop_out_of_work_time: nil,
+      emission: 0,
+      start: nil,
+      end: nil,
+      distance: 0,
+      drive_time: nil,
+      wait_time: nil,
+      visits_duration: nil,
+      quantities: nil
+    }
+  end
+
+  def store_traces(geojson_tracks, trace, options = {})
+    if trace && !options[:no_geojson]
+      geojson_tracks << {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          polylines: trace,
+        },
+        properties: {
+          route_id: self.id,
+          color: self.default_color,
+          drive_time: options[:drive_time],
+          distance: options[:distance]
+        }.compact
+      }.to_json
+    end
+  end
+
   def plan(departure = nil, options = {})
     options[:ignore_errors] = false if options[:ignore_errors].nil?
 
     self.touch if self.id # To force route save in case none attribute has changed below
-    self.distance = 0
+
     geojson_tracks = []
 
-    self.stop_distance = 0
-    self.stop_no_path = false
-    self.stop_out_of_drive_time = nil
-    self.stop_out_of_work_time = nil
-    self.stop_out_of_max_distance = nil
-    self.emission = 0
-    self.start = self.end = nil
     last_lat, last_lng = nil, nil
-    self.drive_time = nil
-    self.wait_time = nil
-    self.visits_duration = nil
-    self.quantities = nil
+    route_attributes = init_route_data
+
     if vehicle_usage? && !stops.empty?
       service_time_start = service_time_start_value
       service_time_end = service_time_end_value
-      self.end = self.start = departure || vehicle_usage.default_time_window_start
+      route_attributes[:end] = route_attributes[:start] = departure || vehicle_usage.default_time_window_start
       speed_multiplier = vehicle_usage.vehicle.default_speed_multiplier
       if vehicle_usage.default_store_stop.try(&:position?)
         last_lat, last_lng = vehicle_usage.default_store_stop.lat, vehicle_usage.default_store_stop.lng
@@ -142,7 +168,7 @@ class Route < ApplicationRecord
 
       # Add service time
       unless service_time_start.nil?
-        self.end += service_time_start
+        route_attributes[:end] += service_time_start
       end
 
       stops_sort = stops.sort_by(&:index)
@@ -191,7 +217,6 @@ class Route < ApplicationRecord
 
       # Recompute Stops
       stops_time_windows = {}
-      quantities_ = {}
       previous_with_pos = vehicle_usage.default_store_start.try(:position?)
       stops_sort.each{ |stop|
         if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
@@ -199,28 +224,14 @@ class Route < ApplicationRecord
           stop.no_path = previous_with_pos && stop.position? && trace.nil?
           previous_with_pos = stop if stop.position?
 
-          if trace && !options[:no_geojson]
-            geojson_tracks << {
-              type: 'Feature',
-              geometry: {
-                type: 'LineString',
-                polylines: trace,
-              },
-              properties: {
-                route_id: self.id,
-                color: self.default_color,
-                drive_time: stop.drive_time,
-                distance: stop.distance
-              }.compact
-            }.to_json
-          end
+          store_traces(geojson_tracks, trace, options.merge(drive_time: stop.drive_time, distance: stop.distance))
 
           if stop.drive_time
             stops_drive_time[stop] = stop.drive_time
-            stop.time = self.end + stop.drive_time
-            self.drive_time = (self.drive_time || 0) + stop.drive_time
+            stop.time = route_attributes[:end] + stop.drive_time
+            route_attributes[:drive_time] = (route_attributes[:drive_time] || 0) + stop.drive_time
           elsif !stop.no_path
-            stop.time = self.end
+            stop.time = route_attributes[:end]
           else
             stop.time = nil
           end
@@ -231,20 +242,20 @@ class Route < ApplicationRecord
             if open && stop.time < open
               stop.wait_time = open - stop.time
               stop.time = open
-              self.wait_time = (self.wait_time || 0) + stop.wait_time
+              route_attributes[:wait_time] = (route_attributes[:wait_time] || 0) + stop.wait_time
             else
               stop.wait_time = nil
             end
             stop.out_of_window = !!(late_wait && late_wait > 0)
 
-            self.distance += stop.distance if stop.distance
-            self.end = stop.time + stop.duration
-            self.visits_duration = (self.visits_duration || 0) + stop.duration if stop.is_a?(StopVisit)
+            route_attributes[:distance] += stop.distance if stop.distance
+            route_attributes[:end] = stop.time + stop.duration
+            route_attributes[:visits_duration] = (route_attributes[:visits_duration] || 0) + stop.duration if stop.is_a?(StopVisit)
 
             stop.out_of_drive_time = stop.time > vehicle_usage.default_time_window_end
-            stop.out_of_work_time = vehicle_usage.outside_default_work_time?(self.start, stop.time)
+            stop.out_of_work_time = vehicle_usage.outside_default_work_time?(route_attributes[:start], stop.time)
             max_distance = vehicle_usage.vehicle.max_distance || planning.vehicle_usage_set.max_distance
-            stop.out_of_max_distance = max_distance ? self.distance > max_distance : false
+            stop.out_of_max_distance = max_distance ? route_attributes[:distance] > max_distance : false
           end
         else
           stop.active = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_window = stop.no_path = stop.out_of_work_time = stop.out_of_max_distance = false
@@ -252,45 +263,31 @@ class Route < ApplicationRecord
         end
       }
 
-      compute_quantities(stops_sort) unless options[:no_quantities]
+      route_attributes[:quantities] = compute_quantities(stops_sort) unless options[:no_quantities]
 
       # Last stop to store
       distance, drive_time, trace = traces.shift
       if drive_time
-        self.distance += distance
+        route_attributes[:distance] += distance
         stops_drive_time[:stop] = drive_time
-        self.end += drive_time
-        self.stop_distance, self.stop_drive_time = distance, drive_time
-        self.drive_time = self.drive_time + self.stop_drive_time if self.drive_time
+        route_attributes[:end] += drive_time
+        route_attributes[:stop_distance], route_attributes[:stop_drive_time] = distance, drive_time
+        route_attributes[:drive_time] += drive_time if route_attributes[:drive_time]
       end
-      self.stop_no_path = vehicle_usage.default_store_stop.try(:position?) && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?
+      route_attributes[:stop_no_path] = vehicle_usage.default_store_stop.try(:position?) && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?
 
       # Add service time to end point
-      self.end += service_time_end unless service_time_end.nil?
+      route_attributes[:end] += service_time_end unless service_time_end.nil?
 
-      if trace && !options[:no_geojson]
-        geojson_tracks << {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            polylines: trace,
-          },
-          properties: {
-            route_id: self.id,
-            color: self.default_color,
-            drive_time: self.stop_drive_time,
-            distance: self.stop_distance
-          }.compact
-        }.to_json
-      end
-
-      self.geojson_tracks = geojson_tracks unless options[:no_geojson]
-      self.stop_out_of_drive_time = self.end > vehicle_usage.default_time_window_end
-      self.stop_out_of_work_time = vehicle_usage.outside_default_work_time?(self.start, self.end)
+      store_traces(geojson_tracks, trace, options.merge(drive_time: drive_time, distance: stop_distance))
+      route_attributes[:geojson_tracks] = geojson_tracks unless options[:no_geojson]
+      route_attributes[:stop_out_of_drive_time] = route_attributes[:end] > vehicle_usage.default_time_window_end
+      route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], route_attributes[:end])
       max_distance = vehicle_usage.vehicle.max_distance || planning.vehicle_usage_set.max_distance
-      self.stop_out_of_max_distance = max_distance ? self.distance > max_distance : false
-      self.emission = vehicle_usage.vehicle.emission.nil? || vehicle_usage.vehicle.consumption.nil? ? nil : self.distance / 1000 * vehicle_usage.vehicle.emission * vehicle_usage.vehicle.consumption / 100
+      route_attributes[:stop_out_of_max_distance] = max_distance ? route_attributes[:distance] > max_distance : false
+      route_attributes[:emission] = vehicle_usage.vehicle.emission.nil? || vehicle_usage.vehicle.consumption.nil? ? nil : route_attributes[:distance] / 1000 * vehicle_usage.vehicle.emission * vehicle_usage.vehicle.consumption / 100
 
+      self.assign_attributes(route_attributes)
       [stops_sort, stops_drive_time, stops_time_windows]
     end
   end
@@ -341,7 +338,7 @@ class Route < ApplicationRecord
         end
       end
     else
-      compute_quantities unless options[:no_quantities]
+      self.quantities = compute_quantities unless options[:no_quantities]
     end
 
     self.geojson_points = stops_to_geojson_points unless options[:no_geojson]
@@ -504,6 +501,8 @@ class Route < ApplicationRecord
   attr_localized :quantities
 
   def compute_quantities(stops_sort = nil)
+    return {} if planning.customer.deliverable_units.empty?
+
     quantities_ = Hash.new(0)
 
     (stops_sort || stops).each do |stop|
@@ -536,13 +535,9 @@ class Route < ApplicationRecord
       end
     end
 
-    if planning.customer.deliverable_units.empty?
-      self.quantities = {}
-    else
-      self.quantities = quantities_.each { |k, v|
-        v = v.round(3)
-      }
-    end
+    quantities_.each { |k, v|
+      v = v.round(3)
+    }
   end
 
   def reverse_order
