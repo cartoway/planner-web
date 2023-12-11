@@ -1,14 +1,14 @@
 I18n.locale = :fr
 
-mapnik_fr = Layer.create!(source: "osm", name: "Mapnik-fr", url: "http://tile-{s}.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", urlssl: "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", attribution: "Tiles by OpenStreetMap-France")
-mapnik = Layer.create!(source: "osm", name: "Mapnik", url: "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", urlssl: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "Tiles by OpenStreetMap")
+mapnik_fr = Layer.create!(source: "osm", name: "Mapnik-fr", url: "http://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", urlssl: "https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", attribution: "Tiles by OpenStreetMap-France")
+mapnik = Layer.create!(source: "osm", name: "Mapnik", url: "http://tile.openstreetmap.org/{z}/{x}/{y}.png", urlssl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "Tiles by OpenStreetMap")
 stamen_bw = Layer.create!(source: "osm", name: "Stamen B&W", name_locale: {fr: "Stamen N&B"}, url: "http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}.png", urlssl: "https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png", attribution: "Tiles by Stamen Design")
-here_layer = Layer.create!(source: "here", name: "Here", url: "http://4.base.maps.cit.api.here.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?app_id=#{ENV['HERE_APP_ID']}&app_code=YOUR_APP_CODE#{ENV['HERE_APP_CODE']}", urlssl: "https://4.base.maps.cit.api.here.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?app_id=#{ENV['HERE_APP_ID']}&app_code=#{ENV['HERE_APP_CODE']}", attribution: "Here")
+here_layer = Layer.create!(source: "here", name: "Here", url: "https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?style=logistics.day&apiKey=#{ENV['HERE_API_KEY']}", urlssl: "https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?style=logistics.day&apiKey=#{ENV['HERE_API_KEY']}", attribution: "Here")
 
 car = RouterWrapper.create!(
     mode: 'car',
     name: 'RouterWrapper-Car',
-    name_locale: {fr: 'Calculateur pour voiture', en: 'Car router'},
+    name_locale: {fr: 'Calculateur pour véhicule utilitaire léger', en: 'Light commercial vehicle router'},
     options: {time: true, distance: true, avoid_zones: false, isochrone: true, isodistance: true, approach: true, motorway: true})
 bicycle = RouterWrapper.create!(
     mode: 'bicycle',
@@ -23,7 +23,7 @@ pedestrian = RouterWrapper.create!(
 here_car = RouterWrapper.create!(
     mode: 'car_here',
     name: 'RouterWrapper-HereCar',
-    name_locale: {fr: 'Calculateur pour voiture monde avec trafic', en: 'Car worldwide with traffic router'},
+    name_locale: {fr: 'Calculateur pour véhicule utilitaire léger monde avec trafic', en: 'Light commercial vehicle worldwide with traffic router'},
     options: {time: true, distance: true, avoid_zones: true, isochrone: true, isodistance: true, motorway: true, toll: true, trailers: false, weight: false, weight_per_axle: false, height: false, width: false, length: false, hazardous_goods: false, strict_restriction: false, traffic: true})
 here_truck = RouterWrapper.create!(
     mode: 'truck',
