@@ -19,6 +19,8 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+@import "variables";
+
 [data-controller='routes'][data-action='show'],
 [data-controller='plannings'][data-action='show'],
 [data-controller='api_web_v01_routes'][data-action='print'],
@@ -163,7 +165,7 @@
     .barcode {
       padding: 1em;
       white-space: nowrap;
-      background-color: white !important;
+      background-color: $white-background !important;
 
       .barcode_x {
         height: 4em;

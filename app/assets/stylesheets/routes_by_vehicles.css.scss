@@ -19,8 +19,10 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
-$navbar-height: 50px;
-$sidebar-width: 350px;
+@import "variables";
+
+$navbar-height: 0px;
+$sidebar-width: 0px;
 $sidebar-margins: 10px;
 
 [data-controller='routes_by_vehicles'][data-action='show'] {
@@ -98,7 +100,7 @@ $sidebar-margins: 10px;
               .planning-tags-item {
                 color: #555555;
                 background: #fff;
-                border: 1px solid #ccc;
+                border: 1px solid $grey-color;
                 border-radius: 4px;
                 cursor: default;
                 float: left;
@@ -156,7 +158,7 @@ $sidebar-margins: 10px;
             padding: 2px 2px 2px 6px;
 
             .fa-reorder {
-              color: #333;
+              color: $text-black;
             }
 
             .fa-reorder:hover {
@@ -213,7 +215,7 @@ $sidebar-margins: 10px;
         display: inline-block;
       }
 
-      .fa-arrows-h {
+      .fa-arrows-left-right {
         display: inline-block;
         cursor: move;
       }

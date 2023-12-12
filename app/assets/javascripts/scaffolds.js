@@ -133,7 +133,7 @@ $(document).on('ready page:load', function() {
     if ($this.find('[class="duration"]').length == 0) {
       var input = '<div class="duration" style="display: block !important">' +
         '<span class="route-info" title="' + I18n.t('plannings.edit.route_visits_duration_help') + '" data-toggle="tooltip">' +
-        '<i class="fa fa-clock-o fa-fw"></i>' +
+        '<i class="fa fa-stopwatch fa-fw"></i>' +
         '<span class="duration"></span>' +
         '</span>' +
         '</div>';
@@ -346,15 +346,15 @@ export const mapInitialize = function(params) {
   map.iconSize = {
     large: {
       name: 'fa-2x',
-      size: 32
+      size: 36
     },
     medium: {
       name: 'fa-lg',
-      size: 20
+      size: 28
     },
     small: {
       name: '',
-      size: 16
+      size: 20
     }
   };
 
@@ -407,7 +407,7 @@ export const templateSelectionColor = function(state) {
   if (state.id) {
     return $("<span class='color_small' style='background:" + state.id + "'></span>");
   } else {
-    return $("<i />").addClass("fa fa-paint-brush").css("color", "#CCC");
+    return $("<i />").addClass("fa fa-paint-brush").css("color", "$grey-color");
   }
 };
 
@@ -625,13 +625,13 @@ L.disableClustersControl = function(map, routesLayer) {
       var button = L.DomUtil.create('a', '', container);
       button.title = I18n.t('plannings.edit.marker_clusters');
 
-      var icon = L.DomUtil.create('i', 'cluster-icon fa fa-certificate fa-lg', button);
+      var icon = L.DomUtil.create('i', 'cluster-icon fa fa-shapes fa-lg', button);
       icon.style.marginLeft = '2px';
 
       container.onclick = function() {
         routesLayer.switchMarkerClusters();
 
-        $('.cluster-icon').toggleClass('fa-certificate fa-circle-o');
+        $('.cluster-icon').toggleClass('fa-arrows-to-circle fa-shapes');
       };
 
       return container;

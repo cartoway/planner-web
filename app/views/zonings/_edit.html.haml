@@ -1,0 +1,22 @@
+- content_for :title, t('.title')
+#edit-zoning.sidebar
+  .sidebar-tabs
+    %ul{:role => "tablist"}
+      %li
+        %a.d-flex.align-items-center.justify-content-center.btn{:href => "#zoning", :role => "tab"}
+          %i.fa.fa-caret-right
+  .sidebar-content.modern-scroll
+    #zoning.sidebar-pane
+      #close_panel.pull-right
+        %button.btn.btn-default.btn-sm.sidebar-close{:title => "#{t '.collapse_zoning_panel'}", :type => "button"}
+          %i.fa.fa-caret-left
+      %h1
+        - if @manage_zoning[:manage_edit]
+          = t '.title'
+        - else
+          = @zoning.name
+      = render 'zonings/form'
+#map.sidebar-map
+= render 'zonings/isoline'
+
+

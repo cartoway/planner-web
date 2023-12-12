@@ -61,7 +61,7 @@
       <th class="center"><%= t '.status' %></th>
       <th class="center"><%= t '.created_end_subscription' %></th>
       <th class="center" data-toggle="tooltip" data-placement="auto" title="Destination"><i class="fa fa-map-marker fa-fw"></i></th>
-      <th class="center" data-toggle="tooltip" data-placement="auto" title="Plannings"><i class="fa fa-calendar-o fa-fw"></i></th>
+      <th class="center" data-toggle="tooltip" data-placement="auto" title="Plannings"><i class="fa fa-map-location fa-fw"></i></th>
       <th></th>
     </tr>
   </thead>
@@ -88,14 +88,14 @@
         <td class="center"><%= customer.test ? raw('<i class="fa fa-check" aria-hidden="true"></i>') : '' %></td>
         <td class="center">
           <% if customer.users.empty? %>
-            <span title="<%= t '.status_no_user' %>"><i class="fa fa-user-times fa-fw"></i><i class="fa fa-warning" style="color: orange;"></i></span>
+            <span title="<%= t '.status_no_user' %>"><i class="fa fa-user-gear-times fa-fw"></i><i class="fa fa-warning" style="color: orange;"></i></span>
           <% else %>
             <% not_connected = customer.users.collect(&:confirmed_at).compact.empty? %>
             <% max = customer.users.collect(&:current_sign_in_at).compact.max %>
             <% if not_connected && !max %>
-              <span title="<%= t '.status_no_sign_in_user' %>"><i class="fa fa-user fa-fw"></i><i class="fa fa-hourglass-half fa-fw"></i></span>
+              <span title="<%= t '.status_no_sign_in_user' %>"><i class="fa fa-user-gear fa-fw"></i><i class="fa fa-hourglass-half fa-fw"></i></span>
             <% elsif max && max < Time.now - 61.days %>
-              <span title="<%= t '.status_inactive_user' %>"><i class="fa fa-user fa-fw"></i>Zz (<%= l max.to_date %>
+              <span title="<%= t '.status_inactive_user' %>"><i class="fa fa-user-gear fa-fw"></i>Zz (<%= l max.to_date %>
                 )</span>
             <% end %>
           <% end %>
@@ -125,7 +125,7 @@
               <i class="fa fa-edit fa-fw"></i>
             <% end %>
             <%= link_to customer, class: "btn btn-danger btn-sm", method: :delete, title: t('all.verb.destroy'), data: { confirm: t('all.verb.destroy_confirm') } do %>
-              <i class="fa fa-trash-o fa-fw"></i>
+              <i class="fa fa-trash fa-fw"></i>
             <% end %>
           </div>
         </td>
@@ -144,8 +144,10 @@
 </table>
 
 <% unless @customers.empty? %>
-<div id="multiple-actions">
-  <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash-o fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+<div id="multiple-actions" class="row">
+  <div class="col-md-12">
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+  </div>
 </div>
 <% end %>
 

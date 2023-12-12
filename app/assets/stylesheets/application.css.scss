@@ -35,7 +35,6 @@
  *= require twitter-bootstrap-static/bootstrap
 
  * font awesome must be after bootstrap to overwrite glyphicons
- *= require font-awesome
  *= require bootstrap_and_overrides
  *= require jquery-ui-overrides
 
@@ -43,3 +42,5 @@
  *= require_self
  *= require_tree .
  */
+
+ @import "font-awesome";

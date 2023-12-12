@@ -19,14 +19,16 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
-$navbar-height: 50px;
-$sidebar-width: 350px;
+@import "variables";
+
+$navbar-height: 0px;
+$sidebar-width: 400px;
 $sidebar-margins: 10px;
 
 [data-controller='plannings'][data-action='edit'] {
   @media screen and (min-width: 768px) {
     .ui-pnotify {
-      margin-right: $sidebar-width + $sidebar-margins; // not possible to use right because it's overloaded by pnotify
+      margin-right: $sidebar-margins; // not possible to use right because it's overloaded by pnotify
     }
   }
   .modal-body {
@@ -99,7 +101,7 @@ $sidebar-margins: 10px;
 
 [data-controller='plannings'] {
   .sidebar.extended {
-    top: $navbar-height !important;
+    top: $planbar-height + $navbar-height !important;
   }
 }
 [data-controller='api_web_v01_plannings'] {
@@ -109,6 +111,8 @@ $sidebar-margins: 10px;
 }
 
 [data-controller='plannings'], [data-controller='api_web_v01_plannings'] {
+  // override
+  $planbar-height: 70px;
 
   .leaflet-popup {
     margin-top: 10px;
@@ -202,8 +206,6 @@ $sidebar-margins: 10px;
   }
 
   #map {
-    min-height: 250px;
-
     .label {
       pointer-events: none;
       text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
@@ -222,6 +224,16 @@ $sidebar-margins: 10px;
     }
   }
 
+  .sidebar-left {
+    left: 0 !important;
+    top: $planbar-height !important;
+    bottom: 0;
+  }
+
+  .sidebar-tabs {
+    top: ($planbar-height + 5px) !important;
+  }
+
   .sidebar {
     .sidebar-content {
       overflow-y: scroll; // important for select2
@@ -232,6 +244,10 @@ $sidebar-margins: 10px;
         display: inline-block;
         overflow: hidden;
         vertical-align: bottom;
+      }
+
+      .btn-group.pull-right {
+        padding-right: 10px;
       }
 
       .dropdown-white {
@@ -251,6 +267,13 @@ $sidebar-margins: 10px;
         cursor: pointer;
       }
       .dropdown-menu li.link:hover {
+        background-color: #EEE;
+      }
+      .accordion-menu li.link {
+        padding-left: 20px;
+        cursor: pointer;
+      }
+      .accordion-menu li.link:hover {
         background-color: #EEE;
       }
       .export_spreadsheet {
@@ -281,7 +304,7 @@ $sidebar-margins: 10px;
             .route-skills-item {
               color: #555555;
               background: #fff;
-              border: 1px solid #ccc;
+              border: 1px solid $grey-color;
               border-radius: 4px;
               cursor: default;
               float: left;
@@ -316,6 +339,59 @@ $sidebar-margins: 10px;
           right: 0px;
           left: auto;
         }
+      }
+    }
+  }
+
+  #extend_close_panel {
+    padding-right: 5px;
+  }
+
+  .extended #extend_close_panel {
+    position: fixed;
+    right: 5px;
+    padding-top: 5px;
+  }
+
+  .sidebar-left ~ .sidebar-map {
+    margin-left: 0px;
+  }
+
+  .sidebar-left ~ .sidebar-map .leaflet-left {
+    left: $sidebar-width;
+  }
+
+  .sidebar.sidebar-left.collapsed {
+    margin-left: $sidebar-margins;
+    height: $planbar-height + 40px;
+  }
+
+  .sidebar-left ~ .sidebar-map .leaflet-top {
+    top: $planbar-height;
+  }
+  .sidebar-left.collapsed ~ .sidebar-map .leaflet-top {
+    top: $planbar-height + 40px;
+    left: 0;
+  }
+
+  .planbar{
+    width: 100%;
+    position: absolute;
+    height: $planbar-height;
+    z-index: 1;
+    padding-left: 5px;
+    background-color: $white-background;
+    border-bottom: 1px solid $grey-color;
+
+    .col {
+      padding: 3px;
+      align-items: flex-end;
+    }
+    .form-group {
+      margin-bottom: 0px;
+
+      .label {
+        margin-bottom: 2px;
       }
     }
   }
@@ -357,7 +433,7 @@ $sidebar-margins: 10px;
         display: inline-block;
       }
 
-      .fa-arrows-h {
+      .fa-arrows-left-right {
         display: inline-block;
         cursor: move;
       }
@@ -371,7 +447,7 @@ $sidebar-margins: 10px;
           display: inline-block;
           vertical-align: top;
           margin: 2px;
-          max-width: 350px;
+          max-width: 400px;
 
           .stops {
             display: block !important;
@@ -388,7 +464,26 @@ $sidebar-margins: 10px;
   }
 
   #planning_zoning_ids_input a {
-    color: #333;
+    color: $text-black;
+  }
+
+  .out_routes {
+    margin-bottom: 0;
+    bottom: 0;
+    position: sticky;
+
+    .out_route {
+      margin-bottom: 0 !important;
+
+      .panel-heading {
+        background-color: gray;
+        color: white;
+      }
+
+      #out_of_route {
+        margin-bottom: 0;
+      }
+    }
   }
 
   .routes {
@@ -464,7 +559,7 @@ $sidebar-margins: 10px;
         min-height: 10px;
       }
 
-      .fa-arrows-h {
+      .fa-arrows-left-right {
         display: none;
       }
 
@@ -535,7 +630,7 @@ $sidebar-margins: 10px;
           padding: 2px 2px 2px 6px;
 
           .fa-reorder {
-            color: #333;
+            color: $text-black;
           }
 
           .fa-reorder:hover {
@@ -591,7 +686,7 @@ $sidebar-margins: 10px;
     }
     li:hover {
       cursor: move;
-      background-color: #ccc;
+      background-color: $grey-color;
     }
     &#columns-skip {
 
@@ -624,7 +719,7 @@ $sidebar-margins: 10px;
     padding-left: 0px;
 
     .optim-duration-title {
-      background-color: white !important;
+      background-color: $white-background !important;
       margin-top: 0px;
       padding-left: 0px !important;
       margin-bottom: 5px !important;
@@ -633,6 +728,40 @@ $sidebar-margins: 10px;
     #min-optim-duration, #max-optim-duration {
       font-size: 12px;
       margin-left: 5px;
+    }
+  }
+
+  .ui-sortable-disabled > .ui-sortable-handle {
+    #out_of_route{
+
+      .out-header {
+        position: relative;
+      }
+    }
+
+    .out-content {
+      position: relative;
+      max-height: 300px;
+      bottom: 0;
+      overflow-y: scroll;
+
+      .route-stops {
+        position: relative;
+        top: 0;
+      }
+
+      .list-group-item {
+        background-color: #e4e4e4;
+      }
+
+      .panel-body {
+        background-color: #f4f4f4;
+      }
+
+      .dropdown-menu {
+        max-height: 200px;
+        bottom: unset;
+      }
     }
   }
 }
@@ -740,10 +869,4 @@ $sidebar-margins: 10px;
 
 .extended #planning_name_extended {
   display: inline-block;
-}
-
-.extended .extend_close_panel {
-  position: fixed;
-  right: 5px;
-  padding-top: 5px;
 }

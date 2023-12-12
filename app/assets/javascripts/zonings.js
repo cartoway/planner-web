@@ -64,7 +64,7 @@ export const zonings_edit = function(params) {
 
   // sidebar has to be created before map
   var sidebar = L.control.sidebar('edit-zoning', {
-    position: 'right'
+    position: 'left'
   });
   sidebar.open('zoning');
 

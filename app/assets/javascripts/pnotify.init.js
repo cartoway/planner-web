@@ -26,6 +26,8 @@ PNotify.prototype.options.buttons.labels = {
   close: I18n.t('web.dialog.close')
 };
 
+var stack_bottomright = {"dir1": "up", "dir2": "left", "firstpos1": 35, "firstpos2": 35};
+
 const isWindowVisible = (function() {
   var stateKey, eventKey, keys = {
     hidden: 'visibilitychange',
@@ -57,6 +59,7 @@ const isWindowVisible = (function() {
         animate_speed: 'slow',
         shadow: true,
         hide: true,
+        stack: stack_bottomright,
         buttons: {
           sticker: false,
           closer: true

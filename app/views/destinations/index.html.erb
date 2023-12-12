@@ -15,7 +15,7 @@
 <div class="row row-top">
   <div class="col-md-6">
     <button id="add" type="button" class="btn btn-primary btn-sm"><i class="fa fa-plus fa-fw"></i> <%= t '.new' %></button>
-    <button id="multiple-delete" class="btn btn-danger btn-sm"><i class="fa fa-trash-o fa-fw"></i> <%= t('all.verb.destroy_selection') %></button>
+    <button id="multiple-delete" class="btn btn-danger btn-sm"><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %></button>
   </div>
   <div class="col-md-4">
     <span id="count"></span> <%= t 'activerecord.models.destinations', count: 10 %>
@@ -114,8 +114,8 @@
   </div>
 </div>
 
-<div class="row">
-  <div class="col-md-12 map-container">
+<div id="map_box" class="row">
+  <div class="col-md-12 map-container d-flex justify-content-center">
     <div id="map"></div>
   </div>
 </div>

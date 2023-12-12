@@ -37,7 +37,7 @@
         <td><%= tag.ref %></td>
         <td class="text-right">
           <%= link_to edit_tag_path(tag), :class => 'btn btn-primary btn-sm' do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
-          <%= link_to tag, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash-o fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <%= link_to tag, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
         </td>
       </tr>
     <% end %>
@@ -45,8 +45,10 @@
 </table>
 
 <% unless @tags.empty? %>
-<div id="multiple-actions">
-  <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash-o fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+<div id="multiple-actions" class="row">
+  <div class="col-md-12">
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+  </div>
 </div>
 <% end %>
 

@@ -4,6 +4,8 @@ ruby '< 2.7'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 4.2'
+# Allow haml syntax for views
+gem 'haml-rails', "~> 1.0.0"
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5'
 # Use Uglifier as compressor for JavaScript assets
@@ -118,7 +120,7 @@ gem 'sprockets'
 
 gem 'webpacker'
 
-gem 'font-awesome-rails'
+gem "font-awesome-sass", "~> 6.4.2"
 gem 'twitter-bootstrap-rails', git: 'https://github.com/seyhunak/twitter-bootstrap-rails.git', ref: 'd3776ddd0b89d28fdebfd6e1c1541348cc90e5cc' # FIXME wait for >3.2.2 with drop font-awesome, require Rails 5
 gem 'twitter_bootstrap_form_for', git: 'https://github.com/Mapotempo/twitter_bootstrap_form_for.git' # FIXME wait for pull request
 gem 'bootstrap-wysihtml5-rails'

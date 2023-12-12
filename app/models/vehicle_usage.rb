@@ -204,7 +204,8 @@ class VehicleUsage < ApplicationRecord
   end
 
   def work_or_window_time
-    ChronicDuration.output(default_work_time || (default_time_window_end - default_time_window_start), limit_to_hours: true, format: :chrono, units: 5)
+    hour_value = ChronicDuration.output(default_work_time || (default_time_window_end - default_time_window_start), limit_to_hours: true, format: :chrono, units: 5)
+    hour_value.length < 5 ? '00:00'[0..4 - hour_value.length] + hour_value : hour_value
   end
 
   def update_rest

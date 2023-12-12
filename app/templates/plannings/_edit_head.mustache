@@ -1,14 +1,14 @@
 <span class="route-info" title="{{#i18n}}plannings.edit.stops_help{{/i18n}}"><i class="fa fa-check-square fa-fw"></i>{{size_active}}/{{size}}&nbsp;{{#i18n}}plannings.edit.stops{{/i18n}}</span>
 {{#averages}}<!--
-  --><span class="route-info" title="{{#i18n}}plannings.edit.vehicles_used_help{{/i18n}}"><i class="fa fa-truck fa-fw" aria-hidden="true"></i>{{averages.vehicles_used}}/{{averages.vehicles}} </span>
+  --><span class="route-info" title="{{#i18n}}plannings.edit.vehicles_used_help{{/i18n}}"><i class="fa fa-truck-field fa-fw" aria-hidden="true"></i>{{averages.vehicles_used}}/{{averages.vehicles}} </span>
 {{/averages}}
 <span class="route-info">
-  <span title="{{#i18n}}plannings.edit.duration_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i><!--
+  <span title="{{#i18n}}plannings.edit.duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i><!--
     -->{{duration}}
   </span>
   {{#averages}}
     (<span title="{{#i18n}}plannings.edit.driving_time_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{averages.routes_drive_time}}</span><!--
-    -->{{#averages.routes_visits_duration}} <span title="{{#i18n}}plannings.edit._help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i>{{averages.routes_visits_duration}}</span>{{/averages.routes_visits_duration}}<!--
+    -->{{#averages.routes_visits_duration}} <span title="{{#i18n}}plannings.edit._help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{averages.routes_visits_duration}}</span>{{/averages.routes_visits_duration}}<!--
     -->{{#averages.routes_wait_time}} <span title="{{#i18n}}plannings.edit.wait_time_help{{/i18n}}"><i class="fa fa-hourglass-half fa-fw"></i>{{averages.routes_wait_time}}</span>{{/averages.routes_wait_time}})
   {{/averages}}
 </span>

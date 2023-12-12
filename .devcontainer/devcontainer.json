@@ -24,7 +24,8 @@
       "extensions": [
         "donjayamanne.git-extension-pack",
         "ms-azuretools.vscode-docker",
-        "vayan.haml"
+        "vayan.haml",
+        "imgildev.vscode-mustache-snippets"
       ]
     }
   },

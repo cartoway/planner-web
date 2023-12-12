@@ -19,6 +19,8 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+@import "variables";
+
 [data-controller='vehicle_usage_sets'] {
   &[data-action='index'], &[data-action='duplicate'] {
     .usage-set-name {
@@ -39,7 +41,7 @@
       padding: 0 5px;
     }
     .table-hover .vehicle_usages:hover > td {
-      background-color: white;
+      background-color: $white-background;;
     }
     #accordion-vehicle-usage-sets {
       .vehicle_usages {

@@ -32,7 +32,7 @@
         <td><%= product.code %></td>
         <td class="text-right">
           <%= link_to edit_product_path(product), :class => 'btn btn-primary btn-sm' do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
-          <%= link_to product, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash-o fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <%= link_to product, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
         </td>
       </tr>
     <% end %>
@@ -41,7 +41,7 @@
 
 <% unless @products.empty? %>
 <div id="multiple-actions">
-  <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash-o fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+  <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
 </div>
 <% end %>
 

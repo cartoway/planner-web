@@ -105,8 +105,8 @@
     </table>
   </div>
 
-  <div id="multiple_plannings_actions">
-    <div class="form-inline">
+  <div id="multiple_plannings_actions" class="row">
+    <div class="form-inline col-md-12">
       <%= t('.select_vehicle') %>
       <%= select_tag 'vehicle-id', options_for_select(active_vehicles.map{ |vehicle|
         [vehicle.name, vehicle.id, {'data-color' => vehicle.color, 'data-id' => vehicle.id}]
@@ -114,7 +114,7 @@
       <%= button_tag type: :button, id: "affect-destinations", class: "btn btn-primary btn-sm form-group" do %><i class="fa fa-external-link fa-fw"></i> <%= t('.affect_destinations') %><% end %>
     </div>
     <div class="form-inline">
-      <%= button_tag type: :submit, id: "automatic-insert", class: "btn btn-default btn-sm form-group" do %><i class="fa fa-lightbulb-o"></i> <%= t('.auto_insert') %><% end %>
+      <%= button_tag type: :submit, id: "automatic-insert", class: "btn btn-default btn-sm form-group" do %><i class="fa fa-bolt"></i> <%= t('.auto_insert') %><% end %>
     </div>
   </div>
 </div>

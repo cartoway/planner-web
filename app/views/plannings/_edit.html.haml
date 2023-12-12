@@ -1,0 +1,232 @@
+- content_for :title, t('.title')
+%div
+  .planbar.d-flex.align-items-end
+    - if @manage_planning[:manage_edit]
+      = render 'flat_form'
+
+#edit-planning.sidebar
+  .sidebar-tabs
+    %ul{role: "tablist"}
+      %li
+        %a.d-flex.align-items-center.justify-content-center.btn{href: "#planning-pane", role: "tab"}
+          %i.fa.fa-caret-right
+  .sidebar-content.modern-scroll
+    #planning-pane.sidebar-pane
+      #extend_close_panel.pull-right
+        %button.btn.btn-default.btn-sm.extend{title: t('.open_planning_panel'), type: "button"}
+          %i.fa.fa-maximize
+        %button.btn.btn-default.btn-sm.sidebar-close{title: t('.collapse_planning_panel'), type: "button"}
+          %i.fa.fa-caret-left
+      %h1
+        - if @manage_planning[:manage_edit]
+          = t('.title')
+        - else
+          = @planning.name
+      - if @callback_button && @planning.customer.default_callback_enabled? && @planning.customer.default_callback_url
+        %p.text-center
+          %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{"data-url": @planning.customer.external_callback_url, type: "button"}
+            %i.fa.fa-desktop.fa-fw
+            = @planning.customer.default_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
+
+      - if @manage_planning[:manage_zoning]
+        = twitter_bootstrap_form_for [:apply_zonings, @planning], { layout: :horizontal, default_div_class: 'col-lg-10 col-md-10', html: { id: "planning_zoning_#{@planning.id}", class: 'form-horizontal update-zonings-form', title: t('plannings.edit.zonings.label') }} do |f|
+          = zoning_select f, @planning, t('plannings.edit.zonings.label')
+          .d-flex.justify-content-center
+            = f.actions do
+              = f.submit t('plannings.edit.zonings.action'), id: 'planning_zoning_button', class: 'btn ' + (@planning.zoning_outdated ? 'btn-warning' : 'btn-default'), title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil)
+      %h4#planning_name_extended
+      #global_tools.btn-group.pull-right
+        %button#optimize_all.btn.btn-primary.btn-sm.optimize{title: t('.optimize'), type: "button", "data-toggle": "modal", "data-target": "#optimization-modal" }
+          %i.fa.fa-gears
+        .dropdown.btn-group
+          %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.toggle_routes'), type: "button"}
+            %i.fa.fa-eye
+            %span.caret
+          -# https://github.com/twbs/bootstrap/issues/1411
+          %ul#toggle_routes_dropdown.dropdown-menu{role: "menu"}
+            %li{"data-selection": "none"}
+              %a.active_none{href: "#"}
+                %i.fa.fa-eye-slash.fa-fw
+                = t 'plannings.edit.active_none'
+            %li{"data-selection": "reverse"}
+              %a.active_reverse{href: "#"}
+                %i.fa.fa-random.fa-fw
+                = t 'plannings.edit.active_reverse'
+            %li{"data-selection": "all"}
+              %a.active_all{href: "#"}
+                %i.fa.fa-eye.fa-fw
+                = t 'plannings.edit.active_all'
+        .dropdown.btn-group
+          %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.lock_routes'), type: "button"}
+            %i.fa.fa-unlock
+            %span.caret
+          -# https://github.com/twbs/bootstrap/issues/1411
+          %ul#lock_routes_dropdown.dropdown-menu{role: "menu"}
+            %li{"data-selection": "none"}
+              %a.active_none{href: "#"}
+                %i.fa.fa-unlock.fa-fw
+                = t 'plannings.edit.active_none'
+            %li{"data-selection": "reverse"}
+              %a.active_reverse{href: "#"}
+                %i.fa.fa-random.fa-fw
+                = t 'plannings.edit.active_reverse'
+            %li{"data-selection": "all"}
+              %a.active_all{href: "#"}
+                %i.fa.fa-lock.fa-fw
+                = t 'plannings.edit.active_all'
+        - if @manage_planning[:manage_export]
+          .dropdown.btn-group
+            %a.btn.btn-default.btn-sm.right.export.dropdown-toggle{"data-toggle": "dropdown", title: t('.exports'), type: "button"}
+              %i.fa.fa-share-nodes
+              %span.caret
+            %ul.dropdown-menu
+              %li.dropdown-header
+                %h5
+                  = t('plannings.edit.all_plannings_related')
+              %hr
+                - if current_user.customer.default_callback_enabled? && current_user.customer.default_callback_url
+                  %li.link.customer_external_callback_url
+                    %i.fa.fa-desktop.fa-fw
+                    = current_user.customer.default_callback_name || t('plannings.edit.customer_external_callback_url.action')
+                  %li.divider{role: "separator"}
+                  -# Device section removed
+              %li
+                = link_to api_web_v01_print_planning_path(@planning) do
+                  %i.fa.fa-print.fa-fw
+                  = t '.export.print'
+              %li.divider{role: "separator"}
+              %li
+                %a.export_spreadsheet
+                  %i.fa.fa-table.fa-fw
+                  = t '.export.spreadsheet'
+              %li.divider{role: "separator"}
+              %li
+                = link_to planning_path(@planning, format: :gpx) do
+                  %i.fa.fa-mobile.fa-fw
+                  = t '.export.gpx_route'
+              %li
+                = link_to planning_path(@planning, format: :gpx, track: true) do
+                  %i.fa.fa-mobile.fa-fw
+                  = t '.export.gpx_track'
+              %li
+                = link_to planning_path(@planning, format: :kmz) do
+                  %i.fa.fa-mobile.fa-fw
+                  = t '.export.kmz_track'
+              - if @planning.routes.any?{|route| route.vehicle_usage_id && !route.vehicle_usage.vehicle.contact_email.blank? }
+                %li.kmz_email
+                  = link_to planning_path(@planning, format: :kmz, email: 1) do
+                    %i.fa.fa-envelope.fa-fw
+                    = t '.export.kmz_email.action'
+              %li.divider{role: "separator"}
+              %li
+                = link_to api_planning_calendar_path(@planning, api_key: current_user.api_key) do
+                  %i.fa.fa-calendar.fa-fw
+                  = t '.export.icalendar.action'
+              - if @planning.routes.any?{|route| route.vehicle_usage_id && !route.vehicle_usage.vehicle.contact_email.blank? }
+                %li.icalendar_email{"data-email": "true"}
+                  = link_to api_planning_calendar_path(@planning, email: 1) do
+                    %i.fa.fa-envelope.fa-fw
+                    = t '.export.icalendar.action_email'
+              - if @planning.customer.enable_sms && @planning.customer.reseller.sms_api_key
+                %li.divider{role: "separator"}
+                %li
+                  %a.send_sms{href: "/api/0.1/plannings/#{@planning.id}/send_sms"}
+                    %i.fa.fa-mobile.fa-fw
+                    = t '.send_sms'
+          - if @manage_planning[:manage_print]
+            = link_to api_web_v01_print_planning_path(@planning), class: 'btn btn-default btn-sm', title: t('.export.print') do
+              %i.fa.fa-print.fa-fw
+      #planning
+
+#map.sidebar-map
+
+#planning-refresh-modal.modal.fade{role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{type: "button", "data-dismiss": "modal"}
+          &times;
+        %h4.modal-title
+          %i.fa.fa-refresh.fa-fw
+          = t('plannings.edit.dialog.refresh.title')
+      .modal-body
+        .container-fluid
+          .row
+            = t('plannings.edit.dialog.refresh.confirm')
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-dismiss": "modal"}
+          = t('all.verb.dismiss')
+        %button#refresh-modal.btn.btn-primary{type: "button"}
+          = t('plannings.edit.refresh')
+
+#planning-move-stops-modal.modal.fade{role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      %form
+        .modal-header
+          %button.close{type: "button", "data-dismiss": "modal"}
+            &times;
+          %h4.modal-title
+            %i.fa.fa-external-link.fa-fw
+            = t('plannings.edit.dialog.move_stops.title')
+        .modal-body.routes
+        .clearfix
+        .modal-footer
+          %button#move-stops-modal.btn.btn-primary{type: "button"}
+            = t('plannings.edit.move_stops')
+
+= render partial: 'layouts/modal_csv'
+
+= render partial: 'plannings/optimization'
+
+= render partial: 'zonings/isoline'
+
+:ruby
+  layers = (current_user.customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer|
+    {
+      name: layer.translated_name,
+      url: request.ssl? ? layer.urlssl : layer.url,
+      attribution: layer.map_attribution,
+      default: layer == current_user.layer,
+      overlay: layer.overlay
+    }
+  }
+  stops_count = 0
+  large_plannning = @planning.routes.any?{ |r| (stops_count += r.stops.size) >= 1000 }
+
+  controller.js(
+    manage_planning: @manage_planning,
+    with_stops: !large_plannning,
+    prefered_unit: current_user.prefered_unit,
+    planning_id: @planning.id,
+    planning_ref: @planning.ref,
+    user_api_key: current_user.api_key,
+    routes_array: @planning.routes.map{ |r|
+      {
+        route_id: r.id,
+        color: r.default_color,
+        vehicle_usage_id: r.vehicle_usage_id,
+        ref: r.ref,
+        outdated: r.outdated,
+        fleet_user: r.vehicle_usage ? r.vehicle_usage.vehicle.devices[:fleet_user] : ''
+      }
+    },
+    zoning_ids: @planning.zonings.collect(&:id),
+    map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)],
+    map_lat: @planning.vehicle_usage_set.vehicle_usages.active.collect(&:default_store_start).compact.find{ |s| s.lat }.try(:lat) || @planning.customer.default_position[:lat],
+    map_lng: @planning.vehicle_usage_set.vehicle_usages.active.collect(&:default_store_start).compact.find{ |s| s.lng }.try(:lng) || @planning.customer.default_position[:lng],
+    vehicles_array: planning_vehicles_array(@planning),
+    vehicles_usages_map: planning_vehicles_usages_map(@planning),
+    quantities: planning_quantities(@planning),
+    color_codes: COLORS_TABLE,
+    colors_by_route: Hash[@planning.routes.select(&:vehicle_usage).map{ |r| [r.id, r.default_color] }],
+    disable_clusters: !large_plannning,
+    url_click2call: current_user.link_phone_number,
+    spreadsheet_columns: @spreadsheet_columns,
+    available_stop_status: @planning.customer.enable_stop_status && @planning.customer.device.available_stop_status?,
+    update_stop_status: @planning.customer.enable_stop_status? && (@planning.date.nil? || @planning.date.between?(Time.now.beginning_of_day, Time.now.end_of_day)) && @planning.customer.device.available_stop_status?,
+    callback_button: @callback_button,
+    available_temperature: available_temperature?,
+    devices: planning_devices(@planning.customer),
+    optimization_duration: optimization_duration(@planning.customer)
+  )

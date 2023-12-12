@@ -196,7 +196,7 @@
           <div class="col-md-6">
             <div class="input-group">
               <%= number_field_tag 'vehicle_usage[vehicle][router_options][trailers]', @vehicle_usage.vehicle.router_options['trailers'], { min: 0, max: 4, placeholder: !@vehicle_usage.vehicle.customer.trailers.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.trailers) : '', class: 'form-control' } %>
-              <span class="input-group-addon"><i class="fa fa-truck fa-fw"></i> </span>
+              <span class="input-group-addon"><i class="fa fa-truck-field fa-fw"></i> </span>
             </div>
             <p class="help-block"><%= t('customers.form.router_options_trailers_range', from: 0, to: 4) %></p>
           </div>
@@ -405,7 +405,7 @@
           <%= collection_select :vehicle_usage, :store_stop_id, @vehicle_usage.vehicle.customer.stores, :id, :name, {
             include_blank: t('vehicle_usages.form.store.default') + ' (' + (@vehicle_usage.vehicle_usage_set.store_stop ? @vehicle_usage.vehicle_usage_set.store_stop.name : t('vehicle_usages.form.store.none')) + ')'}, {
                                   class: 'form-control width_1_2' } %>
-          <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-home fa-fw') %></span>
+          <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-store fa-fw') %></span>
         </div>
         <p class="help-block"><%= t '.stores_help' %></p>
       </div>
@@ -446,7 +446,7 @@
                            placeholder: @vehicle_usage.time_window_end.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.time_window_end) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.time_window_end)) : 0,
                            min: 0,
                            value: number_of_days(@vehicle_usage.time_window_end) %>
-          <span class="input-group-addon"><i class="fa fa-arrows-h fa-fw"></i></span>
+          <span class="input-group-addon"><i class="fa fa-arrows-left-right fa-fw"></i></span>
         </div>
         <p class="help-block"><%= t '.time_window_start_end_help' %></p>
       </div>
@@ -467,7 +467,7 @@
             class: 'form-control',
             placeholder: f.object.vehicle_usage_set.service_time_end ? t("vehicle_usages.form.service_time.default", n: f.object.vehicle_usage_set.service_time_end_time) : t('all.unit.hour_minute'),
             value: @vehicle_usage.service_time_end_time %>
-          <span class="input-group-addon"><i class="fa fa-clock-o fa-fw"></i></span>
+          <span class="input-group-addon"><i class="fa fa-stopwatch fa-fw"></i></span>
         </div>
         <p class="help-block"><%= t '.service_times_help' %></p>
       </div>
@@ -533,7 +533,7 @@
                            placeholder: @vehicle_usage.rest_stop.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop)) : 0,
                            min: 0,
                            value: number_of_days(@vehicle_usage.rest_stop) %>
-          <span class="input-group-addon"><i class="fa fa-arrows-h fa-fw"></i></span>
+          <span class="input-group-addon"><i class="fa fa-arrows-left-right fa-fw"></i></span>
         </div>
         <p class="help-block"><%= t '.rest_start_stop_help' %></p>
       </div>

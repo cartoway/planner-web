@@ -1,0 +1,39 @@
+- options = @planning.id ? {layout: :vertical} : {layout: :vertical}
+= twitter_bootstrap_form_for @planning, options do |f|
+  = render 'shared/error_messages', model: @planning
+  .d-flex.justify-content-start.align-items-end
+    .col
+      = f.text_field :name, required: true, placeholder: "#{t('activerecord.attributes.planning.name')}"
+    - if @planning.customer.vehicle_usage_sets.size > 1
+      .col{:title => "#{t('activerecord.attributes.planning.vehicle_usage_set')}"}
+        = f.collection_select :vehicle_usage_set_id, @planning.id ? t('activerecord.attributes.planning.vehicle_usage_set_small') : [], @planning.customer.vehicle_usage_sets, :id, :name, {}, {required: true}
+    - else
+      = f.hidden_field :vehicle_usage_set_id, value: @planning.customer.vehicle_usage_sets[0].id
+    .col{:title => "#{t('activerecord.attributes.planning.ref')}"}
+      - if @planning.customer.enable_references
+        - if @planning.id
+          = f.text_field :ref, t('activerecord.attributes.planning.ref')
+        - else
+          = f.text_field :ref do
+            %p.help-block= t '.ref_help'
+    .col{:title => "#{t('activerecord.attributes.planning.date')}"}
+      = f.text_field :date, { placeholder: t('plannings.form.default_date'), value: @planning.date ? l(@planning.date.to_time, format: :datepicker) : nil, input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'})}
+    - if (@planning.id && !@planning.tags.empty?) || !@planning.id
+      .form-group
+        %label.col-md-2.control-label{:for => "speed_multiplier"}
+          = t('activerecord.attributes.planning.tag_ids')
+        .col.input-append
+          #planning_tag_ids_input.input-group
+            = select_tag 'planning[tag_ids]', options_for_select(@planning.customer.tags.map { |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}] }, @planning.tags.collect(&:id)), { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control input-group-radiusless', disabled: @planning.id }
+            - if @planning.id
+              %span.input-group-addon.input-group-borderless.borderless-disabled= t("activerecord.attributes.planning.tag_operation.#{@planning.tag_operation}")
+            - else
+              %span.input-group-addon.input-group-borderless.borderless-empty
+              = select_tag 'planning[tag_operation]', options_for_select(t('activerecord.attributes.planning.tag_operation').invert), class: 'form-control tag-operation-field', disabled: @planning.id
+            %span.input-group-addon= content_tag('i', '', class: 'fa fa-tags fa-fw')
+          - unless @planning.id
+            %p.help-block= t '.tags_help'
+    - if @planning.new_record?
+      = zoning_select f, @planning, t('plannings.edit.zonings.label')
+    .col.d-flex
+      = f.submit

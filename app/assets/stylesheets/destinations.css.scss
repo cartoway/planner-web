@@ -19,6 +19,7 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+@import "variables";
 
 [data-controller='destinations'] {
 
@@ -95,7 +96,7 @@
   }
 
   #destination_box {
-    height: 320px;
+    height: 40%;
     overflow-y: scroll;
 
     .col-md-12 {
@@ -227,7 +228,7 @@
         }
       }
       .select2-selection--multiple:before {
-        z-index: -1;
+        z-index: 0;
       }
     }
 
@@ -290,14 +291,14 @@
   .map-container {
     padding: 0;
 
-    position: absolute;
+    position: relative;
     top: 0;
     bottom: 0;
-    z-index: -1;
+    z-index: 0;
+    height: 100%;
 
     #map {
-      position: absolute;
-      top: 501px;
+      position: relative;
       bottom: 0;
       min-height: 250px;
       width: 100%;
@@ -332,7 +333,7 @@
         }
 
         a.column-edit {
-          color: #333;
+          color: $text-black;
           cursor: pointer;
         }
         .column-def {
@@ -358,9 +359,9 @@
 }
 
 .ui-autocomplete {
-  background-color: white;
+  background-color: $white-background;;
   color: black;
-  border: 1px solid #cccccc;
+  border: 1px solid $grey-color;
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 150px;
@@ -375,11 +376,13 @@
   }
 
   .ui-menu-item:hover {
-    background-color: #d8d8d8;
+    background-color: $lightgrey-color;
     cursor: pointer;
    }
  }
 
-@media (min-width: 768px) { .map-container { max-width: 750px; } }
-@media (min-width: 992px) { .map-container { max-width: 970px; } }
-@media (min-width: 1200px) { .map-container { max-width: 1170px; } }
+ #map_box {
+   height: 40%;
+ }
+
+ @media (max-width: 768px) { .map-container { display: none; }}

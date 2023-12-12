@@ -20,6 +20,8 @@
   To use Glyphicons instead of Font Awesome, replace with "require twitter-bootstrap-static/bootstrap-glyphicons"
   */
 
+@import "variables";
+
 /* FIX */
 
 .container:after {
@@ -35,10 +37,10 @@
 $navbar-height: 50px;
 
 .navbar {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  -o-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: $box-shadow;
+  -moz-box-shadow: $box-shadow;
+  -webkit-box-shadow: $box-shadow;
+  -o-box-shadow: $box-shadow;
   margin-bottom: 10px;
 }
 
@@ -71,7 +73,7 @@ h1 {
 }
 
 .input-group-btn .btn-default {
-  color: #428bca;
+  color: $primary-color;
 }
 
 .input-group-addon.input-sm, .input-group-sm .input-group-btn .btn {
@@ -92,7 +94,7 @@ button {
 }
 
 a.btn-default {
-  color: #333;
+  color: $text-black;
 }
 
 .dropdown-menu {
@@ -128,26 +130,6 @@ select.form-control[required]:not(:disabled) {
 
 label .popover {
   font-weight: normal;
-}
-
-@media(min-width: 992px) {
-  .sidebar-pane form {
-    .col-md-2 {
-      width: 21.41%;
-      padding-left: 10px;
-    }
-
-    .col-md-10 {
-      width: 78.59%;
-      padding-right: 12px;
-      padding-left: 6px;
-    }
-
-    .col-md-offset-2 {
-      margin-left: 21.41%;
-      padding-left: 7px;
-    }
-  }
 }
 
 /** External look-like **/
@@ -197,13 +179,14 @@ label .popover {
 }
 /* Add Open and Close cheron to accordion */
 .panel-heading .accordion-toggle:after {
-    font-family: 'FontAwesome';
-    content: "";
+    font: var(--fa-font-solid);
+    content: "\f077";
     float: right;
     color: black;
 }
 .panel-heading .accordion-toggle.collapsed:after {
-    content: "";
+    font: var(--fa-font-solid);
+    content: "\f078";
 }
 
 /* Table sorter */
@@ -224,7 +207,7 @@ label .popover {
   }
 
   .tablesorter-header .tablesorter-header-inner:after {
-    font-family: FontAwesome;
+    font: var(--fa-font-solid);
     float: right;
     content: "\f0dc";
   }
@@ -310,21 +293,21 @@ html.turbolinks-progress-bar::before {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
 
-.fa-stack {
-  width: inherit;
-  height: inherit;
+.point-icon-container {
+  width: unset !important;
+  height: unset !important;
 }
 
-//.point-icon {
-//  font-size: 18px;
-//}
+.fa-stack {
+  width: inherit !important;
+  height: inherit !important;
+  vertical-align: unset !important;
+}
 
 .point-icon-text {
-  font-size: 10px;
   color: white !important;
-  width: 18px;
   font-weight: 600;
-  left: -1px;
+  font-size: 14px;
 }
 
 .cluster-point-border {
@@ -365,6 +348,7 @@ html.turbolinks-progress-bar::before {
   PNotify
 */
 .ui-pnotify {
+  top: inherit;
   margin-top: $navbar-height; // not possible to use top because it's overloaded by pnotify
   z-index: 10 !important;
 }
@@ -382,7 +366,7 @@ body.api-web {
   }
   #map {
     position: absolute;
-    z-index: -1;
+    z-index: 0;
     top: 0px;
     left: 0;
     right: 0;
@@ -582,6 +566,9 @@ body.api-web {
   td.visible-sm {
     display: table-cell !important;
   }
+  .hidden-print {
+    display: none !important;
+  }
 }
 
 .table-valign > tbody > tr > td {
@@ -617,7 +604,17 @@ div.grid-container {
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;
-  color: #333;
+  color: $text-black;
+  white-space: nowrap;
+}
+
+.accordion-menu > li > p.padding-list {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: $text-black;
   white-space: nowrap;
 }
 
@@ -657,4 +654,59 @@ div.grid-container {
 }
 .has-warning .input-group-addon{
   border-color: #8a6d3b !important; // otherwise it's overrided by scaffold css
+}
+
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Backport
+.d-flex {
+  display: -webkit-box !important;
+  display: -ms-flexbox !important;
+  display: flex !important;
+}
+
+// Backport
+.justify-content-center {
+  -webkit-box-pack: center !important;
+  -ms-flex-pack: center !important;
+  justify-content: center !important;
+}
+
+// Backport
+.align-items-center {
+  -webkit-box-align: center !important;
+  -ms-flex-align: center !important;
+  align-items: center !important;
+}
+
+.btn-primary {
+  background-color: $primary-color;
+  border-color: darken($primary-color, 10%);
+}
+
+.panel {
+  border-radius: 0;
+}
+
+.simplecolorpicker.fontawesome span.color[data-selected]::after {
+  font: var(--fa-font-solid);
+  content: "\f00C";
+}
+
+.modern-scroll {
+  &::-webkit-scrollbar{
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #ddd;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #666;
+  }
 }

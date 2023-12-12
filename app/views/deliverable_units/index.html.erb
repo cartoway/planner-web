@@ -43,7 +43,7 @@
         <td><%= deliverable_unit.default_optimization_overload_multiplier == 0 ? t('deliverable_units.form.optimization_overload_multiplier_no') : deliverable_unit.default_optimization_overload_multiplier == -1 ? t('deliverable_units.form.optimization_overload_multiplier_ignore') : deliverable_unit.localized_optimization_overload_multiplier %></td>
         <td class="text-right">
           <%= link_to edit_deliverable_unit_path(deliverable_unit), :class => 'btn btn-primary btn-sm' do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
-          <%= link_to deliverable_unit, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash-o fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <%= link_to deliverable_unit, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
         </td>
       </tr>
     <% end %>
@@ -51,8 +51,10 @@
 </table>
 
 <% unless @deliverable_units.empty? %>
-<div id="multiple-actions">
-  <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash-o fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+<div id="multiple-actions" class="row">
+  <div class="col-md-12">
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+  </div>
 </div>
 <% end %>
 

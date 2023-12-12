@@ -80,6 +80,23 @@ $(document).ready(function() {
   $(document).on("page:fetch", startSpinner);
   $(document).on("page:receive", stopSpinner);
 
+  var menuLeft = $('.menu-left');
+  var mainContent = $('.main');
+
+  menuLeft.on("click", () => {
+    menuLeft.addClass("open")
+  });
+
+  $('.menu-content').on('show.bs.collapse', function () {
+    $('.menu-content.in').removeClass('in');
+  });
+
+  mainContent.on("click", () => {
+    menuLeft.removeClass("open")
+    $('.menu-section').collapse('hide');
+    $('.menu-content.in').removeClass('in');
+  })
+
   Paloma.start();
 });
 

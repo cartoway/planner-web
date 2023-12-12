@@ -35,7 +35,7 @@ options.merge!(default_div_class: 'col-lg-10 col-md-10') if @zoning.id %>
         </div>
       <% else %>
         <div class="col-md-12">
-          <label><input type="checkbox" name="all-destinations"> <%= t '.all_destinations' %> <i class="fa fa-lightbulb-o fa-fw" title="<%= t '.from_planning_help' %>"></i></label>
+          <label><input type="checkbox" name="all-destinations"> <%= t '.all_destinations' %> <i class="fa fa-circle-question fa-fw" title="<%= t '.from_planning_help' %>"></i></label>
         </div>
       <% end %>
       <% if @manage_zoning[:manage_organize] %>
@@ -44,7 +44,7 @@ options.merge!(default_div_class: 'col-lg-10 col-md-10') if @zoning.id %>
           <ul class="dropdown-menu" role="menu">
             <% if !@isochrone.empty? || !@isodistance.empty? %>
               <% if !@isochrone.empty? %>
-                <li><a data-toggle="modal" data-target="#isochrone-modal" data-keyboard="true" href="#"><i class="fa fa-clock-o fa-fw"></i> <%= t '.isochrone' %></a></li>
+                <li><a data-toggle="modal" data-target="#isochrone-modal" data-keyboard="true" href="#"><i class="fa fa-stopwatch fa-fw"></i> <%= t '.isochrone' %></a></li>
               <% end %>
               <% if !@isodistance.empty? %>
                 <li><a data-toggle="modal" data-target="#isodistance-modal" data-keyboard="true" href="#"><i class="fa fa-road fa-fw"></i> <%= t '.isodistance' %></a></li>
