@@ -696,3 +696,17 @@ div.grid-container {
   font: var(--fa-font-solid);
   content: "\f00C";
 }
+
+.modern-scroll {
+  &::-webkit-scrollbar{
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #ddd;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #666;
+  }
+}

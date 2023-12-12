@@ -743,7 +743,7 @@ $sidebar-margins: 10px;
       position: relative;
       max-height: 300px;
       bottom: 0;
-      overflow: scroll;
+      overflow-y: scroll;
 
       .route-stops {
         position: relative;
