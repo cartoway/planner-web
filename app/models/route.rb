@@ -714,10 +714,22 @@ class Route < ApplicationRecord
 
   def stop_index_validation
     if !@no_stop_index_validation && (@stops_updated || @computed) && !stops.empty? && stops.collect(&:index).sum != (stops.length * (stops.length + 1)) / 2
+      # Workaround as long as bad index has no solution recompute indices
+      reset_indices
       raise Exceptions::StopIndexError.new(self)
     end
 
     @no_stop_index_validation = nil
+  rescue Exceptions::StopIndexError => e
+    Raven.capture_exception(e)
+    Rails.logger.error e.message
+    Rails.logger.error e.backtrace.join("\n")
+  end
+
+  def reset_indices
+    stops.each.with_index{ |stop, index|
+      stop.index = index
+    }
   end
 
   def update_stops_track(_stop)
