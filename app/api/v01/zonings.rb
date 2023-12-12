@@ -21,14 +21,17 @@ class V01::Zonings < Grape::API
   helpers SharedParams
   helpers do
     # Never trust parameters from the scary internet, only allow the white list through.
-    def zoning_params
-      p = ActionController::Parameters.new(params)
+    def zoning_params(d_params = nil)
+      p = ActionController::Parameters.new(d_params || params)
       p = p[:zoning] if p.key?(:zoning)
       if p[:zones]
         p[:zones_attributes] = p[:zones]
+        p[:zones_attributes].each{ |z|
+          z[:polygon] = z[:polygon].to_json if z[:polygon].is_a? Hash
+        }
       end
       # Deals with deprecated speed_multiplicator
-      p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator] && !p[:speed_multiplier]
+      p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator]
       p.permit(:name, zones_attributes: [:id, :name, :polygon, :_destroy, :vehicle_id, :speed_multiplier])
     end
   end
@@ -68,12 +71,12 @@ class V01::Zonings < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::Zoning),
       failure: V01::Status.failures
     params do
-      use :params_from_entity, entity: V01::Entities::Zoning.documentation.except(:id).deep_merge(
-        name: { required: true }
-      )
+      requires :name, type: String
+      optional :zones, type: Array do use :request_zone end
     end
     post do
-      zoning = current_customer.zonings.build(zoning_params)
+      d_params = declared(params, include_missing: false)
+      zoning = current_customer.zonings.build(zoning_params(d_params))
       zoning.save!
       present zoning, with: V01::Entities::Zoning
     end
