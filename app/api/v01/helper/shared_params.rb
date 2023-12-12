@@ -70,6 +70,21 @@ module SharedParams
     mutually_exclusive :time_window_end_2, :close2
   end
 
+  params :request_zone do
+    optional :name, type: String
+    optional :vehicle_id, type: Integer
+    optional :polygon, type: JSON do use :request_polygon end
+    optional :speed_multiplier, type: Float
+    optional :speed_multiplicator, type: Float, documentation: { hidden: true }
+    mutually_exclusive :speed_multiplier, :speed_multiplicator
+  end
+
+  params :request_polygon do
+    requires :type, type: String
+    optional :properties, type: Hash
+    requires :geometry, type: Hash
+  end
+
   params :params_from_entity do |options|
     options[:entity].each{ |k, d|
       v = d.dup # Important: use dup not to modify original entity
