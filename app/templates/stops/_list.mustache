@@ -82,24 +82,24 @@
           {{/status_any}}
         </ul>
       </div>
-      {{#size_destinations}}
-        <span class="route-info"><i class="fa fa-map-marker fa-fw"></i>{{size_destinations}}&nbsp;{{#i18n}}plannings.edit.destinations{{/i18n}}</span>
-      {{/size_destinations}}
-      <span class="route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}/{{work_or_window_time}}</span>
-      {{#route_averages}}
-        (<span title="{{#i18n}}plannings.edit.route_driving_time_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{route_averages.drive_time}}</span><!--
-        -->{{#route_averages.visits_duration}} <span title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{route_averages.visits_duration}}</span>{{/route_averages.visits_duration}}<!--
-        -->{{#route_averages.wait_time}} <span title="{{#i18n}}plannings.edit.route_wait_time_help{{/i18n}}"><i class="fa fa-hourglass-half fa-fw"></i>{{route_averages.wait_time}}</span>{{/route_averages.wait_time}})
-      {{/route_averages}}
-      <span class="route-info" title="{{#i18n}}plannings.edit.route_distance_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{distance}}</span>
-      {{#route_averages}}
-        <span class="route-info" title="{{#i18n}}plannings.edit.route_speed_average_help{{/i18n}}"><i class="fa fa-tachometer fa-fw" aria-hidden="true"></i>{{route_averages.speed}} {{prefered_unit}}/h</span>
-      {{/route_averages}}
-      {{#quantities}}
-        <span class="route-info" title="{{#i18n}}plannings.edit.route_quantity_help{{/i18n}}">
-          <i class="fa {{unit_icon}} fa-fw"></i><span data-quantity_id="{{id}}">{{quantity_formatted}}</span>
-        </span>
-      {{/quantities}}
+      <div class="row">
+        {{#size_destinations}}
+          <div class="col-xs-4"><div class="route-info"><i class="fa fa-map-marker fa-fw"></i>{{size_destinations}}&nbsp;{{#i18n}}plannings.edit.destinations{{/i18n}}</div></div>
+        {{/size_destinations}}
+        <div class="col-xs-4"><div class="route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}&nbsp;/&nbsp;{{work_or_window_time}}</div></div>
+        {{#route_averages}}
+          <div class="col-xs-4"><div class="route-info" title="{{#i18n}}plannings.edit.route_driving_time_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{route_averages.drive_time}}</div></div>
+          {{#route_averages.visits_duration}}<div class="col-xs-4"><div class="route-info" title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-user-clock fa-fw"></i>{{route_averages.visits_duration}}</div></div>{{/route_averages.visits_duration}}
+          {{#route_averages.wait_time}}<div class="col-xs-4"><div class="route-info" title="{{#i18n}}plannings.edit.route_wait_time_help{{/i18n}}"><i class="fa fa-hourglass-half fa-fw"></i>{{route_averages.wait_time}}</div></div>{{/route_averages.wait_time}}
+        {{/route_averages}}
+        <div class="col-xs-4"><div class="route-info" title="{{#i18n}}plannings.edit.route_distance_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{distance}}</div></div>
+        {{#route_averages}}
+        <div class="col-xs-4"><div class="route-info" title="{{#i18n}}plannings.edit.route_speed_average_help{{/i18n}}"><i class="fa fa-tachometer fa-fw" aria-hidden="true"></i>{{route_averages.speed}} {{prefered_unit}}/h</div></div>
+        {{/route_averages}}
+        {{#quantities}}
+          <div class="col-xs-4"><div class="route-info" title="{{#i18n}}plannings.edit.route_quantity_help{{/i18n}}"><i class="fa {{unit_icon}} fa-fw"></i>{{quantity_formatted}}</div></div>
+        {{/quantities}}
+      </div>
       {{#route_error}}
         <ul class="ui-state-error">
           {{#route_no_geolocalization}}

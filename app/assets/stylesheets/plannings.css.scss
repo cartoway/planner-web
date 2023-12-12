@@ -70,6 +70,15 @@ $sidebar-margins: 10px;
       }
     }
   }
+
+  .select2-container {
+    width: 100% !important;
+
+
+    .select2-dropdown {
+      width: fit-content !important;
+    }
+  }
 }
 
 [data-controller='plannings'][data-action='index'] {
@@ -283,7 +292,31 @@ $sidebar-margins: 10px;
       #planning {
         .route-info {
           white-space: nowrap;
-          margin: 0 1px;
+          margin: 2px;
+          border: 1px solid lightgray;
+          border-radius: 4px;
+          padding: 4px 8px;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+
+        .global_info {
+          .row {
+            padding-left: 15px;
+            padding-right: 15px;
+          }
+        }
+
+        .global_info, .routes {
+          [class^="col-"] {
+            padding-left: unset;
+            padding-right: unset;
+
+            i {
+              margin-right: 5px;
+
+            }
+          }
         }
 
         .route-skills {
@@ -564,12 +597,10 @@ $sidebar-margins: 10px;
       }
 
       .color_select {
-        width: 44px;
         vertical-align: middle;
       }
 
       .vehicle_select, .vehicle_select + .fake {
-        width: 120px;
         vertical-align: middle;
       }
 
@@ -580,6 +611,10 @@ $sidebar-margins: 10px;
           color: inherit;
           font-size: 150%;
           margin-bottom: 2px;
+        }
+
+        .form-control {
+          z-index: 0;
         }
 
         .route-btn-group .btn {
@@ -761,6 +796,19 @@ $sidebar-margins: 10px;
       .dropdown-menu {
         max-height: 200px;
         bottom: unset;
+      }
+
+
+      &::-webkit-scrollbar{
+        width: 5px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #ddd;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #666;
       }
     }
   }
