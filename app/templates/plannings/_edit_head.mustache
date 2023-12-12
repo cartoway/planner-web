@@ -1,28 +1,26 @@
-<span class="route-info" title="{{#i18n}}plannings.edit.stops_help{{/i18n}}"><i class="fa fa-check-square fa-fw"></i>{{size_active}}/{{size}}&nbsp;{{#i18n}}plannings.edit.stops{{/i18n}}</span>
-{{#averages}}<!--
-  --><span class="route-info" title="{{#i18n}}plannings.edit.vehicles_used_help{{/i18n}}"><i class="fa fa-truck-field fa-fw" aria-hidden="true"></i>{{averages.vehicles_used}}/{{averages.vehicles}} </span>
-{{/averages}}
-<span class="route-info">
-  <span title="{{#i18n}}plannings.edit.duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i><!--
-    -->{{duration}}
-  </span>
-  {{#averages}}
-    (<span title="{{#i18n}}plannings.edit.driving_time_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{averages.routes_drive_time}}</span><!--
-    -->{{#averages.routes_visits_duration}} <span title="{{#i18n}}plannings.edit._help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{averages.routes_visits_duration}}</span>{{/averages.routes_visits_duration}}<!--
-    -->{{#averages.routes_wait_time}} <span title="{{#i18n}}plannings.edit.wait_time_help{{/i18n}}"><i class="fa fa-hourglass-half fa-fw"></i>{{averages.routes_wait_time}}</span>{{/averages.routes_wait_time}})
-  {{/averages}}
-</span>
-<span class="route-info" title="{{#i18n}}plannings.edit.distance_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{distance}}</span>
-{{#averages}}
-  <span class="route-info" title="{{#i18n}}plannings.edit.route_speed_average_help{{/i18n}}"><i class="fa fa-tachometer fa-fw" aria-hidden="true"></i>{{averages.routes_speed_average}} {{prefered_unit}}/h</span>
-{{/averages}}
-<span class="route-info" title="{{#i18n}}plannings.edit.emission_help{{/i18n}}"><i class="fa fa-flask fa-fw"></i>{{emission}}&nbsp;{{#i18n}}all.unit.kgco2e_html{{/i18n}}</span>
-{{#averages}}
-  {{#total_quantities}}
-    <span class="route-info" title="{{#i18n}}plannings.edit.quantity_help{{/i18n}}"><!--
-      --><i class="fa {{unit_icon}} fa-fw"></i>{{quantity}}{{#capacity}}/{{capacity}}{{/capacity}}<!--
-      -->{{#label}}&nbsp;{{label}}{{/label}}
-    </span>
-  {{/total_quantities}}
-{{/averages}}
 
+<div class="row">
+  <div class="col-xs-4" title="{{#i18n}}plannings.edit.stops_help{{/i18n}}"><div class="route-info"><i class="fa fa-check-square fa-fw"></i>{{size_active}}&nbsp;/&nbsp;{{size}}</div></div>
+  {{#averages}}
+    <div class="col-xs-4" title="{{#i18n}}plannings.edit.vehicles_used_help{{/i18n}}"><div class="route-info"><i class="fa fa-truck-field fa-fw" aria-hidden="true"></i>{{averages.vehicles_used}}&nbsp;/&nbsp;{{averages.vehicles}} </div></div>
+  {{/averages}}
+  <div class="col-xs-4" title="{{#i18n}}plannings.edit.duration_help{{/i18n}}"><div class="route-info"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}</div></div>
+  {{#averages}}
+    <div class="col-xs-4" title="{{#i18n}}plannings.edit.driving_time_help{{/i18n}}"><div class="route-info"><i class="fa fa-road fa-fw"></i>{{averages.routes_drive_time}}</div></div>
+    {{#averages.routes_visits_duration}} <div class="col-xs-4" title="{{#i18n}}plannings.edit.visit_duration_help{{/i18n}}"><div class="route-info"><i class="fa fa-user-clock fa-fw"></i>{{averages.routes_visits_duration}}</div></div>{{/averages.routes_visits_duration}}
+    {{#averages.routes_wait_time}} <div class="col-xs-4" title="{{#i18n}}plannings.edit.wait_time_help{{/i18n}}"><div class="route-info"><i class="fa fa-hourglass-half fa-fw"></i>{{averages.routes_wait_time}}</div></div>{{/averages.routes_wait_time}}
+  {{/averages}}
+  <div class="col-xs-4" title="{{#i18n}}plannings.edit.distance_help{{/i18n}}"><div class="route-info"><i class="fa fa-road fa-fw"></i>{{distance}}</div></div>
+  {{#averages}}
+    <div class="col-xs-4" title="{{#i18n}}plannings.edit.route_speed_average_help{{/i18n}}"><div class="route-info"><i class="fa fa-tachometer fa-fw" aria-hidden="true"></i>{{averages.routes_speed_average}} {{prefered_unit}}/h</div></div>
+  {{/averages}}
+  <div class="col-xs-4" title="{{#i18n}}plannings.edit.emission_help{{/i18n}}"><div class="route-info"><i class="fa fa-flask fa-fw"></i>{{emission}}&nbsp;{{#i18n}}all.unit.kgco2e_html{{/i18n}}</div></div>
+  {{#averages}}
+    {{#total_quantities}}
+      <div class="col-xs-4" title="{{#i18n}}plannings.edit.quantity_help{{/i18n}}"><!--
+        --><div class="route-info"><i class="fa {{unit_icon}} fa-fw"></i>{{quantity}}{{#capacity}}&nbsp;/&nbsp;{{capacity}}{{/capacity}}<!--
+        -->{{#label}}&nbsp;{{label}}{{/label}}
+      </div></div>
+    {{/total_quantities}}
+  {{/averages}}
+</div>

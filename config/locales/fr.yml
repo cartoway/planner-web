@@ -1612,7 +1612,7 @@
         du plan vont être modifiées'
       'page_change_zoning_confirm': 'Souhaitez-vous quitter la page et perdre les
         changements de sectorisation ?'
-      'route_placeholder': 'Réf. de la tournée'
+      'route_placeholder': 'Tournée'
       'service_time': 'Durées de service'
       'exports': 'Exporter le plan de tournées'
       'stop_status':
