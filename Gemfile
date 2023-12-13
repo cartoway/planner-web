@@ -157,6 +157,7 @@ gem 'delayed_job_active_record'
 gem 'rgeo'
 gem 'rgeo-geojson'
 gem 'polylines'
+gem 'simplify_rb' # Gem simplifying polylines using Douglas-Peucker algorithm
 
 gem 'ai4r'
 gem 'sim_annealing'
