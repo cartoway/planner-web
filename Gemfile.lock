@@ -662,6 +662,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
+    simplify_rb (0.4.0)
     smart_properties (1.17.0)
     smt_rails (0.2.9)
       mustache (>= 0.99.4)
@@ -848,6 +849,7 @@ DEPENDENCIES
   sidebar-v2-gh-pages-rails!
   sim_annealing
   simplecov
+  simplify_rb
   smt_rails (= 0.2.9)
   sprockets
   swagger-docs
