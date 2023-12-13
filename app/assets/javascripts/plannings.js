@@ -634,6 +634,32 @@ export const plannings_edit = function(params) {
 
   sidebar.addTo(map);
 
+  $('#data_routes_dropdown').find('li a').click(function() {
+    if (routes.length == 0) return;
+
+    var action = 'route-data-toggle';
+    var selection = $(this).parent('li').data('selection');
+
+    $('.route-data-toggle').each(function(index, element) {
+      var i = $("i", element);
+      if (selection == 'all' || selection == 'inverse' && i.hasClass('fa-book')) {
+        i.removeClass("fa-book").addClass("fa-book-open");
+      } else if (i.hasClass('fa-book-open')) {
+        i.removeClass("fa-book-open").addClass("fa-book");
+      }
+    });
+
+    $('.route-data').each(function(index, element) {
+      if (selection == 'all') {
+        $(element).show();
+      } else if (selection == 'none') {
+        $(element).hide();
+      } else if (selection == 'reverse') {
+        $(element).toggle();
+      }
+    });
+  });
+
   $('#lock_routes_dropdown, #toggle_routes_dropdown').find('li a').click(function() {
     if (routes.length == 0) return;
 
@@ -1208,6 +1234,17 @@ export const plannings_edit = function(params) {
             },
             error: ajaxError
           });
+        })
+        .on("click", ".route-data-toggle", function() {
+          var row = $(this).parents('.panel-body').find(".route-data");
+          row.toggle();
+          var hidden = !row.is(":visible");
+          var i = $("i", this);
+          if (hidden) {
+            i.removeClass("fa-book-open").addClass("fa-book");
+          } else {
+            i.removeClass("fa-book").addClass("fa-book-open");
+          }
         })
         .on("click", ".marker", function() {
           var stopIndex = $(this).closest("[data-stop_index]").attr("data-stop_index");

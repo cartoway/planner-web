@@ -33,9 +33,10 @@
                 = f.submit t('plannings.edit.zonings.action'), id: 'planning_zoning_button', class: 'btn ' + (@planning.zoning_outdated ? 'btn-warning' : 'btn-default'), title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil)
       %h4#planning_name_extended
       #global_tools.row
-        .pull-right.btn-group
+        .btn-group
           %button#optimize_all.btn.btn-primary.btn-sm.optimize{title: t('.optimize'), type: "button", "data-toggle": "modal", "data-target": "#optimization-modal" }
             %i.fa.fa-gears
+        .pull-right.btn-group
           .dropdown.btn-group
             %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.toggle_routes'), type: "button"}
               %i.fa.fa-eye
@@ -53,6 +54,24 @@
               %li{"data-selection": "all"}
                 %a.active_all{href: "#"}
                   %i.fa.fa-eye.fa-fw
+                  = t 'plannings.edit.active_all'
+          .dropdown.btn-group
+            %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.show_data_routes'), type: "button"}
+              %i.fa.fa-book
+              %span.caret
+            -# https://github.com/twbs/bootstrap/issues/1411
+            %ul#data_routes_dropdown.dropdown-menu{role: "menu"}
+              %li{"data-selection": "none"}
+                %a.active_none{href: "#"}
+                  %i.fa.fa-book.fa-fw
+                  = t 'plannings.edit.active_none'
+              %li{"data-selection": "reverse"}
+                %a.active_reverse{href: "#"}
+                  %i.fa.fa-random.fa-fw
+                  = t 'plannings.edit.active_reverse'
+              %li{"data-selection": "all"}
+                %a.active_all{href: "#"}
+                  %i.fa.fa-book-open.fa-fw
                   = t 'plannings.edit.active_all'
           .dropdown.btn-group
             %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.lock_routes'), type: "button"}
