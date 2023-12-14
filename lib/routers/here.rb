@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 require 'json'
-require 'polylines'
+require 'fast_polylines'
 
 #RestClient.log = $stdout
 
@@ -56,9 +56,9 @@ module Routers
         if request && request['response'] && request['response']['route']
           r = request['response']['route'][0]
           s = r['summary']
-          result = [s['distance'], s['trafficTime'], Polylines::Encoder.encode_points(r['shape'].collect{ |p|
+          result = [s['distance'], s['trafficTime'], FastPolylines.encode(r['shape'].collect{ |p|
             p.split(',').collect{ |f| Float(f) }
-          }, 1e6)]
+          }, 6)]
         else
           result = [nil, nil, nil]
         end

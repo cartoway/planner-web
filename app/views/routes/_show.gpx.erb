@@ -117,7 +117,7 @@ route.stops.each{ |stop|
     <trkseg>
       <% if route.geojson_tracks
         route.geojson_tracks.map{ |s| JSON.parse(s) }.select{ |geojson| geojson['geometry']['type'] == 'LineString' }.collect{ |geojson| geojson['geometry']['polylines'] }.flatten.each{ |polyline|
-          Polylines::Decoder.decode_polyline(polyline, 1e6).each{ |coordinate| %>
+          FastPolylines.decode(polyline, 6).each{ |coordinate| %>
             <trkpt lat="<%= coordinate[0].round(6) %>" lon="<%= coordinate[1].round(6) %>"></trkpt>
         <% }
         }

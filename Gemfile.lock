@@ -275,6 +275,7 @@ GEM
       faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (3.0.2)
+    fast-polylines (2.2.2)
     ffi (1.15.5)
     figaro (1.2.0)
       thor (>= 0.14.0, < 2)
@@ -481,7 +482,6 @@ GEM
     phonelib (0.8.3)
     pnotify-rails (3.0.0)
     polyglot (0.3.5)
-    polylines (0.4.0)
     premailer (1.15.0)
       addressable
       css_parser (>= 1.6.0)
@@ -763,6 +763,7 @@ DEPENDENCIES
   devise
   devise-i18n
   devise-i18n-views
+  fast-polylines
   figaro
   font-awesome-sass (~> 6.4.2)
   grape
@@ -819,7 +820,6 @@ DEPENDENCIES
   pg (< 1)
   phonelib
   pnotify-rails
-  polylines
   premailer-rails
   pry-rails
   puma

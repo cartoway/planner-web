@@ -17,6 +17,7 @@
 #
 require 'json'
 require 'rest_client'
+require './lib/simplify_geometry'
 #RestClient.log = $stdout
 
 class RouterError < StandardError; end
@@ -84,6 +85,7 @@ module Routers
         segments.collect{ |segment|
           feature = results[segment]
           if feature
+            SimplifyGeometry.polylines(feature)
             distance = feature['properties']['router']['total_distance'] if feature['properties'] && feature['properties']['router']
             time = feature['properties']['router']['total_time'] if feature['properties'] && feature['properties']['router']
             trace = feature['geometry']['polylines'] if feature['geometry']
