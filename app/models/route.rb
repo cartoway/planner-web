@@ -728,7 +728,7 @@ class Route < ApplicationRecord
 
   def reset_indices
     stops.each.with_index{ |stop, index|
-      stop.index = index
+      stop.index = index + 1
     }
   end
 
