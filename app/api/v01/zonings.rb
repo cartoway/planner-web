@@ -72,7 +72,7 @@ class V01::Zonings < Grape::API
       failure: V01::Status.failures
     params do
       requires :name, type: String
-      optional :zones, type: Array do use :request_zone end
+      optional :zones, type: Array, documentation: { param_type: 'body' } do use :request_zone end
     end
     post do
       d_params = declared(params, include_missing: false)
