@@ -154,9 +154,9 @@ gem 'daemons'
 gem 'delayed_job'
 gem 'delayed_job_active_record'
 
+gem 'fast-polylines'
 gem 'rgeo'
 gem 'rgeo-geojson'
-gem 'polylines'
 gem 'simplify_rb' # Gem simplifying polylines using Douglas-Peucker algorithm
 
 gem 'ai4r'

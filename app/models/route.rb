@@ -15,9 +15,6 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-
-require 'simplify_geometry'
-
 class Route < ApplicationRecord
   belongs_to :planning
   belongs_to :vehicle_usage
@@ -618,7 +615,11 @@ class Route < ApplicationRecord
 
     if include_linestrings == true
       features = features.map { |feature|
-        SimplifyGeometry.polylines(feature)
+        next feature unless feature.include?('polylines')
+
+        feature = JSON.parse(feature)
+        SimplifyGeometry.polylines_to_coordinates(feature)
+        feature.to_json
       }
     end
 
