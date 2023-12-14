@@ -20,11 +20,14 @@ class SimplifyGeometry
   def self.process(feature, options = { precision: 1e-6 })
     decoded_polyline = FastPolylines.decode(feature['geometry'].delete('polylines'), 6)
     # Be aware the simplifier reverses polylines order lat/lng to lng/lat
-    simplified_polyline = SimplifyRb::Simplifier.new.process(
-      decoded_polyline.map{ |a, b| {x: b, y: a} },
-      options[:precision],
-      false
-    )
-    simplified_polyline.map{ |crd| crd.values.map{ |a| a.round(6) } }
+    coordinates = decoded_polyline.map{ |a, b| {x: b, y: a} }
+    unless options[:skip_simplifier]
+      coordinates = SimplifyRb::Simplifier.new.process(
+        coordinates,
+        options[:precision],
+        true
+      )
+    end
+    coordinates.map{ |crd| crd.values.map{ |a| a.round(6) } }
   end
 end
