@@ -257,6 +257,7 @@ class ImporterDestinations < ImporterBase
   def import_row(_name, row, _options)
     return unless is_visit?(row[:stop_type])
 
+    destination = nil
     # Deals with deprecated open and close
     row[:time_window_start_1] = row.delete(:open) if !row.key?(:time_window_start_1) && row.key?(:open)
     row[:time_window_end_1] = row.delete(:close) if !row.key?(:time_window_end_1) && row.key?(:close)
@@ -303,7 +304,7 @@ class ImporterDestinations < ImporterBase
           {lat: nil, lng: nil} :
           {}).merge(destination_attributes.compact)) # FIXME: don't use compact to overwrite database with row containing nil
       else
-        destination = @customer.destinations.build(destination_attributes)
+        destination = @customer.destinations.new(destination_attributes)
         @destinations_by_ref[destination.ref] = destination if destination.ref
         @destinations_by_attributes[destination.attributes.slice(*@@slice_attr)] = destination
       end
@@ -342,7 +343,7 @@ class ImporterDestinations < ImporterBase
         if destination
           destination.assign_attributes(destination_attributes)
         else
-          destination = @customer.destinations.build(destination_attributes)
+          destination = @customer.destinations.new(destination_attributes)
           # No destination.ref here for @destinations_by_ref
           @destinations_by_attributes[destination.attributes.slice(*@@slice_attr)] = destination
         end
@@ -368,15 +369,15 @@ class ImporterDestinations < ImporterBase
         @destinations_to_geocode << visit.destination
         visit.destination.lat = nil # for job
       end
-      visit.destination.validate! # to get errors first
-      visit.save!
 
       # Add visit to route if needed
-      if row.key?(:route) && !@visit_ids.include?(visit.id)
+       # If the visit has no id it does not exist yet
+       # And we should add as much visits as we row for this destination
+      if row.key?(:route) && (visit.id.nil? || !@visit_ids.include?(visit.id))
         ref_route = row[:route].blank? ? nil : row[:route] # ref has to be nil for out-of-route
         @routes[ref_route][:ref_vehicle] = row[:ref_vehicle].gsub(%r{[\./\\]}, ' ') if row[:ref_vehicle]
         @routes[ref_route][:visits] << [visit, ValueToBoolean.value_to_boolean(row[:active], true)]
-        @visit_ids << visit.id
+        @visit_ids << visit.id if visit.id
       end
       visit.destination # For subclasses
     else
@@ -385,9 +386,8 @@ class ImporterDestinations < ImporterBase
         @destinations_to_geocode << destination
         destination.lat = nil # for job
       end
-      destination.save!
-      destination # For subclasses
     end
+    destination
   end
 
   def after_import(name, _options)
@@ -406,7 +406,7 @@ class ImporterDestinations < ImporterBase
 
     @customer.save!
 
-    unless @routes.keys.compact.empty? && @planning_hash.values.all?(&:blank?) || @plannings_by_ref
+    if !@plannings_by_ref && (@routes.keys.compact.any? || @planning_hash.values.any?(&:present?))
       planning = @customer.plannings.find{ |p| p.ref == @planning_hash['ref'] } if !@planning_hash['ref'].blank?
       unless planning
         # Do not link the planning to has_many of the customer, to avoid cascading while saving from customer.

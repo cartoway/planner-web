@@ -43,7 +43,7 @@ class ImporterBase
       VehicleUsageSet.without_callback(:create, :before, :check_max_vehicle_usage_set) do
         Customer.transaction do
           before_import(name, data, options)
-
+          destinations = []
           dests = data.each_with_index.collect{ |row, line|
             # Switch from locale or custom to internal column name in case of csv
             row = yield(row, line + 1 + (options[:line_shift] || 0))
@@ -60,6 +60,7 @@ class ImporterBase
               end
 
               dest = import_row(name, row, options)
+              destinations << dest if dest
               if dest.nil?
                 next
               end
@@ -76,6 +77,14 @@ class ImporterBase
               end
             end
           }
+          if destinations.first.is_a? Destination
+            destinations.uniq!
+            # activerecord-import cannot update recursive existing visits
+            existing_destinations = destinations.select{ |dest| dest.id.present? }
+            Destination.import(destinations - existing_destinations, on_duplicate_key_update: { conflict_target: [:id], columns: :all }, recursive: true)
+            related_visits = existing_destinations.flat_map(&:visits)
+            Visit.import(related_visits, on_duplicate_key_update: { conflict_target: [:id], columns: :all })
+          end
           raise ImportEmpty.new I18n.t('import.empty') if dests.all?(&:nil?)
           yield(nil)
 
