@@ -330,13 +330,16 @@ class Planning < ApplicationRecord
   end
 
   def visits_compatibles
+    plan_tags = tags.to_a
+    return customer.visits if plan_tags.empty?
+
     if self.tag_operation == 'or'
       customer.visits.select { |visit|
-        (tags.to_a & (visit.tags.to_a | visit.destination.tags.to_a)).present?
+        (plan_tags & (visit.tags.to_a | visit.destination.tags.to_a)).present?
       }
     else
       customer.visits.select { |visit|
-        tags.to_a & (visit.tags.to_a | visit.destination.tags.to_a) == tags.to_a
+        plan_tags & (visit.tags.to_a | visit.destination.tags.to_a) == plan_tags
       }
     end
   end
