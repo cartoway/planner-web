@@ -734,7 +734,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     body = JSON.parse(last_response.body)
 
     assert_equal 400, last_response.status
-    assert_equal I18n.t('activemodel.models.deliverable_unit.quantity.key.cannot_be_empty'), body['message']
+    assert_equal 'destinations[0][visits][0][quantities][0][deliverable_unit_id], destinations[0][visits][0][quantities][0][quantity] provide all or none of parameters', body['message']
   end
 
   test 'should destroy a destination' do

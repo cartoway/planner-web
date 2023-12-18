@@ -18,7 +18,7 @@
 module SharedParams
   extend Grape::API::Helpers
 
-  params :request_destination do
+  params :request_destination do |options|
     optional :ref, type: String
     optional :name, type: String
     optional :street, type: String
@@ -36,17 +36,19 @@ module SharedParams
     optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
     optional :geocoded_at,  type: Time, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(val) { val.is_a?(String) ? Time.parse(val + ' UTC') : val }
     optional :geocoder_version, type: String
-    optional :visits, type: Array do
-      optional :id, type: Integer, documentation: { desc: 'Required to retrieve an exising visit, if left blank a new visit will be created' }
-      :request_visit
+    optional :visits, type: Array, documentation: { param_type: 'body' } do
+      if options[:skip_visit_id].nil?
+        optional :id, type: Integer, documentation: { desc: 'Required to retrieve an exising visit, if left blank a new visit will be created', hidden: options[:skip_visit_id] }
+      end
+      use(:request_visit, options)
     end
     optional :geocoding_accuracy, type: Float, documentation: { desc: 'Must be inside 0..1 range.' }
   end
 
-  params :request_visit do
+  params :request_visit do |options|
     optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
 
-    optional :quantities, type: Array do
+    optional :quantities, type: Array, documentation: { param_type: 'body' } do
       optional :deliverable_unit_id, type: Integer
       optional :quantity, type: Float
       all_or_none_of :deliverable_unit_id, :quantity
@@ -70,7 +72,7 @@ module SharedParams
     mutually_exclusive :time_window_end_2, :close2
   end
 
-  params :request_zone do
+  params :request_zone do |options|
     optional :name, type: String
     optional :vehicle_id, type: Integer
     optional :polygon, type: JSON do use :request_polygon end
@@ -79,7 +81,7 @@ module SharedParams
     mutually_exclusive :speed_multiplier, :speed_multiplicator
   end
 
-  params :request_polygon do
+  params :request_polygon do |options|
     requires :type, type: String
     optional :properties, type: Hash
     requires :geometry, type: Hash
