@@ -45,6 +45,25 @@ module SharedParams
     optional :geocoding_accuracy, type: Float, documentation: { desc: 'Must be inside 0..1 range.' }
   end
 
+  params :request_store do |options|
+    optional :ref, type: String
+    if options[:require_store_name]
+      requires :name, type: String
+    else
+      optional :name, type: String
+    end
+    optional :street, type: String
+    optional :postalcode, type: String
+    optional :city, type: String
+    optional :state, type: String
+    optional :country, type: String
+    optional :lat, type: Float
+    optional :lng, type: Float
+    optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Mapotempo::Application.config.store_color_default}." }
+    optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{Mapotempo::Application.config.store_icon_default}." }
+    optional :icon_size, type: String, values: ::Store::ICON_SIZE, documentation: { desc: "Icon size. Default: #{Mapotempo::Application.config.store_icon_size_default}." }
+  end
+
   params :request_visit do |options|
     optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
 
