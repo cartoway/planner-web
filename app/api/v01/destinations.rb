@@ -138,7 +138,7 @@ class V01::Destinations < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::Destination),
       failure: V01::Status.failures
     params do
-      use :request_destination
+      use(:request_destination, skip_visit_id: true)
     end
     post do
       destination = current_customer.destinations.build(destination_params)
@@ -156,23 +156,21 @@ class V01::Destinations < Grape::API
         V01::Status.success(:code_200, V01::Entities::Destination)
       ].concat(V01::Status.failures(is_array: true, add: [:code_422]))
     params do
-      optional(:replace, type: Boolean)
-      optional(:planning, type: Hash, desc: 'Planning definition in case of planning created in the same time of destinations import. Planning is created if "route" field is provided in CVS or Json.') do
+      optional(:replace, type: Boolean, documentation: {param_type: 'form'})
+      optional(:file, type: Rack::Multipart::UploadedFile, desc: 'CSV file, encoding, separator and line return automatically detected, with localized CSV header according to HTTP header Accept-Language.', documentation: {param_type: 'form'})
+      optional(:remote, type: Symbol, values: [:tomtom], documentation: {param_type: 'form'})
+      optional(:planning, type: Hash, documentation: { param_type: 'body' }, desc: 'Planning definition in case of planning created in the same time of destinations import. Planning is created if "route" field is provided in CVS or Json.') do
         optional(:name, type: String)
         optional(:ref, type: String)
         optional(:date, type: String)
         optional(:vehicle_usage_set_id, type: Integer)
         optional(:zoning_ids, type: Array[Integer], desc: 'If a new zoning is specified before planning save, all visits will be affected to vehicles specified in zones.')
       end
-      optional(:file, type: Rack::Multipart::UploadedFile, desc: 'CSV file, encoding, separator and line return automatically detected, with localized CSV header according to HTTP header Accept-Language.', documentation: {param_type: 'form'})
+      optional(:destinations, type: Array, documentation: { param_type: 'body' }, desc: 'In mutual exclusion with CSV file upload and remote.') do
+        use(:request_destination, skip_visit_id: true)
+      end
 
-      # FIXME validation should be
-      # optional(:destinations, type: Array[V01::Entities::DestinationImportJson], desc: 'In mutual exclusion with CSV file upload and remote.')
-      # but validation does not work
-      optional(:destinations, type: Array, desc: 'In mutual exclusion with CSV file upload and remote.')
-
-      optional(:remote, type: Symbol, values: [:tomtom])
-      at_least_one_of :file, :destinations, :remote
+      exactly_one_of :file, :destinations, :remote
     end
     put do
       if params[:planning]
