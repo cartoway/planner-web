@@ -18,7 +18,7 @@
             %i.fa.fa-maximize
           %button.btn.btn-default.btn-sm.sidebar-close{title: t('.collapse_planning_panel'), type: "button"}
             %i.fa.fa-caret-left
-      .row
+      #planning_tools.row
         - if @callback_button && @planning.customer.default_callback_enabled? && @planning.customer.default_callback_url
           %p.text-center.col-md-12
             %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{"data-url": @planning.customer.external_callback_url, type: "button"}

@@ -692,6 +692,11 @@ div.grid-container {
   border-radius: 0;
 }
 
+.panel-body {
+  margin: 0px;
+  padding: 2px 5px;
+}
+
 .simplecolorpicker.fontawesome span.color[data-selected]::after {
   font: var(--fa-font-solid);
   content: "\f00C";
