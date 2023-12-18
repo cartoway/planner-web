@@ -89,10 +89,8 @@ class V01::Stores < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::Store),
       failure: V01::Status.failures
     params do
-      use :params_from_entity, entity: V01::Entities::Store.documentation.except(:id).deep_merge(
-        name: {required: true},
-        geocoding_accuracy: {desc: 'Must be inside 0..1 range.'}
-      )
+      use(:request_store, require_store_name: true)
+      optional :geocoding_accuracy, type: Float, documentation: { desc: 'Must be inside 0..1 range.' }
     end
     post do
       store = current_customer.stores.build(store_params)
@@ -106,9 +104,10 @@ class V01::Stores < Grape::API
       success: V01::Status.success(:code_200, V01::Entities::Store),
       failure: V01::Status.failures(is_array: true, add: [:code_422])
     params do
-      use :params_from_entity, entity: V01::Entities::StoresImport.documentation.except(:stores)
-      # FIXME Should be from StoresImport, but does not work.
-      optional :stores, Array[type: V01::Entities::Store]
+      optional :stores, type: Array, documentation: { param_type: 'body' } do
+        optional :id, type: String, desc: SharedParams::ID_DESC
+        use :request_store
+      end
     end
     put do
       import = if params[:stores]
@@ -131,9 +130,7 @@ class V01::Stores < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      use :params_from_entity, entity: V01::Entities::Store.documentation.except(:id).deep_merge(
-          geocoding_accuracy: {desc: 'Must be inside 0..1 range.'}
-      )
+      use :request_store
     end
     put ':id' do
       id = ParseIdsRefs.read(params[:id])
