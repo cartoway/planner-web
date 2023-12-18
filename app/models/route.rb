@@ -115,7 +115,7 @@ class Route < ApplicationRecord
       stop_no_path: false,
       stop_out_of_drive_time: nil,
       stop_out_of_work_time: nil,
-      emission: 0,
+      emission: nil,
       start: nil,
       end: nil,
       distance: 0,
@@ -285,7 +285,7 @@ class Route < ApplicationRecord
       route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], route_attributes[:end])
       max_distance = vehicle_usage.vehicle.max_distance || planning.vehicle_usage_set.max_distance
       route_attributes[:stop_out_of_max_distance] = max_distance ? route_attributes[:distance] > max_distance : false
-      route_attributes[:emission] = vehicle_usage.vehicle.emission.nil? || vehicle_usage.vehicle.consumption.nil? ? nil : route_attributes[:distance] / 1000 * vehicle_usage.vehicle.emission * vehicle_usage.vehicle.consumption / 100
+      route_attributes[:emission] = (vehicle_usage.vehicle.emission.nil? || vehicle_usage.vehicle.consumption.nil?) ? nil : (route_attributes[:distance] / 1000 * vehicle_usage.vehicle.emission * vehicle_usage.vehicle.consumption / 100)
 
       self.assign_attributes(route_attributes)
       [stops_sort, stops_drive_time, stops_time_windows]

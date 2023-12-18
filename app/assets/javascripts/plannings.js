@@ -2048,8 +2048,6 @@ export const plannings_edit = function(params) {
     $(".route-btn-group").each(function(idx, elem) {
       $(elem).toggleClass("pull-right");
     })
-
-    $("#global_tools").toggleClass("pull-right");
   });
 
   $.ajax({
