@@ -585,8 +585,9 @@ class Route < ApplicationRecord
     "#{ref}:#{vehicle_usage? && vehicle_usage.vehicle.name}=>[" + stops.collect(&:to_s).join(', ') + ']'
   end
 
-  def self.routes_to_geojson(routes, include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false)
+  def self.routes_to_geojson(routes, include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false, large = false)
     stores_geojson = []
+    final_features = []
 
     if include_stores
       stores_geojson = routes.select { |r| r.vehicle_usage? }.map(&:vehicle_usage).flat_map { |vu| [vu.default_store_start, vu.default_store_stop, vu.default_store_rest] }.compact.uniq.select(&:position?).map do |store|
@@ -611,19 +612,35 @@ class Route < ApplicationRecord
       (include_linestrings && r.geojson_tracks || []) +
         ((with_quantities ? r.stops_to_geojson_points(with_quantities: true) : r.geojson_points) || []).compact
     }.compact
-    features += stores_geojson unless stores_geojson.empty?
+    final_features += stores_geojson unless stores_geojson.empty?
 
+    polyline_features = []
     if include_linestrings == true
-      features = features.map { |feature|
-        next feature unless feature.include?('polylines')
+      features = features.each { |feature|
+        next final_features << feature unless feature.include?('polylines')
 
-        feature = JSON.parse(feature)
-        SimplifyGeometry.polylines_to_coordinates(feature, { precision: 1e-6, skip_simplifier: true })
-        feature.to_json
+        polyline_feature = JSON.parse(feature)
+        SimplifyGeometry.polylines_to_coordinates(polyline_feature, { precision: 1e-6, skip_simplifier: true })
+        polyline_features << polyline_feature
       }
+
+      if large && routes.size > 1
+        polyline_features.group_by{ |ft| ft['properties']['route_id'] }.each{ |route_id, fts|
+          drive_time = fts.map{ |ft| ft['properties']['drive_time'].to_i }.reduce(&:+)
+          distance = fts.map{ |ft| ft['properties']['distance'].to_f }.reduce(&:+)
+          linestring = fts.map{ |ft| ft['geometry']['coordinates'] }.reduce(&:+)
+
+          fts.first['geometry']['drive_time'] = drive_time
+          fts.first['properties']['distance'] = distance
+          fts.first['geometry']['coordinates'] = linestring
+          final_features << fts.first.to_json
+        }
+      else
+        final_features += polyline_features.map(&:to_json)
+      end
     end
 
-    '{"type":"FeatureCollection","features":[' + features.join(',') + ']}'
+    '{"type":"FeatureCollection","features":[' + final_features.join(',') + ']}'
   end
 
   def to_geojson(include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false)
