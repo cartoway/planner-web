@@ -18,6 +18,62 @@
 module SharedParams
   extend Grape::API::Helpers
 
+
+  params :request_customer do |options|
+    optional :end_subscription, type: Date, documentation: { desc: EDIT_ONLY_ADMIN }
+    optional :max_vehicles, type: Integer, documentation: { desc: EDIT_ONLY_ADMIN }
+
+    if options[:required_customer_params]
+      requires :name, type: String, documentation: { desc: EDIT_ONLY_ADMIN }
+      requires :default_country, type: String
+      requires :router_id, type: Integer
+      requires :profile_id, type: String, documentation: { desc: EDIT_ONLY_ADMIN }
+    else
+      optional :name, type: String, documentation: { desc: EDIT_ONLY_ADMIN }
+      optional :default_country, type: String
+      optional :router_id, type: Integer
+      optional :profile_id, type: String, documentation: { desc: EDIT_ONLY_ADMIN }
+    end
+
+    # Default
+    optional :store_ids, type: Array[Integer]
+    optional :vehicle_usage_set_ids, type: Array[Integer]
+    optional :deliverable_unit_ids, type: Array[Integer]
+
+    optional :ref, type: String, documentation: { desc: EDIT_ONLY_ADMIN }
+    optional :visit_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :take_over, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    mutually_exclusive :visit_duration, :take_over
+
+    optional :router_dimension, type: String, values: ::Router::DIMENSION.keys.map(&:to_s)
+    optional :router_options, type: Hash, documentation: { param_type: 'body' } do
+      use(:request_router_options, options)
+    end
+    optional :speed_multiplier, type: Float
+    optional :speed_multiplicator, type: Float, documentation: { desc: 'Deprecated, use speed_multiplier instead.', hidden: true }
+    mutually_exclusive :speed_multiplier, :speed_multiplicator
+
+    optional :print_planning_annotating, type: Boolean
+    optional :print_header, type: String
+    optional :print_barcode, type: String, values: ::Customer::PRINT_BARCODE, documentation: { desc: 'Print the Reference as Barcode'}
+    optional :sms_template, type: String
+    optional :sms_concat, type: Boolean
+    optional :sms_from_customer_name, type: Boolean
+
+    optional :optimization_max_split_size, type: Integer, default: Mapotempo::Application.config.optimize_max_split_size, documentation: { desc: 'Maximum number of visits to split problem'}
+    optional :optimization_cluster_size, type: Integer, default: Mapotempo::Application.config.optimize_cluster_size, documentation: { desc: 'Time in seconds to group near visits' }
+    optional :optimization_time, type: Float, default: Mapotempo::Application.config.optimize_time, documentation: { desc: 'Maximum optimization time (by vehicle)' }
+    optional :optimization_minimal_time, type: Float, default: Mapotempo::Application.config.optimize_minimal_time, documentation: { desc: 'Minimum optimization time (by vehicle)'}
+    optional :optimization_stop_soft_upper_bound, type: Float, default: Mapotempo::Application.config.optimize_stop_soft_upper_bound, documentation: { desc: 'Stops delay coefficient, 0 to avoid delay'}
+    optional :optimization_vehicle_soft_upper_bound, type: Float, default: Mapotempo::Application.config.optimize_vehicle_soft_upper_bound, documentation: { desc: 'Vehicles delay coefficient, 0 to avoid delay' }
+    optional :optimization_cost_waiting_time, type: Float, default: Mapotempo::Application.config.optimize_cost_waiting_time, documentation: { desc: 'Coefficient to manage waiting time'}
+    optional :optimization_force_start, type: Boolean, default: Mapotempo::Application.config.optimize_force_start, documentation: { desc: 'Force time for departure'}
+
+    optional :advanced_options, type: Hash, coerce_with: JSON, documentation: { desc: 'Advanced options' }
+
+    optional :devices, type: Hash, coerce_with: JSON, documentation: { desc: EDIT_ONLY_ADMIN }
+  end
+
   params :request_destination do |options|
     optional :ref, type: String
     optional :name, type: String
@@ -43,6 +99,23 @@ module SharedParams
       use(:request_visit, options)
     end
     optional :geocoding_accuracy, type: Float, documentation: { desc: 'Must be inside 0..1 range.' }
+  end
+
+  params :request_router_options do |options|
+    optional :track, type: Boolean
+    optional :motorway, type: Boolean
+    optional :toll, type: Boolean
+    optional :trailers, type: Integer
+    optional :weight, type: Float, documentation: { desc: 'Total weight with trailers and shipping goods, in tons' }
+    optional :weight_per_axle, type: Float
+    optional :height, type: Float
+    optional :width, type: Float
+    optional :length, type: Float
+    optional :hazardous_goods, type: String, values: %w(explosive gas flammable combustible organic poison radio_active corrosive poisonous_inhalation harmful_to_water other)
+    optional :max_walk_distance, type: Float
+    optional :approach, type: String, values: ['unrestricted', 'curb']
+    optional :snap, type: Float
+    optional :strict_restriction, type: Boolean
   end
 
   params :request_store do |options|
@@ -129,5 +202,6 @@ module SharedParams
   ex:\n
   en: mm-dd-yyyy\n
   fr: dd-mm-yyyy"
+  EDIT_ONLY_ADMIN = 'Only available in admin.'.freeze
   MAX_DAYS = 31
 end
