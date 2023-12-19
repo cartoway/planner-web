@@ -27,11 +27,10 @@ class V01::Customers < Grape::API
       customer = @current_user.admin? && params[:id] ? @current_user.reseller.customers.where(ParseIdsRefs.read(params[:id])).first! : @current_user.customer
 
       # Deals with deprecated speed_multiplicator
-      p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator] && !p[:speed_multiplier]
-      p[:visit_duration] = p.delete(:take_over) if p.delete(:take_over)
+      p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator]
+      p[:visit_duration] = p.delete(:take_over) if p[:take_over]
 
-      p[:devices] = p[:devices] ? JSON.parse(p[:devices], symbolize_names: true) : {}
-      p[:devices] = customer[:devices].deep_merge(p[:devices]) if customer && customer[:devices].size > 0
+      p[:devices] = customer[:devices].deep_merge(p[:devices] || {}) if customer && customer[:devices].size > 0
 
       if @current_user.admin?
         p.permit(
@@ -184,42 +183,7 @@ class V01::Customers < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      use :params_from_entity, entity: V01::Entities::Customer.documentation.except(
-        :id,
-        :store_ids,
-        :vehicle_usage_set_ids,
-        :deliverable_unit_ids,
-        :job_destination_geocoding_id,
-        :job_store_geocoding_id,
-        :job_optimizer_id,
-        :router_options,
-        :visit_duration,
-        :devices,
-        :take_over,
-        :speed_multiplicator
-      )
-
-      optional :router_options, type: Hash do
-        # optional :traffic, type: Boolean
-        optional :track, type: Boolean
-        optional :motorway, type: Boolean
-        optional :toll, type: Boolean
-        optional :trailers, type: Integer
-        optional :weight, type: Float
-        optional :weight_per_axle, type: Float
-        optional :height, type: Float
-        optional :width, type: Float
-        optional :length, type: Float
-        optional :hazardous_goods, type: String
-        optional :max_walk_distance, type: Float
-        optional :approach, type: String
-        optional :snap, type: Float
-        optional :strict_restriction, type: Boolean
-      end
-
-      optional :visit_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :take_over, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      mutually_exclusive :visit_duration, :take_over
+      use :request_customer
     end
     put ':id' do
       if @current_user.admin?
@@ -240,43 +204,7 @@ class V01::Customers < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::CustomerAdmin),
       failure: V01::Status.failures
     params do
-      use :params_from_entity, entity: V01::Entities::Customer.documentation.except(
-        :id,
-        :store_ids,
-        :vehicle_usage_set_ids,
-        :deliverable_unit_ids,
-        :job_destination_geocoding_id,
-        :job_store_geocoding_id,
-        :job_optimizer_id,
-        :router_options,
-        :visit_duration,
-        :take_over,
-        :speed_multiplicator
-      ).deep_merge(
-        name: { required: true },
-        default_country: { required: true },
-        router_id: { required: true },
-        profile_id: { required: true }
-      )
-
-      optional :router_options, type: Hash do
-        optional :traffic, type: Boolean
-        optional :track, type: Boolean
-        optional :motorway, type: Boolean
-        optional :toll, type: Boolean
-        optional :trailers, type: Integer
-        optional :weight, type: Float
-        optional :weight_per_axle, type: Float
-        optional :height, type: Float
-        optional :width, type: Float
-        optional :length, type: Float
-        optional :hazardous_goods, type: String
-        optional :max_walk_distance, type: Float
-      end
-
-      optional :visit_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :take_over, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      mutually_exclusive :visit_duration, :take_over
+      use(:request_customer, required_customer_params: true)
     end
     post do
       if @current_user.admin?

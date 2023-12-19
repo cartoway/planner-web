@@ -36,7 +36,6 @@ class V01::Entities::Customer < Grape::Entity
   expose(:default_country, documentation: { type: String })
   expose(:router_id, documentation: { type: Integer })
   expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys })
-  # FIXME: RouterOptions entity can only be used to display results, otherwise swagger-ui interface is broken but tests are ok. Entities are working correctly only with is_array.
   expose(:router_options, using: V01::Entities::RouterOptions, documentation: { type: V01::Entities::RouterOptions })
   expose(:speed_multiplier, documentation: { type: Float })
 

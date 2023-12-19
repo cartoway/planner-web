@@ -127,10 +127,10 @@ class V01::CustomerTest < ActiveSupport::TestCase
     customer = customers(:customer_two)
     customer.ref = 'new ref'
 
-    put api_admin(customer.id), customer.attributes.merge('router_dimension' => customer.router_dimension)
+    put api_admin(customer.id), customer.attributes.merge('router_dimension' => customer.router_dimension, 'advanced_options' => {})
     assert_equal 404, last_response.status, 'Bad response: ' + last_response.body
 
-    put api(customer.id), customer.attributes.merge('router_dimension' => customer.router_dimension)
+    put api(customer.id), customer.attributes.merge('router_dimension' => customer.router_dimension, 'advanced_options' => {})
     assert_equal 404, last_response.status, 'Bad response: ' + last_response.body
   end
 
