@@ -18,6 +18,11 @@
 module SharedParams
   extend Grape::API::Helpers
 
+  params :request_capacity do |options|
+    optional :deliverable_unit_id, type: Integer
+    optional :quantity, type: Float
+    all_or_none_of :deliverable_unit_id, :quantity
+  end
 
   params :request_customer do |options|
     optional :end_subscription, type: Date, documentation: { desc: EDIT_ONLY_ADMIN }
@@ -135,6 +140,52 @@ module SharedParams
     optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Mapotempo::Application.config.store_color_default}." }
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{Mapotempo::Application.config.store_icon_default}." }
     optional :icon_size, type: String, values: ::Store::ICON_SIZE, documentation: { desc: "Icon size. Default: #{Mapotempo::Application.config.store_icon_size_default}." }
+  end
+
+  params :request_vehicle do |options|
+    optional :ref, type: String
+    optional :name, type: String
+    optional :contact_email, type: String
+    optional :phone_number, type: String
+    optional :emission, type: Float
+    optional :consumption, type: Integer
+    optional :capacity, type: Integer, documentation: { desc: 'Deprecated, use capacities instead.'}
+    optional :capacity_unit, type: String, documentation: { desc: 'Deprecated, use capacities and deliverable_unit entity instead.'}
+    optional :capacities, type: Array, documentation: { param_type: 'body' } do
+      use :request_capacity
+    end
+    optional :color, type: String, documentation: { desc: 'Color code with #. For instance: #FF0000' }
+    optional :fuel_type, type: String
+    optional :router_id, type: Integer
+    optional :router_dimension, type: String, values: ::Router::DIMENSION.keys.map(&:to_s)
+    optional :router_options, type: Hash do
+      use :request_router_options
+    end
+    optional :speed_multiplicator, type: Float, documentation: { desc: 'Deprecated, use speed_multiplier instead.' }
+    optional :speed_multiplier, type: Float
+    optional :max_distance, type: Integer, documentation: { desc: 'Maximum reachable distance by foot in meters' }
+    optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+    optional :devices, type: Hash
+    optional :custom_attributes, type: Hash, documentation: { desc: 'Additional properties'}
+  end
+
+  params :request_vehicle_usage do |options|
+    optional :time_window_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :service_time_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :work_time, type: Integer, documentation: { type: 'string', desc: 'Work time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :max_distance, type: Integer, documentation: { type: 'integer', desc: 'Maximum achievable distance in meters' }
+    optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+
+    # Deprecated fields
+    optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    mutually_exclusive :time_window_start, :open
+    optional :close, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
+    mutually_exclusive :time_window_end, :close
   end
 
   params :request_visit do |options|

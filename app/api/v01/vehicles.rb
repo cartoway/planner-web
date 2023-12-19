@@ -201,35 +201,7 @@ class V01::Vehicles < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      use :params_from_entity, entity: V01::Entities::Vehicle.documentation.except(
-          :id,
-          :router_options,
-          :capacities,
-      )
-
-      optional :capacities, type: Array do
-        optional :deliverable_unit_id, type: Integer
-        optional :quantity, type: Float
-        all_or_none_of :deliverable_unit_id, :quantity
-      end
-
-      optional :router_options, type: Hash do
-        # optional :traffic, type: Boolean
-        optional :track, type: Boolean
-        optional :motorway, type: Boolean
-        optional :toll, type: Boolean
-        optional :trailers, type: Integer
-        optional :weight, type: Float
-        optional :weight_per_axle, type: Float
-        optional :height, type: Float
-        optional :width, type: Float
-        optional :length, type: Float
-        optional :hazardous_goods, type: String
-        optional :max_walk_distance, type: Float
-        optional :approach, type: String
-        optional :snap, type: Float
-        optional :strict_restriction, type: Boolean
-      end
+      use :request_vehicle
     end
     put ':id' do
       id = ParseIdsRefs.read(params[:id])
@@ -251,66 +223,9 @@ class V01::Vehicles < Grape::API
       if Mapotempo::Application.config.manage_vehicles_only_admin
         requires :customer_id, type: Integer
       end
-      use :params_from_entity, entity: V01::Entities::Vehicle.documentation.except(
-          :id,
-          :router_options,
-          :tag_ids,
-          :capacities,
-      ).deep_merge(
-        name: { required: true }
-      ).deep_merge(V01::Entities::VehicleUsage.documentation.except(
-          :id,
-          :vehicle_usage_set_id,
-          :time_window_start,
-          :time_window_end,
-          :service_time_start,
-          :service_time_end,
-          :work_time,
-          :rest_start,
-          :rest_stop,
-          :rest_duration,
-          :tag_ids,
-          :open,
-          :close
-      ).except(:vehicle_usage_set))
 
-      optional :capacities, type: Array do
-        optional :deliverable_unit_id, type: Integer
-        optional :quantity, type: Float
-        all_or_none_of :deliverable_unit_id, :quantity
-      end
-
-      optional :router_options, type: Hash do
-        # optional :traffic, type: Boolean
-        optional :track, type: Boolean
-        optional :motorway, type: Boolean
-        optional :toll, type: Boolean
-        optional :trailers, type: Integer
-        optional :weight, type: Float
-        optional :weight_per_axle, type: Float
-        optional :height, type: Float
-        optional :width, type: Float
-        optional :length, type: Float
-        optional :hazardous_goods, type: String
-        optional :max_walk_distance, type: Float
-      end
-
-      optional :time_window_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :service_time_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :work_time, type: Integer, documentation: { type: 'string', desc: 'Work time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :max_distance, type: Integer, documentation: { type: 'integer', desc: 'Maximum achievable distance in meters' }
-      optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
-
-      # Deprecated fields
-      optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      mutually_exclusive :time_window_start, :open
-      optional :close, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
-      mutually_exclusive :time_window_end, :close
+      use :request_vehicle
+      use :request_vehicle_usage
     end
     post do
       if Mapotempo::Application.config.manage_vehicles_only_admin

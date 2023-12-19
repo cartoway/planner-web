@@ -92,11 +92,10 @@ class V01::VehiclesTest < ActiveSupport::TestCase
     assert vehicle['capacities'][0]['deliverable_unit_id'], 1
     assert vehicle['capacities'][0]['quantity'], 10
 
-    # FIXME disabled test as API validation is disabled
-    # put api(@vehicle.id), nil, input: { quantities: [{ deliverable_unit: 1, quantity: 'aaa' }] }.to_json, 'CONTENT_TYPE': 'application/json'
-    # assert last_response.bad_request?
-    # response = JSON.parse(last_response.body)
-    # assert_equal response['message'], 'quantities[0][deliverable_unit_id] is missing, quantities[0][quantity] is invalid'
+    put api(@vehicle.id), nil, input: { quantities: [{ deliverable_unit: 1, quantity: 'aaa' }] }.to_json, 'CONTENT_TYPE': 'application/json'
+    assert last_response.bad_request?
+    response = JSON.parse(last_response.body)
+    assert_equal response['message'], 'capacities[0][quantity] is invalid, capacities[0][deliverable_unit_id], capacities[0][quantity] provide all or none of parameters'
   end
 
   test 'should create a vehicle' do
