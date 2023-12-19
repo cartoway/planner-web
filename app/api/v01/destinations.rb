@@ -29,11 +29,7 @@ class V01::Destinations < Grape::API
       end
       if p[:visits_attributes]
         p[:visits_attributes].each do |hash|
-          #Deals with deprecated schedule params
-          p[:time_window_start_1] ||= p.delete(:open1) if p[:open1]
-          p[:time_window_end_1] ||= p.delete(:close1) if p[:close1]
-          p[:time_window_start_2] ||= p.delete(:open2) if p[:open2]
-          p[:time_window_end_2] ||= p.delete(:close2) if p[:close2]
+          convert_timewindows(hash)
 
           hash[:quantities] = Hash[hash[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }] if hash[:quantities] && hash[:quantities].is_a?(Array)
 
@@ -173,6 +169,10 @@ class V01::Destinations < Grape::API
       exactly_one_of :file, :destinations, :remote
     end
     put do
+      if params[:destinations]
+        d_params = declared(params) # Filter undeclared parameters
+        destinations_params = d_params[:destinations].each{ |dest_params| dest_params[:visits]&.each{ |hash| convert_timewindows(hash) } }
+      end
       if params[:planning]
         if params[:planning][:vehicle_usage_set_id]
           params[:planning][:vehicle_usage_set] = current_customer.vehicle_usage_sets.find(params[:planning][:vehicle_usage_set_id])
@@ -184,7 +184,8 @@ class V01::Destinations < Grape::API
         params[:planning].delete(:zoning_ids)
       end
       import = if params[:destinations]
-        ImportJson.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], json: params[:destinations])
+        # FIXME ImportJSON has its own conversion methods. It should be done at the API level
+        ImportJson.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], json: destinations_params)
       elsif params[:remote]
         case params[:remote]
         when :tomtom then ImportTomtom.new(importer: ImporterDestinations.new(current_customer, params[:planning]), customer: current_customer, replace: params[:replace])
@@ -304,5 +305,15 @@ class V01::Destinations < Grape::API
         address_list
       end
     end
+  end
+
+  private
+
+  def convert_timewindows(hash)
+    #Deals with deprecated schedule params
+    hash[:time_window_start_1] ||= hash.delete(:open1) if hash[:open1]
+    hash[:time_window_end_1] ||= hash.delete(:close1) if hash[:close1]
+    hash[:time_window_start_2] ||= hash.delete(:open2) if hash[:open2]
+    hash[:time_window_end_2] ||= hash.delete(:close2) if hash[:close2]
   end
 end
