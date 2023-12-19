@@ -630,8 +630,12 @@ class Planning < ApplicationRecord
     "#{name}=>" + routes.collect(&:to_s).join(' ')
   end
 
-  def to_geojson(include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false)
-    Route.routes_to_geojson(routes, include_stores, respect_hidden, include_linestrings, with_quantities)
+  def large?
+    routes.map{ |r| r.stops.size }.reduce(&:+) >= 1000
+  end
+
+  def to_geojson(include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false, large = large?)
+    Route.routes_to_geojson(routes, include_stores, respect_hidden, include_linestrings, with_quantities, large)
   end
 
   def save_import

@@ -1457,9 +1457,7 @@ export const plannings_edit = function(params) {
           },
           beforeSend: beforeSendWaiting,
           success: function(data) {
-            updatePlanning(data, {
-              skipMap: true
-            });
+            updatePlanning(data);
           },
           complete: completeAjaxMap,
           error: ajaxError
