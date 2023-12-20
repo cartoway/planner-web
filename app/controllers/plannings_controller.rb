@@ -385,6 +385,12 @@ class PlanningsController < ApplicationController
   private
 
   def move_stop(stop_id, route, previous_route_id)
+    # -1 Means latest position in the route
+    index = Integer(params[:index]) if params[:index]
+    if index && (index < -1 || index == 0 || index > route.stops.length + 1)
+      raise Exceptions::StopIndexError.new(route, "Invalid index #{index} provided")
+    end
+
     stop_id = Integer(stop_id) unless stop_id.is_a? Integer
     stop = @planning.routes.find{ |r| r.id == previous_route_id }.stops.find { |s| s.id == stop_id }
     @planning.move_stop(route, stop, params[:index].blank? ? nil : Integer(params[:index]))
