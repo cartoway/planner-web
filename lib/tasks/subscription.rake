@@ -9,6 +9,7 @@ namespace :subscription do
       customers_to_del.destroy_all
     else
       puts 'Invalid parameter: number should be an integer strictly positive.'
+      abort # Return a nil value from the Rake proc
     end
   end
 end
