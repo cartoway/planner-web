@@ -60,14 +60,14 @@ class V01::RoutesGetTest < ActiveSupport::TestCase
     assert last_response.ok?, last_response.body
     geojson = JSON.parse(last_response.body)
     assert geojson['features'].size > 0
-    assert geojson['features'][0]['geometry']['coordinates']
-    assert_nil geojson['features'][0]['geometry']['polylines']
+    assert geojson['features'].one?{ |feature| feature['geometry']['coordinates'] && feature['geometry']['type'] == 'LineString' }
+    assert geojson['features'].none?{ |feature| feature['geometry']['polylines'] }
 
     get api("/plannings/#{@route.planning_id}/routes/#{@route.id}.geojson", api_key: @user.api_key, with_geojson: :polyline)
     assert last_response.ok?, last_response.body
     geojson = JSON.parse(last_response.body)
     assert geojson['features'].size > 0
-    assert_nil geojson['features'][0]['geometry']['coordinates']
-    assert geojson['features'][0]['geometry']['polylines']
+    assert geojson['features'].one?{ |feature| feature['geometry']['polylines'] }
+    assert geojson['features'].none?{ |feature| feature['geometry']['coordinates'] && feature['geometry']['type'] == 'LineString' }
   end
 end
