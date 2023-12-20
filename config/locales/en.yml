@@ -265,10 +265,12 @@ en:
       planning:
         name: Name
         ref: Reference
+        ref_help: A free reference
         ref_small: Ref.
         active: Active
         tag_ids: Tags
         tags: Tags
+        tags_help: Categories used to filter the plan
         zoning_id: Zoning
         created_at: Created
         updated_at: Updated
