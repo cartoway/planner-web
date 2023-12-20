@@ -200,6 +200,11 @@ class Planning < ApplicationRecord
 
   def move_stop(route, stop, index, force = false)
     route, index = prefered_route_and_index([route], stop) unless index || !route.vehicle_usage?
+
+    if index && (index <= 0 || index > route.stops.length + 1)
+      raise Exceptions::StopIndexError.new(route, "Invalid index #{index} provided")
+    end
+
     if stop.route != route
       if stop.is_a?(StopVisit)
         visit, active = stop.visit, stop.active

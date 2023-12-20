@@ -228,7 +228,7 @@ class RouteTest < ActiveSupport::TestCase
     assert_not o.hidden
     geojson = JSON.parse(o.to_geojson(true, true, :polyline))
     assert geojson['features'].size > 0
-    assert geojson['features'][0]['geometry']['polylines']
+    assert geojson['features'].one?{ |feature| feature['geometry']['polylines'] }
 
     # polyline & don't respect_hidden
     o.hidden = true
@@ -241,7 +241,7 @@ class RouteTest < ActiveSupport::TestCase
     assert_not o.hidden
     geojson = JSON.parse(o.to_geojson(false, true, true))
     assert geojson['features'].size > 0
-    assert geojson['features'][0]['geometry']['coordinates']
+    assert geojson['features'].one?{ |feature| feature['geometry']['coordinates'] && feature['geometry']['type'] == 'LineString' }
 
     # coordinates & don't respect_hidden
     o.hidden = true
