@@ -94,7 +94,8 @@ module SharedParams
     optional :phone_number, type: String
     optional :geocoding_accuracy, type: Float
     optional :geocoding_level, type: String, values: ['point', 'house', 'street', 'intersection', 'city']
-    optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+    optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { param_type: 'form', desc: 'Ids separated by comma.' }
+    optional :tags, type: Array[String], documentation: { desc: 'Tag labels separated by comma.', hidden: true }
     optional :geocoded_at,  type: Time, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(val) { val.is_a?(String) ? Time.parse(val + ' UTC') : val }
     optional :geocoder_version, type: String
     optional :visits, type: Array, documentation: { param_type: 'body' } do
@@ -189,13 +190,17 @@ module SharedParams
   end
 
   params :request_visit do |options|
-    optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+    optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { param_type: 'form', desc: 'Ids separated by comma.' }
+    optional :ref, type: String
 
     optional :quantities, type: Array, documentation: { param_type: 'body' } do
       optional :deliverable_unit_id, type: Integer
       optional :quantity, type: Float
       all_or_none_of :deliverable_unit_id, :quantity
     end
+    optional :quantity, type: Integer, documentation: { desc: 'Deprecated, use quantities instead.', hidden: true }
+    optional :quantity1_1, type: Integer, documentation: { desc: 'Deprecated, use quantities instead.', hidden: true }
+    optional :quantity1_2, type: Integer, documentation: { desc: 'Deprecated, use quantities instead.', hidden: true }
 
     optional :time_window_start_1, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
     optional :open1, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
@@ -213,6 +218,13 @@ module SharedParams
     optional :time_window_end_2, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
     optional :close2, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
     mutually_exclusive :time_window_end_2, :close2
+
+    # Route params related to JSON import
+    if options[:json_import]
+      optional :ref_vehicle, type: String
+      optional :route, type: String
+      optional :active, type: Boolean
+    end
   end
 
   params :request_zone do |options|

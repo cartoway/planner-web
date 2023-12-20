@@ -30,19 +30,7 @@ class V01::Destinations < Grape::API
       if p[:visits_attributes]
         p[:visits_attributes].each do |hash|
           convert_timewindows(hash)
-
-          hash[:quantities] = Hash[hash[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }] if hash[:quantities] && hash[:quantities].is_a?(Array)
-
-          # Deals with deprecated quantity
-          if !hash[:quantities]
-            # hash[:quantities] keys must be string here because of permit below
-            hash[:quantities] = { current_customer.deliverable_units[0].id.to_s => hash.delete(:quantity) } if hash[:quantity] && current_customer.deliverable_units.size > 0
-            if hash[:quantity1_1] || hash[:quantity1_2]
-              hash[:quantities] = {}
-              hash[:quantities].merge!({ current_customer.deliverable_units[0].id.to_s => hash.delete(:quantity1_1) }) if hash[:quantity1_1] && current_customer.deliverable_units.size > 0
-              hash[:quantities].merge!({ current_customer.deliverable_units[1].id.to_s => hash.delete(:quantity1_2) }) if hash[:quantity1_2] && current_customer.deliverable_units.size > 1
-            end
-          end
+          convert_deprecated_quantities(hash)
         end
       end
 
@@ -89,6 +77,28 @@ class V01::Destinations < Grape::API
           }
         end
       }.compact
+    end
+
+    def convert_deprecated_quantities(hash)
+      hash[:quantities] = Hash[hash[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }] if hash[:quantities] && hash[:quantities].is_a?(Array)
+      # Deals with deprecated quantity
+      if hash[:quantities].blank?
+        # hash[:quantities] keys must be string here because of permit below
+        hash[:quantities] = { current_customer.deliverable_units[0].id.to_s => hash.delete(:quantity) } if hash[:quantity] && current_customer.deliverable_units.size > 0
+        if hash[:quantity1_1] || hash[:quantity1_2]
+          hash[:quantities] = {}
+          hash[:quantities].merge!({ current_customer.deliverable_units[0].id.to_s => hash.delete(:quantity1_1) }) if hash[:quantity1_1] && current_customer.deliverable_units.size > 0
+          hash[:quantities].merge!({ current_customer.deliverable_units[1].id.to_s => hash.delete(:quantity1_2) }) if hash[:quantity1_2] && current_customer.deliverable_units.size > 1
+        end
+      end
+    end
+
+    def convert_timewindows(hash)
+      #Deals with deprecated schedule params
+      hash[:time_window_start_1] ||= hash.delete(:open1) if hash[:open1]
+      hash[:time_window_end_1] ||= hash.delete(:close1) if hash[:close1]
+      hash[:time_window_start_2] ||= hash.delete(:open2) if hash[:open2]
+      hash[:time_window_end_2] ||= hash.delete(:close2) if hash[:close2]
     end
   end
 
@@ -163,7 +173,7 @@ class V01::Destinations < Grape::API
         optional(:zoning_ids, type: Array[Integer], desc: 'If a new zoning is specified before planning save, all visits will be affected to vehicles specified in zones.')
       end
       optional(:destinations, type: Array, documentation: { param_type: 'body' }, desc: 'In mutual exclusion with CSV file upload and remote.') do
-        use(:request_destination, skip_visit_id: true)
+        use(:request_destination, skip_visit_id: true, json_import: true)
       end
 
       exactly_one_of :file, :destinations, :remote
@@ -171,7 +181,10 @@ class V01::Destinations < Grape::API
     put do
       if params[:destinations]
         d_params = declared(params) # Filter undeclared parameters
-        destinations_params = d_params[:destinations].each{ |dest_params| dest_params[:visits]&.each{ |hash| convert_timewindows(hash) } }
+        destinations_params = d_params[:destinations].each{ |dest_params| dest_params[:visits]&.each{ |hash|
+          convert_timewindows(hash)
+          convert_deprecated_quantities(hash);
+        } }
       end
       if params[:planning]
         if params[:planning][:vehicle_usage_set_id]
@@ -305,15 +318,5 @@ class V01::Destinations < Grape::API
         address_list
       end
     end
-  end
-
-  private
-
-  def convert_timewindows(hash)
-    #Deals with deprecated schedule params
-    hash[:time_window_start_1] ||= hash.delete(:open1) if hash[:open1]
-    hash[:time_window_end_1] ||= hash.delete(:close1) if hash[:close1]
-    hash[:time_window_start_2] ||= hash.delete(:open2) if hash[:open2]
-    hash[:time_window_end_2] ||= hash.delete(:close2) if hash[:close2]
   end
 end
