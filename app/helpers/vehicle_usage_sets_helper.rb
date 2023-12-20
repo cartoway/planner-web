@@ -33,7 +33,7 @@ module VehicleUsageSetsHelper
             concat icon('fa-solid', 'ban', title: t('vehicle_usages.index.store.no_stop'))
           end
         elsif vehicle_usage_set.store_start
-          concat icon('fa-solid','right-left', title: t('vehicle_usages.index.store.same_start_stop'))
+          concat icon('fa-solid', 'right-left', title: t('vehicle_usages.index.store.same_start_stop'))
         end
       end
     end
