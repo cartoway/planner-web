@@ -25,7 +25,7 @@ module VehicleUsageSetsHelper
           concat icon('fa-solid', 'ban', title: t('vehicle_usages.index.store.no_start'))
         end
         if vehicle_usage_set.store_start != vehicle_usage_set.store_stop
-          concat icon('fa-solid','long-arrow-right')
+          concat icon('fa-solid', 'long-arrow-right')
           concat ' '
           if vehicle_usage_set.store_stop
             concat ' %s' % [vehicle_usage_set.store_stop.name]
