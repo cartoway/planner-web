@@ -191,6 +191,9 @@ gem 'iso_country_codes'
 gem 'phonelib'
 gem 'nexmo'
 
+# sentry-rails requires rails >= 5.0
+gem 'sentry-raven'
+
 group :production do
   gem 'rails_12factor'
 
@@ -198,6 +201,4 @@ group :production do
   gem 'redis-store', '~> 1.4.1' # Ensure redis-store dependency is at least 1.4.1 for CVE-2017-1000248 correction
   gem 'redis-rails'
 
-  # sentry-rails requires rails >= 5.0
-  gem 'sentry-raven'
 end
