@@ -87,11 +87,13 @@ class V01::Zonings < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: Integer
-      use :params_from_entity, entity: V01::Entities::Zoning.documentation.except(:id)
+      optional :name, type: String
+      optional :zones, type: Array, documentation: { param_type: 'body' } do use :request_zone end
     end
     put ':id' do
+      d_params = declared(params, include_missing: false)
       zoning = current_customer.zonings.find(params[:id])
-      zoning.update! zoning_params
+      zoning.update! zoning_params(d_params)
       present zoning, with: V01::Entities::Zoning
     end
 
