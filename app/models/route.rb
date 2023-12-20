@@ -614,7 +614,7 @@ class Route < ApplicationRecord
     }.compact
     final_features += stores_geojson unless stores_geojson.empty?
 
-    final_features += simplify_polyline_features(features, { linestring: include_linestrings, large: large })
+    final_features += simplify_polyline_features(routes, features, { linestring: include_linestrings, large: large })
 
     '{"type":"FeatureCollection","features":[' + final_features.join(',') + ']}'
   end
@@ -756,7 +756,7 @@ class Route < ApplicationRecord
     end
   end
 
-  def self.simplify_polyline_features(features, options = {})
+  def self.simplify_polyline_features(routes, features, options = {})
     final_features = []
     if options[:linestring] == true
       polyline_features = []
