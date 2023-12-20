@@ -266,10 +266,12 @@
       'planning':
         'name': 'Nom'
         'ref': 'Référence'
+        'ref_help': 'Référence libre'
         'ref_small': 'Réf.'
         'active': 'Actif'
         'tag_ids': 'Libellés'
         'tags': 'Libellés'
+        'tags_help': 'Catégories ayant permis de filtrer le plan'
         'zoning_id': 'Sectorisation'
         'created_at': 'Création'
         'updated_at': 'Mise à jour'
