@@ -16,8 +16,11 @@ module LinkBack
       referer_params = referer_uri && referer_uri.query ? CGI.parse(referer_uri.query) : nil
       referer_fragment = referer_uri && referer_uri.fragment
       if referer_uri && params['back']
-        session[:link_back] = referer_uri.path
-        session[:link_back] += '#' + referer_fragment if referer_fragment
+        # FIXME: The controller is fired twice and cannot link_back to its referer
+        unless session[:link_back]&.include?("#")
+          session[:link_back] = referer_uri.path
+          session[:link_back] += '#' + referer_fragment if referer_fragment
+        end
       elsif !(referer_uri && referer_params && referer_params['back'])
         session.delete(:link_back)
       end
