@@ -239,7 +239,7 @@ module SharedParams
   params :request_polygon do |options|
     requires :type, type: String
     optional :properties, type: Hash
-    requires :geometry, type: Hash
+    requires :geometry, type: JSON
   end
 
   params :params_from_entity do |options|
