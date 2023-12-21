@@ -108,13 +108,14 @@ class Zone < ApplicationRecord
   def edit_invalid_feature(feature)
     invalidity = feature.geometry.invalid_reason
 
-    case invalidity
-    when nil
-      return feature.geometry
-    when "Self-intersection"
-      return feature.geometry.make_valid
+    if invalidity.nil?
+      feature.geometry
     else
-      raise PolygonValidityError.new(invalidity.class)
+      begin
+        feature.geometry.make_valid
+      rescue RGeo::Error
+        raise PolygonValidityError.new("Failed to make valid a zone with: #{invalidity.class}")
+      end
     end
   end
 
