@@ -23,11 +23,11 @@ class Zone < ApplicationRecord
 
   nilify_blanks
 
-  before_validation :make_polygon_valid
-
   validates :polygon, presence: true
   validate :polygon_json_format_validation
   validate :vehicle_from_customer_validation
+
+  after_validation :make_polygon_valid
 
   before_save :update_outdated
 
@@ -92,24 +92,44 @@ class Zone < ApplicationRecord
   end
 
   def make_polygon_valid
-    decode_geom
-    invalidity = @geom.geometry.invalid_reason
+    return unless polygon
+
+    if (@geom || decode_geom).class == RGeo::GeoJSON::Feature
+      geometry = edit_invalid_feature(@geom)
+      self.polygon = feature_as_geojson(geometry).to_json
+    elsif @geom.class == RGeo::GeoJSON::FeatureCollection
+      geometries = @geom.map { |feature|
+        edit_invalid_feature(feature)
+      }
+      self.polygon = feature_collection_as_geojson(geometries).to_json
+    end
+  end
+
+  def edit_invalid_feature(feature)
+    invalidity = feature.geometry.invalid_reason
 
     case invalidity
     when nil
-      return
+      return feature.geometry
     when "Self-intersection"
-      self.polygon = polygon_to_geojson(@geom.geometry.make_valid)
+      return feature.geometry.make_valid
     else
       raise PolygonValidityError.new(invalidity.class)
     end
   end
 
-  def polygon_to_geojson(geom)
+  def feature_collection_as_geojson(features)
+    {
+      type: 'FeatureCollection',
+      features: features.map{ |feature| feature_as_geojson(feature) }
+    }
+  end
+
+  def feature_as_geojson(feature)
     {
       type: 'Feature',
-      geometry: RGeo::GeoJSON.encode(geom)
-    }.to_json
+      geometry: RGeo::GeoJSON.encode(feature)
+    }
   end
 
   def vehicle_from_customer_validation
