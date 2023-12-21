@@ -4,6 +4,7 @@ module Exceptions
   class LoopError < StandardError; end
   class JobInProgressError < StandardError; end
   class OverMaxLimitError < StandardError; end
+  class PolygonValidityError < StandardError; end
 
   class StopIndexError < StandardError
     attr_reader :route

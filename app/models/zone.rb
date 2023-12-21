@@ -22,6 +22,9 @@ class Zone < ApplicationRecord
   belongs_to :vehicle, inverse_of: :zones
 
   nilify_blanks
+
+  before_validation :make_polygon_valid
+
   validates :polygon, presence: true
   validate :polygon_json_format_validation
   validate :vehicle_from_customer_validation
@@ -86,6 +89,27 @@ class Zone < ApplicationRecord
         false
       end
     end
+  end
+
+  def make_polygon_valid
+    decode_geom
+    invalidity = @geom.geometry.invalid_reason
+
+    case invalidity
+    when nil
+      return
+    when "Self-intersection"
+      self.polygon = polygon_to_geojson(@geom.geometry.make_valid)
+    else
+      raise PolygonValidityError.new(invalidity.class)
+    end
+  end
+
+  def polygon_to_geojson(geom)
+    {
+      type: 'Feature',
+      geometry: RGeo::GeoJSON.encode(geom)
+    }.to_json
   end
 
   def vehicle_from_customer_validation
