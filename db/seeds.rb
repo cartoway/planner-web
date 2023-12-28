@@ -3,7 +3,7 @@ I18n.locale = :fr
 mapnik_fr = Layer.create!(source: "osm", name: "Mapnik-fr", url: "http://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", urlssl: "https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", attribution: "Tiles by OpenStreetMap-France")
 mapnik = Layer.create!(source: "osm", name: "Mapnik", url: "http://tile.openstreetmap.org/{z}/{x}/{y}.png", urlssl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", attribution: "Tiles by OpenStreetMap")
 stamen_bw = Layer.create!(source: "osm", name: "Stamen B&W", name_locale: {fr: "Stamen N&B"}, url: "http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}.png", urlssl: "https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png", attribution: "Tiles by Stamen Design")
-here_layer = Layer.create!(source: "here", name: "Here", url: "https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?style=logistics.day&apiKey=#{ENV['HERE_API_KEY']}", urlssl: "https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?style=logistics.day&apiKey=#{ENV['HERE_API_KEY']}", attribution: "Here")
+here_layer = Layer.create!(source: "here", name: "Here", url: "https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?style=logistics.day&apiKey=#{ENV['HERE_MAP_APIKEY']}", urlssl: "https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?style=logistics.day&apiKey=#{ENV['HERE_MAP_APIKEY']}", attribution: "Here")
 
 car = RouterWrapper.create!(
     mode: 'car',
