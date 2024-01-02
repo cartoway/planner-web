@@ -3,7 +3,7 @@ class V100::Entities::RouteInsertData < Grape::Entity
     'V100_RouteProperties'
   end
 
-  expose(:route, with: V100::Entities::Route)
+  expose(:route, with: V100::Entities::RouteWithVehicleDetails)
   expose(:index, documentation: { type: Integer })
   expose(:time, documentation: { type: Integer })
   expose(:distance, documentation: { type: Float })
