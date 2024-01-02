@@ -255,6 +255,7 @@ export const bootstrap_dialog = function(options) {
 };
 
 export const defaultMapZoom = 12;
+export const largeNbMarkers = 5000;
 export const mapInitialize = function(params) {
   var mapLayer, mapBaseLayers = {},
     mapOverlays = {},
