@@ -18,7 +18,10 @@
 'use strict';
 
 import GlobalConfiguration from '../../assets/javascripts/configuration.js.erb';
-import { defaultMapZoom } from '../../assets/javascripts/scaffolds';
+import {
+  defaultMapZoom,
+  largeNbMarkers
+} from '../../assets/javascripts/scaffolds';
 import {
   beforeSendWaiting,
   mustache_i18n,
@@ -270,6 +273,7 @@ var removeInactiveStops = function(data) {
 };
 
 var nbRoutes = 0;
+var nbMarkers = 0;
 export const RoutesLayer = L.FeatureGroup.extend({
   defaultOptions: {
     outOfRouteId: undefined,
@@ -301,13 +305,14 @@ export const RoutesLayer = L.FeatureGroup.extend({
     animate: false,
     maxClusterRadius: function(currentZoom) {
       // Markers have to be clustered during map initialization with defaultMapZoom
-      return currentZoom > defaultMapZoom ? 1 : nbRoutes < 4 ? 30 * nbRoutes : 100;
+      // With high quantity of markers the switching zoom should be max zoom
+      return nbMarkers < largeNbMarkers && currentZoom > defaultMapZoom || currentZoom > 17 ? 1 : nbRoutes < 4 ? 30 * nbRoutes : 100;
     },
     spiderfyDistanceMultiplier: 0.5,
     // Updated in initialize
-    // disableClusteringAtZoom: 12,
+    // disableClusteringAtZoom: 12, // With high quantity of markers the switching zoom should be max zoom
     iconCreateFunction: function(cluster) {
-      if (cluster._map.getZoom() > cluster._map.defaultMapZoom) {
+      if (nbMarkers < largeNbMarkers && cluster._map.getZoom() > cluster._map.defaultMapZoom || cluster._map.getZoom() > 17) {
         var markers = cluster.getAllChildMarkers();
         var n = ['…'];
         var color;
@@ -835,6 +840,8 @@ export const RoutesLayer = L.FeatureGroup.extend({
         var marker = L.marker(new L.LatLng(latlng.lat, latlng.lng), {
           icon: icon
         });
+
+        nbMarkers += 1;
 
         if (geoJsonPoint.properties.number) {
           (lowIndex) ? marker.setZIndexOffset(-999) : marker.setZIndexOffset(500);
