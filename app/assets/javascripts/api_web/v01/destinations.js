@@ -71,10 +71,13 @@ const api_web_v01_destinations_index = function(params, api) {
 
   markersGroup.showAllDestinations(ajaxParams, function() {
     if (fitBounds) {
-      map.fitBounds(markersGroup.getBounds(), {
-        maxZoom: 15,
-        padding: [20, 20]
-      });
+      var bounds = markersGroup.getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, {
+          maxZoom: 15,
+          padding: [20, 20]
+        });
+      }
     }
   });
 };
