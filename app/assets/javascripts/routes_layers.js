@@ -305,12 +305,12 @@ export const RoutesLayer = L.FeatureGroup.extend({
     animate: false,
     maxClusterRadius: function(currentZoom) {
       // Markers have to be clustered during map initialization with defaultMapZoom
-      // With high quantity of markers the switching zoom should be max zoom
-      return nbMarkers < largeNbMarkers && currentZoom > defaultMapZoom || currentZoom > 17 ? 1 : nbRoutes < 4 ? 30 * nbRoutes : 100;
+      // With high quantity of markers the switching zoom should be close from max zoom
+      return nbMarkers < largeNbMarkers && currentZoom > defaultMapZoom || currentZoom >= 17 ? 1 : nbRoutes < 4 ? 30 * nbRoutes : 100;
     },
     spiderfyDistanceMultiplier: 0.5,
     // Updated in initialize
-    // disableClusteringAtZoom: 12, // With high quantity of markers the switching zoom should be max zoom
+    // disableClusteringAtZoom: 12, // With high quantity of markers the switching zoom should be close from max zoom
     iconCreateFunction: function(cluster) {
       if (nbMarkers < largeNbMarkers && cluster._map.getZoom() > cluster._map.defaultMapZoom || cluster._map.getZoom() > 17) {
         var markers = cluster.getAllChildMarkers();
