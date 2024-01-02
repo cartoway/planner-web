@@ -51,6 +51,14 @@ class V100::Entities::Route < V100::Entities::RouteProperties
   }
 end
 
+class V100::Entities::RouteWithVehicleDetails < V100::Entities::Route
+  expose(:vehicle_usage, using: V100::Entities::VehicleUsageWithVehicle, documentation: { type: V100::Entities::VehicleUsageWithVehicle })
+
+  def self.entity_name
+    'V100_RouteWithVehicleDetails'
+  end
+end
+
 class V100::Entities::RouteStatus < Grape::Entity
   def self.entity_name
     'V100_RouteStatus'
