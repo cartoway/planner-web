@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 9.6.24
--- Dumped by pg_dump version 13.11 (Debian 13.11-0+deb11u1)
+-- Dumped by pg_dump version 13.13 (Debian 13.13-0+deb11u1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -730,6 +730,7 @@ CREATE TABLE public.stops (
     out_of_work_time boolean,
     out_of_max_distance boolean,
     unmanageable_capacity boolean,
+    out_of_force_position boolean DEFAULT false,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -1080,7 +1081,8 @@ CREATE TABLE public.visits (
     time_window_start_2 integer,
     time_window_end_2 integer,
     quantities_operations public.hstore,
-    priority integer
+    priority integer,
+    force_position integer DEFAULT 0
 );
 
 
@@ -2831,4 +2833,6 @@ INSERT INTO schema_migrations (version) VALUES ('20230506091332');
 INSERT INTO schema_migrations (version) VALUES ('20230506091333');
 
 INSERT INTO schema_migrations (version) VALUES ('20231214143522');
+
+INSERT INTO schema_migrations (version) VALUES ('20240103084216');
 
