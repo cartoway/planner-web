@@ -418,7 +418,7 @@ class Planning < ApplicationRecord
 
     o = amalgamate_stops_same_position(stops_on, option[:global], routes_with_vehicle.map(&:vehicle_usage)) { |positions|
       services_and_rests = positions.collect{ |position|
-        stop_id, time_window_start_1, time_window_end_1, time_window_start_2, time_window_end_2, priority, duration, vehicle_usage_id, quantities, quantities_operations, skills, rest = position[2..13]
+        stop_id, time_window_start_1, time_window_end_1, time_window_start_2, time_window_end_2, priority, duration, vehicle_usage_id, quantities, quantities_operations, skills, rest, force_position = position[2..14]
         if option[:ignore_overload_multipliers] && quantities
           quantities.select!{ |id, _val|
             option[:ignore_overload_multipliers].find{ |iom| iom[:unit_id] == id if iom[:ignore] }.nil?
@@ -437,7 +437,8 @@ class Planning < ApplicationRecord
           quantities: quantities,
           quantities_operations: quantities_operations,
           skills: skills,
-          rest: rest
+          rest: rest,
+          position: force_position
         }
       }
 
@@ -531,7 +532,7 @@ class Planning < ApplicationRecord
 
             stop.active = true if route.vehicle_usage? && inactive_stop_ids.exclude?(stop.id)
             stop.index = i += 1
-            stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = nil
+            stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_force_position = nil
             if stop.route_id != route.id
               stop.route_id = route.id
               stop.save!
@@ -779,7 +780,9 @@ class Planning < ApplicationRecord
          stop.is_a?(StopVisit) ? stop.visit.default_quantities : nil,
          stop.is_a?(StopVisit) ? stop.visit.quantities_operations : nil,
          tags_label,
-         stop.is_a?(StopRest)]
+         stop.is_a?(StopRest),
+         stop.is_a?(StopVisit) ? stop.visit.force_position: nil
+        ]
       }
 
       yield(positions_uniq)

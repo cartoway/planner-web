@@ -46,7 +46,7 @@ class V01::Visits < Grape::API
       p[:time_window_end_2] ||= p.delete(:close2) if p[:close2]
 
       deliverable_unit_ids = current_customer.deliverable_units.map{ |du| du.id.to_s }
-      p.permit(:ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, tag_ids: [], quantities: deliverable_unit_ids, quantities_operations: deliverable_unit_ids)
+      p.permit(:ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :force_position, tag_ids: [], quantities: deliverable_unit_ids, quantities_operations: deliverable_unit_ids)
     end
   end
 

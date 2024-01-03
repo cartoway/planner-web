@@ -51,4 +51,5 @@ class V01::Entities::Stop < V01::Entities::StopStatus
   expose(:out_of_drive_time, documentation: { type: 'Boolean' })
   expose(:out_of_work_time, documentation: { type: 'Boolean' })
   expose(:out_of_max_distance, documentation: { type: 'Boolean' })
+  expose(:out_of_force_position, documentation: { type: 'Boolean' })
 end

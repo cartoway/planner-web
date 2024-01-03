@@ -264,4 +264,20 @@ class VisitTest < ActiveSupport::TestCase
       visit.update! time_window_end_2: '09:00', time_window_start_2: '10:00'
     end
   end
+
+  test 'position should be in the existing values' do
+    destination = destinations(:destination_one)
+    visit = destination.visits[0]
+    assert visit.neutral?
+    visit.update force_position: 'always_first'
+    assert visit.always_first?
+    visit.update force_position: :always_final
+    assert visit.always_final?
+    visit.update force_position: 'never_first'
+    assert visit.never_first?
+
+    assert_raises ArgumentError do
+      visit.update force_position: 'invalid_value'
+    end
+  end
 end
