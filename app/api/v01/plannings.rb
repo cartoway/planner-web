@@ -313,47 +313,47 @@ class V01::Plannings < Grape::API
       end
     end
 
-    # desc 'Update routes visibility and lock.',
-    #   nickname: 'updateRoutes',
-    #   success: V01::Status.success(:code_200, V01::Entities::RouteProperties),
-    #   failure: V01::Status.failures
-    # params do
-    #   requires :id, type: String, desc: SharedParams::ID_DESC
-    #   requires :action, type: String, values: %w(visibility toggle lock), desc: 'Toogle is deprecated, use visibility instead'
-    #   requires :selection, type: String, values: %w(all reverse none), desc: 'Choose between: show/lock all routes, toggle all routes or hide/unlock all routes'
-    #   optional :route_ids, type: Array[Integer], documentation: { param_type: 'form' }, coerce_with: CoerceArrayInteger, desc: 'Ids separated by comma.'
-    # end
-    # patch ':id/update_routes' do
-    #   planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-    #   raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
+    desc 'Update routes visibility and lock.',
+      nickname: 'updateRoutes',
+      success: V01::Status.success(:code_200, V01::Entities::RouteProperties),
+      failure: V01::Status.failures
+    params do
+      requires :id, type: String, desc: SharedParams::ID_DESC
+      requires :action, type: String, values: %w(visibility toggle lock), desc: 'Toogle is deprecated, use visibility instead'
+      requires :selection, type: String, values: %w(all reverse none), desc: 'Choose between: show/lock all routes, toggle all routes or hide/unlock all routes'
+      optional :route_ids, type: Array[Integer], documentation: { param_type: 'form' }, coerce_with: CoerceArrayInteger, desc: 'Ids separated by comma.'
+    end
+    patch ':id/update_routes' do
+      planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+      raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
-    #   routes = planning.routes
-    #   routes = routes.select{ |r| params[:route_ids].include? r.id } unless !params[:route_ids] || params[:route_ids].empty?
-    #   routes.each do |route|
-    #     case params[:action].to_sym
-    #       when :toggle, :visibility
-    #         case params[:selection].to_sym
-    #           when :all
-    #             route.update! hidden: false
-    #           when :reverse
-    #             route.update! hidden: !route.hidden
-    #           when :none
-    #             route.update! hidden: true
-    #         end
-    #       when :lock
-    #         case params[:selection].to_sym
-    #           when :all
-    #             route.update! locked: true
-    #           when :reverse
-    #             route.update! locked: !route.locked
-    #           when :none
-    #             route.update! locked: false
-    #         end
-    #     end
-    #   end
+      routes = planning.routes
+      routes = routes.select{ |r| params[:route_ids].include? r.id } unless !params[:route_ids] || params[:route_ids].empty?
+      routes.each do |route|
+        case params[:action].to_sym
+          when :toggle, :visibility
+            case params[:selection].to_sym
+              when :all
+                route.update! hidden: false
+              when :reverse
+                route.update! hidden: !route.hidden
+              when :none
+                route.update! hidden: true
+            end
+          when :lock
+            case params[:selection].to_sym
+              when :all
+                route.update! locked: true
+              when :reverse
+                route.update! locked: !route.locked
+              when :none
+                route.update! locked: false
+            end
+        end
+      end
 
-    #   present routes, with: V01::Entities::RouteProperties
-    # end
+      present routes, with: V01::Entities::RouteProperties
+    end
 
     desc 'Update stops status.',
       detail: 'Update stops status from remote devices. Only available if enable_stop_status is true for customer.',
