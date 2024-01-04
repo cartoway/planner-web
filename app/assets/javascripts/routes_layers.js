@@ -559,6 +559,11 @@ export const RoutesLayer = L.FeatureGroup.extend({
     this._loadAllDestinations(options, callback);
   },
 
+  showAllStores: function(options, callback) {
+    this.hideAllRoutes();
+    this._loadAllStores(options, callback);
+  },
+
   hideAllRoutes: function() {
     if (!this.planningId) {
       for (var routeByClusterId in this.clustersByRoute) {
@@ -694,12 +699,17 @@ export const RoutesLayer = L.FeatureGroup.extend({
     });
   },
 
-  _loadAllStores: function() {
+  _loadAllStores: function(options, callback) {
+    const requestData = options || {}
     $.ajax({
       url: "/api/0.1/stores.geojson",
+      data: requestData,
       beforeSend: beforeSendWaiting,
       success: function(data) {
         this._addRoutes(data);
+        if (callback) {
+          callback(data);
+        }
       }.bind(this),
       complete: completeAjaxMap,
       error: ajaxError
