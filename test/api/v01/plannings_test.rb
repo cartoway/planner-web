@@ -332,37 +332,37 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
   end
 
-  # test 'should update routes' do
-  #   customers(:customer_one).update job_optimizer_id: nil
-  #   planning = plannings :planning_one
-  #   route = routes :route_one_one
+  test 'should update routes' do
+    customers(:customer_one).update job_optimizer_id: nil
+    planning = plannings :planning_one
+    route = routes :route_one_one
 
-  #   without_loading Stop do
-  #     patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'none', action: 'toggle' }
-  #     assert last_response.ok?
-  #     assert_equal true, JSON.parse(last_response.body)[0]['hidden']
-  #     patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'reverse', action: 'toggle' }
-  #     assert_equal false, JSON.parse(last_response.body)[0]['hidden']
+    without_loading Stop do
+      patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'none', action: 'toggle' }
+      assert last_response.ok?
+      assert_equal true, JSON.parse(last_response.body)[0]['hidden']
+      patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'reverse', action: 'toggle' }
+      assert_equal false, JSON.parse(last_response.body)[0]['hidden']
 
-  #     patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'all', action: 'lock' }
-  #     assert last_response.ok?
-  #     assert_equal true, JSON.parse(last_response.body)[0]['locked']
-  #     patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'reverse', action: 'lock' }
-  #     assert_equal false, JSON.parse(last_response.body)[0]['locked']
-  #   end
-  # end
+      patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'all', action: 'lock' }
+      assert last_response.ok?
+      assert_equal true, JSON.parse(last_response.body)[0]['locked']
+      patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'reverse', action: 'lock' }
+      assert_equal false, JSON.parse(last_response.body)[0]['locked']
+    end
+  end
 
-  # test 'should raise exceptions if job already in progress' do
-  #   customers(:customer_one).update job_optimizer_id: nil
-  #   planning = plannings(:planning_one)
-  #   Job.expects(:on_planning).with(planning.customer.job_optimizer, planning.id).returns(true)
-  #   route = routes(:route_one_one)
+  test 'should raise exceptions if job already in progress' do
+    customers(:customer_one).update job_optimizer_id: nil
+    planning = plannings(:planning_one)
+    Job.expects(:on_planning).with(planning.customer.job_optimizer, planning.id).returns(true)
+    route = routes(:route_one_one)
 
-  #   without_loading Stop do
-  #     patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'none', action: 'toggle' }
-  #     assert_equal 409, last_response.status
-  #   end
-  # end
+    without_loading Stop do
+      patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'none', action: 'toggle' }
+      assert_equal 409, last_response.status
+    end
+  end
 
   test 'should apply zonings' do
     [:during_optimization, nil].each do |mode|
