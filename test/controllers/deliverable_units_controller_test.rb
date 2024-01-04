@@ -88,10 +88,10 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
 
   test 'should return an icon in any situation' do
     #Default icon value is nil
-    assert_equal "fa-dumpster", @deliverable_unit.default_icon, response.body
+    assert_equal "fa-archive", @deliverable_unit.default_icon, response.body
 
-    @deliverable_unit.update! icon: "fa-store"
-    assert_equal "fa-store", @deliverable_unit.default_icon, response.body
+    @deliverable_unit.update! icon: "fa-home"
+    assert_equal "fa-home", @deliverable_unit.default_icon, response.body
   end
 
   test 'should remove unit when using enumarable' do

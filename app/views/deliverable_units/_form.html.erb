@@ -32,8 +32,8 @@
            [t('deliverable_units.form.other_icons'),
             @grouped_icons[1].map{ |icon| [icon, icon, {:data => {:content => "<i class='fa fa-fw #{icon}'></i> #{icon}"}, :selected => (@deliverable_unit.icon == icon) ? true : nil }]}
           ]
-        ]), include_blank: t('web.form.default', n: 'fa-dumpster'), class: 'form-control width_1 selectpicker', 'data-live-search' => true  %>
-        <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-dumpster fa-fw') %></span>
+        ]), include_blank: t('web.form.default', n: 'fa-archive'), class: 'form-control width_1 selectpicker', 'data-live-search' => true  %>
+        <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-archive fa-fw') %></span>
       </div>
     </div>
   </div>

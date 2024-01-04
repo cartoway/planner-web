@@ -122,17 +122,17 @@ module Mapotempo
 
     # Default values for icons
     config.tag_color_default = '#000000'.freeze
-    config.tag_icon_default = 'fa-location-pin'.freeze
+    config.tag_icon_default = 'fa-circle'.freeze
     config.tag_icon_size_default = 'medium'.freeze
 
     config.destination_color_default = '#707070'.freeze
-    config.destination_icon_default = 'fa-location-pin'.freeze
+    config.destination_icon_default = 'fa-circle'.freeze
     config.destination_icon_size_default = 'medium'.freeze
 
     config.route_color_default = config.destination_color_default
 
     config.store_color_default = '#000000'.freeze
-    config.store_icon_default = 'fa-store'.freeze
+    config.store_icon_default = 'fa-home'.freeze
     config.store_icon_size_default = 'large'.freeze
   end
 end
@@ -154,7 +154,7 @@ class TwitterBootstrapFormFor::FormBuilder
     value ||= submit_default_value
     @template.button_tag(options) {
       if icon != nil
-        icon ||= 'fa-floppy-disk'
+        icon ||= 'fa-floppy-o'
         @template.concat @template.content_tag('i', nil, class: "fa #{icon} fa-fw")
       end
       @template.concat ' '

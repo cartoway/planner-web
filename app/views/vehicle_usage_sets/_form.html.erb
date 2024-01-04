@@ -11,7 +11,7 @@
           class: 'form-control width_1_2' } %>
         <%= collection_select :vehicle_usage_set, :store_stop_id, @vehicle_usage_set.customer.stores, :id, :name, { include_blank: t('vehicle_usage_sets.form.store.none')}, {
           class: 'form-control width_1_2' } %>
-        <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-store fa-fw') %></span>
+        <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-home fa-fw') %></span>
       </div>
       <p class="help-block"><%= t '.stores_help' %></p>
     </div>
@@ -67,7 +67,7 @@
           class: 'form-control',
           placeholder: t('all.unit.hour_minute'),
           value: @vehicle_usage_set.service_time_end_time %>
-        <span class="input-group-addon"><i class="fa fa-stopwatch fa-fw"></i></span>
+        <span class="input-group-addon"><i class="fa fa-clock-o fa-fw"></i></span>
       </div>
       <p class="help-block"><%= t '.service_times_help' %></p>
     </div>

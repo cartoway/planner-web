@@ -54,7 +54,7 @@
                       = t 'all.value._no'
           %div
             %h5
-              %i.fa.fa-truck-field.fa-fw
+              %i.fa.fa-truck.fa-fw
               = t 'plannings.edit.dialog.optimization.vehicles.title'
             .row
               .col-xs-7
@@ -82,7 +82,7 @@
           - if current_user.customer.deliverable_units.any?{ |du| current_user.customer.vehicles.any?{ |v| v.default_capacities[du.id] } }
             %div
               %h5
-                %i.fa.fa-dumpster.fa-fw
+                %i.fa.fa-archive.fa-fw
                 = t 'plannings.edit.dialog.optimization.deliverable_units.title'
               - current_user.customer.deliverable_units.each do |du|
                 - if current_user.customer.vehicles.any?{ |v| v.default_capacities[du.id] }

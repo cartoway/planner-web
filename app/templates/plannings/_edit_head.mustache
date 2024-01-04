@@ -1,8 +1,7 @@
-
 <div class="row">
   <div class="col-xs-4" title="{{#i18n}}plannings.edit.stops_help{{/i18n}}"><div class="primary route-info"><i class="fa fa-check-square fa-fw"></i>{{size_active}}&nbsp;/&nbsp;{{size}}</div></div>
   {{#averages}}
-    <div class="col-xs-4" title="{{#i18n}}plannings.edit.vehicles_used_help{{/i18n}}"><div class="primary route-info"><i class="fa fa-truck-field fa-fw" aria-hidden="true"></i>{{averages.vehicles_used}}&nbsp;/&nbsp;{{averages.vehicles}} </div></div>
+    <div class="col-xs-4" title="{{#i18n}}plannings.edit.vehicles_used_help{{/i18n}}"><div class="primary route-info"><i class="fa fa-truck fa-fw" aria-hidden="true"></i>{{averages.vehicles_used}}&nbsp;/&nbsp;{{averages.vehicles}} </div></div>
   {{/averages}}
   <div class="col-xs-4" title="{{#i18n}}plannings.edit.duration_help{{/i18n}}"><div class="{{#out_of_drive_time}}danger {{/out_of_drive_time}}primary route-info"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}</div></div>
   {{#averages}}

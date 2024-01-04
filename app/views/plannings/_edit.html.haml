@@ -15,7 +15,7 @@
       #extend_close_panel.row
         .pull-right
           %button.btn.btn-default.btn-sm.extend{title: t('.open_planning_panel'), type: "button"}
-            %i.fa.fa-maximize
+            %i.fa.fa-arrows-alt
           %button.btn.btn-default.btn-sm.sidebar-close{title: t('.collapse_planning_panel'), type: "button"}
             %i.fa.fa-caret-left
       #planning_tools.row
@@ -57,13 +57,13 @@
                   = t 'plannings.edit.active_all'
           .dropdown.btn-group
             %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.toggle_route_data'), type: "button"}
-              %i.fa.fa-book
+              %i.fa.fa-folder-o
               %span.caret
             -# https://github.com/twbs/bootstrap/issues/1411
             %ul#data_routes_dropdown.dropdown-menu{role: "menu"}
               %li{"data-selection": "none"}
                 %a.active_none{href: "#"}
-                  %i.fa.fa-book.fa-fw
+                  %i.fa.fa-folder-o.fa-fw
                   = t 'plannings.edit.active_none'
               %li{"data-selection": "reverse"}
                 %a.active_reverse{href: "#"}
@@ -71,7 +71,7 @@
                   = t 'plannings.edit.active_reverse'
               %li{"data-selection": "all"}
                 %a.active_all{href: "#"}
-                  %i.fa.fa-book-open.fa-fw
+                  %i.fa.fa-folder-open-o.fa-fw
                   = t 'plannings.edit.active_all'
           .dropdown.btn-group
             %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.lock_routes'), type: "button"}
@@ -94,7 +94,7 @@
           - if @manage_planning[:manage_export]
             .dropdown.btn-group
               %a.btn.btn-default.btn-sm.right.export.dropdown-toggle{"data-toggle": "dropdown", title: t('.exports'), type: "button"}
-                %i.fa.fa-share-nodes
+                %i.fa.fa-share-square-o
                 %span.caret
               %ul.dropdown-menu
                 %li.dropdown-header

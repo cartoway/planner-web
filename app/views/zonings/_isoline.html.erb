@@ -21,7 +21,7 @@
                     <div class="input-group">
                       <%= select_tag :isochrone_vehicle_usage_set_id, options_for_select(Hash[@isochrone.collect{ |i| [i[0].name, i[0].id] }], disabled: @isochrone.select{ |i| i[-1] }.collect(&:first)), class: 'form-control' %>
                       <span class="input-group-addon">
-                        <i class="fa fa-truck-field fa-fw"></i>
+                        <i class="fa fa-truck fa-fw"></i>
                       </span>
                     </div>
                     <p class="help-block">
@@ -115,7 +115,7 @@
                     <div class="input-group">
                       <%= select_tag :isodistance_vehicle_usage_set_id, options_for_select(Hash[@isodistance.collect{ |i| [i[0].name, i[0].id] }], disabled: @isodistance.select{ |i| i[-1] }.collect(&:first)), class: 'form-control' %>
                       <span class="input-group-addon">
-                        <i class="fa fa-truck-field fa-fw"></i>
+                        <i class="fa fa-truck fa-fw"></i>
                       </span>
                     </div>
                     <p class="help-block">

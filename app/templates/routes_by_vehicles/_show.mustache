@@ -12,7 +12,7 @@
             {{/colors}}
           </select>
           <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="display: inline-block;"><span class="selection" title="{{#i18n}}plannings.edit.route_change_color_help{{/i18n}}"><span aria-labelledby="select2-route[color]-uj-container" tabindex="0" class="select2-selection select2-selection--single" role="combobox" aria-autocomplete="list" aria-haspopup="true" aria-expanded="false"><span id="select2-route[color]-uj-container" class="select2-selection__rendered"><span class="color_small" style="background:{{color_fake}};vertical-align: top;">{{^color_fake}}<i class="fa fa-paint-brush" style="color: $grey-color;"></i>{{/color_fake}}</span></span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
-          <!--i class="fa fa-location-pin" style="color: {{default_color}}"></i--> {{name}}</h3>
+          <!--i class="fa fa-circle" style="color: {{default_color}}"></i--> {{name}}</h3>
       </div>
       <div class="panel-body">
         <div class="planning-infos">
@@ -30,10 +30,10 @@
           </div>
         </div>
         <!-------------------------------- progress-bar ? ------------------------->
-        <span class="primary route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}/{{work_or_window_time}}</span>
+        <span class="primary route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i>{{duration}}/{{work_or_window_time}}</span>
         {{#route_averages}}
           (<span title="{{#i18n}}plannings.edit.route_driving_time_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{route_averages.drive_time}}</span><!--
-          -->{{#route_averages.visits_duration}} <span title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{route_averages.visits_duration}}</span>{{/route_averages.visits_duration}}<!--
+          -->{{#route_averages.visits_duration}} <span title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i>{{route_averages.visits_duration}}</span>{{/route_averages.visits_duration}}<!--
           -->{{#route_averages.wait_time}} <span title="{{#i18n}}plannings.edit.route_wait_time_help{{/i18n}}"><i class="fa fa-hourglass-half fa-fw"></i>{{route_averages.wait_time}}</span>{{/route_averages.wait_time}})
         {{/route_averages}}
         <span class="primary route-info" title="{{#i18n}}plannings.edit.route_distance_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{distance}}</span>
@@ -51,11 +51,11 @@
               <li title="{{#i18n}}plannings.edit.error.no_geolocalization_help{{/i18n}}"><i class="fa fa-map-marker fa-fw"></i> {{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}</li>
             {{/route_no_geolocalization}}
             {{#route_out_of_window}}
-              <li title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_window{{/i18n}}</li>
+              <li title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_window{{/i18n}}</li>
             {{/route_out_of_window}}
             {{^route_unmanageable_capacity}}
               {{#route_out_of_capacity}}
-                <li title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"><i class="fa fa-dumpster fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_capacity{{/i18n}}</li>
+                <li title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"><i class="fa fa-archive fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_capacity{{/i18n}}</li>
               {{/route_out_of_capacity}}
             {{/route_unmanageable_capacity}}
             {{#route_unmanageable_capacity}}
@@ -71,7 +71,7 @@
               <li title="{{#i18n}}plannings.edit.error.out_of_work_time{{/i18n}}"><i class="fa fa-repeat fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_work_time{{/i18n}}</li>
             {{/route_out_of_work_time}}
             {{#route_out_of_max_distance}}
-              <li title="{{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}"><i class="fa fa-truck-field fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}</li>
+              <li title="{{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}"><i class="fa fa-truck fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}</li>
             {{/route_out_of_max_distance}}
             {{#route_no_path}}
               <li title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"><i class="fa fa-road fa-fw"></i> {{#i18n}}plannings.edit.error.no_path{{/i18n}}</li>
@@ -84,7 +84,7 @@
       <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
         <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} list-group-item">
           <span class="store-status stop-status-{{status_code}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}" {{^status}} style="display: none;" {{/status}}></span>
-          <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
+          <i class="fa {{icon}}{{^icon}}fa-home{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
           <div class="title">
             {{^geocoded}}
               <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
@@ -127,7 +127,7 @@
       {{#stops}}
         {{#wait_time}}
           <li class="wait ui-state-disabled list-group-item">
-            <i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.wait{{/i18n}} {{wait_time}}
+            <i class="fa fa-clock-o fa-fw"></i> {{#i18n}}plannings.edit.wait{{/i18n}} {{wait_time}}
           </li>
         {{/wait_time}}
         {{#rest}}
@@ -137,7 +137,7 @@
           <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
           <div class="title">
             {{#out_of_window}}
-              <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
+              <i class="fa fa-clock-o fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
             {{/out_of_window}}
             {{#out_of_drive_time}}
               <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
@@ -149,7 +149,7 @@
               <i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i>
             {{/out_of_work_time}}
             {{#out_of_max_distance}}
-              <i class="fa fa-truck-field fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
+              <i class="fa fa-truck fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
             {{/out_of_max_distance}}
             {{#unmanageable_capacity}}
               <i class="fa fa-boat fa-fw" title="{{#i18n}}plannings.edit.error.unmanageable_capacity_help{{/i18n}}"></i>
@@ -176,11 +176,11 @@
               <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
             {{/geocoded}}
             {{#out_of_window}}
-              <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
+              <i class="fa fa-clock-o fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
             {{/out_of_window}}
             {{^unmanageable_capacity}}
               {{#out_of_capacity}}
-                <i class="fa fa-dumpster fa-fw" title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"></i>
+                <i class="fa fa-archive fa-fw" title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"></i>
               {{/out_of_capacity}}
             {{/unmanageable_capacity}}
             {{#unmanageable_capacity}}
@@ -220,7 +220,7 @@
       <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
         <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} list-group-item">
           <span class="store-status stop-status-{{status_code}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}" {{^status}} style="display: none;" {{/status}}></span>
-          <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
+          <i class="fa {{icon}}{{^icon}}fa-home{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
           <div class="title">
             {{^geocoded}}
               <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
@@ -232,7 +232,7 @@
               <i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i>
             {{/stop_out_of_work_time}}
             {{#stop_out_of_max_distance}}
-              <i class="fa fa-truck-field fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
+              <i class="fa fa-truck fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
             {{/stop_out_of_max_distance}}
             {{#no_path}}
               <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>

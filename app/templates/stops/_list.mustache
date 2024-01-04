@@ -31,7 +31,7 @@
           {{/manage_destination}}
           {{#geocoded}}<a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>{{/geocoded}}
           <div class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.send_to_route_help{{/i18n}}"><i class="fa fa-truck-field fa-fw"></i><span class="caret"></span></button>
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.send_to_route_help{{/i18n}}"><i class="fa fa-truck fa-fw"></i><span class="caret"></span></button>
             <ul class="dropdown-menu pull-right" role="menu">
               {{#routes}}
                 {{#vehicle_usage_id}}
@@ -65,7 +65,7 @@
       <div class="route-tools">
         <div class="btn-group route-btn-group">
           {{#manage_vehicle}}
-          <a href="{{path}}" class="btn btn-primary btn-xs" title="{{#i18n}}plannings.edit.vehicle_help{{/i18n}}"><i class="fa fa-truck-field"></i></a>
+          <a href="{{path}}" class="btn btn-primary btn-xs" title="{{#i18n}}plannings.edit.vehicle_help{{/i18n}}"><i class="fa fa-truck"></i></a>
           {{/manage_vehicle}}
           <button type="button" data-toggle="modal" data-target="#optimization-modal" data-keyboard="true" class="btn btn-primary btn-xs optimize" title="{{#i18n}}plannings.edit.optimize_help{{/i18n}}"{{#locked}}disabled="disabled"{{/locked}}><i class="fa fa-gear"></i></button>
         </div>
@@ -91,11 +91,11 @@
         </div>
         <div class="btn-group route-btn-group pull-right">
           <button type="button" class="toggle btn btn-default btn-xs" title="{{#i18n}}plannings.edit.toggle_help{{/i18n}}"><i class="fa fa-eye{{#hidden}}-slash{{/hidden}}"></i></button>
-          <button type="button" class="route-data-toggle btn btn-default btn-xs" title="{{#i18n}}plannings.edit.toggle_route_data_help{{/i18n}}"><i class="fa fa-book-open"></i></button>
+          <button type="button" class="route-data-toggle btn btn-default btn-xs" title="{{#i18n}}plannings.edit.toggle_route_data_help{{/i18n}}"><i class="fa fa-folder-open-o"></i></button>
           <button type="button" class="lock btn {{^locked}}btn-default{{/locked}}{{#locked}}btn-warning{{/locked}} btn-xs" title="{{#i18n}}plannings.edit.locked_help{{/i18n}}"><i class="fa fa-{{^locked}}un{{/locked}}lock"></i></button>
           {{#manage_export}}
           <div class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.export_help{{/i18n}}"><i class="fa fa-share-nodes"></i><span class="caret"></span></button>
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.export_help{{/i18n}}"><i class="fa fa-share-square-o"></i><span class="caret"></span></button>
             <ul class="dropdown-menu pull-right" role="menu">
               {{^callback_button}}
                 {{#customer_enable_external_callback}}
@@ -293,10 +293,10 @@
           {{#size_destinations}}
             <div class="col-xs-4"><div class="primary route-info"><i class="fa fa-map-marker fa-fw"></i>{{size_destinations}}&nbsp;{{#i18n}}plannings.edit.destinations{{/i18n}}</div></div>
           {{/size_destinations}}
-          <div class="col-xs-4"><div class="{{#route_out_of_drive_time}}danger {{/route_out_of_drive_time}}{{#route_out_of_work_time}}danger {{/route_out_of_work_time}}primary route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}&nbsp;/&nbsp;{{work_or_window_time}}</div></div>
+          <div class="col-xs-4"><div class="{{#route_out_of_drive_time}}danger {{/route_out_of_drive_time}}{{#route_out_of_work_time}}danger {{/route_out_of_work_time}}primary route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i>{{duration}}&nbsp;/&nbsp;{{work_or_window_time}}</div></div>
           {{#route_averages}}
             <div class="col-xs-4"><div class="primary route-info" title="{{#i18n}}plannings.edit.route_driving_time_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{route_averages.drive_time}}</div></div>
-            {{#route_averages.visits_duration}}<div class="col-xs-4"><div class="primary route-info" title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-user-clock fa-fw"></i>{{route_averages.visits_duration}}</div></div>{{/route_averages.visits_duration}}
+            {{#route_averages.visits_duration}}<div class="col-xs-4"><div class="primary route-info" title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i>{{route_averages.visits_duration}}</div></div>{{/route_averages.visits_duration}}
             {{#route_averages.wait_time}}<div class="col-xs-4"><div class="primary route-info" title="{{#i18n}}plannings.edit.route_wait_time_help{{/i18n}}"><i class="fa fa-hourglass-half fa-fw"></i>{{route_averages.wait_time}}</div></div>{{/route_averages.wait_time}}
           {{/route_averages}}
           <div class="col-xs-4"><div class="{{#route_out_of_max_distance}}danger {{/route_out_of_max_distance}}primary route-info" title="{{#i18n}}plannings.edit.route_distance_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{distance}}</div></div>
@@ -313,11 +313,11 @@
             <li title="{{#i18n}}plannings.edit.error.no_geolocalization_help{{/i18n}}"><i class="fa fa-map-marker fa-fw"></i> {{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}</li>
           {{/route_no_geolocalization}}
           {{#route_out_of_window}}
-            <li title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_window{{/i18n}}</li>
+            <li title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"><i class="fa fa-clock-o fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_window{{/i18n}}</li>
           {{/route_out_of_window}}
           {{^route_unmanageable_capacity}}
             {{#route_out_of_capacity}}
-              <li title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"><i class="fa fa-dumpster fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_capacity{{/i18n}}</li>
+              <li title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"><i class="fa fa-archive fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_capacity{{/i18n}}</li>
             {{/route_out_of_capacity}}
           {{/route_unmanageable_capacity}}
           {{#route_unmanageable_capacity}}
@@ -333,7 +333,7 @@
             <li title="{{#i18n}}plannings.edit.error.out_of_work_time{{/i18n}}"><i class="fa fa-repeat fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_work_time{{/i18n}}</li>
           {{/route_out_of_work_time}}
           {{#route_out_of_max_distance}}
-            <li title="{{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}"><i class="fa fa-truck-field fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}</li>
+            <li title="{{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}"><i class="fa fa-truck fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}</li>
           {{/route_out_of_max_distance}}
           {{#route_no_path}}
             <li title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"><i class="fa fa-road fa-fw"></i> {{#i18n}}plannings.edit.error.no_path{{/i18n}}</li>
@@ -345,7 +345,7 @@
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
       <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} list-group-item">
         <span class="store-status stop-status-{{status_code}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}" {{^status}} style="display: none;" {{/status}}></span>
-        <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
+        <i class="fa {{icon}}{{^icon}}fa-home{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
         <div class="title">
           {{^geocoded}}
             <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
@@ -389,7 +389,7 @@
     {{#stops}}
       {{#wait_time}}
         <li class="wait ui-state-disabled list-group-item">
-          <i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.wait{{/i18n}} {{wait_time}}
+          <i class="fa fa-clock-o fa-fw"></i> {{#i18n}}plannings.edit.wait{{/i18n}} {{wait_time}}
         </li>
       {{/wait_time}}
       {{#rest}}
@@ -399,7 +399,7 @@
         <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
         <div class="title">
           {{#out_of_window}}
-            <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
+            <i class="fa fa-clock-o fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
           {{/out_of_window}}
           {{#out_of_drive_time}}
             <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
@@ -408,7 +408,7 @@
             <i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i>
           {{/out_of_work_time}}
           {{#out_of_max_distance}}
-            <i class="fa fa-truck-field fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
+            <i class="fa fa-truck fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
           {{/out_of_max_distance}}
           {{#no_path}}
             <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
@@ -432,10 +432,10 @@
             <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
           {{/geocoded}}
           {{#out_of_window}}
-            <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
+            <i class="fa fa-clock-o fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
           {{/out_of_window}}
           {{^unmanageable_capacity}}{{#out_of_capacity}}
-            <i class="fa fa-dumpster fa-fw" title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"></i>
+            <i class="fa fa-archive fa-fw" title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"></i>
           {{/out_of_capacity}}{{/unmanageable_capacity}}
           {{#out_of_drive_time}}
             <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
@@ -476,7 +476,7 @@
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
       <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} list-group-item">
         <span class="store-status stop-status-{{status_code}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}" {{^status}} style="display: none;"{{/status}}></span>
-        <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
+        <i class="fa {{icon}}{{^icon}}fa-home{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
         <div class="title">
           {{^geocoded}}
             <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
@@ -488,7 +488,7 @@
             <i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i>
           {{/stop_out_of_work_time}}
           {{#stop_out_of_max_distance}}
-            <i class="fa fa-truck-field fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
+            <i class="fa fa-truck fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
           {{/stop_out_of_max_distance}}
           {{#no_path}}
             <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>

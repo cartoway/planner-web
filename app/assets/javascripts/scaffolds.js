@@ -133,7 +133,7 @@ $(document).on('ready page:load', function() {
     if ($this.find('[class="duration"]').length == 0) {
       var input = '<div class="duration" style="display: block !important">' +
         '<span class="primary route-info" title="' + I18n.t('plannings.edit.route_visits_duration_help') + '" data-toggle="tooltip">' +
-        '<i class="fa fa-stopwatch fa-fw"></i>' +
+        '<i class="fa fa-clock-o fa-fw"></i>' +
         '<span class="duration"></span>' +
         '</span>' +
         '</div>';
@@ -626,13 +626,13 @@ L.disableClustersControl = function(map, routesLayer) {
       var button = L.DomUtil.create('a', '', container);
       button.title = I18n.t('plannings.edit.marker_clusters');
 
-      var icon = L.DomUtil.create('i', 'cluster-icon fa fa-shapes fa-lg', button);
+      var icon = L.DomUtil.create('i', 'cluster-icon fa fa-certificate fa-lg', button);
       icon.style.marginLeft = '2px';
 
       container.onclick = function() {
         routesLayer.switchMarkerClusters();
 
-        $('.cluster-icon').toggleClass('fa-arrows-to-circle fa-shapes');
+        $('.cluster-icon').toggleClass('fa-circle-o fa-certificate');
       };
 
       return container;

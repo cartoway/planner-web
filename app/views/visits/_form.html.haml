@@ -34,7 +34,7 @@
       = f.text_field :duration, {                                                                                                                                                                      |
         value: visit.duration_time_with_seconds,                                                                                                                                                       |
         placeholder: visit.destination.customer.visit_duration ? visit.destination.customer.visit_duration_time_with_seconds + ' (' + t('.duration_default') + ')' : t('all.unit.hour_minute_second'), |
-        input_group: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} do                                                                                                                          |
+        input_group: content_tag('i', '', class: 'fa fa-clock-o fa-fw')} do                                                                                                                          |
         %p.help-block= t '.duration_help'
       #visit_open_close_input{class: "form-group #{nested_has_error?(:time_window_end_1, visit.id)}"}
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_start_1"}= t 'activerecord.attributes.visit.time_window_start_1'

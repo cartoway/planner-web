@@ -24,13 +24,13 @@
                 %li.menu-section.menu-list-item
                   = link_to customers_path do
                     .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-user-gear.fa-fw
+                      %i.fa.fa-user.fa-fw
                       .hidden-menu
                         = t 'customers.menu.customers'
                 %li.menu-section.menu-list-item
                   = link_to admin_users_path do
                     .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-user-gear.fa-fw
+                      %i.fa.fa-user.fa-fw
                       .hidden-menu
                         = t 'admin.users.menu.users'
                 %li.menu-section.menu-list-item
@@ -44,7 +44,7 @@
                 %li#menu-plan.menu-list-item
                   %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#planningsCollpase'}
                     .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-map-location.fa-fw
+                      %i.fa.fa-calendar-o.fa-fw
                       .hidden-menu.menu_label
                         = t 'plannings.menu.plannings'
                   %ul#planningsCollpase.accordion-menu.menu-content.collapse.hidden-menu
@@ -54,7 +54,7 @@
                         = t 'all.verb.new'
                     %li
                       = link_to plannings_path do
-                        %i.fa.fa-map-location.fa-fw
+                        %i.fa.fa-calendar-o.fa-fw
                         = t 'all.verb.list'
                     %li.divider
                     - if current_user.customer.default_max_plannings
@@ -79,19 +79,19 @@
                         %li{style: "display: inline;" }
                           = link_to edit_planning_path(planning) do
                             .text-overflow
-                              %i.fa.fa-route.fa-fw
+                              %i.fa.fa-calendar.fa-fw
                               = planning.name
               - else
                 %li#menu-plan.disabled.menu-section.menu-content.menu-list-item
                   %a{href: "#"}
-                    %i.fa.fa-map-location.fa-fw
+                    %i.fa.fa-calendar-o.fa-fw
                     .hidden-menu
                       = t 'plannings.menu.plannings'
 
               %li#menu-zoning.menu-list-item
                 %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#zoningsCollpase'}
                   .d-flex.align-items-center.justify-content-center
-                    %i.fa.fa-draw-polygon.fa-fw
+                    %i.fa.fa-object-ungroup.fa-fw
                     .hidden-menu.menu_label
                       = t 'zonings.menu.zonings'
                 %ul#zoningsCollpase.accordion-menu.menu-content.collapse.hidden-menu
@@ -101,7 +101,7 @@
                       = t 'all.verb.new'
                   %li
                     = link_to zonings_path do
-                      %i.fa.fa-map-location.fa-fw
+                      %i.fa.fa-object-ungroup.fa-fw
                       = t 'all.verb.list'
                   %li.divider
                   - if current_user.customer.default_max_zonings
@@ -126,7 +126,7 @@
                       %li{style: "display: inline;" }
                         = link_to edit_zoning_path(zoning) do
                           .text-overflow
-                            %i.fa.fa-circle-nodes.fa-fw
+                            %i.fa.fa-circle-o.fa-fw
                             = zoning.name
 
               %li#menu-destination.menu-list-item
@@ -170,13 +170,13 @@
               %li.pannel.panel-default.menu-list-item
                 %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#vehiclesCollpase'}
                   .d-flex.align-items-center.justify-content-center
-                    %i.fa.fa-truck-field.fa-fw
+                    %i.fa.fa-truck.fa-fw
                     .hidden-menu.menu_label
                       = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
                 %ul#vehiclesCollpase.accordion-menu.menu-content.collapse.hidden-menu
                   %li
                     = link_to vehicle_usage_sets_path do
-                      %i.fa.fa-truck-field.fa-fw
+                      %i.fa.fa-truck.fa-fw
                       = t 'all.verb.list'
                   %li
                     = link_to import_vehicle_usage_sets_path do
@@ -185,11 +185,11 @@
                   %li.divider
                   %li
                     = link_to deliverable_units_path do
-                      %i.fa.fa-dumpster.fa-fw
+                      %i.fa.fa-archive.fa-fw
                       = t 'vehicle_usage_sets.menu.deliverable_units'
                   %li
                     = link_to stores_path do
-                      %i.fa.fa-store.fa-fw
+                      %i.fa.fa-home.fa-fw
                       = t 'destinations.menu.stores'
                   %li
                     = link_to store_import_path do
@@ -243,14 +243,14 @@
                   - if current_user.customer
                     %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
                       .d-flex.align-items-center.justify-content-center
-                        %i.fa.fa-user-gear.fa-fw
+                        %i.fa.fa-user.fa-fw
                         .hidden-menu
                           %span.menu_label
                             = current_user.customer.name
                   - else
                     %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
                       .d-flex.align-items-center.justify-content-center
-                        %i.fa.fa-user-gear.fa-fw
+                        %i.fa.fa-user.fa-fw
                         .hidden-menu
                           %span.menu_label
                             = current_user.email
@@ -262,7 +262,7 @@
                           = t 'customers.menu.customer'
                     %li
                       = link_to edit_user_path(current_user) do
-                        %i.fa.fa-user-gear.fa-fw
+                        %i.fa.fa-user.fa-fw
                         = t 'customers.menu.user_settings'
                     %li.divider
                     %li
@@ -274,13 +274,13 @@
                 .divider.solid
                 %li.menu-list-item
                   = link_to new_user_session_path, class: 'btn' do
-                    %i.fa.fa-user-gear.fa-fw
+                    %i.fa.fa-user.fa-fw
                     .hidden-menu
                       = t 'devise.sessions.new.sign_in'
                 - if Mapotempo::Application.config.self_care
                   %li.menu-list-item
                     = link_to new_user_registration_path, class: 'btn' do
-                      %i.fa.fa-user-gear.fa-fw
+                      %i.fa.fa-user.fa-fw
                       .hidden-menu
                         = t 'devise.registrations.new.sign_up'
 

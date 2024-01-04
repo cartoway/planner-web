@@ -221,7 +221,7 @@ const plannings_form = function() {
 const plannings_new = function(params) {
   var onPlanningCreateModal = bootstrap_dialog({
     title: I18n.t('plannings.new.title'),
-    icon: 'fa-calendar-check',
+    icon: 'fa-calendar-check-o',
     message: SMT['modals/default_with_progress']({
       msg: I18n.t('plannings.new.dialog.new_planning')
     })
@@ -353,8 +353,8 @@ export const plannings_edit = function(params) {
           var isMoving = pos.speed && (Date.parse(pos.time) > Date.now() - 600 * 1000);
           var direction_icon = pos.direction ? '<i class="fa fa-location-arrow fa-stack-1x vehicle-direction" style="transform: rotate(' + (parseInt(pos.direction) - 45) + 'deg);" />' : '';
           var iconContent = isMoving ?
-            '<span class="fa-stack" data-route_id="' + route.route_id + '"><i class="fa fa-truck-field fa-stack-2x vehicle-icon pulse" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>' + direction_icon + '</span>' :
-            '<i class="fa fa-truck-field fa-lg vehicle-icon" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>';
+            '<span class="fa-stack" data-route_id="' + route.route_id + '"><i class="fa fa-truck fa-stack-2x vehicle-icon pulse" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>' + direction_icon + '</span>' :
+            '<i class="fa fa-truck fa-lg vehicle-icon" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>';
           vehicleLayer.removeLayer(vehicleMarkers[pos.vehicle_id]);
 
           var icon = new L.divIcon({
@@ -642,10 +642,10 @@ export const plannings_edit = function(params) {
 
     $('.route-data-toggle').each(function(index, element) {
       var i = $("i", element);
-      if (selection == 'all' || selection == 'inverse' && i.hasClass('fa-book')) {
-        i.removeClass("fa-book").addClass("fa-book-open");
-      } else if (i.hasClass('fa-book-open')) {
-        i.removeClass("fa-book-open").addClass("fa-book");
+      if (selection == 'all' || selection == 'inverse' && i.hasClass('fa-folder-o')) {
+        i.removeClass("fa-folder-o").addClass("fa-folder-open-o");
+      } else if (i.hasClass('fa-folder-open-o')) {
+        i.removeClass("fa-folder-open-o").addClass("fa-folder-o");
       }
     });
 
@@ -1240,9 +1240,9 @@ export const plannings_edit = function(params) {
           var hidden = !row.is(":visible");
           var i = $("i", this);
           if (hidden) {
-            i.removeClass("fa-book-open").addClass("fa-book");
+            i.removeClass("fa-folder-open-o").addClass("fa-folder-o");
           } else {
-            i.removeClass("fa-book").addClass("fa-book-open");
+            i.removeClass("fa-folder-o").addClass("fa-folder-open-o");
           }
         })
         .on("click", ".marker", function() {

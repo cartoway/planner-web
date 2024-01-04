@@ -19,7 +19,7 @@ require 'font_awesome'
 
 class DeliverableUnit < ApplicationRecord
   ICON_SIZE = %w(small medium large).freeze
-  ICON_DEFAULT = 'fa-dumpster'.freeze
+  ICON_DEFAULT = 'fa-archive'.freeze
 
   default_scope { order(:label) }
 
