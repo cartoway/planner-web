@@ -62,24 +62,36 @@ const api_web_v01_destinations_index = function(params, api) {
   if (api === 'destinations') {
     var storesLayers = map.storesLayers = L.featureGroup();
     storesLayers.addTo(map);
+
+    markersGroup.showAllDestinations(ajaxParams, function() {
+      if (fitBounds) {
+        var bounds = markersGroup.getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            maxZoom: 15,
+            padding: [20, 20]
+          });
+        }
+      }
+    });
+  } else if (api == 'stores') {
+    markersGroup.showAllStores(ajaxParams, function() {
+      if (fitBounds) {
+        var bounds = markersGroup.getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            maxZoom: 15,
+            padding: [20, 20]
+          });
+        }
+      }
+    });
   }
 
   progressBar && progressBar.advanceTo(50);
   var ajaxParams = {};
   if (ids) ajaxParams.ids = ids.join(',');
   if (params.store_ids) ajaxParams.store_ids = params.store_ids.join(',');
-
-  markersGroup.showAllDestinations(ajaxParams, function() {
-    if (fitBounds) {
-      var bounds = markersGroup.getBounds();
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, {
-          maxZoom: 15,
-          padding: [20, 20]
-        });
-      }
-    }
-  });
 };
 
 Paloma.controller('ApiWeb/V01/Destinations', {
