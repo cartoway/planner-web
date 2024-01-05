@@ -289,13 +289,26 @@ $sidebar-margins: 10px;
         .route-info {
           white-space: nowrap;
           margin: 2px;
-          border: 1px solid lightgray;
           border-radius: 4px;
-          padding: 2px 8px;
+          padding: 2px 6px;
           text-overflow: ellipsis;
           overflow: hidden;
+        }
+        .primary.route-info {
+          border: 2px solid $primary-color;
+        }
+
+        .danger.route-info {
+          border: 2px solid $danger-color !important;
+          background-color: $warning-color !important;
+          background: #fef1ec image-url("ui-bg_glass_95_fef1ec_1x400") 50% 50% repeat-x;
+          color: $danger-color !important;
+        }
+
+        .inactive.route-info {
+          border: 1px solid lightgray;
           background-color: #eee;
-          color: #555;
+          color: #555
         }
 
         .route-tools {
@@ -629,7 +642,7 @@ $sidebar-margins: 10px;
       }
 
       ul.ui-state-error {
-        margin-top: 10px;
+        margin: 2px;
         padding-top: 5px;
         padding-bottom: 5px;
         border-color: #F5ADAD;
