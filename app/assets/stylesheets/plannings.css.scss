@@ -680,7 +680,7 @@ $sidebar-margins: 10px;
 
         .route-btn-group .btn {
           display: block;
-         }
+        }
       }
 
       .panel-body {
@@ -693,6 +693,9 @@ $sidebar-margins: 10px;
 
         .btn-group {
           margin: 0 2px;
+        }
+        .route-btn-group .btn {
+          min-width: 27px;
         }
       }
 
