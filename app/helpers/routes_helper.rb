@@ -34,6 +34,8 @@ module RoutesHelper
       unit = route.planning.customer.deliverable_units.find{ |du| du.id == id }
       next unless unit
 
+      capacity = vehicle && vehicle.default_capacities[id]
+
       q = number_with_precision(v, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
       q += ' / ' + number_with_precision(vehicle.default_capacities[id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[id]
       q += "\u202F" + unit.label if unit.label
@@ -42,7 +44,8 @@ module RoutesHelper
         quantity: v,
         label: unit.label,
         unit_icon: unit.default_icon,
-        quantity_formatted: q
+        quantity_formatted: q,
+        out_of_capacity: v > capacity
       }
     }.compact
   end

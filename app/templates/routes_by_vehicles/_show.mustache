@@ -30,18 +30,18 @@
           </div>
         </div>
         <!-------------------------------- progress-bar ? ------------------------->
-        <span class="route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}/{{work_or_window_time}}</span>
+        <span class="primary route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}/{{work_or_window_time}}</span>
         {{#route_averages}}
           (<span title="{{#i18n}}plannings.edit.route_driving_time_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{route_averages.drive_time}}</span><!--
           -->{{#route_averages.visits_duration}} <span title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{route_averages.visits_duration}}</span>{{/route_averages.visits_duration}}<!--
           -->{{#route_averages.wait_time}} <span title="{{#i18n}}plannings.edit.route_wait_time_help{{/i18n}}"><i class="fa fa-hourglass-half fa-fw"></i>{{route_averages.wait_time}}</span>{{/route_averages.wait_time}})
         {{/route_averages}}
-        <span class="route-info" title="{{#i18n}}plannings.edit.route_distance_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{distance}}</span>
+        <span class="primary route-info" title="{{#i18n}}plannings.edit.route_distance_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{distance}}</span>
         {{#route_averages}}
-          <span class="route-info" title="{{#i18n}}plannings.edit.route_speed_average_help{{/i18n}}"><i class="fa fa-tachometer fa-fw" aria-hidden="true"></i>{{route_averages.speed}} {{prefered_unit}}/h</span>
+          <span class="primary route-info" title="{{#i18n}}plannings.edit.route_speed_average_help{{/i18n}}"><i class="fa fa-tachometer fa-fw" aria-hidden="true"></i>{{route_averages.speed}} {{prefered_unit}}/h</span>
         {{/route_averages}}
         {{#quantities}}
-          <span class="route-info" title="{{#i18n}}plannings.edit.route_quantity_help{{/i18n}}">
+          <span class="{{#out_of_capacity}}danger{{/out_of_capacity}}{{^out_of_capacity}}primary{{/out_of_capacity}} route-info" title="{{#i18n}}plannings.edit.route_quantity_help{{/i18n}}">
             <i class="fa {{unit_icon}} fa-fw"></i><span data-quantity_id="{{id}}">{{quantity_formatted}}</span>
           </span>
         {{/quantities}}

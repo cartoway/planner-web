@@ -726,16 +726,19 @@ class Planning < ApplicationRecord
           unit = route.planning.customer.deliverable_units.find{ |du| du.id == id }
           next unless unit
 
+          capacity = vehicle && vehicle.default_capacities[id]
           if hashy_map.key?(unit.id)
             hashy_map[unit.id][:quantity] += v
-            hashy_map[unit.id][:capacity] += vehicle ? vehicle.default_capacities[id] || 0 : 0
+            hashy_map[unit.id][:capacity] += capacity || 0
+            hashy_map[unit.id][:out_of_capacity] = capacity && (hashy_map[unit.id][:quantity] > hashy_map[unit.id][:capacity])
           else
             hashy_map[unit.id] = {
               id: unit.id,
               label: unit.label,
               unit_icon: unit.default_icon,
               quantity: v,
-              capacity: vehicle ? vehicle.default_capacities[id] || 0 : 0
+              capacity: capacity || 0,
+              out_of_capacity: capacity && (v > capacity)
             }
           end
         end

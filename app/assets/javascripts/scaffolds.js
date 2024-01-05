@@ -132,7 +132,7 @@ $(document).on('ready page:load', function() {
     var $this = this;
     if ($this.find('[class="duration"]').length == 0) {
       var input = '<div class="duration" style="display: block !important">' +
-        '<span class="route-info" title="' + I18n.t('plannings.edit.route_visits_duration_help') + '" data-toggle="tooltip">' +
+        '<span class="primary route-info" title="' + I18n.t('plannings.edit.route_visits_duration_help') + '" data-toggle="tooltip">' +
         '<i class="fa fa-stopwatch fa-fw"></i>' +
         '<span class="duration"></span>' +
         '</span>' +
@@ -152,7 +152,7 @@ $(document).on('ready page:load', function() {
     var $this = this;
     if ($this.find('div[class="quantity-' + obj.id + '"]').length == 0) {
       var input = '<div class="quantity-' + obj.id + '">' +
-        '<span class="route-info" title="' + I18n.t('plannings.edit.route_quantity_help') + '" data-toggle="tooltip">' +
+        '<span class="primary route-info" title="' + I18n.t('plannings.edit.route_quantity_help') + '" data-toggle="tooltip">' +
         '<i class="icon-' + obj.id + ' fa ' + obj.unitIcon + ' fa-fw"></i>' +
         '&nbsp;<span class="quantity-' + obj.id + '"></span>';
       if (withCapacity) {
