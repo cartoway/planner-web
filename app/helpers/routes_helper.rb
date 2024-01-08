@@ -45,7 +45,7 @@ module RoutesHelper
         label: unit.label,
         unit_icon: unit.default_icon,
         quantity_formatted: q,
-        out_of_capacity: v > capacity
+        out_of_capacity: capacity && v > capacity
       }
     }.compact
   end
