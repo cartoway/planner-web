@@ -24,6 +24,5 @@ end
 
 ApiRoot = Rack::Builder.new do
   use ApiLogger
-  use ApiCors
   run ApiRootDef
 end
