@@ -418,7 +418,7 @@ class Planning < ApplicationRecord
 
     o = amalgamate_stops_same_position(stops_on, option[:global], routes_with_vehicle.map(&:vehicle_usage)) { |positions|
       services_and_rests = positions.collect{ |position|
-        stop_id, time_window_start_1, time_window_end_1, time_window_start_2, time_window_end_2, priority, duration, vehicle_usage_id, quantities, quantities_operations, skills, rest, force_position = position[2..14]
+        stop_id, time_window_start_1, time_window_end_1, time_window_start_2, time_window_end_2, priority, force_position, duration, vehicle_usage_id, quantities, quantities_operations, skills, rest, force_position = position[2..14]
         if option[:ignore_overload_multipliers] && quantities
           quantities.select!{ |id, _val|
             option[:ignore_overload_multipliers].find{ |iom| iom[:unit_id] == id if iom[:ignore] }.nil?
@@ -432,6 +432,7 @@ class Planning < ApplicationRecord
           start2: time_window_start_2,
           end2: time_window_end_2,
           priority: priority,
+          force_position: force_position,
           duration: duration,
           vehicle_usage_id: vehicle_usage_id,
           quantities: quantities,
@@ -775,6 +776,7 @@ class Planning < ApplicationRecord
          stop.time_window_start_2.try(:to_f),
          stop.time_window_end_2.try(:to_f),
          stop.priority,
+         stop.force_position,
          stop.duration,
          !global || stop.is_a?(StopRest) ? stop.route.vehicle_usage_id : nil,
          stop.is_a?(StopVisit) ? stop.visit.default_quantities : nil,
@@ -804,6 +806,7 @@ class Planning < ApplicationRecord
                nil,
                nil,
                v[0][0].priority,
+               v[0][0].force_position,
                v.sum{ |vs| vs[0].duration },
                !global ? v[0][0].route.vehicle_usage_id : nil,
                v[0][0].is_a?(StopVisit) ? v[0][0].visit.default_quantities : nil,

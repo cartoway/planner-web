@@ -42,6 +42,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     time_window_end_1: nil,
     time_window_start_2: nil,
     time_window_end_2: nil,
+    force_position: nil,
     priority: nil,
     tags_visit: nil
   })
@@ -105,6 +106,7 @@ route.stops.each { |stop|
       time_window_end_1: (stop.time_window_end_1_absolute_time if stop.time_window_end_1),
       time_window_start_2: (stop.time_window_start_2_absolute_time if stop.time_window_start_2),
       time_window_end_2: (stop.time_window_end_2_absolute_time if stop.time_window_end_2),
+      force_position: (I18n.t("plannings.export_file.force_position_#{stop.force_position}") if stop.is_a?(StopVisit)),
       priority: (stop.priority if stop.priority),
       tags_visit: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
     })
@@ -137,6 +139,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     out_of_window: nil,
     out_of_capacity: nil,
     out_of_drive_time: route.stop_out_of_drive_time ? 'x' : '',
+    out_of_force_position: '',
     out_of_work_time: route.stop_out_of_work_time ? 'x' : '',
     out_of_max_distance: route.stop_out_of_max_distance ? 'x' : '',
 
@@ -164,6 +167,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     time_window_end_1: nil,
     time_window_start_2: nil,
     time_window_end_2: nil,
+    force_position: nil,
     priority: nil,
     tags_visit: nil
   })

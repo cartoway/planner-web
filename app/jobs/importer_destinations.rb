@@ -80,6 +80,7 @@ class ImporterDestinations < ImporterBase
       time_window_start_2: {title: I18n.t('destinations.import_file.time_window_start_2'), desc: I18n.t('destinations.import_file.time_window_start_2_desc'), format: I18n.t('destinations.import_file.format.hour')},
       time_window_end_2: {title: I18n.t('destinations.import_file.time_window_end_2'), desc: I18n.t('destinations.import_file.time_window_end_2_desc'), format: I18n.t('destinations.import_file.format.hour')},
       priority: {title: I18n.t('destinations.import_file.priority'), desc: I18n.t('destinations.import_file.priority_desc'), format: I18n.t('destinations.import_file.format.integer')},
+      force_position: {title: I18n.t('destinations.import_file.force_position'), desc: I18n.t('destinations.import_file.force_position_desc'), format: I18n.t('destinations.import_file.force_position_format')},
       tags_visit: {title: I18n.t('destinations.import_file.tags_visit'), desc: I18n.t('destinations.import_file.tags_visit_desc'), format: I18n.t('destinations.import_file.tags_format')},
       duration: {title: I18n.t('destinations.import_file.duration'), desc: I18n.t('destinations.import_file.duration_desc'), format: I18n.t('destinations.import_file.format.hour')},
     }.merge(Hash[@customer.deliverable_units.flat_map{ |du|
@@ -250,6 +251,19 @@ class ImporterDestinations < ImporterBase
     end
   end
 
+  def valid_force_position(force_position)
+    type = nil
+    %w(always_first never_first neutral always_final).each do |t|
+      type ||= t if (force_position || :neutral) == I18n.t("activerecord.models.visits.force_position.#{t}")
+    end
+    if type
+      puts type.inspect
+      I18n.t("activerecord.models.visits.force_position.#{type}")
+    else
+      raise ImportInvalidRow.new(I18n.t('destinations.import_file.invalid_force_position'))
+    end
+  end
+
   def is_visit?(type)
     type == I18n.t('destinations.import_file.stop_type_visit')
   end
@@ -295,6 +309,7 @@ class ImporterDestinations < ImporterBase
     visit_attributes = row.slice(*@col_visit_keys)
     visit_attributes[:ref] = visit_attributes.delete :ref_visit
     visit_attributes[:tags] = visit_attributes.delete :tags_visit if visit_attributes.key?(:tags_visit)
+    visit_attributes[:force_position] = row[:force_position].present? && valid_force_position(row[:force_position])
 
     if !row[:ref].nil? && !row[:ref].strip.empty?
       destination = @destinations_by_ref[row[:ref]]
