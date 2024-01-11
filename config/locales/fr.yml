@@ -1752,6 +1752,8 @@
         'unmanageable_capacity_help': 'capacité non gérée par le véhicule'
         'out_of_drive_time': 'Hors amplitude horaire véhicule'
         'out_of_drive_time_help': 'Planifié en dehors des amplitudes horaires du véhicule'
+        'out_of_force_position': 'Position forcée non respectée'
+        'out_of_force_position_help': 'Position forcée au sein de la tournée non respectée'
         'out_of_work_time': 'Hors durée de travail'
         'out_of_work_time_help': 'Planifié en dehors de la durée de travail du chauffeur
           (service compris)'
@@ -1893,6 +1895,7 @@
       'out_of_window': 'hors créneau visite'
       'out_of_capacity': 'hors capacité véhicule'
       'out_of_drive_time': 'hors amplitude horaire du véhicule'
+      'out_of_force_position': 'position forcée non respectée'
       'out_of_work_time': 'hors horaire de travail'
       'out_of_max_distance': 'distance maximale réalisable'
       'status': 'statut'

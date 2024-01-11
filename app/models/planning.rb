@@ -532,7 +532,7 @@ class Planning < ApplicationRecord
 
             stop.active = true if route.vehicle_usage? && inactive_stop_ids.exclude?(stop.id)
             stop.index = i += 1
-            stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_force_position = nil
+            stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = nil
             if stop.route_id != route.id
               stop.route_id = route.id
               stop.save!

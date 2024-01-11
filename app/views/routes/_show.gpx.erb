@@ -83,6 +83,9 @@ route.stops.each{ |stop|
       <% if stop.out_of_work_time %>
 <%= t 'plannings.edit.error.out_of_work_time' %>
       <% end %>
+      <% if stop.out_of_force_position %>
+<%= t 'plannings.edit.error.out_of_force_position' %>
+      <% end %>
       <% if stop.out_of_max_distance %>
 <%= t 'plannings.edit.error.out_of_max_distance' %>
       <% end %>

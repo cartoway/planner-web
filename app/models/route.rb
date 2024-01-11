@@ -485,7 +485,7 @@ class Route < ApplicationRecord
         stops.select(:no_path).where(type: 'StopVisit', no_path: true).count > 0))
   end
 
-  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_work_time, :out_of_max_distance].each do |s|
+  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance].each do |s|
     define_method "#{s}" do
       vehicle_usage_id && (respond_to?("stop_#{s}") && send("stop_#{s}") ||
         if stops.loaded?

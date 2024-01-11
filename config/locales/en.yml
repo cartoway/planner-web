@@ -1633,6 +1633,8 @@ en:
         unmanageable_capacity_help: Deliverable unit not managed by the vehicle
         out_of_drive_time: Out of vehicle shift time
         out_of_drive_time_help: Vehicle shift time exceeded
+        out_of_force_position: Forced position constraint not met
+        out_of_force_position_help: Forced position constraint not met within the route
         out_of_work_time: Out of work time
         out_of_work_time_help: Driver work time exceeded (service included)
         out_of_max_distance: Maximum achievable distance exceeded
@@ -1771,6 +1773,7 @@ en:
       out_of_window: out of visit time window
       out_of_capacity: out of capacity
       out_of_drive_time: out of vehicle time shift
+      out_of_force_position: forced position constraint not met
       out_of_work_time: out of work time
       out_of_max_distance: maximum achievable distance
       status: status

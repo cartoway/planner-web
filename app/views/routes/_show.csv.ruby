@@ -14,6 +14,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     out_of_window: nil,
     out_of_capacity: nil,
     out_of_drive_time: nil,
+    out_of_force_position: nil,
     out_of_work_time: nil,
     out_of_max_distance: nil,
 
@@ -74,6 +75,7 @@ route.stops.each { |stop|
       out_of_window: stop.out_of_window ? 'x' : '',
       out_of_capacity: stop.out_of_capacity ? 'x' : '',
       out_of_drive_time: stop.out_of_drive_time ? 'x' : '',
+      out_of_force_position: stop.out_of_force_position ? 'x' : '',
       out_of_work_time: stop.out_of_work_time ? 'x' : '',
       out_of_max_distance: stop.out_of_max_distance ? 'x' : '',
       status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),

@@ -190,6 +190,9 @@
             <% if stop.out_of_work_time %>
               <span><i class="fa fa-repeat fa-fw"></i> <%= t 'plannings.edit.error.out_of_work_time' %></span>
             <% end %>
+            <% if stop.out_of_force_position %>
+              <span><i class="fa fa-angle-right fa-fw"></i> <%= t 'plannings.edit.error.out_of_force_position' %></span>
+            <% end %>
             <% if stop.out_of_max_distance %>
               <span><i class="fa fa-truck-field fa-fw"></i> <%= t 'plannings.edit.error.out_of_max_distance' %></span>
             <% end %>
