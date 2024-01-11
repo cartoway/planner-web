@@ -1476,6 +1476,7 @@ en:
       optimize_routes: Optimize routes
       lock_routes: Lock routes
       toggle_routes: Toggle routes
+      toggle_route_data: Hide route stats
       zonings:
         label: Zonings
         success: Zonings applied successfully
@@ -1563,6 +1564,7 @@ en:
       out_of_route: Unaffected
       out_of_route_quantity_help: Quantity
       toggle_help: Toggle stops on map
+      toggle_route_data_help: Toggle route stats
       locked_unplanned_help: Lock the out of route on global plan operations
       locked_help: Lock the route on global plan operations
       vehicle_help: Vehicle parameters

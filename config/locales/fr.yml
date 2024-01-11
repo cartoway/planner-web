@@ -1588,6 +1588,7 @@
       'optimize_routes': 'Optimiser le plan de tournées'
       'lock_routes': 'Verrouiller les tournées'
       'toggle_routes': 'Masquer les tournées'
+      'toggle_route_data': 'Masquer les statistiques de tournées'
       'zonings':
         'label': 'Sectorisations'
         'success': 'Sectorisations appliqués avec succès'
@@ -1678,7 +1679,7 @@
       'out_of_route': 'Non assignés'
       'out_of_route_quantity_help': 'Quantité'
       'toggle_help': 'Affiche ou cache les arrêts sur la carte'
-      'toggle_data_help': 'Affiche ou cache les infos liées à la tournée'
+      'toggle_route_data_help': 'Affiche ou cache les infos liées à la tournée'
       'locked_unplanned_help': 'Verrouille les non-planifiés pour les opérations globales
         sur le plan de tournées'
       'locked_help': 'Verrouille la tournée pour les opérations globales sur le plan
