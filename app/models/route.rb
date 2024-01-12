@@ -714,45 +714,6 @@ class Route < ApplicationRecord
 
       if position_status == :final
         if !stop.visit.always_final?
-          position.status = nil
-        end
-      end
-
-      if position_status != :final && stop.visit.always_final?
-        stop.out_of_force_position = true
-      end
-    }
-  end
-
-
-  def compute_out_of_force_position
-    stops.each{ |stop| stop.out_of_force_position = nil }
-    stops_sort = stops.sort_by(&:index)
-
-    position_status = :first
-    stops.each{ |stop|
-      next if stop.is_a?(StopRest) || !stop.active
-
-      if position_status == :first
-        if !stop.visit.always_first?
-          position_status = nil
-        end
-        if stop.visit.never_first?
-          stop.out_of_force_position = true
-        end
-      end
-
-      if position_status != :first && stop.visit.always_first?
-        stop.out_of_force_position = true
-      end
-    }
-
-    position_status = :final
-    stops.reverse.each{ |stop|
-      next if stop.is_a?(StopRest) || !stop.active
-
-      if position_status == :final
-        if !stop.visit.always_final?
           position_status = nil
         end
       end

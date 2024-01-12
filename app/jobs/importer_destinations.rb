@@ -251,17 +251,12 @@ class ImporterDestinations < ImporterBase
     end
   end
 
-  def valid_force_position(force_position)
+  def convert_force_position(force_position)
     type = nil
     %w(always_first never_first neutral always_final).each do |t|
-      type ||= t if (force_position || :neutral) == I18n.t("activerecord.models.visits.force_position.#{t}")
+      type ||= t if force_position == I18n.t("activerecord.models.visits.force_position.#{t}")
     end
-    if type
-      puts type.inspect
-      I18n.t("activerecord.models.visits.force_position.#{type}")
-    else
-      raise ImportInvalidRow.new(I18n.t('destinations.import_file.invalid_force_position'))
-    end
+    type || :neutral
   end
 
   def is_visit?(type)
@@ -309,7 +304,7 @@ class ImporterDestinations < ImporterBase
     visit_attributes = row.slice(*@col_visit_keys)
     visit_attributes[:ref] = visit_attributes.delete :ref_visit
     visit_attributes[:tags] = visit_attributes.delete :tags_visit if visit_attributes.key?(:tags_visit)
-    visit_attributes[:force_position] = row[:force_position].present? && valid_force_position(row[:force_position])
+    visit_attributes[:force_position] = row[:force_position].present? && convert_force_position(row[:force_position])
 
     if !row[:ref].nil? && !row[:ref].strip.empty?
       destination = @destinations_by_ref[row[:ref]]
