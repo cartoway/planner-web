@@ -307,6 +307,8 @@ class Route < ApplicationRecord
       )
 
       if stops_sort
+        compute_out_of_force_position
+
         # Try to minimize waiting time by a later begin
         time = self.end
         time -= stops_drive_time[:stop] if stops_drive_time[:stop]
@@ -483,7 +485,7 @@ class Route < ApplicationRecord
         stops.select(:no_path).where(type: 'StopVisit', no_path: true).count > 0))
   end
 
-  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_work_time, :out_of_max_distance].each do |s|
+  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance].each do |s|
     define_method "#{s}" do
       vehicle_usage_id && (respond_to?("stop_#{s}") && send("stop_#{s}") ||
         if stops.loaded?
@@ -682,6 +684,44 @@ class Route < ApplicationRecord
     self.departure_status = nil
     self.arrival_eta = nil
     self.arrival_status = nil
+  end
+
+  def compute_out_of_force_position
+    stops.each{ |stop| stop.out_of_force_position = nil }
+    stops_sort = stops.sort_by(&:index)
+
+    position_status = :first
+    stops_sort.each{ |stop|
+      next if stop.is_a?(StopRest) || !stop.active
+
+      if position_status == :first
+        if !stop.visit.always_first?
+          position_status = nil
+        end
+        if stop.visit.never_first?
+          stop.out_of_force_position = true
+        end
+      end
+
+      if position_status != :first && stop.visit.always_first?
+        stop.out_of_force_position = true
+      end
+    }
+
+    position_status = :final
+    stops_sort.reverse.each{ |stop|
+      next if stop.is_a?(StopRest) || !stop.active
+
+      if position_status == :final
+        if !stop.visit.always_final?
+          position_status = nil
+        end
+      end
+
+      if position_status != :final && stop.visit.always_final?
+        stop.out_of_force_position = true
+      end
+    }
   end
 
   private

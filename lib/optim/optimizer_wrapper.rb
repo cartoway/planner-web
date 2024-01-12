@@ -24,6 +24,8 @@ class OptimizerWrapper
 
   attr_accessor :cache, :url, :api_key
 
+  POSITION_KEYS = { always_first: :force_first, always_last: :force_end, never_first: :never_first}.freeze
+
   def initialize(cache, url, api_key)
     @cache, @url, @api_key = cache, url, api_key
   end
@@ -161,11 +163,7 @@ class OptimizerWrapper
         },
         name: options[:name]
       }
-      vrp[:relations] << {
-        id: :never_first,
-        type: :never_first,
-        linked_ids: services_with_negative_quantities
-      } unless services_with_negative_quantities.empty?
+      vrp[:relations] += collect_relations(services, services_with_negative_quantities)
 
       resource_vrp = RestClient::Resource.new(@url + '/vrp/submit.json', timeout: nil)
       json = resource_vrp.post({api_key: @api_key, vrp: vrp}.to_json, content_type: :json, accept: :json) { |response, request, result, &block|
@@ -219,5 +217,30 @@ class OptimizerWrapper
         end
       }.compact # stores are not returned anymore
     }
+  end
+
+  def collect_relations(services, services_with_negative_quantities)
+    relations = []
+    position_relations(relations, services)
+    negative_quantities_relations(relations, services_with_negative_quantities)
+    relations
+  end
+
+  def position_relations(relations, services)
+    services.group_by{ |serv| serv[:force_position] }.each{ |position, servs|
+      next if position.nil? || position == :neutral
+
+      relations << {
+        type: POSITION_KEYS[position],
+        linked_ids: servs.map{ |serv| "s#{serv[:stop_id]}" }} unless position == 'neutral'
+    }
+  end
+
+  def negative_quantities_relations(relations, services_with_negative_quantities)
+    relations << {
+      id: :never_first,
+      type: :never_first,
+      linked_ids: services_with_negative_quantities
+    } unless services_with_negative_quantities.empty?
   end
 end

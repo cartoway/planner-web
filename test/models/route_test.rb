@@ -335,4 +335,26 @@ class RouteTest < ActiveSupport::TestCase
       end
     }
   end
+
+  test 'should detect the unmet force_position' do
+    route = routes(:route_one_one)
+
+    route.compute_out_of_force_position
+    assert route.stops.none?(&:out_of_force_position)
+
+    always_first_visit = route.stops.find{ |stop| stop.index == 2 }.visit
+    always_first_visit.force_position = :always_first
+
+    route.compute_out_of_force_position
+    assert route.stops.one?(&:out_of_force_position)
+
+    route.outdated = true
+    route.compute
+    assert route.stops.one?(&:out_of_force_position)
+
+    always_first_visit.force_position = :neutral
+    route.outdated = true
+    route.compute
+    assert route.stops.none?(&:out_of_force_position)
+  end
 end

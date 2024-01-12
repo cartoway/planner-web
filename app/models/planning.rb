@@ -418,7 +418,7 @@ class Planning < ApplicationRecord
 
     o = amalgamate_stops_same_position(stops_on, option[:global], routes_with_vehicle.map(&:vehicle_usage)) { |positions|
       services_and_rests = positions.collect{ |position|
-        stop_id, time_window_start_1, time_window_end_1, time_window_start_2, time_window_end_2, priority, duration, vehicle_usage_id, quantities, quantities_operations, skills, rest = position[2..13]
+        stop_id, time_window_start_1, time_window_end_1, time_window_start_2, time_window_end_2, priority, duration, vehicle_usage_id, quantities, quantities_operations, skills, rest, force_position = position[2..14]
         if option[:ignore_overload_multipliers] && quantities
           quantities.select!{ |id, _val|
             option[:ignore_overload_multipliers].find{ |iom| iom[:unit_id] == id if iom[:ignore] }.nil?
@@ -437,7 +437,8 @@ class Planning < ApplicationRecord
           quantities: quantities,
           quantities_operations: quantities_operations,
           skills: skills,
-          rest: rest
+          rest: rest,
+          force_position: force_position
         }
       }
 
@@ -765,6 +766,7 @@ class Planning < ApplicationRecord
     if tws_or_quantities || multiples_vehicles_with_capacities
       # Can't reduce cause of time windows, quantities or multiple vehicles
       positions_uniq = stops.collect{ |stop|
+        force_position = stop.is_a?(StopVisit) && stop.force_position
         tags_label = stop.is_a?(StopVisit) ? (stop.visit.destination.tags | stop.visit.tags).map(&:label) & all_skills.map(&:label) : nil
         [stop.lat,
          stop.lng,
@@ -779,7 +781,9 @@ class Planning < ApplicationRecord
          stop.is_a?(StopVisit) ? stop.visit.default_quantities : nil,
          stop.is_a?(StopVisit) ? stop.visit.quantities_operations : nil,
          tags_label,
-         stop.is_a?(StopRest)]
+         stop.is_a?(StopRest),
+         stop.is_a?(StopVisit) ? stop.visit.force_position : nil
+        ]
       }
 
       yield(positions_uniq)
@@ -794,6 +798,7 @@ class Planning < ApplicationRecord
       positions_uniq = Hash.new { [] }
       stock.each{ |k, v|
         tags_label = v[0][0].is_a?(StopVisit) ? (v[0][0].visit.destination.tags | v[0][0].visit.tags).map(&:label) & all_skills.map(&:label) : nil
+        force_position = v[0][0].is_a?(StopVisit) && v[0][0].force_position
         positions_uniq[v[0][0].id] =
           k + [v[0][0].id,
                nil,
@@ -806,7 +811,8 @@ class Planning < ApplicationRecord
                v[0][0].is_a?(StopVisit) ? v[0][0].visit.default_quantities : nil,
                v[0][0].is_a?(StopVisit) ? v[0][0].visit.quantities_operations : nil,
                tags_label,
-               v[0][0].is_a?(StopRest)]
+               v[0][0].is_a?(StopRest),
+               force_position]
       }
 
       optim_uniq = yield(positions_uniq.collect{ |_k, v| v })

@@ -109,6 +109,7 @@ class RoutesController < ApplicationController
       :out_of_window,
       :out_of_capacity,
       :out_of_drive_time,
+      :out_of_force_position,
       :out_of_work_time,
       :out_of_max_distance,
       :status,
@@ -134,6 +135,7 @@ class RoutesController < ApplicationController
       :time_window_start_2,
       :time_window_end_2,
       :priority,
+      :force_position,
       :tags_visit
     ] + (@route.planning.customer.enable_orders ?
       [:orders] :

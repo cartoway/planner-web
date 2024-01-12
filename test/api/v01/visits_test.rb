@@ -123,7 +123,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
       nil,
       []
     ].each do |tags|
-      put api_destination(@destination.id, @visit.id), @visit.attributes.merge({tag_ids: tags, 'quantities' => [{deliverable_unit_id: 1, quantity: 3.5}, {deliverable_unit_id: 2, quantity: 3.5}]}).to_json, 'CONTENT_TYPE' => 'application/json'
+      put api_destination(@destination.id, @visit.id), @visit.attributes.merge({tag_ids: tags, 'quantities' => [{deliverable_unit_id: 1, quantity: 3.5}, {deliverable_unit_id: 2, quantity: 3.5}]}).except('force_position').to_json, 'CONTENT_TYPE' => 'application/json'
       assert last_response.ok?, last_response.body
 
       get api_destination(@destination.id, @visit.id)
@@ -234,5 +234,22 @@ class V01::VisitsTest < ActiveSupport::TestCase
       assert_match "time_window_start_1, open1 are mutually exclusive", JSON.parse(last_response.body)['message']
       assert_match "time_window_end_1, close1 are mutually exclusive", JSON.parse(last_response.body)['message']
     end
+  end
+
+  test 'should create visit with correct position' do
+    positions = %w[always_first always_final never_first neutral]
+    positions.each{ |position|
+      assert_difference('Visit.count', 1) do
+        post api_destination(@destination.id), @visit.attributes.merge(force_position: position).except('id', 'quantities'), as: :json
+        assert last_response.created?, last_response.body
+        visit = JSON.parse(last_response.body)
+        assert_equal position, visit['force_position']
+      end
+    }
+  end
+
+  test 'should not create a visit with invalid position' do
+    post api_destination(@destination.id), @visit.attributes.merge(force_position: 'invalid_position').except('id', 'quantities'), as: :json
+    assert_equal 400, last_response.status, last_response.body
   end
 end

@@ -9,9 +9,9 @@ else
   json.automatic_insert true
 end
 
-(json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_work_time || stop.out_of_max_distance || stop.no_path
+(json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position|| stop.out_of_work_time || stop.out_of_max_distance || stop.no_path
 
-json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_work_time, :out_of_max_distance, :no_path, :active
+json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :no_path, :active
 json.ref stop.ref if stop.route.planning.customer.enable_references
 json.time_window_start_end_1 !!stop.time_window_start_1 || !!stop.time_window_end_1
 (json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1
@@ -23,6 +23,7 @@ json.time_window_start_end_2 !!stop.time_window_start_2 || !!stop.time_window_en
 (json.time_window_start_2_day number_of_days(stop.time_window_start_2)) if stop.time_window_start_2
 (json.time_window_end_2 stop.time_window_end_2_time) if stop.time_window_end_2
 (json.time_window_end_2_day number_of_days(stop.time_window_end_2)) if stop.time_window_end_2
+(json.force_position stop.force_position) if stop.force_position
 (json.priority stop.priority) if stop.priority
 (json.priority_text stop.priority_text) if stop.priority
 (json.wait_time '%i:%02i' % [stop.wait_time / 60 / 60, stop.wait_time / 60 % 60]) if stop.wait_time && stop.wait_time > 60

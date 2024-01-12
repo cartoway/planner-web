@@ -133,6 +133,11 @@ en:
       visits:
         one: visit
         other: visits
+        force_position:
+          always_first: always first
+          always_last: always final
+          never_first: never first
+          neutral: neutral
       zoning: Zoning
       zonings:
         one: zoning
@@ -1181,6 +1186,9 @@ en:
       ref_visit_desc: reference id of this visit.
       tags_visit: tags visit
       tags_visit_desc: tags of this visit (allowing to group them for example).
+      force_position: forced position
+      force_position_desc: forced position of the visit within the route
+      force_position_format: '[always first | never first | neutral | always final]'
       format:
         string: text
         integer: integer
@@ -1202,6 +1210,7 @@ en:
       missing_location: '"city / postalcode" or "lat / lng" missing.'
       invalid_numeric_value: Invalid numeric value "%{value}".
       invalid_stop: The stop type is invalid
+      invalid_force_position: The forced position type is invalid
       check_custom_columns: Check your columns definition.
     reverse_geocoding:
       apply: Apply new address
@@ -1633,6 +1642,8 @@ en:
         unmanageable_capacity_help: Deliverable unit not managed by the vehicle
         out_of_drive_time: Out of vehicle shift time
         out_of_drive_time_help: Vehicle shift time exceeded
+        out_of_force_position: Forced position constraint not met
+        out_of_force_position_help: Forced position constraint not met within the route
         out_of_work_time: Out of work time
         out_of_work_time_help: Driver work time exceeded (service included)
         out_of_max_distance: Maximum achievable distance exceeded
@@ -1740,6 +1751,11 @@ en:
       stop_type_store: store
       stop_type_visit: visit
       stop_type_rest: rest
+      force_position: forced position
+      force_position_always_first: always first
+      force_position_always_last: always last
+      force_position_never_first: never first
+      force_position_neutral: neutral
       wait_time: wait
       time: time
       distance: distance
@@ -1771,6 +1787,7 @@ en:
       out_of_window: out of visit time window
       out_of_capacity: out of capacity
       out_of_drive_time: out of vehicle time shift
+      out_of_force_position: forced position constraint not met
       out_of_work_time: out of work time
       out_of_max_distance: maximum achievable distance
       status: status

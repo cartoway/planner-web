@@ -29,6 +29,13 @@ class Visit < ApplicationRecord
   nilify_blanks
   validates :destination, presence: true
 
+  enum force_position: {
+    neutral: 0,
+    always_first: 1,
+    never_first: 2,
+    always_final: 3
+  }
+
   include TimeAttr
   attribute :time_window_start_1, ScheduleType.new
   attribute :time_window_end_1, ScheduleType.new
@@ -119,6 +126,14 @@ class Visit < ApplicationRecord
     #     route.save!
     #   }
     # end
+  end
+
+
+  # FIXME: Enum returns integer value instead of string key
+  def attributes
+    visit_attributes = super
+    visit_attributes['force_position'] = self.force_position
+    visit_attributes
   end
 
   def default_duration

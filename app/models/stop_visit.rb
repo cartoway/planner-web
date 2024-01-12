@@ -22,6 +22,7 @@ class StopVisit < Stop
            :time_window_end_1, :time_window_end_1_time, :time_window_end_1_absolute_time,
            :time_window_start_2, :time_window_start_2_time, :time_window_start_2_absolute_time,
            :time_window_end_2, :time_window_end_2_time, :time_window_end_2_absolute_time,
+           :force_position,
            :priority, :priority_text,
            :name,
            :street,
