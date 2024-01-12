@@ -1,4 +1,4 @@
-plan,tournée,véhicule,type arrêt,référence,nom,voie,code postal,ville,lat,lng,référence visite,durée visite,horaire début 1,horaire fin 1,libellés visite
+plan,tournée,véhicule,type arrêt,référence,nom,voie,code postal,ville,lat,lng,référence visite,durée visite,horaire début 1,horaire fin 1,catégories visite
 Plan 1,,,visitess,102,SOEURS SUCREES (LES),"33, rue coquillière",75001,Paris,48.8642730713,2.3411622047,Samedi,00:03:00,04:00,06:00,praxedo:COLLECTE
 Plan 1,Tournée 1,Véhicle 1,dépôtte,Local_technique _Noisy,Local technique Noisy,,,Bordeaux,48.894423,2.439602,,,,,
 Plan 1,Tournée 1,Véhicle 1,,Local_technique _Noisy,Local technique Noisy,,,Bordeaux,48.894423,2.439602,,,,,

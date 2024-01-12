@@ -1,4 +1,4 @@
-nom,voie,complément,code postal,ville,pays,lat,lng,qualité géocodage,niveau géocodage,commentaire,téléphone,sans visite,référence visite,durée visite,quantité,horaire début 1,horaire fin 1,libellés visite
+nom,voie,complément,code postal,ville,pays,lat,lng,qualité géocodage,niveau géocodage,commentaire,téléphone,sans visite,référence visite,durée visite,quantité,horaire début 1,horaire fin 1,catégories visite
 l1,Place Picard,,33000,Bordeaux,,44.84512,-0.578,,,,,"",,,,15:00,16:00,""
 l2,Rue Esprit des Lois,,33000,Bordeaux,,44.83395,-0.56545,,,,,"",,00:02:00,2.0,10:00,11:00,tag2
 l3,Rue de Nuits,,33000,Bordeaux,,,,,,,,"",,,1.0,09:00,10:00,frigo

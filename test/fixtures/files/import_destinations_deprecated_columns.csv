@@ -1,2 +1,2 @@
-nom,voie,complément,code postal,ville,pays,lat,lng,qualité géocodage,niveau géocodage,commentaire,téléphone,sans visite,référence visite,durée visite,quantité,horaire début,horaire fin,libellés visite
+nom,voie,complément,code postal,ville,pays,lat,lng,qualité géocodage,niveau géocodage,commentaire,téléphone,sans visite,référence visite,durée visite,quantité,horaire début,horaire fin,catégories visite
 l1,Place Picard,,33000,Bordeaux,,44.84512,-0.578,,,,,"",,,,15:00,16:00,""

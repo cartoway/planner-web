@@ -93,7 +93,7 @@ curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT'); // note the PUT here
 $filename = tempnam(sys_get_temp_dir(), 'destinations.csv');
 $fh = fopen($filename, 'w');
 fwrite($fh,
-"référence,nom,voie,complément,code postal,ville,lat,lng,tournée,libellés,livré\n
+"référence,nom,voie,complément,code postal,ville,lat,lng,tournée,catégories,livré\n
 z,BF,87 RUE DES FLEURS,,13010,Marseille,43.28,5.39,1,tag1,\"oui\"");
 fclose($fh);
 curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => ('@'.$filename)));
