@@ -195,13 +195,6 @@
                     = link_to store_import_path do
                       %i.fa.fa-upload.fa-fw
                       = t 'destinations.menu.import_stores'
-                  - if @vehicle_usage_sets.try(:length) == 1
-                    %li.divider
-                    - @vehicle_usage_sets[0].vehicle_usages.each do |vehicle_usage|
-                      %li
-                        = link_to edit_vehicle_usage_path(vehicle_usage) do
-                          %i.fa.fa-truck-field.fa-fw
-                          = vehicle_usage.vehicle.name
                 - if current_user.customer.device.configured? :fleet
                   %li
                     = link_to reporting_index_path do
