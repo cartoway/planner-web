@@ -1033,7 +1033,7 @@
       'geocoding_level':
         'point': 'Point'
         'house': 'Adresse'
-        'street': 'Voie'
+        'street': 'N° et libellé de voie'
         'intersection': 'Intersection'
         'city': 'Commune'
         'null': 'Aucun'
