@@ -58,13 +58,13 @@
         # data-priority is used to hide columns depending the width of table
         # http://view.jquerymobile.com/1.3.2/dist/demos/widgets/table-column-toggle/
         %>
-        <th class="country">
+        <th class="country columnSelector-false">
           <div class="col-title"><%= t 'activerecord.attributes.destination.country' %></div>
         </th>
-        <th class="comment">
+        <th class="comment columnSelector-false">
           <div class="col-title"><%= t 'activerecord.attributes.destination.comment_small' %></div>
         </th>
-        <th data-sorter="digit" class="phone">
+        <th data-sorter="digit" class="phone columnSelector-false">
           <div class="col-title"><%= t 'activerecord.attributes.destination.phone_number_small' %></div>
         </th>
         <% if !@customer.enable_multi_visits %>
