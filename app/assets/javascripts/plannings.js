@@ -846,14 +846,14 @@ export const plannings_edit = function(params) {
     _modalWarning.find(".lock").on("click", function(e) {
       e.preventDefault();
 
-      var unplannedRoute = $("ol.routes.ui-sortable > li:first");
+      var unplannedRoute = $("ol.routes.ui-sortable > li:last");
       unplannedRoute.find("button.lock").trigger("click");
 
       toggleModalWarning();
     });
 
     return function toggleModalWarning() {
-      var unplannedRoute = $("ol.routes.ui-sortable > li:first");
+      var unplannedRoute = $("ol.routes.ui-sortable > li:last");
       var isLocked = unplannedRoute.find("button.lock > i").hasClass("fa-lock");
       var keepVisit = $('[name=sticky_vehicle]:checked').val() === 'true';
 
@@ -918,29 +918,13 @@ export const plannings_edit = function(params) {
   $('#optimization-route_id').change(function() {
     $(".modal-optim-warning").hide();
     var routeId = $(this).val();
-    if (routeId) {
-      $('div#optimization-global').hide();
-      optimizationTimer.setOptimDuration();
-      var sizeActive = $('li[data-route_id=' + routeId + '] [data-size-active]');
-      $('div#optimization-active').css({display: (sizeActive.attr('data-size-active') == sizeActive.attr('data-size')) ? 'none' : 'block'});
-      var route = routes.filter(function(route) {
-        return route.route_id == routeId;
-      })[0];
-      var dimension;
-      for (var vehicleId in vehicles_usages_map) {
-        if (vehicles_usages_map[vehicleId].vehicle_usage_id == route.vehicle_usage_id)
-          dimension = vehicles_usages_map[vehicleId].router_dimension;
-      }
-      dimension = 'plannings.edit.dialog.optimization.vehicles.' + dimension;
-      $('#router-dimension-value').html(I18n.t(dimension));
-    }
-    else {
+    if (routeId.length === 0) {
       var routeLen = $('li[data-color]').find('.fa-unlock').length;
       optimizationTimer.setOptimDuration(routeLen);
       $('div#optimization-global').show();
       var sizeRoutes = 0;
       var allStopsActive = true;
-      $.each($('li[data-route_id]:not(:first) [data-size-active]'), function() {
+      $.each($('li[data-route_id]:not(:last) [data-size-active]'), function() {
         var sizeRoute = $(this).attr('data-size');
         sizeRoutes += parseInt(sizeRoute);
         if ($(this).attr('data-size-active') != sizeRoute)
@@ -957,6 +941,21 @@ export const plannings_edit = function(params) {
       var dimensions = $.map(vehicles_usages_map, function(vehicle) { return vehicle.router_dimension; })
         .filter(function(elt, idx, array) { return idx == array.indexOf(elt); });
       $('#router-dimension-value').html(dimensions.map(function(dim) { dim = 'plannings.edit.dialog.optimization.vehicles.' + dim; return I18n.t(dim); }).join(' / '));
+    } else {
+      $('div#optimization-global').hide();
+      optimizationTimer.setOptimDuration();
+      var sizeActive = $('li[data-route_id=' + routeId + '] [data-size-active]');
+      $('div#optimization-active').css({display: (sizeActive.attr('data-size-active') == sizeActive.attr('data-size')) ? 'none' : 'block'});
+      var route = routes.filter(function(route) {
+        return route.route_id == routeId;
+      })[0];
+      var dimension;
+      for (var vehicleId in vehicles_usages_map) {
+        if (vehicles_usages_map[vehicleId].vehicle_usage_id == route.vehicle_usage_id)
+          dimension = vehicles_usages_map[vehicleId].router_dimension;
+      }
+      dimension = 'plannings.edit.dialog.optimization.vehicles.' + dimension;
+      $('#router-dimension-value').html(I18n.t(dimension));
     }
 
     optimizationTimer.displayOptimDuration();
