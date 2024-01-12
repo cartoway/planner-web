@@ -109,10 +109,10 @@
       'stores':
         'one': 'site'
         'other': 'sites'
-      'tag': 'Libellé'
+      'tag': 'Catégorie'
       'tags':
-        'one': 'libellé'
-        'other': 'libellés'
+        'one': 'catégorie'
+        'other': 'catégories'
       'user': 'Utilisateur'
       'users':
         'one': 'utilisateur'
@@ -240,8 +240,8 @@
         'geocoding_accuracy': 'Qualité du géocodage'
         'geocoding_accuracy_small': 'Géoc.'
         'geocoding_level': 'Niveau de géocodage'
-        'tags': 'Libellés'
-        'tag_ids': 'Libellés'
+        'tags': 'Catégories'
+        'tag_ids': 'Catégories'
         'visits': 'Visites'
       'destinations':
         'name': 'Nom'
@@ -274,8 +274,8 @@
         'ref_help': 'Référence libre'
         'ref_small': 'Réf.'
         'active': 'Actif'
-        'tag_ids': 'Libellés'
-        'tags': 'Libellés'
+        'tag_ids': 'Catégories'
+        'tags': 'Catégories'
         'tags_help': 'Catégories ayant permis de filtrer le plan'
         'zoning_id': 'Sectorisation'
         'created_at': 'Création'
@@ -385,7 +385,7 @@
         'geocoding_accuracy': 'Qualité du géocodage'
         'geocoding_level': 'Niveau de géocodage'
       'tag':
-        'label': 'Libellé'
+        'label': 'Catégorie'
         'color': 'Couleur'
         'icon': 'Icône'
         'icon_size': 'Taille d''icône'
@@ -507,8 +507,8 @@
         'time_window_start_2_time_window_end_2_days': 'J+'
         'priority': 'Priorité'
         'multi_visit': 'Multi'
-        'tags': 'Libellés'
-        'tag_ids': 'Libellés'
+        'tags': 'Catégories'
+        'tag_ids': 'Catégories'
         'quantities': 'Quantités'
       'visits':
         'ref': 'Référence'
@@ -529,8 +529,8 @@
         'time_window_start_2_time_window_end_2_days': 'J+'
         'priority': 'Priorité'
         'multi_visit': 'Multi'
-        'tags': 'Libellés'
-        'tag_ids': 'Libellés'
+        'tags': 'Catégories'
+        'tag_ids': 'Catégories'
         'quantities':
           'one': 'Quantité'
           'other': 'Quantités'
@@ -640,7 +640,7 @@
         'tag':
           'icon_unknown': 'n''est pas une icône font-awesome autorisée'
           'icon_size_invalid': 'n''est pas une taille valide'
-          'uniqueness': 'Un libellé existe déjà avec ce nom'
+          'uniqueness': 'Une catégorie existe déjà avec ce nom'
         'optimization_time':
           'must_be_greater_than_minimal_time': 'doit être supérieur à la durée minimale'
         'router':
@@ -1021,7 +1021,7 @@
       'export_spreadsheet_excel': 'Export tableur Excel'
       'stores': 'Sites'
       'import_stores': 'Importer sites'
-      'tags': 'Libellés'
+      'tags': 'Catégories'
       'clear': 'Supprimer toutes les adresses'
       'clear_confirm': 'Êtes-vous sûr de vouloir supprimer toutes les adresses ? Vos
         tournées existantes seront perdues.'
@@ -1048,15 +1048,15 @@
           sur la carte. Voulez-vous la remplacer avec le résultat du géocodage automatique
           ?'
         'attributes_change_bulk':
-          'title': 'Changer plusieurs libellés à la fois'
-          'tags_help': 'Pour chaque ligne respective, permet de remplacer un libellé donné par un autre libellé existant'
+          'title': 'Changer plusieurs catégories à la fois'
+          'tags_help': 'Pour chaque ligne respective, permet de remplacer une catégorie donné par une autre catégorie existant'
       'visit':
         'enable_multi_visits': 'Besoin de plusieurs visites pour le même client ?
           Contactez le support pour avoir accès à cette fonctionnalité.'
         'new': 'Nouvelle visite'
         'new_help': 'Nouvelle visite si vous vous rendez plusieurs fois chez ce client.'
-        'attributes_change_bulk': 'Changer libellés'
-        'attributes_change_bulk_help': 'Changer plusieurs libellés à la fois'
+        'attributes_change_bulk': 'Changer catégories'
+        'attributes_change_bulk_help': 'Changer plusieurs catégories à la fois'
         'collapse_all': 'Tout compacter/développer'
         'collapse_all_help': 'Tout compacter/développer'
     'edit':
@@ -1241,14 +1241,14 @@
       'comment_desc': 'informations nécessaires pour la visite.'
       'phone_number': 'téléphone'
       'phone_number_desc': 'numéro de téléphone du client à contacter.'
-      'tags': 'libellés'
+      'tags': 'catégories'
       'tags_desc': 'catégories du client (permettant par exemple de les grouper).'
-      'tags_format': 'libellé 1,libellé 2'
+      'tags_format': 'catégorie 1,catégorie 2'
       'without_visit': 'sans visite'
       'without_visit_desc': 'précise qu''il n''y a pas de visite associée'
       'ref_visit': 'référence visite'
       'ref_visit_desc': 'référence de la visite.'
-      'tags_visit': 'libellés visite'
+      'tags_visit': 'catégories visite'
       'tags_visit_desc': 'catégories de la visite (permettant par exemple de les grouper).'
       'force_position': 'position forcée'
       'force_position_desc': 'position de la visite au sein de la tournée'
@@ -1477,7 +1477,7 @@
       'panel_two':
         'title': 'Gestion des adresses'
         'content': 'créer ou importer les données adresses(référence, quantité, adresses,
-          durée de visite, horaires de visite, libellées) et les supprimer. Exporter
+          durée de visite, horaires de visite, catégories) et les supprimer. Exporter
           les données adresses..'
         'time': '⏱9min.'
         'doc_link': 'Doc - Gestion des adresses'
@@ -1495,7 +1495,7 @@
         'video': 'Vidéos'
         'vehicules_params': 'Paramétrage des véhicules'
         'destination_params': 'Paramétrage client'
-        'tags': 'Présentation des libellés'
+        'tags': 'Présentation des catégories'
         'zonage': 'Création sectorisation'
         'zonage_update': 'Modification sectorisation'
     'advanced_options':
@@ -1742,7 +1742,7 @@
         'orders': 'Commandes : '
         'duration': 'Durée : '
         'priority': 'Priorité : '
-        'tags': 'Libellés : '
+        'tags': 'Catégories : '
         'stop_drive_time': 'Durée :'
         'stop_distance': 'Distance :'
         'visit': 'Visite'
@@ -1892,7 +1892,7 @@
       'lat': 'lat'
       'lng': 'lng'
       'comment': 'commentaire'
-      'tags': 'libellés'
+      'tags': 'catégories'
       'phone_number': 'téléphone'
       'ref_visit': 'référence visite'
       'duration': 'durée visite'
@@ -1905,7 +1905,7 @@
       'time_window_start_2': 'horaire début 2'
       'time_window_end_2': 'horaire fin 2'
       'priority': 'priorité'
-      'tags_visit': 'libellés visite'
+      'tags_visit': 'catégories visite'
       'out_of_window': 'hors créneau visite'
       'out_of_capacity': 'hors capacité véhicule'
       'out_of_drive_time': 'hors amplitude horaire du véhicule'
@@ -1919,8 +1919,8 @@
       'begin_end_date': 'Période de validité'
       'begin_end_date_help': 'Période durant laquelle le plan est valide'
       'tags_help': 'Permet de filtrer les visites qui seront présentes sur le plan
-        selon leur libellé. Si «tous » est sélectionné, les visites/adresses doivent
-        avoir l’ensemble des libellés. Si « ou » est sélectionné un libellé de la
+        selon leur catégorie. Si «tous » est sélectionné, les visites/adresses doivent
+        avoir l’ensemble des catégories. Si « ou » est sélectionné une catégorie de la
         liste suffit.'
       'order_array': 'Comm.'
       'zonings_help': 'Permet d''affecter automatiquement des visites/adresses à des
@@ -2102,12 +2102,12 @@
       'code_help': 'Code court, quelques lettres'
   'tags':
     'edit':
-      'title': 'Modifier libellé'
+      'title': 'Modifier catégorie'
     'index':
-      'title': 'Liste libellés'
-      'new': 'Nouveau libellé'
+      'title': 'Liste catégories'
+      'new': 'Nouvelle catégorie'
     'new':
-      'title': 'Nouveau libellé'
+      'title': 'Nouvelle catégorie'
     'form':
       'color_default': 'Par défaut'
       'color_help': 'Forcer l''utilisation de cette couleur'
@@ -2511,7 +2511,7 @@
     'form':
       'planning_id': 'Adresse depuis un plan'
       'planning_id_help': 'Permet par exemple de filtrer les adresses à afficher avec
-        certains libellés définis dans le plan de tournées sélectionné.'
+        certaines catégories définis dans le plan de tournées sélectionné.'
       'hide_out_of_route': 'Cacher les adresses non planifiées'
       'all_destinations': 'Afficher toutes les adresses'
       'from_planning_help': 'Vous pouvez aussi afficher les adresses d''un unique plan

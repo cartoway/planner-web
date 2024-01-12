@@ -1,2 +1,2 @@
-véhicule,tournée,ordre,attente,heure,distance,référence,nom,voie,complément,code postal,ville,pays,lat,lng,commentaire,téléphone,durée visite,quantité,livré,horaire début,horaire fin,libellés,hors créneau client,hors capacité véhicule,hors créneau véhicule,priorité
+véhicule,tournée,ordre,attente,heure,distance,référence,nom,voie,complément,code postal,ville,pays,lat,lng,commentaire,téléphone,durée visite,quantité,livré,horaire début,horaire fin,catégories,hors créneau client,hors capacité véhicule,hors créneau véhicule,priorité
 001,1,1,,,,124929,124929,,,,MONDEVILLE,,"49,173419","-0,326613",,,,"39,482",,,,,,,,
