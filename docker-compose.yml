@@ -2,7 +2,7 @@ version: '3.3'
 
 x-web: &web
   build: .
-  image: planner-web:${CARTOROUTE_VERSION:-latest}
+  image: planner-web:${CARTOWAY_VERSION:-latest}
   environment:
     env_file: .env
     RAILS_ENV: ${RAILS_ENV:-production}

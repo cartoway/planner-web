@@ -73,10 +73,10 @@ fr:
       vehicle:
         devices:
           fleet_demo:
-            title: Cartoroute Field (demo)
+            title: Cartoway Field (demo)
           fleet:
-            title: Cartoroute Field
-            fleet_user: "Nom de l'utilisateur Cartoroute Field"
+            title: Cartoway Field
+            fleet_user: "Nom de l'utilisateur Cartoway Field"
           locster:
             title: Locster
             locster_ref: "Ref. véhicule Locster"
@@ -109,11 +109,11 @@ fr:
       invalid_account: Utilisateur invalide (non existant)
       list: Impossible de lister les appareils
       create_company:
-        no_admin_api_key: Pas de clé admin API Cartoroute Field renseignée
+        no_admin_api_key: Pas de clé admin API Cartoway Field renseignée
         already_created: Compagnie déjà existante
         error: Impossible de créer la compagnie
       create_drivers:
-        no_api_key: Pas de clé API Cartoroute Field renseignée pour ce compte client
+        no_api_key: Pas de clé API Cartoway Field renseignée pour ce compte client
         already_created: Utilisateurs déjà existants
       update_drivers:
         update_failed: Échec lors de la mise à jour de l'utilisateur
@@ -184,10 +184,10 @@ fr:
           help: "(DEMONSTRATEUR) Simule la position des véhicules et le statut des visites (si ces options sont actives)
             pour le dernier plan modifié."
         fleet:
-          help: "Permet d'envoyer les tournées vers l'app mobile Cartoroute Field."
-          company_created: "Compagnie créée dans Cartoroute Field :"
-          drivers_created: "Utilisateurs créés dans Cartoroute Field :"
-          drivers_updated: "Utilisateurs mis à jour dans Cartoroute Field:"
+          help: "Permet d'envoyer les tournées vers l'app mobile Cartoway Field."
+          company_created: "Compagnie créée dans Cartoway Field :"
+          drivers_created: "Utilisateurs créés dans Cartoway Field :"
+          drivers_updated: "Utilisateurs mis à jour dans Cartoway Field:"
         alyacom:
           help: "Permet d'envoyer les tournées vers l'application AlyaCom."
         tomtom:
@@ -206,29 +206,29 @@ fr:
     edit:
       all_plannings_related: Concerne toutes les tournées
       fleet_demo_send:
-        action: Envoyer à Cartoroute Field (demo)
-        success: Envoyé à Cartoroute Field (demo) avec succès
-        fail: Échec lors de l'envoi vers Cartoroute Field (demo)
+        action: Envoyer à Cartoway Field (demo)
+        success: Envoyé à Cartoway Field (demo) avec succès
+        fail: Échec lors de l'envoi vers Cartoway Field (demo)
       fleet_demo_clear:
-        action: Vider Cartoroute Field (demo)
-        success: Les interventions Cartoroute Field (demo) ont été vidées avec succès
-        fail: Échec lors de la suppression des interventions Cartoroute Field (demo)
+        action: Vider Cartoway Field (demo)
+        success: Les interventions Cartoway Field (demo) ont été vidées avec succès
+        fail: Échec lors de la suppression des interventions Cartoway Field (demo)
       fleet_send:
-        action: "Envoyer à l'app mobile Cartoroute Field"
-        success: "Envoyé à l'app mobile Cartoroute Field avec succès"
-        fail: "Échec lors de l'envoi vers Mapotempo l'app mobile Cartoroute Field"
+        action: "Envoyer à l'app mobile Cartoway Field"
+        success: "Envoyé à l'app mobile Cartoway Field avec succès"
+        fail: "Échec lors de l'envoi vers Mapotempo l'app mobile Cartoway Field"
       fleet_clear:
-        action: "Vider l'app mobile Cartoroute Field"
-        success: "L'app mobile Cartoroute Field a été vidée avec succès"
-        fail: "Échec lors de la suppression dans l'app mobile Cartoroute Field"
+        action: "Vider l'app mobile Cartoway Field"
+        success: "L'app mobile Cartoway Field a été vidée avec succès"
+        fail: "Échec lors de la suppression dans l'app mobile Cartoway Field"
         button: "Vider la sélection"
         button_empty: "Fermer"
-        empty: "Aucune tournée trouvée sur Cartoroute Field"
+        empty: "Aucune tournée trouvée sur Cartoway Field"
         route:
           name: Nom de tournée
           number: Numéro de tournée
       fleet_fetch_routes:
-        action: "Vider l'app mobile Cartoroute Field"
+        action: "Vider l'app mobile Cartoway Field"
       teksat_send:
         action: Envoyer à Teksat
         success: Envoi vers Teksat terminé avec succès
@@ -300,10 +300,10 @@ fr:
         fail: Échec lors de la suppression des interventions Praxedo
       dialog:
         fleet_demo:
-          title: Cartoroute Field (demo)
+          title: Cartoway Field (demo)
           in_progress: Veuillez patienter
         fleet:
-          title: App mobile Cartoroute Field
+          title: App mobile Cartoway Field
           in_progress: Veuillez patienter
         orange:
           title: Orange Fleet Performance

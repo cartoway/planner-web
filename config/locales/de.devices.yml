@@ -72,10 +72,10 @@ de:
       vehicle:
         devices:
           fleet_demo:
-            title: Cartoroute Field (demo)
+            title: Cartoway Field (demo)
           fleet:
-            title: Cartoroute Field
-            fleet_user: "Cartoroute Field Benutzername"
+            title: Cartoway Field
+            fleet_user: "Cartoway Field Benutzername"
           locster:
             title: Locster
             locster_ref: "Locster-Fahrzeugnummer."
@@ -108,11 +108,11 @@ de:
       invalid_account: Benutzer ungültig (ist nicht vorhanden)
       list: Geräte können nicht aufgelistet werden
       create_company:
-        no_admin_api_key: Kein Cartoroute Field Admin-API-Schlüssel vorhanden
+        no_admin_api_key: Kein Cartoway Field Admin-API-Schlüssel vorhanden
         already_created: Unternehmen bereits erstellt
         error: Unternehmen kann nicht erstellt werden
       create_drivers:
-        no_api_key: Es wurde kein Cartoroute Field API-Schlüssel für diesen Kunden angegeben
+        no_api_key: Es wurde kein Cartoway Field API-Schlüssel für diesen Kunden angegeben
         already_created: Bereits angelegte Benutzer
       update_drivers:
         update_failed: Benutzer konnte nicht aktualisiert werden
@@ -177,10 +177,10 @@ de:
         fleet_demo:
           help: "(NUR DEMO) Simulieren der Position der Fahrzeuge und den Besuchsstatus (wenn diese Optionen aktiviert sind) für den zuletzt aktualisierten Plan."
         fleet:
-          help: "Ermöglicht das Senden von Strecken an die mobile Cartoroute Field App."
-          company_created: "Cartoroute Field Unternehmen erstellt:"
-          drivers_created: "Cartoroute Field Fahrer erstellt:"
-          drivers_updated: "Cartoroute Field Fahrer aktualisiert:"
+          help: "Ermöglicht das Senden von Strecken an die mobile Cartoway Field App."
+          company_created: "Cartoway Field Unternehmen erstellt:"
+          drivers_created: "Cartoway Field Fahrer erstellt:"
+          drivers_updated: "Cartoway Field Fahrer aktualisiert:"
         alyacom:
           help: "Ermöglicht das Senden von Strecken an die AlyaCom-Anwendung."
         tomtom:
@@ -199,29 +199,29 @@ de:
     edit:
       all_plannings_related: Bezieht sich auf alle Strecken
       fleet_demo_send:
-        action: Senden an Cartoroute Field demo
-        success: Senden an Cartoroute Field demo erfolgreich
-        fail: Senden an Cartoroute Field demo fehlgeschlagen
+        action: Senden an Cartoway Field demo
+        success: Senden an Cartoway Field demo erfolgreich
+        fail: Senden an Cartoway Field demo fehlgeschlagen
       fleet_demo_clear:
-        action: Cartoroute Field (demo) löschen
-        success: Cartoroute Field (demo)-Interventionen wurden erfolgreich gelöscht
-        fail: Löschen der Cartoroute Field (demo)-Interventionen fehlgeschlagen
+        action: Cartoway Field (demo) löschen
+        success: Cartoway Field (demo)-Interventionen wurden erfolgreich gelöscht
+        fail: Löschen der Cartoway Field (demo)-Interventionen fehlgeschlagen
       fleet_send:
-        action: An mobile Cartoroute Field App senden
-        success: Wurde erfolgreich an die mobile Cartoroute Field App gesendet
-        fail: Senden an die mobile Cartoroute Field App ist fehlgeschlagen
+        action: An mobile Cartoway Field App senden
+        success: Wurde erfolgreich an die mobile Cartoway Field App gesendet
+        fail: Senden an die mobile Cartoway Field App ist fehlgeschlagen
       fleet_clear:
-        action: Mobile App Cartoroute Field löschen
-        success: Fahrt in der mobilen Cartoroute Field App wurde erfolgreich gelöscht
-        fail: Löschen der mobilen Cartoroute Field App ist fehlgeschlagen
+        action: Mobile App Cartoway Field löschen
+        success: Fahrt in der mobilen Cartoway Field App wurde erfolgreich gelöscht
+        fail: Löschen der mobilen Cartoway Field App ist fehlgeschlagen
         button: Auswahl aufheben
         button_empty: Schließen
-        empty: Keine Strecken auf Cartoroute Field gefunden
+        empty: Keine Strecken auf Cartoway Field gefunden
         route:
           name: Name der Strecke
           number: Streckennummer
       fleet_fetch_routes:
-        action: Mobile App Cartoroute Field löschen
+        action: Mobile App Cartoway Field löschen
       teksat_send:
         action: An Teksat senden
         success: Erfolgreich an Teksat gesendet
@@ -293,10 +293,10 @@ de:
         fail: Löschen der Praxedo-Interventionen fehlgeschlagen
       dialog:
         fleet_demo:
-          title: Cartoroute Field (demo)
+          title: Cartoway Field (demo)
           in_progress: Bitte warten
         fleet:
-          title: Mobile Cartoroute Field App
+          title: Mobile Cartoway Field App
           in_progress: Bitte warten
         orange:
           title: Orange Fleet Performance

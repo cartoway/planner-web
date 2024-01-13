@@ -34,7 +34,7 @@ class V01::Devices::Fleet < Grape::API
       end
 
       desc 'List Devices.',
-        detail: 'List Cartoroute Field devices.',
+        detail: 'List Cartoway Field devices.',
         nickname: 'deviceFleetList',
         is_array: true,
         success: V01::Status.success(:code_200, V01::Entities::DeviceItem),
@@ -44,7 +44,7 @@ class V01::Devices::Fleet < Grape::API
       end
 
       desc 'Send Planning Routes.',
-        detail: 'In Cartoroute Field.',
+        detail: 'In Cartoway Field.',
         nickname: 'deviceFleetSendMultiple',
         success: V01::Status.success(:code_201),
         failure: V01::Status.failures
@@ -56,7 +56,7 @@ class V01::Devices::Fleet < Grape::API
       end
 
       desc 'Clear Route.',
-        detail: 'In Cartoroute Field.',
+        detail: 'In Cartoway Field.',
         nickname: 'deviceFleetClear',
         success: V01::Status.success(:code_204),
         failure: V01::Status.failures
@@ -68,7 +68,7 @@ class V01::Devices::Fleet < Grape::API
       end
 
       desc 'Clear multiple routes.',
-        detail: 'In Cartoroute Field.',
+        detail: 'In Cartoway Field.',
         nickname: 'deviceFleetClearMultiple',
         success: V01::Status.success(:code_204),
         failure: V01::Status.failures
@@ -90,7 +90,7 @@ class V01::Devices::Fleet < Grape::API
       end
 
       desc 'Get Fleet routes.',
-        detail: 'In Cartoroute Field.',
+        detail: 'In Cartoway Field.',
         nickname: 'getFleetRoutes',
         is_array: true,
         success: V01::Status.success(:code_200),
@@ -127,7 +127,7 @@ class V01::Devices::Fleet < Grape::API
       end
 
       desc 'Synchronise Vehicles.',
-        detail: 'In Cartoroute Field.',
+        detail: 'In Cartoway Field.',
         nickname: 'deviceFleetSync',
         success: V01::Status.success(:code_204),
         failure: V01::Status.failures
@@ -137,7 +137,7 @@ class V01::Devices::Fleet < Grape::API
       end
 
       desc 'Create company with drivers.',
-        detail: 'In Cartoroute Field.',
+        detail: 'In Cartoway Field.',
         nickname: 'deviceFleetCreateCompanyAndDrivers',
         success: V01::Status.success(:code_200),
         failure: V01::Status.failures
@@ -152,7 +152,7 @@ class V01::Devices::Fleet < Grape::API
       end
 
       desc 'Create drivers.',
-        detail: 'In Cartoroute Field.',
+        detail: 'In Cartoway Field.',
         nickname: 'deviceFleetCreateDrivers',
         success: V01::Status.success(:code_200),
         failure: V01::Status.failures

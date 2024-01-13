@@ -86,8 +86,8 @@ Rails.application.configure do
   config.default_from_mail = 'root@localhost'
 
   config.swagger_docs_base_path = 'http://localhost:3000/'
-  config.api_contact_email = 'tech@cartoroute.com'
-  config.api_contact_url = 'https://github.com/cartoroute/planner-web'
+  config.api_contact_email = 'tech@cartoway.com'
+  config.api_contact_url = 'https://github.com/cartoway/planner-web'
 
   def cache_factory(namespace, expires_in)
     ActiveSupport::Cache::RedisStore.new(host: ENV['REDIS_HOST'] || 'localhost', namespace: namespace, expires_in: expires_in, raise_errors: true)
@@ -146,7 +146,7 @@ Rails.application.configure do
   )
   config.router.url = ENV['ROUTER_URL'] || 'http://localhost:4899/0.1'
 
-  config.devices.fleet.api_url = 'https://fleet.cartoroute.com'
+  config.devices.fleet.api_url = 'https://fleet.cartoway.com'
   config.devices.fleet.admin_api_key = ENV['DEVICE_FLEET_ADMIN_API_KEY']
   config.devices.alyacom.api_url = 'http://app.alyacom.fr/ws'
   config.devices.masternaut.api_url = 'http://gc.api.geonaut.masternaut.com/MasterWS/services'

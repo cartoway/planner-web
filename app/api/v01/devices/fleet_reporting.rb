@@ -36,7 +36,7 @@ class V01::Devices::FleetReporting < Grape::API
         end
 
         desc 'Get reporting.',
-          detail: "Get reporting from Cartoroute Field missions. Range between begin_date and end_date must be inferior to #{SharedParams::MAX_DAYS} days.",
+          detail: "Get reporting from Cartoway Field missions. Range between begin_date and end_date must be inferior to #{SharedParams::MAX_DAYS} days.",
           nickname: 'reporting.',
           http_codes: [
             V01::Status.success(:code_200),

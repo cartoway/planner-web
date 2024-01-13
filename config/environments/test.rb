@@ -51,8 +51,8 @@ Rails.application.configure do
   config.default_from_mail = 'root@localhost'
 
   config.swagger_docs_base_path = 'http://localhost:3000/'
-  config.api_contact_email = 'tech@cartoroute.com'
-  config.api_contact_url = 'https://github.com/cartoroute/planner-web'
+  config.api_contact_email = 'tech@cartoway.com'
+  config.api_contact_url = 'https://github.com/cartoway/planner-web'
 
   def cache_factory(namespace, expires_in)
     ActiveSupport::Cache::NullStore.new

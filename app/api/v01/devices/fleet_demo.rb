@@ -34,7 +34,7 @@ class V01::Devices::FleetDemo < Grape::API
       end
 
       desc 'Send Planning Routes.',
-        detail: 'In Cartoroute Field demo version (Cartoroute Field demo).',
+        detail: 'In Cartoway Field demo version (Cartoway Field demo).',
         nickname: 'deviceFleetDemoSendMultiple',
         success: V01::Status.success(:code_201),
         failure: V01::Status.failures
@@ -46,7 +46,7 @@ class V01::Devices::FleetDemo < Grape::API
       end
 
       desc 'Clear Route.',
-        detail: 'In Cartoroute Field demo version (Cartoroute Field demo).',
+        detail: 'In Cartoway Field demo version (Cartoway Field demo).',
         nickname: 'deviceFleetDemoClear',
         success: V01::Status.success(:code_204),
         failure: V01::Status.failures
@@ -58,7 +58,7 @@ class V01::Devices::FleetDemo < Grape::API
       end
 
       desc 'Clear Planning Routes.',
-        detail: 'In Cartoroute Field demo version (Cartoroute Field demo).',
+        detail: 'In Cartoway Field demo version (Cartoway Field demo).',
         nickname: 'deviceFleetDemoClearMultiple',
         success: V01::Status.success(:code_204),
         failure: V01::Status.failures

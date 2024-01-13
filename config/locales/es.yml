@@ -1051,7 +1051,7 @@ es:
       no_content: Ningún informe durante este período
     index:
       title: Relaciones
-      head: Descarga el informe de los recorridos realizados con la aplicación móvil Cartoroute Field.
+      head: Descarga el informe de los recorridos realizados con la aplicación móvil Cartoway Field.
       submit: Descargar
       downloading: Descarga en progreso...
       default_begin_date: D-8 por defecto

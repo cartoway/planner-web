@@ -686,15 +686,15 @@ de:
         name_help: Markenname des Resellers
         application_name_help: Website-Name des Resellers
         sms_api_key_help: API-Schlüssel, um SMS senden zu können
-        website_url_help: 'Adresse der Website. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoroute.com/{LG}/).'
-        welcome_url_help: 'Die Adresse der Internetseite wurde als HTML als "iframe" auf der Startseite eingefügt. "{LG}" kann durch einen Sprachcode wie "en", "fr" usw. ersetzt werden (z. B.: https://cartoroute.com/{LG}/app-news).'
-        help_url_help: 'Adresse der Internetseite mit Hilfeinhalt. Es kann "{LG}" verwendet werden, das durch einen Sprachcode wie beispielsweise "en", "fr" usw. ersetzt wird (z. B.: https://cartoroute.com/{LG}/help-center).'
-        contact_url_help: 'Adresse der Internetseite mit Kontaktformular. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoroute.com/{LG}/contact-support/).'
-        subscription_url_help: 'Adresse der Internetseite mit Abonnementinhalten für einen Testkunden. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoroute.com/{LG}/mapotempo-web-subscription-request).'
-        audience_url_help: 'Adresse der Internetseite, die das Zielgruppen-Dashboard enthält. Es kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoroute.com?id={ID})'
-        behavior_url_help: 'Adresse der Internetseite, die das Verhaltens-Dashboard enthält. Es kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoroute.com?id={ID})'
-        customer_audience_url_help: 'Adresse der Internetseite, die das Zielgruppen-Dashboard für einen Kunden enthält. Es kann "{ID}" verwendet werden, das durch die Kundennummer ersetzt wird (z.B.: https://analytics.cartoroute.com?id={ID}).'
-        customer_behavior_url_help: 'Adresse der Internetseite, die das Verhaltens-Dashboard für einen Kunden enthält. Es kann "{ID}" verwendet werden, das durch die Kundennummer ersetzt wird (z.B.: https://analytics.cartoroute.com?id={ID}).'
+        website_url_help: 'Adresse der Website. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/).'
+        welcome_url_help: 'Die Adresse der Internetseite wurde als HTML als "iframe" auf der Startseite eingefügt. "{LG}" kann durch einen Sprachcode wie "en", "fr" usw. ersetzt werden (z. B.: https://cartoway.com/{LG}/app-news).'
+        help_url_help: 'Adresse der Internetseite mit Hilfeinhalt. Es kann "{LG}" verwendet werden, das durch einen Sprachcode wie beispielsweise "en", "fr" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/help-center).'
+        contact_url_help: 'Adresse der Internetseite mit Kontaktformular. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/contact-support/).'
+        subscription_url_help: 'Adresse der Internetseite mit Abonnementinhalten für einen Testkunden. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/mapotempo-web-subscription-request).'
+        audience_url_help: 'Adresse der Internetseite, die das Zielgruppen-Dashboard enthält. Es kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})'
+        behavior_url_help: 'Adresse der Internetseite, die das Verhaltens-Dashboard enthält. Es kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})'
+        customer_audience_url_help: 'Adresse der Internetseite, die das Zielgruppen-Dashboard für einen Kunden enthält. Es kann "{ID}" verwendet werden, das durch die Kundennummer ersetzt wird (z.B.: https://analytics.cartoway.com?id={ID}).'
+        customer_behavior_url_help: 'Adresse der Internetseite, die das Verhaltens-Dashboard für einen Kunden enthält. Es kann "{ID}" verwendet werden, das durch die Kundennummer ersetzt wird (z.B.: https://analytics.cartoway.com?id={ID}).'
         facebook_url_help: Facebook-Link des Resellers
         twitter_url_help: Twitter-Link des Resellers
         linkedin_url_help: LinkedIn-Link des Resellers
@@ -727,8 +727,8 @@ de:
         success: E-Mail an den Benutzer erfolgreich versendet
     vehicles:
       devices:
-        create_company: 'Cartoroute Field-Benutzerkonto initialisieren'
-        create_drivers: 'Aktualisieren oder Erstellen von mobilen Fahrern in Cartoroute Field'
+        create_company: 'Cartoway Field-Benutzerkonto initialisieren'
+        create_drivers: 'Aktualisieren oder Erstellen von mobilen Fahrern in Cartoway Field'
   customers:
     duplicate:
       success: Kundenkonto erfolgreich dupliziert
@@ -1145,7 +1145,7 @@ de:
       no_content: Kein Bericht während dieser Zeit
     index:
       title: Verhältnis
-      head: Laden Sie den Bericht über Touren herunter, die mit der mobilen Anwendung Cartoroute Field erstellt wurden
+      head: Laden Sie den Bericht über Touren herunter, die mit der mobilen Anwendung Cartoway Field erstellt wurden
       submit: Download
       downloading: Download läuft...
       default_begin_date: T-8 standardmäßig

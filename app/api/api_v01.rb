@@ -68,7 +68,7 @@ class ApiV01 < Grape::API
       contact_email: Mapotempo::Application.config.api_contact_email,
       contact_url: Mapotempo::Application.config.api_contact_url,
       license: 'GNU Affero General Public License 3',
-      license_url: 'https://raw.githubusercontent.com/cartoroute/planner-web/master/LICENSE',
+      license_url: 'https://raw.githubusercontent.com/cartoway/planner-web/master/LICENSE',
       version: '0.1',
       description: '
 [Simplified view of domain model](' + Mapotempo::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
@@ -88,7 +88,7 @@ A route is a track between all destinations reached by a vehicle (a new route is
 This REST API is described with Swagger. The Swagger descriptor defines the request end-points, the parameters and the return values. The API can be addressed by HTTP request or with a generated client using the Swagger descriptor.
 ### API key
 All access to the API are subject to an `api_key` parameter in order to authenticate the user.
-This parameter can be sent with a query string on each available operation: `https://planner.cartoroute.com/api/0.1/{objects}?api_key={your_personal_api_key}`
+This parameter can be sent with a query string on each available operation: `https://planner.cartoway.com/api/0.1/{objects}?api_key={your_personal_api_key}`
 ### Return
 The API supports several return formats: `json` and `xml` which depend of the requested extension used in url.
 ### I18n

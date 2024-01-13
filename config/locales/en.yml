@@ -714,20 +714,20 @@ en:
         application_name_help: Reseller Website name
         sms_api_key_help: Api key to be able to send SMS
         website_url_help: 'Website address. It''s possible to use "{LG}" which will
-          be replaced by language like « en », « fr » (ie: https://cartoroute.com/{LG}/).'
+          be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/).'
         welcome_url_help: 'Web page address included as html as "iframe" on welcome
           page. It''s possible to use "{LG}" which will be replaced by language like
-          « en », « fr » (ie: https://cartoroute.com/{LG}/app-news).'
+          « en », « fr » (ie: https://cartoway.com/{LG}/app-news).'
         help_url_help: 'Web page address with help content. It''s possible to use
-          "{LG}" which will be replaced by language like « en », « fr » (ie: https://cartoroute.com/{LG}/help-center).'
+          "{LG}" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/help-center).'
         contact_url_help: 'Web page address with contact form. It''s possible to use
-          "{LG}" which will be replaced by language like « en », « fr » (ie: https://cartoroute.com/{LG}/contact-support/).'
+          "{LG}" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/contact-support/).'
         subscription_url_help: 'Web page address with subscription content for a test customer. It''s possible to use
-          "{LG}" which will be replaced by language like « en », « fr » (ie: https://cartoroute.com/{LG}/mapotempo-web-subscription-request).'
-        audience_url_help: 'Web page adress that contains the audience Dashboard. It''s possible to use "{ID}" which will be replaced by the number of days (ie: https://analytics.cartoroute.com?id={ID}'
-        behavior_url_help: 'Web page adress that contains the behavior Dashboard. It''s possible to use "{ID}" which will be replaced by the number of days (ie: https://analytics.cartoroute.com?id={ID}'
-        customer_audience_url_help: 'Web page adress that contains the audience Dashboard for a customer. It''s possible to use "{ID}" which will be replaced by the customer ID (ie: https://analytics.cartoroute.com?id={ID}'
-        customer_behavior_url_help: 'Web page adress that contains the behavior Dashboard for a customer. It''s possible to use "{ID}" which will be replaced by the customer ID (ie: https://analytics.cartoroute.com?id={ID}'
+          "{LG}" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/mapotempo-web-subscription-request).'
+        audience_url_help: 'Web page adress that contains the audience Dashboard. It''s possible to use "{ID}" which will be replaced by the number of days (ie: https://analytics.cartoway.com?id={ID}'
+        behavior_url_help: 'Web page adress that contains the behavior Dashboard. It''s possible to use "{ID}" which will be replaced by the number of days (ie: https://analytics.cartoway.com?id={ID}'
+        customer_audience_url_help: 'Web page adress that contains the audience Dashboard for a customer. It''s possible to use "{ID}" which will be replaced by the customer ID (ie: https://analytics.cartoway.com?id={ID}'
+        customer_behavior_url_help: 'Web page adress that contains the behavior Dashboard for a customer. It''s possible to use "{ID}" which will be replaced by the customer ID (ie: https://analytics.cartoway.com?id={ID}'
         facebook_url_help: Reseller Facebook link
         twitter_url_help: Reseller Twitter link
         linkedin_url_help: Reseller linkedIn link
@@ -761,8 +761,8 @@ en:
         success: E-Mail sent to user successfully
     vehicles:
       devices:
-        create_company: 'Initialize Cartoroute Field Account'
-        create_drivers: 'Update or create mobile drivers on Cartoroute Field'
+        create_company: 'Initialize Cartoway Field Account'
+        create_drivers: 'Update or create mobile drivers on Cartoway Field'
   customers:
     duplicate:
       success: Customer account duplicated successfully
@@ -1224,7 +1224,7 @@ en:
       no_content: No report during this period
     index:
       title: Reporting
-      head: Download report of routes executed with Cartoroute Field mobile application
+      head: Download report of routes executed with Cartoway Field mobile application
       submit: Download
       downloading: Downloading...
       default_begin_date: D-8 by default

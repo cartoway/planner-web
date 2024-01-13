@@ -23,7 +23,7 @@ class FleetDemo < DeviceBase
   def definition
     {
       device: 'fleet_demo',
-      label: 'Cartoroute Field demo',
+      label: 'Cartoway Field demo',
       label_small: 'Demo',
       route_operations: [:send, :clear],
       has_sync: false,

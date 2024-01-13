@@ -44,7 +44,7 @@ class Fleet < DeviceBase
   def definition
     {
       device: 'fleet',
-      label: 'Cartoroute Field',
+      label: 'Cartoway Field',
       label_small: 'Mapo. Live',
       route_operations: [:send, :fetch_routes],
       has_sync: true,

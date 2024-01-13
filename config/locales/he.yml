@@ -575,16 +575,16 @@ he:
         host_help: נעשה שיומש רב בכתובת האתר ובפורט של המפיץ
         name_help: שם מותג המפיץ
         welcome_url_help: 'כתובת דף אינטרנט הכלולה כ- HTML כ- "iframe" בדף הפתיחה.
-          ניתן להשתמש ב- "{LG}" אשר יוחלף בשפה כמו «en», «fr» (כלומר: http://cartoroute.com/{LG}/page.htm).'
+          ניתן להשתמש ב- "{LG}" אשר יוחלף בשפה כמו «en», «fr» (כלומר: http://cartoway.com/{LG}/page.htm).'
         help_url_help: 'כתובת דף אינטרנט עם תוכן עזרה.אפשרי להשתמש   "{LG}" שיוחלפו
-          בשפה כגון « en », « fr »  (כלומר:  http://cartoroute.com/{LG}/page.html).'
+          בשפה כגון « en », « fr »  (כלומר:  http://cartoway.com/{LG}/page.html).'
         contact_url_help: 'כתובת דף אינטרנט עם תוכן עזרה.אפשרי להשתמש   "{LG}" שיוחלפו
-          בשפה כגון « en », « fr »  (כלומר:  http://cartoroute.com/{LG}/page.html).'
+          בשפה כגון « en », « fr »  (כלומר:  http://cartoway.com/{LG}/page.html).'
         logo_large_help: הגדרת לוגו על דף מלא, עדיפות ל- SVG, או לחילופין בפורמט PNG.
         logo_small_help: סמל תפריט ראשי, 150 × 40 פיקסלים בפורמט SVG או PNG.
         favicon_help: סמל אתר, 16 × 16 פיקסלים בפורמט PNG או ICO.
         website_url_help: 'כתובת דף אינטרנט עם תוכן עזרה.אפשרי להשתמש   "{LG}" שיוחלפו
-          בשפה כגון « en », « fr »  (כלומר:  http://cartoroute.com/{LG}/page.html).'
+          בשפה כגון « en », « fr »  (כלומר:  http://cartoway.com/{LG}/page.html).'
         protocol_url_http: HTTP
         protocol_url_https: HTTPS
     users:
@@ -1014,7 +1014,7 @@ he:
       no_content: אין דיווח בתקופה זו
     index:
       title: יחסים
-      head: הורד דוח של סיורים שנעשו עם היישום הנייד Cartoroute Field
+      head: הורד דוח של סיורים שנעשו עם היישום הנייד Cartoway Field
       submit: הורדה
       downloading: מוריד ...
       default_begin_date: היום פחות 8 ימים כברירת מחדל

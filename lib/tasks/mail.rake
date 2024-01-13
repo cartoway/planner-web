@@ -6,7 +6,7 @@ namespace :mail do
     request = User.joins(:customer).where('customers.test' => true, 'customers.end_subscription' => Time.zone.today + 1.days) | User.where(created_at: (Time.zone.today - 9.days)..Time.zone.today).where.not(customer_id: nil)
 
     users = request.select { |user|
-      /https?:\/\/cartoroute.com\/[^\/]+\/help-center/.match(user.customer.reseller.help_url) && /https?:\/\/cartoroute.com\/[^\/]+\/contact-support/.match(user.customer.reseller.contact_url)
+      /https?:\/\/cartoway.com\/[^\/]+\/help-center/.match(user.customer.reseller.help_url) && /https?:\/\/cartoway.com\/[^\/]+\/contact-support/.match(user.customer.reseller.contact_url)
     }
     users.each do |user|
       begin

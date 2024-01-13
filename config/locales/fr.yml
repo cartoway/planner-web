@@ -727,35 +727,35 @@
         'application_name_help': 'Nom du site Web du revendeur'
         'sms_api_key_help': 'Clé d''API pour envoi de SMS'
         'website_url_help': 'Adresse du site web. Vous pouvez utiliser « {LG} » qui
-          sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoroute.com/{LG}/).'
+          sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoway.com/{LG}/).'
         'welcome_url_help': 'Adresse de la page web html incluse comme « iframe »
           dans la page de bienvenue. Vous pouvez utiliser « {LG} » qui sera remplacé
-          par la langue telle que « en », « fr » (par ex : https://cartoroute.com/{LG}/app-news).'
+          par la langue telle que « en », « fr » (par ex : https://cartoway.com/{LG}/app-news).'
         'help_url_help': 'Adresse de la page web contenant l''aide. Vous pouvez utiliser
           « {LG} » qui sera remplacé par la langue telle que « en », « fr » (par ex :
-          https://cartoroute.com/{LG}/help-center).'
+          https://cartoway.com/{LG}/help-center).'
         'contact_url_help': 'Adresse de la page web contenant le formulaire de contact.
           Vous pouvez utiliser « {LG} » qui sera remplacé par la langue telle que
-          « en », « fr » (par ex : https://cartoroute.com/{LG}/contact-support/).'
+          « en », « fr » (par ex : https://cartoway.com/{LG}/contact-support/).'
         'subscription_url_help': 'Adresse de la page web contenant le formulaire de
           souscription dans le cas d''un compte test. Vous pouvez utiliser « {LG} »
-          qui sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoroute.com/{LG}/mapotempo-web-subscription-request).'
+          qui sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoway.com/{LG}/mapotempo-web-subscription-request).'
         'facebook_url_help': 'Lien Facebook du revendeur'
         'twitter_url_help': 'Lien Twitter du revendeur'
         'linkedin_url_help': 'Lien linkedIn du revendeur'
         'audience_url_help': 'Adresse de la page web contenant votre tableau de bord
           d''audience. Vous pouvez utiliser « {ID} »  qui sera remplacé par le nombre
-          de jours (par ex: https://analytics.cartoroute.com?id={ID}'
+          de jours (par ex: https://analytics.cartoway.com?id={ID}'
         'behavior_url_help': 'Adresse de la page web contenant votre tableau de bord
           de comportement. Vous pouvez utiliser « {ID} »  qui sera remplacé par le
-          nombre de jours (par ex: https://analytics.cartoroute.com?id={ID}'
+          nombre de jours (par ex: https://analytics.cartoway.com?id={ID}'
         'customer_audience_url_help': 'Adresse de la page web contenant votre tableau
           de bord d''audience pour un compte spécifique. Vous pouvez utiliser « {ID} »  qui
-          sera remplacé par l''identifiant de l''espace client (par ex: https://analytics.cartoroute.com?id={ID}'
+          sera remplacé par l''identifiant de l''espace client (par ex: https://analytics.cartoway.com?id={ID}'
         'customer_behavior_url_help': 'Adresse de la page web contenant votre tableau
           de bord de comportement pour un compte spécifique. Vous pouvez utiliser
           « {ID} »  qui sera remplacé par l''identifiant de l'' espace client (par ex:
-          https://analytics.cartoroute.com?id={ID}'
+          https://analytics.cartoway.com?id={ID}'
         'logo_large_help': 'Logo pleine page redimensionnable, de préférence au format
           SVG, à défaut en PNG.'
         'logo_small_help': 'Logo du menu, 150×40 pixels en SVG ou PNG.'
@@ -786,8 +786,8 @@
         'success': 'Email envoyé à l''utilisateur avec succès'
     'vehicles':
       'devices':
-        'create_company': 'Initialiser le compte Cartoroute Field'
-        'create_drivers': 'Mettre à jour ou créer les utilisateurs Cartoroute Field'
+        'create_company': 'Initialiser le compte Cartoway Field'
+        'create_drivers': 'Mettre à jour ou créer les utilisateurs Cartoway Field'
   'customers':
     'duplicate':
       'success': 'Espace client dupliqué avec succès'
@@ -1338,7 +1338,7 @@
       'no_content': 'Aucun rapport durant cette période'
     'index':
       'title': 'Rapports'
-      'head': 'Téléchargement du rapport des tournées réalisées avec l’application mobile Cartoroute Field'
+      'head': 'Téléchargement du rapport des tournées réalisées avec l’application mobile Cartoway Field'
       'submit': 'Télécharger'
       'downloading': 'Téléchargement en cours...'
       'default_begin_date': 'J-8 par défaut'
