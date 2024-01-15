@@ -74,7 +74,7 @@ module SharedParams
     optional :optimization_cost_waiting_time, type: Float, default: Mapotempo::Application.config.optimize_cost_waiting_time, documentation: { desc: 'Coefficient to manage waiting time'}
     optional :optimization_force_start, type: Boolean, default: Mapotempo::Application.config.optimize_force_start, documentation: { desc: 'Force time for departure'}
 
-    optional :advanced_options, type: Hash, coerce_with: JSON, documentation: { desc: 'Advanced options' }
+    optional :advanced_options, type: JSON, documentation: { desc: 'Advanced options' }
 
     optional :devices, type: Hash, coerce_with: JSON, documentation: { desc: EDIT_ONLY_ADMIN }
   end

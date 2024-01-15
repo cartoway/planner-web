@@ -526,14 +526,18 @@ class PlanningsController < ApplicationController
 
   def format_csv(format)
     format.excel do
+      @customer ||= @planning.customer
       @columns = (@params[:columns] && @params[:columns].split('|')) || export_columns
+      @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
       type: 'text/csv',
       filename: filename + '.csv',
       disposition: @params.key?(:disposition) ? @params[:disposition] : 'attachment'
     end
     format.csv do
+      @customer ||= @planning.customer
       @columns = (@params[:columns] && @params[:columns].split('|')) || export_columns
+      @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
     end
   end

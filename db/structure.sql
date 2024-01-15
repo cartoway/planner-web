@@ -98,7 +98,7 @@ CREATE TABLE public.customers (
     enable_references boolean DEFAULT true,
     enable_multi_visits boolean DEFAULT false NOT NULL,
     router_dimension integer DEFAULT 0 NOT NULL,
-    advanced_options text,
+    advanced_options jsonb DEFAULT '{}'::jsonb NOT NULL,
     print_map boolean DEFAULT false NOT NULL,
     external_callback_url character varying,
     external_callback_name character varying,

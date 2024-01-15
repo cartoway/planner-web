@@ -49,6 +49,7 @@ class Customer < ApplicationRecord
   include HashBoolAttr
   store_accessor :router_options, :time, :distance, :avoid_zones, :isochrone, :isodistance, :traffic, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction
   hash_bool_attr :router_options, :time, :distance, :avoid_zones, :isochrone, :isodistance, :traffic, :track, :motorway, :toll, :strict_restriction
+  store_accessor :advanced_options, :import
 
   include LocalizedAttr # To use to_delocalized_decimal method
 

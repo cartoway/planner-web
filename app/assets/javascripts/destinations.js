@@ -528,16 +528,21 @@ const destinations_import = function(params, api) {
   });
 
   $('[name=columns-save]').click(function() {
-    var columnsDef = $('.column-def')
-      .filter(function(i, e) {
+    const advanced_options = { ...params.customer_advanced_options, ...{ 'import': { 'destinations': { 'spreadsheetColumnsDef': {} } } } }
+    $('.column-def').filter(function(i, e) {
         return $(e).val();
       })
-      .map(function(i, e) {
-        return '"' + $(e).attr('name').replace(/import_csv\[column_def\]\[([^\]]+)\]/, '$1') + '": ' + JSON.stringify($(e).val());
-      }).get().join(', ');
+      .each((i, e) => {
+        advanced_options['import']['destinations']['spreadsheetColumnsDef'][$(e).attr('name').replace(/import_csv\[column_def\]\[([^\]]+)\]/, '$1')] = $(e).val();
+      });
     $.ajax({
       type: 'put',
-      data: 'advanced_options={"import": {"destinations": {"spreadsheetColumnsDef": {' + columnsDef + '}}}}',
+      headers: {
+        'content-type': 'application/json'
+      },
+      data: JSON.stringify({
+        advanced_options: advanced_options
+      }),
       url: '/api/0.1/customers/' + params.customer_id + '.json'
     });
   });

@@ -224,4 +224,24 @@ class V01::CustomerTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test 'should update advanced options' do
+    @customer.update advanced_options: {enable_test: true}
+    params = { import: { destinations: { spreadsheetColumnsDef: { ref_vehicle: "driver" }}}, enable_test: true }
+    put api_admin(@customer.id), advanced_options: params.to_json
+    assert last_response.ok?, JSON.parse(last_response.body)
+    assert_equal params.with_indifferent_access, @customer.reload.advanced_options
+    params = { import: { destinations: { spreadsheetColumnsDef: {}}}, enable_test: true }
+    put api_admin(@customer.id), advanced_options: params
+    assert last_response.ok?, last_response.body
+    assert_equal({'enable_test' => 'true'}, @customer.reload.advanced_options)
+    put api_admin(@customer.id), advanced_options: { enable_test: nil }
+    assert last_response.ok?, last_response.body
+    assert_empty @customer.reload.advanced_options
+
+    params = { import: { destinations: { spreadsheetColumnsDef: { ref_vehicle: 'myDriver' }}}}
+    put api(@customer.id), advanced_options: params
+    assert last_response.ok?, last_response.body
+    assert_equal(params.with_indifferent_access, @customer.reload.advanced_options)
+  end
 end

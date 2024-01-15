@@ -73,12 +73,12 @@ class V01::Customers < Grape::API
           :print_map,
           :print_stop_time,
           :print_barcode,
-          :advanced_options,
           :profile_id,
           :router_id,
           :router_dimension,
           :speed_multiplier,
           router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction],
+          advanced_options: permit_recursive_params(p[:advanced_options]),
           devices: permit_recursive_params(p[:devices]))
       else
         p.permit(
@@ -102,11 +102,11 @@ class V01::Customers < Grape::API
           :enable_external_callback,
           :external_callback_url,
           :external_callback_name,
-          :advanced_options,
           :router_id,
           :router_dimension,
           :speed_multiplier,
           router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction],
+          advanced_options: permit_recursive_params(p[:advanced_options]),
           devices: permit_recursive_params(p[:devices]))
       end
     end
@@ -118,7 +118,7 @@ class V01::Customers < Grape::API
             { key => [ permit_recursive_params(value.first) ] }
           elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
             { key => permit_recursive_params(value) }
-          else
+          elsif value.present?
             key
           end
         end

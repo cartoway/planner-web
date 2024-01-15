@@ -42,6 +42,7 @@ customer_one:
     width: 6
     length: 30
     hazardous_goods: gas
+  advanced_options: {}
 
 customer_one_other:
   end_subscription: 2030-08-09 00:00:00
@@ -61,6 +62,7 @@ customer_one_other:
   speed_multiplier: 1
   default_country: France
   reseller: reseller_one
+  advanced_options: {}
 
 customer_two:
   end_subscription: 2030-08-09 00:00:00
@@ -78,3 +80,4 @@ customer_two:
   speed_multiplier: 1.1
   default_country: France
   reseller: reseller_two
+  advanced_options: {}
