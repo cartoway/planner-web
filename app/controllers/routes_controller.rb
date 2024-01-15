@@ -57,12 +57,16 @@ class RoutesController < ApplicationController
         end
       end
       format.excel do
+        @customer = current_user.customer
+        @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
         @columns = (@params[:columns] && @params[:columns].split('|')) || export_columns
         send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
           type: 'text/csv',
           filename: filename + '.csv'
       end
       format.csv do
+        @customer = current_user.customer
+        @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
         @columns = (@params[:columns] && @params[:columns].split('|')) || export_columns
         response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
       end

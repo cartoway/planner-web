@@ -121,7 +121,7 @@ class DestinationsController < ApplicationController
     @import_csv = ImportCsv.new
     @import_tomtom = ImportTomtom.new
     if current_user.customer.advanced_options
-      advanced_options = JSON.parse(current_user.customer.advanced_options)
+      advanced_options = current_user.customer.advanced_options
       @columns_default = advanced_options['import']['destinations']['spreadsheetColumnsDef'] if advanced_options['import'] && advanced_options['import']['destinations'] && advanced_options['import']['destinations']['spreadsheetColumnsDef']
     end
   end
@@ -141,7 +141,7 @@ class DestinationsController < ApplicationController
       else
         @import_tomtom = ImportTomtom.new
         if current_user.customer.advanced_options
-          advanced_options = JSON.parse(current_user.customer.advanced_options)
+          advanced_options = current_user.customer.advanced_options
           @columns_default = advanced_options['import']['destinations']['spreadsheetColumnsDef'] if advanced_options['import'] && advanced_options['import']['destinations'] && advanced_options['import']['destinations']['spreadsheetColumnsDef']
         end
         format.html { render action: 'import' }

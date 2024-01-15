@@ -491,4 +491,20 @@ class CustomerTest < ActiveSupport::TestCase
       @customer.save!
     end
   end
+
+  test 'should allow and update advanced options with special characters' do
+    options = {
+      'import' => {
+        'destinations' => {
+          'spreadsheetColumnsDef' => {
+            'ref' => "Test/string&is#testing'~\"{([|^@])} œéèêùà\\!@#S%^*+_-?/<>:';",
+            'name' => '<>my _ name0123456789',
+            'ref_visit' => 'ref visit  '
+          }
+        }
+      }
+    }
+    assert @customer.update advanced_options: options
+    assert_equal options, @customer.advanced_options
+  end
 end
