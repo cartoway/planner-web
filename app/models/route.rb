@@ -687,7 +687,11 @@ class Route < ApplicationRecord
   end
 
   def compute_out_of_force_position
-    stops.each{ |stop| stop.out_of_force_position = nil }
+    stops.each{ |stop|
+      next if stop.is_a?(StopRest)
+
+      stop.out_of_force_position = false
+    }
     stops_sort = stops.sort_by(&:index)
 
     position_status = :first
