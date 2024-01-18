@@ -166,6 +166,19 @@ a.disabled {
   }
 }
 
+#tag_ids_col {
+  max-width: 25%;
+}
+
+#planning_tag_ids_input {
+  .input-group > .select2-container--bootstrap {
+    display: inline-block;
+  }
+  .select2-search--inline {
+    width: 0px;
+  }
+}
+
 .select2-container--bootstrap.input-sm,
 .select2-container--bootstrap.input-lg {
   border-radius: 0;
