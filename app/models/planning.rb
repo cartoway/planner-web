@@ -882,7 +882,7 @@ class Planning < ApplicationRecord
       # Difference of total time + difference of sum of out_of_window time
       ri[2] = ((r.end - r.start) - (ri[0].end && ri[0].start ? ri[0].end - ri[0].start : 0)) + (r.sum_out_of_window - cache_sum_out_of_window[ri[0]])
       # Delta distance
-      ri[3] = r.distance - ri[0].distance
+      ri[3] = r.distance - ri[0].distance.to_f
 
       r.remove_visit(stop.visit) if stop.is_a?(StopVisit)
 
@@ -935,7 +935,7 @@ class Planning < ApplicationRecord
       # Difference of total time + difference of sum of out_of_window time
       ri[2] = ((r.end - r.start) - (ri[0].end && ri[0].start ? ri[0].end - ri[0].start : 0)) + (r.sum_out_of_window - cache_sum_out_of_window[ri[0]])
       # Delta distance
-      ri[3] = r.distance - ri[0].distance
+      ri[3] = r.distance - ri[0].distance.to_f
 
       r.remove_visit(tmp_visit)
 
