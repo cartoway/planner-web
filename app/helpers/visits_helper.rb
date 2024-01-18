@@ -27,7 +27,7 @@ module VisitsHelper
     [
       [t('activerecord.attributes.visits.force_position.neutral'), :neutral],
       [t('activerecord.attributes.visits.force_position.always_first'), :always_first],
-      [t('activerecord.attributes.visits.force_position.always_last'), :always_last],
+      [t('activerecord.attributes.visits.force_position.always_final'), :always_final],
       [t('activerecord.attributes.visits.force_position.never_first'), :never_first]
     ]
   end

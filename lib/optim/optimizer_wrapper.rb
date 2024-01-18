@@ -24,7 +24,7 @@ class OptimizerWrapper
 
   attr_accessor :cache, :url, :api_key
 
-  POSITION_KEYS = { always_first: :force_first, always_last: :force_end, never_first: :never_first}.freeze
+  POSITION_KEYS = { always_first: :force_first, always_final: :force_end, never_first: :never_first}.freeze
 
   def initialize(cache, url, api_key)
     @cache, @url, @api_key = cache, url, api_key
