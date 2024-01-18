@@ -59,6 +59,11 @@ const api_web_v01_destinations_index = function(params, api) {
 
   var fitBounds = initializeMapHash(map, true);
 
+  progressBar && progressBar.advanceTo(50);
+  var ajaxParams = {};
+  if (ids) ajaxParams.ids = ids.join(',');
+  if (params.store_ids) ajaxParams.store_ids = params.store_ids.join(',');
+
   if (api === 'destinations') {
     var storesLayers = map.storesLayers = L.featureGroup();
     storesLayers.addTo(map);
@@ -87,11 +92,6 @@ const api_web_v01_destinations_index = function(params, api) {
       }
     });
   }
-
-  progressBar && progressBar.advanceTo(50);
-  var ajaxParams = {};
-  if (ids) ajaxParams.ids = ids.join(',');
-  if (params.store_ids) ajaxParams.store_ids = params.store_ids.join(',');
 };
 
 Paloma.controller('ApiWeb/V01/Destinations', {
