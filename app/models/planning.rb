@@ -725,7 +725,7 @@ class Planning < ApplicationRecord
 
         route.quantities.select{ |_k, v| v > 0 }.each do |id, v|
           unit = route.planning.customer.deliverable_units.find{ |du| du.id == id }
-          next unless unit
+          next unless unit && vehicle
 
           capacity = vehicle && vehicle.default_capacities[id]
           if hashy_map.key?(unit.id)
