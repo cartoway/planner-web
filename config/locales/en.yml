@@ -135,7 +135,7 @@ en:
         other: visits
         force_position:
           always_first: always first
-          always_last: always final
+          always_final: always final
           never_first: never first
           neutral: neutral
       zoning: Zoning
@@ -536,7 +536,7 @@ en:
           other: Quantities
         force_position:
           always_first: Always first
-          always_last: Always final
+          always_final: Always final
           never_first: Never first
           neutral: Neutral
       zoning:
@@ -1759,7 +1759,7 @@ en:
       stop_type_rest: rest
       force_position: forced position
       force_position_always_first: always first
-      force_position_always_last: always last
+      force_position_always_final: always last
       force_position_never_first: never first
       force_position_neutral: neutral
       wait_time: wait

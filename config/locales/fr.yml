@@ -135,7 +135,7 @@
         'other': 'visites'
         'force_position':
           'always_first': 'début'
-          'always_last': 'fin'
+          'always_final': 'fin'
           'never_first': 'pas début'
           'neutral': 'neutre'
       'zoning': 'Sectorisation'
@@ -537,7 +537,7 @@
           'other': 'Quantités'
         'force_position':
           'always_first': 'Début'
-          'always_last': 'Fin'
+          'always_final': 'Fin'
           'never_first': 'Pas début'
           'neutral': 'Neutre'
       'zoning':
@@ -1881,7 +1881,7 @@
       'stop_type_rest': 'pause'
       'force_position': 'position forcée'
       'force_position_always_first': 'début'
-      'force_position_always_last': 'fin'
+      'force_position_always_final': 'fin'
       'force_position_never_first': 'pas début'
       'force_position_neutral': 'neutre'
       'wait_time': 'attente'
