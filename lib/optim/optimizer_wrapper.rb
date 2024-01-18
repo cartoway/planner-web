@@ -228,7 +228,7 @@ class OptimizerWrapper
 
   def position_relations(relations, services)
     services.group_by{ |serv| serv[:force_position] }.each{ |position, servs|
-      next if position.nil? || position == :neutral
+      next if position.nil? || position == 'neutral'
 
       relations << {
         type: POSITION_KEYS[position.to_sym],
