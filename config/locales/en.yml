@@ -509,6 +509,7 @@ en:
         tags: Tags
         tag_ids: Tags
         quantities: Quantities
+        force_position: Forced position
       visits:
         ref: Reference
         ref_small: Ref.
@@ -533,6 +534,11 @@ en:
         quantities:
           one: Quantity
           other: Quantities
+        force_position:
+          always_first: Always first
+          always_last: Always final
+          never_first: Never first
+          neutral: Neutral
       zoning:
         name: Name
       zone:
@@ -2313,6 +2319,7 @@ en:
       priority_help: Insertion priority when optimizing (useful when you know all your vehicles will not be able to visit all clients)
       close_help: Without taking into account visit duration
       tags_help: Visit categories
+      force_position_help: Forced position of the visit within the route
       delete: Flag for deletion
       delete_help: Delete this visit (destination will be kept)
     priority_level:

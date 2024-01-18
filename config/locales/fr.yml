@@ -510,6 +510,7 @@
         'tags': 'Catégories'
         'tag_ids': 'Catégories'
         'quantities': 'Quantités'
+        'force_position': 'Position forcée'
       'visits':
         'ref': 'Référence'
         'ref_small': 'Réf.'
@@ -534,6 +535,11 @@
         'quantities':
           'one': 'Quantité'
           'other': 'Quantités'
+        'force_position':
+          'always_first': 'Début'
+          'always_last': 'Fin'
+          'never_first': 'Pas début'
+          'neutral': 'Neutre'
       'zoning':
         'name': 'Nom'
       'zone':
@@ -2473,6 +2479,7 @@
         vous savez que votre flotte de véhicules ne pourra pas visiter toutes les destinations)'
       'close_help': 'Sans tenir compte de la durée de visite'
       'tags_help': 'Catégories de la visite'
+      'force_position_help': 'Position de la visite au sein de la tournée'
       'delete': 'Marquer à supprimer'
       'delete_help': 'Supprimer cette visite (le client sera conservé)'
     'priority_level':
