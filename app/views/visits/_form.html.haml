@@ -97,5 +97,5 @@
           = f.select :tag_ids, t('activerecord.attributes.visit.tag_ids'), options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')} do
             %p.help-block= t '.tags_help'
 
-        = f.select :force_position, t('activerecord.attributes.visit.force_position'), options_for_select(visit_force_position_options_for_select, selected: visit_force_position_options_for_select_selected(visit)), {}, {} do
-          %p.help-block= t '.force_position_help'
+      = f.select :force_position, t('activerecord.attributes.visit.force_position'), options_for_select(visit_force_position_options_for_select, selected: visit_force_position_options_for_select_selected(visit)), {}, {} do
+        %p.help-block= t '.force_position_help'
