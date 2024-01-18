@@ -231,8 +231,8 @@ class OptimizerWrapper
       next if position.nil? || position == :neutral
 
       relations << {
-        type: POSITION_KEYS[position],
-        linked_ids: servs.map{ |serv| "s#{serv[:stop_id]}" }} unless position == 'neutral'
+        type: POSITION_KEYS[position.to_sym],
+        linked_ids: servs.map{ |serv| "s#{serv[:stop_id]}" }}
     }
   end
 
