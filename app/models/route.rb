@@ -691,6 +691,7 @@ class Route < ApplicationRecord
     stops_sort = stops.sort_by(&:index)
 
     position_status = :first
+    previous_stop = nil
     stops_sort.each{ |stop|
       next if stop.is_a?(StopRest) || !stop.active
 
@@ -698,7 +699,7 @@ class Route < ApplicationRecord
         if !stop.visit.always_first?
           position_status = nil
         end
-        if stop.visit.never_first?
+        if stop.visit.never_first? && previous_stop.nil?
           stop.out_of_force_position = true
         end
       end
@@ -706,6 +707,8 @@ class Route < ApplicationRecord
       if position_status != :first && stop.visit.always_first?
         stop.out_of_force_position = true
       end
+
+      previous_stop = stop
     }
 
     position_status = :final
