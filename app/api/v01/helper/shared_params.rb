@@ -232,16 +232,28 @@ module SharedParams
   params :request_zone do |options|
     optional :name, type: String
     optional :vehicle_id, type: Integer
-    optional :polygon, type: JSON do use :request_polygon end
+    optional :polygon, type: JSON do use :request_feature end
     optional :speed_multiplier, type: Float
     optional :speed_multiplicator, type: Float, documentation: { hidden: true }
     mutually_exclusive :speed_multiplier, :speed_multiplicator
   end
 
-  params :request_polygon do |options|
-    requires :type, type: String
+  params :request_feature do |options|
+    requires :type, type: String, values: %w[Feature]
     optional :properties, type: Hash
-    requires :geometry, type: JSON
+    optional :geometry, type: JSON do use :request_geometry end
+  end
+
+  params :request_geometry do |options|
+    requires :type, type: String, values: %w[Polygon MultiPolygon GeometryCollection]
+    optional :coordinates, type: Array
+    optional :geometries, type: Array[JSON] do use :request_single_geometry end
+    exactly_one_of :coordinates, :geometries
+  end
+
+  params :request_single_geometry do |options|
+    requires :type, type: String, values: %w[Polygon MultiPolygon]
+    requires :coordinates, type: Array
   end
 
   params :params_from_entity do |options|

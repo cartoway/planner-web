@@ -77,6 +77,7 @@ class V01::Zonings < Grape::API
     post do
       d_params = declared(params, include_missing: false)
       zoning = current_customer.zonings.build(zoning_params(d_params))
+      zoning.zones = SimplifyGeometry.dump_multipolygons(zoning)
       zoning.save!
       present zoning, with: V01::Entities::Zoning
     end
@@ -94,6 +95,7 @@ class V01::Zonings < Grape::API
       d_params = declared(params, include_missing: false)
       zoning = current_customer.zonings.find(params[:id])
       zoning.update! zoning_params(d_params)
+      SimplifyGeometry.dump_multipolygons(zoning, true)
       present zoning, with: V01::Entities::Zoning
     end
 
