@@ -43,6 +43,26 @@ class V01::ZoningsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should create a zoning with dumped multipolygon' do
+    assert_difference('Zoning.count', 1) do
+      zoning = zonings(:zoning_four)
+      post api(), zoning.attributes.merge(zones: [zoning.zones.first.attributes])
+      assert last_response.created?, last_response.body
+      zoning_params = JSON.parse(last_response.body)
+      assert_equal zoning.zones.size + 2, zoning_params['zones'].size
+    end
+  end
+
+  test 'should create a zoning with dumped geometrycollection' do
+    assert_difference('Zoning.count', 1) do
+      zoning = zonings(:zoning_five)
+      post api(), zoning.attributes.merge(zones: [zoning.zones.first.attributes])
+      assert last_response.created?, last_response.body
+      zoning_params = JSON.parse(last_response.body)
+      assert_equal 1, zoning_params['zones'].size
+    end
+  end
+
   test 'should update a zoning' do
     @zoning.name = 'new name'
     put api(@zoning.id), @zoning.attributes
