@@ -241,19 +241,19 @@ module SharedParams
   params :request_feature do |options|
     requires :type, type: String, values: %w[Feature]
     optional :properties, type: Hash
-    optional :geometry, type: JSON do use :request_geometry end
+    optional :geometry, type: Hash do use :request_geometry end
   end
 
   params :request_geometry do |options|
     requires :type, type: String, values: %w[Polygon MultiPolygon GeometryCollection]
-    optional :coordinates, type: Array
-    optional :geometries, type: Array[JSON] do use :request_single_geometry end
+    optional :coordinates, documentation: { hidden: true }
+    optional :geometries, documentation: { hidden: true }, type: Array do use :request_single_geometry end
     exactly_one_of :coordinates, :geometries
   end
 
   params :request_single_geometry do |options|
     requires :type, type: String, values: %w[Polygon MultiPolygon]
-    requires :coordinates, type: Array
+    requires :coordinates
   end
 
   params :params_from_entity do |options|
