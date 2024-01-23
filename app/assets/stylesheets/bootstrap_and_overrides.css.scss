@@ -28,6 +28,14 @@
     clear: inherit;
 }
 
+// Specific for chrome 45 user_agent
+// var() -> chrome 49
+// font-weight: <number> -> chrome 62
+.fa {
+  font-family: "Font Awesome 6 Free";
+  font-weight: bold;
+}
+
 /* Change */
 
 .no-gutter [class*="col-"]:not(:last-child) {
