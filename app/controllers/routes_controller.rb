@@ -144,7 +144,7 @@ class RoutesController < ApplicationController
     ] + (@route.planning.customer.enable_orders ?
       [:orders] :
       @route.planning.customer.deliverable_units.map{ |du|
-        ('quantity' + (du.label ? '[' + du.label + ']' : '')).to_sym
+        ('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym
       })
   end
 end

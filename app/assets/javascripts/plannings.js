@@ -111,9 +111,14 @@ const spreadsheetModalExport = function(columns, planningId) {
   var appendElement = function(parentSel, columnKey) {
     var displayName;
     var match = columnKey.match(new RegExp('^(.+)\\[(.*)\\]$'));
+    var rematch = columnKey.match(/^([a-z]+(?:_[a-z]+)*)(\d+)$/);
     if (match) {
       var export_translation = 'plannings.export_file.' + match[1];
       displayName = I18n.t(export_translation) + '[' + match[2] + ']';
+    }
+    else if (rematch) {
+      var export_translation = 'plannings.export_file.' + rematch[1];
+      displayName = I18n.t(export_translation) + rematch[2];
     }
     else {
       var export_translation = 'plannings.export_file.' + columnKey;

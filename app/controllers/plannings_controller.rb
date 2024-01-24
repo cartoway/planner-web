@@ -513,8 +513,8 @@ class PlanningsController < ApplicationController
     ] + ((@customer || @planning.customer).enable_orders ?
       [:orders] :
       (@customer || @planning.customer).deliverable_units.flat_map{ |du|
-        [('quantity' + (du.label ? '[' + du.label + ']' : '')).to_sym,
-        ('quantity_operation' + (du.label ? '[' + du.label + ']' : '')).to_sym]
+        [('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym,
+        ('quantity_operation' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym]
       })
   end
 

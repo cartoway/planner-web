@@ -39,7 +39,7 @@ class ImporterVehicleUsageSets < ImporterBase
       consumption: { title: I18n.t('vehicles.import.consumption'), desc: I18n.t('vehicles.import.consumption_desc'), format: I18n.t('vehicles.import.format.float') },
       max_distance: { title: I18n.t('vehicles.import.max_distance'), desc: I18n.t('vehicles.import.max_distance_desc'), format: I18n.t('vehicles.import.format.integer') }
     }.merge(Hash[@customer.deliverable_units.map { |du|
-      ["capacity#{du.id}".to_sym, { title: I18n.t('vehicles.import.capacities') + (du.label ? '[' + du.label + ']' : ''), desc: I18n.t('vehicles.import.capacities_desc'), format: I18n.t('vehicles.import.format.float') }]
+      ["capacity#{du.id}".to_sym, { title: I18n.t('vehicles.import.capacities') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('vehicles.import.capacities_desc'), format: I18n.t('vehicles.import.format.float') }]
     }]).merge(
       router_mode: { title: I18n.t('vehicles.import.router_mode'), desc: I18n.t('vehicles.import.router_mode_desc'), format: "[#{router_modes.join(' | ')}]" },
       router_dimension: { title: I18n.t('vehicles.import.router_dimension'), desc: I18n.t('vehicles.import.router_dimension_desc'), format: "[#{router_dimensions.join(' | ')}]" },
