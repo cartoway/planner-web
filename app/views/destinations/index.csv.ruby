@@ -35,7 +35,10 @@ CSV.generate { |csv|
           @customer.deliverable_units.flat_map{ |du|
             [visit.quantities[du.id],
             visit.quantities_operations[du.id] && I18n.t("destinations.import_file.quantity_operation_#{visit.quantities_operations[du.id]}")]
-          })
+          }) +
+          @customer.custom_attributes.select(&:visit?).map{ |ca|
+            visit.custom_attributes_typed_hash[ca.name]
+          }
       }
     else
       csv << destination_columns + ['x']

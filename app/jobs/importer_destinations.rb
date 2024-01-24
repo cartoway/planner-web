@@ -86,7 +86,9 @@ class ImporterDestinations < ImporterBase
     }.merge(Hash[@customer.deliverable_units.flat_map{ |du|
       [["quantity#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.quantity_desc'), format: I18n.t('destinations.import_file.format.float')}],
       ["quantity_operation#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity_operation') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.quantity_operation_desc'), format: I18n.t('destinations.import_file.quantity_operation_format')}]]
-    }])
+    }]).merge(Hash[@customer.custom_attributes.select(&:visit?).map { |ca|
+    ["custom_attributes_visit[#{ca.name}]", { title: "#{I18n.t('destinations.import_file.custom_attributes_visit')}[#{ca.name}]", format: I18n.t("destinations.import_file.format.#{ca.object_type}")}]
+  }])
   end
 
   def columns
@@ -166,7 +168,7 @@ class ImporterDestinations < ImporterBase
     # @plannings_by_ref set in import_row in order to have internal row title
     @plannings_by_ref = nil
     @@col_dest_keys ||= columns_destination.keys
-    @col_visit_keys = columns_visit.keys + [:quantities, :quantities_operations]
+    @col_visit_keys = columns_visit.keys + [:quantities, :quantities_operations, :custom_attributes_visit]
     @@slice_attr ||= (@@col_dest_keys - [:customer_id, :lat, :lng]).collect(&:to_s)
     @destinations_by_attributes = Hash[@customer.destinations.collect{ |destination| [destination.attributes.slice(*@@slice_attr), destination] }]
     @plannings = []
@@ -230,6 +232,16 @@ class ImporterDestinations < ImporterBase
     end
   end
 
+  def prepare_custom_attributes(row)
+    custom_attributes_visit = {}
+    row.each{ |key, _value|
+      Regexp.new("^custom_attributes_visit\\[(.*)\\]$").match(key.to_s) { |m|
+        custom_attributes_visit[m[1]] = row.delete(m[0])
+      }
+    }
+    row[:custom_attributes_visit] = custom_attributes_visit if custom_attributes_visit.any?
+  end
+
   def valid_row(destination)
     if destination.name.nil?
       raise ImportInvalidRow.new(I18n.t('destinations.import_file.missing_name'))
@@ -280,6 +292,7 @@ class ImporterDestinations < ImporterBase
     row[:duration] = row.delete(:duration) if !row.key?(:duration) && row.key?(:duration)
 
     prepare_quantities row
+    prepare_custom_attributes(row)
     [:tags, :tags_visit].each{ |key| prepare_tags row, key }
 
     if row[:planning_ref]
@@ -304,6 +317,7 @@ class ImporterDestinations < ImporterBase
     visit_attributes = row.slice(*@col_visit_keys)
     visit_attributes[:ref] = visit_attributes.delete :ref_visit
     visit_attributes[:tags] = visit_attributes.delete :tags_visit if visit_attributes.key?(:tags_visit)
+    visit_attributes[:custom_attributes] = visit_attributes.delete :custom_attributes_visit if visit_attributes.key?(:custom_attributes_visit)
     visit_attributes[:force_position] = row[:force_position].present? && convert_force_position(row[:force_position])
 
     if !row[:ref].nil? && !row[:ref].strip.empty?

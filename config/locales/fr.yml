@@ -1259,6 +1259,7 @@
       'force_position': 'position forcée'
       'force_position_desc': 'position de la visite au sein de la tournée'
       'force_position_format': '[début | pas début | neutre | fin]'
+      'custom_attributes_visit': 'attributs visite'
       'format':
         'string': 'texte'
         'integer': 'nombre'
@@ -1920,6 +1921,7 @@
       'out_of_max_distance': 'distance maximale réalisable'
       'status': 'statut'
       'eta': 'eta'
+      'custom_attributes_visit': 'attributs visite'
     'form':
       'ref_help': 'Référence libre'
       'begin_end_date': 'Période de validité'

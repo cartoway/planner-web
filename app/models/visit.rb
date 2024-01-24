@@ -22,7 +22,7 @@ class Visit < ApplicationRecord
   has_many :stop_visits, inverse_of: :visit
   has_many :orders, inverse_of: :visit, dependent: :delete_all
   has_and_belongs_to_many :tags, after_add: :update_tags_track, after_remove: :update_tags_track
-  delegate :lat, :lng, :name, :street, :postalcode, :city, :state, :country, :detail, :comment, :phone_number, to: :destination
+  delegate :customer, :lat, :lng, :name, :street, :postalcode, :city, :state, :country, :detail, :comment, :phone_number, to: :destination
   serialize :quantities, DeliverableUnitQuantity
   serialize :quantities_operations, DeliverableUnitOperation
 
@@ -66,6 +66,9 @@ class Visit < ApplicationRecord
   include LocalizedAttr
 
   attr_localized :quantities
+
+  include TypedAttribute
+  typed_attr :custom_attributes
 
   amoeba do
     exclude_association :stop_visits

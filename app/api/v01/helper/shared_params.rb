@@ -220,6 +220,7 @@ module SharedParams
     mutually_exclusive :time_window_end_2, :close2
 
     optional :force_position, type: String, values: %w[neutral always_first never_first always_final], documentation: { type: 'string', desc: 'Force the position of the visits having the same position in the route they belong to' }
+    optional :custom_attributes, type: Hash, documentation: { desc: 'Additional properties'}
 
     # Route params related to JSON import
     if options[:json_import]
