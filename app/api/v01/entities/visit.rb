@@ -52,6 +52,7 @@ class V01::Entities::Visit < Grape::Entity
   expose(:duration_default, documentation: { type: DateTime }) { |m| m.destination.customer && m.destination.customer.visit_duration_absolute_time_with_seconds }
   expose(:tag_ids, documentation: { type: Integer, is_array: true })
   expose(:force_position, documentation: { type: String })
+  expose(:custom_attributes_typed_hash, documentation: {type: Hash, desc: 'Additional properties'}, as: :custom_attributes)
 
   # Deprecated fields
   expose(:open1, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_start_1` instead' }) { |m| m.time_window_start_1_absolute_time_with_seconds }

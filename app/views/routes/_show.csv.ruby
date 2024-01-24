@@ -57,7 +57,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
 
   row.merge!(
     Hash[route.planning.customer.custom_attributes.select(&:visit?).map{ |ca|
-      ["attribute[#{ca.name}]", nil]
+      ["custom_attributes_visit[#{ca.name}]".to_sym, nil]
     }
   ])
 
@@ -112,7 +112,7 @@ route.stops.each { |stop|
       time_window_end_1: (stop.time_window_end_1_absolute_time if stop.time_window_end_1),
       time_window_start_2: (stop.time_window_start_2_absolute_time if stop.time_window_start_2),
       time_window_end_2: (stop.time_window_end_2_absolute_time if stop.time_window_end_2),
-      force_position: (I18n.t("plannings.export_file.force_position_#{stop.force_position}") if stop.is_a?(StopVisit)),
+      force_position: (I18n.t("plannings.export_file.force_position_#{stop.force_position}") if stop.is_a?(StopVisit) && stop.force_position),
       priority: (stop.priority if stop.priority),
       tags_visit: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
     })
@@ -122,6 +122,11 @@ route.stops.each { |stop|
       route.planning.customer.deliverable_units.flat_map{ |du|
         [[('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.quantities[du.id] : nil],
         [('quantity_operation' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.quantities_operations[du.id] && I18n.t("destinations.import_file.quantity_operation_#{stop.visit.quantities_operations[du.id]}") : nil]]
+      }
+    ])
+    row.merge!(
+      Hash[route.planning.customer.custom_attributes.select(&:visit?).map{ |ca|
+        ["custom_attributes_visit[#{ca.name}]".to_sym, stop.visit.custom_attributes_typed_hash[ca.name]]
       }
     ])
 
@@ -188,7 +193,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
 
   row.merge!(
     Hash[route.planning.customer.custom_attributes.select(&:visit?).map{ |ca|
-      ["attribute[#{ca.name}]", nil]
+      ["custom_attributes_visit[#{ca.name}]".to_sym, nil]
     }
   ])
 

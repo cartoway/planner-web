@@ -13,7 +13,8 @@ class CustomAttribute < ApplicationRecord
   }
 
   enum object_class: {
-    vehicle: 0
+    vehicle: 0,
+    visit: 1
   }
 
   auto_strip_attributes :name

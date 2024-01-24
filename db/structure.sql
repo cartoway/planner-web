@@ -1082,7 +1082,8 @@ CREATE TABLE public.visits (
     time_window_end_2 integer,
     quantities_operations public.hstore,
     priority integer,
-    force_position integer DEFAULT 0
+    force_position integer DEFAULT 0,
+    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -2835,4 +2836,10 @@ INSERT INTO schema_migrations (version) VALUES ('20230506091333');
 INSERT INTO schema_migrations (version) VALUES ('20231214143522');
 
 INSERT INTO schema_migrations (version) VALUES ('20240103084216');
+
+INSERT INTO schema_migrations (version) VALUES ('20240115094756');
+
+INSERT INTO schema_migrations (version) VALUES ('20240122131606');
+
+INSERT INTO schema_migrations (version) VALUES ('20240124083101');
 
