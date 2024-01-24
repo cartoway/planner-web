@@ -9,7 +9,7 @@ CSV.generate { |csv|
     I18n.t('vehicles.import.max_distance')
   ] +
     @vehicle_usage_set.customer.deliverable_units.map { |du|
-      I18n.t('vehicles.import.capacities') + (du.label ? '[' + du.label + ']' : '')
+      I18n.t('vehicles.import.capacities') + (du.label ? "[#{du.label}]" : "#{du.id}")
     } +
     @vehicle_usage_set.customer.custom_attributes.map { |ca|
       I18n.t('vehicles.import.custom_attributes') + '[' + ca.name + ']'

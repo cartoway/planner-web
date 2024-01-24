@@ -55,9 +55,11 @@ module RoutesHelper
     columns.map{ |c|
       if custom_columns&.key?(c)
         custom_columns[c]
+      elsif (m = /^(.+)\[(.*)\]$/.match(c))
+        I18n.t("plannings.export_file.#{m[1]}") + "[#{m[2]}]"
       elsif (m = /^([a-z]+(?:_[a-z]+)*)(\d+)$/.match(c))
         deliverable_unit = customer.deliverable_units.where(id: m[2].to_i).first
-        I18n.t('destinations.import_file.' + m[1]) + '[' + deliverable_unit.label + ']'
+        I18n.t('destinations.import_file.' + m[1]) + (deliverable_unit.label ? "[#{deliverable_unit.label}]" : "#{deliverable_unit.id}")
       else
         I18n.t('plannings.export_file.' + c.to_s)
       end
@@ -67,8 +69,13 @@ module RoutesHelper
   def retrieve_matching_columns(customer, columns)
     columns.map!{ |column|
       if (m = /^(.+)\[(.*)\]$/.match(column))
-        deliverable_unit = customer.deliverable_units.where(label: m[2]).first
-        "#{m[1]}#{deliverable_unit.id}"
+        deliverable_unit = customer.deliverable_units.where(label: m[2])&.first
+
+        if deliverable_unit
+          "#{m[1]}#{deliverable_unit&.id || m[2]}"
+        else
+          column
+        end
       else
         column
       end

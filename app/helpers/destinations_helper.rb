@@ -21,9 +21,11 @@ module DestinationsHelper
     columns(customer).map{ |c|
       if custom_columns&.key?(c.to_s)
         custom_columns[c.to_s]
+      elsif (m = m = /^(.+)\[(.*)\]$/.match(c))
+        I18n.t('destinations.import_file.' + m[1]) + "[#{m[2]}]"
       elsif (m = /^([a-z]+(?:_[a-z]+)*)(\d+)$/.match(c))
         deliverable_unit = customer.deliverable_units.where(id: m[2].to_i).first
-        I18n.t('destinations.import_file.' + m[1]) + '[' + deliverable_unit.label + ']'
+        I18n.t("destinations.import_file.#{m[1]}") + (deliverable_unit.label ? "[#{deliverable_unit.label}]" : "#{deliverable_unit.id}")
       else
         I18n.t('destinations.import_file.' + c.to_s)
       end
@@ -40,12 +42,13 @@ module DestinationsHelper
 
   def columns_visit(customer)
     visit_columns = %i[ref_visit time_window_start_1 time_window_end_1 time_window_start_2 time_window_end_2]
-    visit_columns + %i[priority tags_visit]
+    visit_columns += %i[priority tags_visit]
     unless @customer.enable_orders
       customer.deliverable_units.each{ |du|
         visit_columns += ["quantity#{du.id}".to_sym, "quantity_operation#{du.id}".to_sym]
       }
     end
+    visit_columns += @customer.custom_attributes.select(&:visit?).map{ |ca| "custom_attributes[#{ca.name}]" }
     visit_columns
   end
 
