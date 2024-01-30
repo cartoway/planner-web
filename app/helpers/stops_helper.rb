@@ -19,4 +19,40 @@ module StopsHelper
   def stop_order_quantities(stop)
     stop.order.products.map(&:code).each_with_object({}){ |code, hash| hash.key?(code) ? hash[code] += 1 : hash[code] = 1 }
   end
+
+  def stop_condensed_time_windows(stop)
+    return if !stop.time_window_start_1 && !stop.time_window_end_1
+
+    condensed_string = ""
+    if stop.time_window_start_1_time
+      day_number_start_1 = number_of_days(stop.time_window_start_1)
+      condensed_string += stop.time_window_start_1_time
+      condensed_string += "(+#{day_number_start_1})" if day_number_start_1
+      condensed_string += " (#{I18n.t('plannings.edit.popup.time_window_start_1')})" unless stop.time_window_end_1_time
+    end
+    condensed_string += '-' if stop.time_window_start_1_time && stop.time_window_end_1_time
+    if stop.time_window_end_1_time
+      day_number_end_1 = number_of_days(stop.time_window_end_1)
+      condensed_string += stop.time_window_end_1_time
+      condensed_string += "(+#{day_number_end_1})" if day_number_end_1
+      condensed_string += " (#{I18n.t('plannings.edit.popup.time_window_end_1')})" unless stop.time_window_start_1_time
+    end
+    return condensed_string if !stop.time_window_start_2 && !stop.time_window_end_2
+
+    condensed_string += ' / '
+    if stop.time_window_start_2_time
+      day_number_start_2 = number_of_days(stop.time_window_start_2)
+      condensed_string += stop.time_window_start_2_time
+      condensed_string += "(+#{day_number_start_2})" if day_number_start_2
+      condensed_string += " (#{I18n.t('plannings.edit.popup.time_window_start_2')})" unless stop.time_window_end_2_time
+    end
+    condensed_string += '-' if stop.time_window_start_2_time && stop.time_window_end_2_time
+    if stop.time_window_end_2_time
+      day_number_end_2 = number_of_days(stop.time_window_end_2)
+      condensed_string += stop.time_window_end_2_time
+      condensed_string += "(+#{day_number_end_2})" if day_number_end_2
+      condensed_string += " (#{I18n.t('plannings.edit.popup.time_window_end_2')})" unless stop.time_window_start_2_time
+    end
+    condensed_string
+  end
 end
