@@ -371,7 +371,6 @@
           {{#time}}
             <div class="info stop-info{{#error}} danger{{/error}}">
               {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}}
-
             </div>
           {{/time}}
           <div class="btn-group pull-right stop-tools">
@@ -434,11 +433,13 @@
         </div>
 
         <div class="d-flex align-items-center">
-          <div class="info stop-info{{#error}} danger{{/error}}">
-            {{#active}}{{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{/active}}
-          </div>
+          {{#active}}
+            <div class="info stop-info{{#error}} danger{{/error}}">
+              {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
+            </div>
+          {{/active}}
           <div class="btn-group pull-right stop-tools">
-            <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs {{^manage_destination}}invisible{{/manage_destination}}" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+            <a href="/" class="marker_edit btn btn-default btn-xs invisible"><i class="fa fa-pencil"></i></a>
             <a href="#" class="marker btn btn-default btn-xs {{^geocoded}}invisible{{/geocoded}}" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>
           </div>
           <div class="clearfix"></div>
@@ -483,11 +484,11 @@
           </div>
         {{/time_window_start_end_1}}
         <div class="d-flex align-items-center">
-          <div class="info stop-info{{#error}} danger{{/error}}">
-            {{#active}}{{#geocoded}}{{^no_path}}
+          {{#active}}{{#geocoded}}{{^no_path}}
+            <div class="info stop-info{{#error}} danger{{/error}}">
               {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
-            {{/no_path}}{{/geocoded}}{{/active}}
-          </div>
+            </div>
+          {{/no_path}}{{/geocoded}}{{/active}}
           <div class="btn-group stop-tools">
             {{#manage_destination}}
             <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
