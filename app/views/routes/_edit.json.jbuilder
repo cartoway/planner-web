@@ -116,6 +116,7 @@ if @with_stops
     (json.time_window_start_2_day number_of_days(stop.time_window_start_2)) if stop.time_window_start_2
     (json.time_window_end_2 stop.time_window_end_2_time) if stop.time_window_end_2
     (json.time_window_end_2_day number_of_days(stop.time_window_end_2)) if stop.time_window_end_2
+    (json.time_windows_condensed stop_condensed_time_windows(stop))
     (json.priority stop.priority) if stop.priority
     (json.wait_time '%i:%02i' % [stop.wait_time / 60 / 60, stop.wait_time / 60 % 60]) if stop.wait_time && stop.wait_time > 60
     (json.geocoded true) if stop.position?

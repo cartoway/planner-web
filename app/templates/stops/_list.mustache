@@ -11,37 +11,47 @@
     <ul class="stops sortable list-group" {{#hidden}}style="display: none;"{{/hidden}}>
     {{#stops}}
       {{#destination}}{{#visits}}
-      <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" class="waypoint{{#error}} ui-state-error{{/error}} list-group-item">
-        <i class="fa fa-reorder fa-fw" title="{{#i18n}}plannings.edit.drag_help{{/i18n}}" style="display: none;"></i>
-        <input type="checkbox" checked="checked" style="display: none"/>
-        <div class="title">
-          {{^geocoded}}
-            <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
-          {{/geocoded}}
-          <span class="name" title="{{name}}{{#index_visit}} #{{index_visit}}{{/index_visit}}">{{name}}</span>{{#index_visit}} #{{index_visit}}{{/index_visit}}<br />
-        </div>
-        <div class="btn-group pull-right stop-tools">
-          {{#geocoded}}
-            <button class="automatic_insert btn btn-default btn-xs" title="{{#i18n}}plannings.edit.automatic_insert_help{{/i18n}}">
-              <i class="fa fa-bolt"></i>
-            </button>
-          {{/geocoded}}
-          {{#manage_destination}}
-          <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
-          {{/manage_destination}}
-          {{#geocoded}}<a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>{{/geocoded}}
-          <div class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.send_to_route_help{{/i18n}}"><i class="fa fa-truck-field fa-fw"></i><span class="caret"></span></button>
-            <ul class="dropdown-menu pull-right" role="menu">
-              {{#routes}}
-                {{#vehicle_usage_id}}
-                  <li><a href="/plannings/{{planning_id}}/{{route_id}}/{{stop_id}}/move.json" class="send_to_route"><div class="color_small" style="background:{{color}}"></div> {{name}}</a></li>
-                {{/vehicle_usage_id}}
-              {{/routes}}
-            </ul>
+      <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" class="waypoint{{#error}} ui-state-error{{/error}} d-flex justify-content-between align-items-center list-group-item">
+        <div class="d-flex align-items-center">
+          <input type="checkbox" checked="checked" style="display: none"/>
+          <i class="fa fa-reorder fa-fw" title="{{#i18n}}plannings.edit.drag_help{{/i18n}}" style="display: none;"></i>
+          <div class="title">
+            {{^geocoded}}
+              <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
+            {{/geocoded}}
+            <span class="name" title="{{name}}{{#index_visit}} #{{index_visit}}{{/index_visit}}">{{name}}</span>{{#index_visit}} #{{index_visit}}{{/index_visit}}<br />
           </div>
         </div>
-        <div class="clearfix"></div>
+        {{#time_window_start_end_1}}
+          <div class="timewindow-info" title="{{time_windows_condensed}}">
+              <i class="fa fa-sort fa-rotate-90 fa-fw"></i>
+              {{time_windows_condensed}}
+          </div>
+        {{/time_window_start_end_1}}
+        <div class="d-flex align-items-center">
+          <div class="btn-group pull-right stop-tools">
+            {{#geocoded}}
+              <button class="automatic_insert btn btn-default btn-xs" title="{{#i18n}}plannings.edit.automatic_insert_help{{/i18n}}">
+                <i class="fa fa-bolt"></i>
+              </button>
+            {{/geocoded}}
+            {{#manage_destination}}
+            <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+            {{/manage_destination}}
+            {{#geocoded}}<a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>{{/geocoded}}
+            <div class="btn-group">
+              <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.send_to_route_help{{/i18n}}"><i class="fa fa-truck-field fa-fw"></i><span class="caret"></span></button>
+              <ul class="dropdown-menu pull-right" role="menu">
+                {{#routes}}
+                  {{#vehicle_usage_id}}
+                    <li><a href="/plannings/{{planning_id}}/{{route_id}}/{{stop_id}}/move.json" class="send_to_route"><div class="color_small" style="background:{{color}}"></div> {{name}}</a></li>
+                  {{/vehicle_usage_id}}
+                {{/routes}}
+              </ul>
+            </div>
+          </div>
+          <div class="clearfix"></div>
+        </div>
       </li>
       {{/visits}}{{/destination}}
     {{/stops}}
@@ -343,30 +353,35 @@
     </div>
     {{#store_start}}
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
-      <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} list-group-item">
-        <span class="store-status stop-status-{{status_code}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}" {{^status}} style="display: none;" {{/status}}></span>
-        <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
-        <div class="title">
-          {{^geocoded}}
-            <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
-          {{/geocoded}}
-          {{#no_path}}
-            <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path{{/i18n}}"></i>
-          {{/no_path}}
-          <span class="info">
-            {{#time}}
-              {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}} -
-            {{/time}}
-          </span>
-          <span class="name" title="{{name}}">{{name}}</span>
+      <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-flex justify-content-between align-items-center list-group-item">
+        <div class="d-flex align-items-center">
+          <span class="store-status stop-status-{{status_code}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}" {{^status}} style="display: none;" {{/status}}></span>
+          <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
+          <div class="title">
+            {{^geocoded}}
+              <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
+            {{/geocoded}}
+            {{#no_path}}
+              <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path{{/i18n}}"></i>
+            {{/no_path}}
+            <span class="name" title="{{name}}">{{name}}</span>
+          </div>
         </div>
-        <div class="btn-group pull-right stop-tools">
-          {{#manage_store}}
-          <a href="/stores/{{id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_store_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
-          {{/manage_store}}
-          <a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>
+        <div class="d-flex align-items-center">
+          {{#time}}
+            <div class="info stop-info{{#error}} danger{{/error}}">
+              {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}}
+
+            </div>
+          {{/time}}
+          <div class="btn-group pull-right stop-tools">
+            {{#manage_store}}
+            <a href="/stores/{{id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_store_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+            {{/manage_store}}
+            <a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>
+          </div>
+          <div class="clearfix"></div>
         </div>
-        <div class="clearfix"></div>
       </li>
     </ul>
     {{/store_start}}
@@ -393,78 +408,96 @@
         </li>
       {{/wait_time}}
       {{#rest}}
-      <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" data-store_id="{{store_id}}" class="{{type}}{{#error}} ui-state-error{{/error}} list-group-item">
-        <i class="fa fa-reorder fa-fw" title="{{#i18n}}plannings.edit.drag_help{{/i18n}}" style="display: none;"></i>
-        <span class="number label label-default{{^active}} label-empty{{/active}}" style="background-color: {{color}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}</span>
-        <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
-        <div class="title">
-          {{#out_of_window}}
-            <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
-          {{/out_of_window}}
-          {{#out_of_drive_time}}
-            <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
-          {{/out_of_drive_time}}
-          {{#out_of_work_time}}
-            <i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i>
-          {{/out_of_work_time}}
-          {{#out_of_max_distance}}
-            <i class="fa fa-truck-field fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
-          {{/out_of_max_distance}}
-          {{#no_path}}
-            <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
-          {{/no_path}}
-          <span class="info">{{#active}}{{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}} - {{/active}}</span>
-          <span class="name" title="{{name}}"><i class="fa fa-coffee fa-fw"></i> {{name}}</span>
+      <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" data-store_id="{{store_id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-flex justify-content-between align-items-center list-group-item">
+        <div class="d-flex align-items-center">
+          <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
+          <i class="fa fa-reorder fa-fw" title="{{#i18n}}plannings.edit.drag_help{{/i18n}}" style="display: none;"></i>
+          <span class="number stop-label label label-default{{^active}} label-empty{{/active}}" style="background-color: {{color}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}</span>
+          <div class="title">
+            {{#out_of_window}}
+              <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
+            {{/out_of_window}}
+            {{#out_of_drive_time}}
+              <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
+            {{/out_of_drive_time}}
+            {{#out_of_work_time}}
+              <i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i>
+            {{/out_of_work_time}}
+            {{#out_of_max_distance}}
+              <i class="fa fa-truck-field fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
+            {{/out_of_max_distance}}
+            {{#no_path}}
+              <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
+            {{/no_path}}
+            <span class="name" title="{{name}}"><i class="fa fa-coffee fa-fw"></i> {{name}}</span>
+          </div>
         </div>
-        <div class="btn-group pull-right stop-tools">
-          {{#geocoded}}<a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>{{/geocoded}}
+
+        <div class="d-flex align-items-center">
+          <div class="info stop-info{{#error}} danger{{/error}}">
+            {{#active}}{{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{/active}}
+          </div>
+          <div class="btn-group pull-right stop-tools">
+            <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs {{^manage_destination}}invisible{{/manage_destination}}" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+            <a href="#" class="marker btn btn-default btn-xs {{^geocoded}}invisible{{/geocoded}}" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>
+          </div>
+          <div class="clearfix"></div>
         </div>
-        <div class="clearfix"></div>
       </li>
       {{/rest}}
       {{#destination}}{{#visits}}
-      <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" class="{{type}}{{#error}} ui-state-error{{/error}} list-group-item">
-        <i class="fa fa-reorder fa-fw" title="{{#i18n}}plannings.edit.drag_help{{/i18n}}" style="display: none;"></i>
-        <span class="number label label-default{{^active}} label-empty{{/active}}{{#color_force}} color_force{{/color_force}}" style="background-color: {{color}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}</span>
-        <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^geocoded}} disabled{{/geocoded}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
-        <div class="title">
-          {{^geocoded}}
-            <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
-          {{/geocoded}}
-          {{#out_of_window}}
-            <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
-          {{/out_of_window}}
-          {{^unmanageable_capacity}}{{#out_of_capacity}}
-            <i class="fa fa-dumpster fa-fw" title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"></i>
-          {{/out_of_capacity}}{{/unmanageable_capacity}}
-          {{#out_of_drive_time}}
-            <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
-          {{/out_of_drive_time}}
-          {{#out_of_force_position}}
-            <i class="fa fa-angle-right fa-fw" title="{{#i18n}}plannings.edit.error.out_of_force_position_help{{/i18n}}"></i>
-          {{/out_of_force_position}}
-          {{#unmanageable_capacity}}
-            <i class="fa fa-times fa-fw" title="{{#i18n}}plannings.edit.error.unmanageable_capacity_help{{/i18n}}"></i>
-          {{/unmanageable_capacity}}
-          {{#no_path}}
-            <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
-          {{/no_path}}
-          <span class="info">
+      <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-flex justify-content-between align-items-center list-group-item">
+        <div class="d-flex align-items-center">
+          <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^geocoded}} disabled{{/geocoded}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
+          <i class="fa fa-reorder fa-fw" title="{{#i18n}}plannings.edit.drag_help{{/i18n}}" style="display: none;"></i>
+          <span class="number stop-label label label-default{{^active}} label-empty{{/active}}{{#color_force}} color_force{{/color_force}}" style="background-color: {{color}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}</span>
+          <div class="title">
+            {{^geocoded}}
+              <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
+            {{/geocoded}}
+            {{#out_of_window}}
+              <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
+            {{/out_of_window}}
+            {{^unmanageable_capacity}}{{#out_of_capacity}}
+              <i class="fa fa-dumpster fa-fw" title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"></i>
+            {{/out_of_capacity}}{{/unmanageable_capacity}}
+            {{#out_of_drive_time}}
+              <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
+            {{/out_of_drive_time}}
+            {{#out_of_force_position}}
+              <i class="fa fa-angle-right fa-fw" title="{{#i18n}}plannings.edit.error.out_of_force_position_help{{/i18n}}"></i>
+            {{/out_of_force_position}}
+            {{#unmanageable_capacity}}
+              <i class="fa fa-times fa-fw" title="{{#i18n}}plannings.edit.error.unmanageable_capacity_help{{/i18n}}"></i>
+            {{/unmanageable_capacity}}
+            {{#no_path}}
+              <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
+            {{/no_path}}
+            <span class="name" title="{{name}}{{#index_visit}} #{{index_visit}}{{/index_visit}}{{#status}} - {{status}}{{/status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}">{{name}}</span>{{#index_visit}} #{{index_visit}}{{/index_visit}}
+          </div>
+        </div>
+        {{#time_window_start_end_1}}
+          <div class="timewindow-info" title="{{time_windows_condensed}}">
+              <i class="fa fa-sort fa-rotate-90 fa-fw"></i>
+              {{time_windows_condensed}}
+          </div>
+        {{/time_window_start_end_1}}
+        <div class="d-flex align-items-center">
+          <div class="info stop-info{{#error}} danger{{/error}}">
             {{#active}}{{#geocoded}}{{^no_path}}
-              <span>{{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}</span> -
+              {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
             {{/no_path}}{{/geocoded}}{{/active}}
-          </span>
-          <span class="name" title="{{name}}{{#index_visit}} #{{index_visit}}{{/index_visit}}{{#status}} - {{status}}{{/status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}">{{name}}</span>{{#index_visit}} #{{index_visit}}{{/index_visit}}
+          </div>
+          <div class="btn-group stop-tools">
+            {{#manage_destination}}
+            <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+            {{/manage_destination}}
+            {{#geocoded}}
+              <a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>
+            {{/geocoded}}
+          </div>
+          <div class="clearfix"></div>
         </div>
-        <div class="btn-group pull-right stop-tools">
-          {{#manage_destination}}
-          <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
-          {{/manage_destination}}
-          {{#geocoded}}
-            <a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>
-          {{/geocoded}}
-        </div>
-        <div class="clearfix"></div>
       </li>
       {{/visits}}{{/destination}}
     {{/stops}}
@@ -474,39 +507,43 @@
     </ul>
     {{#store_stop}}
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
-      <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} list-group-item">
-        <span class="store-status stop-status-{{status_code}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}" {{^status}} style="display: none;"{{/status}}></span>
-        <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
-        <div class="title">
-          {{^geocoded}}
-            <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
-          {{/geocoded}}
-          {{#stop_out_of_drive_time}}
-            <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
-          {{/stop_out_of_drive_time}}
-          {{#stop_out_of_work_time}}
-            <i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i>
-          {{/stop_out_of_work_time}}
-          {{#stop_out_of_max_distance}}
-            <i class="fa fa-truck-field fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
-          {{/stop_out_of_max_distance}}
-          {{#no_path}}
-            <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
-          {{/no_path}}
-          <span class="info">
-            {{#time}}
-              {{#end_without_service}}{{end_without_service}}{{#end_without_service_day}}&nbsp;(+{{end_without_service_day}}){{/end_without_service_day}}&nbsp;-&nbsp;{{/end_without_service}}{{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}} -
-            {{/time}}
-          </span>
-          <span class="name" title="{{name}}">{{name}}</span>
+      <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-flex justify-content-between align-items-center list-group-item">
+        <div class="d-flex align-items-center">
+          <span class="store-status stop-status-{{status_code}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}" {{^status}} style="display: none;"{{/status}}></span>
+          <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
+          <div class="title">
+            {{^geocoded}}
+              <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
+            {{/geocoded}}
+            {{#stop_out_of_drive_time}}
+              <i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i>
+            {{/stop_out_of_drive_time}}
+            {{#stop_out_of_work_time}}
+              <i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i>
+            {{/stop_out_of_work_time}}
+            {{#stop_out_of_max_distance}}
+              <i class="fa fa-truck-field fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i>
+            {{/stop_out_of_max_distance}}
+            {{#no_path}}
+              <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
+            {{/no_path}}
+            <span class="name" title="{{name}}">{{name}}</span>
+          </div>
         </div>
-        <div class="btn-group pull-right stop-tools">
-          {{#manage_store}}
-          <a href="/stores/{{id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_store_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
-          {{/manage_store}}
-          <a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>
+        <div class="d-flex align-items-center">
+          {{#time}}
+            <div class="info stop-info{{#error}} danger{{/error}}">
+              {{#end_without_service}}{{end_without_service}}{{#end_without_service_day}}&nbsp;(+{{end_without_service_day}}){{/end_without_service_day}}&nbsp;-&nbsp;{{/end_without_service}}{{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
+            </div>
+          {{/time}}
+          <div class="btn-group pull-right stop-tools">
+            {{#manage_store}}
+            <a href="/stores/{{id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_store_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+            {{/manage_store}}
+            <a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>
+          </div>
+          <div class="clearfix"></div>
         </div>
-        <div class="clearfix"></div>
       </li>
     </ul>
     {{/store_stop}}
