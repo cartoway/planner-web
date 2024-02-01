@@ -298,13 +298,12 @@ $sidebar-margins: 10px;
         .stop-info {
           border-radius: 4px;
           padding: 0 2px;
-          margin-right: 8px;
           text-align: center;
           height: 22px;
         }
 
         .timewindow-info {
-          max-width: 180px;
+          max-width: 99%;
           text-overflow: ellipsis;
           white-space: nowrap;
           overflow: hidden;
@@ -369,7 +368,7 @@ $sidebar-margins: 10px;
             padding-left: unset;
             padding-right: unset;
 
-            i {
+            .route-data i {
               margin-right: 5px;
 
             }
@@ -641,8 +640,7 @@ $sidebar-margins: 10px;
           margin-right: 4px;
         }
         .stops li .title {
-          max-width: 200px; // on Windows available width is shorter than Linux
-          margin-left: 4px;
+          max-width: 99%; // on Windows available width is shorter than Linux
         }
 
         .stops input[type=checkbox] {
@@ -755,6 +753,23 @@ $sidebar-margins: 10px;
         position:relative;
         cursor: default;
         margin: 0px;
+
+        .d-fake-flex {
+          display: -webkit-box !important;
+          display: -ms-flexbox !important;
+        }
+
+        .row {
+          width: 100%;
+          margin-right: 8px;
+
+          .col-xs-1-5 {
+            position: relative;
+            width: 12.5%;
+            float: left;
+            min-height: 1px;
+          }
+        }
 
         li.wait {
           border-top: 0px;
