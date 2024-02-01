@@ -1799,12 +1799,12 @@ export const plannings_edit = function(params) {
           $('span.number', this).css({
             display: 'none'
           });
-          $('i.fa-reorder', this).css({
+          $('.hover-tools', this).css({
             display: 'inline-block'
           });
         })
         .mouseout(function() {
-          $('i.fa-reorder', this).css({
+          $('.hover-tools', this).css({
             display: 'none'
           });
           $('span.number', this).css({

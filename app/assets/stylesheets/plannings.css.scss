@@ -300,6 +300,7 @@ $sidebar-margins: 10px;
           padding: 0 2px;
           text-align: center;
           height: 22px;
+          margin: 0 5px;
         }
 
         .timewindow-info {
@@ -314,6 +315,7 @@ $sidebar-margins: 10px;
           line-height: unset !important;
           border-radius: 8px !important;
           font-size: 80% !important;
+          width: 80%;
         }
 
         .primary.route-info, .primary.stop-info {
@@ -343,10 +345,6 @@ $sidebar-margins: 10px;
           display: flex;
           justify-content: space-between;
           margin: 2px 0px;
-        }
-
-        .stop-tools {
-          margin-right: 8px;
         }
 
         .global_info {
@@ -636,15 +634,14 @@ $sidebar-margins: 10px;
 
       .panel-default {
         .fa-reorder {
-          width: 24px;
-          margin-right: 4px;
+          width: 20px;
         }
         .stops li .title {
           max-width: 99%; // on Windows available width is shorter than Linux
         }
 
         .stops input[type=checkbox] {
-          margin: 0 6px 0 2px;
+          margin: 0;
         }
       }
 
@@ -664,7 +661,6 @@ $sidebar-margins: 10px;
 
           .fa-reorder {
             width: 20px;
-            margin: 0;
           }
 
           li .title {
@@ -768,6 +764,8 @@ $sidebar-margins: 10px;
             width: 12.5%;
             float: left;
             min-height: 1px;
+            padding-left: 2px;
+            padding-right: 2px;
           }
         }
 
