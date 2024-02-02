@@ -303,15 +303,18 @@
           {{#route_out_of_drive_time}}
             <li title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"><i class="fa fa-power-off fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_drive_time{{/i18n}}</li>
           {{/route_out_of_drive_time}}
-            {{#route_out_of_force_position}}
-              <li title="{{#i18n}}plannings.edit.error.out_of_force_position{{/i18n}}"><i class="fa fa-angle-right fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_force_position{{/i18n}}</li>
-            {{/route_out_of_force_position}}
+          {{#route_out_of_force_position}}
+            <li title="{{#i18n}}plannings.edit.error.out_of_force_position{{/i18n}}"><i class="fa fa-angle-right fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_force_position{{/i18n}}</li>
+          {{/route_out_of_force_position}}
           {{#route_out_of_work_time}}
             <li title="{{#i18n}}plannings.edit.error.out_of_work_time{{/i18n}}"><i class="fa fa-repeat fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_work_time{{/i18n}}</li>
           {{/route_out_of_work_time}}
           {{#route_out_of_max_distance}}
             <li title="{{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}"><i class="fa fa-truck-field fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}</li>
           {{/route_out_of_max_distance}}
+          {{#route_out_of_relation}}
+            <li title="{{#i18n}}plannings.edit.error.out_of_relation_help{{/i18n}}"><i class="fa fa-link-slash fa-fw"></i> {{#i18n}}plannings.edit.error.out_of_relation{{/i18n}}</li>
+          {{/route_out_of_relation}}
           {{#route_no_path}}
             <li title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"><i class="fa fa-road fa-fw"></i> {{#i18n}}plannings.edit.error.no_path{{/i18n}}</li>
           {{/route_no_path}}
@@ -464,6 +467,9 @@
               {{#out_of_force_position}}
                 <i class="fa fa-angle-right fa-fw" title="{{#i18n}}plannings.edit.error.out_of_force_position_help{{/i18n}}"></i>
               {{/out_of_force_position}}
+              {{#out_of_relation}}
+                <i class="fa fa-link-slash fa-fw" title="{{#i18n}}plannings.edit.error.out_of_relation_help{{/i18n}}"></i>
+              {{/out_of_relation}}
               {{#unmanageable_capacity}}
                 <i class="fa fa-times fa-fw" title="{{#i18n}}plannings.edit.error.unmanageable_capacity_help{{/i18n}}"></i>
               {{/unmanageable_capacity}}

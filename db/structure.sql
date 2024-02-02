@@ -542,6 +542,51 @@ CREATE TABLE public.profiles_routers (
 
 
 --
+-- Name: relation_fragments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.relation_fragments (
+    relation_id integer NOT NULL,
+    visit_id integer NOT NULL,
+    index integer
+);
+
+
+--
+-- Name: relations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.relations (
+    id integer NOT NULL,
+    relation_type integer DEFAULT 0 NOT NULL,
+    customer_id integer,
+    current_id integer,
+    successor_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+--
+-- Name: relations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.relations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: relations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.relations_id_seq OWNED BY public.relations.id;
+
+
+--
 -- Name: resellers; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -731,6 +776,7 @@ CREATE TABLE public.stops (
     out_of_max_distance boolean,
     unmanageable_capacity boolean,
     out_of_force_position boolean DEFAULT false,
+    out_of_relation boolean DEFAULT false,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -1251,6 +1297,13 @@ ALTER TABLE ONLY public.profiles ALTER COLUMN id SET DEFAULT nextval('public.pro
 
 
 --
+-- Name: relations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relations ALTER COLUMN id SET DEFAULT nextval('public.relations_id_seq'::regclass);
+
+
+--
 -- Name: resellers id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1427,6 +1480,14 @@ ALTER TABLE ONLY public.products
 
 ALTER TABLE ONLY public.profiles
     ADD CONSTRAINT profiles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: relations relations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relations
+    ADD CONSTRAINT relations_pkey PRIMARY KEY (id);
 
 
 --
@@ -1786,6 +1847,27 @@ CREATE INDEX index_plannings_zonings_on_zoning_id ON public.plannings_zonings US
 
 
 --
+-- Name: index_relation_fragments_on_relation_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_relation_fragments_on_relation_id ON public.relation_fragments USING btree (relation_id);
+
+
+--
+-- Name: index_relation_fragments_on_visit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_relation_fragments_on_visit_id ON public.relation_fragments USING btree (visit_id);
+
+
+--
+-- Name: index_relations_on_customer_id_and_current_id_and_successor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_relations_on_customer_id_and_current_id_and_successor_id ON public.relations USING btree (customer_id, current_id, successor_id);
+
+
+--
 -- Name: index_routes_on_vehicle_usage_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2054,6 +2136,14 @@ ALTER TABLE ONLY public.vehicle_usages
 
 
 --
+-- Name: relations fk_rails_334c3fda73; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relations
+    ADD CONSTRAINT fk_rails_334c3fda73 FOREIGN KEY (current_id) REFERENCES public.visits(id) ON DELETE CASCADE;
+
+
+--
 -- Name: profiles_routers fk_rails_35ea0987c7; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2107,6 +2197,14 @@ ALTER TABLE ONLY public.orders
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT fk_rails_598cb67a2e FOREIGN KEY (reseller_id) REFERENCES public.resellers(id);
+
+
+--
+-- Name: relations fk_rails_61598bbbd9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.relations
+    ADD CONSTRAINT fk_rails_61598bbbd9 FOREIGN KEY (successor_id) REFERENCES public.visits(id) ON DELETE CASCADE;
 
 
 --
@@ -2842,4 +2940,6 @@ INSERT INTO schema_migrations (version) VALUES ('20240115094756');
 INSERT INTO schema_migrations (version) VALUES ('20240122131606');
 
 INSERT INTO schema_migrations (version) VALUES ('20240124083101');
+
+INSERT INTO schema_migrations (version) VALUES ('20240202082922');
 

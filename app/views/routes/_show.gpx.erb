@@ -89,6 +89,9 @@ route.stops.each{ |stop|
       <% if stop.out_of_max_distance %>
 <%= t 'plannings.edit.error.out_of_max_distance' %>
       <% end %>
+      <% if stop.out_of_relation %>
+<%= t 'plannings.edit.error.out_of_relation' %>
+      <% end %>
       </desc>
     </rtept>
 <%

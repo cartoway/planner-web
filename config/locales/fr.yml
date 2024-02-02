@@ -651,6 +651,8 @@
           'must_be_greater_than_minimal_time': 'doit être supérieur à la durée minimale'
         'router':
           'unauthorized': 'n''est pas autorisé dans ce Profil'
+        'relation':
+          'pickup_delivery_uniqueness': 'Une visite ne peut appartenir qu''à une seule relation de type pickup/delivery'
   'errors':
     'database':
       'default': 'Erreur avec la base de données.'
@@ -1776,6 +1778,8 @@
           (service compris)'
         'out_of_max_distance': 'Distance maximale réalisable dépassée'
         'out_of_max_distance_help': 'Distance maximale réalisable dépassée'
+        'out_of_relation': 'Relation non respectée'
+        'out_of_relation_help': 'Relation entre visites non respectée'
         'no_path': 'Adresse inaccessible'
         'no_path_help': 'Adresse inaccessible : pas de voie d''accès ou itinéraire
           pour aller ou partir de l''adresse'
@@ -1920,6 +1924,7 @@
       'out_of_force_position': 'position forcée non respectée'
       'out_of_work_time': 'hors horaire de travail'
       'out_of_max_distance': 'distance maximale réalisable'
+      'out_of_relation': 'relation non respectée'
       'status': 'statut'
       'eta': 'eta'
       'custom_attributes_visit': 'attributs visite'

@@ -30,6 +30,7 @@ class Stop < ApplicationRecord
   validates :route, presence: true
 
   scope :includes_destinations, -> { includes(visit: [:tags, destination: [:visits, :tags, :customer]]) }
+  scope :only_stop_visits, -> { where(type: StopVisit.name) }
 
   amoeba do
     enable

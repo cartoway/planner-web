@@ -63,7 +63,8 @@ class Optimizer
             cluster_threshold: planning.customer.optimization_cluster_size || @@cluster_size,
             cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
             force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
-            optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time
+            optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
+            relations: planning.stop_relations
           )
         end
       end

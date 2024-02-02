@@ -107,6 +107,18 @@ module SharedParams
     optional :geocoding_accuracy, type: Float, documentation: { desc: 'Must be inside 0..1 range.' }
   end
 
+  params :request_relation do |options|
+    if options[:relation_post]
+      requires :relation_type, type: String, values: %w[pickup_delivery ordered sequence same_vehicle]
+      requires :current_id, type: Integer
+      requires :successor_id, type: Integer
+    else
+      optional :relation_type, type: String, values: %w[pickup_delivery ordered sequence same_vehicle]
+      optional :current_id, type: Integer
+      optional :successor_id, type: Integer
+    end
+  end
+
   params :request_router_options do |options|
     optional :track, type: Boolean
     optional :motorway, type: Boolean
