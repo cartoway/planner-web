@@ -645,6 +645,9 @@ en:
           must_be_greater_than_minimal_time: must be greater than minimal time
         router:
           unauthorized: unauthorized in this profile
+
+        relation:
+          pickup_delivery_uniqueness: A visit can only belong to a single pickup/delivery relationship
   errors:
     database:
       default: Database error.
@@ -1655,6 +1658,8 @@ en:
         out_of_work_time_help: Driver work time exceeded (service included)
         out_of_max_distance: Maximum achievable distance exceeded
         out_of_max_distance_help: Maximum achievable distance exceeded
+        out_of_relation: Relation violated
+        out_of_relation_help: Relation between visits violated
         no_path: Unreachable destination
         no_path_help: 'Unreachable destination: missing or no path to or from the
           destination to find a route'
@@ -1797,6 +1802,7 @@ en:
       out_of_force_position: forced position constraint not met
       out_of_work_time: out of work time
       out_of_max_distance: maximum achievable distance
+      out_of_relation: relation violated
       status: status
       eta: eta
       custom_attributes_visit: visit attributes

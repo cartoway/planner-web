@@ -196,6 +196,9 @@
             <% if stop.out_of_max_distance %>
               <span><i class="fa fa-truck-field fa-fw"></i> <%= t 'plannings.edit.error.out_of_max_distance' %></span>
             <% end %>
+            <% if stop.out_of_relation %>
+              <span><i class="fa fa-link-slash fa-fw"></i> <%= t 'plannings.edit.error.out_of_relation' %></span>
+            <% end %>
           </span>
         </div>
        <% end %>

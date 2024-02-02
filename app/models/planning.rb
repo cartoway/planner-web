@@ -16,6 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class Planning < ApplicationRecord
+  RELATION_KEYS = { pickup_delivery: :shipment, ordered: :order, sequence: :sequence, same_vehicle: :same_vehicle }
+
   default_scope { includes(:tags).order(:id) }
 
   belongs_to :customer
@@ -346,9 +348,37 @@ class Planning < ApplicationRecord
   end
 
   def visits
-    routes.collect{ |route|
-      route.stops.select{ |stop| stop.is_a?(StopVisit) }.collect(&:visit)
-    }.flatten
+    routes.flat_map{ |route|
+      route.stops.only_stop_visits
+    }
+  end
+
+  def visits_to_stop_hash
+    routes.flat_map{ |route|
+      route.stops.only_stop_visits.map{ |stop| [stop.visit.id, stop] }
+    }.to_h
+  end
+
+  def relations
+    plan_visits = visits.map(&:id)
+    customer.relations.select{ |r_f|
+      plan_visits.include?(r_f.current_id) || plan_visits.include?(r_f.successor_id)
+    }
+  end
+
+  def stop_relations
+    return [] if customer.relations.empty?
+
+    stop_hash = visits_to_stop_hash
+    relations.map{ |relation|
+      {
+        type: RELATION_KEYS[relation.relation_type.to_sym],
+        linked_ids: [
+          stop_hash[relation.current_id] && "s#{stop_hash[relation.current_id].id}",
+          stop_hash[relation.successor_id] && "s#{stop_hash[relation.successor_id].id}"
+        ].compact
+      }
+    }
   end
 
   def apply_orders(order_array, shift)

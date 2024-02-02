@@ -504,12 +504,10 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should optimize one route in planning' do
-    without_loading Stop, if: -> (obj) { obj.route_id != routes(:route_one_one).id } do
-      get :optimize_route, planning_id: @planning, format: :json, route_id: routes(:route_one_one).id
-      assert_response :success
-      assert_equal 1, JSON.parse(response.body)['routes'].size
-      assert_equal 2, JSON.parse(response.body)['averages']['vehicles']
-    end
+    get :optimize_route, planning_id: @planning, format: :json, route_id: routes(:route_one_one).id
+    assert_response :success
+    assert_equal 1, JSON.parse(response.body)['routes'].size
+    assert_equal 2, JSON.parse(response.body)['averages']['vehicles']
   end
 
   test 'should optimize all routes in planning' do
@@ -751,7 +749,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should not optimize one route on unprocessable entity' do
-    without_loading Stop, if: -> (obj) { obj.route_id != routes(:route_one_one).id } do
+    # without_loading Stop, if: -> (obj) { obj.route_id != routes(:route_one_one).id } do
       Customer.stub_any_instance(:save!, lambda { |*a| false } ) do
         get :optimize_route, planning_id: @planning, format: :json, route_id: routes(:route_one_one).id
         assert_valid response
@@ -769,7 +767,7 @@ class PlanningsControllerTest < ActionController::TestCase
         assert_valid response
         assert_response :unprocessable_entity
       end
-    end
+    # end
   end
 
   test 'should not optimize on unprocessable entity' do

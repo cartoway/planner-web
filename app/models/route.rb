@@ -16,6 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class Route < ApplicationRecord
+  RELATION_ORDER_KEYS = %i[pickup_delivery order sequence]
+
   belongs_to :planning
   belongs_to :vehicle_usage
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
@@ -44,6 +46,7 @@ class Route < ApplicationRecord
   # The second visit is for counting the visit index from all the visits of the destination
   scope :includes_destinations, (-> { includes(stops: {visit: [:tags, destination: %i[tags customer visits]]}) })
   scope :includes_deliverable_units, -> { includes(vehicle_usage: [:vehicle_usage_set, vehicle: [customer: :deliverable_units]]) }
+  scope :stop_visits, -> { includes(:stops).where(type: StopVisit.name) }
 
   include RefSanitizer
 
@@ -308,6 +311,7 @@ class Route < ApplicationRecord
 
       if stops_sort
         compute_out_of_force_position
+        compute_out_of_relations
 
         # Try to minimize waiting time by a later begin
         time = self.end
@@ -485,7 +489,7 @@ class Route < ApplicationRecord
         stops.select(:no_path).where(type: 'StopVisit', no_path: true).count > 0))
   end
 
-  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance].each do |s|
+  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation].each do |s|
     define_method "#{s}" do
       vehicle_usage_id && (respond_to?("stop_#{s}") && send("stop_#{s}") ||
         if stops.loaded?
@@ -686,6 +690,39 @@ class Route < ApplicationRecord
     self.arrival_status = nil
   end
 
+  def compute_out_of_relations
+    stops.each{ |s| s.out_of_relation = false }
+
+    stop_hash = stops.only_stop_visits.map{ |stop| [stop.visit.id, stop] }
+    stops_sort = stops.only_stop_visits.sort_by(&:index)
+
+    route_relations = stops.only_stop_visits.flat_map{ |stop_visit|
+      stop_visit.visit.relation_currents + stop_visit.visit.relation_successors
+    }.uniq
+
+    route_relations.each{ |relation|
+      if !stop_hash[relation.current_id] || !stop_hash[relation.successor_id]
+        # Both current and successor should belong to the plan
+        stop_hash[relation.current_id]&.out_of_relation = true
+        stop_hash[relation.successor_id]&.out_of_relation = true
+      elsif stop_hash[relation.current_id].route.id != stop_hash[relation.successor_id].route.id ||
+            stop_hash[relation.current_id].active != stop_hash[relation.successor_id].active
+        # All relations implies that stops belongs to the same route and should be both or none active
+        stop_hash[relation.current_id].out_of_relation = true
+        stop_hash[relation.successor_id].out_of_relation = true
+      elsif RELATION_ORDER_KEYS.include?(relation.relation_type.to_sym) && stop_hash[relation.current_id].index > stop_hash[relation.successor_id].index
+        # Most of relations implies to have ordered stop indices
+        stop_hash[relation.current_id].out_of_relation = true
+        stop_hash[relation.successor_id].out_of_relation = true
+      elsif relation.relation_type == 'sequence' && (stop_hash[relation.current_id].index + 1) != stop_hash[relation.successor_id].index
+        # Sequence implies that successor is right after current stop in route
+        stop_hash[relation.current_id].out_of_relation = true
+        stop_hash[relation.successor.id].out_of_relation = true
+      end
+    }
+  end
+
+
   def compute_out_of_force_position
     stops.each{ |stop| stop.out_of_force_position = nil }
     stops_sort = stops.sort_by(&:index)
@@ -723,6 +760,38 @@ class Route < ApplicationRecord
 
       if position_status != :final && stop.visit.always_final?
         stop.out_of_force_position = true
+      end
+    }
+  end
+
+  def compute_out_of_relations
+    stops.each{ |s| s.out_of_relation = false }
+
+    stop_hash = stops.only_stop_visits.map{ |stop| [stop.visit.id, stop] }.to_h
+    stops_sort = stops.only_stop_visits.sort_by(&:index)
+
+    route_relations = stops.only_stop_visits.flat_map{ |stop_visit|
+      stop_visit.visit.relation_currents + stop_visit.visit.relation_successors
+    }.uniq
+
+    route_relations.each{ |relation|
+      if !stop_hash[relation.current_id] || !stop_hash[relation.successor_id]
+        # Both current and successor should belong to the plan
+        stop_hash[relation.current_id]&.out_of_relation = true
+        stop_hash[relation.successor_id]&.out_of_relation = true
+      elsif stop_hash[relation.current_id].route.id != stop_hash[relation.successor_id].route.id ||
+            stop_hash[relation.current_id].active != stop_hash[relation.successor_id].active
+        # All relations implies that stops belongs to the same route and should be both or none active
+        stop_hash[relation.current_id].out_of_relation = true
+        stop_hash[relation.successor_id].out_of_relation = true
+      elsif RELATION_ORDER_KEYS.include?(relation.relation_type.to_sym) && stop_hash[relation.current_id].index > stop_hash[relation.successor_id].index
+        # Most of relations implies to have ordered stop indices
+        stop_hash[relation.current_id].out_of_relation = true
+        stop_hash[relation.successor_id].out_of_relation = true
+      elsif relation.relation_type == 'sequence' && (stop_hash[relation.current_id].index + 1) != stop_hash[relation.successor_id].index
+        # Sequence implies that successor is right after current stop in route
+        stop_hash[relation.current_id].out_of_relation = true
+        stop_hash[relation.successor.id].out_of_relation = true
       end
     }
   end

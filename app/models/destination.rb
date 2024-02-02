@@ -18,7 +18,7 @@
 class Destination < Location
   default_scope { order(:id) }
 
-  has_many :visits, inverse_of: :destination, dependent: :delete_all, autosave: true
+  has_many :visits, inverse_of: :destination, autosave: true
   accepts_nested_attributes_for :visits, allow_destroy: true
   has_and_belongs_to_many :tags, after_add: :update_tags_track, after_remove: :update_tags_track
 
@@ -30,6 +30,7 @@ class Destination < Location
   before_create :check_max_destination
   before_save :update_tags
   after_save -> { @tag_ids_changed = false }
+  after_destroy :cleanup_visits
 
   include RefSanitizer
 
@@ -73,6 +74,10 @@ class Destination < Location
   end
 
   private
+
+  def cleanup_visits
+    visits.each(&:delete)
+  end
 
   def update_tags_track(_tag)
     @tag_ids_changed = true

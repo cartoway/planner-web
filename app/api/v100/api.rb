@@ -102,4 +102,5 @@ class V100::Api < Grape::API
 
   mount V100::Plannings
   mount V100::Destinations
+  mount V100::Relations
 end

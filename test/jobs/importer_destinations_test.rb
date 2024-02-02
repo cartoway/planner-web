@@ -232,7 +232,7 @@ class ImporterDestinationsTest < ActionController::TestCase
     planning.default_routes
     planning.save!
     @customer.reload
-    @customer.destinations.destroy_all
+    @customer.delete_all_destinations
     # destinations with same ref throw an error
     import_count = 5
     # vehicle_usage_set for new planning is hardcoded but random in tests... rest_count depends of it
@@ -261,7 +261,7 @@ class ImporterDestinationsTest < ActionController::TestCase
 
   test 'should import many-iso' do
     Planning.all.each(&:destroy)
-    @customer.destinations.destroy_all
+    @customer.delete_all_destinations
     assert_difference('Destination.count', 5) do
       assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_many-iso.csv', 'text.csv')).import
 
@@ -370,7 +370,7 @@ class ImporterDestinationsTest < ActionController::TestCase
 
   test 'should not import many-iso due to multi-refs error' do
     Planning.all.each(&:destroy)
-    @customer.destinations.destroy_all
+    @customer.delete_all_destinations
     assert_difference('Destination.count', 0) do
         error = I18n.t('destinations.import_file.refs_duplicate', refs: "réf5")
         destinations_import = ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_multi_refs.csv', 'text.csv'))
@@ -517,7 +517,7 @@ class ImporterDestinationsTest < ActionController::TestCase
     Planning.all.each(&:destroy)
     @customer.tags.all.each(&:destroy)
     @customer.reload
-    @customer.destinations.destroy_all
+    @customer.delete_all_destinations
 
     import_init = ImportCsv.new(importer: ImporterDestinations.new(@customer, {}), replace: true, file: tempfile('test/fixtures/files/import_destinations_ref_and_tags_init.csv', 'text.csv'))
     import_init.import
@@ -546,7 +546,7 @@ class ImporterDestinationsTest < ActionController::TestCase
 
   test 'should import several plans from one file' do
     Planning.all.each(&:destroy)
-    @customer.destinations.destroy_all
+    @customer.delete_all_destinations
     assert_difference('Planning.count', 3) do
       stops_count = 5 + 3 + 3 + 3 # visits plan1 + plan2 + plan3 + rests
       assert_difference('Stop.count', stops_count) do

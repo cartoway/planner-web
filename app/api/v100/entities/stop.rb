@@ -33,4 +33,5 @@ class V100::Entities::Stop < V100::Entities::StopStatus
   expose(:out_of_force_position, documentation: { type: 'Boolean' })
   expose(:out_of_work_time, documentation: { type: 'Boolean' })
   expose(:out_of_max_distance, documentation: { type: 'Boolean' })
+  expose(:out_of_relation, documentation: { type: 'Boolean' })
 end

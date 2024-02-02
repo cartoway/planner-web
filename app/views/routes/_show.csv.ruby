@@ -17,6 +17,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     out_of_force_position: nil,
     out_of_work_time: nil,
     out_of_max_distance: nil,
+    out_of_relation: nil,
 
     ref: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.ref,
     name: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.name,
@@ -85,6 +86,7 @@ route.stops.each { |stop|
       out_of_force_position: stop.out_of_force_position ? 'x' : '',
       out_of_work_time: stop.out_of_work_time ? 'x' : '',
       out_of_max_distance: stop.out_of_max_distance ? 'x' : '',
+      out_of_relation: stop.out_of_relation ? 'x' : '',
       status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),
       eta: stop.eta && I18n.l(stop.eta, format: :hour_minute),
 
@@ -153,6 +155,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     out_of_force_position: '',
     out_of_work_time: route.stop_out_of_work_time ? 'x' : '',
     out_of_max_distance: route.stop_out_of_max_distance ? 'x' : '',
+    out_of_max_distance: '',
 
     ref: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.ref,
     name: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.name,
