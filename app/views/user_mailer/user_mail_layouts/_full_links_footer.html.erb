@@ -1,6 +1,6 @@
 <td align="center" valign="top" width="100%" style="background-color: #F7F7F7;  border-top: 1px solid #e5e5e5; border-bottom: 1px solid #e5e5e5;">
 
-  <div style="min-width:215.53px;margin:5px; padding:10px;display:inline-block; color:#838383; font-family:'Source Sans Pro', Helvetica, Calibri, sans-serif; line-height: 21px;font-size:12px;" class="align-center outlook-font">
+  <div style="min-width:215.53px;margin:5px; padding:10px;display:inline-block; color:#838383; font-family:'montserrat', Helvetica, Calibri, sans-serif; line-height: 21px;font-size:12px;" class="align-center outlook-font">
     <% if @user.customer.reseller.facebook_url %>
         <a target='_blank' href="<%= @user.customer.reseller.facebook_url %>" style="text-decoration:none;">
           <img src="<%= network_icon_url(:facebook) %>" alt="<%= I18n.t('user_mailer.layout.links.facebook') %>" width="30px" height="30px" style="margin-right:30px;" />
@@ -20,7 +20,7 @@
     <% end %>
   </div>
 
-  <div style="margin:5px; margin-bottom:20px;margin-top:20px; padding:10px; display:inline-block; color:#838383; font-family: 'Source Sans Pro', Helvetica, Calibri, sans-serif; line-height: 21px;font-size:11px;" class="align-center outlook-font">
+  <div style="margin:5px; margin-bottom:20px;margin-top:20px; padding:10px; display:inline-block; color:#838383; font-family: 'montserrat', Helvetica, Calibri, sans-serif; line-height: 21px;font-size:11px;" class="align-center outlook-font">
     <%= t("user_mailer.#{@template}.footer", name: @application_name) %>
   </div>
 </td>

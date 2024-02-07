@@ -28,32 +28,6 @@
     width: 60vw;
   }
 
-  .mapotempo-icons {
-    font-family: 'mapotempo';
-    color: lightgray;
-    font-size: 150pt;
-    font-size: 15vw;
-    line-height: 17vw;
-    text-align: center;
-
-    .mapotempo-icon {
-      font-style: normal;
-      font-weight: normal;
-    }
-
-    .mapotempo-map:before {
-      content: "b";
-    }
-
-    .mapotempo-car:before {
-      content: "c";
-    }
-
-    .mapotempo-clock:before {
-      content: "a";
-    }
-  }
-
   iframe {
     width: 100%;
     min-height: 10em;

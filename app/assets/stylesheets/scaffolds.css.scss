@@ -19,14 +19,10 @@
 @import "variables";
 
 @font-face {
-    font-family: 'mapotempo';
-    src: url(font_path('mapotempo-webfont.eot'));
-    src: url(font_path('mapotempo-webfont.eot') + '?#iefix') format('embedded-opentype'),
-         url(font_path('mapotempo-webfont.woff')) format('woff'),
-         url(font_path('mapotempo-webfont.ttf')) format('truetype'),
-         url(font_path('mapotempo-webfont.svg') + '#mapotempo') format('svg');
-    font-weight: normal;
-    font-style: normal;
+  font-family: 'montserrat';
+  font-weight: normal;
+  font-style: normal;
+  src: url(font_path('Montserrat.ttf')) format('truetype');
 }
 
 $navbar-height: 0px;
@@ -37,7 +33,7 @@ $focus-background-color: #89C53F;
 body {
   background-color: $white-background;
   color: $text-black;
-  font-family: verdana, arial, helvetica, sans-serif;
+  font-family: 'montserrat', verdana, arial, helvetica, sans-serif;
   font-size: 13px;
 
   .footer-message {
@@ -459,6 +455,8 @@ span.color[data-color=''][data-selected]:after {
       width: 40px !important;
       right: $sidebar-margins !important;
       border-radius: 0px !important;
+      box-shadow: unset;
+      -webkit-box-shadow: unset;
     }
     .sidebar-tabs {
       width: 100%;
