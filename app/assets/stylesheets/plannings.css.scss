@@ -121,7 +121,7 @@ $sidebar-margins: 10px;
 
 [data-controller='plannings'], [data-controller='api_web_v01_plannings'] {
   // override
-  $planbar-height: 70px;
+  $planbar-height: 42px;
 
   .leaflet-popup {
     margin-top: 10px;
@@ -293,6 +293,10 @@ $sidebar-margins: 10px;
           padding: 2px 6px;
           text-overflow: ellipsis;
           overflow: hidden;
+
+          .fa {
+            margin-right: 4px;
+          }
         }
 
         .stop-info {
@@ -738,12 +742,7 @@ $sidebar-margins: 10px;
       }
 
       .load-stops {
-        padding: 10px;
-        background-color: #EDEDED;
-        cursor: pointer;
-      }
-      .load-stops:hover {
-        background-color: #F6F6F6;
+        padding: 5px;
       }
 
       .stops {

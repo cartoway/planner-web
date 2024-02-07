@@ -26,11 +26,15 @@
               = @planning.customer.default_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
 
         - if @manage_planning[:manage_zoning]
-          = twitter_bootstrap_form_for [:apply_zonings, @planning], { layout: :horizontal, default_div_class: 'col-lg-10 col-md-10', html: { id: "planning_zoning_#{@planning.id}", class: 'form-horizontal update-zonings-form', title: t('plannings.edit.zonings.label') }} do |f|
-            = zoning_select f, @planning, t('plannings.edit.zonings.label')
-            .d-flex.justify-content-center
-              = f.actions do
-                = f.submit t('plannings.edit.zonings.action'), id: 'planning_zoning_button', class: 'btn ' + (@planning.zoning_outdated ? 'btn-warning' : 'btn-default'), title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil)
+          .d-flex.justify-content-center
+            .col-xs-12.col-md-10
+              = twitter_bootstrap_form_for [:apply_zonings, @planning], { layout: :horizontal, default_div_class: '', html: { id: "planning_zoning_#{@planning.id}", class: 'form-horizontal update-zonings-form', title: t('plannings.edit.zonings.label') }} do |f|
+                %label
+                  = t('plannings.edit.zonings.label')
+                = zoning_select f, @planning
+                .d-flex.justify-content-center
+                  = f.actions(class: 'col-md-6') do
+                    = f.submit t('plannings.edit.zonings.action'), id: 'planning_zoning_button', class: 'btn ' + (@planning.zoning_outdated ? 'btn-warning' : 'btn-default'), title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil)
       %h4#planning_name_extended
       #global_tools.row
         .btn-group

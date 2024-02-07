@@ -20,7 +20,6 @@ else
   duration = @planning.routes.includes_vehicle_usages.select(&:vehicle_usage).to_a.sum(0){ |route| route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i}
   json.duration time_over_day(duration)
   json.distance locale_distance(@planning.routes.to_a.sum(0){ |route| route.distance || 0 }, current_user.prefered_unit)
-  json.emission number_to_human(@planning.routes.to_a.sum(0){ |route| route.emission || 0 }, precision: 4)
   (json.outdated true) if @planning.outdated
   json.size @planning.routes.to_a.sum(0){ |route| route.stops.size }
   json.size_active @planning.routes.to_a.sum(0){ |route| route.vehicle_usage_id ? route.size_active : 0 }
@@ -37,6 +36,7 @@ else
       json.routes_speed_average averages[:routes_speed_average]
       json.vehicles_used averages[:vehicles_used]
       json.vehicles averages[:vehicles]
+      json.emission averages[:routes_emission] ? number_to_human(averages[:routes_emission], precision: 4) : '-'
       json.total_quantities planning_quantities(@planning)
     end
   end

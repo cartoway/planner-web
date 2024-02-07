@@ -674,6 +674,7 @@ class Planning < ApplicationRecord
     routes_distance = 0
     converter = metric == 'km' ? 3.6 : 2.237
     result = {
+      routes_emission: nil,
       routes_visits_duration: 0,
       routes_speed_average: 0,
       routes_drive_time: 0,
@@ -686,6 +687,11 @@ class Planning < ApplicationRecord
       if route.vehicle_usage && !route.drive_time.nil?
         result[:routes_drive_time] += route.drive_time
         result[:vehicles_used] += 1 if route.drive_time > 0
+
+        if route.emission
+          result[:routes_emission] = 0 unless result[:routes_emission]
+          result[:routes_emission] += route.emission
+        end
 
         result[:routes_visits_duration] += route.visits_duration if route.visits_duration
         result[:routes_wait_time] += route.wait_time if route.wait_time
