@@ -34,6 +34,7 @@ class Destination < Location
   include RefSanitizer
 
   scope :includes_visits, -> { includes([{visits: :tags}, :tags]) }
+  scope :positioned, -> { where.not(lat: nil).where.not(lng: nil) }
 
   amoeba do
     enable

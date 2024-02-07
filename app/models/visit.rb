@@ -29,6 +29,8 @@ class Visit < ApplicationRecord
   nilify_blanks
   validates :destination, presence: true
 
+  scope :positioned, -> { joins(:destination).merge(Destination.positioned) }
+
   enum force_position: {
     neutral: 0,
     always_first: 1,

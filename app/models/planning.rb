@@ -851,10 +851,17 @@ class Planning < ApplicationRecord
     tmp_routes = {}
 
     by_distance = available_routes.flat_map { |route|
-      stops = route.stops.select { |s| (options[:active_only] ? s.active? : true) && s.position? }
-      stops.map { |s| [s.position, route, s.index] } +
-        [stops.empty? ? [route.vehicle_usage.try(:default_store_start), route, 1] : nil,
-         (stop.route_id != route.id) && route.vehicle_usage.try(:default_store_stop).try(:position?) ? [route.vehicle_usage.default_store_stop, route, route.stops.size + 1] : nil]
+      stops =
+      if options[:active_only]
+        route.stops.where(type: StopVisit.name).where(active: true).joins(:visit).merge(Visit.positioned)
+      else
+        route.stops.where(type: StopVisit.name).joins(:visit).merge(Visit.positioned)
+      end
+      stops = stops.map { |s| [s.visit.destination, route, s.index] }
+      stops ||= []
+      stops << [route.vehicle_usage.default_store_start, route, 1] if stops.empty? && route.vehicle_usage.default_store_start&.position?
+      stops << [route.vehicle_usage.default_store_stop, route, route.stops.size + 1] if route.vehicle_usage&.default_store_stop&.position?
+      stops
     }.compact.sort_by{ |a|
       a[0] && a[0].position? ? a[0].distance(stop.position) : Float::INFINITY
     }
@@ -866,7 +873,7 @@ class Planning < ApplicationRecord
       [[dest_route_idx[1], dest_route_idx[2]], [dest_route_idx[1], dest_route_idx[2] + 1]]
     }.uniq.map { |ri|
       ri[0].class.amoeba do
-        clone :stops # Only duplicate 10 stops just for compute evaluation
+        clone :stops # Only duplicate stops just for compute evaluation
         nullify :planning_id
       end
 
@@ -906,10 +913,17 @@ class Planning < ApplicationRecord
     tmp_routes = {}
 
     by_distance = available_routes.flat_map { |route|
-      stops = route.stops.select { |s| (options[:active_only] ? s.active? : true) && s.position? }
-      stops.map { |s| [s.position, route, s.index] } +
-        [stops.empty? ? [route.vehicle_usage.try(:default_store_start), route, 1] : nil,
-         route.vehicle_usage.try(:default_store_stop).try(:position?) ? [route.vehicle_usage.default_store_stop, route, route.stops.size + 1] : nil]
+      stops =
+      if options[:active_only]
+        route.stops.where(type: StopVisit.name).where(active: true).joins(:visit).merge(Visit.positioned)
+      else
+        route.stops.where(type: StopVisit.name).joins(:visit).merge(Visit.positioned)
+      end
+      stops = stops.map { |s| [s.visit.destination, route, s.index] }
+      stops ||= []
+      stops << [route.vehicle_usage.default_store_start, route, 1] if stops.empty? && route.vehicle_usage.default_store_start&.position?
+      stops << [route.vehicle_usage.default_store_stop, route, route.stops.size + 1] if route.vehicle_usage&.default_store_stop&.position?
+      stops
     }.compact.sort_by{ |a|
       a[0] && a[0].position? ? a[0].distance(destination) : Float::INFINITY
     }
@@ -923,7 +937,7 @@ class Planning < ApplicationRecord
       [[dest_route_idx[1], dest_route_idx[2]], [dest_route_idx[1], dest_route_idx[2] + 1]]
     }.uniq.map { |ri|
       ri[0].class.amoeba do
-        clone :stops # Only duplicate 10 stops just for compute evaluation
+        clone :stops # Only duplicate stops just for compute evaluation
         nullify :planning_id
       end
 
