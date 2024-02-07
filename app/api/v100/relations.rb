@@ -20,7 +20,7 @@ class V100::Relations < Grape::API
       nickname: 'getRelations',
       is_array: true,
       success: V100::Status.success(:code_200, V100::Entities::Relation),
-      failure: V100::Status.failures(is_array: true, override: {code_404: 'CustomAttributes not found.'})
+      failure: V100::Status.failures(is_array: true, override: {code_404: 'Relations not found.'})
     params do
       optional :ids, type: Array[Integer], desc: 'Select returned relations by id.', coerce_with: CoerceArrayInteger
     end
@@ -64,8 +64,8 @@ class V100::Relations < Grape::API
     end
     put ':id' do
       relation = current_customer.relations.where(id: params[:id]).first
-      current = current_customer.visits.where(id: params[:current_id]) if params[:current_id]
-      successor = current_customer.visits.where(id: params[:successor_id]) if params[:successor_id_id]
+      current = current_customer.visits.where(id: params[:current_id]).first if params[:current_id]
+      successor = current_customer.visits.where(id: params[:successor_id]).first if params[:successor_id_id]
       if relation
         relation.update! relation_params
         present relation, with: V100::Entities::Relation
@@ -82,8 +82,8 @@ class V100::Relations < Grape::API
       use(:request_relation, relation_post: true)
     end
     post do
-      current = current_customer.visits.where(id: params[:current_id])
-      successor = current_customer.visits.where(id: params[:successor_id])
+      current = current_customer.visits.where(id: params[:current_id]).first
+      successor = current_customer.visits.where(id: params[:successor_id]).first
       if current && successor
         relation = current_customer.relations.build(relation_params)
         relation.save!
