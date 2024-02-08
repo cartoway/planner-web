@@ -150,11 +150,19 @@ class GeocodeAddokWrapper
   private
 
   def parse_geojson_feature(feature)
-    score = feature['properties']['geocoding']['score']
-    type = feature['properties']['geocoding']['type']
-    label = feature['properties']['geocoding']['label']
-    coordinates = feature['geometry']['coordinates'] if feature['geometry'] && feature['geometry']['coordinates']
-    version = feature['properties']['geocoding']['version']
-    {lat: coordinates && coordinates[1], lng: coordinates && coordinates[0], quality: @@result_types[type], accuracy: score, free: label, geocoder_version: version, geocoded_at: Time.now}
+    result = {
+      accuracy: feature.dig('properties', 'geocoding', 'score'),
+      free: feature.dig('properties', 'geocoding', 'label'),
+      geocoder_version: feature.dig('properties', 'geocoding', 'version'),
+      housenumber: feature.dig('properties', 'geocoding', 'housenumber'),
+      street: feature.dig('properties', 'geocoding', 'street'),
+      postcode: feature.dig('properties', 'geocoding', 'postcode'),
+      city: feature.dig('properties', 'geocoding', 'city'),
+      country: feature.dig('properties', 'geocoding', 'country')
+    }
+
+    type = feature.dig('properties', 'geocoding', 'type')
+    coordinates = feature.dig('geometry', 'coordinates')
+    { lat: coordinates && coordinates[1], lng: coordinates && coordinates[0], quality: @@result_types[type], geocoded_at: Time.now }.merge(result)
   end
 end
