@@ -80,6 +80,7 @@ class Location < ApplicationRecord
 
   def geocode_result(address)
     if address
+      self.geocoding_result = address.to_json
       self.geocoder_version = address[:geocoder_version]
       self.geocoded_at = address[:geocoded_at]
 

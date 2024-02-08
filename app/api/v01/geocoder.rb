@@ -45,7 +45,11 @@ class V01::Geocoder < Grape::API
       json = Mapotempo::Application.config.geocoder.code_free(params[:q], current_customer.default_country, params[:limit] || 10, params[:lat], params[:lng]).collect{ |result|
         {
           address: {
-            city: result[:free]
+            housenumber: result[:housenumber],
+            street: result[:street],
+            postcode: result[:postcode],
+            city: result[:city],
+            country: result[:country]
           },
           boundingbox: [
             result[:lat],
