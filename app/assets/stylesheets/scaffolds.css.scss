@@ -60,6 +60,10 @@ body:lang(he), body:lang(ar) {
 div {
   &.field, &.actions {
     margin-bottom: 10px;
+
+    .help-block {
+      margin-bottom: 0 !important;
+    }
   }
 }
 
