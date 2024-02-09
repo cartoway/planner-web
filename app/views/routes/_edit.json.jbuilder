@@ -45,6 +45,7 @@ if route.vehicle_usage_id
       json.wait_time time_over_day(route.wait_time) if route.wait_time
     end
   end
+  json.emission route.emission ? number_to_human(route.emission, precision: 4) : '-'
   json.work_or_window_time route.vehicle_usage.work_or_window_time
   json.skills [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten.compact do |tag|
     json.icon tag.default_icon

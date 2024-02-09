@@ -1725,6 +1725,7 @@
         les arrêts de manière plus précise (Ok pour continuer malgré tout).'
       'automatic_insert_too_many': 'Trop d''arrêts non assignés. Les sectorisations sont
         recommandées pour affecter les arrêts de manière plus précise'
+      'active_simple': 'Simplifié'
       'active_all': 'Tous'
       'active_reverse': 'Inverser'
       'active_none': 'Aucun'

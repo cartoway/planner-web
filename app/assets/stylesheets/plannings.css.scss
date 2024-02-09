@@ -315,12 +315,10 @@ $sidebar-margins: 10px;
         }
 
         .stop-label {
-          margin: unset !important;
+          margin: 0 !important;
           line-height: unset !important;
-          border-radius: 8px !important;
+          border-radius: 0 !important;
           font-size: 80% !important;
-          width: 80%;
-          border: 1px solid grey !important
         }
 
         .primary.route-info, .primary.stop-info {
@@ -753,6 +751,24 @@ $sidebar-margins: 10px;
         .d-fake-flex {
           display: -webkit-box !important;
           display: -ms-flexbox !important;
+          padding: 0;
+
+          .row {
+            margin-right: 0;
+
+            [class^="col-"] {
+              .stop-label{
+                width: 75% !important;
+                border: 0;
+                height: 34px;
+                padding-top: 10px;
+              }
+
+              input, .fa-store {
+                margin: 0 5px;
+              }
+            }
+          }
         }
 
         .row {
