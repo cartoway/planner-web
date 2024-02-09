@@ -1,5 +1,6 @@
 <% require "#{Rails.application.root}/lib/localized_values.rb" %>
-<%= twitter_bootstrap_form_for @customer, layout: :horizontal, html: { class: 'clear-passwords number-to-percentage form-horizontal'} do |f| %>
+<% options= {layout: :vertical, default_label_class: 'col-md-offset-2 col-md-7', default_div_class: 'col-md-offset-2 col-md-8 field', html: { class: 'clear-passwords number-to-percentage form-horizontal'} } %>
+<%= twitter_bootstrap_form_for @customer, options do |f| %>
 
   <%= render 'shared/error_messages', model: @customer %>
 
@@ -41,7 +42,7 @@
     <% end %>
   </fieldset>
 
-  <fieldset>
+  <div>
     <legend class="scheduler-border">
       <%= t '.default_value' %>
     </legend>
@@ -49,11 +50,11 @@
     <%= render partial: 'profile_router_inputs', locals: { f: f } %>
 
     <div id="router_options_traffic_input" class="form-group <%= @customer.router.try(&:traffic?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_traffic">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_traffic">
         <%= t('activerecord.attributes.customer.router_options_traffic') %>
       </label>
 
-      <div class="col-md-6 input-append form-inline">
+      <div class="col-md-offset-2 col-md-8 field input-append form-inline">
         <label>
           <input type="radio" name="customer[router_options][traffic]" id="customer_router_options_traffic_yes" value="true" <%= @customer.router_options['traffic'] == true ? 'checked' : '' %>/>
           <%= t('customers.form.router_options_traffic_yes') %>
@@ -67,11 +68,11 @@
     </div>
 
     <div id="router_options_track_input" class="form-group <%= @customer.router.try(&:track?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_track">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_track">
         <%= t('activerecord.attributes.customer.router_options_track') %>
       </label>
 
-      <div class="col-md-6 input-append form-inline">
+      <div class="col-md-offset-2 col-md-8 field input-append form-inline">
         <label>
           <input type="radio" name="customer[router_options][track]" id="customer_router_options_track_yes" value="true" <%= @customer.router_options['track'] == false ? '' : 'checked' %>/>
           <%= t('customers.form.router_options_track_yes') %>
@@ -85,11 +86,11 @@
     </div>
 
     <div id="router_options_motorway_input" class="form-group <%= @customer.router.try(&:motorway?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_motorway">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_motorway">
         <%= t('activerecord.attributes.customer.router_options_motorway') %>
       </label>
 
-      <div class="col-md-6 input-append form-inline">
+      <div class="col-md-offset-2 col-md-8 field input-append form-inline">
         <label>
           <input type="radio" name="customer[router_options][motorway]" id="customer_router_options_motorway_yes" value="true" <%= @customer.router_options['motorway'] == false ? '' : 'checked' %>/>
           <%= t('customers.form.router_options_motorway_yes') %>
@@ -103,11 +104,11 @@
     </div>
 
     <div id="router_options_toll_input" class="form-group <%= @customer.router.try(&:toll?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_toll">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_toll">
         <%= t('activerecord.attributes.customer.router_options_toll') %>
       </label>
 
-      <div class="col-md-6 input-append form-inline">
+      <div class="input-append form-inline">
         <label>
           <input type="radio" name="customer[router_options][toll]" id="customer_router_options_toll_yes" value="true" <%= @customer.router_options['toll'] == false ? '' : 'checked' %>/>
           <%= t('customers.form.router_options_toll_yes') %>
@@ -121,11 +122,11 @@
     </div>
 
     <div id="router_options_trailers_input" class="form-group <%= @customer.router.try(&:trailers?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_trailers">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_trailers">
         <%= t('activerecord.attributes.customer.router_options_trailers') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field_tag 'customer[router_options][trailers]', @customer.router_options['trailers'], min: 0, max: 4, step: 1, class: 'form-control' %>
           <span class="input-group-addon"><i class="fa fa-truck-field fa-fw"></i> </span>
@@ -135,11 +136,11 @@
     </div>
 
     <div id="router_options_weight_input" class="form-group <%= @customer.router.try(&:weight?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_weight">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_weight">
         <%= t('activerecord.attributes.customer.router_options_weight') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field_tag 'customer[router_options][weight]', @customer.router_options['weight'], min: 0, max: 1000, class: 'form-control' %>
           <span class="input-group-addon"><%= t('all.unit.ton') %></span>
@@ -149,11 +150,11 @@
     </div>
 
     <div id="router_options_weight_per_axle_input" class="form-group <%= @customer.router.try(&:weight_per_axle?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_weight_per_axle">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_weight_per_axle">
         <%= t('activerecord.attributes.customer.router_options_weight_per_axle') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field 'customer[router_options]', :weight_per_axle, value: @customer.router_options['weight_per_axle'], min: 0, max: 1000, step: 'any', class: 'form-control' %>
           <span class="input-group-addon"><%= t('all.unit.ton') %></span>
@@ -163,11 +164,11 @@
     </div>
 
     <div id="router_options_height_input" class="form-group <%= @customer.router.try(&:height?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_height">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_height">
         <%= t('activerecord.attributes.customer.router_options_height') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field 'customer[router_options]', :height, value: @customer.router_options['height'], min: 0, max: 50, step: 'any', class: 'form-control' %>
           <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -177,11 +178,11 @@
     </div>
 
     <div id="router_options_width_input" class="form-group <%= @customer.router.try(&:width?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_width">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_width">
         <%= t('activerecord.attributes.customer.router_options_width') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field 'customer[router_options]', :width, value: @customer.router_options['width'], min: 0, max: 50, step: 'any', class: 'form-control' %>
           <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -191,11 +192,11 @@
     </div>
 
     <div id="router_options_length_input" class="form-group <%= @customer.router.try(&:length?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_length">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_length">
         <%= t('activerecord.attributes.customer.router_options_length') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field 'customer[router_options]', :length, value: @customer.router_options['length'], min: 0, max: 300, step: 'any', class: 'form-control' %>
           <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -205,21 +206,21 @@
     </div>
 
     <div id="router_options_hazardous_goods_input" class="form-group <%= @customer.router.try(&:hazardous_goods?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_hazardous_goods">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_hazardous_goods">
         <%= t('activerecord.attributes.customer.router_options_hazardous_goods') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <%= select_tag 'customer[router_options][hazardous_goods]', options_for_select(t('activerecord.attributes.router.options.hazardous_goods').invert, @customer.router_options['hazardous_goods']), include_blank: true, class: 'form-control' %>
       </div>
     </div>
 
     <div id="router_options_max_walk_distance_input" class="form-group <%= @customer.router.try(&:max_walk_distance?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_max_walk_distance">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_max_walk_distance">
         <%= t('activerecord.attributes.customer.router_options_max_walk_distance') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field 'customer[router_options]', :max_walk_distance, value: @customer.router_options['max_walk_distance'], step: 'any', class: 'form-control' %>
           <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -229,22 +230,22 @@
     </div>
 
     <div id="router_options_approach_input" class="form-group <%= @customer.router.try(&:approach?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_approach">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_approach">
         <%= t('activerecord.attributes.customer.router_options_approach') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <%= select_tag 'customer[router_options][approach]', options_for_select(t('activerecord.attributes.router.options.approach').invert, selected: @customer.router_options['approach']), include_blank: false, class: 'form-control' %>
         <p class="help-block"><%=  t('customers.form.router_options_approach_help') %></p>
       </div>
     </div>
 
     <div id="router_options_snap_input" class="form-group <%= @customer.router.try(&:snap?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_snap">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_snap">
         <%= t('activerecord.attributes.customer.router_options_snap') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field 'customer[router_options]', :snap, value: @customer.router_options['snap'], step: 'any', class: 'form-control' %>
           <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -254,21 +255,21 @@
     </div>
 
     <div id="router_options_strict_restriction_input" class="form-group <%= @customer.router.try(&:strict_restriction?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-2 control-label" for="customer_router_options_strict_restriction">
+      <label class="col-md-offset-2 col-md-8" for="customer_router_options_strict_restriction">
         <%= t('activerecord.attributes.customer.router_options_strict_restriction') %>
       </label>
 
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <%= check_box_tag 'customer[router_options][strict_restriction]', @customer.router_options['strict_restriction'], !!@customer.router_options['strict_restriction'] %>
         <p class="help-block"><%=  t('customers.form.router_options_strict_restriction') %></p>
       </div>
     </div>
 
     <div class="form-group">
-      <label class="col-md-2 control-label" for="speed_multiplier">
+      <label class="col-md-offset-2 col-md-8" for="speed_multiplier">
         <%= t('activerecord.attributes.customer.speed_multiplier') %>
       </label>
-      <div class="col-md-6 input-append">
+      <div class="input-append col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field_tag :speed_multiplier, (@customer.speed_multiplier ? (@customer.speed_multiplier * 100).to_i : 100), { min: 50, max: 150, placeholder: t('customers.form.speed_multiplier_default', n: 100), class: 'form-control number-to-percentage' } %>
           <span class="input-group-addon">%</span>
@@ -284,10 +285,12 @@
     <% end %>
 
     <%= f.text_field :default_country, required: true %>
+    <div class= "row">
+      <%= f.toggles t 'activerecord.attributes.customer.with_state' do %>
 
-    <%= f.toggles t 'activerecord.attributes.customer.with_state' do %>
-      <%= f.check_box :with_state %>
-    <% end %>
+          <%= f.check_box :with_state %>
+      <% end %>
+    </div>
 
   </fieldset>
 
@@ -309,7 +312,7 @@
       <% end %>
       <%= f.toggles t 'activerecord.attributes.customer.enable_global_optimization' do %>
         <%= f.check_box :enable_global_optimization %>
-        <% if !@customer.id || @customer.test %><p class="help-block"><%= t '.enable_global_optimization_test' %></p><% end %>
+        <% if !@customer.id || @customer.test %><p class="help-block" style="margin-left: 18%"><%= t '.enable_global_optimization_test' %></p><% end %>
       <% end %>
       <%= f.toggles t 'activerecord.attributes.customer.enable_vehicle_position' do %>
         <%= f.check_box :enable_vehicle_position %>
@@ -333,15 +336,15 @@
       <% end %>
 
       <div class="form-group">
-        <label class="col-md-2 control-label"><%= t '.optimization_time' %></label>
-        <div class="col-md-6">
+        <label class="col-md-offset-2 col-md-8"><%= t '.optimization_time' %></label>
+        <div class="col-md-offset-2 col-md-8 field">
           <div class="input-group">
             <%= number_field 'customer', 'optimization_minimal_time', value: @customer.optimization_minimal_time, placeholder: t('.optimization_minimal_time_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.optimize_minimal_time)), min: 0.1, step: 0.1, class: 'form-control width_1_2' %>
             <%= number_field 'customer', 'optimization_time' , value: @customer.optimization_time, placeholder: t('.optimization_time_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.optimize_time)), min: 1, step: 1, class: 'form-control width_1_2' %>
             <span class="input-group-addon" ><%= t('all.unit.second') %></span>
           </div>
-          <p class="help-block col-md-6"><%= t '.optimization_minimal_time_help' %></p>
-          <p class="help-block col-md-6"><%= t '.optimization_time_help' %></p>
+          <p class="help-block"><%= t '.optimization_minimal_time_help' %></p>
+          <p class="help-block"><%= t '.optimization_time_help' %></p>
         </div>
       </div>
 
@@ -354,9 +357,10 @@
       <%= f.number_field :optimization_cost_waiting_time, { placeholder: t('.optimization_cost_waiting_time_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.optimize_cost_waiting_time)), min: 0, step: 'any', input_group: '×'} do %>
           <p class="help-block"><%= t '.optimization_cost_waiting_time_help' %></p>
       <% end %>
+
       <%= f.toggles t 'activerecord.attributes.customer.optimization_force_start' do %>
         <%= f.check_box :optimization_force_start %>
-        <p class="help-block"><%= t '.optimization_force_start_help' %></p>
+        <p class="help-block toggles-help-block"><%= t '.optimization_force_start_help' %></p>
       <% end %>
     </fieldset>
   <% end %>
@@ -384,8 +388,8 @@
             <%= f.check_box :print_stop_time %>
           <% end %>
           <div class="form-group">
-            <label class="col-md-2 control-label" for="customer_print_barcode"><%= t 'activerecord.attributes.customer.print_barcode' %></label>
-            <div class="col-md-6">
+            <label class="col-md-offset-2 col-md-8" for="customer_print_barcode"><%= t 'activerecord.attributes.customer.print_barcode' %></label>
+            <div class="col-md-offset-2 col-md-8 field">
               <div class="input-group">
                 <%= select_tag 'customer[print_barcode]', options_for_select([[t('.print.barcode.code128'), :code128]], @customer.print_barcode), include_blank: true, class: 'form-control' %>
                 <span class="input-group-addon"><i class="fa fa-barcode fa-fw"></i></span>
@@ -458,7 +462,7 @@
         </div>
       </div>
     <% end %>
-  </fieldset>
+  </div>
 
   <% if current_user.admin? %>
     <% @customer.device.definitions.each do |key, device| %>
@@ -466,7 +470,7 @@
         <input name="<%= "customer[devices][#{key}][enable]" %>" value="0" type="hidden">
         <%= f.check_box_tag "customer[devices][#{key}][enable]", 1, to_bool(@customer.devices[key] && @customer.devices[key][:enable]) %>
         <% if device[:help] %>
-          <p class="help-block"><%= t "customers.form.devices.#{key}.help" %></p>
+          <p class="help-block toggles-help-block"><%= t "customers.form.devices.#{key}.help" %></p>
         <% end %>
       <% end %>
     <% end %>
@@ -488,8 +492,8 @@
                   <% definition[:forms][:settings].each{ |field, type| %>
                     <div class="form-group">
                       <% name = "customer[devices][#{key}][#{field}]" %>
-                      <%= f.label_tag name, t("activerecord.attributes.customer.devices.#{key}.#{field}"), class: 'col-md-2 control-label' %>
-                      <div class="col-md-6 input-append">
+                      <%= f.label_tag name, t("activerecord.attributes.customer.devices.#{key}.#{field}"), class: 'control-label' %>
+                      <div class="input-append">
                         <%= case type
                           when :text
                             f.text_field_tag name, @customer.devices[key] && @customer.devices[key][field], autocomplete: 'off', class: 'form-control'

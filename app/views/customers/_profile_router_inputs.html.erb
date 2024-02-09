@@ -12,8 +12,8 @@
 <% end %>
 
 <div id="customer_router_input" class="form-group">
-  <label class="col-md-2 control-label" for="customer_router"><%= t('activerecord.attributes.customer.router') %></label>
-  <div class="col-md-6">
+  <label class="col-md-offset-2 col-md-8" for="customer_router"><%= t('activerecord.attributes.customer.router') %></label>
+  <div class="col-md-offset-2 col-md-8 field">
     <div class="input-group">
       <%= select_tag 'customer[router]', grouped_options_for_select([[t('activerecord.attributes.router.router_dimensions.time'), Router.all.select(&:time?).collect{ |router|
           [router.translated_name + ' - ' + t('activerecord.attributes.router.router_dimensions.time'), router.id.to_s + '_time']
