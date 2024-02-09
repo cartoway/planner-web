@@ -40,6 +40,7 @@
         .btn-group
           %button#optimize_all.btn.btn-primary.btn-sm.optimize{title: t('.optimize'), type: "button", "data-toggle": "modal", "data-target": "#optimization-modal" }
             %i.fa.fa-gears
+            = t('plannings.edit.dialog.optimization.optimize')
         .pull-right.btn-group
           .dropdown.btn-group
             %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.toggle_routes'), type: "button"}
@@ -61,21 +62,21 @@
                   = t 'plannings.edit.active_all'
           .dropdown.btn-group
             %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.toggle_route_data'), type: "button"}
-              %i.fa.fa-book
+              %i.fa.fa-chart-column
               %span.caret
             -# https://github.com/twbs/bootstrap/issues/1411
             %ul#data_routes_dropdown.dropdown-menu{role: "menu"}
               %li{"data-selection": "none"}
                 %a.active_none{href: "#"}
-                  %i.fa.fa-book.fa-fw
+                  %i.fa.fa-angle-left.fa-fw{style: "transform: rotate(-45deg);"}
                   = t 'plannings.edit.active_none'
-              %li{"data-selection": "reverse"}
-                %a.active_reverse{href: "#"}
-                  %i.fa.fa-random.fa-fw
-                  = t 'plannings.edit.active_reverse'
+              %li{"data-selection": "simple"}
+                %a.active_simple{href: "#"}
+                  %i.fa.fa-chart-column.fa-fw
+                  = t 'plannings.edit.active_simple'
               %li{"data-selection": "all"}
                 %a.active_all{href: "#"}
-                  %i.fa.fa-book-open.fa-fw
+                  %i.fa.fa-square-poll-vertical.fa-fw
                   = t 'plannings.edit.active_all'
           .dropdown.btn-group
             %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.lock_routes'), type: "button"}

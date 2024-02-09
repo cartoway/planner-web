@@ -642,25 +642,25 @@ export const plannings_edit = function(params) {
   $('#data_routes_dropdown').find('li a').click(function() {
     if (routes.length == 0) return;
 
-    var action = 'route-data-toggle';
     var selection = $(this).parent('li').data('selection');
-
-    $('.route-data-toggle').each(function(index, element) {
-      var i = $("i", element);
-      if (selection == 'all' || selection == 'inverse' && i.hasClass('fa-book')) {
-        i.removeClass("fa-book").addClass("fa-book-open");
-      } else if (i.hasClass('fa-book-open')) {
-        i.removeClass("fa-book-open").addClass("fa-book");
-      }
-    });
 
     $('.route-data').each(function(index, element) {
       if (selection == 'all') {
         $(element).show();
       } else if (selection == 'none') {
         $(element).hide();
-      } else if (selection == 'reverse') {
-        $(element).toggle();
+      } else if (selection == 'simple') {
+        $(element).show();
+      }
+    });
+
+    $('.route-data-advanced').each(function(index, element) {
+      if (selection == 'all') {
+        $(element).show();
+      } else if (selection == 'none') {
+        $(element).hide();
+      } else if (selection == 'simple') {
+        $(element).hide();
       }
     });
   });
@@ -1796,7 +1796,7 @@ export const plannings_edit = function(params) {
       }).disableSelection();
       $(".route[data-route_id='" + route.route_id + "'] li[data-stop_id]")
         .mouseover(function() {
-          $('span.number', this).css({
+          $('.not-hover', this).css({
             display: 'none'
           });
           $('.hover-tools', this).css({
@@ -1807,7 +1807,7 @@ export const plannings_edit = function(params) {
           $('.hover-tools', this).css({
             display: 'none'
           });
-          $('span.number', this).css({
+          $('.not-hover', this).css({
             display: 'inline-block'
           });
         })
