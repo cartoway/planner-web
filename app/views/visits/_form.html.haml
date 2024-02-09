@@ -21,8 +21,8 @@
           %p.help-block= t '.ref_help'
       - unless visit.destination.customer.enable_orders
         #visit_quantity_input{class: "form-group #{nested_has_error?(:quantities, visit.id)}"}
-          %label.col-md-2.control-label= t 'activerecord.attributes.visit.quantities'
-          .col-md-6
+          %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.visit.quantities'
+          .col-md-offset-2.col-md-8.field
             - visit.destination.customer.deliverable_units.each do |du|
               .input-group{"data-deliverable_unit_id" => "#{du.id}"}
                 = number_field "destination[visits_attributes][#{i}][quantities]", du.id, value: visit.quantities && visit.quantities[du.id], placeholder: du.default_quantity && t('.quantities.default', n: du.localized_default_quantity), class: 'form-control width_1_3', step: 'any'
@@ -39,8 +39,8 @@
       #visit_open_close_input{class: "form-group #{nested_has_error?(:time_window_end_1, visit.id)}"}
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_start_1"}= t 'activerecord.attributes.visit.time_window_start_1'
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_end_1"}= t 'activerecord.attributes.visit.time_window_end_1'
-        %label.col-md-2.control-label= t '.time_window_start_end_1'
-        .col-md-6
+        %label.col-md-offset-2.col-md-8.field= t '.time_window_start_end_1'
+        .col-md-offset-2.col-md-8.field
           .input-group
             %span.input-group-addon= t 'web.form.from_time'
             = text_field "destination[visits_attributes][#{i}]", :time_window_start_1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_1_time
@@ -64,8 +64,8 @@
       #visit_open_close_input{class: "form-group #{nested_has_error?(:time_window_end_2, visit.id)}"}
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_start_2"}= t 'activerecord.attributes.visit.time_window_start_2'
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_end_2"}= t 'activerecord.attributes.visit.time_window_end_2'
-        %label.col-md-2.control-label= t '.time_window_start_end_2'
-        .col-md-6
+        %label.col-md-offset-2.col-md-8.field= t '.time_window_start_end_2'
+        .col-md-offset-2.col-md-8.field
           .input-group
             %span.input-group-addon= t 'web.form.from_time'
             = text_field "destination[visits_attributes][#{i}]", :time_window_start_2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_2_time
@@ -87,8 +87,8 @@
               %i.fa.fa-arrows-left-right.fa-fw
           %p.help-block= t '.close_help'
       #visit_priority_input{class: "form-group #{nested_has_error?(:priority, visit.id)}"}
-        %label.col-md-2.control-label= t '.priority'
-        .col-md-6
+        %label.col-md-offset-2.col-md-8.field= t '.priority'
+        .col-md-offset-2.col-md-8.field
           .input-group
             = text_field "destination[visits_attributes][#{i}]", :priority, class: 'form-control', value: visit.priority, data: {'slider-value' => visit.priority || 0}
           %p.help-block= t '.priority_help'

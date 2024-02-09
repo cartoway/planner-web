@@ -5,8 +5,8 @@
     <p class="help-block"><%= t '.ref_help' %></p>
   <% end %>
   <div class="form-group" id="tag_color_input">
-    <label class="col-md-2 control-label" for="tag_color">Couleur</label>
-    <div class="col-md-6 input-append">
+    <label class="col-md-offset-2 col-md-8 field" for="tag_color">Couleur</label>
+    <div class="col-md-offset-2 col-md-8 field input-append">
       <%= select_tag 'tag[color]', options_for_select((COLORS_TABLE + [customised_color_verification(@tag[:color])]).compact.uniq, @tag[:color]), include_blank: '#000000' %> <i class="fa fa-paint-brush" id="customised_color_picker" title="<%= t('activerecord.attributes.vehicle.customised_color') %>"></i>
       <%= color_field :tag, :color, option = { value: customised_color_verification(@tag[:color]), id: 'color_picker', name: 'fff' } %>
       <p class="help-block"><%= t '.color_help' %></p>
@@ -14,9 +14,9 @@
   </div>
 
   <div id="tag_icon_input" class="form-group">
-    <label class="col-md-2 control-label" for="tag_icon"><%= t 'activerecord.attributes.tag.icon' %></label>
+    <label class="col-md-offset-2 col-md-8 field" for="tag_icon"><%= t 'activerecord.attributes.tag.icon' %></label>
     <label class="sr-only" for="tag_icon_size"><%= t 'activerecord.attributes.tag.icon_size' %></label>
-    <div class="col-md-6">
+    <div class="col-md-offset-2 col-md-8 field">
       <div class="input-group">
         <%= select_tag 'tag[icon]', grouped_options_for_select(
           [

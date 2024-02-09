@@ -16,10 +16,10 @@
           <% end %>
         <% end %>
         <div class="form-group">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_color">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_color">
             <%= t("activerecord.attributes.vehicle.color") %>
           </label>
-          <div class="col-md-6 input-append">
+          <div class="col-md-offset-2 col-md-8 field input-append">
             <div class="input-group">
               <%= select_tag 'vehicle_usage[vehicle][color]', options_for_select((COLORS_TABLE + [customised_color_verification(@vehicle_usage.vehicle[:color])]).compact.uniq, @vehicle_usage.vehicle[:color]), include_blank: '#000000' %> <i class="fa fa-paint-brush" id="customised_color_picker" title="<%= t('activerecord.attributes.vehicle.customised_color') %>"></i>
               <%= color_field :vehicle, :color, option = { value: customised_color_verification(@vehicle_usage.vehicle[:color]), id: 'color_picker', name: 'fff' } %>
@@ -30,8 +30,8 @@
         <div id="vehicle_usage_vehicle_consumption_input" class="form-group">
           <label class="sr-only" for="vehicle_usage_vehicle_emission"><%= t 'activerecord.attributes.vehicle.emission' %></label>
           <label class="sr-only" for="vehicle_usage_vehicle_consumption"><%= t 'activerecord.attributes.vehicle.consumption' %></label>
-          <label class="col-md-2 control-label"><%= t 'activerecord.attributes.vehicle.emission' %> / <%= t 'activerecord.attributes.vehicle.consumption' %></label>
-          <div class="col-md-6">
+          <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.emission' %> / <%= t 'activerecord.attributes.vehicle.consumption' %></label>
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= select 'vehicle_usage[vehicle]', :emission, Vehicle.emissions_table, { include_blank: t('web.form.empty_entry'), selected: @vehicle_usage.vehicle.emission }, class: 'form-control' %>
               <span class="input-group-addon"><%= t 'all.unit.kgco2e_l_html' %></span>
@@ -43,8 +43,8 @@
         </div>
         <div id="vehicle_usage_vehicle_max_distance" class="form-group">
           <label class="sr-only" for="vehicle_usage_vehicle_max_distance"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
-          <label class="col-md-2 control-label"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
-          <div class="col-md-6">
+          <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= number_field 'vehicle_usage[vehicle]',
                 :max_distance,
@@ -58,8 +58,8 @@
         </div>
         <%= twitter_bootstrap_fields_for 'vehicle_usage[vehicle][capacities]', @vehicle_usage.vehicle.capacities, layout: :horizontal do |capacity| %>
           <div id="vehicle_usage_vehicle_capacity_input" class="form-group <%= 'has-error' if @vehicle_usage.vehicle.errors.messages[:capacities].present? %>">
-            <label class="col-md-2 control-label"><%= t 'vehicles.form.capacities.label' %></label>
-            <div class="col-md-6">
+            <label class="col-md-offset-2 col-md-8 field"><%= t 'vehicles.form.capacities.label' %></label>
+            <div class="col-md-offset-2 col-md-8 field">
               <% @vehicle_usage.vehicle.customer.deliverable_units.each do |du| %>
               <div class="input-group">
                 <%= number_field 'vehicle_usage[vehicle][capacities]', du.id, value: @vehicle_usage.vehicle.capacities && @vehicle_usage.vehicle.capacities[du.id], placeholder: du.default_capacity && t('vehicles.form.capacities.default', n: du.localized_default_capacity), class: 'form-control width_1_2', step: 'any', min: 0 %>
@@ -79,8 +79,8 @@
         <% end %>
 
         <div id="vehicle_router_input" class="form-group">
-          <label class="col-md-2 control-label" for="vehicle_router"><%= t 'activerecord.attributes.vehicle.router' %></label>
-          <div class="col-md-6">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_router"><%= t 'activerecord.attributes.vehicle.router' %></label>
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <% routers = @vehicle_usage.vehicle.customer.profile.routers %>
               <%= select_tag 'vehicle_usage[vehicle][router]', grouped_options_for_select([[t('activerecord.attributes.router.router_dimensions.time'), routers.select(&:time?).collect{ |router|
@@ -97,11 +97,11 @@
         </div>
 
         <div id="router_options_traffic_input" class="form-group <%= @vehicle_usage.vehicle.default_router.traffic? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_traffic">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_traffic">
             <%= t('activerecord.attributes.customer.router_options_traffic') %>
           </label>
 
-          <div class="col-md-6 input-append form-inline">
+          <div class="col-md-offset-2 col-md-8 field input-append form-inline">
             <label>
               <input type="radio" name="vehicle_usage[vehicle][router_options][traffic]" id="vehicle_usage_vehicle_router_options_traffic_yes" value="true" <%= @vehicle_usage.vehicle.router_options['traffic'] == true ? 'checked' : '' %>/>
               <%= t('customers.form.router_options_traffic_yes') %>
@@ -120,11 +120,11 @@
         </div>
 
         <div id="router_options_track_input" class="form-group <%= @vehicle_usage.vehicle.default_router.track? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_track">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_track">
             <%= t('activerecord.attributes.customer.router_options_track') %>
           </label>
 
-          <div class="col-md-6 input-append form-inline">
+          <div class="col-md-offset-2 col-md-8 field input-append form-inline">
             <label>
               <input type="radio" name="vehicle_usage[vehicle][router_options][track]" id="vehicle_usage_vehicle_router_options_track_yes" value="true" <%= @vehicle_usage.vehicle.router_options['track'] == true ? 'checked' : '' %>/>
               <%= t('customers.form.router_options_track_yes') %>
@@ -143,11 +143,11 @@
         </div>
 
         <div id="router_options_motorway_input" class="form-group <%= @vehicle_usage.vehicle.default_router.motorway? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_motorway">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_motorway">
             <%= t('activerecord.attributes.customer.router_options_motorway') %>
           </label>
 
-          <div class="col-md-6 input-append form-inline">
+          <div class="col-md-offset-2 col-md-8 field input-append form-inline">
             <label>
               <input type="radio" name="vehicle_usage[vehicle][router_options][motorway]" id="vehicle_usage_vehicle_router_options_motorway_yes" value="true" <%= @vehicle_usage.vehicle.router_options['motorway'] == true ? 'checked' : '' %>/>
               <%= t('customers.form.router_options_motorway_yes') %>
@@ -166,11 +166,11 @@
         </div>
 
         <div id="router_options_toll_input" class="form-group <%= @vehicle_usage.vehicle.default_router.toll? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_toll">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_toll">
             <%= t('activerecord.attributes.customer.router_options_toll') %>
           </label>
 
-          <div class="col-md-6 input-append form-inline">
+          <div class="col-md-offset-2 col-md-8 field input-append form-inline">
             <label>
               <input type="radio" name="vehicle_usage[vehicle][router_options][toll]" id="vehicle_usage_vehicle_router_options_toll_yes" value="true" <%= @vehicle_usage.vehicle.router_options['toll'] == true ? 'checked' : '' %>/>
               <%= t('customers.form.router_options_toll_yes') %>
@@ -189,11 +189,11 @@
         </div>
 
         <div id="router_options_trailers_input" class="form-group <%= @vehicle_usage.vehicle.default_router.trailers? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_trailers">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_trailers">
             <%= t('activerecord.attributes.customer.router_options_trailers') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= number_field_tag 'vehicle_usage[vehicle][router_options][trailers]', @vehicle_usage.vehicle.router_options['trailers'], { min: 0, max: 4, placeholder: !@vehicle_usage.vehicle.customer.trailers.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.trailers) : '', class: 'form-control' } %>
               <span class="input-group-addon"><i class="fa fa-truck-field fa-fw"></i> </span>
@@ -203,11 +203,11 @@
         </div>
 
         <div id="router_options_weight_input" class="form-group <%= @vehicle_usage.vehicle.default_router.weight? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_weight">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_weight">
             <%= t('activerecord.attributes.customer.router_options_weight') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= number_field_tag 'vehicle_usage[vehicle][router_options][weight]', @vehicle_usage.vehicle.router_options['weight'], { min: 0, max: 1000, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.weight.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.weight) : '', class: 'form-control' } %>
               <span class="input-group-addon"><%= t('all.unit.ton') %></span>
@@ -217,11 +217,11 @@
         </div>
 
         <div id="router_options_weight_per_axle_input" class="form-group <%= @vehicle_usage.vehicle.default_router.weight_per_axle? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_weight_per_axle">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_weight_per_axle">
             <%= t('activerecord.attributes.customer.router_options_weight_per_axle') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= number_field_tag 'vehicle_usage[vehicle][router_options][weight_per_axle]', @vehicle_usage.vehicle.router_options['weight_per_axle'], { min: 0, max: 1000, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.weight_per_axle.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.weight_per_axle) : '', class: 'form-control' } %>
               <span class="input-group-addon"><%= t('all.unit.ton') %></span>
@@ -231,11 +231,11 @@
         </div>
 
         <div id="router_options_height_input" class="form-group <%= @vehicle_usage.vehicle.default_router.height? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_height">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_height">
             <%= t('activerecord.attributes.customer.router_options_height') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= number_field_tag 'vehicle_usage[vehicle][router_options][height]', @vehicle_usage.vehicle.router_options['height'], { min: 0, max: 50, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.height.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.height) : '', class: 'form-control' } %>
               <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -245,11 +245,11 @@
         </div>
 
         <div id="router_options_width_input" class="form-group <%= @vehicle_usage.vehicle.default_router.width? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_width">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_width">
             <%= t('activerecord.attributes.customer.router_options_width') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= number_field_tag 'vehicle_usage[vehicle][router_options][width]', @vehicle_usage.vehicle.router_options['width'], { min: 0, max: 50, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.width.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.width) : '', class: 'form-control' } %>
               <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -259,11 +259,11 @@
         </div>
 
         <div id="router_options_length_input" class="form-group <%= @vehicle_usage.vehicle.default_router.length? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_length">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_length">
             <%= t('activerecord.attributes.customer.router_options_length') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= number_field_tag 'vehicle_usage[vehicle][router_options][length]', @vehicle_usage.vehicle.router_options['length'], { min: 0, max: 300, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.length.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.length) : '', class: 'form-control' } %>
               <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -273,21 +273,21 @@
         </div>
 
         <div id="router_options_hazardous_goods_input" class="form-group <%= @vehicle_usage.vehicle.default_router.hazardous_goods? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="customer_router_options_hazardous_goods">
+          <label class="col-md-offset-2 col-md-8 field" for="customer_router_options_hazardous_goods">
             <%= t('activerecord.attributes.customer.router_options_hazardous_goods') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <%= select_tag 'vehicle_usage[vehicle][router_options][hazardous_goods]', options_for_select(t('activerecord.attributes.router.options.hazardous_goods').invert, current_router_options(@vehicle_usage.vehicle)['hazardous_goods']), include_blank: t('vehicles.form.router.default') + ' (' + (!!@vehicle_usage.vehicle.customer.hazardous_goods ? t("activerecord.attributes.router.options.hazardous_goods.#{@vehicle_usage.vehicle.customer.hazardous_goods}") : t('activerecord.attributes.router.options.hazardous_goods_none')) + ')', class: 'form-control' %>
           </div>
         </div>
 
         <div id="router_options_max_walk_distance_input" class="form-group <%= @vehicle_usage.vehicle.default_router.max_walk_distance? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_max_walk_distance">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_max_walk_distance">
             <%= t('activerecord.attributes.customer.router_options_max_walk_distance') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= number_field 'vehicle_usage[vehicle][router_options]', :max_walk_distance, value: @vehicle_usage.vehicle.router_options['max_walk_distance'], placeholder: !@vehicle_usage.vehicle.customer.max_walk_distance.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.max_walk_distance) : '', step: 'any', class: 'form-control' %>
               <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -297,22 +297,22 @@
         </div>
 
         <div id="router_options_approach_input" class="form-group <%= @vehicle_usage.vehicle.default_router.approach? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="customer_router_options_approach">
+          <label class="col-md-offset-2 col-md-8 field" for="customer_router_options_approach">
             <%= t('activerecord.attributes.customer.router_options_approach') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <%= select_tag 'vehicle_usage[vehicle][router_options][approach]', options_for_select(t('activerecord.attributes.router.options.approach').invert, @vehicle_usage.vehicle.router_options['approach']), include_blank: t('vehicles.form.router.default') + ' (' + (!!@vehicle_usage.vehicle.customer.approach ? t("activerecord.attributes.router.options.approach.#{@vehicle_usage.vehicle.customer.approach}") : t('activerecord.attributes.router.options.approach_none')) + ')', class: 'form-control' %>
             <p class="help-block"><%=  t('customers.form.router_options_approach_help') %></p>
           </div>
         </div>
 
         <div id="router_options_snap_input" class="form-group <%= @vehicle_usage.vehicle.default_router.snap? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_snap">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_snap">
             <%= t('activerecord.attributes.customer.router_options_snap') %>
           </label>
 
-          <div class="col-md-6">
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= number_field 'vehicle_usage[vehicle][router_options]', :snap, value: @vehicle_usage.vehicle.router_options['snap'], placeholder: !@vehicle_usage.vehicle.customer.snap.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.snap) : '', step: 'any', class: 'form-control' %>
               <span class="input-group-addon"><%= t('all.unit.m') %></span>
@@ -322,21 +322,21 @@
         </div>
 
         <div id="router_options_strict_restriction_input" class="form-group <%= @vehicle_usage.vehicle.default_router.strict_restriction? ? '' : 'router-option-disabled' %>">
-          <label class="col-md-2 control-label" for="vehicle_usage_vehicle_router_options_strict_restriction">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_strict_restriction">
             <%= t('activerecord.attributes.customer.router_options_strict_restriction') %>
           </label>
 
-          <div class="col-md-6 input-append form-inline">
+          <div class="col-md-offset-2 col-md-8 field input-append form-inline">
             <%= check_box_tag 'vehicle_usage[vehicle][router_options][strict_restriction]', current_router_options(@vehicle_usage.vehicle)['strict_restriction'], !!current_router_options(@vehicle_usage.vehicle)['strict_restriction'] %>
             <p class="help-block"><%=  t('customers.form.router_options_strict_restriction') %></p>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="col-md-2 control-label" for="speed_multiplier">
+          <label class="col-md-offset-2 col-md-8 field" for="speed_multiplier">
             <%= t('activerecord.attributes.vehicle.speed_multiplier') %>
           </label>
-          <div class="col-md-6 input-append">
+          <div class="col-md-offset-2 col-md-8 field input-append">
             <div class="input-group">
               <%= number_field_tag :speed_multiplier, (@vehicle_usage.vehicle.speed_multiplier ? (@vehicle_usage.vehicle.speed_multiplier * 100).to_i : nil), { min: 50, max: 150, placeholder: t('vehicles.form.speed_multiplier.default', n: (@vehicle_usage.vehicle.customer.speed_multiplier ? (@vehicle_usage.vehicle.customer.speed_multiplier * 100).to_i : 75)), class: 'form-control number-to-percentage' } %>
               <span class="input-group-addon">%</span>
@@ -371,8 +371,8 @@
 
         <div id="vehicle_usage_vehicle_phone_number" class="form-group">
           <label class="sr-only" for="vehicle_usage_vehicle_phone_number"><%= t 'activerecord.attributes.vehicle.phone_number' %></label>
-          <label class="col-md-2 control-label"><%= t 'activerecord.attributes.vehicle.phone_number' %></label>
-          <div class="col-md-6">
+          <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.phone_number' %></label>
+          <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
               <%= text_field 'vehicle_usage[vehicle]',
                 :phone_number,
@@ -396,8 +396,8 @@
     <div id="vehicle_usage_store_input" class="form-group">
       <label class="sr-only" for="vehicle_usage_store_start"><%= t 'activerecord.attributes.vehicle_usage.store_start' %></label>
       <label class="sr-only" for="vehicle_usage_store_stop"><%= t 'activerecord.attributes.vehicle_usage.store_stop' %></label>
-      <label class="col-md-2 control-label"><%= t '.stores' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field"><%= t '.stores' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= collection_select :vehicle_usage, :store_start_id, @vehicle_usage.vehicle.customer.stores, :id, :name, {
             include_blank: t('vehicle_usages.form.store.default') + ' (' + (@vehicle_usage.vehicle_usage_set.store_start ? @vehicle_usage.vehicle_usage_set.store_start.name : t('vehicle_usages.form.store.none')) + ')'}, {
@@ -420,8 +420,8 @@
     <div id="vehicle_usage_time_window_start_time_window_end_input" class="form-group">
       <label class="sr-only" for="vehicle_usage_open"><%= t 'activerecord.attributes.vehicle_usage.time_window_start' %></label>
       <label class="sr-only" for="vehicle_usage_close"><%= t 'activerecord.attributes.vehicle_usage.time_window_end' %></label>
-      <label class="col-md-2 control-label"><%= t '.time_window_start_end' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field"><%= t '.time_window_start_end' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <span class="input-group-addon"><%= t 'web.form.from_time' %></span>
           <%= text_field :vehicle_usage, :time_window_start,
@@ -454,8 +454,8 @@
     <div id="vehicle_usage_service_time_input" class="form-group">
       <label class="sr-only" for="vehicle_usage_service_time_start"><%= t 'activerecord.attributes.vehicle_usage.service_time_start' %></label>
       <label class="sr-only" for="vehicle_usage_service_time_end"><%= t 'activerecord.attributes.vehicle_usage.service_time_end' %></label>
-      <label class="col-md-2 control-label"><%= t '.service_times' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field"><%= t '.service_times' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <span class="input-group-addon"><%= t '.service_time_start_addon' %></span>
           <%= text_field :vehicle_usage, :service_time_start,
@@ -474,8 +474,8 @@
     </div>
     <div id="vehicle_usage_set_work_time_input" class="form-group">
       <label class="sr-only" for="vehicle_usage_work_time"><%= t 'activerecord.attributes.vehicle_usage.work_time' %></label>
-      <label class="col-md-2 control-label"><%= t '.work_time' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field"><%= t '.work_time' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= text_field :vehicle_usage, :work_time,
                          value: @vehicle_usage.work_time_time,
@@ -489,8 +489,8 @@
     <div id="vehicle_usage_rest_input" class="form-group">
       <label class="sr-only" for="vehicle_usage_rest_duration"><%= t 'activerecord.attributes.vehicle_usage.rest_duration' %></label>
       <label class="sr-only" for="vehicle_usage_store_rest"><%= t 'activerecord.attributes.vehicle_usage.store_rest' %></label>
-      <label class="col-md-2 control-label"><%= t '.rest_duration_store' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field"><%= t '.rest_duration_store' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= text_field :vehicle_usage, :rest_duration,
             value: @vehicle_usage.rest_duration_time,
@@ -507,8 +507,8 @@
     <div id="vehicle_usage_rest_start_stop_input" class="form-group">
       <label class="sr-only" for="vehicle_usage_rest_start"><%= t 'activerecord.attributes.vehicle_usage.rest_start' %></label>
       <label class="sr-only" for="vehicle_usage_rest_stop"><%= t 'activerecord.attributes.vehicle_usage.rest_stop' %></label>
-      <label class="col-md-2 control-label"><%= t '.rest_start_stop' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field"><%= t '.rest_start_stop' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <span class="input-group-addon"><%= t 'web.form.from_time' %></span>
           <%= text_field :vehicle_usage, :rest_start,

@@ -4,8 +4,8 @@
   <div id="vehicle_usage_set_store_input" class="form-group">
     <label class="sr-only" for="vehicle_usage_set_store_start"><%= t 'activerecord.attributes.vehicle_usage_set.store_start' %></label>
     <label class="sr-only" for="vehicle_usage_set_store_stop"><%= t 'activerecord.attributes.vehicle_usage_set.store_stop' %></label>
-    <label class="col-md-2 control-label"><%= t '.stores' %></label>
-    <div class="col-md-6">
+    <label class="col-md-offset-2 col-md-8 field"><%= t '.stores' %></label>
+    <div class="col-md-offset-2 col-md-8 field">
       <div class="input-group">
         <%= collection_select :vehicle_usage_set, :store_start_id, @vehicle_usage_set.customer.stores, :id, :name, { include_blank: t('vehicle_usage_sets.form.store.none') }, {
           class: 'form-control width_1_2' } %>
@@ -19,8 +19,8 @@
   <div id="vehicle_usage_set_time_window_start_time_window_end_input" class="form-group">
     <label class="sr-only" for="vehicle_usage_set_open"><%= t 'activerecord.attributes.vehicle_usage_set.time_window_start' %></label>
     <label class="sr-only" for="vehicle_usage_set_close"><%= t 'activerecord.attributes.vehicle_usage_set.time_window_end' %></label>
-    <label class="col-md-2 control-label"><%= t '.time_window_start_end' %></label>
-    <div class="col-md-6">
+    <label class="col-md-offset-2 col-md-8 field"><%= t '.time_window_start_end' %></label>
+    <div class="col-md-offset-2 col-md-8 field">
       <div class="input-group">
         <span class="input-group-addon"><%= t 'web.form.from_time' %></span>
         <%= text_field :vehicle_usage_set, :time_window_start,
@@ -54,8 +54,8 @@
   <div id="vehicle_usage_set_service_time_input" class="form-group">
     <label class="sr-only" for="vehicle_usage_set_service_time_start"><%= t 'activerecord.attributes.vehicle_usage_set.service_time_start' %></label>
     <label class="sr-only" for="vehicle_usage_set_service_time_end"><%= t 'activerecord.attributes.vehicle_usage_set.service_time_end' %></label>
-    <label class="col-md-2 control-label"><%= t '.service_times' %></label>
-    <div class="col-md-6">
+    <label class="col-md-offset-2 col-md-8 field"><%= t '.service_times' %></label>
+    <div class="col-md-offset-2 col-md-8 field">
       <div class="input-group">
         <span class="input-group-addon"><%= t '.service_time_start_addon' %></span>
         <%= text_field :vehicle_usage_set, :service_time_start,
@@ -74,8 +74,8 @@
   </div>
   <div id="vehicle_usage_set_work_time_input" class="form-group">
     <label class="sr-only" for="vehicle_usage_set_work_time"><%= t 'activerecord.attributes.vehicle_usage_set.work_time' %></label>
-    <label class="col-md-2 control-label"><%= t '.work_time' %></label>
-    <div class="col-md-6">
+    <label class="col-md-offset-2 col-md-8 field"><%= t '.work_time' %></label>
+    <div class="col-md-offset-2 col-md-8 field">
       <div class="input-group">
         <%= text_field :vehicle_usage_set, :work_time,
                        value: @vehicle_usage_set.work_time_time,
@@ -88,8 +88,8 @@
   </div>
   <div id="vehicle_usage_vehicle_max_distance" class="form-group">
     <label class="sr-only" for="vehicle_usage_vehicle_max_distance"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
-    <label class="col-md-2 control-label"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
-    <div class="col-md-6">
+    <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
+    <div class="col-md-offset-2 col-md-8 field">
       <div class="input-group">
         <%= number_field :vehicle_usage_set,
                          :max_distance,
@@ -104,8 +104,8 @@
   <div id="vehicle_usage_set_rest_input" class="form-group">
     <label class="sr-only" for="vehicle_usage_set_rest_duration"><%= t 'activerecord.attributes.vehicle_usage_set.rest_duration' %></label>
     <label class="sr-only" for="vehicle_usage_set_store_rest"><%= t 'activerecord.attributes.vehicle_usage_set.store_rest' %></label>
-    <label class="col-md-2 control-label"><%= t '.rest_duration_store' %></label>
-    <div class="col-md-6">
+    <label class="col-md-offset-2 col-md-8 field"><%= t '.rest_duration_store' %></label>
+    <div class="col-md-offset-2 col-md-8 field">
       <div class="input-group">
         <%= text_field :vehicle_usage_set, :rest_duration,
           value: @vehicle_usage_set.rest_duration_time,
@@ -122,8 +122,8 @@
   <div id="vehicle_usage_set_rest_start_stop_input" class="form-group">
     <label class="sr-only" for="vehicle_usage_set_rest_start"><%= t 'activerecord.attributes.vehicle_usage_set.rest_start' %></label>
     <label class="sr-only" for="vehicle_usage_set_rest_stop"><%= t 'activerecord.attributes.vehicle_usage_set.rest_stop' %></label>
-    <label class="col-md-2 control-label"><%= t '.rest_start_stop' %></label>
-    <div class="col-md-6">
+    <label class="col-md-offset-2 col-md-8 field"><%= t '.rest_start_stop' %></label>
+    <div class="col-md-offset-2 col-md-8 field">
       <div class="input-group">
         <span class="input-group-addon"><%= t 'web.form.from_time' %></span>
         <%= text_field :vehicle_usage_set, :rest_start,
