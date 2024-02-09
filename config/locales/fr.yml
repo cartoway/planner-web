@@ -708,7 +708,7 @@
       'json': 'Fichier invalide'
       'tomtom': 'Données tomtom invalides, enregistrement %{s}'
     'template_csv': 'Modèle import tableur standard'
-    'template_excel': 'Modèle import tableur Excel'
+    'template_excel': 'Modèle import tableur'
   'admin':
     'profiles':
       'menu':
@@ -1023,7 +1023,7 @@
     'menu':
       'destinations': 'Adresses'
       'import': 'Importer'
-      'export_spreadsheet_standard': 'Export tableur standard'
+      'export_spreadsheet_standard': 'Export tableur'
       'export_spreadsheet_excel': 'Export tableur Excel'
       'stores': 'Sites'
       'import_stores': 'Importer sites'
@@ -1584,7 +1584,7 @@
       'export':
         'icalendar': 'Agenda iCal'
         'icalendar_email': 'Agenda iCal par email'
-        'spreadsheet': 'Tableur CSV / Excel'
+        'spreadsheet': 'Tableur CSV'
         'none_planning': 'Veuillez sélectionner au moins un plan à exporter'
       'over_max_limit': 'Vous avez atteint la limite de plans autorisés pour votre
         compte (Limite : %{limit}), veuillez supprimer vos précédents plans ou contacter
@@ -1660,7 +1660,7 @@
         'csv':
           'success': 'CSV exporté avec succès'
         'print': 'Imprimer'
-        'spreadsheet': 'Tableur CSV / Excel'
+        'spreadsheet': 'Tableur CSV'
         'gpx_route': 'Route GPX'
         'gpx_track': 'Tracé GPX'
         'kmz_track': 'Tracé KMZ'

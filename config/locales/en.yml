@@ -696,7 +696,7 @@ en:
       json: Invalid file
       tomtom: Invalid tomtom data, record %{s}
     template_csv: Import Template Spreadsheet Standard
-    template_excel: Import Template Spreadsheet Excel
+    template_excel: Import Template Spreadsheet
   admin:
     profiles:
       menu:
@@ -978,7 +978,7 @@ en:
     menu:
       destinations: Destinations
       import: Import
-      export_spreadsheet_standard: Export Spreadsheet Standard
+      export_spreadsheet_standard: Export Spreadsheet
       export_spreadsheet_excel: Export Spreadsheet Excel
       stores: Stores
       import_stores: Import stores
@@ -1474,7 +1474,7 @@ en:
       export:
         icalendar: Calendar iCal
         icalendar_email: Calendar iCal by E-Mail
-        spreadsheet: Spreadsheet CSV / Excel
+        spreadsheet: Spreadsheet CSV
         none_planning: Please select at least one plan to export
       over_max_limit: "You have reached the plans number limit for your account (Account Limit: %{limit})"
       routes_by_vehicles: 'Vehicle''s routes'
@@ -1546,7 +1546,7 @@ en:
         csv:
           success: CSV file successfully exported
         print: Print
-        spreadsheet: Spreadsheet CSV / Excel
+        spreadsheet: Spreadsheet CSV
         gpx_route: GPX Route
         gpx_track: GPX Track
         kmz_track: KMZ Track
