@@ -73,6 +73,11 @@
           <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
             <%= link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), disabled: current_user.customer.too_many_vehicle_usage_sets?, :class => 'btn btn-default btn-sm', method: :patch, title: t('all.verb.duplicate') do %><i class="fa fa-copy fa-fw"></i><% end %>
           <% end %>
+
+          <%= link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), :class => 'btn btn-default btn-sm' do %>
+            <i class="fa fa-download fa-fw"></i>
+          <% end %>
+
           <%= link_to edit_vehicle_usage_set_path(vehicle_usage_set, back: true), :class => 'btn btn-primary btn-sm' ,title: t('all.verb.edit') do %><i class="fa fa-edit fa-fw"></i><% end %>
 
           <% if @vehicle_usage_sets.count > 1 %>
@@ -81,23 +86,7 @@
             <% end %>
           <% end %>
 
-          <div class="dropdown form-group export-dropdown">
-            <button class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-              <i class="fa fa-share-nodes fa-fw" title="<%= t('all.verb.export.button')%>"></i><span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" role="menu">
-              <li>
-                <%= link_to vehicle_usage_set_path(vehicle_usage_set, format: :csv) do %>
-                  <i class="fa fa-calendar fa-fw"></i> <%= t 'all.verb.export.csv' %>
-                <% end %>
-              </li>
-              <li>
-                <%= link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel) do %>
-                  <i class="fa fa-calendar fa-fw"></i> <%= t 'all.verb.export.excel' %>
-                <% end %>
-              </li>
-            </ul>
-          </div>
+
         </td>
 
       </tr>

@@ -46,15 +46,15 @@
                 %ul#columns-skip.columns-export-list
             .row
               %p.help-block= t 'plannings.edit.dialog.spreadsheet.columns_DnD_help'
-        .row.form-group
+        .row.form-group.invisible
           %label.col-md-3.control-label= t 'plannings.edit.dialog.spreadsheet.format'
           .col-md-5
             %label
-              %input{checked: "checked", name: "spreadsheet-format", type: "radio", value: "csv"}/
+              %input{name: "spreadsheet-format", type: "radio", value: "csv"}/
               %span= t 'plannings.edit.dialog.spreadsheet.csv'
           .col-md-4
             %label
-              %input{name: "spreadsheet-format", type: "radio", value: "excel"}/
+              %input{checked: "checked", name: "spreadsheet-format", type: "radio", value: "excel"}/
               %span= t 'plannings.edit.dialog.spreadsheet.excel'
     .modal-footer
       %button.btn.btn-default{"data-dismiss" => "modal", type: "button"}= t 'all.verb.dismiss'

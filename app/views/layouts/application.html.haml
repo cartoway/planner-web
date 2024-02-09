@@ -155,13 +155,9 @@
                       %i.fa.fa-upload.fa-fw
                       = t 'destinations.menu.import'
                   %li
-                    = link_to destinations_path({format: :csv}) do
-                      %i.fa.fa-download.fa-fw
-                      = t 'destinations.menu.export_spreadsheet_standard'
-                  %li
                     = link_to destinations_path({format: :excel}) do
                       %i.fa.fa-download.fa-fw
-                      = t 'destinations.menu.export_spreadsheet_excel'
+                      = t 'destinations.menu.export_spreadsheet_standard'
                   %li.divider
                   %li
                     = link_to destinations_path, method: :delete, data: { confirm: t('destinations.menu.clear_confirm') } do
