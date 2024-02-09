@@ -13,8 +13,8 @@
     <div id="store_city_input" class="form-group">
       <label class="sr-only" for="store_postalcode"><%= t 'activerecord.attributes.store.postalcode' %></label>
       <label class="sr-only" for="store_city"><%= t 'activerecord.attributes.store.city' %></label>
-      <label class="col-md-2 control-label"><%= t 'activerecord.attributes.store.postalcode' %> / <%= t 'activerecord.attributes.store.city' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.store.postalcode' %> / <%= t 'activerecord.attributes.store.city' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= text_field :store, :postalcode, maxlength: 17, class: 'form-control width_1_2' %>
           <%= text_field :store, :city, class: 'form-control width_1_2' %>
@@ -25,8 +25,8 @@
 
     <% if @store.customer.with_state? %>
       <div id="store_country_input" class="form-group">
-        <label class="col-md-2 control-label"><%= t 'activerecord.attributes.store.state' %> / <%= t 'activerecord.attributes.store.country' %></label>
-        <div class="col-md-6">
+        <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.store.state' %> / <%= t 'activerecord.attributes.store.country' %></label>
+        <div class="col-md-offset-2 col-md-8 field">
           <div class="input-group">
             <%= text_field :store, :state, class: 'form-control width_1_2' %>
             <%= text_field :store, :country, placeholder: t('.country_default', n: @store.customer.default_country), class: 'form-control width_1_2' %>
@@ -39,8 +39,8 @@
     <% end %>
 
     <div id="store_geocoding_input" class="form-group">
-      <label class="col-md-2 control-label" for="store_geocoding"><%= t 'activerecord.attributes.destination.geocoding_accuracy' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field" for="store_geocoding"><%= t 'activerecord.attributes.destination.geocoding_accuracy' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div id="geocoding_accuracy"<% if ! @store.geocoding_accuracy %> style="display: none"<% end %>>
           <input type="hidden" name="store[geocoding_accuracy]" value="<%= @store.geocoding_accuracy %>">
           <div id="geocoding-progress" class="progress">
@@ -71,13 +71,13 @@
       </div>
     </div>
     <div class="form-group">
-      <span class="col-md-offset-2 col-md-6"><div id="map" class="map-fixed-size"></div></span>
+      <span class="col-md-offset-2 col-md-offset-2 col-md-8 field"><div id="map" class="map-fixed-size"></div></span>
     </div>
     <div id="store_geoloc_input" class="form-group">
       <label class="sr-only" for="store_lat"><%= t 'activerecord.attributes.store.lat' %></label>
       <label class="sr-only" for="store_lnt"><%= t 'activerecord.attributes.store.lng' %></label>
-      <label class="col-md-2 control-label"><%= t 'activerecord.attributes.store.lat' %> / <%= t 'activerecord.attributes.store.lng' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.store.lat' %> / <%= t 'activerecord.attributes.store.lng' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= number_field :store, :lat, step: 'any', class: 'form-control width_1_2' %>
           <%= number_field :store, :lng, step: 'any', class: 'form-control width_1_2' %>
@@ -86,8 +86,8 @@
       </div>
     </div>
     <div id="store_color_input" class="form-group">
-      <label class="col-md-2 control-label"><%= t 'activerecord.attributes.store.color' %></label>
-      <div class="col-md-6">
+      <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.store.color' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= select_tag 'store[color]', options_for_select((COLORS_TABLE + [customised_color_verification(@store[:color])]).compact.uniq, @store.color), include_blank: '#000000' %> <i class="fa fa-paint-brush" id="customised_color_picker" title="<%= t('activerecord.attributes.store.customised_color') %>"></i>
           <%= color_field :store, :color, option = { value: customised_color_verification(@store[:color]), id: 'color_picker', name: 'fff' } %>
@@ -95,9 +95,9 @@
       </div>
     </div>
     <div id="store_icon_input" class="form-group">
-      <label class="col-md-2 control-label" for="store_icon"><%= t 'activerecord.attributes.store.icon' %></label>
+      <label class="col-md-offset-2 col-md-8 field" for="store_icon"><%= t 'activerecord.attributes.store.icon' %></label>
       <label class="sr-only" for="store_icon_size"><%= t 'activerecord.attributes.store.icon_size' %></label>
-      <div class="col-md-6">
+      <div class="col-md-offset-2 col-md-8 field">
         <div class="input-group">
           <%= select_tag 'store[icon]', grouped_options_for_select([
            [t('stores.form.prefered_icons'),

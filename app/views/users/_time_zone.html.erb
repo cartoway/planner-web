@@ -1,8 +1,8 @@
 <div class="form-group">
-  <label for="user_time_zone" class="col-md-2 control-label">
+  <label for="user_time_zone" class="col-md-offset-2 col-md-8">
     <%= t 'customers.edit.time_zone' %>
   </label>
-  <div class="col-md-6">
+  <div class="col-md-offset-2 col-md-8 field">
     <%= time_zone_select :user, :time_zone, ActiveSupport::TimeZone.all, {}, {class: "form-control", required: true} %>
   </div>
 </div>

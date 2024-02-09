@@ -5,9 +5,11 @@
 <h1><%= t '.title' %></h1>
 
 <%= render 'form' %>
-
-<br />
-
-<%= link_to edit_user_registration_path do %>
-  <i class="fa fa-key"></i> <%= t '.edit' %>
-<% end %>
+<div class="col-md-6 field"></div>
+<div class="row">
+  <div class="col-md-offset-2 col-md-6 field">
+    <%= link_to edit_user_registration_path do %>
+      <i class="fa fa-key"></i> <%= t '.edit' %>
+    <% end %>
+  </div>
+</div>
