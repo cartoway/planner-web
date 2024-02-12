@@ -126,7 +126,7 @@ route.stops.each { |stop|
     ])
     row.merge!(
       Hash[route.planning.customer.custom_attributes.select(&:visit?).map{ |ca|
-        ["custom_attributes_visit[#{ca.name}]".to_sym, stop.visit.custom_attributes_typed_hash[ca.name]]
+        ["custom_attributes_visit[#{ca.name}]".to_sym, stop.visit && stop.visit.custom_attributes_typed_hash[ca.name]]
       }
     ])
 

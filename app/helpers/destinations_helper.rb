@@ -35,7 +35,7 @@ module DestinationsHelper
   def columns_destination(customer)
     dest_columns = %i[ref name street detail postalcode city]
     dest_columns << :state if customer.with_state?
-    dest_columns += %i[country lat lng phone_number geocoding_accuracy geocoding_level comment phone_number tags]
+    dest_columns += %i[country lat lng geocoding_accuracy geocoding_level comment phone_number tags]
 
     dest_columns
   end
