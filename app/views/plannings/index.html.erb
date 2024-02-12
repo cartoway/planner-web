@@ -100,13 +100,6 @@
         <button id="external-url" class="btn btn-sm btn-default"><i class="fa fa-desktop fa-fw"></i> <%= @customer.default_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action') %></button>
       <% end %>
     </div>
-    <hr/>
-    <div class="vehicle-action">
-      <h4><%= t('.vehicle_action')%></h4>
-      <%= select_tag 'vehicle_id', options_from_collection_for_select(@customer.vehicles, 'id', 'name'), include_blank: true, class: 'form-control' %>
-      <button id="routes-by-vehicle" class="btn btn-default btn-sm"><i class="fa fa-truck-field fa-wd"></i> <%= t('.routes_by_vehicles') %></button>
-      <button id="deliverables-by-vehicle" class="btn btn-default btn-sm"><i class="fa fa-dumpster fa-wd"></i>  <%= t('.deliverables_by_vehicles') %></button>
-    </div>
   </div>
 </div>
 <% end %>
