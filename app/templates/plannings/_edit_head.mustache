@@ -1,5 +1,5 @@
 
-<div class="row">
+<div class="row route-data">
   <div class="col-xs-4" title="{{#i18n}}plannings.edit.stops_help{{/i18n}}"><div class="primary route-info"><i class="fa fa-check-square fa-fw"></i>{{size_active}}&nbsp;/&nbsp;{{size}}</div></div>
   {{#averages}}
     <div class="col-xs-4" title="{{#i18n}}plannings.edit.vehicles_used_help{{/i18n}}"><div class="primary route-info"><i class="fa fa-truck-field fa-fw" aria-hidden="true"></i>{{averages.vehicles_used}}&nbsp;/&nbsp;{{averages.vehicles}} </div></div>
@@ -12,7 +12,7 @@
   {{/averages}}
   {{#averages}}
     {{#total_quantities}}
-      <div class="col-xs-4" title="{{#i18n}}plannings.edit.quantity_help{{/i18n}}"><!--
+      <div class="col-xs-4 route-data-advanced" title="{{#i18n}}plannings.edit.quantity_help{{/i18n}}"><!--
         --><div class="{{#out_of_capacity}}danger{{/out_of_capacity}} primary route-info"><i class="fa {{unit_icon}} fa-fw"></i>{{quantity}}{{#capacity}}&nbsp;/&nbsp;{{capacity}}{{/capacity}}<!--
         -->{{#label}}&nbsp;{{label}}{{/label}}
       </div></div>
