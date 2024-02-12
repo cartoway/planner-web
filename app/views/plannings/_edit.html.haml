@@ -123,24 +123,6 @@
                     = t '.export.spreadsheet'
                 %li.divider{role: "separator"}
                 %li
-                  = link_to planning_path(@planning, format: :gpx) do
-                    %i.fa.fa-mobile.fa-fw
-                    = t '.export.gpx_route'
-                %li
-                  = link_to planning_path(@planning, format: :gpx, track: true) do
-                    %i.fa.fa-mobile.fa-fw
-                    = t '.export.gpx_track'
-                %li
-                  = link_to planning_path(@planning, format: :kmz) do
-                    %i.fa.fa-mobile.fa-fw
-                    = t '.export.kmz_track'
-                - if @planning.routes.any?{|route| route.vehicle_usage_id && !route.vehicle_usage.vehicle.contact_email.blank? }
-                  %li.kmz_email
-                    = link_to planning_path(@planning, format: :kmz, email: 1) do
-                      %i.fa.fa-envelope.fa-fw
-                      = t '.export.kmz_email.action'
-                %li.divider{role: "separator"}
-                %li
                   = link_to api_planning_calendar_path(@planning, api_key: current_user.api_key) do
                     %i.fa.fa-calendar.fa-fw
                     = t '.export.icalendar.action'
