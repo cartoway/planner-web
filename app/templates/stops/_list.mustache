@@ -328,7 +328,7 @@
 
           <div class="col-xs-5 col-md-2">
             {{#time}}
-              <div class="info stop-info{{#error}} danger{{/error}}">
+              <div class="primary stop-info{{#error}} danger{{/error}}">
                 {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}}
               </div>
             {{/time}}
@@ -389,7 +389,7 @@
           </div>
 
           <div class="col-xs-6 col-md-2 d-flex-column">
-            <div class="info stop-info{{#error}} danger{{/error}}">
+            <div class="primary stop-info{{#error}} danger{{/error}}">
               {{#active}}
                 {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
               {{/active}}
@@ -440,7 +440,7 @@
           </div>
 
           <div class="col-xs-6 col-md-2 d-flex-column">
-            <div class="info stop-info{{#error}} danger{{/error}}">
+            <div class="{{#active}}primary{{/active}}{{^active}}info{{/active}} stop-info{{#error}} danger{{/error}}">
               {{#active}}
                 {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
               {{/active}}
@@ -516,7 +516,7 @@
 
           <div class="col-xs-5 col-md-2">
             {{#time}}
-              <div class="info stop-info{{#error}} danger{{/error}}">
+              <div class="primary stop-info{{#error}} danger{{/error}}">
                 {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}}
               </div>
             {{/time}}
