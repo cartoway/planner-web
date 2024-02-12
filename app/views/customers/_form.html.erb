@@ -384,19 +384,6 @@
           <%= f.toggles t 'activerecord.attributes.customer.print_planning_annotating' do %>
             <%= f.check_box :print_planning_annotating %>
           <% end %>
-          <%= f.toggles t 'activerecord.attributes.customer.print_stop_time' do %>
-            <%= f.check_box :print_stop_time %>
-          <% end %>
-          <div class="form-group">
-            <label class="col-md-offset-2 col-md-8" for="customer_print_barcode"><%= t 'activerecord.attributes.customer.print_barcode' %></label>
-            <div class="col-md-offset-2 col-md-8 field">
-              <div class="input-group">
-                <%= select_tag 'customer[print_barcode]', options_for_select([[t('.print.barcode.code128'), :code128]], @customer.print_barcode), include_blank: true, class: 'form-control' %>
-                <span class="input-group-addon"><i class="fa fa-barcode fa-fw"></i></span>
-              </div>
-              <p class="help-block"><%=  t('customers.form.print.barcode_help') %></p>
-            </div>
-          </div>
           <%= f.text_area :print_header do %>
             <p class="help-block"><%= t '.print_header_help' %></p>
           <% end %>
