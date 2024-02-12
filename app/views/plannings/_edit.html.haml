@@ -70,10 +70,11 @@
                 %a.active_none{href: "#"}
                   %i.fa.fa-angle-left.fa-fw{style: "transform: rotate(-45deg);"}
                   = t 'plannings.edit.active_none'
-              %li{"data-selection": "simple"}
-                %a.active_simple{href: "#"}
-                  %i.fa.fa-chart-column.fa-fw
-                  = t 'plannings.edit.active_simple'
+              - if planning_quantities(@planning).any?
+                %li{"data-selection": "simple"}
+                  %a.active_simple{href: "#"}
+                    %i.fa.fa-chart-column.fa-fw
+                    = t 'plannings.edit.active_simple'
               %li{"data-selection": "all"}
                 %a.active_all{href: "#"}
                   %i.fa.fa-square-poll-vertical.fa-fw
