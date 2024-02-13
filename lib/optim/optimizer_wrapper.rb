@@ -221,17 +221,14 @@ class OptimizerWrapper
 
   def collect_relations(services, services_with_negative_quantities, options)
     relations = []
-    options_relations(options)
-    position_relations(relations, services)
-    negative_quantities_relations(relations, services_with_negative_quantities)
+    relations += options[:relations] if options[:relations]
+    relations += position_relations(services)
+    relations += negative_quantities_relations(services_with_negative_quantities)
     relations
   end
 
-  def options_relations(options)
-    relations << options[:relations] if options[:relations]
-  end
-
-  def position_relations(relations, services)
+  def position_relations(services)
+    relations = []
     services.group_by{ |serv| serv[:force_position] }.each{ |position, servs|
       next if position.nil? || position == 'neutral'
 
@@ -239,13 +236,16 @@ class OptimizerWrapper
         type: POSITION_KEYS[position.to_sym],
         linked_ids: servs.map{ |serv| "s#{serv[:stop_id]}" }}
     }
+    relations
   end
 
-  def negative_quantities_relations(relations, services_with_negative_quantities)
-    relations << {
+  def negative_quantities_relations(services_with_negative_quantities)
+    return [] if services_with_negative_quantities.empty?
+
+    [{
       id: :never_first,
       type: :never_first,
       linked_ids: services_with_negative_quantities
-    } unless services_with_negative_quantities.empty?
+    }]
   end
 end
