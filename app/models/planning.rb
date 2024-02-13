@@ -349,7 +349,7 @@ class Planning < ApplicationRecord
 
   def visits
     routes.flat_map{ |route|
-      route.stops.only_stop_visits
+      route.stops.only_stop_visits.map(&:visit)
     }
   end
 
