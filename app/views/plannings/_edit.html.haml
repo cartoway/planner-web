@@ -24,7 +24,16 @@
             %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{"data-url": @planning.customer.external_callback_url, type: "button"}
               %i.fa.fa-desktop.fa-fw
               = @planning.customer.default_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
-
+        - if @planning.customer.vehicle_usage_sets.size > 1
+          = twitter_bootstrap_form_for @planning, {layout: :horizontal, default_div_class: ''} do |f|
+            .d-flex.justify-content-center
+              .col-xs-12.col-md-10
+                %label
+                  = t('activerecord.attributes.planning.vehicle_usage_set_id')
+                = f.collection_select :vehicle_usage_set_id, @planning.id ? t('activerecord.attributes.planning.vehicle_usage_set_id') : [], @planning.customer.vehicle_usage_sets, :id, :name, {}, {required: true, label_class: 'd-none' }
+                .d-flex.justify-content-center
+                  = f.actions(class: 'col-md-6') do
+                    = f.submit t('plannings.edit.vehicle_usage_set.action'), class: 'btn btn-default'
         - if @manage_planning[:manage_zoning]
           .d-flex.justify-content-center
             .col-xs-12.col-md-10

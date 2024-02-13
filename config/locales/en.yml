@@ -1553,6 +1553,8 @@ en:
         gpx_route: GPX Route
         gpx_track: GPX Track
         kmz_track: KMZ Track
+      vehicle_usage_set:
+        action: Apply Configuration
       zoning:
         none: None
         apply: Apply zoning
