@@ -1666,6 +1666,8 @@
         'gpx_route': 'Route GPX'
         'gpx_track': 'Tracé GPX'
         'kmz_track': 'Tracé KMZ'
+      'vehicle_usage_set':
+        'action': 'Appliquer Configuration'
       'zoning':
         'none': 'Aucun'
         'apply': 'Appliquer sectorisation'
