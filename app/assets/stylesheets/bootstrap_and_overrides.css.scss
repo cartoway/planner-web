@@ -672,7 +672,7 @@ div.grid-container {
 
 // Backport
 .d-none {
-  display: none;
+  display: none !important;
 }
 
 // Backport

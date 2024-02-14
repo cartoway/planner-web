@@ -1,0 +1,166 @@
+= twitter_bootstrap_form_for(@destination, layout: :horizontal, html: {class: "form-horizontal", "data-destination_id" => (@destination.id or 0)}) do |f|
+  = render 'shared/error_messages', model: @destination
+  %fieldset#destination-details
+    - if @destination.customer.enable_references && !@destination.customer.enable_multi_visits
+      = f.text_field :ref do
+        %p.help-block= t '.ref_help'
+    = f.text_field :name, required: true
+    = f.text_field :street, {class: "form-control pointing", input_group: content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually'))} do
+      %p.help-block= t 'web.form.helpers.street'
+    = f.text_field :detail do
+      %p.help-block= t '.detail_help'
+    #destination_city_input.form-group
+      %label.sr-only{for: "destination_postalcode"}= t 'activerecord.attributes.destination.postalcode'
+      %label.sr-only{for: "destination_city"}= t 'activerecord.attributes.destination.city'
+      %label.col-md-offset-2.col-md-8.field
+        = t 'activerecord.attributes.destination.postalcode'
+        \/ #{t 'activerecord.attributes.destination.city'}
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          = text_field :destination, :postalcode, maxlength: 17, class: 'form-control width_1_2'
+          = text_field :destination, :city, class: 'form-control width_1_2'
+          %span.input-group-addon
+            %i.fa.fa-map.fa-fw
+    - if !@destination.customer.with_state
+      #destination_country_input.form-group
+        %label.col-md-offset-2.col-md-8.field
+          = "#{t('activerecord.attributes.destination.state')}/#{t('activerecord.attributes.destination.country')}"
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = text_field :destination, :state, class: 'form-control width_1_2'
+            = text_field :destination, :country, placeholder: t('.country_default', n: @destination.customer.default_country), class: 'form-control width_1_2'
+            %span.input-group-addon
+              %i.fa.fa-map.fa-fw
+    - else
+      = f.text_field :country, {placeholder: t('.country_default', n: @destination.customer.default_country)}
+    -# = @destination.geocoding_result
+    .form-group
+      %label.col-md-offset-2.col-md-8.field{for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
+      .col-md-offset-2.col-md-8.field
+        - if @destination.geocoding_accuracy
+          #geocoding_accuracy
+            #geocoding-progress.progress
+              %input{name: "destination[geocoding_accuracy]", type: "hidden", value: @destination.geocoding_accuracy}
+              .progress-bar{ class: "progress-bar-#{@destination.geocode_progress_bar_class}", style: "width: #{((@destination.geocoding_accuracy || 0) * 100).round}%"}
+                %span= @destination.geocoding_accuracy ? ((@destination.geocoding_accuracy || 0) * 100).round.to_s + '%' : ''
+            %p.help-block= t '.geocoding_accuracy_help'
+            #geocoding_fail.d-none
+              = t '.geocoding_fail'
+              \-
+              %a.pointing{href: "#", role: "button"}
+                %i.fa.fa-crosshairs.fa-fw
+                = t '.locate_manually'
+        #no_geocoding_accuracy{ class: ('d-none' if @destination.geocoding_accuracy)}
+          = t '.geocoding_accuracy_none'
+        #geocoding_level{ class: ('d-none' unless @destination.geocoding_level)}
+          %input{name: "destination[geocoding_level]", type: "hidden", value: @destination.geocoding_level}
+          %i#geocoding-level-point.fa.fa-map-marker.fa-fw.geocoding-level{ class: ('d-none' unless @destination.point?)}
+          %i#geocoding-level-house.fa.fa-store.fa-fw.geocoding-level{ class: ('d-none' unless @destination.house?)}
+          %i#geocoding-level-point.fa.fa-intersection.fa-fw.geocoding-level{ class: ('d-none' unless @destination.intersection?)}
+          %i#geocoding-level-house.fa.fa-street.fa-fw.geocoding-level{ class: ('d-none' unless @destination.street?)}
+          %i#geocoding-level-point.fa.fa-city.fa-fw.geocoding-level{ class: ('d-none' unless @destination.city?)}
+          %span
+            = t 'activerecord.attributes.destination.geocoding_level'
+            \:
+            %span#geocoding-level-value
+            - if @destination.geocoding_level
+              = t("destinations.form.geocoding_level.#{@destination.geocoding_level}")
+      #geocoding_result.col-md-offset-2.col-md-8.field{ class: ('d-none' unless @destination.geocoding_result)}
+        %label= t 'activerecord.attributes.destination.geocoding_result'
+        %input.form-control{ name: "destination[displayed_geocoding_result]", value: @destination.geocoding_result['free'], readonly: 'readonly'}
+      .col-md-offset-2.col-md-8.field
+        #reverse-geocode
+    .form-group
+      .col-md-offset-2.col-md-offset-2.col-md-8.field
+        #map.map-fixed-size
+    #destination_geoloc_input.form-group
+      %label.sr-only{for: "destination_lat"}= t 'activerecord.attributes.destination.lat'
+      %label.sr-only{for: "destination_lnt"}= t 'activerecord.attributes.destination.lng'
+      %label.col-md-offset-2.col-md-8.field
+        = t 'activerecord.attributes.destination.lat'
+        \/ #{t 'activerecord.attributes.destination.lng'}
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          = number_field :destination, :lat, step: 'any', class: 'form-control width_1_2'
+          = number_field :destination, :lng, step: 'any', class: 'form-control width_1_2'
+          %span.input-group-addon
+            %i.fa.fa-globe.fa-fw
+    - if !@destination.customer.enable_multi_visits || @destination.tags.any?
+      .destination_visits_attributes_tag_ids_input
+        = f.select :tag_ids, t('activerecord.attributes.destination.tag_ids'), options_for_select(@destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @destination.tags.collect(&:id)), {}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')} do
+          %p.help-block= t '.tags_help'
+    = f.text_field :phone_number, {input_group: content_tag('i', '', class: 'fa fa-phone fa-fw')}
+    = f.text_area :comment do
+      %p.help-block= t '.comment_help'
+  #visits
+    - if @destination.visits.size > 1
+      #visits-header.row
+        .col-md-2
+        #visits-tools.col-xs-12.col-md-8
+          .pull-right
+            %button#visits-attributes-change-bulk.btn.btn-default.btn-sm{"data-target" => "#visits-attributes-change-bulk-modal", "data-toggle" => "modal", title: "#{t('destinations.form.visit.attributes_change_bulk_help')}", type: "button"}
+              %i.fa.fa-list.fa-fw
+              = t('destinations.form.visit.attributes_change_bulk')
+            %button#visits-expand.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.collapse_all_help')}", type: "button"}
+              %i.fa.fa-angle-double-down.fa-fw
+              = t('destinations.form.visit.collapse_all')
+        .col-md-2
+    - ((!@destination.visits.empty? && @destination.visits) || [@destination.visits.build]).each_with_index do |visit, i|
+      = render 'visits/form', visit: visit, i: i+1
+  - if @destination.visits.empty? || @destination.customer.enable_multi_visits
+    %button#visit-new.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button"}
+      %i.fa.fa-plus.fa-fw
+      = t('destinations.form.visit.new')
+  - unless @destination.customer.enable_multi_visits
+    %p.help-block
+      = t('destinations.form.visit.enable_multi_visits')
+  = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
+  = hidden_field :destination, :geocoded_at, :value => @destination.geocoded_at
+  = f.actions do
+    = f.submit
+#visit-fieldset-template
+  = render 'visits/form', visit: @destination.visits.build, i: 0
+#visits-attributes-change-bulk-modal.modal.fade{role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"data-dismiss" => "modal", type: "button"} ×
+        %h4.modal-title= t 'destinations.form.dialog.attributes_change_bulk.title'
+      .modal-body
+        .container-fluid
+          .row
+            .col-md-2
+              %label= t 'activerecord.attributes.visit.tags'
+            .col-md-10
+              .form-inline
+                Remplacer
+                \#{select_tag 'from_visit_tags', options_for_select(@destination.customer.tags.map{ |t| [t.label, t.id] }), multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk'}
+                par
+                \#{select_tag 'to_visit_tags', options_for_select(@destination.customer.tags.map{ |t| [t.label, t.id] }), multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk'}
+              %p.help-block
+                = t('destinations.form.dialog.attributes_change_bulk.tags_help')
+      .modal-footer
+        %button.btn.btn-default{"data-dismiss" => "modal", type: "button"}
+          %i.fa.fa-undo.fa-fw
+          = t 'all.verb.cancel'
+        %button.btn.btn-primary{"data-dismiss" => "modal", name: "visits-attributes-change-bulk-apply", type: "button"}
+          %i.fa.fa-list.fa-fw
+          = t 'all.verb.apply'
+
+:ruby
+  layers = (current_user.customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer|
+    {
+      name: layer.translated_name,
+      url: request.ssl? ? layer.urlssl : layer.url,
+      attribution: layer.map_attribution,
+      default: layer == current_user.layer,
+      overlay: layer.overlay
+    }
+  }
+  controller.js(
+    destination_id: @destination.id || 0,
+    map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)],
+    map_lat: @destination.lat || @destination.customer.default_position[:lat],
+    map_lng: @destination.lng || @destination.customer.default_position[:lng],
+    enable_multi_visits: @destination.customer.enable_multi_visits
+  )

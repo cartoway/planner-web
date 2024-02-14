@@ -78,6 +78,16 @@ class Location < ApplicationRecord
     [street, postalcode, city, state, !country.nil? && !country.empty? ? country : customer.try(&:default_country)]
   end
 
+  def geocode_progress_bar_class
+    if self.geocoding_accuracy > Mapotempo::Application.config.geocoder.accuracy_success
+      'success'
+    elsif self.geocoding_accuracy > Mapotempo::Application.config.geocoder.accuracy_warning
+      'warning'
+    else
+      'danger'
+    end
+  end
+
   def geocode_result(address)
     if address
       self.geocoding_result = address.to_json
