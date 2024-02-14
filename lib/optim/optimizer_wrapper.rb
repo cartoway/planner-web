@@ -221,10 +221,21 @@ class OptimizerWrapper
 
   def collect_relations(services, services_with_negative_quantities, options)
     relations = []
-    relations += options[:relations] if options[:relations]
+    relations += filter_option_relations(services, options)
     relations += position_relations(services)
     relations += negative_quantities_relations(services_with_negative_quantities)
     relations
+  end
+
+  def filter_option_relations(services, options)
+    return [] unless options[:relations]
+
+    service_hash = services.map{ |s| [s[:id], s] }.to_h
+
+    options[:relations].delete_if{ |relation|
+      !relation[:linked_ids].all?{ |id| service_hash.key? id }
+    }
+    options[:relations]
   end
 
   def position_relations(services)
