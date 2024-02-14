@@ -240,6 +240,7 @@
         'geocoding_accuracy': 'Qualité du géocodage'
         'geocoding_accuracy_small': 'Géoc.'
         'geocoding_level': 'Niveau de géocodage'
+        'geocoding_result': 'Adresse trouvée et utilisée par le géocodage'
         'tags': 'Catégories'
         'tag_ids': 'Catégories'
         'visits': 'Visites'
@@ -255,6 +256,7 @@
         'phone_number': 'Numéro de téléphone'
         'geocoding_accuracy': 'Qualité du géocodage'
         'geocoding_level': 'Niveau de géocodage'
+        'geocoding_result': 'Adresse trouvée et utilisée par le géocodage'
       'layer':
         'name': 'Nom'
         'url': 'URL'
@@ -384,6 +386,7 @@
         'country': 'Pays'
         'geocoding_accuracy': 'Qualité du géocodage'
         'geocoding_level': 'Niveau de géocodage'
+        'geocoding_result': 'Adresse trouvée et utilisée par le géocodage'
       'tag':
         'label': 'Catégorie'
         'color': 'Couleur'

@@ -54,7 +54,7 @@
     </td>
   {{/enable_multi_visits}}
   <td class="geocoding">
-    <div class="block destination-geocoding">
+    <div class="block">
       <span class="geocoding_level" title="{{geocoding_level_title}}">
         <input type="hidden" name="destination[geocoding_level]" value="{{geocoding_level}}">
         {{#geocoding_level}}
@@ -75,19 +75,22 @@
           {{/geocoding_level_city}}
         {{/geocoding_level}}
       </span>
-      <span>
-        {{#geocoding_accuracy}}
+      {{#geocoding_accuracy}}
+        <span>
           <input name="destination[geocoding_accuracy]" class="form-control input-sm" type="hidden" value="{{geocoding_accuracy}}"/>
             <div class="progress" style="width:5em">
               <div class="progress-bar progress-bar-{{geocoding_status}}" style="width: {{geocoding_accuracy_percent}}%;">
                 <span>{{geocoding_accuracy_percent}}%</span>
               </div>
             </div>
-        {{/geocoding_accuracy}}
-        {{^geocoding_accuracy}}
+        </span>
+        <span class="form-control input-sm">{{geocoding_result_free}}</span>
+      {{/geocoding_accuracy}}
+      {{^geocoding_accuracy}}
+        <span>
           <input class="form-control input-sm" type="hidden" value="101"/>
-        {{/geocoding_accuracy}}
-      <span>
+        </span>
+      {{/geocoding_accuracy}}
       {{#has_no_position}}
         <span class="no_position">{{#i18n}}destinations.index.geocoding_empty{{/i18n}}</span>
       {{/has_no_position}}
@@ -129,16 +132,16 @@
           <span style="width:4em">
             <span class="form-control input-sm">{{duration}}</span>
           </span>
-          <span style="width:3em">
+          <span style="width:4em">
             <span class="form-control input-sm">{{time_window_start_1}}</span>
           </span>
-          <span style="width:3em">
+          <span style="width:4em">
             <span class="form-control input-sm">{{time_window_end_1}}</span>
           </span>
-          <span style="width:3em">
+          <span style="width:4em">
             <span class="form-control input-sm">{{time_window_start_2}}</span>
           </span>
-          <span style="width:3em">
+          <span style="width:4em">
             <span class="form-control input-sm">{{time_window_end_2}}</span>
           </span>
         </div>

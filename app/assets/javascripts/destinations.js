@@ -221,6 +221,7 @@ const destinations_form = function(params, api) {
     $('[name$=\\[country\\]]', row).val(destination.country);
     $('[name$=\\[lat\\]]', row).val(destination.lat);
     $('[name$=\\[lng\\]]', row).val(destination.lng);
+    $('[name$=\\[displayed_geocoding_result\\]]', row).val(destination.geocoding_result.free);
     setGeocoderInfo(destination);
     if ($.isNumeric(destination.lat) && $.isNumeric(destination.lng)) {
       if (destination_id in markers) {
@@ -307,6 +308,7 @@ const destinations_form = function(params, api) {
             setGeocoderInfo(json.geocoder_info);
 
             $("#reverse-geocode").html(json.result.label).append(button);
+            $("#geocoding_result").css('display', 'none');
 
           } else {
             $("#reverse-geocode").html('');

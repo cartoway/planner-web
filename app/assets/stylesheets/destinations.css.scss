@@ -171,16 +171,16 @@
       width: 1em;
     }
     th.ref, td.ref {
-      min-width: 3.5em;
+      min-width: 100px;
     }
     th.name, td.name {
-      min-width: 6em;
+      min-width: 100px;
       input {
         background: none;
       }
     }
     th.address, td.address {
-      min-width: 19em;
+      min-width: 150px;
     }
     th.country, td.country {
       min-width: 4em;
@@ -196,7 +196,7 @@
       width: 10em;
     }
     th.geocoding, td.geocoding {
-      width: 6em;
+      min-width: 6em;
     }
 
     .form-control {
@@ -205,7 +205,6 @@
 
     span.form-control {
       overflow: hidden;
-      word-break: break-all;
       // white-space: nowrap;
       // text-overflow: ellipsis;
       border: 0;

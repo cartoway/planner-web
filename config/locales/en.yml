@@ -239,6 +239,7 @@ en:
         geocoding_accuracy: Geocoding accuracy
         geocoding_accuracy_small: Geoc.
         geocoding_level: Geocoding level
+        geocoding_result: Address found and used by geocoding
         tags: Tags
         tag_ids: Tags
         visits: Visits
@@ -254,6 +255,7 @@ en:
         phone_number: Phone number
         geocoding_accuracy: Geocoding accuracy
         geocoding_level: Geocoding level
+        geocoding_result: Address found and used by geoc
       layer:
         name: Name
         url: URL
@@ -383,6 +385,7 @@ en:
         country: Country
         geocoding_accuracy: Geocoding accuracy
         geocoding_level: Geocoding level
+        geocoding_result: Address found and used by geoc
       tag:
         label: Label
         color: Color
