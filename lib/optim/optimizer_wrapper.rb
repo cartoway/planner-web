@@ -195,7 +195,7 @@ class OptimizerWrapper
             matrix, resolution = compute_progression(vrp, job_details)
             progress.call(job_id, matrix, resolution)
           end
-          sleep(2)
+          sleep(0.2)
           json = RestClient.get(@url + "/vrp/jobs/#{job_id}.json", params: {api_key: @api_key})
         else
           if /No solution provided/.match result.dig('job', 'avancement')

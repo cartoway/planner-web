@@ -243,7 +243,7 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
           },
           error: ajaxError
         });
-      }, 2000);
+      }, 200);
 
       $(document).on('page:before-change', function() {
         clearTimeout(progressDialogTimerId);
