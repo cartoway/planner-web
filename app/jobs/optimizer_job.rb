@@ -90,4 +90,8 @@ class OptimizerJob < Job.new(:planning_id, :route_id, :global, :active_only, :ig
     puts e.backtrace.join("\n")
     raise e
   end
+
+  def max_attempts
+    1
+  end
 end
