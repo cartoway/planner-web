@@ -26,7 +26,7 @@
               = @planning.customer.default_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
         - if (@planning.id && !@planning.tags.empty?) || !@planning.id
           .d-flex.justify-content-center
-            .col-xs-12.col-md-10
+            .col-xs-12.col-md-12
               %label
                 = t('activerecord.attributes.planning.tags')
               .form-group
@@ -41,27 +41,30 @@
                     %span.input-group-addon= content_tag('i', '', class: 'fa fa-tags fa-fw')
                   - unless @planning.id
                     %p.help-block= t('activerecord.attributes.planning.tags_help')
-          %br
         - if @planning.customer.vehicle_usage_sets.size > 1
           = twitter_bootstrap_form_for @planning, {layout: :horizontal, default_div_class: ''} do |f|
-            .d-flex.justify-content-center
-              .col-xs-12.col-md-10
-                %label
-                  = t('activerecord.attributes.planning.vehicle_usage_set_id')
-                = f.collection_select :vehicle_usage_set_id, @planning.id ? t('activerecord.attributes.planning.vehicle_usage_set_id') : [], @planning.customer.vehicle_usage_sets, :id, :name, {}, {required: true, label_class: 'd-none' }
-                .d-flex.justify-content-center
-                  = f.actions(class: 'col-md-6') do
-                    = f.submit t('plannings.edit.vehicle_usage_set.action'), class: 'btn btn-default'
+            .d-flex-column.justify-content-center
+              .row
+                .col-xs-12.col-md-12
+                  %label
+                    = t('activerecord.attributes.planning.vehicle_usage_set_id')
+              .row
+                .col-xs-12.col-md-12
+                  .input-group
+                    = f.collection_select :vehicle_usage_set_id, @planning.id ? t('activerecord.attributes.planning.vehicle_usage_set_id') : [], @planning.customer.vehicle_usage_sets, :id, :name, {style: 'margin: 0;'}, {required: true, label_class: 'd-none' }
+                    .input-group-btn
+                      = f.submit '', class: 'btn btn-default'
         - if @manage_planning[:manage_zoning]
           .d-flex.justify-content-center
-            .col-xs-12.col-md-10
+            .col-xs-12.col-md-12
               = twitter_bootstrap_form_for [:apply_zonings, @planning], { layout: :horizontal, default_div_class: '', html: { id: "planning_zoning_#{@planning.id}", class: 'form-horizontal update-zonings-form', title: t('plannings.edit.zonings.label') }} do |f|
                 %label
                   = t('plannings.edit.zonings.label')
-                = zoning_select f, @planning
-                .d-flex.justify-content-center
-                  = f.actions(class: 'col-md-6') do
-                    = f.submit t('plannings.edit.zonings.action'), id: 'planning_zoning_button', class: 'btn ' + (@planning.zoning_outdated ? 'btn-warning' : 'btn-default'), title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil)
+                .input-group
+                  = zoning_select f, @planning
+                  .input-group-btn
+                    = content_tag('a', content_tag('i', nil, class: 'fa fa-plus fa-fw'), href: url_for([:new, :zonings, @planning, back: true]), class: 'btn btn-default', title: t('plannings.edit.zoning_new'))
+                    = f.submit '', id: 'planning_zoning_button', class: 'btn ' + (@planning.zoning_outdated ? 'btn-warning' : 'btn-default'), title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil)
       %h4#planning_name_extended
       #global_tools.row
         .btn-group

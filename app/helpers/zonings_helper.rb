@@ -35,7 +35,6 @@ module ZoningsHelper
   end
 
   def zoning_select(f, planning, label = false)
-    input_group = content_tag('a', content_tag('i', nil, class: 'fa fa-plus fa-fw'), href: url_for([:new, :zonings, planning, back: true]), class: 'btn btn-default', title: t('plannings.edit.zoning_new')) if !planning.new_record?
-    f.select :zoning_ids, label, options_for_select(planning.customer.zonings.map{ |zoning| [zoning.name, zoning.id] }, planning.zonings.map(&:id)), {}, { multiple: true, input_group: input_group }
+    f.select :zoning_ids, label, options_for_select(planning.customer.zonings.map{ |zoning| [zoning.name, zoning.id] }, planning.zonings.map(&:id)), {}, { multiple: true }
   end
 end
