@@ -61,12 +61,12 @@ class OptimizerJob < Job.new(:planning_id, :route_id, :global, :active_only, :ig
             job_progress_save solution_data.merge('completed': false)
             Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
           }
-          job_progress_save(JSON.parse(@job.progress).merge({ 'matrix_progression': 100, 'progression': 100, 'completed': true }))
+          job_progress_save(@job.progress.merge({ 'matrix_progression': 100, 'progression': 100, 'completed': true }))
           Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
           optimum
         end
       rescue VRPNoSolutionError, VRPUnprocessableError => e
-        job_progress_save(JSON.parse(@job.progress).merge({ 'failed': 'true' }))
+        job_progress_save(@job.progress.merge({ 'failed': 'true' }))
         Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
         raise e
       end
