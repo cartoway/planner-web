@@ -42,7 +42,7 @@
                 %label{"data-toggle" => "tooltip", :title => "#{t('plannings.edit.dialog.optimization.visits.active_only_false_help')}"}
                   = radio_button_tag :active_only, :false, false
                   = t 'all.value._no'
-            - if !@with_stops || !@planning.routes.all?{ |r| r.stops.loaded? } || @planning.routes.any?{ |r| !r.stops.flat_map{ |s| [s.visit.try(:time_window_start_1), s.visit.try(:time_window_end_1), s.visit.try(:time_window_start_2), s.visit.try(:time_window_end_2)] }.compact.empty? }
+            - if current_user.customer.optimization_stop_soft_upper_bound > 0 && (!@with_stops || !@planning.routes.all?{ |r| r.stops.loaded? } || @planning.routes.any?{ |r| !r.stops.flat_map{ |s| [s.visit.try(:time_window_start_1), s.visit.try(:time_window_end_1), s.visit.try(:time_window_start_2), s.visit.try(:time_window_end_2)] }.compact.empty? })
               .row
                 .col-xs-7
                   = t 'plannings.edit.dialog.optimization.visits.cost_late_multiplier'
@@ -52,34 +52,29 @@
                       = t 'all.value._yes'
                     - else
                       = t 'all.value._no'
-          %div
-            %h5
-              %i.fa.fa-truck-field.fa-fw
-              = t 'plannings.edit.dialog.optimization.vehicles.title'
-            .row
-              .col-xs-7
-                = t 'plannings.edit.dialog.optimization.vehicles.router_dimension'
-              .col-xs-5
-                %label#router-dimension-value ---
-            #optimization-vehicle-late.row
-              .col-xs-7
-                = t 'plannings.edit.dialog.optimization.vehicles.cost_late_multiplier'
-              .col-xs-5
-                %label
-                  - if current_user.customer.optimization_vehicle_soft_upper_bound != 0
-                    = t 'all.value._yes'
-                  - else
-                    = t 'all.value._no'
-            .row
-              .col-xs-7
-                = t 'plannings.edit.dialog.optimization.vehicles.force_start'
-              .col-xs-5
-                %label
-                  - if current_user.customer.optimization_force_start
-                    = t 'all.value._yes'
-                  - else
-                    = t 'all.value._no'
-          - if current_user.customer.deliverable_units.any?{ |du| current_user.customer.vehicles.any?{ |v| v.default_capacities[du.id] } }
+          - if current_user.customer.optimization_vehicle_soft_upper_bound > 0 || current_user.customer.optimization_force_start
+            %div
+              %h5
+                %i.fa.fa-truck-field.fa-fw
+                = t 'plannings.edit.dialog.optimization.vehicles.title'
+              - if current_user.customer.optimization_vehicle_soft_upper_bound > 0
+                #optimization-vehicle-late.row
+                  .col-xs-7
+                    = t 'plannings.edit.dialog.optimization.vehicles.cost_late_multiplier'
+                  .col-xs-5
+                    %label
+                      - if current_user.customer.optimization_vehicle_soft_upper_bound != 0
+                        = t 'all.value._yes'
+                      - else
+                        = t 'all.value._no'
+              - if current_user.customer.optimization_force_start
+                .row
+                  .col-xs-7
+                    = t 'plannings.edit.dialog.optimization.vehicles.force_start'
+                  .col-xs-5
+                    %label
+                      = t 'all.value._yes'
+          - if current_user.customer.deliverable_units.any?{ |du| du.default_optimization_overload_multiplier > 0 && current_user.customer.vehicles.any?{ |v| v.default_capacities[du.id] } }
             %div
               %h5
                 %i.fa.fa-dumpster.fa-fw
