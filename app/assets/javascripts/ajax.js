@@ -125,7 +125,7 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
 
     dialog.modal(modal_options());
     freezeProgressDialog(dialog);
-    var progress = delayedJob.progress && JSON.parse(delayedJob.progress);
+    var progress = delayedJob.progress;
     $(".progress-bar", dialog).each(function(i, e) {
       // hide or show dialog-progress class
       if (!progress || !progress['completed'] && (!progress['status'] || progress['status'] == 'queued')) {
