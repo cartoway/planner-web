@@ -248,7 +248,8 @@ CREATE TABLE public.destinations (
     ref character varying,
     state character varying,
     geocoded_at timestamp without time zone,
-    geocoder_version character varying
+    geocoder_version character varying,
+    geocoding_result jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -824,7 +825,8 @@ CREATE TABLE public.stores (
     icon_size character varying,
     state character varying,
     geocoded_at timestamp without time zone,
-    geocoder_version character varying
+    geocoder_version character varying,
+    geocoding_result jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -2942,4 +2944,8 @@ INSERT INTO schema_migrations (version) VALUES ('20240122131606');
 INSERT INTO schema_migrations (version) VALUES ('20240124083101');
 
 INSERT INTO schema_migrations (version) VALUES ('20240202082922');
+
+INSERT INTO schema_migrations (version) VALUES ('20240208095803');
+
+INSERT INTO schema_migrations (version) VALUES ('20240219091818');
 

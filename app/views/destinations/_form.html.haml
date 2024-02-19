@@ -37,19 +37,18 @@
     .form-group
       %label.col-md-offset-2.col-md-8.field{for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
       .col-md-offset-2.col-md-8.field
-        - if @destination.geocoding_accuracy
-          #geocoding_accuracy
-            #geocoding-progress.progress
-              %input{name: "destination[geocoding_accuracy]", type: "hidden", value: @destination.geocoding_accuracy}
-              .progress-bar{ class: "progress-bar-#{@destination.geocode_progress_bar_class}", style: "width: #{((@destination.geocoding_accuracy || 0) * 100).round}%"}
-                %span= @destination.geocoding_accuracy ? ((@destination.geocoding_accuracy || 0) * 100).round.to_s + '%' : ''
-            %p.help-block= t '.geocoding_accuracy_help'
-            #geocoding_fail.d-none
-              = t '.geocoding_fail'
-              \-
-              %a.pointing{href: "#", role: "button"}
-                %i.fa.fa-crosshairs.fa-fw
-                = t '.locate_manually'
+        #geocoding_accuracy{ class: ('d-none' unless @destination.geocoding_accuracy) }
+          #geocoding-progress.progress
+            %input{name: "destination[geocoding_accuracy]", type: "hidden", value: @destination.geocoding_accuracy}
+            .progress-bar{ class: "progress-bar-#{@destination.geocode_progress_bar_class}", style: "width: #{((@destination.geocoding_accuracy || 0) * 100).round}%"}
+              %span= @destination.geocoding_accuracy ? ((@destination.geocoding_accuracy || 0) * 100).round.to_s + '%' : ''
+          %p.help-block= t '.geocoding_accuracy_help'
+          #geocoding_fail.d-none
+            = t '.geocoding_fail'
+            \-
+            %a.pointing{href: "#", role: "button"}
+              %i.fa.fa-crosshairs.fa-fw
+              = t '.locate_manually'
         #no_geocoding_accuracy{ class: ('d-none' if @destination.geocoding_accuracy)}
           = t '.geocoding_accuracy_none'
         #geocoding_level{ class: ('d-none' unless @destination.geocoding_level)}
@@ -63,9 +62,9 @@
             = t 'activerecord.attributes.destination.geocoding_level'
             \:
             %span#geocoding-level-value
-            - if @destination.geocoding_level
-              = t("destinations.form.geocoding_level.#{@destination.geocoding_level}")
-      #geocoding_result.col-md-offset-2.col-md-8.field{ class: ('d-none' unless @destination.geocoding_result)}
+              - if @destination.geocoding_level
+                = t("destinations.form.geocoding_level.#{@destination.geocoding_level}")
+      #geocoding_result.col-md-offset-2.col-md-8.field{ class: ('d-none' if @destination.geocoding_result.empty?)}
         %label= t 'activerecord.attributes.destination.geocoding_result'
         %input.form-control{ name: "destination[displayed_geocoding_result]", value: @destination.geocoding_result['free'], readonly: 'readonly'}
       .col-md-offset-2.col-md-8.field
