@@ -23,7 +23,7 @@ class V01::Entities::Job < Grape::Entity
   expose(:created_at, documentation: { type: Date })
   expose(:failed_at, documentation: { type: Date })
   expose(:locked_at, documentation: { type: Date })
-  expose(:progress, documentation: { type: String })
+  expose(:progress, documentation: { type: JSON })
   expose(:run_at, documentation: { type: Date })
   # expose(:sanitized_error, documentation: { type: String })
   expose(:type, documentation: { type: String }) { |m|

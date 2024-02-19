@@ -24,7 +24,7 @@ class Job < Struct
     # Job is executed inside a transaction (for instance to be sure data are all updated in database when job is deleted)
     # New thread will use a new connection outside this transaction to update job progress
     Thread.new do
-      @job.progress = progress
+      @job.progress = progress.to_json
       @job.save
     end.join
   end

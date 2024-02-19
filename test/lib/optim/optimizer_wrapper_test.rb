@@ -71,10 +71,10 @@ class OptimizerWrapperTest < ActionController::TestCase
     uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
 
     # Simple progression
-    progress = lambda{ |job_id, matrix_bar, resolution_bar|
-      if matrix_bar && resolution_bar
-        assert_equal 100.0, matrix_bar
-        assert_equal 43.0, resolution_bar
+    progress = lambda{ |job_id, solution_data|
+      if solution_data && solution_data[:status] != 'queued' && solution_data[:matrix_progression] && solution_data[:progression]
+        assert_equal 100.0, solution_data[:matrix_progression]
+        assert_equal 17.0, solution_data[:progression]
       end
     }
     vrp_simple_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-simple-progression.json')).read
@@ -96,10 +96,10 @@ class OptimizerWrapperTest < ActionController::TestCase
     uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
 
     # Max split progression
-    progress = lambda{ |job_id, matrix_bar, resolution_bar|
-      if matrix_bar && resolution_bar
-        assert_equal 75.0, matrix_bar
-        assert_equal 50.0, resolution_bar
+    progress = lambda{ |job_id, solution_data|
+      if solution_data && solution_data[:status] != 'queued' && solution_data[:matrix_progression] && solution_data[:progression]
+        assert_equal 75.0, solution_data[:matrix_progression]
+        assert_equal 50.0, solution_data[:progression]
       end
     }
     vrp_max_split_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-max-split-progression.json')).read
@@ -121,10 +121,10 @@ class OptimizerWrapperTest < ActionController::TestCase
     uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
 
     # Dicho progression
-    progress = lambda{ |job_id, matrix_bar, resolution_bar|
-      if matrix_bar && resolution_bar
-        assert_equal 100.0, matrix_bar
-        assert_equal 87.5, resolution_bar
+    progress = lambda{ |job_id, solution_data|
+      if solution_data && solution_data[:status] != 'queued' && solution_data[:matrix_progression] && solution_data[:progression]
+        assert_equal 100.0, solution_data[:matrix_progression]
+        assert_equal 87.5, solution_data[:progression]
       end
     }
     vrp_dicho_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-dicho-progression.json')).read

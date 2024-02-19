@@ -4,10 +4,10 @@ job_destination_geocoding:
   priority: 0
   attempts: 0
   handler: "A:A B:B"
-  progress: 0
+  progress: { progress: 0 }
 
 job_optimizer:
   priority: 0
   attempts: 0
   handler: "C:C D:D"
-  progress: 0
+  progress: { progress: 0 }

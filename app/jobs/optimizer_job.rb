@@ -29,10 +29,10 @@ class OptimizerJob < Job.new(:planning_id, :route_id, :global, :active_only, :ig
   @@optimize_minimal_time = Mapotempo::Application.config.optimize_minimal_time
 
   def perform
-    return true if @job.progress == 'no_solution' && @job.attempts > 0
+    return true if @job.progress&.dig('failed') && @job.attempts > 0
 
     Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} perform"
-    job_progress_save '0;0;'
+    job_progress_save({ 'matrix_progression': 0, 'progression': 0, 'completed': false })
     planning = Planning.where(id: planning_id).first!
     routes = planning.routes.select { |r|
       (route_id && r.id == route_id) || (!route_id && !global && r.vehicle_usage_id && r.size_active > 0) || (!route_id && global)
@@ -42,7 +42,6 @@ class OptimizerJob < Job.new(:planning_id, :route_id, :global, :active_only, :ig
 
     optimize_time = planning.customer.optimization_time || @@optimize_time
 
-    bars = Array.new(2, 0)
     optimum = unless routes.select(&:vehicle_usage_id).empty?
       begin
         planning.optimize(routes, global: global, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers) do |positions, services, vehicles|
@@ -58,17 +57,16 @@ class OptimizerJob < Job.new(:planning_id, :route_id, :global, :active_only, :ig
             force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
             optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
             relations: planning.stop_relations
-          ) { |job_id, matrix_bar, resolution_bar|
-            bars = [matrix_bar, resolution_bar, nil] if resolution_bar
-            job_progress_save bars.join(';')
+          ) { |job_id, solution_data|
+            job_progress_save solution_data.merge('completed': false)
             Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
           }
-          job_progress_save '100;100;-1'
+          job_progress_save(JSON.parse(@job.progress).merge({ 'matrix_progression': 100, 'progression': 100, 'completed': true }))
           Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
           optimum
         end
       rescue VRPNoSolutionError, VRPUnprocessableError => e
-        job_progress_save 'no_solution'
+        job_progress_save(JSON.parse(@job.progress).merge({ 'failed': 'true' }))
         Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
         raise e
       end
