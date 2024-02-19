@@ -118,8 +118,8 @@ const destinations_form = function(params, api) {
               map.removeLayer(markers[destination_id]);
               delete markers[destination_id];
             }
-            $('#no_geocoding_accuracy').show();
-            $('#geocoding-level').hide();
+            $('#no_geocoding_accuracy').removeClass('d-none');
+            $('#geocoding-level').addClass('d-none');
           }
           else {
             if (destination_id in markers) {
@@ -178,25 +178,25 @@ const destinations_form = function(params, api) {
   };
 
   const displayGeocoding = function(accuracy_percent, status, level) {
-    $('#geocoding_fail').hide();
+    $('#geocoding_fail').addClass('d-none');
     if (accuracy_percent != 0 && status) {
-      $('#geocoding_accuracy').show();
+      $('#geocoding_accuracy').removeClass('d-none');
       var progress = $('.progress div');
       progress.css('width', accuracy_percent + '%');
       progress.removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
       progress.addClass('progress-bar-' + status);
       $('.progress div span').html(accuracy_percent + '%');
     } else
-      $('#geocoding_accuracy').hide();
+      $('#geocoding_accuracy').addClass('d-none');
     $('[name$=\\[geocoding_accuracy\\]]').val(accuracy_percent / 100);
     if (level == 'point')
-      $('#no_geocoding_accuracy').show();
+      $('#no_geocoding_accuracy').removeClass('d-none');
     else
-      $('#no_geocoding_accuracy').hide();
-    $('#geocoding_level').show();
+      $('#no_geocoding_accuracy').addClass('d-none');
+    $('#geocoding_level').removeClass('d-none');
     $('[name$=\\[geocoding_level\\]]').val(level);
-    $('.geocoding-level').hide();
-    $('#geocoding-level-' + level).show();
+    $('.geocoding-level').addClass('d-none');
+    $('#geocoding-level-' + level).removeClass('d-none');
     var translation_level = 'destinations.form.geocoding_level.' + level;
     $('#geocoding-level-value').html(I18n.t(translation_level));
   };
@@ -222,6 +222,8 @@ const destinations_form = function(params, api) {
     $('[name$=\\[lat\\]]', row).val(destination.lat);
     $('[name$=\\[lng\\]]', row).val(destination.lng);
     $('[name$=\\[displayed_geocoding_result\\]]', row).val(destination.geocoding_result.free);
+    $("#geocoding_result").removeClass('d-none');
+
     setGeocoderInfo(destination);
     if ($.isNumeric(destination.lat) && $.isNumeric(destination.lng)) {
       if (destination_id in markers) {
@@ -243,19 +245,19 @@ const destinations_form = function(params, api) {
         destination = prepare_display_destination(destination);
         displayGeocoding(destination.geocoding_accuracy_percent, destination.geocoding_status, destination.geocoding_level);
       } else {
-        $('#no_geocoding_accuracy').hide();
-        $('#geocoding_accuracy').hide();
+        $('#no_geocoding_accuracy').addClass('d-none');
+        $('#geocoding_accuracy').addClass('d-none');
         $('[name$=\\[geocoding_accuracy\\]]').val(null);
-        $('#geocoding_level').hide();
+        $('#geocoding_level').addClass('d-none');
         $('[name$=\\[geocoding_level\\]]', row).val(null);
-        $('#geocoding_fail').show();
+        $('#geocoding_fail').removeClass('d-none');
       }
     } else {
-      $('#no_geocoding_accuracy').show();
-      $('#geocoding_accuracy').hide();
+      $('#no_geocoding_accuracy').removeClass('d-none');
+      $('#geocoding_accuracy').addClass('d-none');
       $('[name$=\\[geocoding_accuracy\\]]').val(null);
-      $('#geocoding_fail').hide();
-      $('#geocoding_level').hide();
+      $('#geocoding_fail').addClass('d-none');
+      $('#geocoding_level').addClass('d-none');
       $('[name$=\\[geocoding_level\\]]', row).val(null);
     }
   };
@@ -308,7 +310,7 @@ const destinations_form = function(params, api) {
             setGeocoderInfo(json.geocoder_info);
 
             $("#reverse-geocode").html(json.result.label).append(button);
-            $("#geocoding_result").css('display', 'none');
+            $("#geocoding_result").addClass('d-none');
 
           } else {
             $("#reverse-geocode").html('');
@@ -526,7 +528,7 @@ const destinations_import = function(params, api) {
       content: I18n.t('destinations.import.dialog.help.def_example'),
       trigger: 'focus'
     }).focus();
-    $('[name=columns-save]').show();
+    $('[name=columns-save]').removeClass('d-none');
   });
 
   $('[name=columns-save]').click(function() {

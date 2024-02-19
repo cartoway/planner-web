@@ -35,6 +35,7 @@ class V01::Entities::Store < Grape::Entity
   expose(:icon_size, documentation: { type: String, values: ::Store::ICON_SIZE, desc: "Icon size. Default: #{Mapotempo::Application.config.store_icon_size_default}." })
   expose(:geocoding_accuracy, documentation: { type: Float })
   expose(:geocoding_level, documentation: { type: String, values: ['point', 'house', 'street', 'intersection', 'city'] })
+  expose(:geocoding_result, documentation: { type: JSON })
   expose(:geocoded_at, documentation: { type: DateTime})
   expose(:geocoder_version, documentation: {type: String})
 end

@@ -79,6 +79,8 @@ class Location < ApplicationRecord
   end
 
   def geocode_progress_bar_class
+    return unless self.geocoding_accuracy
+
     if self.geocoding_accuracy > Mapotempo::Application.config.geocoder.accuracy_success
       'success'
     elsif self.geocoding_accuracy > Mapotempo::Application.config.geocoder.accuracy_warning
@@ -103,6 +105,7 @@ class Location < ApplicationRecord
 
   def delay_geocode
     if lat_changed? || lng_changed?
+      self.geocoding_result = {}
       self.geocoding_accuracy = nil
       self.geocoding_level = lat && lng ? :point : nil
     end
@@ -133,6 +136,7 @@ class Location < ApplicationRecord
     else
       # when lat/lng are specified manually, geocoding_accuracy has no sense
       if !@is_gecoded && self.point? && (lat_changed? || lng_changed?)
+        self.geocoding_result = {}
         self.geocoding_accuracy = nil
       end
       if position?

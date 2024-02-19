@@ -52,7 +52,7 @@ class Store < Location
 
   include LocalizedAttr
 
-  attr_localized :lat, :lng
+  attr_localized :lat, :lng, :geocoding_accuracy
 
   def destroy
     outdated # Too late to do this in before_destroy callback, children already destroyed
