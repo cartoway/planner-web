@@ -192,8 +192,8 @@ class OptimizerWrapper
           break
         elsif ['queued', 'working'].include?(result.dig('job', 'status'))
           if progress && job_details
-            matrix, resolution = compute_progression(vrp, job_details)
-            progress.call(job_id, matrix, resolution)
+            solution_data = compute_progression(vrp, result, job_details)
+            progress.call(job_id, solution_data)
           end
           sleep(0.2)
           json = RestClient.get(@url + "/vrp/jobs/#{job_id}.json", params: {api_key: @api_key})
@@ -274,15 +274,22 @@ class OptimizerWrapper
   #                                goes up
   #
   # If the problem is simple, the progression is directly related to the time elapsed as there is only one matrix to compute
-  def compute_progression(vrp, job_details)
+  def compute_progression(vrp, result, job_details)
     progression = job_details.dig('avancement')
-    return nil unless progression
+    return {'matrix_progression': 0, 'progression': 0, 'status': 'queued'} unless progression
 
-    if PROGRESSION_KEYS.any?{ |key| progression.include?(key) }
-      multiple_steps_progression(progression)
-    elsif progression.include?('run optimization')
-      single_step_progression(vrp, job_details)
-    end
+    solution_data = compute_solution_data(result.dig('job'), result.dig('solutions')&.last)
+
+    multipart, matrix_bar, resolution_bar =
+      if PROGRESSION_KEYS.any?{ |key| progression.include?(key) }
+        multiple_steps_progression(progression)
+      elsif progression.include?('run optimization')
+        single_step_progression(vrp, job_details)
+      else
+        [nil, 0, 0]
+      end
+    solution_data.merge!('multipart': multipart, 'matrix_progression': matrix_bar, 'progression': resolution_bar)
+    solution_data
   end
 
   def single_step_progression(vrp, job_details)
@@ -291,7 +298,7 @@ class OptimizerWrapper
     maximum_duration = vrp[:configuration][:resolution][:duration] / 1000
 
     current_elapsed = Time.now.to_f - @optimization_start
-    [100, 100 * (current_elapsed/maximum_duration).round(2)]
+    [false, 100, 100 * (current_elapsed/maximum_duration).round(2)]
   end
 
   # Each couple a/b give the progression of the considered step identified by a key
@@ -315,7 +322,7 @@ class OptimizerWrapper
     # Remove dicho from denominators as Matrix computation is performed at the end of the steps but before dicho
     denominators.pop
     matrix_bar += progression.include?('run optimization') ? (100.0 / denominators.reduce(&:*)) : 0
-    [matrix_bar, resolution_bar]
+    [true, matrix_bar, resolution_bar]
   end
 
   def parse_progression(progression, key)
@@ -324,6 +331,14 @@ class OptimizerWrapper
     return [0, 1] unless section_index
 
     ratio = parts[section_index].split(' ').last
-    a, b = ratio.split('/').map(&:to_i)
+    ratio.split('/').map(&:to_i)
+  end
+
+  def compute_solution_data(job, solution)
+    solution_data = solution&.slice('cost', 'total_distance', 'total_time', 'elapsed') || {}
+    solution_data.merge!(job.slice('status'))
+    solution_data.merge('status': 'queued') unless solution_data.key?('status')
+    solution_data.merge!('unassigned_size': solution.dig('unassigned')&.size) if solution
+    solution_data
   end
 end

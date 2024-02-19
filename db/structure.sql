@@ -164,7 +164,7 @@ CREATE TABLE public.delayed_jobs (
     queue character varying(255),
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    progress character varying(255)
+    progress jsonb
 );
 
 
@@ -2946,6 +2946,8 @@ INSERT INTO schema_migrations (version) VALUES ('20240124083101');
 INSERT INTO schema_migrations (version) VALUES ('20240202082922');
 
 INSERT INTO schema_migrations (version) VALUES ('20240208095803');
+
+INSERT INTO schema_migrations (version) VALUES ('20240215103513');
 
 INSERT INTO schema_migrations (version) VALUES ('20240219091818');
 

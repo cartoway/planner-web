@@ -118,98 +118,32 @@ export const unfreezeProgressDialog = function(dialog, delayedJob, url, callback
 };
 
 let iteration = undefined;
-let isProgressing = false;
 export const progressDialog = function(delayedJob, dialog, url, callback, options) {
   if (delayedJob !== undefined) {
-    var timeout = 2000;
+    var timeout = 200;
     var duration;
 
     dialog.modal(modal_options());
     freezeProgressDialog(dialog);
-
-    isProgressing = false;
-    var progress = delayedJob.progress && delayedJob.progress.split(';');
+    var progress = delayedJob.progress && JSON.parse(delayedJob.progress);
     $(".progress-bar", dialog).each(function(i, e) {
       // hide or show dialog-progress class
-      if (typeof progress === "undefined" || progress === null || progress === '' || typeof progress[i] === "undefined" || progress[i] === '') {
+      if (!progress || !progress['completed'] && (!progress['status'] || progress['status'] == 'queued')) {
         $(e).parent().parent().hide();
       } else {
         $(e).parent().parent().show();
-      }
-
-      if (!progress || typeof progress[i] === "undefined" || progress[i] === null || progress[i] === '') {
-        // Inactive progress class
-        $(e).parent().removeClass("active");
-        $(e).css({
-          transition: 'none',
-          width: '0%'
-        });
-      } else if (progress[i] === 0 || progress[i] === '0') {
-        isProgressing = true;
-        $(e).parent().removeClass("active");
-        $(e).css({
-          transition: 'none',
-          width: '0%'
-        });
-      } else if (progress[i] === 100 || progress[i] === '100') {
-        isProgressing = true;
-        $(e).parent().removeClass("active");
-        $(e).css({
-          transition: 'none',
-          width: '100%'
-        });
-      } else if (progress[i] === -1 || progress[i] === '-1') {
-        isProgressing = true;
-        $(e).parent().addClass("active");
-        $(e).css({
-          transition: 'none',
-          width: '100%'
-        });
-      } else if (progress[i].indexOf('ms') > -1) {
-        // optimization in ms
-        var timeSpent = progress[i].split('ms');
-        if (timeSpent > 0) {
-          isProgressing = true;
-        }
-        if (iteration != timeSpent[1] || $(".dialog-attempts-number", dialog).html() != delayedJob.attempts) {
-          iteration = timeSpent[1];
-          duration = parseInt(timeSpent[0]);
-          if (duration > timeout) {
-            $(e).parent().removeClass("active");
-            $(e).css("transition", "linear " + ((duration - timeout) / 1000) + "s");
-            $(e).css("width", "100%");
-          } else {
-            $(e).css('transition', 'none');
-            $(e).css('width', '0%');
-          }
-        }
-      } else if (progress[i].indexOf('/') > -1) {
-        // optimization or geocoding current/total
-        var currentSteps = progress[i].split('/');
-        if (currentSteps[0] > 0) {
-          isProgressing = true;
-        }
-        $(e).parent().removeClass("active");
-        $(e).css("transition", "linear 0.5s");
-        $(e).css("width", "" + (100 * currentSteps[0] / currentSteps[1]) + "%");
-        $(e).html(progress[i]);
-      } else {
-        isProgressing = true;
-        $(e).parent().removeClass("active");
-        $(e).css("transition", "linear 2s");
-        $(e).css("width", "" + progress[i] + "%");
+        fieldBarProgression(dialog, delayedJob, progress, e, i);
       }
     });
 
-    if (isProgressing || delayedJob.attempts > 0) {
-      $(".dialog-inqueue", dialog).hide();
-    } else {
+    if ((!progress || !progress['completed'] && progress['status'] != 'working') && delayedJob.attempts == 0) {
       $(".dialog-inqueue", dialog).show();
+    } else {
+      $(".dialog-inqueue", dialog).hide();
     }
 
-    if (delayedJob.attempts > 0 && delayedJob.progress === 'no_solution') {
+    if (delayedJob.attempts > 0 && progress && progress['failed']) {
       options && options.error && options.error();
-      isProgressing = true;
       $(".dialog-no-solution", dialog).show();
       $(".dialog-progress", dialog).hide();
       unfreezeProgressDialog(dialog, delayedJob, url, callback); // url should not contain dispatch_params_delayed_job
@@ -218,7 +152,6 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     }
 
     if (delayedJob.attempts) {
-      isProgressing = true;
       $(".dialog-attempts-number", dialog).html(delayedJob.attempts);
       $(".dialog-attempts", dialog).show();
     } else {
@@ -227,7 +160,6 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
 
     if (delayedJob.error) {
       options && options.error && options.error();
-      isProgressing = true;
       $(".dialog-progress", dialog).hide();
       $(".dialog-error", dialog).show();
       unfreezeProgressDialog(dialog, delayedJob, url, callback); // url should not contain dispatch_params_delayed_job
@@ -270,6 +202,64 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     return true;
   }
 };
+
+export const fieldBarProgression = function(dialog, delayedJob, progress, element, index) {
+  var bar_value = 0;
+  switch (index) {
+    case 0:
+      if (progress['matrix_progression']) {
+        bar_value = progress['completed'] ? 100 : progress['matrix_progression'];
+      }
+      break;
+    case 1:
+      if (progress['matrix_progression']) {
+        bar_value = progress['completed'] ? 100 : progress['progression'];
+      }
+      break;
+    case 2:
+      bar_value = progress['completed'] ? -1 : 0
+      break;
+  }
+  if (Number(bar_value) == -1) {
+    $(element).parent().addClass("active");
+    $(element).css({
+      transition: 'none',
+      width: '100%'
+    });
+  } else if (Number(bar_value) >= 0 || Number(bar_value) <= 100) {
+    $(element).parent().removeClass("active");
+    $(element).css({
+      transition: 'linear 0.5s',
+      width: "" + bar_value + "%"
+    });
+  } else if (progress['multipart']) {
+    // optimization or geocoding current/total
+    var currentSteps = progress[i].split('/');
+    if (currentSteps[0] > 0) {
+    }
+    $(element).parent().removeClass("active");
+    $(element).css("transition", "linear 0.5s");
+    $(element).css("width", "" + (100 * bar_value) + "%");
+    $(element).html(progress[i]);
+  } else {
+    // optimization in ms
+    var timeSpent = progress['elapsed'] || 0;
+    if (timeSpent > 0) {
+    }
+    if (iteration != timeSpent[1] || $(".dialog-attempts-number", dialog).html() != delayedJob.attempts) {
+      iteration = timeSpent[1];
+      duration = parseInt(timeSpent[0]);
+      if (duration > timeout) {
+        $(element).parent().removeClass("active");
+        $(element).css("transition", "linear " + ((duration - timeout) / 1000) + "s");
+        $(element).css("width", "100%");
+      } else {
+        $(element).css('transition', 'none');
+        $(element).css('width', '0%');
+      }
+    }
+  }
+}
 
 
 export const fake_select2 = function(selector, callback) {
