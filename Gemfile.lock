@@ -36,12 +36,6 @@ GIT
     leaflet-responsive-popup-rails (0.2.0.0)
 
 GIT
-  remote: https://github.com/Mapotempo/mapotempo_web_import_vehicle_store.git
-  revision: 32776cc0709dc4968668c10e811b0280be2995c5
-  specs:
-    mapotempo_web_import_vehicle_store (0.0.1)
-
-GIT
   remote: https://github.com/Mapotempo/paloma.git
   revision: 25cbba9f33c7b36f4f4878035ae53541a0036ee9
   specs:
@@ -816,7 +810,6 @@ DEPENDENCIES
   libnotify
   lograge
   macaddr
-  mapotempo_web_import_vehicle_store!
   minitest-around
   minitest-focus
   minitest-reporters

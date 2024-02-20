@@ -1,0 +1,4 @@
+require "mapotempo_web_import_vehicle_store/engine"
+
+module MapotempoWebImportVehicleStore
+end

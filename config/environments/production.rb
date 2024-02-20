@@ -2,17 +2,17 @@ Rails.application.configure do
    config.webpacker.check_yarn_integrity = false  # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
-  config.cache_classes = true
+  config.cache_classes = false
 
   # Eager load code on boot. This eager loads most of Rails and
   # your application in memory, allowing both threaded web servers
   # and those relying on copy on write to perform better.
   # Rake tasks automatically ignore this option for performance.
-  config.eager_load = true
+  config.eager_load = false
 
   # Full error reports are disabled and caching is turned on.
   config.consider_all_requests_local       = false
-  config.action_controller.perform_caching = true
+  config.action_controller.perform_caching = false
 
   # Enable Rack::Cache to put a simple HTTP cache in front of your application
   # Add `rack-cache` to your Gemfile before enabling this.
@@ -107,8 +107,8 @@ Rails.application.configure do
   config.optimize_minimal_time = 15
   config.optimize_max_split_size = 500
   config.optimize_cluster_size = 0
-  config.optimize_stop_soft_upper_bound = 0.0
-  config.optimize_vehicle_soft_upper_bound = 0.0
+  config.optimize_stop_soft_upper_bound = 0.3
+  config.optimize_vehicle_soft_upper_bound = 0.3
   config.optimize_overload_multiplier = 0
   config.optimize_cost_waiting_time = 1
   config.optimize_force_start = false

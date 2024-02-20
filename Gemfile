@@ -84,8 +84,6 @@ group :test do
 
   gem 'rspec-rails'
 
-  gem 'mapotempo_web_import_vehicle_store', git: 'https://github.com/Mapotempo/mapotempo_web_import_vehicle_store.git'
-
   # Browser tests
   gem 'capybara'
   gem 'selenium-webdriver'

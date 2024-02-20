@@ -2535,3 +2535,15 @@ en:
     sessions:
       new:
         remember_me: Remember me
+  vehicle_stores:
+    import_file:
+      emission: "emission"
+      consumption: "consumption"
+      capacity: "capacity"
+      tomtom_id: "tomtom"
+      router_id: "router"
+      router_dimension: "dimension"
+      masternaut_ref: "masternaut"
+      speed_multiplicator: "speed multiplicator"
+      speed_multiplier: "speed multiplier"
+      many_usage_sets: "Many vehicle configurations presente"
