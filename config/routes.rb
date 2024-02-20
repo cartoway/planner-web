@@ -44,6 +44,7 @@ Rails.application.routes.draw do
       get 'stores/:id/edit_position' => 'stores#edit_position', :as => 'edit_position_store'
       patch 'stores/:id/update_position' => 'stores#update_position', :as => 'update_position_store'
       get 'stores/:id' => 'stores#show'
+      get 'stores/by_distance' => 'stores#by_distance', :as => 'stores_by_distance'
 
       get 'zonings/:id/edit' => 'zonings#edit', :as => 'edit_zoning'
       patch 'zonings/:id/edit' => 'zonings#update'

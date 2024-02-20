@@ -84,7 +84,6 @@ group :test do
 
   gem 'rspec-rails'
 
-  gem 'mapotempo_web_by_time_distance', git: 'https://github.com/Mapotempo/mapotempo_web_by_time_distance.git'
   gem 'mapotempo_web_import_vehicle_store', git: 'https://github.com/Mapotempo/mapotempo_web_import_vehicle_store.git'
 
   # Browser tests
@@ -99,6 +98,7 @@ gem 'grape-swagger'
 gem 'grape-swagger-entity'
 gem 'rack-cors'
 gem 'swagger-docs'
+gem 'rswag'
 
 gem 'rails-i18n'
 gem 'http_accept_language'

@@ -36,12 +36,6 @@ GIT
     leaflet-responsive-popup-rails (0.2.0.0)
 
 GIT
-  remote: https://github.com/Mapotempo/mapotempo_web_by_time_distance.git
-  revision: 4db53a27547c659a3c02046f011c4744149d3964
-  specs:
-    mapotempo_web_by_time_distance (0.0.1)
-
-GIT
   remote: https://github.com/Mapotempo/mapotempo_web_import_vehicle_store.git
   revision: 32776cc0709dc4968668c10e811b0280be2995c5
   specs:
@@ -388,6 +382,8 @@ GEM
     jquery-ui-rails (5.0.5)
       railties (>= 3.2.16)
     json (1.8.6)
+    json-schema (4.1.1)
+      addressable (>= 2.8)
     jwt (2.7.1)
     launchy (2.5.2)
       addressable (~> 2.8)
@@ -598,6 +594,21 @@ GEM
       rspec-mocks (~> 3.10)
       rspec-support (~> 3.10)
     rspec-support (3.12.1)
+    rswag (2.13.0)
+      rswag-api (= 2.13.0)
+      rswag-specs (= 2.13.0)
+      rswag-ui (= 2.13.0)
+    rswag-api (2.13.0)
+      activesupport (>= 3.1, < 7.2)
+      railties (>= 3.1, < 7.2)
+    rswag-specs (2.13.0)
+      activesupport (>= 3.1, < 7.2)
+      json-schema (>= 2.2, < 5.0)
+      railties (>= 3.1, < 7.2)
+      rspec-core (>= 2.14)
+    rswag-ui (2.13.0)
+      actionpack (>= 3.1, < 7.2)
+      railties (>= 3.1, < 7.2)
     rubocop (1.31.0)
       parallel (~> 1.10)
       parser (>= 3.1.0.0)
@@ -805,7 +816,6 @@ DEPENDENCIES
   libnotify
   lograge
   macaddr
-  mapotempo_web_by_time_distance!
   mapotempo_web_import_vehicle_store!
   minitest-around
   minitest-focus
@@ -836,6 +846,7 @@ DEPENDENCIES
   rgeo
   rgeo-geojson
   rspec-rails
+  rswag
   rubocop
   rubyzip
   sanitize
