@@ -4,23 +4,11 @@
     <%= t 'admin.resellers.edit.help_urls' %>
   </legend>
 
-  <%= f.text_field :website_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.website_url_help' %></p>
-  <% end %>
+  <%= f.text_field :website_url, help: t('admin.resellers.form.website_url_help') %>
 
-  <%= f.text_field :welcome_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.welcome_url_help' %></p>
-  <% end %>
+  <%= f.text_field :welcome_url, help: t('admin.resellers.form.welcome_url_help') %>
 
-  <%= f.text_field :help_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.help_url_help' %></p>
-  <% end %>
+  <%= f.text_field :help_url, help: t('admin.resellers.form.help_url_help') %>
 
-  <%= f.text_field :contact_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.contact_url_help' %></p>
-  <% end %>
-
-  <%= f.text_field :subscription_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.subscription_url_help' %></p>
-  <% end %>
-</fieldset>
+  <%= f.text_field :contact_url, help: t('admin.resellers.form.contact_url_help') %>
+  <%= f.text_field :subscription_url, help: t('admin.resellers.form.subscription_url_help') %>

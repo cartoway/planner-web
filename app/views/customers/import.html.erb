@@ -4,7 +4,7 @@
 
 <div class="row row-top">
 
-  <%= twitter_bootstrap_form_for @customer, url: upload_dump_customers_path, layout: :horizontal, html: { class: 'form-horizontal', multipart: true } do |f| %>
+  <%= bootstrap_form_for @customer, url: upload_dump_customers_path, layout: :horizontal, html: { class: 'form-horizontal', multipart: true } do |f| %>
 
     <div class='form-group'>
     <label class="col-md-2 control-label" for="uploaded-customer"><%= t('activerecord.models.customer') %></label>
@@ -17,7 +17,7 @@
     </div>
 
     <%= render partial: 'profile_router_inputs', locals: { f: f } %>
-    <%= f.collection_select :layer_id, t('activerecord.models.layer'), Layer.all.sort_by(&:id).select{ |l| !l[:overlay] }, :id, :translated_name, {}, {} %>
+    <%= f.collection_select :layer_id, Layer.all.sort_by(&:id).select{ |l| !l[:overlay] }, :id, :translated_name, {}, {} %>
     <div class="col-md-2"></div>
     <p class="help-block layer-unauthorized hidden warning has-warning" style="display:block!important;"><%= t('activerecord.attributes.customer.layer_warning') %></p>
 

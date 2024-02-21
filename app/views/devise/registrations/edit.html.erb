@@ -7,7 +7,7 @@
         <h1><%= t('.title', resource: resource_class.model_name.human , default: 'Edit #{resource_name.to_s.humanize}') %></h1>
       </div>
       <div class="panel-body">
-        <%= twitter_bootstrap_form_for resource, as: resource_name, url: registration_path(resource_name), default_label_class: 'col-md-3 control-label', layout: :horizontal do |f| %>
+        <%= bootstrap_form_for resource, as: resource_name, url: registration_path(resource_name), default_label_class: 'col-md-3 control-label', layout: :horizontal do |f| %>
           <%= f.email_field :email %>
           <%= f.password_field :current_password do %>
             <p class="help-block"><%= t('.we_need_your_current_password_to_confirm_your_changes', default: 'we need your current password to confirm your changes') %></p>
@@ -16,9 +16,7 @@
             <p class="help-block"><%= t('.leave_blank_if_you_don_t_want_to_change_it', default: "leave blank if you don't want to change it") %></p>
           <% end %>
           <%= f.password_field :password_confirmation %>
-          <%= f.actions(class: 'col-md-offset-3 col-md-6') do %>
-            <%= f.submit t('.update', default: "Update") %>
-          <% end %>
+          <%= f.submit message: t('.update', default: "Update") %>
         <% end %>
       </div>
     </div>

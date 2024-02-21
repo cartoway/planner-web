@@ -4,22 +4,12 @@
     <%= t 'admin.resellers.edit.analysis_urls' %>
   </legend>
 
-  <%= f.text_field :customer_dashboard_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.customer_dashboard_url_help' %></p>
-  <% end %>
+  <%= f.text_field :customer_dashboard_url, help: t('admin.resellers.form.customer_dashboard_url_help') %>
 
-  <%= f.text_field :audience_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.audience_url_help' %></p>
-  <% end %>
-  <%= f.text_field :behavior_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.behavior_url_help' %></p>
-  <% end %>
+  <%= f.text_field :audience_url, help: t('admin.resellers.form.audience_url_help') %>
+  <%= f.text_field :behavior_url, help: t('admin.resellers.form.behavior_url_help') %>
 
-  <%= f.text_field :customer_audience_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.customer_audience_url_help' %></p>
-  <% end %>
+  <%= f.text_field :customer_audience_url, help: t('admin.resellers.form.customer_audience_url_help') %>
 
-  <%= f.text_field :customer_behavior_url do %>
-    <p class="help-block"><%= t 'admin.resellers.form.customer_behavior_url_help' %></p>
-  <% end %>
+  <%= f.text_field :customer_behavior_url, help: t('admin.resellers.form.customer_behavior_url_help') %>
 </fieldset>

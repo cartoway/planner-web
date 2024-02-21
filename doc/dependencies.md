@@ -1812,9 +1812,9 @@ All the stuff that isn't good/big enough for a real library.
 
 twitter-bootstrap-rails project integrates Bootstrap CSS toolkit for Rails 4, 3.x Asset Pipeline
 
-<a name="twitter_bootstrap_form_for"></a>
-### <a href="http://github.com/stouset/twitter_bootstrap_form_for">twitter_bootstrap_form_for</a> v2.0.0.beta (default)
-#### Rails form builder optimized for Twitter Bootstrap
+<a name="bootstrap_form"></a>
+### <a href="https://github.com/bootstrap-ruby/bootstrap_form">bootstrap_form</a> v2.7.0 (default)
+#### A rails form builder that makes it super easy to integrate twitter bootstrap-style forms
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> whitelisted
 

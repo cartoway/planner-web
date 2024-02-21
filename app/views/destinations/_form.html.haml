@@ -1,14 +1,11 @@
-= twitter_bootstrap_form_for(@destination, layout: :horizontal, html: {class: "form-horizontal", "data-destination_id" => (@destination.id or 0)}) do |f|
+= bootstrap_form_for(@destination, layout: :horizontal, html: {class: "form-horizontal", "data-destination_id" => (@destination.id or 0)}) do |f|
   = render 'shared/error_messages', model: @destination
   %fieldset#destination-details
     - if @destination.customer.enable_references && !@destination.customer.enable_multi_visits
-      = f.text_field :ref do
-        %p.help-block= t '.ref_help'
+      = f.text_field :ref, help: t ('.ref_help')
     = f.text_field :name, required: true
-    = f.text_field :street, {class: "form-control pointing", input_group: content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually'))} do
-      %p.help-block= t 'web.form.helpers.street'
-    = f.text_field :detail do
-      %p.help-block= t '.detail_help'
+    = f.text_field :street, {help: t('web.form.helpers.street'), class: "form-control pointing", append: content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually'))}
+    = f.text_field :detail, help: t('.detail_help')
     #destination_city_input.form-group
       %label.sr-only{for: "destination_postalcode"}= t 'activerecord.attributes.destination.postalcode'
       %label.sr-only{for: "destination_city"}= t 'activerecord.attributes.destination.city'
@@ -86,11 +83,9 @@
             %i.fa.fa-globe.fa-fw
     - if !@destination.customer.enable_multi_visits || @destination.tags.any?
       .destination_visits_attributes_tag_ids_input
-        = f.select :tag_ids, t('activerecord.attributes.destination.tag_ids'), options_for_select(@destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @destination.tags.collect(&:id)), {}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')} do
-          %p.help-block= t '.tags_help'
+        = f.select :tag_ids, options_for_select(@destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @destination.tags.collect(&:id)), {label: t('activerecord.attributes.destination.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
     = f.text_field :phone_number, {input_group: content_tag('i', '', class: 'fa fa-phone fa-fw')}
-    = f.text_area :comment do
-      %p.help-block= t '.comment_help'
+    = f.text_area :comment, help: t('.comment_help')
   #visits
     - if @destination.visits.size > 1
       #visits-header.row
@@ -115,8 +110,7 @@
       = t('destinations.form.visit.enable_multi_visits')
   = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
   = hidden_field :destination, :geocoded_at, :value => @destination.geocoded_at
-  = f.actions do
-    = f.submit
+  = f.submit
 #visit-fieldset-template
   = render 'visits/form', visit: @destination.visits.build, i: 0
 #visits-attributes-change-bulk-modal.modal.fade{role: "dialog", tabindex: "-1"}

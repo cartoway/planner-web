@@ -4,16 +4,14 @@
 
 <h1><%= t '.title' %></h1>
 
-<%= twitter_bootstrap_form_for [:admin, @user], layout: :horizontal do |f| %>
+<%= bootstrap_form_for [:admin, @user], layout: :horizontal do |f| %>
   <%= render 'shared/error_messages', model: @user %>
   <%= hidden_field_tag :url, params[:url] %>
   <%= f.email_field :email, autocomplete: "off" %>
   <%= render partial: 'users/time_zone' %>
-  <%= f.collection_select :customer_id, [], @customers, :id, :name, {}, {class: 'form-control'} %>
-  <%= f.toggles t 'admin.users.menu.send_email' do %>
-    <%= f.check_box :send_email, '', checked: true %>
+  <%= f.collection_select :customer_id, @customers, :id, :name, {}, {class: 'form-control'} %>
+  <%= f.form_group  :send_email, '', checked: true, label: { text: t 'admin.users.menu.send_email' } do %>
+    <%= f.check_box :send_email %>
   <% end %>
-  <%= f.actions do %>
-    <%= f.submit %>
-  <% end %>
+  <%= f.submit %>
 <% end %>

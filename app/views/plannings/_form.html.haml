@@ -1,24 +1,23 @@
-- options = {layout: :vertical, default_label_class: 'col-md-offset-2 col-md-8', default_div_class: 'col-md-offset-2 col-md-8 field' }
-= twitter_bootstrap_form_for @planning, options do |f|
+- options = {layout: :horizontal}
+= bootstrap_form_for @planning, options do |f|
   = render 'shared/error_messages', model: @planning
-  %div
-    = f.text_field :name, required: true
-  - if @planning.customer.vehicle_usage_sets.size > 1
-    %div
-      = f.collection_select :vehicle_usage_set_id, @planning.id ? t('activerecord.attributes.planning.vehicle_usage_set_small') : [], @planning.customer.vehicle_usage_sets, :id, :name, {}, {required: true}
-  - else
-    = f.hidden_field :vehicle_usage_set_id, value: @planning.customer.vehicle_usage_sets[0].id
   %div
     - if @planning.customer.enable_references
       - if @planning.id
         = f.text_field :ref, t('activerecord.attributes.planning.ref')
       - else
-        = f.text_field :ref do
-          %p.help-block= t '.ref_help'
+        = f.text_field :ref, help: t('.ref_help')
+  %div
+    = f.text_field :name, required: true
+  - if @planning.customer.vehicle_usage_sets.size > 1
+    %div
+      = f.collection_select :vehicle_usage_set_id, @planning.customer.vehicle_usage_sets, :id, :name, {}, {label: @planning.id ? t('activerecord.attributes.planning.vehicle_usage_set_small') : [], required: true}
+  - else
+    = f.hidden_field :vehicle_usage_set_id, value: @planning.customer.vehicle_usage_sets[0].id
   %div
     = f.text_field :date, { placeholder: t('.default_date'), value: @planning.date ? l(@planning.date.to_time, format: :datepicker) : nil, input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'})}
   - if (@planning.id && !@planning.tags.empty?) || !@planning.id
-    .col-md-offset-2.col-md-8.field
+    .col-md-offset-2.col-md-8.field.p0
       %label.control-label{:for => "speed_multiplier"}
         = t('activerecord.attributes.planning.tag_ids')
       %div{:class => "input-append"}
@@ -34,5 +33,4 @@
           %p.help-block= t '.tags_help'
   - if @planning.new_record?
     = zoning_select f, @planning, t('plannings.edit.zonings.label')
-  .col-md-offset-2.col-md-8
-    = f.submit
+  = f.submit

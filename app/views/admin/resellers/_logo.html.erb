@@ -4,9 +4,7 @@
     <%= t 'admin.resellers.edit.logo' %>
   </legend>
 
-  <%= f.file_field :logo_large do %>
-    <p class="help-block"><%= t 'admin.resellers.form.logo_large_help' %></p>
-  <% end %>
+  <%= f.file_field :logo_large, help: t('admin.resellers.form.logo_large_help') %>
 
   <% if @reseller.logo_large.url %>
     <div class="form-group">
@@ -16,9 +14,7 @@
     </div>
   <% end %>
 
-  <%= f.file_field :logo_small do %>
-    <p class="help-block"><%= t 'admin.resellers.form.logo_small_help' %></p>
-  <% end %>
+  <%= f.file_field :logo_small, help: t('admin.resellers.form.logo_small_help') %>
 
   <% if @reseller.logo_small.url %>
     <div class="form-group">
@@ -28,9 +24,7 @@
     </div>
   <% end %>
 
-  <%= f.file_field :favicon do %>
-    <p class="help-block"><%= t 'admin.resellers.form.favicon_help' %></p>
-  <% end %>
+  <%= f.file_field :favicon, help: t('admin.resellers.form.favicon_help') %>
 
   <% if @reseller.favicon.url %>
     <div class="form-group">

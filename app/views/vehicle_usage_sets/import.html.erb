@@ -1,4 +1,5 @@
 <% javascript 'vehicle_usage_set' %>
+<% checkbox_options = { label_class: 'col-md-offset-2 col-md-7', control_col: 'col-md-2' } %>
 
 <% content_for :title, t('.title') %>
 
@@ -15,30 +16,32 @@
   <div id="collapseCsv" class="panel-collapse collapse in">
     <div class="panel-body">
       <p class="help-block"><%= t '.csv.help' %></p>
-      <%= twitter_bootstrap_form_for(@import_csv, url: import_csv_vehicle_usage_sets_path, layout: :horizontal, multipart: true) do |f| %>
+      <%= bootstrap_form_for(@import_csv, url: import_csv_vehicle_usage_sets_path, layout: :horizontal, multipart: true) do |f| %>
         <%= render 'shared/error_messages', model: @import_csv %>
-        <%= f.file_field :file, required: true do %>
-          <p class="help-block">
-            <%= t '.csv.file_help' %>
-            <a data-toggle="modal" data-target="#import-help-modal" data-keyboard="true" href="#help" title="<%= t('.import_template_help') %>"><i class="fa fa-info-circle fa-fw"></i> <%= t('.import_template_help') %>
-            </a>
+        <%= f.file_field :file, required: true %>
+        <p class="help-block col-md-offset-2">
+          <%= t('.csv.file_help') %>
+          <a data-toggle="modal" data-target="#import-help-modal" data-keyboard="true" href="#help" title="<%= t('.import_template_help') %>"><i class="fa fa-info-circle fa-fw"></i> <%= t('.import_template_help') %>
+          </a>
+        </p>
+        <% unless @customer.default_max_vehicle_usage_sets > 1 %>
+          <p>
+            <b><%= t('.default_configuration_replaced') %></b>
           </p>
+        <% end %>
 
-          <% unless @customer.default_max_vehicle_usage_sets > 1 %>
-            <p>
-              <b><%= t('.default_configuration_replaced') %></b>
+        <%= f.form_group :replace_vehicles, { label: { text: t('.replace_vehicles') } }.merge(checkbox_options)  do %>
+          <%= f.check_box :replace_vehicles, label: '', checked: @customer.default_max_vehicle_usage_sets <= 1 %>
+        <% end %>
+        <div class='form-group'>
+          <div class='col-md-offset-2 col-md-8 field'>
+            <p class="help-block">
+              <%= t '.replace_vehicles_help' %>
             </p>
-          <% end %>
-        <% end %>
+          </div>
+        </div>
 
-        <%= f.toggles t '.vehicles' do %>
-          <%= f.check_box :replace_vehicles, t('.replace_vehicles'), checked: @customer.default_max_vehicle_usage_sets <= 1 %>
-          <p class="help-block"><%= t '.replace_vehicles_help' %></p>
-        <% end %>
-
-        <%= f.actions do %>
-          <%= f.submit t('all.verb.import'), {}, 'fa-upload' %>
-        <% end %>
+        <%= f.submit message: t('all.verb.import'), icon: 'fa-upload' %>
 
         <div class="form-group">
           <div class="col-md-offset-2 col-md-6">

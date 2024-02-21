@@ -905,3 +905,19 @@ input.form-control.number-of-days {
   width: 80%;
   margin: auto;
 }
+
+.form-horizontal {
+  .control-label, .checkbox {
+    text-align: unset;
+    margin-bottom: 5px;
+    padding-top: unset;
+  }
+}
+
+.form-group input[type="checkbox"] {
+  margin-top: unset;
+}
+
+.p0 {
+  padding: 0;
+}

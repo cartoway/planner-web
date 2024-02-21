@@ -375,6 +375,7 @@ en:
         lng: Longitude
         open: Open
         close: Close
+        ref: Reference
         store_start: Start store
         store_end: End store
         color: Color

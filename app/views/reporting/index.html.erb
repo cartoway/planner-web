@@ -8,7 +8,7 @@
 </div>
 
 <div class="row">
-  <%= twitter_bootstrap_form_for :_, url: {action: 'index'}, layout: :horizontal, html: {class: 'form-horizontal reporting-form', autocomplete: "off"} do |f| %>
+  <%= bootstrap_form_for :_, url: {action: 'index'}, layout: :horizontal, html: {class: 'form-horizontal reporting-form', autocomplete: "off"} do |f| %>
 
     <%= f.hidden_field :customer_id, value: current_user.customer.id %>
 
@@ -16,8 +16,8 @@
 
     <%= f.text_field :end_date, t('.end_date'), { placeholder: t('.default_end_date'), value: l(Date.yesterday.to_time, format: :datepicker), input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'})} %>
 
-    <%= f.toggles t '.with_actions' do %>
-      <%= f.check_box :with_actions %>
+    <%= f.form_group  :with_actions, label: { text: t '.with_actions' } do %>
+          <%= f.check_box :with_actions %>
     <% end %>
 
     <div class="col-md-offset-2 col-md-6">
