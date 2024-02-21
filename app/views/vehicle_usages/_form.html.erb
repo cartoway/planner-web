@@ -1,4 +1,4 @@
-<%= twitter_bootstrap_form_for @vehicle_usage, layout: :horizontal, html: { class: 'number-to-percentage form-horizontal'} do |f| %>
+<%= bootstrap_form_for @vehicle_usage, layout: :horizontal, html: { class: 'number-to-percentage form-horizontal'} do |f| %>
   <%= render 'shared/error_messages', model: @vehicle_usage %>
   <fieldset>
     <legend class="scheduler-border">
@@ -8,12 +8,10 @@
       <% if @vehicle_usage_sets[0].customer.default_max_vehicle_usage_sets > 1 %>
       <p class="help-block"><%= t 'vehicle_usages.form.vehicle.help' %></p>
       <% end %>
-      <%= twitter_bootstrap_fields_for 'vehicle_usage[vehicle]', @vehicle_usage.vehicle, layout: :horizontal do |f| %>
+      <%= f.fields_for @vehicle_usage.vehicle, layout: :horizontal, builder: BootstrapForm::FormBuilder do |f| %>
         <%= f.hidden_field :id %>
         <% if @vehicle_usage.vehicle.customer.enable_references %>
-          <%= f.text_field :ref do %>
-            <p class="help-block"><%= t 'vehicles.form.ref.help' %></p>
-          <% end %>
+          <%= f.text_field :ref, help: t('vehicles.form.ref.help') %>
         <% end %>
         <div class="form-group">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_color">
@@ -87,7 +85,7 @@
             <p class="help-block"><%= t 'vehicles.form.max_ride_duration.help' %></p>
           </div>
         </div>
-        <%= twitter_bootstrap_fields_for 'vehicle_usage[vehicle][capacities]', @vehicle_usage.vehicle.capacities, layout: :horizontal do |capacity| %>
+        <%= f.fields_for 'vehicle_usage[vehicle][capacities]',@vehicle_usage.vehicle.capacities, layout: :horizontal, builder: BootstrapForm::FormBuilder do |capacity| %>
           <div id="vehicle_usage_vehicle_capacity_input" class="form-group <%= 'has-error' if @vehicle_usage.vehicle.errors.messages[:capacities].present? %>">
             <label class="col-md-offset-2 col-md-8 field"><%= t 'vehicles.form.capacities.label' %></label>
             <div class="col-md-offset-2 col-md-8 field">
@@ -401,7 +399,7 @@
           </div>
         </div>
 
-        <%= twitter_bootstrap_fields_for 'vehicle_usage[vehicle][devices]', @vehicle_usage.vehicle, layout: :horizontal do |f| %>
+        <%= f.fields_for 'vehicle_usage[vehicle][devices]', @vehicle_usage.vehicle, layout: :horizontal do |f| %>
           <% @vehicle_usage.vehicle.customer.device.configured_definitions.each do |key, definition| %>
             <% if definition[:forms].key?(:vehicle) %>
               <% definition[:forms][:vehicle].each do |field, type| %>
@@ -466,9 +464,10 @@
     </div>
     <% if @vehicle_usage_sets.count > 1 || @vehicle_usage.tags.count > 0 %>
       <div>
-        <%= f.select :tag_ids, t('activerecord.attributes.vehicle_usage.tag_ids'), options_for_select(@vehicle_usage.vehicle.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @vehicle_usage.tags.collect(&:id)), {}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')} do %>
-          <p class="help-block"><%= t('vehicle_usages.form.tags_help') %></p>
-        <% end %>
+        <%= f.select :tag_ids, options_for_select(@vehicle_usage.vehicle.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @vehicle_usage.tags.collect(&:id)),
+          {help: t('vehicle_usages.form.tags_help')},
+          {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
+        %>
       </div>
     <% end %>
     <div id="vehicle_usage_time_window_start_time_window_end_input" class="form-group">
@@ -594,7 +593,5 @@
     </div>
   </fieldset>
 
-  <%= f.actions do %>
-    <%= f.submit t('.save') %>
-  <% end %>
+  <%= f.submit message: t('.save') %>
 <% end %>

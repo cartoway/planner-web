@@ -1,5 +1,5 @@
 <div id="edit-position">
-<%= twitter_bootstrap_form_for(@store, url: api_web_v01_update_position_store_path(@store), default_label_class: 'col-md-4 control-label', layout: :horizontal, html: {class: "form-horizontal", "data-destination_id" => (@store.id or 0)}) do |f| %>
+<%= bootstrap_form_for(@store, url: api_web_v01_update_position_store_path(@store), default_label_class: 'col-md-4 control-label', layout: :horizontal, html: {class: "form-horizontal", "data-destination_id" => (@store.id or 0)}) do |f| %>
   <%= render 'shared/error_messages', model: @store %>
   <%= f.number_field :lat, { step: 'any'} %>
   <%= f.number_field :lng, { step: 'any'} %>

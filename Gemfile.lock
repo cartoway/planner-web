@@ -48,14 +48,6 @@ GIT
     sidebar-v2-gh-pages-rails (0.0.1)
 
 GIT
-  remote: https://github.com/Mapotempo/twitter_bootstrap_form_for.git
-  revision: 5ec6e134eda8742009310d58f80adb88de3de56e
-  specs:
-    twitter_bootstrap_form_for (2.0.0.beta)
-      actionpack (~> 4)
-      railties (~> 4)
-
-GIT
   remote: https://github.com/frodrigo/jquery-timeentry-rails.git
   revision: ccecc885d334b772d065bb722e2d4528a9f9a40c
   specs:
@@ -172,6 +164,7 @@ GEM
       debug_inspector (>= 0.0.1)
     bootstrap-wysihtml5-rails (0.3.3.8)
       railties (>= 3.0)
+    bootstrap_form (2.7.0)
     brakeman (5.4.1)
     browser (5.3.1)
     builder (3.2.4)
@@ -751,6 +744,7 @@ DEPENDENCIES
   better_errors
   binding_of_caller
   bootstrap-wysihtml5-rails
+  bootstrap_form
   brakeman
   browser
   bullet
@@ -862,7 +856,6 @@ DEPENDENCIES
   tidy-html5!
   turbolinks (< 5)
   twitter-bootstrap-rails!
-  twitter_bootstrap_form_for!
   uglifier (< 4.0)
   validates_timeliness (< 5)
   web-console (~> 2)

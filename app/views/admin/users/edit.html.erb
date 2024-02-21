@@ -4,17 +4,15 @@
 
 <h1><%= t '.title' %></h1>
 
-<%= twitter_bootstrap_form_for [:admin, @user], layout: :horizontal do |f| %>
+<%= bootstrap_form_for [:admin, @user], layout: :horizontal do |f| %>
   <%= render 'shared/error_messages', model: @user %>
   <%= hidden_field_tag :url, params[:url] %>
   <%= f.email_field :email, required: true, autocomplete: "off" %>
   <%= f.password_field :password %>
   <%= f.password_field :password_confirmation %>
   <%= render partial: 'users/time_zone' %>
-  <%= f.collection_select :customer_id, [], @customers, :id, :name, {}, {class: 'form-control'} %>
-  <%= f.actions do %>
-    <%= f.submit %>
-  <% end %>
+  <%= f.collection_select :customer_id, @customers, :id, :name, {}, {class: 'form-control'} %>
+  <%= f.submit %>
 <% end %>
 
 <a href="/?api_key=<%= @user.api_key %>"><%= t '.connect_as' %></a>

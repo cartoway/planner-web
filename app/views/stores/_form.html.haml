@@ -1,12 +1,10 @@
-= twitter_bootstrap_form_for(@store, layout: :horizontal, html: {class: "form-horizontal", "data-destination_id" => (@store.id or 0)}) do |f|
+= bootstrap_form_for(@store, layout: :horizontal, html: {class: "form-horizontal", "data-destination_id" => (@store.id or 0)}) do |f|
   = render 'shared/error_messages', model: @store
   %fieldset#destination-details
     - if @store.customer.enable_references
-      = f.text_field :ref do
-        %p.help-block= t '.ref_help'
+      = f.text_field :ref, help: t('.ref_help')
     = f.text_field :name, required: true
-    = f.text_field :street, {class: "form-control pointing", input_group: content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually'))} do
-      %p.help-block= t 'web.form.helpers.street'
+    = f.text_field :street, { help: t('web.form.helpers.street'), class: "form-control pointing", append: content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually'))}
     #store_city_input.form-group
       %label.sr-only{for: "store_postalcode"}= t 'activerecord.attributes.store.postalcode'
       %label.sr-only{for: "store_city"}= t 'activerecord.attributes.store.city'
@@ -105,8 +103,7 @@
 
   = hidden_field :store, :geocoder_version, :value => @store.geocoder_version
   = hidden_field :store, :geocoded_at, :value => @store.geocoded_at
-  = f.actions do
-    = f.submit
+  = f.submit
 
 :ruby
   layers = (current_user.customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer|

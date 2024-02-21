@@ -1,9 +1,7 @@
-<%= twitter_bootstrap_form_for @tag, layout: :horizontal do |f| %>
+<%= bootstrap_form_for @tag, layout: :horizontal do |f| %>
   <%= render 'shared/error_messages', model: @tag %>
   <%= f.text_field :label, required: true %>
-  <%= f.text_field :ref do %>
-    <p class="help-block"><%= t '.ref_help' %></p>
-  <% end %>
+  <%= f.text_field :ref, help: t('.ref_help') %>
   <div class="form-group" id="tag_color_input">
     <label class="col-md-offset-2 col-md-8 field" for="tag_color">Couleur</label>
     <div class="col-md-offset-2 col-md-8 field input-append">
@@ -33,7 +31,5 @@
     </div>
   </div>
 
-  <%= f.actions do %>
-    <%= f.submit %>
-  <% end %>
+  <%= f.submit %>
 <% end %>

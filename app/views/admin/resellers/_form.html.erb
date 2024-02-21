@@ -1,8 +1,7 @@
-<%= twitter_bootstrap_form_for [:admin, @reseller], layout: :horizontal do |f| %>
+<% checkbox_options = { label_class: 'col-md-offset-2 col-md-7', control_col: 'col-md-2' } %>
+<%= bootstrap_form_for [:admin, @reseller], layout: :horizontal do |f| %>
   <%= render 'shared/error_messages', model: @reseller %>
-  <%= f.text_field :host, required: true do %>
-    <p class="help-block"><%= t '.host_help' %></p>
-  <% end %>
+  <%= f.text_field :host, required: true, help: t('.host_help') %>
 
   <div class="form-group">
     <label class="col-md-2 control-label" for="reseller_url_protocol_http">
@@ -22,21 +21,14 @@
     </div>
   </div>
 
-  <%= f.text_field :name, required: true do %>
-    <p class="help-block"><%= t '.name_help' %></p>
-  <% end %>
+  <%= f.text_field :name, required: true: t('.name_help') %>
 
-  <%= f.text_field :application_name do %>
-    <p class="help-block"><%= t '.application_name_help' %></p>
-  <% end %>
-
-  <%= f.text_field :sms_api_key do %>
-    <p class="help-block"><%= t '.sms_api_key_help' %></p>
-  <% end %>
+  <%= f.text_field :application_name, help: t('.application_name_help') %>
+  <%= f.text_field :sms_api_key, help: t('.sms_api_key_help') %>
   <%= f.password_field :sms_api_secret, value: @reseller.sms_api_secret %>
 
-  <%= f.toggles t 'activerecord.attributes.customer.enable_external_callback' do %>
-    <%= f.check_box :enable_external_callback %>
+  <%= f.form_group :enable_external_callback, {label: { text: t('activerecord.attributes.customer.enable_external_callback') }}.merge(checkbox_options) do %>
+    <%= f.check_box :enable_external_callback, label: '' %>
   <% end %>
 
   <% if @reseller.enable_external_callback %>
@@ -61,7 +53,5 @@
 
   <%= render 'logo', f: f %>
 
-  <%= f.actions do %>
-    <%= f.submit %>
-  <% end %>
+  <%= f.submit %>
 <% end %>

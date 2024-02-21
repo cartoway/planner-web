@@ -1,5 +1,5 @@
 - require 'visits_helper'
-= twitter_bootstrap_fields_for 'destination[visits_attributes]', visit, index: i, layout: :horizontal do |f|
+= fields_for 'destination[visits_attributes]', visit, index: i, layout: :horizontal, builder: BootstrapForm::FormBuilder do |f|
   %fieldset
     %a{name: "visit_id=#{visit.id}"}
     %legend.scheduler-border
@@ -13,7 +13,7 @@
               = t('.delete')
     .collapse.in{id: "collapseVisit#{visit.id || 0}"}
       = f.hidden_field :id
-      = f.check_box :_destroy
+      = f.check_box :_destroy, class: 'd-none'
       = f.label :_destroy do
         = t('.destroy')
       - if visit.destination.customer.enable_references && visit.destination.customer.enable_multi_visits
@@ -31,11 +31,12 @@
                 %span.input-group-addon
                   %i{class: "fa #{du.default_icon} fa-fw"}
             %p.help-block= t '.quantities.help'
-      = f.text_field :duration, {                                                                                                                                                                      |
-        value: visit.duration_time_with_seconds,                                                                                                                                                       |
-        placeholder: visit.destination.customer.visit_duration ? visit.destination.customer.visit_duration_time_with_seconds + ' (' + t('.duration_default') + ')' : t('all.unit.hour_minute_second'), |
-        input_group: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} do                                                                                                                          |
-        %p.help-block= t '.duration_help'
+      = f.text_field :duration,
+        value: visit.duration_time_with_seconds,
+        placeholder: visit.destination.customer.visit_duration ? "#{visit.destination.customer.visit_duration_time_with_seconds} (#{t('.duration_default')})" : t('all.unit.hour_minute_second'),
+        append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw'),
+        help: t('.duration_help')
+
       #visit_open_close_input{class: "form-group #{nested_has_error?(:time_window_end_1, visit.id)}"}
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_start_1"}= t 'activerecord.attributes.visit.time_window_start_1'
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_end_1"}= t 'activerecord.attributes.visit.time_window_end_1'
@@ -94,8 +95,6 @@
           %p.help-block= t '.priority_help'
       - if visit.destination.customer.enable_multi_visits || !visit.tags.empty?
         .destination_visits_attributes_tag_ids_input
-          = f.select :tag_ids, t('activerecord.attributes.visit.tag_ids'), options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')} do
-            %p.help-block= t '.tags_help'
+          = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
 
-      = f.select :force_position, t('activerecord.attributes.visit.force_position'), options_for_select(visit_force_position_options_for_select, selected: visit_force_position_options_for_select_selected(visit)), {}, {} do
-        %p.help-block= t '.force_position_help'
+      = f.select :force_position, options_for_select(visit_force_position_options_for_select, selected: visit_force_position_options_for_select_selected(visit)), {label: t('activerecord.attributes.visit.force_position'), help: t('.force_position_help')}, {}

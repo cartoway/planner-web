@@ -7,13 +7,12 @@
         <h1><%= t('.sign_up', default: "Sign up") %></h1>
       </div>
       <div class="panel-body">
-        <%= twitter_bootstrap_form_for resource, as: resource_name, url: registration_path(resource_name), default_label_class: 'col-md-3 control-label', layout: :horizontal do |f| %>
+        <%= bootstrap_form_for resource, as: resource_name, url: registration_path(resource_name), default_label_class: 'col-md-3 control-label', layout: :horizontal do |f| %>
           <%= f.email_field :email %>
           <%= f.password_field :password %>
           <%= f.password_field :password_confirmation %>
-          <%= f.actions(class: 'col-md-offset-3 col-md-6') do %>
-            <%= f.submit t('.sign_up', default: "Sign up") %>
-          <% end %>
+
+          <%= f.submit message: t('.sign_up') %>
         <% end %>
 
         <%= render "devise/shared/links" %>

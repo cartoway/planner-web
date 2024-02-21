@@ -15,23 +15,20 @@
   <div id="collapseCsv" class="panel-collapse collapse in">
     <div class="panel-body">
       <p class="help-block"><%= t '.csv.help' %></p>
-      <%= twitter_bootstrap_form_for(@import_csv, url: stores_import_csv_path, layout: :horizontal, multipart: true) do |f| %>
+      <%= bootstrap_form_for(@import_csv, url: stores_import_csv_path, layout: :horizontal, multipart: true) do |f| %>
         <%= render 'shared/error_messages', model: @import_csv %>
-        <%= f.file_field :file, required: true do %>
-          <p class="help-block">
-            <%= t '.csv.file_help' %>
-            <a data-toggle="modal" data-target="#import-help-modal" data-keyboard="true" href="#help" title="<%= t('.import_template_help') %>"><i class="fa fa-info-circle fa-fw"></i> <%= t('.import_template_help') %></a>
-          </p>
-        <% end %>
-        <%= f.toggles t '.stores' do %>
-          <%= f.radio_button :replace, t('.replace_no'), 0, checked: !@import_csv.replace %>
+        <%= f.file_field :file, required: true %>
+        <p class="help-block col-md-offset-2">
+          <%= t('.csv.file_help') %>
+          <a data-toggle="modal" data-target="#import-help-modal" data-keyboard="true" href="#help" title="<%= t('.import_template_help') %>"><i class="fa fa-info-circle fa-fw"></i> <%= t('.import_template_help') %></a>
+        </p>
+        <%= f.form_group :stores, {label: {text: t('.stores') }}  do %>
+          <%= f.radio_button :replace, 0, checked: !@import_csv.replace, label: t('.replace_no'), label_class: '' %>
           <p class="help-block"><%= t '.replace_no_help' %></p>
-          <%= f.radio_button :replace, t('.replace_yes'), 1, checked: @import_csv.replace %>
+          <%= f.radio_button :replace, 1, checked: @import_csv.replace, label: t('.replace_yes') %>
           <p class="help-block"><%= t '.replace_yes_help' %></p>
         <% end %>
-        <%= f.actions do %>
-          <%= f.submit t('all.verb.import'), {}, 'fa-upload' %>
-        <% end %>
+        <%= f.submit message: t('all.verb.import'), icon: 'fa-upload' %>
         <div class="form-group">
           <div class="col-md-offset-2 col-md-6">
             <a href="/store/import_template.excel" class="btn btn-default" role="button"><i class="fa fa-download fa-fw"></i> <%= t 'import.template_excel' %></a>

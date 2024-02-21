@@ -5,20 +5,19 @@
       attribution: layer.map_attribution, default: layer == @user.layer, overlay: layer.overlay
     }
   }
-- options = {layout: :vertical, default_label_class: 'col-md-offset-2 col-md-8', default_div_class: 'col-md-offset-2 col-md-8 field' }
-= twitter_bootstrap_form_for @user, options do |f|
+- options = {layout: :horizontal}
+= bootstrap_form_for @user, options do |f|
   = render 'shared/error_messages', model: @user
   = render partial: "users/time_zone"
-  = f.collection_select :layer_id, [], (@user.admin? ? Layer.all.sort_by(&:id) : @user.customer.profile.layers).select{ |l| !l[:overlay] }, :id, :translated_name, {}, {required: true}
+  = f.collection_select :layer_id, (@user.admin? ? Layer.all.sort_by(&:id) : @user.customer.profile.layers).select{ |l| !l[:overlay] }, :id, :translated_name, {}, {required: true}
   .form-group
-    %span.col-md-offset-2.col-md-6
+    %span.col-md-offset-2.col-md-8
       #map.map-fixed-size
-  = f.select :prefered_unit, [], User.unities, {}, {:class => 'form-control'}
+  = f.select :prefered_unit, User.unities, {}, {:class => 'form-control'}
   = f.text_field :url_click2call do
     %p.help-block= t '.url_click2call_help'
   = f.text_field :api_key, {readonly: true, input_group: content_tag('i', '', class: 'fa fa-key fa-fw')}
-  .col-md-offset-2.col-md-6
-    = f.submit
+  = f.submit
 :ruby
   controller.js(
     map_layers: Hash[['default'].zip(layers.select{ |l| l[:default] })],

@@ -376,6 +376,7 @@
         'lng': 'Longitude'
         'open': 'Horaire début'
         'close': 'Horaire fin'
+        'ref': 'Référence'
         'store_start': 'Site début'
         'store_end': 'Site fin'
         'color': 'Couleur'

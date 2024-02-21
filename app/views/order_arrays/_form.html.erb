@@ -1,10 +1,9 @@
-<%= twitter_bootstrap_form_for @order_array, layout: :horizontal do |f| %>
+<%= bootstrap_form_for @order_array, layout: :horizontal do |f| %>
   <%= render 'shared/error_messages', model: @order_array %>
   <%= f.text_field :name, required: true %>
   <%= f.text_field :base_date, required: true, value: @order_array.base_date ? l(@order_array.base_date.to_time, format: :datepicker) : nil, input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'}) %>
   <%= f.select :length, [], OrderArray.lengths.collect{ |key, id| [t(".#{key}"), key] }, {}, {required: true} %>
-  <%= f.actions do %>
-    <%= f.submit %>
+  <%= f.submit %>
     <% if @order_array.id %>
       <div class="btn-group">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><i class="fa fa-table fa-fw"></i> <%= t '.export.menu' %> <span class="caret"></span></button>

@@ -5,7 +5,7 @@
         <h1><%= t('.change_your_password', default: 'Change your password') %></h1>
       </div>
       <div class="panel-body">
-        <%= twitter_bootstrap_form_for resource, as: resource_name, url: password_path(resource_name), method: :put, default_label_class: 'col-md-3 control-label', layout: :horizontal do |f| %>
+        <%= bootstrap_form_for resource, as: resource_name, url: password_path(resource_name), method: :put, default_label_class: 'col-md-3 control-label', layout: :horizontal do |f| %>
           <%= devise_error_messages! %>
           <%= f.hidden_field :reset_password_token %>
           <%= f.password_field :password %>

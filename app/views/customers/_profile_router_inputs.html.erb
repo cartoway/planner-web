@@ -1,5 +1,5 @@
 <% if current_user.admin? %>
-  <%= f.collection_select :profile_id, [], Profile.all, :id, :name, {}, {required: true, input_group: content_tag('i', '', class: 'fa fa-gear fa-fw')} %>
+  <%= f.collection_select :profile_id, Profile.all, :id, :name, {}, {required: true, input_group: content_tag('i', '', class: 'fa fa-gear fa-fw')} %>
 
   <% if has_vehicle_with_unauthorized_router(@customer) %>
     <p class="vehicle-router-unauthorized warning has-warning"><%= t('customers.form.vehicle_router_unauthorized', profile: @customer.profile.name).html_safe %></p>

@@ -1,6 +1,6 @@
 <% options = {layout: :horizontal}
 options.merge!(url: "/api-web/0.1/zonings/#{@zoning.id}/#{params[:action]}") if params[:controller] =~ /api_web/%>
-<%= twitter_bootstrap_form_for @zoning, options do |f| %>
+<%= bootstrap_form_for @zoning, options do |f| %>
   <%= render 'shared/error_messages', model: @zoning %>
   <% if @manage_zoning[:manage_edit] %>
     <div title="<%= t('activerecord.attributes.zoning.name') %>">
@@ -17,9 +17,7 @@ options.merge!(url: "/api-web/0.1/zonings/#{@zoning.id}/#{params[:action]}") if 
         </div>
       </div>
     <% end %>
-    <%= f.actions do %>
-      <%= f.submit %>
-    <% end %>
+    <%= f.submit %>
   <% end %>
   <% if @zoning.id %>
     <hr>
