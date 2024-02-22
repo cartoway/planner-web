@@ -1,5 +1,4 @@
 <% javascript 'destination' %>
-<% checkbox_options = { label_class: 'col-md-offset-2 col-md-7', control_col: 'col-md-2' } %>
 <% content_for :title, t('.title') %>
 
 <h1><%= t '.title' %></h1>
@@ -31,16 +30,7 @@
           <%= f.radio_button :replace, 1, checked: @import_csv.replace, label: t('.replace_yes') %>
           <p class="help-block"><%= t '.replace_yes_help' %></p>
         <% end %>
-        <%= f.form_group :delete_plannings, {label: { text: t('.delete_plannings') }}.merge(checkbox_options)  do %>
-          <%= f.check_box :delete_plannings, label: '' %>
-        <% end %>
-        <div class='form-group'>
-          <div class='col-md-offset-2 col-md-8 field'>
-            <p class="help-block">
-              <%= t '.delete_plannings_help' %>
-            </p>
-          </div>
-        </div>
+        <%= render partial: 'shared/check_box', locals: { form: f, field: :delete_plannings, label: t('.delete_plannings'), help: t('.delete_plannings_help') } %>
         <%= f.submit message: t('all.verb.import'), icon: 'fa fa-upload' %>
         <div class="form-group">
           <div class="col-md-offset-2 col-md-6">
