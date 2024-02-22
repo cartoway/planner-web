@@ -1,6 +1,5 @@
 <% require "#{Rails.application.root}/lib/localized_values.rb" %>
 <% options= {layout: :horizontal, html: { class: 'clear-passwords number-to-percentage form-horizontal'} } %>
-<% checkbox_options = { label_class: 'col-md-offset-2 col-md-7', control_col: 'col-md-2' } %>
 <%= bootstrap_form_for @customer, options do |f| %>
 
   <%= render 'shared/error_messages', model: @customer %>
@@ -13,9 +12,7 @@
   <%= f.text_field :name, required: true, disabled: !current_user.admin?, label: {text: t('.name')} %>
   <%= f.text_field :end_subscription, {value: @customer.end_subscription ? l(@customer.end_subscription.to_time, format: :datepicker) : nil, disabled:!current_user.admin?, append: content_tag('i', '', {class: 'fa fa-calendar fa-fw'})} %>
   <% if current_user.admin? %>
-    <%= f.form_group  :test, {checked: @customer.id ? @customer.test : Mapotempo::Application.config.customer_test_default, label: { text: t('activerecord.attributes.customer.test') }}.merge(checkbox_options) do %>
-      <%= f.check_box :test, label: '' %>
-    <% end %>
+    <%= render partial: 'shared/check_box', locals: { form: f, field: :test, label: t('activerecord.attributes.customer.test'), options: { checked: @customer.id ? @customer.test : Mapotempo::Application.config.customer_test_default } } %>
   <% end %>
 
   <fieldset>
@@ -261,16 +258,9 @@
       </div>
     </div>
 
-    <div id="router_options_strict_restriction_input" class="form-group <%= @customer.router.try(&:strict_restriction?) ? '' : 'router-option-disabled' %>">
-      <label class="col-md-offset-2 col-md-8" for="customer_router_options_strict_restriction">
-        <%= t('activerecord.attributes.customer.router_options_strict_restriction') %>
-      </label>
-
-      <div class="col-md-offset-2 col-md-8 field">
-        <%= check_box_tag 'customer[router_options][strict_restriction]', @customer.router_options['strict_restriction'], !!@customer.router_options['strict_restriction'] %>
-        <p class="help-block"><%=  t('customers.form.router_options_strict_restriction') %></p>
-      </div>
-    </div>
+    <% if (@customer.router.try(&:strict_restriction?)) %>
+      <%= render partial: 'shared/check_box', locals: { form: f, name: "customer[router_options][strict_restriction]", checked: !!@customer.router_options['strict_restriction'], label: t('activerecord.attributes.customer.router_options_strict_restriction'), help: t('customers.form.router_options_strict_restriction') } %>
+    <% end %>
 
     <div class="form-group">
       <label class="col-md-offset-2 col-md-8" for="speed_multiplier">
@@ -289,11 +279,7 @@
 
     <%= f.text_field :visit_duration, {help: t('.visit_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.visit_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} %>
     <%= f.text_field :default_country, required: true %>
-
-    <%= f.form_group :with_state, { label: { text: t('activerecord.attributes.customer.with_state') } }.merge(checkbox_options)  do %>
-      <%= f.check_box :with_state, label: '' %>
-    <% end %>
-
+    <%= render partial: 'shared/check_box', locals: { form: f, field: :with_state, label: t('activerecord.attributes.customer.with_state') } %>
   </fieldset>
 
   <% if current_user.admin? %>
@@ -302,36 +288,13 @@
         <%= t '.options' %>
       </legend>
 
-      <%= f.form_group :enable_multi_visits, { label: { text: t('activerecord.attributes.customer.enable_multi_visits') } }.merge(checkbox_options) do %>
-        <%= f.check_box :enable_multi_visits, label: '' %>
-      <% end %>
-      <%= f.form_group  :enable_references, { label: { text: t('activerecord.attributes.customer.enable_references') }}.merge(checkbox_options) do %>
-        <%= f.check_box :enable_references, label: '' %>
-      <% end %>
-      <%= f.form_group  :enable_global_optimization, { label: { text: t('activerecord.attributes.customer.enable_global_optimization') }, style: 'margin-bottom: 0' }.merge(checkbox_options) do %>
-        <%= f.check_box :enable_global_optimization, label: '' %>
-      <% end %>
-      <% if !@customer.id || @customer.test %>
-        <div class='form-group'>
-          <div class='col-md-offset-2 col-md-8 field'>
-            <p class="help-block">
-              <%= t '.enable_global_optimization_test' %>
-            </p>
-          </div>
-        </div>
-      <% end %>
-      <%= f.form_group  :enable_vehicle_position, { label: { text: t('activerecord.attributes.customer.enable_vehicle_position') } }.merge(checkbox_options) do %>
-        <%= f.check_box :enable_vehicle_position, label: '' %>
-      <% end %>
-      <%= f.form_group  :enable_stop_status, { label: { text: t('activerecord.attributes.customer.enable_stop_status') } }.merge(checkbox_options) do %>
-        <%= f.check_box :enable_stop_status, label: '' %>
-      <% end %>
-      <%= f.form_group  :enable_sms, '', { disabled: !@customer.reseller.sms_api_key, label: { text: t('activerecord.attributes.customer.enable_sms') } }.merge(checkbox_options) do %>
-        <%= f.check_box :enable_sms, label: '' %>
-      <% end %>
-      <%= f.number_field :history_cron_hour, { min: 0, max: 23, input_group: content_tag('i', '', class: 'fa fa-chart-line fa-fw')} do %>
-        <p class="help-block"><%= t '.history_cron_hour_help' %></p>
-      <% end %>
+      <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_multi_visits, label: t('activerecord.attributes.customer.enable_multi_visits') } %>
+      <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_references, label: t('activerecord.attributes.customer.enable_references') } %>
+      <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_global_optimization, label: t('activerecord.attributes.customer.enable_global_optimization'), help: (t('.enable_global_optimization_test') if !@customer.id || @customer.test) } %>
+      <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_vehicle_position, label: t('activerecord.attributes.customer.enable_vehicle_position') } %>
+      <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_stop_status, label: t('activerecord.attributes.customer.enable_stop_status') } %>
+      <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_sms, label: t('activerecord.attributes.customer.enable_sms'), options: { disabled: !@customer.reseller.sms_api_key } } %>
+      <%= f.number_field :history_cron_hour, { help: t('.history_cron_hour_help'), min: 0, max: 23, append: content_tag('i', '', class: 'fa fa-chart-line fa-fw')} %>
     </fieldset>
     <fieldset>
       <legend class="scheduler-border">
@@ -357,9 +320,7 @@
       <%= f.number_field :optimization_vehicle_soft_upper_bound, { help: t('.optimization_vehicle_soft_upper_bound_help'), placeholder: t('.optimization_soft_upper_bound_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.optimize_vehicle_soft_upper_bound)), min: 0, step: 'any', append: '×'} %>
       <%= f.number_field :optimization_cost_waiting_time, { help: t('.optimization_cost_waiting_time_help'), placeholder: t('.optimization_cost_waiting_time_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.optimize_cost_waiting_time)), min: 0, step: 'any', append: '×'} %>
 
-      <%= f.form_group :optimization_force_start, { label: { text: t('activerecord.attributes.customer.optimization_force_start') }, help: t('.optimization_force_start_help') }.merge(checkbox_options) do %>
-        <%= f.check_box :optimization_force_start, label: '' %>
-      <% end %>
+      <%= render partial: 'shared/check_box', locals: { form: f, field: :optimization_force_start, label: t('activerecord.attributes.customer.optimization_force_start'), help: t('.optimization_force_start_help') } %>
     </fieldset>
   <% end %>
   <fieldset>
@@ -376,12 +337,8 @@
       </div>
       <div id="collapsePrint" class="panel-collapse collapse">
         <div class="panel-body">
-          <%= f.form_group :print_map, { label: { text: t('activerecord.attributes.customer.print_map') } }.merge(checkbox_options) do %>
-            <%= f.check_box :print_map, label: '' %>
-          <% end %>
-          <%= f.form_group :print_planning_annotating, { label: { text: t('activerecord.attributes.customer.print_planning_annotating') } }.merge(checkbox_options) do %>
-            <%= f.check_box :print_planning_annotating, label: '' %>
-          <% end %>
+          <%= render partial: 'shared/check_box', locals: { form: f, field: :print_map, label: t('activerecord.attributes.customer.print_map') } %>
+          <%= render partial: 'shared/check_box', locals: { form: f, field: :print_planning_annotating, label: t('activerecord.attributes.customer.print_planning_annotating') } %>
           <%= f.text_area :print_header, help: t('.print_header_help') %>
         </div>
       </div>
@@ -403,21 +360,15 @@
               <p class="help-block"><%= t '.sms_template_help' %></p>
               <p class="help-block"><%= t '.sms_keys_help' %></p>
             <% end %>
-            <%= f.form_group  :sms_concat, help: t('.sms_concat_help'), label: { text: t('activerecord.attributes.customer.sms_concat') } do %>
-              <%= f.check_box :sms_concat %>
-            <% end %>
-            <%= f.form_group  :sms_from_customer_name, help: t('.sms_from_customer_name_help', c: @customer.name), label: { text: t('activerecord.attributes.customer.sms_from_customer_name') } do %>
-              <%= f.check_box :sms_from_customer_name %>
-            <% end %>
+            <%= render partial: 'shared/check_box', locals: { form: f, field: :sms_concat, label: t('activerecord.attributes.customer.sms_concat'), help: t('.sms_concat_help') } %>
+            <%= render partial: 'shared/check_box', locals: { form: f, field: :sms_from_customer_name, label: t('activerecord.attributes.customer.sms_from_customer_name'), help: t('.sms_from_customer_name_help') } %>
           </div>
         </div>
       </div>
     <% end %>
 
     <% if current_user.admin? %>
-      <%= f.form_group  :enable_external_callback, {checked: @customer[:enable_external_callback], label: { text: t('activerecord.attributes.customer.enable_external_callback') }, help: (t('.external_callback.enabled') if @customer.reseller[:enable_external_callback] && !@customer[:enable_external_callback])}.merge(checkbox_options) do %>
-        <%= f.check_box :enable_external_callback, label: '' %>
-      <% end %>
+      <%= render partial: 'shared/check_box', locals: { form: f, value: @customer[:enable_external_callback], field: :enable_external_callback, label: t('activerecord.attributes.customer.enable_external_callback'), help: (t('.external_callback.enabled') if @customer.reseller[:enable_external_callback] && !@customer[:enable_external_callback]) } %>
     <% end %>
     <% if @customer.default_callback_enabled? %>
       <div id="external_callback_container" class="panel panel-default accordion">
@@ -431,8 +382,8 @@
         <div id="collapseExternalCallback" class="panel-collapse">
           <div class="panel-body">
             <div class="col-md-10">
-              <%= f.text_field :external_callback_name, t('.external_callback.name'), placeholder: customer_external_callback_name(@customer, t('.external_callback.name_placeholder')), value: @customer.external_callback_name %>
-              <%= f.text_field :external_callback_url, t('.external_callback.url'), help: simple_format(t('.external_callback.url_help')),  placeholder: customer_external_callback_url(@customer), value: @customer.external_callback_url%>
+              <%= f.text_field :external_callback_name, label: t('.external_callback.name'), placeholder: customer_external_callback_name(@customer, t('.external_callback.name_placeholder')) %>
+              <%= f.text_field :external_callback_url, label: t('.external_callback.url'), help: simple_format(t('.external_callback.url_help')),  placeholder: customer_external_callback_url(@customer), value: @customer.external_callback_url%>
             </div>
           </div>
         </div>
@@ -442,20 +393,7 @@
 
   <% if current_user.admin? %>
     <% @customer.device.definitions.each do |key, device| %>
-      <%= f.form_group device[:label],  {label: { text: device[:label] }}.merge(checkbox_options)do %>
-        <input name="<%= "customer[devices][#{key}][enable]" %>" value="0" type="hidden">
-        <%= f.check_box_tag "customer[devices][#{key}][enable]", 1, to_bool(@customer.devices[key] && @customer.devices[key][:enable]) %>
-
-      <% end %>
-      <% if device[:help] %>
-        <div class='form-group'>
-          <div class='col-md-offset-2 col-md-8 field'>
-            <p class="help-block">
-              <%= t "customers.form.devices.#{key}.help"  %>
-            </p>
-          </div>
-        </div>
-      <% end %>
+      <%= render partial: 'shared/check_box', locals: { form: f, name: "customer[devices][#{key}][enable]", checked: to_bool(@customer.devices[key] && @customer.devices[key][:enable]), label: device[:label], help: (t("customers.form.devices.#{key}.help") if device[:help]) } %>
     <% end %>
   <% end %>
 
