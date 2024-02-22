@@ -207,13 +207,13 @@ export const fieldBarProgression = function(dialog, delayedJob, progress, elemen
   var bar_value = 0;
   switch (index) {
     case 0:
-      if (progress['matrix_progression']) {
-        bar_value = progress['completed'] ? 100 : progress['matrix_progression'];
+      if (progress['first_progression']) {
+        bar_value = progress['completed'] ? 100 : progress['first_progression'];
       }
       break;
     case 1:
-      if (progress['matrix_progression']) {
-        bar_value = progress['completed'] ? 100 : progress['progression'];
+      if (progress['second_progression']) {
+        bar_value = progress['completed'] ? 100 : progress['second_progression'];
       }
       break;
     case 2:

@@ -276,7 +276,7 @@ class OptimizerWrapper
   # If the problem is simple, the progression is directly related to the time elapsed as there is only one matrix to compute
   def compute_progression(vrp, result, job_details)
     progression = job_details.dig('avancement')
-    return {'matrix_progression': 0, 'progression': 0, 'status': 'queued'} unless progression
+    return {'first_progression': 0, 'second_progression': 0, 'status': 'queued'} unless progression
 
     solution_data = compute_solution_data(result.dig('job'), result.dig('solutions')&.last)
 
@@ -288,7 +288,7 @@ class OptimizerWrapper
       else
         [nil, 0, 0]
       end
-    solution_data.merge!('multipart': multipart, 'matrix_progression': matrix_bar, 'progression': resolution_bar)
+    solution_data.merge!('multipart': multipart, 'first_progression': matrix_bar, 'second_progression': resolution_bar)
     solution_data
   end
 

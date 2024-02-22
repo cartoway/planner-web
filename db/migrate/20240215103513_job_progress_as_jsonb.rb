@@ -31,11 +31,11 @@ class JobProgressAsJsonb < ActiveRecord::Migration
 
     splitted = progress.split(';')
 
-    return { 'matrix_progression': 100, 'progression': 100, 'completed': true } if splitted.last == '-1'
+    return { 'first_progression': 100, 'second_progression': 100, 'completed': true } if splitted.last == '-1'
 
     {
-      'matrix_progression': splitted.first.to_f,
-      'progression': splitted[1].to_f,
+      'first_progression': splitted.first.to_f,
+      'second_progression': splitted[1].to_f,
       'completed': false
     }
   end
@@ -44,7 +44,7 @@ class JobProgressAsJsonb < ActiveRecord::Migration
     return nil unless progress
 
 
-    return "#{progress['matrix_progression']};#{progress['progression']}" unless progress['completed']
+    return "#{progress['first_progression']};#{progress['second_progression']}" unless progress['completed']
 
     "100;100;-1"
   end
