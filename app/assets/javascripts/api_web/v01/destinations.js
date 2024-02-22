@@ -117,3 +117,8 @@ Paloma.controller('ApiWeb/V01/Stores', {
     api_web_v01_destinations_index(this.params, 'stores');
   }
 });
+
+Paloma.controller('ApiWeb/V01/Store').prototype.by_distance = function() {
+  api_web_v01_destinations_index(this.params, 'stores');
+};
+
