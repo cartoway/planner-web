@@ -32,7 +32,7 @@ class OptimizerJob < Job.new(:planning_id, :route_id, :global, :active_only, :ig
     return true if @job.progress&.dig('failed') && @job.attempts > 0
 
     Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} perform"
-    job_progress_save({ 'matrix_progression': 0, 'progression': 0, 'completed': false })
+    job_progress_save({ 'first_progression': 0, 'second_progression': 0, 'completed': false })
     planning = Planning.where(id: planning_id).first!
     routes = planning.routes.select { |r|
       (route_id && r.id == route_id) || (!route_id && !global && r.vehicle_usage_id && r.size_active > 0) || (!route_id && global)
@@ -61,7 +61,7 @@ class OptimizerJob < Job.new(:planning_id, :route_id, :global, :active_only, :ig
             job_progress_save solution_data.merge('completed': false)
             Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
           }
-          job_progress_save(@job.progress.merge({ 'matrix_progression': 100, 'progression': 100, 'completed': true }))
+          job_progress_save(@job.progress.merge({ 'first_progression': 100, 'second_progression': 100, 'completed': true }))
           Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
           optimum
         end

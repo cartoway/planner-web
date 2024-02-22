@@ -34,10 +34,11 @@ class GeocoderStoresJob < Job.new(:customer_id)
           }
         rescue GeocodeError # avoid stop import because of geocoding job
         end
-        job_progress_save({ 'progression': Integer(i * 100 / count).to_s })
+        job_progress_save({ 'first_progression': (i * 100.0) / count, status: 'working' })
         Delayed::Worker.logger.info "GeocoderStoresJob customer_id=#{customer_id} #{@job.progress}%"
       end
     }
+    job_progress_save({ 'first_progression': 100, 'completed': true })
   rescue => e
     puts e.message
     puts e.backtrace.join("\n")

@@ -34,10 +34,11 @@ class GeocoderDestinationsJob < Job.new(:customer_id, :planning_ids)
           }
         rescue GeocodeError # avoid stop import because of geocoding job
         end
-        job_progress_save({ 'progression': Integer(i * 100 / count).to_s })
+        job_progress_save({ 'first_progression': i * 100.0 / count, status: 'working' })
         Delayed::Worker.logger.info "GeocoderDestinationsJob customer_id=#{customer_id} #{@job.progress}%"
       end
     }
+    job_progress_save({ 'first_progression': 100, 'completed': true })
 
     Destination.transaction do
       unless !planning_ids || planning_ids.empty?
