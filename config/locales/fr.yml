@@ -1124,6 +1124,7 @@
       'columns': 'Colonnes'
       'no_position': 'manquant'
       'geocoding_level': 'Niveau de géocodage'
+      'geocoding_result': 'Adresse du géocodage'
       'geocoding_column_help': 'Niveau de géocodage et qualité. Ordonner d''abord
         par niveau puis par qualité'
       'geocoding_empty': 'absent'
@@ -1214,6 +1215,7 @@
       'geocoding_level': 'niveau géocodage'
       'geocoding_level_desc': 'niveau de précision atteint lors de la conversion de
         l''adresse postale en coordonnées géographiques, exprimé de manière sémantique.'
+      'geocoding_result': 'adresse géocodage'
       'duration': 'durée visite'
       'duration_desc': 'durée anticipée de la visite'
       'quantity': 'quantité'
@@ -2094,6 +2096,7 @@
       'geocoding_level': 'niveau géocodage'
       'geocoding_level_desc': 'niveau de précision atteint lors de la conversion de
         l''adresse postale en coordonnées géographiques, exprimé de manière sémantique'
+      'geocoding_result': 'adresse géocodage'
       'missing_name': '« nom » manquant.'
       'missing_location': '« ville » ou « code postal » ou « lat » et « lng » manquant.'
       'invalid_numeric_value': 'valeur numérique « %{value} » invalide à l''''enregistrement

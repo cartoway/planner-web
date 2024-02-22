@@ -14,6 +14,7 @@ CSV.generate { |csv|
       destination.lng,
       destination.geocoding_accuracy,
       destination.geocoding_level,
+      destination.geocoding_result.dig('free')
       destination.comment,
       destination.phone_number,
       destination.tags.collect(&:label).join(',')
