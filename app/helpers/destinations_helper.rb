@@ -35,13 +35,13 @@ module DestinationsHelper
   def columns_destination(customer)
     dest_columns = %i[ref name street detail postalcode city]
     dest_columns << :state if customer.with_state?
-    dest_columns += %i[country lat lng geocoding_accuracy geocoding_level comment phone_number tags]
+    dest_columns += %i[country lat lng geocoding_accuracy geocoding_level geocoding_result comment phone_number tags]
 
     dest_columns
   end
 
   def columns_visit(customer)
-    visit_columns = %i[ref_visit time_window_start_1 time_window_end_1 time_window_start_2 time_window_end_2]
+    visit_columns = %i[ref_visit duration time_window_start_1 time_window_end_1 time_window_start_2 time_window_end_2]
     visit_columns += %i[priority tags_visit]
     unless @customer.enable_orders
       customer.deliverable_units.each{ |du|

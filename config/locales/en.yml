@@ -1073,6 +1073,7 @@ en:
       columns: Columns
       no_position: missing
       geocoding_level: Geocoding level
+      geocoding_result: Geocoding result
       geocoding_column_help: Geocoding level and accuracy. Order by level first, then
         by accuracy
       geocoding_empty: missing
@@ -1154,8 +1155,10 @@ en:
         via a score between 0 et 1. E.g. 0.70 means 70% accurate.
       geocoding_accuracy_format: floating number between 0 and 1
       geocoding_level: geocoding level
+      geocoding_result: geocoding result
       geocoding_level_desc: level of precision reached when converting the destination's
         street address into geographic coordinates, expressed via human friendly levels.
+      geocoding_result: geocoding result
       duration: visit duration
       duration_desc: visit duration
       quantity: quantity
@@ -1965,6 +1968,7 @@ en:
       geocoding_level: geocoding level
       geocoding_level_desc: level of precision reached when converting the destination
         street address into geographic coordinates
+      geocoding_result: geocoding result
       missing_name: '"name" missing.'
       missing_location: '"city" or "postalcode" or "lat" and "lng" missing.'
       invalid_numeric_value: Invalid numeric value "%{value}".
