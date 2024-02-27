@@ -18,7 +18,7 @@ x-web: &web
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/uploads:/srv/app/public/uploads
-  links:
+  depends_on:
     - db
     - redis-cache
   restart: unless-stopped
