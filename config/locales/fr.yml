@@ -1629,9 +1629,11 @@
       'load_stops': 'Charger les arrêts de cette tournée'
       'optimize': 'Optimiser toutes les tournées non verrouillées'
       'optimize_help': 'Optimiser la tournée'
+      'optimize_canceled': 'Optimisation annulée'
       'optimize_complete': 'Optimisation terminée'
       'optimize_failed': 'Échec lors de l''optimisation'
       'optimized_at': 'Optimisé'
+      'retry_canceling': 'Annulation échouée, réessayez ultérieurement'
       'zoning_confirm': 'Enregistrer et appliquer la nouvelle sectorisation ? Les tournées
         du plan vont être modifiées'
       'page_change_zoning_confirm': 'Souhaitez-vous quitter la page et perdre les
@@ -1824,6 +1826,8 @@
             'overload_multiplier_true_help': 'La capacité du véhicule est limitée'
             'overload_multiplier_ignore_help': 'La capacité du véhicule est illimitée'
             'ignore': 'ignorer'
+          'cancel': 'Annuler l''optimisation'
+          'canceling': 'Annulation'
           'optimize': 'Optimiser'
           'optimization_time': 'Durée d''optimisation :'
           'optimize_min': 'Au minimum :'
@@ -1838,9 +1842,11 @@
           'optimize': 'Optimisation'
           'routes': 'Actualisation du plan'
           'attempts': 'Tentatives :'
+          'canceled': 'Optimisation annulée'
           'inqueue': 'Tâche d''optimisation en file d''attente'
           'no_solution': 'Pas de solution trouvée pour votre problème'
           'error': 'Impossible d''effectuer le calcul.'
+          'retry_canceling': 'Transmission en cours, réessayez ultérieurement'
         'zoning':
           'title': 'Sectorisation'
           'in_progress': 'Application de la nouvelle sectorisation en cours, merci de patienter'

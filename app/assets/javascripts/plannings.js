@@ -2090,10 +2090,26 @@ export const plannings_edit = function(params) {
           + '<div id="min-optim-duration"></div>'
           + '<div id="max-optim-duration"></div>'
           + '</div>'
+          + '<button class="optim-cancel btn btn-warning">' + I18n.t('plannings.edit.dialog.optimization.cancel') + '</button>'
           + '<button type="button" class="btn btn-primary" data-dismiss="modal">' + I18n.t('web.dialog.close') + '</button>'
     });
+    $('#default-modal').data('canceled', false);
 
     $(".optim-duration h5").prop('title', I18n.t('plannings.edit.dialog.optimization.optimize-title'));
+    dialog_optimizer.on('click', '.optim-cancel', function() {
+      var element = $(this);
+      $.ajax({
+        type: 'DELETE',
+        url: '/plannings/' + planning_id + '/optimize.json',
+        success: function() {
+          element.attr('disabled', true);
+          element.text(I18n.t('plannings.edit.dialog.optimization.canceling'));
+          $('#default-modal').data('canceled', true);
+        },
+        complete: completeAjaxMap,
+        error: ajaxError
+      });
+    });
   };
   initOptimizerDialog();
 
@@ -2124,7 +2140,11 @@ export const plannings_edit = function(params) {
             stickyError(I18n.t('plannings.edit.optimize_failed'));
           },
           success: function() {
-            notice(I18n.t('plannings.edit.optimize_complete'));
+            if ($('#default-modal').data('canceled')) {
+              notice(I18n.t('plannings.edit.optimize_canceled'));
+            } else {
+              notice(I18n.t('plannings.edit.optimize_complete'));
+            }
           }
         };
         if (routeId) updatePlanning(data, options);

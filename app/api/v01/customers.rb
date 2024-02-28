@@ -275,6 +275,7 @@ class V01::Customers < Grape::API
         ParseIdsRefs.match(params[:id], @current_customer) ? @current_customer : nil
       if customer
         if customer.job_optimizer && customer.job_optimizer_id == params[:job_id]
+          Optimizer.kill_optimize(customer.job_optimizer.progress['job_id'])
           customer.job_optimizer.destroy
         elsif customer.job_destination_geocoding && customer.job_destination_geocoding_id == params[:job_id]
           customer.job_destination_geocoding.destroy

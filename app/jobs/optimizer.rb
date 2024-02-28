@@ -29,6 +29,10 @@ class Optimizer
   @@force_start = Mapotempo::Application.config.optimize_force_start
   @@optimize_minimal_time = Mapotempo::Application.config.optimize_minimal_time
 
+  def self.kill_optimize(optim_job_id)
+    Mapotempo::Application.config.optimizer.kill_solve(optim_job_id)
+  end
+
   def self.optimize(planning, route, options = { global: false, synchronous: false, active_only: true, ignore_overload_multipliers: [], nb_route: 0 })
     optimize_time = planning.customer.optimization_time || @@optimize_time
     if route && route.size_active <= 1 && options[:active_only]

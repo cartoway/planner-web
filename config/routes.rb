@@ -125,6 +125,7 @@ Rails.application.routes.draw do
     patch ':route_id/:stop_id' => 'plannings#update_stop'
     get 'optimize' => 'plannings#optimize'
     get ':route_id/optimize' => 'plannings#optimize_route'
+    delete 'optimize' => 'plannings#cancel_optimize'
     member do
       patch :apply_zonings
       patch :automatic_insert
