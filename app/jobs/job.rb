@@ -15,6 +15,8 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
+class JobTimeout < StandardError; end
+
 class Job < Struct
   def before(job)
     @job = job

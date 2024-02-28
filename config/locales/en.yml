@@ -1519,9 +1519,11 @@ en:
       load_stops: Load stops in this route
       optimize: Optimize all unlocked routes
       optimize_help: Optimize the route
+      optimize_canceled: Optimization Canceled
       optimize_complete: Optimization Complete
       optimize_failed: Optimization Failed
       optimized_at: Optimized
+      retry_canceling: Canceling failed, try again later
       zoning_confirm: Save and apply the new zoning? Routes will be updated
       page_change_zoning_confirm: Leave page and discard changes?
       route_placeholder: Route ref.
@@ -1705,6 +1707,8 @@ en:
             overload_multiplier_true_help: The vehicle capacity is limited
             overload_multiplier_ignore_help: The vehicle capacity is unlimited
             ignore: ignore
+          cancel: Cancel optimization
+          canceling: Canceling
           optimize: Optimize
           optimization_time: 'Optimization duration :'
           optimize_min: 'At least :'
@@ -1719,9 +1723,11 @@ en:
           optimize: Optimizing
           routes: Refreshing plan
           attempts: 'Attempts:'
+          canceled: Optimization canceled
           inqueue: Optimization task queued
           no_solution: No solution found for your problem
           error: Compute fail.
+          retry_canceling: Transmission in progress, try again later
         zoning:
           title: Zoning
           in_progress: Please wait, applying new zoning

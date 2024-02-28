@@ -22,7 +22,7 @@ require 'zip'
 class PlanningsController < ApplicationController
   before_action :authenticate_user!
   UPDATE_ACTIONS = [:update, :move, :refresh, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  before_action :set_planning, only: [:show, :edit, :duplicate, :destroy] + UPDATE_ACTIONS
+  before_action :set_planning, only: [:show, :edit, :duplicate, :destroy, :cancel_optimize] + UPDATE_ACTIONS
   before_action :check_no_existing_job, only: UPDATE_ACTIONS
   around_action :includes_sub_models, except: [:index, :new, :create]
   around_action :over_max_limit, only: [:create, :duplicate]
@@ -322,6 +322,19 @@ class PlanningsController < ApplicationController
       rescue ActiveRecord::RecordInvalid
         errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
         format.json { render json: errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def cancel_optimize
+    respond_to do |format|
+      if job_id = current_user.customer.job_optimizer.progress&.dig('job_id')
+        Optimizer.kill_optimize(job_id)
+        current_user.customer.job_optimizer.destroy
+        format.json { render action: 'show', location: @planning }
+      else
+        @planning.errors[:base] = I18n.t('plannings.edit.dialog.optimizer.retry_canceling')
+        format.json { render json: @planning.errors, status: :unprocessable_entity }
       end
     end
   end

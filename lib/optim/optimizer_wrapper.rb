@@ -32,6 +32,65 @@ class OptimizerWrapper
     @cache, @url, @api_key = cache, url, api_key
   end
 
+  def kill_solve(job_id)
+    return unless job_id
+
+    RestClient.delete(@url + "/vrp/jobs/#{job_id}.json", params: {api_key: @api_key})
+  rescue RestClient::NotFound
+    true
+  rescue RestClient::MovedPermanently, RestClient::Found, RestClient::TemporaryRedirect => e
+    e.response.follow_redirection
+    false
+  end
+
+  def solve(vrp, progress, key)
+    resource_vrp = RestClient::Resource.new(@url + '/vrp/submit.json', timeout: nil)
+    json = resource_vrp.post({api_key: @api_key, vrp: vrp}.to_json, content_type: :json, accept: :json) { |response, request, result, &block|
+      if response.code != 200 && response.code != 201
+        json = (response && /json/.match(response.headers[:content_type]) && response.size > 1) ? JSON.parse(response) : nil
+        msg = if json && json['message']
+                json['message']
+              elsif json && json['error']
+                json['error']
+              end
+        Delayed::Worker.logger.info "VRP submit #{response.code} " + (msg || '') + ' ' + request.to_json
+        raise VRPUnprocessableError, msg || 'Unexpected error'
+      end
+      response
+    }
+
+    result = nil
+    while json
+      result = JSON.parse(json)
+      job_details = result['job']
+      job_id = result.dig('job', 'id')
+      if result.dig('job', 'status') == 'completed'
+        @cache.write(key, json.body)
+        break
+      elsif ['queued', 'working'].include?(result.dig('job', 'status'))
+        begin
+          if progress && job_details
+            solution_data = compute_progression(vrp, result, job_details)
+            progress.call(job_id, solution_data)
+          end
+          sleep(0.2)
+          json = RestClient.get(@url + "/vrp/jobs/#{job_id}.json", params: {api_key: @api_key})
+
+        rescue Delayed::WorkerTimeout
+          kill_solve(job_id)
+          raise JobTimeout.new("Optimizer Job #{job_id} has reached max_run_time: #{ScheduleType.new.type_cast(Delayed::Worker.max_run_time)}")
+        end
+      else
+        if /No solution provided/.match result.dig('job', 'avancement')
+          raise VRPNoSolutionError.new
+        else
+          raise RuntimeError.new(result.dig('job', 'avancement') || 'Optimizer return unknown error')
+        end
+      end
+    end
+    result
+  end
+
   # positions with stores at the end
   # services Array[Hash{start1: , end1: , duration: , stop_id: , vehicle_id: , quantities: [], quantities_operations: [], rest: boolean}]
   # vehicles Array[Hash{id: , open: , close: , stores: [], rests: [], capacities: []}]
@@ -40,7 +99,26 @@ class OptimizerWrapper
 
     result = @cache.read(key)
     if !result
-      rests = vehicles.flat_map{ |v| v[:rests] }
+      vrp = build_vrp(positions, services, vehicles, options)
+      result = solve(vrp, progress, key)
+    end
+
+    [result['solutions'][0]['unassigned'] ? result['solutions'][0]['unassigned'].select{ |activity| activity['service_id'] }.collect{ |activity|
+      activity['service_id'][1..-1].to_i
+    } : []] + vehicles.collect{ |vehicle|
+      route = result['solutions'][0]['routes'].find{ |r| r['vehicle_id'] == "v#{vehicle[:id]}" }
+      !route ? [] : route['activities'].collect{ |activity|
+        if activity.key?('service_id')
+          activity['service_id'][1..-1].to_i
+        elsif activity.key?('rest_id')
+          activity['rest_id'][1..-1].to_i
+        end
+      }.compact # stores are not returned anymore
+    }
+  end
+
+  def build_vrp(positions, services, vehicles, options)
+    rests = vehicles.flat_map{ |v| v[:rests] }
       shift_stores = 0
       services_with_negative_quantities = []
 
@@ -166,61 +244,7 @@ class OptimizerWrapper
         name: options[:name]
       }
       vrp[:relations] += collect_relations(services, services_with_negative_quantities, options)
-
-      resource_vrp = RestClient::Resource.new(@url + '/vrp/submit.json', timeout: nil)
-      json = resource_vrp.post({api_key: @api_key, vrp: vrp}.to_json, content_type: :json, accept: :json) { |response, request, result, &block|
-        if response.code != 200 && response.code != 201
-          json = (response && /json/.match(response.headers[:content_type]) && response.size > 1) ? JSON.parse(response) : nil
-          msg = if json && json['message']
-                  json['message']
-                elsif json && json['error']
-                  json['error']
-                end
-          Delayed::Worker.logger.info "VRP submit #{response.code} " + (msg || '') + ' ' + request.to_json
-          raise VRPUnprocessableError, msg || 'Unexpected error'
-        end
-        response
-      }
-
-      result = nil
-      while json
-        result = JSON.parse(json)
-        job_details = result['job']
-        job_id = result.dig('job', 'id')
-        if result.dig('job', 'status') == 'completed'
-          @cache.write(key, json.body)
-          break
-        elsif ['queued', 'working'].include?(result.dig('job', 'status'))
-          if progress && job_details
-            solution_data = compute_progression(vrp, result, job_details)
-            progress.call(job_id, solution_data)
-          end
-          sleep(0.2)
-          json = RestClient.get(@url + "/vrp/jobs/#{job_id}.json", params: {api_key: @api_key})
-        else
-          if /No solution provided/.match result.dig('job', 'avancement')
-            raise VRPNoSolutionError.new
-          else
-            raise RuntimeError.new(result.dig('job', 'avancement') || 'Optimizer return unknown error')
-          end
-        end
-      end
-    else
-      result = JSON.parse(result)
-    end
-
-    [result['solutions'][0]['unassigned'] ? result['solutions'][0]['unassigned'].select{ |activity| activity['service_id'] }.collect{ |activity|
-      activity['service_id'][1..-1].to_i
-    } : []] + vehicles.collect{ |vehicle|
-      route = result['solutions'][0]['routes'].find{ |r| r['vehicle_id'] == "v#{vehicle[:id]}" }
-      !route ? [] : route['activities'].collect{ |activity|
-        if activity.key?('service_id')
-          activity['service_id'][1..-1].to_i
-        elsif activity.key?('rest_id')
-          activity['rest_id'][1..-1].to_i
-        end
-      }.compact # stores are not returned anymore
-    }
+      vrp
   end
 
   def collect_relations(services, services_with_negative_quantities, options)
