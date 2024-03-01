@@ -683,6 +683,12 @@ div.grid-container {
 }
 
 // Backport
+.flex-wrap {
+  -ms-flex-wrap: wrap !important;
+  flex-wrap: wrap !important;
+}
+
+// Backport
 .justify-content-center {
   -webkit-box-pack: center !important;
   -ms-flex-pack: center !important;

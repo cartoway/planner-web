@@ -1796,9 +1796,11 @@ export const plannings_edit = function(params) {
       }).disableSelection();
       $(".route[data-route_id='" + route.route_id + "'] li[data-stop_id]")
         .mouseover(function() {
-          $('.not-hover', this).css({
-            display: 'none'
-          });
+          if ($(window).width() >= 992) {
+            $('.not-hover', this).css({
+              display: 'none'
+            });
+          }
           $('.hover-tools', this).css({
             display: 'inline-block'
           });
