@@ -157,7 +157,7 @@ class Route < ApplicationRecord
     last_lat, last_lng = nil, nil
     route_attributes = init_route_data
 
-    if vehicle_usage? && !stops.empty?
+    if vehicle_usage?
       service_time_start = service_time_start_value
       service_time_end = service_time_end_value
       route_attributes[:end] = route_attributes[:start] = departure || vehicle_usage.default_time_window_start
