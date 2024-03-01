@@ -3,7 +3,8 @@ require 'test_helper'
 class Admin::UsersControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @controller = Admin::UsersController.new
     @user = users(:user_one)
     sign_in users(:user_admin)

@@ -3,7 +3,8 @@ require 'test_helper'
 class TagsControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @tag = tags(:tag_one)
     sign_in users(:user_one)
   end

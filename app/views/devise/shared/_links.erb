@@ -12,10 +12,10 @@
       <%= link_to t(".sign_up", :default => "Sign up"), new_registration_path(resource_name) %>
     </div>
   <% end -%>
-<% elsif request.env['reseller'].website_url %>
+<% elsif @reseller.website_url %>
   <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
     <div>
-      <%= link_to(t(".sign_up_prefix", :default => "Sign up"), request.env['reseller'].website_url.gsub('{LG}', I18n.locale.to_s)).html_safe %>
+      <%= link_to(t(".sign_up_prefix", :default => "Sign up"), @reseller.website_url.gsub('{LG}', I18n.locale.to_s)).html_safe %>
     </div>
   <% end -%>
 <% end -%>

@@ -6,7 +6,8 @@ include REXML
 class OrderArraysControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @order_array = order_arrays(:order_array_one)
     sign_in users(:user_one)
   end

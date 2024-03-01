@@ -1,4 +1,4 @@
 <div class="row">
-  <%= image_tag request.env['reseller'].logo_large.url || "logo.svg", width: 250, alt: request.env['reseller'].name %>
+  <%= image_tag @reseller.logo_large.url || "logo.svg", width: 250, alt: @reseller.name %>
 
   </div>

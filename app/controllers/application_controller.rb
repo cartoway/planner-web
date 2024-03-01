@@ -36,6 +36,7 @@ class ApplicationController < ActionController::Base
   layout :layout_by_resource
 
   # saves the location before loading each page so we can return to the right page.
+  before_action :set_reseller
   before_action :api_key?, :load_vehicles
   before_action :set_locale
   before_action :customer_payment_period, if: :current_user
@@ -82,6 +83,10 @@ class ApplicationController < ActionController::Base
     I18n.locale = http_accept_language.compatible_language_from(I18n.available_locales) || I18n.default_locale
   end
 
+  def set_reseller
+    @reseller = Reseller.where(host: "#{request.host}#{request.port && ":#{request.port}"}").first || request.env['reseller']
+  end
+
   def track_sub_api_time(&block)
     RestClient::Request.start_capture_duration
     ret = block.call
@@ -111,7 +116,7 @@ class ApplicationController < ActionController::Base
       customer = current_user.customer
       @unsubscribed = customer.end_subscription && Time.now >= customer.end_subscription
       if @unsubscribed
-        flash.now[:error] = I18n.t('all.subscribe.expiration_date_over', date: I18n.l((customer.end_subscription - 1.second), format: :long), reseller: request.env['reseller'] && request.env['reseller'].name)
+        flash.now[:error] = I18n.t('all.subscribe.expiration_date_over', date: I18n.l((customer.end_subscription - 1.second), format: :long), reseller: @reseller&.name)
       end
     end
   end

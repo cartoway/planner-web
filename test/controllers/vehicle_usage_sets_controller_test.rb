@@ -3,7 +3,8 @@ require 'test_helper'
 class VehicleUsageSetsControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
     sign_in users(:user_one)
     assert_valid response

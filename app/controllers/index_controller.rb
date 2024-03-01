@@ -31,7 +31,7 @@ class IndexController < ApplicationController
       customer = current_user.customer
       if customer.end_subscription && customer.end_subscription >= Time.now
         if !customer.test && (customer.end_subscription - 30.days) <= Time.now
-          flash.now[:warning] = I18n.t('all.subscribe.expiration_date', date: I18n.l((customer.end_subscription - 1.second), format: :long), reseller: request.env['reseller'] && request.env['reseller'].name)
+          flash.now[:warning] = I18n.t('all.subscribe.expiration_date', date: I18n.l((customer.end_subscription - 1.second), format: :long), reseller: @reseller&.name)
         elsif (customer.end_subscription - 3.days) <= Time.now
           flash.now[:warning] = I18n.t('all.subscribe.expiration_date_test', date: I18n.l((customer.end_subscription - 1.second), format: :long))
         end

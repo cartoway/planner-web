@@ -3,8 +3,10 @@ require 'test_helper'
 class Admin::ResellersControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
     @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     sign_in users(:user_admin)
   end
 
@@ -15,7 +17,7 @@ class Admin::ResellersControllerTest < ActionController::TestCase
   end
 
   test 'should update reseller' do
-    patch :update, id: @reseller, reseller: { name: @reseller.name }
+    patch :update, id: @reseller, reseller: { name: @reseller&.name }
     assert_redirected_to edit_admin_reseller_path(@reseller)
   end
 end

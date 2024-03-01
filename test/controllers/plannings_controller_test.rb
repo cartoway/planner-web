@@ -8,7 +8,8 @@ require 'optim/ort'
 class PlanningsControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @planning = plannings(:planning_one)
     sign_in users(:user_one)
     customers(:customer_one).update(job_optimizer_id: nil, job_destination_geocoding_id: nil)

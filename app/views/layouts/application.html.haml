@@ -7,7 +7,7 @@
     #wrapper
       .menu-left.hidden-print{style: "overflow: hidden;"}
         .top-menu
-          %a#logo.logo{href: "/"}= image_tag request.env['reseller'].logo_small.url || "logo.svg", width: 150, height: 40, alt: request.env['reseller'].name
+          %a#logo.logo{href: "/"}= image_tag @reseller.logo_small.url || "logo.svg", width: 150, height: 40, alt: @reseller.name
 
         .divider.solid
         #accordion.menu-content.panel-group
@@ -197,37 +197,37 @@
                       %i.fa.fa-line-chart.fa-fw
                       %span.menu_label= t('reporting.index.title')
             - if user_signed_in?
-              - if current_user.customer && request.env['reseller'].subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
+              - if current_user.customer && @reseller.subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
                 %li#menu-subscription.subscription.menu-section.menu-list-item
-                  = link_to request.env['reseller'].subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                  = link_to @reseller.subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
                     %i.fa.fa-rocket.fa-fw
                     .hidden-menu
                       %span.menu_label
                         = t 'web.subscription'
-              - if request.env['reseller'].help_url
+              - if @reseller.help_url
                 %li#menu-help.dropdown.help.menu-section.menu-list-item
-                  = link_to request.env['reseller'].help_url.gsub('{LG}', I18n.locale.to_s), class: 'dropdown-toggle', 'data-toggle': "dropdown" do
+                  = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), class: 'dropdown-toggle', 'data-toggle': "dropdown" do
                     %i.fa.fa-info-circle.fa-fw
                     .hidden-menu
                       %span.menu_label
                         = t 'web.help_menu'
                   %ul.dropdown-menu
-              - if request.env['reseller'].help_search_url
+              - if @reseller.help_search_url
                 %li.menu-list-item{style: "padding-left: 10px; padding-right: 15px;"}
                   .hidden-menu
-                    = form_tag request.env['reseller'].help_search_url, method: 'get', target: '_blank' do
+                    = form_tag @reseller.help_search_url, method: 'get', target: '_blank' do
                       = text_field_tag :q, nil, class: 'form-control', placeholder: t('web.help_search_placeholder')
-              - if request.env['reseller'].help_url
-                %li.menu-list-item{ class: ("disabled" if !request.env['reseller'].help_search_url && !request.env['reseller'].contact_urlcurrent_user.customer.too_many_destinations?) }
-                  = link_to request.env['reseller'].help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+              - if @reseller.help_url
+                %li.menu-list-item{ class: ("disabled" if !@reseller.help_search_url && !@reseller.contact_urlcurrent_user.customer.too_many_destinations?) }
+                  = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
                     %i.fa.fa-info-circle.fa-fw
                     .hidden-menu
                       = t 'web.help'
 
                     = t 'web.help'
-              - if request.env['reseller'].contact_url
+              - if @reseller.contact_url
                 %li.menu-list-item
-                  = link_to request.env['reseller'].contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                  = link_to @reseller.contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
                     %i.fa.fa-phone.fa-fw
                     .hidden-menu
                       = t 'web.contact'
