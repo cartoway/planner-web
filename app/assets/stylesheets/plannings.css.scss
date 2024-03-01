@@ -796,7 +796,8 @@ $sidebar-margins: 10px;
             height: 34px;
           }
           @media screen and (max-width: 991px) {
-            height: 68px;
+            max-height: 68px;
+            min-height: 34px
           }
           padding: 2px 2px 2px 6px;
 

@@ -325,11 +325,11 @@
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
       <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
         <div class="row">
-          <div class="col-xs-1 col-md-2">
+          <div class="col-xs-3 col-md-2">
             <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
           </div>
 
-          <div class="col-xs-5 col-md-2">
+          <div class="col-xs-3 col-md-2">
             {{#time}}
               <div class="primary stop-info{{#error}} danger{{/error}}">
                 {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}}
@@ -337,7 +337,7 @@
             {{/time}}
           </div>
 
-          <div class="col-xs-10 col-md-6"><div class="title">
+          <div class="col-xs-4 col-md-6"><div class="title">
               {{^geocoded}}
                 <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
               {{/geocoded}}
@@ -385,13 +385,13 @@
       {{/wait_time}}
       {{#rest}}
       <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" data-store_id="{{store_id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
-        <div class="row d-flex align-items-center">
-          <div class="col-xs-6 col-md-2 d-flex justify-content-center">
+        <div class="row d-flex flex-wrap align-items-center">
+          <div class="col-xs-3 col-md-2 d-flex justify-content-center">
             <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
             <span class="number stop-label label" style="background-color: {{^active}}transparent{{/active}}{{#active}}{{color}}{{/active}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}</span>
           </div>
 
-          <div class="col-xs-6 col-md-2 d-flex-column">
+          <div class="col-xs-3 col-md-2">
             <div class="primary stop-info{{#error}} danger{{/error}}">
               {{#active}}
                 {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
@@ -399,7 +399,7 @@
             </div>
          </div>
 
-          <div class="col-xs-10 col-md-6 d-flex">
+          <div class="col-xs-4 col-md-5 d-flex">
             <div class="title">
               {{#out_of_window}}
                 <i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i>
@@ -420,9 +420,10 @@
             </div>
           </div>
 
-
-          <div class="col-xs-2 col-md-2 hover-tools" style="display: none;">
-            <div class="d-flex align-items-center">
+          <div class="col-xs-2 col-md-3 hover-tools" style="display: none;">
+            <div class="col-xs-0 col-md-6">
+            </div>
+            <div class="col-xs-12 col-md-6 d-flex align-items-center">
               <i class="fa fa-reorder fa-fw" title="{{#i18n}}plannings.edit.drag_help{{/i18n}}"></i>
               <div class="btn-group pull-right stop-tools">
                 <a href="/" class="marker_edit btn btn-default btn-xs invisible"><i class="fa fa-pencil"></i></a>
@@ -435,14 +436,14 @@
       {{/rest}}
       {{#destination}}{{#visits}}
       <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
-        <div class="row d-flex align-items-center">
+        <div class="row d-flex flex-wrap align-items-center">
 
-          <div class="col-xs-6 col-md-2 d-flex justify-content-center">
+          <div class="col-xs-3 col-md-2 d-flex justify-content-center">
             <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^geocoded}} disabled{{/geocoded}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
             <span class="number stop-label label {{#color_force}} color_force{{/color_force}}" style="background-color:{{^active}}transparent{{/active}}{{#active}}{{color}}{{/active}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}&nbsp;</span>
           </div>
 
-          <div class="col-xs-6 col-md-2 d-flex-column">
+          <div class="col-xs-3 col-md-2 d-flex-column">
             <div class="{{#active}}primary{{/active}}{{^active}}info{{/active}} stop-info{{#error}} danger{{/error}}">
               {{#active}}
                 {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
@@ -450,7 +451,7 @@
             </div>
           </div>
 
-          <div class="col-xs-6 col-md-4 d-flex">
+          <div class="col-xs-4 col-md-4 d-flex">
             <div class="title">
               {{^geocoded}}
                 <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
@@ -479,10 +480,10 @@
               <span class="name" title="{{name}}{{#index_visit}} #{{index_visit}}{{/index_visit}}{{#status}} - {{status}}{{/status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}">{{name}}</span>{{#index_visit}} #{{index_visit}}{{/index_visit}}
             </div>
           </div>
-          <div class="col-xs-6 col-md-4 hover-tools" style="display: none;">
-            <div class="col-xs-6 d-flex" >
+          <div class="col-xs-2 col-md-4 hover-tools" style="display: none;">
+            <div class="col-xs-0 col-md-6">
             </div>
-            <div class="col-xs-6 d-flex align-items-center">
+            <div class="col-xs-12 col-md-6 d-flex align-items-center">
               <i class="fa fa-reorder fa-fw" title="{{#i18n}}plannings.edit.drag_help{{/i18n}}"></i>
               <div class="btn-group stop-tools">
                 {{#manage_destination}}
@@ -494,13 +495,17 @@
               </div>
             </div>
           </div>
-          <div class="col-xs-6 col-md-4 not-hover">
-            {{#time_window_start_end_1}}
-              <div class="timewindow-info" title="{{time_windows_condensed}}">
-                  <i class="fa fa-sort fa-rotate-90 fa-fw"></i>
-                  {{time_windows_condensed}}
-              </div>
-            {{/time_window_start_end_1}}
+          <div class="col-xs-12 col-md-4 not-hover">
+            <div class="col-xs-6 col-md-0 d-flex" >
+            </div>
+            <div class="col-xs-6 col-md-12 d-flex" >
+              {{#time_window_start_end_1}}
+                <div class="timewindow-info" title="{{time_windows_condensed}}">
+                    <i class="fa fa-sort fa-rotate-90 fa-fw"></i>
+                    {{time_windows_condensed}}
+                </div>
+              {{/time_window_start_end_1}}
+            </div>
           </div>
         </div>
       </li>
@@ -516,11 +521,11 @@
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
       <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
         <div class="row">
-          <div class="col-xs-1 col-md-2">
+          <div class="col-xs-3 col-md-2">
             <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
           </div>
 
-          <div class="col-xs-5 col-md-2">
+          <div class="col-xs-3 col-md-2">
             {{#time}}
               <div class="primary stop-info{{#error}} danger{{/error}}">
                 {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}}
@@ -528,7 +533,7 @@
             {{/time}}
           </div>
 
-          <div class="col-xs-10 col-md-6"><div class="title">
+          <div class="col-xs-4 col-md-6"><div class="title">
               {{^geocoded}}
                 <i class="fa fa-map-marker fa-fw" title="{{#i18n}}plannings.edit.error.no_geolocalization{{/i18n}}"></i>
               {{/geocoded}}
