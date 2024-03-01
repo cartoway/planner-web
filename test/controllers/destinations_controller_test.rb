@@ -3,7 +3,8 @@ require 'test_helper'
 class DestinationsControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @destination = destinations(:destination_one)
     sign_in users(:user_one)
   end

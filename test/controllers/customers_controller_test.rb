@@ -3,7 +3,9 @@ require 'test_helper'
 class CustomersControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
+    request.host = @reseller.host
     @customer = customers(:customer_one)
   end
 

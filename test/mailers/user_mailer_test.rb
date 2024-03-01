@@ -4,7 +4,7 @@ class UserMailerTest < ActionMailer::TestCase
 
   test 'should send password email' do
     user_one = users(:user_one)
-    reseller_name = user_one.customer.reseller.name
+    reseller_name = user_one.customer.reseller&.name
     email = UserMailer.password_message(user_one, I18n.locale)
 
     assert_emails 1 do
@@ -18,7 +18,7 @@ class UserMailerTest < ActionMailer::TestCase
   test 'should send password email with uploaded image' do
     user_one = users(:user_one)
     reseller = user_one.customer.reseller
-    reseller_name = user_one.customer.reseller.name
+    reseller_name = user_one.customer.reseller&.name
     file = Rack::Test::UploadedFile.new(Rails.root.join('test', 'fixtures', 'logo', 'logo.png'), 'image/png')
     reseller.logo_large = file
     reseller.save!
@@ -35,7 +35,7 @@ class UserMailerTest < ActionMailer::TestCase
 
   test 'should send connection email' do
     user_one = users(:user_one)
-    reseller_name = user_one.customer.reseller.name
+    reseller_name = user_one.customer.reseller&.name
     email = UserMailer.connection_message(user_one, I18n.locale)
 
     assert_emails 1 do
@@ -70,7 +70,7 @@ class UserMailerTest < ActionMailer::TestCase
     # fields is an array of objects like : Mail::Header, Mail::From etc.
     # the [1] is the Mail:From from which we get the full value (not only the email): MySuperComanyName <myroot@root.fr>
     from_value = emails[0].instance_values['header'].fields[1].value
-    from_base = "#{user_one.customer.reseller.name} <#{Rails.application.config.default_from_mail}>"
+    from_base = "#{user_one.customer.reseller&.name} <#{Rails.application.config.default_from_mail}>"
 
     assert_equal from_base, from_value
 

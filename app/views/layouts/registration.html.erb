@@ -7,11 +7,11 @@
   <body class="main container" data-controller="<%= controller.controller_path.gsub('/', '_') %>" data-action="<%= controller.action_name %>">
     <div class="row">
       <div class="col-xs-offset-3 col-xs-6 col-md-offset-4 col-md-4" id="registration-header">
-        <% if request.env['reseller'].website_url %>
-          <a href="<%= request.env['reseller'].website_url.gsub('{LG}', I18n.locale.to_s) %>" target="_blank">
+        <% if @reseller.website_url %>
+          <a href="<%= @reseller.website_url.gsub('{LG}', I18n.locale.to_s) %>" target="_blank">
         <% end %>
-        <%= image_tag request.env['reseller'].logo_large.url || "logo.svg", alt: request.env['reseller'].name, class: "company-logo" %>
-        <% if request.env['reseller'].website_url %>
+        <%= image_tag @reseller.logo_large.url || "logo.svg", alt: @reseller.name, class: "company-logo" %>
+        <% if @reseller.website_url %>
           </a>
         <% end %>
       </div>
@@ -22,11 +22,11 @@
     <div class="row">
       <div class="col-md-offset-2 col-md-8" id="registration-footer">
         <ul>
-        <% if request.env['reseller'].help_url %>
-          <li><%= link_to request.env['reseller'].help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do %><i class="fa fa-info-circle fa-fw"></i> <%= t 'web.help' %><% end %></li>
+        <% if @reseller.help_url %>
+          <li><%= link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do %><i class="fa fa-info-circle fa-fw"></i> <%= t 'web.help' %><% end %></li>
         <% end %>
-        <% if request.env['reseller'].contact_url %>
-          <li><%= link_to request.env['reseller'].contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do %><i class="fa fa-phone fa-fw"></i> <%= t 'web.contact' %><% end %></li>
+        <% if @reseller.contact_url %>
+          <li><%= link_to @reseller.contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do %><i class="fa fa-phone fa-fw"></i> <%= t 'web.contact' %><% end %></li>
         <% end %>
         </ul>
       </div>

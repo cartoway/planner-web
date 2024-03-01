@@ -3,7 +3,8 @@ require 'test_helper'
 class ZoningsControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @zoning = zonings(:zoning_one)
     sign_in users(:user_one)
   end

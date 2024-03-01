@@ -2,7 +2,8 @@ require 'test_helper'
 
 class VisitsControllerTest < ActionController::TestCase
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @visit = visits(:visit_one)
     sign_in users(:user_one)
   end

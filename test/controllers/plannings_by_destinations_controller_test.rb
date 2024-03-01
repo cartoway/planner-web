@@ -6,7 +6,8 @@ include REXML
 class PlanningsByDestinationsControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @destination = destinations(:destination_one)
     @destination.visits.create(tags: [tags(:tag_one)])
     sign_in users(:user_one)

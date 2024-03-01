@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="<%= I18n.locale %>">
   <head>
-    <% reseller_name = request.env['reseller'].name %>
+    <% reseller_name = @reseller.name %>
     <title><%= [yield(:title), reseller_name].select{ |t| !t.empty? }.join(' – ') %></title>
     <%= csrf_meta_tags %>
     <meta charset="utf-8">
@@ -27,7 +27,7 @@
 
     <!-- For all other devices -->
     <!-- Size should be 32 x 32 pixels -->
-    <%= favicon_link_tag request.env['reseller'].favicon.url || 'favicon.ico', :rel => 'shortcut icon' %>
+    <%= favicon_link_tag @reseller.favicon.url || 'favicon.ico', :rel => 'shortcut icon' %>
   </head>
   <body>
     <%= yield %>

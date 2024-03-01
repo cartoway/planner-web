@@ -3,7 +3,8 @@ require 'test_helper'
 class DeliverableUnitsControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @deliverable_unit = deliverable_units(:deliverable_unit_one_one)
     sign_in users(:user_one)
     customers(:customer_one).update(enable_orders: false)

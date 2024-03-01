@@ -6,7 +6,8 @@ include REXML
 class RoutesByVehiclesControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @vehicle = vehicles(:vehicle_one)
     sign_in users(:user_one)
   end

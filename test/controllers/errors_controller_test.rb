@@ -3,7 +3,8 @@ require 'test_helper'
 class ErrorsControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
   end
 
   test 'should get error page 404 as html' do

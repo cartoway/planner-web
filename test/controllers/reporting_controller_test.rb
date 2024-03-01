@@ -3,7 +3,8 @@ require 'test_helper'
 class ReportingControllerTest < ActionController::TestCase
 
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
   end
 
   test 'should get reporting page if authenticated and have fleet device' do

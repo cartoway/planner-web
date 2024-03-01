@@ -2,7 +2,8 @@ require 'test_helper'
 
 class ApiWeb::V01::PlanningsControllerTest < ActionController::TestCase
   setup do
-    @request.env['reseller'] = resellers(:reseller_one)
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
     @planning = plannings(:planning_one)
     sign_in users(:user_one)
   end
