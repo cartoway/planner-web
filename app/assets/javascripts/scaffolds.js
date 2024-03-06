@@ -551,6 +551,7 @@ export const routerOptionsSelect = function(selectId, params) {
         // Car and Truck
         checkInputFieldState($('#router_options_traffic_input'), routerOptions.traffic);
         checkInputFieldState($('#router_options_track_input'), routerOptions.track);
+        checkInputFieldState($('#router_options_low_emission_zone_input'), routerOptions.low_emission_zone);
         checkInputFieldState($('#router_options_motorway_input'), routerOptions.motorway);
         checkInputFieldState($('#router_options_toll_input'), routerOptions.toll);
 
