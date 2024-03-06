@@ -121,6 +121,7 @@ module SharedParams
 
   params :request_router_options do |options|
     optional :track, type: Boolean
+    optional :low_emission_zone, type: Boolean
     optional :motorway, type: Boolean
     optional :toll, type: Boolean
     optional :trailers, type: Integer
