@@ -92,7 +92,8 @@ class RouterTest < ActiveSupport::TestCase
         max_walk_distance: true,
         approach: true,
         snap: true,
-        strict_restriction: true
+        strict_restriction: true,
+        low_emission_zone: true
     }
 
     router.save!
