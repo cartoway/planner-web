@@ -165,6 +165,29 @@
           </div>
         </div>
 
+        <div id="router_options_low_emission_zone_input" class="form-group <%= @vehicle_usage.vehicle.default_router.low_emission_zone? ? '' : 'router-option-disabled' %>">
+          <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_low_emission_zone">
+            <%= t('activerecord.attributes.customer.router_options_low_emission_zone') %>
+          </label>
+
+          <div class="col-md-offset-2 col-md-8 field input-append form-inline">
+            <label>
+              <input type="radio" name="vehicle_usage[vehicle][router_options][low_emission_zone]" id="vehicle_usage_vehicle_router_options_low_emission_zone_yes" value="true" <%= @vehicle_usage.vehicle.router_options['low_emission_zone'] == true ? 'checked' : '' %>/>
+              <%= t('customers.form.router_options_low_emission_zone_yes') %>
+            </label>
+
+            <label>
+              <input type="radio" name="vehicle_usage[vehicle][router_options][low_emission_zone]" id="vehicle_usage_vehicle_router_options_low_emission_zone_no" value="false" <%= @vehicle_usage.vehicle.router_options['low_emission_zone'] == false ? 'checked' : '' %>/>
+              <%= t('customers.form.router_options_low_emission_zone_no') %>
+            </label>
+
+            <label class="pull-right">
+              <input type="radio" name="vehicle_usage[vehicle][router_options][low_emission_zone]" id="vehicle_usage_vehicle_router_options_low_emission_zone_default" value="" <%= @vehicle_usage.vehicle.router_options['low_emission_zone'].nil? && 'checked' %>/>
+              <%= t('customers.form.router_options_low_emission_zone_default', value: @vehicle_usage.vehicle.customer.router_options['low_emission_zone'] == 'false' ? t('customers.form.router_options_low_emission_zone_no') : t('customers.form.router_options_low_emission_zone_yes')) %>
+            </label>
+          </div>
+        </div>
+
         <div id="router_options_toll_input" class="form-group <%= @vehicle_usage.vehicle.default_router.toll? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_toll">
             <%= t('activerecord.attributes.customer.router_options_toll') %>
