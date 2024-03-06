@@ -22,6 +22,7 @@ class V01::Entities::RouterOptions < Grape::Entity
 
   # expose(:traffic, documentation: { type: 'Boolean' }) { |m| m['traffic'] }
   expose(:track, documentation: { type: 'Boolean' }) { |m| m['track'] }
+  expose(:low_emission_zone, documentation: { type: 'Boolean' }) { |m| m['low_emission_zone'] }
   expose(:motorway, documentation: { type: 'Boolean' }) { |m| m['motorway'] }
   expose(:toll, documentation: { type: 'Boolean' }) { |m| m['toll'] }
   expose(:trailers, documentation: { type: Integer }) { |m| m['trailers'] }
