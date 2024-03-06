@@ -201,7 +201,8 @@ class CustomersController < ApplicationController
           :max_walk_distance,
           :approach,
           :snap,
-          :strict_restriction
+          :strict_restriction,
+          :low_emission_zone
         ],
         devices: permit_recursive_params(params[:customer][:devices])
       )
@@ -245,7 +246,8 @@ class CustomersController < ApplicationController
           :max_walk_distance,
           :approach,
           :snap,
-          :strict_restriction
+          :strict_restriction,
+          :low_emission_zone
         ],
         devices: permit_recursive_params(params[:customer][:devices])
       ]

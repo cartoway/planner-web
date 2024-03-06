@@ -192,6 +192,7 @@ en:
         router_dimension: Router objective
         router_options_traffic: Take into account traffic
         router_options_track: Use tracks
+        router_options_low_emission_zone: Access low emission zones
         router_options_motorway: Use motorways
         router_options_toll: Authorize toll sections
         router_options_trailers: Number of trailers pulled by the vehicle
@@ -350,6 +351,7 @@ en:
           approach:
             unrestricted: Indifferent
             curb: Side of the current traffic direction
+          low_emission_zone: Low emission zone
       stop:
         active: Active
         begin: Begin
@@ -851,6 +853,9 @@ en:
       router_options_toll_yes: 'Yes'
       router_options_toll_no: 'No'
       router_options_toll_default: By default (%{value})
+      router_options_low_emission_zone_yes: 'Yes'
+      router_options_low_emission_zone_no: 'No'
+      router_options_low_emission_zone_default: By default (%{value})
       router_options_trailers_range: Between %{from} and %{to} trailers
       router_options_weight_range: Weight (including trailers and shipped goods) between
         %{from} and %{to} tons
