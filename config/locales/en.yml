@@ -1210,6 +1210,7 @@ en:
       force_position_desc: forced position of the visit within the route
       force_position_format: '[always first | never first | neutral | always final]'
       custom_attributes_visit: visit attributes
+      zone: 'zone'
       format:
         string: text
         integer: integer

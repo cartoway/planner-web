@@ -1272,6 +1272,7 @@
       'force_position_desc': 'position de la visite au sein de la tournée'
       'force_position_format': '[début | pas début | neutre | fin]'
       'custom_attributes_visit': 'attributs visite'
+      'zone': 'secteur'
       'format':
         'string': 'texte'
         'integer': 'nombre'

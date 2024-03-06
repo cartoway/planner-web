@@ -16,9 +16,9 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 module DestinationsHelper
-  def csv_column_titles(customer)
+  def csv_column_titles(customer, options = {})
     custom_columns = customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
-    columns(customer).map{ |c|
+    columns(customer, options).map{ |c|
       if custom_columns&.key?(c.to_s)
         custom_columns[c.to_s]
       elsif (m = m = /^(.+)\[(.*)\]$/.match(c))
@@ -52,9 +52,67 @@ module DestinationsHelper
     visit_columns
   end
 
-  def columns(customer)
+  def columns(customer, options = {})
     total_columns = columns_destination(customer)
+    total_columns += options[:extra_destination_columns] if options[:extra_destination_columns]&.is_a?(Array)
     total_columns << :without_visit
     total_columns += columns_visit(customer)
+  end
+
+  def csv_columns_content(destination, customer, options = {})
+    csv = []
+    destination_columns = [
+      destination.ref,
+      destination.name,
+      destination.street,
+      destination.detail,
+      destination.postalcode,
+      destination.city,
+    ] + (customer.with_state? ? [destination.state] : []) + [
+      destination.country,
+      destination.lat,
+      destination.lng,
+      destination.geocoding_accuracy,
+      destination.geocoding_level,
+      destination.geocoding_result.dig('free'),
+      destination.comment,
+      destination.phone_number,
+      destination.tags.collect(&:label).join(',')
+    ]
+    if options[:extra_destination_columns]&.is_a?(Array)
+      options[:extra_destination_columns].each{ |extra_col|
+        if extra_col.is_a?(Array)
+          destination_columns << extra_col.join(',')
+        else
+          destination_columns << extra_col
+        end
+      }
+    end
+    if destination.visits.size > 0
+      destination.visits.each { |visit|
+        csv << destination_columns + [
+          '',
+          visit.ref,
+          visit.duration_absolute_time_with_seconds,
+          visit.time_window_start_1_absolute_time,
+          visit.time_window_end_1_absolute_time,
+          visit.time_window_start_2_absolute_time,
+          visit.time_window_end_2_absolute_time,
+          visit.priority,
+          visit.tags.collect(&:label).join(',')
+        ] + (customer.enable_orders ?
+          [] :
+          customer.deliverable_units.flat_map{ |du|
+            [visit.quantities[du.id],
+            visit.quantities_operations[du.id] && I18n.t("destinations.import_file.quantity_operation_#{visit.quantities_operations[du.id]}")]
+          }) +
+          customer.custom_attributes.select(&:visit?).map{ |ca|
+            visit.custom_attributes_typed_hash[ca.name]
+          }
+      }
+    else
+      csv << destination_columns + ['x']
+    end
+    csv
   end
 end
