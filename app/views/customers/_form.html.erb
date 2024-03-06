@@ -126,7 +126,7 @@
         <%= t('activerecord.attributes.customer.router_options_toll') %>
       </label>
 
-      <div class="input-append form-inline">
+      <div class="col-md-offset-2 col-md-8 field input-append form-inline">
         <label>
           <input type="radio" name="customer[router_options][toll]" id="customer_router_options_toll_yes" value="true" <%= @customer.router_options['toll'] == false ? '' : 'checked' %>/>
           <%= t('customers.form.router_options_toll_yes') %>
