@@ -29,6 +29,7 @@ router_one:
     approach: true
     snap: true
     strict_restriction: true
+    low_emission_zone: true
 
 router_two:
   mode: car

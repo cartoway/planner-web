@@ -154,5 +154,8 @@ class RouterTest < ActiveSupport::TestCase
 
     assert router.strict_restriction, true
     assert router.strict_restriction?, true
+
+    assert router.low_emission_zone, true
+    assert router.low_emission_zone?, true
   end
 end

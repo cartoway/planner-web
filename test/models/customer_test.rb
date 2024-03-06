@@ -203,6 +203,7 @@ class CustomerTest < ActiveSupport::TestCase
         track: true,
         motorway: true,
         toll: true,
+        low_emission_zone: true,
         trailers: 2,
         weight: 10,
         weight_per_axle: 5,
@@ -241,6 +242,9 @@ class CustomerTest < ActiveSupport::TestCase
 
     assert_equal customer.toll, true
     assert_equal customer.toll?, true
+
+    assert_equal customer.low_emission_zone, true
+    assert_equal customer.low_emission_zone?, true
 
     assert_equal customer.trailers, 2
     assert_equal customer.weight, 10

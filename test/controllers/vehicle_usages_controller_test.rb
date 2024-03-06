@@ -28,12 +28,13 @@ class VehicleUsagesControllerTest < ActionController::TestCase
   end
 
   test 'should update vehicle_usage' do
-    patch :update, id: @vehicle_usage, vehicle_usage: {vehicle: {capacities: {'1' => 123, '2' => 456}, color: @vehicle_usage.vehicle.color, consumption: @vehicle_usage.vehicle.consumption, emission: @vehicle_usage.vehicle.emission, name: @vehicle_usage.vehicle.name, max_distance: 200, router_options: {motorway: 'true', trailers: 2, weight: 10, width: '3,55', hazardous_goods: 'gas'}}, time_window_start: @vehicle_usage.time_window_start}
+    patch :update, id: @vehicle_usage, vehicle_usage: {vehicle: {capacities: {'1' => 123, '2' => 456}, color: @vehicle_usage.vehicle.color, consumption: @vehicle_usage.vehicle.consumption, emission: @vehicle_usage.vehicle.emission, name: @vehicle_usage.vehicle.name, max_distance: 200, router_options: {motorway: 'true', trailers: 2, weight: 10, width: '3,55', hazardous_goods: 'gas', low_emission_zone: 'false'}}, time_window_start: @vehicle_usage.time_window_start}
     assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
     assert_equal [123, 456], @vehicle_usage.vehicle.reload.capacities.values
     # FIXME: replace each assertion by one which checks if hash is included in another
     assert @vehicle_usage.vehicle.router_options['weight'] = '10'
     assert @vehicle_usage.vehicle.router_options['motorway'] = 'true'
+    assert @vehicle_usage.vehicle.router_options['low_emission_zone'] = 'false'
     assert @vehicle_usage.vehicle.router_options['trailers'] = '2'
     assert @vehicle_usage.vehicle.router_options['width'] = '3.55'
     assert @vehicle_usage.vehicle.router_options['hazardous_goods'] = 'gas'

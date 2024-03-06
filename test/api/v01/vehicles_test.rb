@@ -64,7 +64,7 @@ class V01::VehiclesTest < ActiveSupport::TestCase
   end
 
   test 'should update vehicle router options' do
-    put api(@vehicle.id), nil, input: {router_options: {motorway: false, weight_per_axle: 3, length: 30, hazardous_goods: 'gas', max_walk_distance: 600, approach: 'curb', snap: 50}}.to_json, CONTENT_TYPE: 'application/json'
+    put api(@vehicle.id), nil, input: {router_options: {motorway: false, weight_per_axle: 3, length: 30, hazardous_goods: 'gas', max_walk_distance: 600, approach: 'curb', snap: 50, low_emission_zone: 'false'}}.to_json, CONTENT_TYPE: 'application/json'
     assert last_response.ok?, last_response.body
 
     vehicle = JSON.parse(last_response.body)
@@ -76,10 +76,11 @@ class V01::VehiclesTest < ActiveSupport::TestCase
     assert vehicle['router_options']['max_walk_distance'] = '600'
     assert vehicle['router_options']['approach'] = 'curb'
     assert vehicle['router_options']['snap'] = '50'
+    assert vehicle['router_options']['low_emission_zone'] = 'false'
   end
 
   test 'should not update vehicle with invalid router options' do
-    put api(@vehicle.id), nil, input: {router_options: {motorway: false, width: '3,55', weight_per_axle: 3, length: 30, hazardous_goods: 'gas', max_walk_distance: 600, approach: 'curb', snap: 50}}.to_json, CONTENT_TYPE: 'application/json'
+    put api(@vehicle.id), nil, input: {router_options: {motorway: false, width: '3,55', weight_per_axle: 3, length: 30, hazardous_goods: 'gas', max_walk_distance: 600, approach: 'curb', snap: 50, low_emission_zone: 'false'}}.to_json, CONTENT_TYPE: 'application/json'
     errors = JSON.parse(last_response.body)
     assert_equal errors['message'], 'router_options[width] is invalid'
   end
