@@ -192,6 +192,7 @@
         'router_dimension': 'Objectif du calculateur'
         'router_options_traffic': 'Tenir compte du trafic'
         'router_options_track': 'Utiliser les chemins'
+        'router_options_low_emission_zone': 'Accéder aux zones à faible émission'
         'router_options_motorway': 'Utiliser les autoroutes'
         'router_options_toll': 'Autoriser les sections à péage'
         'router_options_trailers': 'Nombre de remorques'
@@ -351,6 +352,7 @@
           'approach':
             'unrestricted': 'Indifférent'
             'curb': 'Côté de circulation sur la voie'
+          'low_emission_zone': 'Zones à faible émission'
       'stop':
         'active': 'Actif'
         'begin': 'Début'
@@ -874,6 +876,9 @@
       'router_options_toll_yes': 'Oui'
       'router_options_toll_no': 'Non'
       'router_options_toll_default': 'par défaut (%{value})'
+      'router_options_low_emission_zone_yes': 'Oui'
+      'router_options_low_emission_zone_no': 'Non'
+      'router_options_low_emission_zone_default': 'par défaut (%{value})'
       'router_options_trailers_range': 'Entre %{from} et %{to} remorques'
       'router_options_weight_range': 'Poids (avec remorques et marchandises) entre
         %{from} et %{to} tonnes'
