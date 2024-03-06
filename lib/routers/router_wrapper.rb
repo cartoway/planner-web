@@ -195,6 +195,7 @@ module Routers
         area: options[:speed_multiplier_areas] ? options[:speed_multiplier_areas].collect{ |a| a[:area].join(',') }.join('|') : nil,
         speed_multiplier_area: options[:speed_multiplier_areas] ? options[:speed_multiplier_areas].collect{ |a| a[:speed_multiplier_area] }.join('|') : nil,
         track: options[:track],
+        low_emission_zone: options[:low_emission_zone],
         motorway: options[:motorway],
         toll: options[:toll],
         trailers: options[:trailers],
