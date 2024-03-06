@@ -164,6 +164,8 @@ Rails.application.routes.draw do
   end
   delete 'zonings' => 'zonings#destroy_multiple'
 
+  resources :zones
+
   resources :order_arrays do
     patch 'duplicate'
   end

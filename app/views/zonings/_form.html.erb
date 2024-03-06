@@ -37,29 +37,36 @@ options.merge!(url: "/api-web/0.1/zonings/#{@zoning.id}/#{params[:action]}") if 
           <label><input type="checkbox" name="all-destinations"> <%= t '.all_destinations' %> <i class="fa fa-circle-question fa-fw" title="<%= t '.from_planning_help' %>"></i></label>
         </div>
       <% end %>
-      <% if @manage_zoning[:manage_organize] %>
         <div class="col-md-offset-2 col-md-10">
-          <button type="button" class="btn btn-primary dropdown-toggle" id="generate" data-toggle="dropdown" aria-expanded="false"<% if @isochrone.empty? && @isodistance.empty? && !@planning %> style="display: none;"<% end %>><i class="fa fa-magic fa-fw"></i> <%= t '.generate' %> <span class="caret"></span></button>
-          <ul class="dropdown-menu" role="menu">
-            <% if !@isochrone.empty? || !@isodistance.empty? %>
-              <% if !@isochrone.empty? %>
-                <li><a data-toggle="modal" data-target="#isochrone-modal" data-keyboard="true" href="#"><i class="fa fa-stopwatch fa-fw"></i> <%= t '.isochrone' %></a></li>
+        <div class="col-md-10">
+          <% if @manage_zoning[:manage_organize] %>
+            <button type="button" class="btn btn-primary dropdown-toggle" id="generate" data-toggle="dropdown" aria-expanded="false"<% if @isochrone.empty? && @isodistance.empty? && !@planning %> style="display: none;"<% end %>><i class="fa fa-magic fa-fw"></i> <%= t '.generate' %> <span class="caret"></span></button>
+            <ul class="dropdown-menu" role="menu">
+              <% if !@isochrone.empty? || !@isodistance.empty? %>
+                <% if !@isochrone.empty? %>
+                  <li><a data-toggle="modal" data-target="#isochrone-modal" data-keyboard="true" href="#"><i class="fa fa-stopwatch fa-fw"></i> <%= t '.isochrone' %></a></li>
+                <% end %>
+                <% if !@isodistance.empty? %>
+                  <li><a data-toggle="modal" data-target="#isodistance-modal" data-keyboard="true" href="#"><i class="fa fa-road fa-fw"></i> <%= t '.isodistance' %></a></li>
+                <% end %>
+                <li class="divider"></li>
               <% end %>
-              <% if !@isodistance.empty? %>
-                <li><a data-toggle="modal" data-target="#isodistance-modal" data-keyboard="true" href="#"><i class="fa fa-road fa-fw"></i> <%= t '.isodistance' %></a></li>
+              <% if @planning %>
+                <li><a href="#" id="from_planning"><i class="fa fa-calendar fa-fw"></i> <%= t '.from_planning' %></a></li>
+                <li class="divider"></li>
               <% end %>
-              <li class="divider"></li>
-            <% end %>
-            <% if @planning %>
-              <li><a href="#" id="from_planning"><i class="fa fa-calendar fa-fw"></i> <%= t '.from_planning' %></a></li>
-              <li class="divider"></li>
-            <% end %>
-            <% zoning_vehicles(@zoning, @planning, active: true).count.times{ |n| %>
-              <li><a href="#" class="automatic<% if !@planning %> disabled<% end %>" data-n="<%= n + 1 %>"><i class="fa fa-magic fa-fw"></i> <%= t('.automatic', count: n + 1) %></a></li>
-            <% } %>
-          </ul>
+              <% zoning_vehicles(@zoning, @planning, active: true).count.times{ |n| %>
+                <li><a href="#" class="automatic<% if !@planning %> disabled<% end %>" data-n="<%= n + 1 %>"><i class="fa fa-magic fa-fw"></i> <%= t('.automatic', count: n + 1) %></a></li>
+              <% } %>
+            </ul>
+          <% end %>
         </div>
-      <% end %>
+        <div class="col-md-2">
+          <%= link_to zoning_path(@zoning.id, {planning_id: @planning, format: :excel}), class: "btn btn-default" do %>
+            <i class="fa fa-download fa-fw" title=<%= t('destinations.menu.export_spreadsheet_standard') %>></i>
+          <% end %>
+        </div>
+      </div>
     </div>
   <% end %>
   <div id="zones"></div>

@@ -9,6 +9,7 @@
       <div class="form-control zone-name">{{name}}{{^name}}{{#i18n}}zonings.form.zone_placeholder{{/i18n}} #{{index}}{{/name}}</div>
       {{/manage_edit}}
       <div class="btn-group pull-right">
+        <a href="/zones/{{id}}.excel/?zoning_id={{zoning_id}}{{#planning_id}}&planning_id={{planning_id}}{{/planning_id}}" class="btn btn-default btn-xs" title="{{#i18n}}destinations.menu.export_spreadsheet_standard{{/i18n}}"><i class="fa fa-download fa-fw"></i></a>
         <button type="button" class="delete btn btn-danger btn-xs" title="{{#i18n}}all.verb.destroy{{/i18n}}"><i class="fa fa-trash fa-fw"></i></button>
       </div>
     </div>
