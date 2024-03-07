@@ -688,7 +688,7 @@ export const zonings_edit = function(params) {
   });
 
   $.ajax({
-    url: '/zonings/' + (zoning_id ? zoning_id + '/edit' : 'new') + '.json',
+    url: '/zonings/' + (zoning_id ? zoning_id + '/edit' : 'new') + (planning_id ? '/planning/' + planning_id : '') +'.json',
     beforeSend: beforeSendWaiting,
     success: displayZoningFirstTime,
     complete: completeWaiting,

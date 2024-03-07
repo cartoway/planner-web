@@ -5,6 +5,7 @@ index = 0
 json.zoning @zoning.zones do |zone|
   json.extract! zone, :id, :zoning_id, :name, :vehicle_id, :polygon, :speed_multiplier
   json.index index += 1
+  json.planning_id @planning.id if @planning
 end
 if @planning
   json.planning_id @planning.id
