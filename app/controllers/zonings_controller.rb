@@ -18,6 +18,7 @@
 class ZoningsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_zoning, only: [:show, :edit, :update, :destroy, :duplicate, :automatic, :from_planning, :isochrone, :isodistance]
+  before_action :set_planning, only: [:show, :edit, :new, :automatic, :from_planning]
   before_action :manage_zoning
   around_action :includes_destinations, only: [:show, :edit, :update, :automatic, :from_planning]
   around_action :over_max_limit, only: [:create, :duplicate]
@@ -34,7 +35,9 @@ class ZoningsController < ApplicationController
     respond_to do |format|
       format.excel do
         @customer = current_user.customer
-        if !@destinations
+        if @planning
+          @destinations = @planning.routes.flat_map{ |route| route.stops.only_stop_visits.flat_map{ |stop| stop.visit.destination }}.uniq
+        elsif !@destinations
           @destinations = @customer.destinations.includes_visits
         end
 
@@ -56,11 +59,9 @@ class ZoningsController < ApplicationController
   def new
     @zoning = current_user.customer.zonings.build
     @plannings = current_user.customer.plannings
-    @planning = params.key?(:planning_id) ? current_user.customer.plannings.find(params[:planning_id]) : nil
   end
 
   def edit
-    @planning = params.key?(:planning_id) && !params[:planning_id].empty? ? current_user.customer.plannings.find(params[:planning_id]) : nil
     @vehicle_usage_set = @planning ? @planning.vehicle_usage_set : @zoning.customer.vehicle_usage_sets[0]
     capabilities
   end
@@ -118,7 +119,6 @@ class ZoningsController < ApplicationController
 
   def automatic
     respond_to do |format|
-      @planning = params.key?(:planning_id) ? current_user.customer.plannings.find(params[:planning_id]) : nil
       n = params[:n].to_i if params[:n]
       hide_out_of_route = params[:hide_out_of_route].to_i == 1
       @zoning.automatic_clustering @planning, n, !hide_out_of_route
@@ -129,7 +129,6 @@ class ZoningsController < ApplicationController
 
   def from_planning
     respond_to do |format|
-      @planning = params.key?(:planning_id) ? current_user.customer.plannings.find(params[:planning_id]) : nil
       if @planning
         @zoning.from_planning(@planning)
         @zoning.save!
@@ -187,6 +186,10 @@ class ZoningsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_zoning
     @zoning = current_user.customer.zonings.includes(customer: [vehicle_usage_sets: [vehicle_usages: :vehicle]]).find(params[:id] || params[:zoning_id])
+  end
+
+  def set_planning
+    @planning = params.key?(:planning_id) && !params[:planning_id].empty? ? current_user.customer.plannings.find(params[:planning_id]) : nil
   end
 
   def includes_destinations

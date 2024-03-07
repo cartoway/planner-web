@@ -7,9 +7,12 @@ class ZonesController < ApplicationController
   load_and_authorize_resource
 
   def show
+    @planning = params.key?(:planning_id) ? current_user.customer.plannings.find(params[:planning_id]) : nil
     if params.key?(:destination_ids)
       destination_ids = params[:destination_ids].split(',')
       @destinations = current_user.customer.destinations.where(ParseIdsRefs.where(Destination, destination_ids))
+    elsif @planning
+      @destinations = @planning.routes.flat_map{ |route| route.stops.only_stop_visits.flat_map{ |stop| stop.visit.destination }}.uniq
     elsif params[:destinations] && ValueToBoolean.value_to_boolean(params[:destinations], true)
       @destinations = current_user.customer.destinations
     end
