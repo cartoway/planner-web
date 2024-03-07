@@ -621,8 +621,8 @@ L.disableClustersControl = function(map, routesLayer) {
     onAdd: function() {
       var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-disable-clusters');
       container.style.backgroundColor = 'white';
-      container.style.width = '26px';
-      container.style.height = '26px';
+      container.style.width = '34px';
+      container.style.height = '34px';
 
       var button = L.DomUtil.create('a', '', container);
       button.title = I18n.t('plannings.edit.marker_clusters');
