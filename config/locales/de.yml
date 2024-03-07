@@ -2229,7 +2229,7 @@ de:
   all:
     datepicker: mm-dd-yyyy
     map_attribution:
-      osm: Kartendaten © <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a> Mitwirkende,%{attribution}
+      osm: © <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a>, %{attribution}
       here: Hier
     verb:
       new: Neu
