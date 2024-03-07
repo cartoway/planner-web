@@ -1,11 +1,13 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
 zone_one:
+  name: zone_one
   polygon: "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[-0.9777832031250001,49.53946900793534],[0.823974609375,49.475263243037986],[0.52734375,48.480204398955145],[-1.8896484375,48.36354888898689],[-1.5600585937499998,49.1242192485914],[-0.9777832031250001,49.53946900793534]]]}}"
   zoning: zoning_one
   vehicle: vehicle_one
 
 zone_two:
+  name: zone_two
   polygon: "{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[-0.9777832031250001,49.53946900793534],[0.823974609375,49.475263243037986],[0.52734375,48.480204398955145],[-1.8896484375,48.36354888898689],[-1.5600585937499998,49.1242192485914],[-0.9777832031250001,49.53946900793534]]]}}"
   zoning: zoning_one
   vehicle:
