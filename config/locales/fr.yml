@@ -2648,8 +2648,7 @@
   'all':
     'datepicker': 'dd-mm-yyyy'
     'map_attribution':
-      'osm': 'Carte et données &copy; contributeurs <a href="http://openstreetmap.org"
-        target="_blank">OpenStreetMap</a>, %{attribution}'
+      'osm': '&copy; <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a>, %{attribution}'
       'here': 'Here'
     'verb':
       'new': 'Nouveau'

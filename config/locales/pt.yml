@@ -2313,8 +2313,7 @@
   'all':
     'datepicker': 'dd-mm-yyyy'
     'map_attribution':
-      'osm': 'Carta de dados &copy; contribuintes <a href="http://openstreetmap.org"
-        target="_blank">OpenStreetMap</a>, %{attribution}'
+      'osm': '&copy; <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a>, %{attribution}'
       'here': 'Aqui'
     'verb':
       'new': 'Novo'

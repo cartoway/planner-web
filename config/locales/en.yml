@@ -2482,8 +2482,7 @@ en:
   all:
     datepicker: mm-dd-yyyy
     map_attribution:
-      osm: Map data &copy; <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a>
-        contributors, %{attribution}
+      osm: &copy; <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a>, %{attribution}
       here: Here
     verb:
       new: New
