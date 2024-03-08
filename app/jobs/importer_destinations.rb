@@ -134,11 +134,14 @@ class ImporterDestinations < ImporterBase
     @common_tags = {}
     @tag_labels = Hash[@customer.tags.collect{ |tag| [tag.label, tag] }]
     @tag_ids = Hash[@customer.tags.collect{ |tag| [tag.id, tag] }]
-    @routes = Hash.new{ |h, k|
+    @plannings_routes = Hash.new{ |h, k|
       h[k] = Hash.new{ |hh, kk|
-        hh[kk] = kk == :visits ? [] : nil
+        hh[kk] = Hash.new{ |hhh, kkk|
+          hhh[kkk] = kkk == :visits ? [] : nil
+        }
       }
     }
+    @plannings_hash = Hash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref, plan] }]
     @destinations_to_geocode = []
     @visit_ids = []
 
@@ -165,13 +168,20 @@ class ImporterDestinations < ImporterBase
     @destinations_by_ref = Hash[@customer.destinations.select(&:ref).collect{ |destination| [destination.ref, destination] }]
     # @visits_by_ref must contains ref with and without destination since destination ref could not be present in imported data
     @visits_by_ref = Hash[@customer.destinations.flat_map(&:visits).select(&:ref).flat_map{ |visit| [["#{visit.destination.ref}/#{visit.ref}", visit], ["/#{visit.ref}", visit]] }.uniq]
+    @destinations_visits_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref, Hash.new] }]
+    @destinations_visits_by_ref[nil] = Hash.new
+    @customer.destinations.select(&:ref).flat_map(&:visits).each{ |visit| @destinations_visits_by_ref[visit.destination.ref][visit.ref] = visit }
     # @plannings_by_ref set in import_row in order to have internal row title
-    @plannings_by_ref = nil
+    @plannings_by_ref = {}
     @@col_dest_keys ||= columns_destination.keys
     @col_visit_keys = columns_visit.keys + [:quantities, :quantities_operations, :custom_attributes_visit]
     @@slice_attr ||= (@@col_dest_keys - [:customer_id, :lat, :lng]).collect(&:to_s)
     @destinations_by_attributes = Hash[@customer.destinations.collect{ |destination| [destination.attributes.slice(*@@slice_attr), destination] }]
+
+    @destinations = []
+    @visits = []
     @plannings = []
+    @plannings_attributes = {}
   end
 
   def uniq_ref(row)
@@ -275,9 +285,8 @@ class ImporterDestinations < ImporterBase
     type == I18n.t('destinations.import_file.stop_type_visit')
   end
 
-  def import_row(_name, row, _options)
-    return unless is_visit?(row[:stop_type])
-
+  def convert_deprecated_fields(row)
+    ## TODO: Manage it in API input :
     # Deals with deprecated open and close
     row[:time_window_start_1] = row.delete(:open) if !row.key?(:time_window_start_1) && row.key?(:open)
     row[:time_window_end_1] = row.delete(:close) if !row.key?(:time_window_end_1) && row.key?(:close)
@@ -290,28 +299,16 @@ class ImporterDestinations < ImporterBase
 
     # Deals with deprecated take_over
     row[:duration] = row.delete(:duration) if !row.key?(:duration) && row.key?(:duration)
+  end
 
-    prepare_quantities row
-    prepare_custom_attributes(row)
-    [:tags, :tags_visit].each{ |key| prepare_tags row, key }
-
-    if row[:planning_ref]
-      @plannings_by_ref = Hash[@customer.plannings.map{ |p| [p.ref, p] }] unless @plannings_by_ref
-      unless @plannings_by_ref.key? row[:planning_ref]
-        # Do not link the planning to has_many of the customer, to avoid cascading while saving from customer.
-        # The following save_import does not re-synchr the object in memory from database, unless explicitly requested.
-        planning = Planning.new
-        planning.assign_attributes({
-          ref: row[:planning_ref],
-          name: row[:planning_name],
-          customer: @customer,
-          vehicle_usage_set: @customer.vehicle_usage_sets[0]})
-        planning.default_empty_routes
-        @plannings_by_ref[row[:planning_ref]] = planning
-        raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if @customer.default_max_plannings && @plannings_by_ref.size > @customer.default_max_plannings
-      end
-      @plannings.push(@plannings_by_ref[row[:planning_ref]]) unless @plannings.include? @plannings_by_ref[row[:planning_ref]]
-    end
+  def build_attributes(row)
+    @plannings_attributes[row[:planning_ref]] ||=
+      {
+        ref: row[:planning_ref],
+        name: row[:planning_name],
+        customer: @customer,
+        vehicle_usage_set: @customer.vehicle_usage_sets[0]
+      }
 
     destination_attributes = row.slice(*@@col_dest_keys)
     visit_attributes = row.slice(*@col_visit_keys)
@@ -320,65 +317,79 @@ class ImporterDestinations < ImporterBase
     visit_attributes[:custom_attributes] = visit_attributes.delete :custom_attributes_visit if visit_attributes.key?(:custom_attributes_visit)
     visit_attributes[:force_position] = row[:force_position].present? && convert_force_position(row[:force_position])
 
-    if !row[:ref].nil? && !row[:ref].strip.empty?
+    [destination_attributes, visit_attributes]
+  end
+
+  def prepare_destination(row, destination_attributes, visit_attributes)
+    destination, visit = nil
+    if row[:ref].present? && !row[:ref].strip.empty?
       destination = @destinations_by_ref[row[:ref]]
       if destination
-        destination.assign_attributes((destination_attributes.key?(:lat) || destination_attributes.key?(:lng) ?
-          {lat: nil, lng: nil} :
-          {}).merge(destination_attributes.compact)) # FIXME: don't use compact to overwrite database with row containing nil
+        lat_lng_attributes = (destination_attributes.key?(:lat) || destination_attributes.key?(:lng)) ? {lat: nil, lng: nil} : {}
+        # Compact allows to avoid erasing nil fields
+        destination.assign_attributes(lat_lng_attributes.merge(destination_attributes.compact))
       else
-        destination = @customer.destinations.build(destination_attributes)
+        destination = @customer.destinations.new(destination_attributes)
         @destinations_by_ref[destination.ref] = destination if destination.ref
         @destinations_by_attributes[destination.attributes.slice(*@@slice_attr)] = destination
+        @destinations_visits_by_ref[destination.ref] = Hash.new
       end
-      if row[:without_visit].nil? || row[:without_visit].strip.empty?
-        visit = if !row[:ref_visit].nil? && !row[:ref_visit].strip.empty?
-          @visits_by_ref["#{destination.ref}/#{row[:ref_visit]}"]
-        else
-          # Get the first visit without ref
-          destination.visits.find{ |v| !v.ref }
-        end
-        if visit
-          visit.assign_attributes(visit_attributes.compact) # FIXME: don't use compact to overwrite database with row containing nil
-        else
-          visit = destination.visits.build(visit_attributes)
-          @visits_by_ref["#{visit.destination.ref}/#{visit.ref}"] = visit if visit.ref
-        end
+      visit = prepare_visit_with_destination(row, destination, visit_attributes)
+    else
+      destination, visit = prepare_visit_without_destination_ref(row, destination_attributes, visit_attributes)
+    end
+    [destination, visit]
+  end
+
+  def prepare_visit_with_destination(row, destination, visit_attributes)
+    visit = nil
+    if row[:without_visit].nil? || row[:without_visit].strip.empty?
+      visit = @destinations_visits_by_ref[destination.ref][row[:ref_visit]]
+      if visit
+        # Compact allows to avoid erasing nil fields
+        visit.assign_attributes(visit_attributes.compact)
       else
-        destination.visits.destroy_all
+        visit = destination.visits.new(visit_attributes)
+        @destinations_visits_by_ref[visit.destination.ref][visit.ref] = visit
       end
     else
-      if !row[:ref_visit].nil? && !row[:ref_visit].strip.empty?
-        visit = @visits_by_ref["#{row[:ref]}/#{row[:ref_visit]}"]
-        if visit
-          visit.destination.assign_attributes(destination_attributes)
-          visit.assign_attributes(visit_attributes)
-        end
-      end
-      if !visit
-        # Get destination from attributes for multiple visits
-        destination = if @customer.enable_multi_visits
-            row_compare_attr = (@@dest_attr_nil ||= Hash[*columns_destination.keys.collect{ |v| [v, nil] }.flatten]).merge(destination_attributes).except(:lat, :lng, :tags).stringify_keys
-            @destinations_by_attributes[row_compare_attr]
-          else
-            nil
-          end
-        if destination
-          destination.assign_attributes(destination_attributes)
-        else
-          destination = @customer.destinations.build(destination_attributes)
-          # No destination.ref here for @destinations_by_ref
-          @destinations_by_attributes[destination.attributes.slice(*@@slice_attr)] = destination
-        end
-        if row[:without_visit].nil? || row[:without_visit].strip.empty?
-          # Link only when destination is complete
-          visit = destination.visits.build(visit_attributes)
-          @visits_by_ref["#{visit.destination.ref}/#{visit.ref}"] = visit if visit.ref
-        end
+      destination.visits.destroy_all
+    end
+    visit
+  end
+
+  def prepare_visit_without_destination_ref(row, destination_attributes, visit_attributes)
+    if row[:ref_visit].present? && !row[:ref_visit].strip.empty?
+      visit = @destinations_visits_by_ref[nil][row[:ref_visit]]
+      if visit
+        visit.destination.assign_attributes(destination_attributes)
+        visit.assign_attributes(visit_attributes)
       end
     end
 
-    valid_row visit ? visit.destination : destination
+    if !visit
+      destination =
+        if @customer.enable_multi_visits
+          row_compare_attr = (@@dest_attr_nil ||= Hash[*columns_destination.keys.collect{ |v| [v, nil] }.flatten]).merge(destination_attributes).except(:lat, :lng, :tags).stringify_keys
+          @destinations_by_attributes[row_compare_attr]
+        end
+      if destination
+        destination.assign_attributes(destination_attributes)
+      else
+        destination = @customer.destinations.new(destination_attributes)
+        # No destination.ref here for @destinations_by_ref
+        @destinations_by_attributes[destination.attributes.slice(*@@slice_attr)] = destination
+      end
+      if row[:without_visit].nil? || row[:without_visit].strip.empty?
+        # Link only when destination is complete
+        visit = destination.visits.new(visit_attributes)
+        @destinations_visits_by_ref[visit.destination.ref][visit.ref] = visit if visit.ref
+      end
+    end
+    [destination, visit]
+  end
+
+  def prepare_destination_in_planning(row, destination, visit)
     if visit
       # Instersection of tags of all rows for tags of new planning
       if !@common_tags[row[:planning_ref]]
@@ -392,15 +403,14 @@ class ImporterDestinations < ImporterBase
         @destinations_to_geocode << visit.destination
         visit.destination.lat = nil # for job
       end
-      visit.destination.validate! # to get errors first
-      visit.save!
 
       # Add visit to route if needed
-      if row.key?(:route) && !@visit_ids.include?(visit.id)
+      if row.key?(:route) && (visit.id.nil? || !@visit_ids.include?(visit.id))
+        ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref]
         ref_route = row[:route].blank? ? nil : row[:route] # ref has to be nil for out-of-route
-        @routes[ref_route][:ref_vehicle] = row[:ref_vehicle].gsub(%r{[\./\\]}, ' ') if row[:ref_vehicle]
-        @routes[ref_route][:visits] << [visit, ValueToBoolean.value_to_boolean(row[:active], true)]
-        @visit_ids << visit.id
+        @plannings_routes[ref_planning][ref_route][:ref_vehicle] = row[:ref_vehicle].gsub(%r{[\./\\]}, ' ') if row[:ref_vehicle]
+        @plannings_routes[ref_planning][ref_route][:visits] << [visit, ValueToBoolean.value_to_boolean(row[:active], true)]
+        @visit_ids << visit.id if visit.id
       end
       visit.destination # For subclasses
     else
@@ -409,9 +419,48 @@ class ImporterDestinations < ImporterBase
         @destinations_to_geocode << destination
         destination.lat = nil # for job
       end
-      destination.save!
-      destination # For subclasses
     end
+  end
+
+  def import_row(_name, row, _options)
+    return unless is_visit?(row[:stop_type])
+
+    destination = nil
+    visit = nil
+
+    convert_deprecated_fields(row)
+    prepare_quantities(row)
+    prepare_custom_attributes(row)
+    [:tags, :tags_visit].each{ |key| prepare_tags row, key }
+
+    destination_attributes, visit_attributes = build_attributes(row)
+
+    destination, visit = prepare_destination(row, destination_attributes, visit_attributes)
+
+    valid_row visit ? visit.destination : destination
+
+    prepare_destination_in_planning(row, destination, visit)
+    @destinations << destination
+    destination
+  end
+
+  def prepare_plannings(name, _options)
+    @plannings_routes.each{ |ref, routes_hash|
+      planning = @plannings_hash[ref] if ref
+      unless planning
+        attributes = @plannings_attributes[ref]
+        planning = Planning.new(attributes)
+      end
+      planning.assign_attributes({
+        name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
+      }.merge(@planning_hash))
+      planning.assign_attributes({tags: (ref && @common_tags[ref] || @common_tags[nil] || [])})
+      unless planning.set_routes routes_hash, false, true
+        raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if routes_hash.keys.size > planning.routes.size || routes_hash.keys.compact.size > @customer.max_vehicles
+      end
+      planning.split_by_zones(nil) if @planning_hash.key?(:zonings) || @planning_hash.key?(:zoning_ids)
+      @plannings.push(planning)
+    }
   end
 
   def after_import(name, _options)
@@ -429,31 +478,14 @@ class ImporterDestinations < ImporterBase
     end
 
     @customer.save!
+    @destinations.uniq!
+    # activerecord-import cannot update recursive existing visits
+    existing_destinations = @destinations.select{ |dest| dest.id.present? }
+    Destination.import(@destinations - existing_destinations, on_duplicate_key_update: { conflict_target: [:id], columns: :all }, recursive: true)
+    related_visits = existing_destinations.flat_map(&:visits)
+    Visit.import(related_visits, on_duplicate_key_update: { conflict_target: [:id], columns: :all })
 
-    unless @routes.keys.compact.empty? && @planning_hash.values.all?(&:blank?) || @plannings_by_ref
-      planning = @customer.plannings.find{ |p| p.ref == @planning_hash['ref'] } if !@planning_hash['ref'].blank?
-      unless planning
-        # Do not link the planning to has_many of the customer, to avoid cascading while saving from customer.
-        # The following save_import does not re-synchr the object in memory from database, unless explicitly requested.
-        planning = Planning.new
-        planning.assign_attributes({
-          customer: @customer,
-          vehicle_usage_set: @planning_hash[:vehicle_usage_set_id] && @customer.vehicle_usage_sets.find{ |vu| vu.id == @planning_hash[:vehicle_usage_set_id] } || @customer.vehicle_usage_sets[0]})
-        planning.default_empty_routes
-      end
-      planning.assign_attributes({
-        name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
-      }.merge(@planning_hash))
-      @plannings.push(planning)
-    end
-
-    @plannings.each{ |planning|
-      planning.assign_attributes({tags: (@common_tags[planning.ref] || @common_tags[nil] || [])})
-      unless planning.set_routes @routes, false, true
-        raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if @routes.keys.size > planning.routes.size || @routes.keys.compact.size > @customer.max_vehicles
-      end
-      planning.split_by_zones(nil) if @planning_hash.key?(:zonings) || @planning_hash.key?(:zoning_ids)
-    }
+    prepare_plannings(name, _options)
   end
 
   def save_plannings
