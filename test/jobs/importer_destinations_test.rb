@@ -311,7 +311,9 @@ class ImporterDestinationsTest < ActionController::TestCase
   test 'should import and update' do
     destinations(:destination_unaffected_one).update(lat: 2.5, lng: 2.5, geocoding_accuracy: 0.9, geocoding_level: :house) && @customer.reload
     assert_difference('Destination.count', 1) do
-      assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_update.csv', 'text.csv')).import
+      assert_difference('Visit.count', 1) do
+        assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_update.csv', 'text.csv')).import
+      end
     end
     destination = Destination.find_by(ref:'a')
     assert_equal 'unaffected_one_update', destination.name
@@ -319,7 +321,7 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_nil destination.geocoding_accuracy
     assert_equal 'point', destination.geocoding_level
     assert_equal [[1]], destination.visits.map{ |v| v.quantities.values }
-    assert_equal 'unaffected_two_update', Visit.find_by(ref:'unknown').destination.name
+    assert_equal 'unaffected_two_update', Destination.find_by(ref:'unknown').visits.first.name
 
     assert_no_difference('Destination.count') do
       # should import without need geocode (postalcode should be nilified and unchanged)

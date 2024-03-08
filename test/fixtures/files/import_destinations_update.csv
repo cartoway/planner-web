@@ -1,5 +1,5 @@
-référence visite,nom,voie,complément,code postal,ville,lat,lng,quantité,horaire début 1,horaire fin 1,commentaire,catégories
-c,destination_two_update,MyString,MyString,MyString,MyString,1.5,1.5,3,10:00,11:00,MyString,tag1
-b,destination_one_update,Rue des Lilas,MyString,33200,Bordeau,49.1857,-0.3735,1,10:00,11:00,MyString,tag1
-a,unaffected_one_update,MyString,MyString,"",MyString,1.5,1.5,1,10:00,11:00,MyString,tag1
-unknown,unaffected_two_update,MyString,MyString,MyString,MyString,1.5,1.5,1,10:00,11:00,MyString,tag1
+référence,référence visite,nom,voie,complément,code postal,ville,lat,lng,quantité,horaire début 1,horaire fin 1,commentaire,catégories
+c,c,destination_two_update,MyString,MyString,MyString,MyString,1.5,1.5,3,10:00,11:00,MyString,tag1
+b,b,destination_one_update,Rue des Lilas,MyString,33200,Bordeau,49.1857,-0.3735,1,10:00,11:00,MyString,tag1
+a,a,unaffected_one_update,MyString,MyString,"",MyString,1.5,1.5,1,10:00,11:00,MyString,tag1
+unknown,a,unaffected_two_update,MyString,MyString,MyString,MyString,1.5,1.5,1,10:00,11:00,MyString,tag1
