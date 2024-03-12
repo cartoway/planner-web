@@ -464,16 +464,22 @@ class ImporterDestinations < ImporterBase
       destinations_attributes << attributes
       destination_import_indices << import_index
     }
-    import_result = Destination.import(
-      destinations_attributes,
-      on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-      recursive: true, validate: true, all_or_none: true
-    )
-    raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
-    import_result.ids.each.with_index{ |id, index|
-      @destination_index_to_id_hash[destination_import_indices[index]] = id
+
+    # Every entry should have identical keys to be imported at the same time
+    destinations_attributes.group_by{ |attribute|
+      attribute.keys
+    }.flat_map { |keys, attributes|
+      import_result = Destination.import(
+        attributes,
+        on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+        recursive: true, validate: true, all_or_none: true
+      )
+      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+      import_result.ids.each.with_index{ |id, index|
+        @destination_index_to_id_hash[destination_import_indices[index]] = id
+      }
+      import_result.ids
     }
-    import_result.ids
   end
 
   def bulk_import_visits
