@@ -138,7 +138,7 @@ class ImporterDestinations < ImporterBase
         }
       }
     }
-    @plannings_hash = Hash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref, plan] }]
+    @plannings_hash = Hash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref.to_sym, plan] }]
     @destinations_to_geocode = []
     @visit_ids = []
 
@@ -167,7 +167,7 @@ class ImporterDestinations < ImporterBase
     @existing_destinations_by_ref_and_index = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref, [index, destination]] }]
     @existing_visits_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref, Hash[destination.visits.select(&:ref).map{ |visit| [visit.ref, visit]} ]] }]
 
-    @destinations_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref, [index, destination.attributes]] }]
+    @destinations_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref, [index, destination.attributes.symbolize_keys]] }]
     @destinations_visits_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref, Hash.new] }]
     @destinations_visits_attributes_by_ref[nil] = Hash.new
     @customer.destinations.select(&:ref).flat_map(&:visits).each{ |visit| @destinations_visits_attributes_by_ref[visit.destination.ref][visit.ref] = visit }
@@ -455,22 +455,20 @@ class ImporterDestinations < ImporterBase
   def bulk_import_destinations(destination_index_attributes_hash)
     return [] if destination_index_attributes_hash.empty?
 
-    destinations_attributes = []
-    destination_import_indices = []
-    destination_index_attributes_hash.each{ |import_index, attributes|
-      attributes.delete(:tag_ids)&.each{ |tag_id|
-        @tag_destinations << [import_index, tag_id]
-      }
-      destinations_attributes << attributes
-      destination_import_indices << import_index
-    }
-
     # Every entry should have identical keys to be imported at the same time
-    destinations_attributes.group_by{ |attribute|
-      attribute.keys
-    }.flat_map { |keys, attributes|
+    destination_index_attributes_hash.group_by{ |import_index, attributes|
+      attributes.keys
+    }.flat_map{ |_keys, index_attributes|
+      destination_import_indices = []
+      destination_attributes = index_attributes.map{ |import_index, attributes|
+        attributes.delete(:tag_ids)&.each{ |tag_id|
+          @tag_destinations << [import_index, tag_id]
+        }
+        destination_import_indices << import_index
+        attributes
+      }
       import_result = Destination.import(
-        attributes,
+        destination_attributes,
         on_duplicate_key_update: { conflict_target: [:id], columns: :all },
         recursive: true, validate: true, all_or_none: true
       )
@@ -483,27 +481,32 @@ class ImporterDestinations < ImporterBase
   end
 
   def bulk_import_visits
-    visit_attributes = []
-    visit_import_indices = []
-    (@visits_attributes_without_destination + @visits_attributes_with_destination).each{ |attributes|
-      attributes.delete(:tag_ids)&.each{ |tag_id|
-        @tag_visits << [attributes[:visit_index], tag_id]
-      }
-      visit_import_indices << attributes.delete(:visit_index)
-      attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)]
-      visit_attributes << attributes
-    }
 
-    import_result = Visit.import(
-      visit_attributes,
-      on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-      recursive: true, validate: true, all_or_none: true
-    )
-    raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
-    import_result.ids.each.with_index{ |id, index|
-      @visit_index_to_id_hash[visit_import_indices[index]] = id
+    # Every entry should have identical keys to be imported at the same time
+    (@visits_attributes_without_destination + @visits_attributes_with_destination).group_by{ |attributes|
+      attributes.keys
+    }.flat_map{ |_keys, key_attributes|
+      visit_import_indices = []
+      visit_attributes = key_attributes.map{ |attributes|
+        attributes.delete(:tag_ids)&.each{ |tag_id|
+          @tag_visits << [attributes[:visit_index], tag_id]
+        }
+        visit_import_indices << attributes.delete(:visit_index)
+        attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)]
+        attributes
+      }
+
+      import_result = Visit.import(
+        visit_attributes,
+        on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+        recursive: true, validate: true, all_or_none: true
+      )
+      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+      import_result.ids.each.with_index{ |id, index|
+        @visit_index_to_id_hash[visit_import_indices[index]] = id
+      }
+      import_result.ids
     }
-    import_result.ids
   end
 
   def bulk_import_tags
