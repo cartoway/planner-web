@@ -23,7 +23,10 @@ class Visit < ApplicationRecord
   has_many :relation_successors, class_name: 'Relation', foreign_key: 'successor_id', dependent: :delete_all, validate: false
   has_many :stop_visits, inverse_of: :visit
   has_many :orders, inverse_of: :visit, dependent: :delete_all
-  has_and_belongs_to_many :tags, after_add: :update_tags_track, after_remove: :update_tags_track
+
+  has_many :tag_visits
+  has_many :tags, through: :tag_visits, after_add: :update_tags_track, after_remove: :update_tags_track
+
   delegate :customer, :lat, :lng, :name, :street, :postalcode, :city, :state, :country, :detail, :comment, :phone_number, to: :destination
   serialize :quantities, DeliverableUnitQuantity
   serialize :quantities_operations, DeliverableUnitOperation
