@@ -273,16 +273,6 @@ ALTER SEQUENCE public.destinations_id_seq OWNED BY public.destinations.id;
 
 
 --
--- Name: destinations_tags; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.destinations_tags (
-    destination_id integer NOT NULL,
-    tag_id integer NOT NULL
-);
-
-
---
 -- Name: layers; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -446,16 +436,6 @@ CREATE SEQUENCE public.plannings_id_seq
 --
 
 ALTER SEQUENCE public.plannings_id_seq OWNED BY public.plannings.id;
-
-
---
--- Name: plannings_tags; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.plannings_tags (
-    planning_id integer NOT NULL,
-    tag_id integer NOT NULL
-);
 
 
 --
@@ -860,6 +840,42 @@ CREATE TABLE public.stores_vehicules (
 
 
 --
+-- Name: tag_destinations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tag_destinations (
+    destination_id integer NOT NULL,
+    tag_id integer NOT NULL,
+    created_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.803828'::timestamp without time zone,
+    updated_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.803828'::timestamp without time zone
+);
+
+
+--
+-- Name: tag_plannings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tag_plannings (
+    planning_id integer NOT NULL,
+    tag_id integer NOT NULL,
+    created_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.830886'::timestamp without time zone,
+    updated_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.830886'::timestamp without time zone
+);
+
+
+--
+-- Name: tag_visits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tag_visits (
+    visit_id integer NOT NULL,
+    tag_id integer NOT NULL,
+    created_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.856205'::timestamp without time zone,
+    updated_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.856205'::timestamp without time zone
+);
+
+
+--
 -- Name: tags; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -912,16 +928,6 @@ CREATE TABLE public.tags_vehicle_usages (
 CREATE TABLE public.tags_vehicles (
     vehicle_id integer,
     tag_id integer
-);
-
-
---
--- Name: tags_visits; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.tags_visits (
-    visit_id integer NOT NULL,
-    tag_id integer NOT NULL
 );
 
 
@@ -1656,14 +1662,14 @@ CREATE INDEX fk__plannings_order_array_id ON public.plannings USING btree (order
 -- Name: fk__plannings_tags_planning_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX fk__plannings_tags_planning_id ON public.plannings_tags USING btree (planning_id);
+CREATE INDEX fk__plannings_tags_planning_id ON public.tag_plannings USING btree (planning_id);
 
 
 --
 -- Name: fk__plannings_tags_tag_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX fk__plannings_tags_tag_id ON public.plannings_tags USING btree (tag_id);
+CREATE INDEX fk__plannings_tags_tag_id ON public.tag_plannings USING btree (tag_id);
 
 
 --
@@ -1807,20 +1813,6 @@ CREATE UNIQUE INDEX index_deliverable_units_on_customer_id_and_ref ON public.del
 
 
 --
--- Name: index_destinations_tags_on_destination_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_destinations_tags_on_destination_id ON public.destinations_tags USING btree (destination_id);
-
-
---
--- Name: index_destinations_tags_on_tag_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_destinations_tags_on_tag_id ON public.destinations_tags USING btree (tag_id);
-
-
---
 -- Name: index_orders_on_visit_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1884,24 +1876,38 @@ CREATE INDEX index_stops_on_visit_id ON public.stops USING btree (visit_id);
 
 
 --
+-- Name: index_tag_destinations_on_destination_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tag_destinations_on_destination_id ON public.tag_destinations USING btree (destination_id);
+
+
+--
+-- Name: index_tag_destinations_on_tag_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tag_destinations_on_tag_id ON public.tag_destinations USING btree (tag_id);
+
+
+--
+-- Name: index_tag_visits_on_tag_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tag_visits_on_tag_id ON public.tag_visits USING btree (tag_id);
+
+
+--
+-- Name: index_tag_visits_on_visit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tag_visits_on_visit_id ON public.tag_visits USING btree (visit_id);
+
+
+--
 -- Name: index_tags_on_customer_id_and_ref; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX index_tags_on_customer_id_and_ref ON public.tags USING btree (customer_id, ref);
-
-
---
--- Name: index_tags_visits_on_tag_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_tags_visits_on_tag_id ON public.tags_visits USING btree (tag_id);
-
-
---
--- Name: index_tags_visits_on_visit_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_tags_visits_on_visit_id ON public.tags_visits USING btree (visit_id);
 
 
 --
@@ -2066,18 +2072,18 @@ ALTER TABLE ONLY public.plannings
 
 
 --
--- Name: plannings_tags fk_plannings_tags_planning_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tag_plannings fk_plannings_tags_planning_id; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.plannings_tags
+ALTER TABLE ONLY public.tag_plannings
     ADD CONSTRAINT fk_plannings_tags_planning_id FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
 
 
 --
--- Name: plannings_tags fk_plannings_tags_tag_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tag_plannings fk_plannings_tags_tag_id; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.plannings_tags
+ALTER TABLE ONLY public.tag_plannings
     ADD CONSTRAINT fk_plannings_tags_tag_id FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
 
 
@@ -2250,10 +2256,10 @@ ALTER TABLE ONLY public.plannings_zonings
 
 
 --
--- Name: tags_visits fk_rails_921d431096; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tag_visits fk_rails_921d431096; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.tags_visits
+ALTER TABLE ONLY public.tag_visits
     ADD CONSTRAINT fk_rails_921d431096 FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
 
 
@@ -2282,18 +2288,18 @@ ALTER TABLE ONLY public.vehicle_usages
 
 
 --
--- Name: tags_visits fk_rails_d5309e7b50; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tag_visits fk_rails_d5309e7b50; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.tags_visits
+ALTER TABLE ONLY public.tag_visits
     ADD CONSTRAINT fk_rails_d5309e7b50 FOREIGN KEY (visit_id) REFERENCES public.visits(id) ON DELETE CASCADE;
 
 
 --
--- Name: destinations_tags fk_rails_d7d57d2bd1; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tag_destinations fk_rails_d7d57d2bd1; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.destinations_tags
+ALTER TABLE ONLY public.tag_destinations
     ADD CONSTRAINT fk_rails_d7d57d2bd1 FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
 
 
@@ -2322,10 +2328,10 @@ ALTER TABLE ONLY public.plannings
 
 
 --
--- Name: destinations_tags fk_rails_fde8fb742c; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tag_destinations fk_rails_fde8fb742c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.destinations_tags
+ALTER TABLE ONLY public.tag_destinations
     ADD CONSTRAINT fk_rails_fde8fb742c FOREIGN KEY (destination_id) REFERENCES public.destinations(id) ON DELETE CASCADE;
 
 
@@ -2950,4 +2956,6 @@ INSERT INTO schema_migrations (version) VALUES ('20240208095803');
 INSERT INTO schema_migrations (version) VALUES ('20240215103513');
 
 INSERT INTO schema_migrations (version) VALUES ('20240219091818');
+
+INSERT INTO schema_migrations (version) VALUES ('20240311183150');
 
