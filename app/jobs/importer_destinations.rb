@@ -552,15 +552,11 @@ class ImporterDestinations < ImporterBase
       save_plannings
       @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderDestinationsJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
     elsif !@plannings.empty?
-      # @plannings.each{ |planning|
-      #   planning.compute(ignore_errors: true)
-      # }
+      @plannings.each{ |planning|
+        planning.compute(ignore_errors: true)
+      }
       save_plannings
     end
     # @customer.save!
-  rescue => e
-    puts e
-    puts e.backtrace
-    raise e
   end
 end
