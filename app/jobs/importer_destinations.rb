@@ -529,6 +529,7 @@ class ImporterDestinations < ImporterBase
     @visit_ids = bulk_import_visits
     bulk_import_tags
 
+    @customer.reload
     @destinations_to_geocode = @customer.destinations.reject(&:position?)
 
     if !@destinations_to_geocode.empty? && (@synchronous || !Mapotempo::Application.config.delayed_job_use)
@@ -543,7 +544,6 @@ class ImporterDestinations < ImporterBase
         end
       }
     end
-    # @customer.save!
     prepare_plannings(name, _options)
   end
 
@@ -567,6 +567,5 @@ class ImporterDestinations < ImporterBase
       }
       save_plannings
     end
-    # @customer.save!
   end
 end
