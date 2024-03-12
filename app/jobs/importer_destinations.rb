@@ -545,11 +545,12 @@ class ImporterDestinations < ImporterBase
   end
 
   def save_plannings
-    existing_plannings = @plannings.select{ |plan| plan.id.present? }
-
-    Planning.import(@plannings - existing_plannings, on_duplicate_key_update: { conflict_target: [:id], columns: :all }, recursive: true)
-    existing_plannings.each { |planning|
+    @plannings.each { |planning|
+      if !planning.id
+        planning.save_import!
+      else
       planning.save!
+      end
     }
   end
 
