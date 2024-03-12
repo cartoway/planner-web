@@ -21,9 +21,15 @@ class Tag < ApplicationRecord
   default_scope { order(:label) }
 
   belongs_to :customer
-  has_and_belongs_to_many :destinations
-  has_and_belongs_to_many :visits
-  has_and_belongs_to_many :plannings
+
+  has_many :tag_destinations
+  has_many :destinations, through: :tag_destinations
+
+  has_many :tag_plannings
+  has_many :plannings, through: :tag_plannings
+
+  has_many :tag_visits
+  has_many :visits, through: :tag_visits
 
   nilify_blanks before: :validation
   auto_strip_attributes :label
@@ -96,4 +102,19 @@ class Tag < ApplicationRecord
       r.save!
     }
   end
+end
+
+class TagDestination < ApplicationRecord
+  belongs_to :destination
+  belongs_to :tag
+end
+
+class TagPlanning < ApplicationRecord
+  belongs_to :planning
+  belongs_to :tag
+end
+
+class TagVisit < ApplicationRecord
+  belongs_to :visit
+  belongs_to :tag
 end
