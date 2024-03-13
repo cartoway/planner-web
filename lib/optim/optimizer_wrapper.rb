@@ -258,10 +258,13 @@ class OptimizerWrapper
   def filter_option_relations(services, options)
     return [] unless options[:relations]
 
-    service_hash = services.map{ |s| [s[:id], s] }.to_h
+    service_hash = services.map{ |s| [s[:stop_id], s] }.to_h
 
     options[:relations].delete_if{ |relation|
-      !relation[:linked_ids].all?{ |id| service_hash.key? id }
+      relation[:linked_ids].any?{ |id| !service_hash.key?(id) }
+    }
+    options[:relations].each{ |relation|
+      relation[:linked_ids].map!{ |id| "s#{id}"}
     }
     options[:relations]
   end
