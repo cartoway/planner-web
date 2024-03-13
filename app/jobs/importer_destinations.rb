@@ -138,16 +138,18 @@ class ImporterDestinations < ImporterBase
         }
       }
     }
-    @plannings_hash = Hash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref.to_sym, plan] }]
     @destinations_to_geocode = []
     @visit_ids = []
 
     if options[:delete_plannings]
       @customer.plannings.delete_all
+      @customer.plannings.reload
     end
     if options[:replace]
       @customer.delete_all_destinations
     end
+    @plannings_hash = Hash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref.to_sym, plan] }]
+
     if options[:line_shift] == 1
       # Create missing deliverable units if needed
       column_titles = data[0].is_a?(Hash) ? data[0].keys : data.size > 0 ? data[0].map{ |a| a[0] } : []
