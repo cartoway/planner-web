@@ -374,8 +374,8 @@ class Planning < ApplicationRecord
       {
         type: RELATION_KEYS[relation.relation_type.to_sym],
         linked_ids: [
-          stop_hash[relation.current_id] && "s#{stop_hash[relation.current_id].id}",
-          stop_hash[relation.successor_id] && "s#{stop_hash[relation.successor_id].id}"
+          stop_hash[relation.current_id]&.id,
+          stop_hash[relation.successor_id]&.id
         ].compact
       }
     }
