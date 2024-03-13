@@ -124,7 +124,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def rows_to_json(rows)
-    @customer.destinations.where(id: @destination_ids)
+    @customer.destinations.includes(:visits).where(id: @destination_ids)
   end
 
   def before_import(_name, data, options)
@@ -166,10 +166,10 @@ class ImporterDestinations < ImporterBase
 
 
     @destinations_attributes_without_ref = []
-    @existing_destinations_by_ref_and_index = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref, [index, destination]] }]
+    @existing_destinations_by_ref = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref, destination] }]
     @existing_visits_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref, Hash[destination.visits.select(&:ref).map{ |visit| [visit.ref, visit]} ]] }]
 
-    @destinations_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref, [index, destination.attributes.symbolize_keys]] }]
+    @destinations_attributes_by_ref = {}
     @destinations_visits_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref, Hash.new] }]
     @destinations_visits_attributes_by_ref[nil] = Hash.new
     @customer.destinations.select(&:ref).flat_map(&:visits).each{ |visit| @destinations_visits_attributes_by_ref[visit.destination.ref][visit.ref] = visit }
@@ -179,14 +179,14 @@ class ImporterDestinations < ImporterBase
 
     # @plannings_by_ref set in import_row in order to have internal row title
     @plannings_by_ref = {}
-    @@col_dest_keys ||= columns_destination.keys
-    @col_visit_keys = columns_visit.keys + [:quantities, :quantities_operations, :custom_attributes_visit]
+    @@col_dest_keys ||= columns_destination.keys + [:tags_ids]
+    @col_visit_keys = columns_visit.keys + [:tags_visit_ids, :quantities, :quantities_operations, :custom_attributes_visit]
     @@slice_attr ||= (@@col_dest_keys - [:customer_id, :lat, :lng]).collect(&:to_s)
 
     # Used tp link rows to objects created through bulk imports
     @destination_index_to_id_hash = {}
     @visit_index_to_id_hash = {}
-    @destination_index = @existing_destinations_by_ref_and_index.size
+    @destination_index = 0
     @visit_index = 0
 
     @tag_destinations = []
@@ -228,6 +228,7 @@ class ImporterDestinations < ImporterBase
         row[:quantities].merge!({@customer.deliverable_units[1].id => row.delete(:quantity1_2)}) if row.key?(:quantity1_2) && @customer.deliverable_units.size > 1
       end
     end
+    row[:quantities]&.each{ |k, v| row[:quantities][k] = v&.to_f }
   end
 
   def prepare_tags(row, key)
@@ -329,6 +330,8 @@ class ImporterDestinations < ImporterBase
       }
 
     destination_attributes = row.slice(*@@col_dest_keys).merge(customer_id: @customer.id)
+    convert_lat_lng_attributes(destination_attributes)
+    destination_attributes[:tag_ids] = destination_attributes.delete :tags_ids
     visit_attributes = row.slice(*@col_visit_keys)
     visit_attributes[:ref] = visit_attributes.delete :ref_visit
     visit_attributes[:tag_ids] = visit_attributes.delete :tags_visit_ids
@@ -339,26 +342,28 @@ class ImporterDestinations < ImporterBase
     [destination_attributes, visit_attributes]
   end
 
+  def convert_lat_lng_attributes(destination_attributes)
+    return if !destination_attributes.key?(:lat) && !destination_attributes.key?(:lng)
+
+    destination_attributes[:lat] = destination_attributes[:lat]&.to_f
+    destination_attributes[:lng] = destination_attributes[:lng]&.to_f
+  end
+
   def prepare_destination(row, destination_attributes, visit_attributes)
     if row[:ref].present? && !row[:ref].empty?
-      destination, index = @existing_destinations_by_ref_and_index[row[:ref]]
+      destination =  @existing_destinations_by_ref[row[:ref]]
       if destination
-        lat_lng_attributes = (destination_attributes.key?(:lat) || destination_attributes.key?(:lng)) ? {lat: nil, lng: nil} : {}
-        # Compact allows to avoid erasing nil fields
-        @destinations_attributes_by_ref[destination.ref][1] =
-          destination_attributes.assign_attributes(lat_lng_attributes.merge(destination_attributes.compact)).merge(id: destination.id)
-        prepare_visit_with_destination_ref(row, destination, index, destination_attributes, visit_attributes)
-      else
-        index, dest_attributes  = @destinations_attributes_by_ref[row[:ref]]
-        if dest_attributes
-          dest_attributes.merge!(destination_attributes.compact)
-        else
-          index = @destination_index
-          @destinations_attributes_by_ref[row[:ref]] = [@destination_index, destination_attributes]
-          @destination_index += 1
-        end
-        prepare_visit_with_destination_ref(row, nil, index, destination_attributes, visit_attributes) if index
+        destination_attributes.merge!(id: destination.id)
       end
+      index, dest_attributes = @destinations_attributes_by_ref[row[:ref]]
+      if dest_attributes
+        dest_attributes.merge!(destination_attributes.compact)
+      else
+        index = @destination_index
+        @destinations_attributes_by_ref[row[:ref]] = [@destination_index, destination_attributes]
+        @destination_index += 1
+      end
+      prepare_visit_with_destination_ref(row, nil, index, destination_attributes, visit_attributes) if index
     else
       @destinations_attributes_without_ref << [@destination_index, destination_attributes]
       prepare_visit_without_destination_ref(row, @destination_index, destination_attributes, visit_attributes)
@@ -513,11 +518,11 @@ class ImporterDestinations < ImporterBase
 
   def bulk_import_tags
     TagDestination.import(@tag_destinations.map{ |destination_index, tag_id|
-      [destination_id: @destination_index_to_id_hash[:destination_index], tag_id: tag_id]
-    }.to_h) if @tag_destinations.any?
+      { destination_id: @destination_index_to_id_hash[destination_index], tag_id: tag_id }
+    }) if @tag_destinations.any?
 
     TagVisit.import(@tag_visits.map{ |visit_index, tag_id|
-      [destination_id: @visit_index_to_id_hash[:visit_index], tag_id: tag_id]
+      { destination_id: @visit_index_to_id_hash[visit_index], tag_id: tag_id }
     }.to_h) if @tag_visits.any?
   end
 
@@ -554,7 +559,7 @@ class ImporterDestinations < ImporterBase
       if !planning.id
         planning.save_import!
       else
-      planning.save!
+        planning.save!
       end
     }
   end
