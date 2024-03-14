@@ -30,7 +30,7 @@ visit_two:
 
 visit_three:
   destination: destination_three # customer_one
-  ref: c
+  ref: d
   quantities: '"1" => "3"'
   time_window_start_1: 10:00:00
   time_window_end_1: 11:00:00
