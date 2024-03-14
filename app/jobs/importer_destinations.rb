@@ -345,8 +345,18 @@ class ImporterDestinations < ImporterBase
   def convert_lat_lng_attributes(destination_attributes)
     return if !destination_attributes.key?(:lat) && !destination_attributes.key?(:lng)
 
-    destination_attributes[:lat] = destination_attributes[:lat]&.to_f
-    destination_attributes[:lng] = destination_attributes[:lng]&.to_f
+    destination_attributes[:lat] =
+      if destination_attributes[:lat].nil? || destination_attributes[:lat] == ''
+        nil
+      else
+        destination_attributes[:lat].to_f
+      end
+    destination_attributes[:lng] =
+      if destination_attributes[:lng].nil? || destination_attributes[:lng] == ''
+        nil
+      else
+        destination_attributes[:lng].to_f
+      end
   end
 
   def reset_geocoding(destination_attributes)
@@ -364,8 +374,7 @@ class ImporterDestinations < ImporterBase
       destination =  @existing_destinations_by_ref[row[:ref]]
       if destination
         dest_attributes = destination.attributes.symbolize_keys
-        dest_attributes.extract!(:name, :postalcode, :city)
-        destination_attributes.merge!(dest_attributes.extract!(:name, :postalcode, :city))
+        destination_attributes.merge!(dest_attributes.extract!(:id, :name, :postalcode, :city))
       end
       index, dest_attributes = @destinations_attributes_by_ref[row[:ref]]
       if dest_attributes
@@ -494,7 +503,7 @@ class ImporterDestinations < ImporterBase
       import_result = Destination.import(
         destinations_attributes,
         on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-        recursive: true, validate: true, all_or_none: true
+        validate: true, all_or_none: true
       )
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
       import_result.ids.each.with_index{ |id, index|
@@ -522,7 +531,7 @@ class ImporterDestinations < ImporterBase
       import_result = Visit.import(
         visits_attributes,
         on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-        recursive: true, validate: true, all_or_none: true
+        validate: true, all_or_none: true
       )
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
       import_result.ids.each.with_index{ |id, index|
@@ -595,5 +604,6 @@ class ImporterDestinations < ImporterBase
       }
       save_plannings
     end
+    @customer.save!
   end
 end
