@@ -42,7 +42,7 @@ destination_two:
   tags: tag_one
 
 destination_three:
-  ref: c
+  ref: d
   name: destination_three
   street: MyString
   postalcode: MyString
