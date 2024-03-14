@@ -292,13 +292,13 @@ class ImporterDestinationsTest < ActionController::TestCase
 
   test 'should replace with many visits' do
     @customer.update! enable_multi_visits: true # Move dest.ref to visit.ref !
-    dest_import_count = 6
+    dest_import_count = 5 # 5 uniq ref
     visit_import_count = 7
     visit_tag1_import_count = 1
     visit_tag2_import_count = 3
     stop_visit_count = @customer.plannings.collect{ |p| p.routes.collect{ |r| r.stops.select{ |s| s.is_a?(StopVisit) }.size }.reduce(&:+) }.reduce(&:+)
     assert_no_difference('Planning.count') do
-      assert_difference('Stop.count', visit_import_count * @customer.plannings.select{ |p| p.tags == [] }.size +
+      assert_difference('Stop.count', visit_import_count * @customer.plannings.select{ |p| p.tags == [] }.size + # 0
           visit_tag1_import_count * @plan_tag1_count +
           visit_tag2_import_count * @customer.plannings.select{ |p| p.tags == [tags(:tag_two)] }.size -
           stop_visit_count) do

@@ -1,9 +1,9 @@
-nom,voie,complément,code postal,ville,pays,lat,lng,qualité géocodage,niveau géocodage,commentaire,téléphone,sans visite,référence visite,durée visite,quantité,horaire début 1,horaire fin 1,catégories visite
-l1,Place Picard,,33000,Bordeaux,,44.84512,-0.578,,,,,"",,,,15:00,16:00,""
-l2,Rue Esprit des Lois,,33000,Bordeaux,,44.83395,-0.56545,,,,,"",,00:02:00,2.0,10:00,11:00,tag2
-l3,Rue de Nuits,,33000,Bordeaux,,,,,,,,"",,,1.0,09:00,10:00,frigo
-l4,Rue de New York,,33000,Bordeaux,,44.869693,-0.549332,0.88,street,b,,"",,00:10:00,0.5,10:00,15:00,"tag1,tag2"
-l4,Rue de New York,,33000,Bordeaux,,44.869693,-0.549332,0.88,street,b,,"",,00:05:00,0.5,,,tag2
-l4,Rue de New York,,33000,Bordeaux,,44.869693,-0.549332,0.88,street,b,,"",,,,,,""
-Lormont,,,,Lormont,,44.878241,-0.52273,0.94,city,,,"",,,,,,""
-l1,,,,Bordeaux,,44.8558688073572,-0.550689697265625,,,,,x
+référence,nom,voie,complément,code postal,ville,pays,lat,lng,qualité géocodage,niveau géocodage,commentaire,téléphone,sans visite,référence visite,durée visite,quantité,horaire début 1,horaire fin 1,catégories visite
+l1,l1,Place Picard,,33000,Bordeaux,,44.84512,-0.578,,,,,"",v1,,,15:00,16:00,""
+l2,l2,Rue Esprit des Lois,,33000,Bordeaux,,44.83395,-0.56545,,,,,"",v2,00:02:00,2.0,10:00,11:00,tag2
+l3,l3,Rue de Nuits,,33000,Bordeaux,,,,,,,,"",v3,,1.0,09:00,10:00,frigo
+l4,l4,Rue de New York,,33000,Bordeaux,,44.869693,-0.549332,0.88,street,b,,"",v4,00:10:00,0.5,10:00,15:00,"tag1,tag2"
+l4,l4,Rue de New York,,33000,Bordeaux,,44.869693,-0.549332,0.88,street,b,,"",v5,00:05:00,0.5,,,tag2
+l4,l4,Rue de New York,,33000,Bordeaux,,44.869693,-0.549332,0.88,street,b,,"",v6,,,,,""
+Lormont,Lormont,,,,Lormont,,44.878241,-0.52273,0.94,city,,,"",v7,,,,,""
+l1,l1,,,,Bordeaux,,44.8558688073572,-0.550689697265625,,,,,x
