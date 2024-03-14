@@ -166,13 +166,13 @@ class ImporterDestinations < ImporterBase
 
 
     @destinations_attributes_without_ref = []
-    @existing_destinations_by_ref = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref, destination] }]
-    @existing_visits_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref, Hash[destination.visits.select(&:ref).map{ |visit| [visit.ref, visit]} ]] }]
+    @existing_destinations_by_ref = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref.to_sym, destination] }]
+    @existing_visits_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash[destination.visits.select(&:ref).map{ |visit| [visit.ref.to_sym, visit]} ]] }]
 
     @destinations_attributes_by_ref = {}
-    @destinations_visits_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref, Hash.new] }]
+    @destinations_visits_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash.new] }]
     @destinations_visits_attributes_by_ref[nil] = Hash.new
-    @customer.destinations.select(&:ref).flat_map(&:visits).each{ |visit| @destinations_visits_attributes_by_ref[visit.destination.ref][visit.ref] = visit }
+    @customer.destinations.select(&:ref).flat_map(&:visits).each{ |visit| @destinations_visits_attributes_by_ref[visit.destination.ref&.to_sym][visit.ref&.to_sym] = visit }
 
     @visits_attributes_with_destination = []
     @visits_attributes_without_destination = []
@@ -349,6 +349,16 @@ class ImporterDestinations < ImporterBase
     destination_attributes[:lng] = destination_attributes[:lng]&.to_f
   end
 
+  def reset_geocoding(destination_attributes)
+    # As import has no create or update callback apply `delay_geocode` manually
+    if destination_attributes.key?(:lat) || destination_attributes.key?(:lat)
+      destination_attributes[:geocoding_result] = {}
+      destination_attributes[:geocoding_accuracy] = nil
+      destination_attributes[:geocoding_level] =
+        destination_attributes.key?(:lat) && destination_attributes.key?(:lat) ? 1 : nil
+    end
+  end
+
   def prepare_destination(row, destination_attributes, visit_attributes)
     if row[:ref].present? && !row[:ref].empty?
       destination =  @existing_destinations_by_ref[row[:ref]]
@@ -357,13 +367,15 @@ class ImporterDestinations < ImporterBase
       end
       index, dest_attributes = @destinations_attributes_by_ref[row[:ref]]
       if dest_attributes
-        dest_attributes.merge!(destination_attributes.compact)
+        destination_attributes = dest_attributes.merge(destination_attributes.compact)
+        reset_geocoding(destination_attributes)
       else
         index = @destination_index
+        reset_geocoding(destination_attributes)
         @destinations_attributes_by_ref[row[:ref]] = [@destination_index, destination_attributes]
         @destination_index += 1
       end
-      prepare_visit_with_destination_ref(row, nil, index, destination_attributes, visit_attributes) if index
+      prepare_visit_with_destination_ref(row, destination, index, destination_attributes, visit_attributes) if index
     else
       @destinations_attributes_without_ref << [@destination_index, destination_attributes]
       prepare_visit_without_destination_ref(row, @destination_index, destination_attributes, visit_attributes)
@@ -376,7 +388,7 @@ class ImporterDestinations < ImporterBase
       if destination
         visit = @existing_visits_by_ref[row[:ref]][row[:ref_visit]] if row[:ref]
         @destinations_visits_attributes_by_ref[destination.ref] ||= Hash.new
-        visit_attributes.merge(destination_id: destination.id)
+        visit_attributes.merge!(destination_id: destination.id)
 
         if visit
           visit_attributes.merge!(id: visit.id)
@@ -467,7 +479,7 @@ class ImporterDestinations < ImporterBase
       attributes.keys
     }.flat_map{ |_keys, index_attributes|
       destination_import_indices = []
-      destination_attributes = index_attributes.map{ |import_index, attributes|
+      destinations_attributes = index_attributes.map{ |import_index, attributes|
         attributes.delete(:tag_ids)&.each{ |tag_id|
           @tag_destinations << [import_index, tag_id]
         }
@@ -475,7 +487,7 @@ class ImporterDestinations < ImporterBase
         attributes
       }
       import_result = Destination.import(
-        destination_attributes,
+        destinations_attributes,
         on_duplicate_key_update: { conflict_target: [:id], columns: :all },
         recursive: true, validate: true, all_or_none: true
       )
@@ -494,17 +506,17 @@ class ImporterDestinations < ImporterBase
       attributes.keys
     }.flat_map{ |_keys, key_attributes|
       visit_import_indices = []
-      visit_attributes = key_attributes.map{ |attributes|
+      visits_attributes = key_attributes.map{ |attributes|
         attributes.delete(:tag_ids)&.each{ |tag_id|
           @tag_visits << [attributes[:visit_index], tag_id]
         }
         visit_import_indices << attributes.delete(:visit_index)
-        attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)]
+        attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)] if attributes.key?(:destination_index)
         attributes
       }
 
       import_result = Visit.import(
-        visit_attributes,
+        visits_attributes,
         on_duplicate_key_update: { conflict_target: [:id], columns: :all },
         recursive: true, validate: true, all_or_none: true
       )
@@ -522,8 +534,8 @@ class ImporterDestinations < ImporterBase
     }) if @tag_destinations.any?
 
     TagVisit.import(@tag_visits.map{ |visit_index, tag_id|
-      { destination_id: @visit_index_to_id_hash[visit_index], tag_id: tag_id }
-    }.to_h) if @tag_visits.any?
+      { visit_id: @visit_index_to_id_hash[visit_index], tag_id: tag_id }
+    }) if @tag_visits.any?
   end
 
   def after_import(name, _options)
