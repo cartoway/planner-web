@@ -374,7 +374,7 @@ class ImporterDestinations < ImporterBase
       destination =  @existing_destinations_by_ref[row[:ref]]
       if destination
         dest_attributes = destination.attributes.symbolize_keys
-        destination_attributes.merge!(dest_attributes.extract!(:id, :name, :postalcode, :city))
+        destination_attributes = dest_attributes.extract!(:id, :name, :postalcode, :city).merge(destination_attributes)
       end
       index, dest_attributes = @destinations_attributes_by_ref[row[:ref]]
       if dest_attributes
