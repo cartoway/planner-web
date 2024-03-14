@@ -468,10 +468,9 @@ class ImporterDestinations < ImporterBase
         name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
       }.merge(@planning_hash))
       planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
-
       routes_hash.each{ |k, v|
         visit_ids = v[:visits].map{ |attribute, _active|
-          attribute[:id] || @visit_index_to_id_hash[attribute.delete(:visit_index)]
+          attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
         }
         visits = Visit.where(id: visit_ids)
 
@@ -523,9 +522,9 @@ class ImporterDestinations < ImporterBase
         attributes.delete(:tag_ids)&.each{ |tag_id|
           @tag_visits << [attributes[:visit_index], tag_id]
         }
-        visit_import_indices << attributes.delete(:visit_index)
+        visit_import_indices << attributes[:visit_index]
         attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)] if attributes.key?(:destination_index)
-        attributes
+        attributes.except(:visit_index)
       }
 
       import_result = Visit.import(
