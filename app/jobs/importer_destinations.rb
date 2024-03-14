@@ -364,8 +364,8 @@ class ImporterDestinations < ImporterBase
       destination =  @existing_destinations_by_ref[row[:ref]]
       if destination
         dest_attributes = destination.attributes.symbolize_keys
-        dest_attributes[]
-        destination_attributes.merge!(destination.attributes.symbolize_keys)
+        dest_attributes.extract!(:name, :postalcode, :city)
+        destination_attributes.merge!(dest_attributes.extract!(:name, :postalcode, :city))
       end
       index, dest_attributes = @destinations_attributes_by_ref[row[:ref]]
       if dest_attributes
@@ -586,7 +586,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def finalize_import(_name, _options)
-    if !@destinations_to_geocode.empty? && !@synchronous && Mapotempo::Application.config.delayed_job_use
+    if @destinations_to_geocode.any? && !@synchronous && Mapotempo::Application.config.delayed_job_use
       save_plannings
       @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderDestinationsJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
     elsif !@plannings.empty?
