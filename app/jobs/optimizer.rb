@@ -45,7 +45,20 @@ class Optimizer
         planning.errors.add(:base, I18n.t('errors.planning.already_optimizing'))
         false
       else
-        planning.customer.job_optimizer = Delayed::Job.enqueue(OptimizerJob.new(planning.id, route && route.id, options[:global], options[:active_only], options[:ignore_overload_multipliers], options[:nb_route]))
+        optimizer_job = nil
+        retry_counter = 0
+        # Delayed Job might have loaded deprecated version from older jobs
+        begin
+          optimizer_job = OptimizerJob.new(planning.id, route && route.id, options[:global], options[:active_only], options[:ignore_overload_multipliers], options[:nb_route])
+        rescue TypeError => e
+          ActionDispatch::Reloader.cleanup!
+          ActionDispatch::Reloader.prepare!
+          Raven.capture_exception(e)
+          Rails.logger.error e.message
+          Rails.logger.error e.backtrace.join("\n")
+          retry if (retry_counter += 1) < 3
+        end
+        planning.customer.job_optimizer = Delayed::Job.enqueue(optimizer_job)
         planning.customer.job_optimizer.save!
       end
     else
