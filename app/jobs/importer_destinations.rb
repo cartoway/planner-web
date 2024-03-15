@@ -335,6 +335,7 @@ class ImporterDestinations < ImporterBase
     visit_attributes = row.slice(*@col_visit_keys)
     visit_attributes[:ref] = visit_attributes.delete :ref_visit
     visit_attributes[:tag_ids] = visit_attributes.delete(:tag_visit_ids)
+    visit_attributes[:priority] = nil if visit_attributes[:priority] == 0
     visit_attributes[:custom_attributes] = visit_attributes.delete :custom_attributes_visit if visit_attributes.key?(:custom_attributes_visit)
     visit_attributes[:force_position] = row[:force_position].present? && convert_force_position(row[:force_position])
     visit_attributes[:visit_index] = @visit_index
