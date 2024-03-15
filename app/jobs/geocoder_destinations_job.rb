@@ -24,31 +24,48 @@ class GeocoderDestinationsJob < GeocoderDestinationsJobStruct
     i = 0
     customer.destinations.select(:id).where(lat: nil).each_slice(50){ |destination_ids|
       Destination.transaction do
-        destinations = customer.destinations.find destination_ids # IMPORTANT: Lower Delayed Job Memory Usage
+        destinations = customer.destinations.where(id: destination_ids) # IMPORTANT: Lower Delayed Job Memory Usage
         geocode_args = destinations.collect(&:geocode_args)
         begin
           results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)
           destinations.zip(results).each { |destination, result|
             destination.geocode_result(result) if result
-            destination.save!
+            destination.visits.each{ |v| v.outdated }
             i += 1
           }
+          Destination.import(
+            destinations,
+            validate: true,
+            on_duplicate_key_update: {
+              conflict_target: [:id],
+              columns: [
+                :geocoding_result,
+                :geocoder_version,
+                :geocoded_at,
+                :lat,
+                :lng,
+                :geocoding_accuracy,
+                :geocoding_level
+              ]
+            }
+          )
         rescue GeocodeError # avoid stop import because of geocoding job
         end
         job_progress_save({ 'first_progression': i * 100.0 / count, status: 'working' })
         Delayed::Worker.logger.info "GeocoderDestinationsJob customer_id=#{customer_id} #{@job.progress}%"
       end
     }
-    job_progress_save({ 'first_progression': 100, 'completed': true })
+    customer.reload
 
     Destination.transaction do
       unless !planning_ids || planning_ids.empty?
-        customer.plannings.find(planning_ids).each{ |planning|
+        customer.plannings.where(id: planning_ids).each{ |planning|
           planning.compute
           planning.save!
         }
       end
     end
+    job_progress_save({ 'first_progression': 100, 'completed': true })
   rescue => e
     puts e.message
     puts e.backtrace.join("\n")
