@@ -218,4 +218,47 @@ class V01::Stores < Grape::API
       store.reverse_geocoding(params[:lat], params[:lng])
     end
   end
+
+
+
+  desc 'Import synchronously vehicle, vehicle_usage and store (with only one vehicle_usage_set present) by upload a CSV file or by JSON.',
+    nickname: 'importVehicleStores',
+    params: V01::Entities::VehicleStoresImport.documentation,
+    is_array: true,
+    entity: V01::Entities::VehicleStore
+  put :import_vehicle_stores do
+
+    import = if params[:stores]
+      ImportJson.new(importer: ImporterVehicleStores.new(current_customer), replace: params[:replace], json: params[:stores])
+    else
+      ImportCsv.new(importer: ImporterVehicleStores.new(current_customer), replace: params[:replace], file: params[:file])
+    end
+
+    if import && import.valid? && (stores = import.import(true))
+      present stores, with: V01::Entities::Store
+    else
+      error!({error: import.errors.full_messages}, 422)
+    end
+  end
+
+  desc 'Fetch customer\'s stores by distance.',
+    nickname: 'getStoresByDistance',
+    is_array: true,
+    entity: V01::Entities::Store
+  params do
+    requires :lat, type: Float, desc: 'Point latitude.'
+    requires :lng, type: Float, desc: 'Point longitude.'
+    requires :n, type: Integer, desc: 'Number of results.'
+    optional :vehicle_usage_id, type: Integer, desc: 'Vehicle Usage uses in place of default router and speed multiplicator.'
+  end
+  get :stores_by_distance do
+    position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
+    vehicle_usage = VehicleUsage.joins(:vehicle_usage_set).where(vehicle_usage_sets: {customer_id: current_customer.id}, id: params[:vehicle_usage_id]).first
+    if params.key?(:vehicle_usage_id) && vehicle_usage.nil?
+      error! 'VehicleUsage not found', 404
+    else
+      stores = current_customer.stores_by_distance(position, Integer(params[:n]), vehicle_usage)
+      present stores, with: V01::Entities::Store
+    end
+  end
 end
