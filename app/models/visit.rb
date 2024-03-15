@@ -119,8 +119,10 @@ class Visit < ApplicationRecord
     begin
       ActiveRecord::Base.lock_optimistically = false
       stop_visits.each { |stop|
-        stop.route.outdated = true
-        stop.route.save!
+        if !stop.route.outdated
+          stop.route.outdated = true
+          stop.route.save!
+        end
       }
     ensure
       ActiveRecord::Base.lock_optimistically = true
