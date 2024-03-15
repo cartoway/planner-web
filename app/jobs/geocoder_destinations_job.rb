@@ -34,19 +34,10 @@ class GeocoderDestinationsJob < GeocoderDestinationsJobStruct
             i += 1
           }
           Destination.import(
-            destinations,
+            destinations.to_ary,
             validate: true,
             on_duplicate_key_update: {
-              conflict_target: [:id],
-              columns: [
-                :geocoding_result,
-                :geocoder_version,
-                :geocoded_at,
-                :lat,
-                :lng,
-                :geocoding_accuracy,
-                :geocoding_level
-              ]
+              columns: %i[geocoding_result geocoder_version geocoded_at lat lng geocoding_accuracy geocoding_level]
             }
           )
         rescue GeocodeError # avoid stop import because of geocoding job
