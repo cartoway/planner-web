@@ -445,24 +445,29 @@ class ImporterDestinations < ImporterBase
     destination_index_attributes_hash.group_by{ |import_index, attributes|
       attributes.keys
     }.flat_map{ |_keys, index_attributes|
-      destination_import_indices = []
-      destinations_attributes = index_attributes.map{ |import_index, attributes|
-        attributes.delete(:tag_ids)&.each{ |tag_id|
-          @tag_destinations << [import_index, tag_id]
+      ids = []
+      # Slice to reduce memory spike
+      index_attributes.each_slice(1000){ |sliced_attributes|
+        destination_import_indices = []
+        destinations_attributes = sliced_attributes.map{ |import_index, attributes|
+          attributes.delete(:tag_ids)&.each{ |tag_id|
+            @tag_destinations << [import_index, tag_id]
+          }
+          destination_import_indices << import_index
+          attributes
         }
-        destination_import_indices << import_index
-        attributes
+        import_result = Destination.import(
+          destinations_attributes,
+          on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+          validate: true, all_or_none: true
+        )
+        raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+        import_result.ids.each.with_index{ |id, index|
+          @destination_index_to_id_hash[destination_import_indices[index]] = id
+        }
+        ids += import_result.ids
       }
-      import_result = Destination.import(
-        destinations_attributes,
-        on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-        validate: true, all_or_none: true
-      )
-      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
-      import_result.ids.each.with_index{ |id, index|
-        @destination_index_to_id_hash[destination_import_indices[index]] = id
-      }
-      import_result.ids
+      ids
     }
   end
 
@@ -471,26 +476,31 @@ class ImporterDestinations < ImporterBase
     (@visits_attributes_without_destination + @visits_attributes_with_destination).group_by{ |attributes|
       attributes.keys
     }.flat_map{ |_keys, key_attributes|
-      visit_import_indices = []
-      visits_attributes = key_attributes.map{ |attributes|
-        attributes.delete(:tag_ids)&.each{ |tag_id|
-          @tag_visits << [attributes[:visit_index], tag_id]
+      ids = []
+      # Slice to reduce memory spike
+      key_attributes.each_slice(1000) { |sliced_attributes|
+        visit_import_indices = []
+        visits_attributes = sliced_attributes.map{ |attributes|
+          attributes.delete(:tag_ids)&.each{ |tag_id|
+            @tag_visits << [attributes[:visit_index], tag_id]
+          }
+          visit_import_indices << attributes[:visit_index]
+          attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)] if attributes.key?(:destination_index)
+          attributes.except(:visit_index)
         }
-        visit_import_indices << attributes[:visit_index]
-        attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)] if attributes.key?(:destination_index)
-        attributes.except(:visit_index)
-      }
 
-      import_result = Visit.import(
-        visits_attributes,
-        on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-        validate: true, all_or_none: true
-      )
-      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
-      import_result.ids.each.with_index{ |id, index|
-        @visit_index_to_id_hash[visit_import_indices[index]] = id
+        import_result = Visit.import(
+          visits_attributes,
+          on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+          validate: true, all_or_none: true
+        )
+        raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+        import_result.ids.each.with_index{ |id, index|
+          @visit_index_to_id_hash[visit_import_indices[index]] = id
+        }
+        ids += import_result.ids
       }
-      import_result.ids
+      ids
     }
   end
 
