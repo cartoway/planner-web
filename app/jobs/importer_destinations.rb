@@ -300,6 +300,74 @@ class ImporterDestinations < ImporterBase
     type == I18n.t('destinations.import_file.stop_type_visit')
   end
 
+  def import_row(_name, row, _options)
+    return unless is_visit?(row[:stop_type])
+
+    convert_deprecated_fields(row)
+    prepare_quantities(row)
+    prepare_custom_attributes(row)
+
+    [:tag, :tag_visit].each{ |key| prepare_tags(row, key) }
+    destination_attributes, visit_attributes = build_attributes(row)
+
+    prepare_destination(row, destination_attributes, visit_attributes)
+    prepare_destination_in_planning(row, destination_attributes, visit_attributes)
+    destination_attributes
+  end
+
+  def after_import(name, _options)
+    @destination_ids = bulk_import_destinations(@destinations_attributes_without_ref)
+    @destination_ids += bulk_import_destinations(@destinations_attributes_by_ref.values)
+    # bulk import do not support before_create or before_save callbacks
+    if @customer.destinations.size > max_lines
+      raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit')))
+    end
+    @visit_ids = bulk_import_visits
+    bulk_import_tags
+
+    @customer.reload
+    @destinations_to_geocode = @customer.destinations.reject(&:position?)
+
+    if !@destinations_to_geocode.empty? && (@synchronous || !Mapotempo::Application.config.delayed_job_use)
+      @destinations_to_geocode.each_slice(50){ |destinations|
+        geocode_args = destinations.collect(&:geocode_args)
+        begin
+          results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)
+          destinations.zip(results).each { |destination, result|
+            destination.geocode_result(result) if result
+          }
+        rescue GeocodeError # avoid stop import because of geocoding job
+        end
+      }
+    end
+    prepare_plannings(name, _options)
+  end
+
+  def save_plannings
+    @plannings.each { |planning|
+      if !planning.id
+        planning.save_import!
+      else
+        planning.save!
+      end
+    }
+  end
+
+  def finalize_import(_name, _options)
+    if @destinations_to_geocode.any? && !@synchronous && Mapotempo::Application.config.delayed_job_use
+      save_plannings
+      @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderDestinationsJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
+    elsif !@plannings.empty?
+      @plannings.each{ |planning|
+        planning.compute(ignore_errors: true)
+      }
+      save_plannings
+    end
+    @customer.save!
+  end
+
+  private
+
   def convert_deprecated_fields(row)
     ## TODO: Manage it in API input :
     # Deals with deprecated open and close
@@ -367,6 +435,77 @@ class ImporterDestinations < ImporterBase
       destination_attributes[:geocoding_accuracy] = nil
       destination_attributes[:geocoding_level] =
         destination_attributes.key?(:lat) && destination_attributes.key?(:lat) ? 1 : nil
+    end
+  end
+
+  def bulk_import_destinations(destination_index_attributes_hash)
+    return [] if destination_index_attributes_hash.empty?
+
+    # Every entry should have identical keys to be imported at the same time
+    destination_index_attributes_hash.group_by{ |import_index, attributes|
+      attributes.keys
+    }.flat_map{ |_keys, index_attributes|
+      destination_import_indices = []
+      destinations_attributes = index_attributes.map{ |import_index, attributes|
+        attributes.delete(:tag_ids)&.each{ |tag_id|
+          @tag_destinations << [import_index, tag_id]
+        }
+        destination_import_indices << import_index
+        attributes
+      }
+      import_result = Destination.import(
+        destinations_attributes,
+        on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+        validate: true, all_or_none: true
+      )
+      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+      import_result.ids.each.with_index{ |id, index|
+        @destination_index_to_id_hash[destination_import_indices[index]] = id
+      }
+      import_result.ids
+    }
+  end
+
+  def bulk_import_visits
+    # Every entry should have identical keys to be imported at the same time
+    (@visits_attributes_without_destination + @visits_attributes_with_destination).group_by{ |attributes|
+      attributes.keys
+    }.flat_map{ |_keys, key_attributes|
+      visit_import_indices = []
+      visits_attributes = key_attributes.map{ |attributes|
+        attributes.delete(:tag_ids)&.each{ |tag_id|
+          @tag_visits << [attributes[:visit_index], tag_id]
+        }
+        visit_import_indices << attributes[:visit_index]
+        attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)] if attributes.key?(:destination_index)
+        attributes.except(:visit_index)
+      }
+
+      import_result = Visit.import(
+        visits_attributes,
+        on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+        validate: true, all_or_none: true
+      )
+      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+      import_result.ids.each.with_index{ |id, index|
+        @visit_index_to_id_hash[visit_import_indices[index]] = id
+      }
+      import_result.ids
+    }
+  end
+
+  def bulk_import_tags
+    if @tag_destinations.any?
+      import_result = TagDestination.import(@tag_destinations.map{ |destination_index, tag_id|
+        { destination_id: @destination_index_to_id_hash[destination_index], tag_id: tag_id }
+      })
+      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+    end
+    if @tag_visits.any?
+      import_result = TagVisit.import(@tag_visits.map{ |visit_index, tag_id|
+        { visit_id: @visit_index_to_id_hash[visit_index], tag_id: tag_id }
+      })
+      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
     end
   end
 
@@ -443,21 +582,6 @@ class ImporterDestinations < ImporterBase
     end
   end
 
-  def import_row(_name, row, _options)
-    return unless is_visit?(row[:stop_type])
-
-    convert_deprecated_fields(row)
-    prepare_quantities(row)
-    prepare_custom_attributes(row)
-
-    [:tag, :tag_visit].each{ |key| prepare_tags(row, key) }
-    destination_attributes, visit_attributes = build_attributes(row)
-
-    prepare_destination(row, destination_attributes, visit_attributes)
-    prepare_destination_in_planning(row, destination_attributes, visit_attributes)
-    destination_attributes
-  end
-
   def prepare_plannings(name, _options)
     @plannings_routes.each{ |ref, routes_hash|
       planning = @plannings_hash[ref] if ref
@@ -483,127 +607,5 @@ class ImporterDestinations < ImporterBase
       planning.split_by_zones(nil) if @planning_hash.key?(:zonings) || @planning_hash.key?(:zoning_ids)
       @plannings.push(planning)
     }
-  end
-
-  def bulk_import_destinations(destination_index_attributes_hash)
-    return [] if destination_index_attributes_hash.empty?
-
-    # Every entry should have identical keys to be imported at the same time
-    destination_index_attributes_hash.group_by{ |import_index, attributes|
-      attributes.keys
-    }.flat_map{ |_keys, index_attributes|
-      destination_import_indices = []
-      destinations_attributes = index_attributes.map{ |import_index, attributes|
-        attributes.delete(:tag_ids)&.each{ |tag_id|
-          @tag_destinations << [import_index, tag_id]
-        }
-        destination_import_indices << import_index
-        attributes
-      }
-      import_result = Destination.import(
-        destinations_attributes,
-        on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-        validate: true, all_or_none: true
-      )
-      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
-      import_result.ids.each.with_index{ |id, index|
-        @destination_index_to_id_hash[destination_import_indices[index]] = id
-      }
-      import_result.ids
-    }
-  end
-
-  def bulk_import_visits
-    # Every entry should have identical keys to be imported at the same time
-    (@visits_attributes_without_destination + @visits_attributes_with_destination).group_by{ |attributes|
-      attributes.keys
-    }.flat_map{ |_keys, key_attributes|
-      visit_import_indices = []
-      visits_attributes = key_attributes.map{ |attributes|
-        attributes.delete(:tag_ids)&.each{ |tag_id|
-          @tag_visits << [attributes[:visit_index], tag_id]
-        }
-        visit_import_indices << attributes[:visit_index]
-        attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)] if attributes.key?(:destination_index)
-        attributes.except(:visit_index)
-      }
-
-      import_result = Visit.import(
-        visits_attributes,
-        on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-        validate: true, all_or_none: true
-      )
-      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
-      import_result.ids.each.with_index{ |id, index|
-        @visit_index_to_id_hash[visit_import_indices[index]] = id
-      }
-      import_result.ids
-    }
-  end
-
-  def bulk_import_tags
-    if @tag_destinations.any?
-      import_result = TagDestination.import(@tag_destinations.map{ |destination_index, tag_id|
-        { destination_id: @destination_index_to_id_hash[destination_index], tag_id: tag_id }
-      })
-      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
-    end
-    if @tag_visits.any?
-      import_result = TagVisit.import(@tag_visits.map{ |visit_index, tag_id|
-        { visit_id: @visit_index_to_id_hash[visit_index], tag_id: tag_id }
-      })
-      raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
-    end
-  end
-
-  def after_import(name, _options)
-    @destination_ids = bulk_import_destinations(@destinations_attributes_without_ref)
-    @destination_ids += bulk_import_destinations(@destinations_attributes_by_ref.values)
-    # bulk import do not support before_create or before_save callbacks
-    if @customer.destinations.size > max_lines
-      raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit')))
-    end
-    @visit_ids = bulk_import_visits
-    bulk_import_tags
-
-    @customer.reload
-    @destinations_to_geocode = @customer.destinations.reject(&:position?)
-
-    if !@destinations_to_geocode.empty? && (@synchronous || !Mapotempo::Application.config.delayed_job_use)
-      @destinations_to_geocode.each_slice(50){ |destinations|
-        geocode_args = destinations.collect(&:geocode_args)
-        begin
-          results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)
-          destinations.zip(results).each { |destination, result|
-            destination.geocode_result(result) if result
-          }
-        rescue GeocodeError # avoid stop import because of geocoding job
-        end
-      }
-    end
-    prepare_plannings(name, _options)
-  end
-
-  def save_plannings
-    @plannings.each { |planning|
-      if !planning.id
-        planning.save_import!
-      else
-        planning.save!
-      end
-    }
-  end
-
-  def finalize_import(_name, _options)
-    if @destinations_to_geocode.any? && !@synchronous && Mapotempo::Application.config.delayed_job_use
-      save_plannings
-      @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderDestinationsJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
-    elsif !@plannings.empty?
-      @plannings.each{ |planning|
-        planning.compute(ignore_errors: true)
-      }
-      save_plannings
-    end
-    @customer.save!
   end
 end
