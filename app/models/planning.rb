@@ -161,7 +161,7 @@ class Planning < ApplicationRecord
   end
 
   def compute(options = {})
-    routes.each{ |r| r.compute(options) }
+    routes.includes_destinations.each{ |r| r.compute(options) }
   end
 
   def switch(route, vehicle_usage)
