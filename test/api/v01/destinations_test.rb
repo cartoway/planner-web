@@ -543,8 +543,8 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
   test 'should update bulk from json without visit' do
     assert_no_difference('Destination.count') do
-      assert_difference('Visit.count', -1) do
-        assert_difference('StopVisit.count', -1) do
+      assert_no_difference('Visit.count') do
+        assert_no_difference('StopVisit.count') do
           assert_no_difference('Planning.count') do
             put api, {destinations: [ref: @customer.destinations.first.ref]}.to_json, 'CONTENT_TYPE' => 'application/json'
             assert [true], @customer.plannings.flat_map(&:routes).map{ |r|

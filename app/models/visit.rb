@@ -246,6 +246,7 @@ class Visit < ApplicationRecord
         elsif planning.tags_compatible?(tags.to_a | destination.tags.to_a)
           planning.visit_add(self)
         end
+        planning.save! if !new_record?
       end
     end
 

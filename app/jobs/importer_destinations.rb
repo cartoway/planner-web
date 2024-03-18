@@ -227,7 +227,10 @@ class ImporterDestinations < ImporterBase
         row[:quantities].merge!({@customer.deliverable_units[1].id => row.delete(:quantity1_2)}) if row.key?(:quantity1_2) && @customer.deliverable_units.size > 1
       end
     end
-    row[:quantities]&.each{ |k, v| row[:quantities][k] = v&.to_f }
+    row[:quantities]&.each{ |k, v|
+      v = v.gsub(/,/, '.') if v.is_a?(String)
+      row[:quantities][k] = v&.to_f
+    }
   end
 
   def prepare_tags(row, key)
@@ -403,7 +406,7 @@ class ImporterDestinations < ImporterBase
     visit_attributes = row.slice(*@col_visit_keys)
     visit_attributes[:ref] = visit_attributes.delete :ref_visit
     visit_attributes[:tag_ids] = visit_attributes.delete(:tag_visit_ids)
-    visit_attributes[:priority] = nil if visit_attributes[:priority] == 0
+    visit_attributes[:priority] = nil if visit_attributes[:priority].to_i == 0
     visit_attributes[:custom_attributes] = visit_attributes.delete :custom_attributes_visit if visit_attributes.key?(:custom_attributes_visit)
     visit_attributes[:force_position] = row[:force_position].present? && convert_force_position(row[:force_position])
     visit_attributes[:visit_index] = @visit_index
@@ -521,7 +524,7 @@ class ImporterDestinations < ImporterBase
           destination.update_tags_track(true)
           destination.save!
         }
-        @customer.reload
+        @customer.save!
       end
     end
     if @tag_visits.any?
@@ -532,14 +535,18 @@ class ImporterDestinations < ImporterBase
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
 
       if @customer.plannings.any?
-        visits = @customer.visits.joins(:tags).where(
-          id: visit_ids_and_tag_ids.map{ |tag| tag[:visit_id] }.uniq).where(
-          tags: { id: visit_ids_and_tag_ids.map{ |tag| tag[:tag_id] }.uniq }
-        ).distinct
-        visits.each{ |visit|
-          visit.update_tags_track(true)
-          visit.save!
-        }
+        # Default scope requires destinations to be loaded
+        Destination.unscoped do
+          visits = @customer.visits.joins(:tags).where(
+            id: visit_ids_and_tag_ids.map{ |tag| tag[:visit_id] }.uniq).where(
+            tags: { id: visit_ids_and_tag_ids.map{ |tag| tag[:tag_id] }.uniq }
+          ).order(:id).distinct
+          visits.each{ |visit|
+            visit.update_tags_track(true)
+            visit.save!
+          }
+        end
+        @customer.save!
       end
     end
   end
@@ -572,7 +579,7 @@ class ImporterDestinations < ImporterBase
   def prepare_visit_with_destination_ref(row, destination, destination_index, destination_attributes, visit_attributes)
     if row[:without_visit].nil? || row[:without_visit].strip.empty?
       if destination
-        visit = @existing_visits_by_ref[row[:ref]][row[:ref_visit]]
+        visit = @existing_visits_by_ref[row[:ref]][row[:ref_visit]] unless row[:ref_visit].nil?
         @destinations_visits_attributes_by_ref[destination.ref] ||= Hash.new
         visit_attributes.merge!(destination_id: destination.id)
         if visit
