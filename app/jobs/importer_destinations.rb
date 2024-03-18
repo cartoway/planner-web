@@ -166,7 +166,7 @@ class ImporterDestinations < ImporterBase
 
     @destinations_attributes_without_ref = []
     @existing_destinations_by_ref = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref.to_sym, destination] }]
-    @existing_visits_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash[destination.visits.select(&:ref).map{ |visit| [visit.ref.to_sym, visit]} ]] }]
+    @existing_visits_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash[destination.visits.map{ |visit| [visit.ref&.to_sym, visit]} ]] }]
 
     @destinations_attributes_by_ref = {}
     @destinations_visits_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash.new] }]
@@ -547,7 +547,7 @@ class ImporterDestinations < ImporterBase
   def prepare_visit_with_destination_ref(row, destination, destination_index, destination_attributes, visit_attributes)
     if row[:without_visit].nil? || row[:without_visit].strip.empty?
       if destination
-        visit = @existing_visits_by_ref[row[:ref]][row[:ref_visit]] if row[:ref]
+        visit = @existing_visits_by_ref[row[:ref]][row[:ref_visit]]
         @destinations_visits_attributes_by_ref[destination.ref] ||= Hash.new
         visit_attributes.merge!(destination_id: destination.id)
         if visit
