@@ -76,6 +76,10 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_difference('Planning.count', 1) do
       assert_difference('Destination.count', import_count) do
         assert_difference('Stop.count', (@visit_tag1_count + (import_count * (@plan_tag1_count + 1)) + rest_count)) do
+          # The imported destination had no tag before import, but its visit had tag1
+          # The visit have no ref, it will be updated by the import having no ref neither
+          # The new plan should have all the others visits having tag1 and the one associated to the imported destination
+          # The previously plans should not have new visit
           assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_only_ref.csv', 'text.csv')).import
           assert_equal 49.1857, @customer.destinations.find{ |d| d.ref == 'b' }.lat
         end
