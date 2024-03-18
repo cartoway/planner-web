@@ -15,7 +15,8 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-class GeocoderStoresJob < Job.new(:customer_id)
+GeocoderStoresJobStruct ||= Job.new(:customer_id)
+class GeocoderStoresJob < GeocoderStoresJobStruct
   def perform
     customer = Customer.find(customer_id)
     Delayed::Worker.logger.info "GeocoderStoresJob customer_id=#{customer_id} perform"
