@@ -1,2 +1,2 @@
-référence,nom,voie,complément,code postal,ville,lat,lng,tournée,catégories,livré
-z,BF,87 RUE DES FLEURS,,13010,,,,1,tag1,1
+référence,nom,voie,complément,code postal,ville,lat,lng,tournée,catégories,livré,référence visite
+z,BF,87 RUE DES FLEURS,,13010,,,,1,tag1,1,z

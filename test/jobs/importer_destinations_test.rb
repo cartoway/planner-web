@@ -3,6 +3,8 @@ require 'test_helper'
 class ImporterDestinationsTest < ActionController::TestCase
   setup do
     @customer = customers(:customer_one)
+    # Remove invalid stop
+    stops(:stop_three_one).destroy
     @visit_tag1_count = @customer.visits.select{ |v| v.tags.include? tags(:tag_one) }.size
     @plan_tag1_count = @customer.plannings.select{ |p| p.tags_compatible? [tags(:tag_one)] }.size
   end
@@ -40,11 +42,9 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should import' do
-    without_loading Planning do
-      without_loading Stop do
-        assert_difference('Destination.count', 1) do
-          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_one_without_ref.csv', 'text.csv')).import
-        end
+    without_loading Stop do
+      assert_difference('Destination.count', 1) do
+        assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_one_without_ref.csv', 'text.csv')).import
       end
     end
   end
@@ -65,17 +65,18 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should import only ref in new planning' do
-    # clean all visit ref to update the first destination's visit without ref during import
+    # No visit_ref means new visit
     Visit.all.each{ |v| v.update! ref: nil }
     @customer.reload
     # destinations with same ref are merged
-    import_count = 0
+    destination_import_count = 0
+    visit_import_count = 1
     # vehicle_usage_set for new planning is hardcoded but random in tests... rest_count depends of it
     VehicleUsageSet.all.each { |v| v.destroy if v.id != vehicle_usage_sets(:vehicle_usage_set_one).id }
     rest_count = @customer.vehicle_usage_sets[0].vehicle_usages.select{ |v| v.default_rest_duration }.size
     assert_difference('Planning.count', 1) do
-      assert_difference('Destination.count', import_count) do
-        assert_difference('Stop.count', (@visit_tag1_count + (import_count * (@plan_tag1_count + 1)) + rest_count)) do
+      assert_difference('Destination.count', destination_import_count) do
+        assert_difference('Stop.count', (@visit_tag1_count + (visit_import_count * (@plan_tag1_count + 1)) + rest_count)) do
           # The imported destination had no tag before import, but its visit had tag1
           # The visit have no ref, it will be updated by the import having no ref neither
           # The new plan should have all the others visits having tag1 and the one associated to the imported destination
@@ -117,8 +118,8 @@ class ImporterDestinationsTest < ActionController::TestCase
         dest = Destination.last
       end
     end
-    # new import of same data without ref should create a new visit for existing destination
-    assert_no_difference('Destination.count') do
+    # new import of same data without ref should create a new visit and a new destination
+    assert_difference('Destination.count', import_count) do
       assert_difference('Visit.count', import_count) do
         assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_one_without_ref.csv', 'text.csv')).import
         assert_equal dest.attributes, dest.reload.attributes
@@ -197,7 +198,7 @@ class ImporterDestinationsTest < ActionController::TestCase
     end
   end
 
-  test 'should import two in new planning' do
+  test 'should import two in new and compatible existing plannings' do
     import_count = 2
     # vehicle_usage_set for new planning is hardcoded but random in tests... rest_count depends of it
     VehicleUsageSet.all.each { |v| v.destroy if v.id != vehicle_usage_sets(:vehicle_usage_set_one).id }
@@ -248,7 +249,7 @@ class ImporterDestinationsTest < ActionController::TestCase
         assert_difference('Stop.count', import_count * (@customer.plannings.select{ |p| p.tags.any?{ |t| t.label == 'été' } }.size + 1) + rest_count) do
           di = ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_many-utf-8.csv', 'text.csv'))
           assert di.import, di.errors.messages
-          assert_equal 'été', @customer.plannings.map{ |p| p.tags.map(&:label).empty? ? 'oups' : p.tags.map(&:label).join }.join
+          assert_equal 'été/été', @customer.plannings.map{ |p| p.tags.map(&:label).empty? ? 'oups' : p.tags.map(&:label).join(',') }.join('/')
         end
       end
     end
@@ -275,19 +276,21 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should import with many visits' do
-    @customer.update! enable_multi_visits: true # Move dest.ref to visit.ref !
+    @customer.update! enable_multi_visits: true # Adds visit.ref in addition to dest.ref
     @customer.reload # Force reload after callback save
 
-    dest_import_count = 6
+    dest_import_count = 5 # 5 uniq ref
     visit_import_count = 7
     visit_tag1_import_count = 1
     visit_tag2_import_count = 3
     assert_no_difference('Planning.count') do
       assert_difference('Destination.count', dest_import_count) do
-        assert_difference('Stop.count',
+        assert_difference(
+          'Stop.count',
           visit_import_count * @customer.plannings.select{ |p| p.tags == [] }.size +
-          visit_tag1_import_count * @plan_tag1_count +
-          visit_tag2_import_count * @customer.plannings.select{ |p| p.tags == [tags(:tag_two)] }.size) do
+            visit_tag1_import_count * @plan_tag1_count +
+            visit_tag2_import_count * @customer.plannings.select{ |p| p.tags == [tags(:tag_two)] }.size
+        ) do
           assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_with_many_visits.csv', 'text.csv')).import
         end
       end
@@ -295,17 +298,19 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should replace with many visits' do
-    @customer.update! enable_multi_visits: true # Move dest.ref to visit.ref !
+    @customer.update! enable_multi_visits: true # Adds visit.ref in addition to dest.ref
     dest_import_count = 5 # 5 uniq ref
     visit_import_count = 7
     visit_tag1_import_count = 1
     visit_tag2_import_count = 3
     stop_visit_count = @customer.plannings.collect{ |p| p.routes.collect{ |r| r.stops.select{ |s| s.is_a?(StopVisit) }.size }.reduce(&:+) }.reduce(&:+)
     assert_no_difference('Planning.count') do
-      assert_difference('Stop.count', visit_import_count * @customer.plannings.select{ |p| p.tags == [] }.size + # 0
-          visit_tag1_import_count * @plan_tag1_count +
+      assert_difference(
+        'Stop.count',
+        visit_tag1_import_count * @plan_tag1_count +
           visit_tag2_import_count * @customer.plannings.select{ |p| p.tags == [tags(:tag_two)] }.size -
-          stop_visit_count) do
+          stop_visit_count
+      ) do
         assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_with_many_visits.csv', 'text.csv')).import
         assert_equal dest_import_count, @customer.destinations.size
       end
@@ -564,5 +569,4 @@ class ImporterDestinationsTest < ActionController::TestCase
       end
     end
   end
-
 end
