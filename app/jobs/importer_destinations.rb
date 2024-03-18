@@ -506,16 +506,41 @@ class ImporterDestinations < ImporterBase
 
   def bulk_import_tags
     if @tag_destinations.any?
-      import_result = TagDestination.import(@tag_destinations.map{ |destination_index, tag_id|
-        { destination_id: @destination_index_to_id_hash[destination_index], tag_id: tag_id }
-      })
+      destination_ids_and_tag_ids = @tag_destinations.map{ |visit_index, tag_id|
+        { destination_id: @destination_index_to_id_hash[visit_index], tag_id: tag_id }
+      }
+      import_result = TagDestination.import(destination_ids_and_tag_ids)
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+
+      if @customer.plannings.any?
+        destinations = @customer.destinations.joins(:tags).where(
+          id: destination_ids_and_tag_ids.map{ |tag| tag[:destination_id] }.uniq).where(
+          tags: { id: destination_ids_and_tag_ids.map{ |tag| tag[:tag_id] }.uniq }
+        ).distinct
+        destinations.each{ |destination|
+          destination.update_tags_track(true)
+          destination.save!
+        }
+        @customer.reload
+      end
     end
     if @tag_visits.any?
-      import_result = TagVisit.import(@tag_visits.map{ |visit_index, tag_id|
+      visit_ids_and_tag_ids = @tag_visits.map{ |visit_index, tag_id|
         { visit_id: @visit_index_to_id_hash[visit_index], tag_id: tag_id }
-      })
+      }
+      import_result = TagVisit.import(visit_ids_and_tag_ids)
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+
+      if @customer.plannings.any?
+        visits = @customer.visits.joins(:tags).where(
+          id: visit_ids_and_tag_ids.map{ |tag| tag[:visit_id] }.uniq).where(
+          tags: { id: visit_ids_and_tag_ids.map{ |tag| tag[:tag_id] }.uniq }
+        ).distinct
+        visits.each{ |visit|
+          visit.update_tags_track(true)
+          visit.save!
+        }
+      end
     end
   end
 

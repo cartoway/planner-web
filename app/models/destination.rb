@@ -73,11 +73,11 @@ class Destination < Location
     (tags | visits.flat_map(&:tags).uniq).find(&:icon).try(&:icon_size)
   end
 
-  private
-
   def update_tags_track(_tag)
     @tag_ids_changed = true
   end
+
+  private
 
   def tag_ids_changed?
     @tag_ids_changed
