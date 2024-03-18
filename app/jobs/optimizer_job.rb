@@ -17,7 +17,8 @@
 #
 require 'optim/ort'
 
-class OptimizerJob < Job.new(:planning_id, :route_id, :global, :active_only, :ignore_overload_multipliers, :nb_route)
+OptimizerJobStruct ||= Job.new(:planning_id, :route_id, :global, :active_only, :ignore_overload_multipliers, :nb_route)
+class OptimizerJob < OptimizerJobStruct
   @@optimize_time = Mapotempo::Application.config.optimize_time
   @@optimize_time_force = Mapotempo::Application.config.optimize_time_force
   @@max_split_size = Mapotempo::Application.config.optimize_max_split_size
