@@ -209,6 +209,10 @@ class Visit < ApplicationRecord
     end
   end
 
+  def update_tags_track(_tag)
+    @tag_ids_changed = true
+  end
+
   private
 
   def nilify_priority
@@ -219,10 +223,6 @@ class Visit < ApplicationRecord
     if @tag_ids_changed || time_window_start_1_changed? || time_window_end_1_changed? || time_window_start_2_changed? || time_window_end_2_changed? || quantities_changed? || duration_changed? || force_position_changed?
       outdated
     end
-  end
-
-  def update_tags_track(_tag)
-    @tag_ids_changed = true
   end
 
   def tag_ids_changed?
