@@ -144,19 +144,20 @@ class V01::Api < Grape::API
 
   # Devices
   mount V01::Devices::DevicesApi
+  mount V01::Devices::Alyacom
   mount V01::Devices::FleetDemo
   mount V01::Devices::Fleet
   mount V01::Devices::FleetReporting
-  mount V01::Devices::Alyacom
   mount V01::Devices::Masternaut
+  mount V01::Devices::Notico
+  mount V01::Devices::Praxedo
   mount V01::Devices::Orange
+  mount V01::Devices::Sopac
+  mount V01::Devices::StgTelematics
+  mount V01::Devices::SuiviDeFlotte
   mount V01::Devices::Teksat
   mount V01::Devices::Tomtom
   mount V01::Devices::Trimble
-  mount V01::Devices::SuiviDeFlotte
-  mount V01::Devices::Notico
-  mount V01::Devices::Praxedo
-  mount V01::Devices::Sopac
 
   # Tools
   mount V01::Geocoder

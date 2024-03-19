@@ -11,7 +11,10 @@ require_relative '../lib/optim/optimizer_wrapper'
 require_relative '../lib/exceptions'
 
 require_relative '../lib/devices/device_base'
-['fleet_demo', 'fleet', 'alyacom', 'masternaut', 'orange', 'teksat', 'tomtom', 'trimble', 'suivi_de_flotte', 'notico', 'praxedo', 'sopac'].each{|name|
+[
+  'alyacom', 'fleet_demo', 'fleet', 'masternaut', 'notico', 'orange', 'praxedo',
+  'sopac', 'stg_telematics', 'suivi_de_flotte', 'teksat', 'tomtom', 'trimble'
+].each{|name|
   require_relative "../lib/devices/#{name}"
 }
 
@@ -94,19 +97,20 @@ module Mapotempo
     config.customer_test_default = true
 
     config.devices = OpenStruct.new(
+      alyacom: Alyacom.new,
       fleet_demo: FleetDemo.new,
       fleet: Fleet.new,
-      alyacom: Alyacom.new,
+      # locster: Locster.new,
       masternaut: Masternaut.new,
+      notico: Notico.new,
       orange: Orange.new,
+      praxedo: Praxedo.new,
+      stg_telematics: StgTelematics.new,
+      sopac: Sopac.new,
+      suivi_de_flotte: SuiviDeFlotte.new,
       teksat: Teksat.new,
       tomtom: Tomtom.new,
-      trimble: Trimble.new,
-      # locster: Locster.new,
-      suivi_de_flotte: SuiviDeFlotte.new,
-      notico: Notico.new,
-      praxedo: Praxedo.new,
-      sopac: Sopac.new
+      trimble: Trimble.new
     )
 
     # Max number of models allowed by customer account

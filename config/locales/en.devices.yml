@@ -52,6 +52,11 @@ en:
           locster:
             username: "Username"
             password: "Password"
+          stg_telematics:
+            username: "Username"
+            password: "Password"
+            url: "URL"
+            company_names: "Company Names"
           suivi_de_flotte:
             username: "Username"
             password: "Password"
@@ -86,6 +91,9 @@ en:
           orange:
             title: Orange Fleet Performance
             orange_id: "Orange vehicle ID"
+          stg_telematics:
+            title: STG Telematics
+            stg_telematics_id: STG Telematics vehicle ID
           suivi_de_flotte:
             title: Suivi de flotte
             suivi_de_flotte_id: "Suivi de flotte vehicle ID"
@@ -162,6 +170,13 @@ en:
       timeout: Request Timeout
     masternaut:
       invalid_account: User invalid (does not exist)
+    stg_telematics:
+      get_access_token: Can't get access token. Retry later.
+      list: Can't list devices
+      get_vehicles_pos: Can't get vehicles positions
+      refresh_token_expired: Can't update access token. Retry later.
+      timeout: Request Timeout
+      unauthorized: Can't authenticate. Please check your credentials
     suivi_de_flotte:
       invalid_account: User invalid (does not exist)
     trimble:
@@ -188,6 +203,8 @@ en:
           drivers_updated: "Cartoway Field drivers updated:"
         alyacom:
           help: "Allows sending routes to AlyaCom application."
+        stg_telematics:
+          help: "Allows displaying vehicle positions from STG Telematics."
         tomtom:
           help: "Allows sending routes to TomTom Pro with WEBFLEET."
         teksat:

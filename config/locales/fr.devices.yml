@@ -52,6 +52,11 @@ fr:
           locster:
             username: "Utilisateur"
             password: "Mot de passe"
+          stg_telematics:
+            username: "Utilisateur"
+            password: "Mot de passe"
+            url: "URL"
+            company_names: "Noms des sociétés"
           suivi_de_flotte:
             username: "Utilisateur"
             password: "Mot de passe"
@@ -86,6 +91,9 @@ fr:
           orange:
             title: Orange Fleet Performance
             orange_id: "ID véhicule orange"
+          stg_telematics:
+            title: STG Telematics
+            stg_telematics_id: "ID véhicule STG Telematics"
           suivi_de_flotte:
             title: Suivi de flotte
             suivi_de_flotte_id: "ID véhicule suivi de flotte"
@@ -166,6 +174,13 @@ fr:
       invalid_account: Utilisateur invalide (non existant)
     suivi_de_flotte:
       invalid_account: Utilisateur invalide (non existant)
+    stg_telematics:
+      get_access_token: Impossible d'obtenir le token d'authentification. Veuillez Réessayer ultérieurement.
+      list: Impossible de lister les appareils
+      get_vehicles_pos: Impossible de lister les positions des véhicules
+      refresh_token_expired: Impossible de mettre à jour le token d'authentification. Veuillez Réessayer ultérieurement.
+      timeout: Délai d'attente depassé
+      unauthorized: Non autorisé
     trimble:
       invalid_account: Utilisateur invalide (non existant)
     notico:
@@ -190,6 +205,8 @@ fr:
           drivers_updated: "Utilisateurs mis à jour dans Cartoway Field:"
         alyacom:
           help: "Permet d'envoyer les tournées vers l'application AlyaCom."
+        stg_telematics:
+          help: "Permet de visualiser la position des véhicules avec STG Telematics."
         tomtom:
           help: "Permet d'envoyer les tournées vers les GPS TomTom Pro avec WebFLEET."
         teksat:
