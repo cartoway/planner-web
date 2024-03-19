@@ -125,6 +125,7 @@ Rails.application.configure do
   config.devices.sopac.api_url = "https://restservice1.bluconsole.com/bluconsolerest/1.0/resources/devices"
 
   config.devices.cache_object = cache_factory('devices', 30)
+  config.devices.stg_telematics_cache_object = cache_factory('devices.stg_telematics', 5 * 60)
 
   config.delayed_job_use = false
 

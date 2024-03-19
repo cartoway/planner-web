@@ -16,6 +16,13 @@ module ApiBase
           user: customer.devices[device][:user],
           password: customer.devices[device][:password]
         }
+      when :stg_telematics
+        {
+          url: customer.devices[device][:url],
+          company_names: customer.devices[device][:company_names],
+          username: customer.devices[device][:username],
+          password: customer.devices[device][:password]
+        }
       when :teksat
         {
           url: customer.devices[device][:url],

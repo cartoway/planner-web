@@ -23,7 +23,7 @@ class Device
   end
 
   def all
-    @all ||= Mapotempo::Application.config.devices.to_h.except(:cache_object)
+    @all ||= Mapotempo::Application.config.devices.to_h.except(:cache_object, :stg_telematics_cache_object)
   end
 
   def definitions
