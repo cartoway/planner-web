@@ -75,7 +75,14 @@ class StgTelematics < DeviceBase
 
       if response.code == 200 && body['data']
         body['data'].map do |item|
-          { stg_telematics_vehicle_id: item['vehicleNumber'], device_name: item['vehicleNumber'], lat: item['lat'], lng: item['long'], speed: item['speed'], time: item['last_updated'] + '+00:00' }
+          {
+            stg_telematics_vehicle_id: item['vehicleNumber'],
+            device_name: item['vehicleNumber'],
+            lat: item['lat'],
+            lng: item['long'],
+            speed: item['speed']&.delete(' kmph'),
+            time: item['last_updated'] + '+00:00'
+          }
         end
       else
         raise DeviceServiceError.new('STG Telematics: %s' % [I18n.t('errors.stg_telematics.get_vehicles_pos')])
