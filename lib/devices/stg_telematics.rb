@@ -31,7 +31,8 @@ class StgTelematics < DeviceBase
 
   def authenticate(customer, params)
     response = get_access_token(params || customer.devices[:stg_telematics])
-    if response.code == 200
+    body = JSON.parse(response.body)
+    if response.code == 200 && body['result'] == 1
       return JSON.parse(response.body)&.dig('data', 'token')
     else
       raise DeviceServiceError.new('STG Telematics: %s' % [I18n.t('errors.stg_telematics.get_access_token')])
