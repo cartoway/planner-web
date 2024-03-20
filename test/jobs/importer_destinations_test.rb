@@ -69,14 +69,13 @@ class ImporterDestinationsTest < ActionController::TestCase
     Visit.all.each{ |v| v.update! ref: nil }
     @customer.reload
     # destinations with same ref are merged
-    destination_import_count = 0
-    visit_import_count = 1
+    import_count = 0
     # vehicle_usage_set for new planning is hardcoded but random in tests... rest_count depends of it
     VehicleUsageSet.all.each { |v| v.destroy if v.id != vehicle_usage_sets(:vehicle_usage_set_one).id }
     rest_count = @customer.vehicle_usage_sets[0].vehicle_usages.select{ |v| v.default_rest_duration }.size
     assert_difference('Planning.count', 1) do
-      assert_difference('Destination.count', destination_import_count) do
-        assert_difference('Stop.count', (@visit_tag1_count + (visit_import_count * (@plan_tag1_count + 1)) + rest_count)) do
+      assert_difference('Destination.count', import_count) do
+        assert_difference('Stop.count', (@visit_tag1_count + (import_count * (@plan_tag1_count + 1)) + rest_count)) do
           # The imported destination had no tag before import, but its visit had tag1
           # The visit have no ref, it will be updated by the import having no ref neither
           # The new plan should have all the others visits having tag1 and the one associated to the imported destination
