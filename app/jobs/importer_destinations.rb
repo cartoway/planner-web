@@ -188,6 +188,8 @@ class ImporterDestinations < ImporterBase
     @destination_index = 0
     @visit_index = 0
 
+    @nil_visit_available = Hash.new(Hash.new(true))
+
     @tag_destinations = []
     @tag_visits = []
 
@@ -579,7 +581,11 @@ class ImporterDestinations < ImporterBase
   def prepare_visit_with_destination_ref(row, destination, destination_index, destination_attributes, visit_attributes)
     if row[:without_visit].nil? || row[:without_visit].strip.empty?
       if destination
-        visit = @existing_visits_by_ref[row[:ref]][row[:ref_visit]] unless row[:ref_visit].nil?
+        visit = if row[:ref_visit] || @nil_visit_available[row[:ref_planning]][row[:ref]]
+          # If nil_visit available retrieve the first visit of the destination with a nil ref_visit
+          @nil_visit_available[row[:ref_planning]][row[:ref]] = false
+          @existing_visits_by_ref[row[:ref]][row[:ref_visit]]
+        end
         @destinations_visits_attributes_by_ref[destination.ref] ||= Hash.new
         visit_attributes.merge!(destination_id: destination.id)
         if visit
