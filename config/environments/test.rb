@@ -114,15 +114,16 @@ Rails.application.configure do
   )
   config.router.url = ENV['ROUTER_URL'] || 'http://localhost:4899/0.1'
 
+  config.devices.alyacom.api_url = 'http://app.alyacom.fr/ws'
   config.devices.fleet.api_url = 'http://localhost:8084'
   config.devices.fleet.admin_api_key = ENV['DEVICE_FLEET_ADMIN_API_KEY']
-  config.devices.alyacom.api_url = 'https://alyacom.example.com'
   config.devices.masternaut.api_url = 'https://masternaut.example.com'
   config.devices.orange.api_url = 'https://orange.example.com'
-  config.devices.tomtom.api_url = 'https://tomtom.example.com'
-  config.devices.tomtom.api_key = ENV['DEVICE_TOMTOM_API_KEY']
   config.devices.praxedo.api_url = 'https://ww2.praxedo.com/eTech/services/'
   config.devices.sopac.api_url = "https://restservice1.bluconsole.com/bluconsolerest/1.0/resources/devices"
+  config.devices.stg_telematics.api_url = 'https://stg-telematics.example.com'
+  config.devices.tomtom.api_url = 'https://tomtom.example.com'
+  config.devices.tomtom.api_key = ENV['DEVICE_TOMTOM_API_KEY']
 
   config.devices.cache_object = cache_factory('devices', 30)
   config.devices.stg_telematics_cache_object = cache_factory('devices.stg_telematics', 5 * 60)

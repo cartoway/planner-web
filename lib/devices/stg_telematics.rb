@@ -15,7 +15,6 @@ class StgTelematics < DeviceBase
       forms: {
         settings: {
           company_names: :text, # FIXME: parameters are sent at root level in api...
-          url: :text,
           username: :text,
           password: :password
         },
@@ -139,20 +138,20 @@ class StgTelematics < DeviceBase
     )
   end
 
-  def get_access_token_url(params)
-    URI.encode("https://#{params[:url]}/webservice?token=generateAccessTokenDayWise")
+  def get_access_token_url(_params)
+    URI.encode("#{api_url}/webservice?token=generateAccessTokenDayWise")
   end
 
-  def get_login_status_url(params)
-    URI.encode("https://#{params[:url]}/webservice?token=getLoginStatus")
+  def get_login_status_url(_params)
+    URI.encode("#{api_url}/webservice?token=getLoginStatus")
   end
 
-  def get_vehicles_url(params)
-    URI.encode("https://#{params[:url]}/webservice?token=getTokenBaseLiveData&ProjectId=37")
+  def get_vehicles_url(_params)
+    URI.encode("#{api_url}/webservice?token=getTokenBaseLiveData&ProjectId=37")
   end
 
-  def get_vehicles_position_url(params)
-    URI.encode("https://#{params[:url]}/webservice?token=getVehicleLiveInformation")
+  def get_vehicles_position_url(_params)
+    URI.encode("#{api_url}/webservice?token=getVehicleLiveInformation")
   end
 
   def rest_client_with_method(url, token, params, method = :post)

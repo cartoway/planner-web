@@ -146,17 +146,18 @@ Rails.application.configure do
   )
   config.router.url = ENV['ROUTER_URL'] || 'http://localhost:4899/0.1'
 
+  config.devices.alyacom.api_url = 'http://app.alyacom.fr/ws'
   config.devices.fleet.api_url = 'https://fleet.cartoway.com'
   config.devices.fleet.admin_api_key = ENV['DEVICE_FLEET_ADMIN_API_KEY']
-  config.devices.alyacom.api_url = 'http://app.alyacom.fr/ws'
   config.devices.masternaut.api_url = 'http://gc.api.geonaut.masternaut.com/MasterWS/services'
   config.devices.orange.api_url = 'https://m2m-services.ft-dm.com'
+  config.devices.praxedo.api_url = 'https://ww2.praxedo.com/eTech/services/'
+  config.devices.sopac.api_url = "https://restservice1.bluconsole.com/bluconsolerest/1.0/resources/devices"
+  config.devices.stg_telematics.api_url = 'https://api.stgfleet.com'
+  config.devices.suivi_de_flotte.api_url = 'https://webservice.suivideflotte.net/service/'
   config.devices.tomtom.api_url = 'https://soap.business.tomtom.com/v1.30'
   config.devices.tomtom.api_key = ENV['DEVICE_TOMTOM_API_KEY']
   config.devices.trimble.api_url = 'https://soap.box.trimbletl.com/fleet-service/'
-  config.devices.suivi_de_flotte.api_url = 'https://webservice.suivideflotte.net/service/'
-  config.devices.praxedo.api_url = 'https://ww2.praxedo.com/eTech/services/'
-  config.devices.sopac.api_url = "https://restservice1.bluconsole.com/bluconsolerest/1.0/resources/devices"
 
   config.devices.cache_object = cache_factory('devices', 30)
   config.devices.stg_telematics_cache_object = cache_factory('devices.stg_telematics', 5 * 60)
