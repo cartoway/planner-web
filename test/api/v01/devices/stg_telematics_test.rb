@@ -42,7 +42,7 @@ class V01::Devices::StgTelematicsTest < ActiveSupport::TestCase
         lat: 43.34022,
         lng: -0.45711,
         direction: nil,
-        speed: "37 kmph",
+        speed: "37",
         time: "19 Mar 2024 09:30:10+00:00",
         time_formatted: "18 mars 2024 23:30:10"
       }], JSON.parse(last_response.body, symbolize_names: true)
