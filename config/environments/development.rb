@@ -120,6 +120,7 @@ Rails.application.configure do
   config.devices.orange.api_url = 'https://m2m-services.ft-dm.com'
   config.devices.praxedo.api_url = 'https://ww2.praxedo.com/eTech/services/'
   config.devices.sopac.api_url = 'https://restservice1.bluconsole.com/bluconsolerest/1.0/resources/devices'
+  config.devices.stg_telematics.api_url = 'https://api.stgfleet.com'
   config.devices.suivi_de_flotte.api_url = 'https://webservice.suivideflotte.net/service/'
   config.devices.tomtom.api_url = 'https://soap.business.tomtom.com/v1.30'
   config.devices.tomtom.api_key = ENV['DEVICE_TOMTOM_API_KEY']
