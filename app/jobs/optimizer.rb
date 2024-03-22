@@ -34,56 +34,23 @@ class Optimizer
   end
 
   def self.optimize(planning, route, options = { global: false, synchronous: false, active_only: true, ignore_overload_multipliers: [], nb_route: 0 })
-    optimize_time = planning.customer.optimization_time || @@optimize_time
     if route && route.size_active <= 1 && options[:active_only]
       # Nothing to optimize
       route.compute
       planning.save
-    elsif !options[:synchronous] && Mapotempo::Application.config.delayed_job_use
+    else
       if planning.customer.job_optimizer
         # Customer already run an optimization
         planning.errors.add(:base, I18n.t('errors.planning.already_optimizing'))
         false
       else
-        planning.customer.job_optimizer = Delayed::Job.enqueue(OptimizerJob.new(planning.customer.id, planning.id, route && route.id, options[:global], options[:active_only], options[:ignore_overload_multipliers], options[:nb_route]))
-        planning.customer.job_optimizer.save!
-      end
-    else
-      routes = planning.routes.select { |r|
-        (route && r.id == route.id) || (!route && !options[:global] && r.vehicle_usage_id && r.size_active > 1) || (!route && options[:global])
-      }.reject(&:locked)
-
-      routes.unshift(planning.routes.first) if !options[:global] && !planning.routes.first[:locked] && !route
-
-      optimum = unless routes.select(&:vehicle_usage_id).empty?
-        planning.optimize(routes, options) do |positions, services, vehicles|
-          Mapotempo::Application.config.optimizer.optimize(
-            positions, services, vehicles,
-            name: "c#{planning.customer_id} " + planning.name,
-            optimize_time: @@optimize_time_force || (optimize_time ? optimize_time * 1000 : nil),
-            max_split_size: planning.customer.optimization_max_split_size || @@max_split_size,
-            stop_soft_upper_bound: planning.customer.optimization_stop_soft_upper_bound || @@stop_soft_upper_bound,
-            vehicle_soft_upper_bound: planning.customer.optimization_vehicle_soft_upper_bound || @@vehicle_soft_upper_bound,
-            cluster_threshold: planning.customer.optimization_cluster_size || @@cluster_size,
-            cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
-            force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
-            optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
-            relations: planning.stop_relations
-          )
+        job = OptimizerJob.new(planning.customer.id, planning.id, route && route.id, options[:global], options[:active_only], options[:ignore_overload_multipliers], options[:nb_route])
+        if !options[:synchronous] && Mapotempo::Application.config.delayed_job_use
+          planning.customer.job_optimizer = Delayed::Job.enqueue(job)
+          planning.customer.job_optimizer.save!
+        else
+          job.perform
         end
-      end
-
-      if optimum
-        planning.set_stops(routes, optimum, { global: options[:global], active_only: options[:active_only] })
-        routes.each{ |r|
-          r.reload # Refresh stops order
-          r.compute
-          r.save!
-        }
-        planning.reload
-        planning.save!
-      else
-        false
       end
     end
   end

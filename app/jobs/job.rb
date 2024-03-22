@@ -25,10 +25,12 @@ class Job < Struct
   def job_progress_save(progress)
     # Job is executed inside a transaction (for instance to be sure data are all updated in database when job is deleted)
     # New thread will use a new connection outside this transaction to update job progress
-    Thread.new do
-      @job.progress = progress.to_json
-      @job.save
-    end.join
+    if @job
+      Thread.new do
+        @job.progress = progress.to_json
+        @job.save
+      end.join
+    end
   end
 
   def self.nb_routes(job)
