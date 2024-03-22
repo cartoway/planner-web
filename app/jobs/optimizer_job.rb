@@ -17,7 +17,7 @@
 #
 require 'optim/ort'
 
-OptimizerJobStruct ||= Job.new(:planning_id, :route_id, :global, :active_only, :ignore_overload_multipliers, :nb_route)
+OptimizerJobStruct ||= Job.new(:customer_id, :planning_id, :route_id, :global, :active_only, :ignore_overload_multipliers, :nb_route)
 class OptimizerJob < OptimizerJobStruct
   @@optimize_time = Mapotempo::Application.config.optimize_time
   @@optimize_time_force = Mapotempo::Application.config.optimize_time_force
@@ -32,7 +32,7 @@ class OptimizerJob < OptimizerJobStruct
   def perform
     return true if @job.progress&.dig('failed') && @job.attempts > 0
 
-    Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} perform"
+    Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
     planning = Planning.where(id: planning_id).first!
     routes = planning.routes.select { |r|
@@ -60,15 +60,15 @@ class OptimizerJob < OptimizerJobStruct
             relations: planning.stop_relations
           ) { |job_id, solution_data|
             job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
-            Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
+            Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
           }
           job_progress_save(@job.progress.merge({ 'first_progression': 100, 'second_progression': 100, 'completed': true }))
-          Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
+          Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
           optimum
         end
       rescue VRPNoSolutionError, VRPUnprocessableError => e
         job_progress_save(@job.progress.merge({ 'failed': 'true' }))
-        Delayed::Worker.logger.info "OptimizerJob planning_id=#{planning_id} #{@job.progress}"
+        Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
         raise e
       end
     end
