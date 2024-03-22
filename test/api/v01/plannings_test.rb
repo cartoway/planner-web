@@ -377,7 +377,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
       [false, true].each do |sync|
         get api("/#{@planning.id}/optimize", { details: true, synchronous: sync })
-        assert_equal mode ? 409 : 200, last_response.status, last_response.body
+        assert_equal mode ? 409 : sync ? 200 : 204, last_response.status, last_response.body
       end
     end
   end
@@ -387,7 +387,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
       [false, true].each do |sync|
         get api("/#{@planning.id}/optimize", { global: true, details: true, synchronous: sync })
-        assert_equal mode ? 409 : 200, last_response.status, last_response.body
+        assert_equal mode ? 409 : sync ? 200 : 204, last_response.status, last_response.body
       end
     end
   end
@@ -397,7 +397,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
       [false, true].each do |all|
         get api("/#{@planning.id}/optimize", {details: true, active_only: all })
-        assert_equal mode ? 409 : 200, last_response.status, last_response.body
+        assert_equal mode ? 409 : 204, last_response.status, last_response.body
       end
     end
   end

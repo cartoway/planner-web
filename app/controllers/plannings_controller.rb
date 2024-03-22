@@ -310,7 +310,7 @@ class PlanningsController < ApplicationController
       route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
       begin
         if route && Optimizer.optimize(@planning, route, { global: false, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers }) && @planning.customer.save!
-          @routes = [route]
+          @routes = [route.reload]
           format.json { render action: 'show', location: @planning }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages

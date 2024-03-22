@@ -117,8 +117,8 @@ class V01::Routes < Grape::API
           ].concat(V01::Status.failures(add: [:code_304]))
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
-          optional :details, type: Boolean, desc: 'Output Route Details', default: false
-          optional :synchronous, type: Boolean, desc: 'Synchronous', default: true
+          optional :details, type: Boolean, desc: '[Deprecated] Output Route Details, only active with synchronous option', default: false
+          optional :synchronous, type: Boolean, desc: '[Deprecated] Optimize synchronously, Optimization must be performed asynchronously at least to lock the planning', default: false
           optional :all_stops, type: Boolean, desc: 'Deprecated (Use active_only instead)'
           optional :active_only, type: Boolean, desc: 'If true only active stops are taken into account by optimization, else inactive stops are also taken into account but are not activated in result route.', default: true
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
@@ -126,21 +126,27 @@ class V01::Routes < Grape::API
         end
         patch ':id/optimize' do
           begin
-            raise Exceptions::JobInProgressError if current_customer.job_optimizer
+            if current_customer.job_optimizer
+              status 409
+              present current_customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+              return
+            end
 
             Stop.includes_destinations.scoping do
               if !Optimizer.optimize(get_route.planning, get_route, { global: false, synchronous: params[:synchronous], active_only: params[:all_stops].nil? ? params[:active_only] : !params[:all_stops], ignore_overload_multipliers: params[:ignore_overload_multipliers] })
                 status 304
               else
-                get_route.planning.customer.save!
-                if params[:details]
+                current_customer.save!
+                if params[:synchronous] && params[:details]
                   present get_route, with: V01::Entities::Route, geojson: params[:with_geojson]
+                elsif current_customer.job_optimizer
+                  present current_customer.job_optimizer, with: V01::Entities::Job
                 else
                   status 204
                 end
               end
             end
-          rescue VRPNoSolutionError => e
+          rescue VRPNoSolutionError
             error! V01::Status.code_response(:code_304), 304
           end
         end
