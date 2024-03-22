@@ -34,6 +34,12 @@
                       .hidden-menu
                         = t 'admin.users.menu.users'
                 %li.menu-section.menu-list-item
+                  = link_to delayed_job_web_path do
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-tower-observation.fa-fw
+                      .hidden-menu
+                        = t 'admin.jobs.menu.observation'
+                %li.menu-section.menu-list-item
                   = link_to admin_profiles_path do
                     .d-flex.align-items-center.justify-content-center
                       %i.fa.fa-gear.fa-fw

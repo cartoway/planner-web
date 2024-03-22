@@ -4,6 +4,11 @@ Rails.application.routes.draw do
   mount ApiRoot => '/api'
   mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
+  authenticated :user, -> user { user.admin? }  do
+    match '/delayed_job' => DelayedJobWeb, :anchor => false, :via => [:get, :post]
+    mount DelayedJobWeb, at: "/delayed_job"
+  end
+
   devise_for :users, :controllers => {:registrations => "registrations"}
   devise_scope :user do
     unauthenticated do

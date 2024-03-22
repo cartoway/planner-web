@@ -717,6 +717,9 @@
     'template_csv': 'Modèle import tableur standard'
     'template_excel': 'Modèle import tableur'
   'admin':
+    'jobs':
+      'menu':
+        'observation': Jobs
     'profiles':
       'menu':
         'profiles': 'Profils carto'
