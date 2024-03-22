@@ -151,6 +151,7 @@ gem 'color'
 gem 'daemons'
 gem 'delayed_job'
 gem 'delayed_job_active_record'
+gem 'delayed_job_web'
 
 gem 'fast-polylines'
 gem 'rgeo'
