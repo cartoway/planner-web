@@ -61,6 +61,7 @@ class OptimizerWrapper
 
     result = nil
     while json
+      retry_counter = 0
       result = JSON.parse(json)
       job_details = result['job']
       job_id = result.dig('job', 'id')
@@ -75,7 +76,11 @@ class OptimizerWrapper
           end
           sleep(0.2)
           json = RestClient.get(@url + "/vrp/jobs/#{job_id}.json", params: {api_key: @api_key})
+        rescue SocketError => e
+          retry_counter += 1
+          retry if retry_counter < 3
 
+          raise e
         rescue Delayed::WorkerTimeout
           kill_solve(job_id)
           raise JobTimeout.new("Optimizer Job #{job_id} has reached max_run_time: #{ScheduleType.new.type_cast(Delayed::Worker.max_run_time)}")
