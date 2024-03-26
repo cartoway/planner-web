@@ -246,26 +246,31 @@ class V01::Plannings < Grape::API
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
       optional :global, type: Boolean, desc: 'Use global optimization and move visits between routes if needed', default: false
-      optional :synchronous, type: Boolean, desc: 'Synchronous', default: true
+      optional :synchronous, type: Boolean, desc: '[Deprecated] Optimize synchronously, Optimization must be performed asynchronously at least to lock the planning', default: false
       optional :all_stops, type: Boolean, desc: 'Deprecated (Use active_only instead)'
       optional :active_only, type: Boolean, desc: 'If true only active stops are taken into account by optimization, else inactive stops are also taken into account but are not activated in result route.', default: true
       optional :ignore_overload_multipliers, type: String, desc: "Deliverable Unit id and whether or not it should be ignored : {'0'=>{'unit_id'=>'7', 'ignore'=>'true'}}"
-      optional :with_details, type: Boolean, desc: 'Output route details', default: false
-      optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
+      optional :with_details, type: Boolean, desc: '[Deprecated] Output route details, only active with synchronous option', default: false
+      optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: '[Deprecated] Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring. Only active with synchronous option'
     end
     get ':id/optimize' do
       Route.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        raise Exceptions::JobInProgressError if planning.customer.job_optimizer
-
+        if planning.customer.job_optimizer
+          status 409
+          present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+          return
+        end
         begin
           Optimizer.optimize(planning, nil, { global: params[:global], synchronous: params[:synchronous], active_only: params[:all_stops].nil? ? params[:active_only] : !params[:all_stops], ignore_overload_multipliers: params[:ignore_overload_multipliers] })
           current_customer.save!
         rescue VRPNoSolutionError
           error! V01::Status.code_response(:code_304), 304
         end
-        if params[:details] || params[:with_details]
+        if params[:synchronous] && (params[:details] || params[:with_details])
           present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
+        elsif planning.customer.job_optimizer
+          present planning.customer.job_optimizer, with: V01::Entities::Job
         else
           status 204
         end

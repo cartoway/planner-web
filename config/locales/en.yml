@@ -706,10 +706,10 @@ en:
     template_csv: Import Template Spreadsheet Standard
     template_excel: Import Template Spreadsheet
   admin:
+    jobs:
+      menu:
+        observation: Jobs
     profiles:
-      jobs:
-        menu:
-          observation: Jobs
       menu:
         profiles: Profiles
       index:

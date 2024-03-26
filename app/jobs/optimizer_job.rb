@@ -30,7 +30,7 @@ class OptimizerJob < OptimizerJobStruct
   @@optimize_minimal_time = Mapotempo::Application.config.optimize_minimal_time
 
   def perform
-    return true if @job.progress&.dig('failed') && @job.attempts > 0
+    return true if @job && @job.progress&.dig('failed') && @job.attempts > 0
 
     Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
@@ -45,7 +45,7 @@ class OptimizerJob < OptimizerJobStruct
 
     optimum = unless routes.select(&:vehicle_usage_id).empty?
       begin
-        planning.optimize(routes, global: global, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers) do |positions, services, vehicles|
+        planning.optimize(routes, global: global, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers) do |positions, services, vehicles|
           optimum = Mapotempo::Application.config.optimizer.optimize(
             positions, services, vehicles,
             name: "c#{planning.customer_id} " + planning.name,
@@ -59,16 +59,22 @@ class OptimizerJob < OptimizerJobStruct
             optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
             relations: planning.stop_relations
           ) { |job_id, solution_data|
-            job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
-            Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+            if @job
+              job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
+              Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+            end
           }
-          job_progress_save(@job.progress.merge({ 'first_progression': 100, 'second_progression': 100, 'completed': true }))
-          Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+          if @job
+            job_progress_save(@job.progress.merge({ 'first_progression': 100, 'second_progression': 100, 'completed': true }))
+            Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+          end
           optimum
         end
       rescue VRPNoSolutionError, VRPUnprocessableError => e
-        job_progress_save(@job.progress.merge({ 'failed': 'true' }))
-        Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+        if @job
+          job_progress_save(@job.progress.merge({ 'failed': 'true' }))
+          Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+        end
         raise e
       end
     end
@@ -85,8 +91,10 @@ class OptimizerJob < OptimizerJobStruct
       planning.save!
     end
   rescue => e
-    puts e.message
-    puts e.backtrace.join("\n")
+    if @job
+      puts e.message
+      puts e.backtrace.join("\n")
+    end
     raise e
   end
 

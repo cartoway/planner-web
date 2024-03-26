@@ -18,6 +18,9 @@ class V01::Entities::Job < Grape::Entity
     'V01_Job'
   end
 
+  expose(:message, documentation: { type: String }, if: lambda { |m, options| m || options[:message] }) { |m, options|
+    options.dig(:message) || m
+  }
   expose(:id, documentation: { type: Integer })
   expose(:attempts, documentation: { type: Integer })
   expose(:created_at, documentation: { type: Date })

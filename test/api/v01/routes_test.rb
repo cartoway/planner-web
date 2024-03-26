@@ -152,7 +152,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
   test 'should optimize route with details' do
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
-      patch api(@route.planning.id, "#{@route.id}/optimize", details: true)
+      patch api(@route.planning.id, "#{@route.id}/optimize", details: true, synchronous: true)
       if mode
         assert_equal 409, last_response.status, last_response.body
       else
@@ -190,7 +190,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
   test 'should optimize all stops in the current route' do
     customers(:customer_one).update(job_optimizer_id: nil)
     [false, true].each do |all|
-      patch api(@route.planning.id, "#{@route.id}/optimize", details: true, active_only: all)
+      patch api(@route.planning.id, "#{@route.id}/optimize", details: true, active_only: all, synchronous: true)
       assert_equal 200, last_response.status, last_response.body
       assert JSON.parse(last_response.body)['id']
     end
