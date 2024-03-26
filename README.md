@@ -198,6 +198,7 @@ docker-compose exec --user postgres db psql -c "CREATE ROLE planner PASSWORD 'pl
 docker-compose exec --user postgres db psql -c "CREATE DATABASE planner OWNER planner ENCODING 'utf-8';"
 docker-compose exec --user postgres db psql planner -c "CREATE EXTENSION hstore;"
 docker-compose run --rm web bundle exec rake db:setup
+docker-compose run --rm web bundle exec rake db:seed
 ```
 
 ## Dev in Docker
@@ -213,6 +214,11 @@ docker-compose down
 docker-compose up -d db
 docker-compose exec --user postgres db psql -c "DROP DATABASE planner;"
 docker-compose exec --user postgres db psql -c "DROP ROLE planner;"
+```
+
+Update the `db/structure.sql` file
+```
+docker-compose run --rm web bundle exec rake db:structure:dump
 ```
 
 ## Dev in Docker through VSCode
