@@ -81,7 +81,7 @@ CREATE TABLE public.customers (
     updated_at timestamp without time zone,
     name character varying(255),
     router_id integer NOT NULL,
-    print_planning_annotating boolean,
+    print_planning_annotating boolean DEFAULT true,
     print_header text,
     enable_orders boolean DEFAULT false NOT NULL,
     test boolean DEFAULT false NOT NULL,
@@ -2952,6 +2952,8 @@ INSERT INTO schema_migrations (version) VALUES ('20240124083101');
 INSERT INTO schema_migrations (version) VALUES ('20240202082922');
 
 INSERT INTO schema_migrations (version) VALUES ('20240208095803');
+
+INSERT INTO schema_migrations (version) VALUES ('20240212161312');
 
 INSERT INTO schema_migrations (version) VALUES ('20240215103513');
 
