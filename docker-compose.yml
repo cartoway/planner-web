@@ -4,7 +4,6 @@ x-web: &web
   build: .
   image: planner-web:${CARTOWAY_VERSION:-latest}
   environment:
-    env_file: .env
     RAILS_ENV: ${RAILS_ENV:-production}
     NODE_ENV: ${NODE_ENV:-production}
     GEOCODER_URL: ${GEOCODER_URL:-http://localhost:8081/0.1}
