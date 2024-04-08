@@ -112,9 +112,9 @@ class V01::Routes < Grape::API
           detail: 'Get the shortest route in time or distance.',
           nickname: 'optimizeRoute',
           http_codes: [
-            V01::Status.success(:code_204),
-            V01::Status.success(:code_200, V01::Entities::Route)
-          ].concat(V01::Status.failures(add: [:code_304]))
+            V01::Status.success(:code_200, V01::Entities::Job),
+            V01::Status.success(:code_204)
+      ].concat(V01::Status.failures(override: {code_409: I18n.t('errors.planning.already_optimizing')}, model: {code_409: V01::Entities::Job}))
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
           optional :details, type: Boolean, desc: '[Deprecated] Output Route Details, only active with synchronous option', default: false
@@ -126,11 +126,7 @@ class V01::Routes < Grape::API
         end
         patch ':id/optimize' do
           begin
-            if current_customer.job_optimizer
-              status 409
-              present current_customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
-              return
-            end
+            raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
             Stop.includes_destinations.scoping do
               if !Optimizer.optimize(get_route.planning, get_route, { global: false, synchronous: params[:synchronous], active_only: params[:all_stops].nil? ? params[:active_only] : !params[:all_stops], ignore_overload_multipliers: params[:ignore_overload_multipliers] })
@@ -146,6 +142,9 @@ class V01::Routes < Grape::API
                 end
               end
             end
+          rescue Exceptions::JobInProgressError
+            status 409
+            present current_customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
           rescue VRPNoSolutionError
             error! V01::Status.code_response(:code_304), 304
           end
