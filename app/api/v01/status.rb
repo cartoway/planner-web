@@ -41,11 +41,12 @@ class V01::Status < Grape::API
     status_codes.key?(code) ? status_codes[code].merge(model: model) : {}
   end
 
-  def self.failures(params = {is_array: false, add: nil, override: nil })
+  def self.failures(params = {is_array: false, add: nil, override: nil, model: nil })
     failure_codes = status_codes
     responses = [:code_400, :code_401, :code_402, :code_403, :code_404, :code_405, :code_409, :code_500]
     params[:override]&.each { |code, message| failure_codes[code][:message] = message }
     params[:add]&.each { |code| responses.push(code) if failure_codes.key?(code) }
+    params[:model]&.each { |code, model| failure_codes[code][:model] = model }
     responses.map! { |code| failure_codes[code] }
     responses.map! { |response| response.reject!{ |k| (k == :model) } } if params[:is_array]
     responses

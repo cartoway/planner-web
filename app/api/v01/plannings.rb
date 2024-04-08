@@ -240,9 +240,9 @@ class V01::Plannings < Grape::API
       detail: 'Optimize all unlocked routes by keeping visits in same route or not.',
       nickname: 'optimizeRoutes',
       http_codes: [
-        V01::Status.success(:code_204),
-        V01::Status.success(:code_200, V01::Entities::Planning)
-      ].concat(V01::Status.failures(add: [:code_304]))
+        V01::Status.success(:code_200, V01::Entities::Job),
+        V01::Status.success(:code_204)
+      ].concat(V01::Status.failures(override: {code_409: I18n.t('errors.planning.already_optimizing')}, model: {code_409: V01::Entities::Job}))
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
       optional :global, type: Boolean, desc: 'Use global optimization and move visits between routes if needed', default: false
@@ -256,11 +256,8 @@ class V01::Plannings < Grape::API
     get ':id/optimize' do
       Route.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        if planning.customer.job_optimizer
-          status 409
-          present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
-          return
-        end
+        raise Exceptions::JobInProgressError if planning.customer.job_optimizer
+
         begin
           Optimizer.optimize(planning, nil, { global: params[:global], synchronous: params[:synchronous], active_only: params[:all_stops].nil? ? params[:active_only] : !params[:all_stops], ignore_overload_multipliers: params[:ignore_overload_multipliers] })
           current_customer.save!
@@ -274,6 +271,9 @@ class V01::Plannings < Grape::API
         else
           status 204
         end
+      rescue Exceptions::JobInProgressError
+        status 409
+        present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
       end
     end
 
