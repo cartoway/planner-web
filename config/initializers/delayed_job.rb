@@ -1,7 +1,6 @@
 Delayed::Worker.destroy_failed_jobs = false
 Delayed::Worker.max_attempts = 3
 Delayed::Worker.sleep_delay = 1
-Delayed::Worker.logger = Logger.new(File.join(Rails.root, 'log', 'delayed_job.log'))
 
 Delayed::Worker.class_eval do
   alias_method :run_was, :run
