@@ -44,7 +44,7 @@ services:
 
   delayed-job:
     <<: *web
-    command: bundle exec bin/delayed_job run -n 4
+    command: ./start_delayed_job.sh -n 4
 
 volumes:
   pg_data:
