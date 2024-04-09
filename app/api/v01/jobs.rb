@@ -53,6 +53,7 @@ class V01::Jobs < Grape::API
     desc 'Return a job.',
       detail: 'Return asynchronous job (like geocoding, optimizer) currently runned for the customer.',
       nickname: 'getJob'
+      success: V01::Entities::Job
     params do
       requires :id, type: Integer, desc: ID_DESC
     end
