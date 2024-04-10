@@ -2,3 +2,4 @@ docker
 .git
 .env
 node_modules
+log/*
