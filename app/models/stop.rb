@@ -31,6 +31,7 @@ class Stop < ApplicationRecord
 
   scope :includes_destinations, -> { includes(visit: [:tags, destination: [:visits, :tags, :customer]]) }
   scope :only_stop_visits, -> { where(type: StopVisit.name) }
+  scope :includes_relations, -> { includes(visit: [:relation_currents, :relation_successors])}
 
   amoeba do
     enable

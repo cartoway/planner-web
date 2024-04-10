@@ -25,6 +25,7 @@ class ImporterDestinations < ImporterBase
   def initialize(customer, planning_hash = nil)
     super customer
     @planning_hash = planning_hash || {}
+    @deliverable_units = customer&.deliverable_units || []
   end
 
   def max_lines
@@ -83,7 +84,7 @@ class ImporterDestinations < ImporterBase
       force_position: {title: I18n.t('destinations.import_file.force_position'), desc: I18n.t('destinations.import_file.force_position_desc'), format: I18n.t('destinations.import_file.force_position_format')},
       tag_visits: {title: I18n.t('destinations.import_file.tags_visit'), desc: I18n.t('destinations.import_file.tags_visit_desc'), format: I18n.t('destinations.import_file.tags_format')},
       duration: {title: I18n.t('destinations.import_file.duration'), desc: I18n.t('destinations.import_file.duration_desc'), format: I18n.t('destinations.import_file.format.hour')},
-    }.merge(Hash[@customer.deliverable_units.flat_map{ |du|
+    }.merge(Hash[@deliverable_units.flat_map{ |du|
       [["quantity#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.quantity_desc'), format: I18n.t('destinations.import_file.format.float')}],
       ["quantity_operation#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity_operation') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.quantity_operation_desc'), format: I18n.t('destinations.import_file.quantity_operation_format')}]]
     }]).merge(Hash[@customer.custom_attributes.select(&:visit?).map { |ca|
@@ -92,6 +93,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def columns
+    @deliverable_units = @customer&.deliverable_units || []
     columns_planning.merge(columns_route).merge(columns_destination).merge(columns_visit).merge(
       without_visit: {title: I18n.t('destinations.import_file.without_visit'), desc: I18n.t('destinations.import_file.without_visit_desc'), format: I18n.t('destinations.import_file.format.yes_no')},
       quantities: {}, # only for json import
@@ -138,6 +140,7 @@ class ImporterDestinations < ImporterBase
         }
       }
     }
+    @deliverable_units ||= @customer&.deliverable_units || []
     @destinations_to_geocode = []
     @visit_ids = []
 
@@ -153,12 +156,12 @@ class ImporterDestinations < ImporterBase
     if options[:line_shift] == 1
       # Create missing deliverable units if needed
       column_titles = data[0].is_a?(Hash) ? data[0].keys : data.size > 0 ? data[0].map{ |a| a[0] } : []
-      unit_labels = @customer.deliverable_units.map(&:label)
+      unit_labels = @deliverable_units.map(&:label)
       column_titles.each{ |name|
         m = Regexp.new("^" + I18n.t('destinations.import_file.quantity') + "\\[(.*)\\]$").match(name)
         if m && unit_labels.exclude?(m[1])
           unit_labels.delete_at(unit_labels.index(m[1])) if unit_labels.index(m[1])
-          @customer.deliverable_units.build(label: m[1])
+          @deliverable_units.build(label: m[1])
         end
       }
       @customer.save!
@@ -166,7 +169,7 @@ class ImporterDestinations < ImporterBase
 
     @destinations_attributes_without_ref = []
     @existing_destinations_by_ref = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref.to_sym, destination] }]
-    @existing_visits_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash[destination.visits.map{ |visit| [visit.ref&.to_sym, visit]} ]] }]
+    @existing_visits_by_ref = Hash[@customer.destinations.includes_visits.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash[destination.visits.map{ |visit| [visit.ref&.to_sym, visit]} ]] }]
 
     @destinations_attributes_by_ref = {}
     @destinations_visits_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash.new] }]
@@ -221,12 +224,12 @@ class ImporterDestinations < ImporterBase
 
     # Deals with deprecated quantity
     if !row.key?(:quantities)
-      if row.key?(:quantity) && @customer.deliverable_units.size > 0
-        row[:quantities] = {@customer.deliverable_units[0].id => row.delete(:quantity)}
-      elsif (row.key?(:quantity1_1) || row.key?(:quantity1_2)) && @customer.deliverable_units.size > 0
+      if row.key?(:quantity) && @deliverable_units.size > 0
+        row[:quantities] = {@deliverable_units[0].id => row.delete(:quantity)}
+      elsif (row.key?(:quantity1_1) || row.key?(:quantity1_2)) && @deliverable_units.size > 0
         row[:quantities] = {}
-        row[:quantities].merge!({@customer.deliverable_units[0].id => row.delete(:quantity1_1)}) if row.key?(:quantity1_1)
-        row[:quantities].merge!({@customer.deliverable_units[1].id => row.delete(:quantity1_2)}) if row.key?(:quantity1_2) && @customer.deliverable_units.size > 1
+        row[:quantities].merge!({@deliverable_units[0].id => row.delete(:quantity1_1)}) if row.key?(:quantity1_1)
+        row[:quantities].merge!({@deliverable_units[1].id => row.delete(:quantity1_2)}) if row.key?(:quantity1_2) && @deliverable_units.size > 1
       end
     end
     row[:quantities]&.each{ |k, v|
@@ -645,7 +648,7 @@ class ImporterDestinations < ImporterBase
         visit_ids = v[:visits].map{ |attribute, _active|
           attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
         }
-        visits = Visit.where(id: visit_ids)
+        visits = Visit.includes_destinations.where(id: visit_ids)
 
         v[:visits].map!.with_index{ |(_attribute, active), index| [visits[index], active] }
       }

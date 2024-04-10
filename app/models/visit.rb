@@ -35,6 +35,7 @@ class Visit < ApplicationRecord
   validates :destination, presence: true
 
   scope :positioned, -> { joins(:destination).merge(Destination.positioned) }
+  scope :includes_destinations, -> { includes([:tags, destination: :tags]) }
 
   enum force_position: {
     neutral: 0,
