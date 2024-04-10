@@ -26,6 +26,8 @@ trap _term SIGINT
 echo "Starting delayed jobs ... with ARGs \"${DELAYED_JOB_ARGS}\""
 
 # restart delayed jobs on script execution
+rm -f delayed_job_logs && mkfifo delayed_job_logs
+cat delayed_job_logs &
 bundle exec "./bin/delayed_job ${DELAYED_JOB_ARGS} restart"
 
 echo "Finished starting delayed jobs... Waiting for SIGTERM / CTRL C"
