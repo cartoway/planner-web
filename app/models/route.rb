@@ -597,7 +597,7 @@ class Route < ApplicationRecord
     final_features = []
 
     if include_stores
-      stores_geojson = routes.select { |r| r.vehicle_usage? }.map(&:vehicle_usage).flat_map { |vu| [vu.default_store_start, vu.default_store_stop, vu.default_store_rest] }.compact.uniq.select(&:position?).map do |store|
+      stores_geojson = routes.select(&:vehicle_usage?).map(&:vehicle_usage).flat_map { |vu| [vu.default_store_start, vu.default_store_stop, vu.default_store_rest] }.compact.uniq.select(&:position?).map do |store|
         coordinates = [store.lng, store.lat]
         {
           type: 'Feature',
@@ -691,39 +691,6 @@ class Route < ApplicationRecord
     self.arrival_status = nil
   end
 
-  def compute_out_of_relations
-    stops.each{ |s| s.out_of_relation = false }
-
-    stop_hash = stops.only_stop_visits.map{ |stop| [stop.visit.id, stop] }
-    stops_sort = stops.only_stop_visits.sort_by(&:index)
-
-    route_relations = stops.only_stop_visits.flat_map{ |stop_visit|
-      stop_visit.visit.relation_currents + stop_visit.visit.relation_successors
-    }.uniq
-
-    route_relations.each{ |relation|
-      if !stop_hash[relation.current_id] || !stop_hash[relation.successor_id]
-        # Both current and successor should belong to the plan
-        stop_hash[relation.current_id]&.out_of_relation = true
-        stop_hash[relation.successor_id]&.out_of_relation = true
-      elsif stop_hash[relation.current_id].route.id != stop_hash[relation.successor_id].route.id ||
-            stop_hash[relation.current_id].active != stop_hash[relation.successor_id].active
-        # All relations implies that stops belongs to the same route and should be both or none active
-        stop_hash[relation.current_id].out_of_relation = true
-        stop_hash[relation.successor_id].out_of_relation = true
-      elsif RELATION_ORDER_KEYS.include?(relation.relation_type.to_sym) && stop_hash[relation.current_id].index > stop_hash[relation.successor_id].index
-        # Most of relations implies to have ordered stop indices
-        stop_hash[relation.current_id].out_of_relation = true
-        stop_hash[relation.successor_id].out_of_relation = true
-      elsif relation.relation_type == 'sequence' && (stop_hash[relation.current_id].index + 1) != stop_hash[relation.successor_id].index
-        # Sequence implies that successor is right after current stop in route
-        stop_hash[relation.current_id].out_of_relation = true
-        stop_hash[relation.successor.id].out_of_relation = true
-      end
-    }
-  end
-
-
   def compute_out_of_force_position
     stops.each{ |stop| stop.out_of_force_position = nil }
     stops_sort = stops.sort_by(&:index)
@@ -771,7 +738,7 @@ class Route < ApplicationRecord
     stop_hash = stops.only_stop_visits.map{ |stop| [stop.visit.id, stop] }.to_h
     stops_sort = stops.only_stop_visits.sort_by(&:index)
 
-    route_relations = stops.only_stop_visits.flat_map{ |stop_visit|
+    route_relations = stops.only_stop_visits.includes_relations.flat_map{ |stop_visit|
       stop_visit.visit.relation_currents + stop_visit.visit.relation_successors
     }.uniq
 
@@ -795,6 +762,10 @@ class Route < ApplicationRecord
         stop_hash[relation.successor.id].out_of_relation = true
       end
     }
+  end
+
+  def preload_compute_scopes
+    Route.includes_vehicle_usages.where(id: self.id).includes_destinations
   end
 
   private

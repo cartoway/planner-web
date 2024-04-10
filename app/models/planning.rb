@@ -145,7 +145,7 @@ class Planning < ApplicationRecord
   def default_empty_routes(ignore_errors = false)
     routes.clear
     routes.build
-    vehicle_usage_set.vehicle_usages.select(&:active).each { |vehicle_usage|
+    vehicle_usage_set.vehicle_usages.with_vehicle.select(&:active).each { |vehicle_usage|
       vehicle_usage_add(vehicle_usage, ignore_errors)
     }
   end
@@ -161,7 +161,11 @@ class Planning < ApplicationRecord
   end
 
   def compute(options = {})
-    routes.each{ |r| r.compute(options) }
+    routes.each{ |r|
+      # Load necessary scopes just in time for outdated routes
+      r.preload_compute_scopes if r.outdated
+      r.compute(options)
+    }
   end
 
   def switch(route, vehicle_usage)
@@ -670,7 +674,7 @@ class Planning < ApplicationRecord
   end
 
   def to_geojson(include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false, large = large?)
-    Route.routes_to_geojson(routes, include_stores, respect_hidden, include_linestrings, with_quantities, large)
+    Route.routes_to_geojson(routes.includes_vehicle_usages, include_stores, respect_hidden, include_linestrings, with_quantities, large)
   end
 
   def save_import
@@ -1055,7 +1059,7 @@ class Planning < ApplicationRecord
 
   def update_vehicle_usage_set
     if vehicle_usage_set_id_changed? && !vehicle_usage_set_id_was.nil? && !id.nil?
-      h = Hash[routes.select(&:vehicle_usage).collect{ |route| [route.vehicle_usage.vehicle, route] }]
+      h = Hash[routes.includes_vehicle_usages.select(&:vehicle_usage).collect{ |route| [route.vehicle_usage.vehicle, route] }]
       vehicle_usage_set.vehicle_usages.each{ |vehicle_usage|
         if h[vehicle_usage.vehicle] && vehicle_usage.active
           h[vehicle_usage.vehicle].vehicle_usage = vehicle_usage

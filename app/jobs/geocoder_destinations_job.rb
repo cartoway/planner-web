@@ -24,7 +24,7 @@ class GeocoderDestinationsJob < GeocoderDestinationsJobStruct
     i = 0
     customer.destinations.select(:id).where(lat: nil).each_slice(50){ |destination_ids|
       Destination.transaction do
-        destinations = customer.destinations.where(id: destination_ids) # IMPORTANT: Lower Delayed Job Memory Usage
+        destinations = customer.destinations.where(id: destination_ids).includes_visits # IMPORTANT: Lower Delayed Job Memory Usage
         geocode_args = destinations.collect(&:geocode_args)
         begin
           results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)

@@ -157,7 +157,7 @@ class Zoning < ApplicationRecord
   end
 
   def isowhat?(what, vehicle_usage_set, from_store = true)
-    vehicle_usage_set.vehicle_usages.select(&:active).find{ |vehicle_usage|
+    vehicle_usage_set.vehicle_usages.where(active: true).with_vehicle.find{ |vehicle_usage|
       router = vehicle_usage.vehicle.default_router
       router.method(what).call && (vehicle_usage.default_store_start.try(&:position?) || !from_store)
     }
