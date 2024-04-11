@@ -358,6 +358,7 @@ class ImporterDestinations < ImporterBase
       else
         planning.save!
       end
+      planning.reload
     }
   end
 
@@ -366,10 +367,10 @@ class ImporterDestinations < ImporterBase
       save_plannings
       @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderDestinationsJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
     elsif !@plannings.empty?
-      @plannings.each{ |planning|
-        planning.compute(ignore_errors: true)
-      }
       save_plannings
+      @plannings.each{ |planning|
+        planning.compute_saved(ignore_errors: true)
+      }
     end
     @customer.save!
   end
