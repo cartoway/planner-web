@@ -28,6 +28,7 @@ class V01::Devices::TomtomTest < ActiveSupport::TestCase
 
   setup do
     @customer = add_tomtom_credentials customers(:customer_one)
+    clear_jobs
   end
 
   test 'authenticate' do
@@ -202,6 +203,7 @@ class V01::Devices::TomtomTest < ActiveSupport::TestCase
   end
 
   test 'list addresses' do
+    clear_jobs
     with_stubs [:address_service_wsdl, :show_address_report] do
       assert_equal 4, @customer.destinations.reload.length
       put api("destinations", { remote: 'tomtom' })

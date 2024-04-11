@@ -11,6 +11,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
   setup do
     @destination = destinations(:destination_one)
     @visit = visits(:visit_one)
+    clear_jobs
   end
 
   def around
@@ -251,5 +252,59 @@ class V01::VisitsTest < ActiveSupport::TestCase
   test 'should not create a visit with invalid position' do
     post api_destination(@destination.id), @visit.attributes.merge(force_position: 'invalid_position').except('id', 'quantities'), as: :json
     assert_equal 400, last_response.status, last_response.body
+  end
+end
+
+class V01::VisitsWithJobTest < ActiveSupport::TestCase
+  include Rack::Test::Methods
+  include ActionDispatch::TestProcess
+
+  require Rails.root.join("test/lib/devices/tomtom_base")
+  include TomtomBase
+
+  def app
+    Rails.application
+  end
+
+  setup do
+    @destination = destinations(:destination_one)
+    @visit = visits(:visit_one)
+  end
+
+  def around
+    Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 60, '_ibE_seK_seK_seK'] } } ) do
+      yield
+    end
+  end
+
+  def api(part = nil, param = {})
+    part = part ? '/' + part.to_s : ''
+    "/api/0.1/visits#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=#{v}" }.join('&')
+  end
+
+  def api_destination(destination_id, part = nil, param = {})
+    part = part ? '/' + part.to_s : ''
+    "/api/0.1/destinations/#{destination_id}/visits#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=#{v}" }.join('&')
+  end
+
+  test 'should not create due to job' do
+    assert_difference('Destination.count', 0) do
+      assert_difference('Stop.count', 0) do
+        post api_destination(@destination.id), @visit.attributes.except('quantities')
+        assert_equal 409, last_response.status, last_response.body
+      end
+    end
+  end
+
+  test 'should not update a destination due to job' do
+    put api_destination(@destination.id, @visit.id), @visit.attributes.except('quantities')
+    assert_equal 409, last_response.status, last_response.body
+  end
+
+  test 'should not destroy a destination due to job' do
+    assert_difference('Destination.count', 0) do
+      delete api_destination(@destination.id, @visit.id)
+      assert_equal 409, last_response.status, last_response.body
+    end
   end
 end

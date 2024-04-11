@@ -125,6 +125,21 @@ def suppress_output
   retval
 end
 
+def clear_jobs
+  jobs = JSON.parse(get_jobs(nil).body)
+  jobs.each{ |job|
+    delete_job(job['message']['id'])
+  }
+end
+
+def delete_job(part, param = {})
+  part = part ? '/' + part.to_s : ''
+  delete "/api/0.1/jobs#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+end
+
+def get_jobs(part, param = {})
+  get "/api/0.1/jobs#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+end
 
 if ENV['BENCHMARK'] == 'true'
   require 'capybara/rails'
