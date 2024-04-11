@@ -113,6 +113,8 @@ class V01::Visits < Grape::API
           use :request_visit
         end
         post do
+          raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
           destination_id = ParseIdsRefs.read(params[:destination_id])
           destination = current_customer.destinations.where(destination_id).first!
           visit = destination.visits.build(visit_params)

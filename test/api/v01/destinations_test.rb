@@ -14,6 +14,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   setup do
     @destination = destinations(:destination_one)
     @customer = customers(:customer_one)
+    clear_jobs
   end
 
   def around
@@ -847,5 +848,54 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert last_response.ok?, last_response.body
     assert last_response.body['success']
     refute_empty last_response.body['result']
+  end
+end
+
+class V01::DestinationsWithJobTest < ActiveSupport::TestCase
+  include Rack::Test::Methods
+  include ActionDispatch::TestProcess
+
+  require Rails.root.join("test/lib/devices/tomtom_base")
+  include TomtomBase
+
+  def app
+    Rails.application
+  end
+
+  setup do
+    @customer = customers(:customer_one)
+    @destination = destinations(:destination_one)
+  end
+
+  def around
+    Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 60, '_ibE_seK_seK_seK'] } } ) do
+      yield
+    end
+  end
+
+  def api(part = nil, param = {})
+    part = part ? '/' + part.to_s : ''
+    "/api/0.1/destinations#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+  end
+
+  test 'should not create due to job' do
+    assert_difference('Destination.count', 0) do
+      assert_difference('Stop.count', 0) do
+        post api(), @destination.attributes
+        assert_equal 409, last_response.status, last_response.body
+      end
+    end
+  end
+
+  test 'should not update a destination due to job' do
+    put api(@destination.id), nil, input: @destination.attributes.to_json
+    assert_equal 409, last_response.status
+  end
+
+  test 'should not destroy a destination due to job' do
+    assert_difference('Destination.count', 0) do
+      delete api(@destination.id)
+      assert_equal 409, last_response.status, last_response.body
+    end
   end
 end

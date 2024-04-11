@@ -86,7 +86,11 @@ class V100::Api < Grape::API
       rack_response(format_message(response.merge(status: 403), e.backtrace), 403)
     elsif e.is_a?(Grape::Exceptions::MethodNotAllowed)
       rack_response(format_message(response.merge(status: 405), e.backtrace), 405)
-    elsif e.is_a?(Exceptions::JobInProgressError) || e.is_a?(PG::TRSerializationFailure) || e.is_a?(PG::TRDeadlockDetected) || e.is_a?(ActiveRecord::StaleObjectError) || e.is_a?(ActiveRecord::StatementInvalid)
+    elsif e.is_a?(Exceptions::JobInProgressError)
+      messages = [I18n.t('errors.planning.job_in_progress')]
+      response[:message] = messages.join(' ')
+      rack_response(format_message(response.merge(status: 409), e.backtrace), 409)
+    elsif e.is_a?(PG::TRSerializationFailure) || e.is_a?(PG::TRDeadlockDetected) || e.is_a?(ActiveRecord::StaleObjectError) || e.is_a?(ActiveRecord::StatementInvalid)
       messages = [I18n.t('errors.database.default')]
       if e.is_a?(ActiveRecord::StatementInvalid)
         messages << I18n.t('errors.database.invalid_statement')
