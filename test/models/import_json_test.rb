@@ -2,7 +2,7 @@ require 'test_helper'
 
 class ImportJsonTest < ActiveSupport::TestCase
   setup do
-    @importer = ImporterDestinations.new(customer: customers(:customer_one))
+    @importer = ImporterDestinations.new(customers(:customer_one))
   end
 
   test 'should upload' do
