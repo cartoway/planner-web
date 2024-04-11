@@ -103,7 +103,9 @@ class OptimizerWrapper
     key = Digest::MD5.hexdigest(Marshal.dump([positions, services, vehicles, options]))
 
     result = @cache.read(key)
-    if !result
+    if result
+      result = JSON.parse(result)
+    else
       vrp = build_vrp(positions, services, vehicles, options)
       result = solve(vrp, progress, key)
     end
