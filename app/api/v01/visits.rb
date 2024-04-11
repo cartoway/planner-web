@@ -131,6 +131,8 @@ class V01::Visits < Grape::API
           use :request_visit
         end
         put ':id' do
+          raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
           destination_id = ParseIdsRefs.read(params[:destination_id])
           id = ParseIdsRefs.read(params[:id])
           destination = current_customer.destinations.where(destination_id).first!
@@ -148,6 +150,8 @@ class V01::Visits < Grape::API
           requires :id, type: String, desc: SharedParams::ID_DESC
         end
         delete ':id' do
+          raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
           destination_id = ParseIdsRefs.read(params[:destination_id])
           id = ParseIdsRefs.read(params[:id])
           destination = current_customer.destinations.where(destination_id).first!
@@ -168,6 +172,8 @@ class V01::Visits < Grape::API
     end
     put do
       Visit.transaction do
+        raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
         visits = current_customer.visits.select{ |visit|
           params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
         }.each{ |visit|
@@ -186,6 +192,8 @@ class V01::Visits < Grape::API
       optional :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
     end
     delete do
+      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
       Visit.transaction do
         if params[:ids] && !params[:ids].empty?
           visits = current_customer.visits.select { |visit|

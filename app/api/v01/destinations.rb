@@ -148,6 +148,8 @@ class V01::Destinations < Grape::API
       use(:request_destination, skip_visit_id: true)
     end
     post do
+      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
       destination = current_customer.destinations.build(destination_params)
       destination.save!
       current_customer.save!
@@ -180,6 +182,8 @@ class V01::Destinations < Grape::API
       exactly_one_of :file, :destinations, :remote
     end
     put do
+      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
       if params[:destinations]
         d_params = declared(params) # Filter undeclared parameters
         destinations_params = d_params[:destinations].each{ |dest_params| dest_params[:visits]&.each{ |hash|
@@ -228,6 +232,8 @@ class V01::Destinations < Grape::API
       use :request_destination
     end
     put ':id' do
+      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
       id = ParseIdsRefs.read(params[:id])
       destination = current_customer.destinations.where(id).first!
       destination.assign_attributes(destination_params)
@@ -244,6 +250,8 @@ class V01::Destinations < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     delete ':id' do
+      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
       id = ParseIdsRefs.read(params[:id])
       current_customer.destinations.where(id).first!.destroy
       status 204
