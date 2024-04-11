@@ -82,6 +82,9 @@ class V01::Jobs < Grape::API
     delete ':id' do
       customer = current_customer
       if customer.job_optimizer && customer.job_optimizer_id == params[:id]
+        # Secure condition to avoid deleting job while in transmission
+        raise Exceptions::JobInTransmissionError if !job.locked_at.nil? && !customer.job_optimizer.progress['job_id']
+
         Optimizer.kill_optimize(customer.job_optimizer.progress['job_id'])
         customer.job_optimizer.destroy
       elsif customer.job_destination_geocoding && customer.job_destination_geocoding_id == params[:id]
@@ -90,6 +93,9 @@ class V01::Jobs < Grape::API
         customer.job_store_geocoding.destroy
       end
       status 204
+    rescue Exceptions::JobInTransmissionError
+      status 409
+      present customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.transmission_in_progress')
     end
   end
 end

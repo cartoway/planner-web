@@ -275,6 +275,9 @@ class V01::Customers < Grape::API
         ParseIdsRefs.match(params[:id], @current_customer) ? @current_customer : nil
       if customer
         if customer.job_optimizer && customer.job_optimizer_id == params[:job_id]
+          # Secure condition to avoid deleting job while in transmission
+          raise Exceptions::JobInTransmissionError if !job.locked_at.nil? && !customer.job_optimizer.progress['job_id']
+
           Optimizer.kill_optimize(customer.job_optimizer.progress['job_id'])
           customer.job_optimizer.destroy
         elsif customer.job_destination_geocoding && customer.job_destination_geocoding_id == params[:job_id]
@@ -286,6 +289,9 @@ class V01::Customers < Grape::API
       else
         error! V01::Status.code_response(:code_404, before: 'Customer'), 404
       end
+    rescue Exceptions::JobInTransmissionError
+      status 409
+      present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.transmission_in_progress')
     end
 
     desc 'Duplicate customer.',

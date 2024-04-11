@@ -328,8 +328,10 @@ class PlanningsController < ApplicationController
 
   def cancel_optimize
     respond_to do |format|
-      if job_id = current_user.customer.job_optimizer.progress&.dig('job_id')
-        Optimizer.kill_optimize(job_id)
+      job = current_user.customer.job_optimizer
+      # Secure condition to avoid deleting job while in transmission
+      if job.locked_at.nil? || (optim_job_id = job.progress&.dig('job_id'))
+        Optimizer.kill_optimize(optim_job_id)
         current_user.customer.job_optimizer.destroy
         format.json { render action: 'show', location: @planning }
       else
