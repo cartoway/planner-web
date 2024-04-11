@@ -689,6 +689,7 @@ en:
       automatic_insert_no_result: No route to set stop
       job_in_progress: Impossible to execute this operation for the moment, a background task
         (optimization) is currently running
+      transmission_in_progress: Optimization is being transmitted
     routes:
       bad_barcode_char: Barcode data content unsupported character
   import:
