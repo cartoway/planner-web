@@ -168,6 +168,19 @@ class Planning < ApplicationRecord
     }
   end
 
+  def compute_saved(options = {})
+    routes.find_in_batches(batch_size: 10){ |group|
+      group.each{ |r|
+        # Load necessary scopes just in time for outdated routes
+        r.preload_compute_scopes
+        r.compute(options)
+        r.save
+        r.clear_association_cache
+      }
+      self.save! && self.reload
+    }
+  end
+
   def switch(route, vehicle_usage)
     previous_route = routes.find{ |route| route.vehicle_usage == vehicle_usage }
     if previous_route

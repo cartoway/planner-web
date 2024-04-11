@@ -51,8 +51,7 @@ class GeocoderDestinationsJob < GeocoderDestinationsJobStruct
     Destination.transaction do
       unless !planning_ids || planning_ids.empty?
         customer.plannings.where(id: planning_ids).each{ |planning|
-          planning.compute
-          planning.save!
+          planning.compute_saved
         }
       end
     end

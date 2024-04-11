@@ -82,12 +82,7 @@ class OptimizerJob < OptimizerJobStruct
     # Apply result
     if optimum
       planning.set_stops(routes, optimum, { global: global, active_only: active_only })
-      routes.each { |r|
-        r.reload # Refresh stops order
-        r.compute
-        r.save!
-      }
-      planning.reload
+      planning.compute_saved
       planning.save!
     end
   rescue => e
