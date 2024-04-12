@@ -466,6 +466,19 @@ export const zonings_edit = function(params) {
   };
 
   var updateZone = function(geom) {
+    if (geom.intersects()) {
+      stickyError(L.drawLocal.draw.handlers.polyline.error);
+      var z = zonesMap[geom._leaflet_id].ele;
+      z.css('box-shadow', '#FF0000 0px 0px 5px');
+      setTimeout(function() {
+        z.css('box-shadow', '');
+      }, 5000);
+      $('.sidebar-content').animate({
+        scrollTop: z.offset().top + $('.sidebar-content').scrollTop() - 100
+      });
+      return;
+    }
+
     $('input[name=zoning\\[zones_attributes\\]\\[\\]\\[polygon\\]]', zonesMap[geom._leaflet_id].ele).attr('value', JSON.stringify(geom.toGeoJSON()));
     countPointInPolygon(zonesMap[geom._leaflet_id].layer, zonesMap[geom._leaflet_id].ele);
   };
