@@ -115,6 +115,9 @@ export const zonings_edit = function(params) {
     },
     edit: {
       featureGroup: featureGroup,
+      poly: {
+        allowIntersection: false
+      },
       edit: {
         selectedPathOptions: {
           maintainColor: true,
