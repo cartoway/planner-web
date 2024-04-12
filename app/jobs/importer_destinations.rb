@@ -141,7 +141,7 @@ class ImporterDestinations < ImporterBase
       }
     }
     @deliverable_units ||= @customer&.deliverable_units || []
-    @destinations_to_geocode = []
+    @destinations_to_geocode_count = 0
     @visit_ids = []
 
     if options[:delete_plannings]
@@ -168,14 +168,17 @@ class ImporterDestinations < ImporterBase
     end
 
     @destinations_attributes_without_ref = []
-    @existing_destinations_by_ref = Hash[@customer.destinations.select(&:ref).map.with_index{ |destination, index| [destination.ref.to_sym, destination] }]
-    @existing_visits_by_ref = Hash[@customer.destinations.includes_visits.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash[destination.visits.map{ |visit| [visit.ref&.to_sym, visit]} ]] }]
-
-    @destinations_attributes_by_ref = {}
-    @destinations_visits_attributes_by_ref = Hash[@customer.destinations.select(&:ref).map{ |destination| [destination.ref.to_sym, Hash.new] }]
+    @existing_destinations_by_ref = {}
+    @existing_visits_by_ref = {}
+    @destinations_visits_attributes_by_ref = {}
+    @customer.destinations.where.not(ref: nil).find_each{ |destination|
+      @existing_destinations_by_ref[destination.ref.to_sym] = destination
+      @existing_visits_by_ref[destination.ref.to_sym] = Hash[destination.visits.map{ |visit| [visit.ref&.to_sym, visit]}]
+      @destinations_visits_attributes_by_ref[destination.ref.to_sym] = Hash.new
+      destination.visits.each{ |visit| @destinations_visits_attributes_by_ref[visit.destination.ref&.to_sym][visit.ref&.to_sym] = visit }
+    }
     @destinations_visits_attributes_by_ref[nil] = Hash.new
-    @customer.destinations.select(&:ref).flat_map(&:visits).each{ |visit| @destinations_visits_attributes_by_ref[visit.destination.ref&.to_sym][visit.ref&.to_sym] = visit }
-
+    @destinations_attributes_by_ref = {}
     @visits_attributes_with_destination = []
     @visits_attributes_without_destination = []
 
@@ -334,15 +337,18 @@ class ImporterDestinations < ImporterBase
     bulk_import_tags
 
     @customer.reload
-    @destinations_to_geocode = @customer.destinations.reject(&:position?)
+    @destinations_to_geocode_count = @customer.destinations.not_positioned.count
 
-    if !@destinations_to_geocode.empty? && (@synchronous || !Mapotempo::Application.config.delayed_job_use)
-      @destinations_to_geocode.each_slice(50){ |destinations|
+    if @destinations_to_geocode_count > 0 && (@synchronous || !Mapotempo::Application.config.delayed_job_use)
+      @customer.destinations.includes_visits.not_positioned.find_in_batches(batch_size: 50){ |destinations|
         geocode_args = destinations.collect(&:geocode_args)
         begin
           results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)
           destinations.zip(results).each { |destination, result|
-            destination.geocode_result(result) if result
+            if result
+              destination.geocode_result(result)
+              destination.save
+            end
           }
         rescue GeocodeError # avoid stop import because of geocoding job
         end
@@ -363,7 +369,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def finalize_import(_name, _options)
-    if @destinations_to_geocode.any? && !@synchronous && Mapotempo::Application.config.delayed_job_use
+    if @destinations_to_geocode_count > 0 && !@synchronous && Mapotempo::Application.config.delayed_job_use
       save_plannings
       @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderDestinationsJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
     elsif !@plannings.empty?
@@ -522,11 +528,10 @@ class ImporterDestinations < ImporterBase
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
 
       if @customer.plannings.any?
-        destinations = @customer.destinations.joins(:tags).where(
+        @customer.destinations.joins(:tags).where(
           id: destination_ids_and_tag_ids.map{ |tag| tag[:destination_id] }.uniq).where(
           tags: { id: destination_ids_and_tag_ids.map{ |tag| tag[:tag_id] }.uniq }
-        ).distinct
-        destinations.each{ |destination|
+        ).distinct.find_each{ |destination|
           destination.update_tags_track(true)
           destination.save!
         }
@@ -543,11 +548,10 @@ class ImporterDestinations < ImporterBase
       if @customer.plannings.any?
         # Default scope requires destinations to be loaded
         Destination.unscoped do
-          visits = @customer.visits.joins(:tags).where(
+          @customer.visits.joins(:tags).where(
             id: visit_ids_and_tag_ids.map{ |tag| tag[:visit_id] }.uniq).where(
             tags: { id: visit_ids_and_tag_ids.map{ |tag| tag[:tag_id] }.uniq }
-          ).order(:id).distinct
-          visits.each{ |visit|
+          ).distinct.find_each{ |visit|
             visit.update_tags_track(true)
             visit.save!
           }
