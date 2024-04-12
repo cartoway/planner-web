@@ -36,6 +36,7 @@ class Destination < Location
 
   scope :includes_visits, -> { includes([{visits: :tags}, :tags]) }
   scope :positioned, -> { where.not(lat: nil).where.not(lng: nil) }
+  scope :not_positioned, -> { where('lat IS NULL OR lng IS NULL') }
 
   amoeba do
     enable

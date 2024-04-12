@@ -20,11 +20,10 @@ class GeocoderDestinationsJob < GeocoderDestinationsJobStruct
   def perform
     customer = Customer.find(customer_id)
     Delayed::Worker.logger.info "GeocoderDestinationsJob customer_id=#{customer_id} perform"
-    count = customer.destinations.where(lat: nil).count
+    count = customer.destinations.not_positioned.count
     i = 0
-    customer.destinations.select(:id).where(lat: nil).each_slice(50){ |destination_ids|
+    customer.destinations.includes_visits.not_positioned.find_in_batches(batch_size: 50){ |destinations|
       Destination.transaction do
-        destinations = customer.destinations.where(id: destination_ids).includes_visits # IMPORTANT: Lower Delayed Job Memory Usage
         geocode_args = destinations.collect(&:geocode_args)
         begin
           results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)
