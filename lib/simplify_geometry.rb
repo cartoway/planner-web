@@ -20,7 +20,12 @@ class SimplifyGeometry
   def self.dump_multipolygons(zoning, import = false)
     import &= zoning.zones.any?{ |zone| zone.polygon.match('MultiPolygon') || zone.polygon.match('GeometryCollection') }
     new_zones = zoning.zones.flat_map{ |zone|
-      multipolygon_to_polygons(zone, JSON.parse(zone.polygon)['geometry'], import)
+      geometry = JSON.parse(zone.polygon)['geometry']
+      if geometry
+        multipolygon_to_polygons(zone, geometry, import)
+      else
+        zone.destroy
+      end
     }.compact
     Zone.import(new_zones, import) if import && new_zones.any?
     new_zones
@@ -54,8 +59,8 @@ class SimplifyGeometry
       }
     elsif feature['type'] == 'GeometryCollection'
       new_zones = feature['geometries'].flat_map{ |sub_feature|
-        multipolygon_to_polygons(zone, sub_feature, destroy) if AUTHORIZED_GEOMETRY_TYPES.include?(sub_feature['type'])
-      }
+        multipolygon_to_polygons(zone, sub_feature, destroy) if sub_feature && AUTHORIZED_GEOMETRY_TYPES.include?(sub_feature['type'])
+    }.compact
       zone.destroy if zone && destroy
       new_zones
     else
