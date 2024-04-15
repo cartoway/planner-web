@@ -276,7 +276,7 @@ class V01::Customers < Grape::API
       if customer
         if customer.job_optimizer && customer.job_optimizer_id == params[:job_id]
           # Secure condition to avoid deleting job while in transmission
-          raise Exceptions::JobInTransmissionError if !customer.job_optimizer.locked_at.nil? && !customer.job_optimizer.progress['job_id']
+          raise Exceptions::JobInTransmissionError if !customer.job_optimizer.locked_at.nil? && customer.job_optimizer.failed_at.nil? && !customer.job_optimizer.progress['job_id']
 
           Optimizer.kill_optimize(customer.job_optimizer.progress['job_id'])
           customer.job_optimizer.destroy
@@ -291,7 +291,7 @@ class V01::Customers < Grape::API
       end
     rescue Exceptions::JobInTransmissionError
       status 409
-      present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.transmission_in_progress')
+      present customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.transmission_in_progress')
     end
 
     desc 'Duplicate customer.',

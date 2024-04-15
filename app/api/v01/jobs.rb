@@ -83,7 +83,7 @@ class V01::Jobs < Grape::API
       customer = current_customer
       if customer.job_optimizer && customer.job_optimizer_id == params[:id]
         # Secure condition to avoid deleting job while in transmission
-        raise Exceptions::JobInTransmissionError if !customer.job_optimizer.locked_at.nil? && !customer.job_optimizer.progress['job_id']
+        raise Exceptions::JobInTransmissionError if !customer.job_optimizer.locked_at.nil? && customer.job_optimizer.failed_at.nil? && !customer.job_optimizer.progress['job_id']
 
         Optimizer.kill_optimize(customer.job_optimizer.progress['job_id'])
         customer.job_optimizer.destroy
