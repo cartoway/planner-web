@@ -413,6 +413,8 @@
         'prefered_unit': 'Choix unité'
       'vehicle':
         'max_distance': 'Distance maximale'
+        'max_ride_distance': 'Distance trajet maximale'
+        'max_ride_duration': 'Durée trajet maximale'
         'name': 'Nom'
         'emission': 'Émission'
         'consumption': 'Consommation'
@@ -860,6 +862,8 @@
       'success': 'Véhicules supprimés avec succès'
     'form':
       'max_distance_default': '%{n} (valeur par défaut)'
+      'max_ride_distance_default': '%{n} (valeur par défaut)'
+      'max_ride_duration_default': '%{n} (valeur par défaut)'
       'name': 'Compte'
       'default_value': 'Valeurs par défaut'
       'outputs': 'Diffusion des tournées'
@@ -1797,6 +1801,10 @@
           (service compris)'
         'out_of_max_distance': 'Distance maximale réalisable dépassée'
         'out_of_max_distance_help': 'Distance maximale réalisable dépassée'
+        'out_of_max_ride_distance': 'Distance trajet maximale dépassée'
+        'out_of_max_ride_distance_help': 'Distance trajet maximale dépassée entre arrêts de la tournée'
+        'out_of_max_ride_duration': 'Durée trajet maximale dépassée'
+        'out_of_max_ride_duration_help': 'Durée trajet maximale dépassée entre arrêts de la tournée'
         'out_of_relation': 'Relation non respectée'
         'out_of_relation_help': 'Relation entre visites non respectée'
         'no_path': 'Adresse inaccessible'
@@ -1947,6 +1955,8 @@
       'out_of_force_position': 'position forcée non respectée'
       'out_of_work_time': 'hors horaire de travail'
       'out_of_max_distance': 'distance maximale réalisable'
+      'out_of_max_ride_distance': 'distance trajet maximale'
+      'out_of_max_ride_duration': 'durée trajet maximale'
       'out_of_relation': 'relation non respectée'
       'status': 'statut'
       'eta': 'eta'
@@ -2188,6 +2198,10 @@
     'import':
       'max_distance': 'distance maximale (en mètres)'
       'max_distance_desc': 'distance maximale réalisable du véhicule'
+      'max_ride_distance': 'distance trajet maximale (en mètres)'
+      'max_ride_distance_desc': 'distance trajet maximale entre arrêts de la tournée du véhicule'
+      'max_ride_duration': 'DUrée trajet maximale'
+      'max_ride_duration_desc': 'Durée trajet maximale entre arrêts de la tournée du véhicule'
       'ref_vehicle': 'référence véhicule'
       'ref_desc': 'référence du véhicule'
       'name_vehicle': 'nom véhicule'
@@ -2239,6 +2253,11 @@
       'max_distance':
         'help': 'Distance maximale réalisable en kilomètres'
         'help_miles': 'Distance maximale réalisable en miles'
+      'max_ride_distance':
+        'help': 'Distance maximale du trajet entre deux arrêts de la tournée en kilomètres'
+        'help_miles': 'Distance maximale du trajet entre deux arrêts de la tournée en miles'
+      'max_ride_duration':
+        'help': 'Durée maximale du trajet entre deux arrêts de la tournée'
       'ref':
         'help': 'Référence libre'
       'emissions':
@@ -2375,6 +2394,8 @@
       'title': 'Nouvelle configuration de la flotte'
     'import':
       'max_distance': 'Distance maximale du véhicule'
+      'max_ride_distance': 'Distance trajet maximale entre arrêts de la tournée du véhicule'
+      'max_ride_duration': 'Durée trajet maximale entre arrêts de la tournée du véhicule'
       'title': 'Importer une nouvelle configuration de véhicules'
       'vehicle_usage_set': 'Configuration de véhicules'
       'default_configuration_replaced': 'La configuration par défaut de tous les véhicules

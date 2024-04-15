@@ -412,6 +412,8 @@ en:
         prefered_unit: Prefered unit
       vehicle:
         max_distance: Maximum distance
+        max_ride_distance: Maximum ride distance
+        max_ride_duration: Maximum ride duration
         name: Name
         emission: Emission
         consumption: Consumption
@@ -837,6 +839,8 @@ en:
       success: Vehicles deleted successfully
     form:
       max_distance_default: '%{n} (default value)'
+      max_ride_distance_default: '%{n} (default value)'
+      max_ride_duration_default: '%{n} (default value)'
       name: Account
       default_value: Default values
       outputs: Outputs
@@ -1679,6 +1683,10 @@ en:
         out_of_work_time_help: Driver work time exceeded (service included)
         out_of_max_distance: Maximum achievable distance exceeded
         out_of_max_distance_help: Maximum achievable distance exceeded
+        out_of_max_ride_distance: Maximum ride distance exceeded
+        out_of_max_ride_distance_help: Maximum ride distance between route stops exceeded
+        out_of_max_ride_duration: Maximum ride duration exceeded
+        out_of_max_ride_duration_help: Maximum ride duration between route stops exceeded
         out_of_relation: Relation violated
         out_of_relation_help: Relation between visits violated
         no_path: Unreachable destination
@@ -1827,6 +1835,8 @@ en:
       out_of_force_position: forced position constraint not met
       out_of_work_time: out of work time
       out_of_max_distance: maximum achievable distance
+      out_of_max_ride_distance: maximum ride distance
+      out_of_max_ride_duration: maximum ride duration
       out_of_relation: relation violated
       status: status
       eta: eta
@@ -2059,6 +2069,10 @@ en:
     import:
       max_distance: maximum distance (in meters)
       max_distance_desc: maximum achievable vehicle distance
+      max_ride_distance: maximum ride distance (in meters)
+      max_ride_distance_desc: maximum ride distance between route stops
+      max_ride_duration: maximum ride duration
+      max_ride_duration_desc: maximum ride duration between route stops
       ref_vehicle: reference vehicle
       ref_desc: vehicle reference
       name_vehicle: name vehicle
@@ -2106,6 +2120,11 @@ en:
       max_distance:
         help: Maximum achievable distance in kilometers
         help_miles: Maximum distance achievable in miles
+      max_ride_distance:
+        help: Maximum ride distance between two stops of the route in kilometers
+        help_miles: Maximum ride distance between two stops of the route in miles
+      max_ride_duration:
+        help: Maximum ride duration between two stops of the route
       ref:
         help: A free reference
       emissions:
@@ -2234,6 +2253,8 @@ en:
       title: New vehicles configuration
     import:
       max_distance: Maximum achievable vehicle distance (in metres)
+      max_ride_distance: Maximum ride distance between route stops (in metres)
+      max_ride_duration: Maximum ride duration between route stops
       title: Import vehicles configuration
       vehicle_usage_set: Vehicles configuration
       default_configuration_replaced: The default configuration for all vehicles will be replaced by imported data

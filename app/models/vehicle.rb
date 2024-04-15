@@ -33,6 +33,10 @@ class Vehicle < ApplicationRecord
   store_accessor :router_options, :time, :distance, :avoid_zones, :isochrone, :isodistance, :traffic, :track, :motorway, :toll, :low_emission_zone, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction
   hash_bool_attr :router_options, :time, :distance, :avoid_zones, :isochrone, :isodistance, :traffic, :track, :motorway, :toll, :low_emission_zone, :strict_restriction
 
+  include TimeAttr
+  attribute :max_ride_duration, ScheduleType.new
+  time_attr :max_ride_duration
+
   nilify_blanks
   auto_strip_attributes :name
   validates :customer, presence: true
@@ -45,6 +49,7 @@ class Vehicle < ApplicationRecord
   validates :contact_email, format: { with: /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i }, allow_blank: true
   validate :capacities_validator
   validates :max_distance, numericality: true, allow_nil: true
+  validates :max_ride_distance, numericality: true, allow_nil: true
 
   after_initialize :assign_defaults, :increment_max_vehicles, if: 'new_record?'
   before_validation :check_router_options_format
@@ -213,7 +218,7 @@ class Vehicle < ApplicationRecord
   end
 
   def update_outdated
-    if emission_changed? || consumption_changed? || capacities_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || max_distance_changed?
+    if emission_changed? || consumption_changed? || capacities_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || max_distance_changed? || max_ride_distance_changed? || max_ride_duration_changed?
       vehicle_usages.each{ |vehicle_usage|
         vehicle_usage.routes.each{ |route|
           route.outdated = true

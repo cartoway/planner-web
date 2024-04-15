@@ -29,7 +29,7 @@ class VehicleUsagesController < ApplicationController
   def update
     respond_to do |format|
       p = vehicle_usage_params
-      time_with_day_params(params, p, [:time_window_start, :time_window_end], [:rest_start, :rest_stop, :work_time])
+      time_with_day_params(params, p, [:time_window_start, :time_window_end, :max_ride_duration], [:rest_start, :rest_stop, :work_time])
       @vehicle_usage.assign_attributes(p)
 
       if @vehicle_usage.save
@@ -105,6 +105,8 @@ class VehicleUsagesController < ApplicationController
         :router_dimension,
         :speed_multiplier,
         :max_distance,
+        :max_ride_distance,
+        :max_ride_duration,
         capacities: current_user.customer.deliverable_units.map { |du| du.id.to_s },
         router_options: [
           :time,
@@ -136,6 +138,7 @@ class VehicleUsagesController < ApplicationController
       parameters[:vehicle_attributes] = parameters[:vehicle]
       parameters[:vehicle_attributes][:devices] = {} unless parameters[:vehicle_attributes].key?(:devices)
       parameters[:vehicle_attributes][:max_distance] = DistanceUnits.distance_to_meters(parameters[:vehicle_attributes][:max_distance], @current_user.prefered_unit) if parameters[:vehicle_attributes].key?(:max_distance)
+      parameters[:vehicle_attributes][:max_ride_distance] = DistanceUnits.distance_to_meters(parameters[:vehicle_attributes][:max_ride_distance], @current_user.prefered_unit) if parameters[:vehicle_attributes].key?(:max_ride_distance)
       parameters.except(:vehicle)
     else
       parameters

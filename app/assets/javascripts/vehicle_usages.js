@@ -30,7 +30,7 @@ const vehicle_usages_form = function(params) {
     return true;
   });
 
-  $('#vehicle_usage_open, #vehicle_usage_close, #vehicle_usage_rest_start, #vehicle_usage_rest_stop, #vehicle_usage_rest_duration, #vehicle_usage_service_time_start, #vehicle_usage_service_time_end, #vehicle_usage_work_time').timeEntry({
+  $('#vehicle_usage_open, #vehicle_usage_close, #vehicle_usage_rest_start, #vehicle_usage_rest_stop, #vehicle_usage_rest_duration, #vehicle_usage_service_time_start, #vehicle_usage_service_time_end, #vehicle_usage_work_time, #vehicle_usage_vehicle_max_ride_duration').timeEntry({
     show24Hours: true,
     spinnerImage: '',
     defaultTime: '00:00'

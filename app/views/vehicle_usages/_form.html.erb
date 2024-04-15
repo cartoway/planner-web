@@ -56,6 +56,37 @@
             <p class="help-block"><%= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_distance.help_miles') : t('vehicles.form.max_distance.help') %></p>
           </div>
         </div>
+        <div id="vehicle_usage_vehicle_max_ride_distance_input" class="form-group">
+          <label class="sr-only" for="vehicle_usage_vehicle_max_ride_distance"><%= t 'activerecord.attributes.vehicle.max_ride_distance' %></label>
+          <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_ride_distance' %></label>
+          <div class="col-md-offset-2 col-md-8 field">
+            <div class="input-group">
+              <%= number_field 'vehicle_usage[vehicle]',
+                :max_ride_distance,
+                value: distance_in_user_unit(@vehicle_usage.vehicle.max_ride_distance, @current_user.prefered_unit),
+                placeholder: @vehicle_usage.vehicle_usage_set.max_ride_distance ? t('customers.form.max_ride_distance_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_ride_distance, @current_user.prefered_unit)) : '',
+                step: 'any',
+                class: 'form-control', min: 0, step: 0.1 %>
+              <span class="input-group-addon"><%= current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms') %></span>
+            </div>
+            <p class="help-block"><%= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_ride_distance.help_miles') : t('vehicles.form.max_ride_distance.help') %></p>
+          </div>
+        </div>
+        <div id="vehicle_usage_vehicle_max_ride_duration_input" class="form-group">
+          <label class="sr-only" for="vehicle_usage_vehicle_max_ride_duration"><%= t 'activerecord.attributes.vehicle.max_ride_duration' %></label>
+          <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_ride_duration' %></label>
+          <div class="col-md-offset-2 col-md-8 field">
+            <div class="input-group">
+              <%= text_field 'vehicle_usage[vehicle]',
+                :max_ride_duration,
+                value: @vehicle_usage.vehicle.max_ride_duration_time,
+                placeholder: @vehicle_usage.vehicle_usage_set.max_ride_duration ? t('customers.form.max_ride_duration_default', n: @vehicle_usage.vehicle_usage_set.max_ride_duration_time) : t('all.unit.hour_minute'),
+                class: 'form-control' %>
+              <span class="input-group-addon"><i class="fa fa-stopwatch fa-fw"></i></span>
+            </div>
+            <p class="help-block"><%= t 'vehicles.form.max_ride_duration.help' %></p>
+          </div>
+        </div>
         <%= twitter_bootstrap_fields_for 'vehicle_usage[vehicle][capacities]', @vehicle_usage.vehicle.capacities, layout: :horizontal do |capacity| %>
           <div id="vehicle_usage_vehicle_capacity_input" class="form-group <%= 'has-error' if @vehicle_usage.vehicle.errors.messages[:capacities].present? %>">
             <label class="col-md-offset-2 col-md-8 field"><%= t 'vehicles.form.capacities.label' %></label>

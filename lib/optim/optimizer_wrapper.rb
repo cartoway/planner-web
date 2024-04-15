@@ -126,7 +126,6 @@ class OptimizerWrapper
 
   def build_vrp(positions, services, vehicles, options)
     rests = vehicles.flat_map{ |v| v[:rests] }
-      shift_stores = 0
       services_with_negative_quantities = []
 
       all_skills = vehicles.map { |v| v[:skills] }.flatten.compact
@@ -162,41 +161,7 @@ class OptimizerWrapper
             duration: rest[:duration]
           }
         },
-        vehicles: vehicles.collect{ |vehicle|
-          v = {
-            id: "v#{vehicle[:id]}",
-            router_mode: vehicle[:router].try(&:mode),
-            router_dimension: vehicle[:router_dimension],
-            # router_options are flattened and merged below
-            speed_multiplier: vehicle[:speed_multiplier],
-            area: vehicle[:speed_multiplier_areas] ? vehicle[:speed_multiplier_areas].map{ |a| a[:area].join(',') }.join('|') : nil,
-            speed_multiplier_area: vehicle[:speed_multiplier_areas] ? vehicle[:speed_multiplier_areas].map{ |a| a[:speed_multiplier_area] }.join('|') : nil,
-            timewindow: {start: vehicle[:open], end: vehicle[:close]},
-            duration: vehicle[:work_time],
-            distance: vehicle[:max_distance],
-            start_point_id: vehicle[:stores].include?(:start) ? "p#{shift_stores + services.size}" : nil,
-            end_point_id: vehicle[:stores].include?(:stop) ? "p#{vehicle[:stores].size - 1 + shift_stores + services.size}" : nil,
-            cost_fixed: 0,
-            cost_distance_multiplier: vehicle[:router_dimension] == 'distance' ? 1 : 0,
-            cost_time_multiplier: vehicle[:router_dimension] == 'time' ? 1 : 0,
-            cost_waiting_time_multiplier: vehicle[:router_dimension] == 'time' ? options[:optimization_cost_waiting_time] : 0,
-            cost_late_multiplier: vehicles_cost_late_multiplier,
-            force_start: !vehicle[:force_start].nil? ? vehicle[:force_start]: options[:force_start] ? 'force_start' : nil,
-            rest_ids: vehicle[:rests].collect{ |rest|
-              "r#{rest[:stop_id]}"
-            },
-            capacities: vehicle[:capacities] ? vehicle[:capacities].map{ |c|
-              c[:capacity] && c[:overload_multiplier] >= 0 ? {
-                unit_id: "u#{c[:deliverable_unit_id]}",
-                limit: c[:capacity],
-                overload_multiplier: c[:overload_multiplier]
-              } : nil
-            }.compact : [],
-            skills: use_skills ? [vehicle[:skills]] : nil
-          }.merge(vehicle[:router_options] || {})
-          shift_stores += vehicle[:stores].size
-          v
-        },
+        vehicles: build_vehicles(vehicles, services, options.merge(use_skills: use_skills)),
         services: services.each_with_index.collect{ |service, index|
           services_with_negative_quantities.push("s#{service[:stop_id]}") if service[:quantities_operations] && service[:quantities_operations].values.any?{ |q| q == 'empty' } || service[:quantities] && service[:quantities].values.any?{ |q| q && q < 0 }
           {
@@ -374,5 +339,57 @@ class OptimizerWrapper
     solution_data.merge('status': 'queued') unless solution_data.key?('status')
     solution_data.merge!('unassigned_size': solution.dig('unassigned')&.size) if solution
     solution_data
+  end
+
+  def build_vehicles(vehicles, services, options = {})
+    shift_stores = 0
+    vehicles_cost_late_multiplier = (options[:vehicle_soft_upper_bound] && options[:vehicle_soft_upper_bound] > 0) ? options[:vehicle_soft_upper_bound] : nil
+
+    vehicles.collect{ |vehicle|
+      store_start = if vehicle[:stores].include?(:start)
+        value = "p#{shift_stores + services.size}"
+        shift_stores += 1
+        value
+      end
+      store_end = if vehicle[:stores].include?(:stop)
+        value = "p#{shift_stores + services.size}"
+        shift_stores += 1
+        value
+      end
+      v = {
+        id: "v#{vehicle[:id]}",
+        router_mode: vehicle[:router].try(&:mode),
+        router_dimension: vehicle[:router_dimension],
+        # router_options are flattened and merged below
+        speed_multiplier: vehicle[:speed_multiplier],
+        area: vehicle[:speed_multiplier_areas] ? vehicle[:speed_multiplier_areas].map{ |a| a[:area].join(',') }.join('|') : nil,
+        speed_multiplier_area: vehicle[:speed_multiplier_areas] ? vehicle[:speed_multiplier_areas].map{ |a| a[:speed_multiplier_area] }.join('|') : nil,
+        timewindow: {start: vehicle[:open], end: vehicle[:close]},
+        duration: vehicle[:work_time],
+        distance: vehicle[:max_distance],
+        maximum_ride_distance: vehicle[:max_ride_distance],
+        maximum_ride_time: vehicle[:max_ride_duration],
+        start_point_id: store_start,
+        end_point_id: store_end,
+        cost_fixed: 0,
+        cost_distance_multiplier: vehicle[:router_dimension] == 'distance' ? 1 : 0,
+        cost_time_multiplier: vehicle[:router_dimension] == 'time' ? 1 : 0,
+        cost_waiting_time_multiplier: vehicle[:router_dimension] == 'time' ? options[:optimization_cost_waiting_time] : 0,
+        cost_late_multiplier: vehicles_cost_late_multiplier,
+        force_start: !vehicle[:force_start].nil? ? vehicle[:force_start]: options[:force_start] ? 'force_start' : nil,
+        rest_ids: vehicle[:rests].collect{ |rest|
+          "r#{rest[:stop_id]}"
+        },
+        capacities: vehicle[:capacities] ? vehicle[:capacities].map{ |c|
+          c[:capacity] && c[:overload_multiplier] >= 0 ? {
+            unit_id: "u#{c[:deliverable_unit_id]}",
+            limit: c[:capacity],
+            overload_multiplier: c[:overload_multiplier]
+          } : nil
+        }.compact : [],
+        skills: options[:use_skills] ? [vehicle[:skills]] : nil
+      }.merge(vehicle[:router_options] || {})
+      v
+    }
   end
 end

@@ -118,6 +118,8 @@ class Route < ApplicationRecord
       stop_no_path: false,
       stop_out_of_drive_time: nil,
       stop_out_of_work_time: nil,
+      out_of_max_ride_distance: nil,
+      out_of_max_ride_duration: nil,
       emission: nil,
       start: nil,
       end: nil,
@@ -168,6 +170,10 @@ class Route < ApplicationRecord
       router = vehicle_usage.vehicle.default_router
       router_dimension = vehicle_usage.vehicle.default_router_dimension
       stops_drive_time = {}
+
+      max_distance = vehicle_usage.vehicle.max_distance || planning.vehicle_usage_set.max_distance
+      max_ride_distance = vehicle_usage.vehicle.max_ride_distance || planning.vehicle_usage_set.max_ride_distance
+      max_ride_duration = vehicle_usage.vehicle.max_ride_duration || planning.vehicle_usage_set.max_ride_duration
 
       # Add service time
       unless service_time_start.nil?
@@ -257,11 +263,15 @@ class Route < ApplicationRecord
 
             stop.out_of_drive_time = stop.time > vehicle_usage.default_time_window_end
             stop.out_of_work_time = vehicle_usage.outside_default_work_time?(route_attributes[:start], stop.time)
-            max_distance = vehicle_usage.vehicle.max_distance || planning.vehicle_usage_set.max_distance
-            stop.out_of_max_distance = max_distance ? route_attributes[:distance] > max_distance : false
+            stop.out_of_max_distance = max_distance && (route_attributes[:distance] > max_distance)
+            stop.out_of_max_ride_distance = max_ride_distance && (stop.distance > max_ride_distance)
+            stop.out_of_max_ride_duration = max_ride_distance && (stop.time > max_ride_duration)
+            route_attributes[:out_of_max_ride_distance] ||= stop.out_of_max_ride_distance
+            route_attributes[:out_of_max_ride_duration] ||= stop.out_of_max_ride_duration
           end
         else
-          stop.active = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_window = stop.no_path = stop.out_of_work_time = stop.out_of_max_distance = false
+          stop.active = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_window = stop.no_path = stop.out_of_work_time =
+            stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = false
           stop.distance = stop.time = stop.wait_time = nil
         end
       }

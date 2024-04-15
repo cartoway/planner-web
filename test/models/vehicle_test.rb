@@ -147,6 +147,24 @@ class VehicleTest < ActiveSupport::TestCase
     assert vehicle.vehicle_usages[0].routes[-1].outdated
   end
 
+  test 'should update outdated for max ride distance' do
+    vehicle = vehicles(:vehicle_one)
+    assert_not vehicle.vehicle_usages[0].routes[-1].outdated
+    vehicle.max_ride_distance = 3000
+    vehicle.save!
+    vehicle.reload
+    assert vehicle.vehicle_usages[0].routes[-1].outdated
+  end
+
+  test 'should update outdated for max ride time' do
+    vehicle = vehicles(:vehicle_one)
+    assert_not vehicle.vehicle_usages[0].routes[-1].outdated
+    vehicle.max_ride_duration = 3000
+    vehicle.save!
+    vehicle.reload
+    assert vehicle.vehicle_usages[0].routes[-1].outdated
+  end
+
   test 'should update outdated for empty capacity' do
     vehicle = vehicles(:vehicle_one)
     assert_not vehicle.vehicle_usages[0].routes[-1].outdated

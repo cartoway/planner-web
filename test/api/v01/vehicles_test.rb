@@ -53,6 +53,8 @@ class V01::VehiclesTest < ActiveSupport::TestCase
   test 'should update a vehicle' do
     @vehicle.name = 'new name'
     @vehicle.max_distance = 60
+    @vehicle.max_ride_distance = 50
+    @vehicle.max_ride_duration = 40
     put api(@vehicle.id), nil, input: @vehicle.attributes.merge({'capacities' => [{deliverable_unit_id: 1, quantity: 30}]}).to_json, CONTENT_TYPE: 'application/json'
     assert last_response.ok?, last_response.body
 
@@ -60,6 +62,9 @@ class V01::VehiclesTest < ActiveSupport::TestCase
     assert last_response.ok?, last_response.body
     vehicle = JSON.parse last_response.body
     assert_equal @vehicle.name, vehicle['name']
+    assert_equal @vehicle.max_distance, vehicle['max_distance']
+    assert_equal @vehicle.max_ride_distance, vehicle['max_ride_distance']
+    assert_equal @vehicle.max_ride_duration_absolute_time_with_seconds, vehicle['max_ride_duration']
     assert_equal 30, vehicle['capacities'][0]['quantity']
   end
 

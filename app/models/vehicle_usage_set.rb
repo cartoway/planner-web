@@ -39,7 +39,8 @@ class VehicleUsageSet < ApplicationRecord
   attribute :service_time_start, ScheduleType.new
   attribute :service_time_end, ScheduleType.new
   attribute :work_time, ScheduleType.new
-  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
+  attribute :max_ride_duration, ScheduleType.new
+  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time, :max_ride_duration
 
   validates :customer, presence: true
   validates :name, presence: true
@@ -53,6 +54,7 @@ class VehicleUsageSet < ApplicationRecord
   validates :rest_stop, presence: {if: :rest_duration?, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_window') }}
   validates :rest_duration, presence: {if: :rest_start?, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_duration') }}
   validates :max_distance, numericality: true, allow_nil: true
+  validates :max_ride_distance, numericality: true, allow_nil: true
 
   after_initialize :assign_defaults, if: :new_record?
   before_create :check_max_vehicle_usage_set
@@ -106,7 +108,7 @@ class VehicleUsageSet < ApplicationRecord
       vehicle_usages.each(&:update_rest)
     end
 
-    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? || store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? || store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed?
+    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? || store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? || store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed? || max_distance || max_ride_distance_changed? || max_ride_duration_changed?
       vehicle_usages.each{ |vehicle_usage|
         if (time_window_start_changed? && vehicle_usage.default_time_window_start == time_window_start) ||
           (time_window_end_changed? && vehicle_usage.default_time_window_end == time_window_end) ||
@@ -124,7 +126,11 @@ class VehicleUsageSet < ApplicationRecord
           (store_rest_id_changed? && vehicle_usage.default_store_rest == store_rest) ||
 
           (service_time_start_changed? && vehicle_usage.default_service_time_start == service_time_start) ||
-          (service_time_end_changed? && vehicle_usage.default_service_time_end == service_time_end)
+          (service_time_end_changed? && vehicle_usage.default_service_time_end == service_time_end) ||
+
+          (max_distance_changed? && vehicle_usage.vehicle.max_distance == max_distance) ||
+          (max_ride_distance_changed? && vehicle_usage.vehicle.max_ride_distance == max_ride_distance) ||
+          (max_ride_duration_changed? && vehicle_usage.vehicle.max_ride_duration == max_ride_duration)
 
           vehicle_usage.routes.each{ |route|
             route.outdated = true

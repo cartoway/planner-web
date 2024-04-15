@@ -51,11 +51,30 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     end
   end
 
+  test 'should store max_ride_distance as an integer by converting miles or kms into meters' do
+    [{ prefered_unit: 'mi', value: 59 }, { prefered_unit: 'km', value: 94.951 }].each do |obj|
+      users(:user_one).update(prefered_unit: obj[:prefered_unit])
+      sign_out users(:user_one)
+      sign_in users(:user_one)
+      patch :update, id: @vehicle_usage, vehicle_usage: { vehicle: {max_ride_distance: obj[:value] || nil} }
+      assert_equal 94951, @vehicle_usage.vehicle.max_ride_distance
+    end
+  end
+
   test 'should not update max_distance if null or not given' do
     [{ max_distance: nil }, {}].each do |max_distance_param|
       @vehicle_usage.vehicle.update(max_distance_param)
       patch :update, id: @vehicle_usage, vehicle_usage: { vehicle: max_distance_param }
       assert_nil @vehicle_usage.vehicle.max_distance
+    end
+  end
+
+  test 'should not update max ride distance_time if null or not given' do
+    [{ max_ride_distance: nil, max_ride_duration: nil }, {}].each do |max_ride_param|
+      @vehicle_usage.vehicle.update(max_ride_param)
+      patch :update, id: @vehicle_usage, vehicle_usage: { vehicle: max_ride_param }
+      assert_nil @vehicle_usage.vehicle.max_ride_distance
+      assert_nil @vehicle_usage.vehicle.max_ride_duration
     end
   end
 

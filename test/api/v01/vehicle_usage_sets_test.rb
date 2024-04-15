@@ -52,14 +52,31 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should create a vehicle_usage_set with max ride distance/time' do
+    assert_difference('VehicleUsageSet.count', 1) do
+      @vehicle_usage_set.name = 'new name'
+      @vehicle_usage_set.max_ride_distance = 5
+      @vehicle_usage_set.max_ride_duration = 6
+      post api(), @vehicle_usage_set.attributes
+      result = JSON.parse(last_response.body)
+      assert last_response.created?, last_response.body
+      assert_equal 5, result['max_ride_distance']
+      assert_equal '00:00:06', result['max_ride_duration']
+    end
+  end
+
   test 'should update a vehicle_usage_set' do
     @vehicle_usage_set.name = 'new name'
-    put api(@vehicle_usage_set.id), name: 'riri', max_distance: 60
+    put api(@vehicle_usage_set.id), name: 'riri', max_distance: 60, max_ride_distance: 7, max_ride_duration: '00:08'
     assert last_response.ok?, last_response.body
 
     get api(@vehicle_usage_set.id)
+    result = JSON.parse(last_response.body)
     assert last_response.ok?, last_response.body
-    assert_equal 'riri', JSON.parse(last_response.body)['name']
+    assert_equal 'riri', result['name']
+    assert_equal 60, result['max_distance']
+    assert_equal 7, result['max_ride_distance']
+    assert_equal '00:08:00', result['max_ride_duration']
   end
 
   test 'should update a vehicle_usage_set store with null value' do

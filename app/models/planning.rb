@@ -517,6 +517,8 @@ class Planning < ApplicationRecord
             close: vehicle_close.to_f,
             work_time: vehicle_time && vehicle_time.to_f,
             max_distance: r.vehicle_usage.vehicle.max_distance,
+            max_ride_distance: r.vehicle_usage.vehicle.max_ride_distance,
+            max_ride_duration: r.vehicle_usage.vehicle.max_ride_duration,
             stores: [position_start && :start, position_stop && :stop].compact,
             rests: rests.select{ |s| s[:vehicle_usage_id] == r.vehicle_usage_id },
             capacities: r.vehicle_usage.vehicle.default_capacities && r.vehicle_usage.vehicle.default_capacities.each.map{ |k, v|
@@ -582,7 +584,7 @@ class Planning < ApplicationRecord
 
             stop.active = true if route.vehicle_usage? && inactive_stop_ids.exclude?(stop.id)
             stop.index = i += 1
-            stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = nil
+            stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
             if stop.route_id != route.id
               stop.route_id = route.id
               stop.save!
@@ -595,7 +597,7 @@ class Planning < ApplicationRecord
         other_inactive_stops.each{ |stop|
           stop.active = false if route.vehicle_usage?
           stop.index = i += 1
-          stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = nil
+          stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
         }
       }
 

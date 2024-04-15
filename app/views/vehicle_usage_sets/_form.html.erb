@@ -101,6 +101,35 @@
       <p class="help-block"><%= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_distance.help_miles') : t('vehicles.form.max_distance.help') %></p>
     </div>
   </div>
+  <div id="vehicle_usage_vehicle_max_ride_distance_input" class="form-group">
+    <label class="sr-only" for="vehicle_usage_set_max_ride_distance"><%= t 'activerecord.attributes.vehicle.max_ride_distance' %></label>
+    <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_ride_distance' %></label>
+    <div class="col-md-offset-2 col-md-8 field">
+      <div class="input-group">
+        <%= number_field :vehicle_usage_set,
+                         :max_ride_distance,
+                         value: distance_in_user_unit(@vehicle_usage_set.max_ride_distance, @current_user.prefered_unit),
+                         step: 'any',
+                         class: 'form-control', min: 0, step: 0.1 %>
+        <span class="input-group-addon"><%= current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms') %></span>
+      </div>
+      <p class="help-block"><%= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_ride_distance.help_miles') : t('vehicles.form.max_ride_distance.help') %></p>
+    </div>
+  </div>
+  <div id="vehicle_usage_vehicle_max_ride_duration_input" class="form-group">
+    <label class="sr-only" for="vehicle_usage_set_max_ride_duration"><%= t 'activerecord.attributes.vehicle.max_ride_duration' %></label>
+    <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_ride_duration' %></label>
+    <div class="col-md-offset-2 col-md-8 field">
+      <div class="input-group">
+        <%= text_field :vehicle_usage_set, :max_ride_duration,
+          value: @vehicle_usage_set.max_ride_duration_time,
+          placeholder: t('all.unit.hour_minute'),
+          class: 'form-control' %>
+        <span class="input-group-addon"><i class="fa fa-stopwatch fa-fw"></i></span>
+      </div>
+      <p class="help-block"><%= t('vehicles.form.max_ride_duration.help') %></p>
+    </div>
+  </div>
   <div id="vehicle_usage_set_rest_input" class="form-group">
     <label class="sr-only" for="vehicle_usage_set_rest_duration"><%= t 'activerecord.attributes.vehicle_usage_set.rest_duration' %></label>
     <label class="sr-only" for="vehicle_usage_set_store_rest"><%= t 'activerecord.attributes.vehicle_usage_set.store_rest' %></label>

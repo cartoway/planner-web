@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 9.6.24
--- Dumped by pg_dump version 13.13 (Debian 13.13-0+deb11u1)
+-- Dumped by pg_dump version 13.14 (Debian 13.14-0+deb11u1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -697,7 +697,9 @@ CREATE TABLE public.routes (
     departure_status character varying,
     arrival_eta time without time zone,
     arrival_status character varying,
-    force_start boolean
+    force_start boolean,
+    out_of_max_ride_distance boolean,
+    out_of_max_ride_duration boolean
 );
 
 
@@ -758,6 +760,8 @@ CREATE TABLE public.stops (
     unmanageable_capacity boolean,
     out_of_force_position boolean DEFAULT false,
     out_of_relation boolean DEFAULT false,
+    out_of_max_ride_distance boolean,
+    out_of_max_ride_duration boolean,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -846,8 +850,8 @@ CREATE TABLE public.stores_vehicules (
 CREATE TABLE public.tag_destinations (
     destination_id integer NOT NULL,
     tag_id integer NOT NULL,
-    created_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.803828'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.803828'::timestamp without time zone
+    created_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.129478'::timestamp without time zone,
+    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.129478'::timestamp without time zone
 );
 
 
@@ -858,8 +862,8 @@ CREATE TABLE public.tag_destinations (
 CREATE TABLE public.tag_plannings (
     planning_id integer NOT NULL,
     tag_id integer NOT NULL,
-    created_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.830886'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.830886'::timestamp without time zone
+    created_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.151915'::timestamp without time zone,
+    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.151915'::timestamp without time zone
 );
 
 
@@ -870,8 +874,8 @@ CREATE TABLE public.tag_plannings (
 CREATE TABLE public.tag_visits (
     visit_id integer NOT NULL,
     tag_id integer NOT NULL,
-    created_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.856205'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2024-03-12 14:19:06.856205'::timestamp without time zone
+    created_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.173027'::timestamp without time zone,
+    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.173027'::timestamp without time zone
 );
 
 
@@ -1004,7 +1008,9 @@ CREATE TABLE public.vehicle_usage_sets (
     service_time_start integer,
     service_time_end integer,
     work_time integer,
-    max_distance integer
+    max_distance integer,
+    max_ride_duration integer,
+    max_ride_distance integer
 );
 
 
@@ -1095,7 +1101,9 @@ CREATE TABLE public.vehicles (
     devices jsonb DEFAULT '{}'::jsonb NOT NULL,
     max_distance integer,
     phone_number character varying,
-    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL
+    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
+    max_ride_duration integer,
+    max_ride_distance integer
 );
 
 
@@ -2960,4 +2968,6 @@ INSERT INTO schema_migrations (version) VALUES ('20240215103513');
 INSERT INTO schema_migrations (version) VALUES ('20240219091818');
 
 INSERT INTO schema_migrations (version) VALUES ('20240311183150');
+
+INSERT INTO schema_migrations (version) VALUES ('20240415072208');
 

@@ -37,7 +37,9 @@ class ImporterVehicleUsageSets < ImporterBase
       phone_number: { title: I18n.t('vehicles.import.phone_number'), desc: I18n.t('vehicles.import.phone_number_desc'), format: I18n.t('vehicles.import.format.string') },
       emission: { title: I18n.t('vehicles.import.emission'), desc: I18n.t('vehicles.import.emission_desc'), format: '[' + ::Vehicle.emissions_table.map { |emission| emission[0] }.join(' | ') + ']' },
       consumption: { title: I18n.t('vehicles.import.consumption'), desc: I18n.t('vehicles.import.consumption_desc'), format: I18n.t('vehicles.import.format.float') },
-      max_distance: { title: I18n.t('vehicles.import.max_distance'), desc: I18n.t('vehicles.import.max_distance_desc'), format: I18n.t('vehicles.import.format.integer') }
+      max_distance: { title: I18n.t('vehicles.import.max_distance'), desc: I18n.t('vehicles.import.max_distance_desc'), format: I18n.t('vehicles.import.format.integer') },
+      max_ride_distance: { title: I18n.t('vehicles.import.max_ride_distance'), desc: I18n.t('vehicles.import.max_ride_distance_desc'), format: I18n.t('vehicles.import.format.integer') },
+      max_ride_duration: { title: I18n.t('vehicles.import.max_ride_duration'), desc: I18n.t('vehicles.import.max_ride_duration_desc'), format: I18n.t('vehicles.import.format.integer') }
     }.merge(Hash[@customer.deliverable_units.map { |du|
       ["capacity#{du.id}".to_sym, { title: I18n.t('vehicles.import.capacities') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('vehicles.import.capacities_desc'), format: I18n.t('vehicles.import.format.float') }]
     }]).merge(
@@ -215,6 +217,8 @@ class ImporterVehicleUsageSets < ImporterBase
     end
 
     @common_configuration[:max_distance] = vehicle_attributes[:max_distance] if vehicle_attributes
+    @common_configuration[:max_ride_distance] = vehicle_attributes[:max_ride_distance] if vehicle_attributes
+    @common_configuration[:max_ride_duration] = vehicle_attributes[:max_ride_duration] if vehicle_attributes
 
     vehicle
   end
@@ -234,9 +238,10 @@ class ImporterVehicleUsageSets < ImporterBase
 
     @common_configuration.compact!
     unless @common_configuration.keys.empty?
+      excluded_keys = %i[max_distance max_ride_distance max_ride_duration]
       @vehicle_usage_set.assign_attributes @common_configuration
       @vehicle_usage_set.vehicle_usages.each{ |vu|
-        vu.assign_attributes Hash[@common_configuration.keys.select{ |k| k != :max_distance }.map{ |k| [k, nil] }]
+        vu.assign_attributes Hash[@common_configuration.keys.select{ |k| excluded_keys.exclude? k }.map{ |k| [k, nil] }]
       }
       @vehicle_usage_set.save!
     end
