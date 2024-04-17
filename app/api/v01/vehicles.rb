@@ -52,7 +52,7 @@ class V01::Vehicles < Grape::API
       # Deals with deprecated speed_multiplicator
       p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator] && !p[:speed_multiplier]
       nested_attributes = customer.custom_attributes.map(&:name)
-      p.permit(:contact_email, :phone_number, :ref, :name, :emission, :consumption, :color, :router_id, :router_dimension, :max_distance, :speed_multiplier, router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction], capacities: (current_customer || @current_user.reseller.customers.where(id: params[:customer_id]).first!).deliverable_units.map{ |du| du.id.to_s }, devices: permit_devices, tag_ids: [], custom_attributes: nested_attributes)
+      p.permit(:contact_email, :phone_number, :ref, :name, :emission, :consumption, :color, :router_id, :router_dimension, :max_distance, :max_ride_distance, :max_ride_duration, :speed_multiplier, router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction], capacities: (current_customer || @current_user.reseller.customers.where(id: params[:customer_id]).first!).deliverable_units.map{ |du| du.id.to_s }, devices: permit_devices, tag_ids: [], custom_attributes: nested_attributes)
     end
 
     def permit_devices

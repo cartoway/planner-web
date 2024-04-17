@@ -177,7 +177,9 @@ module SharedParams
     end
     optional :speed_multiplicator, type: Float, documentation: { desc: 'Deprecated, use speed_multiplier instead.' }
     optional :speed_multiplier, type: Float
-    optional :max_distance, type: Integer, documentation: { desc: 'Maximum reachable distance by foot in meters' }
+    optional :max_distance, type: Integer, documentation: { desc: 'Maximum achievable distance in meters' }
+    optional :max_ride_distance, type: Integer, documentation: { desc: 'Maximum riding distance between two stops within a route in meters' }
+    optional :max_ride_duration, type: Integer, documentation: { desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.type_cast(value) }
     optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
     optional :devices, type: Hash
     optional :custom_attributes, type: Hash, documentation: { desc: 'Additional properties'}

@@ -102,10 +102,10 @@ json.with_stops @with_stops
 if @with_stops
   inactive_stops = 0
   json.stops route.vehicle_usage_id ? route.stops.sort_by{ |s| s.index || Float::INFINITY } : (route.stops.all?{ |s| s.name.to_i != 0 } ? route.stops.sort_by{ |s| s.name.to_i } : route.stops.sort_by{ |s| s.name.to_s.downcase }) do |stop|
-    (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_relation || stop.no_path || stop.unmanageable_capacity
+    (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_relation || stop.no_path || stop.unmanageable_capacity
     json.stop_id stop.id
     json.stop_index stop.index
-    json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation, :no_path, :unmanageable_capacity
+    json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_relation, :no_path, :unmanageable_capacity
     json.ref stop.ref if route.planning.customer.enable_references
     json.time_window_start_end_1 !!stop.time_window_start_1 || !!stop.time_window_end_1
     (json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1
@@ -201,7 +201,7 @@ end if route.vehicle_usage_id && route.vehicle_usage.default_store_stop
 (json.end_without_service Time.at(display_end_time(route)).utc.strftime('%H:%M')) if display_end_time(route)
 (json.end_without_service_day number_of_days(display_end_time(route))) if display_end_time(route)
 
-if route.no_geolocalization || route.out_of_window || route.out_of_capacity || route.out_of_drive_time || route.out_of_force_position || route.out_of_work_time || route.out_of_max_distance || route.out_of_relation || route.no_path || route.unmanageable_capacity
+if route.no_geolocalization || route.out_of_window || route.out_of_capacity || route.out_of_drive_time || route.out_of_force_position || route.out_of_work_time || route.out_of_max_distance || route.out_of_max_ride_distance || route.out_of_max_ride_duration || route.out_of_relation || route.no_path || route.unmanageable_capacity
   json.route_error true
   json.route_no_geolocalization route.no_geolocalization
   json.route_out_of_window route.out_of_window
@@ -210,6 +210,8 @@ if route.no_geolocalization || route.out_of_window || route.out_of_capacity || r
   json.route_out_of_force_position route.out_of_force_position
   json.route_out_of_work_time route.out_of_work_time
   json.route_out_of_max_distance route.out_of_max_distance
+  json.route_out_of_max_ride_distance route.out_of_max_ride_distance
+  json.route_out_of_max_ride_duration route.out_of_max_ride_duration
   json.route_of_relation route.out_of_relation
   json.route_no_path route.no_path
   json.route_unmanageable_capacity route.unmanageable_capacity

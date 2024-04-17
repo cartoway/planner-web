@@ -116,6 +116,8 @@ class RoutesController < ApplicationController
       :out_of_force_position,
       :out_of_work_time,
       :out_of_max_distance,
+      :out_of_max_ride_distance,
+      :out_of_max_ride_duration,
       :out_of_relation,
       :status,
       :eta,

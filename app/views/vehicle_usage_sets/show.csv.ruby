@@ -6,7 +6,9 @@ CSV.generate { |csv|
     I18n.t('vehicles.import.phone_number'),
     I18n.t('vehicles.import.emission'),
     I18n.t('vehicles.import.consumption'),
-    I18n.t('vehicles.import.max_distance')
+    I18n.t('vehicles.import.max_distance'),
+    I18n.t('vehicles.import.max_ride_distance'),
+    I18n.t('vehicles.import.max_ride_duration')
   ] +
     @vehicle_usage_set.customer.deliverable_units.map { |du|
       I18n.t('vehicles.import.capacities') + (du.label ? "[#{du.label}]" : "#{du.id}")
@@ -55,7 +57,9 @@ CSV.generate { |csv|
       vehicle_usage.vehicle.phone_number,
       vehicle_usage.vehicle.emission,
       vehicle_usage.vehicle.consumption,
-      vehicle_usage.vehicle.max_distance || @vehicle_usage_set.max_distance
+      vehicle_usage.vehicle.max_distance || @vehicle_usage_set.max_distance,
+      vehicle_usage.vehicle.max_ride_distance || @vehicle_usage_set.max_ride_distance,
+      vehicle_usage.vehicle.max_ride_duration || @vehicle_usage_set.max_ride_duration
     ] +
     @vehicle_usage_set.customer.deliverable_units.map { |du|
       vehicle_usage.vehicle.capacities[du.id]
