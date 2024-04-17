@@ -231,7 +231,6 @@ class Route < ApplicationRecord
         if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
           stop.distance, stop.drive_time, trace = traces.shift
           stop.no_path = previous_with_pos && stop.position? && trace.nil?
-          previous_with_pos = stop if stop.position?
 
           store_traces(geojson_tracks, trace, options.merge(drive_time: stop.drive_time, distance: stop.distance))
 
@@ -264,11 +263,17 @@ class Route < ApplicationRecord
             stop.out_of_drive_time = stop.time > vehicle_usage.default_time_window_end
             stop.out_of_work_time = vehicle_usage.outside_default_work_time?(route_attributes[:start], stop.time)
             stop.out_of_max_distance = max_distance && (route_attributes[:distance] > max_distance)
-            stop.out_of_max_ride_distance = max_ride_distance && (stop.distance > max_ride_distance)
-            stop.out_of_max_ride_duration = max_ride_distance && (stop.time > max_ride_duration)
-            route_attributes[:out_of_max_ride_distance] ||= stop.out_of_max_ride_distance
-            route_attributes[:out_of_max_ride_duration] ||= stop.out_of_max_ride_duration
+            if previous_with_pos&.is_a? Stop
+              # max_ride only apply between stops (stores excluded)
+              stop.out_of_max_ride_distance = max_ride_distance && (stop.distance > max_ride_distance)
+              stop.out_of_max_ride_duration = max_ride_distance && (stop.time > max_ride_duration)
+              route_attributes[:out_of_max_ride_distance] ||= stop.out_of_max_ride_distance
+              route_attributes[:out_of_max_ride_duration] ||= stop.out_of_max_ride_duration
+            else
+              stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = false
+            end
           end
+          previous_with_pos = stop if stop.position?
         else
           stop.active = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_window = stop.no_path = stop.out_of_work_time =
             stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = false
