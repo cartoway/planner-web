@@ -47,8 +47,17 @@ Rails.application.configure do
   # Use :letter_opener to automatically open email in browser
   config.action_mailer.delivery_method = :letter_opener
 
-  config.action_mailer.default_url_options = {host: 'localhost'}
-
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: 'smtp.example.com',
+    port: 587,
+    user_name: 'robot@example.com',
+    password: '',
+    authentication: 'plain',
+    enable_starttls: true,
+    open_timeout: 5,
+    read_timeout: 5,
+  }
   config.default_from_mail = 'root@localhost'
 
   config.swagger_docs_base_path = 'http://localhost:3000/'
