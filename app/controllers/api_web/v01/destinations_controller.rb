@@ -22,27 +22,6 @@ class ApiWeb::V01::DestinationsController < ApiWeb::V01::ApiWebController
   before_action :set_destination, only: [:edit_position, :update_position]
   authorize_resource
 
-  swagger_controller :stores, 'Destinations'
-
-  swagger_api :index do
-    summary 'Display all or some destinations.'
-    param :query, :ids, :array, :optional, 'Destination ids or refs (as "ref:[VALUE]") to be displayed, separated by commas', 'items' => { 'type' => 'string' }
-    param :query, :store_ids, :array, :optional, 'Store ids or refs (as "ref:[VALUE]") to be displayed, separated by commas', 'items' => { 'type' => 'string' }
-    param :query, :disable_clusters, 'boolean', :optional, 'Set this disable_clusters to true/1 to disable clusters on map.'
-  end
-
-  swagger_api :edit_position do
-    summary 'Display a movable position marker of the destination.'
-    param :path, :id, :integer, :required
-  end
-
-  swagger_api :update_position, method: :patch do
-    summary 'Save the destination position.'
-    param :path, :id, :integer, :required
-    param :query, :lat, :float, :optional
-    param :query, :lng, :float, :optional
-  end
-
   def index
     @customer = current_user.customer
     @destinations = if params.key?(:ids)

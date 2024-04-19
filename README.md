@@ -242,3 +242,7 @@ Run tests:
 ```
 RAILS_ENV=test docker-compose run --rm web rake test I18N=false COVERAGE=false
 ```
+
+## Documentation
+The Web API, providing views, is statically generated while rake precompile the project.
+The REST API is, on its side, dynamically generated.

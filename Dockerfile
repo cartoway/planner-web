@@ -30,8 +30,7 @@ RUN bundle config git.allow_insecure true && \
 ADD . /srv/app/
 
 RUN bundle exec rake i18n:js:export && \
-    bundle exec rake assets:precompile
-
+    bundle exec rake assets:precompile API_DOC_MODE=true
 # Prepare configuration files
 ADD ./config/database.yml.docker config/database.yml
 

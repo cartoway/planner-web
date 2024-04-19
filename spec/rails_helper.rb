@@ -15,7 +15,8 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 
 # Checks for pending migrations before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
-ActiveRecord::Migration.maintain_test_schema!
+ActiveRecord::Migration.maintain_test_schema! unless ENV.fetch("API_DOC_MODE", nil)
+# API_DOC_MODE condition is necesseray as rspec-rails requires a database connection
 
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures

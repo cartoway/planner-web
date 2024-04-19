@@ -21,13 +21,6 @@ class ApiWeb::V01::ZoningsController < ApiWeb::V01::ApiWebController
   before_action :manage_zoning
   around_action :includes_destinations
 
-  swagger_controller :zonings, 'Zonings'
-
-  swagger_api :edit do
-    summary 'Edit all or some zones of one zoning.'
-    param :path, :zoning_id, :integer, :required, 'Zonning ids'
-  end
-
   def edit
     capabilities
   end

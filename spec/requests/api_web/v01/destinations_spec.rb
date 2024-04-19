@@ -1,32 +1,25 @@
 require 'swagger_helper'
 
-RSpec.describe 'api_web/v01/stores', type: :request do
-  path '/api-web/0.1/stores' do
-    post('list stores') do
-      tags 'Stores'
+RSpec.describe 'api_web/v01/destinations', type: :request do
+  path '/api-web/0.1/destinations' do
+    get('list destinations') do
+      tags 'Destinations'
       produces 'text/html'
-      description 'Display all or some stores.'
+      description 'Display all or some destinations.'
       parameter name: :ids,
-                description: 'Store ids or refs (as "ref:[VALUE]") to be displayed, separated by commas',
+                description: 'Destination ids or refs (as "ref:[VALUE]") to be displayed, separated by commas',
                 in: :query, type: 'array', items: { type: 'string' }
-      response(200, 'successful') do
-        after do |example|
-          example.metadata[:response][:content] = {
-            'text/html' => '<html><head></head><body><h1>Hello World<h1></body></html>'
-          }
-        end
-        run_test!
-      end
-    end
+      parameter name: :store_ids,
+                description: 'Destination ids or refs (as "ref:[VALUE]") to be displayed, separated by commas',
+                in: :query, type: 'array', items: { type: 'string' }
 
-    get('list stores') do
-      tags 'Stores'
-      produces 'text/html'
-      description 'Display all or some stores.'
-      parameter name: :ids,
-                description: 'Store ids or refs (as "ref:[VALUE]") to be displayed, separated by commas',
-                in: :query, type: 'array', items: { type: 'string' }
+      parameter name: :disable_clusters, in: :query, type: :boolean,
+                description: 'Set this disable_clusters parameter to true/1 to disable clusters on map.'
       response(200, 'successful') do
+        let(:ids) { ['1', '2', '3'] }
+        let(:store_ids) { ['1', '2', '3'] }
+        let(:disable_clusters) { true }
+
         after do |example|
           example.metadata[:response][:content] = {
             'text/html' => '<html><head></head><body><h1>Hello World<h1></body></html>'
@@ -37,11 +30,10 @@ RSpec.describe 'api_web/v01/stores', type: :request do
     end
   end
 
-  path '/api-web/0.1/stores/{id}/edit_position' do
+  path '/api-web/0.1/destinations/{id}/edit_position' do
     parameter name: 'id', in: :path, type: :integer, description: 'id'
-
-    get('edit store position') do
-      tags 'Stores'
+    get('edit destination position') do
+      tags 'Destinations'
       produces 'text/html'
       description 'Display a movable position marker of the destination.'
       response(200, 'successful') do
@@ -57,13 +49,12 @@ RSpec.describe 'api_web/v01/stores', type: :request do
     end
   end
 
-  path '/api-web/0.1/stores/{id}/update_position' do
+  path '/api-web/0.1/destinations/{id}/update_position' do
     parameter name: 'id', in: :path, type: :integer, description: 'id'
-
-    patch('update store position') do
-      tags 'Stores'
+    patch('update destination position') do
+      tags 'Destinations'
       produces 'text/html'
-      description 'Save the store position.'
+      description 'Save the destination position.'
       parameter name: 'lat', in: :query, type: :float
       parameter name: 'lng', in: :query, type: :float
       response(200, 'successful') do
@@ -79,11 +70,11 @@ RSpec.describe 'api_web/v01/stores', type: :request do
     end
   end
 
-  path '/api-web/0.1/stores/{id}' do
+  path '/api-web/0.1/destinations/{id}' do
     parameter name: 'id', in: :path, type: :string, description: 'id'
-
-    get('show store') do
-      tags 'Stores'
+    get('show destination') do
+      tags 'Destinations'
+      produces 'text/html'
       response(200, 'successful') do
         let(:id) { '123' }
 
@@ -92,27 +83,6 @@ RSpec.describe 'api_web/v01/stores', type: :request do
             'application/json' => {
               foo: JSON.parse(response.body, symbolize_names: true)
             }
-          }
-        end
-        run_test!
-      end
-    end
-  end
-
-  path '/api-web/0.1/stores/by_distance' do
-
-    get('by distance') do
-      tags 'Stores'
-      produces 'text/html'
-      description 'Display the N closest stores of a point.'
-      parameter name: 'lat', in: :query, type: :float
-      parameter name: 'lng', in: :query, type: :float
-      parameter name: 'n', in: :query, type: :integer
-      response(200, 'successful') do
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'text/html' => '<html><head></head><body><h1>Hello World<h1></body></html>'
           }
         end
         run_test!

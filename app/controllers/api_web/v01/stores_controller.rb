@@ -20,25 +20,6 @@ class ApiWeb::V01::StoresController < ApiWeb::V01::ApiWebController
   before_action :set_store, only: [:edit_position, :update_position, :show]
   authorize_resource
 
-  swagger_controller :stores, 'Stores'
-
-  swagger_api :index do
-    summary 'Display all or some stores.'
-    param :query, :ids, :array, :optional, 'Store ids or refs (as "ref:[VALUE]") to be displayed, separated by commas', 'items' => { 'type' => 'string' }
-  end
-
-  swagger_api :edit_position do
-    summary 'Display a movable position marker of the store.'
-    param :path, :id, :integer, :required
-  end
-
-  swagger_api :update_position, method: :patch do
-    summary 'Save the store position.'
-    param :path, :id, :integer, :required
-    param :query, :lat, :float, :optional
-    param :query, :lng, :float, :optional
-  end
-
   def index
     @customer = current_user.customer
     @stores = if params.key?(:ids)

@@ -1695,11 +1695,6 @@ Sprockets is a Rack-based asset packaging system that concatenates and serves Ja
 
 <a href="http://opensource.org/licenses/mit-license">MIT</a> whitelisted
 
-
-<a name="swagger-docs"></a>
-### <a href="https://github.com/richhollis/swagger-docs">swagger-docs</a> v0.2.8 (default)
-#### Generates swagger-ui json files for rails apps with APIs. You add the swagger DSL to your controller classes and then run one rake task to generate the json files.
-
 <a href="http://opensource.org/licenses/mit-license">MIT</a> whitelisted
 
 Generates json files for rails apps to use with swagger-ui

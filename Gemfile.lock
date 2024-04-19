@@ -595,10 +595,6 @@ GEM
       rspec-mocks (~> 3.10)
       rspec-support (~> 3.10)
     rspec-support (3.12.1)
-    rswag (2.13.0)
-      rswag-api (= 2.13.0)
-      rswag-specs (= 2.13.0)
-      rswag-ui (= 2.13.0)
     rswag-api (2.13.0)
       activesupport (>= 3.1, < 7.2)
       railties (>= 3.1, < 7.2)
@@ -607,9 +603,6 @@ GEM
       json-schema (>= 2.2, < 5.0)
       railties (>= 3.1, < 7.2)
       rspec-core (>= 2.14)
-    rswag-ui (2.13.0)
-      actionpack (>= 3.1, < 7.2)
-      railties (>= 3.1, < 7.2)
     rubocop (1.31.0)
       parallel (~> 1.10)
       parser (>= 3.1.0.0)
@@ -696,9 +689,6 @@ GEM
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
     ssrf_filter (1.0.8)
-    swagger-docs (0.2.9)
-      activesupport (>= 3)
-      rails (>= 3)
     systemu (2.6.5)
     temple (0.10.3)
     terminal-table (3.0.2)
@@ -851,7 +841,8 @@ DEPENDENCIES
   rgeo
   rgeo-geojson
   rspec-rails
-  rswag
+  rswag-api
+  rswag-specs
   rubocop
   rubyzip
   sanitize
@@ -868,7 +859,6 @@ DEPENDENCIES
   simplify_rb
   smt_rails (= 0.2.9)
   sprockets
-  swagger-docs
   tidy-html5!
   turbolinks (< 5)
   twitter-bootstrap-rails!
