@@ -21,13 +21,6 @@ class ApiWeb::V01::StopsController < ApiWeb::V01::ApiWebController
   before_action :set_stop, only: :show # Before load_and_authorize_resource
   load_and_authorize_resource # Load resource except for show action
 
-  swagger_controller :stops, 'Stops'
-
-  swagger_api :show do
-    summary 'Show a stops details.'
-    param :path, :stop_id, :integer, :required, 'Stop id'
-  end
-
   def show
     respond_to do |format|
       @show_isoline = false

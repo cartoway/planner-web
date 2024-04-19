@@ -21,14 +21,6 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
   before_action :manage_planning
   around_action :includes_sub_models, only: [:print]
 
-  swagger_controller :plannings, 'Plannings'
-
-  swagger_api :edit do
-    summary 'Edit all or some routes of one planning.'
-    param :path, :id, :integer, :required, 'Planning id'
-    param :query, :ids, :array, :optional, 'Planning''s routes ids or refs (as "ref:[VALUE]") to be displayed, separated by commas', 'items' => { 'type' => 'string' }
-  end
-
   def edit
     @spreadsheet_columns = []
     @with_devices = true

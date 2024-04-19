@@ -22,19 +22,6 @@ class ApiWeb::V01::ZonesController < ApiWeb::V01::ApiWebController
   load_and_authorize_resource :zoning
   load_and_authorize_resource :zone, through: :zoning
 
-  swagger_controller :zones, 'Zones'
-
-  swagger_api :index do
-    summary 'Display all or some zones of one zoning. If vehicle_usage_set_id or planning_id or only one vehicle_usage_set present, then filter store by associated VehicleUsageSet''s VehicleUsage.'
-    param :path, :zoning_id, :integer, :required, 'Zonning ids'
-    param :query, :ids, :array, :optional, 'Zoning''s zones ids to be displayed, separated by commas', 'items' => { 'type' => 'integer' }
-    param :query, :destinations, :boolean, :optional, 'Destinations displayed or not, no destinations by default'
-    param :query, :destination_ids, :array, :optional, 'Destination ids or refs (as "ref:[VALUE]") to be displayed, separated by commas', 'items' => { 'type' => 'string' }
-    param :query, :store_ids, :array, :optional, 'Store ids or refs (as "ref:[VALUE]") to be displayed, separated by commas', 'items' => { 'type' => 'string' }
-    param :query, :vehicle_usage_set_id, :integer, :optional, 'VehicleUsageSet id (used to filter stores)'
-    param :query, :planning_id, :integer, :optional, 'Planning id (used to filter stores)'
-  end
-
   def index
     @customer = current_user.customer
     @zones = if params.key?(:ids)

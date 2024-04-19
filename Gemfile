@@ -67,8 +67,6 @@ group :development, :test do
 
   gem 'brakeman'
   gem 'figaro'
-
-  gem 'bullet'
 end
 
 group :test do
@@ -90,13 +88,15 @@ group :test do
   gem 'chromedriver-helper'
 end
 
+gem 'bullet'  # Used in production for api-web doc generation
+
 gem 'grape'
 gem 'grape-entity'
 gem 'grape-swagger'
 gem 'grape-swagger-entity'
 gem 'rack-cors'
-gem 'swagger-docs'
-gem 'rswag'
+gem 'rswag-api'
+gem 'rswag-specs'
 
 gem 'rails-i18n'
 gem 'http_accept_language'
