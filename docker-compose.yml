@@ -40,11 +40,11 @@ services:
     <<: *web
     ports:
       - "8080:8080" # HOST:CONTAINER, edit only HOST part
-    command: bundle exec puma -v -p 8080 --pidfile 'server.pid'
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec puma -v -p 8080 --pidfile 'server.pid'"
 
   delayed-job:
     <<: *web
-    command: ./start_delayed_job.sh -n 4
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 ./start_delayed_job.sh -n 4"
 
 volumes:
   pg_data:

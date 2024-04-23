@@ -13,6 +13,7 @@ RUN apt update && \
         git build-essential \
         zlib1g-dev libicu-dev g++ libgeos-dev libgeos++-dev libpq-dev \
         zlib1g libicu67 libgeos-3.9.0 libpq5 postgresql-client \
+        libjemalloc2 \
         nodejs yarnpkg && \
     ln -s /usr/bin/yarnpkg /usr/bin/yarn
 
