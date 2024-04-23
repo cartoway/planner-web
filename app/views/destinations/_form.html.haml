@@ -2,7 +2,7 @@
   = render 'shared/error_messages', model: @destination
   %fieldset#destination-details
     - if @destination.customer.enable_references && !@destination.customer.enable_multi_visits
-      = f.text_field :ref, help: t ('.ref_help')
+      = f.text_field :ref, help: t('.ref_help')
     = f.text_field :name, required: true
     = f.text_field :street, {help: t('web.form.helpers.street'), class: "form-control pointing", append: content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually'))}
     = f.text_field :detail, help: t('.detail_help')

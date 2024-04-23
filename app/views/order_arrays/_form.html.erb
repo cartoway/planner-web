@@ -2,17 +2,16 @@
   <%= render 'shared/error_messages', model: @order_array %>
   <%= f.text_field :name, required: true %>
   <%= f.text_field :base_date, required: true, value: @order_array.base_date ? l(@order_array.base_date.to_time, format: :datepicker) : nil, input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'}) %>
-  <%= f.select :length, [], OrderArray.lengths.collect{ |key, id| [t(".#{key}"), key] }, {}, {required: true} %>
+  <%= f.select :length, OrderArray.lengths.collect{ |key, id| [t(".#{key}"), key] }, {required: true} %>
   <%= f.submit %>
-    <% if @order_array.id %>
-      <div class="btn-group">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><i class="fa fa-table fa-fw"></i> <%= t '.export.menu' %> <span class="caret"></span></button>
-        <ul class="dropdown-menu pull-right" role="menu">
-          <!--<li><a href="/order_arrays/<%= @order_array.id %>"><i class="fa fa-print fa-fw"></i> <%= t '.export.print' %></a></li>-->
-          <li><a href="/order_arrays/<%= @order_array.id %>.csv<%= params[:planning_id] ? "?planning_id=#{params[:planning_id]}": "" %>"><i class="fa fa-table fa-fw"></i> <%= t '.export.spreadsheet_standard' %></a></li>
-          <li><a href="/order_arrays/<%= @order_array.id %>.excel<%= params[:planning_id] ? "?planning_id=#{params[:planning_id]}": "" %>"><i class="fa fa-table fa-fw"></i> <%= t '.export.spreadsheet_excel' %></a></li>
-        </ul>
-      </div>
-    <% end %>
+  <% if @order_array.id %>
+    <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><i class="fa fa-table fa-fw"></i> <%= t '.export.menu' %> <span class="caret"></span></button>
+      <ul class="dropdown-menu pull-right" role="menu">
+        <!--<li><a href="/order_arrays/<%= @order_array.id %>"><i class="fa fa-print fa-fw"></i> <%= t '.export.print' %></a></li>-->
+        <li><a href="/order_arrays/<%= @order_array.id %>.csv<%= params[:planning_id] ? "?planning_id=#{params[:planning_id]}": "" %>"><i class="fa fa-table fa-fw"></i> <%= t '.export.spreadsheet_standard' %></a></li>
+        <li><a href="/order_arrays/<%= @order_array.id %>.excel<%= params[:planning_id] ? "?planning_id=#{params[:planning_id]}": "" %>"><i class="fa fa-table fa-fw"></i> <%= t '.export.spreadsheet_excel' %></a></li>
+      </ul>
+    </div>
   <% end %>
 <% end %>
