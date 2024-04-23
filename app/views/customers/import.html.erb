@@ -22,7 +22,7 @@
     <p class="help-block layer-unauthorized hidden warning has-warning" style="display:block!important;"><%= t('activerecord.attributes.customer.layer_warning') %></p>
 
     <span class="col-md-2"></span>
-    <%= f.submit t('.submit'), class: "btn btn-primary", disable_with: 'Importation...' %>
+    <%= f.submit message: t('.submit'), button: "btn btn-primary", disable_with: 'Importation...' %>
   <% end %>
 
 </div>

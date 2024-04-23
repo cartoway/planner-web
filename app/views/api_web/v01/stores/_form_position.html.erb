@@ -3,9 +3,7 @@
   <%= render 'shared/error_messages', model: @store %>
   <%= f.number_field :lat, { step: 'any'} %>
   <%= f.number_field :lng, { step: 'any'} %>
-  <%= f.actions do %>
-    <%= f.submit t('helpers.submit.update', model: nil) %>
-  <% end %>
+  <%= f.submit message: t('helpers.submit.update', model: nil) %>
 <% end %>
 </div>
 <div id="map"></div>
