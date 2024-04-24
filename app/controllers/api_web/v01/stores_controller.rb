@@ -61,6 +61,12 @@ class ApiWeb::V01::StoresController < ApiWeb::V01::ApiWebController
     end
   end
 
+  def by_distance
+    @customer = current_user.customer
+    @position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
+    @stores = @customer.stores_by_distance(@position, Integer(params[:n]))
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
