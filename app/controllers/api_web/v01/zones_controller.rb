@@ -18,7 +18,7 @@
 require 'value_to_boolean'
 
 class ApiWeb::V01::ZonesController < ApiWeb::V01::ApiWebController
-  skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
+  skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
   load_and_authorize_resource :zoning
   load_and_authorize_resource :zone, through: :zoning
 
