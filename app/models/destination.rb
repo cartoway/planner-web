@@ -94,7 +94,7 @@ class Destination < Location
       customer.plannings.each do |planning|
         visits.select(&:id).each do |visit|
           if !new_record? && planning.visits_include?(visit)
-            if planning.tag_operation == 'or'
+            if planning.tag_operation == '_or'
               unless (planning.tags.to_a & (tags.to_a | visit.tags.to_a)).present?
                 planning.visit_remove(visit)
               end

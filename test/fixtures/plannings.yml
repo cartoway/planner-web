@@ -8,7 +8,7 @@ planning_one:
   zonings: zoning_one
   tags: tag_one
   active: true
-  tag_operation: and
+  tag_operation: _and
   vehicle_usage_set: vehicle_usage_set_one
 
 planning_two:
@@ -34,7 +34,7 @@ planning_four:
   ref: r4
   customer: customer_two
   zonings: zoning_three
-  tag_operation: or
+  tag_operation: _or
   tags:
     - tag_three
     - tag_four

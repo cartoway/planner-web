@@ -4,14 +4,14 @@ module LinkBack
   extend ActiveSupport::Concern
 
   included do
-    after_filter 'save_link_back', only: [:new, :edit]
+    after_action :save_link_back, only: [:new, :edit]
   end
 
   private
 
   def save_link_back
     # session[:previous_url] is a Rails built-in variable to save last url.
-    if request.format == Mime::HTML
+    if request.format == Mime[:html]
       referer_uri = request.referer ? URI.parse(request.referer) : nil
       referer_params = referer_uri && referer_uri.query ? CGI.parse(referer_uri.query) : nil
       referer_fragment = referer_uri && referer_uri.fragment

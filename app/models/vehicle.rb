@@ -56,7 +56,7 @@ class Vehicle < ApplicationRecord
   validates :max_distance, numericality: true, allow_nil: true
   validates :max_ride_distance, numericality: true, allow_nil: true
 
-  after_initialize :assign_defaults, :increment_max_vehicles, if: 'new_record?'
+  after_initialize :assign_defaults, :increment_max_vehicles, if: -> { new_record? }
   before_validation :check_router_options_format
   before_create :create_vehicle_usage
   before_save :nilify_router_options_blanks

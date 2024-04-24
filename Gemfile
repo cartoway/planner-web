@@ -4,6 +4,7 @@ ruby '< 3'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.2'
+gem 'bootsnap'
 # Allow haml syntax for views
 gem 'haml-rails', "~> 1.0.0"
 # Use SCSS for stylesheets
@@ -84,7 +85,7 @@ group :test do
 
   # Browser tests
   gem 'capybara'
-  gem 'selenium-webdriver'
+  gem 'selenium-webdriver', '> 2.35' # API change require zip/zip to require zip
   gem 'chromedriver-helper'
 end
 
@@ -143,7 +144,7 @@ gem 'select2-rails', '= 4.0.0' # FIXME test compatibility with planning sidebar
 gem 'i18n-js', '< 4'
 gem 'mustache'
 gem 'smt_rails', '0.2.9' # FIXME: JS not working in 0.3.0
-gem 'paloma', git: 'https://github.com/Mapotempo/paloma.git' # FIXME wait for https://github.com/Mapotempo/paloma/commit/25cbba9f33c7b36f4f4878035ae53541a0036ee9 but paloma not maintained !
+gem 'paloma'
 gem 'browser'
 gem 'color'
 

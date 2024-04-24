@@ -65,7 +65,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   test 'should create a planning' do
     assert_difference('Planning.count', 1) do
       @planning.name = 'new name'
-      post api(), @planning.attributes.merge({tag_operation: 'and', tag_ids: tags(:tag_one).id, zoning_ids: [zonings(:zoning_one).id]})
+      post api(), @planning.attributes.merge({tag_operation: '_and', tag_ids: tags(:tag_one).id, zoning_ids: [zonings(:zoning_one).id]})
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal true, response['active']
@@ -77,7 +77,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   test 'should create a planning with begin and end date' do
     assert_difference('Planning.count', 1) do
       @planning.name = 'new name'
-      post api(), @planning.attributes.merge({tag_operation: 'and', begin_date: '20-04-2017', end_date: '25-04-2017'})
+      post api(), @planning.attributes.merge({tag_operation: '_and', begin_date: '20-04-2017', end_date: '25-04-2017'})
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal '2017-04-20', response['begin_date']
@@ -89,7 +89,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     planning = plannings(:planning_four)
 
     assert_difference('Planning.count', 1) do
-      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'and'}).to_json, CONTENT_TYPE: 'application/json'
+      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: '_and'}).to_json, CONTENT_TYPE: 'application/json'
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal 2, response['tag_ids'].size
@@ -103,7 +103,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
 
     assert_difference('Planning.count', 1) do
-      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'or'}).to_json, CONTENT_TYPE: 'application/json'
+      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: '_or'}).to_json, CONTENT_TYPE: 'application/json'
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal 2, response['tag_ids'].size
@@ -121,7 +121,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
       vehicle_usage_set_id: 0,
       zoning_ids: [zonings(:zoning_three).id]
     }.each{ |k, v|
-      attributes = @planning.attributes.merge(name: 'new name', tag_operation: 'and')
+      attributes = @planning.attributes.merge(name: 'new name', tag_operation: '_and')
       attributes[k] = v
       post api(), attributes
       assert_equal 400, last_response.status
@@ -130,7 +130,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should update a planning' do
     @planning.name = 'new name'
-    put api(@planning.id), @planning.attributes.merge(tag_operation: 'and')
+    put api(@planning.id), @planning.attributes.merge(tag_operation: '_and')
     assert last_response.ok?, last_response.body
 
     get api(@planning.id)
@@ -485,13 +485,13 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     customer.save!
 
     assert_difference('Planning.count', 1) do
-      post api(), @planning.attributes.merge({tag_operation: 'and'})
+      post api(), @planning.attributes.merge({tag_operation: '_and'})
       assert last_response.created?, last_response.body
     end
 
     assert_difference('Planning.count', 0) do
       assert_difference('Route.count', 0) do
-        post api(), @planning.attributes.merge({tag_operation: 'and'})
+        post api(), @planning.attributes.merge({tag_operation: '_and'})
         assert last_response.forbidden?, last_response.body
         assert_equal 'dépassement du nombre maximal de plans', JSON.parse(last_response.body)['message']
       end
