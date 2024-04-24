@@ -297,8 +297,8 @@ fr:
         vehicle_usage_set_id: Configuration des véhicules
         vehicle_usage_set_small: Conf.
         tag_operation:
-          and: tous
-          or: ou
+          _and: tous
+          _or: ou
         out_of_route: Non planifié
       profile:
         name: Nom
@@ -568,7 +568,7 @@ fr:
         updated: '%{model} a été mis à jour'
     errors:
       attributes:
-        inconsistent_customer: n'est pas une valeur autorisée pour cet espace client
+        inconsistent_customer: n'appartient pas à cet espace client
       models:
         location:
           missing_address_or_latlng: >-
@@ -668,7 +668,7 @@ fr:
           must_be_greater_than_minimal_time: doit être supérieur à la durée minimale
         router:
           unauthorized: n'est pas autorisé dans ce Profil
-        relation:
+        stops_relation:
           pickup_delivery_uniqueness: >-
             Une visite ne peut appartenir qu'à une seule relation de type
             pickup/delivery

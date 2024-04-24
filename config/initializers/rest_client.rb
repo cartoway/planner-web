@@ -17,7 +17,8 @@ class RestClient::Request
       @@duration[Thread.current.object_id]
     end
 
-    alias_method_chain :execute, :capture_duration
+    alias_method :execute_without_capture_duration, :execute
+    alias_method :execute, :execute_with_capture_duration
   end
 end
 

@@ -230,8 +230,8 @@ es:
         end_date: Fin validez
         vehicle_usage_set_small: Conf.
         tag_operation:
-          and: todos
-          or: o
+          _and: todos
+          _or: o
         name: Nombre
         ref: Referencia
         ref_small: Ref.
