@@ -16,9 +16,9 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class PlanningsByDestinationsController < ApplicationController
-  before_filter :authenticate_user!
+  before_action :authenticate_user!
   load_and_authorize_resource :destination
-  before_filter :set, only: %i[show]
+  before_action :set, only: %i[show]
 
   def show; end
 

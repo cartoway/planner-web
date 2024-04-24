@@ -16,8 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ProductsController < ApplicationController
-  before_filter :authenticate_user!
-  before_filter :set_product, only: [:edit, :update, :destroy]
+  before_action :authenticate_user!
+  before_action :set_product, only: [:edit, :update, :destroy]
 
   load_and_authorize_resource
 

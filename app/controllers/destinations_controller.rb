@@ -19,8 +19,8 @@ require 'csv'
 require 'importer_destinations'
 
 class DestinationsController < ApplicationController
-  before_filter :authenticate_user!
-  before_filter :set_destination, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_user!
+  before_action :set_destination, only: [:show, :edit, :update, :destroy]
   after_action :warnings, only: [:create, :update]
   around_action :over_max_limit, only: [:create, :duplicate]
 

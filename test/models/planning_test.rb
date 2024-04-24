@@ -63,12 +63,12 @@ class PlanningTest < ActiveSupport::TestCase
   end
 
   test 'should save according to tag operation' do
-    planning_and_tags = customers(:customer_two).plannings.build(name: 'plop', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_two), zonings: [zonings(:zoning_three)], tag_operation: 'and', tag_ids: [tags(:tag_three).id, tags(:tag_four).id])
+    planning_and_tags = customers(:customer_two).plannings.build(name: 'plop', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_two), zonings: [zonings(:zoning_three)], tag_operation: '_and', tag_ids: [tags(:tag_three).id, tags(:tag_four).id])
     planning_and_tags.default_routes
     planning_and_tags.save!
     assert_equal 1, planning_and_tags.visits_compatibles.count
 
-    planning_or_tags = customers(:customer_two).plannings.build(name: 'plop 2', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_two), zonings: [zonings(:zoning_three)], tag_operation: 'or', tag_ids: [tags(:tag_three).id, tags(:tag_four).id])
+    planning_or_tags = customers(:customer_two).plannings.build(name: 'plop 2', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_two), zonings: [zonings(:zoning_three)], tag_operation: '_or', tag_ids: [tags(:tag_three).id, tags(:tag_four).id])
     planning_or_tags.default_routes
     planning_or_tags.save!
     assert_equal 2, planning_or_tags.visits_compatibles.count

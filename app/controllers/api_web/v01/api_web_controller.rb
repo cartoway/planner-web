@@ -18,8 +18,8 @@
 require 'parse_ids_refs'
 
 class ApiWeb::V01::ApiWebController < ApplicationController
-  before_filter :skip_trackable
-  after_filter :allow_iframe
+  before_action :skip_trackable
+  after_action :allow_iframe
   layout 'api_web/v01'
 
   private

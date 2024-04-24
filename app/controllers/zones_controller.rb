@@ -1,7 +1,7 @@
 
 class ZonesController < ApplicationController
-  before_filter :authenticate_user!
-  before_filter :set_zone, only: [:show]
+  before_action :authenticate_user!
+  before_action :set_zone, only: [:show]
   around_action :includes_destinations, only: [:show]
 
   load_and_authorize_resource

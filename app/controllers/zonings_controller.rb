@@ -16,10 +16,10 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ZoningsController < ApplicationController
-  before_filter :authenticate_user!
-  before_filter :set_zoning, only: [:show, :edit, :update, :destroy, :duplicate, :automatic, :from_planning, :isochrone, :isodistance]
-  before_filter :set_planning, only: [:show, :edit, :new, :automatic, :from_planning]
-  before_filter :manage_zoning
+  before_action :authenticate_user!
+  before_action :set_zoning, only: [:show, :edit, :update, :destroy, :duplicate, :automatic, :from_planning, :isochrone, :isodistance]
+  before_action :set_planning, only: [:show, :edit, :new, :automatic, :from_planning]
+  before_action :manage_zoning
   around_action :includes_destinations, only: [:show, :edit, :update, :automatic, :from_planning]
   around_action :over_max_limit, only: [:create, :duplicate]
 

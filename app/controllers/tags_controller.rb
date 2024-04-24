@@ -16,9 +16,9 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class TagsController < ApplicationController
-  before_filter :authenticate_user!
-  before_filter :set_tag, only: [:edit, :update, :destroy]
-  before_filter :icons_table, except: [:index]
+  before_action :authenticate_user!
+  before_action :set_tag, only: [:edit, :update, :destroy]
+  before_action :icons_table, except: [:index]
 
   load_and_authorize_resource
 

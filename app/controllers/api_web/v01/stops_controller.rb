@@ -17,8 +17,8 @@
 #
 
 class ApiWeb::V01::StopsController < ApiWeb::V01::ApiWebController
-  skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
-  before_filter :set_stop, only: :show # Before load_and_authorize_resource
+  skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
+  before_action :set_stop, only: :show # Before load_and_authorize_resource
   load_and_authorize_resource # Load resource except for show action
 
   def show

@@ -18,8 +18,8 @@
 class UsersController < ApplicationController
   layout 'registration', only: [:password, :set_password]
 
-  before_filter :set_user, except: [:password, :set_password]
-  before_filter :set_user_from_token, only: [:password, :set_password]
+  before_action :set_user, except: [:password, :set_password]
+  before_action :set_user_from_token, only: [:password, :set_password]
 
   authorize_resource
 

@@ -38,7 +38,9 @@ class V01::Entities::Planning < Grape::Entity
   expose(:outdated, documentation: { type: 'Boolean' })
   expose(:route_ids, documentation: { type: Integer, is_array: true }) { |m| m.routes.collect(&:id) } # Workaround bug with fetch join stops
   expose(:tag_ids, documentation: { type: Integer, desc: 'Restrict visits/destinations in the plan (visits/destinations should have all of these tags to be present in the plan).', is_array: true })
-  expose(:tag_operation, documentation: { type: String, values: ['and', 'or'], desc: 'Choose how to use selected tags: and (for visits with all tags, by default) / or (for visits with at least one tag).', default: 'and' })
+  expose(:tag_operation, documentation: { type: String, values: ['and', 'or'], desc: 'Choose how to use selected tags: and (for visits with all tags, by default) / or (for visits with at least one tag).', default: 'and' }) { |m|
+    m.delete_prefix('_')
+  }
   expose(:updated_at, documentation: { type: DateTime, desc: 'Last Updated At'})
   expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
     if options[:geojson] && options[:geojson] != :false

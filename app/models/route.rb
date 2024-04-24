@@ -36,7 +36,7 @@ class Route < ApplicationRecord
 
   before_update :update_vehicle_usage, :update_geojson
 
-  after_initialize :assign_defaults, if: 'new_record?'
+  after_initialize :assign_defaults, if: -> { new_record? }
   after_create :complete_geojson
   after_save { @computed = false }
 

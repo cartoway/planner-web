@@ -16,8 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class RoutesByVehiclesController < ApplicationController
-  before_filter :authenticate_user!
-  before_filter :manage_routes
+  before_action :authenticate_user!
+  before_action :manage_routes
 
   load_and_authorize_resource :vehicle
 

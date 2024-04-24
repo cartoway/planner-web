@@ -18,8 +18,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class CustomersController < ApplicationController
-  before_filter :authenticate_user!
-  before_filter :set_customer, only: %i[edit update delete_vehicle]
+  before_action :authenticate_user!
+  before_action :set_customer, only: %i[edit update delete_vehicle]
 
   load_and_authorize_resource
 

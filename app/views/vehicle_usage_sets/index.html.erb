@@ -44,7 +44,7 @@
   </thead>
 
   <tbody class="accordion-group">
-    <% @vehicle_usage_sets.each_index do |i| vehicle_usage_set = @vehicle_usage_sets[i] %>
+    <% @vehicle_usage_sets.each_with_index do |_v, i| vehicle_usage_set = @vehicle_usage_sets[i] %>
       <tr class="accordion-heading">
         <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
           <td><%= check_box_tag("vehicle_usage_sets[#{vehicle_usage_set.id}]", '1', false, class: "#{invisible_class} deleter-check", 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions-vehicle-usage-sets') %></td>

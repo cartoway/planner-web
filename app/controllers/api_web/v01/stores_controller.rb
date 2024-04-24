@@ -16,8 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApiWeb::V01::StoresController < ApiWeb::V01::ApiWebController
-  skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
-  before_filter :set_store, only: [:edit_position, :update_position, :show]
+  skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
+  before_action :set_store, only: [:edit_position, :update_position, :show]
   authorize_resource
 
   def index

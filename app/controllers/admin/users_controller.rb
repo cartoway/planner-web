@@ -18,8 +18,8 @@
 class Admin::UsersController < ApplicationController
   load_and_authorize_resource
 
-  before_filter :find_user, except: [:index, :new, :create, :destroy_multiple]
-  before_filter :find_customers, except: [:index, :destroy_multiple]
+  before_action :find_user, except: [:index, :new, :create, :destroy_multiple]
+  before_action :find_customers, except: [:index, :destroy_multiple]
 
   def index
     @users = User.from_customers_for_reseller_id(current_user.reseller_id)

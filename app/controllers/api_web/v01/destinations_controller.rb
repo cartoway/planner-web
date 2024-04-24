@@ -18,8 +18,8 @@
 require 'value_to_boolean'
 
 class ApiWeb::V01::DestinationsController < ApiWeb::V01::ApiWebController
-  skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
-  before_filter :set_destination, only: [:edit_position, :update_position]
+  skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
+  before_action :set_destination, only: [:edit_position, :update_position]
   authorize_resource
 
   def index

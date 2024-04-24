@@ -16,8 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class VehicleUsagesController < ApplicationController
-  before_filter :authenticate_user!
-  before_filter :set_vehicle_usage, only: [:edit, :update, :toggle]
+  before_action :authenticate_user!
+  before_action :set_vehicle_usage, only: [:edit, :update, :toggle]
 
   load_and_authorize_resource
 

@@ -235,7 +235,7 @@ class Visit < ApplicationRecord
       # Don't use local collection here, not set when save new record
       destination.customer.plannings.each do |planning|
         if !new_record? && planning.visits_include?(self)
-          if planning.tag_operation == 'or'
+          if planning.tag_operation == '_or'
             unless (planning.tags.to_a & (tags.to_a | destination.tags.to_a)).present?
               planning.visit_remove(self)
             end
