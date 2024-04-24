@@ -106,7 +106,6 @@ gem 'devise-i18n-views'
 gem 'cancancan'
 gem 'lograge'
 gem 'validates_timeliness', '< 5'
-gem 'rails_engine_decorators'
 gem 'activerecord-import'
 
 gem 'sanitize'
