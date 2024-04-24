@@ -18,7 +18,7 @@
 class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
   skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
   load_and_authorize_resource
-  before_action :manage_planning
+  before_filter :manage_planning
   around_action :includes_sub_models, only: [:print]
 
   def edit

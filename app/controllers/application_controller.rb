@@ -36,10 +36,10 @@ class ApplicationController < ActionController::Base
   layout :layout_by_resource
 
   # saves the location before loading each page so we can return to the right page.
-  before_action :set_reseller
-  before_action :api_key?, :load_vehicles
-  before_action :set_locale
-  before_action :customer_payment_period, if: :current_user
+  before_filter :set_reseller
+  before_filter :api_key?, :load_vehicles
+  before_filter :set_locale
+  before_filter :customer_payment_period, if: :current_user
   around_action :set_time_zone, if: :current_user
   around_action :track_sub_api_time
 

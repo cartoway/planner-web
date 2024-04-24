@@ -19,8 +19,8 @@
 include DeliverableByVehiclesHelper
 
 class DeliverablesByVehiclesController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set, only: %i[show]
+  before_filter :authenticate_user!
+  before_filter :set, only: %i[show]
 
   def show; end
 

@@ -17,7 +17,7 @@
 #
 class Admin::ResellersController < ApplicationController
   load_and_authorize_resource
-  before_action :set_reseller, only: [:edit, :update]
+  before_filter :set_reseller, only: [:edit, :update]
 
   def edit
   end

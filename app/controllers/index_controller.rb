@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class IndexController < ApplicationController
-  before_action :customer_payment_period_month, if: :current_user
+  before_filter :customer_payment_period_month, if: :current_user
 
   def index
     @customer = current_user && current_user.customer

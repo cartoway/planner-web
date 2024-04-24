@@ -18,8 +18,8 @@
 require 'csv'
 
 class OrderArraysController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set_order_array, only: [:show, :edit, :update, :destroy, :duplicate]
+  before_filter :authenticate_user!
+  before_filter :set_order_array, only: [:show, :edit, :update, :destroy, :duplicate]
 
   load_and_authorize_resource
 
