@@ -297,8 +297,8 @@
         'vehicle_usage_set_id': 'Configuration des véhicules'
         'vehicle_usage_set_small': 'Conf.'
         'tag_operation':
-          'and': 'tous'
-          'or': 'ou'
+          '_and': 'tous'
+          '_or': 'ou'
         'out_of_route': 'Non planifié'
       'profile':
         'name': 'Nom'

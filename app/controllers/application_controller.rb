@@ -16,6 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApplicationController < ActionController::Base
+
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
@@ -25,7 +26,6 @@ class ApplicationController < ActionController::Base
   rescue_from ActionController::InvalidAuthenticityToken, with: :server_error
   rescue_from ActiveRecord::RecordNotFound, with: :not_found_error
   rescue_from AbstractController::ActionNotFound, with: :not_found_error
-  rescue_from ActionController::UnknownController, with: :not_found_error
   rescue_from ActiveRecord::StaleObjectError, with: :database_error
   rescue_from PG::TRDeadlockDetected, with: :database_error
   rescue_from ActiveRecord::StatementInvalid, with: :database_error

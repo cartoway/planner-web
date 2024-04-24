@@ -274,8 +274,8 @@
         'vehicle_usage_set_id': 'Configuração de veículos'
         'vehicle_usage_set_small': 'Conf.'
         'tag_operation':
-          'and': 'todos'
-          'or': 'ou'
+          '_and': 'todos'
+          '_or': 'ou'
         'out_of_route': 'Não planeado'
       'profile':
         'name': 'Nome'

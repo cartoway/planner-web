@@ -296,8 +296,8 @@ en:
         vehicle_usage_set_id: Vehicles configuration
         vehicle_usage_set_small: Conf.
         tag_operation:
-          and: all
-          or: or
+          _and: all
+          _or: or
         out_of_route: Unplanned
       profile:
         name: Name

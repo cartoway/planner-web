@@ -270,8 +270,8 @@ de:
         vehicle_usage_set_id: Fahrzeugkonfiguration
         vehicle_usage_set_small: Konf.
         tag_operation:
-          and: alle
-          or: oder
+          _and: alle
+          _or: oder
         out_of_route: Ungeplant
       profile:
         name: Name

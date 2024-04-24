@@ -81,7 +81,7 @@ class PlanningsControllerTest < ActionController::TestCase
     planning = plannings(:planning_four)
 
     assert_difference('Planning.count') do
-      post :create, planning: { name: planning.name, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_two).id, zoning_ids: planning.zonings.collect(&:id), tag_operation: 'and', tag_ids: [tags(:tag_three).id, tags(:tag_four).id] }
+      post :create, planning: { name: planning.name, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_two).id, zoning_ids: planning.zonings.collect(&:id), tag_operation: '_and', tag_ids: [tags(:tag_three).id, tags(:tag_four).id] }
     end
     assert assigns(:planning).persisted?
     assert_redirected_to edit_planning_path(assigns(:planning))
@@ -91,7 +91,7 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal 1, assigns(:planning).routes[0].stops.size
 
     assert_difference('Planning.count') do
-      post :create, planning: { name: planning.name, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_two).id, zoning_ids: planning.zonings.collect(&:id), tag_operation: 'or', tag_ids: [tags(:tag_three).id, tags(:tag_four).id] }
+      post :create, planning: { name: planning.name, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_two).id, zoning_ids: planning.zonings.collect(&:id), tag_operation: '_or', tag_ids: [tags(:tag_three).id, tags(:tag_four).id] }
     end
     assert assigns(:planning).persisted?
     assert_redirected_to edit_planning_path(assigns(:planning))
