@@ -1,9 +1,9 @@
 source 'https://rubygems.org'
-ruby '< 2.7'
+ruby '< 3'
 
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 4.2'
+gem 'rails', '~> 5.2'
 # Allow haml syntax for views
 gem 'haml-rails', "~> 1.0.0"
 # Use SCSS for stylesheets
