@@ -16,7 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
-  skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
+  skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
+  load_and_authorize_resource
   before_action :manage_planning
   around_action :includes_sub_models, only: [:print]
 

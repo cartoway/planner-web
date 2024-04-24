@@ -33,7 +33,7 @@ class Planning < ApplicationRecord
   nilify_blanks
   auto_strip_attributes :name
 
-  enum tag_operation: [:and, :or]
+  enum tag_operation: [:_and_, :_or]
 
   validates :customer, presence: true
   validates :name, presence: true
@@ -352,7 +352,7 @@ class Planning < ApplicationRecord
   end
 
   def tags_compatible?(tags_)
-    if self.tag_operation == 'or'
+    if self.tag_operation == '_or'
       (tags_.to_a & tags.to_a).present?
     else
       (tags_.to_a & tags.to_a).size == tags.size
@@ -363,7 +363,7 @@ class Planning < ApplicationRecord
     plan_tags = tags.to_a
     return customer.visits if plan_tags.empty?
 
-    if self.tag_operation == 'or'
+    if self.tag_operation == '_or'
       customer.visits.select { |visit|
         (plan_tags & (visit.tags.to_a | visit.destination.tags.to_a)).present?
       }
