@@ -2,7 +2,6 @@ Rails.application.routes.draw do
   get '/api/0.1/swagger_doc.json/:all(*format)' => redirect('/api/0.1/swagger_doc/%{all}%{format}') # Workaround for silly swagger-codegen
   get '/api/100/swagger_doc.json/:all(*format)' => redirect('/api/100/swagger_doc/%{all}%{format}') # Workaround for silly swagger-codegen
   mount ApiRoot => '/api'
-  mount Rswag::Api::Engine => '/api-web/0.1'
   mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
   authenticated :user, -> user { user.admin? }  do
