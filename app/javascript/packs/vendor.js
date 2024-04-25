@@ -43,6 +43,7 @@ import 'tablesorter/dist/js/widgets/widget-filter-formatter-html5.min';
 import 'tablesorter/dist/js/widgets/widget-filter-formatter-jui.min';
 import 'tablesorter/dist/js/widgets/widget-scroller.min';
 import 'tablesorter/dist/js/widgets/widget-columnSelector.min';
+import 'tablesorter/dist/js/widgets/widget-pager.min';
 
 import 'jquery-simplecolorpicker';
 

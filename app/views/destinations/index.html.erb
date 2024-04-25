@@ -114,6 +114,23 @@
   </div>
 </div>
 
+<div id="pager" class="pager">
+  <form>
+    <div class="first fa fa-angles-left fa-fw"></div>
+    <div class="prev fa fa-chevron-left fa-fw"></div>
+    <span class="pagedisplay"></span>
+    <div class="next fa fa-chevron-right fa-fw"></div>
+    <div class="last fa fa-angles-right fa-fw"></div>
+    <div><%=t('list.number_rows')%></div>
+    <select class="pagesize btn btn-default btn-sm dropdown-toggle">
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="200">200</option>
+      <option value="all"><%=t('list.all_rows')%></option>
+    </select>
+  </form>
+</div>
+
 <div id="map_box" class="row">
   <div class="col-md-12 map-container d-flex justify-content-center">
     <div id="map"></div>

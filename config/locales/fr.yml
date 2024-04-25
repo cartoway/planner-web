@@ -32,6 +32,9 @@
   'schedule_type':
     'invalid': 'Format d''heure invalide'
   'default_time_zone': 'Paris'
+  'list':
+    'all_rows': Toutes
+    'number_rows': '# Lignes'
   'activemodel':
     'models':
       'deliverable_unit':

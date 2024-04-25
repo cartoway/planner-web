@@ -32,6 +32,9 @@ en:
   schedule_type:
     invalid: Invalid hour value
   default_time_zone: London
+  list:
+    all_rows: All rows
+    number_rows: '# Rows'
   activemodel:
     models:
       deliverable_unit:
