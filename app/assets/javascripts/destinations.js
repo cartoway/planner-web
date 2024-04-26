@@ -1284,47 +1284,7 @@ const destinations_index = function(params, api) {
   };
 
   const checkForDisplayDestinations = function(data) {
-    var isAccuracyDanger = data.destinations && $.grep(data.destinations, function(dest) {
-
-    return dest.geocoding_accuracy && dest.geocoding_accuracy < GlobalConfiguration.geocoderAccuracyWarning;
-    }).length > 0;
-
-    if (isAccuracyDanger) {
-
-      const displayDestinationsAfterModal = function() {
-        var cursorBody = $('body').css('cursor');
-        var cursorMap = $('#map').css('cursor');
-        $('body, #map').css({
-          cursor: 'progress'
-        });
-        setTimeout(function() {
-          displayDestinations(data);
-          $('body').css({
-            cursor: cursorBody
-          });
-          $('#map').css({
-            cursor: cursorMap
-          });
-        }, 200);
-      };
-
-      if (dialog_geocoding) dialog_geocoding.modal('hide');
-      $('#geocoding-danger-modal').modal({
-        keyboard: true,
-        show: true
-      });
-      $("#sort-geocoding").click(function() {
-        $('#geocoding-danger-modal').off('hidden.bs.modal', displayDestinationsAfterModal);
-        $('#geocoding-danger-modal').modal('hide');
-        sortList = [
-          [$('.tablesorter th').index($('th.geocoding')[0]), 0]
-        ];
-        displayDestinationsAfterModal();
-      });
-      $('#geocoding-danger-modal').on('hidden.bs.modal', displayDestinationsAfterModal);
-    } else {
-      displayDestinations(data);
-    }
+    displayDestinations(data);
   };
 
   var dialog_geocoding = bootstrap_dialog({
