@@ -1,0 +1,191 @@
+[
+    {
+        "name": "Public",
+        "permissions": [
+            {
+                "permission": {
+                    "name": "can_read"
+                },
+                "view_menu": {
+                    "name": "DashboardFilterStateRestApi"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_read"
+                },
+                "view_menu": {
+                    "name": "Dataset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_read"
+                },
+                "view_menu": {
+                    "name": "Dashboard"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_read"
+                },
+                "view_menu": {
+                    "name": "CssTemplate"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_read"
+                },
+                "view_menu": {
+                    "name": "SavedQuery"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_read"
+                },
+                "view_menu": {
+                    "name": "Database"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_read"
+                },
+                "view_menu": {
+                    "name": "Chart"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_write"
+                },
+                "view_menu": {
+                    "name": "DashboardFilterStateRestApi"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_get"
+                },
+                "view_menu": {
+                    "name": "OpenApi"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_query"
+                },
+                "view_menu": {
+                    "name": "Api"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_query_form_data"
+                },
+                "view_menu": {
+                    "name": "Api"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_time_range"
+                },
+                "view_menu": {
+                    "name": "Api"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_explore_json"
+                },
+                "view_menu": {
+                    "name": "Superset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_sql_json"
+                },
+                "view_menu": {
+                    "name": "Superset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_dashboard"
+                },
+                "view_menu": {
+                    "name": "Superset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_csv"
+                },
+                "view_menu": {
+                    "name": "Superset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_validate_sql_json"
+                },
+                "view_menu": {
+                    "name": "Superset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_slice_json"
+                },
+                "view_menu": {
+                    "name": "Superset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_annotation_json"
+                },
+                "view_menu": {
+                    "name": "Superset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "all_datasource_access"
+                },
+                "view_menu": {
+                    "name": "all_datasource_access"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_csrf_token"
+                },
+                "view_menu": {
+                    "name": "Superset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "can_favstar"
+                },
+                "view_menu": {
+                    "name": "Superset"
+                }
+            },
+            {
+                "permission": {
+                    "name": "schema_access"
+                },
+                "view_menu": {
+                    "name": "[planner].[history]"
+                }
+            }
+        ]
+    }
+]

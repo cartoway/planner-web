@@ -38,6 +38,7 @@ class V01::Entities::Customer < Grape::Entity
   expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys })
   expose(:router_options, using: V01::Entities::RouterOptions, documentation: { type: V01::Entities::RouterOptions })
   expose(:speed_multiplier, documentation: { type: Float })
+  expose(:history_cron_hour, documentation: { type: Integer })
 
   expose(:print_planning_annotating, documentation: { type: 'Boolean' })
   expose(:print_header, documentation: { type: String })

@@ -41,6 +41,6 @@ class Admin::ResellersController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def reseller_params
-    params.require(:reseller).permit(:host, :name, :application_name, :website_url, :welcome_url, :help_url, :contact_url, :subscription_url, :facebook_url, :twitter_url, :linkedin_url, :logo_large, :logo_small, :favicon, :url_protocol, :audience_url, :behavior_url, :customer_audience_url, :customer_behavior_url, :sms_api_key, :sms_api_secret, :external_callback_url, :external_callback_url_name, :enable_external_callback)
+    params.require(:reseller).permit(:host, :name, :application_name, :website_url, :welcome_url, :help_url, :contact_url, :subscription_url, :facebook_url, :twitter_url, :linkedin_url, :logo_large, :logo_small, :favicon, :url_protocol, :audience_url, :behavior_url, :customer_audience_url, :customer_behavior_url, :customer_dashboard_url, :sms_api_key, :sms_api_secret, :external_callback_url, :external_callback_url_name, :enable_external_callback)
   end
 end

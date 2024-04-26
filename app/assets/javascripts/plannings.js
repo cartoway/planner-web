@@ -1062,6 +1062,21 @@ export const plannings_edit = function(params) {
     return false;
   };
 
+  var historize = function() {
+    $.ajax({
+      type: 'POST',
+      url: this.href,
+      beforeSend: beforeSendWaiting,
+      success: function(data) {
+        stickyNotice(I18n.t('plannings.edit.historize_success', {c: data}));
+      },
+      complete: completeAjaxMap,
+      error: ajaxError
+    });
+    $(this).closest(".dropdown-menu").prev().dropdown("toggle");
+    return false;
+  };
+
   // called first during plan initialization (context: plan), and several times after a route need to be refreshed (context: route)
   var initRoutes = function(context, data, options) {
     fake_select2($(".color_select", context), function(select) {
@@ -2158,6 +2173,7 @@ export const plannings_edit = function(params) {
   });
 
   $('.send_sms').click(sendSMS);
+  $('.historize').click(historize);
 
   $('#isochrone_size').timeEntry({
     show24Hours: true,

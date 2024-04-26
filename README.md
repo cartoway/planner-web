@@ -247,6 +247,33 @@ Run tests:
 RAILS_ENV=test docker-compose run --rm web rake test I18N=false COVERAGE=false
 ```
 
+## Analytics
+
+Analytics can be enabled by adding `docker-compose-superset.yml` to the `COMPOSE_FILE` variable into `.env` file.
+
+Analytics should be initialized with
+```
+docker-compose exec --user postgres db psql -c "CREATE DATABASE superset;"
+docker-compose run --rm superset bash -c "
+    superset db upgrade
+    superset fab create-admin \
+        --username admin \
+        --firstname Superset \
+        --lastname Admin \
+        --email admin@superset.com \
+        --password admin
+    superset init
+    superset fab import-roles -p superset-public-permissions.json
+    "
+```
+
+Then go to Superset at localhost:8089 and setup dashboard.
+
+Add cron every hour to historyze relevant data
+```
+0 * * * * docker-compose run --rm superset_cron
+```
+
 ## Documentation
 The Web API, providing views, is statically generated while rake precompile the project.
 The REST API is, on its side, dynamically generated.

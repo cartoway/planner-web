@@ -1,0 +1,45 @@
+services:
+  superset:
+    image: superset
+    build:
+      context: docker/superset
+    depends_on:
+      - superset_redis
+    environment:
+      SUPERSET_SECRET_KEY: lkfzoiezhfoizehfoizhoihfopizajfoizafjpoizaufepoaz
+      DATABASE_DIALECT: postgresql+psycopg2
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_DB: superset
+      REDIS_HOST: superset_redis
+    volumes:
+      - ./docker/superset:/app/pythonpath
+    ports:
+      - 127.0.0.1:8088:8088
+    restart: unless-stopped
+
+  superset_redis:
+    image: redis:${REDIS_VERSION:-7-alpine}
+    restart: unless-stopped
+
+  superset_nginx:
+    image: superset_nginx
+    build:
+      context: docker/superset_nginx
+    depends_on:
+      - web
+      - superset
+    ports:
+      - 8087:8087
+
+  superset_cron:
+    profiles:
+      - superset_cron
+    extends:
+      file: docker-compose.yml
+      service: delayed-job
+    volumes:
+      - ./docker/superset/cron:/var/spool/cron/crontabs/root
+    command: cron -f -l 2

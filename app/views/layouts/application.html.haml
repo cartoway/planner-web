@@ -241,6 +241,13 @@
               #menu-settings
                 .divider.solid
 
+                - if @reseller.customer_dashboard_url && current_user.customer
+                  %li.menu-section.menu-list-item
+                    = link_to @reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s), target: '_blank' do
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-chart-line.fa-fw
+                        .hidden-menu
+                          = t 'customers.menu.analytics'
                 %li.dropdown.menu-list-item
                   - if current_user.customer
                     %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}

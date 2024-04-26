@@ -81,7 +81,7 @@ module ApplicationHelper
     url = klass.is_a?(Customer) ? klass.reseller.send(type.to_sym) : klass.send(type.to_sym)
     return if !url
 
-    url.sub('{ID}', klass.id.to_s)
+    url.gsub('{ID}', klass.id.to_s)
   end
 
   def time_over_day(time_in_seconds)

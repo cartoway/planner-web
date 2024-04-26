@@ -341,6 +341,9 @@
       <%= f.toggles t 'activerecord.attributes.customer.enable_sms' do %>
         <%= f.check_box :enable_sms, '', disabled: !@customer.reseller.sms_api_key %>
       <% end %>
+      <%= f.number_field :history_cron_hour, { min: 0, max: 23, input_group: content_tag('i', '', class: 'fa fa-chart-line fa-fw')} do %>
+        <p class="help-block"><%= t '.history_cron_hour_help' %></p>
+      <% end %>
     </fieldset>
     <fieldset>
       <legend class="scheduler-border">

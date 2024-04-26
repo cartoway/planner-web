@@ -181,6 +181,7 @@ class CustomersController < ApplicationController
         :speed_multiplier,
         :layer_id,
         :uploaded_file,
+        :history_cron_hour,
         router_options: [
           :time,
           :distance,
@@ -226,6 +227,7 @@ class CustomersController < ApplicationController
         :router_id,
         :router_dimension,
         :speed_multiplier,
+        :history_cron_hour,
         router_options: [
           :time,
           :distance,

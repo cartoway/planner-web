@@ -57,6 +57,7 @@ module SharedParams
     optional :speed_multiplier, type: Float
     optional :speed_multiplicator, type: Float, documentation: { desc: 'Deprecated, use speed_multiplier instead.', hidden: true }
     mutually_exclusive :speed_multiplier, :speed_multiplicator
+    optional :history_cron_hour, type: Integer
 
     optional :print_planning_annotating, type: Boolean
     optional :print_header, type: String
