@@ -17,6 +17,7 @@
 #
 require 'coerce'
 require 'exceptions'
+require 'history'
 
 include PlanningsHelperApi
 include PlanningConcern
@@ -405,6 +406,16 @@ class V01::Plannings < Grape::API
       else
         error! V01::Status.code_response(:code_403), 403
       end
+    end
+
+    desc 'Historize the planning.',
+      nickname: 'historizePlanning',
+      success: V01::Status.success(:code_204),
+      failure: V01::Status.failures
+    post ':id/historize' do
+      planning = current_customer.plannings.where(id: params[:id]).first!
+      History.historize(false, planning.id)
+      status 204
     end
 
     # For internal usage

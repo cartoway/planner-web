@@ -165,6 +165,11 @@
                     %a.send_sms{href: "/api/0.1/plannings/#{@planning.id}/send_sms"}
                       %i.fa.fa-mobile.fa-fw
                       = t '.send_sms'
+                %li.divider{role: "separator"}
+                %li
+                  %a.historize{href: "/api/0.1/plannings/#{@planning.id}/historize"}
+                    %i.fa.fa-chart-line.fa-fw
+                    = t '.historize'
             - if @manage_planning[:manage_print]
               = link_to api_web_v01_print_planning_path(@planning), class: 'btn btn-default btn-sm', title: t('.export.print') do
                 %i.fa.fa-print.fa-fw

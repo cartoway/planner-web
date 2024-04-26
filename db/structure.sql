@@ -124,7 +124,8 @@ CREATE TABLE public.customers (
     print_barcode character varying,
     sms_concat boolean DEFAULT false NOT NULL,
     sms_from_customer_name boolean DEFAULT false NOT NULL,
-    optimization_minimal_time double precision
+    optimization_minimal_time double precision,
+    history_cron_hour integer
 );
 
 
@@ -270,6 +271,30 @@ CREATE SEQUENCE public.destinations_id_seq
 --
 
 ALTER SEQUENCE public.destinations_id_seq OWNED BY public.destinations.id;
+
+
+--
+-- Name: history_stops; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.history_stops (
+    schema_version character varying NOT NULL,
+    date timestamp without time zone NOT NULL,
+    reseller_id integer NOT NULL,
+    customer_id integer NOT NULL,
+    vehicle_usage_id integer,
+    vehicle_id integer,
+    router_mode character varying,
+    planning_id integer NOT NULL,
+    route_id integer NOT NULL,
+    vehicle_usage jsonb,
+    vehicle jsonb,
+    planning jsonb,
+    route jsonb,
+    stops jsonb,
+    stops_count integer,
+    stops_active_count integer
+);
 
 
 --
@@ -599,7 +624,8 @@ CREATE TABLE public.resellers (
     authorized_fleet_administration boolean DEFAULT false,
     external_callback_url character varying,
     external_callback_url_name character varying,
-    enable_external_callback boolean
+    enable_external_callback boolean,
+    customer_dashboard_url character varying
 );
 
 
@@ -2017,6 +2043,13 @@ CREATE INDEX index_visits_on_destination_id ON public.visits USING btree (destin
 
 
 --
+-- Name: stops_idx_customer_id_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX stops_idx_customer_id_date ON public.history_stops USING btree (customer_id, date);
+
+
+--
 -- Name: unique_schema_migrations; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2357,6 +2390,14 @@ ALTER TABLE ONLY public.profiles_routers
 
 ALTER TABLE ONLY public.routes
     ADD CONSTRAINT fk_routes_planning_id FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
+
+
+--
+-- Name: history_stops fk_stops_customer_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.history_stops
+    ADD CONSTRAINT fk_stops_customer_id FOREIGN KEY (customer_id) REFERENCES public.customers(id) ON DELETE CASCADE;
 
 
 --
@@ -2970,4 +3011,8 @@ INSERT INTO schema_migrations (version) VALUES ('20240219091818');
 INSERT INTO schema_migrations (version) VALUES ('20240311183150');
 
 INSERT INTO schema_migrations (version) VALUES ('20240415072208');
+
+INSERT INTO schema_migrations (version) VALUES ('20240504152464');
+
+INSERT INTO schema_migrations (version) VALUES ('20240504152465');
 

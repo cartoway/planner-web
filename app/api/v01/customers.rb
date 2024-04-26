@@ -77,6 +77,7 @@ class V01::Customers < Grape::API
           :router_id,
           :router_dimension,
           :speed_multiplier,
+          :history_cron_hour,
           router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction],
           advanced_options: permit_recursive_params(p[:advanced_options]),
           devices: permit_recursive_params(p[:devices]))
@@ -105,6 +106,7 @@ class V01::Customers < Grape::API
           :router_id,
           :router_dimension,
           :speed_multiplier,
+          :history_cron_hour,
           router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction],
           advanced_options: permit_recursive_params(p[:advanced_options]),
           devices: permit_recursive_params(p[:devices]))

@@ -179,6 +179,7 @@ en:
         sms_concat: Long SMS
         sms_from_customer_name: SMS sender
         enable_external_callback: Enable Callback URL
+        history_cron_hour: Hour of historisation
         print_planning_annotating: Include plan annotating
         print_header: Routes header
         print_map: Include map
@@ -320,6 +321,7 @@ en:
         behavior_url: Behavior URL
         customer_audience_url: Customer's Audience URL
         customer_behavior_url: Customer's Behavior URL
+        customer_dashboard_url: Customer's Dashboard URL
       route:
         distance: Distance
         emission: Emission
@@ -744,8 +746,9 @@ en:
           "{LG}" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/contact-support/).'
         subscription_url_help: 'Web page address with subscription content for a test customer. It''s possible to use
           "{LG}" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/mapotempo-web-subscription-request).'
-        audience_url_help: 'Web page adress that contains the audience Dashboard. It''s possible to use "{ID}" which will be replaced by the number of days (ie: https://analytics.cartoway.com?id={ID}'
-        behavior_url_help: 'Web page adress that contains the behavior Dashboard. It''s possible to use "{ID}" which will be replaced by the number of days (ie: https://analytics.cartoway.com?id={ID}'
+        customer_dashboard_url_help: 'Web page adress that contains the customer Dashboard. It''s possible to use "{ID}" which will be replaced by the customer ID (ie: https://analytics.cartoway.com?id={ID}'
+        audience_url_help: 'Web page adress that contains the audience Dashboard. It''s possible to use "{ID}" which will be replaced by the customer ID (ie: https://analytics.cartoway.com?id={ID}'
+        behavior_url_help: 'Web page adress that contains the behavior Dashboard. It''s possible to use "{ID}" which will be replaced by the customer ID (ie: https://analytics.cartoway.com?id={ID}'
         customer_audience_url_help: 'Web page adress that contains the audience Dashboard for a customer. It''s possible to use "{ID}" which will be replaced by the customer ID (ie: https://analytics.cartoway.com?id={ID}'
         customer_behavior_url_help: 'Web page adress that contains the behavior Dashboard for a customer. It''s possible to use "{ID}" which will be replaced by the customer ID (ie: https://analytics.cartoway.com?id={ID}'
         facebook_url_help: Reseller Facebook link
@@ -794,6 +797,7 @@ en:
       customer: Global settings
       user_settings: User Settings
       customers: Accounts
+      analytics: Analytics
     edit:
       title: Editing global settings
       send_email: Send Confirmation E-Mail
@@ -891,6 +895,7 @@ en:
       max_destinations_help: Maximum number of allowed destinations into the account.
       max_vehicle_usage_sets_default: '%{n} (default value)'
       max_vehicle_usage_sets_help: Maximum number of allowed vehicle base settings into the account.
+      history_cron_hour_help: Hour at which the data is taken to be historised. If not filled in, no historization.
       optimization_max_split_size_default: '%{n} (default value)'
       optimization_max_split_size_help: Maximum number of points to group in case problem
         is too much heavy to optimize. Greater the value is, better the result of
@@ -945,6 +950,7 @@ en:
       speed_multiplier_help: A value higher than 100% means higher speed.
       audience_url_help: Go to the customer dashboard Audience page
       behavior_url_help: Go to the customer dashboard Behavior page
+      customer_dashboard_url: Go to the customer dashboard page
       submit: Update Global settings
       external_callback:
         title: Callback URL
@@ -1645,6 +1651,8 @@ en:
       route_change_color_help: Change route color
       send_sms: Send a SMS to destinations
       send_sms_success: Succeed to send %{c} SMS
+      historize: Historize
+      historize_success: Historize Succeed
       popup:
         outdated: Route trace outdated. Refresh your plan (Refresh button).
         time_window_start_end_1: 'Time window 1:'

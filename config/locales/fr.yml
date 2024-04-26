@@ -179,6 +179,7 @@
         'sms_concat': 'SMS longs'
         'sms_from_customer_name': 'Expéditeur SMS'
         'enable_external_callback': 'Activer URL de rappel'
+        'history_cron_hour': 'Heure de l''historisation'
         'print_planning_annotating': 'Inclure un émargement client'
         'print_header': 'Entête des tournées'
         'print_map': 'Inclure la carte'
@@ -321,6 +322,7 @@
         'behavior_url': 'URL de comportement'
         'customer_audience_url': 'URL d''audience compte'
         'customer_behavior_url': 'URL de comportent compte'
+        'customer_dashboard_url': 'URL du tableau de bord du compte'
       'route':
         'distance': 'Distance'
         'emission': 'Émissions'
@@ -762,12 +764,12 @@
         'facebook_url_help': 'Lien Facebook du revendeur'
         'twitter_url_help': 'Lien Twitter du revendeur'
         'linkedin_url_help': 'Lien linkedIn du revendeur'
+        'customer_dashboard_url_help': 'Adresse de la page web contenant le tableau de bord
+          client. Vous pouvez utiliser « {ID} »  qui sera remplacé par par l''identifiant de l''espace client (par ex: https://analytics.cartoway.com?id={ID}'
         'audience_url_help': 'Adresse de la page web contenant votre tableau de bord
-          d''audience. Vous pouvez utiliser « {ID} »  qui sera remplacé par le nombre
-          de jours (par ex: https://analytics.cartoway.com?id={ID}'
+          d''audience. Vous pouvez utiliser « {ID} »  qui sera remplacé par par l''identifiant de l''espace client (par ex: https://analytics.cartoway.com?id={ID}'
         'behavior_url_help': 'Adresse de la page web contenant votre tableau de bord
-          de comportement. Vous pouvez utiliser « {ID} »  qui sera remplacé par le
-          nombre de jours (par ex: https://analytics.cartoway.com?id={ID}'
+          de comportement. Vous pouvez utiliser « {ID} »  qui sera remplacé par lpar l''identifiant de l''espace client (par ex: https://analytics.cartoway.com?id={ID}'
         'customer_audience_url_help': 'Adresse de la page web contenant votre tableau
           de bord d''audience pour un compte spécifique. Vous pouvez utiliser « {ID} »  qui
           sera remplacé par l''identifiant de l''espace client (par ex: https://analytics.cartoway.com?id={ID}'
@@ -818,6 +820,7 @@
       'customer': 'Paramétrage de l''espace client'
       'user_settings': 'Paramètres utilisateur'
       'customers': 'Espaces clients'
+      'analytics': 'Statistiques'
     'edit':
       'title': 'Modifier paramétrage de l''espace client'
       'send_email': 'Envoyer email de confirmation'
@@ -916,6 +919,7 @@
       'max_vehicle_usage_sets_default': '%{n} (valeur par défaut)'
       'max_vehicle_usage_sets_help': 'Nombre maximal de configurations des véhicules
         autorisées dans le compte.'
+      'history_cron_hour_help': 'Heure à laquelle sont prises les données pour être historisé. Si non rensigné, pas d''historisation.'
       'optimization_max_split_size_default': '%{n} (valeur par défaut)'
       'optimization_max_split_size_help': 'Nombre de points maximal à regrouper dans
         le cas d''un problème à optimiser trop gros. Plus la valeur est grande, meilleur
@@ -986,6 +990,8 @@
         client'
       'behavior_url_help': 'Se rendre sur le tableau de bord comportemental pour ce
         espace client'
+      'customer_dashboard_url': 'Se rendre sur le tableau de bord pour ce compte
+        client'
       'submit': 'Enregistrer paramétrage de l''espace client'
       'external_callback':
         'title': 'URL de rappel'
@@ -1761,6 +1767,8 @@
       'route_change_color_help': 'Changer la couleur de la tournée'
       'send_sms': 'Envoyer un SMS aux clients'
       'send_sms_success': 'Envoi de %{c} SMS avec succès'
+      'historize': 'Historiser'
+      'historize_success': 'Historisé avec succès'
       'popup':
         'outdated': 'Tracé de la tournée obsolète. Veuillez recalculer votre plan
           de tournées (bouton Actualiser).'
