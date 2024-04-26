@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class Destination < Location
-  default_scope { order('geocoding_accuracy ASC NULLS LAST, id') }
+  default_scope { order(:id) }
 
   has_many :visits, inverse_of: :destination, dependent: :delete_all, autosave: true
   accepts_nested_attributes_for :visits, allow_destroy: true
