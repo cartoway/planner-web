@@ -34,7 +34,7 @@
   'default_time_zone': 'Paris'
   'list':
     'all_rows': Toutes
-    'number_rows': '# Lignes'
+    'rows': 'Lignes'
   'activemodel':
     'models':
       'deliverable_unit':

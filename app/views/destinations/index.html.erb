@@ -13,13 +13,27 @@
 <% end %>
 
 <div class="row row-top">
-  <div class="col-md-6">
+  <div class="col-md-5">
     <button id="add" type="button" class="btn btn-primary btn-sm"><i class="fa fa-plus fa-fw"></i> <%= t '.new' %></button>
     <button id="multiple-delete" class="btn btn-danger btn-sm"><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %></button>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-3">
     <span id="count"></span> <%= t 'activerecord.models.destinations', count: 10 %>
     - <span id="count-visits"></span> <%= t 'activerecord.models.visits', count: 10 %>
+  </div>
+  <div class='col-md-2'>
+    <div id="pager" class="pager pull-right" style="padding: unset;">
+      <form>
+        <select class="pagesize btn btn-default btn-sm dropdown-toggle">
+          <option value="100"><%=t('list.rows')%></option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+          <option value="500">500</option>
+          <option value="1000">1000</option>
+          <option value="all"><%=t('list.all_rows')%></option>
+        </select>
+      </form>
+    </div>
   </div>
   <div class="col-md-2">
     <div class="pull-right">
@@ -121,13 +135,6 @@
     <span class="pagedisplay"></span>
     <div class="next fa fa-chevron-right fa-fw"></div>
     <div class="last fa fa-angles-right fa-fw"></div>
-    <div><%=t('list.number_rows')%></div>
-    <select class="pagesize btn btn-default btn-sm dropdown-toggle">
-      <option value="50">50</option>
-      <option value="100">100</option>
-      <option value="200">200</option>
-      <option value="all"><%=t('list.all_rows')%></option>
-    </select>
   </form>
 </div>
 
