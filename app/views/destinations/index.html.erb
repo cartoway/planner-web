@@ -61,20 +61,17 @@
         </th>
         <th class="address columnSelector-disable">
           <div class="col-title">
-            <span><%= t 'activerecord.attributes.destination.street' %></span>,
-            <span><%= t 'activerecord.attributes.destination.detail' %></span>,
-            <span><%= t 'activerecord.attributes.destination.postalcode' %></span>,
-            <span><%= t 'activerecord.attributes.destination.city' %></span>
+            <span><%= t 'activerecord.attributes.destination.address' %></span>
           </div>
+        </th>
+        <th title="<%= t '.geocoding_column_help' %>" class="geocoding filter-false">
+          <div class="col-title"><%= t 'activerecord.attributes.destination.geocoding_accuracy_small' %></div>
         </th>
         <%
         # class="columnSelector-false" allows to uncheck columns in columnSelector
         # data-priority is used to hide columns depending the width of table
         # http://view.jquerymobile.com/1.3.2/dist/demos/widgets/table-column-toggle/
         %>
-        <th class="country columnSelector-false">
-          <div class="col-title"><%= t 'activerecord.attributes.destination.country' %></div>
-        </th>
         <th class="comment columnSelector-false">
           <div class="col-title"><%= t 'activerecord.attributes.destination.comment_small' %></div>
         </th>
@@ -86,14 +83,12 @@
             <div class="col-title"><%= t 'activerecord.attributes.destination.tags' %></div>
           </th>
         <% end %>
-        <th title="<%= t '.geocoding_column_help' %>" class="geocoding filter-false">
-          <div class="col-title"><%= t 'activerecord.attributes.destination.geocoding_accuracy_small' %></div>
-        </th>
         <% visit_width = {}
            visit_width[:ref] = 3 if @customer.enable_references && @customer.enable_multi_visits
            visit_width[:quantity] = 3 unless @customer.enable_orders
            visit_width[:tags] = 8 if @customer.enable_multi_visits
            visit_width[:duration] = 4
+           visit_width[:time_windows] = 16
            visit_width[:time_window_start_1] = 4
            visit_width[:time_window_end_1] = 4
            visit_width[:time_window_start_2] = 4
@@ -115,10 +110,7 @@
             <% end %>
 
             <div class="visit-subtitle" style="width: <%= visit_width[:duration] %>em;"><%= t 'activerecord.attributes.visit.duration_small' %></div>
-            <div class="visit-subtitle" style="width: <%= visit_width[:time_window_start_1] %>em;"><%= t 'activerecord.attributes.visit.time_window_start_1_small' %></div>
-            <div class="visit-subtitle" style="width: <%= visit_width[:time_window_end_1] %>em;"><%= t 'activerecord.attributes.visit.time_window_end_1_small' %></div>
-            <div class="visit-subtitle" style="width: <%= visit_width[:time_window_start_2] %>em;"><%= t 'activerecord.attributes.visit.time_window_start_2_small' %></div>
-            <div class="visit-subtitle" style="width: <%= visit_width[:time_window_end_2] %>em;"><%= t 'activerecord.attributes.visit.time_window_end_2_small' %></div>
+            <div class="visit-subtitle" style="width: <%= visit_width[:time_windows] %>em;"><%= t 'activerecord.attributes.visit.time_windows_small' %></div>
           </div>
         </th>
         <th data-sorter="false" class="filter-false columnSelector-disable"></th>

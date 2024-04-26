@@ -26,33 +26,11 @@
       <span>
         <span class="form-control input-sm">{{city}}</span>
       </span>
+      <span>
+        <span class="form-control input-sm">{{country}}</span>
+      </span>
     </span>
   </td>
-  <td class="country">
-    <span>
-      <span class="form-control input-sm">{{country}}</span>
-    </span>
-  </td>
-  <td class="comment">
-    <span class="form-control input-sm">{{comment}}</span>
-  </td>
-  <td class="phone">
-    <span class="form-control input-sm">{{phone_number}}</span>
-  </td>
-  {{^enable_multi_visits}}
-    <td class="tags">
-      {{#tags}}
-        {{#active}}
-          <span class="form-control input-sm">
-            {{#color}}{{#icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-            {{^color}}{{#icon}}<i class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-            {{#color}}{{^icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-            {{label}}
-          </span>
-        {{/active}}
-      {{/tags}}
-    </td>
-  {{/enable_multi_visits}}
   <td class="geocoding">
     <div class="block">
       <span class="geocoding_level" title="{{geocoding_level_title}}">
@@ -96,6 +74,26 @@
       {{/has_no_position}}
     </div>
   </td>
+  <td class="comment">
+    <span class="form-control input-sm">{{comment}}</span>
+  </td>
+  <td class="phone">
+    <span class="form-control input-sm">{{phone_number}}</span>
+  </td>
+  {{^enable_multi_visits}}
+    <td class="tags">
+      {{#tags}}
+        {{#active}}
+          <span class="form-control input-sm">
+            {{#color}}{{#icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+            {{^color}}{{#icon}}<i class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+            {{#color}}{{^icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+            {{label}}
+          </span>
+        {{/active}}
+      {{/tags}}
+    </td>
+  {{/enable_multi_visits}}
   <td class="visit">
     <div class="destination-visits">
       {{#visits}}
