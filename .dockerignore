@@ -4,3 +4,4 @@ Dockerfile
 .env
 node_modules
 log/*
+delayed_job_logs
