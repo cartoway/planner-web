@@ -5,3 +5,8 @@ Dockerfile
 node_modules
 log/*
 delayed_job_logs
+public/api-web/
+public/assets/
+public/javascripts/
+public/packs/
+public/upload/
