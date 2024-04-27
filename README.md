@@ -198,7 +198,6 @@ docker-compose exec --user postgres db psql -c "CREATE ROLE planner PASSWORD 'pl
 docker-compose exec --user postgres db psql -c "CREATE DATABASE planner OWNER planner ENCODING 'utf-8';"
 docker-compose exec --user postgres db psql planner -c "CREATE EXTENSION hstore;"
 docker-compose run --rm web bundle exec rake db:setup
-docker-compose run --rm web bundle exec rake db:seed
 ```
 
 ## Dev in Docker
