@@ -92,7 +92,9 @@ en:
         one: profile
         other: profiles
       reseller: Reseller
-      resellers: Resellers
+      resellers:
+        one: reseller
+        other: resellers
       route: Route
       routes:
         one: route

@@ -92,7 +92,9 @@
         'one': 'profil'
         'other': 'profils'
       'reseller': 'Partenaire'
-      'resellers': 'Partenaires'
+      'resellers':
+        'one': 'partenaire'
+        'other': 'partenaires'
       'route': 'Tournée'
       'routes':
         'one': 'tournée'
