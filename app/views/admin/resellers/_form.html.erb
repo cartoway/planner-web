@@ -3,11 +3,11 @@
   <%= f.text_field :host, required: true, help: t('.host_help') %>
 
   <div class="form-group">
-    <label class="col-md-2 control-label" for="reseller_url_protocol_http">
+    <label class=" control-label col-md-offset-2 col-md-7" for="reseller_url_protocol_http">
       <%= t('activerecord.attributes.reseller.url_protocol') %>
     </label>
 
-    <div class="col-md-6 input-append form-inline">
+    <div class="col-md-offset-2 col-md-8 field">
       <label>
         <input type="radio" name="reseller[url_protocol]" id="reseller_url_protocol_http" value="http" <%= @reseller.url_protocol == 'http' ? 'checked' : '' %>/>
         <%= t('admin.resellers.form.protocol_url_http') %>
