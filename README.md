@@ -200,6 +200,11 @@ docker-compose exec --user postgres db psql planner -c "CREATE EXTENSION hstore;
 docker-compose run --rm web bundle exec rake db:setup
 ```
 
+Update the database schema after version update with
+```
+docker-compose run --rm web bundle exec rake db:migrate
+```
+
 ## Dev in Docker
 
 For dev in docker add `SUPERUSER`.
