@@ -271,7 +271,7 @@ Then go to Superset at localhost:8089 and setup dashboard.
 
 Add cron every hour to historyze relevant data
 ```
-0 * * * * docker-compose run --rm superset_cron
+0 * * * * cd planner-web && docker-compose run --rm web bundle exec rake db:history:historize
 ```
 
 ## Documentation

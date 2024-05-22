@@ -33,13 +33,3 @@ services:
       - superset
     ports:
       - 8087:8087
-
-  superset_cron:
-    profiles:
-      - superset_cron
-    extends:
-      file: docker-compose.yml
-      service: delayed-job
-    volumes:
-      - ./docker/superset/cron:/var/spool/cron/crontabs/root
-    command: cron -f -l 2
