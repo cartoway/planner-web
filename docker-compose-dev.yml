@@ -13,3 +13,5 @@ services:
   delayed-job:
     volumes:
       - .:/srv/app
+    deploy:
+      replicas: 1
