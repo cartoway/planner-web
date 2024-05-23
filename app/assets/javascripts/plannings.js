@@ -831,6 +831,18 @@ export const plannings_edit = function(params) {
   $('#planning_zoning_ids').change(function() {
     layer_zoning.clearLayers();
     var ids = $(this).val();
+    $.ajax({
+      type: 'PUT',
+      data: JSON.stringify({
+        zoning_ids: ids,
+      }),
+      contentType: 'application/json',
+      url: '/api/0.1/plannings/' + planning_id + '.json',
+      beforeSend: beforeSendWaiting,
+      complete: completeAjaxMap,
+      error: ajaxError
+    });
+
     if (ids && ids.length > 0) {
       $.each(ids, function(i, id) {
         $.ajax({
