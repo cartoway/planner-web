@@ -169,7 +169,7 @@ Install Docker Engine : [https://docs.docker.com/engine/install/](https://docs.d
 
 ## Building
 ```
-docker-compose build
+docker compose build
 ```
 
 ## Settings
@@ -187,42 +187,42 @@ COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml
 ## Run
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Initializing database
 
 ```
-docker-compose up -d
-docker-compose exec --user postgres db psql -c "CREATE ROLE planner PASSWORD 'planner' LOGIN;"
-docker-compose exec --user postgres db psql -c "CREATE DATABASE planner OWNER planner ENCODING 'utf-8';"
-docker-compose exec --user postgres db psql planner -c "CREATE EXTENSION hstore;"
-docker-compose run --rm web bundle exec rake db:setup
+docker compose up -d
+docker compose exec --user postgres db psql -c "CREATE ROLE planner PASSWORD 'planner' LOGIN;"
+docker compose exec --user postgres db psql -c "CREATE DATABASE planner OWNER planner ENCODING 'utf-8';"
+docker compose exec --user postgres db psql planner -c "CREATE EXTENSION hstore;"
+docker compose run --rm web bundle exec rake db:setup
 ```
 
 Update the database schema after version update with
 ```
-docker-compose run --rm web bundle exec rake db:migrate
+docker compose run --rm web bundle exec rake db:migrate
 ```
 
 ## Dev in Docker
 
 For dev in docker add `SUPERUSER`.
 ```
-# docker-compose exec --user postgres db psql -c "ALTER USER planner WITH SUPERUSER;"
+# docker compose exec --user postgres db psql -c "ALTER USER planner WITH SUPERUSER;"
 ```
 
 To reset the instance
 ```
-docker-compose down
-docker-compose up -d db
-docker-compose exec --user postgres db psql -c "DROP DATABASE planner;"
-docker-compose exec --user postgres db psql -c "DROP ROLE planner;"
+docker compose down
+docker compose up -d db
+docker compose exec --user postgres db psql -c "DROP DATABASE planner;"
+docker compose exec --user postgres db psql -c "DROP ROLE planner;"
 ```
 
 Update the `db/structure.sql` file
 ```
-docker-compose run --rm web bundle exec rake db:structure:dump
+docker compose run --rm web bundle exec rake db:structure:dump
 ```
 
 ## Dev in Docker through VSCode
@@ -237,14 +237,14 @@ docker-compose run --rm web bundle exec rake db:structure:dump
 
 Prepare for tests:
 ```
-docker-compose exec --user postgres db psql -c "CREATE DATABASE test OWNER planner;"
-RAILS_ENV=test docker-compose run --rm web bundle exec rake i18n:js:export
-RAILS_ENV=test docker-compose run --rm web bundle exec rake assets:precompile
+docker compose exec --user postgres db psql -c "CREATE DATABASE test OWNER planner;"
+RAILS_ENV=test docker compose run --rm web bundle exec rake i18n:js:export
+RAILS_ENV=test docker compose run --rm web bundle exec rake assets:precompile
 ```
 
 Run tests:
 ```
-RAILS_ENV=test docker-compose run --rm web rake test I18N=false COVERAGE=false
+RAILS_ENV=test docker compose run --rm web rake test I18N=false COVERAGE=false
 ```
 
 ## Analytics
@@ -253,8 +253,8 @@ Analytics can be enabled by adding `docker-compose-superset.yml` to the `COMPOSE
 
 Analytics should be initialized with
 ```
-docker-compose exec --user postgres db psql -c "CREATE DATABASE superset;"
-docker-compose run --rm superset bash -c "
+docker compose exec --user postgres db psql -c "CREATE DATABASE superset;"
+docker compose run --rm superset bash -c "
     superset db upgrade
     superset fab create-admin \
         --username admin \
@@ -271,7 +271,7 @@ Then go to Superset at localhost:8089 and setup dashboard.
 
 Add cron every hour to historyze relevant data
 ```
-0 * * * * cd planner-web && docker-compose run --rm web bundle exec rake db:history:historize
+0 * * * * cd planner-web && docker compose run --rm web bundle exec rake db:history:historize
 ```
 
 ## Documentation
