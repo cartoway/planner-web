@@ -47,7 +47,7 @@ SELECT
       ) ORDER BY stops.index)
   END AS stops,
   count(stops) AS stops_count,
-  sum(CASE WHEN stops.active THEN 1 ELSE 0 END) AS stops_active_count
+  sum(CASE WHEN vehicles.id IS NOT NULL AND stops.active THEN 1 ELSE 0 END) AS stops_active_count
 FROM
   customers
   JOIN plannings ON
