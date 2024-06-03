@@ -1,4 +1,4 @@
-- options = { label_class: 'col-md-offset-2 col-md-7', control_col: 'col-md-2', check_box_class: 'col-md-offset-2-important' }.merge(options || {})
+- options = { help_label_class: 'col-md-offset-2 col-md-7', label_class: 'col-md-offset-2 col-md-7 hidden', control_col: 'col-md-2', check_box_class: 'col-md-offset-2-important' }.merge(options || {})
 - if local_assigns.key? :field
   = form.form_group field, { label: { text: label }, style: ('margin-bottom: 0 !important;' if local_assigns.key?(:help)) }.merge(options) do
     = local_assigns[:form].check_box field, { label: '' }.merge(options)
@@ -7,5 +7,5 @@
     %input{ name: name, value: "false", type: "hidden" }
     = check_box_tag name, 1, checked, options.merge(class: options[:check_box_class])
 - if local_assigns.key? :help
-  %p.check-box.help-block{ class: options[:label_class] }
+  %p.check-box.help-block{ class: options[:help_label_class] }
     = help

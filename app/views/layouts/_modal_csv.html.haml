@@ -9,7 +9,7 @@
     .modal-body
       .container-fluid
         %input{name: "spreadsheet-route", type: "hidden", value: ""}/
-        .row.form-group
+        .row.row.form-group
           %label.col-md-3.control-label= t 'plannings.edit.dialog.spreadsheet.stops'
           .col-md-9
             %div
@@ -28,7 +28,7 @@
               %label
                 %input.spreadsheet-stops{checked: "checked", name: "spreadsheet-stops-inactives", type: "checkbox", value: "inactive"}/
                 %span= t 'plannings.edit.dialog.spreadsheet.stops_inactives'
-        .row.form-group
+        .row.row.form-group
           %label.col-md-3.control-label= t 'plannings.edit.dialog.spreadsheet.columns'
           .col-md-9
             #spreadsheet-columns.row
@@ -46,7 +46,7 @@
                 %ul#columns-skip.columns-export-list
             .row
               %p.help-block= t 'plannings.edit.dialog.spreadsheet.columns_DnD_help'
-        .row.form-group.invisible
+        .row.row.form-group.invisible
           %label.col-md-3.control-label= t 'plannings.edit.dialog.spreadsheet.format'
           .col-md-5
             %label

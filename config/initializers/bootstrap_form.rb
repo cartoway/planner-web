@@ -1,4 +1,20 @@
 module BootstrapForm
+  module FormGroup
+    def form_group_default_class
+      (layout == :inline ? "col" : "col-md-8")
+    end
+  end
+
+  module Helpers
+    module Bootstrap
+      def input_group_content(content)
+        return content if content.include?("btn")
+
+        tag.span(content, class: "input-group-addon")
+      end
+    end
+  end
+
   class FormBuilder
     def default_label_col
       'col-md-offset-2 col-md-7'
@@ -21,7 +37,7 @@ module BootstrapForm
       object = self.object.class.name.snakecase
 
       render_haml <<-HAML, object: object, action: action, message: message, icon: icon, disable_with: disable_with
-        .form-group{ id: "#{object}_div_input" }
+        .row.row.form-group{ id: "#{object}_div_input" }
           .col-md-offset-2.col-md-6
             %button{ name: 'button', type: 'submit', class: "#{button || 'btn btn-primary'}", title: "#{title}", data: { disable_with: "#{disable_with}"}}
               %i.fa{ class: "#{icon || 'fa-floppy-disk'}" }

@@ -9,7 +9,7 @@ options.merge!(url: "/api-web/0.1/zonings/#{@zoning.id}/#{params[:action]}") if 
   <% end %>
   <% if @manage_zoning[:manage_edit] || @manage_zoning[:manage_organize] %>
     <% if @plannings && !@plannings.empty? %>
-      <div class="form-group">
+      <div class="row form-group">
         <label class="col-md-offset-2 col-md-8 field" for="planning_id"><%= t '.planning_id' %></label>
         <div class="col-md-offset-2 col-md-8 field">
           <%= select_tag 'planning_id', options_from_collection_for_select(@plannings, "id", "name", @planning? @planning.id : nil), include_blank: true, class: 'form-control' %>
@@ -21,7 +21,7 @@ options.merge!(url: "/api-web/0.1/zonings/#{@zoning.id}/#{params[:action]}") if 
   <% end %>
   <% if @zoning.id %>
     <hr>
-    <div class="form-group">
+    <div class="row form-group">
       <% if @planning %>
         <div class="col-md-12">
           <p class="help-block"><%= t('.stops_from_planning', s: @planning.name) %></p>
