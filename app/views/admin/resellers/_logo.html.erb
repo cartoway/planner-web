@@ -7,7 +7,7 @@
   <%= f.file_field :logo_large, help: t('admin.resellers.form.logo_large_help') %>
 
   <% if @reseller.logo_large.url %>
-    <div class="form-group">
+    <div class="row form-group">
       <div class="col-md-offset-2 col-md-6">
         <%= image_tag @reseller.logo_large.url, width: '100%' %>
       </div>
@@ -17,7 +17,7 @@
   <%= f.file_field :logo_small, help: t('admin.resellers.form.logo_small_help') %>
 
   <% if @reseller.logo_small.url %>
-    <div class="form-group">
+    <div class="row form-group">
       <div class="col-md-offset-2 col-md-6">
         <%= image_tag @reseller.logo_small.url, width: 150, height: 40 %>
       </div>
@@ -27,7 +27,7 @@
   <%= f.file_field :favicon, help: t('admin.resellers.form.favicon_help') %>
 
   <% if @reseller.favicon.url %>
-    <div class="form-group">
+    <div class="row form-group">
       <div class="col-md-offset-2 col-md-6">
         <%= image_tag @reseller.favicon.url, width: 16, height: 16 %>
       </div>

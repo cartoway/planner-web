@@ -15,7 +15,7 @@
                 <input id="isochrone_vehicle_usage_set_id" type="hidden" value="<%= @vehicle_usage_set.try(&:id) %>"/>
                 <input id="isochrone_vehicle_usage_id" type="hidden" value=""/>
               <% else %>
-                <div class="form-group">
+                <div class="row form-group">
                   <label class="col-md-4 control-label" for="vehicle_use_set"><%= t 'zonings.form.dialog.isoline.vehicle_usage_set' %></label>
                   <div class="col-md-8 input-append">
                     <div class="input-group">
@@ -30,7 +30,7 @@
                   </div>
                 </div>
               <% end %>
-              <div class="form-group">
+              <div class="row form-group">
                 <label class="col-md-4 control-label" for="size"><%= t 'zonings.form.dialog.isochrone.size' %></label>
                 <div class="col-md-8 input-append">
                   <div class="input-group">
@@ -45,7 +45,7 @@
                 </div>
               </div>
               <% if @isoline_need_time.any?{ |i| i[1] } %>
-              <div class="form-group">
+              <div class="row form-group">
                 <label class="col-md-4 control-label" for="size"><%= t 'zonings.form.dialog.isoline.date' %></label>
                 <div class="col-md-8 input-append">
                   <div class="input-group">
@@ -109,7 +109,7 @@
                 <input id="isodistance_vehicle_usage_set_id" type="hidden" value="<%= @vehicle_usage_set.try(&:id) %>"/>
                 <input id="isodistance_vehicle_usage_id" type="hidden" value=""/>
               <% else %>
-                <div class="form-group">
+                <div class="row form-group">
                   <label class="col-md-4 control-label" for="vehicle_use_set"><%= t 'zonings.form.dialog.isoline.vehicle_usage_set' %></label>
                   <div class="col-md-8 input-append">
                     <div class="input-group">
@@ -124,7 +124,7 @@
                   </div>
                 </div>
               <% end %>
-              <div class="form-group">
+              <div class="row form-group">
                 <label class="col-md-4 control-label" for="size"><%= t 'zonings.form.dialog.isodistance.size' %></label>
                 <div class="col-md-8 input-append">
                   <div class="input-group">
@@ -142,7 +142,7 @@
                 </div>
               </div>
               <% if @isoline_need_time.any?{ |i| i[1] } %>
-              <div class="form-group">
+              <div class="row form-group">
                 <label class="col-md-4 control-label" for="size"><%= t 'zonings.form.dialog.isoline.date' %></label>
                 <div class="col-md-8 input-append">
                   <div class="input-group">
