@@ -1,7 +1,7 @@
 <%= bootstrap_form_for @vehicle_usage_set, layout: :horizontal do |f| %>
   <%= render 'shared/error_messages', model: @vehicle_usage_set %>
   <%= f.text_field :name, required: true %>
-  <div id="vehicle_usage_set_store_input" class="form-group">
+  <div id="vehicle_usage_set_store_input" class="row form-group">
     <label class="sr-only" for="vehicle_usage_set_store_start"><%= t 'activerecord.attributes.vehicle_usage_set.store_start' %></label>
     <label class="sr-only" for="vehicle_usage_set_store_stop"><%= t 'activerecord.attributes.vehicle_usage_set.store_stop' %></label>
     <label class="col-md-offset-2 col-md-8 field"><%= t '.stores' %></label>
@@ -16,7 +16,7 @@
       <p class="help-block"><%= t '.stores_help' %></p>
     </div>
   </div>
-  <div id="vehicle_usage_set_time_window_start_time_window_end_input" class="form-group">
+  <div id="vehicle_usage_set_time_window_start_time_window_end_input" class="row form-group">
     <label class="sr-only" for="vehicle_usage_set_open"><%= t 'activerecord.attributes.vehicle_usage_set.time_window_start' %></label>
     <label class="sr-only" for="vehicle_usage_set_close"><%= t 'activerecord.attributes.vehicle_usage_set.time_window_end' %></label>
     <label class="col-md-offset-2 col-md-8 field"><%= t '.time_window_start_end' %></label>
@@ -51,7 +51,7 @@
       <p class="help-block"><%= t '.time_window_start_end_help' %></p>
     </div>
   </div>
-  <div id="vehicle_usage_set_service_time_input" class="form-group">
+  <div id="vehicle_usage_set_service_time_input" class="row form-group">
     <label class="sr-only" for="vehicle_usage_set_service_time_start"><%= t 'activerecord.attributes.vehicle_usage_set.service_time_start' %></label>
     <label class="sr-only" for="vehicle_usage_set_service_time_end"><%= t 'activerecord.attributes.vehicle_usage_set.service_time_end' %></label>
     <label class="col-md-offset-2 col-md-8 field"><%= t '.service_times' %></label>
@@ -72,7 +72,7 @@
       <p class="help-block"><%= t '.service_times_help' %></p>
     </div>
   </div>
-  <div id="vehicle_usage_set_work_time_input" class="form-group">
+  <div id="vehicle_usage_set_work_time_input" class="row form-group">
     <label class="sr-only" for="vehicle_usage_set_work_time"><%= t 'activerecord.attributes.vehicle_usage_set.work_time' %></label>
     <label class="col-md-offset-2 col-md-8 field"><%= t '.work_time' %></label>
     <div class="col-md-offset-2 col-md-8 field">
@@ -86,7 +86,7 @@
       <p class="help-block"><%= t '.work_time_help' %></p>
     </div>
   </div>
-  <div id="vehicle_usage_vehicle_max_distance" class="form-group">
+  <div id="vehicle_usage_vehicle_max_distance" class="row form-group">
     <label class="sr-only" for="vehicle_usage_vehicle_max_distance"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
     <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
     <div class="col-md-offset-2 col-md-8 field">
@@ -101,7 +101,7 @@
       <p class="help-block"><%= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_distance.help_miles') : t('vehicles.form.max_distance.help') %></p>
     </div>
   </div>
-  <div id="vehicle_usage_vehicle_max_ride_distance_input" class="form-group">
+  <div id="vehicle_usage_vehicle_max_ride_distance_input" class="row form-group">
     <label class="sr-only" for="vehicle_usage_set_max_ride_distance"><%= t 'activerecord.attributes.vehicle.max_ride_distance' %></label>
     <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_ride_distance' %></label>
     <div class="col-md-offset-2 col-md-8 field">
@@ -116,7 +116,7 @@
       <p class="help-block"><%= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_ride_distance.help_miles') : t('vehicles.form.max_ride_distance.help') %></p>
     </div>
   </div>
-  <div id="vehicle_usage_vehicle_max_ride_duration_input" class="form-group">
+  <div id="vehicle_usage_vehicle_max_ride_duration_input" class="row form-group">
     <label class="sr-only" for="vehicle_usage_set_max_ride_duration"><%= t 'activerecord.attributes.vehicle.max_ride_duration' %></label>
     <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_ride_duration' %></label>
     <div class="col-md-offset-2 col-md-8 field">
@@ -130,7 +130,7 @@
       <p class="help-block"><%= t('vehicles.form.max_ride_duration.help') %></p>
     </div>
   </div>
-  <div id="vehicle_usage_set_rest_input" class="form-group">
+  <div id="vehicle_usage_set_rest_input" class="row form-group">
     <label class="sr-only" for="vehicle_usage_set_rest_duration"><%= t 'activerecord.attributes.vehicle_usage_set.rest_duration' %></label>
     <label class="sr-only" for="vehicle_usage_set_store_rest"><%= t 'activerecord.attributes.vehicle_usage_set.store_rest' %></label>
     <label class="col-md-offset-2 col-md-8 field"><%= t '.rest_duration_store' %></label>
@@ -148,7 +148,7 @@
       <p class="help-block"><%= t '.rest_duration.help' %></p>
     </div>
   </div>
-  <div id="vehicle_usage_set_rest_start_stop_input" class="form-group">
+  <div id="vehicle_usage_set_rest_start_stop_input" class="row form-group">
     <label class="sr-only" for="vehicle_usage_set_rest_start"><%= t 'activerecord.attributes.vehicle_usage_set.rest_start' %></label>
     <label class="sr-only" for="vehicle_usage_set_rest_stop"><%= t 'activerecord.attributes.vehicle_usage_set.rest_stop' %></label>
     <label class="col-md-offset-2 col-md-8 field"><%= t '.rest_start_stop' %></label>

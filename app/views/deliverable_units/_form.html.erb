@@ -5,7 +5,7 @@
   <%= f.text_field :label, { placeholder: t('.label_placeholder'), help: t('.label_help') } %>
   <%= f.number_field :default_quantity, { step: 'any', help: t('.default_quantity_help') } %>
   <%= f.number_field :default_capacity, { step: 'any', min: '0', help: t('.default_capacity_help') } %>
-  <div class="form-group" id="deliverable_unit_optimization_overload_multiplier_input">
+  <div class="row form-group" id="deliverable_unit_optimization_overload_multiplier_input">
     <label class="col-md-offset-2 col-md-8 field" for="deliverable_unit_optimization_overload_multiplier"><%= t 'activerecord.attributes.deliverable_unit.optimization_overload_multiplier' %></label>
     <div class="col-md-offset-2 col-md-8 field input-append form-inline">
       <label><input type="radio" name="deliverable_unit_optimization_overload_multiplier" id="deliverable_unit_optimization_overload_multiplier_no" data-toggle="popover" data-placement="top" data-content="<%= t '.optimization_overload_multiplier_no_help' %>" value="no"<% if @deliverable_unit.optimization_overload_multiplier == 0 || (@deliverable_unit.optimization_overload_multiplier.nil? && Mapotempo::Application.config.optimize_overload_multiplier == 0) %> checked<% end %>><%= t '.optimization_overload_multiplier_no' %></label>
@@ -14,7 +14,7 @@
       <p class="help-block"><%= t '.optimization_overload_multiplier_help' %></p>
     </div>
   </div>
-  <div id="deliverable_unit_icon_input" class="form-group">
+  <div id="deliverable_unit_icon_input" class="row form-group">
     <label class="col-md-offset-2 col-md-8 field" for="deliverable_unit_icon"><%= t 'activerecord.attributes.store.icon' %></label>
     <div class="col-md-offset-2 col-md-8 field">
       <div class="input-group">

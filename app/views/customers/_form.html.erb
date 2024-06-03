@@ -10,7 +10,7 @@
   <% end %>
 
   <%= f.text_field :name, required: true, disabled: !current_user.admin?, label: {text: t('.name')} %>
-  <%= f.text_field :end_subscription, {value: @customer.end_subscription ? l(@customer.end_subscription.to_time, format: :datepicker) : nil, disabled:!current_user.admin?, append: content_tag('i', '', {class: 'fa fa-calendar fa-fw'})} %>
+  <%= f.text_field :end_subscription, {value: @customer.end_subscription ? l(@customer.end_subscription.to_time, format: :datepicker) : nil, disabled:!current_user.admin?, class: 'datepicker', append: content_tag('i', '', {class: 'fa fa-calendar fa-fw'})} %>
   <% if current_user.admin? %>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :test, label: t('activerecord.attributes.customer.test'), options: { checked: @customer.id ? @customer.test : Mapotempo::Application.config.customer_test_default } } %>
   <% end %>
@@ -262,7 +262,7 @@
       <%= render partial: 'shared/check_box', locals: { form: f, name: "customer[router_options][strict_restriction]", checked: !!@customer.router_options['strict_restriction'], label: t('activerecord.attributes.customer.router_options_strict_restriction'), help: t('customers.form.router_options_strict_restriction') } %>
     <% end %>
 
-    <div class="form-group">
+    <div class="row form-group">
       <label class="col-md-offset-2 col-md-8" for="speed_multiplier">
         <%= t('activerecord.attributes.customer.speed_multiplier') %>
       </label>
@@ -303,7 +303,7 @@
       <%= f.number_field :optimization_max_split_size, { help: t('.optimization_max_split_size_help'), placeholder: t('.optimization_max_split_size_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.optimize_max_split_size)), min: 0, append: content_tag('i', '', class: 'fa fa-gears fa-fw')} %>
       <%= f.number_field :optimization_cluster_size, { help: t('.optimization_cluster_size_help'), placeholder: t('.optimization_cluster_size_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.optimize_cluster_size)), min: 0, append: t('all.unit.second')} %>
 
-      <div class="form-group">
+      <div class="row form-group">
         <label class="col-md-offset-2 col-md-8"><%= t '.optimization_time' %></label>
         <div class="col-md-offset-2 col-md-8 field">
           <div class="input-group">
@@ -411,7 +411,7 @@
               <div class="panel-body">
                 <div class="col-md-12">
                   <% definition[:forms][:settings].each{ |field, type| %>
-                    <div class="form-group">
+                    <div class="row form-group">
                       <% name = "customer[devices][#{key}][#{field}]" %>
                       <%= f.label_tag name, t("activerecord.attributes.customer.devices.#{key}.#{field}"), class: 'control-label' %>
                       <div class="input-append">

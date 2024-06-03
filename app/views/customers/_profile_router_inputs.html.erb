@@ -1,6 +1,5 @@
 <% if current_user.admin? %>
-  <%= f.collection_select :profile_id, Profile.all, :id, :name, {}, {required: true, input_group: content_tag('i', '', class: 'fa fa-gear fa-fw')} %>
-
+  <%= f.select :profile_id, Profile.all.map{ |p| [p.name, p.id]}, {}, {required: true, input_group: content_tag('i', '', class: 'fa fa-gear fa-fw'), control_class: 'form-control' } %>
   <% if has_vehicle_with_unauthorized_router(@customer) %>
     <p class="vehicle-router-unauthorized warning has-warning"><%= t('customers.form.vehicle_router_unauthorized', profile: @customer.profile.name).html_safe %></p>
   <% end %>
@@ -11,7 +10,7 @@
   <%= hidden_field :customer, :profile_id %>
 <% end %>
 
-<div id="customer_router_input" class="form-group">
+<div id="customer_router_input" class="row form-group">
   <label class="col-md-offset-2 col-md-8" for="customer_router"><%= t('activerecord.attributes.customer.router') %></label>
   <div class="col-md-offset-2 col-md-8 field">
     <div class="input-group">
