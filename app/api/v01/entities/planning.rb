@@ -41,11 +41,11 @@ class V01::Entities::Planning < Grape::Entity
   expose(:tag_operation, documentation: { type: String, values: ['and', 'or'], desc: 'Choose how to use selected tags: and (for visits with all tags, by default) / or (for visits with at least one tag).', default: 'and' })
   expose(:updated_at, documentation: { type: DateTime, desc: 'Last Updated At'})
   expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
-    if options[:geojson] != :false || options[:with_geojson] != :false
+    if options[:geojson] && options[:geojson] != :false
       m.to_geojson(true, true,
-        if options[:geojson] == 'polyline' || options[:with_geojson] == :polyline
+        if options[:geojson] == 'polyline'
           :polyline
-        elsif options[:geojson] == 'point' || options[:with_geojson] == :point
+        elsif options[:geojson] == 'point'
           false
         else
           true
