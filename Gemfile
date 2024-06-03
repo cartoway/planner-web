@@ -85,7 +85,7 @@ group :test do
 
   # Browser tests
   gem 'capybara'
-  gem 'selenium-webdriver'
+  gem 'selenium-webdriver', '> 2.35' # API change require zip/zip to require zip
   gem 'chromedriver-helper'
 end
 
