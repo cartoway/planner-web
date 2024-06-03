@@ -93,7 +93,7 @@ $sidebar-margins: 10px;
   }
 
   #multiple_plannings_actions > .form-inline {
-    .form-group {
+    .row.form-group {
       margin-right: 5px;
     }
   }
@@ -427,7 +427,7 @@ $sidebar-margins: 10px;
         margin-right: 2px;
         padding: 5px 15px;
 
-        .form-group {
+        .row.form-group {
           margin: 5px 0 0 0;
         }
 
@@ -500,7 +500,7 @@ $sidebar-margins: 10px;
       padding: 3px;
       align-items: flex-end;
     }
-    .form-group {
+    .row.form-group {
       margin-bottom: 0px;
 
       .label {

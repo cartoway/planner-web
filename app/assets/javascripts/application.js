@@ -39,6 +39,7 @@
 //= require leaflet.pattern
 
 //= require twitter/bootstrap
+//= require bootstrap-datepicker
 //= require bootstrap-wysihtml5
 //= require bootstrap-wysihtml5/locales/fr-FR.js
 //= require bootstrap-wysihtml5/locales/en-US.js

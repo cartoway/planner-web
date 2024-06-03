@@ -373,7 +373,7 @@ const destinations_form = function(params, api) {
     $("input:checkbox[id$='_destroy']", parent).change(function() {
       var fieldset = $(this).closest('fieldset');
       $("label[for$='destroy']", fieldset).toggle(200);
-      $("div.form-group", fieldset).toggle(200);
+      $("div.row.form-group", fieldset).toggle(200);
     });
     $('.flag-destroy', parent).click(function() {
       var fieldset = $(this).closest('fieldset');
@@ -381,7 +381,7 @@ const destinations_form = function(params, api) {
         return !val;
       });
       $("label[for$='destroy']", fieldset).toggle(200);
-      $("div.form-group", fieldset).toggle(200);
+      $("div.row.form-group", fieldset).toggle(200);
     });
 
     $('[name$=\\[duration\\]]', parent).timeEntry({

@@ -122,6 +122,7 @@ gem "font-awesome-sass", "~> 6.4.2"
 gem 'twitter-bootstrap-rails'
 gem 'bootstrap_form'
 gem 'bootstrap-wysihtml5-rails'
+gem 'bootstrap-datepicker-rails'
 
 gem 'leaflet-rails', '> 1.0.2'
 gem 'leaflet-markercluster-rails', git: 'https://github.com/Mapotempo/leaflet-markercluster-rails.git' # FIXME wait for https://github.com/scpike/leaflet-markercluster-rails/pull/8
