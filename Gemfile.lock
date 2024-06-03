@@ -155,6 +155,8 @@ GEM
       debug_inspector (>= 1.2.0)
     bootsnap (1.18.3)
       msgpack (~> 1.2)
+    bootstrap-datepicker-rails (1.10.0.1)
+      railties (>= 3.0)
     bootstrap-wysihtml5-rails (0.3.3.8)
       railties (>= 3.0)
     bootstrap_form (5.0.0)
@@ -770,6 +772,7 @@ DEPENDENCIES
   better_errors
   binding_of_caller
   bootsnap
+  bootstrap-datepicker-rails
   bootstrap-wysihtml5-rails
   bootstrap_form
   brakeman

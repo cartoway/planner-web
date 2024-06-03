@@ -4,9 +4,9 @@
     - if @destination.customer.enable_references && !@destination.customer.enable_multi_visits
       = f.text_field :ref, help: t('.ref_help')
     = f.text_field :name, required: true
-    = f.text_field :street, {help: t('web.form.helpers.street'), class: "form-control pointing", append: content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually'))}
+    = f.text_field :street, {help: t('web.form.helpers.street'), class: "pointing", append: content_tag('span', content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually')), class: 'input-group-btn' )}
     = f.text_field :detail, help: t('.detail_help')
-    #destination_city_input.form-group
+    #destination_city_input.row.form-group
       %label.sr-only{for: "destination_postalcode"}= t 'activerecord.attributes.destination.postalcode'
       %label.sr-only{for: "destination_city"}= t 'activerecord.attributes.destination.city'
       %label.col-md-offset-2.col-md-8.field
@@ -19,7 +19,7 @@
           %span.input-group-addon
             %i.fa.fa-map.fa-fw
     - if !@destination.customer.with_state
-      #destination_country_input.form-group
+      #destination_country_input.row.form-group
         %label.col-md-offset-2.col-md-8.field
           = "#{t('activerecord.attributes.destination.state')}/#{t('activerecord.attributes.destination.country')}"
         .col-md-offset-2.col-md-8.field
@@ -31,7 +31,7 @@
     - else
       = f.text_field :country, {placeholder: t('.country_default', n: @destination.customer.default_country)}
     -# = @destination.geocoding_result
-    .form-group
+    .row.form-group
       %label.col-md-offset-2.col-md-8.field{for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
       .col-md-offset-2.col-md-8.field
         #geocoding_accuracy{ class: ('d-none' unless @destination.geocoding_accuracy) }
@@ -66,10 +66,10 @@
         %input.form-control{ name: "destination[displayed_geocoding_result]", value: @destination.geocoding_result['free'], readonly: 'readonly'}
       .col-md-offset-2.col-md-8.field
         #reverse-geocode
-    .form-group
+    .row.form-group
       .col-md-offset-2.col-md-offset-2.col-md-8.field
         #map.map-fixed-size
-    #destination_geoloc_input.form-group
+    #destination_geoloc_input.row.form-group
       %label.sr-only{for: "destination_lat"}= t 'activerecord.attributes.destination.lat'
       %label.sr-only{for: "destination_lnt"}= t 'activerecord.attributes.destination.lng'
       %label.col-md-offset-2.col-md-8.field
