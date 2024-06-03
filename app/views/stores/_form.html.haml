@@ -4,8 +4,8 @@
     - if @store.customer.enable_references
       = f.text_field :ref, help: t('.ref_help')
     = f.text_field :name, required: true
-    = f.text_field :street, { help: t('web.form.helpers.street'), class: "form-control pointing", append: content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually'))}
-    #store_city_input.form-group
+    = f.text_field :street, { help: t('web.form.helpers.street'), class: "form-control pointing", append: content_tag('span', content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually')), class: 'input-group-btn' )}
+    #store_city_input.row.form-group
       %label.sr-only{for: "store_postalcode"}= t 'activerecord.attributes.store.postalcode'
       %label.sr-only{for: "store_city"}= t 'activerecord.attributes.store.city'
       %label.col-md-offset-2.col-md-8.field
@@ -18,7 +18,7 @@
           %span.input-group-addon
             %i.fa.fa-map.fa-fw
     - if !@store.customer.with_state?
-      #store_country_input.form-group
+      #store_country_input.row.form-group
         %label.col-md-offset-2.col-md-8.field
           = "#{t('activerecord.attributes.store.state')}/#{t('activerecord.attributes.store.country')}"
         .col-md-offset-2.col-md-8.field
@@ -29,7 +29,7 @@
               %i.fa.fa-map.fa-fw
     - else
       = f.text_field :country, {placeholder: t('.country_default', n: @store.customer.default_country)}
-    .form-group
+    .row.form-group
       %label.col-md-offset-2.col-md-8.field{for: "store_geocoding"}= t 'activerecord.attributes.stores.geocoding_accuracy'
       .col-md-offset-2.col-md-8.field
         #geocoding_accuracy{ class: ('d-none' unless @store.geocoding_accuracy) }
@@ -64,10 +64,10 @@
         %input.form-control{ name: "store[displayed_geocoding_result]", value: @store.geocoding_result['free'], readonly: 'readonly'}
       .col-md-offset-2.col-md-8.field
         #reverse-geocode
-    .form-group
+    .row.form-group
       .col-md-offset-2.col-md-offset-2.col-md-8.field
         #map.map-fixed-size
-    #store_geoloc_input.form-group
+    #store_geoloc_input.row.form-group
       %label.sr-only{for: "store_lat"}= t 'activerecord.attributes.store.lat'
       %label.sr-only{for: "store_lnt"}= t 'activerecord.attributes.store.lng'
       %label.col-md-offset-2.col-md-8.field
@@ -79,14 +79,14 @@
           = number_field :store, :lng, step: 'any', class: 'form-control width_1_2'
           %span.input-group-addon
             %i.fa.fa-globe.fa-fw
-    #store_color_input.form-group
+    #store_color_input.row.form-group
       %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.store.color'
       .col-md-offset-2.col-md-8.field
         .input-group
           = select_tag 'store[color]', options_for_select((COLORS_TABLE + [customised_color_verification(@store[:color])]).compact.uniq, @store.color), include_blank: '#000000'
           %i#customised_color_picker.fa.fa-paint-brush{title: "#{t('activerecord.attributes.store.customised_color')}"}
           = color_field :store, :color, option = { value: customised_color_verification(@store[:color]), id: 'color_picker', name: 'fff' }
-    #store_icon_input.form-group
+    #store_icon_input.row.form-group
       %label.col-md-offset-2.col-md-8.field{for: "store_icon"}= t 'activerecord.attributes.store.icon'
       %label.sr-only{for: "store_icon_size"}= t 'activerecord.attributes.store.icon_size'
       .col-md-offset-2.col-md-8.field
