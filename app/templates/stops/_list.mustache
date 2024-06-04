@@ -232,6 +232,17 @@
                 </li>
                 <li role="separator" class="divider"></li>
               {{/notico}}
+              {{#planner}}
+                <div class="dropdown-spacing">
+                  {{#i18n}}plannings.edit.dialog.planner.title{{/i18n}} :
+                  {{vehicle.name}}
+                </div>
+                <li class="link device-operation" data-service="planner" data-operation="send" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.planner_send.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/planner}}
               {{#praxedo}}
                 <div class="dropdown-spacing">
                   {{#i18n}}plannings.edit.dialog.praxedo.title{{/i18n}} :

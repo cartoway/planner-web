@@ -109,6 +109,8 @@ en:
           notico:
             title: Notico
             agent_id: "Notico Deliv delivery man ID"
+          planner:
+            title: Cartoway Mobile
           praxedo:
             title: Praxedo
             praxedo_agent_id: "Praxedo Agent ID"
@@ -305,6 +307,10 @@ en:
         action: Clear Notico Deliv
         success: Notico Deliv trip has been cleared successfully
         fail: Failed to clear Notico Deliv
+      planner_send:
+        action: Send to Cartoway Mobile
+        success: Sent to Cartoway Mobile successfully
+        fail: Failed to send to Cartoway Mobile
       praxedo_send:
         action: Send to Praxedo
         success: Sent to Praxedo successfully
@@ -340,6 +346,9 @@ en:
           in_progress: Please wait
         notico:
           title: Notico Deliv
+          in_progress: Please wait
+        planner:
+          title: Cartoway Mobile
           in_progress: Please wait
         praxedo:
           title: Praxedo

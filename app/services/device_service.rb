@@ -20,7 +20,7 @@ class DeviceService
 
   def initialize(params)
     @customer = params[:customer]
-    @cache_object = Mapotempo::Application.config.devices.cache_object
+    @cache_object = Mapotempo::Application.config.devices.planner_cache_object
     @name = self.class.name.gsub('Service', '')
     @service_name = @name.underscore.to_sym
     @service = Mapotempo::Application.config.devices[service_name]
@@ -58,6 +58,17 @@ class DeviceService
 
     result = yield
     cache_object.write key, result
+    result
+  end
+
+  def store_cache(cache_key, vehicle_key, data)
+    stored_data = cache_object.read cache_key
+    if stored_data
+      data_index = stored_data.index{ |s_data| s_data[vehicle_key] == data[vehicle_key] }
+      stored_data[data_index] = data
+    end
+    result = stored_data || [data]
+    cache_object.write cache_key, result
     result
   end
 end

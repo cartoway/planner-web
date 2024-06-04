@@ -1911,6 +1911,14 @@ en:
   stops:
     default:
       name_rest: Rest
+    error_messages:
+      update:
+        failure: Echec de la mise à jour
+    mobile:
+      navigate: Navigate
+      back: Back
+      previous: Previous
+      next: Next
   stores:
     default:
       name: Depot number 1

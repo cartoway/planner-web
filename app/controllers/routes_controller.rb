@@ -22,11 +22,19 @@ require 'zip'
 
 class RoutesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_route, only: [:update]
+  before_action :set_route, only: [:mobile, :update]
 
   load_and_authorize_resource
 
   include PlanningExport
+
+  def mobile
+    @params = params
+    @stops = @route.stops.only_active_stop_visits
+    respond_to do |format|
+      format.html { render 'routes/mobile', locals: { route: @route }, layout: 'mobile' }
+    end
+  end
 
   def show
     @params = params
@@ -80,6 +88,23 @@ class RoutesController < ApplicationController
       else
         format.html { render action: 'edit' }
       end
+    end
+  end
+
+  def update_position
+    @customer = current_user.customer
+    if params['latitude'] && params['longitude'] && params['latitude'].is_a?(Float) && params['longitude'].is_a?(Float)
+      @customer.device.enabled_definitions.each{ |key, _value|
+        service = Object.const_get("#{key.to_s.capitalize!}Service").new({customer: @customer})
+        service.cache_position(@route.vehicle_usage.vehicle, params) if service.respond_to?(:cache_position)
+      }
+      if request.xhr?
+        head :ok
+      else
+        head :no_content
+      end
+    else
+      head :bad_request
     end
   end
 

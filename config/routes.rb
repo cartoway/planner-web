@@ -146,8 +146,13 @@ Rails.application.routes.draw do
   delete 'products' => 'products#destroy_multiple'
 
   resources :routes
+  get 'routes/:id/mobile' => 'routes#mobile'
+  patch 'routes/:id/update_position' => 'routes#update_position'
 
-  get 'stops/:id' => 'stops#show'
+  resources :stops
+  # get 'stops/:id' => 'stops#show'
+  # get 'stops/:id/edit' => 'stops#edit'
+  # patch 'stops/:id/update' => 'stops#update'
   get 'routes/:route_id/stops/by_index/:index' => 'stops#show'
 
   get 'routes_by_vehicles/:vehicle_id' => 'routes_by_vehicles#show'

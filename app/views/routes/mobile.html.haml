@@ -1,0 +1,27 @@
+.panel
+  .panel-heading
+    = @route.ref
+  #position
+  .route-stops
+    .stops
+      - @stops.each do |stop|
+        - next unless stop.active
+        .card.mb-3
+          .card-header
+            .row{ style: 'display: contents' }
+              = link_to("/stops/#{stop.id}/edit") do
+                .col-xs-1
+                  .number.label{ class: "label-#{stop.status}" }
+                    = stop.index
+                .col-xs-4
+                  - if stop.status
+                    .stop-status{ class: "stop-status-#{stop.status}" }
+                      = t("plannings.edit.stop_status.#{stop.status}")
+                .col-xs-5
+                  .title
+                    .name{ title: stop.name }
+                      = stop.name
+                .col-xs-1
+                  .fa.fa-caret-right
+
+- controller.js(route_id: @route.id, user_api_key: current_user.api_key)

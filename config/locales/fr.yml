@@ -2034,6 +2034,14 @@
   'stops':
     'default':
       'name_rest': 'Pause'
+    'error_messages':
+      'update':
+        'failure': 'Echec de la mise à jour'
+    'mobile':
+      'navigate': 'Naviguer'
+      'back': 'Retour'
+      'previous': 'Précédent'
+      'next': 'Suivant'
   'stores':
     'default':
       'name': 'Site numéro 1'
