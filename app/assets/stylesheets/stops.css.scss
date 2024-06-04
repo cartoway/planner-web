@@ -1,0 +1,38 @@
+@import "variables";
+
+[data-controller='stops'][data-action='edit'],
+[data-controller='routes'][data-action='mobile'] {
+
+  .label-planned {
+    background-color: $primary-color;
+  }
+
+  .label-started {
+    background-color: var(--warning);
+  }
+
+  .label-finished {
+    background-color: var(--success);
+  }
+
+  .label-rejected {
+    background-color: var(--danger);
+  }
+
+  .label- {
+    background-color: var(--gray);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    -webkit-box-pack: center !important;
+    -ms-flex-pack: center !important;
+    justify-content: center !important;
+  }
+
+  .active {
+    box-shadow: 2px 3px 2px rgba(0,0,0,.4);
+  }
+}
+

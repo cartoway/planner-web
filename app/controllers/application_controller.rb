@@ -38,6 +38,8 @@ class ApplicationController < ActionController::Base
   # saves the location before loading each page so we can return to the right page.
   before_action :set_reseller
   before_action :api_key?, :load_vehicles
+  before_action :driver_token?
+  before_action :set_driver
   before_action :set_locale
   before_action :customer_payment_period, if: :current_user
   around_action :set_time_zone, if: :current_user
@@ -54,6 +56,23 @@ class ApplicationController < ActionController::Base
       else
         redirect_to new_user_session_path, alert: t('web.key_not_found')
       end
+    end
+  end
+
+  def driver_token?
+    if params['token']
+      if (vehicle = Vehicle.find_by(driver_token: params['token']))
+        @current_vehicle = vehicle
+        session[:current_driver_id] = vehicle.id
+      else
+        redirect_to new_user_session_path, alert: t('web.key_not_found')
+      end
+    end
+  end
+
+  def set_driver
+    if session[:current_driver_id]
+      @current_vehicle ||= Vehicle.find(session[:current_driver_id])
     end
   end
 
@@ -132,6 +151,28 @@ class ApplicationController < ActionController::Base
   def authenticate_user!(options = {})
     if user_signed_in?
       super(options)
+    else
+      self.response_body = nil
+      respond_to do |format|
+        format.js do
+          flash[:alert] = I18n.t('devise.failure.unauthenticated')
+          js_redirect_to(root_path)
+        end
+        format.html do
+          redirect_to root_path, notice: I18n.t('devise.failure.unauthenticated')
+        end
+        format.json do
+          flash.now[:alert] = I18n.t('devise.failure.unauthenticated')
+          render json:   { error: I18n.t('devise.failure.unauthenticated') }.to_json,
+                 status: :forbidden
+        end
+      end
+    end
+  end
+
+  def authenticate_driver!
+    if vehicle_signed_in?
+      nil
     else
       self.response_body = nil
       respond_to do |format|

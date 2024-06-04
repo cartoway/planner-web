@@ -61,6 +61,10 @@ if route.vehicle_usage_id
 
     if has_route_operation && has_vehicle && has_blank_key
       json.set!(key, true)
+
+      if key == :planner
+        json.driver_token route.vehicle_usage.vehicle.driver_token
+      end
     end
   end
   if @with_stops && @with_devices

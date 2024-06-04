@@ -22,7 +22,8 @@ module PlanningsHelper
         id: vehicle.id,
         text: vehicle.name,
         color: vehicle.color,
-        available_position: vehicle.customer.device.available_position?(vehicle) && vehicle.vehicle_usages.detect{ |item| item.vehicle_usage_set == @planning.vehicle_usage_set }.active?
+        available_position: vehicle.customer.device.available_position?(vehicle) && vehicle.vehicle_usages.detect{ |item| item.vehicle_usage_set == @planning.vehicle_usage_set }.active?,
+        cache_position: vehicle.customer.device.available_cache_position?(vehicle) && vehicle.vehicle_usages.detect{ |item| item.vehicle_usage_set == @planning.vehicle_usage_set }.active?
       }
     }
   end
