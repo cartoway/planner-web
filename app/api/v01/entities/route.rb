@@ -59,7 +59,7 @@ class V01::Entities::Route < V01::Entities::RouteProperties
     m.quantities ? m.quantities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
   }
   expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
-    if options[:geojson] != :false
+    if options[:geojson] && options[:geojson] != :false
       m.to_geojson(true, true,
         if options[:geojson] == :polyline
           :polyline
@@ -108,7 +108,7 @@ class V01::Entities::RouteProperties < Grape::Entity
   }
   expose(:force_start, documentation: { type: 'Boolean', desc: 'DEPRECATED. To be configured on vehicle_usage_set.' })
   expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
-    if options[:geojson] != :false
+    if options[:geojson] && options[:geojson] != :false
       m.to_geojson(true, true,
         if options[:geojson] == :polyline
           :polyline
