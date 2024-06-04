@@ -31,6 +31,7 @@ class Stop < ApplicationRecord
 
   scope :includes_destinations, -> { includes(visit: [:tags, destination: [:visits, :tags, :customer]]) }
   scope :only_stop_visits, -> { where(type: StopVisit.name) }
+  scope :only_active_stop_visits, -> { where(active: true, type: StopVisit.name) }
   scope :includes_relations, -> { includes(visit: [:relation_currents, :relation_successors])}
 
   before_save :outdate_route

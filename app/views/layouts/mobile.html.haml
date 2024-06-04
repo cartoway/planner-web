@@ -1,0 +1,11 @@
+!!!html
+%html{lang: "#{I18n.locale}"}
+  %head
+    = render partial: 'layouts/head'
+
+  %body{"data-controller": "#{controller.controller_path.gsub('/', '_')}", "data-action": "#{controller.action_name}"}
+    .mobile
+      = yield
+
+    = render partial: 'shared/flash_messages'
+    = render 'layouts/javascript'

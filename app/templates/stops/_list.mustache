@@ -116,7 +116,6 @@
           <button type="button" class="toggle btn btn-default btn-xs" title="{{#i18n}}plannings.edit.toggle_help{{/i18n}}"><i class="fa fa-eye{{#hidden}}-slash{{/hidden}}"></i></button>
           <button type="button" class="lock btn {{^locked}}btn-default{{/locked}}{{#locked}}btn-warning{{/locked}} btn-xs" title="{{#i18n}}plannings.edit.locked_help{{/i18n}}"><i class="fa fa-{{^locked}}un{{/locked}}lock"></i></button>
           {{#manage_export}}
-          <div class="btn-group">
             <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.export_help{{/i18n}}"><i class="fa fa-share-nodes"></i><span class="caret"></span></button>
             <ul class="dropdown-menu pull-right" role="menu">
               {{^callback_button}}
@@ -232,6 +231,17 @@
                 </li>
                 <li role="separator" class="divider"></li>
               {{/notico}}
+              {{#planner}}
+                <div class="dropdown-spacing">
+                  {{#i18n}}plannings.edit.dialog.planner.title{{/i18n}}
+                </div>
+                <li><a href="/routes/{{route_id}}/mobile?token={{driver_token}}" ><i class="fa fa-link fa-fw"></i> {{#i18n}}plannings.edit.planner_send.access{{/i18n}}</a></li>
+                <li class="link device-operation" data-service="planner" data-operation="send" data-route-id="{{route_id}}">
+                    <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
+                    {{#i18n}}plannings.edit.planner_send.action{{/i18n}}
+                </li>
+                <li role="separator" class="divider"></li>
+              {{/planner}}
               {{#praxedo}}
                 <div class="dropdown-spacing">
                   {{#i18n}}plannings.edit.dialog.praxedo.title{{/i18n}} :
@@ -262,7 +272,6 @@
                 </li>
               {{/customer_enable_sms}}
             </ul>
-          </div>
           {{/manage_export}}
 
           {{^manage_export}}

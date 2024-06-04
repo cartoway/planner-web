@@ -1413,6 +1413,14 @@
       'route_ref': 'Référence de la tournée : %{ref}'
       'order_array': 'Commandes : %{name}'
       'link': 'Lien de téléchargement : <a href=%{link}>Plan iCalendar</a>'
+    'send_driver_route':
+      'subject': 'Tournée du %{date}'
+      'title': 'Tournée du %{date}'
+      'hello': 'Bonjour'
+      'content': 'Une tournée vous a été envoyée'
+      'vehicle': 'Véhicule : %{name}'
+      'planning': 'Plan de tournées : %{name} %{date}'
+      'link': 'Lien de la tournée : <a href=%{link}>Tournée</a>'
   'user_mailer':
     'layout':
       'welcome': 'Bienvenue chez %{name} !'
@@ -2008,6 +2016,8 @@
       'annotating':
         'hour': 'Heure de passage :'
         'signature': 'Signature :'
+    'mobile':
+      'empty_route': 'Tournée vide'
   'deliverables_by_vehicles':
     'show':
       'title_page': Etat de charge par tournée
@@ -2034,6 +2044,14 @@
   'stops':
     'default':
       'name_rest': 'Pause'
+    'error_messages':
+      'update':
+        'failure': 'Echec de la mise à jour'
+    'mobile':
+      'navigate': 'Naviguer'
+      'back': 'Retour'
+      'previous': 'Précédent'
+      'next': 'Suivant'
   'stores':
     'default':
       'name': 'Site numéro 1'

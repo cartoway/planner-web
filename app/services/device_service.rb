@@ -60,4 +60,16 @@ class DeviceService
     cache_object.write key, result
     result
   end
+
+  def store_cache(cache_key, vehicle_key, data)
+    stored_data = cache_object.read(cache_key) || []
+    data_index = stored_data.index{ |s_data| s_data[vehicle_key] == data[vehicle_key] }
+    if data_index
+      stored_data[data_index] = data
+    else
+      stored_data.push(data)
+    end
+    cache_object.write cache_key, stored_data
+    stored_data
+  end
 end

@@ -23,7 +23,7 @@ class Device
   end
 
   def all
-    @all ||= Mapotempo::Application.config.devices.to_h.except(:cache_object, :stg_telematics_cache_object)
+    @all ||= Mapotempo::Application.config.devices.to_h.except(:cache_object, :stg_telematics_cache_object, :planner_cache_object)
   end
 
   def definitions
@@ -71,5 +71,14 @@ class Device
       has_stop_status ||= device.respond_to?(:fetch_stops) && @customer.device.configured?(key)
     }
     @customer.enable_stop_status? && has_stop_status
+  end
+
+  def available_cache_position?(vehicle)
+    has_cache_position = false
+    all.each { |key, device|
+      configured_vehicle = device.definition[:forms][:vehicle] && device.definition[:forms][:vehicle].keys.all?{ |k| !vehicle.devices[k].blank? }
+      has_cache_position ||= configured_vehicle && device.respond_to?(:cache_position) && @customer.device.configured?(key)
+    }
+    @customer.enable_vehicle_position? && has_cache_position
   end
 end

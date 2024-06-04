@@ -1,0 +1,42 @@
+.panel
+  .panel-heading
+    .input-group.mb-3
+      %input.form-control{ value: @route.ref, type: 'text', disabled: true }
+      %span.input-group-addon
+        %i.fa.fa-route.fa-fw
+    .input-group.mb-3
+      %input.form-control{ value: @route.vehicle_usage.vehicle.name, type: 'text', disabled: true }
+      %span.input-group-addon
+        %i.fa.fa-truck-field.fa-fw
+    .input-group.mb-3
+      %input.form-control{ value: date, type: 'text', disabled: true }
+      %span.input-group-addon
+        %i.fa.fa-calendar.fa-fw
+  .panel-body{ style: "padding-left: 15px; padding-right: 15px;"}
+    .route-stops
+      - if @stops&.any?
+        .stops
+          - @stops.each do |stop|
+            - next unless stop.active
+            .card.mb-3
+              .card-header
+                .row{ style: 'display: contents' }
+                  = link_to("/stops/#{stop.id}/edit") do
+                    .col-xs-1
+                      .number.label{ class: "label-#{stop.status}" }
+                        = stop.index
+                    .col-xs-4
+                      - if stop.status
+                        .stop-status{ class: "stop-status-#{stop.status}" }
+                          = t("plannings.edit.stop_status.#{stop.status}")
+                    .col-xs-5
+                      .title
+                        .name{ title: stop.name }
+                          = stop.name
+                    .col-xs-1
+                      .fa.fa-caret-right
+      - else
+        .alert.alert-warning
+          = t("routes.mobile.empty_route")
+
+- controller.js(route_id: @route.id)

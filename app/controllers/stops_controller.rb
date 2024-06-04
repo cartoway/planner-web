@@ -17,8 +17,9 @@
 #
 
 class StopsController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set_stop, only: :show # Before load_and_authorize_resource
+  before_action :authenticate_user!, except: [:edit, :update]
+  before_action :authenticate_driver!, only: [:edit, :update]
+  before_action :set_stop, only: [:show, :edit, :update] # Before load_and_authorize_resource
 
   load_and_authorize_resource # Load resource except for show action
 
@@ -26,6 +27,26 @@ class StopsController < ApplicationController
     respond_to do |format|
       @show_isoline = true
       format.json
+    end
+  end
+
+  def edit
+    respond_to do |format|
+      format.html { render 'stops/edit', layout: 'mobile' }
+    end
+  end
+
+  def update
+    if @stop.update(stop_params)
+      if request.xhr?
+        render json: { success: true }
+      end
+    else
+      format.json do
+        flash.now[:alert] = I18n.t('stops.error_messages.update.failure')
+        render json:   { error: I18n.t('stops.error_messages.update.failure') }.to_json,
+               status: :unprocessable_entity
+      end
     end
   end
 
@@ -38,10 +59,17 @@ class StopsController < ApplicationController
     else
       @stop = Stop.find_by route_id: params[:route_id], index: params[:index]
     end
+    @route = @stop.route
+    @visit = @stop.visit
+    @destination = @stop.visit.destination
+    @predecessor_id = @route.stops.where(active: true).where("index < #{@stop.index}").order(:index).last&.id
+    @successor_id = @route.stops.where(active: true).where("index > #{@stop.index}").order(:index).first&.id
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def stop_params
-    params.require(:stop).permit()
+    params.require(:stop).permit(
+      :status
+    )
   end
 end

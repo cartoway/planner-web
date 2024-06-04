@@ -1342,6 +1342,14 @@ en:
       route_ref: "Route reference: %{ref}"
       order_array: "Orders: %{name}"
       link: "Download link: <a href=%{link}>iCalendar Plan</a>"
+    send_driver_route:
+      subject: "%{date} Tour"
+      title: "%{date} Tour"
+      hello: Hello
+      content: A tour has been sent to you
+      vehicle: "Vehicle: %{name}"
+      planning: "Plan: %{name} (date)"
+      link: "Tour link: <a href=%{link}>Tour</a>"
   user_mailer:
     layout:
       welcome: "Welcome to %{name}!"
@@ -1885,6 +1893,8 @@ en:
       annotating:
         hour: 'Passing Time:'
         signature: 'Signature:'
+    mobile:
+      empty_route: Empty tour
   deliverables_by_vehicles:
     show:
       title_page: Charge by plans
@@ -1911,6 +1921,14 @@ en:
   stops:
     default:
       name_rest: Rest
+    error_messages:
+      update:
+        failure: Echec de la mise à jour
+    mobile:
+      navigate: Navigate
+      back: Back
+      previous: Previous
+      next: Next
   stores:
     default:
       name: Depot number 1

@@ -22,4 +22,4 @@
 #
 translations:
 - file: "app/assets/javascripts/i18n/translations.js"
-  only: ["*.customers.*", "*.deliverables_by_vehicles.*", "*.deliverable_units.*", "*.destinations.*", "*.order_arrays.*", "*.plannings.*", "*.reporting.*", "*.tags.*", "*.users.*", "*.vehicles.*", "*.zonings.*", "*.all.*", "*.web.*", "*.visits.*", "*.leaflet_draw.*", "*.api_web.*", "*.stores.*", "*.vehicle_usage_sets.import.dialog.*"]
+  only: ["*.customers.*", "*.deliverables_by_vehicles.*", "*.deliverable_units.*", "*.destinations.*", "*.errors.mobile.*", "*.order_arrays.*", "*.plannings.*", "*.reporting.*", "*.tags.*", "*.users.*", "*.vehicles.*", "*.zonings.*", "*.all.*", "*.web.*", "*.visits.*", "*.leaflet_draw.*", "*.api_web.*", "*.stores.*", "*.vehicle_usage_sets.import.dialog.*"]
