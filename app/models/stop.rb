@@ -33,6 +33,8 @@ class Stop < ApplicationRecord
   scope :only_stop_visits, -> { where(type: StopVisit.name) }
   scope :includes_relations, -> { includes(visit: [:relation_currents, :relation_successors])}
 
+  before_save :outdate_route
+
   amoeba do
     enable
   end
@@ -60,9 +62,8 @@ class Stop < ApplicationRecord
     (self.visit && visit.color) || route.default_color
   end
 
-  def active=(value)
-    self['active'] = value
-    if active_changed?
+  def outdate_route
+    if active_changed? && !new_record?
       route.outdated = true if route
     end
   end

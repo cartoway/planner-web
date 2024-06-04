@@ -228,57 +228,59 @@ class Route < ApplicationRecord
       stops_time_windows = {}
       previous_with_pos = vehicle_usage.default_store_start.try(:position?)
       stops_sort.each{ |stop|
+        stop_attributes = {}
         if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
-          stop.distance, stop.drive_time, trace = traces.shift
-          stop.no_path = previous_with_pos && stop.position? && trace.nil?
+          stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
+          stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
 
-          store_traces(geojson_tracks, trace, options.merge(drive_time: stop.drive_time, distance: stop.distance))
+          store_traces(geojson_tracks, trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance]))
 
-          if stop.drive_time
-            stops_drive_time[stop] = stop.drive_time
-            stop.time = route_attributes[:end] + stop.drive_time
-            route_attributes[:drive_time] = (route_attributes[:drive_time] || 0) + stop.drive_time
-          elsif !stop.no_path
-            stop.time = route_attributes[:end]
+          if stop_attributes[:drive_time]
+            stops_drive_time[stop] = stop_attributes[:drive_time]
+            stop_attributes[:time] = route_attributes[:end] + stop_attributes[:drive_time]
+            route_attributes[:drive_time] = (route_attributes[:drive_time] || 0) + stop_attributes[:drive_time]
+          elsif !stop_attributes[:no_path]
+            stop_attributes[:time] = route_attributes[:end]
           else
-            stop.time = nil
+            stop_attributes[:time] = nil
           end
 
-          if stop.time
-            open, close, late_wait = stop.best_open_close(stop.time)
+          if stop_attributes[:time]
+            open, close, late_wait = stop.best_open_close(stop_attributes[:time])
             stops_time_windows[stop] = [open, close]
-            if open && stop.time < open
-              stop.wait_time = open - stop.time
-              stop.time = open
-              route_attributes[:wait_time] = (route_attributes[:wait_time] || 0) + stop.wait_time
+            if open && stop_attributes[:time] < open
+              stop_attributes[:wait_time] = open - stop_attributes[:time]
+              stop_attributes[:time] = open
+              route_attributes[:wait_time] = (route_attributes[:wait_time] || 0) + stop_attributes[:wait_time]
             else
-              stop.wait_time = nil
+              stop_attributes[:wait_time] = nil
             end
-            stop.out_of_window = !!(late_wait && late_wait > 0)
+            stop_attributes[:out_of_window] = !!(late_wait && late_wait > 0)
 
-            route_attributes[:distance] += stop.distance if stop.distance
-            route_attributes[:end] = stop.time + stop.duration
+            route_attributes[:distance] += stop_attributes[:distance] if stop_attributes[:distance]
+            route_attributes[:end] = stop_attributes[:time] + stop.duration
             route_attributes[:visits_duration] = (route_attributes[:visits_duration] || 0) + stop.duration if stop.is_a?(StopVisit)
 
-            stop.out_of_drive_time = stop.time > vehicle_usage.default_time_window_end
-            stop.out_of_work_time = vehicle_usage.outside_default_work_time?(route_attributes[:start], stop.time)
-            stop.out_of_max_distance = max_distance && (route_attributes[:distance] > max_distance)
+            stop_attributes[:out_of_drive_time] = stop_attributes[:time] > vehicle_usage.default_time_window_end
+            stop_attributes[:out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], stop_attributes[:time])
+            stop_attributes[:out_of_max_distance] = max_distance && (route_attributes[:distance] > max_distance)
             if previous_with_pos&.is_a? Stop
               # max_ride only apply between stops (stores excluded)
-              stop.out_of_max_ride_distance = max_ride_distance && stop.distance && (stop.distance > max_ride_distance)
-              stop.out_of_max_ride_duration = max_ride_duration && (stop.time > max_ride_duration)
-              route_attributes[:out_of_max_ride_distance] ||= stop.out_of_max_ride_distance
-              route_attributes[:out_of_max_ride_duration] ||= stop.out_of_max_ride_duration
+              stop_attributes[:out_of_max_ride_distance] = max_ride_distance && stop_attributes[:distance] && (stop_attributes[:distance] > max_ride_distance)
+              stop_attributes[:out_of_max_ride_duration] = max_ride_duration && (stop_attributes[:time] > max_ride_duration)
+              route_attributes[:out_of_max_ride_distance] ||= stop_attributes[:out_of_max_ride_distance]
+              route_attributes[:out_of_max_ride_duration] ||= stop_attributes[:out_of_max_ride_duration]
             else
-              stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = false
+              stop_attributes[:out_of_max_ride_distance] = stop_attributes[:out_of_max_ride_duration] = false
             end
           end
           previous_with_pos = stop if stop.position?
         else
-          stop.active = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_window = stop.no_path = stop.out_of_work_time =
-            stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = false
-          stop.distance = stop.time = stop.wait_time = nil
+          stop_attributes[:active] = stop_attributes[:out_of_capacity] = stop_attributes[:out_of_drive_time] = stop_attributes[:out_of_window] = stop_attributes[:no_path] = stop_attributes[:out_of_work_time] =
+            stop_attributes[:out_of_max_distance] = stop_attributes[:out_of_max_ride_distance] = stop_attributes[:out_of_max_ride_duration] = false
+          stop_attributes[:distance] = stop_attributes[:time] = stop_attributes[:wait_time] = nil
         end
+        stop.attributes = stop_attributes
       }
 
       route_attributes[:quantities] = compute_quantities(stops_sort) unless options[:no_quantities]
