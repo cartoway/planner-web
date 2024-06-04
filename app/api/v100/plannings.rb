@@ -32,6 +32,7 @@ class V100::Plannings < Grape::API
       optional :max_distance, type: Float, desc: 'Maximum distance for best routes (in meters).'
       optional :active_only, type: Boolean, desc: 'Use only active stops.', default: true
       optional :out_of_zone, type: Boolean, desc: 'Take into account points out of zones.', default: true
+      optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     patch ':id/automatic_insert' do
       Route.includes_destinations.scoping do
@@ -55,7 +56,7 @@ class V100::Plannings < Grape::API
             impacted_routes.uniq!
             planning.compute
             planning.save!
-            present :routes, impacted_routes, with: V100::Entities::Route
+            present :routes, impacted_routes, with: V100::Entities::Route, geojson: params[:with_geojson]
             status 201
           end
         rescue Exceptions::LoopError => e
