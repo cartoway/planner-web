@@ -268,7 +268,7 @@ class PlanningsController < ApplicationController
           @route = @planning.routes.includes_destinations.where(id: Integer(params[:route_id])).first
           @stop = @route.stops.find(Integer(params[:stop_id])) if @route
           @stop.assign_attributes(stop_params) if @stop
-          if @stop && @route.compute! && @planning.save!
+          if @stop && @route.compute! && @route.save!
             @routes = [@route]
             format.json { render action: 'show', location: @planning }
           else
