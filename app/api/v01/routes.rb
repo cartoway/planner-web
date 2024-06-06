@@ -55,6 +55,8 @@ class V01::Routes < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         put ':id' do
+          raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
+
           get_route.update! route_params
           get_route.compute && get_route.save!
           present get_route, with: V01::Entities::RouteProperties
