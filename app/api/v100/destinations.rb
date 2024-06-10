@@ -50,4 +50,41 @@ class V100::Destinations < Grape::API
       end
     end
   end
+
+  resource :destinations do
+    desc 'Fetch customer\'s destinations.',
+      nickname: 'getDestinations',
+      is_array: true,
+      success: V100::Status.success(:code_200, V100::Entities::Destination),
+      failure: V100::Status.failures(is_array: true)
+    params do
+      optional :ids, type: Array[String], desc: 'Select returned destinations by id separated with comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
+      optional :quantities, type: Boolean, default: false, desc: 'Include the quantities when using geojson output.'
+      optional :visits, type: Boolean, default: true, desc: 'Include the visits associated to the destinations'
+    end
+    get do
+      if env['api.format'] == :geojson
+        present_geojson_destinations params
+      else
+        destinations =  if params[:visits]
+          current_customer.destinations.includes_visits
+        else
+          current_customer.destinations
+        end
+
+        destinations = if params.key?(:ids)
+          destinations.select{ |destination|
+            params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
+          }
+        else
+          destinations.load
+        end
+        if params[:visits]
+          present destinations, with: V100::Entities::DestinationWithVisit
+        else
+          present destinations, with: V100::Entities::Destination
+        end
+      end
+    end
+  end
 end
