@@ -25,10 +25,4 @@ class V100::Entities::Visit < Grape::Entity
   expose(:tag_ids, documentation: { type: Integer, is_array: true })
   expose(:force_position, documentation: { type: String })
   expose(:custom_attributes_typed_hash, documentation: {type: Hash, desc: 'Additional properties'}, as: :custom_attributes)
-
-  # Deprecated fields
-  expose(:open1, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_start_1` instead' }) { |m| m.time_window_start_1_absolute_time_with_seconds }
-  expose(:close1, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_end_1` instead.' }) { |m| m.time_window_end_1_absolute_time_with_seconds }
-  expose(:open2, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_start_2` instead' }) { |m| m.time_window_start_2_absolute_time_with_seconds }
-  expose(:close2, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `time_window_end_2` instead.' }) { |m| m.time_window_end_2_absolute_time_with_seconds }
 end
