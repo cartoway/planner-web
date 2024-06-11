@@ -94,11 +94,19 @@ class V01::Routes < Grape::API
         end
         patch ':id/visits/moves' do
           raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
-
-          Route.includes_destinations.scoping do
-            visits = get_route.planning.routes.flat_map{ |r| r.stops.select{ |s| s.is_a?(StopVisit) }.map(&:visit) }
-            visits_ordered = []
-            params[:visit_ids].each{ |s| visits_ordered << visits.find{ |visit| ParseIdsRefs.match(s, visit) } }
+          visit_ids = params[:visit_ids].map{ |raw_id|
+            id_hash = ParseIdsRefs.read(raw_id)
+            id_hash[:ref] || id_hash[:id]
+          }.compact
+          planning_route_ids = Route.where(planning_id: get_route.planning.id).map(&:id)
+          Route.includes_destinations.where(id: get_route.id).scoping do
+            visits_ordered = StopVisit
+                                .includes(:visit)
+                                .where(visits: { id: visit_ids }, route_id: planning_route_ids)
+                                .references(:visit)
+                                .unscope(:order)
+                                .map(&:visit)
+                                .sort_by{ |v| visit_ids.index(v.id) }
             unless visits_ordered.empty?
               Planning.transaction do
                 visits_ordered.each{ |visit| get_route.planning.move_visit(get_route, visit, params[:automatic_insert] ? nil : -1) }
