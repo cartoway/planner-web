@@ -375,8 +375,11 @@
   /* pager output text */
   .tablesorter-pager .pagedisplay {
     padding: 0 5px 0 5px;
-    width: 80px;
     text-align: center;
+
+    .ts-page {
+      min-width: 40px
+    }
   }
 
   /*** css used when "updateArrows" option is true ***/
