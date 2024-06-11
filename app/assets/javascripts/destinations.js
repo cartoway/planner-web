@@ -483,6 +483,10 @@ const destinations_form = function(params, api) {
       });
     }
   });
+
+  var table = $('#destination_box').find('table');
+  table.trigger('update');
+  table.trigger('appendCache');
 };
 
 
@@ -765,6 +769,9 @@ const destinations_index = function(params, api) {
           beforeSend: beforeSendWaiting,
           success: function() {
             $row.remove();
+            var table = $('#destination_box').find('table');
+            table.trigger('update');
+            table.trigger('appendCache');
             if (markers[id]) {
               var keys  = Object.keys(markers);
               var index = keys.indexOf(id);
@@ -1197,7 +1204,7 @@ const destinations_index = function(params, api) {
         // output default: '{page}/{totalPages}'
         // possible variables: {size}, {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
         // also {page:input} & {startRow:input} will add a modifiable input in place of the value
-        pager_output: '{page:input} - {page} / {totalPages}',
+        pager_output: '{page:input} / {totalPages}',
 
         // apply disabled classname to the pager arrows when the rows at either extreme is visible
         pager_updateArrows: true,
