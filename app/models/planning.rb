@@ -211,10 +211,9 @@ class Planning < ApplicationRecord
   def move_visit(route, visit, index)
     stop = nil
     routes.find do |route|
-      route.stops.find{ |s| stop = s if s.is_a?(StopVisit) && s.visit == visit }
+      stop = route.stops.where(visit_id: visit.id, type: 'StopVisit').first
     end
 
-    # stop = Stop.where(route_id: self.routes.ids, visit_id: visit.id, type: 'StopVisit')
     if stop
       move_stop(route, stop, index)
     end

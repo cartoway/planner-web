@@ -68,6 +68,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
   end
 
   test 'should update a route' do
+    clear_jobs
     @route.locked = true
     put api(@route.planning.id, @route.id), @route.attributes
     assert last_response.ok?, last_response.body
@@ -117,6 +118,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
   test 'should move visits in routes' do
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      @route.remove_visit(visits(:visit_one)) # routes 1_1 and 3_1 both have a stop belonging to visit_id: 1
       assert_no_difference('Stop.count') do
         r = routes(:route_three_one)
         patch api(@route.planning.id, "#{r.id}/visits/moves").gsub('.json', '.xml'), visit_ids: [visits(:visit_two).id, visits(:visit_one).id]
@@ -125,8 +127,9 @@ class V01::RoutesTest < V01::RoutesBaseTest
         else
           assert_equal 204, last_response.status, last_response.body
           stops_visit = r.stops.select{ |s| s.is_a? StopVisit }
-          assert_equal visits(:visit_two).ref, stops_visit[0].visit.ref
-          assert_equal visits(:visit_one).ref, stops_visit[1].visit.ref
+          # visit_one already belongs to the current route, so it did not move
+          assert_equal visits(:visit_one).ref, stops_visit[0].visit.ref
+          assert_equal visits(:visit_two).ref, stops_visit[1].visit.ref
           @route.planning.routes.select(&:vehicle_usage).each{ |vu|
             assert_not vu.outdated
           }
