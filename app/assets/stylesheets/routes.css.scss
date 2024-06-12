@@ -34,13 +34,18 @@
       word-wrap: break-word;
       page-break-after: always;
 
-      &:last-of-type {
-        page-break-after: avoid !important;
-      }
-    }
+      ol {
+        page-break-inside: auto;
 
-    li.list-group-item {
-      page-break-inside: avoid;
+        li:last-of-type {
+          page-break-after: auto !important;
+        }
+
+        li.list-group-item {
+          page-break-inside: avoid;
+          page-break-after: auto !important;
+        }
+      }
     }
 
     .container {
