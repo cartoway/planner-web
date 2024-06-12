@@ -486,6 +486,7 @@ const destinations_form = function(params, api) {
 
   var table = $('#destination_box').find('table');
   table.trigger('update');
+  table.trigger('applyWidgets');
   table.trigger('appendCache');
 };
 
@@ -771,6 +772,7 @@ const destinations_index = function(params, api) {
             $row.remove();
             var table = $('#destination_box').find('table');
             table.trigger('update');
+            table.trigger('applyWidgets');
             table.trigger('appendCache');
             if (markers[id]) {
               var keys  = Object.keys(markers);
@@ -960,6 +962,10 @@ const destinations_index = function(params, api) {
           $(".destinations").append(SMT['destinations/edit'](prepare_display_destination(data)));
           wire($('.destinations tr').last(), true)
           countInc();
+          var table = $('#destination_box').find('table');
+          table.trigger('update');
+          table.trigger('applyWidgets');
+          table.trigger('appendCache');
         },
         complete: completeWaiting,
         error: ajaxError
@@ -1282,6 +1288,10 @@ const destinations_index = function(params, api) {
               }
               countDec();
             });
+            var table = $('#destination_box').find('table');
+            table.trigger('update');
+            table.trigger('applyWidgets');
+            table.trigger('appendCache');
           },
           complete: completeWaiting,
           error: ajaxError
