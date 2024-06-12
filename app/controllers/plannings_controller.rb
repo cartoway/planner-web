@@ -401,7 +401,7 @@ class PlanningsController < ApplicationController
 
   def move_stop(stop_id, route, previous_route_id)
     # -1 Means latest position in the route
-    index = Integer(params[:index]) if params[:index]
+    index = Integer(params[:index]) if params[:index] && !params[:index].empty?
     if index && (index < -1 || index == 0 || index > route.stops.length + 1)
       raise Exceptions::StopIndexError.new(route, "Invalid index #{index} provided")
     end
