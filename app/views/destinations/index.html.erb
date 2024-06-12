@@ -13,13 +13,27 @@
 <% end %>
 
 <div class="row row-top">
-  <div class="col-md-6">
+  <div class="col-md-5">
     <button id="add" type="button" class="btn btn-primary btn-sm"><i class="fa fa-plus fa-fw"></i> <%= t '.new' %></button>
     <button id="multiple-delete" class="btn btn-danger btn-sm"><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %></button>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-3">
     <span id="count"></span> <%= t 'activerecord.models.destinations', count: 10 %>
     - <span id="count-visits"></span> <%= t 'activerecord.models.visits', count: 10 %>
+  </div>
+  <div class='col-md-2'>
+    <div id="pager" class="pager pull-right" style="padding: unset;">
+      <form>
+        <select class="pagesize btn btn-default btn-sm dropdown-toggle">
+          <option selected disabled hidden value="100"><%=t('list.rows')%></option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+          <option value="500">500</option>
+          <option value="1000">1000</option>
+          <option value="all"><%=t('list.all_rows')%></option>
+        </select>
+      </form>
+    </div>
   </div>
   <div class="col-md-2">
     <div class="pull-right">
@@ -47,20 +61,17 @@
         </th>
         <th class="address columnSelector-disable">
           <div class="col-title">
-            <span><%= t 'activerecord.attributes.destination.street' %></span>,
-            <span><%= t 'activerecord.attributes.destination.detail' %></span>,
-            <span><%= t 'activerecord.attributes.destination.postalcode' %></span>,
-            <span><%= t 'activerecord.attributes.destination.city' %></span>
+            <span><%= t 'activerecord.attributes.destination.address' %></span>
           </div>
+        </th>
+        <th title="<%= t '.geocoding_column_help' %>" class="geocoding filter-false">
+          <div class="col-title"><%= t 'activerecord.attributes.destination.geocoding_accuracy_small' %></div>
         </th>
         <%
         # class="columnSelector-false" allows to uncheck columns in columnSelector
         # data-priority is used to hide columns depending the width of table
         # http://view.jquerymobile.com/1.3.2/dist/demos/widgets/table-column-toggle/
         %>
-        <th class="country columnSelector-false">
-          <div class="col-title"><%= t 'activerecord.attributes.destination.country' %></div>
-        </th>
         <th class="comment columnSelector-false">
           <div class="col-title"><%= t 'activerecord.attributes.destination.comment_small' %></div>
         </th>
@@ -72,18 +83,12 @@
             <div class="col-title"><%= t 'activerecord.attributes.destination.tags' %></div>
           </th>
         <% end %>
-        <th title="<%= t '.geocoding_column_help' %>" class="geocoding filter-false">
-          <div class="col-title"><%= t 'activerecord.attributes.destination.geocoding_accuracy_small' %></div>
-        </th>
         <% visit_width = {}
            visit_width[:ref] = 3 if @customer.enable_references && @customer.enable_multi_visits
            visit_width[:quantity] = 3 unless @customer.enable_orders
            visit_width[:tags] = 8 if @customer.enable_multi_visits
            visit_width[:duration] = 4
-           visit_width[:time_window_start_1] = 4
-           visit_width[:time_window_end_1] = 4
-           visit_width[:time_window_start_2] = 4
-           visit_width[:time_window_end_2] = 4
+           visit_width[:time_windows] = 16
         %>
         <th data-sorter="false" class="visit columnSelector-disable" style="min-width:<%= visit_width.values.reduce(&:+) %>em;">
           <div class="col-title"><%= t 'activerecord.models.visit' %></div>
@@ -101,10 +106,7 @@
             <% end %>
 
             <div class="visit-subtitle" style="width: <%= visit_width[:duration] %>em;"><%= t 'activerecord.attributes.visit.duration_small' %></div>
-            <div class="visit-subtitle" style="width: <%= visit_width[:time_window_start_1] %>em;"><%= t 'activerecord.attributes.visit.time_window_start_1_small' %></div>
-            <div class="visit-subtitle" style="width: <%= visit_width[:time_window_end_1] %>em;"><%= t 'activerecord.attributes.visit.time_window_end_1_small' %></div>
-            <div class="visit-subtitle" style="width: <%= visit_width[:time_window_start_2] %>em;"><%= t 'activerecord.attributes.visit.time_window_start_2_small' %></div>
-            <div class="visit-subtitle" style="width: <%= visit_width[:time_window_end_2] %>em;"><%= t 'activerecord.attributes.visit.time_window_end_2_small' %></div>
+            <div class="visit-subtitle" style="width: <%= visit_width[:time_windows] %>em;"><%= t 'activerecord.attributes.visit.time_windows_small' %></div>
           </div>
         </th>
         <th data-sorter="false" class="filter-false columnSelector-disable"></th>
@@ -112,6 +114,16 @@
       <tbody class="destinations"></tbody>
     </table>
   </div>
+</div>
+
+<div id="pager" class="pager">
+  <form>
+    <div class="first fa fa-angles-left fa-fw"></div>
+    <div class="prev fa fa-chevron-left fa-fw"></div>
+    <span class="pagedisplay"></span>
+    <div class="next fa fa-chevron-right fa-fw"></div>
+    <div class="last fa fa-angles-right fa-fw"></div>
+  </form>
 </div>
 
 <div id="map_box" class="row">

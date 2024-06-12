@@ -32,6 +32,9 @@
   'schedule_type':
     'invalid': 'Format d''heure invalide'
   'default_time_zone': 'Paris'
+  'list':
+    'all_rows': Toutes
+    'rows': 'Lignes'
   'activemodel':
     'models':
       'deliverable_unit':
@@ -505,6 +508,8 @@
         'ref_small': 'Réf.'
         'duration': 'Durée de visite'
         'duration_small': 'Durée'
+        'time_windows': Créneaux horaires
+        'time_windows_small': Créneaux
         'time_window_start_1': 'Début de Plage horaire 1'
         'time_window_start_1_small': 'Début 1'
         'time_window_end_1': 'Fin de Plage horaire 1'

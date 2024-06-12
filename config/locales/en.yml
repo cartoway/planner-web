@@ -32,6 +32,9 @@ en:
   schedule_type:
     invalid: Invalid hour value
   default_time_zone: London
+  list:
+    all_rows: All rows
+    rows: 'Rows'
   activemodel:
     models:
       deliverable_unit:
@@ -504,6 +507,8 @@ en:
         ref_small: Ref.
         duration: Visit duration
         duration_small: Duration
+        time_windows: Time windows
+        time_windows_small: Windows
         time_window_start_1: Time window 1 open
         time_window_start_1_small: Open 1
         time_window_end_1: Time window 1 close
