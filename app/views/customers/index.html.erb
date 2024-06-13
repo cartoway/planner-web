@@ -78,7 +78,7 @@
         %>
         <td><%= customer.name %>
           <br/>
-          <%= link_to '<i class="fa fa-chart-line" aria-hidden="true"></i>'.html_safe, dashboard_url, target: '_blank', title: t('customers.form.dashboard_url_help') if dashboard_url %>
+          <%= link_to '<i class="fa fa-chart-line" aria-hidden="true"></i>'.html_safe, dashboard_url, target: '_blank', title: t('customers.form.customer_dashboard_url_help') if dashboard_url %>
           <%= link_to '<i class="fa fa-bar-chart" aria-hidden="true"></i>'.html_safe, audience_url, target: '_blank', title: t('customers.form.audience_url_help') if audience_url %>
           <%= link_to '<i class="fa fa-pie-chart" aria-hidden="true"></i>'.html_safe, behavior_url, target: '_blank', title: t('customers.form.behavior_url_help') if behavior_url %>
         </td>
