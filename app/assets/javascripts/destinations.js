@@ -959,8 +959,8 @@ const destinations_index = function(params, api) {
         url: '/api/0.1/destinations.json',
         beforeSend: beforeSendWaiting,
         success: function(data) {
-          $(".destinations").append(SMT['destinations/edit'](prepare_display_destination(data)));
-          wire($('.destinations tr').last(), true)
+          $(".destinations").prepend(SMT['destinations/edit'](prepare_display_destination(data)));
+          wire($('.destinations tr').first(), true)
           countInc();
           var table = $('#destination_box').find('table');
           table.trigger('update');
