@@ -958,7 +958,7 @@ en:
       speed_multiplier_help: A value higher than 100% means higher speed.
       audience_url_help: Go to the customer dashboard Audience page
       behavior_url_help: Go to the customer dashboard Behavior page
-      customer_dashboard_url: Go to the customer dashboard page
+      customer_dashboard_url_help: Go to the customer dashboard page
       submit: Update Global settings
       external_callback:
         title: Callback URL

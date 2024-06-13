@@ -998,7 +998,7 @@
         client'
       'behavior_url_help': 'Se rendre sur le tableau de bord comportemental pour ce
         espace client'
-      'customer_dashboard_url': 'Se rendre sur le tableau de bord pour ce compte
+      'customer_dashboard_url_help': 'Se rendre sur le tableau de bord pour ce compte
         client'
       'submit': 'Enregistrer paramétrage de l''espace client'
       'external_callback':
