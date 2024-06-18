@@ -65,6 +65,10 @@ class Ability
       end
     else
       can [:password, :set_password], User
+
+      # Mobile routes
+      can [:mobile, :update_position], Route
+      can [:edit, :update], Stop
     end
   end
 end

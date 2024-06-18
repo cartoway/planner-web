@@ -308,9 +308,11 @@ en:
         success: Notico Deliv trip has been cleared successfully
         fail: Failed to clear Notico Deliv
       planner_send:
-        action: Send to Cartoway Mobile
-        success: Sent to Cartoway Mobile successfully
-        fail: Failed to send to Cartoway Mobile
+        access: Access the tour
+        transmit: Transmit to driver
+        action: Send to driver
+        success: Sent to driver successfully
+        fail: Failed to send
       praxedo_send:
         action: Send to Praxedo
         success: Sent to Praxedo successfully

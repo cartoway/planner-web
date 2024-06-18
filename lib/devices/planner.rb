@@ -9,7 +9,7 @@ class Planner < DeviceBase
       device: 'planner',
       label: 'Planner Cartoway',
       label_small: 'Planner',
-      route_operations: [:send, :clear],
+      route_operations: [:send],
       has_sync: true,
       help: true,
       forms: {
@@ -19,7 +19,12 @@ class Planner < DeviceBase
   end
 
   def send_route(customer, route, _options = {})
-    true
+    email = route.vehicle_usage.vehicle.contact_email
+    if Mapotempo::Application.config.delayed_job_use
+      RouteMailer.delay.send_driver_route(customer, I18n.locale, email, route)
+    else
+      RouteMailer.send_driver_route(customer, I18n.locale, email, route).deliver_now
+    end
   end
 
   def clear_route(customer, route)

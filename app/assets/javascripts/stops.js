@@ -32,7 +32,7 @@ const stops_edit = function(params) {
     console.log(coords);
     $.ajax({
       type: 'PATCH',
-      url: '/routes/' + params.route_id +'/update_position?api_key=' + params.user_api_key,
+      url: '/routes/' + params.route_id +'/update_position',
       data: JSON.stringify(coords),
       contentType : 'application/json',
       beforeSend: function(jqXHR, settings) {

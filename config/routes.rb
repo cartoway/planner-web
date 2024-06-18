@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   end
 
   devise_for :users, :controllers => {:registrations => "registrations"}
+  devise_for :vehicles
   devise_scope :user do
     unauthenticated do
       root 'index#index', as: :apikey_root, constraints: {url: /\?api_key=/}

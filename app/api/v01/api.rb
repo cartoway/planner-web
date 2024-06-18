@@ -154,6 +154,7 @@ class V01::Api < Grape::API
   mount V01::Devices::FleetReporting
   mount V01::Devices::Masternaut
   mount V01::Devices::Notico
+  mount V01::Devices::Planner
   mount V01::Devices::Praxedo
   mount V01::Devices::Orange
   mount V01::Devices::Sopac

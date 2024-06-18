@@ -310,9 +310,11 @@ fr:
         success: Notico Deliv a été vidé avec succès
         fail: Échec lors de la suppression de Notico Deliv
       planner_send:
-        action: Envoyer à Cartoway Mobile
-        success: Envoyé à Cartoway Mobile avec succès
-        fail: Échec lors de l'envoi vers Cartoway Mobile
+        access: Accéder à la tournée
+        transmit: Transmettre au chauffeur
+        action: Envoyer au chauffeur
+        success: Envoyé au chauffeur avec succès
+        fail: Échec lors de l'envoi
       praxedo_send:
         action: Envoyer à Praxedo
         success: Envoyé à Praxedo avec succès

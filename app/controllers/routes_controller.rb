@@ -21,8 +21,11 @@ require 'value_to_boolean'
 require 'zip'
 
 class RoutesController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set_route, only: [:mobile, :update]
+  before_action :authenticate_user!, except: [:mobile, :update_position]
+  before_action :set_route, only: [:update]
+
+  before_action :authenticate_driver!, only: [:mobile, :update_position]
+  before_action :set_driver_route, only: [:mobile]
 
   load_and_authorize_resource
 
@@ -92,7 +95,7 @@ class RoutesController < ApplicationController
   end
 
   def update_position
-    @customer = current_user.customer
+    @customer = current_vehicle.customer
     if params['latitude'] && params['longitude'] && params['latitude'].is_a?(Float) && params['longitude'].is_a?(Float)
       @customer.device.enabled_definitions.each{ |key, _value|
         service = Object.const_get("#{key.to_s.capitalize!}Service").new({customer: @customer})
@@ -113,6 +116,16 @@ class RoutesController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_route
     @route = Route.for_customer_id(current_user.customer_id).find params[:id]
+  end
+
+  def set_driver_route
+    @route = Route.find(params[:id])
+
+    if @route.vehicle_usage.vehicle.id != current_vehicle.id
+      head :not_found
+    else
+      @route
+    end
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.

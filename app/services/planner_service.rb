@@ -8,7 +8,7 @@ class PlannerService < DeviceService
   def get_vehicles_pos
     if customer.devices[service_name]
       with_cache [:get_vehicles_pos, service_name, customer.id] do
-        nil
+        []
       end
     end
   end
