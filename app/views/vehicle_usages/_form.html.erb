@@ -407,7 +407,7 @@
                   <%= f.text_field field, t("activerecord.attributes.vehicle.devices.#{key}.#{field}") %>
                 <% elsif type == :select %>
                   <!-- this can be refactored with options_for_select -->
-                  <%= f.select field, definition[:label], [],
+                  <%= f.select field, definition[:label],
                    {include_blank: false, include_hidden: false},
                    {data: {device: key}, multiple: field.to_s.include?("_ids") ? true : false } %>
                 <% end %>
