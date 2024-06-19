@@ -640,6 +640,8 @@ class ImporterDestinations < ImporterBase
 
   def prepare_plannings(name, _options)
     @plannings_routes.each{ |ref, routes_hash|
+      next if @planning_hash.empty? && ref.nil? && routes_hash.keys.compact.empty?
+
       planning = @plannings_hash[ref] if ref
       unless planning
         attributes = @plannings_attributes[ref]
