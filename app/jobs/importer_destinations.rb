@@ -301,10 +301,10 @@ class ImporterDestinations < ImporterBase
 
   def convert_force_position(force_position)
     type = nil
-    %w(always_first never_first neutral always_final).each do |t|
-      type ||= t if force_position == I18n.t("activerecord.models.visits.force_position.#{t}")
+    Visit.force_positions.each do |key, index|
+      type ||= index if force_position == key || force_position == I18n.t("activerecord.models.visits.force_position.#{key}")
     end
-    type || :neutral
+    type || 0
   end
 
   def is_visit?(type)
