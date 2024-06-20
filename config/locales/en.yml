@@ -1893,6 +1893,8 @@ en:
       annotating:
         hour: 'Passing Time:'
         signature: 'Signature:'
+    mobile:
+      empty_route: Empty tour
   deliverables_by_vehicles:
     show:
       title_page: Charge by plans

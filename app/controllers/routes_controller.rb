@@ -35,7 +35,7 @@ class RoutesController < ApplicationController
     @params = params
     @stops = @route.stops.only_active_stop_visits
     respond_to do |format|
-      format.html { render 'routes/mobile', locals: { route: @route }, layout: 'mobile' }
+      format.html { render 'routes/mobile', locals: { route: @route, date: @route.planning.date }, layout: 'mobile' }
     end
   end
 

@@ -2016,6 +2016,8 @@
       'annotating':
         'hour': 'Heure de passage :'
         'signature': 'Signature :'
+    'mobile':
+      'empty_route': 'Tournée vide'
   'deliverables_by_vehicles':
     'show':
       'title_page': Etat de charge par tournée
