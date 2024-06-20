@@ -4,12 +4,16 @@ import { beforeSendWaiting, completeWaiting, ajaxError } from '../../assets/java
 
 const stops_edit = function(params) {
   $('#radiobtn a').on('click', function(){
-    var sel = $(this).data('title');
-    var tog = $(this).data('toggle');
-    $('#'+tog).prop('value', sel);
+    var selected = $(this).data('title');
+    var toggled = $(this).data('toggle');
+    $('#'+toggled).prop('value', selected);
 
-    $('a[data-toggle="'+tog+'"]').not('[data-title="'+sel+'"]').removeClass('active');
-    $('a[data-toggle="'+tog+'"][data-title="'+sel+'"]').addClass('active');
+    $('a[data-toggle="'+toggled+'"]').not('[data-title="'+selected+'"]').removeClass('active');
+    $('a[data-toggle="'+toggled+'"][data-title="'+selected+'"]').addClass('active');
+
+    var match = $('#label-index').attr("class").match(new RegExp('label-[a-z]*'));
+    $('#label-index').removeClass(match.shift())
+                     .addClass('label-'+selected);
     submitForm($(this));
   });
 
@@ -27,7 +31,6 @@ const stops_edit = function(params) {
   }
 
   function sendPosition(position) {
-    console.log(position);
     var coords = position.coords;
     console.log(coords);
     $.ajax({
