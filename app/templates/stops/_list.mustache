@@ -116,7 +116,6 @@
           <button type="button" class="toggle btn btn-default btn-xs" title="{{#i18n}}plannings.edit.toggle_help{{/i18n}}"><i class="fa fa-eye{{#hidden}}-slash{{/hidden}}"></i></button>
           <button type="button" class="lock btn {{^locked}}btn-default{{/locked}}{{#locked}}btn-warning{{/locked}} btn-xs" title="{{#i18n}}plannings.edit.locked_help{{/i18n}}"><i class="fa fa-{{^locked}}un{{/locked}}lock"></i></button>
           {{#manage_export}}
-          <div class="btn-group">
             <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.export_help{{/i18n}}"><i class="fa fa-share-nodes"></i><span class="caret"></span></button>
             <ul class="dropdown-menu pull-right" role="menu">
               {{^callback_button}}
@@ -273,7 +272,6 @@
                 </li>
               {{/customer_enable_sms}}
             </ul>
-          </div>
           {{/manage_export}}
 
           {{^manage_export}}
