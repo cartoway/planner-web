@@ -1,7 +1,16 @@
 !!!html
+
+- javascript 'mobile'
+
 %html{lang: "#{I18n.locale}"}
   %head
     = render partial: 'layouts/head'
+    .mobile_header.d-flex.align-items-end.justify-content-end
+      .form-check.form-switch.pull-right
+        %input#location-switch.form-check-input{checked: "checked", role: "switch", type: "checkbox"}
+        %label
+          .fa.fa-location-dot.fa-fw
+          = t('stops.mobile.tracking')
 
   %body{"data-controller": "#{controller.controller_path.gsub('/', '_')}", "data-action": "#{controller.action_name}"}
     .mobile
