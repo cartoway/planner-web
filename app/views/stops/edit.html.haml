@@ -25,7 +25,7 @@
       .col-xs-10
         = @destination.name
   .card-body
-    %p.card-text.container
+    %p.card-text
       .row
         .col-xs-1
           %i.fa.fa-map.fa-fw
@@ -108,12 +108,13 @@
                   = t('plannings.edit.stop_status.rejected')
               = f.hidden_field :position, { name: 'stop[position]', id: 'active_status_position' }
               = f.hidden_field :status, { name: 'stop[status]', id: 'active_status', onchange: "this.form.submit()" }
-.row
-  - if @successor_id
-    .col-xs-4.text-center
-      = link_to("/stops/#{@successor_id}/edit") do
-        %button.btn.btn-default
-          .fa.fa-angle-down
-          = t('stops.mobile.next')
+.container
+  .row
+    - if @successor_id
+      .col-xs-4.text-center
+        = link_to("/stops/#{@successor_id}/edit") do
+          %button.btn.btn-default
+            .fa.fa-angle-down
+            = t('stops.mobile.next')
 
 - controller.js(route_id: @route.id)
