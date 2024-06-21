@@ -1929,6 +1929,7 @@ en:
       back: Back
       previous: Previous
       next: Next
+      tracking: Tracking
   stores:
     default:
       name: Depot number 1

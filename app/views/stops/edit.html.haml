@@ -42,16 +42,22 @@
               = @destination.country
 
         .col-xs-5.text-right
-          %a{ href: "geo:#{@destination.lat},#{@destination.lng}" }
+          %a{ href: "geo:#{@destination.lat},#{@destination.lng}?q=#{@destination.lat},#{@destination.lng}" }
             %button.btn.btn-default
               .fa.fa-diamond-turn-right
-              = t('destinations.mobile.navigate')
+              = t('stops.mobile.navigate')
       - if @destination.detail
         .row
           .col-xs-1
             %i.fa.fa-circle-info
           .col-xs-9
             = @destination.detail
+      - if @destination.phone_number
+        .row
+          .col-xs-1
+            %i.fa.fa-phone
+          .co-xs-9
+            = @destination.phone_number
 
     - if @visit&.time_window_start_1
       .row

@@ -3,6 +3,21 @@
 [data-controller='stops'][data-action='edit'],
 [data-controller='routes'][data-action='mobile'] {
 
+  .mobile_header {
+    width: 100%;
+    position: absolute;
+    height: $mobile-header-height;
+    z-index: 1;
+    padding-left: 5px;
+    border-bottom: 1px solid $grey-color;
+  }
+
+  .mobile {
+    position: absolute;
+    top: $mobile-header-height;
+    width: 100%
+  }
+
   .label-planned {
     background-color: $primary-color;
   }
