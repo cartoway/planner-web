@@ -3,11 +3,11 @@ $box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 $text-black: #333;
 $focus-font-color: #FFF;
 $focus-menu-border: #08bfab;
-$primary-color: #42ca64;
 $white-background: #ffffff;
 
 // Sizes
 $planbar-height: 0px;
+$mobile-header-height: 24px;
 $menu-width: 70px;
 
 $lightgrey-color: #F4FAFB;
@@ -189,12 +189,124 @@ $card-bg:                           var(--#{$prefix}body-bg);
 $card-img-overlay-padding:          $spacer;
 $card-group-margin:                 $grid-gutter-width * .5;
 
+$color-mode-type:             data !default; // `data` or `media-query`
+
+$enable-dark-mode:            true !default;
+$enable-gradients:            false !default;
+$enable-reduced-motion:       true !default;
 $enable-rounded:              true !default;
 $enable-shadows:              false !default;
+$enable-transitions:          true !default;
 
-$link-hover-decoration:                   null !default;
+// Characters which are escaped by the escape-svg function
+$escaped-characters: (
+  ("<", "%3c"),
+  (">", "%3e"),
+  ("#", "%23"),
+  ("(", "%28"),
+  (")", "%29"),
+) !default;
 
+$link-hover-decoration: null !default;
 
+$btn-disabled-opacity:        .65 !default;
+
+$component-active-color: $white !default;
+$component-active-bg:    $primary-color !default;
+
+$focus-ring-width:      .25rem !default;
+$focus-ring-opacity:    .25 !default;
+$focus-ring-color:      rgba($primary-color, $focus-ring-opacity) !default;
+$focus-ring-blur:       0 !default;
+$focus-ring-box-shadow: 0 0 $focus-ring-blur $focus-ring-width $focus-ring-color !default;
+
+$font-size-base:   14px;
+
+$input-bg:                              var(--#{$prefix}body-bg) !default;
+$input-btn-focus-box-shadow:            $focus-ring-box-shadow !default;
+$input-focus-border-color:              tint-color($component-active-bg, 50%) !default;
+$line-height-base:                      1.42857143;
+
+// scss-docs-start form-check-variables
+$form-check-input-width:                  1em !default;
+$form-check-min-height:                   $font-size-base * $line-height-base !default;
+$form-check-padding-start:                $form-check-input-width + .5em !default;
+$form-check-margin-bottom:                .125rem !default;
+$form-check-label-color:                  null !default;
+$form-check-label-cursor:                 null !default;
+$form-check-transition:                   null !default;
+$form-check-input-active-filter:          brightness(90%) !default;
+
+$form-check-input-bg:                     $input-bg !default;
+$form-check-input-border:                 var(--#{$prefix}border-width) solid var(--#{$prefix}border-color) !default;
+$form-check-input-border-radius:          .25em !default;
+$form-check-radio-border-radius:          50% !default;
+$form-check-input-focus-border:           $input-focus-border-color !default;
+$form-check-input-focus-box-shadow:       $focus-ring-box-shadow !default;
+
+$form-check-input-checked-color:          $component-active-color !default;
+$form-check-input-checked-bg-color:       $component-active-bg !default;
+$form-check-input-checked-border-color:   $form-check-input-checked-bg-color !default;
+$form-check-input-checked-bg-image:       url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='#{$form-check-input-checked-color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/></svg>") !default;
+$form-check-radio-checked-bg-image:       url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='2' fill='#{$form-check-input-checked-color}'/></svg>") !default;
+
+$form-check-input-indeterminate-color:          $component-active-color !default;
+$form-check-input-indeterminate-bg-color:       $component-active-bg !default;
+$form-check-input-indeterminate-border-color:   $form-check-input-indeterminate-bg-color !default;
+$form-check-input-indeterminate-bg-image:       url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='none' stroke='#{$form-check-input-indeterminate-color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10h8'/></svg>") !default;
+
+$form-check-input-disabled-opacity:        .5 !default;
+$form-check-label-disabled-opacity:        $form-check-input-disabled-opacity !default;
+$form-check-btn-check-disabled-opacity:    $btn-disabled-opacity !default;
+
+$form-check-inline-margin-end:    1rem !default;
+
+// scss-docs-start form-switch-variables
+$form-switch-color:               rgba($black, .25) !default;
+$form-switch-width:               2em !default;
+$form-switch-padding-start:       .5em !default;
+
+$form-switch-bg-image:            url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#{$form-switch-color}'/></svg>") !default;
+$form-switch-border-radius:       $form-switch-width !default;
+$form-switch-transition:          background-position .15s ease-in-out !default;
+
+$form-switch-focus-color:         $input-focus-border-color !default;
+$form-switch-focus-bg-image:      url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#{$form-switch-focus-color}'/></svg>") !default;
+
+$form-switch-checked-color:       $component-active-color !default;
+$form-switch-checked-bg-image:    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#{$form-switch-checked-color}'/></svg>") !default;
+$form-switch-checked-bg-position: right center !default;
+
+$form-switch-color-dark:            rgba($white, .25) !default;
+$form-switch-bg-image-dark:         url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'><circle r='3' fill='#{$form-switch-color-dark}'/></svg>") !default;
+
+$form-check-bg: #{escape-svg($form-switch-bg-image)};
+$form-check-bg-image: #{escape-svg($form-check-input-checked-bg-image)};
+
+@function str-replace($string, $search, $replace: "") {
+  $index: str-index($string, $search);
+
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+  }
+
+  @return $string;
+}
+
+@function escape-svg($string) {
+  @if str-index($string, "data:image/svg+xml") {
+    @each $char, $encoded in $escaped-characters {
+      // Do not escape the url brackets
+      @if str-index($string, "url(") == 1 {
+        $string: url("#{str-replace(str-slice($string, 6, -3), $char, $encoded)}");
+      } @else {
+        $string: str-replace($string, $char, $encoded);
+      }
+    }
+  }
+
+  @return $string;
+}
 
 @mixin border-bottom-radius($radius: $border-radius) {
   @if $enable-rounded {
@@ -226,7 +338,7 @@ $link-hover-decoration:                   null !default;
 
 @mixin border-radius($radius: $border-radius, $fallback-border-radius: false) {
   @if $enable-rounded {
-    border-radius: valid-radius($radius);
+    border-radius: $radius;
   }
   @else if $fallback-border-radius != false {
     border-radius: $fallback-border-radius;
@@ -248,6 +360,54 @@ $link-hover-decoration:                   null !default;
 
     @if (length($result) > 0) {
       box-shadow: $result;
+    }
+  }
+}
+
+// stylelint-disable property-disallowed-list
+@mixin transition($transition...) {
+  @if length($transition) == 0 {
+    $transition: $transition-base;
+  }
+
+  @if length($transition) > 1 {
+    @each $value in $transition {
+      @if $value == null or $value == none {
+        @warn "The keyword 'none' or 'null' must be used as a single argument.";
+      }
+    }
+  }
+
+  @if $enable-transitions {
+    @if nth($transition, 1) != null {
+      transition: $transition;
+    }
+
+    @if $enable-reduced-motion and nth($transition, 1) != null and nth($transition, 1) != none {
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+  }
+}
+
+// scss-docs-start color-mode-mixin
+@mixin color-mode($mode: light, $root: false) {
+  @if $color-mode-type == "media-query" {
+    @if $root == true {
+      @media (prefers-color-scheme: $mode) {
+        :root {
+          @content;
+        }
+      }
+    } @else {
+      @media (prefers-color-scheme: $mode) {
+        @content;
+      }
+    }
+  } @else {
+    [data-bs-theme="#{$mode}"] {
+      @content;
     }
   }
 }

@@ -2052,6 +2052,7 @@
       'back': 'Retour'
       'previous': 'Précédent'
       'next': 'Suivant'
+      'tracking': 'Tracking'
   'stores':
     'default':
       'name': 'Site numéro 1'
