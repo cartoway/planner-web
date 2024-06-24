@@ -92,6 +92,7 @@ route.stops.each { |stop|
       out_of_max_ride_duration: stop.out_of_max_ride_duration ? 'x' : '',
       out_of_relation: stop.out_of_relation ? 'x' : '',
       status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),
+      status_updated_at: stop.status_updated_at && I18n.l(stop.status_updated_at, format: :hour_minute),
       eta: stop.eta && I18n.l(stop.eta, format: :hour_minute),
 
       ref: stop.is_a?(StopVisit) ? stop.visit.destination.ref : stop.ref,

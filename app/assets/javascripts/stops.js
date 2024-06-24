@@ -5,6 +5,7 @@ export const stops_edit = function(params) {
     var selected = $(this).data('title');
     var toggled = $(this).data('toggle');
     $('#'+toggled).prop('value', selected);
+    $('#'+toggled+'_updated_at').prop('value', new Date().toUTCString());
 
     $('a[data-toggle="'+toggled+'"]').not('[data-title="'+selected+'"]').removeClass('active');
     $('a[data-toggle="'+toggled+'"][data-title="'+selected+'"]').addClass('active');

@@ -107,6 +107,7 @@
                 %a.btn.btn-danger{ data: { toggle: 'active_status', title: 'undelivered' }, class: ('active' if @stop.status == 'undelivered')}
                   = t('plannings.edit.stop_status.undelivered')
               = f.hidden_field :position, { name: 'stop[position]', id: 'active_status_position' }
+              = f.hidden_field :status_updated_at, { name: 'stop[status_updated_at]', id: 'active_status_updated_at' }
               = f.hidden_field :status, { name: 'stop[status]', id: 'active_status', onchange: "this.form.submit()" }
 .container
   .row
