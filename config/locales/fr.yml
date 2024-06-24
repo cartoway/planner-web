@@ -703,6 +703,10 @@
     'location':
       'geocoding_fail': 'Le géocodage a échoué :'
       'reversegeocoding_fail': 'Le géocodage inversé a échoué :'
+    'mobile':
+      'default': 'Une erreur s''est produite'
+      'denied_geolocation': 'Vous avez refusé le partage de position'
+      'unsupported_geolocation': 'Votre navigateur ne supporte pas la remontée de position'
     'planning':
       'import_too_many_routes': 'Tentative d''importer plus de tournées que de véhicules
         disponibles'
@@ -1682,6 +1686,10 @@
         'started': 'Démarré'
         'finished': 'Terminé'
         'rejected': 'Rejeté'
+        'intransit': "En route"
+        'exception':  "Anomalie"
+        'delivered': "Livré"
+        'undelivered': "Non livré"
         'any': 'Tous statuts'
         'none': 'Sans statut'
       'update_stops_status': 'Statuts arrêts :'
@@ -2049,10 +2057,10 @@
         'failure': 'Echec de la mise à jour'
     'mobile':
       'navigate': 'Naviguer'
-      'back': 'Retour'
+      'back': 'Tournée'
       'previous': 'Précédent'
       'next': 'Suivant'
-      'tracking': 'Tracking'
+      'tracking': 'Partage de position'
   'stores':
     'default':
       'name': 'Site numéro 1'

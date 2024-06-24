@@ -695,6 +695,10 @@ en:
     location:
       geocoding_fail: 'Geocoding has failed:'
       reversegeocoding_fail: 'Reverse geocoding has failed:'
+    mobile:
+      default: An error has occurred
+      denied_geolocation: You have denied position sharing
+      unsupported_geolocation: Your browser does not support geolocation
     planning:
       import_too_many_routes: Tried to import more routes than available vehicles
       already_optimizing: A plan optimization is already in progress
@@ -1570,6 +1574,10 @@ en:
         started: Started
         finished: Finished
         rejected: Rejected
+        intransit: In transit
+        exception:  Exception
+        delivered: Delivered
+        undelivered: Undelivered
         any: Any status
         none: Without status
       update_stops_status: 'Stops status:'
@@ -1926,10 +1934,10 @@ en:
         failure: Echec de la mise à jour
     mobile:
       navigate: Navigate
-      back: Back
+      back: Tour
       previous: Previous
       next: Next
-      tracking: Tracking
+      tracking: Position sharing
   stores:
     default:
       name: Depot number 1
