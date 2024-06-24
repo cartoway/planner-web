@@ -1812,6 +1812,7 @@
         'stop_distance': 'Distance :'
         'visit': 'Visite'
         'status': 'Statut :'
+        'status_updated_at': 'Horaire statut'
         'eta': 'ETA :'
         'day': 'J+'
       'error':
@@ -1991,6 +1992,7 @@
       'out_of_max_ride_duration': 'durée trajet maximale'
       'out_of_relation': 'relation non respectée'
       'status': 'statut'
+      'status_updated_at': 'horaire statut'
       'eta': 'eta'
       'custom_attributes_visit': 'attributs visite'
     'form':
