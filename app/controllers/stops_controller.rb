@@ -69,7 +69,8 @@ class StopsController < ApplicationController
   # Never trust parameters from the scary internet, only allow the white list through.
   def stop_params
     params.require(:stop).permit(
-      :status
+      :status,
+      :status_updated_at
     )
   end
 end

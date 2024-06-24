@@ -59,6 +59,7 @@ if stop.is_a?(StopVisit)
   if stop.status
     json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
     json.status_code stop.status.downcase
+    json.status_updated_at stop.status_updated_at_time
   end
   if stop.route.last_sent_to && stop.status && stop.eta
     (json.eta_formated l(stop.eta, format: :hour_minute)) if stop.eta

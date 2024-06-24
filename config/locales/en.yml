@@ -1695,6 +1695,7 @@ en:
         stop_distance: 'Distance:'
         visit: Visit
         status: 'Status:'
+        status_updated_at: 'Time Status:'
         eta: 'ETA:'
         day: D+
       error:
@@ -1871,6 +1872,7 @@ en:
       out_of_max_ride_duration: maximum ride duration
       out_of_relation: relation violated
       status: status
+      status_updated_at: time status changed
       eta: eta
       custom_attributes_visit: visit attributes
     form:
