@@ -98,14 +98,14 @@
               Status
             .input-group
               #radiobtn.btn-group
-                %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'planned' }, class: ('active' if @stop.status == 'planned') }
-                  = t('plannings.edit.stop_status.planned')
-                %a.btn.btn-warning{ data: { toggle: 'active_status', title: 'started' }, class: ('active' if @stop.status == 'started') }
-                  = t('plannings.edit.stop_status.started')
-                %a.btn.btn-success{ data: { toggle: 'active_status', title: 'finished' }, class: ('active' if @stop.status == 'finished') }
-                  = t('plannings.edit.stop_status.finished')
-                %a.btn.btn-danger{ data: { toggle: 'active_status', title: 'rejected' }, class: ('active' if @stop.status == 'rejected')}
-                  = t('plannings.edit.stop_status.rejected')
+                %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if @stop.status == 'intransit') }
+                  = t('plannings.edit.stop_status.intransit')
+                %a.btn.btn-success{ data: { toggle: 'active_status', title: 'delivered' }, class: ('active' if @stop.status == 'delivered') }
+                  = t('plannings.edit.stop_status.delivered')
+                %a.btn.btn-warning{ data: { toggle: 'active_status', title: 'exception' }, class: ('active' if @stop.status == 'exception') }
+                  = t('plannings.edit.stop_status.exception')
+                %a.btn.btn-danger{ data: { toggle: 'active_status', title: 'undelivered' }, class: ('active' if @stop.status == 'undelivered')}
+                  = t('plannings.edit.stop_status.undelivered')
               = f.hidden_field :position, { name: 'stop[position]', id: 'active_status_position' }
               = f.hidden_field :status, { name: 'stop[status]', id: 'active_status', onchange: "this.form.submit()" }
 .container

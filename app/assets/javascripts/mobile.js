@@ -33,7 +33,8 @@ const tracking = function(params) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(sendPosition, handleError);
       } else {
-        alert("Geolocation is not supported by this browser.");
+        alert(I18n.t('errors.mobile.unsupported_geolocation'));
+        clearInterval(positionInterval);
       }
     }
   }
@@ -57,10 +58,12 @@ const tracking = function(params) {
   function handleError(error) {
     switch(error.code) {
       case error.PERMISSION_DENIED:
-        alert("User denied the request for Geolocation.");
+        alert(I18n.t('errors.mobile.denied_geolocation'));
+        clearInterval(positionInterval);
         break;
       default:
-        alert("An error occurred: " + error.message);
+        alert(I18n.t('errors.mobile.default'));
+        clearInterval(positionInterval);
     }
   }
 

@@ -29,7 +29,7 @@ class RouteMailer < ApplicationMailer
     @customer = customer
     I18n.with_locale(locale) do
       @title = I18n.t('route_mailer.send_driver_route.title')
-      mail to: email, subject: "[#{route.vehicle_usage.vehicle.name}] #{t('route_mailer.send_driver_route.subject')}" do |format|
+      mail to: email, subject: "[#{route.vehicle_usage.vehicle.name}] #{t('route_mailer.send_driver_route.subject', date: route.planning.date)}" do |format|
         format.html { render 'route_mailer/send_driver_route', locals: { customer: customer, route: route } }
       end
     end
