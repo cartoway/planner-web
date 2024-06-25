@@ -12,7 +12,7 @@
       %input.form-control{ value: date, type: 'text', disabled: true }
       %span.input-group-addon
         %i.fa.fa-calendar.fa-fw
-  .panel-body{}
+  .panel-body
     #accordion.panel-group.route-stops{ role: 'tablist', aria_multiselectable: 'true' }
       - previous = nil
       - @stops.each do |stop|
@@ -20,18 +20,17 @@
 
         .panel.panel-default
           .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px" }
-            .row
-              .col-xs-1
+            .d-flex.align-items-center.justify-content-between
+              .col-xs-3
                 %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
                   .fa.fa-caret-down.fa-fw
-              .col-xs-1
                 %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
                   #label-index.number.label{ class: ("label-#{stop.status}") }
                     = stop.index
-              .col-xs-4
+              .col-xs-5.p-0
                 %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
                   = stop.name
-              .col-xs-5
+              .col-xs-4.p-0
                 %a{ href: "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}" }
                   %button.btn.btn-default
                     .fa.fa-diamond-turn-right
