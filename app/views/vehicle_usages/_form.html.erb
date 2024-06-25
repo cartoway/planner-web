@@ -399,7 +399,7 @@
           </div>
         </div>
 
-        <%= f.fields_for 'vehicle_usage[vehicle][devices]', @vehicle_usage.vehicle, layout: :horizontal do |f| %>
+        <%= f.fields_for 'devices', @vehicle_usage.vehicle, layout: :horizontal do |f| %>
           <% @vehicle_usage.vehicle.customer.device.configured_definitions.each do |key, definition| %>
             <% if definition[:forms].key?(:vehicle) %>
               <% definition[:forms][:vehicle].each do |field, type| %>
