@@ -84,15 +84,9 @@ const tracking = function(params) {
   initTracking();
 };
 
-Paloma.controller('Stops', {
-  edit: function() {
-    tracking(this.params);
-    stops_edit(this.params);
-  }
-});
-
 Paloma.controller('Routes', {
   mobile: function() {
     tracking(this.params);
+    stops_edit(this.params);
   }
 });

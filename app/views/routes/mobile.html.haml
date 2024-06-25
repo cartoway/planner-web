@@ -12,30 +12,35 @@
       %input.form-control{ value: date, type: 'text', disabled: true }
       %span.input-group-addon
         %i.fa.fa-calendar.fa-fw
-  .panel-body{ style: "padding-left: 15px; padding-right: 15px;"}
-    .route-stops
-      - if @stops&.any?
-        .stops
-          - @stops.each do |stop|
-            - next unless stop.active
-            .card.mb-3
-              .card-header
-                .row{ style: 'display: contents' }
-                  = link_to("/stops/#{stop.id}/edit") do
-                    .col-xs-1
-                      .number.label{ class: "label-#{stop.status}" }
-                        = stop.index
-                    .col-xs-4
-                      - if stop.status
-                        .stop-status{ class: "stop-status-#{stop.status}" }
-                          = t("plannings.edit.stop_status.#{stop.status}")
-                    .col-xs-5
-                      .title
-                        .name{ title: stop.name }
-                          = stop.name
-                    .col-xs-1
-                      .fa.fa-caret-right
-      - else
+  .panel-body{}
+    #accordion.panel-group.route-stops{ role: 'tablist', aria_multiselectable: 'true' }
+      - previous = nil
+      - @stops.each do |stop|
+        - next unless stop.active
+
+        .panel.panel-default
+          .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px" }
+            .row
+              .col-xs-1
+                %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                  .fa.fa-caret-down.fa-fw
+              .col-xs-1
+                %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                  #label-index.number.label{ class: ("label-#{stop.status}") }
+                    = stop.index
+              .col-xs-4
+                %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                  = stop.name
+              .col-xs-5
+                %a{ href: "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}" }
+                  %button.btn.btn-default
+                    .fa.fa-diamond-turn-right
+                    = t('stops.mobile.navigate')
+          .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
+            .panel-body
+              = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit }
+        - previous = stop
+      - if @stops&.empty?
         .alert.alert-warning
           = t("routes.mobile.empty_route")
 

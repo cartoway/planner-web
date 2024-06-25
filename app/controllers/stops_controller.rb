@@ -54,16 +54,14 @@ class StopsController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_stop
-    if params[:id]
-      @stop = Stop.find params[:id]
+    if params[:stop_id] || params[:id]
+      @stop = Stop.find(params[:stop_id] || params[:id])
     else
       @stop = Stop.find_by route_id: params[:route_id], index: params[:index]
     end
     @route = @stop.route
     @visit = @stop.visit
     @destination = @stop.visit.destination
-    @predecessor_id = @route.stops.where(active: true).where("index < #{@stop.index}").order(:index).last&.id
-    @successor_id = @route.stops.where(active: true).where("index > #{@stop.index}").order(:index).first&.id
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
