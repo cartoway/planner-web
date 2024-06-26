@@ -108,7 +108,7 @@ const devicesObserveVehicle = (function() {
       width: '100%',
       allowClear: true, // Need a placeholder
       placeholder: '',
-      minimumResultsForSearch: Infinity,
+      minimumResultsForSearch: 5,
       templateResult: function(data_selection) {
         return data_selection.text;
       },
@@ -129,7 +129,7 @@ const devicesObserveVehicle = (function() {
   var _addDataToSelect2 = function(name, datas, devices) {
     _buildSelect(name, datas);
     var el = $('[data-device=' + name + ']');
-    el.val(devices[name + "_id"] || devices[name + "_ids"] || devices[name + "_ref"] || devices[name + "_user"] || datas[0])
+    el.val(devices[name + "_id"] || devices[name + "_ids"] || devices[name + "_vehicle_id"] || devices[name + "_ref"] || devices[name + "_user"] || datas[0])
       .trigger("change");
   };
 
