@@ -19,7 +19,7 @@ gem 'turbolinks', '< 5' # FIXME: turbolinks not working with anchors in url
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder'
 # bundle exec rake doc:rails generates the API under doc/api.
-gem 'sdoc', '~> 0.4', group: :doc
+# gem 'sdoc', group: :doc
 
 gem 'rake'
 
@@ -58,7 +58,8 @@ group :development, :test do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   # gem 'spring' # Other gems incmpatible with last spring version
 
-  gem 'rubocop'
+  gem 'erb_lint'
+  gem 'rubocop', ' > 1.50'
   gem 'byebug'
   gem 'i18n-tasks'
 
@@ -85,7 +86,7 @@ group :test do
 
   # Browser tests
   gem 'capybara'
-  gem 'selenium-webdriver', '> 2.35' # API change require zip/zip to require zip
+  gem 'selenium-webdriver'
   gem 'chromedriver-helper'
 end
 
