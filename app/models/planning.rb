@@ -33,7 +33,7 @@ class Planning < ApplicationRecord
   nilify_blanks
   auto_strip_attributes :name
 
-  enum tag_operation: [:_and_, :_or]
+  enum tag_operation: [:_and, :_or]
 
   validates :customer, presence: true
   validates :name, presence: true
