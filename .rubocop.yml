@@ -1,3 +1,5 @@
+inherit_from: .rubocop_todo.yml
+
 Metrics/LineLength:
   Enabled: false
 
@@ -19,7 +21,7 @@ Metrics/PerceivedComplexity:
 Metrics/CyclomaticComplexity:
   Enabled: false
 
-Style/AlignParameters:
+Layout/ParameterAlignment:
   Enabled: false
 
 Style/DoubleNegation:
@@ -43,7 +45,7 @@ Style/SpaceInsideHashLiteralBraces:
 Style/NegatedIf:
   Enabled: false
 
-Style/IndentHash:
+Layout/FirstHashElementIndentation:
   Enabled: false
 
 Style/NumericLiterals:
@@ -61,7 +63,7 @@ Style/IfUnlessModifier:
 Style/CommentIndentation:
   Enabled: false
 
-Style/IndentArray:
+Layout/FirstArrayElementIndentation:
   Enabled: false
 
 Style/ClassAndModuleChildren:
