@@ -106,11 +106,6 @@
             </span>
           {{/enable_multi_visits}}
           {{/enable_references}}
-          {{^enable_orders}}
-          <span style="width:3em">
-            <span class="form-control input-sm">{{#multiple_quantities}}#{{/multiple_quantities}}{{^multiple_quantities}}{{quantity}}{{/multiple_quantities}}</span>
-          </span>
-          {{/enable_orders}}
           {{#enable_multi_visits}}
           <span style="width:8em">
             <span class="form-control input-sm">
@@ -127,21 +122,6 @@
             </span>
             </span>
           {{/enable_multi_visits}}
-          <span style="width:4em">
-            <span class="form-control input-sm">{{duration}}</span>
-          </span>
-          <span style="width:4em">
-            <span class="form-control input-sm">{{time_window_start_1}}</span>
-          </span>
-          <span style="width:4em">
-            <span class="form-control input-sm">{{time_window_end_1}}</span>
-          </span>
-          <span style="width:4em">
-            <span class="form-control input-sm">{{time_window_start_2}}</span>
-          </span>
-          <span style="width:4em">
-            <span class="form-control input-sm">{{time_window_end_2}}</span>
-          </span>
         </div>
       {{/visits}}
     </div>

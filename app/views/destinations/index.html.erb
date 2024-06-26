@@ -83,32 +83,6 @@
             <div class="col-title"><%= t 'activerecord.attributes.destination.tags' %></div>
           </th>
         <% end %>
-        <% visit_width = {}
-           visit_width[:ref] = 3 if @customer.enable_references && @customer.enable_multi_visits
-           visit_width[:quantity] = 3 unless @customer.enable_orders
-           visit_width[:tags] = 8 if @customer.enable_multi_visits
-           visit_width[:duration] = 4
-           visit_width[:time_windows] = 16
-        %>
-        <th data-sorter="false" class="visit columnSelector-disable" style="min-width:<%= visit_width.values.reduce(&:+) %>em;">
-          <div class="col-title"><%= t 'activerecord.models.visit' %></div>
-          <div id="visit-subtitles" style="width: 100%;">
-            <% if @customer.enable_references && @customer.enable_multi_visits %>
-              <div class="visit-subtitle" style="min-width: <%= visit_width[:ref] %>em;"><%= t 'activerecord.attributes.visit.ref_small' %></div>
-            <% end %>
-
-            <% unless @customer.enable_orders %>
-            <div class="visit-subtitle" style="width: <%= visit_width[:quantity] %>em;"><%= t '.quantity_small' %></div>
-            <% end %>
-
-            <% if @customer.enable_multi_visits %>
-              <div class="visit-subtitle" style="width: <%= visit_width[:tags] %>em;"><%= t 'activerecord.attributes.visit.tags' %></div>
-            <% end %>
-
-            <div class="visit-subtitle" style="width: <%= visit_width[:duration] %>em;"><%= t 'activerecord.attributes.visit.duration_small' %></div>
-            <div class="visit-subtitle" style="width: <%= visit_width[:time_windows] %>em;"><%= t 'activerecord.attributes.visit.time_windows_small' %></div>
-          </div>
-        </th>
         <th data-sorter="false" class="filter-false columnSelector-disable"></th>
       </tr></thead>
       <tbody class="destinations"></tbody>
