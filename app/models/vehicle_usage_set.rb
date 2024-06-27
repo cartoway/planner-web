@@ -19,9 +19,9 @@ class VehicleUsageSet < ApplicationRecord
   default_scope { order(:id) }
 
   belongs_to :customer, inverse_of: :vehicle_usage_sets
-  belongs_to :store_start, class_name: 'Store', inverse_of: :vehicle_usage_set_starts
-  belongs_to :store_stop, class_name: 'Store', inverse_of: :vehicle_usage_set_stops
-  belongs_to :store_rest, class_name: 'Store', inverse_of: :vehicle_usage_set_rests
+  belongs_to :store_start, class_name: 'Store', inverse_of: :vehicle_usage_set_starts, optional: true
+  belongs_to :store_stop, class_name: 'Store', inverse_of: :vehicle_usage_set_stops, optional: true
+  belongs_to :store_rest, class_name: 'Store', inverse_of: :vehicle_usage_set_rests, optional: true
   has_many :plannings, inverse_of: :vehicle_usage_set
   before_destroy :destroy_vehicle_usage_set # Update planning.vehicle_usage_set before destroy self
   has_many :vehicle_usages, inverse_of: :vehicle_usage_set, dependent: :delete_all, autosave: true
@@ -143,7 +143,7 @@ class VehicleUsageSet < ApplicationRecord
   def destroy_vehicle_usage_set
     default = customer.vehicle_usage_sets.find{ |vehicle_usage_set| vehicle_usage_set != self && !vehicle_usage_set.destroyed? }
     if !default
-      errors[:base] << I18n.t('activerecord.errors.models.vehicle_usage_set.at_least_one')
+      errors.add(:base, { message: I18n.t('activerecord.errors.models.vehicle_usage_set.at_least_one') })
       return false
     else
       customer.plannings.select{ |planning| planning.vehicle_usage_set == self }.each{ |planning|
