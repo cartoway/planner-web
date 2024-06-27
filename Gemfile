@@ -27,6 +27,7 @@ gem 'rake'
 gem 'hashie', '~> 3.4', '>= 3.4.4'
 
 gem 'puma'
+gem 'mail', '~> 2.8.1'
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
@@ -59,7 +60,7 @@ group :development, :test do
   # gem 'spring' # Other gems incmpatible with last spring version
 
   gem 'erb_lint'
-  gem 'rubocop', ' > 1.50'
+  gem 'rubocop'
   gem 'byebug'
   gem 'i18n-tasks'
 
@@ -82,6 +83,7 @@ group :test do
   gem 'tidy-html5', git: 'https://github.com/moneyadviceservice/tidy-html5-gem.git'
   gem 'html_validation'
 
+  gem 'rails-controller-testing'
   gem 'rspec-rails'
 
   # Browser tests
@@ -170,7 +172,7 @@ gem 'carrierwave'
 
 gem 'charlock_holmes', '> 0.7.3'
 gem 'savon'
-gem 'savon-multipart', '~> 2.0.2'
+gem 'savon-multipart'
 gem 'rest-client'
 gem 'macaddr'
 gem 'rubyzip'
@@ -201,5 +203,4 @@ group :production do
   gem 'redis'
   gem 'redis-store', '~> 1.4.1' # Ensure redis-store dependency is at least 1.4.1 for CVE-2017-1000248 correction
   gem 'redis-rails'
-
 end
