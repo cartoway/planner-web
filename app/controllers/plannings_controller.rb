@@ -294,7 +294,7 @@ class PlanningsController < ApplicationController
           format.json { render json: @planning.errors, status: :unprocessable_entity }
         end
       rescue VRPNoSolutionError
-        @planning.errors.add(:base, :no_solution, { message: I18n.t('plannings.edit.dialog.optimizer.no_solution') })
+        @planning.errors.add(:base, I18n.t('plannings.edit.dialog.optimizer.no_solution'))
         format.json { render json: @planning.errors, status: :unprocessable_entity }
       rescue ActiveRecord::RecordInvalid
         errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
@@ -317,7 +317,7 @@ class PlanningsController < ApplicationController
           format.json { render json: errors, status: :unprocessable_entity }
         end
       rescue VRPNoSolutionError
-        @planning.errors.add(:base, :no_solution, { message: I18n.t('plannings.edit.dialog.optimizer.no_solution') })
+        @planning.errors.add(:base, I18n.t('plannings.edit.dialog.optimizer.no_solution'))
         format.json { render json: @planning.errors, status: :unprocessable_entity }
       rescue ActiveRecord::RecordInvalid
         errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
@@ -335,7 +335,7 @@ class PlanningsController < ApplicationController
         current_user.customer.job_optimizer.destroy
         format.json { render action: 'show', location: @planning }
       else
-        @planning.errors.add(:base, :retry_canceling, { message: I18n.t('plannings.edit.dialog.optimizer.retry_canceling') })
+        @planning.errors.add(:base, I18n.t('plannings.edit.dialog.optimizer.retry_canceling'))
         format.json { render json: @planning.errors, status: :unprocessable_entity }
       end
     end
@@ -462,7 +462,6 @@ class PlanningsController < ApplicationController
 
   def planning_params
     p = params.require(:planning).permit(:name, :ref, :active, :date, :begin_date, :end_date, :vehicle_usage_set_id, :tag_operation, tag_ids: [], zoning_ids: [])
-    p[:tag_operation] = p[:tag_operation].prepend('_') if p[:tag_operation] && !p[:tag_operation].start_with('_')
     p[:date] = Date.strptime(p[:date], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK) unless p[:date].blank?
     p[:begin_date] = Date.strptime(p[:begin_date], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK) unless p[:begin_date].blank?
     p[:end_date] = Date.strptime(p[:end_date], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK) unless p[:end_date].blank?

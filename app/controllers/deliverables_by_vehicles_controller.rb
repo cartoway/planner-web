@@ -16,9 +16,9 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
-include DeliverableByVehiclesHelper
-
 class DeliverablesByVehiclesController < ApplicationController
+  include DeliverableByVehiclesHelper
+
   before_action :authenticate_user!
   before_action :set, only: %i[show]
 
@@ -27,10 +27,9 @@ class DeliverablesByVehiclesController < ApplicationController
   private
 
   def deliverables_by_vehicle_params
-    p = ActionController::Parameters.new(params)
-    p.require(:vehicle_id)
-    p.require(:planning_ids)
-    p.permit(:vehicle_id, :planning_ids)
+    params.require(:vehicle_id)
+    params.require(:planning_ids)
+    params.permit(:vehicle_id, :planning_ids)
   end
 
   def set

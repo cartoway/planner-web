@@ -15,7 +15,7 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-require 'addressable'
+require 'addressable/uri'
 require_relative './fleet_modules/fleet_builder.rb'
 
 #RestClient.log = $stdout
@@ -276,7 +276,7 @@ class Fleet < DeviceBase
 
   def fetch_routes_by_date(customer, from, to, sync_user)
     params = {from: from || (Time.zone.now - 12.hour), to: to, user_id: sync_user}
-    url = URI.encode("#{api_url}/api/0.1/routes?" + URI.encode_www_form(params.compact))
+    url = Addressable::URI.encode("#{api_url}/api/0.1/routes?" + URI.encode_www_form(params.compact))
 
     begin
       response = JSON.parse rest_client_get(url, customer.devices[:fleet][:api_key], nil), symbolize_names: true
@@ -344,7 +344,7 @@ class Fleet < DeviceBase
   end
 
   def reporting(api_key, locale, params)
-    url = URI.encode("#{api_url}/api/0.1/reportings?#{URI.encode_www_form(params.compact)}")
+    url = Addressable::URI.encode("#{api_url}/api/0.1/reportings?#{URI.encode_www_form(params.compact)}")
     begin
       response = RestClient.get(
         url,
@@ -413,39 +413,39 @@ class Fleet < DeviceBase
   end
 
   def set_company_url
-    URI.encode("#{api_url}/api/0.1/admin/companies")
+    Addressable::URI.encode("#{api_url}/api/0.1/admin/companies")
   end
 
   def get_users_url(params = {})
-    URI.encode(Addressable::Template.new("#{api_url}/api/0.1/users{?with_vehicle*}").expand(params).to_s)
+    Addressable::URI.encode(Addressable::Template.new("#{api_url}/api/0.1/users{?with_vehicle*}").expand(params).to_s)
   end
 
   def get_user_url(user)
-    URI.encode("#{api_url}/api/0.1/users/#{convert_user(user)}")
+    Addressable::URI.encode("#{api_url}/api/0.1/users/#{convert_user(user)}")
   end
 
   def set_user_url
-    URI.encode("#{api_url}/api/0.1/users")
+    Addressable::URI.encode("#{api_url}/api/0.1/users")
   end
 
   def get_vehicles_pos_url
-    URI.encode("#{api_url}/api/0.1/user_current_locations")
+    Addressable::URI.encode("#{api_url}/api/0.1/user_current_locations")
   end
 
   def delete_missions_url(user, destination_ids)
-    URI.encode("#{api_url}/api/0.1/missions/?user_id=#{convert_user(user)}&#{destination_ids.to_query('ids')}")
+    Addressable::URI.encode("#{api_url}/api/0.1/missions/?user_id=#{convert_user(user)}&#{destination_ids.to_query('ids')}")
   end
 
   def post_routes_url(user)
-    URI.encode("#{api_url}/api/0.1/routes?user_id=#{convert_user(user)}")
+    Addressable::URI.encode("#{api_url}/api/0.1/routes?user_id=#{convert_user(user)}")
   end
 
   def put_routes_url(_user, delete_missions, route_id)
-    URI.encode("#{api_url}/api/0.1/routes/#{route_id}?delete_missions=#{delete_missions}")
+    Addressable::URI.encode("#{api_url}/api/0.1/routes/#{route_id}?delete_missions=#{delete_missions}")
   end
 
   def get_route_url(user, route_id, with_missions = false)
-    URI.encode("#{api_url}/api/0.1/routes/#{route_id}?user_id=#{convert_user(user)}&with_missions=#{with_missions}")
+    Addressable::URI.encode("#{api_url}/api/0.1/routes/#{route_id}?user_id=#{convert_user(user)}&with_missions=#{with_missions}")
   end
 
   def generate_store_id(store, route, date, options)

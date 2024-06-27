@@ -151,7 +151,8 @@ class VehicleUsageSetsController < ApplicationController
   def activate_multiple_vehicle_usage(vehicle_usage_set_id, activate)
     VehicleUsageSet.transaction do
       if params['vehicle_usages']
-        vehicle_usage_ids = params['vehicle_usages'][vehicle_usage_set_id].map{ |vu| vu[0].to_i if vu[1] == 'on' }.compact
+        vehicle_usage_ids = []
+        params['vehicle_usages'][vehicle_usage_set_id].each_pair{ |key, value| vehicle_usage_ids << key.to_i if value == 'on' }
         current_user.customer.vehicle_usage_sets.find(vehicle_usage_set_id).vehicle_usages.each{ |vu|
           vu.update(active: activate) if vehicle_usage_ids.include?(vu.id)
         }

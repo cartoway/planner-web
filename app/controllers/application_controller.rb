@@ -274,11 +274,11 @@ class ApplicationController < ActionController::Base
   end
 
   def parse_router_options(params)
-    params[:router_options].each { |key, value|
+    params['router_options'].each { |key, value| # Unsage navigation
       if value == 'true' || value == 'false'
-        params[:router_options][key] = ValueToBoolean.value_to_boolean(value)
+        params['router_options'][key] = ValueToBoolean.value_to_boolean(value)
       elsif (value.respond_to?(:to_f) && value.to_f != 0.0)
-        params[:router_options][key] = value.to_f
+        params['router_options'][key] = value.to_f
       end
     }
   end

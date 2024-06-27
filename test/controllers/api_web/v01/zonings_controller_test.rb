@@ -18,25 +18,25 @@ class ApiWeb::V01::ZoningsControllerTest < ActionController::TestCase
     assert @controller.can?(:edit, @zoning)
     assert @controller.cannot?(:edit, zonings(:zoning_three))
 
-    get :edit, id: zonings(:zoning_three)
+    get :edit, params: { id: zonings(:zoning_three) }
     assert_response :redirect
   end
 
   test 'should sign in with api_key' do
     sign_out users(:user_one)
-    get :edit, id: @zoning, api_key: 'testkey1'
+    get :edit, params: { id: @zoning, api_key: 'testkey1' }
     assert_response :success
     assert_not_nil assigns(:zoning)
   end
 
   test 'should get edit' do
-    get :edit, id: @zoning
+    get :edit, params: { id: @zoning }
     assert_response :success
     assert_valid response
   end
 
   test 'should update zoning' do
-    patch :update, id: @zoning, zoning: { name: @zoning.name }
+    patch :update, params: { id: @zoning, zoning: { name: @zoning.name } }
     assert_redirected_to api_web_v01_edit_zoning_path(assigns(:zoning))
   end
 end

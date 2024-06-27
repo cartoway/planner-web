@@ -145,7 +145,7 @@ class OptimizerWrapper
           raise e
         rescue Delayed::WorkerTimeout
           kill_solve(job_id)
-          raise JobTimeout.new("Optimizer Job #{job_id} has reached max_run_time: #{ScheduleType.new.type_cast(Delayed::Worker.max_run_time)}")
+          raise JobTimeout.new("Optimizer Job #{job_id} has reached max_run_time: #{ScheduleType.new.cast(Delayed::Worker.max_run_time)}")
         end
       else
         if /No solution provided/.match result.dig('job', 'avancement')

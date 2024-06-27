@@ -110,7 +110,7 @@ class Store < Location
       }
       true
     else
-      errors.add(:base, { message: I18n.t('activerecord.errors.models.store.at_least_one') })
+      errors.add(:base, I18n.t('activerecord.errors.models.store.at_least_one'))
       false
     end
   end

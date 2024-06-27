@@ -29,9 +29,7 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
 
   def print
     @params = params
-    respond_to do |format|
-      format.html
-    end
+    respond_to(&:html)
   end
 
   def self.manage
