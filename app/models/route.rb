@@ -19,7 +19,7 @@ class Route < ApplicationRecord
   RELATION_ORDER_KEYS = %i[pickup_delivery order sequence]
 
   belongs_to :planning
-  belongs_to :vehicle_usage
+  belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
   serialize :quantities, DeliverableUnitQuantity
 

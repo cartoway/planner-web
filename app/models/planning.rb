@@ -27,7 +27,7 @@ class Planning < ApplicationRecord
   has_many :tag_plannings
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
-  belongs_to :order_array
+  belongs_to :order_array, optional: true
   belongs_to :vehicle_usage_set, inverse_of: :plannings, validate: true
 
   nilify_blanks

@@ -26,9 +26,9 @@ class Customer < ApplicationRecord
   belongs_to :reseller
   belongs_to :profile
   belongs_to :router
-  belongs_to :job_destination_geocoding, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy
-  belongs_to :job_store_geocoding, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy
-  belongs_to :job_optimizer, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy
+  belongs_to :job_destination_geocoding, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
+  belongs_to :job_store_geocoding, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
+  belongs_to :job_optimizer, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
   has_many :products, inverse_of: :customer, autosave: true, dependent: :delete_all
   has_many :plannings, inverse_of: :customer, autosave: true, dependent: :delete_all
   has_many :order_arrays, inverse_of: :customer, autosave: true, dependent: :delete_all

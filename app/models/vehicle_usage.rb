@@ -21,9 +21,9 @@ class VehicleUsage < ApplicationRecord
   belongs_to :vehicle_usage_set
 
   belongs_to :vehicle
-  belongs_to :store_start, class_name: 'Store', inverse_of: :vehicle_usage_starts
-  belongs_to :store_stop, class_name: 'Store', inverse_of: :vehicle_usage_stops
-  belongs_to :store_rest, class_name: 'Store', inverse_of: :vehicle_usage_rests
+  belongs_to :store_start, class_name: 'Store', inverse_of: :vehicle_usage_starts, optional: true
+  belongs_to :store_stop, class_name: 'Store', inverse_of: :vehicle_usage_stops, optional: true
+  belongs_to :store_rest, class_name: 'Store', inverse_of: :vehicle_usage_rests, optional: true
   has_many :routes, inverse_of: :vehicle_usage, autosave: true
 
   has_and_belongs_to_many :tags, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
