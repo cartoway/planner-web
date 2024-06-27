@@ -98,7 +98,7 @@ class ImportCsv
         message[0] = message[0].capitalize
         message += (message.end_with?('.') ? ' ' : '. ') + I18n.t('destinations.import_file.check_custom_columns') if column_def && !column_def.values.compact.empty?
         # format error to be human friendly with row content (take into account customized column names)
-        errors[:base] << error_and_format_row(message, last_row)
+        errors.add(:base, { message: error_and_format_row(message, last_row) })
         Rails.logger.warn e.message
         Rails.logger.warn e.backtrace.join("\n")
         return false

@@ -247,7 +247,7 @@ class Vehicle < ApplicationRecord
   def destroy_vehicle
     default = customer.vehicles.find{ |vehicle| vehicle != self && !vehicle.destroyed? }
     unless default
-      errors[:base] << I18n.t('activerecord.errors.models.vehicles.at_least_one')
+      errors.add(:base, { message: I18n.t('activerecord.errors.models.vehicles.at_least_one') })
       false
     end
   end

@@ -19,7 +19,7 @@ class Stop < ApplicationRecord
   default_scope { order(:index) }
 
   belongs_to :route
-  belongs_to :visit, optional: true # Pretty strange
+  belongs_to :visit, optional: true # TODO: Remove optional
 
   nilify_blanks
 
