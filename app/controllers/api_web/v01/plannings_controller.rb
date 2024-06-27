@@ -15,53 +15,58 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
+class ApiWeb::V01::ZoningsController < ApiWeb::V01::ApiWebController
   skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
   load_and_authorize_resource
-  before_action :manage_planning
-  around_action :includes_sub_models, only: [:print]
+  before_action :manage_zoning
+  around_action :includes_destinations
 
   def edit
-    @spreadsheet_columns = []
-    @with_devices = true
     capabilities
   end
 
-  def print
-    @params = params
+  def update
     respond_to do |format|
-      format.html
+      if @zoning.update_attributes(zoning_params) && @zoning.save
+        @zoning.errors.add(:base, 'test')
+        format.html { redirect_to api_web_v01_edit_zoning_path(@zoning), notice: t('activerecord.successful.messages.updated', model: @zoning.class.model_name.human) }
+      else
+        capabilities
+        format.html { render action: 'edit' }
+      end
     end
   end
 
   def self.manage
-    Hash[[:organize, :print].map{ |v| ["manage_#{v}".to_sym, true] }]
+    Hash[[:edit, :organize].map{ |v| ["manage_#{v}".to_sym, true] }]
   end
 
   private
-
-  # Use callbacks to share common setup or constraints between actions.
-  # rights should be checked before thanks to CanCan::Ability
-  def manage_planning
-    @manage_planning = ApiWeb::V01::PlanningsController.manage
-    @callback_button = true
-  end
-
-  def includes_sub_models
-    if action_name.to_sym == :print
-      VehicleUsage.with_stores.scoping do
-        Route.includes_destinations.scoping do
-          yield
-        end
-      end
-    else
-      yield
-    end
-  end
 
   def capabilities
     @isochrone = []
     @isodistance = []
     @isoline_need_time = []
+  end
+
+  # Use callbacks to share common setup or constraints between actions.
+  # rights should be checked before thanks to CanCan::Ability
+  def manage_zoning
+    @manage_zoning = ApiWeb::V01::ZoningsController.manage
+  end
+
+  def includes_destinations
+    Route.includes_destinations.scoping do
+      yield
+    end
+  end
+
+  # Never trust parameters from the scary internet, only allow the white list through.
+  def zoning_params
+    params[:zoning] ||= {id: params[:id]} # Require not empty if none zone
+    params[:zoning][:zones_attributes].each{ |zone|
+      zone[:speed_multiplier] = zone[:avoid_zone] ? 0 : 1
+    } if params[:zoning][:zones_attributes]
+    params.require(:zoning).permit(:name, zones_attributes: [:id, :name, :polygon, :_destroy, :vehicle_id, :speed_multiplier])
   end
 end
