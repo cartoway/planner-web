@@ -49,7 +49,7 @@ class ImportTomtom
     raise e if Rails.env.test? && !e.is_a?(ImportBaseError) && !e.is_a?(Exceptions::OverMaxLimitError)
     message = e.is_a?(ImportInvalidRow) ? I18n.t('import.data_erroneous.tomtom', s: last_row[:ref]) + ', ' : last_row[:ref] ? I18n.t('import.tomtom.record', s: last_row[:ref]) + ', ' : ''
     message += e.message
-    errors[:base] << message + (last_row ? ' [' + last_row.to_a.collect{ |a| "#{a[0]}: \"#{a[1]}\"" }.join(', ') + ']' : '')
+    errors.add(:base, { message: message + (last_row ? ' [' + last_row.to_a.collect{ |a| "#{a[0]}: \"#{a[1]}\"" }.join(', ') + ']' : '') })
     Rails.logger.error e.message
     Rails.logger.error e.backtrace.join("\n")
     return false

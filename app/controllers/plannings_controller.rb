@@ -294,7 +294,7 @@ class PlanningsController < ApplicationController
           format.json { render json: @planning.errors, status: :unprocessable_entity }
         end
       rescue VRPNoSolutionError
-        @planning.errors[:base] = I18n.t('plannings.edit.dialog.optimizer.no_solution')
+        @planning.errors.add(:base, :no_solution, { message: I18n.t('plannings.edit.dialog.optimizer.no_solution') })
         format.json { render json: @planning.errors, status: :unprocessable_entity }
       rescue ActiveRecord::RecordInvalid
         errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
@@ -317,7 +317,7 @@ class PlanningsController < ApplicationController
           format.json { render json: errors, status: :unprocessable_entity }
         end
       rescue VRPNoSolutionError
-        @planning.errors[:base] = I18n.t('plannings.edit.dialog.optimizer.no_solution')
+        @planning.errors.add(:base, :no_solution, { message: I18n.t('plannings.edit.dialog.optimizer.no_solution') })
         format.json { render json: @planning.errors, status: :unprocessable_entity }
       rescue ActiveRecord::RecordInvalid
         errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
@@ -335,7 +335,7 @@ class PlanningsController < ApplicationController
         current_user.customer.job_optimizer.destroy
         format.json { render action: 'show', location: @planning }
       else
-        @planning.errors[:base] = I18n.t('plannings.edit.dialog.optimizer.retry_canceling')
+        @planning.errors.add(:base, :retry_canceling, { message: I18n.t('plannings.edit.dialog.optimizer.retry_canceling') })
         format.json { render json: @planning.errors, status: :unprocessable_entity }
       end
     end
