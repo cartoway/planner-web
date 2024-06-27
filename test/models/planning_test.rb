@@ -500,7 +500,7 @@ class PlanningTest < ActiveSupport::TestCase
     end
 
     assert_raises(ActiveRecord::RecordInvalid) do
-      planning.update!(date: '20-12-0031')
+      planning.update!(date: '20-13-0031')
     end
   end
 

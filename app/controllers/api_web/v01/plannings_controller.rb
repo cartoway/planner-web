@@ -33,9 +33,7 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
     @planning = current_user.customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
     authorize! :print, @planning
     @params = params
-    respond_to do |format|
-      format.html
-    end
+    respond_to(&:html)
   end
 
   def self.manage
