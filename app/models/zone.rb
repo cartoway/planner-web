@@ -19,7 +19,7 @@ class Zone < ApplicationRecord
   default_scope { order(:id) }
 
   belongs_to :zoning, inverse_of: :zones
-  belongs_to :vehicle, inverse_of: :zones
+  belongs_to :vehicle, inverse_of: :zones, optional: true
 
   nilify_blanks
 

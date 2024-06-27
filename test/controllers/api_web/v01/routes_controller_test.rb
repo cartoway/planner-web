@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class ApiWeb::V01::RoutesControllerTest < ActionController::TestCase
-
   setup do
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
@@ -18,20 +17,20 @@ class ApiWeb::V01::RoutesControllerTest < ActionController::TestCase
     assert @controller.can?(:index, @route.planning)
     assert @controller.cannot?(:index, plannings(:planning_three))
 
-    get :index, planning_id: plannings(:planning_three)
+    get :index, params: { planning_id: plannings(:planning_three) }
     assert_response :redirect
     assert_nil assigns(:routes)
   end
 
   test 'should get routes' do
-    get :index, planning_id: @route.planning_id
+    get :index, params: { planning_id: @route.planning_id }
     assert_response :success
     assert_not_nil assigns(:routes)
     assert_valid response
   end
 
   test 'should print' do
-    get :print, planning_id: @route.planning_id, id: @route.id
+    get :print, params: { planning_id: @route.planning_id, id: @route.id }
     assert_response :success
   end
 end

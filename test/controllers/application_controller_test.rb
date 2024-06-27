@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class ApplicationControllerTest < ActionController::TestCase
-
   ApplicationController.class_eval do
     def index
       render nothing: true
@@ -17,7 +16,7 @@ class ApplicationControllerTest < ActionController::TestCase
   test 'should set user from api key without updating sign in at' do
     users(:user_one).update(current_sign_in_at: Time.new(2000), last_sign_in_at: Time.new(2000))
 
-    get :index, api_key: 'testkey1'
+    get :index, params: { api_key: 'testkey1' }
     assert_equal [Time.new(2000)], users(:user_one).reload.attributes.slice('current_sign_in_at', 'last_sign_in_at').values.uniq
   end
 
@@ -31,25 +30,25 @@ class ApplicationControllerTest < ActionController::TestCase
   test 'should rescue database error' do
     message = "#{I18n.t('errors.database.default')} #{I18n.t('errors.database.deadlock')}"
     ApplicationController.stub_any_instance(:api_key?, lambda { |*a| raise ActiveRecord::StaleObjectError.new(self, nil) }) do
-      get :index, format: :json
+      get :index, params: { format: :json }
       assert_equal message, JSON.parse(response.body)['error']
       assert_response :unprocessable_entity
     end
 
     ApplicationController.stub_any_instance(:api_key?, lambda { |*a| raise PG::TRDeadlockDetected.new }) do
-      get :index, format: :json, only_path: true
+      get :index, params: { format: :json, only_path: true }
       assert_equal message, JSON.parse(response.body)['error']
       assert_response :unprocessable_entity
     end
 
     ApplicationController.stub_any_instance(:api_key?, lambda { |*a| raise ActiveRecord::StatementInvalid.new(self) }) do
-      get :index, format: :json
+      get :index, params: { format: :json }
       assert_equal "#{I18n.t('errors.database.default')} #{I18n.t('errors.database.invalid_statement')}", JSON.parse(response.body)['error']
       assert_response :unprocessable_entity
     end
 
     ApplicationController.stub_any_instance(:api_key?, lambda { |*a| raise PG::TRSerializationFailure.new }) do
-      get :index, format: :json
+      get :index, params: { format: :json }
       assert_equal message, JSON.parse(response.body)['error']
       assert_response :unprocessable_entity
     end
@@ -57,7 +56,7 @@ class ApplicationControllerTest < ActionController::TestCase
 
   test 'should rescue server error' do
       ApplicationController.stub_any_instance(:api_key?, lambda { |*a| raise ActionController::InvalidAuthenticityToken.new }) do
-        get :index, format: :json
+        get :index, params: { format: :json }
         assert_response :internal_server_error
       end
   end
