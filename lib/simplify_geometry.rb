@@ -18,9 +18,9 @@ class SimplifyGeometry
   end
 
   def self.dump_multipolygons(zoning, import = false)
-    import &= zoning.zones.any?{ |zone| zone.polygon.match('MultiPolygon') || zone.polygon.match('GeometryCollection') }
+    import &= zoning.zones.any?{ |zone| zone.polygon&.match('MultiPolygon') || zone.polygon&.match('GeometryCollection') }
     new_zones = zoning.zones.flat_map{ |zone|
-      geometry = JSON.parse(zone.polygon)['geometry']
+      geometry = zone.polygon && JSON.parse(zone.polygon)['geometry']
       if geometry
         multipolygon_to_polygons(zone, geometry, import)
       else
