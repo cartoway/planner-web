@@ -483,7 +483,7 @@ GEM
       shellany (~> 0.0)
     numerizer (0.1.1)
     orm_adapter (0.5.0)
-    paloma (5.0.0)
+    paloma (6.1.0)
     parallel (1.25.1)
     parser (3.3.3.0)
       ast (~> 2.4.1)
