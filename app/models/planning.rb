@@ -22,7 +22,7 @@ class Planning < ApplicationRecord
 
   belongs_to :customer
   has_and_belongs_to_many :zonings, autosave: true, after_add: :update_zonings_track, after_remove: :update_zonings_track
-  has_many :routes, -> { order('CASE WHEN vehicle_usage_id IS NULL THEN 0 ELSE routes.id END') }, inverse_of: :planning, autosave: true, dependent: :delete_all
+  has_many :routes, -> { order(vehicle_usage_id: :asc, id: :asc) }, inverse_of: :planning, autosave: true, dependent: :delete_all
 
   has_many :tag_plannings
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
@@ -183,7 +183,6 @@ class Planning < ApplicationRecord
         r.preload_compute_scopes
         r.compute(options)
         r.save
-        r.clear_association_cache
       }
       self.save! && self.reload
     }
