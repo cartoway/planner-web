@@ -14,6 +14,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   setup do
     @destination = destinations(:destination_one)
     @customer = customers(:customer_one)
+    @tags = tags.select{ |t| t.customer_id == @customer.id }
     clear_jobs
   end
 
@@ -51,7 +52,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert_difference('Destination.count', 1) do
       assert_difference('Stop.count', 0) do
         @destination.name = 'new dest'
-        post api(), @destination.attributes.update({tag_ids: tags})
+        post api(), @destination.attributes.update({tag_ids: @tags.map(&:id)})
         assert last_response.created?, last_response.body
         assert_equal @destination.name, JSON.parse(last_response.body)['name']
       end
@@ -63,7 +64,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
       assert_difference('Stop.count', 0) do
         assert_difference('Visit.count', 2) do
           @destination.name = 'new dest'
-          post api(), nil, input: @destination.attributes.update({tag_ids: tags}).merge(visits: [{
+          post api(), nil, input: @destination.attributes.update({tag_ids: @tags.map(&:id)}).merge(visits: [{
             ref: 'v1',
             quantity1_1: 1,
             time_window_start_1: '08:00',
