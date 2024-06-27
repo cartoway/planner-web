@@ -4,7 +4,6 @@ ruby '< 3'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.2'
-gem 'bootsnap'
 # Allow haml syntax for views
 gem 'haml-rails', "~> 1.0.0"
 # Use SCSS for stylesheets
@@ -19,7 +18,7 @@ gem 'turbolinks', '< 5' # FIXME: turbolinks not working with anchors in url
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder'
 # bundle exec rake doc:rails generates the API under doc/api.
-gem 'sdoc', '~> 0.4', group: :doc
+# gem 'sdoc', group: :doc
 
 gem 'rake'
 
@@ -58,7 +57,8 @@ group :development, :test do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   # gem 'spring' # Other gems incmpatible with last spring version
 
-  gem 'rubocop'
+  gem 'erb_lint'
+  gem 'rubocop', ' > 1.50'
   gem 'byebug'
   gem 'i18n-tasks'
 
@@ -85,7 +85,7 @@ group :test do
 
   # Browser tests
   gem 'capybara'
-  gem 'selenium-webdriver', '> 2.35' # API change require zip/zip to require zip
+  gem 'selenium-webdriver'
   gem 'chromedriver-helper'
 end
 
@@ -119,7 +119,7 @@ gem 'sprockets'
 gem 'webpacker'
 
 gem "font-awesome-sass", "~> 6.4.2"
-gem 'twitter-bootstrap-rails', git: 'https://github.com/seyhunak/twitter-bootstrap-rails.git', ref: 'd3776ddd0b89d28fdebfd6e1c1541348cc90e5cc' # FIXME wait for >3.2.2 with drop font-awesome, require Rails 5
+gem 'twitter-bootstrap-rails'
 gem 'bootstrap_form'
 gem 'bootstrap-wysihtml5-rails'
 gem 'bootstrap-datepicker-rails'
