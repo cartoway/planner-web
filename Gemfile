@@ -4,6 +4,7 @@ ruby '< 3'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.2'
+gem 'bootsnap'
 # Allow haml syntax for views
 gem 'haml-rails', "~> 1.0.0"
 # Use SCSS for stylesheets

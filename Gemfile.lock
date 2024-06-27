@@ -153,6 +153,8 @@ GEM
     bigdecimal (3.1.7)
     binding_of_caller (1.0.1)
       debug_inspector (>= 1.2.0)
+    bootsnap (1.18.3)
+      msgpack (~> 1.2)
     bootstrap-datepicker-rails (1.10.0.1)
       railties (>= 3.0)
     bootstrap-wysihtml5-rails (0.3.3.8)
@@ -447,6 +449,7 @@ GEM
     minitest-stub_any_instance (1.0.3)
     mocha (2.2.0)
       ruby2_keywords (>= 0.0.5)
+    msgpack (1.7.2)
     multi_json (1.15.0)
     mustache (1.1.1)
     mustermann (3.0.0)
@@ -782,6 +785,7 @@ DEPENDENCIES
   barby
   better_errors
   binding_of_caller
+  bootsnap
   bootstrap-datepicker-rails
   bootstrap-wysihtml5-rails
   bootstrap_form
