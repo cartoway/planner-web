@@ -18,6 +18,8 @@
 require 'grape-swagger'
 
 class ApiRootDef < Grape::API
+  include Grape::Extensions::Hash::ParamBuilder
+
   mount ApiV01
   mount ApiV100
 end
