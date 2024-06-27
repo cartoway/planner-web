@@ -25,7 +25,7 @@ class User < ApplicationRecord
   nilify_blanks
   auto_strip_attributes :url_click2call
 
-  belongs_to :reseller
+  belongs_to :reseller, optional: true
   belongs_to :customer
   belongs_to :layer
 
