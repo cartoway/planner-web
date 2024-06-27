@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class DeliverableUnitsControllerTest < ActionController::TestCase
-
   setup do
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
@@ -16,7 +15,7 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     ability = Ability.new(users(:user_three))
     assert ability.cannot? :manage, @deliverable_unit
 
-    get :edit, id: deliverable_units(:deliverable_unit_two_one)
+    get :edit, params: { id: deliverable_units(:deliverable_unit_two_one) }
     assert_response :not_found
   end
 
@@ -35,7 +34,7 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
 
   test 'should create deliverable unit' do
     assert_difference('DeliverableUnit.count') do
-      post :create, deliverable_unit: { label: @deliverable_unit.label }
+      post :create, params: { deliverable_unit: { label: @deliverable_unit.label } }
     end
 
     assert_redirected_to deliverable_units_path
@@ -43,7 +42,7 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
 
   test 'should not create deliverable unit' do
     assert_no_difference('DeliverableUnit.count') do
-      post :create, deliverable_unit: { optimization_overload_multiplier: -1 }
+      post :create, params: { deliverable_unit: { optimization_overload_multiplier: -1 } }
     end
 
     assert_template :new
@@ -53,18 +52,18 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
   end
 
   test 'should get edit' do
-    get :edit, id: @deliverable_unit
+    get :edit, params: { id: @deliverable_unit }
     assert_response :success
     assert_valid response
   end
 
   test 'should update deliverable unit' do
-    patch :update, id: @deliverable_unit, deliverable_unit: { label: @deliverable_unit.label }
+    patch :update, params: { id: @deliverable_unit, deliverable_unit: { label: @deliverable_unit.label } }
     assert_redirected_to deliverable_units_path
   end
 
   test 'should not update deliverable unit' do
-    patch :update, id: @deliverable_unit, deliverable_unit: { optimization_overload_multiplier: -1 }
+    patch :update, params: { id: @deliverable_unit, deliverable_unit: { optimization_overload_multiplier: -1 } }
     assert_template :edit
     deliverable_unit = assigns(:deliverable_unit)
     assert deliverable_unit.errors.any?
@@ -73,7 +72,7 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
 
   test 'should destroy deliverable unit' do
     assert_difference('DeliverableUnit.count', -1) do
-      delete :destroy, id: @deliverable_unit
+      delete :destroy, params: { id: @deliverable_unit }
     end
 
     assert_redirected_to deliverable_units_path
@@ -81,7 +80,7 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
 
   test 'should destroy multiple deliverable units' do
     assert_difference('DeliverableUnit.count', -2) do
-      delete :destroy_multiple, deliverable_units: { deliverable_units(:deliverable_unit_one_one).id => 1, deliverable_units(:deliverable_unit_one_two).id => 1 }
+      delete :destroy_multiple, params: { deliverable_units: { deliverable_units(:deliverable_unit_one_one).id => 1, deliverable_units(:deliverable_unit_one_two).id => 1 } }
     end
 
     assert_redirected_to deliverable_units_path
