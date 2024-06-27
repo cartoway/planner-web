@@ -9,7 +9,7 @@ class ApiWeb::V01::VisitsControllerTest < ActionController::TestCase
   end
 
   test 'should get one' do
-    get :show, id: @visit, format: :json
+    get :show, params: { id: @visit, format: :json }
     assert_response :success
     assert_valid response
   end

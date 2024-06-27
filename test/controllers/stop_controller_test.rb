@@ -9,7 +9,7 @@ class StopsControllerTest < ActionController::TestCase
   end
 
   test 'should get one' do
-    get :show, id: @stop, format: :json
+    get :show, params: { id: @stop, format: :json }
     assert_response :success
     assert_valid response
   end

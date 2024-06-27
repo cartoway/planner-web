@@ -133,7 +133,8 @@ class CustomersController < ApplicationController
     end
     parse_router_options(params[:customer]) if params[:customer][:router_options]
     # From customer form all keys are not present: need merge
-    params[:customer][:devices] = @customer[:devices].deep_merge(params[:customer][:devices] || {}) if @customer && !@customer[:devices].empty?
+    devices_params = permit_recursive_params(params.dig('customer', 'devices'))
+    devices_params = @customer[:devices].deep_merge(devices_params || {}) if @customer && !@customer[:devices].empty?
     if current_user.admin?
       parameters = params.require(:customer).permit(
         :ref,
@@ -204,9 +205,8 @@ class CustomersController < ApplicationController
           :snap,
           :strict_restriction,
           :low_emission_zone
-        ],
-        devices: permit_recursive_params(params[:customer][:devices])
-      )
+        ]
+      ).merge!(devices: devices_params)
       parameters[:end_subscription] = Date.strptime(parameters[:end_subscription], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK) unless parameters[:end_subscription].blank?
       return parameters
     else
@@ -250,12 +250,11 @@ class CustomersController < ApplicationController
           :snap,
           :strict_restriction,
           :low_emission_zone
-        ],
-        devices: permit_recursive_params(params[:customer][:devices])
+        ]
       ]
       allowed_params << :max_vehicles unless Mapotempo::Application.config.manage_vehicles_only_admin
 
-      params.require(:customer).permit(*allowed_params)
+      params.require(:customer).permit(*allowed_params).merge(devices: devices_params)
     end
   end
 
