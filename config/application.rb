@@ -1,5 +1,6 @@
 require_relative 'boot'
 
+require 'ostruct'
 require 'rails/all'
 require_relative '../app/middleware/reseller_by_host'
 require_relative '../lib/routers/osrm'
