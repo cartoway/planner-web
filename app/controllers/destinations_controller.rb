@@ -178,18 +178,25 @@ class DestinationsController < ApplicationController
   private
 
   def time_with_day_params(params, local_params, times)
-    if local_params[:visits_attributes]
-      if local_params[:visits_attributes].is_a?(Hash)
-        local_params[:visits_attributes].each do |k, _|
-          times.each do |time|
-            local_params[:visits_attributes][k][time] = ChronicDuration.parse("#{params[:destination][:visits_attributes][k]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][k][time].tr(':', 'h')}min", keep_zero: true) unless params[:destination][:visits_attributes][k]["#{time}_day".to_sym].to_s.empty? || local_params[:visits_attributes][k][time].to_s.empty?
-          end
+    return unless local_params[:visits_attributes]
+
+    if local_params[:visits_attributes].is_a?(Array)
+      local_params[:visits_attributes].each_with_index do |_, i|
+        times.each do |time|
+          local_params[:visits_attributes][i][time] = ChronicDuration.parse("#{params[:destination][:visits_attributes][i]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][i][time].tr(':', 'h')}min", keep_zero: true) unless params[:destination][:visits_attributes][i]["#{time}_day".to_sym].to_s.empty? || local_params[:visits_attributes][i][time].to_s.empty?
         end
-      else
-        local_params[:visits_attributes].each_with_index do |_, i|
-          times.each do |time|
-            local_params[:visits_attributes][i][time] = ChronicDuration.parse("#{params[:destination][:visits_attributes][i]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][i][time].tr(':', 'h')}min", keep_zero: true) unless params[:destination][:visits_attributes][i]["#{time}_day".to_sym].to_s.empty? || local_params[:visits_attributes][i][time].to_s.empty?
-          end
+      end
+    else
+      local_params[:visits_attributes].each_pair do |k, valu|
+        times.each do |time|
+          next if params[:destination][:visits_attributes][k]["#{time}_day".to_sym].to_s.empty? ||
+                  local_params[:visits_attributes][k][time].to_s.empty?
+
+          local_params[:visits_attributes][k][time] =
+            ChronicDuration.parse(
+              "#{params[:destination][:visits_attributes][k]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][k][time].tr(':', 'h')}min",
+              keep_zero: true
+            )
         end
       end
     end
@@ -207,13 +214,11 @@ class DestinationsController < ApplicationController
   # Never trust parameters from the scary internet, only allow the white list through.
   def destination_params
     # Deals with deprecated quantity
-    if params[:visits_attributes]
-      params[:visits_attributes].each{ |p|
-        if !p[:quantities] && p[:quantity] && !current_user.customer.deliverable_units.empty?
-          p[:quantities] = { current_user.customer.deliverable_units[0].id => p.delete(:quantity) }
-        end
-      }
-    end
+    params[:visits_attributes]&.each{ |p|
+      if !p[:quantities] && p[:quantity] && !current_user.customer.deliverable_units.empty?
+        p[:quantities] = { current_user.customer.deliverable_units[0].id => p.delete(:quantity) }
+      end
+    }
 
     o = params.require(:destination).permit(
       :ref,

@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class DestinationsControllerTest < ActionController::TestCase
-
   setup do
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
@@ -21,7 +20,7 @@ class DestinationsControllerTest < ActionController::TestCase
     ability = Ability.new(users(:user_three))
     assert ability.cannot? :manage, @destination
 
-    get :edit, id: destinations(:destination_four)
+    get :edit, params: { id: destinations(:destination_four) }
     assert_response :not_found
   end
 
@@ -35,14 +34,14 @@ class DestinationsControllerTest < ActionController::TestCase
   test 'should get index in excel' do
     customers(:customer_one).update enable_orders: false
     visits(:visit_one).update quantities: {2 => 2.5}
-    get :index, format: :excel
+    get :index, params: { format: :excel }
     assert_response :success
     assert_not_nil assigns(:destinations)
     assert_equal "b;destination_one;Rue des Lilas;MyString;33200;Bordeau;;49.1857;-0.3735;;;;MyString;MyString;\"\";\"\";b;00:05:33;10:00;11:00;;;4;tag1;2.5;;;\r".encode("iso-8859-1"), response.body.split("\n").find{ |l| l.start_with? 'b;destination_one' }
   end
 
   test 'should get index in excel with order array' do
-    get :index, format: :excel
+    get :index, params: { format: :excel }
     assert_response :success
     assert_not_nil assigns(:destinations)
     assert_equal "b;destination_one;Rue des Lilas;MyString;33200;Bordeau;;49.1857;-0.3735;;;;MyString;MyString;\"\";\"\";b;00:05:33;10:00;11:00;;;4;tag1\r".encode("iso-8859-1"), response.body.split("\n").find{ |l| l.start_with? 'b;destination_one' }
@@ -58,7 +57,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_no_difference('Stop.count') do
       assert_difference('Destination.count') do
         assert_no_difference('Visit.count') do
-          post :create, destination: {
+          post :create, params: { destination: {
             city: @destination.city,
             lat: @destination.lat,
             lng: @destination.lng,
@@ -69,7 +68,7 @@ class DestinationsControllerTest < ActionController::TestCase
             detail: @destination.detail,
             comment: @destination.comment,
             phone_number: @destination.phone_number
-          }
+          } }
         end
       end
     end
@@ -81,7 +80,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_difference('Stop.count', 1) do
       assert_difference('Destination.count', 1) do
         assert_difference('Visit.count', 1) do
-          post :create, destination: {
+          post :create, params: { destination: {
             city: 'Bordeaux',
             name: 'new dest',
             postalcode: '33000',
@@ -97,7 +96,7 @@ class DestinationsControllerTest < ActionController::TestCase
               quantity1_1: '10',
               tag_ids: [tags(:tag_one).id]
             }]
-          }
+          } }
         end
       end
     end
@@ -108,7 +107,7 @@ class DestinationsControllerTest < ActionController::TestCase
   test 'should create destination with visit exceeding one day' do
     assert_difference('Destination.count', 1) do
       assert_difference('Visit.count', 1) do
-        post :create, destination: {
+        post :create, params: { destination: {
             city: 'Bordeaux',
             name: 'new dest',
             postalcode: '33000',
@@ -124,14 +123,14 @@ class DestinationsControllerTest < ActionController::TestCase
                 time_window_end_2: '14:00',
                 time_window_end_2_day: '1'
             }}
-        }
+        } }
       end
     end
     assert_redirected_to edit_destination_path(assigns(:destination))
 
     assert_difference('Destination.count', 1) do
       assert_difference('Visit.count', 1) do
-        post :create, destination: {
+        post :create, params: { destination: {
             city: 'Bordeaux',
             name: 'new dest',
             postalcode: '33000',
@@ -147,7 +146,7 @@ class DestinationsControllerTest < ActionController::TestCase
                                     time_window_end_2: '14:00',
                                     time_window_end_2_day: '1'
                                 }]
-        }
+        } }
       end
     end
     assert_redirected_to edit_destination_path(assigns(:destination))
@@ -160,7 +159,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_difference('Stop.count', 1) do
       assert_difference('Destination.count', 1) do
         assert_difference('Visit.count', 1) do
-          post :create, destination: {
+          post :create, params: { destination: {
             city: 'Bordeaux',
             name: 'new dest',
             postalcode: '33000',
@@ -174,7 +173,7 @@ class DestinationsControllerTest < ActionController::TestCase
               priority: -4,
               quantity1_1: '10'
             }]
-          }
+          } }
         end
       end
     end
@@ -184,7 +183,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'should not create destination' do
     assert_difference('Destination.count', 0) do
-      post :create, destination: { name: '' }
+      post :create, params: { destination: { name: '' } }
     end
 
     assert_template :new
@@ -194,39 +193,39 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should get edit' do
-    get :edit, id: @destination
+    get :edit, params: { id: @destination }
     assert_response :success
     assert_valid response
   end
 
   test 'should update destination' do
-    patch :update, id: @destination, destination: { city: @destination.city, lat: @destination.lat, lng: @destination.lng, name: @destination.name, postalcode: @destination.postalcode, street: @destination.street, state: @destination.state, detail: @destination.detail, comment: @destination.comment, phone_number: @destination.phone_number }
+    patch :update, params: { id: @destination, destination: { city: @destination.city, lat: @destination.lat, lng: @destination.lng, name: @destination.name, postalcode: @destination.postalcode, street: @destination.street, state: @destination.state, detail: @destination.detail, comment: @destination.comment, phone_number: @destination.phone_number } }
     assert_redirected_to edit_destination_path(assigns(:destination))
   end
 
   test 'should update destination and visit' do
     size_visits = @destination.visits.size
-    visits_attributes = Hash[@destination.visits.map{ |v| [v.id.to_s, v.attributes.merge(quantities: {'1' => 1, '2' => 2.3})]}]
-    patch :update, id: @destination, destination: { visits_attributes: visits_attributes}
+    visits_attributes = Hash[@destination.visits.map{ |v| [v.id.to_s, v.attributes.merge('quantities' => {'1' => 1, '2' => 2.3})]}]
+    patch :update, params: { id: @destination, destination: { visits_attributes: visits_attributes} }
     assert_redirected_to edit_destination_path(assigns(:destination))
     assert_equal [[1, 2.3]] * size_visits, @destination.reload.visits.map{ |v| v.quantities.values }
   end
 
   test 'should update destination with geocode error' do
     Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
-      patch :update, id: @destination, destination: { city: 'Nantes', lat: nil, lng: nil }
+      patch :update, params: { id: @destination, destination: { city: 'Nantes', lat: nil, lng: nil } }
       assert_redirected_to edit_destination_path(assigns(:destination))
       assert_not_nil flash[:warning]
     end
   end
 
   test 'should update destination tags' do
-    patch :update, id: @destination, destination: { tag_ids: [tags(:tag_two).id] }
+    patch :update, params: { id: @destination, destination: { tag_ids: [tags(:tag_two).id] } }
     assert_redirected_to edit_destination_path(assigns(:destination))
   end
 
   test 'should not update destination' do
-    patch :update, id: @destination, destination: { name: '' }
+    patch :update, params: { id: @destination, destination: { name: '' } }
 
     assert_template :edit
     destination = assigns(:destination)
@@ -236,7 +235,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'should destroy destination' do
     assert_difference('Destination.count', -1) do
-      delete :destroy, id: @destination
+      delete :destroy, params: { id: @destination }
     end
 
     assert_redirected_to destinations_path
@@ -278,7 +277,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_difference('Destination.count', import_count) do
       assert_difference('Stop.count', (destinations_count + import_rest_count) + import_count * (plannings_count + 1)) do
         assert_difference('Planning.count', 1) do
-          post :upload_csv, import_csv: { replace: false, file: file }
+          post :upload_csv, params: { import_csv: { replace: false, file: file } }
         end
       end
     end
@@ -293,7 +292,7 @@ class DestinationsControllerTest < ActionController::TestCase
     file.original_filename = 'import_invalid.csv'
 
     assert_difference('Destination.count', 0) do
-      post :upload_csv, import_csv: { replace: false, file: file }
+      post :upload_csv, params: { import_csv: { replace: false, file: file } }
     end
 
     assert_template :import
@@ -301,13 +300,10 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should display an error' do
-    file = ActionDispatch::Http::UploadedFile.new({
-      tempfile: File.new(Rails.root.join('test/fixtures/files/import_malformed.csv')),
-    })
-    file.original_filename = 'import_malformed.csv'
+    file = fixture_file_upload(Rails.root.join('test/fixtures/files/import_malformed.csv'), 'text/csv')
 
     assert_difference('Destination.count', 0) do
-      post :upload_csv, import_csv: { replace: false, file: file }
+      post :upload_csv, params: { import_csv: { replace: false, file: file } }
     end
 
     assert_template :import
@@ -325,7 +321,7 @@ class DestinationsControllerTest < ActionController::TestCase
         tempfile: File.new(Rails.root.join('test/fixtures/files/', test[:file]))
       )
       file.original_filename = test[:file]
-      post :upload_csv, import_csv: { replace: false, file: file, column_def: test[:column_def] ? test[:column_def] : nil }
+      post :upload_csv, params: { import_csv: { replace: false, file: file, column_def: test[:column_def] ? test[:column_def] : nil } }
 
       case test[:redirect]
       when 'last_planning'
@@ -348,7 +344,7 @@ class DestinationsControllerTest < ActionController::TestCase
         tempfile: File.new(Rails.root.join('test/fixtures/files/', test[:file]))
       )
       file.original_filename = test[:file]
-      post :upload_csv, import_csv: { replace: false, file: file, column_def: test[:column_def] ? test[:column_def] : nil }
+      post :upload_csv, params: { import_csv: { replace: false, file: file, column_def: test[:column_def] ? test[:column_def] : nil } }
 
       assert_redirected_to destinations_url
     end
@@ -361,7 +357,7 @@ class DestinationsControllerTest < ActionController::TestCase
     customer.save!
 
     assert_difference('Destination.count', 1) do
-      post :create, destination: {
+      post :create, params: { destination: {
         city: 'Bordeaux',
         name: 'new dest',
         postalcode: '33000',
@@ -376,12 +372,12 @@ class DestinationsControllerTest < ActionController::TestCase
           quantity1_1: '10',
           tag_ids: [tags(:tag_one).id]
         }]
-      }
+      } }
     end
 
     assert_difference('Destination.count', 0) do
       assert_difference('Visit.count', 0) do
-        post :create, destination: {
+        post :create, params: { destination: {
           city: 'B2',
           name: 'new 2',
           postalcode: '33000',
@@ -396,19 +392,19 @@ class DestinationsControllerTest < ActionController::TestCase
             quantity1_1: '10',
             tag_ids: [tags(:tag_one).id]
           }]
-        }
+        } }
       end
     end
   end
 
   test 'should update tag to move stop from plan to other' do
     without_loading Stop, if: -> (obj) { obj.route_id != routes(:route_zero_one).id && obj.route_id != routes(:route_zero_two).id } do
-      patch :update, id: destinations(:destination_unaffected_one), destination: {
+      patch :update, params: { id: destinations(:destination_unaffected_one), destination: {
         tag_ids: [],
         visits_attributes: [{
           tag_ids: [tags(:tag_two).id]
         }]
-      }
+      } }
       assert_redirected_to edit_destination_path(assigns(:destination))
     end
   end

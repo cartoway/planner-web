@@ -25,7 +25,7 @@ class Vehicle < ApplicationRecord
   default_scope { order(:id) }
 
   belongs_to :customer
-  belongs_to :router
+  belongs_to :router, optional: true
   has_many :vehicle_usages, inverse_of: :vehicle, dependent: :destroy, autosave: true
   has_many :zones, inverse_of: :vehicle, dependent: :nullify, autosave: true
 
@@ -247,8 +247,8 @@ class Vehicle < ApplicationRecord
   def destroy_vehicle
     default = customer.vehicles.find{ |vehicle| vehicle != self && !vehicle.destroyed? }
     unless default
-      errors.add(:base, { message: I18n.t('activerecord.errors.models.vehicles.at_least_one') })
-      false
+      errors.add(:base, I18n.t('activerecord.errors.models.vehicles.at_least_one'))
+      throw :abort
     end
   end
 

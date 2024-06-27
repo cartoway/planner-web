@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class VehicleUsageSetTest < ActiveSupport::TestCase
-
   def around
     Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1, 1, '_ibE_seK_seK_seK'] } } ) do
       yield

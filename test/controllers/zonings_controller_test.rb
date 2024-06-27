@@ -1,7 +1,6 @@
 require 'test_helper'
 
 class ZoningsControllerTest < ActionController::TestCase
-
   setup do
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
@@ -15,7 +14,7 @@ class ZoningsControllerTest < ActionController::TestCase
     ability = Ability.new(users(:user_three))
     assert ability.cannot? :manage, @zoning
 
-    get :edit, id: zonings(:zoning_three)
+    get :edit, params: { id: zonings(:zoning_three) }
     assert_response :not_found
   end
 
@@ -38,7 +37,7 @@ class ZoningsControllerTest < ActionController::TestCase
 
   test 'should get new with a planning_id' do
     selected_planning_id = @zoning.plannings.map(&:id).first.to_s
-    get :new, planning_id: selected_planning_id
+    get :new, params: { planning_id: selected_planning_id }
     @zoning.plannings.each do |planning|
       planning_id = planning.id.to_s
       if planning_id == selected_planning_id
@@ -51,45 +50,45 @@ class ZoningsControllerTest < ActionController::TestCase
 
   test 'should create zoning' do
     assert_difference('Zoning.count') do
-      post :create, zoning: { name: @zoning.name }
+      post :create, params: { zoning: { name: @zoning.name } }
     end
 
     assert_redirected_to edit_zoning_path(assigns(:zoning))
   end
 
   test 'should not set @planning.zoning_outdated to true when modifying not relevant zone fields' do
-    patch :update, id: @zoning.id, zoning: { name: @zoning.name, zones_attributes: [{ id: @zoning.zones.first.id, name: 'ZoneName' }] }
+    patch :update, params: { id: @zoning.id, zoning: { name: @zoning.name, zones_attributes: [{ id: @zoning.zones.first.id, name: 'ZoneName' }] } }
     assert_equal @zoning.plannings.map(&:zoning_outdated), [nil, nil]
   end
 
   test 'should not set @planning.zoning_outdated to true when modifying zonning name field' do
-    patch :update, id: @zoning.id, zoning: { name: 'ZonningName' }
+    patch :update, params: { id: @zoning.id, zoning: { name: 'ZonningName' } }
     assert_equal @zoning.plannings.map(&:zoning_outdated), [nil, nil]
   end
 
   test 'should set @planning.zoning_outdated to true when modifying relevant zone field: vehicle' do
     vehicle_id = Vehicle.where(customer_id: @zoning.customer_id).second.id
-    patch :update, id: @zoning.id, zoning: { name: @zoning.name, zones_attributes: [{ id: @zoning.zones.first.id, vehicle_id: vehicle_id}] }
+    patch :update, params: { id: @zoning.id, zoning: { name: @zoning.name, zones_attributes: [{ id: @zoning.zones.first.id, vehicle_id: vehicle_id}] } }
     assert_equal @zoning.plannings.map(&:zoning_outdated), [true, true]
   end
 
   test 'should set @planning.zoning_outdated to true when modifying relevant zone field: polygon' do
     polygon = JSON.parse @zoning.zones.first.polygon
     polygon['geometry']['coordinates'][0][0] = [-0.2, 40]
-    patch :update, id: @zoning.id, zoning: { name: @zoning.name, zones_attributes: [{ id: @zoning.zones.first.id, polygon: JSON.generate(polygon)}] }
+    patch :update, params: { id: @zoning.id, zoning: { name: @zoning.name, zones_attributes: [{ id: @zoning.zones.first.id, polygon: JSON.generate(polygon)}] } }
     assert_equal @zoning.plannings.map(&:zoning_outdated), [true, true]
   end
 
   test 'should set @planning.zoning_outdated to true when modifying relevant zone field: speed_multiplier' do
     speed_multiplier = 0
-    patch :update, id: @zoning.id, zoning: { name: @zoning.name, zones_attributes: [{ id: @zoning.zones.first.id, avoid_zone: true, speed_multiplier: speed_multiplier}] }
+    patch :update, params: { id: @zoning.id, zoning: { name: @zoning.name, zones_attributes: [{ id: @zoning.zones.first.id, avoid_zone: true, speed_multiplier: speed_multiplier}] } }
     assert_equal @zoning.plannings.map(&:zoning_outdated), [true, true]
   end
 
   test 'should not create zoning' do
     assert_difference('Zoning.count', 0) do
       assert_difference('Zone.count', 0) do
-        post :create, zoning: { name: '', zones_attributes: [Zone.new(name: 'zone').attributes] }
+        post :create, params: { zoning: { name: '', zones_attributes: [Zone.new(name: 'zone').attributes] } }
       end
     end
 
@@ -101,7 +100,7 @@ class ZoningsControllerTest < ActionController::TestCase
 
   test 'should get edit with or without a planning_id' do
     [{}, { planning_id: ''}, { planning_id: @zoning.plannings.first }].each do |option|
-      get :edit, { id: @zoning }.merge(option), locale: 'fr'
+      get :edit, params: { id: @zoning, locale: 'fr' }.merge(option)
       assert_response :success
       assert_valid response
       assert_match(/Modifier sectorisation/, response.body)
@@ -109,12 +108,12 @@ class ZoningsControllerTest < ActionController::TestCase
   end
 
   test 'should update zoning' do
-    patch :update, id: @zoning, zoning: { name: @zoning.name }
+    patch :update, params: { id: @zoning, zoning: { name: @zoning.name } }
     assert_redirected_to edit_zoning_path(assigns(:zoning))
   end
 
   test 'should not update zoning' do
-    patch :update, id: @zoning, zoning: { name: '' }
+    patch :update, params: { id: @zoning, zoning: { name: '' } }
 
     assert_template :edit
     zoning = assigns(:zoning)
@@ -124,7 +123,7 @@ class ZoningsControllerTest < ActionController::TestCase
 
   test 'should destroy zoning' do
     assert_difference('Zoning.count', -1) do
-      delete :destroy, id: @zoning
+      delete :destroy, params: { id: @zoning }
     end
 
     assert_redirected_to zonings_path
@@ -132,7 +131,7 @@ class ZoningsControllerTest < ActionController::TestCase
 
   test 'should destroy multiple zoning' do
     assert_difference('Zoning.count', -2) do
-      delete :destroy_multiple, zonings: { zonings(:zoning_one).id => 1, zonings(:zoning_two).id => 1 }
+      delete :destroy_multiple, params: { zonings: { zonings(:zoning_one).id => 1, zonings(:zoning_two).id => 1 } }
     end
 
     assert_redirected_to zonings_path
@@ -147,7 +146,7 @@ class ZoningsControllerTest < ActionController::TestCase
   end
 
   test 'should get show in excel' do
-    get :show, { id: @zoning, format: :excel }, locale: 'fr'
+    get :show, params: { id: @zoning, format: :excel, locale: 'fr' }
     assert_response :success
     assert_not_nil assigns(:destinations)
     assert_equal "b;destination_one;Rue des Lilas;MyString;33200;Bordeau;;49.1857;-0.3735;;;;MyString;MyString;\"\";zone_one,zone_two;\"\";b;00:05:33;10:00;11:00;;;4;tag1\r".encode("iso-8859-1"), response.body.split("\n").find{ |l| l.start_with? 'b;destination_one' }
@@ -155,19 +154,19 @@ class ZoningsControllerTest < ActionController::TestCase
 
   test 'should duplicate' do
     assert_difference('Zoning.count') do
-      patch :duplicate, zoning_id: @zoning
+      patch :duplicate, params: { zoning_id: @zoning }
     end
 
     assert_redirected_to edit_zoning_path(assigns(:zoning))
   end
 
   test 'should generate from planning' do
-    patch :from_planning, format: :json, zoning_id: @zoning, planning_id: plannings(:planning_one)
+    patch :from_planning, params: { format: :json, zoning_id: @zoning, planning_id: plannings(:planning_one) }
     assert_response :success
   end
 
   test 'should generate automatic' do
-    patch :automatic, format: :json, zoning_id: @zoning, planning_id: plannings(:planning_one)
+    patch :automatic, params: { format: :json, zoning_id: @zoning, planning_id: plannings(:planning_one) }
     assert_response :success
   end
 
@@ -179,7 +178,7 @@ class ZoningsControllerTest < ActionController::TestCase
         stub_table = stub_request(:post, uri_template)
           .with(:body => hash_including(dimension: (isowhat == :isochrone ? 'time' : 'distance'), loc: "#{store_one.lat},#{store_one.lng}", mode: 'car', size: isowhat == :isochrone ? '600' : '1000'))
           .to_return(status: 200, body:  File.new(File.expand_path('../../web_mocks/', __FILE__) + '/isochrone/isochrone-1.json').read)
-        patch isowhat, format: :json, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id, zoning_id: @zoning
+        patch isowhat, params: { format: :json, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id, zoning_id: @zoning }
         assert_response :success
         assert_equal 1, JSON.parse(response.body)['zoning'].length
         assert_not_nil JSON.parse(response.body)['zoning'][0]['polygon']
@@ -197,7 +196,7 @@ class ZoningsControllerTest < ActionController::TestCase
         stub_table = stub_request(:post, uri_template)
           .with(:body => hash_including(dimension: (isowhat == :isochrone ? 'time' : 'distance'), loc: "#{store_one.lat},#{store_one.lng}", mode: 'car', size: isowhat == :isochrone ? '600' : '1000', departure: Date.today.strftime('%Y-%m-%d') + ' 10:00:00 -1000'))
           .to_return(status: 200, body: File.new(File.expand_path('../../web_mocks/', __FILE__) + '/isochrone/isochrone-1.json').read)
-        patch isowhat, format: :json, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id, departure_date: Date.today.to_s, zoning_id: @zoning
+        patch isowhat, params: { format: :json, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id, departure_date: Date.today.to_s, zoning_id: @zoning }
         assert_response :success
         assert_equal 1, JSON.parse(response.body)['zoning'].length
         assert_includes JSON.parse(response.body)['zoning'][0]['name'], vehicle_usages(:vehicle_usage_one_one).default_time_window_start_absolute_time
@@ -214,25 +213,25 @@ class ZoningsControllerTest < ActionController::TestCase
     customer.save!
 
     assert_difference('Zoning.count', 1) do
-      post :create, zoning: {
+      post :create, params: { zoning: {
         name: 'new dest',
-      }
+      } }
       assert_response :redirect
     end
 
     assert_difference('Zoning.count', 0) do
       assert_difference('Zone.count', 0) do
-        post :create, zoning: {
+        post :create, params: { zoning: {
           name: 'new 2',
           zones_attributes: [Zone.new(name: 'zone').attributes]
-        }
+        } }
       end
     end
   end
 
   test 'should crach when invalid integer is given for isochrone/isodistance' do
     %i[isochrone isodistance].each { |isowhat|
-      assert_raises(ArgumentError){ patch isowhat, format: :json, zoning_id: @zoning.id, planning_id: plannings(:planning_one).id, size: 'one', vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id }
+      assert_raises(ArgumentError){ patch isowhat, params: { format: :json, zoning_id: @zoning.id, planning_id: plannings(:planning_one).id, size: 'one', vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id }}
     }
   end
 end
