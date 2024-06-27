@@ -15,7 +15,7 @@ class StoresControllerTest < ActionController::TestCase
     ability = Ability.new(users(:user_three))
     assert ability.cannot? :manage, @store
 
-    get :edit, id: stores(:store_two)
+    get :edit, params: { id: stores(:store_two) }
     assert_response :not_found
   end
 
@@ -27,7 +27,7 @@ class StoresControllerTest < ActionController::TestCase
   end
 
   test 'should get one' do
-    get :show, id: @store, format: :json
+    get :show, params: { id: @store, format: :json }
     assert_response :success
     assert_valid response
   end
@@ -40,7 +40,7 @@ class StoresControllerTest < ActionController::TestCase
 
   test 'should create store' do
     assert_difference('Store.count') do
-      post :create, store: { city: @store.city, lat: @store.lat, lng: @store.lng, name: @store.name, postalcode: @store.postalcode, street: @store.street, state: @store.state }
+      post :create, params: { store: { city: @store.city, lat: @store.lat, lng: @store.lng, name: @store.name, postalcode: @store.postalcode, street: @store.street, state: @store.state } }
     end
 
     assert_redirected_to edit_store_path(assigns(:store))
@@ -48,7 +48,7 @@ class StoresControllerTest < ActionController::TestCase
 
   test 'should not create store' do
     assert_difference('Store.count', 0) do
-      post :create, store: { name: '' }
+      post :create, params: { store: { name: '' } }
     end
 
     assert_template :new
@@ -58,26 +58,26 @@ class StoresControllerTest < ActionController::TestCase
   end
 
   test 'should get edit' do
-    get :edit, id: @store
+    get :edit, params: { id: @store }
     assert_response :success
     assert_valid response
   end
 
   test 'should update store' do
-    patch :update, id: @store, store: { city: @store.city, lat: @store.lat, lng: @store.lng, name: @store.name, postalcode: @store.postalcode, street: @store.street, state: @store.state }
+    patch :update, params: { id: @store, store: { city: @store.city, lat: @store.lat, lng: @store.lng, name: @store.name, postalcode: @store.postalcode, street: @store.street, state: @store.state } }
     assert_redirected_to edit_store_path(assigns(:store))
   end
 
   test 'should update store with geocode error' do
     Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
-      patch :update, id: @store, store: { city: 'Nantes', lat: nil, lng: nil }
+      patch :update, params: { id: @store, store: { city: 'Nantes', lat: nil, lng: nil } }
       assert_redirected_to edit_store_path(assigns(:store))
       assert_not_nil flash[:warning]
     end
   end
 
   test 'should not update store' do
-    patch :update, id: @store, store: { name: '' }
+    patch :update, params: { id: @store, store: { name: '' } }
 
     assert_template :edit
     store = assigns(:store)
@@ -93,21 +93,21 @@ class StoresControllerTest < ActionController::TestCase
     vehicle_usage_sets.each { |v| assert v.store_start == @store || v.store_stop == @store || v.store_rest == @store }
 
     assert_difference('Store.count', -1) do
-      delete :destroy, id: @store
+      delete :destroy, params: { id: @store }
     end
 
     vehicle_usages.reload
     vehicle_usage_sets.reload
 
     vehicle_usages.each { |v| assert v.store_start != @store && v.store_stop != @store && v.store_rest != @store }
-    vehicle_usage_sets .each { |v| assert v.store_start != @store && v.store_stop != @store && v.store_rest != @store }
+    vehicle_usage_sets.each { |v| assert v.store_start != @store && v.store_stop != @store && v.store_rest != @store }
 
     assert_redirected_to stores_path
   end
 
   test 'should destroy multiple stores' do
     assert_difference('Store.count', -2) do
-      delete :destroy_multiple, stores: { stores(:store_one).id => 1, stores(:store_one_bis).id => 1 }
+      delete :destroy_multiple, params: { stores: { stores(:store_one).id => 1, stores(:store_one_bis).id => 1 } }
     end
 
     assert_redirected_to stores_path
@@ -115,7 +115,7 @@ class StoresControllerTest < ActionController::TestCase
 
   test 'should show import template' do
     [:csv, :excel].each{ |format|
-      get :import_template, format: format
+      get :import_template, params: { format: format }
       assert_response :success
     }
   end
@@ -135,7 +135,7 @@ class StoresControllerTest < ActionController::TestCase
     import_count = 1
 
     assert_difference('Store.count', import_count) do
-      post :upload_csv, import_csv: { replace: false, file: file }
+      post :upload_csv, params: { import_csv: { replace: false, file: file } }
     end
 
     assert_redirected_to stores_path
@@ -148,7 +148,7 @@ class StoresControllerTest < ActionController::TestCase
     file.original_filename = 'import_invalid.csv'
 
     assert_difference('Store.count', 0) do
-      post :upload_csv, import_csv: { replace: false, file: file }
+      post :upload_csv, params: { import_csv: { replace: false, file: file } }
     end
 
     assert_template :import
@@ -156,7 +156,7 @@ class StoresControllerTest < ActionController::TestCase
   end
 
   test 'should display application layout on devise scope' do
-    get :edit, id: @store
+    get :edit, params: { id: @store }
     assert_template layout: 'application'
   end
 end

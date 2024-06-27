@@ -1,9 +1,9 @@
 require 'test_helper'
 
 require 'rexml/document'
-include REXML
 
 class PlanningsByDestinationsControllerTest < ActionController::TestCase
+  include REXML
 
   setup do
     @reseller = resellers(:reseller_one)
@@ -19,14 +19,14 @@ class PlanningsByDestinationsControllerTest < ActionController::TestCase
     ability = Ability.new(users(:user_three))
     assert ability.cannot? :show, @destination
 
-    get :show, destination_id: destinations(:destination_four).id
+    get :show, params: { destination_id: destinations(:destination_four).id }
     assert_response :redirect
   end
 
   test 'should show plannings by destination' do
     stop_ids = @destination.visits.flat_map(&:stop_visits).map(&:id)
     without_loading Stop, if: -> (stop) { stop_ids.exclude? stop.id } do
-      get :show, destination_id: @destination.id
+      get :show, params: { destination_id: @destination.id }
       assert_response :success
       assert_valid response
       assert_equal 2, assigns(:stop_visits).size
