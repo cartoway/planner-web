@@ -166,7 +166,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
 
   test 'should export vehicle usage set to csv or excel' do
     [:csv, :excel].each { |format|
-      get :show, id: @vehicle_usage_set, params: { format: format }
+      get :show, params: { id: @vehicle_usage_set, format: format }
       assert_response :success
       assert_valid response
       assert_equal response.content_type, 'text/csv'
@@ -193,10 +193,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
   end
 
   test 'should upload' do
-    file = ActionDispatch::Http::UploadedFile.new(
-      tempfile: File.new(Rails.root.join('test/fixtures/files/import_vehicle_usage_sets_one.csv')),
-    )
-    file.original_filename = 'import_vehicle_usage_sets_one.csv'
+    file = fixture_file_upload(Rails.root.join('test/fixtures/files/import_vehicle_usage_sets_one.csv'), 'text/csv')
 
     assert_difference('VehicleUsageSet.count', 1) do
       post :upload_csv, params: { import_csv: { replace_vehicles: true, file: file } }
