@@ -22,7 +22,7 @@ class ApiWeb::V01::PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should sign in with api_key' do
-    sign_out users(:user_one)
+    sign_out :user
     get :edit, params: { id: @planning, api_key: 'testkey1' }
     assert_response :success
     assert_not_nil assigns(:planning)
