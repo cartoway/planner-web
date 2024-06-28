@@ -63,7 +63,7 @@ class VehicleUsagesControllerTest < ActionController::TestCase
   test 'should not update max_distance if null or not given' do
     [{ max_distance: nil }, {}].each do |max_distance_param|
       @vehicle_usage.vehicle.update(max_distance_param)
-      patch :update, params: { id: @vehicle_usage, vehicle_usage: { vehicle: max_distance_param }}
+      patch :update, params: { id: @vehicle_usage, vehicle_usage: { id: @vehicle_usage, vehicle: max_distance_param }}
       assert_nil @vehicle_usage.vehicle.max_distance
     end
   end
@@ -71,7 +71,7 @@ class VehicleUsagesControllerTest < ActionController::TestCase
   test 'should not update max ride distance_time if null or not given' do
     [{ max_ride_distance: nil, max_ride_duration: nil }, {}].each do |max_ride_param|
       @vehicle_usage.vehicle.update(max_ride_param)
-      patch :update, params: { id: @vehicle_usage, vehicle_usage: { vehicle: max_ride_param }}
+      patch :update, params: { id: @vehicle_usage, vehicle_usage: { id: @vehicle_usage, vehicle: max_ride_param }}
       assert_nil @vehicle_usage.vehicle.max_ride_distance
       assert_nil @vehicle_usage.vehicle.max_ride_duration
     end
@@ -114,7 +114,7 @@ class VehicleUsagesControllerTest < ActionController::TestCase
   end
 
   test 'should disable vehicle usage' do
-    patch :toggle, id: @vehicle_usage.id
+    patch :toggle, params: { id: @vehicle_usage.id }
     assert !@vehicle_usage.reload.active
     assert_redirected_to vehicle_usage_sets_path + "#collapseUsageSet#{vehicle_usage_sets(:vehicle_usage_set_one).id}"
   end

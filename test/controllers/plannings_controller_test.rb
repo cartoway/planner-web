@@ -478,7 +478,7 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should not switch' do
     ApplicationController.stub_any_instance(:not_found_error, lambda { |*a| raise ActiveRecord::RecordNotFound }) do
       assert_raises ActiveRecord::RecordNotFound do
-        patch :switch, planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, vehicle_usage_id: 666
+        patch :switch, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, vehicle_usage_id: 666 }
       end
     end
   end
