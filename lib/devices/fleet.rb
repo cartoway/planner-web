@@ -276,7 +276,7 @@ class Fleet < DeviceBase
 
   def fetch_routes_by_date(customer, from, to, sync_user)
     params = {from: from || (Time.zone.now - 12.hour), to: to, user_id: sync_user}
-    url = Addressable::URI.encode("#{api_url}/api/0.1/routes?" + Addressable::URI.encode_www_form(params.compact))
+    url = Addressable::URI.encode("#{api_url}/api/0.1/routes?" + URI.encode_www_form(params.compact))
 
     begin
       response = JSON.parse rest_client_get(url, customer.devices[:fleet][:api_key], nil), symbolize_names: true
@@ -344,7 +344,7 @@ class Fleet < DeviceBase
   end
 
   def reporting(api_key, locale, params)
-    url = Addressable::URI.encode("#{api_url}/api/0.1/reportings?#{Addressable::URI.encode_www_form(params.compact)}")
+    url = Addressable::URI.encode("#{api_url}/api/0.1/reportings?#{URI.encode_www_form(params.compact)}")
     begin
       response = RestClient.get(
         url,

@@ -20,7 +20,7 @@ class Vehicle < ApplicationRecord
   default_scope { order(:id) }
 
   belongs_to :customer
-  belongs_to :router
+  belongs_to :router, optional: true
   has_many :vehicle_usages, inverse_of: :vehicle, dependent: :destroy, autosave: true
   has_many :zones, inverse_of: :vehicle, dependent: :nullify, autosave: true
 
