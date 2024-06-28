@@ -257,8 +257,8 @@ fa:
         vehicle_usage_set_id: ''
         vehicle_usage_set_small: ''
         tag_operation:
-          and: ''
-          or: ''
+          _and: ''
+          _or: ''
       profile:
         name: ''
         layers: ''

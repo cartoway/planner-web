@@ -12,6 +12,7 @@ class V100::Plannings < Grape::API
       p = ActionController::Parameters.new(params)
       p = p[:planning] if p.key?(:planning)
       p[:zoning_ids] = [p[:zoning_id]] if p[:zoning_id] && (!p[:zoning_ids] || p[:zoning_ids].empty?)
+      p[:tag_operation] = p[:tag_operation].prepend('_') if p[:tag_operation] && !p[:tag_operation].start_with('_')
       p.permit(:name, :ref, :date, :begin_date, :end_date, :active, :vehicle_usage_set_id, :tag_operation, tag_ids: [], zoning_ids: [])
     end
   end

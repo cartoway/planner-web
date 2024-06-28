@@ -21,7 +21,7 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
 
   def api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/vehicle_usage_sets#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/0.1/vehicle_usage_sets#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + Adressable::URI.escape(v.to_s) }.join('&')
   end
 
   test 'should return customer''s vehicle_usage_sets' do
@@ -110,7 +110,7 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
     @customer.reload
 
     assert_difference('VehicleUsageSet.count', 0) do
-      put api(), replace_vehicles: false, file: fixture_file_upload('files/import_vehicle_usage_sets_one.csv', 'text/csv')
+      put api(), replace_vehicles: false, file: fixture_file_upload(Rails.root.join('test/fixtures/files/import_vehicle_usage_sets_one.csv'), 'text/csv')
       assert last_response.ok?, last_response.body
       json = JSON.parse(last_response.body)
 

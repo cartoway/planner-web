@@ -31,7 +31,7 @@
         <%= render partial: 'shared/check_box', locals: { form: f, field: :replace_vehicles, label: t('.replace_vehicles'), help: t('.replace_vehicles_help'), options: { checked: @customer.default_max_vehicle_usage_sets <= 1 } } %>
         <%= f.submit message: t('all.verb.import'), icon: 'fa-upload' %>
 
-        <div class="form-group">
+        <div class="row form-group">
           <div class="col-md-offset-2 col-md-6">
             <a href="/vehicle_usage_sets/import_template.excel" class="btn btn-default" role="button"><i class="fa fa-download fa-fw"></i> <%= t 'import.template_excel' %>
             </a>

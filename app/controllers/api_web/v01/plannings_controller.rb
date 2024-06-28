@@ -1,11 +1,3 @@
-# Copyright © Mapotempo, 2016
-#
-# This file is part of Mapotempo.
-#
-# Mapotempo is free software. You can redistribute it and/or
-# modify since you respect the terms of the GNU Affero General
-# Public License as published by the Free Software Foundation,
-# either version 3 of the License, or (at your option) any later version.
 #
 # Mapotempo is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
@@ -16,7 +8,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
-  skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
+  skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
   load_and_authorize_resource
   before_action :manage_planning
   around_action :includes_sub_models, only: [:print]
@@ -29,9 +21,7 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
 
   def print
     @params = params
-    respond_to do |format|
-      format.html
-    end
+    respond_to(&:html)
   end
 
   def self.manage

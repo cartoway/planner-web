@@ -20,17 +20,17 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable,
          :validatable
 
-  default_scope { order('LOWER(email)') }
+  default_scope { order(Arel.sql('LOWER(email)')) }
 
   nilify_blanks
   auto_strip_attributes :url_click2call
 
-  belongs_to :reseller
+  belongs_to :reseller, optional: true
   belongs_to :customer
   belongs_to :layer
 
-  after_initialize :assign_defaults, if: 'new_record?'
-  before_validation :assign_defaults_layer, if: 'new_record?'
+  after_initialize :assign_defaults, if: -> { new_record? }
+  before_validation :assign_defaults_layer, if: -> { new_record? }
   before_save :set_time_zone
 
   validates :customer, presence: true, unless: :admin?

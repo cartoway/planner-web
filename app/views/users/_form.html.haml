@@ -9,11 +9,11 @@
 = bootstrap_form_for @user, options do |f|
   = render 'shared/error_messages', model: @user
   = render partial: "users/time_zone"
-  = f.collection_select :layer_id, (@user.admin? ? Layer.all.sort_by(&:id) : @user.customer.profile.layers).select{ |l| !l[:overlay] }, :id, :translated_name, {}, {required: true}
-  .form-group
+  = f.collection_select :layer_id, (@user.admin? ? Layer.all.sort_by(&:id) : @user.customer.profile.layers).select{ |l| !l[:overlay] }, :id, :translated_name, {}, {required: true, control_class: 'form-control'}
+  .row.form-group
     %span.col-md-offset-2.col-md-8
       #map.map-fixed-size
-  = f.select :prefered_unit, User.unities, {}, {:class => 'form-control'}
+  = f.select :prefered_unit, User.unities, {}, {control_class: 'form-control'}
   = f.text_field :url_click2call do
     %p.help-block= t '.url_click2call_help'
   = f.text_field :api_key, {readonly: true, input_group: content_tag('i', '', class: 'fa fa-key fa-fw')}

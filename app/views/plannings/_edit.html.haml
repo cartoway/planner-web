@@ -29,7 +29,7 @@
             .col-xs-12.col-md-12
               %label
                 = t('activerecord.attributes.planning.tags')
-              .form-group
+              .row.form-group
                 .input-append
                   #planning_tag_ids_input.input-group
                     = select_tag 'planning[tag_ids]', options_for_select(@planning.customer.tags.map { |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}] }, @planning.tags.collect(&:id)), { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control input-group-radiusless', disabled: @planning.id }

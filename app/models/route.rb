@@ -19,7 +19,7 @@ class Route < ApplicationRecord
   RELATION_ORDER_KEYS = %i[pickup_delivery order sequence]
 
   belongs_to :planning
-  belongs_to :vehicle_usage
+  belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
   serialize :quantities, DeliverableUnitQuantity
 
@@ -36,7 +36,7 @@ class Route < ApplicationRecord
 
   before_update :update_vehicle_usage, :update_geojson
 
-  after_initialize :assign_defaults, if: 'new_record?'
+  after_initialize :assign_defaults, if: -> { new_record? }
   after_create :complete_geojson
   after_save { @computed = false }
 

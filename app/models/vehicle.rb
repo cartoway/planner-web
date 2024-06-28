@@ -20,7 +20,7 @@ class Vehicle < ApplicationRecord
   default_scope { order(:id) }
 
   belongs_to :customer
-  belongs_to :router
+  belongs_to :router, optional: true
   has_many :vehicle_usages, inverse_of: :vehicle, dependent: :destroy, autosave: true
   has_many :zones, inverse_of: :vehicle, dependent: :nullify, autosave: true
 
@@ -51,7 +51,7 @@ class Vehicle < ApplicationRecord
   validates :max_distance, numericality: true, allow_nil: true
   validates :max_ride_distance, numericality: true, allow_nil: true
 
-  after_initialize :assign_defaults, :increment_max_vehicles, if: 'new_record?'
+  after_initialize :assign_defaults, :increment_max_vehicles, if: -> { new_record? }
   before_validation :check_router_options_format
   before_create :create_vehicle_usage
   before_save :nilify_router_options_blanks
@@ -240,8 +240,8 @@ class Vehicle < ApplicationRecord
   def destroy_vehicle
     default = customer.vehicles.find{ |vehicle| vehicle != self && !vehicle.destroyed? }
     unless default
-      errors[:base] << I18n.t('activerecord.errors.models.vehicles.at_least_one')
-      false
+      errors.add(:base, I18n.t('activerecord.errors.models.vehicles.at_least_one'))
+      throw :abort
     end
   end
 

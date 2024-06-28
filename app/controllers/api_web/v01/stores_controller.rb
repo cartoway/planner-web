@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApiWeb::V01::StoresController < ApiWeb::V01::ApiWebController
-  skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
+  skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
   before_action :set_store, only: [:edit_position, :update_position, :show]
   authorize_resource
 
@@ -59,6 +59,12 @@ class ApiWeb::V01::StoresController < ApiWeb::V01::ApiWebController
         end
       end
     end
+  end
+
+  def by_distance
+    @customer = current_user.customer
+    @position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
+    @stores = @customer.stores_by_distance(@position, Integer(params[:n]))
   end
 
   private

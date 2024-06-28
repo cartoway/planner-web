@@ -76,10 +76,12 @@ class VehicleUsagesController < ApplicationController
   end
 
   def vehicle_usage_params
-    if params[:vehicle_usage][:vehicle] && params[:vehicle_usage][:vehicle][:router]
+    if params.dig('vehicle_usage', 'vehicle', 'router') # Unsafe navigation
       params[:vehicle_usage][:vehicle][:router_id], params[:vehicle_usage][:vehicle][:router_dimension] = params[:vehicle_usage][:vehicle][:router].split('_')
     end
-    parse_router_options(params[:vehicle_usage][:vehicle]) if params[:vehicle_usage].key?(:vehicle) && params[:vehicle_usage][:vehicle][:router_options]
+    if params.dig('vehicle_usage', 'vehicle', 'router_options') # Unsafe navigation
+      parse_router_options(params.dig('vehicle_usage', 'vehicle'))
+    end
     parameters = params.require(:vehicle_usage).permit(
       :time_window_start,
       :time_window_end,

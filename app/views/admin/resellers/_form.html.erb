@@ -2,7 +2,7 @@
   <%= render 'shared/error_messages', model: @reseller %>
   <%= f.text_field :host, required: true, help: t('.host_help') %>
 
-  <div class="form-group">
+  <div class="row form-group">
     <label class=" control-label col-md-offset-2 col-md-7" for="reseller_url_protocol_http">
       <%= t('activerecord.attributes.reseller.url_protocol') %>
     </label>
