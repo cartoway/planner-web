@@ -20,7 +20,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable,
          :validatable
 
-  default_scope { order('LOWER(email)') }
+  default_scope { order(Arel.sql('LOWER(email)')) }
 
   nilify_blanks
   auto_strip_attributes :url_click2call
