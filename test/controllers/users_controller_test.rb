@@ -15,7 +15,7 @@ class UsersControllerTest < ActionController::TestCase
     ability = Ability.new(users(:user_three))
     assert ability.cannot? :manage, @user
 
-    get :edit, id: users(:user_three)
+    get :edit, params: { id: users(:user_three) }
     assert_response :redirect
   end
 
