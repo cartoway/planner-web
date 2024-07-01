@@ -38,7 +38,7 @@
                 .col-xs-4.p-0
                   - agent_link = case agent
                   - when :ios
-                    - "comgooglemaps://?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+                    - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
                   - else
                     - "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
                   %a{ href: agent_link }
