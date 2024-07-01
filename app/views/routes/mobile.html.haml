@@ -1,3 +1,4 @@
+- agent = detect_agent
 .panel
   .panel-heading
     .input-group.mb-3
@@ -35,7 +36,12 @@
                   %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
                     = stop.name
                 .col-xs-4.p-0
-                  %a{ href: "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}" }
+                  - agent_link = case agent
+                  - when :ios
+                    - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+                  - else
+                    - "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+                  %a{ href: agent_link }
                     %button.btn.btn-default
                       .fa.fa-diamond-turn-right
                       = t('stops.mobile.navigate')
