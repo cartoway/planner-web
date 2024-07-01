@@ -13,34 +13,38 @@
       %span.input-group-addon
         %i.fa.fa-calendar.fa-fw
   .panel-body
-    #accordion.panel-group.route-stops{ role: 'tablist', aria_multiselectable: 'true' }
-      - previous = nil
-      - @stops.each do |stop|
-        - next unless stop.active
+    - if is_expired
+      .alert.alert-warning
+        = t("errors.routes.expired")
+    - else
+      #accordion.panel-group.route-stops{ role: 'tablist', aria_multiselectable: 'true' }
+        - previous = nil
+        - @stops.each do |stop|
+          - next unless stop.active
 
-        .panel.panel-default
-          .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px" }
-            .d-flex.align-items-center.justify-content-between
-              .col-xs-3
-                %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                  .fa.fa-caret-down.fa-fw
-                %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                  #label-index.number.label{ class: ("label-#{stop.status}") }
-                    = stop.index
-              .col-xs-5.p-0
-                %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                  = stop.name
-              .col-xs-4.p-0
-                %a{ href: "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}" }
-                  %button.btn.btn-default
-                    .fa.fa-diamond-turn-right
-                    = t('stops.mobile.navigate')
-          .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
-            .panel-body
-              = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit }
-        - previous = stop
-      - if @stops&.empty?
-        .alert.alert-warning
-          = t("routes.mobile.empty_route")
+          .panel.panel-default
+            .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px" }
+              .d-flex.align-items-center.justify-content-between
+                .col-xs-3
+                  %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                    .fa.fa-caret-down.fa-fw
+                  %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                    #label-index.number.label{ class: ("label-#{stop.status}") }
+                      = stop.index
+                .col-xs-5.p-0
+                  %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                    = stop.name
+                .col-xs-4.p-0
+                  %a{ href: "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}" }
+                    %button.btn.btn-default
+                      .fa.fa-diamond-turn-right
+                      = t('stops.mobile.navigate')
+            .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
+              .panel-body
+                = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit }
+          - previous = stop
+        - if @stops&.empty?
+          .alert.alert-warning
+            = t("routes.mobile.empty_route")
 
 - controller.js(route_id: @route.id)

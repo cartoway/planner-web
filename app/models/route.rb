@@ -131,6 +131,10 @@ class Route < ApplicationRecord
     }
   end
 
+  def is_expired?
+    planning.date + stops.last.time.seconds + 12.hour < DateTime.now
+  end
+
   def store_traces(geojson_tracks, trace, options = {})
     if trace && !options[:no_geojson]
       geojson_tracks << {
