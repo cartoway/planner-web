@@ -10,7 +10,7 @@
           %a#logo.logo{href: "/"}= image_tag @reseller.logo_small.url || "logo.svg", width: 150, height: 40, alt: @reseller.name
 
         .divider.solid
-        #accordion.menu-content.panel-group
+        #accordion-menu.menu-content.panel-group
           %ul.menu.menu-list
             %li.divider
             - if user_signed_in? && current_user.admin?
@@ -48,7 +48,7 @@
             - if user_signed_in? && current_user.customer
               - if !@unsubscribed
                 %li#menu-plan.menu-list-item
-                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#planningsCollpase'}
+                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#planningsCollpase'}
                     .d-flex.align-items-center.justify-content-center
                       %i.fa.fa-map-location.fa-fw
                       .hidden-menu.menu_label
@@ -95,7 +95,7 @@
                       = t 'plannings.menu.plannings'
 
               %li#menu-zoning.menu-list-item
-                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#zoningsCollpase'}
+                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#zoningsCollpase'}
                   .d-flex.align-items-center.justify-content-center
                     %i.fa.fa-draw-polygon.fa-fw
                     .hidden-menu.menu_label
@@ -136,7 +136,7 @@
                             = zoning.name
 
               %li#menu-destination.menu-list-item
-                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#destinationsCollpase'}
+                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#destinationsCollpase'}
                   .d-flex.align-items-center.justify-content-center
                     %i.fa.fa-map-marker.fa-fw
                     .hidden-menu.menu_label
@@ -170,7 +170,7 @@
                       %i.fa.fa-trash.fa-fw
                       = t 'destinations.menu.clear'
               %li.pannel.panel-default.menu-list-item
-                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#vehiclesCollpase'}
+                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#vehiclesCollpase'}
                   .d-flex.align-items-center.justify-content-center
                     %i.fa.fa-truck-field.fa-fw
                     .hidden-menu.menu_label
@@ -211,7 +211,7 @@
                       %span.menu_label
                         = t 'web.subscription'
               - if @reseller.help_url
-                %li#menu-help.dropdown.help.menu-section.menu-list-item
+                %li#menu-help.dropdown.help.menu-sectqion.menu-list-item
                   = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), class: 'dropdown-toggle', 'data-toggle': "dropdown" do
                     %i.fa.fa-info-circle.fa-fw
                     .hidden-menu
@@ -250,14 +250,14 @@
                           = t 'customers.menu.analytics'
                 %li.dropdown.menu-list-item
                   - if current_user.customer
-                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
+                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#customerCollpase'}
                       .d-flex.align-items-center.justify-content-center
                         %i.fa.fa-user-gear.fa-fw
                         .hidden-menu
                           %span.menu_label
                             = current_user.customer.name
                   - else
-                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion', href: '#customerCollpase'}
+                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#customerCollpase'}
                       .d-flex.align-items-center.justify-content-center
                         %i.fa.fa-user-gear.fa-fw
                         .hidden-menu
