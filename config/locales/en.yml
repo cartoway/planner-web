@@ -708,6 +708,7 @@ en:
       transmission_in_progress: Optimization is being transmitted
     routes:
       bad_barcode_char: Barcode data content unsupported character
+      expired: The tour has expired
   import:
     csv:
       line: Line %{s}
