@@ -132,7 +132,9 @@ class Route < ApplicationRecord
   end
 
   def is_expired?
-    planning.date + stops.last.time.seconds + 12.hour < DateTime.now
+    return false if planning.date.nil? || stops.only_active_stop_visits.empty? || stops.only_active_stop_visits.last.time.nil?
+
+    planning.date + stops.only_active_stop_visits.last.time.seconds + 12.hour < DateTime.now
   end
 
   def store_traces(geojson_tracks, trace, options = {})
