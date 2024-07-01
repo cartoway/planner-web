@@ -718,6 +718,7 @@
     'routes':
       'bad_barcode_char': 'Les données du code barre contiennent un caractère non
         pris en charge'
+      'expired': 'La tournée a expirée'
   'import':
     'csv':
       'line': 'Ligne %{s}'
