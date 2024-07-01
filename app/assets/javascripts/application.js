@@ -93,7 +93,6 @@ $(document).ready(function() {
 
   mainContent.on("click", () => {
     menuLeft.removeClass("open")
-    $('.menu-section').collapse('hide');
     $('.menu-content.in').removeClass('in');
   })
 
