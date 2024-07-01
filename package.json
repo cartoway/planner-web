@@ -2,7 +2,7 @@
   "dependencies": {
     "@rails/webpacker": "3.2.1",
     "babel-preset-react": "^6.24.1",
-    "bootstrap": "3.3.7",
+    "bootstrap": "3.4.1",
     "bootstrap-datepicker": "1.7.1",
     "bootstrap-filestyle": "1.2.1",
     "bootstrap-select": "1.12.4",

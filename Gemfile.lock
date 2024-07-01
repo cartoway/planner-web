@@ -79,17 +79,6 @@ GIT
   specs:
     tidy-html5 (0.1.2)
 
-GIT
-  remote: https://github.com/seyhunak/twitter-bootstrap-rails.git
-  revision: d3776ddd0b89d28fdebfd6e1c1541348cc90e5cc
-  ref: d3776ddd0b89d28fdebfd6e1c1541348cc90e5cc
-  specs:
-    twitter-bootstrap-rails (3.2.2)
-      actionpack (>= 3.1)
-      execjs (>= 2.2.2, >= 2.2)
-      less-rails (>= 2.5.0)
-      railties (>= 3.1)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -696,6 +685,11 @@ GEM
       polyglot (>= 0.3.1)
     turbolinks (2.5.4)
       coffee-rails
+    twitter-bootstrap-rails (3.2.2)
+      actionpack (>= 3.1)
+      execjs (>= 2.2.2, >= 2.2)
+      less-rails (>= 2.5.0)
+      railties (>= 3.1)
     tzinfo (1.2.11)
       thread_safe (~> 0.1)
     uglifier (3.2.0)
@@ -855,7 +849,7 @@ DEPENDENCIES
   sprockets
   tidy-html5!
   turbolinks (< 5)
-  twitter-bootstrap-rails!
+  twitter-bootstrap-rails
   uglifier (< 4.0)
   validates_timeliness (< 5)
   web-console (~> 2)
