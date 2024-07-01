@@ -21,7 +21,7 @@ module Devices
       planning = @current_customer.plannings.find params[:planning_id]
       routes = planning.routes.select(&:vehicle_usage_id)
       routes = routes.select{ |route| route.vehicle_usage.vehicle.devices[options[:device_id]] } if options[:device_id]
-      routes.select{ |r| r.stops.select{ |s| s.position? }.size > 0 }.each{ |route|
+      routes.select{ |r| r.stops.only_active_stop_visits.select{ |s| s.position? }.size > 0 }.each{ |route|
         Route.transaction do
           service.send_route(route, options)
           route.save!
