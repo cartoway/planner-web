@@ -1,18 +1,21 @@
 - agent = detect_agent
 .panel
   .panel-heading
-    .input-group.mb-3
-      %input.form-control{ value: @route.ref, type: 'text', disabled: true }
-      %span.input-group-addon
+    .d-flex.align-items-center.justify-items-center
+      .label.label-default.p-3.mr-2
         %i.fa.fa-route.fa-fw
-    .input-group.mb-3
-      %input.form-control{ value: @route.vehicle_usage.vehicle.name, type: 'text', disabled: true }
-      %span.input-group-addon
+      %h4
+        = @route.ref
+    .d-flex.align-items-center.justify-items-center
+      .label.label-default.p-3.mr-2
         %i.fa.fa-truck-field.fa-fw
-    .input-group.mb-3
-      %input.form-control{ value: date, type: 'text', disabled: true }
-      %span.input-group-addon
+      %h4
+        = @route.vehicle_usage.vehicle.name
+    .d-flex.align-items-center.justify-items-center
+      .label.label-default.p-3.mr-2
         %i.fa.fa-calendar.fa-fw
+      %h4
+        = date
   .panel-body
     - if is_expired
       .alert.alert-warning
@@ -24,18 +27,14 @@
           - next unless stop.active
 
           .panel.panel-default
-            .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px" }
+            .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}" }
               .d-flex.align-items-center.justify-content-between
-                .col-xs-3
-                  %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                    .fa.fa-caret-down.fa-fw
-                  %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                    #label-index.number.label{ class: ("label-#{stop.status}") }
-                      = stop.index
-                .col-xs-5.p-0
-                  %a{ role: 'button', href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                    = stop.name
-                .col-xs-4.p-0
+                .col-xs-3{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                  #label-index.number.label{ class: ("label-#{stop.status}") }
+                    = stop.index
+                .col-xs-7.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                  = stop.name
+                .col-xs-2.p-0
                   - agent_link = case agent
                   - when :ios
                     - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
@@ -44,7 +43,13 @@
                   %a{ href: agent_link }
                     %button.btn.btn-default
                       .fa.fa-diamond-turn-right
-                      = t('stops.mobile.navigate')
+              .d-flex.align-items-center.justify-items-center
+                .col-xs-3
+                  .fa.fa-caret-down.fa-fw
+                .col-xs-9.p-0
+                  = stop.visit.destination.street
+                  = stop.visit.destination.postalcode
+                  = stop.visit.destination.city
             .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
               .panel-body
                 = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit }

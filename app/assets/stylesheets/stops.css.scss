@@ -58,5 +58,25 @@
     padding-top: 5px;
     padding-bottom: 5px;
   }
+
+  .panel-heading-intransit {
+    border-left: 12px solid $primary-color;
+  }
+
+  .panel-heading-exception {
+    border-left: 12px solid var(--warning);
+  }
+
+  .panel-heading-delivered {
+    border-left: 12px solid var(--success);
+  }
+
+  .panel-heading-undelivered {
+    border-left: 12px solid var(--danger);
+  }
+
+  .panel-headgin- {
+    border-left: 12px solid transparent;
+  }
 }
 
