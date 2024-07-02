@@ -109,8 +109,8 @@ fr:
           notico:
             title: Notico
             agent_id: "ID Livreur Notico Deliv"
-          planner:
-            title: Cartoway Mobile
+          deliver:
+            title: Cartoway Deliver
           praxedo:
             title: Praxedo
             praxedo_agent_id: "Code Technicien Praxedo"
@@ -309,7 +309,7 @@ fr:
         action: Vider Notico Deliv
         success: Notico Deliv a été vidé avec succès
         fail: Échec lors de la suppression de Notico Deliv
-      planner_send:
+      deliver_send:
         access: Accéder à la tournée
         transmit: Transmettre au livreur
         action: Envoyer au livreur
@@ -351,8 +351,8 @@ fr:
         notico:
           title: Notico Deliv
           in_progress: Veuillez patienter
-        planner:
-          title: Cartoway Mobile
+        deliver:
+          title: Cartoway Deliver
           in_progress: Veuillez patienter
         praxedo:
           title: Praxedo
