@@ -23,7 +23,7 @@ class Device
   end
 
   def all
-    @all ||= Mapotempo::Application.config.devices.to_h.except(:cache_object, :stg_telematics_cache_object, :planner_cache_object)
+    @all ||= Mapotempo::Application.config.devices.to_h.except(:cache_object, :stg_telematics_cache_object, :deliver_cache_object)
   end
 
   def definitions
@@ -59,6 +59,9 @@ class Device
   def available_position?(vehicle)
     has_position = false
     all.each { |key, device|
+      has_position = true if key == :deliver && @customer.device.configured?(key)
+      next if key == :deliver
+
       configured_vehicle = device.definition[:forms][:vehicle] && device.definition[:forms][:vehicle].keys.all?{ |k| !vehicle.devices[k].blank? }
       has_position ||= configured_vehicle && device.respond_to?(:get_vehicles_pos) && @customer.device.configured?(key)
     }
@@ -76,6 +79,9 @@ class Device
   def available_cache_position?(vehicle)
     has_cache_position = false
     all.each { |key, device|
+      has_cache_position = true if key == :deliver && @customer.device.configured?(key)
+      next if key == :deliver
+
       configured_vehicle = device.definition[:forms][:vehicle] && device.definition[:forms][:vehicle].keys.all?{ |k| !vehicle.devices[k].blank? }
       has_cache_position ||= configured_vehicle && device.respond_to?(:cache_position) && @customer.device.configured?(key)
     }

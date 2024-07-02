@@ -1,10 +1,10 @@
-class V01::Devices::Planner < Grape::API
+class V01::Devices::Deliver < Grape::API
   namespace :devices do
-    namespace :planner do
+    namespace :deliver do
 
       helpers do
         def service
-          PlannerService.new customer: @customer
+          DeliverService.new customer: @customer
         end
       end
 
@@ -17,8 +17,8 @@ class V01::Devices::Planner < Grape::API
       end
 
       desc 'Send Planning Routes.',
-        detail: 'On Cartoway Mobile.',
-        nickname: 'devicePlannerSendMultiple',
+        detail: 'On Cartoway Deliver.',
+        nickname: 'deviceDeliverSendMultiple',
         success: V01::Status.success(:code_201),
         failure: V01::Status.failures
       params do

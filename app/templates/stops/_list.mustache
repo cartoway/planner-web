@@ -231,17 +231,17 @@
                 </li>
                 <li role="separator" class="divider"></li>
               {{/notico}}
-              {{#planner}}
+              {{#deliver}}
                 <div class="dropdown-spacing">
-                  {{#i18n}}plannings.edit.dialog.planner.title{{/i18n}}
+                  {{#i18n}}plannings.edit.dialog.deliver.title{{/i18n}}
                 </div>
-                <li><a href="/routes/{{route_id}}/mobile?token={{driver_token}}" ><i class="fa fa-link fa-fw"></i> {{#i18n}}plannings.edit.planner_send.access{{/i18n}}</a></li>
-                <li class="link device-operation" data-service="planner" data-operation="send" data-route-id="{{route_id}}">
+                <li><a href="/routes/{{route_id}}/mobile?token={{driver_token}}" ><i class="fa fa-link fa-fw"></i> {{#i18n}}plannings.edit.deliver_send.access{{/i18n}}</a></li>
+                <li class="link device-operation" data-service="deliver" data-operation="send" data-route-id="{{route_id}}">
                     <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
-                    {{#i18n}}plannings.edit.planner_send.action{{/i18n}}
+                    {{#i18n}}plannings.edit.deliver_send.action{{/i18n}}
                 </li>
                 <li role="separator" class="divider"></li>
-              {{/planner}}
+              {{/deliver}}
               {{#praxedo}}
                 <div class="dropdown-spacing">
                   {{#i18n}}plannings.edit.dialog.praxedo.title{{/i18n}} :
