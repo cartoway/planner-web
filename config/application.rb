@@ -12,7 +12,7 @@ require_relative '../lib/exceptions'
 
 require_relative '../lib/devices/device_base'
 [
-  'alyacom', 'fleet_demo', 'fleet', 'masternaut', 'notico', 'orange', 'planner', 'praxedo',
+  'alyacom', 'fleet_demo', 'fleet', 'masternaut', 'notico', 'orange', 'deliver', 'praxedo',
   'sopac', 'stg_telematics', 'suivi_de_flotte', 'teksat', 'tomtom', 'trimble'
 ].each{|name|
   require_relative "../lib/devices/#{name}"
@@ -104,7 +104,7 @@ module Mapotempo
       masternaut: Masternaut.new,
       notico: Notico.new,
       orange: Orange.new,
-      planner: Planner.new,
+      deliver: Deliver.new,
       praxedo: Praxedo.new,
       stg_telematics: StgTelematics.new,
       sopac: Sopac.new,

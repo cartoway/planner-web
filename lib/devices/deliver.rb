@@ -3,12 +3,12 @@ end
 
 #RestClient.log = 'stdout'
 
-class Planner < DeviceBase
+class Deliver < DeviceBase
   def definition
     {
-      device: 'planner',
-      label: 'Planner Cartoway',
-      label_small: 'Planner',
+      device: 'deliver',
+      label: 'Cartoway Deliver',
+      label_small: 'Deliver',
       route_operations: [:send],
       has_sync: true,
       help: true,
