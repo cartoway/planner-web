@@ -4,6 +4,8 @@
 
 %html{lang: "#{I18n.locale}"}
   %head
+    - content_for :title do
+      = t('plannings.edit.dialog.deliver.title')
     = render partial: 'layouts/head'
   %body{"data-controller": "#{controller.controller_path.gsub('/', '_')}", "data-action": "#{controller.action_name}"}
     .mobile_header.d-flex.align-items-center.justify-content-between
