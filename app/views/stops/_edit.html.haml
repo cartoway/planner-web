@@ -32,12 +32,13 @@
       = visit.time_window_end_2_time
 
   - if visit.default_quantities?
-    - visit_quantities(stop.visit, @route.vehicle_usage.vehicle).each do |units|
+    - visit_quantities(stop.visit, @route.vehicle_usage.vehicle).each do |unit|
       .d-flex.align-items-center.justify-items-center.mb-1
         .label.label-default.p-3.mr-2
-          %i.fa.fa-fw{ class: units[:unit_icon] }
+          %i.fa.fa-fw{ class: unit[:unit_icon] }
         .quantity
-          = units[:quantity_formatted]
+          = unit[:quantity]
+          = unit[:label]
   .row
     .form-group
       =  bootstrap_form_for stop, url: stop_path, method: :patch, remote: true do |f|
