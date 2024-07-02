@@ -1,64 +1,43 @@
 .container
-  .row
-    .col-xs-1
-      %i.fa.fa-map.fa-fw
-    .col-xs-9
-      .row
-        .col-xs-12
-          = destination.street
-      .row
-        .col-xs-12
-          = destination.postalcode
-          = destination.city
-      .row
-        .col-xs-12
-          = destination.country
-
   - if destination.detail
-    .row
-      .col-xs-1
+    .d-flex.align-items-center.justify-items-center.mb-1
+      .label.label-default.p-3.mr-2
         %i.fa.fa-circle-info
-      .col-xs-9
-        = destination.detail
+      = destination.detail
   - if destination.comment
-    .row
-      .col-xs-1
+    .d-flex.align-items-center.justify-items-center.mb-1
+      .label.label-default.p-3.mr-2
         %i.fa.fa-comment-dots
-      .col-xs-9
-        = destination.comment
+      = destination.comment
   - if destination.phone_number
-    .row
-      .col-xs-1
+    .d-flex.align-items-center.justify-items-center.mb-1
+      .label.label-default.p-3.mr-2
         %i.fa.fa-phone
-      .col-xs-9
-        %a{ href: "tel:#{destination.phone_number}" }
-          = destination.phone_number
+      %a{ href: "tel:#{destination.phone_number}" }
+        = destination.phone_number
 
   - if visit&.time_window_start_1
-    .row
-      .col-xs-1
+    .d-flex.align-items-center.justify-items-center.mb-1
+      .label.label-default.p-3.mr-2
         %i.fa.fa-clock.fa-fw
-      .col-xs-9
-        = visit.time_window_start_1_time
-        \-
-        = visit.time_window_end_1_time
+      = visit.time_window_start_1_time
+      \-
+      = visit.time_window_end_1_time
   - if visit&.time_window_start_2
-    .row
-      .col-xs-1
+    .d-flex.align-items-center.justify-items-center.mb-1
+      .label.label-default.p-3.mr-2
         %i.fa.fa-clock.fa-fw
-      .col-xs-9
-        = visit.time_window_start_2_time
-        \-
-        = visit.time_window_end_2_time
+      = visit.time_window_start_2_time
+      \-
+      = visit.time_window_end_2_time
 
   - if visit.default_quantities?
     - visit_quantities(stop.visit, @route.vehicle_usage.vehicle).each do |units|
-      .row
-        .col-xs-1
+      .d-flex.align-items-center.justify-items-center.mb-1
+        .label.label-default.p-3.mr-2
           %i.fa.fa-fw{ class: units[:unit_icon] }
-        .col-xs-9
-          .quantity
-            = units[:quantity_formatted]
+        .quantity
+          = units[:quantity_formatted]
   .row
     .form-group
       =  bootstrap_form_for stop, url: stop_path, method: :patch, remote: true do |f|

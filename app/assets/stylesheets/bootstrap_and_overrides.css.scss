@@ -771,14 +771,31 @@ div.grid-container {
   margin-bottom: 1rem !important;
 }
 
+.mb-1 {
+  margin-bottom: 3px !important;
+}
+
 // Backports
 .mb-0 {
   margin-bottom: 0 !important;
 }
 
+.mr-2 {
+  margin-right: 6px !important;
+}
+
 // Backports
 .p-0 {
   padding: 0 !important;
+}
+
+.p-3 {
+  padding: 10px !important;
+}
+
+.label-default {
+  background-color: $gray-200;
+  color: $gray-700;
 }
 
 
