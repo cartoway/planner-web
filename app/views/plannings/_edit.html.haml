@@ -147,7 +147,8 @@
                         %i.fa.fa-mobile.fa-rotate-90.fa-fw
                           - translation = "#{definition[:device]}_#{route_operation.is_a?(Hash) ? route_operation.keys[0].to_s + '_' + route_operation.values[0].to_s : route_operation}.action"
                         = t("plannings.edit.#{translation}")
-                  %li.divider{role: "separator"}
+                    - if definition[:route_operations].any?
+                      %li.divider{role: "separator"}
                 %li
                   = link_to api_web_v01_print_planning_path(@planning) do
                     %i.fa.fa-print.fa-fw
