@@ -14,6 +14,9 @@ export const stops_edit = function(params) {
     var match = $(this).closest('.panel').find('#label-index').attr("class").match(new RegExp('label-[a-z]*'));
     $(this).closest('.panel').find('#label-index').removeClass(match.shift())
                      .addClass('label-'+selected);
+    var match = $(this).closest('.panel').find('.panel-heading').attr("class").match(new RegExp('panel-heading-[a-z]*'));
+    $(this).closest('.panel').find('.panel-heading').removeClass(match.shift())
+                     .addClass('panel-heading-'+selected);
     submitForm($(this));
   });
 
