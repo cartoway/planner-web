@@ -10,17 +10,33 @@
     z-index: 1;
     padding-left: 5px;
     border-bottom: 1px solid $grey-color;
+    background-color: $primary-color;
+    color: $white;
 
     .company-logo {
       height: calc(#{$mobile-header-height} - 8px);
     }
+
+    .form-check-input {
+      &:checked {
+        border-color: $white;
+      }
+    }
+
+    .form-switch .form-check-input:not(:checked):not(:focus) {
+      background-color: $white;
+    }
   }
 
   .mobile {
-    font-size: 14px !important;
+    font-size: 16px !important;
     position: absolute;
     top: $mobile-header-height;
     width: 100%
+  }
+
+  .label {
+    min-width: 32px;
   }
 
   .label-planned, .label-intransit {
@@ -59,6 +75,10 @@
     padding-bottom: 5px;
   }
 
+  .panel-body .panel-heading {
+    background-color: $gray-200;
+  }
+
   .panel-heading-intransit {
     border-left: 12px solid $primary-color;
   }
@@ -75,8 +95,26 @@
     border-left: 12px solid var(--danger);
   }
 
-  .panel-headgin- {
+  .panel-heading- {
     border-left: 12px solid transparent;
+  }
+
+  .btn {
+    border-radius: 16px;
+  }
+
+  #radiobtn {
+    .btn {
+      min-width: 30vw;
+      margin-top: 6px;
+      margin-bottom: 6px;
+
+    }
+    .btn.active {
+      min-width: 40vw !important;
+      margin-top: 2px !important;
+      margin-bottom: 2px !important;
+    }
   }
 }
 

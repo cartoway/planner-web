@@ -784,6 +784,10 @@ div.grid-container {
   margin-right: 6px !important;
 }
 
+.mt-1 {
+  margin-top: 3px !important;
+}
+
 // Backports
 .p-0 {
   padding: 0 !important;
@@ -791,6 +795,11 @@ div.grid-container {
 
 .p-3 {
   padding: 10px !important;
+}
+
+.pv-1 {
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
 }
 
 .label-default {

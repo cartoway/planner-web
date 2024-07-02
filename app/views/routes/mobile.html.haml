@@ -1,21 +1,27 @@
 - agent = detect_agent
 .panel
-  .panel-heading
-    .d-flex.align-items-center.justify-items-center
+  .panel-heading.pv-1
+    %h4.d-flex.align-items-center.justify-items-center
       .label.label-default.p-3.mr-2
         %i.fa.fa-route.fa-fw
-      %h4
-        = @route.ref
-    .d-flex.align-items-center.justify-items-center
+      = @route.ref
+    %h4.d-flex.align-items-center.justify-items-center
       .label.label-default.p-3.mr-2
         %i.fa.fa-truck-field.fa-fw
-      %h4
-        = @route.vehicle_usage.vehicle.name
-    .d-flex.align-items-center.justify-items-center
+      = @route.vehicle_usage.vehicle.name
+    %h4.d-flex.align-items-center.justify-items-center
       .label.label-default.p-3.mr-2
         %i.fa.fa-calendar.fa-fw
-      %h4
-        = date
+      = date
+    - route_quantities(@route).each do |unit|
+      - next if unit[:quantity]&.zero?
+
+      %h4.d-flex.align-items-center.justify-items-center
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-fw{ class: unit[:unit_icon] }
+        .quantity
+          = unit[:quantity]
+          = unit[:label]
   .panel-body
     - if is_expired
       .alert.alert-warning
@@ -26,30 +32,40 @@
         - @stops.each do |stop|
           - next unless stop.active
 
+          - next_status = case stop.status
+          - when 'intransit'
+            - 'delivered'
+          - when nil
+            - 'intransit'
           .panel.panel-default
             .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}" }
-              .d-flex.align-items-center.justify-content-between
-                .col-xs-3{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                  #label-index.number.label{ class: ("label-#{stop.status}") }
+              .d-flex.align-items-center.justify-content-between.mb-1
+                .col-xs-1.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                  #label-index.number.label.p-3{ class: ("label-#{stop.status}") }
                     = stop.index
-                .col-xs-7.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                .col-xs-5.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
                   = stop.name
-                .col-xs-2.p-0
-                  - agent_link = case agent
-                  - when :ios
-                    - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
-                  - else
-                    - "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
-                  %a{ href: agent_link }
-                    %button.btn.btn-default
+                .col-xs-6.p-0
+                  .d-flex.align-items-center.justify-content-end
+                    %a#quick-status.btn.btn-default.mr-2{ data: { toggle: 'active_status', title: next_status }, class: ('d-none' unless next_status) }
+                      .d-flex.align-items-center
+                        .fa.fa-check.mr-2
+                        #quick-status-text
+                          = t("plannings.edit.stop_status.#{next_status}") if next_status
+                    - agent_link = case agent
+                    - when :ios
+                      - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+                    - else
+                      - "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+                    %a.btn.btn-default{ href: agent_link }
                       .fa.fa-diamond-turn-right
-              .d-flex.align-items-center.justify-items-center
-                .col-xs-3
-                  .fa.fa-caret-down.fa-fw
-                .col-xs-9.p-0
+              .d-flex.align-items-center{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                .col-xs-11.p-3
                   = stop.visit.destination.street
                   = stop.visit.destination.postalcode
                   = stop.visit.destination.city
+              .d-flex.align-items-center.justify-content-center{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                .fa.fa-caret-down.fa-fw
             .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
               .panel-body
                 = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit }
