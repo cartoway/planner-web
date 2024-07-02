@@ -195,6 +195,8 @@ en:
           confirm: "Sync Vehicles?"
           action: "Sync Vehicles"
           no_credentials: "No credentials given for the device"
+        deliver:
+          help: "Allows routes to be carried out from the planner's mobile views"
         fleet_demo:
           help: "(DEMO ONY) Simulate vehicles' position and visit status (if these options are activated)
             for the last updated plan."

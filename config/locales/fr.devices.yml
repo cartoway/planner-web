@@ -197,6 +197,8 @@ fr:
           confirm: "Synchroniser les véhicules ?"
           action: "Synchroniser les véhicules"
           no_credentials: "Pas d'identifiants renseignés pour l'appareil"
+        deliver:
+          help: "Permet d'effectuer les tournées depuis les vues mobiles du planner"
         fleet_demo:
           help: "(DEMONSTRATEUR) Simule la position des véhicules et le statut des visites (si ces options sont actives)
             pour le dernier plan modifié."
