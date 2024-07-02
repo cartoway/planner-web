@@ -2,19 +2,19 @@
 .panel
   .panel-heading
     .d-flex.align-items-center.justify-items-center
-      .label.label-default.p-3.mr-2
-        %i.fa.fa-route.fa-fw
       %h4
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-route.fa-fw
         = @route.ref
     .d-flex.align-items-center.justify-items-center
-      .label.label-default.p-3.mr-2
-        %i.fa.fa-truck-field.fa-fw
       %h4
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-truck-field.fa-fw
         = @route.vehicle_usage.vehicle.name
     .d-flex.align-items-center.justify-items-center
-      .label.label-default.p-3.mr-2
-        %i.fa.fa-calendar.fa-fw
       %h4
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-calendar.fa-fw
         = date
   .panel-body
     - if is_expired
