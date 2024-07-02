@@ -703,6 +703,10 @@
     'location':
       'geocoding_fail': 'Le géocodage a échoué :'
       'reversegeocoding_fail': 'Le géocodage inversé a échoué :'
+    'mobile':
+      'default': 'Une erreur s''est produite'
+      'denied_geolocation': 'Vous avez refusé le partage de position'
+      'unsupported_geolocation': 'Votre navigateur ne supporte pas la remontée de position'
     'planning':
       'import_too_many_routes': 'Tentative d''importer plus de tournées que de véhicules
         disponibles'
@@ -714,6 +718,7 @@
     'routes':
       'bad_barcode_char': 'Les données du code barre contiennent un caractère non
         pris en charge'
+      'expired': 'La tournée a expirée'
   'import':
     'csv':
       'line': 'Ligne %{s}'
@@ -1413,6 +1418,14 @@
       'route_ref': 'Référence de la tournée : %{ref}'
       'order_array': 'Commandes : %{name}'
       'link': 'Lien de téléchargement : <a href=%{link}>Plan iCalendar</a>'
+    'send_driver_route':
+      'subject': 'Tournée du %{date}'
+      'title': 'Tournée du %{date}'
+      'hello': 'Bonjour'
+      'content': 'Une tournée vous a été envoyée'
+      'vehicle': 'Véhicule : %{name}'
+      'planning': 'Plan de tournées : %{name} %{date}'
+      'link': 'Lien de la tournée : <a href=%{link}>Tournée</a>'
   'user_mailer':
     'layout':
       'welcome': 'Bienvenue chez %{name} !'
@@ -1674,6 +1687,10 @@
         'started': 'Démarré'
         'finished': 'Terminé'
         'rejected': 'Rejeté'
+        'intransit': "En route"
+        'exception':  "Anomalie"
+        'delivered': "Livré"
+        'undelivered': "Non livré"
         'any': 'Tous statuts'
         'none': 'Sans statut'
       'update_stops_status': 'Statuts arrêts :'
@@ -1796,6 +1813,7 @@
         'stop_distance': 'Distance :'
         'visit': 'Visite'
         'status': 'Statut :'
+        'status_updated_at': 'Horaire statut'
         'eta': 'ETA :'
         'day': 'J+'
       'error':
@@ -1975,6 +1993,7 @@
       'out_of_max_ride_duration': 'durée trajet maximale'
       'out_of_relation': 'relation non respectée'
       'status': 'statut'
+      'status_updated_at': 'horaire statut'
       'eta': 'eta'
       'custom_attributes_visit': 'attributs visite'
     'form':
@@ -2008,6 +2027,8 @@
       'annotating':
         'hour': 'Heure de passage :'
         'signature': 'Signature :'
+    'mobile':
+      'empty_route': 'Tournée vide'
   'deliverables_by_vehicles':
     'show':
       'title_page': Etat de charge par tournée
@@ -2034,6 +2055,15 @@
   'stops':
     'default':
       'name_rest': 'Pause'
+    'error_messages':
+      'update':
+        'failure': 'Echec de la mise à jour'
+    'mobile':
+      'navigate': 'Naviguer'
+      'back': 'Tournée'
+      'previous': 'Précédent'
+      'next': 'Suivant'
+      'tracking': 'Partage de position'
   'stores':
     'default':
       'name': 'Site numéro 1'

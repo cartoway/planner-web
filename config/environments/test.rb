@@ -126,6 +126,7 @@ Rails.application.configure do
   config.devices.tomtom.api_key = ENV['DEVICE_TOMTOM_API_KEY']
 
   config.devices.cache_object = cache_factory('devices', 30)
+  config.devices.planner_cache_object = cache_factory('devices.planner', 60*60*24*10)
   config.devices.stg_telematics_cache_object = cache_factory('devices.stg_telematics', 5 * 60)
 
   config.delayed_job_use = false

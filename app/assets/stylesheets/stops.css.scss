@@ -1,0 +1,62 @@
+@import "variables";
+
+[data-controller='stops'][data-action='edit'],
+[data-controller='routes'][data-action='mobile'] {
+
+  .mobile_header {
+    width: 100%;
+    position: absolute;
+    height: $mobile-header-height;
+    z-index: 1;
+    padding-left: 5px;
+    border-bottom: 1px solid $grey-color;
+
+    .company-logo {
+      height: calc(#{$mobile-header-height} - 8px);
+    }
+  }
+
+  .mobile {
+    font-size: 14px !important;
+    position: absolute;
+    top: $mobile-header-height;
+    width: 100%
+  }
+
+  .label-planned, .label-intransit {
+    background-color: $primary-color;
+  }
+
+  .label-started, .label-exception {
+    background-color: var(--warning);
+  }
+
+  .label-finished, .label-delivered {
+    background-color: var(--success);
+  }
+
+  .label-rejected, .label-undelivered {
+    background-color: var(--danger);
+  }
+
+  .label- {
+    background-color: var(--gray);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    -webkit-box-pack: center !important;
+    -ms-flex-pack: center !important;
+    justify-content: center !important;
+  }
+
+  .active {
+    box-shadow: 2px 3px 2px rgba(0,0,0,.4);
+    border: 4px solid #ffffff96;
+    border-radius: 2px !important;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+

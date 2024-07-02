@@ -502,6 +502,7 @@ class PlanningsController < ApplicationController
       :out_of_max_ride_distance,
       :out_of_max_ride_duration,
       :status,
+      :status_updated_at,
       :eta,
 
       :ref,

@@ -1,0 +1,23 @@
+%table.w320{cellpadding: "0", cellspacing: "0", width: "600"}
+  %tr
+    %td{width: "50"}
+    %td{align: "center", width: "1000"}
+      %div{align: "justify"}
+        %p= t('.hello') + ','
+        %p= t('.content', s: customer.reseller.name)
+        %br
+        %ul
+          %li
+            = t('.vehicle', name: route.vehicle_usage.vehicle.name)
+          %li
+            = t('.planning', name: route.planning.name, date: route.planning.date ? "#{l(route.planning.date)}" : '')
+          %li
+            = t('.link', link: (customer.reseller.url_protocol + '://' + customer.reseller.host + '/routes/' + route.id.to_s + '/mobile?token=' + route.vehicle_usage.vehicle.driver_token)).html_safe
+        %br
+        %p
+          = I18n.t('user_mailer.layout.staff.greetings').html_safe
+        %p.signature
+          = I18n.t('user_mailer.layout.staff.signature', name: customer.reseller.name).html_safe
+    %td{width: "50"}
+- content_for :footer do
+  %td{align: "center", class: "white-background", height: "100px", valign: "top", width: "100%", style: "border-top: 1px solid #e5e5e5, border-bottom: 1px solid #e5e5e5" }

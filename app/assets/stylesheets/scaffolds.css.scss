@@ -695,16 +695,16 @@ input.form-control.number-of-days {
     margin: 0px 5px;
   }
 
-  .stop-status-planned {
+  .stop-status-planned, .stop-status-intransit {
     background: #357EC7;
   }
-  .stop-status-started {
+  .stop-status-started, .stop-status-exception {
     background: #FBB117;
   }
-  .stop-status-finished {
+  .stop-status-finished, .stop-status-delivered {
     background: #58BE13;
   }
-  .stop-status-rejected {
+  .stop-status-rejected, .stop-status-undelivered {
     background: red;
   }
   .stop-status-none {

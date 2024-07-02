@@ -689,6 +689,11 @@ div.grid-container {
 }
 
 // Backport
+.justify-content-start {
+  justify-content: flex-start !important;
+}
+
+// Backport
 .justify-content-center {
   -webkit-box-pack: center !important;
   -ms-flex-pack: center !important;
@@ -701,6 +706,12 @@ div.grid-container {
   -ms-flex-pack: justify !important;
   justify-content: space-between !important;
 }
+
+// Backport
+.justify-content-end {
+  justify-content: flex-end !important;
+}
+
 
 // Backport
 .align-items-center {
@@ -753,4 +764,441 @@ div.grid-container {
 
 .progress-bar.primary{
   background-color: $primary-color;
+}
+
+// Backports
+.mb-3 {
+  margin-bottom: 1rem !important;
+}
+
+// Backports
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+// Backports
+.p-0 {
+  padding: 0 !important;
+}
+
+
+.card {
+  // scss-docs-start card-css-vars
+  --#{$prefix}card-spacer-y: #{$card-spacer-y};
+  --#{$prefix}card-spacer-x: #{$card-spacer-x};
+  --#{$prefix}card-title-spacer-y: #{$card-title-spacer-y};
+  --#{$prefix}card-title-color: #{$card-title-color};
+  --#{$prefix}card-subtitle-color: #{$card-subtitle-color};
+  --#{$prefix}card-border-width: #{$card-border-width};
+  --#{$prefix}card-border-color: #{$card-border-color};
+  --#{$prefix}card-border-radius: #{$card-border-radius};
+  --#{$prefix}card-box-shadow: #{$card-box-shadow};
+  --#{$prefix}card-inner-border-radius: #{$card-inner-border-radius};
+  --#{$prefix}card-cap-padding-y: #{$card-cap-padding-y};
+  --#{$prefix}card-cap-padding-x: #{$card-cap-padding-x};
+  --#{$prefix}card-cap-bg: #{$card-cap-bg};
+  --#{$prefix}card-cap-color: #{$card-cap-color};
+  --#{$prefix}card-height: #{$card-height};
+  --#{$prefix}card-color: #{$card-color};
+  --#{$prefix}card-bg: #{$card-bg};
+  --#{$prefix}card-img-overlay-padding: #{$card-img-overlay-padding};
+  --#{$prefix}card-group-margin: #{$card-group-margin};
+  // scss-docs-end card-css-vars
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; // See https://github.com/twbs/bootstrap/pull/22740#issuecomment-305868106
+  height: var(--#{$prefix}card-height);
+  color: var(--#{$prefix}body-color);
+  word-wrap: break-word;
+  background-color: var(--#{$prefix}card-bg);
+  background-clip: border-box;
+  border: var(--#{$prefix}card-border-width) solid var(--#{$prefix}card-border-color);
+  @include border-radius(var(--#{$prefix}card-border-radius));
+  @include box-shadow(var(--#{$prefix}card-box-shadow));
+
+  > hr {
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  > .list-group {
+    border-top: inherit;
+    border-bottom: inherit;
+
+    &:first-child {
+      border-top-width: 0;
+      @include border-top-radius(var(--#{$prefix}card-inner-border-radius));
+    }
+
+    &:last-child  {
+      border-bottom-width: 0;
+      @include border-bottom-radius(var(--#{$prefix}card-inner-border-radius));
+    }
+  }
+
+  // Due to specificity of the above selector (`.card > .list-group`), we must
+  // use a child selector here to prevent double borders.
+  > .card-header + .list-group,
+  > .list-group + .card-footer {
+    border-top: 0;
+  }
+}
+
+.card-body {
+  // Enable `flex-grow: 1` for decks and groups so that card blocks take up
+  // as much space as possible, ensuring footers are aligned to the bottom.
+  flex: 1 1 auto;
+  padding: var(--#{$prefix}card-spacer-y) var(--#{$prefix}card-spacer-x);
+  color: var(--#{$prefix}card-color);
+}
+
+.card-title {
+  margin-bottom: var(--#{$prefix}card-title-spacer-y);
+  color: var(--#{$prefix}card-title-color);
+}
+
+.card-subtitle {
+  margin-top: calc(-.5 * var(--#{$prefix}card-title-spacer-y)); // stylelint-disable-line function-disallowed-list
+  margin-bottom: 0;
+  color: var(--#{$prefix}card-subtitle-color);
+}
+
+.card-text:last-child {
+  margin-bottom: 0;
+}
+
+.card-link {
+  &:hover {
+    text-decoration: if($link-hover-decoration == underline, none, null);
+  }
+
+  + .card-link {
+    margin-left: var(--#{$prefix}card-spacer-x);
+  }
+}
+
+//
+// Optional textual caps
+//
+
+.card-header {
+  padding: var(--#{$prefix}card-cap-padding-y) var(--#{$prefix}card-cap-padding-x);
+  margin-bottom: 0; // Removes the default margin-bottom of <hN>
+  color: var(--#{$prefix}card-cap-color);
+  background-color: var(--#{$prefix}card-cap-bg);
+  border-bottom: var(--#{$prefix}card-border-width) solid var(--#{$prefix}card-border-color);
+
+  &:first-child {
+    @include border-radius(var(--#{$prefix}card-inner-border-radius) var(--#{$prefix}card-inner-border-radius) 0 0);
+  }
+}
+
+.card-footer {
+  padding: var(--#{$prefix}card-cap-padding-y) var(--#{$prefix}card-cap-padding-x);
+  color: var(--#{$prefix}card-cap-color);
+  background-color: var(--#{$prefix}card-cap-bg);
+  border-top: var(--#{$prefix}card-border-width) solid var(--#{$prefix}card-border-color);
+
+  &:last-child {
+    @include border-radius(0 0 var(--#{$prefix}card-inner-border-radius) var(--#{$prefix}card-inner-border-radius));
+  }
+}
+
+
+//
+// Header navs
+//
+
+.card-header-tabs {
+  margin-right: calc(-.5 * var(--#{$prefix}card-cap-padding-x)); // stylelint-disable-line function-disallowed-list
+  margin-bottom: calc(-1 * var(--#{$prefix}card-cap-padding-y)); // stylelint-disable-line function-disallowed-list
+  margin-left: calc(-.5 * var(--#{$prefix}card-cap-padding-x)); // stylelint-disable-line function-disallowed-list
+  border-bottom: 0;
+
+  .nav-link.active {
+    background-color: var(--#{$prefix}card-bg);
+    border-bottom-color: var(--#{$prefix}card-bg);
+  }
+}
+
+.card-header-pills {
+  margin-right: calc(-.5 * var(--#{$prefix}card-cap-padding-x)); // stylelint-disable-line function-disallowed-list
+  margin-left: calc(-.5 * var(--#{$prefix}card-cap-padding-x)); // stylelint-disable-line function-disallowed-list
+}
+
+// Card image
+.card-img-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: var(--#{$prefix}card-img-overlay-padding);
+  @include border-radius(var(--#{$prefix}card-inner-border-radius));
+}
+
+.card-img,
+.card-img-top,
+.card-img-bottom {
+  width: 100%; // Required because we use flexbox and this inherently applies align-self: stretch
+}
+
+.card-img,
+.card-img-top {
+  @include border-top-radius(var(--#{$prefix}card-inner-border-radius));
+}
+
+.card-img,
+.card-img-bottom {
+  @include border-bottom-radius(var(--#{$prefix}card-inner-border-radius));
+}
+
+
+//
+// Card groups
+//
+
+.card-group {
+  // The child selector allows nested `.card` within `.card-group`
+  // to display properly.
+  > .card {
+    margin-bottom: var(--#{$prefix}card-group-margin);
+  }
+
+  // @include media-breakpoint-up(sm) {
+    display: flex;
+    flex-flow: row wrap;
+    // The child selector allows nested `.card` within `.card-group`
+    // to display properly.
+    > .card {
+      // Flexbugs #4: https://github.com/philipwalton/flexbugs#flexbug-4
+      flex: 1 0 0%;
+      margin-bottom: 0;
+
+      + .card {
+        margin-left: 0;
+        border-left: 0;
+      }
+
+      // Handle rounded corners
+      @if $enable-rounded {
+        &:not(:last-child) {
+          @include border-end-radius(0);
+
+          .card-img-top,
+          .card-header {
+            // stylelint-disable-next-line property-disallowed-list
+            border-top-right-radius: 0;
+          }
+          .card-img-bottom,
+          .card-footer {
+            // stylelint-disable-next-line property-disallowed-list
+            border-bottom-right-radius: 0;
+          }
+        }
+
+        &:not(:first-child) {
+          @include border-start-radius(0);
+
+          .card-img-top,
+          .card-header {
+            // stylelint-disable-next-line property-disallowed-list
+            border-top-left-radius: 0;
+          }
+          .card-img-bottom,
+          .card-footer {
+            // stylelint-disable-next-line property-disallowed-list
+            border-bottom-left-radius: 0;
+          }
+        }
+      }
+    }
+  // }
+}
+
+//
+// Check/radio
+//
+
+.form-check {
+  display: block;
+  min-height: $form-check-min-height;
+  padding-left: $form-check-padding-start;
+  margin-bottom: $form-check-margin-bottom;
+
+  .form-check-input {
+    float: right;
+    margin-right: $form-switch-padding-start;
+  }
+}
+
+.form-check-reverse {
+  padding-right: $form-check-padding-start;
+  padding-left: 0;
+  text-align: right;
+
+  .form-check-input {
+    float: right;
+    margin-right: $form-check-padding-start * -1;
+    margin-left: 0;
+  }
+}
+
+.form-check-input {
+  flex-shrink: 0;
+  width: $form-check-input-width;
+  height: $form-check-input-width;
+  margin-top: ($line-height-base - $form-check-input-width) * .5; // line-height minus check height
+  vertical-align: top;
+  appearance: none;
+  background-color: var($form-check-bg);
+  background-image: var($form-check-bg-image);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border: $form-check-input-border;
+  print-color-adjust: exact; // Keep themed appearance for print
+  @include transition($form-check-transition);
+
+  &[type="checkbox"] {
+    @include border-radius($form-check-input-border-radius);
+  }
+
+  &[type="radio"] {
+    // stylelint-disable-next-line property-disallowed-list
+    border-radius: $form-check-radio-border-radius;
+  }
+
+  &:active {
+    filter: $form-check-input-active-filter;
+  }
+
+  &:focus {
+    border-color: $form-check-input-focus-border;
+    outline: 0;
+    box-shadow: $form-check-input-focus-box-shadow;
+  }
+
+  &:checked {
+    background-color: $form-check-input-checked-bg-color;
+    border-color: $form-check-input-checked-border-color;
+
+    &[type="checkbox"] {
+      @if $enable-gradients {
+        $form-check-bg-image: #{escape-svg($form-check-input-checked-bg-image)}, var(--#{$prefix}gradient);
+      } @else {
+        $form-check-bg-image: #{escape-svg($form-check-input-checked-bg-image)};
+      }
+    }
+
+    &[type="radio"] {
+      @if $enable-gradients {
+        $form-check-bg-image: #{escape-svg($form-check-radio-checked-bg-image)}, var(--#{$prefix}gradient);
+      } @else {
+        $form-check-bg-image: #{escape-svg($form-check-radio-checked-bg-image)};
+      }
+    }
+  }
+
+  &[type="checkbox"]:indeterminate {
+    background-color: $form-check-input-indeterminate-bg-color;
+    border-color: $form-check-input-indeterminate-border-color;
+
+    @if $enable-gradients {
+      $form-check-bg-image: #{escape-svg($form-check-input-indeterminate-bg-image)}, var(--#{$prefix}gradient);
+    } @else {
+      $form-check-bg-image: #{escape-svg($form-check-input-indeterminate-bg-image)};
+    }
+  }
+
+  &:disabled {
+    pointer-events: none;
+    filter: none;
+    opacity: $form-check-input-disabled-opacity;
+  }
+
+  // Use disabled attribute in addition of :disabled pseudo-class
+  // See: https://github.com/twbs/bootstrap/issues/28247
+  &[disabled],
+  &:disabled {
+    ~ .form-check-label {
+      cursor: default;
+      opacity: $form-check-label-disabled-opacity;
+    }
+  }
+}
+
+.form-check-label {
+  color: $form-check-label-color;
+  cursor: $form-check-label-cursor;
+}
+
+//
+// Switch
+//
+
+.form-switch {
+  .form-check-input {
+
+    width: $form-switch-width;
+    margin-left: $form-switch-padding-start;
+    background-position: left center;
+    background-image: #{escape-svg($form-switch-bg-image)};
+    @include border-radius($form-switch-border-radius, 0);
+    @include transition($form-switch-transition);
+
+    &:focus {
+      background-image: #{escape-svg($form-switch-focus-bg-image)};
+    }
+
+    &:checked {
+      background-position: $form-switch-checked-bg-position;
+
+      @if $enable-gradients {
+        background-image: #{escape-svg($form-switch-checked-bg-image)}, var(--#{$prefix}gradient);
+      } @else {
+        background-image: #{escape-svg($form-switch-checked-bg-image)};
+      }
+    }
+  }
+
+  &.form-check-reverse {
+    padding-right: $form-switch-padding-start;
+    padding-left: 0;
+
+    .form-check-input {
+      margin-right: $form-switch-padding-start * -1;
+      margin-left: 0;
+    }
+  }
+}
+
+.form-check-inline {
+  display: inline-block;
+  margin-right: $form-check-inline-margin-end;
+}
+
+.btn-check {
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+  pointer-events: none;
+
+  &[disabled],
+  &:disabled {
+    + .btn {
+      pointer-events: none;
+      filter: none;
+      opacity: $form-check-btn-check-disabled-opacity;
+    }
+  }
+}
+
+@if $enable-dark-mode {
+  @include color-mode(dark) {
+    .form-switch .form-check-input:not(:checked):not(:focus) {
+      background-image: #{escape-svg($form-switch-bg-image-dark)};
+    }
+  }
 }
