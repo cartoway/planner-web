@@ -41,7 +41,7 @@ profile_all = Profile.create!(name: "2. All", layers: [mapnik_fr, mapnik, stamen
 profile_other = Profile.create!(name: "3. Other", layers: [mapnik_fr, mapnik, stamen_bw], routers: [car])
 
 reseller = Reseller.create!(host: "localhost:3000", name: "Planner Web", authorized_fleet_administration: true)
-customer = Customer.create!(reseller: reseller, name: "Toto", default_country: "France", router: car, profile: profile_all, test: true, max_vehicles: 2, devices: {'fleet_demo' => {'enable' => '1'}})
+customer = Customer.create!(reseller: reseller, name: "Toto", default_country: "France", router: car, profile: profile_all, test: true, max_vehicles: 2)
 admin = User.create!(email: "admin@example.com", password: "12345678", reseller: reseller, layer: mapnik)
 test = User.create!(email: "test@example.com", password: "12345678", layer: mapnik, customer: customer)
 toto = User.create!(email: "toto@example.com", password: "12345678", layer: mapnik, customer: customer)
