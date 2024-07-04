@@ -30,7 +30,11 @@ class DestinationsController < ApplicationController
 
   def index
     @customer = current_user.customer
-    @destinations = request.format.html? ? current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST') : current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes_visits
+    @destinations = if request.format.html? || !@customer.is_editable?
+      current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes([:tags])
+    else
+      current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes_visits
+    end
     @tags = current_user.customer.tags
     respond_to do |format|
       format.html

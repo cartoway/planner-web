@@ -122,6 +122,23 @@
             </span>
             </span>
           {{/enable_multi_visits}}
+          {{#is_editable}}
+            <span style="width:4em">
+              <span class="form-control input-sm">{{duration}}</span>
+            </span>
+            <span style="width:4em">
+              <span class="form-control input-sm">{{time_window_start_1}}</span>
+            </span>
+            <span style="width:4em">
+              <span class="form-control input-sm">{{time_window_end_1}}</span>
+            </span>
+            <span style="width:4em">
+              <span class="form-control input-sm">{{time_window_start_2}}</span>
+            </span>
+            <span style="width:4em">
+              <span class="form-control input-sm">{{time_window_end_2}}</span>
+            </span>
+          {{/is_editable}}
         </div>
       {{/visits}}
     </div>

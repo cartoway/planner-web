@@ -839,14 +839,25 @@ const destinations_index = function(params, api) {
   const count = function() {
     var n = $('.destinations tr:visible').length;
     $("#count").html(n);
+    if (isEditable) {
+      var v = $('.destinations tr:visible [role="visit"]').length;
+      $("#count-visits").html(v);
+    }
   };
 
   const countInc = function() {
     $("#count").html(parseInt($("#count").text()) + 1);
+    if (isEditable) {
+      $("#count-visits").html(parseInt($("#count-visits").text()) + 1);
+    }
   };
 
   const countDec = function() {
     $("#count").html(parseInt($("#count").text()) - 1);
+    if (isEditable) {
+      var v = $('.destinations tr:visible [role="visit"]').length;
+      $("#count-visits").html(v);
+    }
   };
 
   const markerChange = function(id, latLng) {

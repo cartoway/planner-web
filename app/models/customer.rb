@@ -279,6 +279,10 @@ class Customer < ApplicationRecord
     reindex_routes
   end
 
+  def is_editable?
+    destinations.count <= Mapotempo::Application.config.max_destinations_editable
+  end
+
   def max_vehicles
     @max_vehicles ||= vehicles.size
   end
