@@ -19,7 +19,9 @@
   </div>
   <div class="col-md-3">
     <span id="count"></span> <%= t 'activerecord.models.destinations', count: 10 %>
-    - <span id="count-visits"></span> <%= t 'activerecord.models.visits', count: 10 %>
+    <% if current_user.customer.is_editable? %>
+      - <span id="count-visits"></span> <%= t 'activerecord.models.visits', count: 10 %>
+    <% end %>
   </div>
   <div class='col-md-2'>
     <div id="pager" class="pager pull-right" style="padding: unset;">
@@ -83,6 +85,32 @@
             <div class="col-title"><%= t 'activerecord.attributes.destination.tags' %></div>
           </th>
         <% end %>
+        <% if @customer.is_editable? %>
+          <% visit_width = {}
+            visit_width[:ref] = 3 if @customer.enable_references && @customer.enable_multi_visits
+            visit_width[:quantity] = 3 unless @customer.enable_orders
+            visit_width[:tags] = 8 if @customer.enable_multi_visits
+            visit_width[:duration] = 4
+            visit_width[:time_windows] = 16
+          %>
+          <th data-sorter="false" class="visit columnSelector-disable" style="min-width:<%= visit_width.values.reduce(&:+) %>em;">
+            <div class="col-title"><%= t 'activerecord.models.visit' %></div>
+            <div id="visit-subtitles" style="width: 100%;">
+              <% if @customer.enable_references && @customer.enable_multi_visits %>
+                <div class="visit-subtitle" style="min-width: <%= visit_width[:ref] %>em;"><%= t 'activerecord.attributes.visit.ref_small' %></div>
+              <% end %>
+              <% unless @customer.enable_orders %>
+              <div class="visit-subtitle" style="width: <%= visit_width[:quantity] %>em;"><%= t '.quantity_small' %></div>
+              <% end %>
+              <% if @customer.enable_multi_visits %>
+                <div class="visit-subtitle" style="width: <%= visit_width[:tags] %>em;"><%= t 'activerecord.attributes.visit.tags' %></div>
+              <% end %>
+
+              <div class="visit-subtitle" style="width: <%= visit_width[:duration] %>em;"><%= t 'activerecord.attributes.visit.duration_small' %></div>
+              <div class="visit-subtitle" style="width: <%= visit_width[:time_windows] %>em;"><%= t 'activerecord.attributes.visit.time_windows_small' %></div>
+            </div>
+          </th>
+        <% end %>
         <th data-sorter="false" class="filter-false columnSelector-disable"></th>
       </tr></thead>
       <tbody class="destinations"></tbody>
@@ -143,7 +171,7 @@ layers = (@customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.co
   }
 }
 controller.js(
-  is_editable: @destinations.size <= Mapotempo::Application.config.max_destinations_editable,
+  is_editable: @customer.is_editable?,
   reached_max_destinations: @destinations.size > @customer.default_max_destinations,
   map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)],
   map_lat: @customer.default_position[:lat],
