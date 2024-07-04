@@ -18,7 +18,7 @@
 class Destination < Location
   default_scope { order(:id) }
 
-  has_many :visits, inverse_of: :destination, dependent: :delete_all, autosave: true
+  has_many :visits, inverse_of: :destination, dependent: :delete_all
   accepts_nested_attributes_for :visits, allow_destroy: true
   has_many :tag_destinations
   has_many :tags, through: :tag_destinations, after_add: :update_tags_track, after_remove: :update_tags_track
@@ -29,7 +29,7 @@ class Destination < Location
   validate_consistency :tags
 
   before_create :check_max_destination
-  before_save :update_tags
+  before_save :update_tags, :save_visits
   after_save -> { @tag_ids_changed = false }
 
   include RefSanitizer
@@ -86,6 +86,12 @@ class Destination < Location
 
   def check_max_destination
     !self.customer.too_many_destinations? || raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit')))
+  end
+
+  def save_visits
+    return if self.new_record?
+
+    visits.each(&:save!)
   end
 
   def update_tags
