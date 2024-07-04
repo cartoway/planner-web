@@ -379,13 +379,13 @@ class Planning < ApplicationRecord
 
   def relations
     plan_visits = visits.map(&:id)
-    customer.relations.select{ |r_f|
+    customer.stops_relations.select{ |r_f|
       plan_visits.include?(r_f.current_id) || plan_visits.include?(r_f.successor_id)
     }
   end
 
-  def stop_relations
-    return [] if customer.relations.empty?
+  def stops_relationss
+    return [] if customer.stops_relations.empty?
 
     stop_hash = visits_to_stop_hash
     relations.map{ |relation|

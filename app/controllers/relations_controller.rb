@@ -1,2 +1,0 @@
-class RelationsController < ApplicationController
-end
