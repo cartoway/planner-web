@@ -662,7 +662,7 @@ en:
           must_be_greater_than_minimal_time: must be greater than minimal time
         router:
           unauthorized: unauthorized in this profile
-        relation:
+        stops_relation:
           pickup_delivery_uniqueness: A visit can only belong to a single pickup/delivery relationship
   errors:
     database:
