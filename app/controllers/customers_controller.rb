@@ -134,7 +134,8 @@ class CustomersController < ApplicationController
     parse_router_options(params[:customer]) if params[:customer][:router_options]
     # From customer form all keys are not present: need merge
     devices_params = permit_recursive_params(params.dig('customer', 'devices'))
-    devices_params = @customer[:devices].deep_merge(devices_params || {}) if @customer && !@customer[:devices].empty?
+    devices_params = @customer[:devices].deep_merge(devices_params || {}) if @customer&.devices&.any?
+    devices_params ||= {}
     if current_user.admin?
       parameters = params.require(:customer).permit(
         :ref,
