@@ -19,8 +19,8 @@ class Visit < ApplicationRecord
   default_scope { order(:id) }
 
   belongs_to :destination, inverse_of: :visits
-  has_many :relation_currents, class_name: 'Relation', foreign_key: 'current_id', dependent: :delete_all, validate: false
-  has_many :relation_successors, class_name: 'Relation', foreign_key: 'successor_id', dependent: :delete_all, validate: false
+  has_many :relation_currents, class_name: 'StopsRelation', foreign_key: 'current_id', dependent: :delete_all, validate: false
+  has_many :relation_successors, class_name: 'StopsRelation', foreign_key: 'successor_id', dependent: :delete_all, validate: false
   has_many :stop_visits, inverse_of: :visit
   has_many :orders, inverse_of: :visit, dependent: :delete_all
 
