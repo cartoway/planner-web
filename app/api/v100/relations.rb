@@ -27,9 +27,9 @@ class V100::Relations < Grape::API
     get do
       relations =
         if params.key?(:ids)
-          current_customer.relations.select{ |relation| params[:ids].any? { |string| relation.id == string }}
+          current_customer.stops_relations.select{ |relation| params[:ids].any? { |string| relation.id == string }}
         else
-          current_customer.relations.load
+          current_customer.stops_relations.load
         end
       if relations
         present relations, with: V100::Entities::Relation
@@ -46,7 +46,7 @@ class V100::Relations < Grape::API
       requires :id, type: Integer
     end
     get ':id' do
-      relation = current_customer.relations.where(id: params[:id]).first
+      relation = current_customer.stops_relations.where(id: params[:id]).first
       if relation
         present relation, with: V100::Entities::Relation
         return
@@ -63,7 +63,7 @@ class V100::Relations < Grape::API
       use :request_relation
     end
     put ':id' do
-      relation = current_customer.relations.where(id: params[:id]).first
+      relation = current_customer.stops_relations.where(id: params[:id]).first
       current = current_customer.visits.where(id: params[:current_id]).first if params[:current_id]
       successor = current_customer.visits.where(id: params[:successor_id]).first if params[:successor_id_id]
       if relation
@@ -85,7 +85,7 @@ class V100::Relations < Grape::API
       current = current_customer.visits.where(id: params[:current_id]).first
       successor = current_customer.visits.where(id: params[:successor_id]).first
       if current && successor
-        relation = current_customer.relations.build(relation_params)
+        relation = current_customer.stops_relations.build(relation_params)
         relation.save!
         current_customer.save!
         present relation, with: V100::Entities::Relation
@@ -103,7 +103,7 @@ class V100::Relations < Grape::API
     end
     delete ':id' do
       id = ParseIdsRefs.read(params[:id])
-      current_customer.relations.where(id).first!.destroy
+      current_customer.stops_relations.where(id).first!.destroy
       status 204
     end
   end

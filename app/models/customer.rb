@@ -43,7 +43,7 @@ class Customer < ApplicationRecord
   has_many :users, inverse_of: :customer, dependent: :destroy
   has_many :deliverable_units, inverse_of: :customer, autosave: true, dependent: :delete_all, after_add: :update_deliverable_units_track, after_remove: :update_deliverable_units_track
   has_many :custom_attributes, inverse_of: :customer, autosave: true, dependent: :delete_all
-  has_many :relations, inverse_of: :customer, autosave: true, dependent: :delete_all
+  has_many :stops_relations, inverse_of: :customer, autosave: true, dependent: :delete_all
   enum router_dimension: Router::DIMENSION
 
   attr_accessor :deliverable_units_updated, :device, :exclude_users
@@ -214,7 +214,7 @@ class Customer < ApplicationRecord
         planning.save! validate: Mapotempo::Application.config.validate_during_duplication
       }
 
-      copy.relations.each{ |relation|
+      copy.stops_relations.each{ |relation|
         relation.current = visits_map[relation.current]
         relation.successor = visits_map[relation.successor]
         relation.save! validate: Mapotempo::Application.config.validate_during_duplication
@@ -267,7 +267,7 @@ class Customer < ApplicationRecord
   end
 
   def delete_all_destinations
-    relations.delete_all
+    stops_relations.delete_all
     destinations.delete_all
     self.reload
     reindex_routes
