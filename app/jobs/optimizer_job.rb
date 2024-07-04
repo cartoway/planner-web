@@ -57,7 +57,7 @@ class OptimizerJob < OptimizerJobStruct
             cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
             force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
             optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
-            relations: planning.stop_relations
+            relations: planning.stops_relationss
           ) { |job_id, solution_data|
             if @job
               job_progress_save solution_data.merge('job_id': job_id, 'completed': false)

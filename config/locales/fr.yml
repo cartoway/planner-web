@@ -668,7 +668,7 @@
           'must_be_greater_than_minimal_time': 'doit être supérieur à la durée minimale'
         'router':
           'unauthorized': 'n''est pas autorisé dans ce Profil'
-        'relation':
+        'stops_relation':
           'pickup_delivery_uniqueness': 'Une visite ne peut appartenir qu''à une seule relation de type pickup/delivery'
   'errors':
     'database':
