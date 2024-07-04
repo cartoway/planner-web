@@ -318,7 +318,9 @@ class Planning < ApplicationRecord
   def get_associated_route_from_zones(destination)
     # If zoning, get appropriate route
     if zonings.any?
-      zone = Zoning.new(zones: zonings.collect(&:zones).flatten).inside(destination)
+      # Directly assigning zones to a new zoning update their zoning_id
+      collect_zones = zonings.collect{ |zoning| zoning.zones.map{ |z| z.dup }}.flatten
+      zone = Zoning.new(zones: collect_zones).inside(destination)
       if zone && zone.vehicle
         route = routes.find{ |route|
           route.vehicle_usage? && route.vehicle_usage.vehicle == zone.vehicle && !route.locked
@@ -450,8 +452,9 @@ class Planning < ApplicationRecord
           route.locked || route.set_visits([])
         }
       end
-
-      Zoning.new(zones: zonings.collect(&:zones).flatten).apply(visits_free).each{ |zone, visits|
+        # Directly assigning zones to a new zoning updates their zoning_id
+        collect_zones = zonings.collect{ |zoning| zoning.zones.map{ |z| z.dup }}.flatten
+        Zoning.new(zones: collect_zones).apply(visits_free).each{ |zone, visits|
         if zone && zone.vehicle && vehicles_map[zone.vehicle] && !vehicles_map[zone.vehicle].locked
           vehicles_map[zone.vehicle].add_visits(visits.collect{ |d| [d, true] })
         else
