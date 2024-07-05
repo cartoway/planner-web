@@ -92,7 +92,7 @@ class Admin::CustomersControllerTest < ActionController::TestCase
       assert_difference('VehicleUsage.count', @customer.vehicle_usage_sets.size) do
         assert_difference('Route.count', @customer.plannings.length) do
           Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1, 1, '_ibE_seK_seK_seK'] } } ) do
-            patch :update, params: { id: @customer, params: { customer: { duration: '00:30', enable_orders: !@customer.enable_orders, max_vehicles: @customer.max_vehicles + 1 }}}
+            patch :update, params: { id: @customer, customer: { duration: '00:30', enable_orders: !@customer.enable_orders, max_vehicles: @customer.max_vehicles + 1 }}
           end
         end
       end

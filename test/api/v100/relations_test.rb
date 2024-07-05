@@ -42,7 +42,7 @@ class V100::RelationsTest < ActiveSupport::TestCase
   end
 
   test 'should create an ordered relation' do
-    assert_difference('Relation.count', 1) do
+    assert_difference('StopsRelation.count', 1) do
       post api(), { relation_type: 'ordered', current_id: visits(:visit_three).id, successor_id: visits(:visit_two).id }
       assert last_response.created?, last_response.body
 
@@ -63,7 +63,7 @@ class V100::RelationsTest < ActiveSupport::TestCase
   end
 
   test 'should destroy a relation' do
-    assert_difference('Relation.count', -1) do
+    assert_difference('StopsRelation.count', -1) do
       delete api(@relation.id)
       assert_equal 204, last_response.status, last_response.body
     end

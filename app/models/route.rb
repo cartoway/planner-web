@@ -158,8 +158,6 @@ class Route < ApplicationRecord
   def plan(departure = nil, options = {})
     options[:ignore_errors] = false if options[:ignore_errors].nil?
 
-    self.touch if self.id # To force route save in case none attribute has changed below
-
     geojson_tracks = []
 
     last_lat, last_lng = nil, nil

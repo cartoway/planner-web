@@ -45,7 +45,7 @@ module Consistency
               models = record.send(model_name)
               models = [models].compact unless models.is_a? ActiveRecord::Associations::CollectionProxy
 
-              record.errors[model_name] << I18n.t('activerecord.errors.attributes.inconsistent_customer') if models.any?{ |m| m.customer_id != consistent_value }
+              record.errors[model_name] << "#{consistent_value} " + I18n.t('activerecord.errors.attributes.inconsistent_customer') if models.any?{ |m| m.customer_id != consistent_value }
             end
           }
         end

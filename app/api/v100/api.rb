@@ -3,7 +3,7 @@ require 'exceptions'
 class V100::Api < Grape::API
   helpers do
     def session
-      env[Rack::Session::Abstract::ENV_SESSION_KEY]
+      env[Rack::RACK_SESSION]
     end
 
     def warden
@@ -11,7 +11,7 @@ class V100::Api < Grape::API
     end
 
     def current_customer(customer_id = nil)
-      api_key = headers['Api-Key'] || params['api_key']
+      api_key = headers['Api-Key'] || params[:api_key]
       @current_user ||= api_key && User.find_by(api_key: api_key)
       @current_user ||= warden.authenticated? && warden.user
       @current_customer ||= @current_user && (@current_user.admin? && customer_id ? @current_user.reseller.customers.find(customer_id) : @current_user.customer)

@@ -26,7 +26,7 @@ class User < ApplicationRecord
   auto_strip_attributes :url_click2call
 
   belongs_to :reseller, optional: true
-  belongs_to :customer
+  belongs_to :customer, optional: true # Admin has no customer
   belongs_to :layer
 
   after_initialize :assign_defaults, if: -> { new_record? }

@@ -30,13 +30,13 @@ class V01::ErrorTest < ActiveSupport::TestCase
 
   test 'should rescue database error' do
     message = "#{I18n.t('errors.database.default')} #{I18n.t('errors.database.invalid_statement')}"
-    Customer.stub_any_instance(:assign_attributes, ->(*_a) { raise ActiveRecord::StatementInvalid.new(self, nil) }) do
+    Customer.stub_any_instance(:assign_attributes, ->(*_a) { raise ActiveRecord::StatementInvalid.new(self) }) do
       put api(@customer.id), ref: 'ref-abcd'
       assert database_error_assertions(message)
     end
 
     message = "#{I18n.t('errors.database.default')} #{I18n.t('errors.database.deadlock')}"
-    Customer.stub_any_instance(:assign_attributes, ->(*_a) { raise ActiveRecord::StaleObjectError.new(self, nil) }) do
+    Customer.stub_any_instance(:assign_attributes, ->(*_a) { raise ActiveRecord::StaleObjectError.new(self) }) do
       put api(@customer.id), ref: 'ref-abcd'
       assert database_error_assertions(message)
     end

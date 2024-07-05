@@ -21,7 +21,7 @@ class CoerceArrayInteger
   def self.parse(str)
     if str.is_a? String
       str.split(',').collect{ |i| Integer(i) }
-    elsif str.nil?
+    elsif str.nil? || str == [""]
       []
     elsif str.is_a? Array
       str.collect{ |i| Integer(i) }

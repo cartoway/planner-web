@@ -30,7 +30,8 @@ class V01::RoutesTest < V01::RoutesBaseTest
   end
 
   test 'should return 404 with invalid ids' do
-    put api(plannings(:planning_two).id, @route.id), @route.attributes
+    customers(:customer_one).update(job_optimizer_id: nil)
+    put api(plannings(:planning_two).id), @route.attributes.except('planning_id')
     assert_equal 404, last_response.status
   end
 

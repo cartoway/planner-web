@@ -29,7 +29,7 @@ class Destination < Location
   validate_consistency :tags
 
   before_create :check_max_destination
-  before_save :update_tags, :save_visits
+  before_save :save_visits, :update_tags
   after_save -> { @tag_ids_changed = false }
 
   include RefSanitizer

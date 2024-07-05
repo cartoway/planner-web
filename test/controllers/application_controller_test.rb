@@ -3,7 +3,7 @@ require 'test_helper'
 class ApplicationControllerTest < ActionController::TestCase
   ApplicationController.class_eval do
     def index
-      render nothing: true
+      render body: nil
     end
   end
 
