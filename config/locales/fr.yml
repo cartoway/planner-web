@@ -568,7 +568,7 @@
         'updated': '%{model} a été mis à jour'
     'errors':
       'attributes':
-        'inconsistent_customer': 'n''est pas une valeur autorisée pour cet espace client'
+        'inconsistent_customer': 'n''appartient pas à cet espace client'
       'models':
         'location':
           'missing_address_or_latlng': 'Le code postal et la ville ne peuvent pas

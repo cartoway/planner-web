@@ -90,8 +90,7 @@ class UsersControllerTest < ActionController::TestCase
   test 'should redirect to root if driver token' do
     sign_out(@user)
     vehicle = vehicles(:vehicle_one)
-    get :edit, id: @user, driver_token: vehicle.driver_token
+    get :edit, params: { id: @user, driver_token: vehicle.driver_token }
     assert_redirected_to root_url
-    assert response.forbidden?, response.body
   end
 end

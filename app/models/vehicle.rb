@@ -239,6 +239,7 @@ class Vehicle < ApplicationRecord
       vehicle_usages.each{ |vehicle_usage|
         vehicle_usage.routes.each{ |route|
           route.vehicle_color_changed = true
+          route.save
         }
       }
     end
