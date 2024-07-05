@@ -4,7 +4,7 @@ class V100::Relations < Grape::API
   helpers SharedParams
   helpers do
     def session
-      env[Rack::Session::Abstract::ENV_SESSION_KEY]
+      env[Rack::RACK_SESSION]
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.

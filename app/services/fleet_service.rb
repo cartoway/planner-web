@@ -75,7 +75,7 @@ class FleetService < DeviceService
     return unless service.clear_routes_by_external_ref(customer, refs.each(&:symbolize_keys))
 
     # return routes array since only lib is abble to decode external refs
-    Route.find(refs.map(&:external_ref).map{ |ref|
+    Route.find(refs.map{ |ref| ref[:external_ref] }.map{ |ref|
       service.decode_route_id_from_route_ref(ref)
     })
   end

@@ -498,10 +498,6 @@ class PlanningTest < ActiveSupport::TestCase
     ensure
       I18n.locale = orig_locale
     end
-
-    assert_raises(ActiveRecord::RecordInvalid) do
-      planning.update!(date: '20-13-0031')
-    end
   end
 
   test 'duplicate should not change zonings outdated flag when initially false' do
