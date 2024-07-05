@@ -40,7 +40,6 @@ class Planning < ApplicationRecord
   validates :vehicle_usage_set, presence: true
   validates :begin_date, presence: true, if: :end_date
   validates :end_date, presence: true, if: :begin_date
-  validate :valid_date?
   validate :begin_after_end_date
 
   include Consistency
@@ -935,13 +934,5 @@ class Planning < ApplicationRecord
     if self.begin_date.present? && self.end_date.present? && self.end_date < self.begin_date
       errors.add(:end_date, I18n.t('activerecord.errors.models.planning.attributes.end_date.after'))
     end
-  end
-
-  def valid_date?
-    return true if self.date.nil?
-
-    Date.parse(self.date.to_s)
-  rescue ArgumentError
-    errors.add(:date, I18n.t('activerecord.errors.models.planning.attributes.date.invalid'))
   end
 end

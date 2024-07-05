@@ -16,7 +16,6 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 module FleetBase
-
   def set_route
     planning = plannings(:planning_one)
     planning.update!(date: 10.days.from_now)
@@ -27,6 +26,7 @@ module FleetBase
     @route = routes(:route_one_one)
     @vehicle = @route.vehicle_usage.vehicle
     @vehicle.update!(devices: { fleet_user: 'driver1' })
+    @customer.reload # TODO: Check if necessary
   end
 
   def with_stubs(names, &block)
@@ -107,7 +107,7 @@ module FleetBase
                     status_type_reference: 'mission_completed',
                     status_type_label: 'To do',
                     status_type_color: '#fff',
-                    eta: '2000-01-01 00:00:00.00'
+                    eta: '2000-01-01 00:00:00.00 UTC'
                   }
                 ]
               }

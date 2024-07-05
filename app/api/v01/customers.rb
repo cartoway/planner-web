@@ -21,16 +21,15 @@ class V01::Customers < Grape::API
   helpers do
     # Never trust parameters from the scary internet, only allow the white list through.
     def customer_params
-      p = ActionController::Parameters.new(params)
+      p = ActionController::Parameters.new(params).to_unsafe_h
       p = p[:customer] if p.key?(:customer)
-
       customer = @current_user.admin? && params[:id] ? @current_user.reseller.customers.where(ParseIdsRefs.read(params[:id])).first! : @current_user.customer
 
       # Deals with deprecated speed_multiplicator
       p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator]
       p[:visit_duration] = p.delete(:take_over) if p[:take_over]
-
       p[:devices] = customer[:devices].deep_merge(p[:devices] || {}) if customer && customer[:devices].size > 0
+      p = ActionController::Parameters.new(p)
 
       if @current_user.admin?
         p.permit(
@@ -114,15 +113,16 @@ class V01::Customers < Grape::API
     end
 
     def permit_recursive_params(params)
-      if !params.nil?
-        params.map do |key, value|
-          if value.is_a?(Array)
-            { key => [ permit_recursive_params(value.first) ] }
-          elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
-            { key => permit_recursive_params(value) }
-          elsif value.present?
-            key
-          end
+      return if params.nil?
+
+      params_hash = params.is_a?(ActionController::Parameters) ? params.to_unsafe_h : params
+      params_hash.map do |key, value|
+        if value.is_a?(Array)
+          { key => [ permit_recursive_params(value.first) ] }
+        elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
+          { key => permit_recursive_params(value) }
+        elsif value.present?
+          key
         end
       end
     end

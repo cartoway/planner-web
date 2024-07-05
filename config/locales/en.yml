@@ -568,7 +568,7 @@ en:
         updated: '%{model} has been updated successfully'
     errors:
       attributes:
-        inconsistent_customer: is not authorized for this customer
+        inconsistent_customer: does not belong to this customer
       models:
         location:
           missing_address_or_latlng: Postalcode and city cannot be empty if lat/lng are empty

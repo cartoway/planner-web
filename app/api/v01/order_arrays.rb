@@ -22,7 +22,7 @@ class V01::OrderArrays < Grape::API
         orders = Hash[order_array.orders.load.map{ |order| [order.id, order] }]
         products = Hash[current_customer.products.collect{ |product| [product.id, product] }]
         params[:orders].each{ |id, order|
-          id = Integer(id)
+          id = Integer(id.to_s)
           order[:product_ids] ||= []
           if orders.key?(id)
             orders[id].products.clear
