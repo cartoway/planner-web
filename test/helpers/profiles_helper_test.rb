@@ -2,7 +2,6 @@ require 'test_helper'
 require 'set'
 
 class ProfilesHelperTest < ActionView::TestCase
-
   setup do
     @profile = profiles(:profile_one)
     @profile2 = profiles(:profile_two)
@@ -24,7 +23,7 @@ class ProfilesHelperTest < ActionView::TestCase
   end
 
   test 'format routers by profile know time and/or distance mode' do
-    @profile2.routers = @routers.first(2)
+    @profile2.routers = @routers.select{ |router| router.name == 'MyString' }
 
     h = ["#{@profile2.routers.second.id}_distance", "#{@profile2.routers.second.id}_time", "#{@profile2.routers.first.id}_time"]
 

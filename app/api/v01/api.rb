@@ -20,7 +20,7 @@ require 'exceptions'
 class V01::Api < Grape::API
   helpers do
     def session
-      env[Rack::Session::Abstract::ENV_SESSION_KEY]
+      env[Rack::RACK_SESSION]
     end
 
     def warden

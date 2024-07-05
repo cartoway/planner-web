@@ -27,7 +27,7 @@ class V01::Zonings < Grape::API
       if p[:zones]
         p[:zones_attributes] = p[:zones]
         p[:zones_attributes].each{ |z|
-          z[:polygon] = z[:polygon].to_json if z[:polygon].is_a? Hash
+          z[:polygon] = Sanitize.clean(z[:polygon].to_json) if z[:polygon].is_a?(Hash) || z[:polygon].is_a?(ActionController::Parameters)
         }
       end
       # Deals with deprecated speed_multiplicator
