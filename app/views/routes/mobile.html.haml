@@ -1,18 +1,21 @@
 - agent = detect_agent
 .panel
   .panel-heading.pv-1
-    %h4.d-flex.align-items-center.justify-items-center
-      .label.label-default.p-3.mr-2
-        %i.fa.fa-route.fa-fw
-      = @route.ref
-    %h4.d-flex.align-items-center.justify-items-center
-      .label.label-default.p-3.mr-2
-        %i.fa.fa-truck-field.fa-fw
-      = @route.vehicle_usage.vehicle.name
-    %h4.d-flex.align-items-center.justify-items-center
-      .label.label-default.p-3.mr-2
-        %i.fa.fa-calendar.fa-fw
-      = date
+    - if @route.ref
+      %h4.d-flex.align-items-center.justify-items-center
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-route.fa-fw
+        = @route.ref
+    - if @route.vehicle_usage.vehicle.name
+      %h4.d-flex.align-items-center.justify-items-center
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-truck-field.fa-fw
+        = @route.vehicle_usage.vehicle.name
+    - if date
+      %h4.d-flex.align-items-center.justify-items-center
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-calendar.fa-fw
+        = date
     - route_quantities(@route).each do |unit|
       - next if unit[:quantity]&.zero?
 
