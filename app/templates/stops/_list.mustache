@@ -339,7 +339,7 @@
     {{#store_start}}
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
       <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
-        <div class="row">
+        <div class="row stop-row">
           <div class="col-xs-3 col-md-2">
             <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
           </div>
@@ -400,7 +400,7 @@
       {{/wait_time}}
       {{#rest}}
       <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" data-store_id="{{store_id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
-        <div class="row d-flex flex-wrap align-items-center">
+        <div class="row stop-row d-flex flex-wrap align-items-center{{#status}} stop-row-{{status_code}}{{/status}}">
           <div class="col-xs-3 col-md-2 d-flex justify-content-center">
             <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
             <span class="number stop-label label" style="background-color: {{^active}}transparent{{/active}}{{#active}}{{color}}{{/active}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}</span>
@@ -437,6 +437,9 @@
               {{#no_path}}
                 <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
               {{/no_path}}
+              {{#status}}
+                <i class="fa fa-fw stop-status-icon-{{status_code}}"title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"></i>
+              {{/status}}
               <span class="name" title="{{name}}"><i class="fa fa-coffee fa-fw"></i> {{name}}</span>
             </div>
           </div>
@@ -457,11 +460,11 @@
       {{/rest}}
       {{#destination}}{{#visits}}
       <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
-        <div class="row d-flex flex-wrap align-items-center">
+        <div class="row stop-row d-flex flex-wrap align-items-center{{#status}} stop-row-{{status_code}}{{/status}}">
 
           <div class="col-xs-3 col-md-2 d-flex justify-content-center">
             <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^geocoded}} disabled{{/geocoded}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
-            <span class="number stop-label label {{#color_force}} color_force{{/color_force}}" style="background-color:{{^active}}transparent{{/active}}{{#active}}{{color}}{{/active}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}&nbsp;</span>
+            <span class="number stop-label label {{#color_force}} color_force{{/color_force}}" style="background-color:{{^active}}transparent{{/active}}{{#active}}{{color}}{{/active}};">{{number}}&nbsp;</span>
           </div>
 
           <div class="col-xs-3 col-md-2 d-flex-column">
@@ -507,6 +510,9 @@
               {{#no_path}}
                 <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
               {{/no_path}}
+              {{#status}}
+                <i class="fa fa-fw stop-status-icon-{{status_code}}"title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"></i>
+              {{/status}}
               <span class="name" title="{{name}}{{#index_visit}} #{{index_visit}}{{/index_visit}}{{#status}} - {{status}}{{/status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}">{{name}}</span>{{#index_visit}} #{{index_visit}}{{/index_visit}}
             </div>
           </div>
