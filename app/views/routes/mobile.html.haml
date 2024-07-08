@@ -43,7 +43,7 @@
           .panel.panel-default
             .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}" }
               .d-flex.align-items-center.justify-content-between.mb-1
-                .col-xs-1.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                .col-xs-2.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
                   #label-index.number.label.p-3{ class: ("label-#{stop.status}") }
                     = stop.index
                 .col-xs-5.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
