@@ -81,6 +81,9 @@ Rails.application.configure do
 
   # Application config
 
+  # change delivery_method to `:letter_opener_web` if access to send mails is needed
+  # Moreover the gem `letter_opener_web` should be reachable in Gemfile
+  # and the route to /letter_opener should be open (routes.rb)
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.default_url_options = { :host => 'localhost:3000' } # Needed by devise
   config.action_mailer.smtp_settings = {
