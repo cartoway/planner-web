@@ -317,6 +317,10 @@ fr:
         action: Envoyer au livreur
         success: Envoyé au livreur avec succès
         fail: Échec lors de l'envoi
+      deliver_clear:
+        action: Réinitialiser les status
+        success: Les status ont été réinitialisés avec succès
+        fail: Échec de la réinitialisation
       praxedo_send:
         action: Envoyer à Praxedo
         success: Envoyé à Praxedo avec succès
