@@ -420,7 +420,7 @@ export const plannings_edit = function(params) {
 
   var updateStopsStatus = function(data) {
     var updateStopAndStoreStatusContent = function(content, el) {
-      var klass = (el.store) ? 'store-status' : 'stop-status';
+      var klass = (el.store) ? 'store-row' : 'stop-row';
       var $elt = content.find('.toggle-status, .' + klass);
       var hadStatus = !($elt.css('display') == 'none');
 
@@ -431,11 +431,12 @@ export const plannings_edit = function(params) {
 
       $.each($elt, function(i, elt) {
         $elt = $(elt);
-        if (!el.status || el.status && !$elt.hasClass('stop-status-' + el.status_code)) {
-          $elt.removeClass().addClass(klass + (el.status_code ? ' stop-status-' + el.status_code : ''));
-          $elt.attr({
-            title: el.status + (el.eta_formated ? ' - ' + I18n.t('plannings.edit.popup.eta') + ' ' + el.eta_formated : '')
-          });
+        if (!el.status || el.status && !$elt.hasClass('stop-row-' + el.status_code)) {
+          var match = $elt.attr("class").match(new RegExp('stop-row-[a-z]*'));
+          if (match !== null) {
+            $elt.removeClass(match.shift());
+          }
+          $elt.addClass(klass + (el.status_code ? ' stop-row-' + el.status_code : ''));
         }
       });
       var name = content.find('.title .name');

@@ -240,6 +240,10 @@
                     <i class="fa fa-mobile fa-rotate-90 fa-fw"></i>
                     {{#i18n}}plannings.edit.deliver_send.action{{/i18n}}
                 </li>
+                <li class="link device-operation" data-service="deliver" data-operation="clear" data-route-id="{{route_id}}">
+                  <i class="fa fa-rectangle-xmark fa-fw"></i>
+                  {{#i18n}}plannings.edit.deliver_clear.action{{/i18n}}
+                </li>
                 <li role="separator" class="divider"></li>
               {{/deliver}}
               {{#praxedo}}
@@ -339,7 +343,7 @@
     {{#store_start}}
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
       <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
-        <div class="row stop-row">
+        <div class="row store-row">
           <div class="col-xs-3 col-md-2">
             <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
           </div>
@@ -437,9 +441,6 @@
               {{#no_path}}
                 <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
               {{/no_path}}
-              {{#status}}
-                <i class="fa fa-fw stop-status-icon-{{status_code}}"title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"></i>
-              {{/status}}
               <span class="name" title="{{name}}"><i class="fa fa-coffee fa-fw"></i> {{name}}</span>
             </div>
           </div>
@@ -510,9 +511,6 @@
               {{#no_path}}
                 <i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i>
               {{/no_path}}
-              {{#status}}
-                <i class="fa fa-fw stop-status-icon-{{status_code}}"title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"></i>
-              {{/status}}
               <span class="name" title="{{name}}{{#index_visit}} #{{index_visit}}{{/index_visit}}{{#status}} - {{status}}{{/status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}">{{name}}</span>{{#index_visit}} #{{index_visit}}{{/index_visit}}
             </div>
           </div>
