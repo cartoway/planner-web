@@ -13,6 +13,7 @@ vehicle_one:
   router: router_one
   router_options:
     traffic: true
+  driver_token: token_one
   custom_attributes:
     { 'custom_attribute_one': "2", 'custom_attribute_two': "true" }
 
@@ -37,6 +38,7 @@ vehicle_three:
   speed_multiplier:
   router: router_one
   tags: tag_one
+  driver_token: token_three
 
 vehicle_four:
   name: vehicle_four

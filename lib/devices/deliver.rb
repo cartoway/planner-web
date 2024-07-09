@@ -1,6 +1,3 @@
-class DeviceExpiredTokenError < StandardError
-end
-
 #RestClient.log = 'stdout'
 
 class Deliver < DeviceBase
@@ -9,7 +6,7 @@ class Deliver < DeviceBase
       device: 'deliver',
       label: 'Cartoway Deliver',
       label_small: 'Deliver',
-      route_operations: [:send],
+      route_operations: [:send, :clear],
       has_sync: true,
       help: true,
       forms: {
@@ -20,6 +17,8 @@ class Deliver < DeviceBase
 
   def send_route(customer, route, _options = {})
     email = route.vehicle_usage.vehicle.contact_email
+    return if email.nil?
+
     if Mapotempo::Application.config.delayed_job_use
       RouteMailer.delay.send_driver_route(customer, I18n.locale, email, route)
     else
@@ -28,6 +27,7 @@ class Deliver < DeviceBase
   end
 
   def clear_route(customer, route)
+    route.stops.each { |s| s.assign_attributes status: nil, eta: nil }
     true
   end
 
@@ -53,22 +53,5 @@ class Deliver < DeviceBase
         }
       }
     }.compact
-  end
-
-  def get_vehicles_pos(customer)
-    planning = customer.plannings.sort_by(&:updated_at).last
-    customer.vehicles.map{ |v|
-      route = planning.routes.find{ |r| r.vehicle_usage && r.vehicle_usage.vehicle_id == v.id }
-      stops = route ? route.stops.select{ |s| s.position? } : []
-      {
-        vehicle_id: v.id,
-        device_name: v.name,
-        lat: stops.size > 0 ? stops.map{ |s| s.position.lat }.sum(0) / stops.size + Random.new.rand(10) * 0.01 : customer.stores.first.lat,
-        lng: stops.size > 0 ? stops.map{ |s| s.position.lng }.sum(0) / stops.size + Random.new.rand(10) * 0.01 : customer.stores.first.lng,
-        time: Time.now,
-        speed: stops.size > 0 ? Random.new.rand(90) : 0,
-        direction: stops.size > 0 ? Random.new.rand(360) : 0
-      }
-    }
   end
 end
