@@ -106,7 +106,7 @@ a.btn-default {
 }
 
 .dropdown-menu {
-  max-height: 300px;
+  max-height: 350px;
   overflow-y: auto;
 }
 .navbar .dropdown-menu {
@@ -801,12 +801,6 @@ div.grid-container {
   padding-top: 3px !important;
   padding-bottom: 3px !important;
 }
-
-.label-default {
-  background-color: $gray-200;
-  color: $gray-700;
-}
-
 
 .card {
   // scss-docs-start card-css-vars

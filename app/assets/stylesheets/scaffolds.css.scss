@@ -711,30 +711,6 @@ input.form-control.number-of-days {
     background: none;
   }
 
-  .stop-status-icon-intransit::before {
-    font: var(--fa-font-solid);
-    color: #357EC7;
-    content: "\f48b";
-  }
-
-  .stop-status-icon-exception::before {
-    font: var(--fa-font-solid);
-    color: #FBB117;
-    content: "\f071";
-  }
-
-  .stop-status-icon-delivered::before {
-    font: var(--fa-font-solid);
-    color: #58BE13;
-    content: "\f058";
-  }
-
-  .stop-status-icon-undelivered::before {
-    font: var(--fa-font-solid);
-    color: red;
-    content: "\f071";
-  }
-
   .stop-row {
     &.stop-row-intransit:after {
       position: absolute;

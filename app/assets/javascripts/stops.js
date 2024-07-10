@@ -1,6 +1,12 @@
 'use strict';
 
 export const stops_edit = function(params) {
+
+  $.find('.no-toggle').forEach(function(button) {
+    button.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+  })
   $('#radiobtn a, #quick-status').on('click', function() {
     var selected = $(this).data('title');
     changeStatuses($(this), selected);

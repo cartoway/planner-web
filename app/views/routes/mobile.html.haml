@@ -41,33 +41,39 @@
           - when nil
             - 'intransit'
           .panel.panel-default
-            .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}" }
+            .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
               .d-flex.align-items-center.justify-content-between.mb-1
-                .col-xs-2.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                  #label-index.number.label.p-3{ class: ("label-#{stop.status}") }
-                    = stop.index
-                .col-xs-5.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                  = stop.name
+                .col-xs-2.p-0
+                  .d-flex.align-items-center.justify-content-between
+                    #label-index.number.label.p-3{ class: ("label-#{stop.status}") }
+                      = stop.index
                 .col-xs-6.p-0
-                  .d-flex.align-items-center.justify-content-end
-                    %a#quick-status.btn.btn-default.mr-2{ data: { toggle: 'active_status', title: next_status }, class: ('d-none' unless next_status) }
-                      .d-flex.align-items-center
-                        .fa.fa-check.mr-2
-                        #quick-status-text
-                          = t("plannings.edit.stop_status.#{next_status}") if next_status
-                    - agent_link = case agent
-                    - when :ios
-                      - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
-                    - else
-                      - "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
-                    %a.btn.btn-default{ href: agent_link }
-                      .fa.fa-diamond-turn-right
-              .d-flex.align-items-center{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
-                .col-xs-11.p-3
-                  = stop.visit.destination.street
-                  = stop.visit.destination.postalcode
-                  = stop.visit.destination.city
-              .d-flex.align-items-center.justify-content-center{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                  = stop.name
+                .col-xs-4.p-0
+                  %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ data: { toggle: 'active_status', title: next_status }, class: ('d-none' unless next_status) }
+                    .d-flex.align-items-center
+                      .fa.fa-regular.fa-square-caret-right.mr-2
+                      #quick-status-text
+                        = t("plannings.edit.stop_status.#{next_status}") if next_status
+                  - agent_link = case agent
+                  - when :ios
+                    - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+                  - else
+                    - "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+              .d-flex.align-items-center
+                -# .col-xs-4.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+                .col-xs-12.p-0.mt-1
+                  .d-flex.align-items-center.justify-content-between
+                    .col-xs-8.p-0.mr-2
+                      = stop.visit.destination.street
+                      = stop.visit.destination.postalcode
+                      = stop.visit.destination.city
+                    .col-xs-4.p-0
+                      %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: agent_link }
+                        .d-flex.align-items-center
+                          .fa.fa-diamond-turn-right.mr-2
+                          = t("stops.mobile.navigate")
+              .d-flex.align-items-center.justify-content-center
                 .fa.fa-caret-down.fa-fw
             .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
               .panel-body
