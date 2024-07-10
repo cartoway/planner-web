@@ -7,6 +7,7 @@ class UserMailer < ApplicationMailer
   def password_message(user, locale)
     I18n.with_locale(locale) do
       @user = user
+      @reseller = user.customer.reseller
       @name, @application_name = names(user) # To deprecate
       @title = t('user_mailer.password.title')
       @confirmation_link = password_user_url(user, token: user.confirmation_token, host: user.customer.reseller.url_protocol + '://' + user.customer.reseller.host)
@@ -23,6 +24,7 @@ class UserMailer < ApplicationMailer
   def connection_message(user, locale)
     I18n.with_locale(locale) do
       @user = user
+      @reseller = user.customer.reseller
       @name, @application_name = names(user) # To deprecate
       @title = t('user_mailer.connection.title')
       @home_link = user.customer.reseller.url_protocol + '://' + user.customer.reseller.host
@@ -37,6 +39,7 @@ class UserMailer < ApplicationMailer
   def accompanying_message(user, locale)
     I18n.with_locale(locale) do
       @user = user
+      @reseller = user.customer.reseller
       @name, @application_name = names(user) # To deprecate
       @template = 'accompanying'
       @parameters = links_parameters('accompanying_message', locale)
@@ -53,6 +56,7 @@ class UserMailer < ApplicationMailer
   def subscribe_message(user, locale)
     I18n.with_locale(locale) do
       @user = user
+      @reseller = user.customer.reseller
       @name, @application_name = names(user) # To deprecate
       @template = 'subscribe'
       @parameters = links_parameters('subscribe_message', locale)
@@ -68,6 +72,7 @@ class UserMailer < ApplicationMailer
   def automation_dispatcher(user, locale, template = 'accompanying_team', with_links = false)
     I18n.with_locale(locale) do
       @user = user
+      @reseller = user.customer.reseller
       @name, @application_name = names(user) # To deprecate
       @home_link = user.customer.reseller.url_protocol + '://' + user.customer.reseller.host
       @template = template
@@ -85,6 +90,7 @@ class UserMailer < ApplicationMailer
   def send_fleet_drivers(user, locale, drivers, current_admin = nil)
     I18n.with_locale(locale) do
       @user = user
+      @reseller = user.customer.reseller
       @name, @application_name = names(user) # To deprecate
       @template = 'fleet_drivers'
       [user.email, current_admin && current_admin.email].compact.each do |to|

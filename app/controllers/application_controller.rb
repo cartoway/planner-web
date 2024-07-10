@@ -60,8 +60,8 @@ class ApplicationController < ActionController::Base
   end
 
   def driver_token?
-    if params['token']
-      if (vehicle = Vehicle.find_by(driver_token: params['token']))
+    if params['driver_token']
+      if (vehicle = Vehicle.find_by(driver_token: params['driver_token']))
         @current_vehicle = vehicle
         session[:current_driver_id] = vehicle.id
       else
