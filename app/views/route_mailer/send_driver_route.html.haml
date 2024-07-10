@@ -12,7 +12,7 @@
           %li
             = t('.planning', name: route.planning.name, date: route.planning.date ? "#{l(route.planning.date)}" : '')
           %li
-            = t('.link', link: (customer.reseller.url_protocol + '://' + customer.reseller.host + '/routes/' + route.id.to_s + '/mobile?token=' + route.vehicle_usage.vehicle.driver_token)).html_safe
+            = t('.link', link: (customer.reseller.url_protocol + '://' + customer.reseller.host + '/routes/' + route.id.to_s + '/mobile?driver_token=' + route.vehicle_usage.vehicle.driver_token)).html_safe
         %br
         %p
           = I18n.t('user_mailer.layout.staff.greetings').html_safe

@@ -34,7 +34,7 @@ export const stops_edit = function(params) {
       next_status = 'delivered';
       panel.find('#quick-status').removeClass('d-none');
       panel.find('#quick-status').data('title', next_status);
-      panel.find('#quick-status-text').text(I18n.t("plannings.edit.stop_status." + next_status));
+      panel.find('#quick-status-text').text(I18n.t("plannings.edit.stop_status.delivered"));
     } else {
       panel.find('#quick-status').addClass('d-none');
     }
