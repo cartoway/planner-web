@@ -40,6 +40,11 @@
     min-width: 32px;
   }
 
+  .label-default {
+    background-color: $gray-200;
+    color: $gray-700;
+  }
+
   .label-planned, .label-intransit {
     background-color: $primary-color;
   }
