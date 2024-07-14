@@ -267,7 +267,7 @@ docker compose run --rm superset bash -c "
     "
 ```
 
-Then go to Superset at localhost:8089 and setup dashboard.
+Then go to Superset at http://localhost:8088 and setup dashboard.
 
 Add cron every hour to historyze relevant data
 ```
