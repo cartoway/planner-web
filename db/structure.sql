@@ -33,6 +33,18 @@ COMMENT ON EXTENSION hstore IS 'data type for storing sets of (key, value) pairs
 SET default_tablespace = '';
 
 --
+-- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ar_internal_metadata (
+    key character varying NOT NULL,
+    value character varying,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
 -- Name: custom_attributes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -548,17 +560,6 @@ CREATE TABLE public.profiles_routers (
 
 
 --
--- Name: relation_fragments; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.relation_fragments (
-    relation_id integer NOT NULL,
-    visit_id integer NOT NULL,
-    index integer
-);
-
-
---
 -- Name: relations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -788,6 +789,7 @@ CREATE TABLE public.stops (
     out_of_relation boolean DEFAULT false,
     out_of_max_ride_distance boolean,
     out_of_max_ride_duration boolean,
+    status_updated_at timestamp without time zone,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -876,8 +878,8 @@ CREATE TABLE public.stores_vehicules (
 CREATE TABLE public.tag_destinations (
     destination_id integer NOT NULL,
     tag_id integer NOT NULL,
-    created_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.129478'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.129478'::timestamp without time zone
+    created_at timestamp without time zone DEFAULT '2024-03-20 14:17:21.76572'::timestamp without time zone,
+    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:21.76572'::timestamp without time zone
 );
 
 
@@ -888,8 +890,8 @@ CREATE TABLE public.tag_destinations (
 CREATE TABLE public.tag_plannings (
     planning_id integer NOT NULL,
     tag_id integer NOT NULL,
-    created_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.151915'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.151915'::timestamp without time zone
+    created_at timestamp without time zone DEFAULT '2024-03-20 14:17:21.798121'::timestamp without time zone,
+    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:21.798121'::timestamp without time zone
 );
 
 
@@ -900,8 +902,8 @@ CREATE TABLE public.tag_plannings (
 CREATE TABLE public.tag_visits (
     visit_id integer NOT NULL,
     tag_id integer NOT NULL,
-    created_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.173027'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.173027'::timestamp without time zone
+    created_at timestamp without time zone DEFAULT '2024-03-20 14:17:21.816357'::timestamp without time zone,
+    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:21.816357'::timestamp without time zone
 );
 
 
@@ -1129,7 +1131,8 @@ CREATE TABLE public.vehicles (
     phone_number character varying,
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     max_ride_duration integer,
-    max_ride_distance integer
+    max_ride_distance integer,
+    driver_token character varying
 );
 
 
@@ -1434,6 +1437,14 @@ ALTER TABLE ONLY public.zones ALTER COLUMN id SET DEFAULT nextval('public.zones_
 --
 
 ALTER TABLE ONLY public.zonings ALTER COLUMN id SET DEFAULT nextval('public.zonings_id_seq'::regclass);
+
+
+--
+-- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ar_internal_metadata
+    ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
 
 
 --
@@ -1872,20 +1883,6 @@ CREATE INDEX index_plannings_zonings_on_planning_id ON public.plannings_zonings 
 --
 
 CREATE INDEX index_plannings_zonings_on_zoning_id ON public.plannings_zonings USING btree (zoning_id);
-
-
---
--- Name: index_relation_fragments_on_relation_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_relation_fragments_on_relation_id ON public.relation_fragments USING btree (relation_id);
-
-
---
--- Name: index_relation_fragments_on_visit_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_relation_fragments_on_visit_id ON public.relation_fragments USING btree (visit_id);
 
 
 --
@@ -3017,4 +3014,8 @@ INSERT INTO schema_migrations (version) VALUES ('20240504152464');
 INSERT INTO schema_migrations (version) VALUES ('20240504152465');
 
 INSERT INTO schema_migrations (version) VALUES ('20240504152466');
+
+INSERT INTO schema_migrations (version) VALUES ('20240618115347');
+
+INSERT INTO schema_migrations (version) VALUES ('20240624091527');
 
