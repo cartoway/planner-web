@@ -42,7 +42,6 @@ export const stops_edit = function(params) {
   }
 
   function submitForm(current_context) {
-    console.log(current_context.find('form'));
     current_context.find('form').submit();
   }
 };
