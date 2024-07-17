@@ -6,7 +6,7 @@
       %a.accordion-toggle{"data-parent" => "", "data-toggle" => "collapse", href: "#collapseVisit#{visit.id || 0}"}
         %span= t('.legend', n: i)
       - if visit.destination.customer.enable_multi_visits || !current_page?(action: 'new')
-        .row.form-group.destroy-block
+        .mb-3.row.destroy-block
           .col-md-3
             %button.btn.btn-default.btn-sm.flag-destroy{title: "#{t('.delete_help')}", type: "button"}
               %i.fa.fa-trash.fa-fw
@@ -20,7 +20,7 @@
         = f.text_field :ref do
           %p.help-block= t '.ref_help'
       - unless visit.destination.customer.enable_orders
-        #visit_quantity_input{class: "form-group #{nested_has_error?(:quantities, visit.id)}"}
+        #visit_quantity_input{class: "#{nested_has_error?(:quantities, visit.id)}"}
           %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.visit.quantities'
           .col-md-offset-2.col-md-8.field
             - visit.destination.customer.deliverable_units.each do |du|
@@ -37,7 +37,7 @@
         append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw'),
         help: t('.duration_help')
 
-      #visit_open_close_input{class: "form-group #{nested_has_error?(:time_window_end_1, visit.id)}"}
+      #visit_open_close_input{class: "#{nested_has_error?(:time_window_end_1, visit.id)}"}
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_start_1"}= t 'activerecord.attributes.visit.time_window_start_1'
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_end_1"}= t 'activerecord.attributes.visit.time_window_end_1'
         %label.col-md-offset-2.col-md-8.field= t '.time_window_start_end_1'
@@ -62,7 +62,7 @@
             %span.input-group-addon
               %i.fa.fa-arrows-left-right.fa-fw
           %p.help-block= t '.close_help'
-      #visit_open_close_input{class: "form-group #{nested_has_error?(:time_window_end_2, visit.id)}"}
+      #visit_open_close_input{class: "#{nested_has_error?(:time_window_end_2, visit.id)}"}
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_start_2"}= t 'activerecord.attributes.visit.time_window_start_2'
         %label.sr-only{for: "destination_visits_attributes_\#{i}_time_window_end_2"}= t 'activerecord.attributes.visit.time_window_end_2'
         %label.col-md-offset-2.col-md-8.field= t '.time_window_start_end_2'
@@ -87,7 +87,7 @@
             %span.input-group-addon
               %i.fa.fa-arrows-left-right.fa-fw
           %p.help-block= t '.close_help'
-      #visit_priority_input{class: "form-group #{nested_has_error?(:priority, visit.id)}"}
+      #visit_priority_input{class: "#{nested_has_error?(:priority, visit.id)}"}
         %label.col-md-offset-2.col-md-8.field= t '.priority'
         .col-md-offset-2.col-md-8.field
           .input-group

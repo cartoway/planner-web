@@ -63,6 +63,14 @@ h1 {
     padding: 3px 5px;
 }
 
+.row {
+  padding-left: unset;
+  padding-right: unset;
+
+  margin-left: unset;
+  margin-right: unset;
+}
+
 .row.form-group {
   .form-inline {
     // several values on same line, like radio buttons

@@ -17,7 +17,7 @@
   %div
     = f.text_field :date, { placeholder: t('.default_date'), value: @planning.date ? l(@planning.date.to_time, format: :datepicker) : nil, input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'})}
   - if (@planning.id && !@planning.tags.empty?) || !@planning.id
-    .col-md-offset-2.col-md-8.field.p0
+    .col-md-offset-2.col-md-8.field
       %label.control-label{:for => "speed_multiplier"}
         = t('activerecord.attributes.planning.tag_ids')
       %div{:class => "input-append"}

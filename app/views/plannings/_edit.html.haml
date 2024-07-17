@@ -48,7 +48,7 @@
               .col-xs-12.col-md-12
                 %label
                   = t('activerecord.attributes.planning.vehicle_usage_set_id')
-                = f.collection_select :vehicle_usage_set_id, @planning.customer.vehicle_usage_sets, :id, :name, { control_col: 'col-xs-12 col-md-12', label: '', label_class: 'd-none' }, {required: true }
+                = f.collection_select :vehicle_usage_set_id, @planning.customer.vehicle_usage_sets, :id, :name, { control_col: 'col-xs-12 col-md-12', label: '', label_class: 'd-none' }, {required: true, control_class: 'form-control' }
                 .d-flex.justify-content-center
                   = f.submit message: t('plannings.edit.vehicle_usage_set.action'), button: 'btn btn-default'
         - if @manage_planning[:manage_zoning]
