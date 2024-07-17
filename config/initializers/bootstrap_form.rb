@@ -37,7 +37,7 @@ module BootstrapForm
       object = self.object.class.name.snakecase
 
       render_haml <<-HAML, object: object, action: action, message: message, icon: icon, disable_with: disable_with
-        .row.row.form-group{ id: "#{object}_div_input" }
+        .row.form-group{ id: "#{object}_div_input" }
           .col-md-offset-2.col-md-6
             %button{ name: 'button', type: 'submit', class: "#{button || 'btn btn-primary'}", title: "#{title}", data: { disable_with: "#{disable_with}"}}
               %i.fa{ class: "#{icon || 'fa-floppy-disk'}" }
