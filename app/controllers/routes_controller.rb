@@ -97,8 +97,10 @@ class RoutesController < ApplicationController
   def update_position
     @customer = current_vehicle.customer
     if params['latitude'] && params['longitude'] && params['latitude'].is_a?(Float) && params['longitude'].is_a?(Float)
-      @customer.device.enabled_definitions.each{ |key, _value|
-        service = Object.const_get("#{key.to_s.capitalize!}Service").new({customer: @customer})
+      Mapotempo::Application.config.devices.to_h.each{ |key, device|
+        next if @customer.device.enabled_definitions.exclude?(key)
+
+        service = Object.const_get(device.class.name + 'Service').new({customer: @customer})
         service.cache_position(@route.vehicle_usage.vehicle, params) if service.respond_to?(:cache_position)
       }
       if request.xhr?
