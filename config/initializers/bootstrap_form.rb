@@ -36,13 +36,14 @@ module BootstrapForm
       action = action == 'new' ? 'create' : 'update'
       object = self.object.class.name.underscore
 
-      render_haml <<-HAML, object: object, action: action, message: message, icon: icon, disable_with: disable_with
+      output = render_haml <<-HAML, object: object, action: action, message: message, icon: icon, disable_with: disable_with
         .row.form-group{ id: "#{object}_div_input" }
           .col-md-offset-2.col-md-6
             %button{ name: 'button', type: 'submit', class: "#{button || 'btn btn-primary'}", title: "#{title}", data: { disable_with: "#{disable_with}"}}
               %i.fa{ class: "#{icon || 'fa-floppy-disk'}" }
               = message || I18n.t("helpers.submit.#{action}", model: I18n.t("activerecord.models.#{object.pluralize}.one"))
       HAML
+      output.html_safe
     end
   end
 end
