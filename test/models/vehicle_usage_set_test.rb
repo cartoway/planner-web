@@ -108,7 +108,7 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     assert vehicle_usage_set.valid?
     vehicle_usage_set.rest_duration = 15.minutes.to_i
     assert !vehicle_usage_set.valid?
-    assert_equal [:rest_start, :rest_stop], vehicle_usage_set.errors.keys
+    assert_equal [:rest_start, :rest_stop], vehicle_usage_set.errors.attribute_names
     vehicle_usage_set.rest_start = 10.hours.to_i
     vehicle_usage_set.rest_stop = 11.hours.to_i
     assert vehicle_usage_set.valid?
@@ -120,10 +120,10 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     assert vehicle_usage_set.valid?
     vehicle_usage_set.update time_window_start: '08:00', time_window_end: '18:00', work_time: '12:00'
     assert_not vehicle_usage_set.valid?
-    assert_equal [:work_time], vehicle_usage_set.errors.keys
+    assert_equal [:work_time], vehicle_usage_set.errors.attribute_names
     vehicle_usage_set.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '01:00', service_time_end: '01:00', work_time: '09:00'
     assert_not vehicle_usage_set.valid?
-    assert_equal [:work_time], vehicle_usage_set.errors.keys
+    assert_equal [:work_time], vehicle_usage_set.errors.attribute_names
   end
 
   test 'rest stop should not be after rest start' do
