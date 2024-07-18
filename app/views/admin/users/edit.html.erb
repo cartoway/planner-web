@@ -14,5 +14,6 @@
   <%= f.collection_select :customer_id, @customers, :id, :name, {}, {class: 'form-control'} %>
   <%= f.submit %>
 <% end %>
-
-<a href="/?api_key=<%= @user.api_key %>"><%= t '.connect_as' %></a>
+<div class='col-md-offset-2 col-md-7'>
+  <a href="/?api_key=<%= @user.api_key %>"><%= t '.connect_as' %></a>
+</div>
