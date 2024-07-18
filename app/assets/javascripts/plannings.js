@@ -772,6 +772,19 @@ export const plannings_edit = function(params) {
         if (labelMarker) labelLayer.removeLayer(labelMarker);
         labelMarker = null;
       });
+      if (zone.vehicle_id) {
+        this.on('click', function() {
+          var route = $('select.vehicle_select[value="' + zone.vehicle_id + '"]').closest('.route');
+          route.css('box-shadow', '#4D90FE 0px 0px 5px');
+          setTimeout(function() {
+            route.css('box-shadow', '');
+          }, 1500);
+          $('.sidebar-content').animate({
+            scrollTop: route.offset().top + $('.sidebar-content').scrollTop() - 100
+          });
+        });
+      }
+
       return this;
     }
   });
