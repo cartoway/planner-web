@@ -3,10 +3,12 @@ ruby '< 3'
 
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 5.2'
+gem 'rails', '~> 6.1', '>= 6.1.7.8'
+gem 'railties', '~> 6.1', '>= 6.1.7.8'
+
 gem 'bootsnap'
 # Allow haml syntax for views
-gem 'haml-rails', "~> 1.0.0"
+gem 'haml-rails'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5'
 # Use Uglifier as compressor for JavaScript assets
@@ -62,7 +64,7 @@ group :development, :test do
   gem 'erb_lint'
   gem 'rubocop'
   gem 'byebug'
-  gem 'i18n-tasks'
+  gem 'i18n-tasks', '~> 1.0.13'
 
   # Debugging tool
   gem 'pry-rails'
@@ -102,7 +104,7 @@ gem 'rack-cors'
 gem 'rswag-api'
 gem 'rswag-specs'
 
-gem 'rails-i18n'
+gem 'rails-i18n', '>= 7'
 gem 'http_accept_language'
 gem 'devise'
 gem 'devise-i18n'
@@ -115,7 +117,7 @@ gem 'activerecord-import'
 gem 'sanitize'
 gem 'iconv'
 
-gem 'pg', '< 1' # TODO: fix me for active record 4.2.11 compatibility
+gem 'pg'
 
 gem 'sprockets'
 
@@ -141,10 +143,10 @@ gem 'leaflet-responsive-popup-rails', git: 'https://github.com/Mapotempo/leaflet
 
 gem 'jquery-turbolinks'
 gem 'jquery-ui-rails', '< 6' # FIXME Support IE10 removed in jQuery UI 1.12 + bad performances for large list sortable
-gem 'jquery-tablesorter', '< 1.21.2' # FIXME waiting for a replacement (v59)
+gem 'jquery-tablesorter', '~> 1.27'
 gem 'jquery-simplecolorpicker-rails'
 gem 'jquery-timeentry-rails', git: 'https://github.com/frodrigo/jquery-timeentry-rails.git'
-gem 'select2-rails', '= 4.0.0' # FIXME test compatibility with planning sidebar
+gem 'select2-rails'
 gem 'i18n-js', '< 4'
 gem 'mustache'
 gem 'smt_rails', '0.2.9' # FIXME: JS not working in 0.3.0
@@ -180,7 +182,7 @@ gem 'barby'
 
 gem 'pnotify-rails'
 
-gem 'nokogiri'
+gem 'nokogiri', '~> 1.15.1'
 gem 'addressable'
 gem 'icalendar'
 
