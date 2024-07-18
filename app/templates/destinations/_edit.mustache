@@ -39,23 +39,28 @@
       <input type="hidden" name="destination[lng]" value="{{lng}}" />
       <span class="geocoding_level" title="{{geocoding_level_title}}">
         <input type="hidden" name="destination[geocoding_level]" value="{{geocoding_level}}">
-        {{#geocoding_level}}
-          {{#geocoding_level_point}}
-            <i class="fa fa-map-marker fa-fw geocoding-level"></i>
-          {{/geocoding_level_point}}
-          {{#geocoding_level_house}}
-            <i class="fa fa-store fa-fw geocoding-level"></i>
-          {{/geocoding_level_house}}
-          {{#geocoding_level_street}}
-            <i class="fa fa-road fa-fw geocoding-level"></i>
-          {{/geocoding_level_street}}
-          {{#geocoding_level_intersection}}
-            <i class="fa fa-times fa-fw geocoding-level"></i>
-          {{/geocoding_level_intersection}}
-          {{#geocoding_level_city}}
-            <i class="fa fa-exclamation-triangle fa-fw geocoding-level"></i>
-          {{/geocoding_level_city}}
-        {{/geocoding_level}}
+        {{#has_no_position}}
+          <i class="fa fa-triangle-exclamation" title="{{#i18n}}destinations.index.geocoding_empty{{/i18n}}"></i>
+        {{/has_no_position}}
+        {{^has_no_position}}
+          {{#geocoding_level}}
+            {{#geocoding_level_point}}
+              <i class="fa fa-map-marker fa-fw geocoding-level"></i>
+            {{/geocoding_level_point}}
+            {{#geocoding_level_house}}
+              <i class="fa fa-store fa-fw geocoding-level"></i>
+            {{/geocoding_level_house}}
+            {{#geocoding_level_street}}
+              <i class="fa fa-road fa-fw geocoding-level"></i>
+            {{/geocoding_level_street}}
+            {{#geocoding_level_intersection}}
+              <i class="fa fa-times fa-fw geocoding-level"></i>
+            {{/geocoding_level_intersection}}
+            {{#geocoding_level_city}}
+              <i class="fa fa-exclamation-triangle fa-fw geocoding-level"></i>
+            {{/geocoding_level_city}}
+          {{/geocoding_level}}
+        {{/has_no_position}}
       </span>
       <span>
         {{#geocoding_accuracy}}
@@ -70,9 +75,6 @@
           <input class="form-control input-sm" type="hidden" value="101"/>
         {{/geocoding_accuracy}}
       <span>
-      {{#has_no_position}}
-        <span class="no_position">{{#i18n}}destinations.index.geocoding_empty{{/i18n}}</span>
-      {{/has_no_position}}
     </div>
   </td>
   <td class="comment">
