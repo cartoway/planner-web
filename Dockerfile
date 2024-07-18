@@ -1,5 +1,3 @@
-# Ruby 2.6 limited by rails 4 version
-# Debian bullseye limited by Ruby 2.6
 FROM ruby:2.7-bullseye
 ENTRYPOINT []
 CMD ["/bin/bash"]
