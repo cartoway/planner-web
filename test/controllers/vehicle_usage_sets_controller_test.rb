@@ -169,7 +169,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
       get :show, params: { id: @vehicle_usage_set, format: format }
       assert_response :success
       assert_valid response
-      assert_equal response.content_type, 'text/csv'
+      assert_match 'text/csv', response.content_type
     }
   end
 
@@ -177,7 +177,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     get :show, params: { id: @vehicle_usage_set, format: :csv }
     assert_response :success
     assert_valid response
-    assert_equal response.content_type, 'text/csv'
+    assert_equal 'text/csv; charset=utf-8', response.content_type
 
     csv = CSV.new(response.body)
     headers = csv.first

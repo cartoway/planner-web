@@ -205,7 +205,7 @@ class VisitTest < ActiveSupport::TestCase
 
     visit.quantities = {customers(:customer_one).deliverable_units[0].id => 'not a float'}
     assert_not visit.save
-    assert_equal visit.errors.first.second, I18n.t('activerecord.errors.models.visit.attributes.quantities.not_float')
+    assert_equal visit.errors.first.message, I18n.t('activerecord.errors.models.visit.attributes.quantities.not_float')
   end
 
   test 'should update outdated for quantity' do
