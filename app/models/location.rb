@@ -18,7 +18,7 @@
 class LocalizationValidator < ActiveModel::Validator
   def validate(record)
     if record.postalcode.nil? && record.city.nil? && !record.position?
-      record.errors[:base] << I18n.t('activerecord.errors.models.location.missing_address_or_latlng')
+      record.errors.add(:base, message: I18n.t('activerecord.errors.models.location.missing_address_or_latlng'))
     end
   end
 end

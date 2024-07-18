@@ -125,7 +125,7 @@ class VehicleTest < ActiveSupport::TestCase
 
     vehicle.capacities = {customers(:customer_one).deliverable_units[0].id => 'not a float'}
     assert_not vehicle.save
-    assert_equal vehicle.errors.first.second, I18n.t('activerecord.errors.models.vehicle.attributes.capacities.not_float')
+    assert_equal vehicle.errors.first.message, I18n.t('activerecord.errors.models.vehicle.attributes.capacities.not_float')
   end
 
   test 'should update outdated for capacity' do
