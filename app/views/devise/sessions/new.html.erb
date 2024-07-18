@@ -9,9 +9,7 @@
           <%= f.text_field :email %>
           <%= f.password_field :password %>
           <% if devise_mapping.rememberable? %>
-            <%= f.form_group :remember_me, { label: { text: t('.remember_me') }, control_col: 'col-md-2' } do %>
-              <%= f.check_box :remember_me, label: '', checked: true %>
-            <% end %>
+            <%= render partial: 'shared/check_box', locals: { form: f, field: :remember_me, label: t('.remember_me'), options: { checked: true } } %>
           <% end %>
           <%= f.submit message: t('.sign_in'), icon: 'fa-check' %>
         <% end %>
