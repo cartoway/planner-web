@@ -407,7 +407,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     planning_false_id = Random.new_seed
     [false, true].each do |sync|
       get api("/#{planning_false_id}/optimize", {details: true, synchronous: sync })
-      assert_equal 400, last_response.status
+      assert_equal 404, last_response.status
     end
   end
 

@@ -663,7 +663,7 @@ class Planning < ApplicationRecord
 
               Visit.without_callback(:update, :before, :update_outdated) do
                 # Do not flag route as outdated just for quantities change, route quantities are computed after loop
-                stops_map[s[:order_id]].visit.update_attributes(quantities: quantities)
+                stops_map[s[:order_id]].visit.update(quantities: quantities)
               end
               routes_quantities_changed << stops_map[s[:order_id]].route
             end

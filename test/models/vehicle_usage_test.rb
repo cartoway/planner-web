@@ -55,7 +55,7 @@ class VehicleUsageTest < ActiveSupport::TestCase
     vehicle_usage.vehicle_usage_set.update! rest_start: nil, rest_stop: nil, rest_duration: nil
     vehicle_usage.rest_duration = 15.minutes.to_i
     assert_not vehicle_usage.valid?
-    assert_equal [:rest_start, :rest_stop], vehicle_usage.errors.keys
+    assert_equal [:rest_start, :rest_stop], vehicle_usage.errors.attribute_names
 
     vehicle_usage.rest_start = 10.hours.to_i
     vehicle_usage.rest_stop = 11.hours.to_i
@@ -64,7 +64,7 @@ class VehicleUsageTest < ActiveSupport::TestCase
     vehicle_usage.update! rest_start: nil, rest_stop: nil, rest_duration: nil
     vehicle_usage.rest_stop = 11.hours.to_i
     assert_not vehicle_usage.valid?
-    assert_equal [:rest_stop, :rest_duration], vehicle_usage.errors.keys
+    assert_equal [:rest_stop, :rest_duration], vehicle_usage.errors.attribute_names
   end
 
   test 'should validate rest range in relation to the working time range' do
@@ -72,7 +72,7 @@ class VehicleUsageTest < ActiveSupport::TestCase
     vehicle_usage.update rest_start: '12:00', rest_stop: '14:00', time_window_start: '08:00', time_window_end: '18:00', service_time_start: '00:30', service_time_end: '00:15'
     assert vehicle_usage.valid?
     vehicle_usage.update rest_start: '07:00', rest_stop: '14:00', time_window_start: '08:00', time_window_end: '18:00', service_time_start: '00:45', service_time_end: '00:30'
-    assert_equal [:base], vehicle_usage.errors.keys
+    assert_equal [:base], vehicle_usage.errors.attribute_names
   end
 
   test 'should validate service working day start/end in relation to the working time range' do
@@ -80,11 +80,11 @@ class VehicleUsageTest < ActiveSupport::TestCase
     vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '00:30', service_time_end: '00:15'
     assert vehicle_usage.valid?
     vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '18:00', service_time_end: '1:00'
-    assert_equal [:service_time_start], vehicle_usage.errors.keys
+    assert_equal [:service_time_start], vehicle_usage.errors.attribute_names
     vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '08:00', service_time_end: '18:00'
-    assert_equal [:service_time_end], vehicle_usage.errors.keys
+    assert_equal [:service_time_end], vehicle_usage.errors.attribute_names
     vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '08:00', service_time_end: '08:00'
-    assert_equal [:base], vehicle_usage.errors.keys
+    assert_equal [:base], vehicle_usage.errors.attribute_names
   end
 
   test 'should validate work time in relation to the working time range and service range' do
@@ -93,10 +93,10 @@ class VehicleUsageTest < ActiveSupport::TestCase
     assert vehicle_usage.valid?
     vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', work_time: '12:00'
     assert_not vehicle_usage.valid?
-    assert_equal [:work_time], vehicle_usage.errors.keys
+    assert_equal [:work_time], vehicle_usage.errors.attribute_names
     vehicle_usage.update time_window_start: '08:00', time_window_end: '18:00', service_time_start: '01:00', service_time_end: '01:00', work_time: '09:00'
     assert_not vehicle_usage.valid?
-    assert_equal [:work_time], vehicle_usage.errors.keys
+    assert_equal [:work_time], vehicle_usage.errors.attribute_names
   end
 
   test 'should validate time_window_start and time_window_end time exceeding one day' do
