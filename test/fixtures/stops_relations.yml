@@ -1,12 +1,12 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-relation_one:
+stops_relation_one:
   relation_type: 0 # pickup_delivery
   current_id: 1 # Refered by tomtom web mock as encoded string ":v1" (visit_one)
   successor: visit_two
   customer: customer_one
 
-relation_two:
+stops_relation_two:
   relation_type: 1 # ordered
   current: visit_three
   successor: visit_unaffected_one
