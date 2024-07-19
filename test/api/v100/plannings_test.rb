@@ -13,7 +13,7 @@ class V100::PlanningsBaseTest < ActiveSupport::TestCase
 
   def api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/100/plannings#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/100/plannings#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 end
 
