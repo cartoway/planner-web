@@ -27,6 +27,9 @@ Minitest::Reporters.use! [
 class ActiveSupport::TestCase
   ActiveRecord::Migration.check_pending!
 
+  # Make tests independants from others fixtures edition
+  self.use_transactional_tests = false
+
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
   # Note: You'll currently still have to declare fixtures explicitly in integration tests
