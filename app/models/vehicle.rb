@@ -88,7 +88,7 @@ class Vehicle < ApplicationRecord
     end
   rescue StandardError => e
     errors.add :capacities, :not_float if e.is_a?(ArgumentError) || e.is_a?(TypeError)
-    errors.add :capacities, :negative_value, {value: e.object[:value]} if e.is_a? Exceptions::NegativeErrors
+    errors.add :capacities, :negative_value, **{value: e.object[:value]} if e.is_a? Exceptions::NegativeErrors
   end
 
   def self.emissions_table

@@ -34,7 +34,7 @@ class V01::Devices::FleetTest < ActiveSupport::TestCase
 
   def planning_api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/plannings#{part}.json?api_key=testkey1&" + param.collect { |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/0.1/plannings#{part}.json?api_key=testkey1&" + param.collect { |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   test 'authenticate' do

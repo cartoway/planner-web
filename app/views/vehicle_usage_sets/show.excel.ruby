@@ -1,4 +1,4 @@
-CSV.generate({col_sep: ';', row_sep: "\r\n"}) { |csv|
+CSV.generate(**{col_sep: ';', row_sep: "\r\n"}) { |csv|
   csv << [
     I18n.t('vehicles.import.ref_vehicle'),
     I18n.t('vehicles.import.name_vehicle'),
