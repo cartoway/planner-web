@@ -13,7 +13,7 @@ class V01::ZoningsTest < ActiveSupport::TestCase
 
   def api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/zonings#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/0.1/zonings#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   test 'should return customer''s zonings' do
