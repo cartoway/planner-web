@@ -10,23 +10,3 @@ Delayed::Worker.class_eval do
     end
   end
 end
-
-module Delayed::WorkerClassReloadingPatch
-  # Override Delayed::Worker#reserve_job to optionally reload classes before running a job
-  def reserve_job(*)
-    job = super
-
-    if job && self.class.reload_app?
-      ActionDispatch::Reloader.cleanup!
-      ActionDispatch::Reloader.prepare!
-    end
-
-    job
-  end
-
-  # Override Delayed::Worker#reload! which is called from the job polling loop to not reload classes
-  def reload!
-    # no-op
-  end
-end
-Delayed::Worker.send(:prepend, Delayed::WorkerClassReloadingPatch)
