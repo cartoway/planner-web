@@ -96,8 +96,7 @@ end
 
 gem 'bullet'  # Used in production for api-web doc generation
 
-gem 'grape', '< 2.1' # TODO: in grape 2.1 object are not autoreload after requests anymore
-                     # Moreover the rack_response(format_message(...)) is deprecated
+gem 'grape'
 gem 'grape-entity'
 gem 'grape-swagger'
 gem 'grape-swagger-entity'

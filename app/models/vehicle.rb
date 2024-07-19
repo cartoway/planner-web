@@ -29,7 +29,8 @@ class Vehicle < ApplicationRecord
   has_many :vehicle_usages, inverse_of: :vehicle, dependent: :destroy, autosave: true
   has_many :zones, inverse_of: :vehicle, dependent: :nullify, autosave: true
 
-  has_and_belongs_to_many :tags, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
+  has_many :tag_vehicles
+  has_many :tags, through: :tag_vehicles, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
   enum router_dimension: Router::DIMENSION
   serialize :capacities, DeliverableUnitQuantity

@@ -96,17 +96,17 @@ class V01::Api < Grape::API
 
     response = {message: e.message}
     if e.is_a?(ActiveRecord::RecordNotFound) || e.is_a?(ArgumentError)
-      rack_response(V01::Status.code_response(:code_404), 404)
+      error!(V01::Status.code_response(:code_404), 404)
     elsif e.is_a?(ActiveRecord::RecordInvalid) || e.is_a?(RangeError) || e.is_a?(Grape::Exceptions::ValidationErrors) || e.is_a?(Exceptions::StopIndexError)
-      rack_response(format_message(response.merge(status: 400), e.backtrace), 400)
+      error!(response.merge(status: 400), 400, e.backtrace)
     elsif e.is_a?(Exceptions::OverMaxLimitError)
-      rack_response(format_message(response.merge(status: 403), e.backtrace), 403)
+      error!(response.merge(status: 403), 403, e.backtrace)
     elsif e.is_a?(Grape::Exceptions::MethodNotAllowed)
-      rack_response(format_message(response.merge(status: 405), e.backtrace), 405)
+      error!(response.merge(status: 405), 405, e.backtrace)
     elsif e.is_a?(Exceptions::JobInProgressError)
       messages = [I18n.t('errors.planning.job_in_progress')]
       response[:message] = messages.join(' ')
-      rack_response(format_message(response.merge(status: 409), e.backtrace), 409)
+      error!(response.merge(status: 409), 409, e.backtrace)
     elsif e.is_a?(PG::TRSerializationFailure) || e.is_a?(PG::TRDeadlockDetected) || e.is_a?(ActiveRecord::StaleObjectError) || e.is_a?(ActiveRecord::StatementInvalid)
       messages = [I18n.t('errors.database.default')]
       if e.is_a?(ActiveRecord::StatementInvalid)
@@ -115,9 +115,9 @@ class V01::Api < Grape::API
         messages << I18n.t('errors.database.deadlock')
       end
       response[:message] = messages.join(' ')
-      rack_response(format_message(response.merge(status: 409), e.backtrace), 409)
+      error!(response.merge(status: 409), 409, e.backtrace)
     else
-      rack_response(format_message(response.merge(status: 500), e.backtrace), 500)
+      error!(response.merge(status: 500), 500, e.backtrace)
     end
   end
 
