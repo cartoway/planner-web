@@ -22,7 +22,7 @@ class V100::PlanningsDestinationsTest < ActiveSupport::TestCase
 
   def api(planning_id, part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/100/plannings/#{planning_id}/destinations#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/100/plannings/#{planning_id}/destinations#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   test 'should return 404 with invalid destination id' do
