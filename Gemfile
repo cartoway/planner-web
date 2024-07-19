@@ -91,7 +91,7 @@ group :test do
   # Browser tests
   gem 'capybara'
   gem 'selenium-webdriver'
-  gem 'chromedriver-helper'
+  gem 'webdrivers'
 end
 
 gem 'bullet'  # Used in production for api-web doc generation
