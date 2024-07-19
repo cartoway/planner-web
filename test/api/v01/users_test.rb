@@ -18,7 +18,7 @@ class V01::UsersTest < ActiveSupport::TestCase
 
   def api_admin(part = nil, params = {})
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/users#{part}.json?api_key=adminkey&" + params.collect { |key, value| "#{key}=#{URI.escape(value)}" } .join("&")
+    "/api/0.1/users#{part}.json?api_key=adminkey&" + params.collect { |key, value| "#{key}=#{URI::DEFAULT_PARSER.escape(value)}" } .join("&")
   end
 
   test 'should return users' do

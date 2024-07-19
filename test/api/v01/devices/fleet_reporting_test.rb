@@ -39,7 +39,7 @@ class V01::Devices::FleetReportingTest < ActiveSupport::TestCase
         .to_return(status: 200, body: '[{"mission_action_final_label":"To do","mission_address":{"city":"bordeaux","country":"france","postalcode":"33000","street":"40 rue de canolle"},"mission_date":"2019-04-17T12:00:00.000+02:00","mission_duration":3600,"mission_external_ref":"mission-r15587-2019_04_17-1312","mission_id":"mission-a8c0f6ff9","mission_location":{"lat":44.828271,"lon":-0.602265},"mission_name":"jean roger Pomme"}]', headers: {})
 
 
-    get api('devices/fleet/reporting', { customer_id: @customer.id, begin_date: '01-01-2019', end_date: '31-01-2019', with_actions: true })
+    get api('devices/fleet/reporting', **{ customer_id: @customer.id, begin_date: '01-01-2019', end_date: '31-01-2019', with_actions: true })
     assert_equal 200, last_response.status
   end
 
@@ -53,7 +53,7 @@ class V01::Devices::FleetReportingTest < ActiveSupport::TestCase
     orig_locale = I18n.locale
     begin
       I18n.locale = :en
-      get api('devices/fleet/reporting', { customer_id: @customer.id, begin_date: '01-01-2019', end_date: '01-30-2019', with_actions: true })
+      get api('devices/fleet/reporting', **{ customer_id: @customer.id, begin_date: '01-01-2019', end_date: '01-30-2019', with_actions: true })
       assert_equal 204, last_response.status
     ensure
       I18n.locale = orig_locale

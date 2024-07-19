@@ -21,7 +21,7 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
 
   def api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/vehicle_usage_sets#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/0.1/vehicle_usage_sets#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   test 'should return customer''s vehicle_usage_sets' do

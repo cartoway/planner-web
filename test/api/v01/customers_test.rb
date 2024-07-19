@@ -13,12 +13,12 @@ class V01::CustomerTest < ActiveSupport::TestCase
 
   def api(part = nil, param = {}, format = 'json')
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/customers#{part}.#{format}?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/0.1/customers#{part}.#{format}?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   def api_admin(part = nil, format = 'json', params = {})
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/customers#{part}.#{format}?api_key=adminkey&" + params.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/0.1/customers#{part}.#{format}?api_key=adminkey&" + params.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   test 'should list customers' do
