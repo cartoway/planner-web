@@ -900,6 +900,30 @@ CREATE TABLE public.tag_plannings (
 
 
 --
+-- Name: tag_vehicle_usages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tag_vehicle_usages (
+    vehicle_usage_id integer,
+    tag_id integer,
+    created_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.059601'::timestamp without time zone NOT NULL,
+    updated_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.059601'::timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: tag_vehicles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tag_vehicles (
+    vehicle_id integer,
+    tag_id integer,
+    created_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.047754'::timestamp without time zone NOT NULL,
+    updated_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.047754'::timestamp without time zone NOT NULL
+);
+
+
+--
 -- Name: tag_visits; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -945,26 +969,6 @@ CREATE SEQUENCE public.tags_id_seq
 --
 
 ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.id;
-
-
---
--- Name: tags_vehicle_usages; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.tags_vehicle_usages (
-    vehicle_usage_id integer,
-    tag_id integer
-);
-
-
---
--- Name: tags_vehicles; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.tags_vehicles (
-    vehicle_id integer,
-    tag_id integer
-);
 
 
 --
@@ -2780,5 +2784,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20240624091527'),
 ('20240627142001'),
 ('20240704115843');
+('20240719162433');
 
 
