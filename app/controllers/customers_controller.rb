@@ -128,16 +128,18 @@ class CustomersController < ApplicationController
   end
 
   def customer_params
-    if params[:customer][:router]
-      params[:customer][:router_id], params[:customer][:router_dimension] = params[:customer][:router].split('_')
+    unsafe_params = params.to_unsafe_h
+    if unsafe_params[:customer][:router]
+      unsafe_params[:customer][:router_id], unsafe_params[:customer][:router_dimension] = unsafe_params[:customer][:router].split('_')
     end
-    parse_router_options(params[:customer]) if params[:customer][:router_options]
+    parse_router_options(unsafe_params[:customer]) if unsafe_params[:customer][:router_options]
     # From customer form all keys are not present: need merge
-    devices_params = permit_recursive_params(params.dig('customer', 'devices'))
+    devices_params = permit_recursive_params(unsafe_params.dig('customer', 'devices'))
     devices_params = @customer[:devices].deep_merge(devices_params || {}) if @customer&.devices&.any?
     devices_params ||= {}
+    p = ActionController::Parameters.new(unsafe_params)
     if current_user.admin?
-      parameters = params.require(:customer).permit(
+      parameters = p.require(:customer).permit(
         :ref,
         :name,
         :description,
@@ -255,19 +257,21 @@ class CustomersController < ApplicationController
       ]
       allowed_params << :max_vehicles unless Mapotempo::Application.config.manage_vehicles_only_admin
 
-      params.require(:customer).permit(*allowed_params).merge(devices: devices_params)
+      p.require(:customer).permit(*allowed_params).merge(devices: devices_params)
     end
   end
 
-  def permit_recursive_params(params)
-    params&.map do |key, value|
-        if value.is_a?(Array)
-          { key => [permit_recursive_params(value.first)] }
-        elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
-          { key => permit_recursive_params(value) }
-        else
-          key
-        end
+  def permit_recursive_params(unsafe_params)
+    return unsafe_params unless respond_to?(:each)
+
+    unsafe_params&.map do |key, value|
+      if value.is_a?(Array)
+        { key => [permit_recursive_params(value.first)] }
+      elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
+        { key => permit_recursive_params(value) }
+      else
+        { key => value }
+      end
     end
   end
 end
