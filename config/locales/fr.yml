@@ -1786,7 +1786,7 @@
       'active_reverse': 'Inverser'
       'active_none': 'Aucun'
       'send_to_route_help': 'Envoyer cet arrêt dans une tournée'
-      'wait': 'Temps d''attente :'
+      'wait': 'Temps d''attente'
       'vehicle_speed': 'Vitesse :'
       'vehicle_last_position_time': 'Dernier relevé :'
       'route_change_color_help': 'Changer la couleur de la tournée'

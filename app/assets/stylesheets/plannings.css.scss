@@ -321,6 +321,11 @@ $sidebar-margins: 10px;
           font: 14px/1.5 Helvetica Neue,Arial,Helvetica,sans-serif;
         }
 
+        .info.route-info, .info.stop-info {
+          border: 1px solid $grey-color;
+          background-color: $lightgrey-color;
+        }
+
         .primary.route-info, .primary.stop-info {
           border: 1px solid $primary-border-color;
           background-color: $primary-background-color;
@@ -757,7 +762,7 @@ $sidebar-margins: 10px;
 
             [class^="col-"] {
               .stop-label{
-                width: 75% !important;
+                width: 100% !important;
                 border: 0;
                 height: 34px;
                 padding-top: 7px;
