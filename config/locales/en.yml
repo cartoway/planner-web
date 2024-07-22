@@ -1670,7 +1670,7 @@ en:
       active_reverse: Reverse
       active_none: None
       send_to_route_help: Move this stop to a route
-      wait: 'Waiting time:'
+      wait: 'Waiting time'
       vehicle_speed: 'Speed:'
       vehicle_last_position_time: 'Last position:'
       route_change_color_help: Change route color

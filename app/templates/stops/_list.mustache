@@ -344,14 +344,17 @@
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
       <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
         <div class="row store-row">
-          <div class="col-xs-3 col-md-2">
-            <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
-          </div>
-
-          <div class="col-xs-3 col-md-2">
+          <div class="col-xs-6 col-md-4 d-flex justify-content-between align-items-center">
+            <div class="col-xs-2 d-flex align-items-center justify-content-center">
+              <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
+            </div>
             {{#time}}
-              <div class="primary stop-info{{#error}} danger{{/error}}">
-                {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}}
+              <div class="col-xs-10 d-flex justify-content-end">
+                <div class="{{#start_with_service}}col-xs-12{{/start_with_service}}{{^start_with_service}}col-xs-7{{/start_with_service}}">
+                  <div class="primary stop-info{{#error}} danger{{/error}} {{#start_with_service}}ml-0{{/start_with_service}}">
+                    {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}}
+                  </div>
+                </div>
               </div>
             {{/time}}
           </div>
@@ -398,23 +401,47 @@
     <ul class="stops sortable list-group" {{#hidden}}style="display: none;"{{/hidden}}>
     {{#stops}}
       {{#wait_time}}
-        <li class="wait ui-state-disabled list-group-item">
-          <i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.wait{{/i18n}} {{wait_time}}
+        <li class="d-fake-flex wait ui-state-disabled list-group-item">
+          <div class="row d-flex">
+            <div class="col-xs-6 col-md-4 d-flex align-items-center justify-content-between">
+              <div class="col-xs-2 d-flex align-items-center justify-content-center">
+                <i class="fa fa-stopwatch fa-fw"></i>
+              </div>
+              <div class="col-xs-10 d-flex justify-content-center">
+                <div class="col-xs-7">
+                  <div class="info stop-info">
+                    {{wait_time}}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xs-6 col-md-5 d-flex align-items-center">
+              <div class="title">
+                {{#i18n}}plannings.edit.wait{{/i18n}}
+              </div>
+            </div>
+          </div>
         </li>
       {{/wait_time}}
       {{#rest}}
       <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" data-store_id="{{store_id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
         <div class="row stop-row d-flex flex-wrap align-items-center{{#status}} stop-row-{{status_code}}{{/status}}">
-          <div class="col-xs-3 col-md-2 d-flex justify-content-center">
-            <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
-            <span class="number stop-label label" style="background-color: {{^active}}transparent{{/active}}{{#active}}{{color}}{{/active}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}</span>
-          </div>
+          <div class="col-xs-6 col-md-4 d-flex justify-content-center align-items-center">
+            <div class="col-xs-2 d-flex align-items-center justify-content-center">
+              <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
 
-          <div class="col-xs-3 col-md-2">
-            <div class="primary stop-info{{#error}} danger{{/error}}">
-              {{#active}}
-                {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
-              {{/active}}
+            </div>
+            <div class="col-xs-10 d-flex align-items-center">
+              <div class="col-xs-5 d-flex justify-content-center">
+                <span class="number stop-label label" style="background-color: {{^active}}transparent{{/active}}{{#active}}{{color}}{{/active}};"><span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"{{^status}} style="display: none;"{{/status}}></span>{{number}}</span>
+              </div>
+              <div class="col-xs-7">
+                <div class="primary stop-info{{#error}} danger{{/error}}">
+                  {{#active}}
+                    {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
+                  {{/active}}
+                </div>
+              </div>
             </div>
          </div>
 
@@ -463,16 +490,21 @@
       <li data-stop_id="{{stop_id}}" data-stop_index="{{stop_index}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
         <div class="row stop-row d-flex flex-wrap align-items-center{{#status}} stop-row-{{status_code}}{{/status}}">
 
-          <div class="col-xs-3 col-md-2 d-flex justify-content-center">
-            <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^geocoded}} disabled{{/geocoded}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
-            <span class="number stop-label label {{#color_force}} color_force{{/color_force}}" style="background-color:{{^active}}transparent{{/active}}{{#active}}{{color}}{{/active}};">{{number}}&nbsp;</span>
-          </div>
-
-          <div class="col-xs-3 col-md-2 d-flex-column">
-            <div class="{{#active}}primary{{/active}}{{^active}}info{{/active}} stop-info{{#error}} danger{{/error}}">
-              {{#active}}
-                {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
-              {{/active}}
+          <div class="col-xs-6 col-md-4 d-flex justify-content-center align-items-center">
+            <div class="col-xs-2 d-flex justify-content-center align-items-center">
+              <input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}}{{^geocoded}} disabled{{/geocoded}}{{^manage_organize}} disabled{{/manage_organize}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>
+            </div>
+            <div class="col-xs-10 d-flex align-items-center">
+              <div class="col-xs-5 d-flex justify-content-center">
+                <span class="number stop-label label {{#color_force}} color_force{{/color_force}}" style="background-color:{{^active}}transparent{{/active}}{{#active}}{{color}}{{/active}};">{{number}}&nbsp;</span>
+              </div>
+              <div class="col-xs-7">
+                <div class="{{#active}}primary{{/active}}{{^active}}info{{/active}} stop-info{{#error}} danger{{/error}}">
+                  {{#active}}
+                    {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
+                  {{/active}}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -555,14 +587,18 @@
     <ul class="stops list-group" {{#hidden}}style="display: none;"{{/hidden}}>
       <li data-store_id="{{id}}" class="{{type}}{{#error}} ui-state-error{{/error}} d-fake-flex align-items-center list-group-item">
         <div class="row">
-          <div class="col-xs-3 col-md-2">
-            <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
-          </div>
 
-          <div class="col-xs-3 col-md-2">
+          <div class="col-xs-6 col-md-4 d-flex justify-content-between align-items-center">
+            <div class="col-xs-2 d-flex align-items-center justify-content-center">
+              <i class="fa {{icon}}{{^icon}}fa-store{{/icon}} fa-fw" style="color: {{#color_fake}}{{color_fake}}{{/color_fake}}{{^color_fake}}{{color}}{{^color}}black{{/color}}{{/color_fake}};"></i>
+            </div>
             {{#time}}
-              <div class="primary stop-info{{#error}} danger{{/error}}">
-                {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}{{#start_with_service}}&nbsp;-&nbsp;{{start_with_service}}{{#start_with_service_day}}&nbsp;(+{{start_with_service_day}}){{/start_with_service_day}}{{/start_with_service}}
+              <div class="col-xs-10 d-flex justify-content-end">
+                <div class="{{#start_with_service}}col-xs-12{{/start_with_service}}{{^start_with_service}}col-xs-7{{/start_with_service}}">
+                  <div class="primary stop-info{{#error}} danger{{/error}} {{#end_without_service}}ml-0{{/end_without_service}}">
+                    {{#end_without_service}}{{end_without_service}}{{#end_without_service_day}}&nbsp;(+{{end_without_service_day}}){{/end_without_service_day}}&nbsp;-&nbsp;{{/end_without_service}}{{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}
+                  </div>
+                </div>
               </div>
             {{/time}}
           </div>
