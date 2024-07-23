@@ -537,7 +537,7 @@ class Planning < ApplicationRecord
       }
     }
     routes_with_vehicle.each_with_index{ |r, i|
-      if o[routes.find{ |route| !route.vehicle_usage? } ? i + 1 : i].size > 0
+      if o[i].size > 0
         r.optimized_at = Time.now.utc
         r.last_sent_to = r.last_sent_at = nil
       elsif option[:global]
