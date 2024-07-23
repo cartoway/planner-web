@@ -424,7 +424,6 @@ export const plannings_edit = function(params) {
       var $elt = content.find('.toggle-status, .' + klass);
       var hadStatus = !($elt.css('display') == 'none');
 
-      if (el.status) { $elt.show(); } else { $elt.hide(); }
       if (el.eta_formated) { content.find('.toggle-status-eta').show()} else { content.find('.toggle-status-eta').hide() }
 
       $elt = content.find('.' + klass);
