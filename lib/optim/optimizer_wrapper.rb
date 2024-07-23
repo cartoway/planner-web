@@ -125,6 +125,7 @@ class OptimizerWrapper
   end
 
   def build_vrp(positions, services, vehicles, options)
+    @optimization_start = nil
     rests = vehicles.flat_map{ |v| v[:rests] }
       services_with_negative_quantities = []
 
@@ -293,7 +294,7 @@ class OptimizerWrapper
 
   def single_step_progression(vrp, job_details)
     # Resolution graph may not be available. i.e: VROOM did not return intermediate solutions
-    @optimization_start ||=  Time.now.to_f - (job_details.dig('graph')&.any? && job_details.dig('graph').last['time'].to_f / 1000 || 0)
+    @optimization_start ||=  Time.now.to_f - (job_details.dig('graph')&.any? && (job_details.dig('graph').last['time'].to_f / 1000) || 0)
     maximum_duration = vrp[:configuration][:resolution][:duration] / 1000
 
     current_elapsed = Time.now.to_f - @optimization_start
