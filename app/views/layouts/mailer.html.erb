@@ -173,13 +173,25 @@
     .signature {
       font-weight: 800;
     }
+
+    .d-flex {
+      display: -webkit-box !important;
+      display: -ms-flexbox !important;
+      display: flex !important;
+    }
+
+    .align-items-center {
+      -webkit-box-align: center !important;
+      -ms-flex-align: center !important;
+      align-items: center !important;
+    }
   </style>
 
   <style type="text/css" media="screen">
     @media screen {
       /* Thanks Outlook 2013! */
       * {
-        font-family: 'Oxygen', 'Helvetica Neue', 'Arial', 'sans-serif' !important;
+        font-family: 'montserrat', 'Oxygen', 'Helvetica Neue', 'Arial', 'sans-serif' !important;
       }
     }
   </style>
@@ -286,10 +298,13 @@
               <center>
                 <table cellpadding="0" cellspacing="0" width="600" class="w320" style="margin-top: 15px;">
                   <tr>
-                    <td class="pull-left mobile-header-padding-left" style="vertical-align: middle;">
-                      <a target="_blank" href="<%= @home_link %>">
-                        <img src="<%= reseller_logo_path(@reseller) %>" alt="<%= "Logo #{@reseller.name}" %>" width="137px" height="47px" />
+                    <td class="pull-left mobile-header-padding-left d-flex align-items-center">
+                      <a target="_blank" href="<%= @home_link %>" class='d-flex align-items-center'>
+                        <%= image_tag (@reseller.logo_large.url || 'logo.svg'), alt: @reseller&.name, class: 'company-logo', width: '137px', height: '47px' %>
                       </a>
+                      <% if @reseller.name %>
+                        <h1><%= @reseller.name %></h1>
+                      <% end %>
                     </td>
 
                     <td class="pull-right mobile-header-padding-right" style="color: #4d4d4d;">

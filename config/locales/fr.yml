@@ -1419,8 +1419,8 @@
       'order_array': 'Commandes : %{name}'
       'link': 'Lien de téléchargement : <a href=%{link}>Plan iCalendar</a>'
     'send_driver_route':
-      'subject': 'Tournée du %{date}'
-      'title': 'Tournée du %{date}'
+      'subject': 'Tournée'
+      'title': 'Tournée'
       'hello': 'Bonjour'
       'content': 'Une tournée vous a été envoyée'
       'vehicle': 'Véhicule : %{name}'
