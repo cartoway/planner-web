@@ -376,7 +376,7 @@ class OptimizerWrapper
         cost_time_multiplier: vehicle[:router_dimension] == 'time' ? 1 : 0,
         cost_waiting_time_multiplier: vehicle[:router_dimension] == 'time' ? options[:optimization_cost_waiting_time] : 0,
         cost_late_multiplier: vehicles_cost_late_multiplier,
-        force_start: !vehicle[:force_start].nil? ? vehicle[:force_start]: options[:force_start] ? 'force_start' : nil,
+        shift_preference: !vehicle[:force_start].nil? ? vehicle[:force_start]: options[:force_start] ? 'force_start' : nil,
         rest_ids: vehicle[:rests].collect{ |rest|
           "r#{rest[:stop_id]}"
         },
