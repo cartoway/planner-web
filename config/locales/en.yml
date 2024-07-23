@@ -1348,8 +1348,8 @@ en:
       order_array: "Orders: %{name}"
       link: "Download link: <a href=%{link}>iCalendar Plan</a>"
     send_driver_route:
-      subject: "%{date} Tour"
-      title: "%{date} Tour"
+      subject: "Tour"
+      title: "Tour"
       hello: Hello
       content: A tour has been sent to you
       vehicle: "Vehicle: %{name}"
