@@ -48,13 +48,13 @@ class OptimizerJob < OptimizerJobStruct
             end
           }
           if @job
-            job_progress_save(@job.progress.merge({ 'first_progression': 100, 'second_progression': 100, 'completed': true }))
+            job_progress_save(JSON.parse(@job.progress).merge({ 'first_progression': 100, 'second_progression': 100, 'completed': true }))
             Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
           end
         end
       rescue VRPNoSolutionError, VRPUnprocessableError => e
         if @job
-          job_progress_save(@job.progress.merge({ 'failed': 'true' }))
+          job_progress_save(JSON.parse(@job.progress).merge({ 'failed': 'true' }))
           Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
         end
         raise e
