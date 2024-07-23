@@ -384,8 +384,8 @@ class Customer < ApplicationRecord
 
   def assign_defaults
     self.default_country ||= I18n.t('customers.default.country')
-    self.enable_references = Mapotempo::Application.config.enable_references
-    self.enable_multi_visits = Mapotempo::Application.config.enable_multi_visits
+    self.enable_references ||= Mapotempo::Application.config.enable_references
+    self.enable_multi_visits ||= Mapotempo::Application.config.enable_multi_visits
   end
 
   def create_default_store
