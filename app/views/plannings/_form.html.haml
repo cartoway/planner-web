@@ -32,5 +32,5 @@
         - unless @planning.id
           %p.help-block= t '.tags_help'
   - if @planning.new_record?
-    = zoning_select f, @planning, label: t('plannings.edit.zonings.label'), control_col: 'col-md-offset-2 col-md-8 field'
+    = zoning_select f, @planning, label: t('plannings.edit.zonings.label'), control_col: 'col-md-offset-2 col-md-8 field', label_class: 'col-md-offset-2 col-md-8 field'
   = f.submit

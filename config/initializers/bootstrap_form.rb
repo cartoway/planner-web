@@ -1,7 +1,7 @@
 module BootstrapForm
   module FormGroup
     def form_group_default_class
-      (layout == :inline ? "col" : "col-md-8")
+      (layout == :inline ? "col" : "")
     end
   end
 
