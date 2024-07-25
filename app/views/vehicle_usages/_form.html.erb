@@ -13,7 +13,7 @@
         <% if @vehicle_usage.vehicle.customer.enable_references %>
           <%= f.text_field :ref, help: t('vehicles.form.ref.help') %>
         <% end %>
-        <div class="row form-group">
+        <div class="row">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_color">
             <%= t("activerecord.attributes.vehicle.color") %>
           </label>
@@ -25,7 +25,7 @@
           </div>
         </div>
         <%= f.text_field :name, required: true %>
-        <div id="vehicle_usage_vehicle_consumption_input" class="row form-group">
+        <div id="vehicle_usage_vehicle_consumption_input" class="row">
           <label class="sr-only" for="vehicle_usage_vehicle_emission"><%= t 'activerecord.attributes.vehicle.emission' %></label>
           <label class="sr-only" for="vehicle_usage_vehicle_consumption"><%= t 'activerecord.attributes.vehicle.consumption' %></label>
           <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.emission' %> / <%= t 'activerecord.attributes.vehicle.consumption' %></label>
@@ -39,7 +39,7 @@
             <p class="help-block"><%= t 'vehicles.form.emissions.help' %> - <%= current_user.prefered_unit == 'mi' ? t('vehicles.form.consumption.help_miles') : t('vehicles.form.consumption.help') %></p>
           </div>
         </div>
-        <div id="vehicle_usage_vehicle_max_distance" class="row form-group">
+        <div id="vehicle_usage_vehicle_max_distance" class="row">
           <label class="sr-only" for="vehicle_usage_vehicle_max_distance"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
           <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_distance' %></label>
           <div class="col-md-offset-2 col-md-8 field">
@@ -54,7 +54,7 @@
             <p class="help-block"><%= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_distance.help_miles') : t('vehicles.form.max_distance.help') %></p>
           </div>
         </div>
-        <div id="vehicle_usage_vehicle_max_ride_distance_input" class="row form-group">
+        <div id="vehicle_usage_vehicle_max_ride_distance_input" class="row">
           <label class="sr-only" for="vehicle_usage_vehicle_max_ride_distance"><%= t 'activerecord.attributes.vehicle.max_ride_distance' %></label>
           <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_ride_distance' %></label>
           <div class="col-md-offset-2 col-md-8 field">
@@ -70,7 +70,7 @@
             <p class="help-block"><%= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_ride_distance.help_miles') : t('vehicles.form.max_ride_distance.help') %></p>
           </div>
         </div>
-        <div id="vehicle_usage_vehicle_max_ride_duration_input" class="row form-group">
+        <div id="vehicle_usage_vehicle_max_ride_duration_input" class="row">
           <label class="sr-only" for="vehicle_usage_vehicle_max_ride_duration"><%= t 'activerecord.attributes.vehicle.max_ride_duration' %></label>
           <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.max_ride_duration' %></label>
           <div class="col-md-offset-2 col-md-8 field">
@@ -86,7 +86,7 @@
           </div>
         </div>
         <%= f.fields_for 'vehicle_usage[vehicle][capacities]',@vehicle_usage.vehicle.capacities, layout: :horizontal, builder: BootstrapForm::FormBuilder do |capacity| %>
-          <div id="vehicle_usage_vehicle_capacity_input" class="form-group <%= 'has-error' if @vehicle_usage.vehicle.errors.messages[:capacities].present? %>">
+          <div id="vehicle_usage_vehicle_capacity_input" class="<%= 'has-error' if @vehicle_usage.vehicle.errors.messages[:capacities].present? %>">
             <label class="col-md-offset-2 col-md-8 field"><%= t 'vehicles.form.capacities.label' %></label>
             <div class="col-md-offset-2 col-md-8 field">
               <% @vehicle_usage.vehicle.customer.deliverable_units.each do |du| %>
@@ -107,7 +107,7 @@
           </div>
         <% end %>
 
-        <div id="vehicle_router_input" class="row form-group">
+        <div id="vehicle_router_input" class="row">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_router"><%= t 'activerecord.attributes.vehicle.router' %></label>
           <div class="col-md-offset-2 col-md-8 field">
             <div class="input-group">
@@ -125,7 +125,7 @@
           </div>
         </div>
 
-        <div id="router_options_traffic_input" class="form-group <%= @vehicle_usage.vehicle.default_router.traffic? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_traffic_input" class="<%= @vehicle_usage.vehicle.default_router.traffic? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_traffic">
             <%= t('activerecord.attributes.customer.router_options_traffic') %>
           </label>
@@ -148,7 +148,7 @@
           </div>
         </div>
 
-        <div id="router_options_track_input" class="form-group <%= @vehicle_usage.vehicle.default_router.track? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_track_input" class="<%= @vehicle_usage.vehicle.default_router.track? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_track">
             <%= t('activerecord.attributes.customer.router_options_track') %>
           </label>
@@ -171,7 +171,7 @@
           </div>
         </div>
 
-        <div id="router_options_motorway_input" class="form-group <%= @vehicle_usage.vehicle.default_router.motorway? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_motorway_input" class="<%= @vehicle_usage.vehicle.default_router.motorway? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_motorway">
             <%= t('activerecord.attributes.customer.router_options_motorway') %>
           </label>
@@ -194,7 +194,7 @@
           </div>
         </div>
 
-        <div id="router_options_low_emission_zone_input" class="form-group <%= @vehicle_usage.vehicle.default_router.low_emission_zone? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_low_emission_zone_input" class="<%= @vehicle_usage.vehicle.default_router.low_emission_zone? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_low_emission_zone">
             <%= t('activerecord.attributes.customer.router_options_low_emission_zone') %>
           </label>
@@ -217,7 +217,7 @@
           </div>
         </div>
 
-        <div id="router_options_toll_input" class="form-group <%= @vehicle_usage.vehicle.default_router.toll? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_toll_input" class="<%= @vehicle_usage.vehicle.default_router.toll? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_toll">
             <%= t('activerecord.attributes.customer.router_options_toll') %>
           </label>
@@ -240,7 +240,7 @@
           </div>
         </div>
 
-        <div id="router_options_trailers_input" class="form-group <%= @vehicle_usage.vehicle.default_router.trailers? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_trailers_input" class="<%= @vehicle_usage.vehicle.default_router.trailers? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_trailers">
             <%= t('activerecord.attributes.customer.router_options_trailers') %>
           </label>
@@ -254,7 +254,7 @@
           </div>
         </div>
 
-        <div id="router_options_weight_input" class="form-group <%= @vehicle_usage.vehicle.default_router.weight? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_weight_input" class="<%= @vehicle_usage.vehicle.default_router.weight? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_weight">
             <%= t('activerecord.attributes.customer.router_options_weight') %>
           </label>
@@ -268,7 +268,7 @@
           </div>
         </div>
 
-        <div id="router_options_weight_per_axle_input" class="form-group <%= @vehicle_usage.vehicle.default_router.weight_per_axle? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_weight_per_axle_input" class="<%= @vehicle_usage.vehicle.default_router.weight_per_axle? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_weight_per_axle">
             <%= t('activerecord.attributes.customer.router_options_weight_per_axle') %>
           </label>
@@ -282,7 +282,7 @@
           </div>
         </div>
 
-        <div id="router_options_height_input" class="form-group <%= @vehicle_usage.vehicle.default_router.height? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_height_input" class="<%= @vehicle_usage.vehicle.default_router.height? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_height">
             <%= t('activerecord.attributes.customer.router_options_height') %>
           </label>
@@ -296,7 +296,7 @@
           </div>
         </div>
 
-        <div id="router_options_width_input" class="form-group <%= @vehicle_usage.vehicle.default_router.width? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_width_input" class="<%= @vehicle_usage.vehicle.default_router.width? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_width">
             <%= t('activerecord.attributes.customer.router_options_width') %>
           </label>
@@ -310,7 +310,7 @@
           </div>
         </div>
 
-        <div id="router_options_length_input" class="form-group <%= @vehicle_usage.vehicle.default_router.length? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_length_input" class="<%= @vehicle_usage.vehicle.default_router.length? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_length">
             <%= t('activerecord.attributes.customer.router_options_length') %>
           </label>
@@ -324,7 +324,7 @@
           </div>
         </div>
 
-        <div id="router_options_hazardous_goods_input" class="form-group <%= @vehicle_usage.vehicle.default_router.hazardous_goods? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_hazardous_goods_input" class="<%= @vehicle_usage.vehicle.default_router.hazardous_goods? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="customer_router_options_hazardous_goods">
             <%= t('activerecord.attributes.customer.router_options_hazardous_goods') %>
           </label>
@@ -334,7 +334,7 @@
           </div>
         </div>
 
-        <div id="router_options_max_walk_distance_input" class="form-group <%= @vehicle_usage.vehicle.default_router.max_walk_distance? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_max_walk_distance_input" class="<%= @vehicle_usage.vehicle.default_router.max_walk_distance? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_max_walk_distance">
             <%= t('activerecord.attributes.customer.router_options_max_walk_distance') %>
           </label>
@@ -348,7 +348,7 @@
           </div>
         </div>
 
-        <div id="router_options_approach_input" class="form-group <%= @vehicle_usage.vehicle.default_router.approach? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_approach_input" class="<%= @vehicle_usage.vehicle.default_router.approach? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="customer_router_options_approach">
             <%= t('activerecord.attributes.customer.router_options_approach') %>
           </label>
@@ -359,7 +359,7 @@
           </div>
         </div>
 
-        <div id="router_options_snap_input" class="form-group <%= @vehicle_usage.vehicle.default_router.snap? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_snap_input" class="<%= @vehicle_usage.vehicle.default_router.snap? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_snap">
             <%= t('activerecord.attributes.customer.router_options_snap') %>
           </label>
@@ -373,7 +373,7 @@
           </div>
         </div>
 
-        <div id="router_options_strict_restriction_input" class="form-group <%= @vehicle_usage.vehicle.default_router.strict_restriction? ? '' : 'router-option-disabled' %>">
+        <div id="router_options_strict_restriction_input" class="<%= @vehicle_usage.vehicle.default_router.strict_restriction? ? '' : 'router-option-disabled' %>">
           <label class="col-md-offset-2 col-md-8 field" for="vehicle_usage_vehicle_router_options_strict_restriction">
             <%= t('activerecord.attributes.customer.router_options_strict_restriction') %>
           </label>
@@ -384,7 +384,7 @@
           </div>
         </div>
 
-        <div class="row form-group">
+        <div class="row">
           <label class="col-md-offset-2 col-md-8 field" for="speed_multiplier">
             <%= t('activerecord.attributes.vehicle.speed_multiplier') %>
           </label>
@@ -419,7 +419,7 @@
         <legend class="scheduler-border"><%= t 'vehicle_usages.form.driver.legend' %></legend>
         <%= f.text_field :contact_email, {input_group: '@', help: t('vehicles.form.contact_email.help')} %>
 
-        <div id="vehicle_usage_vehicle_phone_number" class="row form-group">
+        <div id="vehicle_usage_vehicle_phone_number" class="row">
           <label class="sr-only" for="vehicle_usage_vehicle_phone_number"><%= t 'activerecord.attributes.vehicle.phone_number' %></label>
           <label class="col-md-offset-2 col-md-8 field"><%= t 'activerecord.attributes.vehicle.phone_number' %></label>
           <div class="col-md-offset-2 col-md-8 field">
@@ -443,7 +443,7 @@
     <% if @vehicle_usage_sets[0].customer.default_max_vehicle_usage_sets > 1 %>
     <p class="help-block"><%= t 'vehicle_usages.form.vehicle_usage.help' %></p>
     <% end %>
-    <div id="vehicle_usage_store_input" class="row form-group">
+    <div id="vehicle_usage_store_input" class="row">
       <label class="sr-only" for="vehicle_usage_store_start"><%= t 'activerecord.attributes.vehicle_usage.store_start' %></label>
       <label class="sr-only" for="vehicle_usage_store_stop"><%= t 'activerecord.attributes.vehicle_usage.store_stop' %></label>
       <label class="col-md-offset-2 col-md-8 field"><%= t '.stores' %></label>
@@ -468,7 +468,7 @@
         %>
       </div>
     <% end %>
-    <div id="vehicle_usage_time_window_start_time_window_end_input" class="row form-group">
+    <div id="vehicle_usage_time_window_start_time_window_end_input" class="row">
       <label class="sr-only" for="vehicle_usage_open"><%= t 'activerecord.attributes.vehicle_usage.time_window_start' %></label>
       <label class="sr-only" for="vehicle_usage_close"><%= t 'activerecord.attributes.vehicle_usage.time_window_end' %></label>
       <label class="col-md-offset-2 col-md-8 field"><%= t '.time_window_start_end' %></label>
@@ -502,7 +502,7 @@
         <p class="help-block"><%= t '.time_window_start_end_help' %></p>
       </div>
     </div>
-    <div id="vehicle_usage_service_time_input" class="row form-group">
+    <div id="vehicle_usage_service_time_input" class="row">
       <label class="sr-only" for="vehicle_usage_service_time_start"><%= t 'activerecord.attributes.vehicle_usage.service_time_start' %></label>
       <label class="sr-only" for="vehicle_usage_service_time_end"><%= t 'activerecord.attributes.vehicle_usage.service_time_end' %></label>
       <label class="col-md-offset-2 col-md-8 field"><%= t '.service_times' %></label>
@@ -523,7 +523,7 @@
         <p class="help-block"><%= t '.service_times_help' %></p>
       </div>
     </div>
-    <div id="vehicle_usage_set_work_time_input" class="row form-group">
+    <div id="vehicle_usage_set_work_time_input" class="row">
       <label class="sr-only" for="vehicle_usage_work_time"><%= t 'activerecord.attributes.vehicle_usage.work_time' %></label>
       <label class="col-md-offset-2 col-md-8 field"><%= t '.work_time' %></label>
       <div class="col-md-offset-2 col-md-8 field">
@@ -537,7 +537,7 @@
         <p class="help-block"><%= t '.work_time_help' %></p>
       </div>
     </div>
-    <div id="vehicle_usage_rest_input" class="row form-group">
+    <div id="vehicle_usage_rest_input" class="row">
       <label class="sr-only" for="vehicle_usage_rest_duration"><%= t 'activerecord.attributes.vehicle_usage.rest_duration' %></label>
       <label class="sr-only" for="vehicle_usage_store_rest"><%= t 'activerecord.attributes.vehicle_usage.store_rest' %></label>
       <label class="col-md-offset-2 col-md-8 field"><%= t '.rest_duration_store' %></label>
@@ -555,7 +555,7 @@
         <p class="help-block"><%= t '.rest_duration.help' %></p>
       </div>
     </div>
-    <div id="vehicle_usage_rest_start_stop_input" class="row form-group">
+    <div id="vehicle_usage_rest_start_stop_input" class="row">
       <label class="sr-only" for="vehicle_usage_rest_start"><%= t 'activerecord.attributes.vehicle_usage.rest_start' %></label>
       <label class="sr-only" for="vehicle_usage_rest_stop"><%= t 'activerecord.attributes.vehicle_usage.rest_stop' %></label>
       <label class="col-md-offset-2 col-md-8 field"><%= t '.rest_start_stop' %></label>
