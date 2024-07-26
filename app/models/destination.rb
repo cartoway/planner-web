@@ -26,7 +26,7 @@ class Destination < Location
   auto_strip_attributes :name, :street, :postalcode, :city, :country, :detail, :comment, :phone_number
 
   include Consistency
-  validate_consistency :tags
+  validate_consistency [:tags]
 
   before_create :check_max_destination
   before_save :save_visits, :update_tags

@@ -1,0 +1,20 @@
+tag_one_destination_unaffected_one:
+  tag: tag_one
+  destination: destination_unaffected_one
+
+tag_one_destination_two:
+  tag: tag_one
+  destination: destination_two
+
+tag_one_destination_three:
+  tag: tag_one
+  destination: destination_three
+
+tags_tag_three_destination_four:
+  tag: tag_three
+  destination: destination_four
+
+tags_tag_three_destination_five:
+  tag: tag_three
+  destination: destination_five
+

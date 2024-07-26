@@ -64,7 +64,7 @@ class Vehicle < ApplicationRecord
   before_update :update_outdated, :update_color
 
   include Consistency
-  validate_consistency :tags
+  validate_consistency [:tags]
 
   after_save -> { @tag_ids_changed = false }
 

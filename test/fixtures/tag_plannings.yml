@@ -1,0 +1,15 @@
+tag_one_planning_one:
+  tag: tag_one
+  planning: planning_one
+
+tag_two_planning_two:
+  tag: tag_two
+  planning: planning_two
+
+tag_three_planning_four:
+  tag: tag_three
+  planning: planning_four
+
+tag_four_planning_four:
+  tag: tag_four
+  planning: planning_four
