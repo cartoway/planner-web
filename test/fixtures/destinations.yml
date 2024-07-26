@@ -12,7 +12,6 @@ destination_unaffected_one:
   detail: MyString
   comment: MyString
   phone_number: MyString
-  tags: tag_one
 
 destination_one:
   ref: b
@@ -39,7 +38,6 @@ destination_two:
   detail: MyString
   comment: MyString
   phone_number: MyString
-  tags: tag_one
 
 destination_three:
   ref: d
@@ -53,7 +51,6 @@ destination_three:
   detail: MyString
   comment: MyString
   phone_number: MyString
-  tags: tag_one
 
 destination_four:
   name: destination_four
@@ -66,7 +63,6 @@ destination_four:
   detail: MyString
   comment: MyString
   phone_number: MyString
-  tags: tag_three
 
 destination_five:
   name: destination_five
@@ -79,4 +75,3 @@ destination_five:
   detail: MyString
   comment: MyString
   phone_number: MyString
-  tags: tag_three
