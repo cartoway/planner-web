@@ -25,17 +25,9 @@ module Consistency
 
   class_methods do
     # Attributes must have a defined #{attr_name}_changed? method
-    def validate_consistency(*attributes)
-      if attributes.last.is_a?(Hash)
-        options = attributes.pop
-        attribute_consistency = options[:attr_consistency]
-      end
-      attribute_consistency ||= :customer_id
-
+    def validate_consistency(attributes, &block)
       validate do |record|
-        consistent_value = options && options[:attr_consistency_method] ?
-          options[:attr_consistency_method].call(record) :
-          record.send(attribute_consistency)
+        consistent_value = block ? block.call(record) : record.send(:customer_id)
         if consistent_value
           attributes.each{ |attr|
             attr = attr.to_s.gsub(/^(.+[^s])(s?)$/, '\1_id\2').to_sym unless attr.to_s =~ /_ids?$/
@@ -44,7 +36,6 @@ module Consistency
               model_name = attr.to_s.gsub(/_id(s?)$/, '\1').to_sym
               models = record.send(model_name)
               models = [models].compact unless models.is_a? ActiveRecord::Associations::CollectionProxy
-
               record.errors.add(model_name, message: "#{consistent_value} " + I18n.t('activerecord.errors.attributes.inconsistent_customer')) if models.any?{ |m| m.customer_id != consistent_value }
             end
           }
