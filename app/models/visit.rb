@@ -63,7 +63,7 @@ class Visit < ApplicationRecord
   validate :quantities_validator
 
   include Consistency
-  validate_consistency :tags, attr_consistency_method: ->(visit) { visit.destination.try :customer_id }
+  validate_consistency([:tags]) { |visit| visit.destination.try :customer_id }
 
   before_save :update_tags, :create_orders, :update_quantities
   before_update :update_outdated
