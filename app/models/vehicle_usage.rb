@@ -54,7 +54,7 @@ class VehicleUsage < ApplicationRecord
   before_save :update_routes
 
   include Consistency
-  validate_consistency :tags, attr_consistency_method: ->(vehicle_usage) { vehicle_usage.vehicle.try(:customer_id) }
+  validate_consistency([:tags]){ |vehicle_usage| vehicle_usage.vehicle.try(:customer_id) }
 
   after_save -> { @tag_ids_changed = false }
 
@@ -67,6 +67,8 @@ class VehicleUsage < ApplicationRecord
 
   amoeba do
     exclude_association :routes
+    exclude_association :tags
+    exclude_association :tag_vehicle_usages
 
     customize(lambda { |_original, copy|
       def copy.update_outdated; end

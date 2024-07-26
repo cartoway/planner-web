@@ -57,9 +57,13 @@ class Tag < ApplicationRecord
   after_destroy :reset_routes_geojson_point
 
   amoeba do
-    exclude_association :visits
-    exclude_association :plannings
+    enable
     exclude_association :destinations
+    exclude_association :plannings
+    exclude_association :vehicles
+    exclude_association :vehicle_usages
+    exclude_association :visits
+    exclude_association :tag_vehicle_usages
 
     customize( lambda { |original, copy|
       def copy.update_outdated; end

@@ -43,7 +43,7 @@ class Planning < ApplicationRecord
   validate :begin_after_end_date
 
   include Consistency
-  validate_consistency :vehicle_usage_set, :order_array, :zonings, :tags
+  validate_consistency [:vehicle_usage_set, :order_array, :zonings, :tags]
 
   before_create :update_zonings, :check_max_planning
   before_destroy :unlink_job_optimizer

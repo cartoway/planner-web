@@ -8,7 +8,7 @@ class V100::RelationsTest < ActiveSupport::TestCase
   end
 
   setup do
-    @relation = stops_relations(:relation_one)
+    @relation = stops_relations(:stops_relation_one)
   end
 
   def api(part = nil, param = {})
