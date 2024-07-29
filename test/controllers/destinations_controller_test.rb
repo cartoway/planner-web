@@ -300,7 +300,7 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should display an error' do
-    file = fixture_file_upload(Rails.root.join('test/fixtures/files/import_malformed.csv'), 'text/csv')
+    file = fixture_file_upload('import_malformed.csv', 'text/csv')
 
     assert_difference('Destination.count', 0) do
       post :upload_csv, params: { import_csv: { replace: false, file: file } }
