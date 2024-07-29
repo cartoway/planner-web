@@ -121,7 +121,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   test 'should create bulk from csv' do
     assert_difference('Destination.count', 1) do
       assert_difference('Planning.count', 1) do
-        put api(), replace: false, file: fixture_file_upload('files/import_destinations_one.csv', 'text/csv')
+        put api(), replace: false, file: fixture_file_upload('import_destinations_one.csv', 'text/csv')
         assert last_response.ok?, last_response.body
         assert_equal 1, JSON.parse(last_response.body).size
 

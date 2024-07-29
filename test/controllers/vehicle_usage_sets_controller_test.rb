@@ -193,7 +193,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
   end
 
   test 'should upload' do
-    file = fixture_file_upload(Rails.root.join('test/fixtures/files/import_vehicle_usage_sets_one.csv'), 'text/csv')
+    file = fixture_file_upload('import_vehicle_usage_sets_one.csv', 'text/csv')
 
     assert_difference('VehicleUsageSet.count', 1) do
       post :upload_csv, params: { import_csv: { replace_vehicles: true, file: file } }
