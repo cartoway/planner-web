@@ -166,7 +166,7 @@ class Customer < ApplicationRecord
           vehicle_usage.store_start = stores_map[vehicle_usage.store_start]
           vehicle_usage.store_stop = stores_map[vehicle_usage.store_stop]
           vehicle_usage.store_rest = stores_map[vehicle_usage.store_rest]
-          # vehicle_usage.tags = vehicle_usage.tags.map{ |tag| tags_map[tag] }
+          vehicle_usage.tags = vehicle_usage.tags.map{ |tag| tags_map[tag] }
           vehicle_usage.force_check_consistency = true
           vehicle_usage.save! validate: Mapotempo::Application.config.validate_during_duplication
         }
