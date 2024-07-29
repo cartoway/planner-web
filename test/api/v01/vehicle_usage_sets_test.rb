@@ -110,7 +110,7 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
     @customer.reload
 
     assert_difference('VehicleUsageSet.count', 0) do
-      put api(), replace_vehicles: false, file: fixture_file_upload(Rails.root.join('test/fixtures/files/import_vehicle_usage_sets_one.csv'), 'text/csv')
+      put api(), replace_vehicles: false, file: fixture_file_upload('import_vehicle_usage_sets_one.csv', 'text/csv')
       assert last_response.ok?, last_response.body
       json = JSON.parse(last_response.body)
 
@@ -125,7 +125,7 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
     @customer.update_attribute(:max_vehicle_usage_sets, 6)
 
     assert_difference('VehicleUsageSet.count', 1) do
-      put api(), replace_vehicles: true, file: fixture_file_upload('files/import_vehicle_usage_sets_one.csv', 'text/csv')
+      put api(), replace_vehicles: true, file: fixture_file_upload('import_vehicle_usage_sets_one.csv', 'text/csv')
       assert last_response.ok?, last_response.body
       json = JSON.parse(last_response.body)
 
