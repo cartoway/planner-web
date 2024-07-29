@@ -71,6 +71,7 @@ group :development, :test do
   gem 'awesome_print'
 
   gem 'brakeman'
+  gem 'bundler-audit'
   gem 'figaro'
 end
 
