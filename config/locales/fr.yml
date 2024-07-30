@@ -1886,7 +1886,7 @@
           'optimize_max': 'Au maximum :'
           'optimize_less': 'Moins de'
           'optimize-title': 'Durée du processus d''optimisation. Ne prend pas en compte le temps passé en file d''attente.'
-          'warning': 'Attention : le comportement de l''optimisation a changé. Les arrêts non assignés seront affectés à un véhicule durant l''optimisation. Si ce comportement n''est pas souhaité, veuillez les verrouiller.'
+          'warning': 'Attention : Les arrêts non assignés seront affectés à un véhicule durant l''optimisation. Si ce comportement n''est pas souhaité, veuillez les verrouiller.'
         'optimizer':
           'title': 'Optimisation'
           'in_progress': 'Processus en cours, merci de patienter.'
