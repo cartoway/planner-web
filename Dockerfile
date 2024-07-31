@@ -6,14 +6,15 @@ ARG RAILS_ENV
 ARG NODE_ENV
 ENV REDIS_HOST redis-cache
 
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt update && \
     apt install -y \
         git build-essential \
         zlib1g-dev libicu-dev g++ libgeos-dev libgeos++-dev libpq-dev \
         zlib1g libicu67 libgeos-3.9.0 libpq5 postgresql-client \
         libjemalloc2 \
-        nodejs yarnpkg && \
-    ln -s /usr/bin/yarnpkg /usr/bin/yarn
+        nodejs && \
+        npm install -g yarn
 
 WORKDIR /srv/app
 
