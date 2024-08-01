@@ -1057,7 +1057,7 @@ pt:
         float: '0,123'
         required: obrigatório
         advisable: recomendado
-        optionnal: opcional
+        optional: opcional
   vehicle_usage_sets:
     import:
       import_template_help: Ajuda
@@ -1490,7 +1490,7 @@ pt:
         yes_no: sim/não
         required: obrigatório
         advisable: recomendado
-        optionnal: opcional
+        optional: opcional
         deprecated: rejeitado
       not_csv: O ficheiro importado não é formato CSV
       empty_file: conteúdo em branco
@@ -2206,7 +2206,7 @@ pt:
         yes_no: sim/não
         required: obrigatório
         advisable: recomendado
-        optionnal: opcional
+        optional: opcional
         deprecated: depreciado
     form:
       ref:

@@ -1318,7 +1318,7 @@ en:
         yes_no: yes/no
         required: required
         advisable: advised
-        optionnal: optional
+        optional: optional
         deprecated: deprecated
       not_csv: Imported file is not a CSV
       empty_file: content is blank
@@ -2205,7 +2205,7 @@ en:
         float: '0.123'
         required: required
         advisable: advised
-        optionnal: optional
+        optional: optional
   products:
     menu:
       products: Products
@@ -2317,7 +2317,7 @@ en:
         yes_no: yes/no
         required: required
         advisable: advised
-        optionnal: optional
+        optional: optional
         deprecated: deprecated
     form:
       max_distance:

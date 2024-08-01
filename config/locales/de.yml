@@ -1241,7 +1241,7 @@ de:
         yes_no: ja/nein
         required: erforderlich
         advisable: beraten
-        optionnal: optional
+        optional: optional
         deprecated: veraltet
       not_csv: Importierte Datei ist keine CSV-Datei
       empty_file: Inhalt ist leer
@@ -2073,7 +2073,7 @@ de:
         float: '0,123'
         required: erforderlich
         advisable: beraten
-        optionnal: optional
+        optional: optional
   products:
     menu:
       products: Produkte
@@ -2183,7 +2183,7 @@ de:
         yes_no: ja/nein
         required: erforderlich
         advisable: beraten
-        optionnal: optional
+        optional: optional
         deprecated: veraltet
     form:
       max_distance:

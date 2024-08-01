@@ -962,7 +962,7 @@ he:
         yes_no: כן / לא
         required: נדרש
         advisable: מומלץ
-        optionnal: אופציונאלי
+        optional: אופציונאלי
         deprecated: הוצא משימוש
       not_csv: הקובץ המיובא אינו CSV
       empty_file: התוכן ריק
