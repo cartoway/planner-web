@@ -653,9 +653,7 @@ fr:
               invalid_format: 'ne doit pas contenir les caractères ".", "\" ou "/"'
               ref_value: 'Référence tournée '
             begin_date:
-              blank: >-
-                doit être remplie si une date de fin de validité est
-                renseignée
+              blank: doit être remplie si une date de fin de validité est renseignée
             end_date:
               blank: >-
                 doit être remplie si une date de début de validité est
@@ -708,8 +706,8 @@ fr:
       taken: est déjà utilisé(e)
     connection_refused: Connexion à la base de donnée impossible
     location:
-      geocoding_fail: "Le géocodage a échoué :"
-      reversegeocoding_fail: "Le géocodage inversé a échoué :"
+      geocoding_fail: 'Le géocodage a échoué :'
+      reversegeocoding_fail: 'Le géocodage inversé a échoué :'
     mobile:
       default: Une erreur s'est produite
       denied_geolocation: Vous avez refusé le partage de position
@@ -731,8 +729,10 @@ fr:
     tomtom:
       record: 'Enregistrement %{s}'
     empty: 'Rien à importer, vérifiez vos données.'
-    without_stop_type: "Valeurs vides pour « type arrêt », retirez la colonne/clé ou renseignez une valeur parmi [visite | site | pause]."
-    data: "Vérifiez vos données :"
+    without_stop_type: >-
+      Valeurs vides pour « type arrêt », retirez la colonne/clé ou renseignez
+      une valeur parmi [visite | site | pause].
+    data: 'Vérifiez vos données :'
     data_erroneous:
       csv: 'Fichier invalide, ligne %{s}'
       json: Fichier invalide
@@ -764,19 +764,54 @@ fr:
         name_help: Marque du revendeur
         application_name_help: Nom du site Web du revendeur
         sms_api_key_help: Clé d'API pour envoi de SMS
-        website_url_help: "Adresse du site web. Vous pouvez utiliser « {LG} » qui sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoway.com/{LG}/)."
-        welcome_url_help: "Adresse de la page web html incluse comme « iframe » dans la page de bienvenue. Vous pouvez utiliser « {LG} » qui sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoway.com/{LG}/app-news)."
-        help_url_help: "Adresse de la page web contenant l'aide. Vous pouvez utiliser « {LG} » qui sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoway.com/{LG}/help-center)."
-        contact_url_help: "Adresse de la page web contenant le formulaire de contact. Vous pouvez utiliser « {LG} » qui sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoway.com/{LG}/contact-support/)."
-        subscription_url_help: "Adresse de la page web contenant le formulaire de souscription dans le cas d'un compte test. Vous pouvez utiliser « {LG} » qui sera remplacé par la langue telle que « en », « fr » (par ex : https://cartoway.com/{LG}/mapotempo-web-subscription-request)."
+        website_url_help: >-
+          Adresse du site web. Vous pouvez utiliser « {LG} » qui sera remplacé
+          par la langue telle que « en », « fr » (par ex :
+          https://cartoway.com/{LG}/).
+        welcome_url_help: >-
+          Adresse de la page web html incluse comme « iframe » dans la page de
+          bienvenue. Vous pouvez utiliser « {LG} » qui sera remplacé par la
+          langue telle que « en », « fr » (par ex :
+          https://cartoway.com/{LG}/app-news).
+        help_url_help: >-
+          Adresse de la page web contenant l'aide. Vous pouvez utiliser « {LG} »
+          qui sera remplacé par la langue telle que « en », « fr » (par ex :
+          https://cartoway.com/{LG}/help-center).
+        contact_url_help: >-
+          Adresse de la page web contenant le formulaire de contact. Vous pouvez
+          utiliser « {LG} » qui sera remplacé par la langue telle que « en »,
+          « fr » (par ex : https://cartoway.com/{LG}/contact-support/).
+        subscription_url_help: >-
+          Adresse de la page web contenant le formulaire de souscription dans le
+          cas d'un compte test. Vous pouvez utiliser « {LG} » qui sera remplacé
+          par la langue telle que « en », « fr » (par ex :
+          https://cartoway.com/{LG}/mapotempo-web-subscription-request).
         facebook_url_help: Lien Facebook du revendeur
         twitter_url_help: Lien Twitter du revendeur
         linkedin_url_help: Lien linkedIn du revendeur
-        customer_dashboard_url_help: "Adresse de la page web contenant le tableau de bord client. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
-        audience_url_help: "Adresse de la page web contenant votre tableau de bord d'audience. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
-        behavior_url_help: "Adresse de la page web contenant votre tableau de bord de comportement. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
-        customer_audience_url_help: "Adresse de la page web contenant votre tableau de bord d'audience pour un compte spécifique. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
-        customer_behavior_url_help: "Adresse de la page web contenant votre tableau de bord de comportement pour un compte spécifique. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l' espace client (par ex: https://analytics.cartoway.com?id={ID}"
+        customer_dashboard_url_help: >-
+          Adresse de la page web contenant le tableau de bord client. Vous
+          pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de
+          l'espace client (par ex: https://analytics.cartoway.com?id={ID}
+        audience_url_help: >-
+          Adresse de la page web contenant votre tableau de bord d'audience.
+          Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de
+          l'espace client (par ex: https://analytics.cartoway.com?id={ID}
+        behavior_url_help: >-
+          Adresse de la page web contenant votre tableau de bord de
+          comportement. Vous pouvez utiliser « {ID} » qui sera remplacé par
+          l'identifiant de l'espace client (par ex:
+          https://analytics.cartoway.com?id={ID}
+        customer_audience_url_help: >-
+          Adresse de la page web contenant votre tableau de bord d'audience pour
+          un compte spécifique. Vous pouvez utiliser « {ID} » qui sera remplacé
+          par l'identifiant de l'espace client (par ex:
+          https://analytics.cartoway.com?id={ID}
+        customer_behavior_url_help: >-
+          Adresse de la page web contenant votre tableau de bord de comportement
+          pour un compte spécifique. Vous pouvez utiliser « {ID} » qui sera
+          remplacé par l'identifiant de l' espace client (par ex:
+          https://analytics.cartoway.com?id={ID}
         logo_large_help: >-
           Logo pleine page redimensionnable, de préférence au format SVG, à
           défaut en PNG.
@@ -954,10 +989,24 @@ fr:
         Vous pouvez préciser ici une durée minimale, par véhicule. Sinon
         l'optimisation s'arrête par défaut automatiquement.
       optimization_soft_upper_bound_default: '%{n} (valeur par défaut)'
-      optimization_stop_soft_upper_bound_help: "Plus la valeur est grande plus les retards seront pénalisants (0 pour empêcher les retards de manière stricte : désactive les clusters dans ce cas).<br> Valeurs conseillées :<br> - Au plus rapide: 0 à 1<br> - Au plus court: 0 à 30"
-      optimization_vehicle_soft_upper_bound_help: "Pour une optimisation globale, permet de gérer la répartition sur les véhicules. Plus la valeur est grande plus les retards seront pénalisants (0 pour empêcher les retards de manière stricte : désactive les clusters dans ce cas).<br> Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus court : 0 à 30"
+      optimization_stop_soft_upper_bound_help: >-
+        Plus la valeur est grande plus les retards seront pénalisants (0 pour
+        empêcher les retards de manière stricte : désactive les clusters dans ce
+        cas).<br> Valeurs conseillées :<br> - Au plus rapide: 0 à 1<br> - Au
+        plus court: 0 à 30
+      optimization_vehicle_soft_upper_bound_help: >-
+        Pour une optimisation globale, permet de gérer la répartition sur les
+        véhicules. Plus la valeur est grande plus les retards seront pénalisants
+        (0 pour empêcher les retards de manière stricte : désactive les clusters
+        dans ce cas).<br> Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br>
+        - Au plus court : 0 à 30
       optimization_cost_waiting_time_default: '%{n} (valeur par défaut)'
-      optimization_cost_waiting_time_help: "Permet d'évaluer l'importance des temps d'attente. Plus la valeur est grande, plus l'attente avant l'ouverture d'un créneau horaire sera pénalisée (0 pour ne pas considérer l'attente dans l'optimisation).<br> Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus court : non pris en compte"
+      optimization_cost_waiting_time_help: >-
+        Permet d'évaluer l'importance des temps d'attente. Plus la valeur est
+        grande, plus l'attente avant l'ouverture d'un créneau horaire sera
+        pénalisée (0 pour ne pas considérer l'attente dans l'optimisation).<br>
+        Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus court :
+        non pris en compte
       optimization_force_start_help: Forcer le départ du véhicule à son horaire de début.
       enable_global_optimization_test: Actif si Test
       print_header_help: Bloc de texte ajouté avant chaque tournée
@@ -974,12 +1023,15 @@ fr:
         votre client renseigné sur l'application. Votre texte ne doit pas
         comporter de caractères non standards (GSM 03.38) et ne devrait pas
         dépasser 160 caractères (ou 70 en cas de caractères spéciaux).
-      sms_keys_help: "Chaînes de remplacements disponibles : {NAME} {REF} {VISIT_REF} {DATE} {TIME} {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER}."
+      sms_keys_help: >-
+        Chaînes de remplacements disponibles : {NAME} {REF} {VISIT_REF} {DATE}
+        {TIME} {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME}
+        {PHONE_NUMBER}.
       sms_concat_help: >-
         Si coché vos SMS seront complets (mais facturés le prix de plusieurs SMS
         en cas de dépassement), si non coché vos SMS seront tronqués en cas de
         dépassement.
-      sms_from_customer_name_help: "Si coché « %{c} » sera utilisé comme nom d'expéditeur du SMS"
+      sms_from_customer_name_help: 'Si coché « %{c} » sera utilisé comme nom d''expéditeur du SMS'
       speed_multiplier_default: '%{n} (valeur par défaut)'
       speed_multiplier_help: Une valeur supérieure à 100% signifie une vitesse plus élevée.
       audience_url_help: Se rendre sur le tableau de bord d'audience pour ce compte client
@@ -1013,7 +1065,7 @@ fr:
       prefered_icons: Conseillés
       other_icons: Autres
       label_placeholder: unité
-      label_help: "Par exemple « colis » ou une unité comme « kg »."
+      label_help: Par exemple « colis » ou une unité comme « kg ».
       ref_help: Référence libre
       default_quantity_help: >-
         Quantité à livrer par défaut à toutes vos visites (laisser vide si pas
@@ -1119,7 +1171,7 @@ fr:
           Importe les clients depuis un fichier CSV. Les fichiers CSV peuvent
           être exportés à partir de tableurs ou depuis d'autres logiciels.
         file_help: Import de fichier CSV uniquement.
-        custom_columns: "Vous avez défini des colonnes personnalisées : %{s}."
+        custom_columns: 'Vous avez défini des colonnes personnalisées : %{s}.'
       import_template_help: Aide - Définition des colonnes
       dialog:
         help:
@@ -1134,7 +1186,11 @@ fr:
             Si vous souhaitez ne pas utiliser les noms de colonnes par défaut,
             vous pouvez les définir vous-même. Vous pouvez définir une suite de
             numéro de colonnes, ou d'intitulés.
-          def_example: "Par exemple pour « voie », renseigner « numéro, rue, 4 » signifie que vos colonnes intitulées « numéro », « rue », et la 4ème colonne (sans nom) seront fusionnées pour valeur de « voie » dans l'application."
+          def_example: >-
+            Par exemple pour « voie », renseigner « numéro, rue, 4 » signifie
+            que vos colonnes intitulées « numéro », « rue », et la 4ème colonne
+            (sans nom) seront fusionnées pour valeur de « voie » dans
+            l'application.
       tomtom:
         title: TomTom
         help: Importe les adresses de TomTom WEBFLEET comme clients
@@ -1175,7 +1231,10 @@ fr:
           move_help: Déplacez les points manuellement sur la carte le cas échéant
           dismiss: Ignorer
           sort_geocoding: Montrer les géocodages peu fiables d'abord
-      over_max_limit: "Vous avez atteint la limite d'adresses autorisées pour votre compte (Limite : %{limit}), contactez le support si vous avez besoin de plus d'adresses"
+      over_max_limit: >-
+        Vous avez atteint la limite d'adresses autorisées pour votre compte
+        (Limite : %{limit}), contactez le support si vous avez besoin de plus
+        d'adresses
     new:
       title: Nouveau client
     import_file:
@@ -1203,7 +1262,10 @@ fr:
       name: nom
       name_desc: 'nom du client, de l''adresse ou du point d''intérêt'
       street: voie
-      street_desc: "numéro de l'immeuble, type de voie et nom de la voie (l'orthographe doit être correcte pour un géocodage fiable). Note : les détails d'accès doivent eux être posés dans le champ « complément »"
+      street_desc: >-
+        numéro de l'immeuble, type de voie et nom de la voie (l'orthographe doit
+        être correcte pour un géocodage fiable). Note : les détails d'accès
+        doivent eux être posés dans le champ « complément »
       detail: complément
       detail_desc: >-
         détails d'accès complémentaires à la voie permettant à l'agent de
@@ -1254,15 +1316,15 @@ fr:
       quantity_operation_fill: remplir
       quantity_operation_empty: vider
       quantity1_1: quantité 1_1
-      quantity1_1_desc: "déprécié : utiliser « quantités » à la place."
+      quantity1_1_desc: 'déprécié : utiliser « quantités » à la place.'
       quantity1_2: quantité 1_2
-      quantity1_2_desc: "déprécié : utiliser « quantités » à la place."
+      quantity1_2_desc: 'déprécié : utiliser « quantités » à la place.'
       active: livré
       active_desc: indique si le client est livré durant cette tournée ou pas
       open: horaire début
-      open_desc: "déprécié : utiliser « horaire début 1 » à la place."
+      open_desc: 'déprécié : utiliser « horaire début 1 » à la place.'
       close: horaire fin
-      close_desc: "déprécié : utiliser « horaire fin 1 » à la place."
+      close_desc: 'déprécié : utiliser « horaire fin 1 » à la place.'
       time_window_start_1: horaire début 1
       time_window_start_1_desc: >-
         début de la plage horaire 1 (peut dépasser 24:00) conseillée pour la
@@ -1312,13 +1374,13 @@ fr:
         deprecated: déprécié
       not_csv: Le fichier importé n'est pas au format CSV
       empty_file: ne contient aucune donnée
-      refs_duplicate: "La référence « %{refs} » est présente en double dans le fichier."
-      refs_visit_duplicate: "La référence visite « %{refs} » est présente en double dans le fichier."
+      refs_duplicate: 'La référence « %{refs} » est présente en double dans le fichier.'
+      refs_visit_duplicate: 'La référence visite « %{refs} » est présente en double dans le fichier.'
       too_many_lines: 'Import stoppé, trop de lignes (max: %{n}).'
       none_column: Aucune correspondance de colonne trouvée
-      missing_name: "« nom » manquant."
-      missing_location: "« ville / code postal » ou « lat / lng » manquant."
-      invalid_numeric_value: "valeur numérique « %{value} » invalide."
+      missing_name: « nom » manquant.
+      missing_location: « ville / code postal » ou « lat / lng » manquant.
+      invalid_numeric_value: 'valeur numérique « %{value} » invalide.'
       invalid_stop: Le type d'arrêt n'est pas valide
       invalid_force_position: Le type de position forcée est invalide
       check_custom_columns: Vérifiez votre définition des colonnes à importer.
@@ -1401,34 +1463,41 @@ fr:
       content: >-
         Un export au format KMZ vient de vous être envoyé depuis %{s} en pièce
         jointe à cet e-mail.
-      vehicle: "Véhicule : %{name}"
-      planning: "Plan de tournées : %{name} %{date}"
-      planning_ref: "Référence du plan : %{ref}"
-      route_ref: "Référence de la tournée : %{ref}"
-      order_array: "Commandes : %{name}"
+      vehicle: 'Véhicule : %{name}'
+      planning: 'Plan de tournées : %{name} %{date}'
+      planning_ref: 'Référence du plan : %{ref}'
+      route_ref: 'Référence de la tournée : %{ref}'
+      order_array: 'Commandes : %{name}'
     send_computed_ics_route:
       title: Export plan iCalendar
       hello: Bonjour
-      content: "Un export au format agenda iCalendar vient de vous être envoyé depuis %{s}, vous pouvez : Copier-coller le lien et l'importer dans votre agenda personnel (la mise à jour de votre agenda se fera de manière automatique à l'avenir) ou Cliquer sur le lien pour télécharger le contenu de l'agenda (pas de mise à jour automatique)."
-      vehicle: "Véhicule : %{name}"
-      planning: "Plan de tournées : %{name} %{date}"
-      planning_ref: "Référence du plan : %{ref}"
-      route_ref: "Référence de la tournée : %{ref}"
-      order_array: "Commandes : %{name}"
-      link: "Lien de téléchargement : <a href=%{link}>Plan iCalendar</a>"
+      content: >-
+        Un export au format agenda iCalendar vient de vous être envoyé depuis
+        %{s}, vous pouvez : Copier-coller le lien et l'importer dans votre
+        agenda personnel (la mise à jour de votre agenda se fera de manière
+        automatique à l'avenir) ou Cliquer sur le lien pour télécharger le
+        contenu de l'agenda (pas de mise à jour automatique).
+      vehicle: 'Véhicule : %{name}'
+      planning: 'Plan de tournées : %{name} %{date}'
+      planning_ref: 'Référence du plan : %{ref}'
+      route_ref: 'Référence de la tournée : %{ref}'
+      order_array: 'Commandes : %{name}'
+      link: 'Lien de téléchargement : <a href=%{link}>Plan iCalendar</a>'
     send_driver_route:
       subject: Tournée
       title: Tournée
       hello: Bonjour
       content: Une tournée vous a été envoyée
-      vehicle: "Véhicule : %{name}"
-      planning: "Plan de tournées : %{name} %{date}"
-      link: "Lien de la tournée : <a href=%{link}>Tournée</a>"
+      vehicle: 'Véhicule : %{name}'
+      planning: 'Plan de tournées : %{name} %{date}'
+      link: 'Lien de la tournée : <a href=%{link}>Tournée</a>'
   user_mailer:
     layout:
       welcome: 'Bienvenue chez %{name} !'
       staff:
-        content: "Pour vous l'expérience %{name} démarre dès maintenant ! Notre équipe est mobilisée pour garantir son succès."
+        content: >-
+          Pour vous l'expérience %{name} démarre dès maintenant ! Notre équipe
+          est mobilisée pour garantir son succès.
         greetings: 'Bien à vous,'
         signature: 'L''équipe %{name}'
       links:
@@ -1480,7 +1549,7 @@ fr:
       main_content: >-
         Afin de vous offrir la meilleure expérience, vous pouvez compter sur
         notre équipe pour vous accompagner. Aussi,
-      highlight: "pour toutes questions vous pouvez nous contacter : "
+      highlight: 'pour toutes questions vous pouvez nous contacter : '
       contact_support: Contacter le support
       preheader: Découvrez la 1er partie des ressources pour bien démarrer.
       panels_header: 'Les ressources pour bien démarrer : 1er partie'
@@ -1521,7 +1590,8 @@ fr:
     features:
       header: Vous avez des questions ? Notre équipe y répond !
       main_content: >-
-        Notre équipe est disponible pour répondre à l'ensemble de vos questions :
+        Notre équipe est disponible pour répondre à l'ensemble de vos
+        questions :
       highlight: ''
       contact_support: Contacter le support
       preheader: Découvrez la 2nd partie des ressources pour bien démarrer.
@@ -1596,7 +1666,7 @@ fr:
         doc_link: Doc - TomTom WEBFLEET
         doc_href: /manual/07-tomtom_webfleet.html
       panel_three:
-        title: "Options avancées :"
+        title: 'Options avancées :'
         content: >-
           utiliser les options avancées : créer des visites multiples avec des
           paramètres différents pour un même client etc.
@@ -1614,7 +1684,10 @@ fr:
         webfleet: Interfacer TomTom WEBFLEET
     accompanying:
       title: Notre équipe vous accompagne
-      content: "Afin de vous offrir la meilleure expérience, vous pouvez compter sur notre équipe pour vous accompagner. Aussi, <b>pour toutes questions vous pouvez nous contacter</b> :"
+      content: >-
+        Afin de vous offrir la meilleure expérience, vous pouvez compter sur
+        notre équipe pour vous accompagner. Aussi, <b>pour toutes questions vous
+        pouvez nous contacter</b> :
       link: Contacter le support
       preheader: Notre équipe est disponible pour répondre à l'ensemble de vos questions.
       footer: 'Vous recevez ce message en tant qu''utilisateur de %{name}'
@@ -1624,7 +1697,11 @@ fr:
         Vous arrivez au terme de votre période d’essai. <b>Nous vous remercions
         de l’intérêt que vous portez à %{name} et nous espérons que l'expérience
         a répondu à vos attentes.</b>
-      content: "Si vous souhaitez poursuivre l’aventure à nos côtés <b>vous pouvez dès à présent contacter notre service commercial par le biais de ce formulaire ou par téléphone au +33&nbsp;5&nbsp;64&nbsp;27&nbsp;04&nbsp;59&nbsp;</b> :"
+      content: >-
+        Si vous souhaitez poursuivre l’aventure à nos côtés <b>vous pouvez dès à
+        présent contacter notre service commercial par le biais de ce formulaire
+        ou par téléphone au
+        +33&nbsp;5&nbsp;64&nbsp;27&nbsp;04&nbsp;59&nbsp;</b> :
       link: 'Je demande à m''abonner à %{name}'
       preheader: >-
         Vous arrivez au terme de votre période d’essai. Nous vous remercions de
@@ -1647,19 +1724,22 @@ fr:
         icalendar_email: Agenda iCal par email
         spreadsheet: Tableur CSV
         none_planning: Veuillez sélectionner au moins un plan à exporter
-      over_max_limit: "Vous avez atteint la limite de plans autorisés pour votre compte (Limite : %{limit}), veuillez supprimer vos précédents plans ou contacter le support si vous avez besoin de plus de plans."
+      over_max_limit: >-
+        Vous avez atteint la limite de plans autorisés pour votre compte
+        (Limite : %{limit}), veuillez supprimer vos précédents plans ou
+        contacter le support si vous avez besoin de plus de plans.
       routes_by_vehicles: Tournées du véhicule
       deliverables_by_vehicles: État de charge
       vehicle_select_error: Vous devez avoir sélectionné un véhicule
-      vehicle_action: "Actions pour un véhicule :"
+      vehicle_action: 'Actions pour un véhicule :'
     edit:
       sopac_title: Relevé de température
-      device_name_label: "Nom de l'appareil :"
-      last_temperature_statement_label: "Dernier relevé :"
-      temperature_label: "Température :"
+      device_name_label: 'Nom de l''appareil :'
+      last_temperature_statement_label: 'Dernier relevé :'
+      temperature_label: 'Température :'
       vehicles: Véhicules
       marker_clusters: Activer/Désactiver les groupes de points
-      current_position: "Position véhicule :"
+      current_position: 'Position véhicule :'
       optimize_routes: Optimiser le plan de tournées
       lock_routes: Verrouiller les tournées
       toggle_routes: Masquer les tournées
@@ -1707,7 +1787,7 @@ fr:
         undelivered: Non livré
         any: Tous statuts
         none: Sans statut
-      update_stops_status: "Statuts arrêts :"
+      update_stops_status: 'Statuts arrêts :'
       customer_external_callback_url:
         action: Application externe
       export:
@@ -1795,7 +1875,10 @@ fr:
       automatic_insert_help_multiple: >-
         Propose un bon endroit pour insérer les adresses dans des tournées (le
         résultat ne sera plus optimisé)
-      automatic_insert_confirm: "Affecter tous les arrêts non assignés à des tournées ? Le résultat ne sera plus optimisé. Les sectorisations sont recommandées pour affecter les arrêts de manière plus précise (Ok pour continuer malgré tout)."
+      automatic_insert_confirm: >-
+        Affecter tous les arrêts non assignés à des tournées ? Le résultat ne
+        sera plus optimisé. Les sectorisations sont recommandées pour affecter
+        les arrêts de manière plus précise (Ok pour continuer malgré tout).
       automatic_insert_too_many: >-
         Trop d'arrêts non assignés. Les sectorisations sont recommandées pour
         affecter les arrêts de manière plus précise
@@ -1887,8 +1970,8 @@ fr:
             active_only: Placer les visites décochées en fin de tournée
             active_only_true_help: Ne prendre en compte que les visites cochées dans les tournées.
             active_only_false_help: >-
-              Optimiser toutes les visites d'une tournée, qu'elles soient actives
-              ou non (les visites décochées resteront décochées).
+              Optimiser toutes les visites d'une tournée, qu'elles soient
+              actives ou non (les visites décochées resteront décochées).
             cost_late_multiplier: Autoriser les retards créneau visite
           vehicles:
             title: Flotte
@@ -1906,14 +1989,17 @@ fr:
           cancel: Annuler l'optimisation
           canceling: Annulation
           optimize: Optimiser
-          optimization_time: "Durée d'optimisation :"
-          optimize_min: "Au minimum :"
-          optimize_max: "Au maximum :"
+          optimization_time: 'Durée d''optimisation :'
+          optimize_min: 'Au minimum :'
+          optimize_max: 'Au maximum :'
           optimize_less: Moins de
           optimize-title: >-
             Durée du processus d'optimisation. Ne prends pas en compte le temps
             passé en file d'attente.
-          warning: "Attention : Les arrêts non assignés seront affectés à un véhicule durant l'optimisation. Si ce comportement n'est pas souhaité, veuillez les verrouiller."
+          warning: >-
+            Attention : Les arrêts non assignés seront affectés à un véhicule
+            durant l'optimisation. Si ce comportement n'est pas souhaité,
+            veuillez les verrouiller.
         optimizer:
           title: Optimisation
           in_progress: 'Processus en cours, merci de patienter.'
@@ -2030,9 +2116,9 @@ fr:
       begin_end_date_help: Période durant laquelle le plan est valide
       tags_help: >-
         Permet de filtrer les visites qui seront présentes sur le plan selon
-        leur catégorie. Si « tous » est sélectionné, les visites/adresses doivent
-        avoir l’ensemble des catégories. Si « ou » est sélectionné une catégorie
-        de la liste suffit.
+        leur catégorie. Si « tous » est sélectionné, les visites/adresses
+        doivent avoir l’ensemble des catégories. Si « ou » est sélectionné une
+        catégorie de la liste suffit.
       order_array: Comm.
       zonings_help: >-
         Permet d'affecter automatiquement des visites/adresses à des véhicules
@@ -2211,9 +2297,9 @@ fr:
         niveau de précision atteint lors de la conversion de l'adresse postale
         en coordonnées géographiques, exprimé de manière sémantique
       geocoding_result: adresse géocodage
-      missing_name: "« nom » manquant."
-      missing_location: "« ville » ou « code postal » ou « lat » et « lng » manquant."
-      invalid_numeric_value: "valeur numérique « %{value} » invalide à l''enregistrement %{line}."
+      missing_name: « nom » manquant.
+      missing_location: « ville » ou « code postal » ou « lat » et « lng » manquant.
+      invalid_numeric_value: 'valeur numérique « %{value} » invalide à l''''enregistrement %{line}.'
       format:
         string: texte
         integer: nombre
@@ -2322,7 +2408,7 @@ fr:
       tags_format: 'compétence 1,compétence 2'
       devices: appareils
       devices_desc: référence ou ID de votre GPS associé aux véhicules
-      missing_name: "« nom » du véhicule manquant"
+      missing_name: « nom » du véhicule manquant
       format:
         string: texte
         json: json
@@ -2419,7 +2505,7 @@ fr:
       driver:
         legend: Chauffeur
       vehicle_usage:
-        legend: "Configuration du véhicule : « %{s} »"
+        legend: 'Configuration du véhicule : « %{s} »'
         help: >-
           Les informations ci-dessous sont spécifiques à la configuration du
           véhicule.
@@ -2483,7 +2569,10 @@ fr:
       stores: Départ - Arrivée
       time: Début - Fin
       service_time: Durées de service
-      over_max_limit: "Vous avez atteint la limite de configurations de la flotte autorisées pour votre compte (Limite : %{limit}), contactez le support si vous avez besoin de plus de configurations"
+      over_max_limit: >-
+        Vous avez atteint la limite de configurations de la flotte autorisées
+        pour votre compte (Limite : %{limit}), contactez le support si vous avez
+        besoin de plus de configurations
     new:
       title: Nouvelle configuration de la flotte
     import:
@@ -2583,9 +2672,9 @@ fr:
       empty_file: ne contient aucune donnée
       too_many_lines: 'Import stoppé, trop de lignes (max: %{n}).'
       none_column: Aucune colonne trouvée
-      missing_name: "« nom » de la configuration par défaut manquant"
+      missing_name: « nom » de la configuration par défaut manquant
       missing_time_window_start_end: heure de début ou de fin de la configuration par défaut manquantes
-      invalid_numeric_value: "valeur numérique « %{value} » invalide."
+      invalid_numeric_value: 'valeur numérique « %{value} » invalide.'
       check_custom_columns: Vérifiez votre définition des colonnes à importer.
     form:
       time_window_start_end: Amplitude horaire
@@ -2670,7 +2759,11 @@ fr:
     index:
       title: Liste sectorisations
       new: Nouvelle sectorisation
-      over_max_limit: "Vous avez atteint la limite de sectorisations autorisés pour votre compte (Limite : %{limit}), veuillez supprimer vos précédentes sectorisations ou contacter le support si vous avez besoin de plus de sectorisations"
+      over_max_limit: >-
+        Vous avez atteint la limite de sectorisations autorisés pour votre
+        compte (Limite : %{limit}), veuillez supprimer vos précédentes
+        sectorisations ou contacter le support si vous avez besoin de plus de
+        sectorisations
     new:
       title: Nouvelle sectorisation
     form:
@@ -2683,7 +2776,7 @@ fr:
       from_planning_help: >-
         Vous pouvez aussi afficher les adresses d'un unique plan de tournées en
         modifiant ce sectorisation depuis le plan en question
-      stops_from_planning: "Adresses chargées depuis le plan « %{s} »"
+      stops_from_planning: 'Adresses chargées depuis le plan « %{s} »'
       generate: Générer
       automatic:
         one: 'Automatique : 1 secteur'
