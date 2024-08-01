@@ -1940,7 +1940,6 @@ de:
         default: '%{n} (Standard)'
       time_window_start_end_days:
         default: '%{n}'
-      time_window_start: Zeitverschiebung
       time_window_start_end_help: Arbeitszeiten des Auslieferungsfahrers
       stores: Start / Ende
       store:
