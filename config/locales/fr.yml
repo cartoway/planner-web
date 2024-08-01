@@ -825,8 +825,6 @@
   'customers':
     'duplicate':
       'success': 'Espace client dupliqué avec succès'
-    'import':
-      'success': 'L''espace client %{customer_name} a été importé avec succès.'
     'default':
       'country': 'France'
     'menu':
@@ -860,6 +858,7 @@
       'audience_url': 'Tableau de bord d''audience pour l''ensemble des espaces'
       'behavior_url': 'Tableau de bord comportemental pour l''ensemble des espaces'
     'import':
+      'success': 'L''espace client %{customer_name} a été importé avec succès.'
       'title': 'Importer un espace client'
       'label': 'Sélectionner un espace client à partir d''un fichier .dump'
       'submit': 'Importer le espace client'

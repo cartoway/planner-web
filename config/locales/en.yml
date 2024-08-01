@@ -802,8 +802,6 @@ en:
   customers:
     duplicate:
       success: Customer account duplicated successfully
-    import:
-      success: Customer account %{customer_name} imported successfully
     default:
       country: England
     menu:
@@ -827,7 +825,6 @@ en:
       title: Listing accounts
       new: New Account
       import: Import customer
-      import: Import
       map: Map
       no_test: not in test
       status: Status
@@ -838,6 +835,7 @@ en:
       audience_url: Audience Dashboard for all accounts
       behavior_url: Behavior Dashboard for all accounts
     import:
+      success: Customer account %{customer_name} imported successfully
       title: Import customer
       label: Select customer from .dump file
       submit: Import customer
@@ -1190,7 +1188,6 @@ en:
       geocoding_result: geocoding result
       geocoding_level_desc: level of precision reached when converting the destination's
         street address into geographic coordinates, expressed via human friendly levels.
-      geocoding_result: geocoding result
       duration: visit duration
       duration_desc: visit duration
       quantity: quantity
