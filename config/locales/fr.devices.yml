@@ -222,7 +222,7 @@ fr:
       fleet_send:
         action: Envoyer à l'app mobile Cartoway Field
         success: Envoyé à l'app mobile Cartoway Field avec succès
-        fail: Échec lors de l'envoi vers Mapotempo l'app mobile Cartoway Field
+        fail: Échec lors de l'envoi vers l'app mobile Cartoway Field
       fleet_clear:
         action: Vider l'app mobile Cartoway Field
         success: L'app mobile Cartoway Field a été vidée avec succès

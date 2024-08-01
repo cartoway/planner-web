@@ -785,7 +785,7 @@ fr:
           Adresse de la page web contenant le formulaire de souscription dans le
           cas d'un compte test. Vous pouvez utiliser « {LG} » qui sera remplacé
           par la langue telle que « en », « fr » (par ex :
-          https://cartoway.com/{LG}/mapotempo-web-subscription-request).
+          https://cartoway.com/{LG}/planner-web-subscription-request).
         facebook_url_help: Lien Facebook du revendeur
         twitter_url_help: Lien Twitter du revendeur
         linkedin_url_help: Lien linkedIn du revendeur
@@ -1700,12 +1700,11 @@ fr:
       content: >-
         Si vous souhaitez poursuivre l’aventure à nos côtés <b>vous pouvez dès à
         présent contacter notre service commercial par le biais de ce formulaire
-        ou par téléphone au
-        +33&nbsp;5&nbsp;64&nbsp;27&nbsp;04&nbsp;59&nbsp;</b> :
+        ou par téléphone</b> :
       link: 'Je demande à m''abonner à %{name}'
       preheader: >-
         Vous arrivez au terme de votre période d’essai. Nous vous remercions de
-        l’intérêt que vous portez à Mapotempo Web (resseler solution name) et
+        l’intérêt que vous portez à la solution et
         nous espérons que l'expérience a répondu à vos attentes.
       footer: 'Vous recevez ce message en tant qu''utilisateur de %{name}'
   plannings:

@@ -713,7 +713,7 @@ de:
         welcome_url_help: "Die Adresse der Internetseite wurde als HTML als \"iframe\" auf der Startseite eingefügt. \"{LG}\" kann durch einen Sprachcode wie \"en\", \"fr\" usw. ersetzt werden (z. B.: https://cartoway.com/{LG}/app-news)."
         help_url_help: "Adresse der Internetseite mit Hilfeinhalt. Es kann \"{LG}\" verwendet werden, das durch einen Sprachcode wie beispielsweise \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/help-center)."
         contact_url_help: "Adresse der Internetseite mit Kontaktformular. Es kann \"{LG}\" verwendet werden, das durch eine Sprache wie \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/contact-support/)."
-        subscription_url_help: "Adresse der Internetseite mit Abonnementinhalten für einen Testkunden. Es kann \"{LG}\" verwendet werden, das durch eine Sprache wie \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/mapotempo-web-subscription-request)."
+        subscription_url_help: "Adresse der Internetseite mit Abonnementinhalten für einen Testkunden. Es kann \"{LG}\" verwendet werden, das durch eine Sprache wie \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/planner-web-subscription-request)."
         audience_url_help: "Adresse der Internetseite, die das Zielgruppen-Dashboard enthält. Es kann \"{ID}\" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})"
         behavior_url_help: "Adresse der Internetseite, die das Verhaltens-Dashboard enthält. Es kann \"{ID}\" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})"
         customer_audience_url_help: >-
@@ -1558,12 +1558,11 @@ de:
         Erwartungen erfüllen konnte.</b>
       content: >-
         Wenn Sie das Abenteuer mit uns fortsetzen möchten, <b>können Sie unser
-        Verkaufsteam über dieses Formular oder telefonisch unter
-        +33&nbsp;5&nbsp;64&nbsp;27&nbsp;04&nbsp;59&nbsp; kontaktieren</b>:
+        Verkaufsteam über dieses Formular oder telefonisch kontaktieren</b>:
       link: 'Hiermit beantrage ich ein Abonnement für %{name}.'
       preheader: >-
         Ihr kostenloser Demozeitraum endet in Kürze. Wir danken Ihnen für Ihr
-        Interesse an Mapotempo Web (Name der Online-Lösung) und hoffen, dass
+        Interesse an der Lösung und hoffen, dass
         diese Erfahrungen Ihre Erwartungen erfüllt haben.
       footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
   plannings:
