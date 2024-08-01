@@ -1,8 +1,12 @@
 fr:
   errors:
     messages:
-      carrierwave_processing_error: "Impossible de redimensionner l'image."
-      carrierwave_integrity_error: "Pas une image."
-      carrierwave_download_error: "Impossible de télécharger l'image."
-      extension_white_list_error: "Vous n'êtes pas autorisé à envoyer un fichier %{extension}, types autorisés : %{allowed_types}"
-      extension_black_list_error: "Vous n'êtes pas autorisé à envoyer un fichier %{extension}, types interdits : %{prohibited_types}"
+      carrierwave_processing_error: Impossible de redimensionner l'image.
+      carrierwave_integrity_error: Pas une image.
+      carrierwave_download_error: Impossible de télécharger l'image.
+      extension_white_list_error: >-
+        Vous n'êtes pas autorisé à envoyer un fichier %{extension}, types
+        autorisés : %{allowed_types}
+      extension_black_list_error: >-
+        Vous n'êtes pas autorisé à envoyer un fichier %{extension}, types
+        interdits : %{prohibited_types}

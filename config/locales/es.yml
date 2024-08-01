@@ -1,5 +1,5 @@
 es:
-  encoding: 'Windows-1252'
+  encoding: Windows-1252
   distance:
     unit:
       one: m
@@ -152,16 +152,14 @@ es:
         router_options_max_walk_distance: Distancia máxima a pie
         router_options_approach: Llegar/Salir con el punto de visita a la derecha
         router_options_snap: Posponer la parada al cruce
-        router_options_strict_restriction: Respeto estricto de las limitaciones vehículos
-          pesados
+        router_options_strict_restriction: Respeto estricto de las limitaciones vehículos pesados
         print_planning_annotating: Incluir una firma cliente
         print_header: Encabezamiento de las giras
         print_stop_time: Incluir los horarios de pasaje
         print_map: Incluir el mapa
         stores: Depósitos
         enable_orders: Activar los mandos
-        enable_multi_vehicle_usage_sets: Permitir las configuraciones de vehículos
-          múltiples
+        enable_multi_vehicle_usage_sets: Permitir las configuraciones de vehículos múltiples
         enable_references: Mostrar las referencias
         enable_multi_visits: Permitir las visitas múltiples
         enable_global_optimization: Activar la optimización global
@@ -468,45 +466,50 @@ es:
         inconsistent_customer: no es un valor autorizado para esa cuenta cliente
       models:
         location:
-          missing_address_or_latlng: El código postal y la ciudad no pueden estar
-            vacíos si lat/Ing están vacíos
+          missing_address_or_latlng: >-
+            El código postal y la ciudad no pueden estar vacíos si lat/Ing están
+            vacíos
           lat_outside_range: debe estar entre -90..90
           lng_outside_range: debe estar entre -180..180
-          geocoding_accuracy_outside_range: debe estar entre 0,,1
+          geocoding_accuracy_outside_range: 'debe estar entre 0,,1'
         vehicles:
           at_least_one: Un vehículo por lo menos es necesario
         vehicle_usage:
-          rest_range: La franja de descanso debe estar entre %{start} y %{end}
+          rest_range: 'La franja de descanso debe estar entre %{start} y %{end}'
           service_range: no puede ser superior o igual al tiempo de trabajo
           attributes:
             time_window_end:
               after: debe ser después del horario de inicio
-          missing_rest_duration: debe ser cumplimentado(a) si una franja de descanso
-            esta cuplimentada
+          missing_rest_duration: >-
+            debe ser cumplimentado(a) si una franja de descanso esta
+            cuplimentada
         vehicle_usage_set:
           at_least_one: Una configuración del vehículo por lo menos es necesaria
-          missing_rest_window: debe ser cumplimentado(a) si la duración de descanso
-            esta cumplimentada
+          missing_rest_window: >-
+            debe ser cumplimentado(a) si la duración de descanso esta
+            cumplimentada
           attributes:
             time_window_end:
               after: debe ser después el horario de inicio
             rest_stop:
               after: debe ser después el horario de inicio
-          missing_rest_duration: debe ser cumplimentado(a) si una franja de descanso
-            esta cuplimentada
+          missing_rest_duration: >-
+            debe ser cumplimentado(a) si una franja de descanso esta
+            cuplimentada
         visit:
           attributes:
             time_window_end_1:
-              blank: debe ser cumplimentado(a) si un inicio o una fin de Franja horario
-                2 esta indicado(a)
-              after: debe ser después el %{s}
+              blank: >-
+                debe ser cumplimentado(a) si un inicio o una fin de Franja
+                horario 2 esta indicado(a)
+              after: 'debe ser después el %{s}'
             time_window_start_2:
-              after: debe ser después del fin de %{s}
+              after: 'debe ser después del fin de %{s}'
             time_window_end_2:
-              after: debe ser después de %{s}
+              after: 'debe ser después de %{s}'
             quantities:
               not_float: debe ser un numero
-              negative_value: debe ser un valor positivo (%{value})
+              negative_value: 'debe ser un valor positivo (%{value})'
         zone:
           attributes:
             vehicle:
@@ -526,23 +529,25 @@ es:
         route:
           attributes:
             stops:
-              bad_index: Malo índice %{índex} en la gira %{route}
+              bad_index: 'Malo índice %{índex} en la gira %{route}'
         planning:
           attributes:
             ref:
               ref_value: 'Referencia gira '
             begin_date:
-              blank: debe ser cumplimentado(a) si una fecha de fin de validez esta
+              blank: >-
+                debe ser cumplimentado(a) si una fecha de fin de validez esta
                 indicada
             end_date:
-              blank: debe ser cumplimentado(a) si una fecha de inicio de validez esta
+              blank: >-
+                debe ser cumplimentado(a) si una fecha de inicio de validez esta
                 indicada
               after: debe ser después la fecha de inicio de validez
         vehicle:
           attributes:
             capacities:
               not_float: debe ser un numero
-              negative_value: debe ser un valor positivo (%{value})
+              negative_value: 'debe ser un valor positivo (%{value})'
         tag:
           icon_unknown: no es un icono font-awesome autorizado
           icon_size_invalid: no es un tamaño valido
@@ -574,40 +579,47 @@ es:
       description: La pagina que intenta alcanzar ha provocado un error
       status:
         title:
-          default: Un error ha ocurrido en la aplicación
           '404': Pagina precedente
           '500': Un error interno ha ocurrido
+          default: Un error ha ocurrido en la aplicación
         explanation:
-          '404': La pagina no ha sido encontrada en el servidor, a lo mejor ha sido
+          '404': >-
+            La pagina no ha sido encontrada en el servidor, a lo mejor ha sido
             suprimida.
-          default: Un error interno ha ocurrido. El problema ha sido señalado, gracias
-            de intentar otra acción mientras tanto. Contactar el soporto si urgencia.
-          '500': Un error interno ha ocurrido. El problema ha sido señalado, gracias
-            de intentar otra acción mientras tanto. Contactar el soporto si urgencia.
+          '500': >-
+            Un error interno ha ocurrido. El problema ha sido señalado, gracias
+            de intentar otra acción mientras tanto. Contactar el soporto si
+            urgencia.
+          default: >-
+            Un error interno ha ocurrido. El problema ha sido señalado, gracias
+            de intentar otra acción mientras tanto. Contactar el soporto si
+            urgencia.
       back_button: Pagina precedente
       home_button: Volver al inicio
     messages:
       taken: esta ya utilizado(a)
     connection_refused: Conexión a la base de datos imposible
     location:
-      geocoding_fail: 'La geocodificacion ha fracasado :'
+      geocoding_fail: "La geocodificacion ha fracasado :"
       reversegeocoding_fail: 'La geocodificacion inversa ha fracasado :'
     planning:
       import_too_routes: Intento de importar mas giras que de vehículos disponibles
       already_optimizing: Una optimización del plan esta ya pendiente
-      deadlock: 'Atención : fracaso de la actualización de los datos. Otra actualización
-        ha sido realizada, quizás ha realizado varias operaciones demasiado rápidamente.'
+      deadlock: >-
+        Atención : fracaso de la actualización de los datos. Otra actualización
+        ha sido realizada, quizás ha realizado varias operaciones demasiado
+        rápidamente.
   import:
     csv:
-      line: Línea %{s}
+      line: 'Línea %{s}'
     tomtom:
-      record: Registro %{s}
-    empty: Nada a importar, verifique sus datos.
-    data: 'Verificad sus datos :'
+      record: 'Registro %{s}'
+    empty: 'Nada a importar, verifique sus datos.'
+    data: "Verificad sus datos :"
     data_erroneous:
-      csv: Fichero invalido, line %{s}
+      csv: 'Fichero invalido, line %{s}'
       json: Fichero invalido
-      tomtom: Datos tomtom inválidos, registro %{s}
+      tomtom: 'Datos tomtom inválidos, registro %{s}'
     template_csv: Modelo importe hoja de calculo estándar
     template_excel: Modelo importe hoja de calculo Excel
   admin:
@@ -622,13 +634,15 @@ es:
       edit:
         title: Modificar revendedor
       form:
-        host_help: Nombre de host y puerto del URL web utilizados para detectar este
+        host_help: >-
+          Nombre de host y puerto del URL web utilizados para detectar este
           revendedor
         name_help: Marca del revendedor
-        logo_large_help: Logo plena pagina redimensionable, preferentemente al formato
-          SVG, o sino en PNG.
-        logo_small_help: Logo del menú, 150×40 pixeles en SVG o PNG.
-        favicon_help: Icono del sitio web, 16x16 pixeles al formato PNG o ICO.
+        logo_large_help: >-
+          Logo plena pagina redimensionable, preferentemente al formato SVG, o
+          sino en PNG.
+        logo_small_help: 'Logo del menú, 150×40 pixeles en SVG o PNG.'
+        favicon_help: 'Icono del sitio web, 16x16 pixeles al formato PNG o ICO.'
         protocol_url_http: HTTP
         protocol_url_https: HTTPS
       menu:
@@ -697,43 +711,43 @@ es:
       options: Opciones
       optimization_parameters: Configuraciones de optimización
       router_help: Perfil utilizado para los cálculos de itinerarios predeterminados
-      router_options_trailers_range: Entre %{from} y %{to} remolques
-      router_options_weight_range: Peso (con remolques y mercancías) entre %{from}
-        y %{to} toneladas
-      router_options_weight_per_axle_range: Peso par eje entre %{from} y %{to} toneladas
-      router_options_height_range: Altura entre %{from} y %{to} metros
-      router_options_width_range: Anchura entre %{from} y %{to} metros
-      router_options_length_range: Largura entre %{from} y %{to} metros
-      router_options_max_walk_distance_range: Distancia máxima a pie antes de coger
-        los transportes públicos
-      router_options_approach_help: Llegar/Salir con el punto de visita del lado de
-        circulación en el camino
-      router_options_snap_range: Distancia máxima para pararse a un cruce sino parada
-        delante el punto de entrega
-      router_options_strict_restriction: Si no marcado el calculador intentara respetar
-        las prohibiciones a lo mas cerca y pasara por encima la prohibición solo si
-        no puede hacerlo de otra manera.
+      router_options_trailers_range: 'Entre %{from} y %{to} remolques'
+      router_options_weight_range: 'Peso (con remolques y mercancías) entre %{from} y %{to} toneladas'
+      router_options_weight_per_axle_range: 'Peso par eje entre %{from} y %{to} toneladas'
+      router_options_height_range: 'Altura entre %{from} y %{to} metros'
+      router_options_width_range: 'Anchura entre %{from} y %{to} metros'
+      router_options_length_range: 'Largura entre %{from} y %{to} metros'
+      router_options_max_walk_distance_range: Distancia máxima a pie antes de coger los transportes públicos
+      router_options_approach_help: Llegar/Salir con el punto de visita del lado de circulación en el camino
+      router_options_snap_range: >-
+        Distancia máxima para pararse a un cruce sino parada delante el punto de
+        entrega
+      router_options_strict_restriction: >-
+        Si no marcado el calculador intentara respetar las prohibiciones a lo
+        mas cerca y pasara por encima la prohibición solo si no puede hacerlo de
+        otra manera.
       visit_duration_help: Duración de visita media por cliente
-      optimization_time_help: La optimización se para por defecto automáticamente.
-        Sin embargo puede precisar aquí un valor limite, por vehículo, que no se debe
-        sobrepasar.
-      optimization_stop_soft_upper_bound_help: 'Mas grande es el valor mas penalisantes
-        son los retrasos  (0 para impedir los retrasos de manera estricta : desactiva
-        los clúster en ese caso).'
-      optimization_vehicle_soft_upper_bound_help: 'Para una optimización global, permite
-        gestionar el reparte sobre los vehículos. Mas grande es el valor mas penalisantes
-        son los retrasos (0 para impedir los retrasos de manera estricta : desactiva
-        los clúster en ese caso).'
-      optimization_cost_waiting_time_help: Permite evaluar la importancia de los tiempos
-        de espera. Mas grande es el valor mas penalizada será la espera antes la apertura
-        de una franja horaria (0 para no considerar la espera en la optimización).
-      optimization_force_start_help: Forzar la salida del vehículo a su horario de
-        inicio.
+      optimization_time_help: >-
+        La optimización se para por defecto automáticamente. Sin embargo puede
+        precisar aquí un valor limite, por vehículo, que no se debe sobrepasar.
+      optimization_stop_soft_upper_bound_help: >-
+        Mas grande es el valor mas penalisantes son los retrasos  (0 para
+        impedir los retrasos de manera estricta : desactiva los clúster en ese
+        caso).
+      optimization_vehicle_soft_upper_bound_help: >-
+        Para una optimización global, permite gestionar el reparte sobre los
+        vehículos. Mas grande es el valor mas penalisantes son los retrasos (0
+        para impedir los retrasos de manera estricta : desactiva los clúster en
+        ese caso).
+      optimization_cost_waiting_time_help: >-
+        Permite evaluar la importancia de los tiempos de espera. Mas grande es
+        el valor mas penalizada será la espera antes la apertura de una franja
+        horaria (0 para no considerar la espera en la optimización).
+      optimization_force_start_help: Forzar la salida del vehículo a su horario de inicio.
       print_header_help: Bloque de texto añadido antes cada gira
       print:
         title: Impresiones
-      speed_multiplier_help: Un valor superior a 100% significa una velocidad mas
-        alta.
+      speed_multiplier_help: Un valor superior a 100% significa una velocidad mas alta.
       submit: Registrar parametrado global
       external_callback:
         title: URL de recordatorio
@@ -744,10 +758,10 @@ es:
       router_options_default: '%{n} (valor predeterminado)'
       router_options_motorway_yes: Si
       router_options_motorway_no: 'No'
-      router_options_motorway_default: Predeterminado (%{value})
+      router_options_motorway_default: 'Predeterminado (%{value})'
       router_options_toll_yes: Si
       router_options_toll_no: 'No'
-      router_options_toll_default: predeterminado (%{value})
+      router_options_toll_default: 'predeterminado (%{value})'
       optimization_cluster_size_default: '%{n} (valor predeterminado)'
       optimization_time_default: '%{n} (valor predeterminado)'
       optimization_soft_upper_bound_default: '%{n} (valor predeterminado)'
@@ -762,19 +776,24 @@ es:
       new: Nueva unidad entregable
     form:
       label_placeholder: unidad
-      label_help: Por ejemplo « paquete » o una unidad como « kg ».
-      default_quantity_help: Cantidad predeterminada que debe entregarse a todas vuestras
-        visitas (dejar vacío si no hay cantidad).
-      default_capacity_help: Capacidad predeterminada de todos sus vehículos (dejar
-        vacío si ilimitado).
-      optimization_overload_multiplier_no_help: Durante la optimización, si indica
-        una capacidad por sus vehículos, ningún sobrepaso será autorizado.
-      optimization_overload_multiplier_yes_help: Durante la optimización, si indica
-        una capacidad por sus vehículos, un sobrepaso esta autorizado. Mas grande
-        es el coeficiente menos la optimización permitirá un sobrepaso.
+      label_help: "Por ejemplo « paquete » o una unidad como « kg »."
+      default_quantity_help: >-
+        Cantidad predeterminada que debe entregarse a todas vuestras visitas
+        (dejar vacío si no hay cantidad).
+      default_capacity_help: >-
+        Capacidad predeterminada de todos sus vehículos (dejar vacío si
+        ilimitado).
+      optimization_overload_multiplier_no_help: >-
+        Durante la optimización, si indica una capacidad por sus vehículos,
+        ningún sobrepaso será autorizado.
+      optimization_overload_multiplier_yes_help: >-
+        Durante la optimización, si indica una capacidad por sus vehículos, un
+        sobrepaso esta autorizado. Mas grande es el coeficiente menos la
+        optimización permitirá un sobrepaso.
       optimization_overload_multiplier_ignore: Ignorado
-      optimization_overload_multiplier_ignore_help: Durante la optimización las cantidades
-        y capacidades de sus vehículos no serán tomadas en cuenta.
+      optimization_overload_multiplier_ignore_help: >-
+        Durante la optimización las cantidades y capacidades de sus vehículos no
+        serán tomadas en cuenta.
       prefered_icons: Aconsejados
       other_icons: Otros
       ref_help: Referencia libre
@@ -795,12 +814,11 @@ es:
       import_stores: Importar depósitos
       tags: Etiquetas
     form:
-      detail_help: Complemento de dirección no geocodable, ej. numero de escalera
+      detail_help: 'Complemento de dirección no geocodable, ej. numero de escalera'
       comment_help: Informaciones necesarias para la entrega
       geocoding_accuracy_none: No aplicable
       geocoding_fail: La geocodificación ha fallado
-      geocoding_accuracy_help: Calidad de la conversión de la dirección hacia la posición
-        geográfica
+      geocoding_accuracy_help: Calidad de la conversión de la dirección hacia la posición geográfica
       geocoding_level:
         point: Punto
         house: Dirección
@@ -810,9 +828,9 @@ es:
         'null': Ninguno
       tags_help: Categorías del cliente
       dialog:
-        confirm_overwrite_point: La posición anterior ha sido definida manualmente
-          en el mapa. Quiere remplazarla con el resultado de la geocodificación automática
-          ?
+        confirm_overwrite_point: >-
+          La posición anterior ha sido definida manualmente en el mapa. Quiere
+          remplazarla con el resultado de la geocodificación automática ?
       visit:
         new: Nueva visita
         new_help: Nueva visita si va varias veces a ese cliente.
@@ -823,11 +841,13 @@ es:
       title: Modificar cliente
     import:
       title: Importar clientes
-      replace_no_help: Una actualización de los clientes existentes (referencia cliente
+      replace_no_help: >-
+        Una actualización de los clientes existentes (referencia cliente
         invariable)  esta hecha y los nuevos están añadidos a la aplicación.
       replace_yes: Suprimir antiguos clientes
       csv:
-        help: Importa los clientes desde un fichero CSV. Los ficheros CSV pueden ser
+        help: >-
+          Importa los clientes desde un fichero CSV. Los ficheros CSV pueden ser
           exportados a partir de hojas de calculo o desde otros programas.
         file_help: Importe de fichero CSV únicamente.
         title: Fichero CSV
@@ -835,13 +855,15 @@ es:
       dialog:
         help:
           title: Lista de las columnas de su fichero
-          desc: 'Su fichero de importe puede contener las columnas y tipos de valores
-            siguientes :'
+          desc: >-
+            Su fichero de importe puede contener las columnas y tipos de valores
+            siguientes :
           columns_route: Columnas de la gira
           columns_destination: Columnas de la destinación visitada
           columns_visit: Columnas de la visita
-          def_help: Si no quiere utilizar los nombres de columnas predeterminados,
-            puede definirlos usted mismo. Puede definir una secuencia de numero de
+          def_help: >-
+            Si no quiere utilizar los nombres de columnas predeterminados, puede
+            definirlos usted mismo. Puede definir una secuencia de numero de
             columnas o títulos.
       tomtom:
         title: TomTom
@@ -852,32 +874,34 @@ es:
       delete_plannings: Suprimir antiguos planes
     index:
       title: Lista clientes
-      geocoding_column_help: Nivel de geocodificacion y calidad. Ordenar primero por
-        nivel y luego por calidad
-      mutli_quantities: Múltiples cantidades, editad esta visita para cambiar las
-        cantidades.
+      geocoding_column_help: >-
+        Nivel de geocodificacion y calidad. Ordenar primero por nivel y luego
+        por calidad
+      mutli_quantities: 'Múltiples cantidades, editad esta visita para cambiar las cantidades.'
       click2call: Haced clic para llamar
       quantity_small: Ctd.
       dialog:
         geocoding:
           title: Geocodificacion
-          in_progress: Geocodificacion en curso, por favor espere.
+          in_progress: 'Geocodificacion en curso, por favor espere.'
           inqueue: Tarea de geocodificacion en la cola
           error: Imposible llevar a cabo el calculo.
           attempts: 'Intentos :'
         geocoding_danger:
           title: Resultados de la geocodificacion poco fiables
-          infos: Algunos de sus clientes parecen estar geocodados de manera poco fiable.
-            Quiere volver a verlos en la lista ?
-          hide_help: 'Para no ver mas este mensaje, seleccione los clientes que tienen
-            una geocodificacion poco fiable y luego :'
+          infos: >-
+            Algunos de sus clientes parecen estar geocodados de manera poco
+            fiable. Quiere volver a verlos en la lista ?
+          hide_help: >-
+            Para no ver mas este mensaje, seleccione los clientes que tienen una
+            geocodificacion poco fiable y luego :
           correct_help: Compruebe la dirección para corregirla o completarla si necesario
           move_help: Desplace los puntos manualmente sobre el mapa en tal caso
           sort_geocoding: Mostrar las geocodificaciones poco fiables en primer lugar
           dismiss: Ignorar
         import:
           title: Importe de los clientes
-          in_progress: Importe de los clientes en curso, por favor espere
+          in_progress: 'Importe de los clientes en curso, por favor espere'
       new: Nuevo cliente
       default_name: Nuevo cliente
       columns: Columnas
@@ -888,51 +912,59 @@ es:
       title: Nuevo cliente
     import_file:
       refs_duplicate: 'La "referencia" : "%{refs}" esta presente en doble en el fichero.'
-      refs_visit_duplicate: 'La "referencia visita" :  "%{refs}" esta presente en
-        doble en el fichero.'
+      refs_visit_duplicate: >-
+        La "referencia visita" :  "%{refs}" esta presente en doble en el
+        fichero.
       route_desc: numero o referencia de la gira en el plan.
-      ref_vehicle_desc: referencia o nombre del vehículo que efectúa la parada en
-        le plan.
+      ref_vehicle_desc: referencia o nombre del vehículo que efectúa la parada en le plan.
       stop_format: '[visita | deposito | descanso]'
       name_desc: nombre del cliente o de la destinación visitada
-      street_desc: 'numero del edificio, tipo de vía y nombre de la vía (la ortografía
-        tiene que ser correcta para una geocodificacion fiable). Nota : les detalles
-        del acceso tienen que estar puestos en el cuadro "complemento"'
-      postalcode_desc: código postal de la ciudad o del municipio (la exactitud es
-        importante para una geocodificacion fiable)
-      city_desc: nombre de la ciudad o del municipio (la ortografía tiene que ser
+      street_desc: >-
+        numero del edificio, tipo de vía y nombre de la vía (la ortografía tiene
+        que ser correcta para una geocodificacion fiable). Nota : les detalles
+        del acceso tienen que estar puestos en el cuadro "complemento"
+      postalcode_desc: >-
+        código postal de la ciudad o del municipio (la exactitud es importante
+        para una geocodificacion fiable)
+      city_desc: >-
+        nombre de la ciudad o del municipio (la ortografía tiene que ser
         correcta para una geocodificacion fiable)
-      country_desc: nombre del país (la ortografía tiene que ser correcta para una
+      country_desc: >-
+        nombre del país (la ortografía tiene que ser correcta para una
         geocodificacion fiable)
       geocoding_accuracy_format: numero de coma de 0 a 1
       quantity_desc: cantidad de unidades para entregar.
       quantity1_1: cantidad 1_1
       quantity1_2: cantidad 1_2
-      active_desc: indica si la entrega al cliente ha sido hecha durante esta gira
-        o no
+      active_desc: indica si la entrega al cliente ha sido hecha durante esta gira o no
       open_desc: 'depreciado : utilizar mas bien "horario inicio 1".'
       close_desc: 'depreciado : utilizar mas bien "horario fin 1".'
-      time_window_start_1_desc: inicio de la franja horaria 1 (puede superar 24:00) aconsejada para
-        la visita.
-      time_window_end_1_desc: fin de la franja horaria 1 (puede superar 24:00) aconsejada para
-        la visita.
-      time_window_start_2_desc: inicio de la franja horaria 2 (puede superar 24:00) aconsejada para
-        la visita.
-      time_window_end_2_desc: fin de la franja horaria 2 (puede superar 24:00) aconsejada para
-        la visita.
+      time_window_start_1_desc: >-
+        inicio de la franja horaria 1 (puede superar 24:00) aconsejada para la
+        visita.
+      time_window_end_1_desc: >-
+        fin de la franja horaria 1 (puede superar 24:00) aconsejada para la
+        visita.
+      time_window_start_2_desc: >-
+        inicio de la franja horaria 2 (puede superar 24:00) aconsejada para la
+        visita.
+      time_window_end_2_desc: >-
+        fin de la franja horaria 2 (puede superar 24:00) aconsejada para la
+        visita.
       comment_desc: informaciones necesarias para la visita.
       phone_number_desc: numero de teléfono de cliente que se debe contactar.
       tags_desc: categorías del cliente (que permiten por ejemplo de agruparlos).
-      tags_format: etiqueta 1, etiqueta 2
+      tags_format: 'etiqueta 1, etiqueta 2'
       without_visit: sin visita
       without_visit_desc: indica que no hay visita asociada
       ref_visit_desc: referencia de la visita.
       tags_visit_desc: categorías de la visita (que permiten por ejemplo agruparlos).
       none_column: Ninguna columna correspondiente encontrada
-      missing_location: « ciudad / código postal » o « lat / lng » que falta.
+      missing_location: "« ciudad / código postal » o « lat / lng » que falta."
       ref: referencia
-      ref_desc: una identificación estable, constante y única que permite la actualización
-        no destructiva de este elemento en el próximo importe
+      ref_desc: >-
+        una identificación estable, constante y única que permite la
+        actualización no destructiva de este elemento en el próximo importe
       route: gira
       ref_vehicle: vehículo
       stop_type: tipo parada
@@ -943,16 +975,19 @@ es:
       postalcode: código postal
       city: ciudad
       state: estado
-      state_desc: nombre del estado (la ortografía tiene que ser correcta para una
+      state_desc: >-
+        nombre del estado (la ortografía tiene que ser correcta para una
         geocodificacion fiable)
       country: país
       lat: lat
-      lat_desc: latitud de la destinación (en grados decimales) entre -90° y 90°.
-        Ej. 45, 91
+      lat_desc: >-
+        latitud de la destinación (en grados decimales) entre -90° y 90°. Ej.
+        45, 91
       lat_format: numero de coma entre -90 y 90
       lng: lng
-      lng_desc: longitud de la destinación (en grados decimales) entre -180° y 180°.
-        Ej. -07,781
+      lng_desc: >-
+        longitud de la destinación (en grados decimales) entre -180° y 180°. Ej.
+        -07,781
       lng_format: numero de coma entre -180 y 180
       geocoding_accuracy: calidad geocodificacion
       geocoding_level: nivel geocodificacion
@@ -977,8 +1012,8 @@ es:
         string: texto
         integer: numero
         float: '0.123'
-        hour: HH:MM
-        second: HH:MM:SS
+        hour: 'HH:MM'
+        second: 'HH:MM:SS'
         yes_no: si/no
         required: obligatorio
         advisable: recomendado
@@ -987,8 +1022,8 @@ es:
       not_csv: El fichero importado no esta en formato CSV
       empty_file: no contiene ningún dato
       too_many_lines: 'Importe parado, demasiadas líneas (max: %{n}).'
-      missing_name: « nombre » que falta.
-      invalid_numeric_value: valor numérico  « %{value} » invalido.
+      missing_name: "« nombre » que falta."
+      invalid_numeric_value: "valor numérico  « %{value} » invalido."
       invalid_stop: El tipo de parada no es válido
       check_custom_columns: Compruebe su definición de las columnas a importar.
     reverse_geocoding:
@@ -996,10 +1031,12 @@ es:
   index:
     unsupported_browser:
       unsupported_browser: Navegador no soportado
-      unsupported_browser_modern: Su navegador es demasiado antiguo, por favor utilice
-        un navegador reciente.
-      download_browser: 'Puede descargar la ultima versión del navegador libre Firefox
-        en esta dirección : '
+      unsupported_browser_modern: >-
+        Su navegador es demasiado antiguo, por favor utilice un navegador
+        reciente.
+      download_browser: >-
+        Puede descargar la ultima versión del navegador libre Firefox en esta
+        dirección :
   order_arrays:
     form:
       week: Semana
@@ -1021,14 +1058,12 @@ es:
       paste: Pegar
       total: Total
       planning: Aplicar al plan
-      confirm_ovewrite_column: Esta seguro que quiere modificar los datos de la columna
-        ?
-      confirm_ovewrite_row: Esta seguro que quiere modificar los datos de la línea
-        ?
+      confirm_ovewrite_column: Esta seguro que quiere modificar los datos de la columna ?
+      confirm_ovewrite_row: Esta seguro que quiere modificar los datos de la línea ?
       dialog:
         loading:
           title: Carga
-          in_progress: Carga en proceso, gracias por esperar.
+          in_progress: 'Carga en proceso, gracias por esperar.'
       vehicle: Vehículo
       name: Nombre
       comment: Comentario
@@ -1043,15 +1078,19 @@ es:
       order_arrays: Pedidos
   reporting:
     download:
-      max_interval_reached: El intervalo entre la fecha de inicio y la fecha de finalización debe ser inferior a 31 días
+      max_interval_reached: >-
+        El intervalo entre la fecha de inicio y la fecha de finalización debe
+        ser inferior a 31 días
       end_date_inferior: La fecha de finalización debe ser mayor que la fecha de inicio.
-      fail: Ha ocurrido un error, por favor intente de nuevo
+      fail: 'Ha ocurrido un error, por favor intente de nuevo'
       success: El informe se está descargando.
       retry: descargar nuevo
       no_content: Ningún informe durante este período
     index:
       title: Relaciones
-      head: Descarga el informe de los recorridos realizados con la aplicación móvil Cartoway Field.
+      head: >-
+        Descarga el informe de los recorridos realizados con la aplicación móvil
+        Cartoway Field.
       submit: Descargar
       downloading: Descarga en progreso...
       default_begin_date: D-8 por defecto
@@ -1061,8 +1100,9 @@ es:
       with_actions: Historial de estado
   route_mailer:
     send_kmz_route:
-      content: Un exporta en el formato KMZ acaba de haberle sido mandado desde %{s}
-        en archivo adjunto a este e-mail.
+      content: >-
+        Un exporta en el formato KMZ acaba de haberle sido mandado desde %{s} en
+        archivo adjunto a este e-mail.
       planning_ref: 'Referencia del plan : %{ref}'
       route_ref: 'Referencia de la gira : %{ref}'
       order_array: 'Mandos : %{name}'
@@ -1113,10 +1153,10 @@ es:
       optimize_complete: Optimización terminada
       optimize_failed: Fracaso durante la optimización
       optimized_at: Optimizado
-      zoning_confirm: Registrar y aplicar la nueva zonificación ? Las giras del plan
-        van a ser modificadas
-      page_change_zoning_confirm: Quiere salir de la pagina y perder los cambios de
-        zonificación ?
+      zoning_confirm: >-
+        Registrar y aplicar la nueva zonificación ? Las giras del plan van a ser
+        modificadas
+      page_change_zoning_confirm: Quiere salir de la pagina y perder los cambios de zonificación ?
       route_placeholder: Ref. de la gira
       exports: Exportar el plan
       stop_status:
@@ -1134,8 +1174,9 @@ es:
         icalendar:
           success: Fichero mandado por email con éxito a todos los vehículos
           fail: Fracaso durante la exportación por email
-          mail_error: Email(s) no mandado(s). <br/> Verificar la configuración de
-            los emails para sus vehículos.
+          mail_error: >-
+            Email(s) no mandado(s). <br/> Verificar la configuración de los
+            emails para sus vehículos.
           action: Agenda iCal
           action_email: Agenda iCal por email
         kmz_email:
@@ -1163,16 +1204,16 @@ es:
       open_planning_panel: Desplegar el panel del plan
       collapse_planning_panel: Reducir el panel del plan
       refresh: Actualizar
-      refresh_help: Parámetros o clientes utilizados para este plan han sido cambiados,
-        hay que calcularlo de nuevo
+      refresh_help: >-
+        Parámetros o clientes utilizados para este plan han sido cambiados, hay
+        que calcularlo de nuevo
       outdated_zoning: La zonificación ha sido cambiada. Aplique de nuevo para actualizar.
       stops_help: Paradas planificadas/total
       duration_help: Suma de las duraciones de las giras
       distance_help: Suma de las distancias de las giras
       out_of_route: No planificados
       toggle_help: Muestra o esconde las paradas en el mapa
-      locked_unplanned_help: Bloquea los no planificados para las operaciones globales
-        en el plan
+      locked_unplanned_help: Bloquea los no planificados para las operaciones globales en el plan
       locked_help: Bloquea la gira para las operaciones globales en el plan
       vehicle_help: Parametrar el vehículo
       export_help: Exportar la gira
@@ -1239,41 +1280,40 @@ es:
       rest_duration: duración de descanso
       rest_duration_desc: duración del descanso del repartidor
       store_rest_ref: referencia deposito descanso
-      store_rest_desc: refrencia del deposito para la pausa del repartidor /  necesaria
-        si franja de descanso informada
+      store_rest_desc: >-
+        refrencia del deposito para la pausa del repartidor /  necesaria si
+        franja de descanso informada
       service_time_start: duración de servicio antes
-      service_time_start_desc: duración de servicio antes y sin tener en cuenta la
-        duración de pausa
+      service_time_start_desc: duración de servicio antes y sin tener en cuenta la duración de pausa
       service_time_end: duración de servicio después
-      service_time_end_desc: duración de servicio después y sin tener en cuenta la
-        duración de pausa
+      service_time_end_desc: duración de servicio después y sin tener en cuenta la duración de pausa
       format:
         float: numero decimal
         required_for_default: requerido por defecto
         string: texto
         integer: numero
-        hour: HH:MM
-        second: HH:MM:SS
+        hour: 'HH:MM'
+        second: 'HH:MM:SS'
         yes_no: si/no
         required: obligatorio
         advisable: recomendado
         optional: opcional
         deprecated: depreciado
       none_column: Ninguna columna encontrada
-      missing_name: « nombre » de la configuracion predeterminada faltante
-      missing_time_window_start_end: hora de inicio o de fin de la configuracion predeterminada
-        faltante
+      missing_name: "« nombre » de la configuracion predeterminada faltante"
+      missing_time_window_start_end: hora de inicio o de fin de la configuracion predeterminada faltante
       vehicle_usage_set: Configuración de vehículos
       time_window_start: horario inicio
       time_window_end: horario fin
       not_csv: El fichero importado no esta en formato CSV
       empty_file: no contiene ningún dato
       too_many_lines: 'Importe parado, demasiadas líneas (max: %{n}).'
-      invalid_numeric_value: valor numerico « %{value} » invalido.
+      invalid_numeric_value: "valor numerico « %{value} » invalido."
       check_custom_columns: Compruebe su definición de las columnas a importar.
     form:
-      service_times_help: Duraciones añadidas antes de la primera parada y después
-        de la ultima parada.
+      service_times_help: >-
+        Duraciones añadidas antes de la primera parada y después de la ultima
+        parada.
       time_window_start_end_help: Horario de trabajo repartidor
       stores: Salida / Llegada
       store:
@@ -1294,10 +1334,12 @@ es:
   visits:
     form:
       legend: 'Visita #%{n}'
-      destroy: Si marcada, la visita sera suprimida despues validacion. Desmarque
-        para anular.
-      ref_help: Referencia libre. IMPORTANTE si no quiere sobrescribir sus visitas
-        con importe/exporte en particular
+      destroy: >-
+        Si marcada, la visita sera suprimida despues validacion. Desmarque para
+        anular.
+      ref_help: >-
+        Referencia libre. IMPORTANTE si no quiere sobrescribir sus visitas con
+        importe/exporte en particular
       duration_default: Defecto
       duration_help: Si vacio utilisa el valor predeterminado
       time_window_start_end_1: Franja horaria 1
@@ -1314,10 +1356,12 @@ es:
       collapse_zoning_panel: Reducir el panel de zonificacon
       generate_confirm: Esto reiniciara todas sus zonas actuales. Seguir ?
       vehicleless_confirm: Confirmar el registro de zonas sin vehiculos ?
-      isochrone_missing_vehicle: Isodistancia no puede ser generada para al menos
-        un vehiculo debido a una restriccion del calculador de itinerario
-      isodistance_missing_vehicle: Isodistancia no puede ser generada para al menos
-        un vehiculo debido a una restriccion del calculador de itinerario
+      isochrone_missing_vehicle: >-
+        Isodistancia no puede ser generada para al menos un vehiculo debido a
+        una restriccion del calculador de itinerario
+      isodistance_missing_vehicle: >-
+        Isodistancia no puede ser generada para al menos un vehiculo debido a
+        una restriccion del calculador de itinerario
       failed: Fracaso durante la generacion del isochrone
       success: Isochrone generado con exito
     index:
@@ -1326,9 +1370,10 @@ es:
     form:
       hide_out_of_route: Ocultar los clientes no planificados
       all_destinations: Mostrar todos los clientes
-      from_planning_help: Puede tambien mostrar los clientes de un unico plan cambiando
-        esta zonificacion desde el plan
-      stops_from_planning: Clientes cargados desde el plan « %{s} »
+      from_planning_help: >-
+        Puede tambien mostrar los clientes de un unico plan cambiando esta
+        zonificacion desde el plan
+      stops_from_planning: "Clientes cargados desde el plan « %{s} »"
       automatic:
         one: 'Automatico : 1 zona'
         other: 'Automatico :  %{count} zonas'
@@ -1342,18 +1387,21 @@ es:
           size_help: Zona accesible desde el punto de salida en ese tiempo de recorrido.
           title: Isochrone
           vehicle_usage_set: Configuración de los vehículos
-          vehicle_usage_set_help: Configuración de los vehículos a tener en cuenta,
-            espcialmente el deposito de salida.
+          vehicle_usage_set_help: >-
+            Configuración de los vehículos a tener en cuenta, espcialmente el
+            deposito de salida.
           size: Tiempo
         isochrone-progress:
           title: Calculo de isochrones en marcha
         isodistance:
-          size_help: Zona accesible desde el punto de salida con esta distancia de
+          size_help: >-
+            Zona accesible desde el punto de salida con esta distancia de
             recorrido.
           title: Isodistancia
           vehicle_usage_set: Configuración de los vehículos
-          vehicle_usage_set_help: Configuracion de los vehiculos a tener en cuenta,
-            especialmente el deposito de salida.
+          vehicle_usage_set_help: >-
+            Configuracion de los vehiculos a tener en cuenta, especialmente el
+            deposito de salida.
           size: Distancia
         isodistance-progress:
           title: Calculo de isodistancias en marcha
@@ -1373,8 +1421,9 @@ es:
     default: No esta autorizado acceder a esta pagnia
   web:
     key_not_found: Su llave de conexion no es reconosida
-    slow_browser: Utiliza %{n} que ralentiza la aplicacion. Le invitamos a utilizar
-      otro navegador descargable gratuitamente para mejores rendimientos.
+    slow_browser: >-
+      Utiliza %{n} que ralentiza la aplicacion. Le invitamos a utilizar otro
+      navegador descargable gratuitamente para mejores rendimientos.
     form:
       empty_entry: '- No indicado -'
       to_time: a
@@ -1461,15 +1510,17 @@ es:
       _yes: si
       _no: 'no'
     subscribe:
-      expiration_date: Su periodo de utilizacion acaba pronto. Fecha de fin el  %{date}.
-        Si quiere renovarlo puede contactar %{reseller}.
-      expiration_date_over: Su periodo de utilizacion ha acabado el  %{date}. Si quiere
-        renovarlo puede contactar %{reseller}.
+      expiration_date: >-
+        Su periodo de utilizacion acaba pronto. Fecha de fin el  %{date}. Si
+        quiere renovarlo puede contactar %{reseller}.
+      expiration_date_over: >-
+        Su periodo de utilizacion ha acabado el  %{date}. Si quiere renovarlo
+        puede contactar %{reseller}.
   helpers:
     submit:
-      create: Crear %{model}
-      update: Registrar %{model}
-      submit: Registrar %{model}
+      create: 'Crear %{model}'
+      update: 'Registrar %{model}'
+      submit: 'Registrar %{model}'
   devise:
     shared:
       links:

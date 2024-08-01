@@ -3,63 +3,65 @@ fr:
     draw:
       toolbar:
         actions:
-          title: "Annuler le dessin"
-          text: "Annuler"
+          title: Annuler le dessin
+          text: Annuler
         finish:
-          title: "Terminer le dessin"
-          text: "Terminer"
+          title: Terminer le dessin
+          text: Terminer
         undo:
-          title: "Supprime le dernier point ajouté"
-          text: "Supprime le dernier point"
+          title: Supprime le dernier point ajouté
+          text: Supprime le dernier point
         buttons:
-          polyline: "Dessiner un chemin"
-          polygon: "Dessiner une zone"
-          rectangle: "Dessiner un rectangle"
-          circle: "Dessiner un cercle"
-          marker: "Poser un marqueur"
+          polyline: Dessiner un chemin
+          polygon: Dessiner une zone
+          rectangle: Dessiner un rectangle
+          circle: Dessiner un cercle
+          marker: Poser un marqueur
       handlers:
         circle:
           tooltip:
-            start: "Cliquer puis déplacer la souris pour tracer un cercle."
+            start: Cliquer puis déplacer la souris pour tracer un cercle.
         marker:
           tooltip:
-            start: "Cliquer sur la carte pour positionner le marqueur."
+            start: Cliquer sur la carte pour positionner le marqueur.
         polygon:
           tooltip:
-            start: "Cliquer pour commencer à dessiner."
-            cont: "Cliquer pour continuer à dessiner."
-            end: "Cliquer sur le premier point pour refermer le polygone."
+            start: Cliquer pour commencer à dessiner.
+            cont: Cliquer pour continuer à dessiner.
+            end: Cliquer sur le premier point pour refermer le polygone.
         polyline:
-          error: "<strong>Erreur :</strong> la forme ne peut pas se croiser elle-même !"
+          error: >-
+            <strong>Erreur :</strong> la forme ne peut pas se croiser elle-même
+            !
           tooltip:
-            start: "Cliquer pour tracer la ligne."
-            cont: "Cliquer pour continuer la ligne."
-            end: "Cliquer pour finir la ligne."
+            start: Cliquer pour tracer la ligne.
+            cont: Cliquer pour continuer la ligne.
+            end: Cliquer pour finir la ligne.
         rectangle:
           tooltip:
-            start: "Cliquer puis déplacer la souris pour tracer un rectangle."
+            start: Cliquer puis déplacer la souris pour tracer un rectangle.
         simpleshape:
           tooltip:
-            end: "Libérer la souris pour finir le tracé."
+            end: Libérer la souris pour finir le tracé.
     edit:
       toolbar:
         actions:
           save:
-            title: "Confirmer les modifications."
-            text: "Confirmer"
+            title: Confirmer les modifications.
+            text: Confirmer
           cancel:
-            title: "Abandonner les changements."
-            text: "Abandonner"
+            title: Abandonner les changements.
+            text: Abandonner
         buttons:
-          edit: "Modifier."
-          editDisabled: "Rien à modifier."
-          remove: "Supprimer."
-          removeDisabled: "Rien à supprimer."
+          edit: Modifier.
+          editDisabled: Rien à modifier.
+          remove: Supprimer.
+          removeDisabled: Rien à supprimer.
       handlers:
         edit:
           tooltip:
-            text: "Déplacer les contrôleurs pour modifier un objet."
-            subtext: "Cliquer sur abandonner pour annuler les modifications."
+            text: Déplacer les contrôleurs pour modifier un objet.
+            subtext: Cliquer sur abandonner pour annuler les modifications.
         remove:
           tooltip:
-            text: "Cliquer sur un objet pour l'enlever"
+            text: Cliquer sur un objet pour l'enlever

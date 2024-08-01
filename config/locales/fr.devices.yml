@@ -4,95 +4,95 @@ fr:
       customer:
         devices:
           fleet:
-            user: "Nom utilisateur"
-            api_key: "Clé API"
+            user: Nom utilisateur
+            api_key: Clé API
           tomtom:
-            account: "Compte"
-            user: "Utilisateur"
-            password: "Mot de passe"
+            account: Compte
+            user: Utilisateur
+            password: Mot de passe
           masternaut:
-            username: "Nom d'utilisateur"
-            password: "Mot de passe"
+            username: Nom d'utilisateur
+            password: Mot de passe
           orange:
-            user: "Utilisateur"
-            password: "Mot de passe"
+            user: Utilisateur
+            password: Mot de passe
           alyacom:
-            association: "Identifiant"
-            alyacom_api_key: "Clé d'API"
+            association: Identifiant
+            alyacom_api_key: Clé d'API
           teksat:
-            teksat_customer_id: "Client ID"
-            username: "Nom d'utilisateur"
-            password: "Mot de passe"
-            url: "URL"
+            teksat_customer_id: Client ID
+            username: Nom d'utilisateur
+            password: Mot de passe
+            url: URL
           trimble:
-            customer: "Compte client"
-            username: "Utilisateur"
-            password: "Mot de passe"
+            customer: Compte client
+            username: Utilisateur
+            password: Mot de passe
           locster:
-            username: "Utilisateur"
-            password: "Mot de passe"
+            username: Utilisateur
+            password: Mot de passe
           stg_telematics:
-            username: "Utilisateur"
-            password: "Mot de passe"
-            url: "URL"
-            company_names: "Noms des sociétés"
+            username: Utilisateur
+            password: Mot de passe
+            url: URL
+            company_names: Noms des sociétés
           suivi_de_flotte:
-            username: "Utilisateur"
-            password: "Mot de passe"
+            username: Utilisateur
+            password: Mot de passe
           notico:
-            ftp_url: "Adresse du serveur FTP"
-            ftp_path: "Répertoire sur le serveur FTP"
-            username: "Utilisateur"
-            password: "Mot de passe"
+            ftp_url: Adresse du serveur FTP
+            ftp_path: Répertoire sur le serveur FTP
+            username: Utilisateur
+            password: Mot de passe
           praxedo:
-            login: "Login"
-            password: "Mot de passe"
-            code_inter_start: "Code d'intervention pour le départ"
-            code_inter_stop: "Code d'intervention pour l'arrivé"
-            code_mat: "Code du matériel à livrer"
-            code_route: "Code de la tournée"
+            login: Login
+            password: Mot de passe
+            code_inter_start: Code d'intervention pour le départ
+            code_inter_stop: Code d'intervention pour l'arrivé
+            code_mat: Code du matériel à livrer
+            code_route: Code de la tournée
           sopac:
-            username: "Utilisateur"
-            password: "Mot de passe"
+            username: Utilisateur
+            password: Mot de passe
       vehicle:
         devices:
           fleet_demo:
             title: Cartoway Field (demo)
           fleet:
             title: Cartoway Field
-            fleet_user: "Nom de l'utilisateur Cartoway Field"
+            fleet_user: Nom de l'utilisateur Cartoway Field
           locster:
             title: Locster
-            locster_ref: "Ref. véhicule Locster"
+            locster_ref: Ref. véhicule Locster
           masternaut:
             title: Masternaut
-            masternaut_ref: "Ref. véhicule Masternaut"
+            masternaut_ref: Ref. véhicule Masternaut
           orange:
             title: Orange Fleet Performance
-            orange_id: "ID véhicule orange"
+            orange_id: ID véhicule orange
           stg_telematics:
             title: STG Telematics
-            stg_telematics_id: "ID véhicule STG Telematics"
+            stg_telematics_id: ID véhicule STG Telematics
           suivi_de_flotte:
             title: Suivi de flotte
-            suivi_de_flotte_id: "ID véhicule suivi de flotte"
+            suivi_de_flotte_id: ID véhicule suivi de flotte
           teksat:
             title: Teksat
-            teksat_id: "ID véhicule Teksat"
+            teksat_id: ID véhicule Teksat
           tomtom:
             title: TomTom Webfleet
-            tomtom_id: "ID véhicule TomTom"
+            tomtom_id: ID véhicule TomTom
           trimble:
             title: Trimble
-            trimble_ref: "Ref. véhicule Trimble"
+            trimble_ref: Ref. véhicule Trimble
           notico:
             title: Notico
-            agent_id: "ID Livreur Notico Deliv"
+            agent_id: ID Livreur Notico Deliv
           deliver:
             title: Cartoway Deliver
           praxedo:
             title: Praxedo
-            praxedo_agent_id: "Code Technicien Praxedo"
+            praxedo_agent_id: Code Technicien Praxedo
   errors:
     fleet:
       invalid_account: Utilisateur invalide (non existant)
@@ -116,19 +116,20 @@ fr:
       unauthorized: Non autorisé
       timeout: Délai d'attente depassé
     tomtom:
-      access_denied: Non Autorisé. 'Accès complet aux commandes' n'est pas activé
-        dans l'interface WebFLEET. Vous n'avez pas les permissions nécessaires pour
+      access_denied: >-
+        Non Autorisé. 'Accès complet aux commandes' n'est pas activé dans
+        l'interface WebFLEET. Vous n'avez pas les permissions nécessaires pour
         effectuer cette action.
       invalid_account: Utilisateur invalide (non existant)
-      external_requests_not_allowed: Non Autorisé. 'Accès à l'interface WebFLEET.connect'
-        n'est pas activé dans l'interface WebFLEET. Les requêtes externes ne sont
-        pas autorisées pour ce compte/utilisateur.
+      external_requests_not_allowed: >-
+        Non Autorisé. 'Accès à l'interface WebFLEET.connect' n'est pas activé
+        dans l'interface WebFLEET. Les requêtes externes ne sont pas autorisées
+        pour ce compte/utilisateur.
       hostname_not_allowed: Le nom de domaine n'est pas autorisé
       request_quota_reached: Quota de requêtes dépassé
       addresses_empty_result: Aucune adresse trouvée
       could_not_process_last_request: La requête n'a pas pu être traitée
-      unsupported_export_type: Le GPS connecté ne supporte pas l'export de points
-        de passage
+      unsupported_export_type: Le GPS connecté ne supporte pas l'export de points de passage
       duplicate_order: Commande déjà envoyée
       busy_processing: Compte occupé à traiter une autre demande
       gps_unreachable: GPS actuellement indisponible
@@ -143,7 +144,7 @@ fr:
       set_mission: Échec lors de la création de la mission
       unauthorized: Non autorisé
     orange:
-      no_equipment: 'Véhicule: Aucun équipement trouvé'
+      no_equipment: "Véhicule: Aucun équipement trouvé"
       unauthorized: Non autorisé
       list: Impossible de lister les appareils
       get_vehicles_pos: Impossible de lister les positions des véhicules
@@ -156,10 +157,14 @@ fr:
     suivi_de_flotte:
       invalid_account: Utilisateur invalide (non existant)
     stg_telematics:
-      get_access_token: Impossible d'obtenir le token d'authentification. Veuillez Réessayer ultérieurement.
+      get_access_token: >-
+        Impossible d'obtenir le token d'authentification. Veuillez Réessayer
+        ultérieurement.
       list: Impossible de lister les appareils
       get_vehicles_pos: Impossible de lister les positions des véhicules
-      refresh_token_expired: Impossible de mettre à jour le token d'authentification. Veuillez Réessayer ultérieurement.
+      refresh_token_expired: >-
+        Impossible de mettre à jour le token d'authentification. Veuillez
+        Réessayer ultérieurement.
       timeout: Délai d'attente depassé
       unauthorized: Non autorisé
     trimble:
@@ -172,36 +177,37 @@ fr:
     form:
       devices:
         sync:
-          complete: "Synchronisation complète"
-          confirm: "Synchroniser les véhicules ?"
-          action: "Synchroniser les véhicules"
-          no_credentials: "Pas d'identifiants renseignés pour l'appareil"
+          complete: Synchronisation complète
+          confirm: Synchroniser les véhicules ?
+          action: Synchroniser les véhicules
+          no_credentials: Pas d'identifiants renseignés pour l'appareil
         deliver:
-          help: "Permet d'effectuer les tournées depuis les vues mobiles du planner"
+          help: Permet d'effectuer les tournées depuis les vues mobiles du planner
         fleet_demo:
-          help: "(DEMONSTRATEUR) Simule la position des véhicules et le statut des visites (si ces options sont actives)
-            pour le dernier plan modifié."
+          help: >-
+            (DEMONSTRATEUR) Simule la position des véhicules et le statut des
+            visites (si ces options sont actives) pour le dernier plan modifié.
         fleet:
-          help: "Permet d'envoyer les tournées vers l'app mobile Cartoway Field."
-          company_created: "Compagnie créée dans Cartoway Field :"
-          drivers_created: "Utilisateurs créés dans Cartoway Field :"
-          drivers_updated: "Utilisateurs mis à jour dans Cartoway Field:"
+          help: Permet d'envoyer les tournées vers l'app mobile Cartoway Field.
+          company_created: "Compagnie créée dans Cartoway Field :"
+          drivers_created: "Utilisateurs créés dans Cartoway Field :"
+          drivers_updated: 'Utilisateurs mis à jour dans Cartoway Field:'
         alyacom:
-          help: "Permet d'envoyer les tournées vers l'application AlyaCom."
+          help: Permet d'envoyer les tournées vers l'application AlyaCom.
         stg_telematics:
-          help: "Permet de visualiser la position des véhicules avec STG Telematics."
+          help: Permet de visualiser la position des véhicules avec STG Telematics.
         tomtom:
-          help: "Permet d'envoyer les tournées vers les GPS TomTom Pro avec WebFLEET."
+          help: Permet d'envoyer les tournées vers les GPS TomTom Pro avec WebFLEET.
         teksat:
-          help: "Permet d'envoyer les tournées vers les GPS Teksat."
+          help: Permet d'envoyer les tournées vers les GPS Teksat.
         orange:
-          help: "Permet d'envoyer les tournées vers les GPS Orange Fleet Performance."
+          help: Permet d'envoyer les tournées vers les GPS Orange Fleet Performance.
         masternaut:
-          help: "Permet d'envoyer les tournées vers les GPS Masternaut."
+          help: Permet d'envoyer les tournées vers les GPS Masternaut.
         notico:
-          help: "Permet d'envoyer les tournées vers l'application Notico Deliv."
+          help: Permet d'envoyer les tournées vers l'application Notico Deliv.
         praxedo:
-          help: "Permet d'envoyer les tournées vers l'application Praxedo."
+          help: Permet d'envoyer les tournées vers l'application Praxedo.
   plannings:
     edit:
       all_plannings_related: Concerne toutes les tournées
@@ -214,21 +220,21 @@ fr:
         success: Les interventions Cartoway Field (demo) ont été vidées avec succès
         fail: Échec lors de la suppression des interventions Cartoway Field (demo)
       fleet_send:
-        action: "Envoyer à l'app mobile Cartoway Field"
-        success: "Envoyé à l'app mobile Cartoway Field avec succès"
-        fail: "Échec lors de l'envoi vers Mapotempo l'app mobile Cartoway Field"
+        action: Envoyer à l'app mobile Cartoway Field
+        success: Envoyé à l'app mobile Cartoway Field avec succès
+        fail: Échec lors de l'envoi vers Mapotempo l'app mobile Cartoway Field
       fleet_clear:
-        action: "Vider l'app mobile Cartoway Field"
-        success: "L'app mobile Cartoway Field a été vidée avec succès"
-        fail: "Échec lors de la suppression dans l'app mobile Cartoway Field"
-        button: "Vider la sélection"
-        button_empty: "Fermer"
-        empty: "Aucune tournée trouvée sur Cartoway Field"
+        action: Vider l'app mobile Cartoway Field
+        success: L'app mobile Cartoway Field a été vidée avec succès
+        fail: Échec lors de la suppression dans l'app mobile Cartoway Field
+        button: Vider la sélection
+        button_empty: Fermer
+        empty: Aucune tournée trouvée sur Cartoway Field
         route:
           name: Nom de tournée
           number: Numéro de tournée
       fleet_fetch_routes:
-        action: "Vider l'app mobile Cartoway Field"
+        action: Vider l'app mobile Cartoway Field
       teksat_send:
         action: Envoyer à Teksat
         success: Envoi vers Teksat terminé avec succès
@@ -245,7 +251,9 @@ fr:
         action: Points de passage vers TomTom
         success: Envoi vers TomTom terminé avec succès
         fail: Échec lors de l'envoi vers TomTom
-        title: Attention tous les appareils tomtom ne supportent pas cette méthode d'envoi
+        title: >-
+          Attention tous les appareils tomtom ne supportent pas cette méthode
+          d'envoi
       tomtom_clear:
         action: Vider TomTom
         success: Les commandes TomTom ont été vidées avec succès

@@ -1,5 +1,5 @@
 de:
-  encoding: 'Windows-1252'
+  encoding: Windows-1252
   distance:
     unit:
       one: m
@@ -530,7 +530,9 @@ de:
         inconsistent_customer: ist für diesen Kunden nicht berechtigt
       models:
         location:
-          missing_address_or_latlng: Postleitzahl und Ort dürfen nicht leer sein, wenn Breiten-/Längengrad leer sind
+          missing_address_or_latlng: >-
+            Postleitzahl und Ort dürfen nicht leer sein, wenn
+            Breiten-/Längengrad leer sind
           lat_outside_range: muss im Bereich -90 bis 90 liegen
           lng_outside_range: muss im Bereich -180 bis 180 liegen
           geocoding_accuracy_outside_range: muss im Bereich von 0 bis 1 liegen
@@ -538,7 +540,7 @@ de:
           attributes:
             capacities:
               not_float: muss eine Zahl sein
-              negative_value: muss ein positiver Wert sein (%{value})
+              negative_value: 'muss ein positiver Wert sein (%{value})'
         vehicles:
           at_least_one: Mindestens ein Fahrzeug erforderlich
         vehicle_usage:
@@ -546,10 +548,12 @@ de:
             time_window_end:
               after: muss hinter der Öffnungszeit liegen
             rest_stop:
-              after: muss hinter der Öffnungszeit liegen, die vorhanden sein muss.
-          missing_rest_window: darf nicht leer sein, wenn Pausendauer oder eine Zeit eingetragen sind
-          missing_rest_duration: darf nicht leer sein, wenn das Pausenfenster ausgefüllt ist
-          rest_range: Pausenbereich muss zwischen %{start} und %{end} liegen
+              after: 'muss hinter der Öffnungszeit liegen, die vorhanden sein muss.'
+          missing_rest_window: >-
+            darf nicht leer sein, wenn Pausendauer oder eine Zeit eingetragen
+            sind
+          missing_rest_duration: 'darf nicht leer sein, wenn das Pausenfenster ausgefüllt ist'
+          rest_range: 'Pausenbereich muss zwischen %{start} und %{end} liegen'
           service_range: darf nicht größer als der Arbeitstagesbereich sein
           work_time_inside_window: muss kleiner oder gleich dem Arbeitszeitfenster sein
         vehicle_usage_set:
@@ -559,22 +563,24 @@ de:
             rest_stop:
               after: muss hinter der Öffnungszeit liegen
           at_least_one: Mindestens eine Fahrzeugkonfiguration erforderlich
-          missing_rest_window: darf nicht leer sein, wenn Pausendauer eingetragen ist
-          missing_rest_duration: darf nicht leer sein, wenn das Pausenfenster ausgefüllt ist
+          missing_rest_window: 'darf nicht leer sein, wenn Pausendauer eingetragen ist'
+          missing_rest_duration: 'darf nicht leer sein, wenn das Pausenfenster ausgefüllt ist'
           work_time_inside_window: muss kleiner oder gleich dem Arbeitszeitfenster sein
         visit:
           attributes:
             time_window_end_1:
-              after: muss nach %{s} sein
-              blank: darf nicht leer sein, wenn das Zeitfenster 2 öffnen oder schließen eingestellt ist
+              after: 'muss nach %{s} sein'
+              blank: >-
+                darf nicht leer sein, wenn das Zeitfenster 2 öffnen oder
+                schließen eingestellt ist
             time_window_start_2:
-              after: muss nach %{s} sein
+              after: 'muss nach %{s} sein'
             time_window_end_2:
-              after: muss nach %{s} sein
+              after: 'muss nach %{s} sein'
             priority: muss zwischen -4 und 4 liegen
             quantities:
               not_float: muss eine Zahl sein
-              negative_value: muss ein positiver Wert sein (%{value})
+              negative_value: 'muss ein positiver Wert sein (%{value})'
         zone:
           attributes:
             vehicle:
@@ -600,16 +606,16 @@ de:
         route:
           attributes:
             stops:
-              bad_index: Fehlerhafter Index %{index} auf der Strecke %{route}
+              bad_index: 'Fehlerhafter Index %{index} auf der Strecke %{route}'
         planning:
           attributes:
             ref:
-              invalid_format: darf keine Zeichen ".", "\" oder " /" enthalten
+              invalid_format: 'darf keine Zeichen ".", "\" oder " /" enthalten'
               ref_value: 'Streckennummer '
             begin_date:
-              blank: darf nicht leer sein, wenn ein Enddatum gesetzt ist
+              blank: 'darf nicht leer sein, wenn ein Enddatum gesetzt ist'
             end_date:
-              blank: darf nicht leer sein, wenn das Beginndatum gesetzt ist
+              blank: 'darf nicht leer sein, wenn das Beginndatum gesetzt ist'
               after: muss nach dem Beginndatum liegen
         tag:
           icon_unknown: ist nicht in der Liste der Symbole von „Awesome“-Schriftarten
@@ -620,21 +626,32 @@ de:
     database:
       default: Datenbankfehler.
       invalid_statement: Dieser Vorgang kann nicht ausgeführt werden
-      deadlock: 'Aktualisieren der Daten ist fehlgeschlagen. Ein weiteres Update wurde gleichzeitig durchgeführt. Sie haben möglicherweise mehrere Operationen zu schnell oder mehrfach durchgeführt.'
+      deadlock: >-
+        Aktualisieren der Daten ist fehlgeschlagen. Ein weiteres Update wurde
+        gleichzeitig durchgeführt. Sie haben möglicherweise mehrere Operationen
+        zu schnell oder mehrfach durchgeführt.
     management:
       title: Ein Fehler ist aufgetreten
-      description: Die Seite, auf die Sie zugreifen möchten, hat einen Fehler ausgelöst
+      description: 'Die Seite, auf die Sie zugreifen möchten, hat einen Fehler ausgelöst'
       status:
         title:
-          default: In der Anwendung ist ein Fehler aufgetreten
           '404': Seite kann nicht gefunden werden
           '422': Anfrage kann nicht verarbeitet werden
           '500': Interner Fehler aufgetreten
+          default: In der Anwendung ist ein Fehler aufgetreten
         explanation:
-          default: Ein interner Fehler ist aufgetreten. Problem wurde gemeldet. Bitte versuchen Sie eine andere Aktion. Wenden Sie sich in dringenden Fällen an den Support.
-          '404': Diese Seite wurde auf dem Server nicht gefunden, vielleicht wurde sie gelöscht.
+          '404': >-
+            Diese Seite wurde auf dem Server nicht gefunden, vielleicht wurde
+            sie gelöscht.
           '422': Die gewünschte Aktion kann nicht ausgeführt werden.
-          '500': Ein interner Fehler ist aufgetreten. Problem wurde gemeldet. Bitte versuchen Sie eine andere Aktion. Wenden Sie sich in dringenden Fällen an den Support.
+          '500': >-
+            Ein interner Fehler ist aufgetreten. Problem wurde gemeldet. Bitte
+            versuchen Sie eine andere Aktion. Wenden Sie sich in dringenden
+            Fällen an den Support.
+          default: >-
+            Ein interner Fehler ist aufgetreten. Problem wurde gemeldet. Bitte
+            versuchen Sie eine andere Aktion. Wenden Sie sich in dringenden
+            Fällen an den Support.
       back_button: Vorherige Seite
       home_button: Zurück zum Start
     messages:
@@ -644,24 +661,28 @@ de:
       geocoding_fail: 'Geokodierung ist fehlgeschlagen:'
       reversegeocoding_fail: 'Umgekehrte Geokodierung ist fehlgeschlagen:'
     planning:
-      import_too_many_routes: Es wurde versucht, mehr Strecken als verfügbare Fahrzeuge zu importieren
+      import_too_many_routes: 'Es wurde versucht, mehr Strecken als verfügbare Fahrzeuge zu importieren'
       already_optimizing: Eine Optimierung des Plans läuft bereits
       automatic_insert_no_result: Keine Strecke zum Einsetzen des Halts
-      job_in_progress: 'Dieser Vorgang kann im Moment nicht ausgeführt werden: Eine Hintergrundaufgabe (Optimierung) läuft gerade'
+      job_in_progress: >-
+        Dieser Vorgang kann im Moment nicht ausgeführt werden: Eine
+        Hintergrundaufgabe (Optimierung) läuft gerade
     routes:
       bad_barcode_char: Barcode-Dateninhalt mit nicht unterstütztem Zeichen
   import:
     csv:
-      line: Zeile %{s}
+      line: 'Zeile %{s}'
     tomtom:
-      record: Eintrag %{s}
+      record: 'Eintrag %{s}'
     empty: Nichts zu importieren. Überprüfen Sie Ihre Daten.
-    without_stop_type: Leere Werte für „Haltetyp“. Entfernen Sie diese Spalte/Schlüssel oder geben Sie einen Wert unter [Besuch | Filiale | Pause] ein.
+    without_stop_type: >-
+      Leere Werte für „Haltetyp“. Entfernen Sie diese Spalte/Schlüssel oder
+      geben Sie einen Wert unter [Besuch | Filiale | Pause] ein.
     data: 'Überprüfen Sie Ihre Daten:'
     data_erroneous:
-      csv: Ungültige Datei, Zeile %{s}
+      csv: 'Ungültige Datei, Zeile %{s}'
       json: Ungültige Datei
-      tomtom: Ungültige TomTom-Daten, Eintrag %{s}
+      tomtom: 'Ungültige TomTom-Daten, Eintrag %{s}'
     template_csv: Vorlagen-Tabellenkalkulation Standard importieren
     template_excel: Vorlagen-Tabellenkalkulation Excel importieren
   admin:
@@ -682,25 +703,37 @@ de:
         social_urls: URLs für soziale Netzwerke
         analysis_urls: URLs für Dashboard-Analyse
       form:
-        host_help: Web-URL-Hostname und Port, der für die Übereinstimmung mit diesem Reseller verwendet wird
+        host_help: >-
+          Web-URL-Hostname und Port, der für die Übereinstimmung mit diesem
+          Reseller verwendet wird
         name_help: Markenname des Resellers
         application_name_help: Website-Name des Resellers
-        sms_api_key_help: API-Schlüssel, um SMS senden zu können
-        website_url_help: 'Adresse der Website. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/).'
-        welcome_url_help: 'Die Adresse der Internetseite wurde als HTML als "iframe" auf der Startseite eingefügt. "{LG}" kann durch einen Sprachcode wie "en", "fr" usw. ersetzt werden (z. B.: https://cartoway.com/{LG}/app-news).'
-        help_url_help: 'Adresse der Internetseite mit Hilfeinhalt. Es kann "{LG}" verwendet werden, das durch einen Sprachcode wie beispielsweise "en", "fr" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/help-center).'
-        contact_url_help: 'Adresse der Internetseite mit Kontaktformular. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/contact-support/).'
-        subscription_url_help: 'Adresse der Internetseite mit Abonnementinhalten für einen Testkunden. Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/mapotempo-web-subscription-request).'
-        audience_url_help: 'Adresse der Internetseite, die das Zielgruppen-Dashboard enthält. Es kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})'
-        behavior_url_help: 'Adresse der Internetseite, die das Verhaltens-Dashboard enthält. Es kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})'
-        customer_audience_url_help: 'Adresse der Internetseite, die das Zielgruppen-Dashboard für einen Kunden enthält. Es kann "{ID}" verwendet werden, das durch die Kundennummer ersetzt wird (z.B.: https://analytics.cartoway.com?id={ID}).'
-        customer_behavior_url_help: 'Adresse der Internetseite, die das Verhaltens-Dashboard für einen Kunden enthält. Es kann "{ID}" verwendet werden, das durch die Kundennummer ersetzt wird (z.B.: https://analytics.cartoway.com?id={ID}).'
+        sms_api_key_help: 'API-Schlüssel, um SMS senden zu können'
+        website_url_help: "Adresse der Website. Es kann \"{LG}\" verwendet werden, das durch eine Sprache wie \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/)."
+        welcome_url_help: "Die Adresse der Internetseite wurde als HTML als \"iframe\" auf der Startseite eingefügt. \"{LG}\" kann durch einen Sprachcode wie \"en\", \"fr\" usw. ersetzt werden (z. B.: https://cartoway.com/{LG}/app-news)."
+        help_url_help: "Adresse der Internetseite mit Hilfeinhalt. Es kann \"{LG}\" verwendet werden, das durch einen Sprachcode wie beispielsweise \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/help-center)."
+        contact_url_help: "Adresse der Internetseite mit Kontaktformular. Es kann \"{LG}\" verwendet werden, das durch eine Sprache wie \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/contact-support/)."
+        subscription_url_help: "Adresse der Internetseite mit Abonnementinhalten für einen Testkunden. Es kann \"{LG}\" verwendet werden, das durch eine Sprache wie \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/mapotempo-web-subscription-request)."
+        audience_url_help: "Adresse der Internetseite, die das Zielgruppen-Dashboard enthält. Es kann \"{ID}\" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})"
+        behavior_url_help: "Adresse der Internetseite, die das Verhaltens-Dashboard enthält. Es kann \"{ID}\" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})"
+        customer_audience_url_help: >-
+          Adresse der Internetseite, die das Zielgruppen-Dashboard für einen
+          Kunden enthält. Es kann "{ID}" verwendet werden, das durch die
+          Kundennummer ersetzt wird (z.B.:
+          https://analytics.cartoway.com?id={ID}).
+        customer_behavior_url_help: >-
+          Adresse der Internetseite, die das Verhaltens-Dashboard für einen
+          Kunden enthält. Es kann "{ID}" verwendet werden, das durch die
+          Kundennummer ersetzt wird (z.B.:
+          https://analytics.cartoway.com?id={ID}).
         facebook_url_help: Facebook-Link des Resellers
         twitter_url_help: Twitter-Link des Resellers
         linkedin_url_help: LinkedIn-Link des Resellers
-        logo_large_help: Ganzseitiges Logo mit Größenänderung, vorzugsweise im SVG- oder alternativ im PNG-Format.
-        logo_small_help: Logo des Hauptmenüs, 150×40 Pixel im SVG- oder PNG-Format.
-        favicon_help: Website-Symbol, 16×16 Pixel im PNG- oder ICO-Format.
+        logo_large_help: >-
+          Ganzseitiges Logo mit Größenänderung, vorzugsweise im SVG- oder
+          alternativ im PNG-Format.
+        logo_small_help: 'Logo des Hauptmenüs, 150×40 Pixel im SVG- oder PNG-Format.'
+        favicon_help: 'Website-Symbol, 16×16 Pixel im PNG- oder ICO-Format.'
         protocol_url_http: HTTP
         protocol_url_https: HTTPS
     users:
@@ -727,8 +760,8 @@ de:
         success: E-Mail an den Benutzer erfolgreich versendet
     vehicles:
       devices:
-        create_company: 'Cartoway Field-Benutzerkonto initialisieren'
-        create_drivers: 'Aktualisieren oder Erstellen von mobilen Fahrern in Cartoway Field'
+        create_company: Cartoway Field-Benutzerkonto initialisieren
+        create_drivers: Aktualisieren oder Erstellen von mobilen Fahrern in Cartoway Field
   customers:
     duplicate:
       success: Kundenkonto erfolgreich dupliziert
@@ -778,30 +811,37 @@ de:
       limits: Grenzwerte
       options: Optionen
       optimization_parameters: Optimierungseinstellungen
-      router_help: Profil, das vom Streckenplan standardmäßig verwendet wird
+      router_help: 'Profil, das vom Streckenplan standardmäßig verwendet wird'
       router_options_default: '%{n} (Standardwert)'
-      router_options_traffic_yes: 'Ja'
-      router_options_traffic_no: 'Nein'
-      router_options_traffic_default: Standardwert (%{value})
-      router_options_track_yes: 'Ja'
-      router_options_track_no: 'Nein'
-      router_options_track_default: Standardwert (%{value})
-      router_options_motorway_yes: 'Ja'
-      router_options_motorway_no: 'Nein'
-      router_options_motorway_default: Standardwert (%{value})
-      router_options_toll_yes: 'Ja'
-      router_options_toll_no: 'Nein'
-      router_options_toll_default: Standardwert (%{value})
-      router_options_trailers_range: Zwischen %{from} und %{to} Anhängern
-      router_options_weight_range: Gewicht (einschließlich Anhänger und versandter Ware) zwischen %{from} und %{to} Tonnen
-      router_options_weight_per_axle_range: Gewicht pro Achse zwischen %{from} und %{to} Tonnen
-      router_options_height_range: Höhe zwischen %{from} und %{to} Metern
-      router_options_width_range: Breite zwischen %{from} und %{to} Metern
-      router_options_length_range: Länge zwischen %{from} und %{to} Metern
+      router_options_traffic_yes: Ja
+      router_options_traffic_no: Nein
+      router_options_traffic_default: 'Standardwert (%{value})'
+      router_options_track_yes: Ja
+      router_options_track_no: Nein
+      router_options_track_default: 'Standardwert (%{value})'
+      router_options_motorway_yes: Ja
+      router_options_motorway_no: Nein
+      router_options_motorway_default: 'Standardwert (%{value})'
+      router_options_toll_yes: Ja
+      router_options_toll_no: Nein
+      router_options_toll_default: 'Standardwert (%{value})'
+      router_options_trailers_range: 'Zwischen %{from} und %{to} Anhängern'
+      router_options_weight_range: >-
+        Gewicht (einschließlich Anhänger und versandter Ware) zwischen %{from}
+        und %{to} Tonnen
+      router_options_weight_per_axle_range: 'Gewicht pro Achse zwischen %{from} und %{to} Tonnen'
+      router_options_height_range: 'Höhe zwischen %{from} und %{to} Metern'
+      router_options_width_range: 'Breite zwischen %{from} und %{to} Metern'
+      router_options_length_range: 'Länge zwischen %{from} und %{to} Metern'
       router_options_max_walk_distance_range: Maximale Laufentfernung vor der Fahrt mit öffentlichen Verkehrsmitteln
       router_options_approach_help: An- und Abreise mit Kontrollpunkt in der aktuellen Verkehrsrichtung
-      router_options_snap_range: Maximale Entfernung bis zum Halt an einer Kreuzung, ansonsten Halt am Auslieferungsort.
-      router_options_strict_restriction: Wenn nicht angekreuzt, wird der Router versuchen, die Einschränkungen streng einzuhalten und Einschränkungen nur dann aufzuheben, falls dies der einzige Weg ist.
+      router_options_snap_range: >-
+        Maximale Entfernung bis zum Halt an einer Kreuzung, ansonsten Halt am
+        Auslieferungsort.
+      router_options_strict_restriction: >-
+        Wenn nicht angekreuzt, wird der Router versuchen, die Einschränkungen
+        streng einzuhalten und Einschränkungen nur dann aufzuheben, falls dies
+        der einzige Weg ist.
       visit_duration_help: Durchschnittliche Zeit pro Benutzerkonto
       max_plannings_default: '%{n} (Standardwert)'
       max_plannings_help: Maximale Anzahl der zulässigen Pläne auf dem Benutzerkonto.
@@ -810,24 +850,52 @@ de:
       max_destinations_default: '%{n} (Standardwert)'
       max_destinations_help: Maximale Anzahl der zulässigen Zielorte auf dem Benutzerkonto.
       max_vehicle_usage_sets_default: '%{n} (Standardwert)'
-      max_vehicle_usage_sets_help: Maximale Anzahl der zulässigen Fahrzeug-Grundeinstellungen auf dem Benutzerkonto.
+      max_vehicle_usage_sets_help: >-
+        Maximale Anzahl der zulässigen Fahrzeug-Grundeinstellungen auf dem
+        Benutzerkonto.
       optimization_max_split_size_default: '%{n} (Standardwert)'
-      optimization_max_split_size_help: Maximale Anzahl der zu gruppierenden Punkte, falls das Problem zu schwierig ist, um es zu optimieren. Je größer der Wert ist, desto besser ist das Ergebnis der Optimierung (aber keine Lösung für das Problem innerhalb der verfügbaren Zeit könnte häufiger auftreten). Je kleiner der Wert ist, desto schneller wird die Optimierung sein (aber die Lösung könnte eine geringere Qualität aufweisen). Ein Wert, der dem 10-20-fachen der durchschnittlichen Länge Ihrer Strecken entspricht, ist richtig.
+      optimization_max_split_size_help: >-
+        Maximale Anzahl der zu gruppierenden Punkte, falls das Problem zu
+        schwierig ist, um es zu optimieren. Je größer der Wert ist, desto besser
+        ist das Ergebnis der Optimierung (aber keine Lösung für das Problem
+        innerhalb der verfügbaren Zeit könnte häufiger auftreten). Je kleiner
+        der Wert ist, desto schneller wird die Optimierung sein (aber die Lösung
+        könnte eine geringere Qualität aufweisen). Ein Wert, der dem
+        10-20-fachen der durchschnittlichen Länge Ihrer Strecken entspricht, ist
+        richtig.
       optimization_cluster_size_default: '%{n} (Standardwert)'
-      optimization_cluster_size_help: Wert in Sekunden zwischen den Punkten der Gruppe vor der Optimierung. Ein großer Wert verschlechtert das Optimierungsergebnis (30 Sekunden sind bereits ein großer Wert). Berücksichtigen Sie nur eine einzige Streckenoptimierung mit Verzögerungen und ohne Fahrzeugkapazität.
+      optimization_cluster_size_help: >-
+        Wert in Sekunden zwischen den Punkten der Gruppe vor der Optimierung.
+        Ein großer Wert verschlechtert das Optimierungsergebnis (30 Sekunden
+        sind bereits ein großer Wert). Berücksichtigen Sie nur eine einzige
+        Streckenoptimierung mit Verzögerungen und ohne Fahrzeugkapazität.
       optimization_time: Optimierungszeit (Mindest- und Höchstwert)
       optimization_time_default: '%{n} (Standardwert)'
-      optimization_time_help: Sie können hier eine maximale Zeit pro Fahrzeug für die Optimierung angeben. Andernfalls stoppt die Optimierung standardmäßig automatisch.
+      optimization_time_help: >-
+        Sie können hier eine maximale Zeit pro Fahrzeug für die Optimierung
+        angeben. Andernfalls stoppt die Optimierung standardmäßig automatisch.
       optimization_minimal_time_default: '%{n} (Standardwert)'
-      optimization_minimal_time_help: Sie können hier eine Mindestdauer pro Fahrzeug angeben. Andernfalls stoppt die Optimierung automatisch.
+      optimization_minimal_time_help: >-
+        Sie können hier eine Mindestdauer pro Fahrzeug angeben. Andernfalls
+        stoppt die Optimierung automatisch.
       optimization_soft_upper_bound_default: '%{n} (Standardwert)'
-      optimization_stop_soft_upper_bound_help: 'Je wichtiger der Wert ist, desto schädlicher sind Verzögerungen (0, um Verzögerungen streng zu verbieten: schalten Sie die Cluster in diesem Fall aus).'
-      optimization_vehicle_soft_upper_bound_help: 'Für eine globale Optimierung können Sie die Verteilung auf Fahrzeuge verwalten. Je wichtiger der Wert ist, desto schädlicher sind Verzögerungen (0, um Verzögerungen streng zu verbieten: schalten Sie die Cluster in diesem Fall aus).'
+      optimization_stop_soft_upper_bound_help: >-
+        Je wichtiger der Wert ist, desto schädlicher sind Verzögerungen (0, um
+        Verzögerungen streng zu verbieten: schalten Sie die Cluster in diesem
+        Fall aus).
+      optimization_vehicle_soft_upper_bound_help: >-
+        Für eine globale Optimierung können Sie die Verteilung auf Fahrzeuge
+        verwalten. Je wichtiger der Wert ist, desto schädlicher sind
+        Verzögerungen (0, um Verzögerungen streng zu verbieten: schalten Sie die
+        Cluster in diesem Fall aus).
       optimization_cost_waiting_time_default: '%{n} (Standardwert)'
-      optimization_cost_waiting_time_help: Bewerten Sie die Bedeutung der Wartezeiten. Je größer der Wert ist, desto größer ist die Verzögerung vor dem Öffnen des Zeitfensters (0, um eine Wartezeit zu unterbinden).
+      optimization_cost_waiting_time_help: >-
+        Bewerten Sie die Bedeutung der Wartezeiten. Je größer der Wert ist,
+        desto größer ist die Verzögerung vor dem Öffnen des Zeitfensters (0, um
+        eine Wartezeit zu unterbinden).
       optimization_force_start_help: Erzwingt den Start des Fahrzeugs zu Beginn seines Zeitplans.
-      enable_global_optimization_test: Aktiviert, wenn Test
-      print_header_help: Textblock, der vor jeder Strecke hinzugefügt wird
+      enable_global_optimization_test: 'Aktiviert, wenn Test'
+      print_header_help: 'Textblock, der vor jeder Strecke hinzugefügt wird'
       print:
         title: Drucken
         barcode:
@@ -835,13 +903,23 @@ de:
         barcode_help: Referenz als Barcode einbinden
       sms:
         title: SMS
-      sms_character_count: Ihre Mitteilung enthält %{c} Zeichen
-      sms_template_help: SMS-Vorlage, die für Ihre Besuche versendet wird. {NAME} wird durch den in der App ausgefüllten Zielortnamen ersetzt. Ihr Text sollte keine Sonderzeichen (GSM 03.38) enthalten und 160 Zeichen (bzw. 70 bei Sonderzeichen) nicht überschreiten.
-      sms_keys_help: "Verfügbare Ersatzzeichenketten: {NAME} {REF} {VISIT_REF} {DATE} {TIME} {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER}."
-      sms_concat_help: Bei einer Aktivierung wird Ihre SMS vollständig sein (bei Überschreitung der maximalen Zeichenzahl werden jedoch mehrere SMS zum jeweiligen Preis berechnet). Wenn es nicht aktiviert ist, wird Ihre SMS abgeschnitten werden.
-      sms_from_customer_name_help: Wenn angekreuzt, wird "%{c}" als SMS-Absendername verwendet
+      sms_character_count: 'Ihre Mitteilung enthält %{c} Zeichen'
+      sms_template_help: >-
+        SMS-Vorlage, die für Ihre Besuche versendet wird. {NAME} wird durch den
+        in der App ausgefüllten Zielortnamen ersetzt. Ihr Text sollte keine
+        Sonderzeichen (GSM 03.38) enthalten und 160 Zeichen (bzw. 70 bei
+        Sonderzeichen) nicht überschreiten.
+      sms_keys_help: >-
+        Verfügbare Ersatzzeichenketten: {NAME} {REF} {VISIT_REF} {DATE} {TIME}
+        {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER}.
+      sms_concat_help: >-
+        Bei einer Aktivierung wird Ihre SMS vollständig sein (bei Überschreitung
+        der maximalen Zeichenzahl werden jedoch mehrere SMS zum jeweiligen Preis
+        berechnet). Wenn es nicht aktiviert ist, wird Ihre SMS abgeschnitten
+        werden.
+      sms_from_customer_name_help: 'Wenn angekreuzt, wird "%{c}" als SMS-Absendername verwendet'
       speed_multiplier_default: '%{n} (Standardwert)'
-      speed_multiplier_help: Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit.
+      speed_multiplier_help: "Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit."
       audience_url_help: Gehen Sie zur Zielgruppenseite des Kunden-Dashboards.
       behavior_url_help: Gehen Sie zur Verhaltensseite des Kunden-Dashboards.
       submit: Globale Einstellungen aktualisieren
@@ -850,9 +928,14 @@ de:
         name: Name
         name_placeholder: Externe Anwendung
         url: URL
-        url_placeholder: http://www.example.com?p_id={PLANNING_ID}
-        url_help: "Externe URL, die vom Export-Menü des Plans aufgerufen wird \nKann die folgenden Ersatz-Token enthalten: PLANNING_ID, PLANNING_REF,
-          PLANNING_IDS, ROUTE_ID, ROUTE_REF, API_KEY, CUSTOMER_ID\nBeispiel: http://www.example.com?p_id={PLANNING_ID}\n"
+        url_placeholder: 'http://www.example.com?p_id={PLANNING_ID}'
+        url_help: >
+          Externe URL, die vom Export-Menü des Plans aufgerufen wird
+
+          Kann die folgenden Ersatz-Token enthalten: PLANNING_ID, PLANNING_REF,
+          PLANNING_IDS, ROUTE_ID, ROUTE_REF, API_KEY, CUSTOMER_ID
+
+          Beispiel: http://www.example.com?p_id={PLANNING_ID}
   deliverable_units:
     edit:
       title: Bearbeiten der lieferbaren Einheit
@@ -865,17 +948,28 @@ de:
       prefered_icons: Bevorzugt
       other_icons: Andere
       label_placeholder: Einheit
-      label_help: Zum Beispiel "Paket" oder eine Einheit wie "lb", kg" usw.
+      label_help: 'Zum Beispiel "Paket" oder eine Einheit wie "lb", kg" usw.'
       ref_help: Eine freie Referenz
-      default_quantity_help: Liefermenge für alle Ihre Besuche (leerlassen, falls keine Menge).
-      default_capacity_help: Kapazität für alle Ihre Fahrzeuge (leerlassen, falls keine Begrenzung).
-      optimization_overload_multiplier_no: 'Nein'
-      optimization_overload_multiplier_no_help: Sollten Sie bei der Optimierung Kapazitäten für Ihre Fahrzeuge einstellen, so ist eine Überladung verboten.
-      optimization_overload_multiplier_yes: 'Ja'
-      optimization_overload_multiplier_yes_help: Sollten Sie bei der Optimierung Kapazitäten für Ihre Fahrzeuge einstellen, so ist eine Überladung zulässig. Je größer die Anzahl ist, desto weniger Überladung wird durch die Optimierung zugelassen.
+      default_quantity_help: 'Liefermenge für alle Ihre Besuche (leerlassen, falls keine Menge).'
+      default_capacity_help: 'Kapazität für alle Ihre Fahrzeuge (leerlassen, falls keine Begrenzung).'
+      optimization_overload_multiplier_no: Nein
+      optimization_overload_multiplier_no_help: >-
+        Sollten Sie bei der Optimierung Kapazitäten für Ihre Fahrzeuge
+        einstellen, so ist eine Überladung verboten.
+      optimization_overload_multiplier_yes: Ja
+      optimization_overload_multiplier_yes_help: >-
+        Sollten Sie bei der Optimierung Kapazitäten für Ihre Fahrzeuge
+        einstellen, so ist eine Überladung zulässig. Je größer die Anzahl ist,
+        desto weniger Überladung wird durch die Optimierung zugelassen.
       optimization_overload_multiplier_ignore: Ignoriert
-      optimization_overload_multiplier_ignore_help: Bei der Optimierung werden Mengen und Fahrzeugkapazitäten nicht berücksichtigt.
-      optimization_overload_multiplier_help: Zulässige oder nicht zulässige Überlast während der Optimierung (nur gültig, wenn die Kapazität für das Fahrzeug angegeben ist). Wenn eine Überladung zulässig ist, so wird bei einem größeren Wert durch die Optimierung immer weniger Überladung zugelassen.
+      optimization_overload_multiplier_ignore_help: >-
+        Bei der Optimierung werden Mengen und Fahrzeugkapazitäten nicht
+        berücksichtigt.
+      optimization_overload_multiplier_help: >-
+        Zulässige oder nicht zulässige Überlast während der Optimierung (nur
+        gültig, wenn die Kapazität für das Fahrzeug angegeben ist). Wenn eine
+        Überladung zulässig ist, so wird bei einem größeren Wert durch die
+        Optimierung immer weniger Überladung zugelassen.
   destinations:
     upload_tomtom:
       success: Adressen erfolgreich importiert
@@ -888,10 +982,12 @@ de:
       import_stores: Filialen importieren
       tags: Tags
       clear: Alle Zielorte löschen
-      clear_confirm: Sind Sie sicher, dass Sie alle Ziele löschen möchten? Bestehende Strecken werden verlorengehen.
+      clear_confirm: >-
+        Sind Sie sicher, dass Sie alle Ziele löschen möchten? Bestehende
+        Strecken werden verlorengehen.
     form:
       ref_help: Eine freie Referenz
-      detail_help: Nicht geokodierte Adressergänzung, z. B. Wohnungsnummer
+      detail_help: "Nicht geokodierte Adressergänzung, z. B. Wohnungsnummer"
       comment_help: Lieferinformationen
       locate_manually: Manuelles Auffinden auf der Karte
       geocoding_accuracy_none: Nicht zutreffend
@@ -907,14 +1003,20 @@ de:
         'null': Keines
       tags_help: Zielortkategorien
       dialog:
-        confirm_overwrite_point: Position wurde manuell eingestellt. Überschreiben mit Ergebnissen der Geokodierung?
+        confirm_overwrite_point: >-
+          Position wurde manuell eingestellt. Überschreiben mit Ergebnissen der
+          Geokodierung?
         attributes_change_bulk:
           title: Mehrere Tags in einer Aktion ändern
-          tags_help: Für jede Zeile können Sie ein bestimmtes Tag durch ein anderes bestehendes Tag ersetzen
+          tags_help: >-
+            Für jede Zeile können Sie ein bestimmtes Tag durch ein anderes
+            bestehendes Tag ersetzen
       visit:
-        enable_multi_visits: Brauchen Sie mehr als einen Besuch für diesen Zielort? Kontaktieren Sie bitte den Support, um diese Funktion zu aktivieren.
+        enable_multi_visits: >-
+          Brauchen Sie mehr als einen Besuch für diesen Zielort? Kontaktieren
+          Sie bitte den Support, um diese Funktion zu aktivieren.
         new: Neuer Besuch
-        new_help: Neuer Besuch, wenn Sie diesen Zielort mehrmals besuchen.
+        new_help: 'Neuer Besuch, wenn Sie diesen Zielort mehrmals besuchen.'
         attributes_change_bulk: Tags ändern
         attributes_change_bulk_help: Mehrere Tags in einer Aktion ändern
         collapse_all: Alle einklappen/ausklappen
@@ -926,17 +1028,30 @@ de:
       title: Zielorte importieren
       destinations: Zielorte
       replace_no: Update / Zusatz
-      replace_no_help: Es wird ein Update der bestehenden Zielorte (unveränderte Zielreferenzen) durchgeführt, und die neuen Zielorte werden der Anwendung hinzugefügt.
+      replace_no_help: >-
+        Es wird ein Update der bestehenden Zielorte (unveränderte
+        Zielreferenzen) durchgeführt, und die neuen Zielorte werden der
+        Anwendung hinzugefügt.
       replace_yes: Vorherige Zielorte löschen
-      replace_yes_help: Löschen und Ersetzen der Zielorte durch importierte Zielorte. Überschreiben aller Ziele. Auch alte Strecken werden verlorengehen.
-      replace_confirm: Das Löschen aller Zielort wird sich auf Ihre alten Pläne auswirken, die nur neue, ungeplante Zielorte enthalten werden. Sind Sie sicher?
+      replace_yes_help: >-
+        Löschen und Ersetzen der Zielorte durch importierte Zielorte.
+        Überschreiben aller Ziele. Auch alte Strecken werden verlorengehen.
+      replace_confirm: >-
+        Das Löschen aller Zielort wird sich auf Ihre alten Pläne auswirken, die
+        nur neue, ungeplante Zielorte enthalten werden. Sind Sie sicher?
       plannings: Pläne
       delete_plannings: Frühere Pläne löschen
-      delete_plannings_help: Löschen der zuvor erstellten Pläne und Strecken (ermöglicht bessere Leistungen). Sollten in Ihrer neuen Importdatei Strecken vorhanden sein, so wird nach dem Import ein neuer Streckenplan erstellt.
+      delete_plannings_help: >-
+        Löschen der zuvor erstellten Pläne und Strecken (ermöglicht bessere
+        Leistungen). Sollten in Ihrer neuen Importdatei Strecken vorhanden sein,
+        so wird nach dem Import ein neuer Streckenplan erstellt.
       delete_plannings_confirm: Alle zuvor erstellten Streckenpläne löschen?
       csv:
         title: CSV-Datei
-        help: Importiert Zielorte aus der CSV-Datei. CSV-Dateien können aus Tabellenkalkulationen oder anderen Softwareprogrammen exportiert werden.
+        help: >-
+          Importiert Zielorte aus der CSV-Datei. CSV-Dateien können aus
+          Tabellenkalkulationen oder anderen Softwareprogrammen exportiert
+          werden.
         file_help: Nur CSV-Dateien importieren.
         custom_columns: 'Sie haben benutzerdefinierte Spalten festgelegt: %{s}.'
       import_template_help: Hilfe – Definition der Spalten
@@ -947,8 +1062,14 @@ de:
           columns_route: Streckenspalten
           columns_destination: Spalten mit besuchten Zielorten
           columns_visit: Besuchsspalten
-          def_help: Wenn Sie die Standard-Spaltennamen nicht verwenden möchten, können Sie diese auch anpassen. Sie können eine Liste von Spaltennummern oder -titeln angeben.
-          def_example: Sie können beispielsweise für "Straße" "Nummer, Straße, 4" definieren, um Ihre Spalten "Nummer", "Straße" und 4. Spalte ohne Titel in der Anwendung als Wert für "Straße" zusammenzuführen.
+          def_help: >-
+            Wenn Sie die Standard-Spaltennamen nicht verwenden möchten, können
+            Sie diese auch anpassen. Sie können eine Liste von Spaltennummern
+            oder -titeln angeben.
+          def_example: >-
+            Sie können beispielsweise für "Straße" "Nummer, Straße, 4"
+            definieren, um Ihre Spalten "Nummer", "Straße" und 4. Spalte ohne
+            Titel in der Anwendung als Wert für "Straße" zusammenzuführen.
       tomtom:
         title: TomTom
         help: TomTom WEBFLEET-Adressen als Zielorte importieren
@@ -959,79 +1080,118 @@ de:
       columns: Spalten
       no_position: fehlen
       geocoding_level: Ebene der Geokodierung
-      geocoding_column_help: Ebene und Genauigkeit der Geokodierung. Erst nach Ebene, dann nach Genauigkeit sortieren
+      geocoding_column_help: >-
+        Ebene und Genauigkeit der Geokodierung. Erst nach Ebene, dann nach
+        Genauigkeit sortieren
       geocoding_empty: fehlen
-      mutli_quantities: Mehrere Mengen. Bearbeiten Sie diesen Besuch, um die Mengen zu ändern.
+      mutli_quantities: 'Mehrere Mengen. Bearbeiten Sie diesen Besuch, um die Mengen zu ändern.'
       click2call: Zum Anrufen anklicken
       quantity_small: Mge.
       dialog:
         import:
           title: Importieren
-          in_progress: Bitte warten Sie, der Import läuft
+          in_progress: 'Bitte warten Sie, der Import läuft'
         geocoding:
           title: Geokodierung
-          in_progress: Bitte warten Sie, die Geokodierung läuft.
+          in_progress: 'Bitte warten Sie, die Geokodierung läuft.'
           attempts: 'Versuche:'
           inqueue: Geokodierungs-Aufgabe in Warteschlange
           error: Berechnung ist fehlgeschlagen.
         geocoding_danger:
           title: Unzuverlässige Geokodierungsergebnisse
-          infos: Einige Ihrer Zielorte scheinen unzuverlässig geokodiert worden zu sein. Möchten Sie sie anzeigen?
-          hide_help: 'Um diese Meldung auszublenden, wählen Sie Ihre nicht zuverlässigen geokodierten Zielorte und:'
-          correct_help: Prüfen Sie die Adresse, um sie bei Bedarf zu korrigieren oder zu ergänzen
+          infos: >-
+            Einige Ihrer Zielorte scheinen unzuverlässig geokodiert worden zu
+            sein. Möchten Sie sie anzeigen?
+          hide_help: >-
+            Um diese Meldung auszublenden, wählen Sie Ihre nicht zuverlässigen
+            geokodierten Zielorte und:
+          correct_help: >-
+            Prüfen Sie die Adresse, um sie bei Bedarf zu korrigieren oder zu
+            ergänzen
           move_help: Punkte auf der Karte bei Bedarf verschieben
           dismiss: Entlassen
           sort_geocoding: Nicht zuverlässige geokodierte Ergebnisse zuerst anzeigen
-      over_max_limit: "Sie haben die maximale Anzahl der Zielorte für Ihr Benutzerkonto erreicht (Grenzwert: %{limit})"
+      over_max_limit: >-
+        Sie haben die maximale Anzahl der Zielorte für Ihr Benutzerkonto
+        erreicht (Grenzwert: %{limit})
     new:
       title: Neuer Zielort
     import_file:
       ref: Referenz
-      ref_desc: 'Zielortreferenz: stabile, eindeutige, konstante Referenz-ID, die eine zerstörungsfreie Aktualisierung dieses Elements ermöglicht, wenn der nächste Import erfolgt'
+      ref_desc: >-
+        Zielortreferenz: stabile, eindeutige, konstante Referenz-ID, die eine
+        zerstörungsfreie Aktualisierung dieses Elements ermöglicht, wenn der
+        nächste Import erfolgt
       route: Strecke
-      route_desc: index oder Referenz der Strecke im erstellten Plan, wenn dieses Feld ausgefüllt ist.
+      route_desc: >-
+        index oder Referenz der Strecke im erstellten Plan, wenn dieses Feld
+        ausgefüllt ist.
       ref_vehicle: Fahrzeug
-      ref_vehicle_desc: Referenz oder Name des Fahrzeugs, mit dem der Halt im Plan durchgeführt wird.
+      ref_vehicle_desc: >-
+        Referenz oder Name des Fahrzeugs, mit dem der Halt im Plan durchgeführt
+        wird.
       planning_ref: Referenzplan
-      planning_ref_desc: Planreferenz für Erstellung/Aktualisierung (wenn Sie mehrere Pläne importieren oder einen bestimmten Plan aktualisieren möchten)
+      planning_ref_desc: >-
+        Planreferenz für Erstellung/Aktualisierung (wenn Sie mehrere Pläne
+        importieren oder einen bestimmten Plan aktualisieren möchten)
       planning_name: Plan
       planning_name_desc: Planbezeichnung für Erstellung/Aktualisierung
       stop_type: Haltetyp
-      stop_type_desc: Haltetyp im Plan. Standardwert ist [Besuch].
+      stop_type_desc: 'Haltetyp im Plan. Standardwert ist [Besuch].'
       stop_type_visit: Besuch
       stop_type_visit_desc: ''
       stop_format: '[Besuch | Filiale | Pause]'
       name: Name
       name_desc: Name des Benutzerkontos oder des besuchten Zielorts
       street: Straße
-      street_desc: Straßenadresse mit Gebäudenummer, Straßentyp und Straßenname (Schreibweise ist entscheidend für zuverlässige Geokodierung). Nicht-offizielle Elemente wie Raumnummer, Treppenbuchstabe usw. müssen in das Feld "Detail" verschoben werden
+      street_desc: >-
+        Straßenadresse mit Gebäudenummer, Straßentyp und Straßenname
+        (Schreibweise ist entscheidend für zuverlässige Geokodierung).
+        Nicht-offizielle Elemente wie Raumnummer, Treppenbuchstabe usw. müssen
+        in das Feld "Detail" verschoben werden
       detail: Detail
-      detail_desc: 'für den Benutzer verständliche Details und Hinweise, die Ihren Mitarbeiter von seinem Fahrzeug bis vor die Haustür des Zielorts führen. Beispiele: Gebäudename, Etage, Raumnummer ...'
+      detail_desc: >-
+        für den Benutzer verständliche Details und Hinweise, die Ihren
+        Mitarbeiter von seinem Fahrzeug bis vor die Haustür des Zielorts führen.
+        Beispiele: Gebäudename, Etage, Raumnummer ...
       postalcode: Postleitzahl
-      postalcode_desc: Postleitzahl Ihres Bezirks (Genauigkeit ist für eine zuverlässige Geokodierung entscheidend)
+      postalcode_desc: >-
+        Postleitzahl Ihres Bezirks (Genauigkeit ist für eine zuverlässige
+        Geokodierung entscheidend)
       city: Ort
-      city_desc: Stadt-, Orts- oder Bezirksname (Schreibweise ist entscheidend für eine zuverlässige Geokodierung)
+      city_desc: >-
+        Stadt-, Orts- oder Bezirksname (Schreibweise ist entscheidend für eine
+        zuverlässige Geokodierung)
       state: Status
-      state_desc: Zustandsname (Schreibweise ist entscheidend für eine zuverlässige Geokodierung)
+      state_desc: >-
+        Zustandsname (Schreibweise ist entscheidend für eine zuverlässige
+        Geokodierung)
       country: Land
-      country_desc: Ländername (Schreibweise ist entscheidend für eine zuverlässige Geokodierung)
+      country_desc: >-
+        Ländername (Schreibweise ist entscheidend für eine zuverlässige
+        Geokodierung)
       lat: Breite
-      lat_desc: Breitengrad des Zielorts in Dezimalgraden zwischen -90° und 90°. Z. B. 45,91
+      lat_desc: "Breitengrad des Zielorts in Dezimalgraden zwischen -90° und 90°. Z. B. 45,91"
       lat_format: Gleitkommazahl zwischen -90 und 90
       lng: Länge
-      lng_desc: 'Längengrad des Zielorts in Dezimalgraden zwischen -180° und 180°. Beispiel: -0,781'
+      lng_desc: >-
+        Längengrad des Zielorts in Dezimalgraden zwischen -180° und 180°.
+        Beispiel: -0,781
       lng_format: Gleitkommazahl zwischen -180 und 180
       geocoding_accuracy: Genauigkeit der Geokodierung
-      geocoding_accuracy_desc: 'Qualitätsbewertung für die Umrechnung der Straßenadresse des Zielorts in geografische Koordinaten. Diese Angabe wird durch eine Punktzahl zwischen 0 und 1 ausgedrückt. Beispiel: 0,70 bedeutet 70 % Genauigkeit.'
+      geocoding_accuracy_desc: "Qualitätsbewertung für die Umrechnung der Straßenadresse des Zielorts in geografische Koordinaten. Diese Angabe wird durch eine Punktzahl zwischen 0 und 1 ausgedrückt. Beispiel: 0,70 bedeutet 70 % Genauigkeit."
       geocoding_accuracy_format: Gleitkommazahl zwischen 0 und 1
       geocoding_level: Geokodierungsebene
-      geocoding_level_desc: Präzision, die bei der Umwandlung der Straßenadresse des Ziels in geografische Koordinaten erreicht wird, ausgedrückt durch für den Benutzer verständliche Ebenen.
+      geocoding_level_desc: >-
+        Präzision, die bei der Umwandlung der Straßenadresse des Ziels in
+        geografische Koordinaten erreicht wird, ausgedrückt durch für den
+        Benutzer verständliche Ebenen.
       duration: Verweildauer
       duration_desc: Verweildauer
       quantity: Menge
       quantity_desc: Anzahl der zu liefernden Einheiten.
       quantity_operation: Vorgang
-      quantity_operation_desc: Geben Sie an, ob das Fahrzeug befüllt oder entleert werden soll.
+      quantity_operation_desc: 'Geben Sie an, ob das Fahrzeug befüllt oder entleert werden soll.'
       quantity_operation_format: '[ausfüllen | leeren]'
       quantity_operation_fill: füllen
       quantity_operation_empty: leer
@@ -1040,30 +1200,34 @@ de:
       quantity1_2: Menge 1_2
       quantity1_2_desc: 'veraltet: Verwenden Sie stattdessen "Mengen".'
       active: aktiv
-      active_desc: Gibt an, ob der Besuch auf dieser Strecke bzw. in diesem Plan aktiv ist oder nicht.
+      active_desc: >-
+        Gibt an, ob der Besuch auf dieser Strecke bzw. in diesem Plan aktiv ist
+        oder nicht.
       open: offen
       open_desc: 'veraltet: Verwenden Sie stattdessen "öffnen 1".'
       close: schließen
       close_desc: 'veraltet: Verwenden Sie stattdessen "schließen 1".'
       time_window_start_1: öffnen 1
-      time_window_start_1_desc: Startzeit 1 (kann über 24:00 hinausgehen), um Zielort zu besuchen.
+      time_window_start_1_desc: 'Startzeit 1 (kann über 24:00 hinausgehen), um Zielort zu besuchen.'
       time_window_end_1: schließen 1
-      time_window_end_1_desc: Endzeit 1 (kann über 24:00 Uhr hinausgehen), um Zielort zu besuchen.
+      time_window_end_1_desc: 'Endzeit 1 (kann über 24:00 Uhr hinausgehen), um Zielort zu besuchen.'
       time_window_start_2: öffnen 2
-      time_window_start_2_desc: Startzeit 2 (kann über 24:00 hinausgehen), um Zielort zu besuchen.
+      time_window_start_2_desc: 'Startzeit 2 (kann über 24:00 hinausgehen), um Zielort zu besuchen.'
       time_window_end_2: schließen 2
-      time_window_end_2_desc: Endzeit 2 (kann über 24:00 Uhr hinausgehen), um Zielort zu besuchen.
+      time_window_end_2_desc: 'Endzeit 2 (kann über 24:00 Uhr hinausgehen), um Zielort zu besuchen.'
       priority: Priorität
-      priority_desc: Einschlusspriorität bei der Optimierung, von -4 (niedrigste) bis 4 (höchste).
+      priority_desc: >-
+        Einschlusspriorität bei der Optimierung, von -4 (niedrigste) bis 4
+        (höchste).
       comment: Bemerkung
       comment_desc: ergänzende Informationen.
       phone_number: Telefon
       phone_number_desc: Telefonnummer des Zielorts.
       tags: Tags
       tags_desc: Zielort-Tags (erlaubt deren Gruppierung).
-      tags_format: Tag 1, Tag 2
+      tags_format: 'Tag 1, Tag 2'
       without_visit: ohne Besuch
-      without_visit_desc: besagt, dass es keine zugehörigen Besuche gibt
+      without_visit_desc: 'besagt, dass es keine zugehörigen Besuche gibt'
       ref_visit: Referenzbesuch
       ref_visit_desc: Referenz-ID dieses Besuchs.
       tags_visit: Tags des Besuchs
@@ -1072,8 +1236,8 @@ de:
         string: Text
         integer: Ganzzahl
         float: '0,123'
-        hour: HH:MM
-        second: HH:MM:SS
+        hour: 'HH:MM'
+        second: 'HH:MM:SS'
         yes_no: ja/nein
         required: erforderlich
         advisable: beraten
@@ -1087,7 +1251,7 @@ de:
       none_column: Keine passende Spalte gefunden
       missing_name: '"Name" fehlt.'
       missing_location: '"Stadt/Postleitzahl" oder "Breite/Länge" fehlt.'
-      invalid_numeric_value: Ungültiger numerischer Wert "%{value}".
+      invalid_numeric_value: 'Ungültiger numerischer Wert "%{value}".'
       check_custom_columns: Prüfen Sie Ihre Spaltendefinition.
     reverse_geocoding:
       apply: Neue Adresse übernehmen
@@ -1095,7 +1259,9 @@ de:
     unsupported_browser:
       unsupported_browser: Nicht unterstützter Browser
       unsupported_browser_modern: Ihr Browser ist zu alt. Bitte verwenden Sie einen aktuellen Browser.
-      download_browser: 'Sie können die neueste Version des kostenlosen Browsers Firefox herunterladen unter: '
+      download_browser: >-
+        Sie können die neueste Version des kostenlosen Browsers Firefox
+        herunterladen unter:
   order_arrays:
     menu:
       order_arrays: Aufträge
@@ -1122,8 +1288,8 @@ de:
       paste: Einfügen
       total: Summe
       planning: Auf Plan anwenden
-      confirm_ovewrite_column: Sind Sie sicher, dass Sie die Spaltendaten überschreiben möchten?
-      confirm_ovewrite_row: Sind Sie sicher, dass Sie die Zeilendaten überschreiben möchten?
+      confirm_ovewrite_column: 'Sind Sie sicher, dass Sie die Spaltendaten überschreiben möchten?'
+      confirm_ovewrite_row: 'Sind Sie sicher, dass Sie die Zeilendaten überschreiben möchten?'
       dialog:
         loading:
           title: Laden
@@ -1137,7 +1303,9 @@ de:
       total: Summe
   reporting:
     download:
-      max_interval_reached: Das Intervall zwischen dem Startdatum und dem Enddatum muss weniger als 31 Tage betragen
+      max_interval_reached: >-
+        Das Intervall zwischen dem Startdatum und dem Enddatum muss weniger als
+        31 Tage betragen
       end_date_inferior: Das Enddatum muss größer sein als das Startdatum
       fail: Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut
       success: Der Bericht wird heruntergeladen
@@ -1145,7 +1313,9 @@ de:
       no_content: Kein Bericht während dieser Zeit
     index:
       title: Verhältnis
-      head: Laden Sie den Bericht über Touren herunter, die mit der mobilen Anwendung Cartoway Field erstellt wurden
+      head: >-
+        Laden Sie den Bericht über Touren herunter, die mit der mobilen
+        Anwendung Cartoway Field erstellt wurden
       submit: Download
       downloading: Download läuft...
       default_begin_date: T-8 standardmäßig
@@ -1155,186 +1325,254 @@ de:
       with_actions: Statusverlauf
   route_mailer:
     send_kmz_route:
-      title: "KMZ-Export planen"
+      title: KMZ-Export planen
       hello: Hallo
-      content: An diese E-Mail von %{s} wurde eine KMZ-Datei mit Streckeninformationen angehängt.
-      vehicle: "Fahrzeug: %{name}"
-      planning: "Plan: %{name} (Datum)"
-      planning_ref: "Planreferenz: %{ref}"
-      route_ref: "Streckennummer %{ref}"
-      order_array: "Aufträge: %{name}"
+      content: >-
+        An diese E-Mail von %{s} wurde eine KMZ-Datei mit Streckeninformationen
+        angehängt.
+      vehicle: 'Fahrzeug: %{name}'
+      planning: 'Plan: %{name} (Datum)'
+      planning_ref: 'Planreferenz: %{ref}'
+      route_ref: 'Streckennummer %{ref}'
+      order_array: 'Aufträge: %{name}'
     send_computed_ics_route:
-      title: "iCalendar-Export planen"
+      title: iCalendar-Export planen
       hello: Hallo
-      content: "Ein iCalendar wurde von %{s} gesendet. Sie können den folgenden Link kopieren und einfügen, um ihn in Ihrem persönlichen Kalender als Quelle zu verwenden (das Update erfolgt automatisch), oder Sie können auf diesen Link klicken, um die Datei herunterzuladen (in diesem Fall erfolgt kein Update)."
-      vehicle: "Fahrzeug: %{name}"
-      planning: "Plan: %{name} (Datum)"
-      planning_ref: "Planreferenz: %{ref}"
-      route_ref: "Streckennummer %{ref}"
-      order_array: "Aufträge: %{name}"
-      link: "Download-Link: <a href=%{link}>iCalendar-Plan</a>"
+      content: >-
+        Ein iCalendar wurde von %{s} gesendet. Sie können den folgenden Link
+        kopieren und einfügen, um ihn in Ihrem persönlichen Kalender als Quelle
+        zu verwenden (das Update erfolgt automatisch), oder Sie können auf
+        diesen Link klicken, um die Datei herunterzuladen (in diesem Fall
+        erfolgt kein Update).
+      vehicle: 'Fahrzeug: %{name}'
+      planning: 'Plan: %{name} (Datum)'
+      planning_ref: 'Planreferenz: %{ref}'
+      route_ref: 'Streckennummer %{ref}'
+      order_array: 'Aufträge: %{name}'
+      link: 'Download-Link: <a href=%{link}>iCalendar-Plan</a>'
   user_mailer:
     layout:
-      welcome: "Willkommen zu %{name}!"
+      welcome: 'Willkommen zu %{name}!'
       staff:
-        content: "Für Sie beginnt die %{name}-Erfahrung bereits jetzt! Unser Team arbeitet daran, Ihren Erfolg zu sichern."
-        greetings: "Mit freundlichen Grüßen"
-        signature: "%{name} Team"
+        content: >-
+          Für Sie beginnt die %{name}-Erfahrung bereits jetzt! Unser Team
+          arbeitet daran, Ihren Erfolg zu sichern.
+        greetings: Mit freundlichen Grüßen
+        signature: '%{name} Team'
       links:
-        title: "Folgen Sie uns!"
-        facebook: "Facebook-Link"
-        twitter: "Twitter-Link"
-        linkedin: "LinkedIn Link"
+        title: Folgen Sie uns!
+        facebook: Facebook-Link
+        twitter: Twitter-Link
+        linkedin: LinkedIn Link
     footer:
-      first_step: "⭐ Schritt 1: Ihr Passwort setzen"
-      second_step: "⭐ Schritt 2: Anmelden in der Anwendung"
+      first_step: '⭐ Schritt 1: Ihr Passwort setzen'
+      second_step: '⭐ Schritt 2: Anmelden in der Anwendung'
     password:
-      subject: "Festlegen Ihres Passwort für %{name}"
-      title: "Ihr Passwort setzen"
-      preheader: "Willkommen und vielen Dank, dass Sie sich entschieden haben, %{name} zu testen"
-      welcome: "Willkommen zu %{name}!"
+      subject: 'Festlegen Ihres Passwort für %{name}'
+      title: Ihr Passwort setzen
+      preheader: >-
+        Willkommen und vielen Dank, dass Sie sich entschieden haben, %{name} zu
+        testen
+      welcome: 'Willkommen zu %{name}!'
       detail:
-        content: "Vielen Dank, dass Sie sich für %{application_name} mit Streckenplan- und Optimierungsfunktion %{limit} entschieden haben."
-        limit: " für <b>%{days} Tage</b>"
-        define: "Bevor Sie sich bei Ihrem %{test}-Benutzerkonto anmelden, legen Sie bitte Ihr Passwort fest:"
-        test: " Test"
-        link: "Passwort festlegen"
+        content: >-
+          Vielen Dank, dass Sie sich für %{application_name} mit Streckenplan-
+          und Optimierungsfunktion %{limit} entschieden haben.
+        limit: ' für <b>%{days} Tage</b>'
+        define: >-
+          Bevor Sie sich bei Ihrem %{test}-Benutzerkonto anmelden, legen Sie
+          bitte Ihr Passwort fest:
+        test: ' Test'
+        link: Passwort festlegen
     connection:
-      subject: "Melden Sie sich bei Ihrem %{name}-Benutzerkonto an."
-      title: "Melden Sie sich bei Ihrem Benutzerkonto an"
-      preheader: "Sie können sich nun in Ihrem Benutzerkonto anmelden."
-      welcome: "Herzlichen Glückwunsch! Sie können sich nun in Ihrem Benutzerkonto anmelden."
+      subject: 'Melden Sie sich bei Ihrem %{name}-Benutzerkonto an.'
+      title: Melden Sie sich bei Ihrem Benutzerkonto an
+      preheader: Sie können sich nun in Ihrem Benutzerkonto anmelden.
+      welcome: >-
+        Herzlichen Glückwunsch! Sie können sich nun in Ihrem Benutzerkonto
+        anmelden.
       detail:
-        content: "Zum Einloggen "
-        id: "Bitte verwenden Sie das von Ihnen festgelegte Passwort und Ihren Benutzernamen: %{login}."
-        link: "Verbindung"
+        content: 'Zum Einloggen '
+        id: >-
+          Bitte verwenden Sie das von Ihnen festgelegte Passwort und Ihren
+          Benutzernamen: %{login}.
+        link: Verbindung
     fleet_drivers:
       hello: Hallo
       subject: Mobilfunk-Benutzerkonto
       preheader: Mobilfunk-Benutzerkonto
-      content: "Die folgenden mobilen Benutzer wurden erstellt und stehen nun für die Verbindung mit einem Mobiltelefon bereit (E-Mail als Benutzername und Passwort)."
-      login: "E-Mail: %{email} / Passwort: %{password}"
+      content: >-
+        Die folgenden mobilen Benutzer wurden erstellt und stehen nun für die
+        Verbindung mit einem Mobiltelefon bereit (E-Mail als Benutzername und
+        Passwort).
+      login: 'E-Mail: %{email} / Passwort: %{password}'
       footer: Mobilfunk-Benutzerkonto
     accompanying_team:
-      header: "Unser Team unterstützt Sie"
-      main_content: "Sie können Sie sich darauf verlassen, dass unser Team Sie unterstützt, um Ihnen die beste Erfahrung zu bieten. Sie können "
-      highlight: "uns also bei allen Fragen gerne kontaktieren: "
-      contact_support: "Support kontaktieren"
-      preheader: "Entdecken Sie den 1. Teil der Ressourcen, um loszulegen."
-      panels_header: "Zu startende Ressourcen: 1. Teil"
-      documentation: "Online-Dokumentation"
-      panels_subtitle: "Schauen Sie sich die ersten drei Abschnitte unserer"
-      goal: "Absichten an:"
+      header: Unser Team unterstützt Sie
+      main_content: >-
+        Sie können Sie sich darauf verlassen, dass unser Team Sie unterstützt,
+        um Ihnen die beste Erfahrung zu bieten. Sie können
+      highlight: 'uns also bei allen Fragen gerne kontaktieren: '
+      contact_support: Support kontaktieren
+      preheader: 'Entdecken Sie den 1. Teil der Ressourcen, um loszulegen.'
+      panels_header: 'Zu startende Ressourcen: 1. Teil'
+      documentation: Online-Dokumentation
+      panels_subtitle: Schauen Sie sich die ersten drei Abschnitte unserer
+      goal: 'Absichten an:'
       panel_one:
-        title: "Vor dem Start"
-        content: "erfahren Sie, welchen Browser Sie verwenden sollten und was Sie über die Durchschnittsgeschwindigkeit der Fahrzeuge wissen müssen. Wie Open-Source-Karten, Geokodierung und Optimierungsalgorithmen funktionieren."
-        time: "⏱3 Min."
-        doc_link: "Dokument – Bevor Sie beginnen"
-        doc_href: "/manual/00-before_start.html"
+        title: Vor dem Start
+        content: >-
+          erfahren Sie, welchen Browser Sie verwenden sollten und was Sie über
+          die Durchschnittsgeschwindigkeit der Fahrzeuge wissen müssen. Wie
+          Open-Source-Karten, Geokodierung und Optimierungsalgorithmen
+          funktionieren.
+        time: "⏱3 Min."
+        doc_link: Dokument – Bevor Sie beginnen
+        doc_href: /manual/00-before_start.html
       panel_two:
-        title: "Beginnen mit %{name}"
-        content: "Erfahren Sie, wie man sich in der %{name} Software anmeldet und was ihre Grundlagen sind: Datenimport, Streckenoptimierung und Datenexport."
-        time: "⏱2 Min."
-        doc_link: "Dokument – Beginnen mit %{name}."
-        doc_href: "/manual/01-start.html"
+        title: 'Beginnen mit %{name}'
+        content: >-
+          Erfahren Sie, wie man sich in der %{name} Software anmeldet und was
+          ihre Grundlagen sind: Datenimport, Streckenoptimierung und
+          Datenexport.
+        time: "⏱2 Min."
+        doc_link: 'Dokument – Beginnen mit %{name}.'
+        doc_href: /manual/01-start.html
       panel_three:
-        title: "Globale und Benutzereinstellungen"
-        content: "Passwort und Benutzername, Art des Fuhrparks, durchschnittliche Verweildauer, Export optimierter Pläne auf GPS-Geräte, Export optimierter Pläne als Roadmaps."
-        time: "⏱6 Min."
-        doc_link: "Dokument – Globale und Benutzereinstellungen"
-        doc_href: "/manual/02-global_settings_users.html"
-      footer: "Sie erhalten diese E-Mail als Benutzer von %{name}."
+        title: Globale und Benutzereinstellungen
+        content: >-
+          Passwort und Benutzername, Art des Fuhrparks, durchschnittliche
+          Verweildauer, Export optimierter Pläne auf GPS-Geräte, Export
+          optimierter Pläne als Roadmaps.
+        time: "⏱6 Min."
+        doc_link: Dokument – Globale und Benutzereinstellungen
+        doc_href: /manual/02-global_settings_users.html
+      footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
     features:
-      header: "Haben Sie Fragen? Unser Team antwortet gerne!"
-      main_content: "Unser Team steht Ihnen für sämtliche Ihrer Fragen gerne zur Verfügung: "
-      highlight: ""
-      contact_support: "Support kontaktieren"
-      preheader: "Schauen Sie sich den 2. Teil der Ressourcen an, um loszulegen."
-      panels_header: "Zu startende Ressourcen: 2. Teil"
-      panels_subtitle: "Schauen Sie sich die drei folgenden Abschnitte unserer"
-      documentation: "Online-Dokumentation an"
-      goal: "Absichten an:"
+      header: Haben Sie Fragen? Unser Team antwortet gerne!
+      main_content: 'Unser Team steht Ihnen für sämtliche Ihrer Fragen gerne zur Verfügung: '
+      highlight: ''
+      contact_support: Support kontaktieren
+      preheader: 'Schauen Sie sich den 2. Teil der Ressourcen an, um loszulegen.'
+      panels_header: 'Zu startende Ressourcen: 2. Teil'
+      panels_subtitle: Schauen Sie sich die drei folgenden Abschnitte unserer
+      documentation: Online-Dokumentation an
+      goal: 'Absichten an:'
       panel_one:
-        title: "Fahrzeugmanagement"
-        content: "Konfigurieren der Fahrzeuge, ihrer Verbrauchswerte und ihrer Kapazität. Definieren Sie die Streckenfunktion gemäß dem Fahrzeugtyp und konfigurieren Sie die Lager."
-        time: "⏱15 M."
-        doc_link: "Dokument – Fahrzeugmanagement"
-        doc_href: "/manual/03-vehicles_configuration.html"
+        title: Fahrzeugmanagement
+        content: >-
+          Konfigurieren der Fahrzeuge, ihrer Verbrauchswerte und ihrer
+          Kapazität. Definieren Sie die Streckenfunktion gemäß dem Fahrzeugtyp
+          und konfigurieren Sie die Lager.
+        time: "⏱15 M."
+        doc_link: Dokument – Fahrzeugmanagement
+        doc_href: /manual/03-vehicles_configuration.html
       panel_two:
-        title: "Zielortmanagement"
-        content: "Erstellen oder Importieren von Zielortdaten (Referenz, Menge, Adressen, Verweildauer, Besuchszeitfenster, Labels) und Löschen dieser Daten. Exportieren der Zielortdaten ..."
-        time: "⏱9 Min."
-        doc_link: "Dokument – Zielortmanagement"
-        doc_href: "/manual/04-destinations.html"
+        title: Zielortmanagement
+        content: >-
+          Erstellen oder Importieren von Zielortdaten (Referenz, Menge,
+          Adressen, Verweildauer, Besuchszeitfenster, Labels) und Löschen dieser
+          Daten. Exportieren der Zielortdaten ...
+        time: "⏱9 Min."
+        doc_link: Dokument – Zielortmanagement
+        doc_href: /manual/04-destinations.html
       panel_three:
-        title: "Zoneneinteilungsmanagement"
-        content: "eine Zoneneinteilung manuell erstellen. Erstellen Sie automatisch eine Zoneneinteilung aus dem Streckenplan oder halten Sie eine Anzahl von Zonen ein. Ändern Sie schließlich eine Zoneneinteilung."
-        time: "⏱5 Min."
-        doc_link: "Dokument – Zoneneinteilungsmanagement"
-        doc_href: "/manual/05-zonings.html"
-      footer: "Sie erhalten diese E-Mail als Benutzer von %{name}."
+        title: Zoneneinteilungsmanagement
+        content: >-
+          eine Zoneneinteilung manuell erstellen. Erstellen Sie automatisch eine
+          Zoneneinteilung aus dem Streckenplan oder halten Sie eine Anzahl von
+          Zonen ein. Ändern Sie schließlich eine Zoneneinteilung.
+        time: "⏱5 Min."
+        doc_link: Dokument – Zoneneinteilungsmanagement
+        doc_href: /manual/05-zonings.html
+      footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
       adds:
-        video: "Videos"
-        vehicules_params: "Fahrzeugeinstellungen (englisches Sub.)"
-        destination_params: "Zielorteinstellungen (englische Sub.)"
-        tags: "Tags-Einführung (englisches Sub.)"
-        zonage: "Zoneneinteilung erstellen (englisches Sub.)"
-        zonage_update: "Zoneneinteilung bearbeiten (englisches Sub.)"
+        video: Videos
+        vehicules_params: Fahrzeugeinstellungen (englisches Sub.)
+        destination_params: Zielorteinstellungen (englische Sub.)
+        tags: Tags-Einführung (englisches Sub.)
+        zonage: Zoneneinteilung erstellen (englisches Sub.)
+        zonage_update: Zoneneinteilung bearbeiten (englisches Sub.)
     advanced_options:
-      header: "Können wir Ihnen dabei helfen, einige Funktionen zu klären?"
-      main_content: "Sie haben %{name} nun bereits seit 2 Tagen benutzt. Sie haben eine Reihe von Funktionen entdeckt. Sollten Sie Fragen dazu haben, so können Sie sich jederzeit an unser Team wenden: "
-      highlight: ""
-      contact_support: "Support kontaktieren"
-      preheader: "Entdecken Sie den 3. Teil der Ressourcen, um loszulegen."
-      panels_header: "Zu startende Ressourcen: 3. Teil"
-      panels_subtitle: "Schauen Sie sich die letzten <b>drei Abschnitte</b> unserer"
-      documentation: "Online-Dokumentation."
-      goal: "Absichten an:"
+      header: 'Können wir Ihnen dabei helfen, einige Funktionen zu klären?'
+      main_content: >-
+        Sie haben %{name} nun bereits seit 2 Tagen benutzt. Sie haben eine Reihe
+        von Funktionen entdeckt. Sollten Sie Fragen dazu haben, so können Sie
+        sich jederzeit an unser Team wenden:
+      highlight: ''
+      contact_support: Support kontaktieren
+      preheader: 'Entdecken Sie den 3. Teil der Ressourcen, um loszulegen.'
+      panels_header: 'Zu startende Ressourcen: 3. Teil'
+      panels_subtitle: Schauen Sie sich die letzten <b>drei Abschnitte</b> unserer
+      documentation: Online-Dokumentation.
+      goal: 'Absichten an:'
       panel_one:
-        title: "Plan- und Streckenmanagement"
-        content: "Erstellen eines Streckenplans, Anwenden einer Zoneneinteilung, Streckenoptimierung, Exportieren von Strecken (Straßenkarte, Mobiltelefon, GPS, Kalender, Tabellenkalkulation)."
-        time: "⏱20 Min."
-        doc_link: "Dokument – Plan- und Streckenmanagement"
-        doc_href: "/manual/06-plans.html"
+        title: Plan- und Streckenmanagement
+        content: >-
+          Erstellen eines Streckenplans, Anwenden einer Zoneneinteilung,
+          Streckenoptimierung, Exportieren von Strecken (Straßenkarte,
+          Mobiltelefon, GPS, Kalender, Tabellenkalkulation).
+        time: "⏱20 Min."
+        doc_link: Dokument – Plan- und Streckenmanagement
+        doc_href: /manual/06-plans.html
       panel_two:
-        title: "TomTom WEBFLEET (optional)"
-        content: "Benutzen Sie TomTom WEBFLEET? Erfahren Sie, wie Sie %{name} und TomTom WEBFLEET miteinander verbinden. Wie der Planer den Link erstellen kann und wie Außendienstmitarbeiter diesen täglich nutzen können."
-        time: "⏱9 Min."
-        doc_link: "Dokument – TomTom WEBFLEET"
-        doc_href: "/manual/07-tomtom_webfleet.html"
+        title: TomTom WEBFLEET (optional)
+        content: >-
+          Benutzen Sie TomTom WEBFLEET? Erfahren Sie, wie Sie %{name} und TomTom
+          WEBFLEET miteinander verbinden. Wie der Planer den Link erstellen kann
+          und wie Außendienstmitarbeiter diesen täglich nutzen können.
+        time: "⏱9 Min."
+        doc_link: Dokument – TomTom WEBFLEET
+        doc_href: /manual/07-tomtom_webfleet.html
       panel_three:
-        title: "Erweiterte Optionen:"
-        content: "Erweiterte Optionen verwenden: Erstellen mehrerer Besuche mit unterschiedlichen Einstellungen für den gleichen Zielort usw."
-        time: "⏱4 Min."
-        doc_link: "Dokument – Erweiterte Optionen"
-        doc_href: "/manual/08-advanced_options.html"
-      footer: "Sie erhalten diese E-Mail als Benutzer von %{name}."
+        title: 'Erweiterte Optionen:'
+        content: >-
+          Erweiterte Optionen verwenden: Erstellen mehrerer Besuche mit
+          unterschiedlichen Einstellungen für den gleichen Zielort usw.
+        time: "⏱4 Min."
+        doc_link: Dokument – Erweiterte Optionen
+        doc_href: /manual/08-advanced_options.html
+      footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
       adds:
-        videos: "Videos"
-        plans: "Erstellen eines Plans (englisches Sub.)"
-        stops: "Haltemanagement (englisches Sub.)"
-        optimize: "Einführung in die Optimierung (englisches Sub.)"
-        export: "Export der Strecken (englisches Sub.)"
-        gps: "Export auf GPS-Geräte und Mobilgeräte (englisches Sub.)"
-        webfleet: "Link zu TomTom Webfleet (englisches Sub.)"
+        videos: Videos
+        plans: Erstellen eines Plans (englisches Sub.)
+        stops: Haltemanagement (englisches Sub.)
+        optimize: Einführung in die Optimierung (englisches Sub.)
+        export: Export der Strecken (englisches Sub.)
+        gps: Export auf GPS-Geräte und Mobilgeräte (englisches Sub.)
+        webfleet: Link zu TomTom Webfleet (englisches Sub.)
     accompanying:
-      title: "Unser Team unterstützt Sie"
-      content: "Sie können Sie sich darauf verlassen, dass unser Team Sie unterstützt, um Ihnen die beste Erfahrung zu bieten. Damit <b>Sie uns bei Fragen kontaktieren können:</b>"
-      link: "Support kontaktieren"
-      preheader: "Unser Team steht Ihnen für sämtliche Ihrer Fragen gerne zur Verfügung:"
-      footer: "Sie erhalten diese E-Mail als Benutzer von %{name}."
+      title: Unser Team unterstützt Sie
+      content: >-
+        Sie können Sie sich darauf verlassen, dass unser Team Sie unterstützt,
+        um Ihnen die beste Erfahrung zu bieten. Damit <b>Sie uns bei Fragen
+        kontaktieren können:</b>
+      link: Support kontaktieren
+      preheader: 'Unser Team steht Ihnen für sämtliche Ihrer Fragen gerne zur Verfügung:'
+      footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
     subscribe:
-      title: "Sollten wir das Abenteuer nicht gemeinsam fortsetzen?"
-      try_period_over: "Ihre kostenlose Demozeit ist leider abgelaufen. <b>Vielen Dank für Ihr Interesse an %{name} und wir hoffen, dass diese Erfahrung Ihre Erwartungen erfüllen konnte.</b>"
-      content: "Wenn Sie das Abenteuer mit uns fortsetzen möchten, <b>können Sie unser Verkaufsteam über dieses Formular oder telefonisch unter +33&nbsp;5&nbsp;64&nbsp;27&nbsp;04&nbsp;59&nbsp; kontaktieren</b>:"
-      link: "Hiermit beantrage ich ein Abonnement für %{name}."
-      preheader: "Ihr kostenloser Demozeitraum endet in Kürze. Wir danken Ihnen für Ihr Interesse an Mapotempo Web (Name der Online-Lösung) und hoffen, dass diese Erfahrungen Ihre Erwartungen erfüllt haben."
-      footer: "Sie erhalten diese E-Mail als Benutzer von %{name}."
+      title: Sollten wir das Abenteuer nicht gemeinsam fortsetzen?
+      try_period_over: >-
+        Ihre kostenlose Demozeit ist leider abgelaufen. <b>Vielen Dank für Ihr
+        Interesse an %{name} und wir hoffen, dass diese Erfahrung Ihre
+        Erwartungen erfüllen konnte.</b>
+      content: >-
+        Wenn Sie das Abenteuer mit uns fortsetzen möchten, <b>können Sie unser
+        Verkaufsteam über dieses Formular oder telefonisch unter
+        +33&nbsp;5&nbsp;64&nbsp;27&nbsp;04&nbsp;59&nbsp; kontaktieren</b>:
+      link: 'Hiermit beantrage ich ein Abonnement für %{name}.'
+      preheader: >-
+        Ihr kostenloser Demozeitraum endet in Kürze. Wir danken Ihnen für Ihr
+        Interesse an Mapotempo Web (Name der Online-Lösung) und hoffen, dass
+        diese Erfahrungen Ihre Erwartungen erfüllt haben.
+      footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
   plannings:
     menu:
       plannings: Pläne
       plannings_limit:
-        menu_message: Sie haben zu viele Pläne. Finden Sie alle Ihre Pläne, indem Sie auf Liste klicken.
+        menu_message: >-
+          Sie haben zu viele Pläne. Finden Sie alle Ihre Pläne, indem Sie auf
+          Liste klicken.
     index:
       title: Auflistung der Pläne
       new: Neuer Plan
@@ -1343,9 +1581,13 @@ de:
         icalendar: Kalender iCal
         icalendar_email: iCal-Kalender per E-Mail
         spreadsheet: CSV- / Excel-Tabellenkalkulation
-        none_planning: Bitte wählen Sie mindestens einen Plan aus, den Sie exportieren möchten.
-      over_max_limit: "Sie haben die maximale Anzahl der Pläne für Ihr Benutzerkonto erreicht (Grenzwert: %{limit})"
-      routes_by_vehicles: 'Anzeigen aller Strecken von'
+        none_planning: >-
+          Bitte wählen Sie mindestens einen Plan aus, den Sie exportieren
+          möchten.
+      over_max_limit: >-
+        Sie haben die maximale Anzahl der Pläne für Ihr Benutzerkonto erreicht
+        (Grenzwert: %{limit})
+      routes_by_vehicles: Anzeigen aller Strecken von
     edit:
       sopac_title: Temperaturangabe
       device_name_label: 'Gerätename:'
@@ -1368,7 +1610,9 @@ de:
       title: Plan bearbeiten
       stops: Haltepunkte
       destinations: Zielorte
-      without_stops_title: Haltepunkte aus diesem vergrößerbaren Plan wurden nicht geladen, um die Anzeigeleistung zu verbessern
+      without_stops_title: >-
+        Haltepunkte aus diesem vergrößerbaren Plan wurden nicht geladen, um die
+        Anzeigeleistung zu verbessern
       load_stops_out_of_route: Laden von ungeplanten Haltepunkten
       load_stops: Ladehalte auf dieser Strecke
       optimize: Optimieren Sie alle entsperrten Strecken.
@@ -1376,7 +1620,9 @@ de:
       optimize_complete: Optimierung abgeschlossen
       optimize_failed: Optimierung fehlgeschlagen
       optimized_at: Optimiert
-      zoning_confirm: Speichern und Anwenden der neuen Zoneneinteilung? Strecken werden aktualisiert.
+      zoning_confirm: >-
+        Speichern und Anwenden der neuen Zoneneinteilung? Strecken werden
+        aktualisiert.
       page_change_zoning_confirm: Seite verlassen und Änderungen verwerfen?
       route_placeholder: Streckenref.
       service_time: Servicezeit
@@ -1400,7 +1646,9 @@ de:
           action_email: iCal-Kalender per E-Mail
           success: Datei erfolgreich per E-Mail an alle Fahrzeuge versendet
           fail: Exportieren der E-Mail fehlgeschlagen
-          mail_error: E-Mail(s) nicht gesendet.<br/> Überprüfen Sie die E-Mail-Konfiguration für jedes Fahrzeug.
+          mail_error: >-
+            E-Mail(s) nicht gesendet.<br/> Überprüfen Sie die
+            E-Mail-Konfiguration für jedes Fahrzeug.
         kmz_email:
           action: KMZ-Track per E-Mail
           success: E-Mail erfolgreich versendet
@@ -1459,10 +1707,19 @@ de:
       edit_store_help: Bearbeiten der Filialinformationen
       edit_visit_help: Besuchs-/Kundeninformationen bearbeiten
       marker_help: Auf Karte anzeigen
-      automatic_insert_help: Finden Sie den besten Platz auf einer Strecke, um diesen Halt einzufügen (Ergebnisse konnten nicht mehr optimiert werden)
-      automatic_insert_help_multiple: Finden einer guten Position auf den Strecken, um Halte einzufügen (Ergebnisse werden nicht mehr optimiert)
-      automatic_insert_confirm: Eine Strecke für jeden Halt suchen? Ergebnisse werden nicht optimiert werden. Zoneneinteilungen werden empfohlen, um für jeden Halt eine genaue Strecke zu finden (OK, um trotzdem fortzufahren).
-      automatic_insert_too_many: Zu viele Haltepunkte ohne Fahrzeuge. Zoneneinteilungen werden empfohlen, um für jeden Halt eine genaue Strecke anzugeben
+      automatic_insert_help: >-
+        Finden Sie den besten Platz auf einer Strecke, um diesen Halt einzufügen
+        (Ergebnisse konnten nicht mehr optimiert werden)
+      automatic_insert_help_multiple: >-
+        Finden einer guten Position auf den Strecken, um Halte einzufügen
+        (Ergebnisse werden nicht mehr optimiert)
+      automatic_insert_confirm: >-
+        Eine Strecke für jeden Halt suchen? Ergebnisse werden nicht optimiert
+        werden. Zoneneinteilungen werden empfohlen, um für jeden Halt eine
+        genaue Strecke zu finden (OK, um trotzdem fortzufahren).
+      automatic_insert_too_many: >-
+        Zu viele Haltepunkte ohne Fahrzeuge. Zoneneinteilungen werden empfohlen,
+        um für jeden Halt eine genaue Strecke anzugeben
       active_all: Alle
       active_reverse: Rückwärts
       active_none: Keines
@@ -1472,9 +1729,11 @@ de:
       vehicle_last_position_time: 'Letzte Position:'
       route_change_color_help: Ändern der Streckenfarbe
       send_sms: Senden einer SMS an Zielorte
-      send_sms_success: Senden von %{c} SMS erfolgreich
+      send_sms_success: 'Senden von %{c} SMS erfolgreich'
       popup:
-        outdated: Streckenverfolgung veraltet. Aktualisieren Sie Ihren Plan (Schaltfläche „Aktualisieren“).
+        outdated: >-
+          Streckenverfolgung veraltet. Aktualisieren Sie Ihren Plan
+          (Schaltfläche „Aktualisieren“).
         time_window_start_end_1: 'Zeitfenster 1:'
         time_window_start_1: öffnen 1
         time_window_end_1: schließen 1
@@ -1495,7 +1754,9 @@ de:
         day: D+
       error:
         no_geolocalization: Keine Geolokalisierung
-        no_geolocalization_help: Es konnten keine geografischen Koordinaten oder Adressen gefunden werden
+        no_geolocalization_help: >-
+          Es konnten keine geografischen Koordinaten oder Adressen gefunden
+          werden
         out_of_window: Außerhalb des Zeitfensters
         out_of_window_help: Geplanter Halt außerhalb der angegebenen Zeitfenster
         out_of_capacity: Außerhalb der Kapazität
@@ -1509,21 +1770,31 @@ de:
         out_of_max_distance: Maximal erreichbare Entfernung überschritten
         out_of_max_distance_help: Maximal erreichbare Entfernung überschritten
         no_path: Unerreichbarer Zielort
-        no_path_help: 'Unerreichbarer Zielort: fehlender oder kein Weg zum oder vom Zielort, um eine Strecke zu finden'
+        no_path_help: >-
+          Unerreichbarer Zielort: fehlender oder kein Weg zum oder vom Zielort,
+          um eine Strecke zu finden
       dialog:
         refresh:
           title: Aktualisieren des Plans
-          confirm: Sie haben Änderungen durchgeführt, die eine Neuberechnung des Plans erfordern. Möchten Sie den Plan jetzt aktualisieren?
+          confirm: >-
+            Sie haben Änderungen durchgeführt, die eine Neuberechnung des Plans
+            erfordern. Möchten Sie den Plan jetzt aktualisieren?
         optimization:
           title: Optimierung
           visits:
             title: Besuche
             sticky_vehicle: Alle Besuche auf den gleichen Strecken halten
-            sticky_vehicle_true_help: Die Optimierungsfunktion bearbeitet jede Strecke separat, um für alle Besuche die gleiche Strecke beizubehalten.
-            sticky_vehicle_false_help: Die Optimierungsfunktion definiert selbst die beste Strecke für jeden Besuch.
+            sticky_vehicle_true_help: >-
+              Die Optimierungsfunktion bearbeitet jede Strecke separat, um für
+              alle Besuche die gleiche Strecke beizubehalten.
+            sticky_vehicle_false_help: >-
+              Die Optimierungsfunktion definiert selbst die beste Strecke für
+              jeden Besuch.
             active_only: Setzen Sie nicht markierte Besuche an das Ende der Strecke
             active_only_true_help: Optimierung behandelt nur markierte Besuche auf den Strecken.
-            active_only_false_help: Die Optimierung bearbeitet alle Besuche auf den Strecken, egal ob aktiv oder inaktiv (nicht markierte Besuche bleiben unmarkiert).
+            active_only_false_help: >-
+              Die Optimierung bearbeitet alle Besuche auf den Strecken, egal ob
+              aktiv oder inaktiv (nicht markierte Besuche bleiben unmarkiert).
             cost_late_multiplier: Verzögerung für Besuch zulassen
           vehicles:
             title: Fahrzeuge
@@ -1541,7 +1812,7 @@ de:
           optimize: Optimieren
         optimizer:
           title: Optimierung
-          in_progress: Bitte warten Sie, die Verarbeitung läuft.
+          in_progress: 'Bitte warten Sie, die Verarbeitung läuft.'
           matrix: Entfernungsmatrix
           optimize: Optimierung
           routes: Aktualisieren des Plans
@@ -1551,16 +1822,18 @@ de:
           error: Berechnung ist fehlgeschlagen.
         zoning:
           title: Zoneneinteilung
-          in_progress: Bitte warten Sie, bis Sie eine neue Zoneneinteilung anwenden
+          in_progress: 'Bitte warten Sie, bis Sie eine neue Zoneneinteilung anwenden'
         move_stops:
           title: Bewegen der Haltepunkte
           move_to: Zielortfahrt auswählen
         move_destinations:
-          title: 'Bewegen der Haltepunkte'
-          in_progress: 'Zuordnung der Besuche zum laufenden Fahrzeug läuft. Bitte warten Sie.'
+          title: Bewegen der Haltepunkte
+          in_progress: >-
+            Zuordnung der Besuche zum laufenden Fahrzeug läuft. Bitte warten
+            Sie.
         vehicle:
           title: Fahrzeug wechseln
-          in_progress: Bitte warten Sie, um ein neues Fahrzeug anzumelden
+          in_progress: 'Bitte warten Sie, um ein neues Fahrzeug anzumelden'
         automatic_insert:
           title: Finden der besten Position für Ihre Halte
           in_progress: Bitte warten
@@ -1574,7 +1847,9 @@ de:
           columns: Spalten
           columns_export: Für den Export
           columns_skip: Überspringen
-          columns_DnD_help: Verwenden Sie die Maus, um exportierte Spalten per Drag&Drop zu bewegen
+          columns_DnD_help: >-
+            Verwenden Sie die Maus, um exportierte Spalten per Drag&Drop zu
+            bewegen
           format: Format
           csv: CSV-Format Standard
           excel: Excel CSV-Format
@@ -1633,10 +1908,18 @@ de:
       ref_help: Eine freie Referenz
       begin_end_date: Gültigkeitszeitraum
       begin_end_date_help: Gültigkeitszeitraum des Plans
-      tags_help: Ermöglicht eine Filterung der im Plan angezeigten Besuche gemäß ihren Tags. Wenn "alle" ausgewählt ist, müssen alle Besuche/Kunden mit allen Tags versehen sein. Wenn "oder" ausgewählt ist, genügt ein Tag aus der Liste.
+      tags_help: >-
+        Ermöglicht eine Filterung der im Plan angezeigten Besuche gemäß ihren
+        Tags. Wenn "alle" ausgewählt ist, müssen alle Besuche/Kunden mit allen
+        Tags versehen sein. Wenn "oder" ausgewählt ist, genügt ein Tag aus der
+        Liste.
       order_array: Aufträge
-      zonings_help: Ermöglicht die automatische Zuordnung von Fahrzeugen zu Besuchen/Zielorten mit geografischen Zonen.
-      avoid_zones_help: Außerdem können Sie Zonen definieren, in denen das Fahrzeug nicht fahren dürfen.
+      zonings_help: >-
+        Ermöglicht die automatische Zuordnung von Fahrzeugen zu
+        Besuchen/Zielorten mit geografischen Zonen.
+      avoid_zones_help: >-
+        Außerdem können Sie Zonen definieren, in denen das Fahrzeug nicht fahren
+        dürfen.
       default_date: Standardmäßig aktuelles Datum
       default: Standard
     show:
@@ -1658,9 +1941,9 @@ de:
         signature: 'Unterschrift:'
   routes_by_vehicles:
     show:
-      title_page: 'Strecken nach Fahrzeugen'
-      title: 'Strecken'
-      collapse_routes_panel: 'Streckenübersicht einklappen'
+      title_page: Strecken nach Fahrzeugen
+      title: Strecken
+      collapse_routes_panel: Streckenübersicht einklappen
   shared:
     error_messages:
       form_contains_error:
@@ -1694,13 +1977,22 @@ de:
       title: Filialen importieren
       stores: Filialen
       replace_no: Update / Zusatz
-      replace_no_help: Bestehende Filialen werden aktualisiert (unveränderte Filialreferenzen) und die neuen Filialen werden hinzugefügt.
+      replace_no_help: >-
+        Bestehende Filialen werden aktualisiert (unveränderte Filialreferenzen)
+        und die neuen Filialen werden hinzugefügt.
       replace_yes: Frühere Filialen löschen
-      replace_yes_help: Löschen und Ersetzen der Filialen durch importierte Filialen. Alle Filialen überschreiben.
-      replace_confirm: Alle Filialen und deren Änderungen löschen und durch importierte Daten ersetzen?
+      replace_yes_help: >-
+        Löschen und Ersetzen der Filialen durch importierte Filialen. Alle
+        Filialen überschreiben.
+      replace_confirm: >-
+        Alle Filialen und deren Änderungen löschen und durch importierte Daten
+        ersetzen?
       csv:
         title: CSV-Datei
-        help: Importieren der Filialen aus einer CSV-Datei. CSV-Dateien können aus Tabellenkalkulationen oder anderen Softwareprogrammen exportiert werden.
+        help: >-
+          Importieren der Filialen aus einer CSV-Datei. CSV-Dateien können aus
+          Tabellenkalkulationen oder anderen Softwareprogrammen exportiert
+          werden.
         file_help: Nur CSV-Dateien importieren
       import_template_help: Hilfe
       dialog:
@@ -1711,55 +2003,74 @@ de:
       dialog:
         import:
           title: Filialen importieren
-          in_progress: Bitte warten Sie, der Import läuft
+          in_progress: 'Bitte warten Sie, der Import läuft'
       title: Auflisten der Filialen
       new: Neue Filiale
     new:
       title: Neue Filiale
     import_file:
       ref: Referenz
-      ref_desc: stabile, eindeutige, konstante Referenz-ID, die eine zerstörungsfreie Aktualisierung dieses Elements ermöglicht, wenn der nächste Import erfolgt
+      ref_desc: >-
+        stabile, eindeutige, konstante Referenz-ID, die eine zerstörungsfreie
+        Aktualisierung dieses Elements ermöglicht, wenn der nächste Import
+        erfolgt
       name: Name
       name_desc: Name der Filiale
       color: Farbe
-      color_desc: Farbe Ihres Symbols, wobei der Wert ein Farbcode ist. Siehe Webfarbe unter https://de.wikipedia.org/wiki/Webfarbe
+      color_desc: >-
+        Farbe Ihres Symbols, wobei der Wert ein Farbcode ist. Siehe Webfarbe
+        unter https://de.wikipedia.org/wiki/Webfarbe
       color_format: '#000000 oder schwarz'
       icon: Symbol
-      icon_desc: Name des Symbols, das Sie aus der Liste http://fontawesome.io/icons ausgewählt haben. Bitte geben Sie das Präfix "fa-" ein. Z. B. fa-Erstellung.
+      icon_desc: "Name des Symbols, das Sie aus der Liste http://fontawesome.io/icons ausgewählt haben. Bitte geben Sie das Präfix \"fa-\" ein. Z. B. fa-Erstellung."
       icon_size: Symbolgröße
-      icon_size_desc: 'Größe des Symbols, das Ihre Filiale auf der Karte darstellt. Standard: groß.'
+      icon_size_desc: >-
+        Größe des Symbols, das Ihre Filiale auf der Karte darstellt. Standard:
+        groß.
       open: öffnen
       open_desc: Öffnungszeit der Filiale
       close: schließen
       close_desc: Schließungszeit der Filiale
       street: Straße
-      street_desc: Straßenadresse mit Gebäudenummer, Straßentyp und Straßenname (Schreibweise ist entscheidend für zuverlässige Geokodierung).
+      street_desc: >-
+        Straßenadresse mit Gebäudenummer, Straßentyp und Straßenname
+        (Schreibweise ist entscheidend für zuverlässige Geokodierung).
       postalcode: Postleitzahl
-      postalcode_desc: Postleitzahl Ihres Bezirks (Genauigkeit ist für eine zuverlässige Geokodierung entscheidend)
+      postalcode_desc: >-
+        Postleitzahl Ihres Bezirks (Genauigkeit ist für eine zuverlässige
+        Geokodierung entscheidend)
       city: Ort
-      city_desc: Stadt-, Orts- oder Bezirksname (die Schreibweise ist entscheidend für eine zuverlässige Geokodierung).
+      city_desc: >-
+        Stadt-, Orts- oder Bezirksname (die Schreibweise ist entscheidend für
+        eine zuverlässige Geokodierung).
       state: Status
-      state_desc: Zustandsname (Schreibweise ist entscheidend für eine zuverlässige Geokodierung)
+      state_desc: >-
+        Zustandsname (Schreibweise ist entscheidend für eine zuverlässige
+        Geokodierung)
       country: Land
-      country_desc: Ländername (Schreibweise ist entscheidend für eine zuverlässige Geokodierung)
+      country_desc: >-
+        Ländername (Schreibweise ist entscheidend für eine zuverlässige
+        Geokodierung)
       lat: Breite
-      lat_desc: Breitengrad des Zielorts in Dezimalgraden zwischen -90° und 90°. Z. B. 45,91
+      lat_desc: "Breitengrad des Zielorts in Dezimalgraden zwischen -90° und 90°. Z. B. 45,91"
       lat_format: Gleitkommazahl zwischen -90 und 90
       lng: Länge
-      lng_desc: 'Längengrad des Zielorts in Dezimalgraden zwischen -180° und 180°. Beispiel: -0,781'
+      lng_desc: >-
+        Längengrad des Zielorts in Dezimalgraden zwischen -180° und 180°.
+        Beispiel: -0,781
       lng_format: Gleitkommazahl zwischen -180 und 180
       geocoding_accuracy: Genauigkeit der Geokodierung
-      geocoding_accuracy_desc: 'Qualitätswert, der bei Umrechnung der Zielortadresse in geografische Koordinaten angegeben wird. Bei weniger als 85 % überprüfen Sie bitte Ihre Rechtschreibung und aktualisieren Sie die Geokodierung. Diese Punktzahl wird mit einem Wert zwischen 0 und 1 ausgedrückt. Beispiel: 0,70 bedeutet 70 % Genauigkeit.'
+      geocoding_accuracy_desc: "Qualitätswert, der bei Umrechnung der Zielortadresse in geografische Koordinaten angegeben wird. Bei weniger als 85 % überprüfen Sie bitte Ihre Rechtschreibung und aktualisieren Sie die Geokodierung. Diese Punktzahl wird mit einem Wert zwischen 0 und 1 ausgedrückt. Beispiel: 0,70 bedeutet 70 % Genauigkeit."
       geocoding_accuracy_format: Gleitkommazahl von 0 bis 1
       geocoding_level: Geokodierungsebene
       geocoding_level_desc: Präzision bei der Umwandlung der Zieladresse in geografische Koordinaten
       missing_name: '"Name" fehlt.'
       missing_location: '"Ort" oder "Postleitzahl" oder "Breite" und "Länge" fehlen.'
-      invalid_numeric_value: Ungültiger numerischer Wert "%{value}".
+      invalid_numeric_value: 'Ungültiger numerischer Wert "%{value}".'
       format:
         string: Text
         integer: Ganzzahl
-        hour: HH:MM
+        hour: 'HH:MM'
         float: '0,123'
         required: erforderlich
         advisable: beraten
@@ -1776,7 +2087,7 @@ de:
       title: Neues Produkt
     form:
       name_help: Langer Name des Produkts
-      code_help: Kurzcode, wenige Buchstaben
+      code_help: 'Kurzcode, wenige Buchstaben'
   tags:
     edit:
       title: Tag bearbeiten
@@ -1803,25 +2114,29 @@ de:
     edit:
       title: Benutzer bearbeiten
       edit: Ändern von Anmeldedaten und Passwort
-      edit_user: Sie sind nicht berechtigt, einen anderen Benutzer zu bearbeiten.
+      edit_user: 'Sie sind nicht berechtigt, einen anderen Benutzer zu bearbeiten.'
     form:
-      url_click2call_help: URL der VOIP-Kommunikationslösung. Stellen Sie in der URL '{TEL}'' anstelle der Telefonnummer ein.
+      url_click2call_help: >-
+        URL der VOIP-Kommunikationslösung. Stellen Sie in der URL '{TEL}''
+        anstelle der Telefonnummer ein.
       send_email: E-Mail senden
     update:
       success: Benutzer erfolgreich aktualisiert
     password:
       title: Passwort bearbeiten
-      unauthenticated: Verbindungsfehler, bitte überprüfen Sie die URL in Ihrer Bestätigungs-E-Mail.
+      unauthenticated: >-
+        Verbindungsfehler, bitte überprüfen Sie die URL in Ihrer
+        Bestätigungs-E-Mail.
     set_password:
       action: Mein Passwort festlegen
       success: Benutzer erfolgreich aktualisiert
   vehicles:
-    default_name: Fahrzeug %{n}
-    emissions_nothing: Nichts - %{n}
-    emissions_light_petrol: Licht – Benzin – %{n}
-    emissions_light_diesel: Licht – Diesel – %{n}
-    emissions_light_lgp: Licht – Flüssiggas – %{n}
-    emissions_ngv: Erdgasfahrzeug – %{n}
+    default_name: 'Fahrzeug %{n}'
+    emissions_nothing: 'Nichts - %{n}'
+    emissions_light_petrol: 'Licht – Benzin – %{n}'
+    emissions_light_diesel: 'Licht – Diesel – %{n}'
+    emissions_light_lgp: 'Licht – Flüssiggas – %{n}'
+    emissions_ngv: 'Erdgasfahrzeug – %{n}'
     import:
       max_distance: maximale Entfernung (in Metern)
       max_distance_desc: maximal erreichbarer Fahrzeugabstand
@@ -1836,7 +2151,7 @@ de:
       emission: Emission
       emission_desc: Kraftstoffart
       consumption: Verbrauch
-      consumption_desc: durchschnittlicher Kraftstoffverbrauch in Litern pro 100 km
+      consumption_desc: "durchschnittlicher Kraftstoffverbrauch in Litern pro 100 km"
       capacities: Kapazitäten
       capacities_desc: Maximale Fahrzeugkapazitäten
       router_mode: Streckenfunktion
@@ -1846,12 +2161,16 @@ de:
       router_options: Router-Optionen
       router_options_desc: Verwendung besonderer Streckenführungsoptionen erzwingen
       speed_multiplier: Geschwindigkeitsmultiplikator
-      speed_multiplier_desc: Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit.
+      speed_multiplier_desc: "Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit."
       color: Farbe
       color_desc: dem Fahrzeug zugeordnete Farbe
       tags: Fahrzeugfertigkeiten
-      tags_desc: 'Fertigkeiten, die mit dem Fahrzeug verknüpft sind. (Achtung: Wenn ein Fahrzeug mit einer Fertigkeit verbunden ist, werden bei Optimierung des Plans Besuche mit dieser Fertigkeit automatisch in dieses Fahrzeug verschoben.)'
-      tags_format: Fertigkeit 1, Fertigkeit 2
+      tags_desc: >-
+        Fertigkeiten, die mit dem Fahrzeug verknüpft sind. (Achtung: Wenn ein
+        Fahrzeug mit einer Fertigkeit verbunden ist, werden bei Optimierung des
+        Plans Besuche mit dieser Fertigkeit automatisch in dieses Fahrzeug
+        verschoben.)
+      tags_format: 'Fertigkeit 1, Fertigkeit 2'
       devices: Geräte
       devices_desc: Referenz oder ID der dem Fahrzeug zugeordneten Geräte
       missing_name: „Name“ des fehlenden Fahrzeugs
@@ -1860,8 +2179,8 @@ de:
         json: json
         integer: Ganzzahl
         float: '0,123'
-        hour: HH:MM
-        second: HH:MM:SS
+        hour: 'HH:MM'
+        second: 'HH:MM:SS'
         yes_no: ja/nein
         required: erforderlich
         advisable: beraten
@@ -1876,8 +2195,8 @@ de:
       emissions:
         help: Kraftstoffart
       consumption:
-        help: Durchschnittlicher Kraftstoffverbrauch in Litern pro 100 km
-        help_miles: Durchschnittlicher Kraftstoffverbrauch in Litern pro 62,1 Meilen
+        help: "Durchschnittlicher Kraftstoffverbrauch in Litern pro 100 km"
+        help_miles: "Durchschnittlicher Kraftstoffverbrauch in Litern pro 62,1 Meilen"
       capacities:
         label: Kapazitäten
         default: '%{n} (Standardwert)'
@@ -1891,13 +2210,16 @@ de:
         default: Standard
       speed_multiplier:
         default: '%{n} (Standardwert)'
-        help: Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit. Die globale Feinabstimmung der Einstellungen wird auch bei der Berechnung verwendet.
+        help: "Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit. Die globale Feinabstimmung der Einstellungen wird auch bei der Berechnung verwendet."
       contact_email:
         help: E-Mail des Fahrergeräts
       contact_phone:
         help: Telefonnummer des Fahrergeräts
       tags_empty: Keine Fertigkeiten gefunden
-      tags_help: 'Fertigkeiten, die mit dem Fahrzeug verknüpft sind. (Warnung: Wenn nur ein Fahrzeug über Fähigkeiten verfügt, können alle anderen Fahrzeuge diese Fähigkeit nicht nutzen, außer wenn diese angegeben sind)'
+      tags_help: >-
+        Fertigkeiten, die mit dem Fahrzeug verknüpft sind. (Warnung: Wenn nur
+        ein Fahrzeug über Fähigkeiten verfügt, können alle anderen Fahrzeuge
+        diese Fähigkeit nicht nutzen, außer wenn diese angegeben sind)
   vehicle_usages:
     menu:
       vehicle_usages: Fahrzeugkonfigurationen
@@ -1917,8 +2239,12 @@ de:
       disable: Deaktivieren
       multiple_disable: Ausgewählte Fahrzeuge deaktivieren
       multiple_enable: Ausgewählte Fahrzeuge aktivieren
-      disable_confirm: Sind Sie sicher? Alle Strecken mit diesem Fahrzeug und die Konfiguration werden verlorengehen.
-      multiple_disable_confirm: Sind Sie sicher? Alle Strecken, die diese Fahrzeuge und Konfigurationen verwenden, werden verlorengehen.
+      disable_confirm: >-
+        Sind Sie sicher? Alle Strecken mit diesem Fahrzeug und die Konfiguration
+        werden verlorengehen.
+      multiple_disable_confirm: >-
+        Sind Sie sicher? Alle Strecken, die diese Fahrzeuge und Konfigurationen
+        verwenden, werden verlorengehen.
       enable: Aktivieren
     new:
       title: Konfiguration eines neuen Fahrzeugs
@@ -1928,12 +2254,16 @@ de:
       save: Fahrzeugkonfiguration speichern
       vehicle:
         legend: Fahrzeug
-        help: Die folgenden Angaben zum Fahrzeug sind für alle Fahrzeugkonfigurationen gleich
+        help: >-
+          Die folgenden Angaben zum Fahrzeug sind für alle
+          Fahrzeugkonfigurationen gleich
       driver:
         legend: Fahrer
       vehicle_usage:
         legend: 'Fahrzeugkonfiguration: "%{s}"'
-        help: Die folgenden Angaben sind spezifisch für die Konfiguration des Fahrzeugs.
+        help: >-
+          Die folgenden Angaben sind spezifisch für die Konfiguration des
+          Fahrzeugs.
       time_window_start:
         default: '%{n} (Standard)'
       time_window_end:
@@ -1955,7 +2285,7 @@ de:
       rest_start_stop_help: Ohne Berücksichtigung der Pausendauer
       rest_duration:
         default: '%{n} (Standardwert)'
-        help: Erfordert ein Pausenfenster, wenn ausgefüllt
+        help: 'Erfordert ein Pausenfenster, wenn ausgefüllt'
       store_rest:
         default: Standard
         none: Keines
@@ -1964,14 +2294,23 @@ de:
         default: '%{n} (Standardwert)'
       service_time_start_addon: Vor
       service_time_end_addon: nach
-      service_times_help: Zeiträume, die vor dem ersten Halt und nach dem letzten Halt hinzugefügt werden
+      service_times_help: >-
+        Zeiträume, die vor dem ersten Halt und nach dem letzten Halt hinzugefügt
+        werden
       work_time: Arbeitszeit
       work_time_default: '%{n} (Standardwert)'
-      work_time_help: Arbeitszeit muss kleiner oder gleich der Arbeitszeit der Schicht sein (Dienstleistung ohne Pause) Bei einer entsprechenden Definition wird die Optimierung die Arbeitszeit streng einhalten.
+      work_time_help: >-
+        Arbeitszeit muss kleiner oder gleich der Arbeitszeit der Schicht sein
+        (Dienstleistung ohne Pause) Bei einer entsprechenden Definition wird die
+        Optimierung die Arbeitszeit streng einhalten.
       devices:
         placeholder: Gerät wählen
         fieldset: GPS & Mobiltelefone
-      tags_help: 'Fertigkeiten, die mit der aktuellen Konfiguration verknüpft sind. (Warnung: Wenn nur ein Fahrzeug über Fähigkeiten verfügt, können alle anderen Fahrzeuge diese Fähigkeit nicht nutzen, außer wenn diese angegeben sind)'
+      tags_help: >-
+        Fertigkeiten, die mit der aktuellen Konfiguration verknüpft sind.
+        (Warnung: Wenn nur ein Fahrzeug über Fähigkeiten verfügt, können alle
+        anderen Fahrzeuge diese Fähigkeit nicht nutzen, außer wenn diese
+        angegeben sind)
   vehicle_usage_sets:
     default:
       name: Standard
@@ -1987,37 +2326,54 @@ de:
       stores: Start - Ende
       time: Öffnen - Schließen
       service_time: Servicezeit
-      over_max_limit: "Sie haben die maximale Anzahl der Fahrzeugkonfigurationen für Ihr Benutzerkonto erreicht (Grenzwert: %{limit})"
+      over_max_limit: >-
+        Sie haben die maximale Anzahl der Fahrzeugkonfigurationen für Ihr
+        Benutzerkonto erreicht (Grenzwert: %{limit})
     new:
       title: Konfiguration neuer Fahrzeuge
     import:
       max_distance: Maximal erreichbarer Fahrzeugabstand (in Metern)
       title: Fahrzeugkonfiguration importieren
       vehicle_usage_set: Fahrzeugkonfiguration
-      default_configuration_replaced: Standardkonfiguration für alle Fahrzeuge wird durch importierte Daten ersetzt.
+      default_configuration_replaced: >-
+        Standardkonfiguration für alle Fahrzeuge wird durch importierte Daten
+        ersetzt.
       replace_yes: Vorhandene Konfiguration ersetzen
       replace_yes_help: Die aktuelle Konfiguration wird durch die neue ersetzt.
       replace_no: Fahrzeugkonfiguration hinzufügen
-      replace_no_help: Es wird eine neue Konfiguration hinzugefügt, ohne bestehende Konfigurationen zu ändern.
+      replace_no_help: >-
+        Es wird eine neue Konfiguration hinzugefügt, ohne bestehende
+        Konfigurationen zu ändern.
       vehicles: Fahrzeuge
       replace_vehicles: Vorhandene Fahrzeuge ersetzen
-      replace_vehicles_help: Alle Fahrzeuge in der Anwendung werden mit den importierten Daten aktualisiert (Fahrzeuge mit gleicher Referenz werden durch die entsprechenden Daten ersetzt).
+      replace_vehicles_help: >-
+        Alle Fahrzeuge in der Anwendung werden mit den importierten Daten
+        aktualisiert (Fahrzeuge mit gleicher Referenz werden durch die
+        entsprechenden Daten ersetzt).
       csv:
         title: CSV-Datei
-        help: Importieren der Fahrzeugkonfiguration aus der CSV-Datei. CSV-Dateien können aus Tabellenkalkulationen oder anderen Softwareprogrammen exportiert werden.
+        help: >-
+          Importieren der Fahrzeugkonfiguration aus der CSV-Datei. CSV-Dateien
+          können aus Tabellenkalkulationen oder anderen Softwareprogrammen
+          exportiert werden.
         file_help: Nur CSV-Dateien importieren
       import_template_help: Hilfe
       dialog:
-        replace_vehicles_confirm: Sind Sie sicher, dass Sie alle Fahrzeugeigenschaften durch Daten aus der Importdatei ersetzen wollen?
+        replace_vehicles_confirm: >-
+          Sind Sie sicher, dass Sie alle Fahrzeugeigenschaften durch Daten aus
+          der Importdatei ersetzen wollen?
         import:
           title: Fahrzeugkonfiguration importieren
           in_progress: Konfigurationsimport läuft. Bitte warten Sie.
         help:
           title: Spaltennamen in Ihrer Datei
-          desc: "Ihre Importdatei kann die folgenden Spaltennamen verwenden:"
+          desc: 'Ihre Importdatei kann die folgenden Spaltennamen verwenden:'
           columns_vehicle: Fahrzeugspalten
           columns_vehicle_usage_set: Spalten der Fahrzeugkonfiguration
-          columns_vehicle_usage_set_default: Wenn eine Spalte für alle Fahrzeuge die gleichen Daten hat, werden diese Daten als Standardkonfiguration verwendet und für jedes Fahrzeug entfernt.
+          columns_vehicle_usage_set_default: >-
+            Wenn eine Spalte für alle Fahrzeuge die gleichen Daten hat, werden
+            diese Daten als Standardkonfiguration verwendet und für jedes
+            Fahrzeug entfernt.
       name_vehicle_usage_set: Namenskonfiguration
       name_desc: Standardkonfigurationsname
       time_window_start: öffnen
@@ -2037,20 +2393,24 @@ de:
       store_rest_ref: Pause der Filialreferenz
       store_rest_desc: Pausenreferenz der Filiale für den Auslieferungsfahrer
       service_time_start: Servicezeit vor
-      service_time_start_desc: Dauer, die vor dem ersten Halt hinzugefügt wurde
+      service_time_start_desc: 'Dauer, die vor dem ersten Halt hinzugefügt wurde'
       service_time_end: Servicezeit nach
-      service_time_end_desc: Zeiträume, die vor dem letzten Halt hinzugefügt werden
+      service_time_end_desc: 'Zeiträume, die vor dem letzten Halt hinzugefügt werden'
       work_time: Arbeitszeit
       work_time_desc: Arbeitszeit kleiner als oder gleich dem Arbeitszeitfenster
       tags: Fähigkeiten
-      tags_desc: 'Fertigkeiten, die mit der aktuellen Konfiguration verknüpft sind. (Warnung: Wenn nur ein Fahrzeug über Fähigkeiten verfügt, können alle anderen Fahrzeuge diese Fähigkeit nicht nutzen, außer wenn diese angegeben sind)'
-      tags_format: Fertigkeit 1, Fertigkeit 2
+      tags_desc: >-
+        Fertigkeiten, die mit der aktuellen Konfiguration verknüpft sind.
+        (Warnung: Wenn nur ein Fahrzeug über Fähigkeiten verfügt, können alle
+        anderen Fahrzeuge diese Fähigkeit nicht nutzen, außer wenn diese
+        angegeben sind)
+      tags_format: 'Fertigkeit 1, Fertigkeit 2'
       format:
         string: Text
         integer: Ganzzahl
         float: Nummer
-        hour: HH:MM
-        second: HH:MM:SS
+        hour: 'HH:MM'
+        second: 'HH:MM:SS'
         yes_no: ja/nein
         required: erforderlich
         required_for_default: erforderlich für Standard
@@ -2063,7 +2423,7 @@ de:
       none_column: Keine Spalte gefunden
       missing_name: '"Name" der fehlenden Standardkonfiguration'
       missing_time_window_start_end: Beginn- oder Endzeit der Standardkonfiguration fehlt
-      invalid_numeric_value: Ungültiger numerischer Wert "%{value}".
+      invalid_numeric_value: 'Ungültiger numerischer Wert "%{value}".'
       check_custom_columns: Prüfen Sie Ihre Spaltendefinition.
     form:
       time_window_start_end: Zeitverschiebung
@@ -2075,32 +2435,47 @@ de:
       service_times: Servicezeiten
       service_time_start_addon: Vor
       service_time_end_addon: nach
-      service_times_help: Zeiträume, die vor dem ersten Halt und nach dem letzten Halt hinzugefügt werden.
+      service_times_help: >-
+        Zeiträume, die vor dem ersten Halt und nach dem letzten Halt hinzugefügt
+        werden.
       work_time: Arbeitszeit
-      work_time_help: Arbeitszeit muss kleiner oder gleich der Arbeitszeit der Schicht sein (Dienstleistung ohne Pause)
+      work_time_help: >-
+        Arbeitszeit muss kleiner oder gleich der Arbeitszeit der Schicht sein
+        (Dienstleistung ohne Pause)
       rest_duration_store: Pausendauer / -ort
       rest_duration:
-        help: Erfordert ein Pausenfenster, wenn ausgefüllt
+        help: 'Erfordert ein Pausenfenster, wenn ausgefüllt'
       rest_start_stop: Pausenfenster
       rest_start_stop_help: Ohne Berücksichtigung der Pausendauer
   visits:
     form:
       legend: 'Besuchen Sie #%{n}'
-      destroy: Wenn diese Option aktiviert ist, wird der Besuch durch Absenden dieser Seite zerstört. Markierung aufheben zum Abbrechen.
-      ref_help: Eine kostenlose Referenz. Wichtig, um beim Import/Export ein Überschreiben von Besuchen zu vermeiden
+      destroy: >-
+        Wenn diese Option aktiviert ist, wird der Besuch durch Absenden dieser
+        Seite zerstört. Markierung aufheben zum Abbrechen.
+      ref_help: >-
+        Eine kostenlose Referenz. Wichtig, um beim Import/Export ein
+        Überschreiben von Besuchen zu vermeiden
       quantities:
         fill: 'Füllen Sie (mindestens) aus:'
         empty: Leer (mindestens)
         default: '%{n} (Standardwert)'
-        quantities_operations_title: 'Befüllen/Leeren'
-        quantities_operations_help: 'Nur auswählen, wenn Sie die gesamte Menge in das Fahrzeug füllen bzw. aus dem Fahrzeug laden müssen'
-        help: Zu liefernde Mengen. Im Falle von Füllen / Entleeren entscheidet die Optimierungsfunktion selbst über die Mengen. Wenn Sie einen Wert angeben, wird er als Mindestwert zum Füllen / Entleeren verwendet.
+        quantities_operations_title: Befüllen/Leeren
+        quantities_operations_help: >-
+          Nur auswählen, wenn Sie die gesamte Menge in das Fahrzeug füllen bzw.
+          aus dem Fahrzeug laden müssen
+        help: >-
+          Zu liefernde Mengen. Im Falle von Füllen / Entleeren entscheidet die
+          Optimierungsfunktion selbst über die Mengen. Wenn Sie einen Wert
+          angeben, wird er als Mindestwert zum Füllen / Entleeren verwendet.
       duration_default: Standard
-      duration_help: Wenn das Feld leer ist, verwenden Sie den Standardwert
+      duration_help: 'Wenn das Feld leer ist, verwenden Sie den Standardwert'
       time_window_start_end_1: Zeitfenster 1
       time_window_start_end_2: Zeitfenster 2
       priority: Priorität
-      priority_help: Einfügungspriorität bei der Optimierung (nützlich, wenn Sie wissen, dass sämtliche Ihrer Fahrzeuge nicht alle Kunden besuchen können).
+      priority_help: >-
+        Einfügungspriorität bei der Optimierung (nützlich, wenn Sie wissen, dass
+        sämtliche Ihrer Fahrzeuge nicht alle Kunden besuchen können).
       close_help: Ohne Berücksichtigung der Besuchsdauer
       tags_help: Besuchskategorien
       delete: Löschmarkierung
@@ -2122,23 +2497,33 @@ de:
       collapse_zoning_panel: Zoneneinteilungsübersicht einklappen
       generate_confirm: Diese Aktion setzt alle Ihrer aktuellen Zonen zurück. Fortfahren?
       vehicleless_confirm: Sind Sie sicher? Einige Zonen haben kein Fahrzeug
-      isochrone_missing_vehicle: Isochrone können aufgrund von Beschränkungen der Streckenfunktion für mindestens ein Fahrzeug nicht erzeugt werden.
-      isodistance_missing_vehicle: Isodistanz kann aufgrund von Beschränkungen der Streckenfunktion für mindestens ein Fahrzeug nicht erzeugt werden.
+      isochrone_missing_vehicle: >-
+        Isochrone können aufgrund von Beschränkungen der Streckenfunktion für
+        mindestens ein Fahrzeug nicht erzeugt werden.
+      isodistance_missing_vehicle: >-
+        Isodistanz kann aufgrund von Beschränkungen der Streckenfunktion für
+        mindestens ein Fahrzeug nicht erzeugt werden.
       failed: Erstellen der Isochrone fehlgeschlagen
       success: Isochrone erfolgreich generiert
     index:
       title: Auflisten der Zoneneinteilungen
       new: Neue Zoneneinteilung
-      over_max_limit: "Sie haben die maximale Anzahl der Zoneneinteilungen für Ihr Benutzerkonto erreicht (Kontolimit: %{limit})"
+      over_max_limit: >-
+        Sie haben die maximale Anzahl der Zoneneinteilungen für Ihr
+        Benutzerkonto erreicht (Kontolimit: %{limit})
     new:
       title: Neue Zoneneinteilung
     form:
       planning_id: Zielorte aus dem Plan
-      planning_id_help: So können Sie beispielsweise die anzuzeigenden Zielorte mit bestimmten Labels filtern, die im ausgewählten Streckenplan definiert sind.
+      planning_id_help: >-
+        So können Sie beispielsweise die anzuzeigenden Zielorte mit bestimmten
+        Labels filtern, die im ausgewählten Streckenplan definiert sind.
       hide_out_of_route: Nicht betroffene Zielorte ausblenden
       all_destinations: Alle Ziele anzeigen
-      from_planning_help: Ebenso können Zielorte aus einem eindeutigen Plan gefiltert werden, indem Sie diese Zoneneinteilung aus dem Plan bearbeiten
-      stops_from_planning: Zielorte aus dem Plan "%{s}"
+      from_planning_help: >-
+        Ebenso können Zielorte aus einem eindeutigen Plan gefiltert werden,
+        indem Sie diese Zoneneinteilung aus dem Plan bearbeiten
+      stops_from_planning: 'Zielorte aus dem Plan "%{s}"'
       generate: Erstellen
       automatic:
         one: 'Automatisch: 1 Zone'
@@ -2152,7 +2537,9 @@ de:
       dialog:
         isoline:
           vehicle_usage_set: Fahrzeugkonfiguration
-          vehicle_usage_set_help: Zu berücksichtigende Fahrzeugkonfiguration, insbesondere die Startfiliale.
+          vehicle_usage_set_help: >-
+            Zu berücksichtigende Fahrzeugkonfiguration, insbesondere die
+            Startfiliale.
           date: Datum
           default_date: Standardmäßig aktuelles Datum
           vehicles_open: Fahrzeuge öffnen
@@ -2160,23 +2547,25 @@ de:
         isochrone:
           title: Isochrone
           size: Zeit
-          size_help: Bereich, der mit dieser Fahrtzeit vom Startpunkt aus erreichbar ist.
+          size_help: 'Bereich, der mit dieser Fahrtzeit vom Startpunkt aus erreichbar ist.'
         isochrone-progress:
           title: Berechnungen der Isochrone in Bearbeitung
         isodistance:
           title: Isodistanz
           size: Strecke
-          size_help: Bereich, der mit dieser Fahrtzeit vom Startpunkt aus erreichbar ist.
+          size_help: 'Bereich, der mit dieser Fahrtzeit vom Startpunkt aus erreichbar ist.'
         isodistance-progress:
           title: Berechnung der Isodistanz läuft
         validate: Erstellen
   unauthorized:
-    default: Sie sind nicht berechtigt, auf diese Seite zuzugreifen
+    default: 'Sie sind nicht berechtigt, auf diese Seite zuzugreifen'
   unlock_operation:
-    default: Kontaktieren Sie bitte den Support, um diese Funktion zu aktivieren
+    default: 'Kontaktieren Sie bitte den Support, um diese Funktion zu aktivieren'
   web:
     key_not_found: Ihr Verbindungsschlüssel ist ungültig.
-    slow_browser: Sie verwenden %{n}, was die Anwendung verlangsamt. Wir empfehlen, einen anderen kostenlosen Browser zu verwenden, um die Leistung zu verbessern.
+    slow_browser: >-
+      Sie verwenden %{n}, was die Anwendung verlangsamt. Wir empfehlen, einen
+      anderen kostenlosen Browser zu verwenden, um die Leistung zu verbessern.
     form:
       default: '%{n} (Standardwert)'
       empty_entry: '- N. V. -'
@@ -2224,11 +2613,15 @@ de:
           without_vehicle: Ohne Fahrzeug
   notifications:
     sms:
-      alert_plan: Hallo {NAME}. Ihr Besuch ist am {DATE} zwischen {TIME-60} und {TIME+60} in {CITY} geplant.
+      alert_plan: >-
+        Hallo {NAME}. Ihr Besuch ist am {DATE} zwischen {TIME-60} und {TIME+60}
+        in {CITY} geplant.
   all:
     datepicker: mm-dd-yyyy
     map_attribution:
-      osm: © <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a>, %{attribution}
+      osm: >-
+        © <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a>,
+        %{attribution}
       here: Hier
     verb:
       new: Neu
@@ -2266,20 +2659,30 @@ de:
       ton: Tonnen
       kgco2e_html: kgCO<sub>2</sub>e
       kgco2e_l_html: kgCO<sub>2</sub>e/l
-      l_100km: l/100 km
-      l_62Miles: l/62,1 Meilen
+      l_100km: "l/100 km"
+      l_62Miles: 'l/62,1 Meilen'
       hour_minute: 'Stunde : Minute'
       hour_minute_second: 'Stunde : Minute : Sekunde'
     value:
-      _true: 'richtig'
-      _false: 'falsch'
-      _yes: 'ja'
-      _no: 'nein'
+      _true: richtig
+      _false: falsch
+      _yes: ja
+      _no: nein
     subscribe:
-      planning_unavailable: Plan kann nicht geändert werden. Ihr Abonnement ist abgelaufen | Bitte wenden Sie sich an Ihren Reseller, um eine Vertragsverlängerung zu erhalten.
-      expiration_date: "Es bleiben nur wenige Tage, um Ihr Abonnement zu verlängern. Enddatum ist %{date}. Wenn Sie Ihr Abonnement verlängern möchten, wenden Sie sich bitte an %{reseller}."
-      expiration_date_test: "Ihr Testkonto verfällt am %{date}. Um unsere Lösung weiterhin zu nutzen, können Sie sich gerne an unser Team wenden."
-      expiration_date_over: "Das Nutzungsdatum überschreitet das Datum %{date}. Wenn Sie Ihr Abonnement verlängern möchten, wenden Sie sich bitte an %{reseller}."
+      planning_unavailable: >-
+        Plan kann nicht geändert werden. Ihr Abonnement ist abgelaufen | Bitte
+        wenden Sie sich an Ihren Reseller, um eine Vertragsverlängerung zu
+        erhalten.
+      expiration_date: >-
+        Es bleiben nur wenige Tage, um Ihr Abonnement zu verlängern. Enddatum
+        ist %{date}. Wenn Sie Ihr Abonnement verlängern möchten, wenden Sie sich
+        bitte an %{reseller}.
+      expiration_date_test: >-
+        Ihr Testkonto verfällt am %{date}. Um unsere Lösung weiterhin zu nutzen,
+        können Sie sich gerne an unser Team wenden.
+      expiration_date_over: >-
+        Das Nutzungsdatum überschreitet das Datum %{date}. Wenn Sie Ihr
+        Abonnement verlängern möchten, wenden Sie sich bitte an %{reseller}.
   helpers:
     submit:
       create: '%{model} erstellen'

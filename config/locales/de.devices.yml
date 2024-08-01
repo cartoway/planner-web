@@ -4,85 +4,85 @@ de:
       customer:
         devices:
           fleet:
-            user: "Benutzername"
-            api_key: "API-Schlüssel"
+            user: Benutzername
+            api_key: API-Schlüssel
           tomtom:
-            account: "Name des Benuterkontos"
-            user: "Benutzer"
-            password: "Passwort"
+            account: Name des Benuterkontos
+            user: Benutzer
+            password: Passwort
           masternaut:
-            username: "Benutzername"
-            password: "Passwort"
+            username: Benutzername
+            password: Passwort
           orange:
-            user: "Benutzername"
-            password: "Passwort"
+            user: Benutzername
+            password: Passwort
           alyacom:
-            association: "Kennung"
-            alyacom_api_key: "API-Schlüssel"
+            association: Kennung
+            alyacom_api_key: API-Schlüssel
           teksat:
-            teksat_customer_id: "Kunden-ID"
-            username: "Benutzername"
-            password: "Passwort"
-            url: "URL"
+            teksat_customer_id: Kunden-ID
+            username: Benutzername
+            password: Passwort
+            url: URL
           trimble:
-            customer: "Kunde"
-            username: "Benutzername"
-            password: "Passwort"
+            customer: Kunde
+            username: Benutzername
+            password: Passwort
           locster:
-            username: "Benutzername"
-            password: "Passwort"
+            username: Benutzername
+            password: Passwort
           suivi_de_flotte:
-            username: "Benutzername"
-            password: "Passwort"
+            username: Benutzername
+            password: Passwort
           notico:
-            ftp_url: "FTP-Serveradresse"
-            ftp_path: "Pfad auf FTP-Server"
-            username: "Benutzername"
-            password: "Passwort"
+            ftp_url: FTP-Serveradresse
+            ftp_path: Pfad auf FTP-Server
+            username: Benutzername
+            password: Passwort
           praxedo:
-            login: "Login"
-            password: "Passwort"
-            code_inter_start: "Eínsatz-Code für Startpunkt"
-            code_inter_stop: "Eínsatz-Code für Haltepunkt"
-            code_mat: "Code für das zu liefernde Material"
-            code_route: "Code für die Strecke"
+            login: Login
+            password: Passwort
+            code_inter_start: Eínsatz-Code für Startpunkt
+            code_inter_stop: Eínsatz-Code für Haltepunkt
+            code_mat: Code für das zu liefernde Material
+            code_route: Code für die Strecke
           sopac:
-            username: "Benutzername"
-            password: "Passwort"
+            username: Benutzername
+            password: Passwort
       vehicle:
         devices:
           fleet_demo:
             title: Cartoway Field (demo)
           fleet:
             title: Cartoway Field
-            fleet_user: "Cartoway Field Benutzername"
+            fleet_user: Cartoway Field Benutzername
           locster:
             title: Locster
-            locster_ref: "Locster-Fahrzeugnummer."
+            locster_ref: Locster-Fahrzeugnummer.
           masternaut:
             title: Masternaut
-            masternaut_ref: "Masternaut-Fahrzeugnummer."
+            masternaut_ref: Masternaut-Fahrzeugnummer.
           orange:
             title: Orange Fleet Performance
-            orange_id: "Orange Fahrzeug-ID"
+            orange_id: Orange Fahrzeug-ID
           suivi_de_flotte:
             title: Suivi de flotte
-            suivi_de_flotte_id: "Suivi de flotte Fahrzeug-ID"
+            suivi_de_flotte_id: Suivi de flotte Fahrzeug-ID
           teksat:
             title: Teksat
-            teksat_id: "Teksat Fahrzeug-ID"
+            teksat_id: Teksat Fahrzeug-ID
           tomtom:
             title: TomTom Webfleet
-            tomtom_id: "TomTom Fahrzeug-ID"
+            tomtom_id: TomTom Fahrzeug-ID
           trimble:
             title: Trimble
-            trimble_ref: "Trimble Fahrzeug-Nr."
+            trimble_ref: Trimble Fahrzeug-Nr.
           notico:
             title: Hinweis
-            agent_id: "Notico Deliv Auslieferungsfahrer-ID"
+            agent_id: Notico Deliv Auslieferungsfahrer-ID
           praxedo:
             title: Praxedo
-            praxedo_agent_id: "Praxedo Vertreter-ID"
+            praxedo_agent_id: Praxedo Vertreter-ID
   errors:
     fleet:
       invalid_account: Benutzer ungültig (ist nicht vorhanden)
@@ -106,16 +106,24 @@ de:
       unauthorized: Unbefugt
       timeout: Timeout bei Anfrage
     tomtom:
-      access_denied: Zugriff verweigert. 'Full Access Orders' (Aufträge mit vollem Zugriff) sind in der WEBFLEET-Benutzeroberfläche nicht aktiviert. Sie haben keine ausreichenden Zugriffsrechte, um diese Funktion auszuführen.
+      access_denied: >-
+        Zugriff verweigert. 'Full Access Orders' (Aufträge mit vollem Zugriff)
+        sind in der WEBFLEET-Benutzeroberfläche nicht aktiviert. Sie haben keine
+        ausreichenden Zugriffsrechte, um diese Funktion auszuführen.
       invalid_account: Benutzer ungültig (ist nicht vorhanden)
-      external_requests_not_allowed: Zugriff verweigert. 'Zugriff auf die Schnittstelle WEBFLEET.connect' ist in der WEBFLEET-Benutzeroberfläche nicht aktiviert. Externe Anfragen sind für dieses Benutzerkonto / Benutzer nicht zugelassen.
+      external_requests_not_allowed: >-
+        Zugriff verweigert. 'Zugriff auf die Schnittstelle WEBFLEET.connect' ist
+        in der WEBFLEET-Benutzeroberfläche nicht aktiviert. Externe Anfragen
+        sind für dieses Benutzerkonto / Benutzer nicht zugelassen.
       hostname_not_allowed: Hostname nicht erlaubt
       request_quota_reached: Anfragenquote erreicht
       addresses_empty_result: Keine Adressen gefunden
       could_not_process_last_request: Anfrage konnte nicht bearbeitet werden
       unsupported_export_type: Das angeschlossene GPS unterstützt keinen Export als Wegpunkt
       duplicate_order: Doppelte Auftragsnummer
-      busy_processing: Benutzerkonto / Benutzername beschäftigt mit Bearbeitung einer anderen Anfrage
+      busy_processing: >-
+        Benutzerkonto / Benutzername beschäftigt mit Bearbeitung einer anderen
+        Anfrage
       gps_unreachable: GPS derzeit nicht erreichbar
       last_action_failed: Ihre letzte Aktion konnte nicht bearbeitet werden
       service_failed: Dienst nach mehreren Versuchen besetzt
@@ -150,31 +158,36 @@ de:
     form:
       devices:
         sync:
-          complete: "Synchronisation abgeschlossen"
-          confirm: "Fahrzeuge synchronisieren?"
-          action: "Fahrzeuge synchronisieren"
-          no_credentials: "Es wurden keine Anmeldedaten für das Gerät angegeben"
+          complete: Synchronisation abgeschlossen
+          confirm: Fahrzeuge synchronisieren?
+          action: Fahrzeuge synchronisieren
+          no_credentials: Es wurden keine Anmeldedaten für das Gerät angegeben
         fleet_demo:
-          help: "(NUR DEMO) Simulieren der Position der Fahrzeuge und den Besuchsstatus (wenn diese Optionen aktiviert sind) für den zuletzt aktualisierten Plan."
+          help: >-
+            (NUR DEMO) Simulieren der Position der Fahrzeuge und den
+            Besuchsstatus (wenn diese Optionen aktiviert sind) für den zuletzt
+            aktualisierten Plan.
         fleet:
-          help: "Ermöglicht das Senden von Strecken an die mobile Cartoway Field App."
-          company_created: "Cartoway Field Unternehmen erstellt:"
-          drivers_created: "Cartoway Field Fahrer erstellt:"
-          drivers_updated: "Cartoway Field Fahrer aktualisiert:"
+          help: Ermöglicht das Senden von Strecken an die mobile Cartoway Field App.
+          company_created: 'Cartoway Field Unternehmen erstellt:'
+          drivers_created: 'Cartoway Field Fahrer erstellt:'
+          drivers_updated: 'Cartoway Field Fahrer aktualisiert:'
         alyacom:
-          help: "Ermöglicht das Senden von Strecken an die AlyaCom-Anwendung."
+          help: Ermöglicht das Senden von Strecken an die AlyaCom-Anwendung.
         tomtom:
-          help: "Ermöglicht das Senden von Strecken an TomTom Pro mit WEBFLEET."
+          help: Ermöglicht das Senden von Strecken an TomTom Pro mit WEBFLEET.
         teksat:
-          help: "Ermöglicht das Senden von Strecken an Teksat-Geräte."
+          help: Ermöglicht das Senden von Strecken an Teksat-Geräte.
         orange:
-          help: "Ermöglicht das Senden von Strecken an Orange Fleet Performance-Geräte."
+          help: >-
+            Ermöglicht das Senden von Strecken an Orange Fleet
+            Performance-Geräte.
         masternaut:
-          help: "Ermöglicht das Senden von Strecken an Masternaut-Geräte."
+          help: Ermöglicht das Senden von Strecken an Masternaut-Geräte.
         notico:
-          help: "Ermöglicht das Senden von Strecken an die Notico Deliv-Anwendung."
+          help: Ermöglicht das Senden von Strecken an die Notico Deliv-Anwendung.
         praxedo:
-          help: "Ermöglicht das Senden von Strecken an die Praxedo-Anwendung."
+          help: Ermöglicht das Senden von Strecken an die Praxedo-Anwendung.
   plannings:
     edit:
       all_plannings_related: Bezieht sich auf alle Strecken

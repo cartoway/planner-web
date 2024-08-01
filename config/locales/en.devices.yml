@@ -4,95 +4,95 @@ en:
       customer:
         devices:
           fleet:
-            user: "User name"
-            api_key: "API key"
+            user: User name
+            api_key: API key
           tomtom:
-            account: "Account name"
-            user: "User"
-            password: "Password"
+            account: Account name
+            user: User
+            password: Password
           masternaut:
-            username: "Username"
-            password: "Password"
+            username: Username
+            password: Password
           orange:
-            user: "Username"
-            password: "Password"
+            user: Username
+            password: Password
           alyacom:
-            association: "Identifier"
-            alyacom_api_key: "API key"
+            association: Identifier
+            alyacom_api_key: API key
           teksat:
-            teksat_customer_id: "Customer ID"
-            username: "Username"
-            password: "Password"
-            url: "URL"
+            teksat_customer_id: Customer ID
+            username: Username
+            password: Password
+            url: URL
           trimble:
-            customer: "Customer"
-            username: "Username"
-            password: "Password"
+            customer: Customer
+            username: Username
+            password: Password
           locster:
-            username: "Username"
-            password: "Password"
+            username: Username
+            password: Password
           stg_telematics:
-            username: "Username"
-            password: "Password"
-            url: "URL"
-            company_names: "Company Names"
+            username: Username
+            password: Password
+            url: URL
+            company_names: Company Names
           suivi_de_flotte:
-            username: "Username"
-            password: "Password"
+            username: Username
+            password: Password
           notico:
-            ftp_url: "FTP server address"
-            ftp_path: "Path on FTP server"
-            username: "Username"
-            password: "Password"
+            ftp_url: FTP server address
+            ftp_path: Path on FTP server
+            username: Username
+            password: Password
           praxedo:
-            login: "Login"
-            password: "Password"
-            code_inter_start: "Intervention code for start point"
-            code_inter_stop: "Intervention code for stop point"
-            code_mat: "Code for the material to deliver"
-            code_route: "Code for the route"
+            login: Login
+            password: Password
+            code_inter_start: Intervention code for start point
+            code_inter_stop: Intervention code for stop point
+            code_mat: Code for the material to deliver
+            code_route: Code for the route
           sopac:
-            username: "Username"
-            password: "Password"
+            username: Username
+            password: Password
       vehicle:
         devices:
           fleet_demo:
             title: Cartoway Field (demo)
           fleet:
             title: Cartoway Field
-            fleet_user: "Cartoway Field user name"
+            fleet_user: Cartoway Field user name
           locster:
             title: Locster
-            locster_ref: "Locster vehicle Ref."
+            locster_ref: Locster vehicle Ref.
           masternaut:
             title: Masternaut
-            masternaut_ref: "Masternaut vehicle Ref."
+            masternaut_ref: Masternaut vehicle Ref.
           orange:
             title: Orange Fleet Performance
-            orange_id: "Orange vehicle ID"
+            orange_id: Orange vehicle ID
           stg_telematics:
             title: STG Telematics
             stg_telematics_id: STG Telematics vehicle ID
           suivi_de_flotte:
             title: Suivi de flotte
-            suivi_de_flotte_id: "Suivi de flotte vehicle ID"
+            suivi_de_flotte_id: Suivi de flotte vehicle ID
           teksat:
             title: Teksat
-            teksat_id: "Teksat vehicle ID"
+            teksat_id: Teksat vehicle ID
           tomtom:
             title: TomTom Webfleet
-            tomtom_id: "TomTom vehicle ID"
+            tomtom_id: TomTom vehicle ID
           trimble:
             title: Trimble
-            trimble_ref: "Trimble vehicle Ref."
+            trimble_ref: Trimble vehicle Ref.
           notico:
             title: Notico
-            agent_id: "Notico Deliv delivery man ID"
+            agent_id: Notico Deliv delivery man ID
           deliver:
             title: Cartoway Deliver
           praxedo:
             title: Praxedo
-            praxedo_agent_id: "Praxedo Agent ID"
+            praxedo_agent_id: Praxedo Agent ID
   errors:
     fleet:
       invalid_account: User invalid (does not exist)
@@ -116,12 +116,14 @@ en:
       unauthorized: Unauthorized
       timeout: Request Timeout
     tomtom:
-      access_denied: Access denied. 'Full Access Orders' is not enabled in WEBFLEET
-        user interface. You have insufficient permissions to perform this function.
+      access_denied: >-
+        Access denied. 'Full Access Orders' is not enabled in WEBFLEET user
+        interface. You have insufficient permissions to perform this function.
       invalid_account: User invalid (does not exist)
-      external_requests_not_allowed: Access denied. 'Access to interface WEBFLEET.connect'
-        is not enabled in WEBFLEET user interface. External requests are not allowed
-        for that account/user.
+      external_requests_not_allowed: >-
+        Access denied. 'Access to interface WEBFLEET.connect' is not enabled in
+        WEBFLEET user interface. External requests are not allowed for that
+        account/user.
       hostname_not_allowed: Hostname not allowed
       request_quota_reached: Request Quota Reached
       addresses_empty_result: No Addresses Found
@@ -170,36 +172,37 @@ en:
     form:
       devices:
         sync:
-          complete: "Sync Complete"
-          confirm: "Sync Vehicles?"
-          action: "Sync Vehicles"
-          no_credentials: "No credentials given for the device"
+          complete: Sync Complete
+          confirm: Sync Vehicles?
+          action: Sync Vehicles
+          no_credentials: No credentials given for the device
         deliver:
-          help: "Allows routes to be carried out from the planner's mobile views"
+          help: Allows routes to be carried out from the planner's mobile views
         fleet_demo:
-          help: "(DEMO ONY) Simulate vehicles' position and visit status (if these options are activated)
-            for the last updated plan."
+          help: >-
+            (DEMO ONY) Simulate vehicles' position and visit status (if these
+            options are activated) for the last updated plan.
         fleet:
-          help: "Allows sending routes to Cartoway Field mobile app."
-          company_created: "Cartoway Field company created:"
-          drivers_created: "Cartoway Field drivers created:"
-          drivers_updated: "Cartoway Field drivers updated:"
+          help: Allows sending routes to Cartoway Field mobile app.
+          company_created: 'Cartoway Field company created:'
+          drivers_created: 'Cartoway Field drivers created:'
+          drivers_updated: 'Cartoway Field drivers updated:'
         alyacom:
-          help: "Allows sending routes to AlyaCom application."
+          help: Allows sending routes to AlyaCom application.
         stg_telematics:
-          help: "Allows displaying vehicle positions from STG Telematics."
+          help: Allows displaying vehicle positions from STG Telematics.
         tomtom:
-          help: "Allows sending routes to TomTom Pro with WEBFLEET."
+          help: Allows sending routes to TomTom Pro with WEBFLEET.
         teksat:
-          help: "Allows sending routes to Teksat devices."
+          help: Allows sending routes to Teksat devices.
         orange:
-          help: "Allows sending routes to Orange Fleet Performance devices."
+          help: Allows sending routes to Orange Fleet Performance devices.
         masternaut:
-          help: "Allows sending routes to Masternaut devices."
+          help: Allows sending routes to Masternaut devices.
         notico:
-          help: "Allows sending routes to Notico Deliv application."
+          help: Allows sending routes to Notico Deliv application.
         praxedo:
-          help: "Allows sending routes to Praxedo application."
+          help: Allows sending routes to Praxedo application.
   plannings:
     edit:
       all_plannings_related: Relates to all routes
@@ -243,7 +246,7 @@ en:
         action: Send to TomTom as Waypoints
         success: Sent to TomTom successfully
         fail: Failed to send to TomTom
-        title: Warning, this method is not handled by all devices
+        title: 'Warning, this method is not handled by all devices'
       tomtom_clear:
         action: Clear TomTom
         success: TomTom commands have been cleared successfully

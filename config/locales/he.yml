@@ -1,5 +1,5 @@
 he:
-  encoding: 'Windows-1255'
+  encoding: Windows-1255
   distance:
     unit:
       one: מטר
@@ -439,8 +439,7 @@ he:
         inconsistent_customer: אינו מורשה עבור לקוח זה
       models:
         location:
-          missing_address_or_latlng: המיקוד והעיר אינם יכולים להיות ריקים אם קוי האורך
-            והרוחב ריקים
+          missing_address_or_latlng: המיקוד והעיר אינם יכולים להיות ריקים אם קוי האורך והרוחב ריקים
           lat_outside_range: חייב להיות בטווח  -90..90
           lng_outside_range: חייב להיות בטווח -180..180
           geocoding_accuracy_outside_range: חייב להיות בטווח 0..1
@@ -458,7 +457,7 @@ he:
               after: חייב להיות לאחר זמן הפתיחה
           missing_rest_window: לא יכול להיות ריק אם משך המנוחה מלא
           missing_rest_duration: לא יכול להיות ריק אם חלון הזמן מנוחה מלא
-          rest_range: טווח המנוחה חייב להיות בין %{start} עד %{end}
+          rest_range: 'טווח המנוחה חייב להיות בין %{start} עד %{end}'
           service_range: לא יכול להיות גדול יותר מאשר טווח עבודה
         vehicle_usage_set:
           attributes:
@@ -499,11 +498,11 @@ he:
         route:
           attributes:
             stops:
-              bad_index: Bad index %{index} on the route %{route}
+              bad_index: 'Bad index %{index} on the route %{route}'
         planning:
           attributes:
             ref:
-              invalid_format: השימוש ב תווים הבאים אינו חוקי ".", "\" or "/"
+              invalid_format: 'השימוש ב תווים הבאים אינו חוקי ".", "\" or "/"'
               ref_value: 'הפניה למסלול '
             begin_date:
               blank: לא יכול לקבל ערכים ריקים אם קיים תאריך סיום
@@ -518,12 +517,13 @@ he:
       import_too_routes: היה ניסיון לייבא יותר ניתובים מאשר כלי רכב זמינים
       already_optimizing: תכנית אופטימיזציה נמצאת בתהליך
     tomtom:
-      access_denied: גישה נידחיתה. 'Full Access Orders' אינה זמינה בממשק המשתמש של
-        WEBFLEET. אין לך את ההרשאות המתאימות לביצוע פעולה זו.
+      access_denied: >-
+        גישה נידחיתה. 'Full Access Orders' אינה זמינה בממשק המשתמש של WEBFLEET.
+        אין לך את ההרשאות המתאימות לביצוע פעולה זו.
       invalid_account: משתמש לא חוקי (לא קיים)
-      external_requests_not_allowed: גישה נידחיתה. 'Access to interface WEBFLEET.connect'
-        אינה זמינה בממשק המשתמש של WEBFLEET. בקשות חיצוניות אינן מותרות עבור החשבון
-        / משתמש זה.
+      external_requests_not_allowed: >-
+        גישה נידחיתה. 'Access to interface WEBFLEET.connect' אינה זמינה בממשק
+        המשתמש של WEBFLEET. בקשות חיצוניות אינן מותרות עבור החשבון / משתמש זה.
       hostname_not_allowed: שם המארח אינו מותר
       request_quota_reached: מכסת בקשה התקבלה
       addresses_empty_result: כתובת לא אותרה
@@ -574,17 +574,22 @@ he:
       form:
         host_help: נעשה שיומש רב בכתובת האתר ובפורט של המפיץ
         name_help: שם מותג המפיץ
-        welcome_url_help: 'כתובת דף אינטרנט הכלולה כ- HTML כ- "iframe" בדף הפתיחה.
-          ניתן להשתמש ב- "{LG}" אשר יוחלף בשפה כמו «en», «fr» (כלומר: http://cartoway.com/{LG}/page.htm).'
-        help_url_help: 'כתובת דף אינטרנט עם תוכן עזרה.אפשרי להשתמש   "{LG}" שיוחלפו
-          בשפה כגון « en », « fr »  (כלומר:  http://cartoway.com/{LG}/page.html).'
-        contact_url_help: 'כתובת דף אינטרנט עם תוכן עזרה.אפשרי להשתמש   "{LG}" שיוחלפו
-          בשפה כגון « en », « fr »  (כלומר:  http://cartoway.com/{LG}/page.html).'
-        logo_large_help: הגדרת לוגו על דף מלא, עדיפות ל- SVG, או לחילופין בפורמט PNG.
-        logo_small_help: סמל תפריט ראשי, 150 × 40 פיקסלים בפורמט SVG או PNG.
-        favicon_help: סמל אתר, 16 × 16 פיקסלים בפורמט PNG או ICO.
-        website_url_help: 'כתובת דף אינטרנט עם תוכן עזרה.אפשרי להשתמש   "{LG}" שיוחלפו
-          בשפה כגון « en », « fr »  (כלומר:  http://cartoway.com/{LG}/page.html).'
+        welcome_url_help: >-
+          כתובת דף אינטרנט הכלולה כ- HTML כ- "iframe" בדף הפתיחה. ניתן להשתמש ב-
+          "{LG}" אשר יוחלף בשפה כמו «en», «fr» (כלומר:
+          http://cartoway.com/{LG}/page.htm).
+        help_url_help: >-
+          כתובת דף אינטרנט עם תוכן עזרה.אפשרי להשתמש   "{LG}" שיוחלפו בשפה כגון
+          « en », « fr »  (כלומר:  http://cartoway.com/{LG}/page.html).
+        contact_url_help: >-
+          כתובת דף אינטרנט עם תוכן עזרה.אפשרי להשתמש   "{LG}" שיוחלפו בשפה כגון
+          « en », « fr »  (כלומר:  http://cartoway.com/{LG}/page.html).
+        logo_large_help: 'הגדרת לוגו על דף מלא, עדיפות ל- SVG, או לחילופין בפורמט PNG.'
+        logo_small_help: 'סמל תפריט ראשי, 150 × 40 פיקסלים בפורמט SVG או PNG.'
+        favicon_help: 'סמל אתר, 16 × 16 פיקסלים בפורמט PNG או ICO.'
+        website_url_help: >-
+          כתובת דף אינטרנט עם תוכן עזרה.אפשרי להשתמש   "{LG}" שיוחלפו בשפה כגון
+          « en », « fr »  (כלומר:  http://cartoway.com/{LG}/page.html).
         protocol_url_http: HTTP
         protocol_url_https: HTTPS
     users:
@@ -657,18 +662,16 @@ he:
       router_options_default: '%{n} (ברירת מחדל)'
       router_options_motorway_yes: כן
       router_options_motorway_no: לא
-      router_options_motorway_default: ברירת מחדל (%{value})
+      router_options_motorway_default: 'ברירת מחדל (%{value})'
       router_options_toll_yes: כן
       router_options_toll_no: לא
-      router_options_toll_default: ברירת מחדל (%{value})
-      router_options_trailers_range: ערכי טריילר בין הערכים %{from} לבין%{to}
-      router_options_weight_range: ערכי משקל (כולל טריילרים וסחורה) בין הערכים %{from}
-        לבין%{to}
-      router_options_weight_per_axle_range: ערכי משקל לכל סרן בין%{from} לבין%{to}
-        טון
-      router_options_height_range: ערכי גובה בין%{from} לבין%{to} מטרים
-      router_options_width_range: ערכי רחב בין%{from} לבין%{to} מטרים
-      router_options_length_range: ערכי אורך בין%{from} לבין%{to} מטרים
+      router_options_toll_default: 'ברירת מחדל (%{value})'
+      router_options_trailers_range: 'ערכי טריילר בין הערכים %{from} לבין%{to}'
+      router_options_weight_range: 'ערכי משקל (כולל טריילרים וסחורה) בין הערכים %{from} לבין%{to}'
+      router_options_weight_per_axle_range: 'ערכי משקל לכל סרן בין%{from} לבין%{to} טון'
+      router_options_height_range: 'ערכי גובה בין%{from} לבין%{to} מטרים'
+      router_options_width_range: 'ערכי רחב בין%{from} לבין%{to} מטרים'
+      router_options_length_range: 'ערכי אורך בין%{from} לבין%{to} מטרים'
       duration_help: זמן ממוצע לחשבון
       tomtom: TomTom WEBFLEET
       tomtom_help: מאפשר לשלוח תוכניות TomTom Pro עם WEBFLEET.
@@ -681,22 +684,26 @@ he:
       alyacom: AlyaCom
       alyacom_help: אפשר שליחת תכנית לאפליקציית AlyaCom
       optimization_cluster_size_default: '%{n} (ערך ברירת מחדל)'
-      optimization_cluster_size_help: ערך בשניות בין נקודות לקבוצה לפני ביצוע אופטימיזציה.
-        ערך גדול יפגע בתוצאות האופטימיזציה (30 שניות כבר ערך חשוב). יש לקחת בחשבון
-        רק אופטימיזציה של מסלול אחד עם עיכובים.
+      optimization_cluster_size_help: >-
+        ערך בשניות בין נקודות לקבוצה לפני ביצוע אופטימיזציה. ערך גדול יפגע
+        בתוצאות האופטימיזציה (30 שניות כבר ערך חשוב). יש לקחת בחשבון רק
+        אופטימיזציה של מסלול אחד עם עיכובים.
       optimization_time_default: '%{n} (ערך ברירת מחדל)'
-      optimization_time_help: האופטימיזציה נעצרת אוטומטית כברירת מחדל. עם זאת, תוכל
-        לציין כאן זמן מקסימלי לאופטימיזציה.
+      optimization_time_help: >-
+        האופטימיזציה נעצרת אוטומטית כברירת מחדל. עם זאת, תוכל לציין כאן זמן
+        מקסימלי לאופטימיזציה.
       optimization_soft_upper_bound_default: '%{n} (ערך ברירת מחדל)'
-      optimization_stop_soft_upper_bound_help: הערך הוא חשוב ביותר, ככל שיש יותר עיכובים
-        כך הביצועים נפגמים (הקלד 0  כדי למנוע עיכובים ובמקרה זה אין לבטל אשכולות).
-      optimization_vehicle_soft_upper_bound_help: בכדי להריץ אופטימיזציה גלובאלית,
-        יש לאפשר ניהול הפצה באמצעות רכבים. הערך הוא חשוב ביותר, ככל שיש יותר עיכובים
-        כך הביצועים נפגמים (הקלד 0  כדי למנוע עיכובים ובמקרה זה אין לבטל אשכולות).
+      optimization_stop_soft_upper_bound_help: >-
+        הערך הוא חשוב ביותר, ככל שיש יותר עיכובים כך הביצועים נפגמים (הקלד 0
+        כדי למנוע עיכובים ובמקרה זה אין לבטל אשכולות).
+      optimization_vehicle_soft_upper_bound_help: >-
+        בכדי להריץ אופטימיזציה גלובאלית, יש לאפשר ניהול הפצה באמצעות רכבים. הערך
+        הוא חשוב ביותר, ככל שיש יותר עיכובים כך הביצועים נפגמים (הקלד 0  כדי
+        למנוע עיכובים ובמקרה זה אין לבטל אשכולות).
       optimization_cost_waiting_time_default: '%{n} (ערך ברירת מחדל)'
-      optimization_cost_waiting_time_help: הערכת שווי זמן ההמתנה. הערך הוא חשוב ביותר,
-        ככל שיש יותר עיכובים כך הביצועים נפגמים (הקלד 0  כדי למנוע עיכובים ובמקרה
-        זה אין לבטל אשכולות).
+      optimization_cost_waiting_time_help: >-
+        הערכת שווי זמן ההמתנה. הערך הוא חשוב ביותר, ככל שיש יותר עיכובים כך
+        הביצועים נפגמים (הקלד 0  כדי למנוע עיכובים ובמקרה זה אין לבטל אשכולות).
       print_header_help: טקסט שיוכנס לפני כל מסלול
       print:
         title: הדפסה
@@ -719,15 +726,14 @@ he:
         name: שם
         name_placeholder: אפליקציה חיצונית
         url: קישור
-        url_placeholder: http://www.example.com?p_id={PLANNING_ID}
-        url_help: 'כתובת אתר חיצונית לקישור מתפריט ייצוא תכנון
+        url_placeholder: 'http://www.example.com?p_id={PLANNING_ID}'
+        url_help: >
+          כתובת אתר חיצונית לקישור מתפריט ייצוא תכנון
 
           יכול להכיל את האסימונים החלפת בעקבות: PLANNING_ID, PLANNING_REF,
           PLANNING_IDS, ROUTE_ID, ROUTE_REF, API_KEY, CUSTOMER_ID
 
           דוגמה: http://www.example.com?p_id={PLANNING_ID}
-
-          '
       optimization_force_start_help: אלץ רכב להתחיל עם תחילת לוח הזמנים
   deliverable_units:
     edit:
@@ -741,23 +747,24 @@ he:
       prefered_icons: מועדף
       other_icons: אחרים
       label_placeholder: יחידה
-      label_help: For instance "מנות" or a unit like "ליברות", קג".
+      label_help: 'For instance "מנות" or a unit like "ליברות", קג".'
       ref_help: הפניה חופשית
       default_quantity_help: כמות למשלוח בכל ביקור (השאר ריק אם אין מגבלה).
       default_capacity_help: הגבלה לכל הרכבים (השאר ריק אם אין מגבלה).
       optimization_overload_multiplier_no: לא
-      optimization_overload_multiplier_no_help: במהלך האופטימיזציה, במקרה של הגדרת
-        מספר מיגבלות עבור כלי הרכב, חריגה בעומס היתר אינה אפשרית.
+      optimization_overload_multiplier_no_help: >-
+        במהלך האופטימיזציה, במקרה של הגדרת מספר מיגבלות עבור כלי הרכב, חריגה
+        בעומס היתר אינה אפשרית.
       optimization_overload_multiplier_yes: כן
-      optimization_overload_multiplier_yes_help: במהלך האופטימיזציה, במקרה של הגדרת
-        מספר מיגבלות עבור כלי הרכב, חריגה בעומס היתר כן אפשרית. עומס יתר יהיה מותר
-        על ידי אופטימיזציה.
+      optimization_overload_multiplier_yes_help: >-
+        במהלך האופטימיזציה, במקרה של הגדרת מספר מיגבלות עבור כלי הרכב, חריגה
+        בעומס היתר כן אפשרית. עומס יתר יהיה מותר על ידי אופטימיזציה.
       optimization_overload_multiplier_ignore: התעלם
-      optimization_overload_multiplier_ignore_help: במהלך האופטימיזציה, כמויות וכלי
-        רכב לא יובאו בחשבון.
-      optimization_overload_multiplier_help: עומס יתר או לא במהלך האופטימיזציה (תקף
-        רק אם הקיבולת מוגדרת לרכב). אם העומס יתר על המידה, המספר הגדול יותר הוא, עומס
-        יתר יהיה מותר על ידי אופטימיזציה.
+      optimization_overload_multiplier_ignore_help: 'במהלך האופטימיזציה, כמויות וכלי רכב לא יובאו בחשבון.'
+      optimization_overload_multiplier_help: >-
+        עומס יתר או לא במהלך האופטימיזציה (תקף רק אם הקיבולת מוגדרת לרכב). אם
+        העומס יתר על המידה, המספר הגדול יותר הוא, עומס יתר יהיה מותר על ידי
+        אופטימיזציה.
   destinations:
     upload_tomtom:
       success: כתובות יובאו בהצלחה
@@ -770,10 +777,10 @@ he:
       import_stores: יבא מחסנים
       tags: תגים
       clear: מחק את כל היעדים
-      clear_confirm: מחיקת כל היעדים הינה בילתי הפיכה, האם לבצע מחיקה ?
+      clear_confirm: 'מחיקת כל היעדים הינה בילתי הפיכה, האם לבצע מחיקה ?'
     form:
       ref_help: הפניה חופשית
-      detail_help: כתובת גאוקודינג אינה חוקית, אפשרי מספר שטוח
+      detail_help: 'כתובת גאוקודינג אינה חוקית, אפשרי מספר שטוח'
       comment_help: פרטי שילוח
       locate_manually: אתר מיקום מפה באופן ידני
       geocoding_accuracy_none: לא יישים
@@ -806,12 +813,14 @@ he:
       replace_confirm: מחק את כל הלקוחות עם התיקונים שלהם ולהחליף אותם עם אלה מיובאים?
       plannings: תוכניות
       delete_plannings: מחק תוכניות קודמות
-      delete_plannings_help: מחק תוכניות שנוצרו בעבר (מאפשר ביצוע טוב יותר). אם נתיבים
-        קיימים בקובץ הייבוא החדש שלך, תיווצר תכנית לאחר הייבוא.
+      delete_plannings_help: >-
+        מחק תוכניות שנוצרו בעבר (מאפשר ביצוע טוב יותר). אם נתיבים קיימים בקובץ
+        הייבוא החדש שלך, תיווצר תכנית לאחר הייבוא.
       delete_plannings_confirm: מחק את כל התוכניות הקודמות?
       csv:
         title: CSV קובץ
-        help: ייבוא יעדים מקובץ CSV. קבצי CSV ניתן לייצא מגיליון אלקטרוני או תוכנות
+        help: >-
+          ייבוא יעדים מקובץ CSV. קבצי CSV ניתן לייצא מגיליון אלקטרוני או תוכנות
           אחרות.
         file_help: ייבא רק קובצי CSV.
       import_template_help: עזרה - הגדרת עמודות
@@ -822,10 +831,12 @@ he:
           columns_route: נתיב עמודות
           columns_destination: עמודות היעדים שביקרת
           columns_visit: בקר בעמודות
-          def_help: אם אינך מעוניין להשתמש בשמות של עמודות ברירת מחדל, תוכל להתאים
-            אישית אותן בעצמך. באפשרותך לציין רשימה של מספרי עמודות או כותרות.
-          def_example: לדוגמה, עבור "רחוב", ניתן להגדיר "מספר, כביש, 4" כדי למזג את
-            העמודות "מספר", "כביש" ואת העמודה 4 ללא כותרת כמו ערך עבור "רחוב" ביישום.
+          def_help: >-
+            אם אינך מעוניין להשתמש בשמות של עמודות ברירת מחדל, תוכל להתאים אישית
+            אותן בעצמך. באפשרותך לציין רשימה של מספרי עמודות או כותרות.
+          def_example: >-
+            לדוגמה, עבור "רחוב", ניתן להגדיר "מספר, כביש, 4" כדי למזג את העמודות
+            "מספר", "כביש" ואת העמודה 4 ללא כותרת כמו ערך עבור "רחוב" ביישום.
       tomtom:
         title: TomTom
         help: ייבוא כתובות TomTom WEBFLEET כיעדים
@@ -836,19 +847,18 @@ he:
       columns: עמודות
       no_position: חסר
       geocoding_level: רמות גאוקודינג
-      geocoding_column_help: רמת הגיאוקוד ודיוק. סדר לפי הרמה הראשונה, ולאחר מכן על
-        ידי דיוק
+      geocoding_column_help: 'רמת הגיאוקוד ודיוק. סדר לפי הרמה הראשונה, ולאחר מכן על ידי דיוק'
       geocoding_empty: חסר
-      mutli_quantities: מספר כמויות, לערוך ביקור זה כדי לשנות כמויות.
+      mutli_quantities: 'מספר כמויות, לערוך ביקור זה כדי לשנות כמויות.'
       click2call: לחץ להתקשרות
       quantity_small: כמות.
       dialog:
         import:
           title: יבוא
-          in_progress: אנא המתן, יבוא בתהליך
+          in_progress: 'אנא המתן, יבוא בתהליך'
         geocoding:
           title: גאוקודינג
-          in_progress: אנא המתן, גאוקודינג בתהליך.
+          in_progress: 'אנא המתן, גאוקודינג בתהליך.'
           attempts: 'ניסיונות:'
           inqueue: משימת הגאוקוד בתור
           error: נפילת מחשב.
@@ -865,7 +875,8 @@ he:
     import_file:
       refs_duplicate: 'ההתייחסות: (%{refs}) שוכפלה'
       ref: התייחסות
-      ref_desc: מזהה ייחוס יציב, ייחודי, קבוע, המאפשר עדכון לא הרסני של פריט זה כאשר
+      ref_desc: >-
+        מזהה ייחוס יציב, ייחודי, קבוע, המאפשר עדכון לא הרסני של פריט זה כאשר
         יבוא הבא קורה
       route: מסלול
       route_desc: מדד או הפניה של המסלול בתוכנית.
@@ -878,16 +889,18 @@ he:
       name: שם
       name_desc: שם יעד או חשבון יעד.
       street: רחוב
-      street_desc: כתובת רחוב עם מספר בניין, סוג כביש ושם כביש (איות הוא קריטי עבור
-        קידוד אמין). אלמנטים לא רשמיים כגון מספר החדר, מדרגות המכתב, וכו 'יש להעביר
+      street_desc: >-
+        כתובת רחוב עם מספר בניין, סוג כביש ושם כביש (איות הוא קריטי עבור קידוד
+        אמין). אלמנטים לא רשמיים כגון מספר החדר, מדרגות המכתב, וכו 'יש להעביר
         לשדה "פרט ".
       detail: פרטים
-      detail_desc: פרטים ידידותיים לאדם וסימנים המוביל את הסוכן שלך מרכב שלו אל הסף
-        של היעד. לְמָשָׁל. שם הבניין, הרצפה, מספר החדר…
+      detail_desc: >-
+        פרטים ידידותיים לאדם וסימנים המוביל את הסוכן שלך מרכב שלו אל הסף של
+        היעד. לְמָשָׁל. שם הבניין, הרצפה, מספר החדר…
       postalcode: מיקוד
       postalcode_desc: המיקוד של עיר או עיירה (הדיוק חשוב עבור geocoding אמין)
       city: עיר
-      city_desc: עיר, עיר או שם מחוז (איות הוא קריטי עבור גאוקודינג אמין)
+      city_desc: 'עיר, עיר או שם מחוז (איות הוא קריטי עבור גאוקודינג אמין)'
       country: ארץ
       country_desc: מדינה או שם המדינה (איות הוא קריטי עבור גאוקודינג אמין)
       lat: רוחב
@@ -896,13 +909,15 @@ he:
       lng_desc: קו אורך של היעד במעלות עשרוניות בין -180 ° ל 180 °. לְמָשָׁל. -0.781
       lng_format: מספר float בין הערכים מינוס 180 ו-180
       geocoding_accuracy: רמת דיוק הגאוקודינג
-      geocoding_accuracy_desc: ציון איכות שניתן לתהליך המרת כתובת הרחוב של היעד לקואורדינטות
-        גיאוגרפיות. ציון זה בא לידי ביטוי באמצעות ציון בין 0 et 1. למשל 0.70 פירושו
-        70% מדויק.
+      geocoding_accuracy_desc: >-
+        ציון איכות שניתן לתהליך המרת כתובת הרחוב של היעד לקואורדינטות
+        גיאוגרפיות. ציון זה בא לידי ביטוי באמצעות ציון בין 0 et 1. למשל 0.70
+        פירושו 70% מדויק.
       geocoding_accuracy_format: מספר float בין הערכים 0 ו-1
       geocoding_level: רמת הגאוקודינג
-      geocoding_level_desc: רמת הדיוק הגיע בעת המרת כתובת הרחוב של היעד לתוך קואורדינטות
-        גיאוגרפיות, לידי ביטוי ברמות ידידותיות אנושיות.
+      geocoding_level_desc: >-
+        רמת הדיוק הגיע בעת המרת כתובת הרחוב של היעד לתוך קואורדינטות גיאוגרפיות,
+        לידי ביטוי ברמות ידידותיות אנושיות.
       duration: משך הביקור
       duration_desc: משך הביקור
       quantity: כמות
@@ -931,7 +946,7 @@ he:
       phone_number_desc: מספר טלפון של היעד.
       tags: תגים
       tags_desc: תגי יעדים (אפשר קיבוץ).
-      tags_format: תג 1, תג 2
+      tags_format: 'תג 1, תג 2'
       without_visit: ללא ביקור
       without_visit_desc: קובע כי אין ביקורים קשורים
       ref_visit: מזהה לביקור
@@ -942,8 +957,8 @@ he:
         string: טקטס
         integer: מספר שלם
         float: '0.123'
-        hour: HH:MM
-        second: HH:MM:SS
+        hour: 'HH:MM'
+        second: 'HH:MM:SS'
         yes_no: כן / לא
         required: נדרש
         advisable: מומלץ
@@ -963,7 +978,7 @@ he:
   index:
     unsupported_browser:
       unsupported_browser: דפדפן לא נתמך
-      unsupported_browser_modern: הדפדפן שלך ישן מדי, השתמש בכל דפדפן עדכני.
+      unsupported_browser_modern: 'הדפדפן שלך ישן מדי, השתמש בכל דפדפן עדכני.'
       download_browser: 'ניתן להוריד גירסת דפדפן מתקדמת בחינם: '
   order_arrays:
     menu:
@@ -996,7 +1011,7 @@ he:
       dialog:
         loading:
           title: טוען
-          in_progress: טוען, נא המתן.
+          in_progress: 'טוען, נא המתן.'
     new:
       title: הזמנות חדשות בתיכנון
     export_file:
@@ -1008,7 +1023,7 @@ he:
     download:
       max_interval_reached: המרווח בין תאריך ההתחלה לבין תאריך הסיום חייב להיות פחות מ -31 ימים
       end_date_inferior: תאריך הסיום חייב להיות גדול מתאריך ההתחלה
-      fail: אירעה שגיאה, נסה שוב
+      fail: 'אירעה שגיאה, נסה שוב'
       success: הדוח מתבצע להורדה
       retry: להוריד מחדש
       no_content: אין דיווח בתקופה זו
@@ -1024,7 +1039,7 @@ he:
       with_actions: היסטוריית הסטטוס
   route_mailer:
     send_kmz_route:
-      content: דואר אלקטרוני זה מכיל קובץ KMZ המכיל מידע על המסלול %{s}.
+      content: 'דואר אלקטרוני זה מכיל קובץ KMZ המכיל מידע על המסלול %{s}.'
       vehicle: רכב
       planning: תוכנית
       planning_ref: תכנית מס'
@@ -1039,15 +1054,19 @@ he:
       link: קישור להורדה
   user_mailer:
     welcome:
-      title: החשבון נמצא בניצולת של - %{s}
-      content: "<p>שלום וברוך הבא %{s},</p>\n \n <p>You can set your password with\
-        \ the following link: <a href=\"%{l}\" target=\"_blank\" title=\"אני משנה\
-        \ את הסיסמה שלי %{s}\">הגדר סיסמא</a>  <br/> or copy/paste following url in\
-        \ your browser : %{l} </p>\n \n <p>You will be able to connect our service\
-        \ online %{s} with click on following URL: <a href=\"%{a}\" target=\"_blank\"\
-        \ title=\"I log in %{s}\">%{a}<a> </p>\n \n <p>If you need to contact us,\
-        \ please use the following link: <a href=\"%{c}\" target=\"_blank\" title=\"\
-        I contact support\">%{c}</a> </p>\n \n <p>Best regards,</p>\n \n <p>%{s} team</p>"
+      title: 'החשבון נמצא בניצולת של - %{s}'
+      content: |-
+        <p>שלום וברוך הבא %{s},</p>
+
+         <p>You can set your password with the following link: <a href="%{l}" target="_blank" title="אני משנה את הסיסמה שלי %{s}">הגדר סיסמא</a>  <br/> or copy/paste following url in your browser : %{l} </p>
+
+         <p>You will be able to connect our service online %{s} with click on following URL: <a href="%{a}" target="_blank" title="I log in %{s}">%{a}<a> </p>
+
+         <p>If you need to contact us, please use the following link: <a href="%{c}" target="_blank" title="I contact support">%{c}</a> </p>
+
+         <p>Best regards,</p>
+
+         <p>%{s} team</p>
     footer:
       first_step: 'שלב 1: הגדר את הסיסמא שלך'
     password:
@@ -1056,7 +1075,7 @@ he:
       detail:
         link: הגדר סיסמא
     connection:
-      subject: התחבר לחשבון שלך %{name}
+      subject: 'התחבר לחשבון שלך %{name}'
       title: התחבר לחשבון שלך
       welcome: אתה יכול כעת להתחבר לחשבון שלך
     accompanying_team:
@@ -1097,35 +1116,39 @@ he:
       last_sent_to: שלח ל
       optimize_global:
         title: לייעל את הכל
-        all_help: בצע אופטימיזציה לכל התוכנית (לכל העצירות) למעט מסלולים סגורים (עצירות
+        all_help: >-
+          בצע אופטימיזציה לכל התוכנית (לכל העצירות) למעט מסלולים סגורים (עצירות
           יכולות להשתייך לניתובים אחרים)
-        active_help: אופטימיזציה של התזמון בכללותה, רק עבור עצירות פעילה למעט סיורים
-          נעולים (העצירות שלך יכולה להיות מוקצי סיור אחר כרגע)
+        active_help: >-
+          אופטימיזציה של התזמון בכללותה, רק עבור עצירות פעילה למעט סיורים נעולים
+          (העצירות שלך יכולה להיות מוקצי סיור אחר כרגע)
         all_stops: כל העצירות
         active_stops: רק עצירות פעילות
         confirm: מטב מהתכנון הכולל? (עצירות שלך יכולים להיות מוקצים סיור אחר כרגע)
       optimize_each:
         title: בצע אופטימיזציה לכל נתיב
-        all_help: ייעול מסלולים, לכל התחנות, לוח זמנים לא נעולים אחד אחד (העצירות
-          שלך תישאר כל סיור ראשוני)
-        active_help: ייעול מסלולים, רק עבור עצירות פעילה, לוח זמנים לא נעולים אחד
-          אחד (העצירות שלך תישאר כל סיור ראשוני)
+        all_help: >-
+          ייעול מסלולים, לכל התחנות, לוח זמנים לא נעולים אחד אחד (העצירות שלך
+          תישאר כל סיור ראשוני)
+        active_help: >-
+          ייעול מסלולים, רק עבור עצירות פעילה, לוח זמנים לא נעולים אחד אחד
+          (העצירות שלך תישאר כל סיור ראשוני)
         all_stops: כל העצירות
         active_stops: רק עצירות פעילות
         confirm: להפעיל חישוב אופטימיזציה על כל מסלול? (מפסיק תישאר inital נתיב)
       optimize_all: בצע אופטימיזציה לכל העצירות
       optimize_actives: בצע אופטימיזציה רק לעצירות פעילות
       optimized_at: אופטימיזציה
-      optimize_global_help: ייעל את כל התכנון למעט מסלולים נעולים (עצירות יכולות להיות
-        מהנקודה האמיתית למסלול אחר)
-      optimize_each_help: בצע אופטימיזציה לכל המסלולים הנעולים אחד אחרי השני (עצירות
-        יישארו במסלול הראשוני)
+      optimize_global_help: >-
+        ייעל את כל התכנון למעט מסלולים נעולים (עצירות יכולות להיות מהנקודה
+        האמיתית למסלול אחר)
+      optimize_each_help: >-
+        בצע אופטימיזציה לכל המסלולים הנעולים אחד אחרי השני (עצירות יישארו במסלול
+        הראשוני)
       title: עריכת תוכנית
       stops: עצירה
-      optimize_global_confirm: האם לייעל את כל התכנון? (עצירות ניתן להקצות מחדש לתוואי
-        אחר)
-      optimize_each_confirm: להפעיל חישוב אופטימיזציה על כל מסלול? (עצירות יישארו
-        במסלול הראשוני)
+      optimize_global_confirm: האם לייעל את כל התכנון? (עצירות ניתן להקצות מחדש לתוואי אחר)
+      optimize_each_confirm: להפעיל חישוב אופטימיזציה על כל מסלול? (עצירות יישארו במסלול הראשוני)
       optimize_confirm: האם להריץ חישוב ייעול ?
       optimize_complete: האופטימיזציה הושלמה
       optimize_failed: האופטימיזציה נכשלה
@@ -1215,7 +1238,7 @@ he:
       open_planning_panel: פתח פנל תיכנון
       collapse_planning_panel: הקטן את לוח התיכנון
       refresh: רענן
-      refresh_help: פרמטרי התוכנית שונו, נדרש לחשב תוכנית מחדש
+      refresh_help: 'פרמטרי התוכנית שונו, נדרש לחשב תוכנית מחדש'
       outdated_zoning: האיזורים שונו. עדכן שוב כדי לבצע ריענון.
       stops_help: תיכנון עצירות / סך הכל
       duration_help: משך זמן כולל
@@ -1239,11 +1262,10 @@ he:
       marker_help: הצג על המפה
       automatic_insert_help: מצא מסלול והכנס עצירה זו
       automatic_insert_help_multiple: מצא מסלול והוסף עצירות (התוצאות לא יהיו מייטביות)
-      automatic_insert_confirm: האם למצוא מסלול עבור כל עצירה? במצב זה התוצאות אינן
-        אופטימאליות. בעבודה עם איזורים מומלץ למצוא מסלול עבור כל עצירה (אוקי להמשיך
-        בכל מקרה).
-      automatic_insert_too_many: יותר מדי עצירות ללא כלי רכב. מומלץ לקבוע אזורי נסיעה
-        עבור כל עצירה
+      automatic_insert_confirm: >-
+        האם למצוא מסלול עבור כל עצירה? במצב זה התוצאות אינן אופטימאליות. בעבודה
+        עם איזורים מומלץ למצוא מסלול עבור כל עצירה (אוקי להמשיך בכל מקרה).
+      automatic_insert_too_many: יותר מדי עצירות ללא כלי רכב. מומלץ לקבוע אזורי נסיעה עבור כל עצירה
       active_all: אפשר הכל
       active_reverse: אפשר חזרה
       active_none: ללא
@@ -1279,16 +1301,18 @@ he:
         out_of_drive_time: חריגה מחלון הזמן של הרכב
         out_of_drive_time_help: פעילות הרכב חורגת מחלון הזמן של הרכב
         no_path: יעד בילתי נגיש
-        no_path_help: 'יעד שלא ניתן להגיע אליו: חסר או אין מסלול אל היעד וממנו כדי
-          למצוא מסלול מתאים'
+        no_path_help: >-
+          יעד שלא ניתן להגיע אליו: חסר או אין מסלול אל היעד וממנו כדי למצוא
+          מסלול מתאים
       dialog:
         refresh:
           title: רענן תיכנון
-          confirm: ביצעת שינויים הדורשים שחזור של התוכנית. האם ברצונך לרענן את התוכנית
+          confirm: >-
+            ביצעת שינויים הדורשים שחזור של התוכנית. האם ברצונך לרענן את התוכנית
             כעת?
         optimizer:
           title: אופטימיזציה
-          in_progress: אנא המתן, עד גמר התהליך.
+          in_progress: 'אנא המתן, עד גמר התהליך.'
           matrix: מטריצת מרחקים
           optimize: אופטימיזציה
           routes: מסלול
@@ -1312,7 +1336,7 @@ he:
           title: AlyaCom
           in_progress: אנא המתן
         zoning:
-          in_progress: אנא המתן, מעדכן איזורים חדשים
+          in_progress: 'אנא המתן, מעדכן איזורים חדשים'
         automatic_insert:
           title: הגדר נתיבים עבור עצירות ללא כלי רכב
         spreadsheet:
@@ -1367,11 +1391,11 @@ he:
       out_of_drive_time: מחוץ לחלון הזמן שהוגדר לרכב
       status: סטטוס
     form:
-      tags_help: הגבלת ביקורים / יעדים בתכנית (ביקורים / יעדים צריכים לכלול את כל
+      tags_help: >-
+        הגבלת ביקורים / יעדים בתכנית (ביקורים / יעדים צריכים לכלול את כל
         הקטגוריות הללו בכדי להילקח בחשבון בתוכנית)
       order_array: הזמנות
-      zonings_help: אפשר להקצות אוטומטתי רכבים לביקורים / יעדים עם איזורים גאוגרפים
-        זההים.
+      zonings_help: אפשר להקצות אוטומטתי רכבים לביקורים / יעדים עם איזורים גאוגרפים זההים.
       avoid_zones_help: אפשר להגדיר איזור שבו הרכב לא יוכל לחזור אחורה.
       default: ברירת מחדל
       begin_end_date: תקופת תוקף
@@ -1417,8 +1441,8 @@ he:
       stores: ערכים שמורים
       replace_no: עידכון / בנוסף
   vehicles:
-    default_name: רכב %{n}
-    emissions_nothing: ריק - %{n}
+    default_name: 'רכב %{n}'
+    emissions_nothing: 'ריק - %{n}'
     form:
       capacities:
         label: מיגבלה
@@ -1453,10 +1477,10 @@ he:
       dialog:
         isochrone:
           vehicle_usage_set: תצורת כלי רכב
-          vehicle_usage_set_help: בחינת תצורת כלי רכב, במיוחד את מחסן ההתחלה.
+          vehicle_usage_set_help: 'בחינת תצורת כלי רכב, במיוחד את מחסן ההתחלה.'
         isodistance:
           vehicle_usage_set: תצורת כלי רכב
-          vehicle_usage_set_help: בחינת תצורת כלי רכב, במיוחד את מחסן ההתחלה.
+          vehicle_usage_set_help: 'בחינת תצורת כלי רכב, במיוחד את מחסן ההתחלה.'
           size: מרחק
           size_help: האיזור נגיש מנקודת ההתחלה בהתחשב במרחק הנסיעה.
         validate: מעבד נתונים
@@ -1466,7 +1490,8 @@ he:
     default: אינך מורשה להיכנס לדף זה
   web:
     key_not_found: פרטי החיבור שלך אינם חוקיים
-    slow_browser: אתה משתמש ב-%{n} שמאט את היישום. אנו ממליצים להשתמש בדפדפן אחר להורדה
+    slow_browser: >-
+      אתה משתמש ב-%{n} שמאט את היישום. אנו ממליצים להשתמש בדפדפן אחר להורדה
       בחינם להופעות טובות יותר.
     form:
       default: '%{n} (ברירת מחדל)'
@@ -1544,9 +1569,9 @@ he:
       _no: לא
   helpers:
     submit:
-      create: צור %{model}
-      update: שמור %{model}
-      submit: שמור %{model}
+      create: 'צור %{model}'
+      update: 'שמור %{model}'
+      submit: 'שמור %{model}'
   devise:
     shared:
       links:
