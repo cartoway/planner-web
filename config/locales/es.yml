@@ -572,7 +572,7 @@ es:
       ref: referencia
       time_window_start: horario inicio
       format:
-        optionnal: opcional
+        optional: opcional
   errors:
     management:
       title: Imposible acceder a la pagina
@@ -1017,7 +1017,7 @@ es:
         yes_no: si/no
         required: obligatorio
         advisable: recomendado
-        optionnal: opcional
+        optional: opcional
         deprecated: depreciado
       not_csv: El fichero importado no esta en formato CSV
       empty_file: no contiene ningún dato
@@ -1252,7 +1252,7 @@ es:
         yes_no: si/no
         required: obligatorio
         advisable: recomendado
-        optionnal: opcional
+        optional: opcional
         deprecated: depreciado
     form:
       ref:

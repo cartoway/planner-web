@@ -4,7 +4,7 @@ CSV.generate { |csv|
   csv << columns.collect{ |data| data[:title] }
   csv << columns.collect{ |data|
     data[:format].to_s + (!data[:required] || data[:required] != I18n.t('destinations.import_file.format.required') ?
-    ' (' + (data[:required] ? data[:required] : I18n.t('destinations.import_file.format.optionnal')) + ')' :
+    ' (' + (data[:required] ? data[:required] : I18n.t('destinations.import_file.format.optional')) + ')' :
     '')
   }
 }
