@@ -177,7 +177,7 @@ en:
         enable_references: View references
         enable_multi_visits: Enable more than one visit per destination
         enable_global_optimization: Enable global optimization
-        enable_vehicle_position: Enable vehicles's position
+        enable_vehicle_position: Enable vehicle's position
         enable_stop_status: Enable visits status
         enable_sms: Enable SMS
         sms_template: SMS template
@@ -417,7 +417,7 @@ en:
         sign_in_at: Last connection
         ref: Reference
         confirmed_at: Confirmed at
-        prefered_unit: Prefered unit
+        prefered_unit: Preferred unit
       vehicle:
         max_distance: Maximum distance
         max_ride_distance: Maximum ride distance
@@ -773,23 +773,23 @@ en:
           "fr" (ie:
           https://cartoway.com/{LG}/mapotempo-web-subscription-request).
         customer_dashboard_url_help: >-
-          Web page adress that contains the customer Dashboard. It's possible to
+          Web page address that contains the customer Dashboard. It's possible to
           use "{ID}" which will be replaced by the customer ID (ie:
           https://analytics.cartoway.com?id={ID}
         audience_url_help: >-
-          Web page adress that contains the audience Dashboard. It's possible to
+          Web page address that contains the audience Dashboard. It's possible to
           use "{ID}" which will be replaced by the customer ID (ie:
           https://analytics.cartoway.com?id={ID}
         behavior_url_help: >-
-          Web page adress that contains the behavior Dashboard. It's possible to
+          Web page address that contains the behavior Dashboard. It's possible to
           use "{ID}" which will be replaced by the customer ID (ie:
           https://analytics.cartoway.com?id={ID}
         customer_audience_url_help: >-
-          Web page adress that contains the audience Dashboard for a customer.
+          Web page address that contains the audience Dashboard for a customer.
           It's possible to use "{ID}" which will be replaced by the customer ID
           (ie: https://analytics.cartoway.com?id={ID}
         customer_behavior_url_help: >-
-          Web page adress that contains the behavior Dashboard for a customer.
+          Web page address that contains the behavior Dashboard for a customer.
           It's possible to use "{ID}" which will be replaced by the customer ID
           (ie: https://analytics.cartoway.com?id={ID}
         facebook_url_help: Reseller Facebook link
@@ -948,7 +948,7 @@ en:
         optimize. Greater the value is, better the result of optimization will
         be (but no solution found for the problem within available time could
         occur more often). Smaller the value is, faster the optimization will be
-        (but solution coulb be with less quality). A value equal to 10-20 times
+        (but solution could be with less quality). A value equal to 10-20 times
         the average size of your routes is right.
       optimization_cluster_size_default: '%{n} (default value)'
       optimization_cluster_size_help: >-
@@ -1089,7 +1089,7 @@ en:
       dialog:
         confirm_overwrite_point: Position has been set manually. Override with geocoding results?
         attributes_change_bulk:
-          title: Change several tags in oce action
+          title: Change several tags in once action
           tags_help: >-
             For each respective line, allow to replace a specific tag with
             another existing tag
@@ -1100,7 +1100,7 @@ en:
         new: New visit
         new_help: New visit if you go to this destination several times.
         attributes_change_bulk: Change tags
-        attributes_change_bulk_help: Change several tags in oce action
+        attributes_change_bulk_help: Change several tags in once action
         collapse_all: Collapse/expand all
         collapse_all_help: Collapse/expand all
     edit:
@@ -1318,7 +1318,7 @@ en:
         yes_no: yes/no
         required: required
         advisable: advised
-        optionnal: optionnal
+        optionnal: optional
         deprecated: deprecated
       not_csv: Imported file is not a CSV
       empty_file: content is blank
@@ -1338,7 +1338,7 @@ en:
     download:
       max_interval_reached: Range between begin date and end date must be inferior to 31 days
       end_date_inferior: End date must be superior to begin date
-      fail: 'An error has occured, try again'
+      fail: 'An error has occurred, try again'
       success: The reporting is currently downloading
       retry: Download again
       no_content: No report during this period
@@ -1719,7 +1719,7 @@ en:
           fail: Failed to export E-Mail
           mail_error: >-
             Email(s) not send. <br/> Check email configuration for each
-            vehicule.
+            vehicle.
         kmz_email:
           action: KMZ Track by E-Mail
           success: E-Mail sent successfully
@@ -1758,7 +1758,7 @@ en:
       visit_duration_help: Total visits duration
       wait_time_help: Total waiting time
       speed_help: Speed average for the whole planning
-      vehicles_used_help: Vehicules used / Total
+      vehicles_used_help: Vehicles used / Total
       quantity_help: Quantities / Vehicles capacities
       out_of_route: Unaffected
       out_of_route_quantity_help: Quantity
@@ -2075,7 +2075,7 @@ en:
       name_rest: Rest
     error_messages:
       update:
-        failure: Echec de la mise à jour
+        failure: Fails to update
     mobile:
       navigate: Navigate
       back: Tour
@@ -2099,7 +2099,7 @@ en:
         small: small
         medium: medium
         large: large
-      prefered_icons: Prefered
+      prefered_icons: Preferred
       other_icons: Others
     edit:
       title: Editing store
@@ -2206,7 +2206,7 @@ en:
         float: '0.123'
         required: required
         advisable: advised
-        optionnal: optionnal
+        optionnal: optional
   products:
     menu:
       products: Products
@@ -2238,7 +2238,7 @@ en:
         small: small
         medium: medium
         large: large
-      prefered_icons: Prefered
+      prefered_icons: Preferred
       other_icons: Others
   users:
     menu:
@@ -2287,7 +2287,7 @@ en:
       consumption: consumption
       consumption_desc: average fuel consumption in liters per 100 km
       capacities: capacities
-      capacities_desc: maximun vehicle's capacities
+      capacities_desc: maximum vehicle's capacities
       custom_attributes: attributes
       router_mode: routing engine
       router_mode_desc: force use of a specific routing engine
@@ -2318,7 +2318,7 @@ en:
         yes_no: yes/no
         required: required
         advisable: advised
-        optionnal: optionnal
+        optionnal: optional
         deprecated: deprecated
     form:
       max_distance:
@@ -2341,7 +2341,7 @@ en:
         default: '%{n} (default value)'
         no_overload: ' (no overload)'
         ignore_overload: ' (ignored)'
-        help: Maximun vehicle's capacities
+        help: Maximum vehicle's capacities
       router:
         default: Default
         help: Force use of a specific routing engine
@@ -2446,7 +2446,7 @@ en:
         placeholder: Choose a device
         fieldset: GPS & Mobiles
       tags_help: >-
-        Skills associated to the curent configuration. (Warning: if only one
+        Skills associated to the current configuration. (Warning: if only one
         vehicle has skills so all other vehicles could not use this skill unless
         declared)
   vehicle_usage_sets:
@@ -2480,9 +2480,9 @@ en:
         data
       replace_yes: Replace existing configuration
       replace_yes_help: The current configuration will be replaced by the new one.
-      replace_no: Add vheicles configuration
+      replace_no: Add vehicles configuration
       replace_no_help: >-
-        A new configuration will be added without changing exisiting
+        A new configuration will be added without changing existing
         configurations.
       vehicles: Vehicles
       replace_vehicles: Replace existing vehicles
@@ -2510,7 +2510,7 @@ en:
           columns_vehicle_usage_set: Vehicles configuration columns
           columns_vehicle_usage_set_default: >-
             If a column has the same data for all vehicles so this data will be
-            used for the default cinfiguration and removed for each vehicle
+            used for the default configuration and removed for each vehicle
       name_vehicle_usage_set: name configuration
       name_desc: default configuration name
       time_window_start: open
@@ -2551,7 +2551,7 @@ en:
         required: required
         required_for_default: required for default
         advisable: advised
-        optional: optionnal
+        optional: optional
         deprecated: deprecated
       not_csv: Imported file is not a CSV
       empty_file: content is blank
@@ -2775,7 +2775,7 @@ en:
       save: Save
       cancel: Cancel
       filter: Filter
-      apply: Appliquer
+      apply: Apply
     multiple-actions:
       none_selected_element: None selected element
     unit:
@@ -2802,7 +2802,7 @@ en:
     subscribe:
       planning_unavailable: >-
         Plan can’t be changed. Your subscription period is expired | Contact
-        your reseller to get a contrat extension.
+        your reseller to get a contract extension.
       expiration_date: >-
         Only few days to renew your subscription. The end date is %{date}. If
         you want to renew your subscription, please contact %{reseller}.
@@ -2838,4 +2838,4 @@ en:
       masternaut_ref: masternaut
       speed_multiplicator: speed multiplicator
       speed_multiplier: speed multiplier
-      many_usage_sets: Many vehicle configurations presente
+      many_usage_sets: Many vehicle configurations present
