@@ -752,11 +752,26 @@ en:
         name_help: Reseller brand name
         application_name_help: Reseller Website name
         sms_api_key_help: Api key to be able to send SMS
-        website_url_help: "Website address. It's possible to use \"{LG}\" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/)."
-        welcome_url_help: "Web page address included as html as \"iframe\" on welcome page. It's possible to use \"{LG}\" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/app-news)."
-        help_url_help: "Web page address with help content. It's possible to use \"{LG}\" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/help-center)."
-        contact_url_help: "Web page address with contact form. It's possible to use \"{LG}\" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/contact-support/)."
-        subscription_url_help: "Web page address with subscription content for a test customer. It's possible to use \"{LG}\" which will be replaced by language like « en », « fr » (ie: https://cartoway.com/{LG}/mapotempo-web-subscription-request)."
+        website_url_help: >-
+          Website address. It's possible to use "{LG}" which will be replaced by
+          language like "en", "fr" (ie: https://cartoway.com/{LG}/).
+        welcome_url_help: >-
+          Web page address included as html as "iframe" on welcome page. It's
+          possible to use "{LG}" which will be replaced by language like "en",
+          "fr" (ie: https://cartoway.com/{LG}/app-news).
+        help_url_help: >-
+          Web page address with help content. It's possible to use "{LG}" which
+          will be replaced by language like "en", "fr" (ie:
+          https://cartoway.com/{LG}/help-center).
+        contact_url_help: >-
+          Web page address with contact form. It's possible to use "{LG}" which
+          will be replaced by language like "en", "fr" (ie:
+          https://cartoway.com/{LG}/contact-support/).
+        subscription_url_help: >-
+          Web page address with subscription content for a test customer. It's
+          possible to use "{LG}" which will be replaced by language like "en",
+          "fr" (ie:
+          https://cartoway.com/{LG}/mapotempo-web-subscription-request).
         customer_dashboard_url_help: >-
           Web page adress that contains the customer Dashboard. It's possible to
           use "{ID}" which will be replaced by the customer ID (ie:
@@ -910,10 +925,10 @@ en:
         If not checked the router will try to strictly respect the limitations
         and override limitations only if it's the only way.
       vehicle_router_unauthorized: >-
-        At least one vehicle have an unauthorized router for this profile :
+        At least one vehicle have an unauthorized router for this profile:
         <strong>%{profile}</strong>
       user_layer_unauthorized: >-
-        At least one user have an unauthorized layer for this profile :
+        At least one user have an unauthorized layer for this profile:
         <strong>%{profile}</strong>
       visit_duration_help: Average time per account
       max_plannings_default: '%{n} (default value)'
@@ -1638,12 +1653,12 @@ en:
       routes_by_vehicles: Vehicle's routes
       deliverables_by_vehicles: Vehicle's deliverables
       vehicle_select_error: You must select a vehicle
-      vehicle_action: "Actions for a vehicle  :"
+      vehicle_action: 'Actions for a vehicle:'
     edit:
       sopac_title: Temperature statement
-      device_name_label: "Device Name :"
-      last_temperature_statement_label: "Last statement :"
-      temperature_label: "Temperature :"
+      device_name_label: 'Device Name:'
+      last_temperature_statement_label: 'Last statement:'
+      temperature_label: 'Temperature:'
       vehicles: Vehicles
       marker_clusters: Switch clusters of stops
       current_position: 'Vehicle position:'
@@ -1804,7 +1819,7 @@ en:
         quantity: 'Quantity:'
         orders: 'Orders:'
         duration: 'Visit duration:'
-        priority: 'Priority : '
+        priority: 'Priority: '
         tags: 'Tags:'
         stop_drive_time: 'Duration:'
         stop_distance: 'Distance:'
@@ -1879,9 +1894,9 @@ en:
           cancel: Cancel optimization
           canceling: Canceling
           optimize: Optimize
-          optimization_time: "Optimization duration :"
-          optimize_min: "At least :"
-          optimize_max: "At most :"
+          optimization_time: 'Optimization duration:'
+          optimize_min: 'At least:'
+          optimize_max: 'At most:'
           optimize_less: Less than
           optimize-title: >-
             Optimization process duration. Does not take into account queue
@@ -2292,7 +2307,7 @@ en:
       tags_format: 'skill 1,skill 2'
       devices: devices
       devices_desc: reference or ID of devices associated to vehicle
-      missing_name: "« name » of the vehicle missing"
+      missing_name: '"name" of the vehicle missing'
       format:
         string: text
         json: json
@@ -2542,7 +2557,7 @@ en:
       empty_file: content is blank
       too_many_lines: 'Stop import, too many lines (max: %{n}).'
       none_column: None found column
-      missing_name: "« name » of the default configuration missing"
+      missing_name: '"name" of the default configuration missing'
       missing_time_window_start_end: begin or end time of the default configuration missing
       invalid_numeric_value: 'Invalid numeric value "%{value}".'
       check_custom_columns: Check your columns definition.
@@ -2777,8 +2792,8 @@ en:
       kgco2e_l_html: kgCO<sub>2</sub>e/l
       l_100km: l/100 km
       l_62Miles: l/62.1 mi.
-      hour_minute: 'hour : minute'
-      hour_minute_second: 'hour : minute : second'
+      hour_minute: 'hour: minute'
+      hour_minute_second: 'hour: minute: second'
     value:
       _true: 'true'
       _false: 'false'
