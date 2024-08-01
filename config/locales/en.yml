@@ -771,7 +771,7 @@ en:
           Web page address with subscription content for a test customer. It's
           possible to use "{LG}" which will be replaced by language like "en",
           "fr" (ie:
-          https://cartoway.com/{LG}/mapotempo-web-subscription-request).
+          https://cartoway.com/{LG}/planner-web-subscription-request).
         customer_dashboard_url_help: >-
           Web page address that contains the customer Dashboard. It's possible to
           use "{ID}" which will be replaced by the customer ID (ie:
@@ -1625,12 +1625,11 @@ en:
         expectations.</b>
       content: >-
         If you wish to continue the adventure with us <b>you can contact our
-        sales team by this form or by phone at
-        +33&nbsp;5&nbsp;64&nbsp;27&nbsp;04&nbsp;59&nbsp;</b>:
+        sales team by this form or by phone</b>:
       link: 'I request to subscribe to %{name}'
       preheader: >-
         Your free trial period will end soon. We thank you for your interest in
-        Mapotempo Web (web solution name) and we hope that the experience has
+        the solution and we hope that the experience has
         met your expectations.
       footer: 'You receive this email as a user of %{name}'
   plannings:

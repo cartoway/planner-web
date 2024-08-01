@@ -728,7 +728,7 @@ pt:
           Endereço da página web contendo o formulário de ubscrição para uma
           conta de teste. Poderá utilizar "{LG}" o qual será substituído  pela
           língua como « en », « fr » (ie:
-          https://cartoway.com/{LG}/mapotempo-web-subscription-request).
+          https://cartoway.com/{LG}/planner-web-subscription-request).
         facebook_url_help: Link do Facebook do revendedor
         twitter_url_help: Link do Twitter do revendedor
         linkedin_url_help: Link do Linkedin do revendedor
@@ -1788,8 +1788,7 @@ pt:
         satisfeito as suas expectativas. </b>
       content: >-
         Se quiser continuar essa aventuara conosco <b> pode contactar a nossa
-        equipe de vendas preenchendo o formulàrio ou por telefone ao
-        +33&nbsp;5&nbsp;64&nbsp;27&nbsp;04&nbsp;59&nbsp;:</b>:
+        equipe de vendas preenchendo o formulàrio ou por telefone</b>:
       link: 'Quero subscrever ao %{name}'
     fleet_drivers:
       hello: Olá
