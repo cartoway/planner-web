@@ -40,7 +40,7 @@ fr:
       deliverable_unit:
         quantity:
           key:
-            cannot_be_empty: L'unité de'capacité ne peut être vide
+            cannot_be_empty: L'unité de capacité ne peut être vide
       import_csv: Import CSV
       import_csvs:
         one: Import CSV
@@ -207,7 +207,7 @@ fr:
         router_options_height: Hauteur du véhicule
         router_options_width: Largeur du véhicule
         router_options_length: Longueur du véhicule
-        router_options_hazardous_goods: Type de matière dangeureuse
+        router_options_hazardous_goods: Type de matière dangereuse
         router_options_max_walk_distance: Distance maximum à pied
         router_options_approach: Arriver/Partir dans le sens de circulation
         router_options_snap: Reporter l'arrêt au carrefour
@@ -325,7 +325,7 @@ fr:
         audience_url: URL d'audience
         behavior_url: URL de comportement
         customer_audience_url: URL d'audience compte
-        customer_behavior_url: URL de comportent compte
+        customer_behavior_url: URL de comportement compte
         customer_dashboard_url: URL du tableau de bord du compte
       route:
         distance: Distance
@@ -457,7 +457,7 @@ fr:
         store_start: Site départ
         store_start_id: Site départ
         store_stop: Site arrivé
-        store_stop_id: Site arrivée
+        store_stop_id: Site arrivé
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
@@ -475,7 +475,7 @@ fr:
         store_start: Site départ
         store_start_id: Site départ
         store_stop: Site arrivé
-        store_stop_id: Site arrivée
+        store_stop_id: Site arrivé
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
@@ -589,7 +589,7 @@ fr:
               after: doit être après l'horaire de début
             rest_stop:
               after: doit être après l'horaire de début qui doit alors être présent
-          missing_rest_window: doit être rempli(e) si la durée de repos ou un horaire est rempli
+          missing_rest_window: doit être remplie si la durée de repos ou un horaire est rempli
           missing_rest_duration: doit être remplie si une plage de repos est remplie
           rest_range: 'La plage de repos doit être comprise entre %{start} et %{end}'
           service_range: ne peut pas être supérieure ou égale au temps de travail
@@ -601,7 +601,7 @@ fr:
             rest_stop:
               after: doit être après l'horaire de début
           at_least_one: Au moins une configuration de véhicules est requise
-          missing_rest_window: doit être rempli(e) si la durée de repos est remplie
+          missing_rest_window: doit être remplie si la durée de repos est remplie
           missing_rest_duration: doit être remplie si une plage de repos est remplie
           work_time_inside_window: doit être inférieure ou égal à la plage horaire de travail
         visit:
@@ -622,9 +622,9 @@ fr:
         zone:
           attributes:
             vehicle:
-              bad_customer: non associé au espace client
+              bad_customer: non associé à l'espace client
             polygon:
-              invalid_json: n'est pas une chaîne de caractères json valide
+              invalid_json: n'est pas une chaîne de caractères JSON valide
         customer:
           attributes:
             plannings:
@@ -654,11 +654,11 @@ fr:
               ref_value: 'Référence tournée '
             begin_date:
               blank: >-
-                doit être rempli(e) si une date de fin de validité est
+                doit être remplie si une date de fin de validité est
                 renseignée
             end_date:
               blank: >-
-                doit être rempli(e) si une date de début de validité est
+                doit être remplie si une date de début de validité est
                 renseignée
               after: doit être après la date de début de validité
         tag:
@@ -676,7 +676,7 @@ fr:
   errors:
     database:
       default: Erreur avec la base de données.
-      invalid_statement: L'action que vous avez tenté de réaliser est impossible.
+      invalid_statement: L'action que vous avez tentée de réaliser est impossible.
       deadlock: >-
         Une autre mise à jour a été effectuée en simultané, vous avez peut-être
         réalisé plusieurs opérations trop rapidement ou plusieurs fois.
@@ -691,9 +691,9 @@ fr:
           default: Une erreur est survenue dans l'application
         explanation:
           '404': >-
-            La page n'a pas été trouvée sur le serveur, elle a peut être été
+            La page n'a pas été trouvée sur le serveur, elle a peut-être été
             supprimée.
-          '422': L'action que vous avez tenté de réaliser est impossible.
+          '422': L'action que vous avez tentée de réaliser est impossible.
           '500': >-
             Une erreur interne s'est produite. Le problème a été signalé, merci
             d'essayer une autre action en attendant. Contactez le support si
@@ -724,7 +724,7 @@ fr:
       transmission_in_progress: L'optimisation est en cours de transmission
     routes:
       bad_barcode_char: Les données du code barre contiennent un caractère non pris en charge
-      expired: La tournée a expirée
+      expired: La tournée a expiré
   import:
     csv:
       line: 'Ligne %{s}'
@@ -736,7 +736,7 @@ fr:
     data_erroneous:
       csv: 'Fichier invalide, ligne %{s}'
       json: Fichier invalide
-      tomtom: 'Données tomtom invalides, enregistrement %{s}'
+      tomtom: 'Données TomTom invalides, enregistrement %{s}'
     template_csv: Modèle import tableur standard
     template_excel: Modèle import tableur
   admin:
@@ -772,11 +772,11 @@ fr:
         facebook_url_help: Lien Facebook du revendeur
         twitter_url_help: Lien Twitter du revendeur
         linkedin_url_help: Lien linkedIn du revendeur
-        customer_dashboard_url_help: "Adresse de la page web contenant le tableau de bord client. Vous pouvez utiliser « {ID} »  qui sera remplacé par par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
-        audience_url_help: "Adresse de la page web contenant votre tableau de bord d'audience. Vous pouvez utiliser « {ID} »  qui sera remplacé par par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
-        behavior_url_help: "Adresse de la page web contenant votre tableau de bord de comportement. Vous pouvez utiliser « {ID} »  qui sera remplacé par lpar l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
-        customer_audience_url_help: "Adresse de la page web contenant votre tableau de bord d'audience pour un compte spécifique. Vous pouvez utiliser « {ID} »  qui sera remplacé par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
-        customer_behavior_url_help: "Adresse de la page web contenant votre tableau de bord de comportement pour un compte spécifique. Vous pouvez utiliser « {ID} »  qui sera remplacé par l'identifiant de l' espace client (par ex: https://analytics.cartoway.com?id={ID}"
+        customer_dashboard_url_help: "Adresse de la page web contenant le tableau de bord client. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
+        audience_url_help: "Adresse de la page web contenant votre tableau de bord d'audience. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
+        behavior_url_help: "Adresse de la page web contenant votre tableau de bord de comportement. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
+        customer_audience_url_help: "Adresse de la page web contenant votre tableau de bord d'audience pour un compte spécifique. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l'espace client (par ex: https://analytics.cartoway.com?id={ID}"
+        customer_behavior_url_help: "Adresse de la page web contenant votre tableau de bord de comportement pour un compte spécifique. Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de l' espace client (par ex: https://analytics.cartoway.com?id={ID}"
         logo_large_help: >-
           Logo pleine page redimensionnable, de préférence au format SVG, à
           défaut en PNG.
@@ -849,7 +849,7 @@ fr:
       success: 'L''espace client %{customer_name} a été importé avec succès.'
       title: Importer un espace client
       label: Sélectionner un espace client à partir d'un fichier .dump
-      submit: Importer le espace client
+      submit: Importer l'espace client
     upload_dump:
       success: Client importé avec succès
       file_empty: Un fichier .dump doit être renseigné
@@ -919,7 +919,7 @@ fr:
       max_zonings_default: '%{n} (valeur par défaut)'
       max_zonings_help: Nombre maximal de sectorisations autorisés dans le compte.
       max_destinations_default: '%{n} (valeur par défaut)'
-      max_destinations_help: Nombre maximal de adressesautorisés dans le compte.
+      max_destinations_help: Nombre maximal d'adresses autorisés dans le compte.
       max_vehicle_usage_sets_default: '%{n} (valeur par défaut)'
       max_vehicle_usage_sets_help: >-
         Nombre maximal de configurations des véhicules autorisées dans le
@@ -957,7 +957,7 @@ fr:
       optimization_stop_soft_upper_bound_help: "Plus la valeur est grande plus les retards seront pénalisants (0 pour empêcher les retards de manière stricte : désactive les clusters dans ce cas).<br> Valeurs conseillées :<br> - Au plus rapide: 0 à 1<br> - Au plus court: 0 à 30"
       optimization_vehicle_soft_upper_bound_help: "Pour une optimisation globale, permet de gérer la répartition sur les véhicules. Plus la valeur est grande plus les retards seront pénalisants (0 pour empêcher les retards de manière stricte : désactive les clusters dans ce cas).<br> Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus court : 0 à 30"
       optimization_cost_waiting_time_default: '%{n} (valeur par défaut)'
-      optimization_cost_waiting_time_help: "Permet d'évaluer l'importance des temps d'attente. Plus la valeur est grande, plus l'attente avant l'ouverture d'un créneau horaire sera pénalisée (0 pour ne pas considérer l'attente dans l'optimisation).<br> Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus rcourt : non pris en compte"
+      optimization_cost_waiting_time_help: "Permet d'évaluer l'importance des temps d'attente. Plus la valeur est grande, plus l'attente avant l'ouverture d'un créneau horaire sera pénalisée (0 pour ne pas considérer l'attente dans l'optimisation).<br> Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus court : non pris en compte"
       optimization_force_start_help: Forcer le départ du véhicule à son horaire de début.
       enable_global_optimization_test: Actif si Test
       print_header_help: Bloc de texte ajouté avant chaque tournée
@@ -974,7 +974,7 @@ fr:
         votre client renseigné sur l'application. Votre texte ne doit pas
         comporter de caractères non standards (GSM 03.38) et ne devrait pas
         dépasser 160 caractères (ou 70 en cas de caractères spéciaux).
-      sms_keys_help: "Chaines de remplacements disponibles : {NAME} {REF} {VISIT_REF} {DATE} {TIME} {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER}."
+      sms_keys_help: "Chaînes de remplacements disponibles : {NAME} {REF} {VISIT_REF} {DATE} {TIME} {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER}."
       sms_concat_help: >-
         Si coché vos SMS seront complets (mais facturés le prix de plusieurs SMS
         en cas de dépassement), si non coché vos SMS seront tronqués en cas de
@@ -995,7 +995,7 @@ fr:
         url_help: >
           URL externe à appeler depuis le menu export du plan des tournées
 
-          Les chaînes de caractères suivantes vont etre remplacées :
+          Les chaînes de caractères suivantes vont être remplacées :
           PLANNING_ID, PLANNING_REF, PLANNING_IDS, ROUTE_ID, ROUTE_REF, API_KEY,
           CUSTOMER_ID
 
@@ -1175,7 +1175,7 @@ fr:
           move_help: Déplacez les points manuellement sur la carte le cas échéant
           dismiss: Ignorer
           sort_geocoding: Montrer les géocodages peu fiables d'abord
-      over_max_limit: "Vous avez atteint la limite de adresses autorisées pour votre compte (Limite : %{limit}), contactez le support si vous avez besoin de plus d'adresses"
+      over_max_limit: "Vous avez atteint la limite d'adresses autorisées pour votre compte (Limite : %{limit}), contactez le support si vous avez besoin de plus d'adresses"
     new:
       title: Nouveau client
     import_file:
@@ -1186,7 +1186,7 @@ fr:
       route: tournée
       route_desc: >-
         numéro ou référence de la tournée dans le plan de tournées créé lorsque
-        ce champs est renseigné.
+        ce champ est renseigné.
       ref_vehicle: véhicule
       ref_vehicle_desc: référence ou nom du véhicule effectuant l'arrêt dans la tournée.
       planning_ref: référence plan
@@ -1491,7 +1491,7 @@ fr:
         title: Avant de commencer
         content: >-
           quels sont les navigateurs supportés par %{name} ? Les types de
-          véhicules pris en compte au sein de la solution ? Découvrez le
+          véhicules pris en compte au sein de la solution ? Découvrez-le
           fonctionnement de la cartographie Libre OpenStreetMap, du géocodage et
           des algorithmes d’optimisation.
         time: ⏱3min.
@@ -1534,7 +1534,7 @@ fr:
         title: Gestion des véhicules
         content: >-
           configurer les véhicules, leur consommation, leur capacité. Définir le
-          calculateur d’itinéraire selon le type de véhicule, configurer les
+          calculateur d’itinéraire selon le type de véhicule, configurer-les
           sites.
         time: ⏱15min.
         doc_link: Doc - Gestion des véhicules
@@ -1582,7 +1582,7 @@ fr:
         title: Gestion des plans et des tournées
         content: >-
           créer un plan de tournées, appliquer une sectorisation, optimiser des
-          tournées, exporter des tournées (feuille de route, mobile, gps,
+          tournées, exporter des tournées (feuille de route, mobile, GPS,
           agenda, tableur).
         time: ⏱20min.
         doc_link: Doc - Gestion des plans de tournées
@@ -1651,8 +1651,8 @@ fr:
       over_max_limit: "Vous avez atteint la limite de plans autorisés pour votre compte (Limite : %{limit}), veuillez supprimer vos précédents plans ou contacter le support si vous avez besoin de plus de plans."
       routes_by_vehicles: Tournées du véhicule
       deliverables_by_vehicles: État de charge
-      vehicle_select_error: Vous devez avoir selectionné un véhicule
-      vehicle_action: "Actions pour un vehicule :"
+      vehicle_select_error: Vous devez avoir sélectionné un véhicule
+      vehicle_action: "Actions pour un véhicule :"
     edit:
       sopac_title: Relevé de température
       device_name_label: "Nom de l'appareil :"
@@ -1667,10 +1667,10 @@ fr:
       toggle_route_data: Masquer les statistiques de tournées
       zonings:
         label: Sectorisations
-        success: Sectorisations appliqués avec succès
+        success: Sectorisations appliquées avec succès
         fail: Échec lors de l'application des sectorisations
         action: Appliquer Sectorisations
-      zoning_new: Créer un nouvelle sectorisation depuis ce plan de tournées
+      zoning_new: Créer une nouvelle sectorisation depuis ce plan de tournées
       zoning_edit: Modifier cette sectorisation depuis ce plan de tournées
       last_sent_to: Envoi
       title: Modifier plan
@@ -1754,7 +1754,7 @@ fr:
       refresh_help: >-
         Des paramètres ou des adresses utilisés par ce plan de tournées ont été
         modifiés, il est nécessaire de le recalculer
-      outdated_zoning: La sectorisation a été modifié. Appliquez à nouveau pour actualiser.
+      outdated_zoning: La sectorisation a été modifiée. Appliquez à nouveau pour actualiser.
       stops_help: Arrêts planifiés / total
       duration_help: Somme des durées des tournées
       distance_help: Somme des distances des tournées
@@ -1888,7 +1888,7 @@ fr:
             active_only: Placer les visites décochées en fin de tournée
             active_only_true_help: Ne prendre en compte que les visites cochées dans les tournées.
             active_only_false_help: >-
-              Optimiser toutes les visites d'une tournée, qu'elle soient actives
+              Optimiser toutes les visites d'une tournée, qu'elles soient actives
               ou non (les visites décochées resteront décochées).
             cost_late_multiplier: Autoriser les retards créneau visite
           vehicles:
@@ -1912,7 +1912,7 @@ fr:
           optimize_max: "Au maximum :"
           optimize_less: Moins de
           optimize-title: >-
-            Durée du processus d'optimisation. Ne prend pas en compte le temps
+            Durée du processus d'optimisation. Ne prends pas en compte le temps
             passé en file d'attente.
           warning: "Attention : Les arrêts non assignés seront affectés à un véhicule durant l'optimisation. Si ce comportement n'est pas souhaité, veuillez les verrouiller."
         optimizer:
@@ -2062,13 +2062,13 @@ fr:
       empty_route: Tournée vide
   deliverables_by_vehicles:
     show:
-      title_page: Etat de charge par tournée
+      title_page: État de charge par tournée
       total_quantity: Total quantités
       total_stops: Nombre total d'arrêts
       total_destinations: Nombre total d''adresses
       visits_duration: 'Durée de visite (hh:mm)'
       drive_duration: 'Durée de conduite (hh:mm)'
-      route_duration: 'Durée total de la tournée (hh:mm)'
+      route_duration: 'Durée totale de la tournée (hh:mm)'
       average: Moyenne
       deliverable_unit: Capacités
       fail: Impossible de charger les plannings pour ce véhicule
@@ -2102,7 +2102,7 @@ fr:
       lng: '2.35947'
       city: Rungis
     geocoding:
-      geocoding_in_progress: Geocodage en cours.
+      geocoding_in_progress: Géocodage en cours.
     form:
       ref: Référence
       ref_help: Référence libre
@@ -2288,7 +2288,7 @@ fr:
       max_distance_desc: distance maximale réalisable du véhicule
       max_ride_distance: distance trajet maximale (en mètres)
       max_ride_distance_desc: distance trajet maximale entre arrêts de la tournée du véhicule
-      max_ride_duration: DUrée trajet maximale
+      max_ride_duration: Durée trajet maximale
       max_ride_duration_desc: Durée trajet maximale entre arrêts de la tournée du véhicule
       ref_vehicle: référence véhicule
       ref_desc: référence du véhicule
@@ -2446,7 +2446,7 @@ fr:
       rest_start_stop_help: Sans tenir compte de la durée de pause
       rest_duration:
         default: '%{n} (valeur par défaut)'
-        help: Requiert une plage de repos si renseigné
+        help: Requiers une plage de repos si renseigné
       store_rest:
         default: Défaut
         none: Aucun
@@ -2545,7 +2545,7 @@ fr:
       store_start_ref: référence site départ
       store_start_desc: référence du site de départ du livreur
       store_stop_ref: référence site arrivée
-      store_stop_desc: référence du site d'arrivé du livreur
+      store_stop_desc: référence du site d'arrivée du livreur
       rest_start: début plage repos
       rest_start_desc: heure du début de la plage de repos
       rest_stop: fin plage repos
@@ -2605,7 +2605,7 @@ fr:
         travail (service compris sans la pause)
       rest_duration_store: Durée de repos / lieu
       rest_duration:
-        help: Requiert une plage de repos si renseigné
+        help: Requiers une plage de repos si renseigné
       rest_start_stop: Plage de repos
       rest_start_stop_help: Sans tenir compte de la durée de pause
   visits:
@@ -2658,7 +2658,7 @@ fr:
     edit:
       title: Modifier sectorisation
       collapse_zoning_panel: Minifier le panneau de sectorisation
-      generate_confirm: Ceci réinitialisera toutes vos secteurs actuelles. Continuer ?
+      generate_confirm: Ceci réinitialisera toutes vos secteurs actuels. Continuer ?
       vehicleless_confirm: Confirmer l'enregistrement de secteurs sans véhicules ?
       isochrone_missing_vehicle: >-
         Un isochrone ne peut être généré pour au moins un véhicule du fait d'une
