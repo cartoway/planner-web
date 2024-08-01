@@ -467,7 +467,7 @@ es:
       models:
         location:
           missing_address_or_latlng: >-
-            El código postal y la ciudad no pueden estar vacíos si lat/Ing están
+            El código postal y la ciudad no pueden estar vacíos si lat/lng están
             vacíos
           lat_outside_range: debe estar entre -90..90
           lng_outside_range: debe estar entre -180..180
@@ -1300,15 +1300,15 @@ es:
         optional: opcional
         deprecated: depreciado
       none_column: Ninguna columna encontrada
-      missing_name: "« nombre » de la configuracion predeterminada faltante"
-      missing_time_window_start_end: hora de inicio o de fin de la configuracion predeterminada faltante
+      missing_name: "« nombre » de la configuración predeterminada faltante"
+      missing_time_window_start_end: hora de inicio o de fin de la configuración predeterminada faltante
       vehicle_usage_set: Configuración de vehículos
       time_window_start: horario inicio
       time_window_end: horario fin
       not_csv: El fichero importado no esta en formato CSV
       empty_file: no contiene ningún dato
       too_many_lines: 'Importe parado, demasiadas líneas (max: %{n}).'
-      invalid_numeric_value: "valor numerico « %{value} » invalido."
+      invalid_numeric_value: "valor numérico « %{value} » invalido."
       check_custom_columns: Compruebe su definición de las columnas a importar.
     form:
       service_times_help: >-
@@ -1335,35 +1335,35 @@ es:
     form:
       legend: 'Visita #%{n}'
       destroy: >-
-        Si marcada, la visita sera suprimida despues validacion. Desmarque para
+        Si marcada, la visita sera suprimida después validación. Desmarque para
         anular.
       ref_help: >-
         Referencia libre. IMPORTANTE si no quiere sobrescribir sus visitas con
         importe/exporte en particular
       duration_default: Defecto
-      duration_help: Si vacio utilisa el valor predeterminado
+      duration_help: Si vació utiliza el valor predeterminado
       time_window_start_end_1: Franja horaria 1
       time_window_start_end_2: Franja horaria 2
       close_help: Sin tener en cuenta la duración de visita
-      tags_help: Categorias de la visita
+      tags_help: Categorías de la visita
       delete: Marcar para suprimir
       delete_help: Suprimir esta visita (el cliente sera conservado)
       quantities:
-        default: '%{n} (valor pretedeterminado)'
+        default: '%{n} (valor predeterminado)'
   zonings:
     edit:
       title: Modificar zonificación
-      collapse_zoning_panel: Reducir el panel de zonificacon
+      collapse_zoning_panel: Reducir el panel de zonificación
       generate_confirm: Esto reiniciara todas sus zonas actuales. Seguir ?
-      vehicleless_confirm: Confirmar el registro de zonas sin vehiculos ?
+      vehicleless_confirm: Confirmar el registro de zonas sin vehículos ?
       isochrone_missing_vehicle: >-
-        Isodistancia no puede ser generada para al menos un vehiculo debido a
-        una restriccion del calculador de itinerario
+        Isodistancia no puede ser generada para al menos un vehículo debido a
+        una restricción del calculador de itinerario
       isodistance_missing_vehicle: >-
-        Isodistancia no puede ser generada para al menos un vehiculo debido a
-        una restriccion del calculador de itinerario
-      failed: Fracaso durante la generacion del isochrone
-      success: Isochrone generado con exito
+        Isodistancia no puede ser generada para al menos un vehículo debido a
+        una restricción del calculador de itinerario
+      failed: Fracaso durante la generación del isochrone
+      success: Isochrone generado con éxito
     index:
       title: Lista zonificaciones
       new: Nueva zonificación
@@ -1371,7 +1371,7 @@ es:
       hide_out_of_route: Ocultar los clientes no planificados
       all_destinations: Mostrar todos los clientes
       from_planning_help: >-
-        Puede tambien mostrar los clientes de un unico plan cambiando esta
+        Puede tambien mostrar los clientes de un único plan cambiando esta
         zonificacion desde el plan
       stops_from_planning: "Clientes cargados desde el plan « %{s} »"
       automatic:
@@ -1380,15 +1380,15 @@ es:
       from_planning: Desde las giras del plan
       zone_placeholder: Zona
       avoid_zone: No circular en esta zona
-      isochrone: Isochron / vehiculo(s)
-      isodistance: Isodistancia / vehiculo(s)
+      isochrone: Isochron / vehículo(s)
+      isodistance: Isodistancia / vehículo(s)
       dialog:
         isochrone:
           size_help: Zona accesible desde el punto de salida en ese tiempo de recorrido.
           title: Isochrone
           vehicle_usage_set: Configuración de los vehículos
           vehicle_usage_set_help: >-
-            Configuración de los vehículos a tener en cuenta, espcialmente el
+            Configuración de los vehículos a tener en cuenta, especialmente el
             deposito de salida.
           size: Tiempo
         isochrone-progress:
@@ -1400,7 +1400,7 @@ es:
           title: Isodistancia
           vehicle_usage_set: Configuración de los vehículos
           vehicle_usage_set_help: >-
-            Configuracion de los vehiculos a tener en cuenta, especialmente el
+            Configuración de los vehículos a tener en cuenta, especialmente el
             deposito de salida.
           size: Distancia
         isodistance-progress:
@@ -1418,11 +1418,11 @@ es:
     new:
       title: Nueva zonificación
   unauthorized:
-    default: No esta autorizado acceder a esta pagnia
+    default: No esta autorizado acceder a esta pagina
   web:
-    key_not_found: Su llave de conexion no es reconosida
+    key_not_found: Su llave de conexión no es reconocida
     slow_browser: >-
-      Utiliza %{n} que ralentiza la aplicacion. Le invitamos a utilizar otro
+      Utiliza %{n} que ralentiza la aplicación. Le invitamos a utilizar otro
       navegador descargable gratuitamente para mejores rendimientos.
     form:
       empty_entry: '- No indicado -'
@@ -1433,7 +1433,7 @@ es:
     select2:
       empty_result: Sin resultado
     placeholder_filter: filtrar
-    help_search_placeholder: Terminos a buscar…
+    help_search_placeholder: Términos a buscar…
     help: Ayuda en línea
     choose_file: Seleccionar fichero
     geocoder:
@@ -1472,7 +1472,7 @@ es:
     verb:
       new: Nuevo
       list: Lista
-      show: Mostar
+      show: Mostrar
       edit: Modificar
       export:
         csv: Hoja de calculo CSV
@@ -1511,10 +1511,10 @@ es:
       _no: 'no'
     subscribe:
       expiration_date: >-
-        Su periodo de utilizacion acaba pronto. Fecha de fin el  %{date}. Si
+        Su periodo de utilización acaba pronto. Fecha de fin el  %{date}. Si
         quiere renovarlo puede contactar %{reseller}.
       expiration_date_over: >-
-        Su periodo de utilizacion ha acabado el  %{date}. Si quiere renovarlo
+        Su periodo de utilización ha acabado el  %{date}. Si quiere renovarlo
         puede contactar %{reseller}.
   helpers:
     submit:
