@@ -600,7 +600,7 @@ es:
       taken: esta ya utilizado(a)
     connection_refused: Conexión a la base de datos imposible
     location:
-      geocoding_fail: "La geocodificacion ha fracasado :"
+      geocoding_fail: "La geocodificacion ha fracasado:"
       reversegeocoding_fail: 'La geocodificacion inversa ha fracasado :'
     planning:
       import_too_routes: Intento de importar mas giras que de vehículos disponibles
@@ -615,7 +615,7 @@ es:
     tomtom:
       record: 'Registro %{s}'
     empty: 'Nada a importar, verifique sus datos.'
-    data: "Verificad sus datos :"
+    data: "Verificad sus datos:"
     data_erroneous:
       csv: 'Fichero invalido, line %{s}'
       json: Fichero invalido
@@ -776,7 +776,7 @@ es:
       new: Nueva unidad entregable
     form:
       label_placeholder: unidad
-      label_help: "Por ejemplo « paquete » o una unidad como « kg »."
+      label_help: "Por ejemplo «paquete» o una unidad como «kg»."
       default_quantity_help: >-
         Cantidad predeterminada que debe entregarse a todas vuestras visitas
         (dejar vacío si no hay cantidad).
@@ -960,7 +960,7 @@ es:
       ref_visit_desc: referencia de la visita.
       tags_visit_desc: categorías de la visita (que permiten por ejemplo agruparlos).
       none_column: Ninguna columna correspondiente encontrada
-      missing_location: "« ciudad / código postal » o « lat / lng » que falta."
+      missing_location: "«ciudad / código postal» o «lat / lng» que falta."
       ref: referencia
       ref_desc: >-
         una identificación estable, constante y única que permite la
@@ -1022,8 +1022,8 @@ es:
       not_csv: El fichero importado no esta en formato CSV
       empty_file: no contiene ningún dato
       too_many_lines: 'Importe parado, demasiadas líneas (max: %{n}).'
-      missing_name: "« nombre » que falta."
-      invalid_numeric_value: "valor numérico  « %{value} » invalido."
+      missing_name: "«nombre» que falta."
+      invalid_numeric_value: "valor numérico  «%{value}» invalido."
       invalid_stop: El tipo de parada no es válido
       check_custom_columns: Compruebe su definición de las columnas a importar.
     reverse_geocoding:
@@ -1300,7 +1300,7 @@ es:
         optional: opcional
         deprecated: depreciado
       none_column: Ninguna columna encontrada
-      missing_name: "« nombre » de la configuración predeterminada faltante"
+      missing_name: "«nombre» de la configuración predeterminada faltante"
       missing_time_window_start_end: hora de inicio o de fin de la configuración predeterminada faltante
       vehicle_usage_set: Configuración de vehículos
       time_window_start: horario inicio
@@ -1308,7 +1308,7 @@ es:
       not_csv: El fichero importado no esta en formato CSV
       empty_file: no contiene ningún dato
       too_many_lines: 'Importe parado, demasiadas líneas (max: %{n}).'
-      invalid_numeric_value: "valor numérico « %{value} » invalido."
+      invalid_numeric_value: "valor numérico «%{value}» invalido."
       check_custom_columns: Compruebe su definición de las columnas a importar.
     form:
       service_times_help: >-
@@ -1373,7 +1373,7 @@ es:
       from_planning_help: >-
         Puede tambien mostrar los clientes de un único plan cambiando esta
         zonificacion desde el plan
-      stops_from_planning: "Clientes cargados desde el plan « %{s} »"
+      stops_from_planning: "Clientes cargados desde el plan «%{s}»"
       automatic:
         one: 'Automatico : 1 zona'
         other: 'Automatico :  %{count} zonas'
