@@ -9,7 +9,7 @@
 'use strict';
 
 // FIXME: jQuery 3 not working with pnotify
-import 'expose-loader?$!expose-loader?jQuery!jquery';
+import 'jquery';
 import 'jquery-ujs';
 
 import 'select2';
@@ -47,12 +47,12 @@ import 'tablesorter/dist/js/widgets/widget-pager.min';
 
 import 'jquery-simplecolorpicker';
 
-import 'expose-loader?PNotify!pnotify';
+import 'pnotify';
 import 'pnotify/dist/pnotify.buttons';
 import 'pnotify/dist/pnotify.nonblock';
 import 'pnotify/dist/pnotify.desktop';
 
-import 'expose-loader?L!leaflet';
+import 'leaflet';
 import 'leaflet-polylineoffset';
 import 'leaflet.markercluster';
 import 'leaflet-control-geocoder';

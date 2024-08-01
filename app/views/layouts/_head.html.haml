@@ -3,8 +3,9 @@
 = csrf_meta_tags
 %meta{charset: "utf-8"}/
 %meta{content: "width=device-width, initial-scale=1.0", name: "viewport"}/
-= stylesheet_pack_tag 'vendor_stylesheet'
-= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true
+= javascript_pack_tag 'vendor_stylesheet'
+= javascript_pack_tag 'vendor', 'data-turbolinks-track': 'reload'
+= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload'
 = favicon_link_tag 'apple-touch-57.png', :rel => 'apple-touch-icon', :type => 'image/png'
 = favicon_link_tag 'apple-touch-72.png', :rel => 'apple-touch-icon', :type => 'image/png', :sizes => '72x72'
 = favicon_link_tag 'apple-touch-114.png', :rel => 'apple-touch-icon', :type => 'image/png', :sizes => '114x114'
@@ -17,6 +18,5 @@
   I18n.locale = "#{I18n.locale}";
 / Javascripts
 / Placed inside head element to support turbolinks
-= javascript_pack_tag 'vendor', 'data-turbolinks-track': 'reload'
-= javascript_include_tag 'application', 'data-turbolinks-track' => true
+= javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
 = yield(:javascript)
