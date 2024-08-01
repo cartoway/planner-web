@@ -4,7 +4,7 @@ fr:
       customer:
         devices:
           fleet:
-            user: Nom utilisateur
+            user: Nom d'utilisateur
             api_key: Clé API
           tomtom:
             account: Compte
@@ -48,7 +48,7 @@ fr:
             login: Login
             password: Mot de passe
             code_inter_start: Code d'intervention pour le départ
-            code_inter_stop: Code d'intervention pour l'arrivé
+            code_inter_stop: Code d'intervention pour l'arrivée
             code_mat: Code du matériel à livrer
             code_route: Code de la tournée
           sopac:
@@ -57,16 +57,16 @@ fr:
       vehicle:
         devices:
           fleet_demo:
-            title: Cartoway Field (demo)
+            title: Cartoway Field (démo)
           fleet:
             title: Cartoway Field
             fleet_user: Nom de l'utilisateur Cartoway Field
           locster:
             title: Locster
-            locster_ref: Ref. véhicule Locster
+            locster_ref: Réf. véhicule Locster
           masternaut:
             title: Masternaut
-            masternaut_ref: Ref. véhicule Masternaut
+            masternaut_ref: Réf. véhicule Masternaut
           orange:
             title: Orange Fleet Performance
             orange_id: ID véhicule orange
@@ -305,8 +305,8 @@ fr:
         success: Envoyé au livreur avec succès
         fail: Échec lors de l'envoi
       deliver_clear:
-        action: Réinitialiser les status
-        success: Les status ont été réinitialisés avec succès
+        action: Réinitialiser les statuts
+        success: Les statuts ont été réinitialisés avec succès
         fail: Échec de la réinitialisation
       praxedo_send:
         action: Envoyer à Praxedo
@@ -318,7 +318,7 @@ fr:
         fail: Échec lors de la suppression des interventions Praxedo
       dialog:
         fleet_demo:
-          title: Cartoway Field (demo)
+          title: Cartoway Field (démo)
           in_progress: Veuillez patienter
         fleet:
           title: App mobile Cartoway Field
