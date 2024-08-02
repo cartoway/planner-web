@@ -64,7 +64,7 @@ group :development, :test do
   gem 'erb_lint'
   gem 'rubocop'
   gem 'byebug'
-  gem 'i18n-tasks', '~> 1.0.13'
+  gem 'i18n-tasks', '~> 1.0.14'
 
   # Debugging tool
   gem 'pry-rails'
