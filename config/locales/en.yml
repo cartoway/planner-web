@@ -834,12 +834,12 @@ en:
     default:
       country: England
     menu:
-      customer: Global settings
+      customer: Customer account settings
       user_settings: User Settings
       customers: Accounts
       analytics: Analytics
     edit:
-      title: Editing global settings
+      title: Editing customer account settings
       send_email: Send Confirmation E-Mail
       password: Change Password
       user:
@@ -1006,7 +1006,7 @@ en:
       audience_url_help: Go to the customer dashboard Audience page
       behavior_url_help: Go to the customer dashboard Behavior page
       customer_dashboard_url_help: Go to the customer dashboard page
-      submit: Update Global settings
+      submit: Update customer account settings
       external_callback:
         title: Callback URL
         name: Name
@@ -1511,12 +1511,12 @@ en:
         doc_link: 'Doc - Start with %{name}'
         doc_href: /manual/01-start.html
       panel_three:
-        title: Global and user settings
+        title: Customer account and user settings
         content: >-
           password and login, type of fleet, average visits duration, export
           optimized plans to GPS devices, export optimized plans as roadmaps.
         time: ⏱6min.
-        doc_link: Doc - Global and user settings
+        doc_link: Doc - Customer account and user settings
         doc_href: /manual/02-global_settings_users.html
       footer: 'You receive this email as a user of %{name}'
     features:
