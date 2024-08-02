@@ -344,7 +344,7 @@ GEM
       haml (>= 4.0.6)
       railties (>= 5.1)
     hashdiff (1.1.0)
-    hashie (3.6.0)
+    hashie (5.0.0)
     highline (3.1.0)
       reline
     html_validation (1.1.6)
@@ -530,7 +530,7 @@ GEM
     public_suffix (6.0.0)
     puma (6.4.2)
       nio4r (~> 2.0)
-    racc (1.8.0)
+    racc (1.8.1)
     rack (2.2.9)
     rack-cors (2.0.2)
       rack (>= 2.0.0)
@@ -761,7 +761,8 @@ GEM
     unicode-display_width (2.5.0)
     uniform_notifier (1.16.0)
     uri (0.13.0)
-    validates_timeliness (4.1.1)
+    validates_timeliness (6.0.1)
+      activemodel (>= 6.0.0, < 7)
       timeliness (>= 0.3.10, < 1)
     warden (1.2.9)
       rack (>= 2.0.9)
@@ -793,7 +794,7 @@ GEM
     websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    zeitwerk (2.6.16)
+    zeitwerk (2.6.17)
 
 PLATFORMS
   ruby
@@ -847,11 +848,11 @@ DEPENDENCIES
   guard-rails
   guard-rake
   haml-rails
-  hashie (~> 3.4, >= 3.4.4)
+  hashie
   html_validation
   http_accept_language
   i18n-js (< 4)
-  i18n-tasks (~> 1.0.14)
+  i18n-tasks
   icalendar
   iconv
   iso_country_codes
@@ -927,7 +928,7 @@ DEPENDENCIES
   turbolinks (< 5)
   twitter-bootstrap-rails
   uglifier (< 4.0)
-  validates_timeliness (< 5)
+  validates_timeliness
   web-console (~> 2)
   webdrivers
   webmock
