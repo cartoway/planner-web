@@ -675,11 +675,11 @@ es:
     default:
       country: Francia
     menu:
-      customer: Parametrado global
+      customer: Configuración espacio cliente
       user_settings: Configuraciones usuario
       customers: Cuentas clientes
     edit:
-      title: Modificar parametrado global
+      title: Modificar configuración espacio cliente
       password: Cambiar la contraseña
       user:
         list: Lista de los usuarios
@@ -748,7 +748,7 @@ es:
       print:
         title: Impresiones
       speed_multiplier_help: Un valor superior a 100% significa una velocidad mas alta.
-      submit: Registrar parametrado global
+      submit: Registrar configuración espacio cliente
       external_callback:
         title: URL de recordatorio
         name: Nombre
@@ -1124,7 +1124,7 @@ es:
         test: test
     accompanying_team:
       panel_three:
-        title: Parametrado global usuario
+        title: Configuración del espacio cliente y usuario
   plannings:
     index:
       title: Lista planes
