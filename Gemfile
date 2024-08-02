@@ -26,7 +26,7 @@ gem 'jbuilder'
 gem 'rake'
 
 # Make hashes more powerful
-gem 'hashie', '~> 3.4', '>= 3.4.4'
+gem 'hashie'
 
 gem 'puma'
 gem 'mail', '~> 2.8.1'
@@ -64,7 +64,7 @@ group :development, :test do
   gem 'erb_lint'
   gem 'rubocop'
   gem 'byebug'
-  gem 'i18n-tasks', '~> 1.0.14'
+  gem 'i18n-tasks'
 
   # Debugging tool
   gem 'pry-rails'
@@ -112,7 +112,7 @@ gem 'devise-i18n'
 gem 'devise-i18n-views'
 gem 'cancancan'
 gem 'lograge'
-gem 'validates_timeliness', '< 5'
+gem 'validates_timeliness'
 gem 'activerecord-import'
 
 gem 'sanitize'
