@@ -601,12 +601,12 @@ es:
     connection_refused: Conexión a la base de datos imposible
     location:
       geocoding_fail: "La geocodificacion ha fracasado:"
-      reversegeocoding_fail: 'La geocodificacion inversa ha fracasado :'
+      reversegeocoding_fail: 'La geocodificacion inversa ha fracasado:'
     planning:
       import_too_routes: Intento de importar mas giras que de vehículos disponibles
       already_optimizing: Una optimización del plan esta ya pendiente
       deadlock: >-
-        Atención : fracaso de la actualización de los datos. Otra actualización
+        Atención: fracaso de la actualización de los datos. Otra actualización
         ha sido realizada, quizás ha realizado varias operaciones demasiado
         rápidamente.
   import:
@@ -732,12 +732,12 @@ es:
         precisar aquí un valor limite, por vehículo, que no se debe sobrepasar.
       optimization_stop_soft_upper_bound_help: >-
         Mas grande es el valor mas penalisantes son los retrasos  (0 para
-        impedir los retrasos de manera estricta : desactiva los clúster en ese
+        impedir los retrasos de manera estricta: desactiva los clúster en ese
         caso).
       optimization_vehicle_soft_upper_bound_help: >-
         Para una optimización global, permite gestionar el reparte sobre los
         vehículos. Mas grande es el valor mas penalisantes son los retrasos (0
-        para impedir los retrasos de manera estricta : desactiva los clúster en
+        para impedir los retrasos de manera estricta: desactiva los clúster en
         ese caso).
       optimization_cost_waiting_time_help: >-
         Permite evaluar la importancia de los tiempos de espera. Mas grande es
@@ -829,8 +829,8 @@ es:
       tags_help: Categorías del cliente
       dialog:
         confirm_overwrite_point: >-
-          La posición anterior ha sido definida manualmente en el mapa. Quiere
-          remplazarla con el resultado de la geocodificación automática ?
+          La posición anterior ha sido definida manualmente en el mapa. ¿Quiere
+          remplazarla con el resultado de la geocodificación automática?
       visit:
         new: Nueva visita
         new_help: Nueva visita si va varias veces a ese cliente.
@@ -857,7 +857,7 @@ es:
           title: Lista de las columnas de su fichero
           desc: >-
             Su fichero de importe puede contener las columnas y tipos de valores
-            siguientes :
+            siguientes:
           columns_route: Columnas de la gira
           columns_destination: Columnas de la destinación visitada
           columns_visit: Columnas de la visita
@@ -886,15 +886,15 @@ es:
           in_progress: 'Geocodificacion en curso, por favor espere.'
           inqueue: Tarea de geocodificacion en la cola
           error: Imposible llevar a cabo el calculo.
-          attempts: 'Intentos :'
+          attempts: 'Intentos:'
         geocoding_danger:
           title: Resultados de la geocodificacion poco fiables
           infos: >-
             Algunos de sus clientes parecen estar geocodados de manera poco
-            fiable. Quiere volver a verlos en la lista ?
+            fiable. ¿Quiere volver a verlos en la lista?
           hide_help: >-
             Para no ver mas este mensaje, seleccione los clientes que tienen una
-            geocodificacion poco fiable y luego :
+            geocodificacion poco fiable y luego:
           correct_help: Compruebe la dirección para corregirla o completarla si necesario
           move_help: Desplace los puntos manualmente sobre el mapa en tal caso
           sort_geocoding: Mostrar las geocodificaciones poco fiables en primer lugar
@@ -911,9 +911,9 @@ es:
     new:
       title: Nuevo cliente
     import_file:
-      refs_duplicate: 'La "referencia" : "%{refs}" esta presente en doble en el fichero.'
+      refs_duplicate: 'La "referencia": "%{refs}" esta presente en doble en el fichero.'
       refs_visit_duplicate: >-
-        La "referencia visita" :  "%{refs}" esta presente en doble en el
+        La "referencia visita":  "%{refs}" esta presente en doble en el
         fichero.
       route_desc: numero o referencia de la gira en el plan.
       ref_vehicle_desc: referencia o nombre del vehículo que efectúa la parada en le plan.
@@ -921,7 +921,7 @@ es:
       name_desc: nombre del cliente o de la destinación visitada
       street_desc: >-
         numero del edificio, tipo de vía y nombre de la vía (la ortografía tiene
-        que ser correcta para una geocodificacion fiable). Nota : les detalles
+        que ser correcta para una geocodificacion fiable). Nota: les detalles
         del acceso tienen que estar puestos en el cuadro "complemento"
       postalcode_desc: >-
         código postal de la ciudad o del municipio (la exactitud es importante
@@ -937,8 +937,8 @@ es:
       quantity1_1: cantidad 1_1
       quantity1_2: cantidad 1_2
       active_desc: indica si la entrega al cliente ha sido hecha durante esta gira o no
-      open_desc: 'depreciado : utilizar mas bien "horario inicio 1".'
-      close_desc: 'depreciado : utilizar mas bien "horario fin 1".'
+      open_desc: 'depreciado: utilizar mas bien "horario inicio 1".'
+      close_desc: 'depreciado: utilizar mas bien "horario fin 1".'
       time_window_start_1_desc: >-
         inicio de la franja horaria 1 (puede superar 24:00) aconsejada para la
         visita.
@@ -994,8 +994,8 @@ es:
       duration: duración visita
       duration_desc: duración anticipada de la visita
       quantity: Cantidad
-      quantity1_1_desc: 'depreciado : utilizar mas bien  "cantidades".'
-      quantity1_2_desc: 'depreciado : utilizar mas bien "cantidades".'
+      quantity1_1_desc: 'depreciado: utilizar mas bien  "cantidades".'
+      quantity1_2_desc: 'depreciado: utilizar mas bien "cantidades".'
       active: entregado
       open: horario inicio
       close: horario fin
@@ -1036,7 +1036,7 @@ es:
         reciente.
       download_browser: >-
         Puede descargar la ultima versión del navegador libre Firefox en esta
-        dirección :
+        dirección:
   order_arrays:
     form:
       week: Semana
@@ -1058,8 +1058,8 @@ es:
       paste: Pegar
       total: Total
       planning: Aplicar al plan
-      confirm_ovewrite_column: Esta seguro que quiere modificar los datos de la columna ?
-      confirm_ovewrite_row: Esta seguro que quiere modificar los datos de la línea ?
+      confirm_ovewrite_column: ¿Esta seguro que quiere modificar los datos de la columna?
+      confirm_ovewrite_row: ¿Esta seguro que quiere modificar los datos de la línea?
       dialog:
         loading:
           title: Carga
@@ -1103,19 +1103,19 @@ es:
       content: >-
         Un exporta en el formato KMZ acaba de haberle sido mandado desde %{s} en
         archivo adjunto a este e-mail.
-      planning_ref: 'Referencia del plan : %{ref}'
-      route_ref: 'Referencia de la gira : %{ref}'
-      order_array: 'Mandos : %{name}'
+      planning_ref: 'Referencia del plan: %{ref}'
+      route_ref: 'Referencia de la gira: %{ref}'
+      order_array: 'Mandos: %{name}'
     send_computed_ics_route:
-      link: 'Enlace de descarga : <a href=%{link}>Planning iCalendar</a>'
-      vehicle: 'Vehículo : %{name}'
-      planning_ref: 'Referencia del plan : %{ref}'
-      route_ref: 'Referencia de la gira : %{ref}'
-      order_array: 'Mandos :  %{name}'
+      link: 'Enlace de descarga: <a href=%{link}>Planning iCalendar</a>'
+      vehicle: 'Vehículo: %{name}'
+      planning_ref: 'Referencia del plan: %{ref}'
+      route_ref: 'Referencia de la gira: %{ref}'
+      order_array: 'Mandos:  %{name}'
   user_mailer:
     layout:
       links:
-        title: Síguenos !
+        title: ¡Síguenos!
         facebook: Enlace Facebook
         twitter: Enlace Twitter
         linkedin: Enlace LinkedIn
@@ -1135,7 +1135,7 @@ es:
         icalendar_email: Agenda iCal por email
         spreadsheet: Hoja de calculo CSV / Excel
     edit:
-      current_position: 'Posición vehículo :'
+      current_position: 'Posición vehículo:'
       lock_routes: Bloquear las giras
       toggle_routes: Ocultar las giras
       zonings:
@@ -1154,9 +1154,9 @@ es:
       optimize_failed: Fracaso durante la optimización
       optimized_at: Optimizado
       zoning_confirm: >-
-        Registrar y aplicar la nueva zonificación ? Las giras del plan van a ser
+        ¿Registrar y aplicar la nueva zonificación? Las giras del plan van a ser
         modificadas
-      page_change_zoning_confirm: Quiere salir de la pagina y perder los cambios de zonificación ?
+      page_change_zoning_confirm: ¿Quiere salir de la pagina y perder los cambios de zonificación?
       route_placeholder: Ref. de la gira
       exports: Exportar el plan
       stop_status:
@@ -1166,7 +1166,7 @@ es:
         rejected: Rechazado
         any: Todos estatutos
         none: Sin estatuto
-      update_stops_status: 'Estatutos paradas :'
+      update_stops_status: 'Estatutos paradas:'
       export:
         customer_external_callback_url:
           success: Aplicación externa llamada con éxito
@@ -1354,8 +1354,8 @@ es:
     edit:
       title: Modificar zonificación
       collapse_zoning_panel: Reducir el panel de zonificación
-      generate_confirm: Esto reiniciara todas sus zonas actuales. Seguir ?
-      vehicleless_confirm: Confirmar el registro de zonas sin vehículos ?
+      generate_confirm: Esto reiniciara todas sus zonas actuales. ¿Seguir?
+      vehicleless_confirm: ¿Confirmar el registro de zonas sin vehículos?
       isochrone_missing_vehicle: >-
         Isodistancia no puede ser generada para al menos un vehículo debido a
         una restricción del calculador de itinerario
@@ -1375,8 +1375,8 @@ es:
         zonificacion desde el plan
       stops_from_planning: "Clientes cargados desde el plan «%{s}»"
       automatic:
-        one: 'Automatico : 1 zona'
-        other: 'Automatico :  %{count} zonas'
+        one: 'Automatico: 1 zona'
+        other: 'Automatico:  %{count} zonas'
       from_planning: Desde las giras del plan
       zone_placeholder: Zona
       avoid_zone: No circular en esta zona
@@ -1451,8 +1451,8 @@ es:
       routes:
         index:
           none_routes: Ninguna carretera ha sido cargada
-          departure: 'Salida :'
-          arrival: 'Llegada :'
+          departure: 'Salida:'
+          arrival: 'Llegada:'
         print:
           button: Imprimir
       stores:
@@ -1484,8 +1484,8 @@ es:
       duplicate: Duplicar
       toggle_selection: Invertir selección
       save: Salvaguardar
-      destroy_confirm: Esta seguro ?
-      confirm: Esta seguro ?
+      destroy_confirm: ¿Esta seguro?
+      confirm: ¿Esta seguro?
       dismiss: Cerrar
       import: Importar
     unit:
@@ -1498,8 +1498,8 @@ es:
       kgco2e_l_html: kgCO<sub>2</sub>e/l
       l_100km: l/100 km
       l_62Miles: l/62.1 mi.
-      hour_minute: 'hora : minuto'
-      hour_minute_second: 'hora : minuto : segundo'
+      hour_minute: 'hora: minuto'
+      hour_minute_second: 'hora: minuto: segundo'
       m: m
       kms: km
       mile: mi.
@@ -1524,8 +1524,8 @@ es:
   devise:
     shared:
       links:
-        sign_in_prefix: Posee ya una cuenta ?
-        sign_up_prefix: Necesidad crear una cuenta ?
+        sign_in_prefix: ¿Posee ya una cuenta?
+        sign_up_prefix: ¿Necesidad crear una cuenta?
     sessions:
       new:
         remember_me: Acordarse de mi
