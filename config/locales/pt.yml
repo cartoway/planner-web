@@ -102,10 +102,10 @@ pt:
       stores:
         one: base
         other: bases
-      tag: Marcador
+      tag: Categoria
       tags:
-        one: marcador
-        other: marcadores
+        one: categoria
+        other: categorias
       user: Utilizador
       users:
         one: utilizador
@@ -198,7 +198,7 @@ pt:
         print_barcode: Código de barras
         router_options_traffic: Ter em conta o tráfego
       deliverable_unit:
-        label: Marcador
+        label: Categoria
         ref: Referência
         icon: Icone
         default_quantity: Quantidade por defeito
@@ -226,8 +226,8 @@ pt:
         geocoding_accuracy: Precisão da geocodificação
         geocoding_accuracy_small: Geoc.
         geocoding_level: Nível de geocodificação
-        tags: Marcadores
-        tag_ids: Marcadores
+        tags: Categorias
+        tag_ids: Categorias
         visits: Visitas
       destinations:
         name: Nome
@@ -259,8 +259,8 @@ pt:
         ref: Referencia
         ref_small: Ref.ª
         active: Ativo
-        tag_ids: Marcadores
-        tags: Marcadores
+        tag_ids: Categorias
+        tags: Categorias
         zoning_id: Zoneamento
         created_at: Criado
         updated_at: Atualizado
@@ -369,7 +369,7 @@ pt:
         geocoding_accuracy: Precisão da geocodificação
         geocoding_level: Nível da geocodificação
       tag:
-        label: Marcador
+        label: Categoria
         color: Cor
         icon: Icon
         icon_size: Tamanho do icon
@@ -457,8 +457,8 @@ pt:
         time_window_start_end_2small: Início/Fim 2
         time_window_start_2_time_window_end_2_days: D+
         multi_visit: Multi
-        tags: Marcadores
-        tag_ids: Marcadores
+        tags: Categorias
+        tag_ids: Categorias
         quantities: Quantidades
         priority: Prioridade
       visits:
@@ -479,8 +479,8 @@ pt:
         time_window_start_end_2small: Início/Fim 2
         time_window_start_2_time_window_end_2_days: D+
         multi_visit: Multi
-        tags: Marcadores
-        tag_ids: Marcadores
+        tags: Categorias
+        tag_ids: Categorias
         quantities:
           one: Quantidade
           other: Quantidades
@@ -1474,12 +1474,12 @@ pt:
       phone_number_desc: número do telefone de contacto no destino.
       tags: etiquetas
       tags_desc: categorização do destino (permitirá agrupa-los).
-      tags_format: 'marcador 1, marcador 2'
+      tags_format: 'categoria 1, categoria 2'
       without_visit: sem visita
       without_visit_desc: precisa que não existe nenhuma visita associada
       ref_visit: visita de referência
       ref_visit_desc: referência da visita.
-      tags_visit: marcador visita
+      tags_visit: categoria visita
       tags_visit_desc: 'categorização da visita (permitirá, por exemplo, agrupa-las).'
       format:
         string: texto
@@ -2083,9 +2083,9 @@ pt:
       begin_end_date: Período de validade
       begin_end_date_help: Período durante o qual o plano é válido
       tags_help: >-
-        Autorizar filtro das visitas do plano consoante seus marcadores. Se
+        Autorizar filtro das visitas do plano consoante suas categorias. Se
         “todos” for selecionado, todos os clientes/visitas devem possuir  todos
-        os marcadores selecionados. Se ”ou” for selecionado, um marcador é
+        os categorias selecionados. Se ”ou” for selecionado, uma categoria é
         suficiente.
       order_array: Encomendas
       zonings_help: >-
@@ -2126,12 +2126,12 @@ pt:
       code_help: 'Código curto, algumas letras'
   tags:
     edit:
-      title: Alterar marcador
+      title: Alterar categoria
     index:
       title: Lista etiquetas
-      new: Novo marcador
+      new: Nova categoria
     new:
-      title: Novo marcador
+      title: Nova categoria
     form:
       color_default: Por defeito
       color_help: Forçar utilização desta cor
