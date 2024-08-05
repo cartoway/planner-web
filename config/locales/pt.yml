@@ -1721,7 +1721,7 @@ pt:
           Finalmente, modificar um zoneamento.
         time: ⏱5min.
         doc_link: Doc - Gestão de zoneamentos
-        doc_href: /manual/05-zonings.html
+        doc_href: /manual/05-sectorisations.htmll
       footer: 'Recebe este email como utilizador de %{name}'
       adds:
         video: Vídeos

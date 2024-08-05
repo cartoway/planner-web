@@ -1446,7 +1446,7 @@ de:
           optimierter Pläne als Roadmaps.
         time: "⏱6 Min."
         doc_link: Dokument – Globale und Benutzereinstellungen
-        doc_href: /manual/02-global_settings_users.html
+        doc_href: /manual/02-customer_account_users_settings.html
       footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
     features:
       header: Haben Sie Fragen? Unser Team antwortet gerne!
@@ -1484,7 +1484,7 @@ de:
           Zonen ein. Ändern Sie schließlich eine Zoneneinteilung.
         time: "⏱5 Min."
         doc_link: Dokument – Zoneneinteilungsmanagement
-        doc_href: /manual/05-zonings.html
+        doc_href: /manual/05-sectorisations.htmll
       footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
       adds:
         video: Videos
