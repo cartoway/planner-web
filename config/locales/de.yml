@@ -1358,7 +1358,7 @@ de:
         An diese E-Mail von %{s} wurde eine KMZ-Datei mit Streckeninformationen
         angehängt.
       vehicle: 'Fahrzeug: %{name}'
-      planning: 'Plan: %{name} (Datum)'
+      planning: 'Plan: %{name} %{date}'
       planning_ref: 'Planreferenz: %{ref}'
       route_ref: 'Streckennummer %{ref}'
       order_array: 'Aufträge: %{name}'
@@ -1372,7 +1372,7 @@ de:
         diesen Link klicken, um die Datei herunterzuladen (in diesem Fall
         erfolgt kein Update).
       vehicle: 'Fahrzeug: %{name}'
-      planning: 'Plan: %{name} (Datum)'
+      planning: 'Plan: %{name} %{date}'
       planning_ref: 'Planreferenz: %{ref}'
       route_ref: 'Streckennummer %{ref}'
       order_array: 'Aufträge: %{name}'
