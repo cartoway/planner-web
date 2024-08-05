@@ -1517,7 +1517,7 @@ en:
           optimized plans to GPS devices, export optimized plans as roadmaps.
         time: ⏱6min.
         doc_link: Doc - Customer account and user settings
-        doc_href: /manual/02-global_settings_users.html
+        doc_href: /manual/02-customer_account_users_settings.html
       footer: 'You receive this email as a user of %{name}'
     features:
       header: You have questions? Our team responds!
