@@ -2298,7 +2298,7 @@ fr:
       geocoding_result: adresse géocodage
       missing_name: « nom » manquant.
       missing_location: « ville » ou « code postal » ou « lat » et « lng » manquant.
-      invalid_numeric_value: 'valeur numérique « %{value} » invalide à l''''enregistrement %{line}.'
+      invalid_numeric_value: 'valeur numérique « %{value} » invalide à l''enregistrement %{line}.'
       format:
         string: texte
         integer: nombre

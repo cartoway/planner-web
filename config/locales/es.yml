@@ -529,7 +529,7 @@ es:
         route:
           attributes:
             stops:
-              bad_index: 'Malo índice %{índex} en la gira %{route}'
+              bad_index: 'Malo índice %{index} en la gira %{route}'
         planning:
           attributes:
             ref:
