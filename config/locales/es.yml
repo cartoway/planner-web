@@ -126,10 +126,10 @@ es:
       visits:
         one: visita
         other: visitas
-      zoning: Zonificación
+      zoning: Sectorización
       zonings:
-        one: Zonificación
-        other: zonificaciones
+        one: sectorización
+        other: sectorizaciones
     attributes:
       customer:
         enable_external_callback: Activar URL de recordatorio
@@ -238,7 +238,7 @@ es:
         active: Activo
         tag_ids: Etiquetas
         tags: Etiquetas
-        zoning_id: Zonificación
+        zoning_id: Sectorización
         order_array_id: Cuadro de mandos
         date: Fecha
         vehicle_usage_set: Configuración de los vehículos
@@ -1139,12 +1139,12 @@ es:
       lock_routes: Bloquear las giras
       toggle_routes: Ocultar las giras
       zonings:
-        success: Zonificaciones aplicadas con éxito
-        fail: Fracaso para aplicar zonificaciones
-        action: Aplicar Zonificación
-        label: Zonificaciones
-      zoning_new: Crear una nueva zonificación desde el plan
-      zoning_edit: Modificar esta zonificación desde ese plan
+        success: Sectorización aplicada con éxito
+        fail: Fracaso para aplicar sectorización
+        action: Aplicar Sectorización
+        label: Sectorizaciones
+      zoning_new: Crear una nueva sectorización desde el plan
+      zoning_edit: Modificar esta sectorización desde ese plan
       last_sent_to: Envió
       title: Modificar plan
       load_stops_out_of_route: Cargar las paradas no planificadas
@@ -1154,9 +1154,9 @@ es:
       optimize_failed: Fracaso durante la optimización
       optimized_at: Optimizado
       zoning_confirm: >-
-        ¿Registrar y aplicar la nueva zonificación? Las giras del plan van a ser
+        ¿Registrar y aplicar la nueva sectorización? Las giras del plan van a ser
         modificadas
-      page_change_zoning_confirm: ¿Quiere salir de la pagina y perder los cambios de zonificación?
+      page_change_zoning_confirm: ¿Quiere salir de la pagina y perder los cambios de sectorización?
       route_placeholder: Ref. de la gira
       exports: Exportar el plan
       stop_status:
@@ -1191,10 +1191,10 @@ es:
         print: Imprimir
         spreadsheet: Hoja de calculo CSV / Excel
       zoning:
-        apply: Aplicar zonificación
-        edit: Modificar zonificación
+        apply: Aplicar sectorización
+        edit: Modificar sectorización
         none: Ninguno
-        new: Nueva zonificación
+        new: Nueva sectorización
       order_array:
         edit: Modificar cuadro de mandos
       map:
@@ -1207,7 +1207,7 @@ es:
       refresh_help: >-
         Parámetros o clientes utilizados para este plan han sido cambiados, hay
         que calcularlo de nuevo
-      outdated_zoning: La zonificación ha sido cambiada. Aplique de nuevo para actualizar.
+      outdated_zoning: La sectorización ha sido cambiada. Aplique de nuevo para actualizar.
       stops_help: Paradas planificadas/total
       duration_help: Suma de las duraciones de las giras
       distance_help: Suma de las distancias de las giras
@@ -1352,8 +1352,8 @@ es:
         default: '%{n} (valor predeterminado)'
   zonings:
     edit:
-      title: Modificar zonificación
-      collapse_zoning_panel: Reducir el panel de zonificación
+      title: Modificar sectorización
+      collapse_zoning_panel: Reducir el panel de sectorización
       generate_confirm: Esto reiniciara todas sus zonas actuales. ¿Seguir?
       vehicleless_confirm: ¿Confirmar el registro de zonas sin vehículos?
       isochrone_missing_vehicle: >-
@@ -1365,14 +1365,14 @@ es:
       failed: Fracaso durante la generación del isochrone
       success: Isochrone generado con éxito
     index:
-      title: Lista zonificaciones
-      new: Nueva zonificación
+      title: Lista sectorizaciones
+      new: Nueva sectorización
     form:
       hide_out_of_route: Ocultar los clientes no planificados
       all_destinations: Mostrar todos los clientes
       from_planning_help: >-
         Puede tambien mostrar los clientes de un único plan cambiando esta
-        zonificacion desde el plan
+        sectorización desde el plan
       stops_from_planning: "Clientes cargados desde el plan «%{s}»"
       automatic:
         one: 'Automatico: 1 zona'
@@ -1414,9 +1414,9 @@ es:
       from_isodistance: Isodistancia
       from: desde
     menu:
-      zonings: Zonificaciones
+      zonings: Sectorizaciones
     new:
-      title: Nueva zonificación
+      title: Nueva sectorización
   unauthorized:
     default: No esta autorizado acceder a esta pagina
   web:
