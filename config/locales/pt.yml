@@ -98,10 +98,10 @@ pt:
           store: depósito
           visit: visita
           rest: pausa
-      store: Base
+      store: Armazém
       stores:
-        one: base
-        other: bases
+        one: armazém
+        other: armazéms
       tag: Categoria
       tags:
         one: categoria
@@ -155,7 +155,7 @@ pt:
         print_header: Cabeçalho de rotas
         print_stop_time: Incluir horas de paragem
         print_map: Incluir mapa
-        stores: Base
+        stores: Armazéms
         enable_orders: Permitir pedidos
         enable_multi_vehicle_usage_sets: Permitir parametrização de múltiplos veículos
         enable_references: Ver referências
