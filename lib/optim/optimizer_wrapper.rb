@@ -43,6 +43,64 @@ class OptimizerWrapper
     false
   end
 
+  def build_vrp(planning, routes, options = {})
+    vrp_vehicles, v_points = build_vehicles(planning, routes, options)
+    all_skills = vrp_vehicles.map { |v| v[:skills] }.flatten.compact
+
+    stops = routes.flat_map{ |route|
+      next [] if route.vehicle_usage.nil? && !options[:global]
+
+      route.stops
+    }
+    vrp_services, s_points = build_services(planning, stops, options.merge(use_skills: all_skills.any?, problem_skills: all_skills))
+    vrp_rests = build_rests(stops, options)
+    relations = collect_relations(routes, options)
+
+    vrp_routes = build_routes(routes, options) if options[:only_insertion]
+    vrp_units = vrp_vehicles.flat_map{ |v| v[:capacities]&.map{ |c| c[:unit_id] } }.compact.uniq.map{ |unit_id|
+      { id: unit_id }
+    }
+
+    vrp = {
+      configuration: build_configuration(options.merge(vehicle_count: vrp_vehicles.size)),
+      name: options[:name],
+      points: v_points + s_points,
+      relations: relations,
+      rests: vrp_rests,
+      routes: vrp_routes,
+      services: vrp_services,
+      units: vrp_units,
+      vehicles: vrp_vehicles
+    }
+    filter_constraints(vrp, options)
+    vrp
+  end
+
+  def optimize(planning, routes, options, &progress)
+    vrp = build_vrp(planning, routes, options)
+    key = Digest::MD5.hexdigest(Marshal.dump(vrp))
+
+    result = @cache.read(key)
+    if result
+      result = JSON.parse(result)
+    else
+      result = solve(vrp, progress, key)
+    end
+
+    [result['solutions'][0]['unassigned'] ? result['solutions'][0]['unassigned'].select{ |activity| activity['service_id'] }.collect{ |activity|
+      activity['service_id'][1..-1].to_i
+    } : []] + vrp[:vehicles].collect{ |vehicle|
+      route = result['solutions'][0]['routes'].find{ |r| r['vehicle_id'] == vehicle[:id] }
+      !route ? [] : route['activities'].collect{ |activity|
+        if activity.key?('service_id')
+          activity['service_id'][1..-1].to_i
+        elsif activity.key?('rest_id')
+          activity['rest_id'][1..-1].to_i
+        end
+      }.compact # stores are not returned anymore
+    }
+  end
+
   def solve(vrp, progress, key)
     resource_vrp = RestClient::Resource.new(@url + '/vrp/submit.json', timeout: nil)
     json = resource_vrp.post({api_key: @api_key, vrp: vrp}.to_json, content_type: :json, accept: :json) { |response, request, result, &block|
@@ -96,145 +154,226 @@ class OptimizerWrapper
     result
   end
 
-  # positions with stores at the end
-  # services Array[Hash{start1: , end1: , duration: , stop_id: , vehicle_id: , quantities: [], quantities_operations: [], rest: boolean}]
-  # vehicles Array[Hash{id: , open: , close: , stores: [], rests: [], capacities: []}]
-  def optimize(positions, services, vehicles, options, &progress)
-    key = Digest::MD5.hexdigest(Marshal.dump([positions, services, vehicles, options]))
+  private
 
-    result = @cache.read(key)
-    if result
-      result = JSON.parse(result)
-    else
-      vrp = build_vrp(positions, services, vehicles, options)
-      result = solve(vrp, progress, key)
-    end
-
-    [result['solutions'][0]['unassigned'] ? result['solutions'][0]['unassigned'].select{ |activity| activity['service_id'] }.collect{ |activity|
-      activity['service_id'][1..-1].to_i
-    } : []] + vehicles.collect{ |vehicle|
-      route = result['solutions'][0]['routes'].find{ |r| r['vehicle_id'] == "v#{vehicle[:id]}" }
-      !route ? [] : route['activities'].collect{ |activity|
-        if activity.key?('service_id')
-          activity['service_id'][1..-1].to_i
-        elsif activity.key?('rest_id')
-          activity['rest_id'][1..-1].to_i
-        end
-      }.compact # stores are not returned anymore
+  def build_configuration(options)
+    {
+      preprocessing: {
+        max_split_size: options[:max_split_size],
+        cluster_threshold: options[:cluster_threshold],
+        prefer_short_segment: true,
+        first_solution_strategy: :self_selection,
+      },
+      resolution: {
+        duration: options[:optimize_time] ? options[:optimize_time] * options[:vehicle_count] : nil,
+        # iterations_without_improvment: 100,
+        initial_time_out: options[:optimize_minimal_time] ? options[:optimize_minimal_time] * options[:vehicle_count] * 1000 : nil,
+        time_out_multiplier: 2
+      },
+      restitution: {
+        intermediate_solutions: false
+      }
     }
   end
 
-  def build_vrp(positions, services, vehicles, options)
-    @optimization_start = nil
-    rests = vehicles.flat_map{ |v| v[:rests] }
-      services_with_negative_quantities = []
-
-      all_skills = vehicles.map { |v| v[:skills] }.flatten.compact
-      use_skills = !all_skills.empty?
-
-      services_late_multiplier = (options[:stop_soft_upper_bound] && options[:stop_soft_upper_bound] > 0) ? options[:stop_soft_upper_bound] : nil
-      vehicles_cost_late_multiplier = (options[:vehicle_soft_upper_bound] && options[:vehicle_soft_upper_bound] > 0) ? options[:vehicle_soft_upper_bound] : nil
-      # FIXME: ortools is not able to support non null vehicle late multiplier for global optim
-      if vehicles.size > 1 && !services.all?{ |s| s[:vehicle_usage_id] }
-        vehicles_cost_late_multiplier = nil unless options[:vehicle_soft_upper_bound] != Mapotempo::Application.config.optimize_vehicle_soft_upper_bound
-      end
-
-      vrp = {
-        units: vehicles.flat_map{ |v| v[:capacities] && v[:capacities].map{ |c| c[:deliverable_unit_id] } }.uniq.map{ |k|
-          {id: "u#{k}"}
-        },
-        points: positions.each_with_index.collect{ |pos, i|
-          {
-            id: "p#{i}",
-            location: {
-              lat: pos[0],
-              lon: pos[1]
-            }
-          }
-        },
-        rests: rests.collect{ |rest|
-          {
-            id: "r#{rest[:stop_id]}",
-            timewindows: [{
-              start: rest[:start1],
-              end: rest[:end1]
-            }],
-            duration: rest[:duration]
-          }
-        },
-        vehicles: build_vehicles(vehicles, services, options.merge(use_skills: use_skills)),
-        services: services.each_with_index.collect{ |service, index|
-          services_with_negative_quantities.push("s#{service[:stop_id]}") if service[:quantities_operations] && service[:quantities_operations].values.any?{ |q| q == 'empty' } || service[:quantities] && service[:quantities].values.any?{ |q| q && q < 0 }
-          {
-            id: "s#{service[:stop_id]}",
-            type: 'service',
-            sticky_vehicle_ids: service[:vehicle_usage_id] ? ["v#{service[:vehicle_usage_id]}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
-            activity: {
-              point_id: "p#{index}",
-              timewindows: [
-                (service[:start1] || service[:end1]) && {
-                  start: service[:start1],
-                  end: service[:end1]
-                },
-                (service[:start2] || service[:end2]) && {
-                  start: service[:start2],
-                  end: service[:end2]
-                },
-              ].compact,
-              duration: service[:duration],
-              late_multiplier: service[:rest] ? nil : services_late_multiplier
-            },
-            priority: service[:priority] && (service[:priority].to_i - 4).abs,
-            quantities: service[:quantities] ? service[:quantities].each.map{ |k, v|
-              v ? {
-                unit_id: "u#{k}",
-                value: v,
-                fill: service[:quantities_operations][k] == 'fill' || nil,
-                empty: service[:quantities_operations][k] == 'empty' || nil
-              }.compact : nil
-            }.compact : [],
-            skills: (use_skills && service[:skills]) ? (all_skills & service[:skills]) : nil
-          }.delete_if{ |_, v| !v }
-        },
-        relations: [],
-        configuration: {
-          preprocessing: {
-            max_split_size: options[:max_split_size],
-            cluster_threshold: options[:cluster_threshold],
-            prefer_short_segment: true,
-            first_solution_strategy: :self_selection,
-          },
-          resolution: {
-            duration: options[:optimize_time] ? options[:optimize_time] * vehicles.size : nil,
-            # iterations_without_improvment: 100,
-            initial_time_out: options[:optimize_minimal_time] ? options[:optimize_minimal_time] * vehicles.size * 1000 : nil,
-            time_out_multiplier: 2
-          },
-          restitution: {
-            intermediate_solutions: false
-          }
-        },
-        name: options[:name]
+  def build_point(stop, options = {})
+    position_label = stop.position.is_a?(Destination) ? 'p' : 'd'
+    {
+      id: "#{position_label}#{stop.position.id}",
+      location: {
+        lat: stop.position.lat,
+        lon: stop.position.lng
       }
-      vrp[:relations] += collect_relations(services, services_with_negative_quantities, options)
-      vrp
+    }
   end
 
-  def collect_relations(services, services_with_negative_quantities, options)
+  # A StopRest with a position is send as a service
+  def build_rests(stops, options = {})
+    stops.map{ |stop|
+      next unless stop.is_a?(StopRest) && stop.destination.lat
+
+      {
+        id: "r#{stop.id}",
+        timewindows: [{
+          start: stop.time_window_start_1.try(:to_f),
+          end: stop.time_window_end_1.try(:to_f)
+        }],
+        duration: stop.duration
+      }
+    }.compact
+  end
+
+  def build_routes(routes, options = {})
+    routes.map{ |route|
+      next if route.vehicle_usage.nil?
+
+      mission_ids = route.stops.map{ |stop|
+        next if stop.is_a?(StopRest) && !stop.position? ||
+                !stop.active && options[:only_active]
+
+        "s#{stop.id}"
+      }.compact
+
+      {
+        vehicle_id: "v#{route.vehicle_usage_id}",
+        mission_ids: mission_ids
+      }
+    }.compact
+  end
+
+  def build_services(planning, stops, options = {})
+    point_hash = {}
+    services_late_multiplier = (options[:stop_soft_upper_bound] && options[:stop_soft_upper_bound] > 0) ? options[:stop_soft_upper_bound] : nil
+    vrp_services = stops.map{ |stop|
+      next if options[:only_active] && !stop.active
+
+      service_point = build_point(stop)
+      # A stop without destination is either a proper rest either cannot be send to the optimizer
+      next if service_point.nil?
+
+      point_hash[service_point[:id]] = service_point
+
+      tags_label = stop.is_a?(StopVisit) ? (stop.visit.destination.tags | stop.visit.tags).map(&:label) & planning.all_skills.map(&:label) : nil
+      {
+        id: "s#{stop.id}",
+        type: 'service',
+        sticky_vehicle_ids: stop.route.vehicle_usage_id && (!options[:global] || stop.is_a?(StopRest)) ? ["v#{stop.route.vehicle_usage_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
+        activity: {
+          point_id: service_point[:id],
+          timewindows: [
+            (stop.time_window_start_1 || stop.time_window_end_1) && {
+              start: stop.time_window_start_1.try(:to_f),
+              end: stop.time_window_end_1.try(:to_f)
+            },
+            (stop.time_window_start_2 || stop.time_window_end_2) && {
+              start: stop.time_window_start_2.try(:to_f),
+              end: stop.time_window_end_2.try(:to_f)
+            },
+          ].compact,
+          duration: stop.duration,
+          late_multiplier: services_late_multiplier
+        }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
+        priority: stop.priority && (stop.priority.to_i - 4).abs,
+        quantities: stop.visit.default_quantities&.map{ |k, v|
+          v ? {
+            unit_id: "u#{k}",
+            value: v,
+            fill: stop.visit.quantities_operations[k] == 'fill' || nil,
+            empty: stop.visit.quantities_operations[k] == 'empty' || nil
+          }.compact : nil
+        }&.compact || [],
+        skills: (options[:use_skills] && tags_label) ? (options[:problem_skills] & tags_label) : nil
+      }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? }
+    }
+    [vrp_services, point_hash.values]
+  end
+
+  def build_vehicles(planning, routes, options)
+    vehicles_cost_late_multiplier = (options[:vehicle_soft_upper_bound] && options[:vehicle_soft_upper_bound] > 0) ? options[:vehicle_soft_upper_bound] : nil
+
+    vrp_vehicles = []
+    point_hash = {}
+
+    routes.each{ |route|
+      next if route.vehicle_usage.nil?
+
+      %i(start stop).each{ |store_type|
+        type_label = "store_#{store_type}"
+        next if route.vehicle_usage.send(type_label).nil?
+
+        type_id_label = "store_#{store_type}_id"
+        if route.vehicle_usage.send(type_label).lat && route.vehicle_usage.send(type_label).lng
+          label = "d#{route.vehicle_usage.send(type_id_label)}"
+          point_hash[label] = {
+            id: label,
+            location: {
+              lat: route.vehicle_usage.send(type_label).lat,
+              lon: route.vehicle_usage.send(type_label).lng
+            }
+          }
+        end
+      }
+
+      vehicle = route.vehicle_usage.vehicle
+      vehicle_skills = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten.compact.uniq.map(&:label)
+
+      # Only register as rest StopRests without destination
+      vehicle_rests = route.stops.select{ |stop| stop.is_a?(StopRest) && !stop.position? }
+      capacities = vehicle.default_capacities&.map{ |k, v|
+        next if v.nil?
+
+        strict_capacity = options[:ignore_overload_multipliers].find{ |iom| iom[:unit_id] == k } if options[:ignore_overload_multipliers]
+        ignore_capacity = options[:ignore].find{ |iom| iom[:unit_id] == k } if options[:ignore]
+        {
+          unit_id: "u#{k}",
+          limit: ignore_capacity ? nil : v,
+          overload_multiplier: strict_capacity ? nil : (planning.customer.deliverable_units.find{ |du| du.id == k }.optimization_overload_multiplier || Mapotempo::Application.config.optimize_overload_multiplier)
+        }
+      }&.compact
+
+        vrp_vehicles << {
+          id: "v#{route.vehicle_usage_id}",
+          router_mode: route.vehicle_usage.vehicle.default_router.try(&:mode),
+          router_dimension: route.vehicle_usage.vehicle.default_router_dimension,
+          router_options: route.vehicle_usage.vehicle.default_router_options
+                               .symbolize_keys.except(:time, :distance, :isochrone, :isodistance, :avoid_zones)
+                               .delete_if{ |k, v| v.nil? } || {},
+          speed_multiplier: route.vehicle_usage.vehicle.default_speed_multiplier,
+          area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:area].join(',') }&.join('|'),
+          speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
+          timewindow: { start: vehicle[:open], end: vehicle[:close] }.delete_if{ |_k, v| v.nil? },
+          duration: route.vehicle_usage.default_work_time(true)&.to_f,
+          distance: route.vehicle_usage.vehicle.max_distance,
+          maximum_ride_distance: route.vehicle_usage.vehicle.max_ride_distance,
+          maximum_ride_time: route.vehicle_usage.vehicle.max_ride_duration,
+          start_point_id: route.vehicle_usage.store_start_id && "d#{route.vehicle_usage.store_start_id}",
+          end_point_id: route.vehicle_usage.store_start_id && "d#{route.vehicle_usage.store_start_id}",
+          cost_fixed: 0,
+          cost_distance_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'distance' ? 1 : 0,
+          cost_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? 1 : 0,
+          cost_waiting_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? options[:optimization_cost_waiting_time] : 0,
+          cost_late_multiplier: vehicles_cost_late_multiplier,
+          shift_preference: (route.force_start || options[:force_start]) ? 'force_start' : nil,
+          rest_ids: vehicle_rests.map{ |r| "r#{r[:id]}" },
+          capacities: capacities || [],
+          skills: [vehicle_skills]
+      }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? }
+    }
+
+    [vrp_vehicles, point_hash.values]
+  end
+
+  def collect_relations(routes, options)
+    return route_orders(routes) if options[:only_insertion]
+
+    stops = routes.flat_map{ |route|
+      next [] if route.vehicle_usage.nil? && !options[:global]
+
+      route.stops
+    }
     relations = []
-    relations += filter_option_relations(services, options)
-    relations += position_relations(services)
-    relations += negative_quantities_relations(services_with_negative_quantities)
+    relations += filter_option_relations(stops, options)
+    relations += position_relations(stops)
+    relations += negative_quantities_relations(stops)
     relations
   end
 
-  def filter_option_relations(services, options)
+  def filter_constraints(vrp, options = {})
+    if options[:only_insertion]
+      only_insertion_services(vrp[:services])
+      only_insertion_vehicles(vrp[:vehicles])
+      only_insertion_relations(vrp[:relations])
+      vrp[:rests] = []
+    end
+  end
+
+  def filter_option_relations(stops, options)
     return [] unless options[:relations]
 
-    service_hash = services.map{ |s| [s[:stop_id], s] }.to_h
+    stop_hash = stops.map{ |s| [s.id, s] }.to_h
 
     options[:relations].delete_if{ |relation|
-      relation[:linked_ids].any?{ |id| !service_hash.key?(id) }
+      relation[:linked_ids].any?{ |id| !stop_hash.key?(id) }
     }
     options[:relations].each{ |relation|
       relation[:linked_ids].map!{ |id| "s#{id}"}
@@ -242,19 +381,29 @@ class OptimizerWrapper
     options[:relations]
   end
 
-  def position_relations(services)
+  def position_relations(stops)
     relations = []
-    services.group_by{ |serv| serv[:force_position] }.each{ |position, servs|
-      next if position.nil? || position == 'neutral'
+    stops.select{ |stop| stop.is_a?(StopVisit) }
+         .group_by{ |stop| stop.visit.force_position }
+         .each{ |position, stps|
+           next if position.nil? || position == 'neutral'
 
-      relations << {
-        type: POSITION_KEYS[position.to_sym],
-        linked_ids: servs.map{ |serv| "s#{serv[:stop_id]}" }}
-    }
+           relations << {
+             type: POSITION_KEYS[position.to_sym],
+             linked_ids: stps.map{ |stop| "s#{stop.id}" }}
+         }
     relations
   end
 
-  def negative_quantities_relations(services_with_negative_quantities)
+  def negative_quantities_relations(stops)
+    services_with_negative_quantities = []
+    stops.each{ |stop|
+      next if stop.is_a?(StopRest) ||
+              stop.visit.quantities_operations&.values&.none?{ |q| q == 'empty' } &&
+              stop.visit.default_quantities&.values&.none?{ |q| q && q < 0 }
+
+      services_with_negative_quantities.push("s#{stop.id}")
+    }
     return [] if services_with_negative_quantities.empty?
 
     [{
@@ -263,6 +412,42 @@ class OptimizerWrapper
       linked_ids: services_with_negative_quantities
     }]
   end
+
+  def route_orders(routes)
+    routes.map{ |route|
+      next if route.vehicle_usage.nil?
+
+      mission_ids = route.stops.map{ |stop|
+        next if stop.is_a?(StopRest) && !stop.position? ||
+                !stop.active && options[:only_active]
+
+        "s#{stop.id}"
+      }.compact
+
+      {
+        type: :order,
+        linked_ids: mission_ids
+      }
+    }.compact
+  end
+
+  def only_insertion_services(services)
+    services.each{ |service|
+      timewindows = service.dig(:activity, :timewindows)
+      timewindows.delete_at(1)
+      timewindows[0].delete(:end)
+    }
+  end
+
+  def only_insertion_vehicles(vehicles)
+    keys_to_remove = %i[capacities distance duration maximum_ride_distance maximum_ride_duration rest_ids skills]
+    vehicles.each{ |vehicle|
+      keys_to_remove.each{ |key| vehicle.delete(key) }
+
+      vehicle[:timewindow].delete(:end)
+    }
+  end
+
   # Resolutions might contain multiple steps in a hierachical order :
   # - split independent process -> The problem is split in independant sub problems regarding sticky vehicles or skills
   # - solution                  -> Some resolutions might require multiple solutions from a single problem with some perturbations
@@ -340,57 +525,5 @@ class OptimizerWrapper
     solution_data.merge('status': 'queued') unless solution_data.key?('status')
     solution_data.merge!('unassigned_size': solution.dig('unassigned')&.size) if solution
     solution_data
-  end
-
-  def build_vehicles(vehicles, services, options = {})
-    shift_stores = 0
-    vehicles_cost_late_multiplier = (options[:vehicle_soft_upper_bound] && options[:vehicle_soft_upper_bound] > 0) ? options[:vehicle_soft_upper_bound] : nil
-
-    vehicles.collect{ |vehicle|
-      store_start = if vehicle[:stores].include?(:start)
-        value = "p#{shift_stores + services.size}"
-        shift_stores += 1
-        value
-      end
-      store_end = if vehicle[:stores].include?(:stop)
-        value = "p#{shift_stores + services.size}"
-        shift_stores += 1
-        value
-      end
-      v = {
-        id: "v#{vehicle[:id]}",
-        router_mode: vehicle[:router].try(&:mode),
-        router_dimension: vehicle[:router_dimension],
-        # router_options are flattened and merged below
-        speed_multiplier: vehicle[:speed_multiplier],
-        area: vehicle[:speed_multiplier_areas] ? vehicle[:speed_multiplier_areas].map{ |a| a[:area].join(',') }.join('|') : nil,
-        speed_multiplier_area: vehicle[:speed_multiplier_areas] ? vehicle[:speed_multiplier_areas].map{ |a| a[:speed_multiplier_area] }.join('|') : nil,
-        timewindow: {start: vehicle[:open], end: vehicle[:close]},
-        duration: vehicle[:work_time],
-        distance: vehicle[:max_distance],
-        maximum_ride_distance: vehicle[:max_ride_distance],
-        maximum_ride_time: vehicle[:max_ride_duration],
-        start_point_id: store_start,
-        end_point_id: store_end,
-        cost_fixed: 0,
-        cost_distance_multiplier: vehicle[:router_dimension] == 'distance' ? 1 : 0,
-        cost_time_multiplier: vehicle[:router_dimension] == 'time' ? 1 : 0,
-        cost_waiting_time_multiplier: vehicle[:router_dimension] == 'time' ? options[:optimization_cost_waiting_time] : 0,
-        cost_late_multiplier: vehicles_cost_late_multiplier,
-        shift_preference: !vehicle[:force_start].nil? ? vehicle[:force_start]: options[:force_start] ? 'force_start' : nil,
-        rest_ids: vehicle[:rests].collect{ |rest|
-          "r#{rest[:stop_id]}"
-        },
-        capacities: vehicle[:capacities] ? vehicle[:capacities].map{ |c|
-          c[:capacity] && c[:overload_multiplier] >= 0 ? {
-            unit_id: "u#{c[:deliverable_unit_id]}",
-            limit: c[:capacity],
-            overload_multiplier: c[:overload_multiplier]
-          } : nil
-        }.compact : [],
-        skills: options[:use_skills] ? [vehicle[:skills]] : nil
-      }.merge(vehicle[:router_options] || {})
-      v
-    }
   end
 end

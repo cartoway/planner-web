@@ -12,36 +12,13 @@ class OptimizerWrapperTest < ActionController::TestCase
     uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
     @stub_VrpJob = stub_request(:get, uri_template).to_return(status: 200, body: File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/vrp-job.json').read)
 
-    @positions = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]]
-    @services = [
-        {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 1, quantities: {}},
-        {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 2, quantities: {}},
-        {start1: 28800, end1: 36000, start2: nil, end2: nil, duration: 500.0, stop_id: 3},
-        {start1: 0, end1: 7200, start2: nil, end2: nil, duration: 300.0, stop_id: 4},
-    ]
-    @vehicles = [
-        {start1: 28800, end1: 36000, duration: 500.0, stop_id: 5, work_time: 0, stores: [:start], rests: []},
-    ]
+    @planning = planning(:planning_one)
   end
 
   test 'should optimize' do
     begin
-      p = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]]
-      t = [
-        {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 1, quantities: {}},
-        {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 2, quantities: {}},
-        {start1: 28800, end1: 36000, start2: nil, end2: nil, duration: 500.0, stop_id: 3},
-        {start1: 0, end1: 7200, start2: nil, end2: nil, duration: 300.0, stop_id: 4},
-      ]
-      r = [
-        {start1: 28800, end1: 36000, duration: 500.0, stop_id: 5},
-      ]
-
-      assert_equal [[], [1, 2, 3, 4, 5]], @optim.optimize(p, t, [id: 1, stores: [:start, :stop], rests: r, router: routers(:router_one), capacities: {}], optimize_minimal_time: 3)
-
-      assert_equal [[], [1, 2, 3, 4, 5]], @optim.optimize(p, t, [id: 1, stores: [:start], rests: r, router: routers(:router_one)], optimize_minimal_time: 3)
-
-      assert_equal [[], [1, 2, 3, 4, 5]], @optim.optimize(p, t, [id: 1, stores: [], rests: r, router: routers(:router_one)], optimize_minimal_time: 3)
+      routes = @planning.routes.select{ |route| route.vehicle_usage_id }
+      assert_equal [[], [1, 2, 3, 4, 5]], @optim.optimize(@planning, routes, optimize_minimal_time: 3)
     ensure
       remove_request_stub(@stub_VrpJob)
       remove_request_stub(@stub_VrpSubmit)
@@ -50,21 +27,7 @@ class OptimizerWrapperTest < ActionController::TestCase
 
   test 'should build relation' do
     begin
-      p = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]]
-      t = [
-        {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 1, quantities: {}},
-        {start1: nil, end1: nil, start2: nil, end2: nil, duration: 300.0, stop_id: 2, quantities: {}},
-        {start1: 28800, end1: 36000, start2: nil, end2: nil, duration: 500.0, stop_id: 3},
-        {start1: 0, end1: 7200, start2: nil, end2: nil, duration: 300.0, stop_id: 4},
-      ]
-      r = [
-        {start1: 28800, end1: 36000, duration: 500.0, stop_id: 5},
-      ]
-      rl = [
-        { type: :order, linked_ids: [1, 2] }
-      ]
-
-      vrp = @optim.build_vrp(p, t, [id: 1, stores: [:start, :stop], rests: r, router: routers(:router_one), capacities: {}], optimize_minimal_time: 3, relations: rl)
+      vrp = @optim.build_vrp(@planning, @planning.routes)
       refute_empty vrp[:relations]
     ensure
       remove_request_stub(@stub_VrpJob)
@@ -83,7 +46,7 @@ class OptimizerWrapperTest < ActionController::TestCase
       @stub_VrpFail = stub_request(:get, uri_template).to_return(status: 417, body: File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/vrp-fail.json').read)
 
       assert_raises VRPUnprocessableError do
-        assert_match '/assert_vehicles_no_zero_duration/', optim.optimize(@positions, @services, @vehicles, optimize_minimal_time: 3)
+        assert_match '/assert_vehicles_no_zero_duration/', optim.optimize(@planning, @planning.routes, optimize_minimal_time: 3)
       end
     ensure
       remove_request_stub(@stub_VrpSubmit)
@@ -111,7 +74,7 @@ class OptimizerWrapperTest < ActionController::TestCase
       status: 200, body: vrp_complete_file, headers: {content_type: 'json'}
     })
 
-    @optim.optimize(@positions, @services, @vehicles, optimize_time: 30000, &progress)
+    @optim.optimize(@planning, @planning.routes, optimize_time: 30000, &progress)
   ensure
     remove_request_stub(stub_vrp_job) if stub_vrp_job
   end
@@ -136,7 +99,7 @@ class OptimizerWrapperTest < ActionController::TestCase
       status: 200, body: vrp_complete_file, headers: {content_type: 'json'}
     })
 
-    @optim.optimize(@positions, @services, @vehicles, optimize_time: 30000, &progress)
+    @optim.optimize(@planning, @planning.routes, optimize_time: 30000, &progress)
   ensure
     remove_request_stub(stub_vrp_job) if stub_vrp_job
   end
@@ -161,7 +124,7 @@ class OptimizerWrapperTest < ActionController::TestCase
       status: 200, body: vrp_complete_file, headers: {content_type: 'json'}
     })
 
-    @optim.optimize(@positions, @services, @vehicles, optimize_time: 30000, &progress)
+    @optim.optimize(@planning, @planning.routes, optimize_time: 30000, &progress)
   ensure
     remove_request_stub(stub_vrp_job) if stub_vrp_job
   end
