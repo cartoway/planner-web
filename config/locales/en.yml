@@ -143,10 +143,10 @@ en:
           always_final: always final
           never_first: never first
           neutral: neutral
-      zoning: Zoning
+      zoning: Sectorisation
       zonings:
-        one: zoning
-        other: zonings
+        one: sectorisation
+        other: sectorisations
     attributes:
       customer:
         ref: Reference
@@ -159,7 +159,7 @@ en:
         test: Test
         max_vehicles: Number vehicles
         max_plannings: Max plans
-        max_zonings: Max zonings
+        max_zonings: Max sectorisations
         max_destinations: Max destinations
         max_vehicle_usage_sets: Max vehicles base settings
         visit_duration: Visit duration
@@ -285,7 +285,7 @@ en:
         tag_ids: Tags
         tags: Tags
         tags_help: Categories used to filter the plan
-        zoning_id: Zoning
+        zoning_id: Sectorisation
         created_at: Created
         updated_at: Updated
         order_array_id: Orders Plan
@@ -626,7 +626,7 @@ en:
             plannings:
               over_max_limit: Maximum number of plans reached
             zonings:
-              over_max_limit: Maximum number of zonings reached
+              over_max_limit: Maximum number of sectorisations reached
             destinations:
               over_max_limit: Maximum number of destinations reached
             stores:
@@ -934,7 +934,7 @@ en:
       max_plannings_default: '%{n} (default value)'
       max_plannings_help: Maximum number of allowed plans into the account.
       max_zonings_default: '%{n} (default value)'
-      max_zonings_help: Maximum number of allowed zonings into the account.
+      max_zonings_help: Maximum number of allowed sectorisations into the account.
       max_destinations_default: '%{n} (default value)'
       max_destinations_help: Maximum number of allowed destinations into the account.
       max_vehicle_usage_sets_default: '%{n} (default value)'
@@ -1308,7 +1308,7 @@ en:
       force_position_desc: forced position of the visit within the route
       force_position_format: '[always first | never first | neutral | always final]'
       custom_attributes_visit: visit attributes
-      zone: zone
+      zone: sector
       format:
         string: text
         integer: integer
@@ -1547,21 +1547,21 @@ en:
         doc_link: Doc - Destination management
         doc_href: /manual/04-destinations.html
       panel_three:
-        title: Zoning management
+        title: Sectorisation management
         content: >-
-          manually create a zoning. Automatically create a zoning from the
-          routes plan or respect a number of zones. Finally, modify a zoning.
+          manually create a sectorisation. Automatically create a sectorisation from the
+          routes plan or respect a number of sectors. Finally, modify a sectorisation.
         time: ⏱5min.
-        doc_link: Doc - Zoning management
-        doc_href: /manual/05-zonings.html
+        doc_link: Doc - Sector management
+        doc_href: /manual/05-sectorisations.html
       footer: 'You receive this email as a user of %{name}'
       adds:
         video: Videos
         vehicules_params: Vehicles settings (english sub.)
         destination_params: Destinations settings (english sub.)
         tags: Tags introduction (english sub.)
-        zonage: Create zoning (english sub.)
-        zonage_update: Edit zoning (english sub.)
+        zonage: Create sectorisation (english sub.)
+        zonage_update: Edit sectorisation (english sub.)
     advanced_options:
       header: Can we help you clarify some features?
       main_content: >-
@@ -1666,12 +1666,12 @@ en:
       toggle_routes: Toggle routes
       toggle_route_data: Hide route stats
       zonings:
-        label: Zonings
-        success: Zonings applied successfully
-        fail: Failed to apply Zonings
-        action: Apply Zonings
-      zoning_new: New zoning from this plan
-      zoning_edit: Edit zoning from this plan
+        label: Sectorisations
+        success: Sectorisation applied successfully
+        fail: Failed to apply Sectorisation
+        action: Apply Sectorisation
+      zoning_new: New sectorisation from this plan
+      zoning_edit: Edit sectorisation from this plan
       last_sent_to: Sent to
       title: Editing plan
       stops: stops
@@ -1688,7 +1688,7 @@ en:
       optimize_failed: Optimization Failed
       optimized_at: Optimized
       retry_canceling: 'Canceling failed, try again later'
-      zoning_confirm: Save and apply the new zoning? Routes will be updated
+      zoning_confirm: Save and apply the new sectorisation? Routes will be updated
       page_change_zoning_confirm: Leave page and discard changes?
       route_placeholder: Route ref.
       service_time: Service Time
@@ -1734,9 +1734,9 @@ en:
         action: Apply Configuration
       zoning:
         none: None
-        apply: Apply zoning
-        edit: Edit zoning
-        new: New zoning
+        apply: Apply sectorisation
+        edit: Edit sectorisation
+        new: New sectorisation
       order_array:
         edit: Edit orders plan
       map:
@@ -1748,7 +1748,7 @@ en:
       collapse_planning_panel: Collapse plan panel
       refresh: Refresh
       refresh_help: 'Plan parameters have been changed, it is required to recalculate'
-      outdated_zoning: Zoning changed. Apply again to refresh.
+      outdated_zoning: Sectorisation changed. Apply again to refresh.
       stops_help: Plan stops / total
       duration_help: Total duration
       distance_help: Total distance
@@ -1917,8 +1917,8 @@ en:
           error: Compute fail.
           retry_canceling: 'Transmission in progress, try again later'
         zoning:
-          title: Zoning
-          in_progress: 'Please wait, applying new zoning'
+          title: Sectorisation
+          in_progress: 'Please wait, applying new sectorisation'
         move_stops:
           title: Moving stops
           move_to: Choose target route
@@ -2024,7 +2024,7 @@ en:
       zonings_help: >-
         Allow to automatically assign vehicles to visits/destinations with
         geographic zones.
-      avoid_zones_help: 'In addition, allow to define zones where vehicle cannot circulate.'
+      avoid_zones_help: 'In addition, allow to define sectors where vehicle cannot circulate.'
       default_date: Current date by default
       default: Default
     show:
@@ -2621,12 +2621,12 @@ en:
       from_isodistance: Isodistance
       from: from
     menu:
-      zonings: Zonings
+      zonings: Sectorisations
     edit:
-      title: Editing zoning
-      collapse_zoning_panel: Collapse zoning panel
-      generate_confirm: This action will reset all your current zones. Continue?
-      vehicleless_confirm: Are you sure? Some zones don't have a vehicle
+      title: Editing sectorisation
+      collapse_zoning_panel: Collapse sectorisation panel
+      generate_confirm: This action will reset all your current sectors. Continue?
+      vehicleless_confirm: Are you sure? Some sectors don't have a vehicle
       isochrone_missing_vehicle: >-
         Isochrone cannot be generated for at least one vehicle due to routing
         engine restrictions
@@ -2636,13 +2636,13 @@ en:
       failed: Failed to generate Isochrone
       success: Isochrone generated successfully
     index:
-      title: Listing zonings
-      new: New Zoning
+      title: Listing sectorisations
+      new: New Sectorisation
       over_max_limit: >-
-        You have reached the zonings number limit for your account (Account
+        You have reached the sectorisations number limit for your account (Account
         Limit: %{limit})
     new:
-      title: New zoning
+      title: New Sectorisation
     form:
       planning_id: Destinations from plan
       planning_id_help: >-
@@ -2656,12 +2656,12 @@ en:
       stops_from_planning: 'Destinations from plan "%{s}"'
       generate: Generate
       automatic:
-        one: 'Automatic: 1 zone'
-        other: 'Automatic: %{count} zones'
+        one: 'Automatic: 1 sector'
+        other: 'Automatic: %{count} sectors'
       from_planning: From plan routes
-      zone_placeholder: Zone
+      zone_placeholder: Sector
       zone_vehicle: Vehicle
-      avoid_zone: Don't go inside this zone
+      avoid_zone: Don't go inside this sector
       isochrone: Isochrone by vehicle(s)
       isodistance: Isodistance by vehicle(s)
       dialog:
@@ -2739,7 +2739,7 @@ en:
           none_stores: No stores found
       zones:
         index:
-          none_zones: No zones found
+          none_zones: No Sector found
           without_vehicle: Without Vehicle
   notifications:
     sms:
