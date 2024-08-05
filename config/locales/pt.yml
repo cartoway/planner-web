@@ -777,11 +777,11 @@ pt:
     default:
       country: Portugal
     menu:
-      customer: Parâmetros globais
+      customer: Parâmetros da área de cliente
       user_settings: Parâmetros de utilizador
       customers: Contas cliente
     edit:
-      title: Modificar parâmetros globais
+      title: Modificar parâmetros da área de cliente
       send_email: Enviar email de confirmação
       password: Alterar palavra passe
       user:
@@ -876,7 +876,7 @@ pt:
           code128: Código 128
       speed_multiplier_default: '%{n} (valor por defeito)'
       speed_multiplier_help: Um valor superior a 100% significa velocidade mais elevada.
-      submit: Atualizar parâmetros globais
+      submit: Atualizar parâmetros da área de cliente
       external_callback:
         title: URL de resposta
         name: Nome
@@ -1676,15 +1676,15 @@ pt:
         doc_link: 'Doc - Início com %{name}'
         doc_href: /manual/01-start.html
       panel_three:
-        title: Parâmetros globais e de utilizador
+        title: Parâmetros da área de cliente e de utilizador
         content: >-
           parâmetros da conta com palavra passe e utilizador. De atividade como
           o tipo de veículos, duração média das visitas, exportação dos planos
           otimizados para os dispositivos de GPS, exportação dos planos
           otimizados para os mapas de rotas.
         time: ⏱6min.
-        doc_link: Doc - Parâmetros globais e de utilizador
-        doc_href: /manual/02-global_settings_users.html
+        doc_link: Doc - Parâmetros da área de cliente e de utilizador
+        doc_href: /manual/02-customer_account_users_settings.html
       footer: 'Recebe este email como utilizador de %{name}'
       preheader: Descubra a primeira parte dos recursos para começar.
     features:
