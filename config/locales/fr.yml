@@ -1585,7 +1585,7 @@ fr:
           route.
         time: ⏱6min.
         doc_link: Doc - Paramétrage de l'espace client et utilisateur
-        doc_href: /manual/02-global_settings_users.html
+        doc_href: /manual/02-customer_account_users_settings.html
       footer: 'Vous recevez ce message en tant qu''utilisateur de %{name}'
     features:
       header: Vous avez des questions ? Notre équipe y répond !
@@ -1625,7 +1625,7 @@ fr:
           nombre de secteurs. Enfin, modifier une sectorisation.
         time: ⏱5min.
         doc_link: Doc - Gestion des sectorisations
-        doc_href: /manual/05-zonings.html
+        doc_href: /manual/05-sectorisations.htmll
       footer: 'Vous recevez ce message en tant qu''utilisateur de %{name}'
       adds:
         video: Vidéos
