@@ -114,10 +114,10 @@ en:
       stores:
         one: Facility
         other: Facilities
-      tag: Tag
+      tag: Category
       tags:
-        one: tag
-        other: tags
+        one: category
+        other: categories
       user: User
       users:
         one: user
@@ -247,8 +247,8 @@ en:
         geocoding_accuracy_small: Geoc.
         geocoding_level: Geocoding level
         geocoding_result: Address found and used by geocoding
-        tags: Tags
-        tag_ids: Tags
+        tags: Categories
+        tag_ids: Categories
         visits: Visits
       destinations:
         name: Name
@@ -282,8 +282,8 @@ en:
         ref_help: A free reference
         ref_small: Ref.
         active: Active
-        tag_ids: Tags
-        tags: Tags
+        tag_ids: Categories
+        tags: Categories
         tags_help: Categories used to filter the plan
         zoning_id: Sectorisation
         created_at: Created
@@ -523,8 +523,8 @@ en:
         time_window_start_2_time_window_end_2_days: D+
         priority: Priority
         multi_visit: Multi
-        tags: Tags
-        tag_ids: Tags
+        tags: Categories
+        tag_ids: Categories
         quantities: Quantities
         force_position: Forced position
       visits:
@@ -546,8 +546,8 @@ en:
         time_window_start_2_time_window_end_2_days: D+
         priority: Priority
         multi_visit: Multi
-        tags: Tags
-        tag_ids: Tags
+        tags: Categories
+        tag_ids: Categories
         quantities:
           one: Quantity
           other: Quantities
@@ -656,7 +656,7 @@ en:
         tag:
           icon_unknown: is not in font-awesome icons list
           icon_size_invalid: is not a valid size
-          uniqueness: Tag with the same label already exist
+          uniqueness: Category with the same label already exist
         optimization_time:
           must_be_greater_than_minimal_time: must be greater than minimal time
         router:
@@ -1064,7 +1064,7 @@ en:
       export_spreadsheet_excel: Export Spreadsheet Excel
       stores: Facilities
       import_stores: Import facilities
-      tags: Tags
+      tags: Categories
       clear: Clear all destinations
       clear_confirm: >-
         Are you sure to want to delete all destinations? Existing routes will be
@@ -1089,7 +1089,7 @@ en:
       dialog:
         confirm_overwrite_point: Position has been set manually. Override with geocoding results?
         attributes_change_bulk:
-          title: Change several tags in once action
+          title: Change several categories in once action
           tags_help: >-
             For each respective line, allow to replace a specific tag with
             another existing tag
@@ -1099,8 +1099,8 @@ en:
           to activate this feature.
         new: New visit
         new_help: New visit if you go to this destination several times.
-        attributes_change_bulk: Change tags
-        attributes_change_bulk_help: Change several tags in once action
+        attributes_change_bulk: Change categories
+        attributes_change_bulk_help: Change several categories in once action
         collapse_all: Collapse/expand all
         collapse_all_help: Collapse/expand all
     edit:
@@ -1295,15 +1295,15 @@ en:
       comment_desc: complementary informations.
       phone_number: phone
       phone_number_desc: phone number of destination.
-      tags: tags
-      tags_desc: destination tags (allowing to group them).
-      tags_format: 'tag 1,tag 2'
+      tags: categories
+      tags_desc: destination categories (allowing to group them).
+      tags_format: 'category 1,category 2'
       without_visit: without visit
       without_visit_desc: states that there is no associated visits
       ref_visit: reference visit
       ref_visit_desc: reference id of this visit.
-      tags_visit: tags visit
-      tags_visit_desc: tags of this visit (allowing to group them for example).
+      tags_visit: categories visit
+      tags_visit_desc: categories of this visit (allowing to group them for example).
       force_position: forced position
       force_position_desc: forced position of the visit within the route
       force_position_format: '[always first | never first | neutral | always final]'
@@ -1559,7 +1559,7 @@ en:
         video: Videos
         vehicules_params: Vehicles settings (english sub.)
         destination_params: Destinations settings (english sub.)
-        tags: Tags introduction (english sub.)
+        tags: Categories introduction (english sub.)
         zonage: Create sectorisation (english sub.)
         zonage_update: Edit sectorisation (english sub.)
     advanced_options:
@@ -1819,7 +1819,7 @@ en:
         orders: 'Orders:'
         duration: 'Visit duration:'
         priority: 'Priority: '
-        tags: 'Tags:'
+        tags: 'Categories:'
         stop_drive_time: 'Duration:'
         stop_distance: 'Distance:'
         visit: Visit
@@ -1985,7 +1985,7 @@ en:
       lat: lat
       lng: lng
       comment: comment
-      tags: tags
+      tags: categories
       phone_number: phone
       ref_visit: reference visit
       duration: visit duration
@@ -1998,7 +1998,7 @@ en:
       time_window_start_2: open 2
       time_window_end_2: close 2
       priority: priority
-      tags_visit: tags visit
+      tags_visit: categories visit
       out_of_window: out of visit time window
       out_of_capacity: out of capacity
       out_of_drive_time: out of vehicle time shift
@@ -2221,12 +2221,12 @@ en:
       code_help: 'Short code, few letters'
   tags:
     edit:
-      title: Editing tag
+      title: Editing category
     index:
-      title: Listing tags
-      new: New tag
+      title: Listing categories
+      new: New category
     new:
-      title: New tag
+      title: New category
     form:
       color_default: Default
       color_help: Force use of this color
