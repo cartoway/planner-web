@@ -102,10 +102,10 @@ es:
       stores:
         one: almacén
         other: almacenes
-      tag: Etiqueta
+      tag: Categoría
       tags:
-        one: etiqueta
-        other: etiquetas
+        one: categoría
+        other: categorías
       user: Usuario
       users:
         one: usuario
@@ -188,7 +188,7 @@ es:
         default_quantity: Cantidad por defecto
         default_capacity: Capacidad predeterminada
         optimization_overload_multiplier: Coeficiente sobrepaso
-        label: Etiqueta
+        label: Categoría
         ref: Referencia
         icon: Icono
       destination:
@@ -211,8 +211,8 @@ es:
         phone_number: Numero de teléfono
         geocoding_accuracy: Calidad de la geocodificación
         geocoding_level: Nivel de geocodificación
-        tags: Etiquetas
-        tag_ids: Etiquetas
+        tags: Categorías
+        tag_ids: Categorías
         visits: Visitas
       layer:
         attribution: Atribución
@@ -236,8 +236,8 @@ es:
         ref: Referencia
         ref_small: Ref.
         active: Activo
-        tag_ids: Etiquetas
-        tags: Etiquetas
+        tag_ids: Categorías
+        tags: Categorías
         zoning_id: Sectorización
         order_array_id: Cuadro de mandos
         date: Fecha
@@ -359,7 +359,7 @@ es:
         geocoding_accuracy: Calidad de la geocodificación
         geocoding_level: Nivel de geocodificación
       tag:
-        label: Etiqueta
+        label: Categoría
         color: Color
         icon: Icono
         icon_size: Talla del icono
@@ -426,8 +426,8 @@ es:
         time_window_start_end_2small: Inicio/Fin 2
         time_window_start_2_time_window_end_2_days: D+
         multi_visit: Multi
-        tags: Etiquetas
-        tag_ids: Etiquetas
+        tags: Categorías
+        tag_ids: Categorías
         quantities: Cantidades
       visits:
         ref: Referencia
@@ -447,8 +447,8 @@ es:
         time_window_start_end_2small: Inicio/Fin 2
         time_window_start_2_time_window_end_2_days: D+
         multi_visit: Multi
-        tags: Etiquetas
-        tag_ids: Etiquetas
+        tags: Categorías
+        tag_ids: Categorías
         quantities:
           one: Cantidad
           other: Cantidades
@@ -812,7 +812,7 @@ es:
       import: Importar
       stores: Almacenes
       import_stores: Importar almacenes
-      tags: Etiquetas
+      tags: Categorías
     form:
       detail_help: 'Complemento de dirección no geocodable, ej. numero de escalera'
       comment_help: Informaciones necesarias para la entrega
@@ -954,7 +954,7 @@ es:
       comment_desc: informaciones necesarias para la visita.
       phone_number_desc: numero de teléfono de cliente que se debe contactar.
       tags_desc: categorías del cliente (que permiten por ejemplo de agruparlos).
-      tags_format: 'etiqueta 1, etiqueta 2'
+      tags_format: 'categoría 1, categoría 2'
       without_visit: sin visita
       without_visit_desc: indica que no hay visita asociada
       ref_visit_desc: referencia de la visita.
@@ -1005,9 +1005,9 @@ es:
       time_window_end_2: horario fin 2
       comment: comentario
       phone_number: teléfono
-      tags: etiquetas
+      tags: categorías
       ref_visit: referencia visita
-      tags_visit: etiquetas visita
+      tags_visit: categorías visita
       format:
         string: texto
         integer: numero
