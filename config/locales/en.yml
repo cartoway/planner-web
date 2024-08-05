@@ -770,19 +770,18 @@ en:
         subscription_url_help: >-
           Web page address with subscription content for a test customer. It's
           possible to use "{LG}" which will be replaced by language like "en",
-          "fr" (ie:
-          https://cartoway.com/{LG}/planner-web-subscription-request).
+          "fr" (ie: https://cartoway.com/{LG}/planner-web-subscription-request).
         customer_dashboard_url_help: >-
-          Web page address that contains the customer Dashboard. It's possible to
-          use "{ID}" which will be replaced by the customer ID (ie:
+          Web page address that contains the customer Dashboard. It's possible
+          to use "{ID}" which will be replaced by the customer ID (ie:
           https://analytics.cartoway.com?id={ID}
         audience_url_help: >-
-          Web page address that contains the audience Dashboard. It's possible to
-          use "{ID}" which will be replaced by the customer ID (ie:
+          Web page address that contains the audience Dashboard. It's possible
+          to use "{ID}" which will be replaced by the customer ID (ie:
           https://analytics.cartoway.com?id={ID}
         behavior_url_help: >-
-          Web page address that contains the behavior Dashboard. It's possible to
-          use "{ID}" which will be replaced by the customer ID (ie:
+          Web page address that contains the behavior Dashboard. It's possible
+          to use "{ID}" which will be replaced by the customer ID (ie:
           https://analytics.cartoway.com?id={ID}
         customer_audience_url_help: >-
           Web page address that contains the audience Dashboard for a customer.
@@ -1549,8 +1548,9 @@ en:
       panel_three:
         title: Sectorisation management
         content: >-
-          manually create a sectorisation. Automatically create a sectorisation from the
-          routes plan or respect a number of sectors. Finally, modify a sectorisation.
+          manually create a sectorisation. Automatically create a sectorisation
+          from the routes plan or respect a number of sectors. Finally, modify a
+          sectorisation.
         time: ⏱5min.
         doc_link: Doc - Sector management
         doc_href: /manual/05-sectorisations.html
@@ -1629,8 +1629,7 @@ en:
       link: 'I request to subscribe to %{name}'
       preheader: >-
         Your free trial period will end soon. We thank you for your interest in
-        the solution and we hope that the experience has
-        met your expectations.
+        the solution and we hope that the experience has met your expectations.
       footer: 'You receive this email as a user of %{name}'
   plannings:
     menu:
@@ -1716,9 +1715,7 @@ en:
           action_email: Calendar iCal by E-Mail
           success: File successfully sent by E-Mail to all the vehicles
           fail: Failed to export E-Mail
-          mail_error: >-
-            Email(s) not send. <br/> Check email configuration for each
-            vehicle.
+          mail_error: Email(s) not send. <br/> Check email configuration for each vehicle.
         kmz_email:
           action: KMZ Track by E-Mail
           success: E-Mail sent successfully
@@ -2110,7 +2107,9 @@ en:
         An update of existing stores (unchanged store references) is made and
         the new ones are added.
       replace_yes: Delete previous facilities
-      replace_yes_help: Delete and replace facilities with imported ones. Overwrite all facilities.
+      replace_yes_help: >-
+        Delete and replace facilities with imported ones. Overwrite all
+        facilities.
       replace_confirm: >-
         Delete all stores and their amendments and replace them with imported
         ones?
@@ -2639,8 +2638,8 @@ en:
       title: Listing sectorisations
       new: New Sectorisation
       over_max_limit: >-
-        You have reached the sectorisations number limit for your account (Account
-        Limit: %{limit})
+        You have reached the sectorisations number limit for your account
+        (Account Limit: %{limit})
     new:
       title: New Sectorisation
     form:

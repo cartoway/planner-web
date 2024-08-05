@@ -709,13 +709,35 @@ de:
         name_help: Markenname des Resellers
         application_name_help: Website-Name des Resellers
         sms_api_key_help: 'API-Schlüssel, um SMS senden zu können'
-        website_url_help: "Adresse der Website. Es kann \"{LG}\" verwendet werden, das durch eine Sprache wie \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/)."
-        welcome_url_help: "Die Adresse der Internetseite wurde als HTML als \"iframe\" auf der Startseite eingefügt. \"{LG}\" kann durch einen Sprachcode wie \"en\", \"fr\" usw. ersetzt werden (z. B.: https://cartoway.com/{LG}/app-news)."
-        help_url_help: "Adresse der Internetseite mit Hilfeinhalt. Es kann \"{LG}\" verwendet werden, das durch einen Sprachcode wie beispielsweise \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/help-center)."
-        contact_url_help: "Adresse der Internetseite mit Kontaktformular. Es kann \"{LG}\" verwendet werden, das durch eine Sprache wie \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/contact-support/)."
-        subscription_url_help: "Adresse der Internetseite mit Abonnementinhalten für einen Testkunden. Es kann \"{LG}\" verwendet werden, das durch eine Sprache wie \"en\", \"fr\" usw. ersetzt wird (z. B.: https://cartoway.com/{LG}/planner-web-subscription-request)."
-        audience_url_help: "Adresse der Internetseite, die das Zielgruppen-Dashboard enthält. Es kann \"{ID}\" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})"
-        behavior_url_help: "Adresse der Internetseite, die das Verhaltens-Dashboard enthält. Es kann \"{ID}\" verwendet werden, das durch die Anzahl der Tage ersetzt wird (z. B.: https://analytics.cartoway.com?id={ID})"
+        website_url_help: >-
+          Adresse der Website. Es kann "{LG}" verwendet werden, das durch eine
+          Sprache wie "en", "fr" usw. ersetzt wird (z. B.:
+          https://cartoway.com/{LG}/).
+        welcome_url_help: >-
+          Die Adresse der Internetseite wurde als HTML als "iframe" auf der
+          Startseite eingefügt. "{LG}" kann durch einen Sprachcode wie "en",
+          "fr" usw. ersetzt werden (z. B.: https://cartoway.com/{LG}/app-news).
+        help_url_help: >-
+          Adresse der Internetseite mit Hilfeinhalt. Es kann "{LG}" verwendet
+          werden, das durch einen Sprachcode wie beispielsweise "en", "fr" usw.
+          ersetzt wird (z. B.: https://cartoway.com/{LG}/help-center).
+        contact_url_help: >-
+          Adresse der Internetseite mit Kontaktformular. Es kann "{LG}"
+          verwendet werden, das durch eine Sprache wie "en", "fr" usw. ersetzt
+          wird (z. B.: https://cartoway.com/{LG}/contact-support/).
+        subscription_url_help: >-
+          Adresse der Internetseite mit Abonnementinhalten für einen Testkunden.
+          Es kann "{LG}" verwendet werden, das durch eine Sprache wie "en", "fr"
+          usw. ersetzt wird (z. B.:
+          https://cartoway.com/{LG}/planner-web-subscription-request).
+        audience_url_help: >-
+          Adresse der Internetseite, die das Zielgruppen-Dashboard enthält. Es
+          kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt
+          wird (z. B.: https://analytics.cartoway.com?id={ID})
+        behavior_url_help: >-
+          Adresse der Internetseite, die das Verhaltens-Dashboard enthält. Es
+          kann "{ID}" verwendet werden, das durch die Anzahl der Tage ersetzt
+          wird (z. B.: https://analytics.cartoway.com?id={ID})
         customer_audience_url_help: >-
           Adresse der Internetseite, die das Zielgruppen-Dashboard für einen
           Kunden enthält. Es kann "{ID}" verwendet werden, das durch die
@@ -919,7 +941,7 @@ de:
         werden.
       sms_from_customer_name_help: 'Wenn angekreuzt, wird "%{c}" als SMS-Absendername verwendet'
       speed_multiplier_default: '%{n} (Standardwert)'
-      speed_multiplier_help: "Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit."
+      speed_multiplier_help: Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit.
       audience_url_help: Gehen Sie zur Zielgruppenseite des Kunden-Dashboards.
       behavior_url_help: Gehen Sie zur Verhaltensseite des Kunden-Dashboards.
       submit: Globale Einstellungen aktualisieren
@@ -987,7 +1009,7 @@ de:
         Strecken werden verlorengehen.
     form:
       ref_help: Eine freie Referenz
-      detail_help: "Nicht geokodierte Adressergänzung, z. B. Wohnungsnummer"
+      detail_help: 'Nicht geokodierte Adressergänzung, z. B. Wohnungsnummer'
       comment_help: Lieferinformationen
       locate_manually: Manuelles Auffinden auf der Karte
       geocoding_accuracy_none: Nicht zutreffend
@@ -1171,7 +1193,9 @@ de:
         Ländername (Schreibweise ist entscheidend für eine zuverlässige
         Geokodierung)
       lat: Breite
-      lat_desc: "Breitengrad des Zielorts in Dezimalgraden zwischen -90° und 90°. Z. B. 45,91"
+      lat_desc: >-
+        Breitengrad des Zielorts in Dezimalgraden zwischen -90° und 90°. Z. B.
+        45,91
       lat_format: Gleitkommazahl zwischen -90 und 90
       lng: Länge
       lng_desc: >-
@@ -1179,7 +1203,10 @@ de:
         Beispiel: -0,781
       lng_format: Gleitkommazahl zwischen -180 und 180
       geocoding_accuracy: Genauigkeit der Geokodierung
-      geocoding_accuracy_desc: "Qualitätsbewertung für die Umrechnung der Straßenadresse des Zielorts in geografische Koordinaten. Diese Angabe wird durch eine Punktzahl zwischen 0 und 1 ausgedrückt. Beispiel: 0,70 bedeutet 70 % Genauigkeit."
+      geocoding_accuracy_desc: >-
+        Qualitätsbewertung für die Umrechnung der Straßenadresse des Zielorts in
+        geografische Koordinaten. Diese Angabe wird durch eine Punktzahl
+        zwischen 0 und 1 ausgedrückt. Beispiel: 0,70 bedeutet 70 % Genauigkeit.
       geocoding_accuracy_format: Gleitkommazahl zwischen 0 und 1
       geocoding_level: Geokodierungsebene
       geocoding_level_desc: >-
@@ -1426,7 +1453,7 @@ de:
           die Durchschnittsgeschwindigkeit der Fahrzeuge wissen müssen. Wie
           Open-Source-Karten, Geokodierung und Optimierungsalgorithmen
           funktionieren.
-        time: "⏱3 Min."
+        time: ⏱3 Min.
         doc_link: Dokument – Bevor Sie beginnen
         doc_href: /manual/00-before_start.html
       panel_two:
@@ -1435,7 +1462,7 @@ de:
           Erfahren Sie, wie man sich in der %{name} Software anmeldet und was
           ihre Grundlagen sind: Datenimport, Streckenoptimierung und
           Datenexport.
-        time: "⏱2 Min."
+        time: ⏱2 Min.
         doc_link: 'Dokument – Beginnen mit %{name}.'
         doc_href: /manual/01-start.html
       panel_three:
@@ -1444,7 +1471,7 @@ de:
           Passwort und Benutzername, Art des Fuhrparks, durchschnittliche
           Verweildauer, Export optimierter Pläne auf GPS-Geräte, Export
           optimierter Pläne als Roadmaps.
-        time: "⏱6 Min."
+        time: ⏱6 Min.
         doc_link: Dokument – Globale und Benutzereinstellungen
         doc_href: /manual/02-customer_account_users_settings.html
       footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
@@ -1464,7 +1491,7 @@ de:
           Konfigurieren der Fahrzeuge, ihrer Verbrauchswerte und ihrer
           Kapazität. Definieren Sie die Streckenfunktion gemäß dem Fahrzeugtyp
           und konfigurieren Sie die Lager.
-        time: "⏱15 M."
+        time: ⏱15 M.
         doc_link: Dokument – Fahrzeugmanagement
         doc_href: /manual/03-vehicles_configuration.html
       panel_two:
@@ -1473,7 +1500,7 @@ de:
           Erstellen oder Importieren von Zielortdaten (Referenz, Menge,
           Adressen, Verweildauer, Besuchszeitfenster, Labels) und Löschen dieser
           Daten. Exportieren der Zielortdaten ...
-        time: "⏱9 Min."
+        time: ⏱9 Min.
         doc_link: Dokument – Zielortmanagement
         doc_href: /manual/04-destinations.html
       panel_three:
@@ -1482,7 +1509,7 @@ de:
           eine Zoneneinteilung manuell erstellen. Erstellen Sie automatisch eine
           Zoneneinteilung aus dem Streckenplan oder halten Sie eine Anzahl von
           Zonen ein. Ändern Sie schließlich eine Zoneneinteilung.
-        time: "⏱5 Min."
+        time: ⏱5 Min.
         doc_link: Dokument – Zoneneinteilungsmanagement
         doc_href: /manual/05-sectorisations.htmll
       footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
@@ -1512,7 +1539,7 @@ de:
           Erstellen eines Streckenplans, Anwenden einer Zoneneinteilung,
           Streckenoptimierung, Exportieren von Strecken (Straßenkarte,
           Mobiltelefon, GPS, Kalender, Tabellenkalkulation).
-        time: "⏱20 Min."
+        time: ⏱20 Min.
         doc_link: Dokument – Plan- und Streckenmanagement
         doc_href: /manual/06-plans.html
       panel_two:
@@ -1521,7 +1548,7 @@ de:
           Benutzen Sie TomTom WEBFLEET? Erfahren Sie, wie Sie %{name} und TomTom
           WEBFLEET miteinander verbinden. Wie der Planer den Link erstellen kann
           und wie Außendienstmitarbeiter diesen täglich nutzen können.
-        time: "⏱9 Min."
+        time: ⏱9 Min.
         doc_link: Dokument – TomTom WEBFLEET
         doc_href: /manual/07-tomtom_webfleet.html
       panel_three:
@@ -1529,7 +1556,7 @@ de:
         content: >-
           Erweiterte Optionen verwenden: Erstellen mehrerer Besuche mit
           unterschiedlichen Einstellungen für den gleichen Zielort usw.
-        time: "⏱4 Min."
+        time: ⏱4 Min.
         doc_link: Dokument – Erweiterte Optionen
         doc_href: /manual/08-advanced_options.html
       footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
@@ -1562,8 +1589,8 @@ de:
       link: 'Hiermit beantrage ich ein Abonnement für %{name}.'
       preheader: >-
         Ihr kostenloser Demozeitraum endet in Kürze. Wir danken Ihnen für Ihr
-        Interesse an der Lösung und hoffen, dass
-        diese Erfahrungen Ihre Erwartungen erfüllt haben.
+        Interesse an der Lösung und hoffen, dass diese Erfahrungen Ihre
+        Erwartungen erfüllt haben.
       footer: 'Sie erhalten diese E-Mail als Benutzer von %{name}.'
   plannings:
     menu:
@@ -2021,7 +2048,10 @@ de:
         unter https://de.wikipedia.org/wiki/Webfarbe
       color_format: '#000000 oder schwarz'
       icon: Symbol
-      icon_desc: "Name des Symbols, das Sie aus der Liste http://fontawesome.io/icons ausgewählt haben. Bitte geben Sie das Präfix \"fa-\" ein. Z. B. fa-Erstellung."
+      icon_desc: >-
+        Name des Symbols, das Sie aus der Liste http://fontawesome.io/icons
+        ausgewählt haben. Bitte geben Sie das Präfix "fa-" ein. Z. B.
+        fa-Erstellung.
       icon_size: Symbolgröße
       icon_size_desc: >-
         Größe des Symbols, das Ihre Filiale auf der Karte darstellt. Standard:
@@ -2051,7 +2081,9 @@ de:
         Ländername (Schreibweise ist entscheidend für eine zuverlässige
         Geokodierung)
       lat: Breite
-      lat_desc: "Breitengrad des Zielorts in Dezimalgraden zwischen -90° und 90°. Z. B. 45,91"
+      lat_desc: >-
+        Breitengrad des Zielorts in Dezimalgraden zwischen -90° und 90°. Z. B.
+        45,91
       lat_format: Gleitkommazahl zwischen -90 und 90
       lng: Länge
       lng_desc: >-
@@ -2059,7 +2091,12 @@ de:
         Beispiel: -0,781
       lng_format: Gleitkommazahl zwischen -180 und 180
       geocoding_accuracy: Genauigkeit der Geokodierung
-      geocoding_accuracy_desc: "Qualitätswert, der bei Umrechnung der Zielortadresse in geografische Koordinaten angegeben wird. Bei weniger als 85 % überprüfen Sie bitte Ihre Rechtschreibung und aktualisieren Sie die Geokodierung. Diese Punktzahl wird mit einem Wert zwischen 0 und 1 ausgedrückt. Beispiel: 0,70 bedeutet 70 % Genauigkeit."
+      geocoding_accuracy_desc: >-
+        Qualitätswert, der bei Umrechnung der Zielortadresse in geografische
+        Koordinaten angegeben wird. Bei weniger als 85 % überprüfen Sie bitte
+        Ihre Rechtschreibung und aktualisieren Sie die Geokodierung. Diese
+        Punktzahl wird mit einem Wert zwischen 0 und 1 ausgedrückt. Beispiel:
+        0,70 bedeutet 70 % Genauigkeit.
       geocoding_accuracy_format: Gleitkommazahl von 0 bis 1
       geocoding_level: Geokodierungsebene
       geocoding_level_desc: Präzision bei der Umwandlung der Zieladresse in geografische Koordinaten
@@ -2150,7 +2187,7 @@ de:
       emission: Emission
       emission_desc: Kraftstoffart
       consumption: Verbrauch
-      consumption_desc: "durchschnittlicher Kraftstoffverbrauch in Litern pro 100 km"
+      consumption_desc: durchschnittlicher Kraftstoffverbrauch in Litern pro 100 km
       capacities: Kapazitäten
       capacities_desc: Maximale Fahrzeugkapazitäten
       router_mode: Streckenfunktion
@@ -2160,7 +2197,7 @@ de:
       router_options: Router-Optionen
       router_options_desc: Verwendung besonderer Streckenführungsoptionen erzwingen
       speed_multiplier: Geschwindigkeitsmultiplikator
-      speed_multiplier_desc: "Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit."
+      speed_multiplier_desc: Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit.
       color: Farbe
       color_desc: dem Fahrzeug zugeordnete Farbe
       tags: Fahrzeugfertigkeiten
@@ -2194,8 +2231,8 @@ de:
       emissions:
         help: Kraftstoffart
       consumption:
-        help: "Durchschnittlicher Kraftstoffverbrauch in Litern pro 100 km"
-        help_miles: "Durchschnittlicher Kraftstoffverbrauch in Litern pro 62,1 Meilen"
+        help: Durchschnittlicher Kraftstoffverbrauch in Litern pro 100 km
+        help_miles: 'Durchschnittlicher Kraftstoffverbrauch in Litern pro 62,1 Meilen'
       capacities:
         label: Kapazitäten
         default: '%{n} (Standardwert)'
@@ -2209,7 +2246,10 @@ de:
         default: Standard
       speed_multiplier:
         default: '%{n} (Standardwert)'
-        help: "Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit. Die globale Feinabstimmung der Einstellungen wird auch bei der Berechnung verwendet."
+        help: >-
+          Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit. Die globale
+          Feinabstimmung der Einstellungen wird auch bei der Berechnung
+          verwendet.
       contact_email:
         help: E-Mail des Fahrergeräts
       contact_phone:
@@ -2658,7 +2698,7 @@ de:
       ton: Tonnen
       kgco2e_html: kgCO<sub>2</sub>e
       kgco2e_l_html: kgCO<sub>2</sub>e/l
-      l_100km: "l/100 km"
+      l_100km: l/100 km
       l_62Miles: 'l/62,1 Meilen'
       hour_minute: 'Stunde : Minute'
       hour_minute_second: 'Stunde : Minute : Sekunde'
