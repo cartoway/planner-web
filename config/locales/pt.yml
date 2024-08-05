@@ -1498,7 +1498,7 @@ pt:
       none_column: Não encontrada qualquer correspondencia de coluna
       missing_name: falta "nome".
       missing_location: '"localidade / código postal" ou "lat / long" em falta.'
-      invalid_numeric_value: "valor numérico «%{value}» invalido."
+      invalid_numeric_value: 'valor numérico «%{value}» invalido.'
       check_custom_columns: Verifique a definição das colunas a importar.
       quantity_operation_format: '[preencher | esvaziar]'
       quantity_operation_fill: preencher
@@ -1585,8 +1585,8 @@ pt:
         Foi-lhe enviado um ficheiro KMZ contendo informação de rotas, anexado a
         este email desde %{s}.
       vehicle: 'Veículo: %{name}'
-      planning: "Plano de rotas: %{name} %{date}"
-      planning_ref: "Referencia do plano: %{ref}"
+      planning: 'Plano de rotas: %{name} %{date}'
+      planning_ref: 'Referencia do plano: %{ref}'
       route_ref: 'Referencia da rota: %{ref}'
       order_array: 'Encomendas: %{name}'
     send_computed_ics_route:
@@ -1596,9 +1596,9 @@ pt:
         Foi-lhe enviado um iCalender de %{s}, poderá: copiar/colar o link na sua
         agenda (a atualização será automática) ou pode clicar neste link para
         descarregar o ficheiro (neste caso não haverá atualização automática).
-      vehicle: "Veículo: %{name}"
+      vehicle: 'Veículo: %{name}'
       planning: 'Plano de rotas: %{name} %{date}'
-      planning_ref: "Referencia do plano: %{ref}"
+      planning_ref: 'Referencia do plano: %{ref}'
       route_ref: 'Referencia da rota: %{ref}'
       order_array: 'Encomendas: %{name}'
       link: 'Link para descarregar: <a href=%{link}>iCalendar Plan</a>'
@@ -1716,8 +1716,8 @@ pt:
       panel_three:
         title: Gestão de setorizaçãoes
         content: >-
-          criar manualmente um setorização. Criar automaticamente um setorização a
-          partir do plano de rotas ou respeitante a um numero de zonas.
+          criar manualmente um setorização. Criar automaticamente um setorização
+          a partir do plano de rotas ou respeitante a um numero de zonas.
           Finalmente, modificar um setorização.
         time: ⏱5min.
         doc_link: Doc - Gestão de setorizaçãoes
@@ -1808,7 +1808,9 @@ pt:
         icalendar_email: Agenda iCal por email
         spreadsheet: Folha de cálculo CSV / Excel
         none_planning: Por favor selecione pelo menos um plano para exportar
-      list_message: "Você alcançou o limite aconselhado de planos rotas associados à sua conta (Limite: %{limit})"
+      list_message: >-
+        Você alcançou o limite aconselhado de planos rotas associados à sua
+        conta (Limite: %{limit})
     edit:
       vehicles: Veículos
       current_position: 'Posição do veículo:'
@@ -1864,7 +1866,9 @@ pt:
       optimize_confirm: Lançar um calculo de otimização?
       optimize_complete: Otimização terminada
       optimize_failed: Falha na otimização
-      zoning_confirm: Guardar e aplicar o nova setorização? As rotas do plano serão modificadas
+      zoning_confirm: >-
+        Guardar e aplicar o nova setorização? As rotas do plano serão
+        modificadas
       page_change_zoning_confirm: Pretende deixar a página e abandonar alterações de setorização?
       route_placeholder: Ref. da rota.
       service_time: Duração do serviço

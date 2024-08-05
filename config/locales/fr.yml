@@ -1704,8 +1704,8 @@ fr:
       link: 'Je demande à m''abonner à %{name}'
       preheader: >-
         Vous arrivez au terme de votre période d’essai. Nous vous remercions de
-        l’intérêt que vous portez à la solution et
-        nous espérons que l'expérience a répondu à vos attentes.
+        l’intérêt que vous portez à la solution et nous espérons que
+        l'expérience a répondu à vos attentes.
       footer: 'Vous recevez ce message en tant qu''utilisateur de %{name}'
   plannings:
     menu:
