@@ -1374,12 +1374,12 @@ pt:
           sort_geocoding: Mostrar primeiro as geocodificações pouco fiáveis
       over_max_limit: >-
         Você atingiu o nùmero màximo de pontos para a sua conta. (Limite da
-        conta : %{limit})
+        conta: %{limit})
     new:
       title: Novo destino
     import_file:
       refs_duplicate: 'A referência: "%{refs}" está duplicada.'
-      refs_visit_duplicate: 'A "referência de visita" : "%{refs}" está duplicada.'
+      refs_visit_duplicate: 'A "referência de visita": "%{refs}" está duplicada.'
       ref: referência
       ref_desc: >-
         um identificador estável, constante e único que permita a atualização
@@ -1498,7 +1498,7 @@ pt:
       none_column: Não encontrada qualquer correspondencia de coluna
       missing_name: falta "nome".
       missing_location: '"localidade / código postal" ou "lat / long" em falta.'
-      invalid_numeric_value: "valor numérico « %{value} » invalido."
+      invalid_numeric_value: "valor numérico «%{value}» invalido."
       check_custom_columns: Verifique a definição das colunas a importar.
       quantity_operation_format: '[preencher | esvaziar]'
       quantity_operation_fill: preencher
@@ -1585,8 +1585,8 @@ pt:
         Foi-lhe enviado um ficheiro KMZ contendo informação de rotas, anexado a
         este email desde %{s}.
       vehicle: 'Veículo: %{name}'
-      planning: "Plano de rotas : %{name} %{date}"
-      planning_ref: "Referencia do plano : %{ref}"
+      planning: "Plano de rotas: %{name} %{date}"
+      planning_ref: "Referencia do plano: %{ref}"
       route_ref: 'Referencia da rota: %{ref}'
       order_array: 'Encomendas: %{name}'
     send_computed_ics_route:
@@ -1596,15 +1596,15 @@ pt:
         Foi-lhe enviado um iCalender de %{s}, poderá: copiar/colar o link na sua
         agenda (a atualização será automática) ou pode clicar neste link para
         descarregar o ficheiro (neste caso não haverá atualização automática).
-      vehicle: "Veículo : %{name}"
+      vehicle: "Veículo: %{name}"
       planning: 'Plano de rotas: %{name} %{date}'
-      planning_ref: "Referencia do plano : %{ref}"
+      planning_ref: "Referencia do plano: %{ref}"
       route_ref: 'Referencia da rota: %{ref}'
       order_array: 'Encomendas: %{name}'
       link: 'Link para descarregar: <a href=%{link}>iCalendar Plan</a>'
   user_mailer:
     layout:
-      welcome: 'Bemvindo(a) a %{name} !'
+      welcome: 'Bemvindo(a) a %{name}!'
       staff:
         content: >-
           Para si, a experiência %{name} começa agora! A nossa equipa está
@@ -1619,7 +1619,7 @@ pt:
     password:
       subject: 'Defina a sua palavra passe para %{name}'
       title: Defina a sua palavra passe
-      welcome: 'Bemvindo a %{name} !'
+      welcome: 'Bemvindo a %{name}!'
       detail:
         content: >-
           Obrigado por ter escolhido a solução de planificação e otimização de
@@ -1764,7 +1764,7 @@ pt:
       panel_three:
         title: 'Opções avançadas:'
         content: >-
-          utilize opções avançadas : crie multiplas visitas ao mesmo ponto com
+          utilize opções avançadas: crie multiplas visitas ao mesmo ponto com
           configurações diferentes etc.
         time: ⏱4min.
         doc_link: Doc - Opções avançadas
@@ -1808,7 +1808,7 @@ pt:
         icalendar_email: Agenda iCal por email
         spreadsheet: Folha de cálculo CSV / Excel
         none_planning: Por favor selecione pelo menos um plano para exportar
-      list_message: "Você alcançou o limite aconselhado de planos rotas associados à sua conta (Limite : %{limit})"
+      list_message: "Você alcançou o limite aconselhado de planos rotas associados à sua conta (Limite: %{limit})"
     edit:
       vehicles: Veículos
       current_position: 'Posição do veículo:'
@@ -2461,7 +2461,7 @@ pt:
       l_100km: l/100 km
       l_62Miles: l/62.1 mi.
       hour_minute: 'hora:minuto'
-      hour_minute_second: 'hora : minuto : segundo'
+      hour_minute_second: 'hora: minuto: segundo'
     value:
       _true: verdade
       _false: falso
