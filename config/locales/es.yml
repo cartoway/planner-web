@@ -95,13 +95,13 @@ es:
         one: parada
         other: paradas
         type:
-          store: depósito
+          store: almacén
           visit: visita
           rest: pausa
-      store: Deposito
+      store: Almacén
       stores:
-        one: deposito
-        other: depósitos
+        one: almacén
+        other: almacenes
       tag: Etiqueta
       tags:
         one: etiqueta
@@ -157,7 +157,7 @@ es:
         print_header: Encabezamiento de las giras
         print_stop_time: Incluir los horarios de pasaje
         print_map: Incluir el mapa
-        stores: Depósitos
+        stores: Almacenes
         enable_orders: Activar los mandos
         enable_multi_vehicle_usage_sets: Permitir las configuraciones de vehículos múltiples
         enable_references: Mostrar las referencias
@@ -299,8 +299,8 @@ es:
         distance: Distancia
         time: Duración
       store:
-        store_start: Deposito inicio
-        store_end: Deposito fin
+        store_start: Almacén inicio
+        store_end: Almacén fin
         name: Nombre
         address: Dirección
         street: Vía
@@ -381,10 +381,10 @@ es:
         vehicle_id: Vehículo
         time_window_start: Horario inicio
         time_window_end: Horario fin
-        store_start: Deposito salida
-        store_start_id: Deposito salida
-        store_stop: Deposito llegada
-        store_stop_id: Deposito llegada
+        store_start: Almacén salida
+        store_start_id: Almacén salida
+        store_stop: Almacén llegada
+        store_stop_id: Almacén llegada
         rest_start: Inicio franja descanso
         rest_stop: Fin franja descanso
         rest_duration: Duración de descanso
@@ -397,10 +397,10 @@ es:
         name: Nombre
         time_window_start: Horario inicio
         time_window_end: Horario fin
-        store_start: Deposito salida
-        store_start_id: Deposito salida
-        store_stop: Deposito llegada
-        store_stop_id: Deposito llegada
+        store_start: Almacén salida
+        store_start_id: Almacén salida
+        store_stop: Almacén llegada
+        store_stop_id: Almacén llegada
         rest_start: Inicio franja descanso
         rest_stop: Fin franja descanso
         rest_duration: Duración de descanso
@@ -521,9 +521,9 @@ es:
             destinations:
               over_max_limit: Sobrepaso del numero máximo de clientes
             stores:
-              over_max_limit: Sobrepaso del numero máximo de depósitos
+              over_max_limit: Sobrepaso del numero máximo de almacenes
         store:
-          at_least_one: Por lo menos un deposito es necesario
+          at_least_one: Por lo menos un almacén es necesario
           icon_unknown: no es un icono font-awesome autorizado
           icon_size_invalid: no es un tamaño valido
         route:
@@ -557,7 +557,7 @@ es:
       lng: '-3.66242'
       city: Madrid
     edit:
-      title: Importar depósitos
+      title: Importar almacenes
     form:
       ref: Referencia
       ref_help: Referencia libre
@@ -810,8 +810,8 @@ es:
       clear: Suprimir todos los clientes
       destinations: Clientes
       import: Importar
-      stores: Depósitos
-      import_stores: Importar depósitos
+      stores: Almacenes
+      import_stores: Importar almacenes
       tags: Etiquetas
     form:
       detail_help: 'Complemento de dirección no geocodable, ej. numero de escalera'
@@ -917,7 +917,7 @@ es:
         fichero.
       route_desc: numero o referencia de la gira en el plan.
       ref_vehicle_desc: referencia o nombre del vehículo que efectúa la parada en le plan.
-      stop_format: '[visita | deposito | descanso]'
+      stop_format: '[visita | almacén | descanso]'
       name_desc: nombre del cliente o de la destinación visitada
       street_desc: >-
         numero del edificio, tipo de vía y nombre de la vía (la ortografía tiene
@@ -1222,7 +1222,7 @@ es:
       route_quantity_help: Cantidad/Capacidad vehículo
       drag_help: Deslizar-colocar para ordenar el cliente en las giras
       active_help: Tener en cuenta o no un cliente en la gira
-      edit_store_help: Modificar las informaciones del deposito
+      edit_store_help: Modificar las informaciones del almacén
       edit_visit_help: Modificar las informaciones del cliente
       vehicles: Vehículos
       stops: paradas
@@ -1269,19 +1269,19 @@ es:
       name_vehicle_usage_set: nombre configuración
       open_desc: inicio del horario de trabajo del repartidor
       close_desc: fin del horario de trabajo del repartidor
-      store_start_ref: referencia deposito salida
-      store_start_desc: referencia del deposito de salida del repartidor
-      store_stop_ref: referencia deposito llegada
-      store_stop_desc: referencia del deposito de llegada del repartidor
+      store_start_ref: referencia almacén salida
+      store_start_desc: referencia del almacén de salida del repartidor
+      store_stop_ref: referencia almacén llegada
+      store_stop_desc: referencia del almacén de llegada del repartidor
       rest_start: inicio franja descanso
       rest_start_desc: horario del inicio de la franja de descanso
       rest_stop: fin franja descanso
       rest_stop_desc: hora de fin de la franja de descanso
       rest_duration: duración de descanso
       rest_duration_desc: duración del descanso del repartidor
-      store_rest_ref: referencia deposito descanso
+      store_rest_ref: referencia almacén descanso
       store_rest_desc: >-
-        refrencia del deposito para la pausa del repartidor /  necesaria si
+        refrencia del almacén para la pausa del repartidor /  necesaria si
         franja de descanso informada
       service_time_start: duración de servicio antes
       service_time_start_desc: duración de servicio antes y sin tener en cuenta la duración de pausa
@@ -1318,7 +1318,7 @@ es:
       stores: Salida / Llegada
       store:
         none: Ninguno
-      stores_help: Depositos de salida y de llegada
+      stores_help: Almacenes de salida y de llegada
       service_times: Duraciones de servicio
       service_time_start_addon: antes
       service_time_end_addon: después
@@ -1389,7 +1389,7 @@ es:
           vehicle_usage_set: Configuración de los vehículos
           vehicle_usage_set_help: >-
             Configuración de los vehículos a tener en cuenta, especialmente el
-            deposito de salida.
+            almacén de salida.
           size: Tiempo
         isochrone-progress:
           title: Calculo de isochrones en marcha
@@ -1401,7 +1401,7 @@ es:
           vehicle_usage_set: Configuración de los vehículos
           vehicle_usage_set_help: >-
             Configuración de los vehículos a tener en cuenta, especialmente el
-            deposito de salida.
+            almacén de salida.
           size: Distancia
         isodistance-progress:
           title: Calculo de isodistancias en marcha
@@ -1457,7 +1457,7 @@ es:
           button: Imprimir
       stores:
         index:
-          none_stores: Ningún deposito ha sido cargado
+          none_stores: Ningún almacén ha sido cargado
       zones:
         index:
           none_zones: Ninguna zona ha sido cargada
