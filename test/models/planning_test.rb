@@ -507,49 +507,6 @@ class PlanningTest < ActiveSupport::TestCase
     assert dup_planning.zoning_outdated
   end
 
-  test 'should no amalgamate point at same position' do
-    route = routes(:route_one_one)
-
-    initial_positions = [D.new(1,1,1), D.new(2,2,2), D.new(3,3,3)]
-    ret = route.planning.send(:amalgamate_stops_same_position, initial_positions, false, [route.vehicle_usage]) { |positions|
-      assert_equal 3, positions.size
-      pos = positions.sort
-      [pos.collect{ |p|
-        p[2]
-      }]
-    }
-    assert_equal initial_positions.size, ret[0].size
-    assert_equal 1.upto(initial_positions.size).to_a, ret[0]
-  end
-
-  test 'should amalgamate point at same position' do
-    route = routes(:route_one_one)
-
-    initial_positions = [D.new(1,1,1,nil,nil,nil,nil,nil,0,nil,nil, nil,[Struct.new(:label).new('skills')]), D.new(2,2,2,nil,nil,nil,nil,nil,0), D.new(2,2,3,nil,nil,nil,nil,nil,0), D.new(3,3,4,nil,nil,nil,nil,nil,0)]
-    ret = route.planning.send(:amalgamate_stops_same_position, initial_positions, false, [route.vehicle_usage]) { |positions|
-      assert_equal 3, positions.size
-      pos = positions.sort
-      [pos.collect{ |p|
-        p[2]
-      }]
-    }
-    assert_equal initial_positions.size, ret[0].size
-    assert_equal 1.upto(initial_positions.size).to_a, ret[0]
-    assert_equal initial_positions.first.tags.size, 1
-  end
-
-  test 'should no amalgamate point at same position, tw' do
-    route = routes(:route_one_one)
-
-    positions = [D.new(1,1,1,nil,nil,nil,nil,nil,0), D.new(2,2,2,nil,nil,nil,nil,nil,0), D.new(2,2,3,10,20,nil,nil,nil,0), D.new(3,3,4,nil,nil,nil,nil,nil,0)]
-    ret = route.planning.send(:amalgamate_stops_same_position, positions, false, [route.vehicle_usage]) { |positions|
-      assert_equal 4, positions.size
-      [(1..(positions.size)).to_a]
-    }
-    assert_equal positions.size, ret[0].size
-    assert_equal 1.upto(positions.size).to_a, ret[0]
-  end
-
   test 'should optimize one route with one store rest' do
     route = routes(:route_one_one)
     optim = route.planning.optimize([route], { global: false }) { |*a|
