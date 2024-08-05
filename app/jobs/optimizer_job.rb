@@ -47,17 +47,19 @@ class OptimizerJob < OptimizerJobStruct
       begin
         planning.optimize(routes, global: global, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers) do |positions, services, vehicles|
           optimum = Mapotempo::Application.config.optimizer.optimize(
-            positions, services, vehicles,
-            name: "c#{planning.customer_id} " + planning.name,
-            optimize_time: @@optimize_time_force || (optimize_time ? optimize_time * 1000 : nil),
-            max_split_size: planning.customer.optimization_max_split_size || @@max_split_size,
-            stop_soft_upper_bound: planning.customer.optimization_stop_soft_upper_bound || @@stop_soft_upper_bound,
-            vehicle_soft_upper_bound: planning.customer.optimization_vehicle_soft_upper_bound || @@vehicle_soft_upper_bound,
-            cluster_threshold: planning.customer.optimization_cluster_size || @@cluster_size,
-            cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
-            force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
-            optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
-            relations: planning.stop_relations
+            planning, routes,
+            {
+              name: "c#{planning.customer_id} " + planning.name,
+              optimize_time: @@optimize_time_force || (optimize_time ? optimize_time * 1000 : nil),
+              max_split_size: planning.customer.optimization_max_split_size || @@max_split_size,
+              stop_soft_upper_bound: planning.customer.optimization_stop_soft_upper_bound || @@stop_soft_upper_bound,
+              vehicle_soft_upper_bound: planning.customer.optimization_vehicle_soft_upper_bound || @@vehicle_soft_upper_bound,
+              cluster_threshold: planning.customer.optimization_cluster_size || @@cluster_size,
+              cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
+              force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
+              optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
+              relations: planning.stop_relations
+            }
           ) { |job_id, solution_data|
             if @job
               job_progress_save solution_data.merge('job_id': job_id, 'completed': false)

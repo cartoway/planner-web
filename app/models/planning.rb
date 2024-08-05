@@ -461,90 +461,14 @@ class Planning < ApplicationRecord
 
   def optimize(routes, option = { global: false, active_only: true, ignore_overload_multipliers: [] }, &optimizer)
     routes_with_vehicle = routes.select(&:vehicle_usage?)
-    stops_on = (routes.find{ |r| !r.vehicle_usage? }.try(:stops) || []) + routes_with_vehicle.flat_map{ |r|
-      r.stops_segregate(option[:active_only])[true]
-    }.compact
 
-    o = amalgamate_stops_same_position(stops_on, option[:global], routes_with_vehicle.map(&:vehicle_usage)) { |positions|
-      services_and_rests = positions.collect{ |position|
-        stop_id, time_window_start_1, time_window_end_1, time_window_start_2, time_window_end_2, priority, duration, vehicle_usage_id, quantities, quantities_operations, skills, rest, force_position = position[2..14]
-        if option[:ignore_overload_multipliers] && quantities
-          quantities.select!{ |id, _val|
-            option[:ignore_overload_multipliers].find{ |iom| iom[:unit_id] == id if iom[:ignore] }.nil?
-          }
-        end
+    solution = optimizer.call(self, routes)
 
-        {
-          stop_id: stop_id,
-          start1: time_window_start_1,
-          end1: time_window_end_1,
-          start2: time_window_start_2,
-          end2: time_window_end_2,
-          priority: priority,
-          duration: duration,
-          vehicle_usage_id: vehicle_usage_id,
-          quantities: quantities,
-          quantities_operations: quantities_operations,
-          skills: skills,
-          rest: rest,
-          force_position: force_position
-        }
-      }
-
-      unnil_positions(positions, services_and_rests) { |positions, services, rests|
-        positions = positions.collect{ |position| position[0..1] }
-        vehicles = routes_with_vehicle.collect{ |r|
-          position_start = r.vehicle_usage.default_store_start.try(&:position?) ? [r.vehicle_usage.default_store_start.lat, r.vehicle_usage.default_store_start.lng] : nil
-          position_stop = r.vehicle_usage.default_store_stop.try(&:position?) ? [r.vehicle_usage.default_store_stop.lat, r.vehicle_usage.default_store_stop.lng] : nil
-          # TODO: simplify positions without duplications (for instance same start and stop stores)
-          positions = (positions + [position_start, position_stop]).compact
-
-          vehicle_open = r.vehicle_usage.default_time_window_start
-          vehicle_open += r.vehicle_usage.default_service_time_start if r.vehicle_usage.default_service_time_start
-          vehicle_close = r.vehicle_usage.default_time_window_end
-          vehicle_close -= r.vehicle_usage.default_service_time_end if r.vehicle_usage.default_service_time_end
-          vehicle_skills = [r.vehicle_usage.tags, r.vehicle_usage.vehicle.tags].flatten.compact.map(&:label)
-          vehicle_time = r.vehicle_usage.default_work_time(true)
-          {
-            id: r.vehicle_usage_id,
-            router: r.vehicle_usage.vehicle.default_router,
-            router_dimension: r.vehicle_usage.vehicle.default_router_dimension,
-            router_options: r.vehicle_usage.vehicle.default_router_options.symbolize_keys.except(:time, :distance, :isochrone, :isodistance, :avoid_zones),
-            speed_multiplier: r.vehicle_usage.vehicle.default_speed_multiplier,
-            speed_multiplier_areas: Zoning.speed_multiplier_areas(zonings),
-            open: vehicle_open.to_f,
-            close: vehicle_close.to_f,
-            work_time: vehicle_time && vehicle_time.to_f,
-            max_distance: r.vehicle_usage.vehicle.max_distance,
-            max_ride_distance: r.vehicle_usage.vehicle.max_ride_distance,
-            max_ride_duration: r.vehicle_usage.vehicle.max_ride_duration,
-            stores: [position_start && :start, position_stop && :stop].compact,
-            rests: rests.select{ |s| s[:vehicle_usage_id] == r.vehicle_usage_id },
-            capacities: r.vehicle_usage.vehicle.default_capacities && r.vehicle_usage.vehicle.default_capacities.each.map{ |k, v|
-              capacity = option[:ignore_overload_multipliers].find{ |iom| iom[:unit_id] == k } if option[:ignore_overload_multipliers]
-              {
-                deliverable_unit_id: k,
-                capacity: capacity.nil? ? v : capacity[:ignore] ? nil : v,
-                overload_multiplier: customer.deliverable_units.find{ |du| du.id == k }.optimization_overload_multiplier || Mapotempo::Application.config.optimize_overload_multiplier
-              }
-            },
-            skills: vehicle_skills,
-            force_start: r.force_start,
-          }
-        }
-        # Remove unplanned stops if no global optimization
-        optimizer.call(positions, services, vehicles)[(routes.find{ |r| !r.vehicle_usage? } ? 0 : 1)..-1]
-      }
-    }
     routes_with_vehicle.each_with_index{ |r, i|
-      if o[i].size > 0
-        r.optimized_at = Time.now.utc
-        r.last_sent_to = r.last_sent_at = nil
-      elsif option[:global]
-        r.optimized_at = r.last_sent_to = r.last_sent_at = nil
-      end
+      r.optimized_at = Time.now.utc
+      r.last_sent_to = r.last_sent_at = nil
     }
-    o
+    solution
   end
 
   def set_stops(routes, stop_ids, options = { global: false, active_only: true })
