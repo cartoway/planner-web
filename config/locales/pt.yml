@@ -126,10 +126,10 @@ pt:
       visits:
         one: visita
         other: visitas
-      zoning: Zoneamento
+      zoning: Setorização
       zonings:
-        one: zoneamento
-        other: zoneamentos
+        one: setorização
+        other: setorizaçãoes
     attributes:
       customer:
         enable_external_callback: Ativar URL de chamada
@@ -188,7 +188,7 @@ pt:
         router_options_track: Utilizar caminhos
         optimization_max_split_size: Dimensão da divisão de otimização
         max_plannings: Max planos
-        max_zonings: Max zoneamentos
+        max_zonings: Max Setorizaçãoes
         max_destinations: Max pontos
         max_vehicle_usage_sets: Max parâmetros base dos veículos
         enable_sms: Ativar envio de SMS
@@ -261,7 +261,7 @@ pt:
         active: Ativo
         tag_ids: Categorias
         tags: Categorias
-        zoning_id: Zoneamento
+        zoning_id: Setorização
         created_at: Criado
         updated_at: Atualizado
         order_array_id: Lista de pedidos
@@ -597,7 +597,7 @@ pt:
             plannings:
               over_max_limit: O nùmero màximo de planos foi atingido
             zonings:
-              over_max_limit: O nùmero màximo de zoneamentos foi atingido
+              over_max_limit: O nùmero màximo de setorizaçãoes foi atingido
             vehicle_usage_sets:
               over_max_limit: O nùmero màximo de parâmetros base dos veículos foi atingido
         store:
@@ -906,7 +906,7 @@ pt:
       max_plannings_default: '%{n} (valor por defeito)'
       max_plannings_help: Nùmero màximo de planos autorizados na conta.
       max_zonings_default: '%{n} (valor por defeito)'
-      max_zonings_help: Nùmero màximo de zoneamentos autorizados na conta.
+      max_zonings_help: Nùmero màximo de setorizaçãoes autorizados na conta.
       max_destinations_default: '%{n} (valor por defeito)'
       max_destinations_help: Nùmero màximo de pontos autorizados na conta.
       max_vehicle_usage_sets_default: '%{n} (valor por defeito)'
@@ -1714,13 +1714,13 @@ pt:
         doc_link: Doc - Gestão de destinos
         doc_href: /manual/04-destinations.html
       panel_three:
-        title: Gestão de zoneamentos
+        title: Gestão de setorizaçãoes
         content: >-
-          criar manualmente um zoneamento. Criar automaticamente um zoneamento a
+          criar manualmente um setorização. Criar automaticamente um setorização a
           partir do plano de rotas ou respeitante a um numero de zonas.
-          Finalmente, modificar um zoneamento.
+          Finalmente, modificar um setorização.
         time: ⏱5min.
-        doc_link: Doc - Gestão de zoneamentos
+        doc_link: Doc - Gestão de setorizaçãoes
         doc_href: /manual/05-sectorisations.htmll
       footer: 'Recebe este email como utilizador de %{name}'
       adds:
@@ -1728,8 +1728,8 @@ pt:
         vehicules_params: Parametrização dos veículos
         destination_params: Parametrização dos destinos
         tags: Apresentação das etiquetas
-        zonage: Criação de zoneamento
-        zonage_update: Alteração de zoneamento
+        zonage: Criação de setorização
+        zonage_update: Alteração de setorização
       preheader: Veja a segunda parte dos recursos para começar.
     advanced_options:
       header: Podemos ajudá-lo a esclarecer alguns aspetos?
@@ -1745,7 +1745,7 @@ pt:
       panel_one:
         title: Gestão de planos e de rotas
         content: >-
-          criar um plano de rotas, aplicar um zoneamento, otimizar rotas,
+          criar um plano de rotas, aplicar um setorização, otimizar rotas,
           exportar rotas (mapa de rotas, telemóvel, GPS, calendário, folha de
           cálculo).
         time: ⏱20min.
@@ -1815,12 +1815,12 @@ pt:
       lock_routes: Bloquear rotas
       toggle_routes: Alternar rotas
       zonings:
-        label: Zoneamentos
-        success: Zoneamentos aplicados com sucesso
-        fail: Falha na aplicação de Zoneamentos
-        action: Aplicar Zoneamentos
-      zoning_new: Criar novo zoneamento a partir deste plano de rotas
-      zoning_edit: Modificar zoneamento a partir deste plano de rotas
+        label: Setorização
+        success: Setorização aplicada com sucesso
+        fail: Falha na aplicação de Setorização
+        action: Aplicar Setorização
+      zoning_new: Criar nova setorização a partir deste plano de rotas
+      zoning_edit: Modificar setorização a partir deste plano de rotas
       last_sent_to: Enviado para
       title: Modificar plano
       stops: paragens
@@ -1864,8 +1864,8 @@ pt:
       optimize_confirm: Lançar um calculo de otimização?
       optimize_complete: Otimização terminada
       optimize_failed: Falha na otimização
-      zoning_confirm: Guardar e aplicar o novo zoneamento? As rotas do plano serão modificadas
-      page_change_zoning_confirm: Pretende deixar a página e abandonar alterações de zoneamento?
+      zoning_confirm: Guardar e aplicar o nova setorização? As rotas do plano serão modificadas
+      page_change_zoning_confirm: Pretende deixar a página e abandonar alterações de setorização?
       route_placeholder: Ref. da rota.
       service_time: Duração do serviço
       exports: Exportar o plano de rotas
@@ -1904,9 +1904,9 @@ pt:
         kmz_track: Seguimento KMZ
       zoning:
         none: Nenhum
-        apply: Aplicar zoneamento
-        edit: Modificar zoneamento
-        new: Novo zoneamento
+        apply: Aplicar setorização
+        edit: Modificar setorização
+        new: Nova setorização
       order_array:
         edit: Modificar plano de encomendas
       map:
@@ -1919,7 +1919,7 @@ pt:
       refresh_help: >-
         Foram modificados parâmetros ou clientes utilizados neste plano de
         rotas. Necessário recalcular
-      outdated_zoning: O zoneamento foi alterado. Aplicar de novo para atualizar.
+      outdated_zoning: O setorização foi alterado. Aplicar de novo para atualizar.
       stops_help: Paragens planeadas / total
       duration_help: Soma da duração das rotas
       distance_help: Soma das distancias das rotas
@@ -1947,11 +1947,11 @@ pt:
         já não serão otimizados)
       automatic_insert_confirm: >-
         Fazer corresponder a rotas todas as paragens não planeadas? O resultado
-        já não será otimizado. Os zoneamentos são recomendados para fazer
+        já não será otimizado. Os setorizaçãoes são recomendados para fazer
         corresponder as paragens às rotas de forma mais precisa (Ok para
         continuar mesmo assim).
       automatic_insert_too_many: >-
-        Demasiadas paragens sem veículos. Os zoneamentos são recomendados para
+        Demasiadas paragens sem veículos. Os setorizaçãoes são recomendados para
         fazer corresponder as paragens às rotas de forma mais precisa
       active_all: Todos
       active_reverse: Inverter
@@ -2009,8 +2009,8 @@ pt:
           no_solution: Sem solução para o seu problema
           error: Impossível efetuar o cálculo.
         zoning:
-          title: Zoneamento
-          in_progress: Aplicando o novo zoneamento. Por favor aguarde
+          title: Setorização
+          in_progress: Aplicando o nova setorização. Por favor aguarde
         vehicle:
           title: Troca de veículo
           in_progress: Aplicando novo veículo. Por favor aguarde
@@ -2334,12 +2334,12 @@ pt:
       from_isodistance: Isodistancia
       from: desde
     menu:
-      zonings: Zonas
+      zonings: Sectores
     edit:
-      title: Alterar zoneamento
-      collapse_zoning_panel: Minimizar o painel de zoneamento
-      generate_confirm: Esta ação reinicializará todas as zonas correntes. Continuar?
-      vehicleless_confirm: Algumas zonas não têm veículo. Confirma?
+      title: Alterar setorização
+      collapse_zoning_panel: Minimizar o painel de setorização
+      generate_confirm: Esta ação reinicializará todas as sectores correntes. Continuar?
+      vehicleless_confirm: Alguns sectores não têm veículo. Confirma?
       isochrone_missing_vehicle: >-
         O Isocrono não pode ser gerada para, pelo menos, um veículo, devido a
         restrições do calculador de itinerários
@@ -2349,23 +2349,23 @@ pt:
       failed: Falha ao gerar o Isocrono
       success: Isocrono gerado corretamente
     index:
-      title: Listagem de zonas
-      new: Novo Zoneamento
+      title: Listagem de sectores
+      new: Nova setorização
     new:
-      title: Novo zoneamento
+      title: Nova setorização
     form:
       hide_out_of_route: Ocultar destinos não afetados
       all_destinations: Mostrar todos os destinos
       from_planning_help: >-
         É também possível filtrar destinos a partir de um plano de rotas,
-        modificando este zoneamento de acordo com o plano em questão
+        modificando esta setorização de acordo com o plano em questão
       stops_from_planning: 'Destinos do plano "%{s}"'
       generate: Gerar
       automatic:
-        one: 'Automático: 1 zona'
-        other: 'Automático: %{count} zonas'
+        one: 'Automático: 1 sector'
+        other: 'Automático: %{count} sectores'
       from_planning: A partir do plano rotas
-      zone_placeholder: Zona
+      zone_placeholder: Sector
       zone_vehicle: Veículo
       avoid_zone: Não circular nesta zona
       isochrone: Isocrono / veículo(s)
@@ -2418,7 +2418,7 @@ pt:
           none_stores: Nenhum armazém encontrado
       zones:
         index:
-          none_zones: Nenhuma zona encontrada
+          none_zones: Nenhuma sector encontrado
           without_vehicle: Sem veículo
   all:
     datepicker: dd-mm-yyyy
