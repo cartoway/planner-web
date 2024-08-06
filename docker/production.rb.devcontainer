@@ -106,10 +106,6 @@ Rails.application.configure do
     ActiveSupport::Cache::RedisStore.new(host: ENV['REDIS_HOST'] || 'localhost', namespace: namespace, expires_in: expires_in, raise_errors: true)
   end
 
-#  config.optimize = Ort.new(
-#    cache_factory('optimizer', 60*60*24*10),
-#    'http://localhost:4567/0.1/optimize_tsptw'
-#  )
   config.optimizer = OptimizerWrapper.new(
     cache_factory('optimizer_wrapper', 60*60*24*10),
     ENV['OPTIMIZER_URL'] || 'http://localhost:1791/0.1',

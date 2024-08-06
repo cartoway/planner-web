@@ -15,7 +15,6 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-require 'optim/ort'
 require 'optimizer_job'
 
 class Optimizer

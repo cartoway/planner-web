@@ -6,7 +6,6 @@ require_relative '../lib/routers/osrm'
 require_relative '../lib/routers/otp'
 require_relative '../lib/routers/here'
 require_relative '../lib/routers/router_wrapper'
-require_relative '../lib/optim/ort'
 require_relative '../lib/optim/optimizer_wrapper'
 require_relative '../lib/exceptions'
 
