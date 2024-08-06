@@ -52,6 +52,9 @@ class OptimizerWrapper
 
       route.stops
     }
+    stops += Stop.where(id: options[:moving_stop_ids])
+    stops.uniq!
+
     vrp_services, s_points = build_services(planning, stops, options.merge(use_skills: all_skills.any?, problem_skills: all_skills))
     vrp_rests = build_rests(stops, options)
     relations = collect_relations(routes, options)
@@ -76,7 +79,7 @@ class OptimizerWrapper
     vrp
   end
 
-  def optimize(planning, routes, options, &progress)
+  def optimize(planning, routes, options = {}, &progress)
     vrp = build_vrp(planning, routes, options)
     key = Digest::MD5.hexdigest(Marshal.dump(vrp))
 
@@ -87,7 +90,7 @@ class OptimizerWrapper
       result = solve(vrp, progress, key)
     end
 
-    [result['solutions'][0]['unassigned'] ? result['solutions'][0]['unassigned'].select{ |activity| activity['service_id'] }.collect{ |activity|
+    optimum = [result['solutions'][0]['unassigned'] ? result['solutions'][0]['unassigned'].select{ |activity| activity['service_id'] }.collect{ |activity|
       activity['service_id'][1..-1].to_i
     } : []] + vrp[:vehicles].collect{ |vehicle|
       route = result['solutions'][0]['routes'].find{ |r| r['vehicle_id'] == vehicle[:id] }
@@ -99,6 +102,8 @@ class OptimizerWrapper
         end
       }.compact # stores are not returned anymore
     }
+    optimum = optimum[1..-1] if routes.none?{ |route| !route.vehicle_usage? }
+    optimum
   end
 
   def solve(vrp, progress, key)
@@ -209,11 +214,13 @@ class OptimizerWrapper
 
       mission_ids = route.stops.map{ |stop|
         next if stop.is_a?(StopRest) && !stop.position? ||
-                !stop.active && options[:only_active]
+                !stop.active && options[:only_active] ||
+                options[:moving_stop_ids]&.include?(stop.id)
 
         "s#{stop.id}"
       }.compact
 
+      next if mission_ids.empty?
       {
         vehicle_id: "v#{route.vehicle_usage_id}",
         mission_ids: mission_ids
@@ -237,7 +244,10 @@ class OptimizerWrapper
       {
         id: "s#{stop.id}",
         type: 'service',
-        sticky_vehicle_ids: stop.route.vehicle_usage_id && (!options[:global] || stop.is_a?(StopRest)) ? ["v#{stop.route.vehicle_usage_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
+        sticky_vehicle_ids:
+          stop.route.vehicle_usage_id &&
+          (!options[:global] || stop.is_a?(StopRest)) &&
+          (options[:moving_stop_ids].nil? || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route.vehicle_usage_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
         activity: {
           point_id: service_point[:id],
           timewindows: [
@@ -344,7 +354,7 @@ class OptimizerWrapper
   end
 
   def collect_relations(routes, options)
-    return route_orders(routes) if options[:only_insertion]
+    return route_orders(routes, options) if options[:only_insertion]
 
     stops = routes.flat_map{ |route|
       next [] if route.vehicle_usage.nil? && !options[:global]
@@ -362,7 +372,6 @@ class OptimizerWrapper
     if options[:only_insertion]
       only_insertion_services(vrp[:services])
       only_insertion_vehicles(vrp[:vehicles])
-      only_insertion_relations(vrp[:relations])
       vrp[:rests] = []
     end
   end
@@ -413,16 +422,18 @@ class OptimizerWrapper
     }]
   end
 
-  def route_orders(routes)
+  def route_orders(routes, options = {})
     routes.map{ |route|
       next if route.vehicle_usage.nil?
 
       mission_ids = route.stops.map{ |stop|
         next if stop.is_a?(StopRest) && !stop.position? ||
-                !stop.active && options[:only_active]
+                !stop.active && options[:only_active] ||
+                options[:moving_stop_ids]&.include?(stop.id)
 
         "s#{stop.id}"
       }.compact
+      next if mission_ids.empty?
 
       {
         type: :order,
@@ -434,6 +445,8 @@ class OptimizerWrapper
   def only_insertion_services(services)
     services.each{ |service|
       timewindows = service.dig(:activity, :timewindows)
+      next unless timewindows
+
       timewindows.delete_at(1)
       timewindows[0].delete(:end)
     }
@@ -444,7 +457,7 @@ class OptimizerWrapper
     vehicles.each{ |vehicle|
       keys_to_remove.each{ |key| vehicle.delete(key) }
 
-      vehicle[:timewindow].delete(:end)
+      vehicle[:timewindow]&.delete(:end)
     }
   end
 
