@@ -15,7 +15,7 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-OptimizerJobStruct ||= Job.new(:customer_id, :planning_id, :route_id, :global, :active_only, :ignore_overload_multipliers, :nb_route)
+OptimizerJobStruct ||= Job.new(:customer_id, :planning_id, :route_id, :options)
 class OptimizerJob < OptimizerJobStruct
   @@optimize_time = Mapotempo::Application.config.optimize_time
   @@optimize_time_force = Mapotempo::Application.config.optimize_time_force
@@ -34,16 +34,16 @@ class OptimizerJob < OptimizerJobStruct
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
     planning = Planning.where(id: planning_id).first!
     routes = planning.routes.select { |r|
-      (route_id && r.id == route_id) || (!route_id && !global && r.vehicle_usage_id && r.size_active > 0) || (!route_id && global)
+      (route_id && r.id == route_id) || (!route_id && !options[:global] && r.vehicle_usage_id && r.size_active > 0) || (!route_id && options[:global])
     }.reject(&:locked)
 
-    routes.unshift(planning.routes.first) if !global && !planning.routes.first[:locked] && !route_id
+    routes.unshift(planning.routes.first) if !options[:global] && !planning.routes.first[:locked] && !route_id
 
     optimize_time = planning.customer.optimization_time || @@optimize_time
 
     optimum = unless routes.select(&:vehicle_usage_id).empty?
       begin
-        planning.optimize(routes, global: global, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers) do |positions, services, vehicles|
+        planning.optimize(routes, options.merge(synchronous: false)) do
           optimum = Mapotempo::Application.config.optimizer.optimize(
             planning, routes,
             {
@@ -56,7 +56,9 @@ class OptimizerJob < OptimizerJobStruct
               cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
               force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
               optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
-              relations: planning.stop_relations
+              relations: planning.stop_relations,
+              only_insertion: options[:only_insertion],
+              moving_stop_ids: options[:moving_stop_ids]
             }
           ) { |job_id, solution_data|
             if @job
@@ -81,7 +83,7 @@ class OptimizerJob < OptimizerJobStruct
 
     # Apply result
     if optimum
-      planning.set_stops(routes, optimum, { global: global, active_only: active_only })
+      planning.set_stops(routes, optimum, { global: options[:global], active_only: options[:active_only], only_insertion: options[:only_insertion] })
       planning.compute_saved
       planning.save!
     end

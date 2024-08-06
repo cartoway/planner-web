@@ -459,10 +459,10 @@ class Planning < ApplicationRecord
     end
   end
 
-  def optimize(routes, option = { global: false, active_only: true, ignore_overload_multipliers: [] }, &optimizer)
+  def optimize(routes, options = { global: false, active_only: true, ignore_overload_multipliers: [] }, &optimizer)
     routes_with_vehicle = routes.select(&:vehicle_usage?)
 
-    solution = optimizer.call(self, routes)
+    solution = optimizer.call(self, routes, **options)
 
     routes_with_vehicle.each_with_index{ |r, i|
       r.optimized_at = Time.now.utc
@@ -472,7 +472,7 @@ class Planning < ApplicationRecord
   end
 
   def set_stops(routes, stop_ids, options = { global: false, active_only: true })
-    raise 'Invalid routes count' unless routes.size == stop_ids.size
+    raise 'Invalid routes count' if routes.size != stop_ids.size && !options[:only_insertion]
     Route.transaction do
       stops_count = routes.collect{ |r| r.stops.size }.reduce(&:+)
       flat_stop_ids = stop_ids.flatten.compact

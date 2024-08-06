@@ -64,5 +64,45 @@ class V100::Plannings < Grape::API
         end
       end
     end
+
+    desc 'Insert one or more stop into planning routes.',
+      detail: 'Insert through optimization one or more stops in best routes and on best positions to have minimal influence on route\'s total time (this operation doesn\'t take into account time windows if they exist...). You should use this operation with existing stops in current planning\'s routes.',
+      nickname: 'optimizedInsertion',
+      success: V100::Status.success(:code_201, V100::Entities::Route),
+      failure: V100::Status.failures,
+      is_array: true
+    params do
+      requires :id, type: String, desc: SharedParams::ID_DESC
+      requires :stop_ids, type: Array[Integer], desc: 'Ids separated by comma. You should not have too many stops.', documentation: { param_type: 'form' }, coerce_with: CoerceArrayInteger
+      optional :active_only, type: Boolean, desc: 'Use only active stops.', default: true
+    end
+    patch ':id/optimized_insertion' do
+      puts params.inspect
+      Route.includes_destinations.scoping do
+        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+        raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
+        stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
+
+        begin
+          Planning.transaction do
+            moving_stop_ids = stops.map(&:id)
+            Optimizer.optimize(planning, nil, { only_insertion: true, moving_stop_ids: moving_stop_ids })
+            current_customer.save!
+          end
+        rescue VRPNoSolutionError
+          error! V01::Status.code_response(:code_304), 304
+        end
+        if params[:synchronous] && (params[:details] || params[:with_details])
+          present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
+        elsif planning.customer.job_optimizer
+          present planning.customer.job_optimizer, with: V01::Entities::Job
+        else
+          status 204
+        end
+      rescue Exceptions::JobInProgressError
+        status 409
+        present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+      end
+    end
   end
 end
