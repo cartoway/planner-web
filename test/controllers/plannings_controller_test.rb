@@ -3,8 +3,6 @@ require 'test_helper'
 require 'rexml/document'
 include REXML
 
-require 'optim/ort'
-
 class PlanningsControllerTest < ActionController::TestCase
 
   setup do

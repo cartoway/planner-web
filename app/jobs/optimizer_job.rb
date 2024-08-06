@@ -15,8 +15,6 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-require 'optim/ort'
-
 OptimizerJobStruct ||= Job.new(:customer_id, :planning_id, :route_id, :global, :active_only, :ignore_overload_multipliers, :nb_route)
 class OptimizerJob < OptimizerJobStruct
   @@optimize_time = Mapotempo::Application.config.optimize_time
