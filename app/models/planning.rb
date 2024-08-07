@@ -393,7 +393,7 @@ class Planning < ApplicationRecord
     }
   end
 
-  def stops_relationss
+  def stops_relations
     return [] if customer.stops_relations.empty?
 
     stop_hash = visits_to_stop_hash
