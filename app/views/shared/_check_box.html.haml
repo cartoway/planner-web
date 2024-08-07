@@ -4,7 +4,7 @@
     = local_assigns[:form].check_box field, { label: '' }.merge(options)
 - else
   = form.form_group label, { label: { text: label }, style: ('margin-bottom: 0 !important;' if local_assigns.key?(:help)) }.merge(options) do
-    %input{ name: name, value: "0", type: "hidden" }
+    %input{ name: name, value: "false", type: "hidden" }
     = check_box_tag name, 1, checked, options.merge(class: options[:check_box_class])
 - if local_assigns.key? :help
   %p.check-box.help-block{ class: options[:label_class] }
