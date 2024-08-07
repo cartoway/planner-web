@@ -65,7 +65,7 @@ class OptimizerWrapper
     }
 
     vrp = {
-      configuration: build_configuration(options.merge(vehicle_count: vrp_vehicles.size)),
+      configuration: build_configuration(options.merge(service_count: vrp_services.size, vehicle_count: vrp_vehicles.size)),
       name: options[:name],
       points: v_points + s_points,
       relations: relations,
@@ -75,7 +75,7 @@ class OptimizerWrapper
       units: vrp_units,
       vehicles: vrp_vehicles
     }
-    filter_constraints(vrp, options)
+    filter_constraints(routes, vrp, options)
     vrp
   end
 
@@ -103,6 +103,9 @@ class OptimizerWrapper
       }.compact # stores are not returned anymore
     }
     optimum = optimum[1..-1] if routes.none?{ |route| !route.vehicle_usage? }
+    if @removed_route_indices&.any?
+      @removed_route_indices.each{ |index| optimum.insert(index, [])}
+    end
     optimum
   end
 
@@ -162,6 +165,13 @@ class OptimizerWrapper
   private
 
   def build_configuration(options)
+    service_ratio = options[:moving_stop_ids]&.any? ? options[:moving_stop_ids].size.to_f / options[:service_count] : 1
+    optim_duration_min = if options[:optimize_minimal_time]
+      (service_ratio * options[:optimize_minimal_time] * options[:vehicle_count] * 1000).to_i
+    end
+    optim_duration_max = if options[:optimize_time]
+      (service_ratio * options[:optimize_time] * options[:vehicle_count] * options[:service_count]).to_i
+    end
     {
       preprocessing: {
         max_split_size: options[:max_split_size],
@@ -170,9 +180,8 @@ class OptimizerWrapper
         first_solution_strategy: :self_selection,
       },
       resolution: {
-        duration: options[:optimize_time] ? options[:optimize_time] * options[:vehicle_count] : nil,
-        # iterations_without_improvment: 100,
-        initial_time_out: options[:optimize_minimal_time] ? options[:optimize_minimal_time] * options[:vehicle_count] * 1000 : nil,
+        duration: optim_duration_max,
+        initial_time_out: optim_duration_min,
         time_out_multiplier: 2
       },
       restitution: {
@@ -368,10 +377,10 @@ class OptimizerWrapper
     relations
   end
 
-  def filter_constraints(vrp, options = {})
+  def filter_constraints(routes, vrp, options = {})
     if options[:only_insertion]
       only_insertion_services(vrp[:services])
-      only_insertion_vehicles(vrp[:vehicles])
+      only_insertion_vehicles(routes, vrp)
       vrp[:rests] = []
     end
   end
@@ -452,9 +461,26 @@ class OptimizerWrapper
     }
   end
 
-  def only_insertion_vehicles(vehicles)
+  def only_insertion_vehicles(routes, vrp)
     keys_to_remove = %i[capacities distance duration maximum_ride_distance maximum_ride_duration rest_ids skills]
-    vehicles.each{ |vehicle|
+    used_vehicle_hash = Hash.new { false }
+    vrp[:services].each{ |service|
+      service[:sticky_vehicle_ids]&.each{ |sticky_id|
+        used_vehicle_hash[sticky_id] = true
+      }
+    }
+    vrp[:vehicles].delete_if{ |vehicle|
+      !used_vehicle_hash.key?(vehicle[:id])
+    }
+    @removed_route_indices = routes.map.with_index{ |route, index|
+      next unless route.vehicle_usage?
+
+      next if used_vehicle_hash.key?("v#{route.vehicle_usage.vehicle_id}")
+
+      index
+    }.compact
+
+    vrp[:vehicles].each{ |vehicle|
       keys_to_remove.each{ |key| vehicle.delete(key) }
 
       vehicle[:timewindow]&.delete(:end)
