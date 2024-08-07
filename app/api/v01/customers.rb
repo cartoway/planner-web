@@ -113,7 +113,7 @@ class V01::Customers < Grape::API
     end
 
     def permit_recursive_params(params)
-      return params unless respond_to?(:each)
+      return params unless params.respond_to?(:each)
 
       params_hash = params.is_a?(ActionController::Parameters) ? params.to_unsafe_h : params
       params_hash.map do |key, value|
@@ -122,7 +122,7 @@ class V01::Customers < Grape::API
         elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
           { key => permit_recursive_params(value) }
         elsif value.present?
-          { key => value }
+          key
         end
       end
     end

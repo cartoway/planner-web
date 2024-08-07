@@ -262,15 +262,15 @@ class CustomersController < ApplicationController
   end
 
   def permit_recursive_params(unsafe_params)
-    return unsafe_params unless respond_to?(:each)
+    return unsafe_params unless unsafe_params.respond_to?(:each)
 
     unsafe_params&.map do |key, value|
       if value.is_a?(Array)
         { key => [permit_recursive_params(value.first)] }
       elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
         { key => permit_recursive_params(value) }
-      else
-        { key => value }
+      elsif value.present?
+        key
       end
     end
   end
