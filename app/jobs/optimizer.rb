@@ -43,7 +43,7 @@ class Optimizer
         planning.errors.add(:base, I18n.t('errors.planning.already_optimizing'))
         false
       else
-        job = OptimizerJob.new(planning.customer.id, planning.id, route&.id, options)
+        job = OptimizerJob.new(planning.customer.id, planning.id, route&.id, **options)
         if !options[:synchronous] && Mapotempo::Application.config.delayed_job_use
           planning.customer.job_optimizer = Delayed::Job.enqueue(job)
           planning.customer.job_optimizer.save!
