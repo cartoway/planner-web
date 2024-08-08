@@ -7,9 +7,9 @@
 name: "Ruby on Rails CI"
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "dev" ]
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -36,6 +36,8 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: '3.0.6'
+      - name: Install Ruby Dependencies
+        run: bundle install
       - name: Set Node.js 14.x
         uses: actions/setup-node@v3
         with:
