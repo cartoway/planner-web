@@ -127,10 +127,7 @@ class StoresControllerTest < ActionController::TestCase
   end
 
   test 'should upload' do
-    file = ActionDispatch::Http::UploadedFile.new({
-      tempfile: File.new(Rails.root.join('test/fixtures/files/import_stores_one.csv')),
-    })
-    file.original_filename = 'import_stores_one.csv'
+    file = fixture_file_upload('test/fixtures/files/import_stores_one.csv')
 
     import_count = 1
 
@@ -142,10 +139,7 @@ class StoresControllerTest < ActionController::TestCase
   end
 
   test 'should not upload' do
-    file = ActionDispatch::Http::UploadedFile.new({
-      tempfile: File.new(Rails.root.join('test/fixtures/files/import_invalid.csv')),
-    })
-    file.original_filename = 'import_invalid.csv'
+    file = fixture_file_upload('test/fixtures/files/import_invalid.csv')
 
     assert_difference('Store.count', 0) do
       post :upload_csv, params: { import_csv: { replace: false, file: file } }

@@ -264,11 +264,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'should upload' do
     customers(:customer_one).update(job_destination_geocoding_id: nil)
-    file = ActionDispatch::Http::UploadedFile.new({
-      tempfile: File.new(Rails.root.join('test/fixtures/files/import_destinations_one.csv')),
-    })
-    file.original_filename = 'import_destinations_one.csv'
-
+    file = fixture_file_upload('test/fixtures/files/import_destinations_one.csv')
     destinations_count = @destination.customer.destinations.count
     plannings_count = @destination.customer.plannings.select{ |planning| planning.tags_compatible? [tags(:tag_one)] }.count
     import_count = 1
@@ -286,11 +282,7 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should not upload' do
-    file = ActionDispatch::Http::UploadedFile.new({
-      tempfile: File.new(Rails.root.join('test/fixtures/files/import_invalid.csv')),
-    })
-    file.original_filename = 'import_invalid.csv'
-
+    file = fixture_file_upload('test/fixtures/files/import_invalid.csv')
     assert_difference('Destination.count', 0) do
       post :upload_csv, params: { import_csv: { replace: false, file: file } }
     end
@@ -317,10 +309,7 @@ class DestinationsControllerTest < ActionController::TestCase
       { redirect: 'destinations', file: 'import_destinations_update.csv', column_def: nil },
       { redirect: 'plannings', file: 'import_destinations_several_plans.csv', column_def: nil }
     ].each do |test|
-      file = ActionDispatch::Http::UploadedFile.new(
-        tempfile: File.new(Rails.root.join('test/fixtures/files/', test[:file]))
-      )
-      file.original_filename = test[:file]
+      file = fixture_file_upload("test/fixtures/files/#{test[:file]}")
       post :upload_csv, params: { import_csv: { replace: false, file: file, column_def: test[:column_def] ? test[:column_def] : nil } }
 
       case test[:redirect]
@@ -340,10 +329,7 @@ class DestinationsControllerTest < ActionController::TestCase
       { redirect: 'destinations', file: 'import_destinations_update.csv', column_def: nil },
       { redirect: 'destinations', file: 'import_destinations_several_plans.csv', column_def: nil }
     ].each do |test|
-      file = ActionDispatch::Http::UploadedFile.new(
-        tempfile: File.new(Rails.root.join('test/fixtures/files/', test[:file]))
-      )
-      file.original_filename = test[:file]
+      file = fixture_file_upload("test/fixtures/files/#{test[:file]}")
       post :upload_csv, params: { import_csv: { replace: false, file: file, column_def: test[:column_def] ? test[:column_def] : nil } }
 
       assert_redirected_to destinations_url
