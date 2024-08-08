@@ -39,9 +39,9 @@ class OptimizerJob < OptimizerJobStruct
 
     if routes.select(&:vehicle_usage_id).any?
       begin
-        planning.optimize(routes, options) do |planning, routes, options|
+        planning.optimize(routes, **options) do |planning, routes, **options|
           options = job_options(planning).merge(options)
-          optimum = Mapotempo::Application.config.optimizer.optimize(planning, routes, options) { |job_id, solution_data|
+          optimum = Mapotempo::Application.config.optimizer.optimize(planning, routes, **options) { |job_id, solution_data|
             if @job
               job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
               Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
@@ -63,7 +63,7 @@ class OptimizerJob < OptimizerJobStruct
 
     # Apply result
     if optimum
-      planning.set_stops(routes, optimum, { global: options[:global], active_only: options[:active_only], insertion_only: options[:insertion_only], moving_stop_ids: options[:moving_stop_ids] })
+      planning.set_stops(routes, optimum, **{ global: options[:global], active_only: options[:active_only], insertion_only: options[:insertion_only], moving_stop_ids: options[:moving_stop_ids] })
       planning.compute_saved
       planning.save!
     end
