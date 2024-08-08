@@ -28,7 +28,7 @@ class OptimizerJob < OptimizerJobStruct
   @@optimize_minimal_time = Mapotempo::Application.config.optimize_minimal_time
 
   def perform
-    return true if @job && @job.progress&.dig('failed') && @job.attempts > 0
+    return true if @job&.progress&.dig('failed') && @job.attempts > 0
 
     Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
@@ -39,28 +39,11 @@ class OptimizerJob < OptimizerJobStruct
 
     routes.unshift(planning.routes.first) if !options[:global] && !planning.routes.first[:locked] && !route_id
 
-    optimize_time = planning.customer.optimization_time || @@optimize_time
-
     optimum = unless routes.select(&:vehicle_usage_id).empty?
       begin
-        planning.optimize(routes, options.merge(synchronous: false)) do
-          optimum = Mapotempo::Application.config.optimizer.optimize(
-            planning, routes,
-            {
-              name: "c#{planning.customer_id} " + planning.name,
-              optimize_time: @@optimize_time_force || (optimize_time ? optimize_time * 1000 : nil),
-              max_split_size: planning.customer.optimization_max_split_size || @@max_split_size,
-              stop_soft_upper_bound: planning.customer.optimization_stop_soft_upper_bound || @@stop_soft_upper_bound,
-              vehicle_soft_upper_bound: planning.customer.optimization_vehicle_soft_upper_bound || @@vehicle_soft_upper_bound,
-              cluster_threshold: planning.customer.optimization_cluster_size || @@cluster_size,
-              cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
-              force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
-              optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
-              relations: planning.stop_relations,
-              only_insertion: options[:only_insertion],
-              moving_stop_ids: options[:moving_stop_ids]
-            }
-          ) { |job_id, solution_data|
+        planning.optimize(routes, options) do |planning, routes, options|
+          options = job_options(planning).merge(options)
+          optimum = Mapotempo::Application.config.optimizer.optimize(planning, routes, options) { |job_id, solution_data|
             if @job
               job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
               Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
@@ -83,7 +66,7 @@ class OptimizerJob < OptimizerJobStruct
 
     # Apply result
     if optimum
-      planning.set_stops(routes, optimum, { global: options[:global], active_only: options[:active_only], only_insertion: options[:only_insertion] })
+      planning.set_stops(routes, optimum, { global: options[:global], active_only: options[:active_only], insertion_only: options[:insertion_only] })
       planning.compute_saved
       planning.save!
     end
@@ -97,5 +80,21 @@ class OptimizerJob < OptimizerJobStruct
 
   def max_attempts
     1
+  end
+
+  def job_options(planning)
+    optimize_time = planning.customer.optimization_time || @@optimize_time
+    {
+      synchronous: false,
+      name: "c#{planning.customer_id} " + planning.name,
+      optimize_time: @@optimize_time_force || (optimize_time ? optimize_time * 1000 : nil),
+      max_split_size: planning.customer.optimization_max_split_size || @@max_split_size,
+      stop_soft_upper_bound: planning.customer.optimization_stop_soft_upper_bound || @@stop_soft_upper_bound,
+      vehicle_soft_upper_bound: planning.customer.optimization_vehicle_soft_upper_bound || @@vehicle_soft_upper_bound,
+      cluster_threshold: planning.customer.optimization_cluster_size || @@cluster_size,
+      cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
+      force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
+      optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time
+    }
   end
 end
