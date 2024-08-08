@@ -381,10 +381,10 @@ class OptimizerWrapper
   end
 
   def filter_planning_stops_relations(planning, stops, options)
-    return [] unless planning.stop_relations
+    return [] unless planning.stops_relations
 
     stop_hash = stops.map{ |s| [s.id, s] }.to_h
-    relations = planning.stop_relations
+    relations = planning.stops_relations
     relations.delete_if{ |relation|
       relation[:linked_ids].any?{ |id| !stop_hash.key?(id) }
     }
