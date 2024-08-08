@@ -17,7 +17,13 @@ class PlanningsControllerTest < ActionController::TestCase
     Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 60, '_ibE_seK_seK_seK'] } } ) do
       Routers::RouterWrapper.stub_any_instance(:matrix, lambda{ |url, mode, dimensions, row, column, options| [Array.new(row.size) { Array.new(column.size, 0) }] }) do
         # return all services in reverse order in first route, rests at the end
-        OptimizerWrapper.stub_any_instance(:optimize, lambda { |positions, services, vehicles, options| [[]] + vehicles.each_with_index.map{ |v, i| ((i.zero? ? services.reverse : []) + vehicles[0][:rests]).map{ |s| s[:stop_id] }} }) do
+        OptimizerWrapper.stub_any_instance(:optimize, lambda { |planning, routes, options|
+        # Put all the stops on the first available route with a vehicle
+          returned_stops = routes.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
+          first_route = routes.find{ |r| r.vehicle_usage? }
+          first_route_rests = first_route.stops.select{ |stop| stop.is_a?(StopRest) }.compact
+          routes.select{ |r| !r.vehicle_usage? }.map{ |r| [] } + routes.select{ |r| r.vehicle_usage? }.map.with_index{ |v, i| ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map(&:id) }
+        }) do
           yield
         end
       end

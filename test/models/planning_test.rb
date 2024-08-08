@@ -26,16 +26,28 @@ class PlanningTest < ActiveSupport::TestCase
   end
 
   # default order, rest at the end
-  def optimizer_route(positions, services, vehicles)
-    [[]] + [(services + vehicles[0][:rests]).collect{ |s| s[:stop_id] }]
+  def optimizer_route(planning, routes, options)
+    returned_stops = routes.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
+    first_route = routes.find{ |r| r.vehicle_usage? }
+    first_route_rests = first_route.stops.select{ |stop| stop.is_a?(StopRest) }.compact
+    routes.select{ |r| !r.vehicle_usage? }.map{ |r| [] } + routes.select{ |r| r.vehicle_usage? }.map.with_index{ |v, i| ((i.zero? ? returned_stops : []) + first_route_rests).map(&:id) }
   end
 
   # return all services in reverse order in first route, rests at the end
-  def optimizer_global(positions, services, vehicles)
-    [[]] + vehicles.each_with_index.map{ |v, i|
-      ((i.zero? ? services.reject{ |s| s[:vehicle_usage_id] } : []) + services.select{ |s| s[:vehicle_usage_id] && s[:vehicle_usage_id] == v[:id] } + v[:rests]).map{ |s|
-        s[:stop_id]
-      }.reverse
+  def optimizer_global(planning, routes, options)
+    all_stop_visits = routes.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
+    routes.select{ |r| !r.vehicle_usage? }.map{ |r| [] } +
+    routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i|
+      (
+        if options[:global] && i == 0
+          all_stop_visits.map(&:id)
+        elsif !options[:global]
+          r.stops.select{ |s| s.is_a?(StopVisit) }.map(&:id)
+        else
+          []
+        end +
+        r.stops.select{ |s| s.is_a?(StopRest) }.map(&:id)
+      ).reverse
     }
   end
 
@@ -573,9 +585,8 @@ class PlanningTest < ActiveSupport::TestCase
     # should be nil
     assert_nil stops.find{ |stop| stop.is_a?(StopRest) || stop.time_window_start_1 || stop.time_window_end_1 || stop.time_window_start_2 || stop.time_window_end_2 }
 
-    planning.optimize(planning.routes, { global: false }) do |positions, services, vehicles|
-      assert_equal stops.count, services.count
-      optimizer_global(positions, services, vehicles)
+    planning.optimize(planning.routes, { global: false }) do |planning, routes, options|
+      optimizer_global(planning, routes, options)
     end
   end
 
@@ -589,10 +600,8 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal ['Pause', 'store 1'], # It should have a Pause (geolocalized rest)
       planning.routes.collect{ |r| r.stops.map{ |s| s.name if s.type == 'StopRest' } }.map(&:compact).flatten
 
-    planning.optimize(planning.routes, { global: false }) do |positions, services, vehicles|
-      assert services.collect{ |s| s.key? :rest }.uniq.first # All Service should have a rest key
-      # Given parameters in OptimizerWrapper::optimize should contain late_multiplier:null
-      optimizer_global(positions, services, vehicles)
+    planning.optimize(planning.routes, { global: false }) do |planning, routes, options|
+      optimizer_global(planning, routes, options)
     end
   end
 
@@ -603,10 +612,8 @@ class PlanningTest < ActiveSupport::TestCase
       .with(body: /distance/)
       .to_return(File.new(File.expand_path('../../web_mocks/', __FILE__) + '/optimizer/optimize.json').read)
 
-    planning.optimize(planning.routes, { global: false }) do |positions, services, vehicles|
-      assert vehicles.collect{ |s| s.key? :max_distance }.uniq.first # All Vehicles should have a max_distance key
-      # Given parameters in OptimizerWrapper::optimize should contain distance
-      optimizer_global(positions, services, vehicles)
+    planning.optimize(planning.routes, { global: false }) do |planning, routes, options|
+      optimizer_global(planning, routes, options)
     end
   end
 

@@ -86,7 +86,7 @@ class V100::Plannings < Grape::API
         begin
           Planning.transaction do
             moving_stop_ids = stops.map(&:id)
-            Optimizer.optimize(planning, nil, { only_insertion: true, moving_stop_ids: moving_stop_ids })
+            Optimizer.optimize(planning, nil, { insertion_only: true, moving_stop_ids: moving_stop_ids })
             current_customer.save!
           end
         rescue VRPNoSolutionError
