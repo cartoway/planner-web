@@ -460,7 +460,7 @@ class Planning < ApplicationRecord
     end
   end
 
-  def optimize(routes, options, &optimizer)
+  def optimize(routes, **options, &optimizer)
     options = { global: false, active_only: true, ignore_overload_multipliers: [] }.merge(options)
     routes_with_vehicle = routes.select(&:vehicle_usage?)
 
@@ -473,7 +473,7 @@ class Planning < ApplicationRecord
     solution
   end
 
-  def set_stops(routes, stop_ids, options = {})
+  def set_stops(routes, stop_ids, **options)
     options = { global: false, active_only: true }.merge(options)
     raise 'Invalid routes count' if routes.size != stop_ids.size && !options[:insertion_only]
 
