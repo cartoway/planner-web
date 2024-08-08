@@ -11,8 +11,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
   end
 
   def tempfile(file, name)
-    file = ActionDispatch::Http::UploadedFile.new(tempfile: File.new(Rails.root.join(file)))
-    file.original_filename = name
+    file = fixture_file_upload(file)
     file
   end
 
