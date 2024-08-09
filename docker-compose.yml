@@ -3,6 +3,9 @@ version: '3.3'
 x-web: &web
   build: .
   image: planner-web:${CARTOWAY_VERSION:-latest}
+  networks:
+    - private-network
+    - public-network
   environment:
     RAILS_ENV: ${RAILS_ENV:-production}
     NODE_ENV: ${NODE_ENV:-production}
@@ -10,21 +13,23 @@ x-web: &web
     GEOCODER_API_KEY: ${GEOCODER_API_KEY:-demo}
     ROUTER_URL: ${ROUTER_URL:-http://localhost:8082/0.1}
     ROUTER_API_KEY: ${ROUTER_API_KEY:-demo}
-    OPTIMIZER_URL: ${OPTIMIZER_URL:-http://localhost:8083/0.1}
+    OPTIMIZER_URL: ${OPTIMIZER_URL:-http://optimizer-server/0.1}
     OPTIMIZER_API_KEY: ${OPTIMIZER_API_KEY:-demo}
-    SENTRY_DSN: ${SENTRY_DSN}
+    # SENTRY_DSN: ${SENTRY_DSN}
     HERE_MAP_APIKEY: ${HERE_MAP_APIKEY}
-  volumes:
-    - ./config/database.yml.docker:/srv/app/config/database.yml
-    - ./docker/uploads:/srv/app/public/uploads
   depends_on:
     - db
     - redis-cache
+  volumes:
+    - ./config/database.yml.docker:/srv/app/config/database.yml
+    - ./docker/uploads:/srv/app/public/uploads
   restart: unless-stopped
 
 services:
   db:
     image: postgres:15
+    networks:
+      - private-network
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
@@ -33,6 +38,8 @@ services:
 
   redis-cache:
     image: redis:${REDIS_VERSION:-7-alpine}
+    networks:
+      - private-network
     restart: unless-stopped
     command: redis-server --save ""
 
@@ -50,3 +57,10 @@ services:
 
 volumes:
   pg_data:
+
+networks:
+  private-network:
+    external: false
+
+  public-network:
+    name: public-network
