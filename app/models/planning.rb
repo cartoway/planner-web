@@ -22,29 +22,28 @@ class Planning < ApplicationRecord
 
   belongs_to :customer
   has_and_belongs_to_many :zonings, autosave: true, after_add: :update_zonings_track, after_remove: :update_zonings_track
-  has_many :routes, -> { order('CASE WHEN vehicle_usage_id IS NULL THEN 0 ELSE routes.id END') }, inverse_of: :planning, autosave: true, dependent: :delete_all
+  has_many :routes, -> { order(Arel.sql('CASE WHEN vehicle_usage_id IS NULL THEN 0 ELSE routes.id END')) }, inverse_of: :planning, autosave: true, dependent: :delete_all
 
   has_many :tag_plannings
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
-  belongs_to :order_array
+  belongs_to :order_array, optional: true
   belongs_to :vehicle_usage_set, inverse_of: :plannings, validate: true
 
   nilify_blanks
   auto_strip_attributes :name
 
-  enum tag_operation: [:and, :or]
+  enum tag_operation: [:_and, :_or]
 
   validates :customer, presence: true
   validates :name, presence: true
   validates :vehicle_usage_set, presence: true
   validates :begin_date, presence: true, if: :end_date
   validates :end_date, presence: true, if: :begin_date
-  validate :valid_date?
   validate :begin_after_end_date
 
   include Consistency
-  validate_consistency :vehicle_usage_set, :order_array, :zonings, :tags
+  validate_consistency [:vehicle_usage_set, :order_array, :zonings, :tags]
 
   before_create :update_zonings, :check_max_planning
   before_destroy :unlink_job_optimizer
@@ -175,7 +174,6 @@ class Planning < ApplicationRecord
         r.preload_compute_scopes
         r.compute(options)
         r.save
-        r.clear_association_cache
       }
       self.save! && self.reload
     }
@@ -311,7 +309,9 @@ class Planning < ApplicationRecord
   def get_associated_route_from_zones(destination)
     # If zoning, get appropriate route
     if zonings.any?
-      zone = Zoning.new(zones: zonings.collect(&:zones).flatten).inside(destination)
+      # Directly assigning zones to a new zoning update their zoning_id
+      collect_zones = zonings.collect{ |zoning| zoning.zones.map{ |z| z.dup }}.flatten
+      zone = Zoning.new(zones: collect_zones).inside(destination)
       if zone && zone.vehicle
         route = routes.find{ |route|
           route.vehicle_usage? && route.vehicle_usage.vehicle == zone.vehicle && !route.locked
@@ -344,7 +344,7 @@ class Planning < ApplicationRecord
   end
 
   def tags_compatible?(tags_)
-    if self.tag_operation == 'or'
+    if self.tag_operation == '_or'
       (tags_.to_a & tags.to_a).present?
     else
       (tags_.to_a & tags.to_a).size == tags.size
@@ -355,7 +355,7 @@ class Planning < ApplicationRecord
     plan_tags = tags.to_a
     return customer.visits if plan_tags.empty?
 
-    if self.tag_operation == 'or'
+    if self.tag_operation == '_or'
       customer.visits.select { |visit|
         (plan_tags & (visit.tags.to_a | visit.destination.tags.to_a)).present?
       }
@@ -380,13 +380,13 @@ class Planning < ApplicationRecord
 
   def relations
     plan_visits = visits.map(&:id)
-    customer.relations.select{ |r_f|
+    customer.stops_relations.select{ |r_f|
       plan_visits.include?(r_f.current_id) || plan_visits.include?(r_f.successor_id)
     }
   end
 
-  def stop_relations
-    return [] if customer.relations.empty?
+  def stops_relations
+    return [] if customer.stops_relations.empty?
 
     stop_hash = visits_to_stop_hash
     relations.map{ |relation|
@@ -443,8 +443,9 @@ class Planning < ApplicationRecord
           route.locked || route.set_visits([])
         }
       end
-
-      Zoning.new(zones: zonings.collect(&:zones).flatten).apply(visits_free).each{ |zone, visits|
+        # Directly assigning zones to a new zoning updates their zoning_id
+        collect_zones = zonings.collect{ |zoning| zoning.zones.map{ |z| z.dup }}.flatten
+        Zoning.new(zones: collect_zones).apply(visits_free).each{ |zone, visits|
         if zone && zone.vehicle && vehicles_map[zone.vehicle] && !vehicles_map[zone.vehicle].locked
           vehicles_map[zone.vehicle].add_visits(visits.collect{ |d| [d, true] })
         else
@@ -459,10 +460,11 @@ class Planning < ApplicationRecord
     end
   end
 
-  def optimize(routes, options = { global: false, active_only: true, ignore_overload_multipliers: [] }, &optimizer)
+  def optimize(routes, **options, &optimizer)
+    options = { global: false, active_only: true, ignore_overload_multipliers: [] }.merge(options)
     routes_with_vehicle = routes.select(&:vehicle_usage?)
 
-    solution = optimizer.call(self, routes, **options)
+    solution = optimizer.call(self, routes, options)
 
     routes_with_vehicle.each_with_index{ |r, i|
       r.optimized_at = Time.now.utc
@@ -471,8 +473,10 @@ class Planning < ApplicationRecord
     solution
   end
 
-  def set_stops(routes, stop_ids, options = { global: false, active_only: true })
-    raise 'Invalid routes count' if routes.size != stop_ids.size && !options[:only_insertion]
+  def set_stops(routes, stop_ids, **options)
+    options = { global: false, active_only: true }.merge(options)
+    raise 'Invalid routes count' if routes.size != stop_ids.size && !options[:insertion_only]
+
     Route.transaction do
       stops_count = routes.collect{ |r| r.stops.size }.reduce(&:+)
       flat_stop_ids = stop_ids.flatten.compact
@@ -531,6 +535,7 @@ class Planning < ApplicationRecord
         route.stops.reload # Refresh route.stops collection if stops have been moved
       }
       raise 'Invalid stops count' unless routes.collect{ |r| r.stops.size }.reduce(&:+) == stops_count
+
       self.reload # Refresh route.stops collection if stops have been moved
     end
   end
@@ -586,7 +591,7 @@ class Planning < ApplicationRecord
 
               Visit.without_callback(:update, :before, :update_outdated) do
                 # Do not flag route as outdated just for quantities change, route quantities are computed after loop
-                stops_map[s[:order_id]].visit.update_attributes(quantities: quantities)
+                stops_map[s[:order_id]].visit.update(quantities: quantities)
               end
               routes_quantities_changed << stops_map[s[:order_id]].route
             end
@@ -926,11 +931,5 @@ class Planning < ApplicationRecord
     if self.begin_date.present? && self.end_date.present? && self.end_date < self.begin_date
       errors.add(:end_date, I18n.t('activerecord.errors.models.planning.attributes.end_date.after'))
     end
-  end
-
-  def valid_date?
-    Marshal.dump(Time.new(self.date.to_date.year)) unless self.date.nil?
-  rescue ArgumentError
-    errors.add(:date, I18n.t('activerecord.errors.models.planning.attributes.date.invalid'))
   end
 end

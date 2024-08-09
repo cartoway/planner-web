@@ -14,7 +14,7 @@ class V01::StoresTest < ActiveSupport::TestCase
 
   def api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/stores#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/0.1/stores#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   test 'should return customer''s stores' do
@@ -56,7 +56,7 @@ class V01::StoresTest < ActiveSupport::TestCase
 
   test 'should create bulk from csv' do
     assert_difference('Store.count', 1) do
-      put api(), replace: false, file: fixture_file_upload('files/import_stores_one.csv', 'text/csv')
+      put api(), replace: false, file: fixture_file_upload('import_stores_one.csv', 'text/csv')
       assert last_response.ok?, last_response.body
       json = JSON.parse(last_response.body)
       assert_equal 1, json.size
@@ -66,7 +66,7 @@ class V01::StoresTest < ActiveSupport::TestCase
   end
 
   test 'should replace from csv' do
-    put api(), replace: true, file: fixture_file_upload('files/import_stores_one.csv', 'text/csv')
+    put api(), replace: true, file: fixture_file_upload('import_stores_one.csv', 'text/csv')
     assert last_response.ok?, last_response.body
     assert_equal 1, JSON.parse(last_response.body).size
     assert_equal Store.where("customer_id='#{customers(:customer_one).id}'").count, 1

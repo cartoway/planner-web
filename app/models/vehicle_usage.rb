@@ -21,12 +21,13 @@ class VehicleUsage < ApplicationRecord
   belongs_to :vehicle_usage_set
 
   belongs_to :vehicle
-  belongs_to :store_start, class_name: 'Store', inverse_of: :vehicle_usage_starts
-  belongs_to :store_stop, class_name: 'Store', inverse_of: :vehicle_usage_stops
-  belongs_to :store_rest, class_name: 'Store', inverse_of: :vehicle_usage_rests
+  belongs_to :store_start, class_name: 'Store', inverse_of: :vehicle_usage_starts, optional: true
+  belongs_to :store_stop, class_name: 'Store', inverse_of: :vehicle_usage_stops, optional: true
+  belongs_to :store_rest, class_name: 'Store', inverse_of: :vehicle_usage_rests, optional: true
   has_many :routes, inverse_of: :vehicle_usage, autosave: true
 
-  has_and_belongs_to_many :tags, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
+  has_many :tag_vehicle_usages
+  has_many :tags, through: :tag_vehicle_usages, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
   accepts_nested_attributes_for :vehicle, update_only: true
 
@@ -53,7 +54,7 @@ class VehicleUsage < ApplicationRecord
   before_save :update_routes
 
   include Consistency
-  validate_consistency :tags, attr_consistency_method: ->(vehicle_usage) { vehicle_usage.vehicle.try(:customer_id) }
+  validate_consistency([:tags]){ |vehicle_usage| vehicle_usage.vehicle.try(:customer_id) }
 
   after_save -> { @tag_ids_changed = false }
 
@@ -66,6 +67,8 @@ class VehicleUsage < ApplicationRecord
 
   amoeba do
     exclude_association :routes
+    exclude_association :tags
+    exclude_association :tag_vehicle_usages
 
     customize(lambda { |_original, copy|
       def copy.update_outdated; end

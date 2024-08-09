@@ -1,0 +1,2 @@
+class StopsRelationsController < ApplicationController
+end

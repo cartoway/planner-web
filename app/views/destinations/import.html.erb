@@ -32,7 +32,7 @@
         <% end %>
         <%= render partial: 'shared/check_box', locals: { form: f, field: :delete_plannings, label: t('.delete_plannings'), help: t('.delete_plannings_help') } %>
         <%= f.submit message: t('all.verb.import'), icon: 'fa fa-upload' %>
-        <div class="form-group">
+        <div class="row form-group">
           <div class="col-md-offset-2 col-md-6">
             <a href="/destination/import_template.excel" class="btn btn-default" role="button"><i class="fa fa-download fa-fw"></i> <%= t 'import.template_excel' %></a>
           </div>

@@ -18,7 +18,7 @@
 class Destination < Location
   default_scope { order(:id) }
 
-  has_many :visits, inverse_of: :destination, dependent: :delete_all, autosave: true
+  has_many :visits, inverse_of: :destination, dependent: :delete_all
   accepts_nested_attributes_for :visits, allow_destroy: true
   has_many :tag_destinations
   has_many :tags, through: :tag_destinations, after_add: :update_tags_track, after_remove: :update_tags_track
@@ -26,10 +26,10 @@ class Destination < Location
   auto_strip_attributes :name, :street, :postalcode, :city, :country, :detail, :comment, :phone_number
 
   include Consistency
-  validate_consistency :tags
+  validate_consistency [:tags]
 
   before_create :check_max_destination
-  before_save :update_tags
+  before_save :save_visits, :update_tags
   after_save -> { @tag_ids_changed = false }
 
   include RefSanitizer
@@ -88,13 +88,19 @@ class Destination < Location
     !self.customer.too_many_destinations? || raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit')))
   end
 
+  def save_visits
+    return if self.new_record?
+
+    visits.each(&:save!)
+  end
+
   def update_tags
     if customer && (@tag_ids_changed || new_record?)
       # Don't use local collection here, not set when save new record
       customer.plannings.each do |planning|
         visits.select(&:id).each do |visit|
           if !new_record? && planning.visits_include?(visit)
-            if planning.tag_operation == 'or'
+            if planning.tag_operation == '_or'
               unless (planning.tags.to_a & (tags.to_a | visit.tags.to_a)).present?
                 planning.visit_remove(visit)
               end

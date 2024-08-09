@@ -19,8 +19,8 @@ class Visit < ApplicationRecord
   default_scope { order(:id) }
 
   belongs_to :destination, inverse_of: :visits
-  has_many :relation_currents, class_name: 'Relation', foreign_key: 'current_id', dependent: :delete_all, validate: false
-  has_many :relation_successors, class_name: 'Relation', foreign_key: 'successor_id', dependent: :delete_all, validate: false
+  has_many :relation_currents, class_name: 'StopsRelation', foreign_key: 'current_id', dependent: :delete_all, validate: false
+  has_many :relation_successors, class_name: 'StopsRelation', foreign_key: 'successor_id', dependent: :delete_all, validate: false
   has_many :stop_visits, inverse_of: :visit
   has_many :orders, inverse_of: :visit, dependent: :delete_all
 
@@ -63,7 +63,7 @@ class Visit < ApplicationRecord
   validate :quantities_validator
 
   include Consistency
-  validate_consistency :tags, attr_consistency_method: ->(visit) { visit.destination.try :customer_id }
+  validate_consistency([:tags]) { |visit| visit.destination.try :customer_id }
 
   before_save :update_tags, :create_orders, :update_quantities
   before_update :update_outdated
@@ -235,7 +235,7 @@ class Visit < ApplicationRecord
       # Don't use local collection here, not set when save new record
       destination.customer.plannings.each do |planning|
         if !new_record? && planning.visits_include?(self)
-          if planning.tag_operation == 'or'
+          if planning.tag_operation == '_or'
             unless (planning.tags.to_a & (tags.to_a | destination.tags.to_a)).present?
               planning.visit_remove(self)
             end

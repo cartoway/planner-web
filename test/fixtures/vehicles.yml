@@ -37,7 +37,6 @@ vehicle_three:
   customer: customer_one
   speed_multiplier:
   router: router_one
-  tags: tag_one
   driver_token: token_three
 
 vehicle_four:

@@ -147,19 +147,19 @@ class StgTelematics < DeviceBase
   end
 
   def get_access_token_url(_params)
-    URI.encode("#{api_url}/webservice?token=generateAccessTokenDayWise")
+    URI::DEFAULT_PARSER.escape("#{api_url}/webservice?token=generateAccessTokenDayWise")
   end
 
   def get_login_status_url(_params)
-    URI.encode("#{api_url}/webservice?token=getLoginStatus")
+    URI::DEFAULT_PARSER.escape("#{api_url}/webservice?token=getLoginStatus")
   end
 
   def get_vehicles_url(_params)
-    URI.encode("#{api_url}/webservice?token=getTokenBaseLiveData&ProjectId=37")
+    URI::DEFAULT_PARSER.escape("#{api_url}/webservice?token=getTokenBaseLiveData&ProjectId=37")
   end
 
   def get_vehicles_position_url(_params)
-    URI.encode("#{api_url}/webservice?token=getVehicleLiveInformation")
+    URI::DEFAULT_PARSER.escape("#{api_url}/webservice?token=getVehicleLiveInformation")
   end
 
   def rest_client_with_method(url, token, params, method = :post)

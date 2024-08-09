@@ -98,7 +98,7 @@ class ImportCsv
         message[0] = message[0].capitalize
         message += (message.end_with?('.') ? ' ' : '. ') + I18n.t('destinations.import_file.check_custom_columns') if column_def && !column_def.values.compact.empty?
         # format error to be human friendly with row content (take into account customized column names)
-        errors[:base] << error_and_format_row(message, last_row)
+        errors.add(:base, error_and_format_row(message, last_row))
         Rails.logger.warn e.message
         Rails.logger.warn e.backtrace.join("\n")
         return false
@@ -156,7 +156,7 @@ class ImportCsv
     end
 
     if contents.blank?
-      errors[:file] << I18n.t('destinations.import_file.empty_file')
+      errors.add(:file, message: I18n.t('destinations.import_file.empty_file'))
       return false
     end
 
@@ -174,11 +174,11 @@ class ImportCsv
         end
       }
       if data.length > @importer.max_lines + 1
-        errors[:file] << I18n.t('destinations.import_file.too_many_lines', n: @importer.max_lines)
+        errors.add(:file, message: I18n.t('destinations.import_file.too_many_lines', n: @importer.max_lines))
         return false
       end
     rescue CSV::MalformedCSVError => e
-      errors[:file] << e.message
+      errors.add(:file, message: e.message)
       return false
     end
 

@@ -22,7 +22,7 @@ class StopTest < ActiveSupport::TestCase
 
   test 'Create Stops With or Without visit_id' do
     route = routes :route_one_one
-    assert ActiveRecord::Base.connection.execute "INSERT INTO stops(active, route_id, index) VALUES('t', #{route.id}, 1);"
+    assert ActiveRecord::Base.connection.execute "INSERT INTO stops(active, route_id, index, type) VALUES('t', #{route.id}, 1, '#{StopRest.name}');"
     assert_raise ActiveRecord::StatementInvalid do
       assert ActiveRecord::Base.connection.execute "INSERT INTO stops(active, route_id, index, type) VALUES('t', #{route.id}, 1, '#{StopVisit.name}');"
     end

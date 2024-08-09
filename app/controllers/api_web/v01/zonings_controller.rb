@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApiWeb::V01::ZoningsController < ApiWeb::V01::ApiWebController
-  skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
+  skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
   load_and_authorize_resource
   before_action :manage_zoning
   around_action :includes_destinations
@@ -27,8 +27,8 @@ class ApiWeb::V01::ZoningsController < ApiWeb::V01::ApiWebController
 
   def update
     respond_to do |format|
-      if @zoning.update_attributes(zoning_params) && @zoning.save
-        @zoning.errors[:base] = 'test'
+      if @zoning.update(zoning_params) && @zoning.save
+        @zoning.errors.add(:base, 'test')
         format.html { redirect_to api_web_v01_edit_zoning_path(@zoning), notice: t('activerecord.successful.messages.updated', model: @zoning.class.model_name.human) }
       else
         capabilities

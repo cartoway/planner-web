@@ -27,6 +27,9 @@ Minitest::Reporters.use! [
 class ActiveSupport::TestCase
   ActiveRecord::Migration.check_pending!
 
+  # Make tests independants from others fixtures edition
+  self.use_transactional_tests = false
+
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
   # Note: You'll currently still have to declare fixtures explicitly in integration tests
@@ -134,17 +137,18 @@ end
 
 def delete_job(part, param = {})
   part = part ? '/' + part.to_s : ''
-  delete "/api/0.1/jobs#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+  delete "/api/0.1/jobs#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
 end
 
 def get_jobs(part, param = {})
-  get "/api/0.1/jobs#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+  get "/api/0.1/jobs#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
 end
 
 if ENV['BENCHMARK'] == 'true'
   require 'capybara/rails'
   require 'capybara/minitest'
   require 'pi'
+  require 'webdrivers/chromedriver'
   BENCHMARK_CPU_RATE = cpu_rate 17000
 
 # Browser testing configuration

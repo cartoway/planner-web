@@ -1,4 +1,4 @@
-class Relation < ActiveRecord::Base
+class StopsRelation < ActiveRecord::Base
   belongs_to :customer
 
   belongs_to :current, class_name: 'Visit'
@@ -31,6 +31,6 @@ class Relation < ActiveRecord::Base
   def pickup_delivery_relation_uniqueness
     return unless pickup_delivery? && (self.class.find_by(current: successor) || self.class.find_by(successor: current))
 
-    errors.add(:base, I18n.t('activerecord.errors.models.relation.pickup_delivery_uniqueness'))
+    errors.add(:base, I18n.t('activerecord.errors.models.stops_relation.pickup_delivery_uniqueness'))
   end
 end

@@ -14,6 +14,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   setup do
     @destination = destinations(:destination_one)
     @customer = customers(:customer_one)
+    @tags = tags.select{ |t| t.customer_id == @customer.id }
     clear_jobs
   end
 
@@ -25,7 +26,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
   def api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/destinations#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/0.1/destinations#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   test 'should return customer''s destinations' do
@@ -51,7 +52,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert_difference('Destination.count', 1) do
       assert_difference('Stop.count', 0) do
         @destination.name = 'new dest'
-        post api(), @destination.attributes.update({tag_ids: tags})
+        post api(), @destination.attributes.update({tag_ids: @tags.map(&:id)})
         assert last_response.created?, last_response.body
         assert_equal @destination.name, JSON.parse(last_response.body)['name']
       end
@@ -60,10 +61,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
   test 'should create with visits' do
     assert_difference('Destination.count', 1) do
-      assert_difference('Stop.count', 0) do
-        assert_difference('Visit.count', 2) do
+      assert_difference('Visit.count', 2) do
+        assert_difference('Stop.count', 4) do
           @destination.name = 'new dest'
-          post api(), nil, input: @destination.attributes.update({tag_ids: tags}).merge(visits: [{
+          post api(), nil, input: @destination.attributes.update({tag_ids: @tags.map(&:id)}).merge(visits: [{
             ref: 'v1',
             quantity1_1: 1,
             time_window_start_1: '08:00',
@@ -99,7 +100,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
       assert_difference('Destination.count', 1) do
         assert_difference('Stop.count', 0) do
           @destination.name = 'new dest'
-          post api(), @destination.attributes.update({tag_ids: tags})
+          post api(), @destination.attributes.update({tag_ids: @tags.map(&:id)})
           assert last_response.created?, last_response.body
           assert_equal @destination.name, JSON.parse(last_response.body)['name']
         end
@@ -120,7 +121,8 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   test 'should create bulk from csv' do
     assert_difference('Destination.count', 1) do
       assert_difference('Planning.count', 1) do
-        put api(), replace: false, file: fixture_file_upload('files/import_destinations_one.csv', 'text/csv')
+        file = fixture_file_upload('test/fixtures/files/import_destinations_one.csv', 'text/csv')
+        put api(), replace: false, file: file
         assert last_response.ok?, last_response.body
         assert_equal 1, JSON.parse(last_response.body).size
 
@@ -875,7 +877,7 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
 
   def api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/0.1/destinations#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/0.1/destinations#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   test 'should not create due to job' do

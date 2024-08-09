@@ -8,18 +8,18 @@ class V100::RelationsTest < ActiveSupport::TestCase
   end
 
   setup do
-    @relation = relations(:relation_one)
+    @relation = stops_relations(:stops_relation_one)
   end
 
   def api(part = nil, param = {})
     part = part ? '/' + part.to_s : ''
-    "/api/100/relations#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI.escape(v.to_s) }.join('&')
+    "/api/100/relations#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
   test "should return customer's relations" do
     get api()
     assert last_response.ok?, last_response.body
-    assert_equal @relation.customer.relations.size, JSON.parse(last_response.body).size
+    assert_equal @relation.customer.stops_relations.size, JSON.parse(last_response.body).size
   end
 
   test "should return customer's relations by ids" do
@@ -42,7 +42,7 @@ class V100::RelationsTest < ActiveSupport::TestCase
   end
 
   test 'should create an ordered relation' do
-    assert_difference('Relation.count', 1) do
+    assert_difference('StopsRelation.count', 1) do
       post api(), { relation_type: 'ordered', current_id: visits(:visit_three).id, successor_id: visits(:visit_two).id }
       assert last_response.created?, last_response.body
 
@@ -63,7 +63,7 @@ class V100::RelationsTest < ActiveSupport::TestCase
   end
 
   test 'should destroy a relation' do
-    assert_difference('Relation.count', -1) do
+    assert_difference('StopsRelation.count', -1) do
       delete api(@relation.id)
       assert_equal 204, last_response.status, last_response.body
     end

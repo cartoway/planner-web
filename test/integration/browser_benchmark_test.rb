@@ -41,10 +41,7 @@ if ENV['BENCHMARK'] == 'true'
     # Under 1000 points markers are clusterized and routes collapsed
     focus
     test 'should show a planning with 900 points in less than 40 seconds' do
-      file = ActionDispatch::Http::UploadedFile.new({
-                                                      tempfile: File.new(Rails.root.join('test/fixtures/files/import_destinations_benchmark_900.csv'))
-                                                    })
-      file.original_filename = 'import_destinations_benchmark_900.csv'
+      file = fixture_file_upload('test/fixtures/files/import_destinations_benchmark_900.csv')
       import_csv = ImportCsv.new(importer: @importer, replace: false, file: file)
       import_csv.import
 
@@ -69,10 +66,7 @@ if ENV['BENCHMARK'] == 'true'
     # Markers are clusterized and routes collapsed
     focus
     test 'should show a planning with 4 000 points in less than 30 seconds' do
-      file = ActionDispatch::Http::UploadedFile.new({
-                                                      tempfile: File.new(Rails.root.join('test/fixtures/files/import_destinations_benchmark_4000.csv'))
-                                                    })
-      file.original_filename = 'import_destinations_benchmark_4000.csv'
+      file = fixture_file_upload('test/fixtures/files/import_destinations_benchmark_4000.csv')
       import_csv = ImportCsv.new(importer: @importer, replace: false, file: file)
       import_csv.import
 

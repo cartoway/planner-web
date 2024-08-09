@@ -42,7 +42,7 @@ class V01::Devices::DevicesApi < Grape::API
         device = @current_customer.device.enableds[params[:device]]
         if device && device.respond_to?('check_auth')
           require_params = device.respond_to?('definition') && device.definition[:forms][:settings] && device.definition[:forms][:settings].keys
-          if require_params && require_params.map(&:to_s).all?{ |k| params.keys.include? k }
+          if require_params && require_params.all?{ |k| params.keys.include? k }
             device.check_auth(params) # raises DeviceServiceError
             status 204
           else

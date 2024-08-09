@@ -21,7 +21,7 @@ require 'exceptions'
 module ApplicationHelper
   def javascript(*files)
     files.each do |file|
-      content_for(:javascript) { javascript_pack_tag(file, {'data-turbolinks-track': 'reload'}) }
+      content_for(:javascript) { javascript_pack_tag(file, **{'data-turbolinks-track': 'reload'}) }
     end
   end
 

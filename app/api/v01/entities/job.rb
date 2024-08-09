@@ -30,7 +30,7 @@ class V01::Entities::Job < Grape::Entity
   expose(:run_at, documentation: { type: Date })
   # expose(:sanitized_error, documentation: { type: String })
   expose(:type, documentation: { type: String }) { |m|
-    m.name.snakecase.gsub(/_job$/, '')
+    m.name.underscore.parameterize(separator: '_').gsub(/_job$/, '')
   }
   # expose(:redirection, documentation: { type: String })
   # expose(:job_type, documentation: { type: String })

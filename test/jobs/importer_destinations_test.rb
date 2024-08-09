@@ -385,7 +385,7 @@ class ImporterDestinationsTest < ActionController::TestCase
         error = I18n.t('destinations.import_file.refs_duplicate', refs: "réf5")
         destinations_import = ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_multi_refs.csv', 'text.csv'))
         assert_equal false, destinations_import.import
-        assert_equal true, Rails.logger.error
+        assert_equal 1, Rails.logger.error
         assert_equal error, destinations_import.errors.messages[:base][0].scan(error)[0]
     end
   end

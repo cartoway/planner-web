@@ -31,6 +31,12 @@ class Tag < ApplicationRecord
   has_many :tag_visits
   has_many :visits, through: :tag_visits
 
+  has_many :tag_vehicles
+  has_many :vehicles, through: :tag_vehicles
+
+  has_many :tag_vehicle_usages
+  has_many :vehicle_usages, through: :tag_vehicle_usages
+
   nilify_blanks before: :validation
   auto_strip_attributes :label
 
@@ -51,9 +57,13 @@ class Tag < ApplicationRecord
   after_destroy :reset_routes_geojson_point
 
   amoeba do
-    exclude_association :visits
-    exclude_association :plannings
+    enable
     exclude_association :destinations
+    exclude_association :plannings
+    exclude_association :vehicles
+    exclude_association :vehicle_usages
+    exclude_association :visits
+    exclude_association :tag_vehicle_usages
 
     customize( lambda { |original, copy|
       def copy.update_outdated; end
@@ -111,6 +121,16 @@ end
 
 class TagPlanning < ApplicationRecord
   belongs_to :planning
+  belongs_to :tag
+end
+
+class TagVehicle < ApplicationRecord
+  belongs_to :vehicle
+  belongs_to :tag
+end
+
+class TagVehicleUsage < ApplicationRecord
+  belongs_to :vehicle_usage
   belongs_to :tag
 end
 

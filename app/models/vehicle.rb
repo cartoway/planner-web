@@ -25,11 +25,12 @@ class Vehicle < ApplicationRecord
   default_scope { order(:id) }
 
   belongs_to :customer
-  belongs_to :router
+  belongs_to :router, optional: true
   has_many :vehicle_usages, inverse_of: :vehicle, dependent: :destroy, autosave: true
   has_many :zones, inverse_of: :vehicle, dependent: :nullify, autosave: true
 
-  has_and_belongs_to_many :tags, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
+  has_many :tag_vehicles
+  has_many :tags, through: :tag_vehicles, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
   enum router_dimension: Router::DIMENSION
   serialize :capacities, DeliverableUnitQuantity
@@ -56,14 +57,14 @@ class Vehicle < ApplicationRecord
   validates :max_distance, numericality: true, allow_nil: true
   validates :max_ride_distance, numericality: true, allow_nil: true
 
-  after_initialize :assign_defaults, :increment_max_vehicles, if: 'new_record?'
+  after_initialize :assign_defaults, :increment_max_vehicles, if: -> { new_record? }
   before_validation :check_router_options_format
   before_create :create_vehicle_usage
   before_save :nilify_router_options_blanks
   before_update :update_outdated, :update_color
 
   include Consistency
-  validate_consistency :tags
+  validate_consistency [:tags]
 
   after_save -> { @tag_ids_changed = false }
 
@@ -88,7 +89,7 @@ class Vehicle < ApplicationRecord
     end
   rescue StandardError => e
     errors.add :capacities, :not_float if e.is_a?(ArgumentError) || e.is_a?(TypeError)
-    errors.add :capacities, :negative_value, {value: e.object[:value]} if e.is_a? Exceptions::NegativeErrors
+    errors.add :capacities, :negative_value, **{value: e.object[:value]} if e.is_a? Exceptions::NegativeErrors
   end
 
   def self.emissions_table
@@ -239,6 +240,7 @@ class Vehicle < ApplicationRecord
       vehicle_usages.each{ |vehicle_usage|
         vehicle_usage.routes.each{ |route|
           route.vehicle_color_changed = true
+          route.save
         }
       }
     end
@@ -247,8 +249,8 @@ class Vehicle < ApplicationRecord
   def destroy_vehicle
     default = customer.vehicles.find{ |vehicle| vehicle != self && !vehicle.destroyed? }
     unless default
-      errors[:base] << I18n.t('activerecord.errors.models.vehicles.at_least_one')
-      false
+      errors.add(:base, I18n.t('activerecord.errors.models.vehicles.at_least_one'))
+      throw :abort
     end
   end
 

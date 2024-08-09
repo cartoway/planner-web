@@ -102,7 +102,7 @@ class FleetTest < ActionController::TestCase
       planning.save
       planning.reload
 
-      assert_equal '2000-01-01 00:00:00 UTC', planning.routes.second.arrival_eta.to_s
+      assert_equal '2000-01-01 00:00:00 UTC', planning.routes.second.arrival_eta.utc.to_s
       assert_equal 'Finished', planning.routes.second.arrival_status
     end
   end
