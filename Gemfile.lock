@@ -621,7 +621,8 @@ GEM
     rexml (3.3.2)
       strscan
     rgeo (3.0.1)
-    rgeo-geojson (2.1.1)
+    rgeo-geojson (2.2.0)
+      multi_json (~> 1.15)
       rgeo (>= 1.0.0)
     rouge (4.3.0)
     rspec-core (3.13.0)
