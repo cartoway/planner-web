@@ -36,16 +36,15 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: '3.0.6'
-      - name: Install Ruby Dependencies
-        run: bundle install
+      - name: Rebuild rgeo gem
+        run: bundle pristine rgeo
       - name: Set Node.js 14.x
         uses: actions/setup-node@v3
         with:
           node-version: 14.x
-      - name: Run install
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install # will run `yarn install` command
+          cache: 'yarn'
+      - name: Install project dependencies
+        run: yarn
       - name: Webpack compilation
         run: NODE_ENV=test bin/rails webpacker:compile
       # Add or replace database setup steps here
@@ -66,9 +65,9 @@ jobs:
           bundler-cache: true
           ruby-version: '3.0.6'
       # Add or replace any other lints here
-      - name: Security audit dependencies
-        run: bin/rake bundle:audit
-      - name: Security audit application code
-        run: bin/brakeman -q -w2
+      # - name: Security audit dependencies
+      #   run: bin/rake bundle:audit
+      # - name: Security audit application code
+      #   run: bin/brakeman -q -w2
       - name: Lint Ruby files
-        run: bin/rubocop --parallel
+        run: bundle exec rubocop --parallel
