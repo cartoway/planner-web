@@ -23,7 +23,7 @@ class CustomersController < ApplicationController
 
   load_and_authorize_resource
 
-  include Devices::Helpers
+  include V01::Devices::DeviceHelpers
 
   def index
     respond_to do |format|
