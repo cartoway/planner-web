@@ -48,13 +48,13 @@ def destination_hash index
     detail: "this is test #{index}",
     tag_ids: [],
     lat: 48.8562,
-    lng: 2.3556
+    lng: 2.3556,
     visits: [{
       time_window_start_1: "08:00",
       time_window_end_1: "12:00",
       time_window_start_2: "14:00",
       time_window_end_2: "18:00",
-      : "00:10:00"
+      duration: "00:10:00"
     }]
   }
 end
@@ -76,12 +76,12 @@ def destination_hash_with_route index
     lat: 48.8562,
     lng: 2.3556,
     visits: [{
-      quantities: [{deliverable_unit_id: !!!one_of_your_deliverable_unit_id!!!, quantity: 1.0}],
+      quantities: [{deliverable_unit_id: "!!!one_of_your_deliverable_unit_id!!!", quantity: 1.0}],
       time_window_start_1: "08:00",
       time_window_end_1: "12:00",
       time_window_start_2: "14:00",
       time_window_end_2: "18:00",
-      : "00:10:00",
+      duration: "00:10:00",
       route: "string",
       active: true
     }]
