@@ -18,7 +18,7 @@
 require 'coerce'
 
 require Rails.root.join('app/api/v01/devices/device_helpers')
-include Devices::Helpers
+include V01::Devices::DeviceHelpers
 include DeliverableByVehiclesHelper
 class V01::Vehicles < Grape::API
 
