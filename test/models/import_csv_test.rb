@@ -6,7 +6,7 @@ class ImportCsvTest < ActiveSupport::TestCase
   end
 
   test 'should upload' do
-    file = fixture_file_upload('test/fixtures/files/import_stores_one.csv')
+    file = Rack::Test::UploadedFile.new('test/fixtures/files/import_stores_one.csv')
     import_csv = ImportCsv.new(importer: @importer, replace: false, file: file)
     assert import_csv.valid?
   end
@@ -17,7 +17,7 @@ class ImportCsvTest < ActiveSupport::TestCase
       2
     end
 
-    file = fixture_file_upload('test/fixtures/files/import_destinations_many-utf-8.csv')
+    file = Rack::Test::UploadedFile.new('test/fixtures/files/import_destinations_many-utf-8.csv')
     assert_difference('Destination.count', 0) do
       assert !ImportCsv.new(importer: importer_destinations, replace: false, file: file).import
     end
@@ -30,7 +30,7 @@ class ImportCsvTest < ActiveSupport::TestCase
   end
 
   test 'shoud not import invalid' do
-    file = fixture_file_upload('test/fixtures/files/import_invalid.csv')
+    file = Rack::Test::UploadedFile.new('test/fixtures/files/import_invalid.csv')
     assert_difference('Destination.count', 0) do
       o = ImportCsv.new(importer: @importer, replace: false, file: file)
       assert !o.import
@@ -40,7 +40,7 @@ class ImportCsvTest < ActiveSupport::TestCase
 
   test 'should upload plan when vehicle number is less or equal to maximum allowed' do
     stub_request(:post, %r{/0.1/routes.json}).to_return(status: 200)
-    file = fixture_file_upload('test/fixtures/files/import_more_route_than_vehicle.csv')
+    file = Rack::Test::UploadedFile.new('test/fixtures/files/import_more_route_than_vehicle.csv')
     customer = customers(:customer_one_other)
     customer.update(max_vehicles: 1)
     @importer = ImporterDestinations.new(customer)
@@ -52,7 +52,7 @@ class ImportCsvTest < ActiveSupport::TestCase
 
   test 'should upload plan when vehicle number is equal to maximum allowed and destinations are not affected' do
     stub_request(:post, %r{/0.1/routes.json}).to_return(status: 200)
-    file = fixture_file_upload('test/fixtures/files/import_enough_route_for_vehicle_and_destination_not_affected.csv')
+    file = Rack::Test::UploadedFile.new('test/fixtures/files/import_enough_route_for_vehicle_and_destination_not_affected.csv')
     customer = customers(:customer_one_other)
     customer.update(max_vehicles: 1)
     @importer = ImporterDestinations.new(customer)
@@ -69,7 +69,7 @@ class ImportCsvTest < ActiveSupport::TestCase
       geocoding_accuracy: 0.98, geocoding_level: 5, ref: 'p-12'
     )
 
-    file2 = fixture_file_upload('test/fixtures/files/import_customers_and_geocode.csv')
+    file2 = Rack::Test::UploadedFile.new('test/fixtures/files/import_customers_and_geocode.csv')
     import_csv = ImportCsv.new(importer: @importer, replace: false, file: file2, column_def: { name: 'name' })
     import_csv.import
 
@@ -86,7 +86,7 @@ class ImportCsvTest < ActiveSupport::TestCase
         geocoding_accuracy: 0.98, geocoding_level: 5, ref: 'p-12'
     )
 
-    file2 = fixture_file_upload('test/fixtures/files/import_customers_with_specific_columns_name.csv')
+    file2 = Rack::Test::UploadedFile.new('test/fixtures/files/import_customers_with_specific_columns_name.csv')
     import_csv = ImportCsv.new(importer: @importer, replace: false, file: file2, column_def: { name: 'name', lat: 'latitude', lng: 'longitude' })
     import_csv.import
 
@@ -103,7 +103,7 @@ class ImportCsvTest < ActiveSupport::TestCase
       geocoding_accuracy: 0.98, geocoding_level: 5, ref: 'p-12'
     )
 
-    file2 = fixture_file_upload('test/fixtures/files/import_customers_and_do_not_geocode.csv')
+    file2 = Rack::Test::UploadedFile.new('test/fixtures/files/import_customers_and_do_not_geocode.csv')
     import_csv = ImportCsv.new(importer: @importer, replace: false, file: file2, column_def: { name: 'name' })
     import_csv.import
 
@@ -120,7 +120,7 @@ class ImportCsvTest < ActiveSupport::TestCase
         geocoding_accuracy: 0.98, geocoding_level: 5, ref: 'p-12'
     )
 
-    file2 = fixture_file_upload('test/fixtures/files/import_destination_special_lat_lng.csv')
+    file2 = Rack::Test::UploadedFile.new('test/fixtures/files/import_destination_special_lat_lng.csv')
     import_csv = ImportCsv.new(importer: @importer, replace: false, file: file2, column_def: { name: 'name', lat: 'latitude', lng: 'longitude' })
     import_csv.import
 
