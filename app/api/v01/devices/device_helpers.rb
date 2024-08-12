@@ -15,8 +15,8 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-module Devices
-  module Helpers
+module V01::Devices
+  module DeviceHelpers
     def device_send_routes(options = {})
       planning = @current_customer.plannings.find params[:planning_id]
       routes = planning.routes.select(&:vehicle_usage_id)
