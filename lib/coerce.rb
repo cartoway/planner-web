@@ -42,3 +42,21 @@ class CoerceArrayString
     end
   end
 end
+
+class CSVFile
+  attr_reader :filename, :content, :encoding
+
+  def initialize(filename, content, encoding = 'UTF-8')
+    @filename = filename
+    @content = content
+    @encoding = encoding
+  end
+
+  def self.parse(value)
+    if value.is_a?(File)
+      new(File.basename(value.path), value.read, value.encoding)
+    elsif value.is_a?(Hash)
+      new(value[:filename], value[:tempfile].read)
+    end
+  end
+end
