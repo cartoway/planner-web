@@ -15,7 +15,7 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-module SharedParams
+module SharedParams # rubocop:disable Metrics/ModuleLength
   extend Grape::API::Helpers
 
   params :request_capacity do |options|
@@ -203,6 +203,27 @@ module SharedParams
     mutually_exclusive :time_window_start, :open
     optional :close, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     mutually_exclusive :time_window_end, :close
+  end
+
+  params :request_vehicle_usage_set do |options|
+    optional :name, type: String, documentation: { type: String }
+    optional :time_window_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :store_start_id, type: Integer, documentation: { type: Integer }
+    optional :store_stop_id, type: Integer, documentation: { type: Integer }
+    optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :service_time_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :work_time, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :store_rest_id, type: Integer, documentation: { type: Integer }
+    optional :max_distance, type: Integer, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' }
+    optional :max_ride_distance, type: Integer, documentation: { type: Integer, desc: 'Maximum riding distance between two stops within a route in meters' }
+    optional :max_ride_duration, type: Integer, documentation: { type: 'string', desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    # Deprecated fields
+    optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: 'Deprecated, use `visit_duration` instead' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :close, type: Integer, documentation: { hidden: true, type: 'string', desc: 'Deprecated, use `time_window_end` instead.' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
   end
 
   params :request_visit do |options|
