@@ -16,6 +16,8 @@ x-web: &web
     HERE_MAP_APIKEY: ${HERE_MAP_APIKEY}
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
+    - ./docker/production.rb:/srv/app/config/environments/production.rb
+    - ./docker/production.rb:/srv/app/config/environments/development.rb
     - ./docker/uploads:/srv/app/public/uploads
   depends_on:
     - db
