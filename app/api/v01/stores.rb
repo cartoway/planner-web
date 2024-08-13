@@ -108,7 +108,7 @@ class V01::Stores < Grape::API
         optional :id, type: String, desc: SharedParams::ID_DESC
         use :request_store
       end
-      optional :file, type: File
+      optional :file, type: CSVFile, documentation: { desc: 'CSV file' }
       mutually_exclusive :stores, :file
     end
     put do

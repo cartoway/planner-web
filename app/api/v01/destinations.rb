@@ -166,7 +166,7 @@ class V01::Destinations < Grape::API
       ].concat(V01::Status.failures(is_array: true, add: [:code_422]))
     params do
       optional(:replace, type: Boolean, documentation: {param_type: 'form'})
-      optional(:file, type: Rack::Multipart::UploadedFile, desc: 'CSV file, encoding, separator and line return automatically detected, with localized CSV header according to HTTP header Accept-Language.', documentation: {param_type: 'form'})
+      optional(:file, type: CSVFile, desc: 'CSV file, encoding, separator and line return automatically detected, with localized CSV header according to HTTP header Accept-Language.', documentation: {param_type: 'form'})
       optional(:remote, type: Symbol, values: [:tomtom], documentation: {param_type: 'form'})
       optional(:planning, type: Hash, documentation: { param_type: 'body' }, desc: 'Planning definition in case of planning created in the same time of destinations import. Planning is created if "route" field is provided in CVS or Json.') do
         optional(:name, type: String)

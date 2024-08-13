@@ -180,7 +180,13 @@ class V01::VehicleUsageSets < Grape::API
       success: V01::Status.success(:code_200, V01::Entities::VehicleUsageSet),
       failure: V01::Status.failures(is_array: true, add: [:code_422])
     params do
-      use :params_from_entity, entity: V01::Entities::VehicleUsageSetsImport.documentation
+      optional(:replace_vehicles, documentation: { type: 'Boolean', default: false })
+      optional :vehicle_usage_sets, type: Array, documentation: { param_type: 'body' } do
+        optional :id, type: String, desc: SharedParams::ID_DESC
+        use :request_vehicle_usage_set
+      end
+      optional :file, type: CSVFile, documentation: { desc: 'CSV file' }
+      mutually_exclusive :vehicle_usage_sets, :file
     end
     put do
       import = if params[:vehicle_usage_sets]
