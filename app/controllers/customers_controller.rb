@@ -133,10 +133,15 @@ class CustomersController < ApplicationController
       unsafe_params[:customer][:router_id], unsafe_params[:customer][:router_dimension] = unsafe_params[:customer][:router].split('_')
     end
     parse_router_options(unsafe_params[:customer]) if unsafe_params[:customer][:router_options]
+    if unsafe_params[:customer][:end_subscription] && !unsafe_params[:customer][:end_subscription].blank?
+      unsafe_params[:customer][:end_subscription] = Date.strptime(unsafe_params[:customer][:end_subscription], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK)
+    end
     # From customer form all keys are not present: need merge
-    devices_params = permit_recursive_params(unsafe_params.dig('customer', 'devices'))
-    devices_params = @customer[:devices].deep_merge(devices_params || {}) if @customer&.devices&.any?
+    devices_params = unsafe_params.dig('customer', 'devices')
+    devices_params = @customer[:devices].deep_stringify_keys.deep_merge(devices_params || {}) if @customer&.devices&.any?
     devices_params ||= {}
+    unsafe_params['customer']['devices'] = devices_params
+
     p = ActionController::Parameters.new(unsafe_params)
     if current_user.admin?
       parameters = p.require(:customer).permit(
@@ -208,9 +213,9 @@ class CustomersController < ApplicationController
           :snap,
           :strict_restriction,
           :low_emission_zone
-        ]
-      ).merge!(devices: devices_params)
-      parameters[:end_subscription] = Date.strptime(parameters[:end_subscription], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK) unless parameters[:end_subscription].blank?
+        ],
+        devices: permit_recursive_params(devices_params)
+      )
       return parameters
     else
       allowed_params = [
@@ -257,7 +262,7 @@ class CustomersController < ApplicationController
       ]
       allowed_params << :max_vehicles unless Mapotempo::Application.config.manage_vehicles_only_admin
 
-      p.require(:customer).permit(*allowed_params).merge(devices: devices_params)
+      p.require(:customer).permit(*allowed_params)
     end
   end
 
@@ -266,11 +271,11 @@ class CustomersController < ApplicationController
 
     unsafe_params&.map do |key, value|
       if value.is_a?(Array)
-        { key => [permit_recursive_params(value.first)] }
+        { key => permit_recursive_params(value.first) }.symbolize_keys
       elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
-        { key => permit_recursive_params(value) }
+        { key => permit_recursive_params(value) }.symbolize_keys
       elsif value.present?
-        key
+        key.to_sym
       end
     end
   end

@@ -118,7 +118,7 @@ class V01::Customers < Grape::API
       params_hash = params.is_a?(ActionController::Parameters) ? params.to_unsafe_h : params
       params_hash.map do |key, value|
         if value.is_a?(Array)
-          { key => [ permit_recursive_params(value.first) ] }
+          { key => permit_recursive_params(value.first) }
         elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
           { key => permit_recursive_params(value) }
         elsif value.present?
