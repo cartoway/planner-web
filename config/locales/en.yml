@@ -722,7 +722,9 @@ en:
       [visit | store | rest].
     data: 'Check your data:'
     data_erroneous:
-      csv: 'Invalid file, line %{s}'
+      invalid: Invalid
+      empty: Unfulfilled
+      csv: 'Invalid file, lines [%{s}]'
       json: Invalid file
       tomtom: 'Invalid tomtom data, record %{s}'
     template_csv: Import Template Spreadsheet Standard
