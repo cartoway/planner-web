@@ -12,6 +12,14 @@ export const stops_edit = function(params) {
     changeStatuses($(this), selected);
   });
 
+  $('.custom_field').each(function() {
+    var element = $(this).find('input, select, textarea');
+    element.on('change', function() {
+      var panel = element.closest('.panel');
+      submitForm(panel);
+    });
+  })
+
   function changeStatuses(element, selected) {
     var panel = $(element).closest('.panel');
     var toggled = $(element).data('toggle');

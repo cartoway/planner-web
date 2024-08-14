@@ -12,7 +12,7 @@ class V01::CustomAttributes < Grape::API
       p = ActionController::Parameters.new(params)
       p = p[:custom_attributes] if p.key?(:custom_attributes)
 
-      p.permit(:name, :object_type, :object_class, :default_value, :description)
+      p.permit(:name, :object_type, :object_class, :default_value, :description, default_value: [])
     end
   end
 
@@ -60,13 +60,11 @@ class V01::CustomAttributes < Grape::API
     params do
       requires :id, type: Integer
 
-      use :params_from_entity, entity: V01::Entities::CustomAttribute.documentation.except(
-          :id,
-          :name,
-          :object_type,
-          :object_class,
-          :default_value,
-          :description)
+      requires :name, type: String
+      requires :object_type, type: String
+      requires :object_class, type: String
+      optional :default_value, types: [Array[String], String, Integer, Float, Boolean]
+      optional :description, type: String
     end
     put ':id' do
       custom_attribute = current_customer.custom_attributes.where(id: params[:id]).first

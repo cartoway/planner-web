@@ -5,8 +5,8 @@ class V01::Entities::CustomAttribute < Grape::Entity
 
   expose(:id, documentation: { type: Integer })
   expose(:name, documentation: { type: String })
-  expose(:object_type, documentation: { type: String, values: ['boolean', 'string', 'integer', 'float'] })
-  expose(:object_class, documentation: { type: String, values: ['vehicle', 'visit'] })
-  expose(:default_value, documentation: { type: String })
+  expose(:object_type, documentation: { type: String, values: ['boolean', 'string', 'integer', 'float', 'array'] })
+  expose(:object_class, documentation: { type: String, values: ['vehicle', 'visit', 'stop'] })
+  expose(:default_value)
   expose(:description, documentation: { type: String })
 end

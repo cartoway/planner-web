@@ -59,6 +59,10 @@ en:
         replace: Replace
   activerecord:
     models:
+      custom_attribute: Additional property
+      custom_attributes:
+        one: ddditional property
+        other: Additional properties
       customer: Account
       customers:
         one: account
@@ -149,6 +153,12 @@ en:
         one: sectorisation
         other: sectorisations
     attributes:
+      custom_attribute:
+        name: Name
+        object_type: Type
+        object_class: Entity
+        default_value: Default value
+        description: Description
       customer:
         ref: Reference
         ref_help: Reference must be unique
@@ -830,6 +840,38 @@ en:
       devices:
         create_company: Initialize Cartoway Field Account
         create_drivers: Update or create mobile drivers on Cartoway Field
+  custom_attributes:
+    edit:
+      title: Editing additional property
+      name: Name
+      object_type: Type
+      object_class: Entity
+      default_value: Default value
+      description: Description
+    index:
+      title: Listing additional properties
+      new: New additional property
+    new:
+      title: New additional property
+    form:
+      name: Name
+      name_help: Property name
+      object_class: Entity
+      object_class_help: Entity to which property is linked
+      object_type: Type
+      object_type_help: Property type. Used to adjust display format
+      default_value: Default value
+      default_value_help: Default value
+      description: Description
+      description_help: Indication describing the property
+    menu:
+      custom_attributes: Additional properties
+    types:
+      array: List
+      boolean: Check box
+      float: Floating number
+      integer: Integer number
+      string: Text
   customers:
     duplicate:
       success: Customer account duplicated successfully
@@ -2082,10 +2124,12 @@ en:
       update:
         failure: Fails to update
     mobile:
-      navigate: Navigate
       back: Tour
-      previous: Previous
+      form: Form
+      navigate: Navigate
       next: Next
+      previous: Previous
+      status: Status
       tracking: Position sharing
   stores:
     default:

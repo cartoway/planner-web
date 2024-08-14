@@ -77,7 +77,7 @@
                 .fa.fa-caret-down.fa-fw
             .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
               .panel-body
-                = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit }
+                = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit, custom_attributes: custom_attributes }
           - previous = stop
         - if @stops&.empty?
           .alert.alert-warning

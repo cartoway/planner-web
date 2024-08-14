@@ -270,6 +270,11 @@
                         = link_to edit_customer_path(current_user.customer) do
                           %i.fa.fa-wrench.fa-fw
                           = t 'customers.menu.customer'
+                      %li
+                        = link_to custom_attributes_path do
+                          %i.fa.fa-file-lines
+                          = t 'custom_attributes.menu.custom_attributes'
+
                     %li
                       = link_to edit_user_path(current_user) do
                         %i.fa.fa-user-gear.fa-fw

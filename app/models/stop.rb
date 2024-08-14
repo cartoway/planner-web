@@ -27,6 +27,9 @@ class Stop < ApplicationRecord
   attribute :time, ScheduleType.new
   time_attr :time
 
+  include TypedAttribute
+  typed_attr :custom_attributes
+
   validates :route, presence: true
 
   scope :includes_destinations, -> { includes(visit: [:tags, destination: [:visits, :tags, :customer]]) }

@@ -1,12 +1,18 @@
+- form ||= nil
 - options = { help_label_class: 'col-md-offset-2 col-md-7', label_class: 'col-md-offset-2 col-md-7 hidden', label_col: 'col-md-offset-2 col-md-6', control_col: 'form-switch col-md-2', check_box_class: 'form-check-input' }.merge(options || {})
-- if local_assigns.key? :field
-  = form.form_group field, { label: { text: label }, style: ('margin-bottom: 0 !important;' if local_assigns.key?(:help)) }.merge(options).merge(control_col: 'form-switch') do
-    = local_assigns[:form].check_box field, { label: '' }.merge(options)
+- if form
+  - if local_assigns.key? :field
+    = form.form_group field, { label: { text: label }, style: ('margin-bottom: 0 !important;' if local_assigns.key?(:help)) }.merge(options).merge(control_col: 'form-switch') do
+      = local_assigns[:form].check_box field, { label: '' }.merge(options)
+  - else
+    = form.form_group label, { label: { text: label }, style: ('margin-bottom: 0 !important;' if local_assigns.key?(:help)) }.merge(options) do
+      .form-check
+        %input{ name: name, value: "false", type: "hidden" }
+        = check_box_tag name, 1, checked, options.merge(class: options[:check_box_class])
 - else
-  = form.form_group label, { label: { text: label }, style: ('margin-bottom: 0 !important;' if local_assigns.key?(:help)) }.merge(options) do
-    .form-check
-      %input{ name: name, value: "false", type: "hidden" }
-      = check_box_tag name, 1, checked, options.merge(class: options[:check_box_class])
+  .form-check
+    %input{ name: name, value: "false", type: "hidden" }
+    = check_box_tag name, 1, checked, options.merge(class: options[:check_box_class])
 - if local_assigns.key? :help
   %p.check-box.help-block{ class: options[:help_label_class] }
     = help

@@ -1,0 +1,23 @@
+.row
+  %label.col-form-label.col-md-offset-2.col-md-7
+    = t 'activerecord.attributes.custom_attribute.default_value'
+  - case typed_default_value
+  - when Array
+    %ul#default_list.col-md-offset-2.col-md-8.mb-0
+      - typed_default_value.each.with_index do |value, index|
+        .default-value-row.input-group{ id: "row_#{index}" }
+          = text_field_tag 'custom_attribute[default_value][]', value, class: 'form-control'
+          %a.input-group-addon.btn.btn-danger.btn-sm.btn-remove{ id: "delete_#{index}" }
+            %i.fa.fa-trash.fa-fw
+            = t 'all.verb.destroy'
+    %small.form-text.text-muted.col-md-offset-2.col-md-8
+      = t 'custom_attributes.form.default_value_help'
+    .col-md-offset-2.col-md-8.mb-3
+      %a#add_row.btn.btn-primary.btn-sm
+        %i.fa.fa-plus.fa-fw
+        = t 'all.verb.new'
+  - else
+    .col-md-offset-2.col-md-8.field{ class: ('form-switch' if typed_default_value == true || typed_default_value == false) }
+      = custom_attribute_default_value_form_field(object_type, typed_default_value)
+      %small.form-text.text-muted
+        = t 'custom_attributes.form.default_value_help'

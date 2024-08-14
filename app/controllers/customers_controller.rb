@@ -214,7 +214,7 @@ class CustomersController < ApplicationController
           :strict_restriction,
           :low_emission_zone
         ],
-        devices: permit_recursive_params(devices_params)
+        devices: RecursiveParamsHelper.permit_recursive(devices_params)
       )
       return parameters
     else
@@ -263,20 +263,6 @@ class CustomersController < ApplicationController
       allowed_params << :max_vehicles unless Mapotempo::Application.config.manage_vehicles_only_admin
 
       p.require(:customer).permit(*allowed_params)
-    end
-  end
-
-  def permit_recursive_params(unsafe_params)
-    return unsafe_params unless unsafe_params.respond_to?(:each)
-
-    unsafe_params&.map do |key, value|
-      if value.is_a?(Array)
-        { key => permit_recursive_params(value.first) }.symbolize_keys
-      elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
-        { key => permit_recursive_params(value) }.symbolize_keys
-      elsif value.present?
-        key.to_sym
-      end
     end
   end
 end

@@ -68,7 +68,8 @@ class StopsController < ApplicationController
   def stop_params
     params.require(:stop).permit(
       :status,
-      :status_updated_at
+      :status_updated_at,
+      custom_attributes: RecursiveParamsHelper.permit_recursive(params['stop']['custom_attributes'])
     )
   end
 end

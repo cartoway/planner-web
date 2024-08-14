@@ -68,9 +68,10 @@
   .row {
     display: flex;
     flex-wrap: wrap;
-    -webkit-box-pack: center !important;
-    -ms-flex-pack: center !important;
-    justify-content: center !important;
+  }
+
+  .form-control {
+    border-radius: 4px;
   }
 
   .active {
