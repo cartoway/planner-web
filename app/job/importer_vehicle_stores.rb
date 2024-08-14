@@ -55,7 +55,7 @@ class ImporterVehicleStores < ImporterStores
     super(name, data, options)
   end
 
-  def import_row(name, row, options)
+  def import_row(name, row, line, options)
     row[:capacities] = Hash[row[:capacities].map{ |q| [q[:deliverable_unit_id], q[:quantity]] }] if row[:capacities]
     # Deals with deprecated capacity
     if !row.key?(:capacities)
@@ -66,7 +66,7 @@ class ImporterVehicleStores < ImporterStores
     # Deals with deprecated speed_multiplicator
     row[:speed_multiplier] = row.delete(:speed_multiplicator) if row.key?(:speed_multiplicator) && !row.key?(:speed_multiplier)
 
-    store = super(name, row.clone.delete_if{ |k, v| columns_vehicle.keys.include? k }, options)
+    store = super(name, row.clone.delete_if{ |k, v| columns_vehicle.keys.include? k }, line, options)
     store.save!
 
     vehicle = @customer.vehicles.find_by(ref: row[:ref]) if row[:ref]

@@ -91,7 +91,7 @@ class ImportCsv
           rows
         end
       rescue StandardError => e
-        raise e if Rails.env.test? && !e.is_a?(ImportBaseError) && !e.is_a?(Exceptions::OverMaxLimitError)
+        raise e if Rails.env.test? && !e.is_a?(ImportBaseError) && !e.is_a?(ImportBulkError) && !e.is_a?(Exceptions::OverMaxLimitError)
 
         message = e.is_a?(ImportInvalidRow) ? I18n.t('import.data_erroneous.csv', s: last_line) + ', ' : last_line && !e.is_a?(ImportBaseError) ? I18n.t('import.csv.line', s: last_line) + ', ' : ''
         message += e.message

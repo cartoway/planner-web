@@ -311,7 +311,7 @@ class ImporterDestinations < ImporterBase
     type == I18n.t('destinations.import_file.stop_type_visit')
   end
 
-  def import_row(_name, row, _options)
+  def import_row(_name, row, line, _options)
     return unless is_visit?(row[:stop_type])
 
     convert_deprecated_fields(row)
@@ -321,8 +321,8 @@ class ImporterDestinations < ImporterBase
     [:tag, :tag_visit].each{ |key| prepare_tags(row, key) }
     destination_attributes, visit_attributes = build_attributes(row)
 
-    prepare_destination(row, destination_attributes, visit_attributes)
-    prepare_destination_in_planning(row, destination_attributes, visit_attributes)
+    prepare_destination(row, line, destination_attributes, visit_attributes)
+    prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
     destination_attributes
   end
 
@@ -457,26 +457,30 @@ class ImporterDestinations < ImporterBase
     return [] if destination_index_attributes_hash.empty?
 
     # Every entry should have identical keys to be imported at the same time
-    destination_index_attributes_hash.group_by{ |import_index, attributes|
+    destination_index_attributes_hash.group_by{ |import_index, lines, attributes|
       attributes.keys
     }.flat_map{ |_keys, index_attributes|
       ids = []
       # Slice to reduce memory spike
-      index_attributes.each_slice(1000){ |sliced_attributes|
+      index_attributes.each_slice(1000).with_index{ |sliced_attributes, slice_index|
         destination_import_indices = []
-        destinations_attributes = sliced_attributes.map{ |import_index, attributes|
+        slice_lines = []
+        destinations_attributes = sliced_attributes.map{ |import_index, lines, attributes|
           attributes.delete(:tag_ids)&.each{ |tag_id|
             @tag_destinations << [import_index, tag_id]
           }
+          slice_lines << lines
           destination_import_indices << import_index
           attributes
         }
         import_result = Destination.import(
           destinations_attributes,
           on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-          validate: true, all_or_none: true
+          validate: true, all_or_none: true, track_validation_failures: true
         )
-        raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+
+        raise ImportBulkError.new(import_destination_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
+
         import_result.ids.each.with_index{ |id, index|
           @destination_index_to_id_hash[destination_import_indices[index]] = id
         }
@@ -488,17 +492,19 @@ class ImporterDestinations < ImporterBase
 
   def bulk_import_visits
     # Every entry should have identical keys to be imported at the same time
-    (@visits_attributes_without_destination + @visits_attributes_with_destination).group_by{ |attributes|
+    (@visits_attributes_without_destination + @visits_attributes_with_destination).group_by{ |line, attributes|
       attributes.keys
     }.flat_map{ |_keys, key_attributes|
       ids = []
       # Slice to reduce memory spike
-      key_attributes.each_slice(1000) { |sliced_attributes|
+      key_attributes.each_slice(1000).with_index { |sliced_attributes, slice_index|
         visit_import_indices = []
-        visits_attributes = sliced_attributes.map{ |attributes|
+        slice_lines = []
+        visits_attributes = sliced_attributes.map{ |line, attributes|
           attributes.delete(:tag_ids)&.each{ |tag_id|
             @tag_visits << [attributes[:visit_index], tag_id]
           }
+          slice_lines << line
           visit_import_indices << attributes[:visit_index]
           attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)] if attributes.key?(:destination_index)
           attributes.except(:visit_index)
@@ -507,9 +513,11 @@ class ImporterDestinations < ImporterBase
         import_result = Visit.import(
           visits_attributes,
           on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-          validate: true, all_or_none: true
+          validate: true, all_or_none: true, track_validation_failures: true
         )
-        raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
+
+        raise ImportBulkError.new(import_visit_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
+
         import_result.ids.each.with_index{ |id, index|
           @visit_index_to_id_hash[visit_import_indices[index]] = id
         }
@@ -561,32 +569,33 @@ class ImporterDestinations < ImporterBase
     end
   end
 
-  def prepare_destination(row, destination_attributes, visit_attributes)
+  def prepare_destination(row, line, destination_attributes, visit_attributes)
     if row[:ref].present? && !row[:ref].empty?
       destination =  @existing_destinations_by_ref[row[:ref]]
       if destination
         dest_attributes = destination.attributes.symbolize_keys
         destination_attributes = dest_attributes.extract!(:id, :name, :postalcode, :city).merge(destination_attributes)
       end
-      index, dest_attributes = @destinations_attributes_by_ref[row[:ref]]
+      index, lines, dest_attributes = @destinations_attributes_by_ref[row[:ref]]
       if dest_attributes
         reset_geocoding(destination_attributes)
+        lines << line
         destination_attributes = dest_attributes.merge(destination_attributes.compact)
       else
         index = @destination_index
         reset_geocoding(destination_attributes)
-        @destinations_attributes_by_ref[row[:ref]] = [@destination_index, destination_attributes]
+        @destinations_attributes_by_ref[row[:ref]] = [@destination_index, [line], destination_attributes]
         @destination_index += 1
       end
-      prepare_visit_with_destination_ref(row, destination, index, destination_attributes, visit_attributes) if index
+      prepare_visit_with_destination_ref(row, line, destination, index, destination_attributes, visit_attributes) if index
     else
-      @destinations_attributes_without_ref << [@destination_index, destination_attributes]
-      prepare_visit_without_destination_ref(row, @destination_index, destination_attributes, visit_attributes)
+      @destinations_attributes_without_ref << [@destination_index, [line], destination_attributes]
+      prepare_visit_without_destination_ref(row, line, @destination_index, destination_attributes, visit_attributes)
       @destination_index += 1
     end
   end
 
-  def prepare_visit_with_destination_ref(row, destination, destination_index, destination_attributes, visit_attributes)
+  def prepare_visit_with_destination_ref(row, line, destination, destination_index, destination_attributes, visit_attributes)
     if row[:without_visit].nil? || row[:without_visit].strip.empty?
       if destination
         visit = if row[:ref_visit] || @nil_visit_available[row[:ref_planning]][row[:ref]]
@@ -605,20 +614,20 @@ class ImporterDestinations < ImporterBase
           # Compact allows to avoid erasing nil fields
           visit_attributes.compact!
         end
-        @visits_attributes_with_destination << visit_attributes
+        @visits_attributes_with_destination << [line, visit_attributes]
       else
-        @visits_attributes_without_destination << visit_attributes.merge(destination_index: destination_index)
+        @visits_attributes_without_destination << [line, visit_attributes.merge(destination_index: destination_index)]
       end
     else
       destination&.visits&.destroy_all
     end
   end
 
-  def prepare_visit_without_destination_ref(row, destination_index, destination_attributes, visit_attributes)
-    @visits_attributes_without_destination << visit_attributes.merge(destination_index: destination_index)
+  def prepare_visit_without_destination_ref(row, line, destination_index, destination_attributes, visit_attributes)
+    @visits_attributes_without_destination << [line, visit_attributes.merge(destination_index: destination_index)]
   end
 
-  def prepare_destination_in_planning(row, destination_attributes, visit_attributes)
+  def prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
     if visit_attributes
       # Instersection of tags of all rows for tags of new planning
       if !@common_tags[row[:planning_ref]]
@@ -664,6 +673,30 @@ class ImporterDestinations < ImporterBase
       end
       planning.split_by_zones(nil) if @planning_hash.key?(:zonings) || @planning_hash.key?(:zoning_ids)
       @plannings.push(planning)
+    }
+  end
+
+  def import_destination_errors_with_indices(slice_lines, slice_index, failed_instances)
+    failed_instances.group_by{ |index_in_dataset, object_with_errors|
+    object_with_errors.errors.errors.map{ |err| [err.attribute, err.type] }
+    }.map{ |errors, grouped_failed_instances|
+    errs = grouped_failed_instances[0][1].errors.errors
+    failed_indices = grouped_failed_instances.flat_map{ |index, _object| slice_lines[index].map{ |slice_line| slice_index * 1000 + slice_line + 1}}
+    I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' - ' + errs.map{ |err|
+      err.options[:message] || "#{@@col_dest_keys[errors.attribute]} #{I18n("import.data_erroneous.#{err.type}")}"
+      }.join(', ')
+    }.join(';')
+  end
+
+  def import_visit_errors_with_indices(slice_lines, slice_index, failed_instances)
+    failed_instances.group_by{ |index_in_dataset, object_with_errors|
+      object_with_errors.errors.errors.map{ |err| [err.attribute, err.type] }
+    }.map{ |errors, grouped_failed_instances|
+      errs = grouped_failed_instances[0][1]
+      failed_indices = grouped_failed_instances.flat_map{ |index, _object| slice_lines[index].map{ |slice_line| slice_index * 1000 + slice_line + 1}}
+      I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' ' + errs.map{ |err|
+        err.options[:message] || "#{@@col_dest_keys[errors.attribute]} - #{I18n("import.data_erroneous.#{err.type}")}"
+      }.join(', ')
     }
   end
 end

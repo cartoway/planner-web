@@ -734,7 +734,9 @@ fr:
       une valeur parmi [visite | site | pause].
     data: 'Vérifiez vos données :'
     data_erroneous:
-      csv: 'Fichier invalide, ligne %{s}'
+      invalid: Invalide
+      empty: Non renseigné
+      csv: 'Fichier invalide, lignes [%{s}]'
       json: Fichier invalide
       tomtom: 'Données TomTom invalides, enregistrement %{s}'
     template_csv: Modèle import tableur standard
