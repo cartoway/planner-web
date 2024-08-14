@@ -160,7 +160,7 @@ class ImporterVehicleUsageSets < ImporterBase
     row[:custom_attributes] = custom_attributes if custom_attributes.any?
   end
 
-  def import_row(_name, row, options)
+  def import_row(_name, row, _line, options)
     if (row[:time_window_start].nil? || row[:time_window_end].nil?) && @vehicle_usage_set.nil?
       raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.missing_time_window_start_end'))
     elsif row[:name_vehicle].nil? && !@vehicle_usage_set.nil?

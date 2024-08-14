@@ -18,6 +18,7 @@
 require 'csv'
 
 class ImportBaseError < StandardError; end
+class ImportBulkError < StandardError; end
 class ImportEmpty < ImportBaseError; end
 class ImportTooManyRoutes < ImportBaseError; end
 class ImportInvalidRow < ImportBaseError; end
@@ -63,7 +64,7 @@ class ImporterBase
                   end
                 end
 
-                dest = import_row(name, row, options)
+                dest = import_row(name, row, line, options)
                 if dest.nil?
                   next
                 end

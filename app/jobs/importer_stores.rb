@@ -81,7 +81,7 @@ class ImporterStores < ImporterBase
     @stores_by_ref = Hash[@customer.stores.select(&:ref).collect{ |store| [store.ref, store] }]
   end
 
-  def import_row(_name, row, _options)
+  def import_row(_name, row, _line, _options)
     if row[:name].nil?
       raise ImportInvalidRow.new(I18n.t('stores.import_file.missing_name'))
     end
