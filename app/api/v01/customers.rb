@@ -78,8 +78,8 @@ class V01::Customers < Grape::API
           :speed_multiplier,
           :history_cron_hour,
           router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction],
-          advanced_options: permit_recursive_params(p[:advanced_options]),
-          devices: permit_recursive_params(p[:devices]))
+          advanced_options: RecursiveParamsHelper.permit_recursive(p[:advanced_options]),
+          devices: RecursiveParamsHelper.permit_recursive(p[:devices]))
       else
         p.permit(
           :visit_duration,
@@ -107,23 +107,8 @@ class V01::Customers < Grape::API
           :speed_multiplier,
           :history_cron_hour,
           router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction],
-          advanced_options: permit_recursive_params(p[:advanced_options]),
-          devices: permit_recursive_params(p[:devices]))
-      end
-    end
-
-    def permit_recursive_params(params)
-      return params unless params.respond_to?(:each)
-
-      params_hash = params.is_a?(ActionController::Parameters) ? params.to_unsafe_h : params
-      params_hash.map do |key, value|
-        if value.is_a?(Array)
-          { key => permit_recursive_params(value.first) }
-        elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
-          { key => permit_recursive_params(value) }
-        elsif value.present?
-          key
-        end
+          advanced_options: RecursiveParamsHelper.permit_recursive(p[:advanced_options]),
+          devices: RecursiveParamsHelper.permit_recursive(p[:devices]))
       end
     end
   end

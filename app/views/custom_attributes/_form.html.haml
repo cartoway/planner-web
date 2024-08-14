@@ -1,0 +1,11 @@
+- require "#{Rails.application.root}/lib/localized_values"
+= bootstrap_form_for @custom_attribute, layout: :horizontal do |f|
+  = render 'shared/error_messages', model: @custom_attribute
+  = f.text_field :name, help: t('.name_help')
+  = f.select :object_type, CustomAttribute.object_types.keys.map{ |key| [t("custom_attributes.types.#{key}"), key] }, { help: t('.object_type_help') }, class: 'form-control'
+  = f.select :object_class, CustomAttribute.ordered_object_classes.map{ |key| [t("activerecord.models.#{key}"), key] }, { help: t('.object_class_help') }, class: 'form-control'
+
+  #default_value_container
+    = render partial: 'default_value', locals: { object_type: @custom_attribute.object_type, typed_default_value: @typed_default_value || object_type_cast(@custom_attribute.object_type, @custom_attribute.default_value) }
+  = f.text_field :description, { help: t('.description_help') }
+  = f.submit

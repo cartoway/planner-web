@@ -8,7 +8,7 @@ custom_attribute_one:
   customer: customer_one
   default_value: 5
 
-custom_attribute_two:
+custom_attribute_two_two:
   name: 'custom_attribute_two'
   object_type: 1 # string
   object_class: 0 # vehicle

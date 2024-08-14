@@ -35,7 +35,16 @@ class RoutesController < ApplicationController
     @params = params
     @stops = @route.stops.only_active_stop_visits
     respond_to do |format|
-      format.html { render 'routes/mobile', locals: { route: @route, date: @route.planning.date, is_expired: @route.is_expired? }, layout: 'mobile' }
+      format.html {
+        render 'routes/mobile',
+        locals: {
+          route: @route,
+          date: @route.planning.date,
+          is_expired: @route.is_expired?,
+          custom_attributes: current_vehicle.customer.custom_attributes.select{ |c_u| c_u.object_class == 'stop' }
+        },
+        layout: 'mobile'
+      }
     end
   end
 

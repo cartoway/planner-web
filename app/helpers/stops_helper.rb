@@ -55,4 +55,22 @@ module StopsHelper
     end
     condensed_string
   end
+
+  def custom_attribute_form_field(form, stop, custom_attribute)
+    field_name = "stop[custom_attributes][#{custom_attribute.name}]"
+    current_value = stop.custom_attributes_typed_hash[custom_attribute.name] || custom_attribute.typed_default_value
+    case custom_attribute.object_type_before_type_cast
+    when 0
+      render partial: 'shared/check_box', locals: { form: form, name: field_name, checked: current_value, help: custom_attribute.description, label: custom_attribute.name, options: { label_col: 'd-none', help_label_class: 'd-none'} }
+    when 1
+      text_area_tag field_name, current_value, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control'
+    when 2
+      number_field_tag field_name, current_value, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control'
+    when 3
+      number_field_tag field_name, current_value, step: :any, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control'
+    when 4
+      current_value = stop.custom_attributes_typed_hash[custom_attribute.name]
+      select_tag field_name, options_for_select(custom_attribute.typed_default_value, current_value), {include_blank: true, help: custom_attribute.description, label: custom_attribute.name, class: "selectpicker", class: 'form-control' }
+    end
+  end
 end

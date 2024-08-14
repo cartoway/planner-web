@@ -4,12 +4,26 @@ module TypedAttribute
   class_methods do
     def typed_attr(current_attribute)
       define_method("#{current_attribute}_typed_hash") do
-        current_type = CustomAttribute.object_classes[self.class.to_s.downcase]
-        reference_attributes = self.customer.send(current_attribute).where(object_class: current_type)
+        customer =
+          if self.respond_to?(:customer)
+            self.customer
+          elsif self.is_a?(Stop)
+            self.visit.destination.customer
+          end
+
+        current_type =
+          if self.is_a?(Stop)
+            CustomAttribute.object_classes['stop']
+          else
+            CustomAttribute.object_classes[self.class.to_s.downcase]
+          end
+
+        reference_attributes = customer.send(current_attribute).where(object_class: current_type)
         current_attributes = send(current_attribute)
-        Hash[reference_attributes.map{ |r_a|
+        rhash = Hash[reference_attributes.map{ |r_a|
           [r_a.name, typed_value(r_a.object_type, current_attributes[r_a.name] || r_a.default_value)]
         }]
+        rhash
       end
     end
   end

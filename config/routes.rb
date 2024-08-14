@@ -140,6 +140,12 @@ Rails.application.routes.draw do
   end
   delete 'plannings' => 'plannings#destroy_multiple'
 
+  resources :custom_attributes do
+    patch 'update_default_value_partial' => 'custom_attributes#update_default_value_partial'
+  end
+  post 'reset_default_value_partial' => 'custom_attributes#reset_default_value_partial'
+  delete 'custom_attributes' => 'custom_attributes#destroy_multiple'
+
   resources :deliverable_units
   delete 'deliverable_units' => 'deliverable_units#destroy_multiple'
 

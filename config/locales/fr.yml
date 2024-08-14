@@ -59,6 +59,10 @@ fr:
         replace: Remplacer
   activerecord:
     models:
+      custom_attribute: Propriété additionnelle
+      custom_attributes:
+        one: propriété additionnelle
+        other: propriétés additionnelles
       customer: Espace client
       customers:
         one: espace client
@@ -149,6 +153,12 @@ fr:
         one: sectorisation
         other: sectorisations
     attributes:
+      custom_attribute:
+        name: Nom
+        object_type: Type
+        object_class: Entité
+        default_value: Valeur par défaut
+        description: Description
       customer:
         ref: Référence
         ref_help: La référence doit être unique
@@ -848,6 +858,39 @@ fr:
       devices:
         create_company: Initialiser le compte Cartoway Field
         create_drivers: Mettre à jour ou créer les utilisateurs Cartoway Field
+  custom_attributes:
+    edit:
+      title: Modifier propriété additionnelle
+      name: Nom
+      object_class: Entité
+      object_type: Type
+      default_value: Valeur par défaut
+      description: Description
+    index:
+      title: Liste propriétés additionnelles
+      new: Nouvelle propriété additionnelle
+    new:
+      title: Nouvelle propriété additionnelle
+    form:
+      name: Nom
+      name_help: Nom de la propriété
+      object_class: Entité
+      object_class_help: Entité à laquelle lier la propriété
+      object_type: Type
+      object_type_help: Type de la propriété. Permet d'ajuster le format d'affichage
+      default_value: Valeur par défaut
+      default_value_help: Valeur par défault
+      description: Description
+      description_help: Indication décrivant la propriété
+    menu:
+      custom_attributes: Propriétés additionnelles
+    types:
+      array: Liste
+      boolean: Case à cocher
+      float: Nombre à virgule
+      integer: Nombre entier
+      string: Texte
+
   customers:
     duplicate:
       success: Espace client dupliqué avec succès
@@ -2183,10 +2226,12 @@ fr:
       update:
         failure: Echec de la mise à jour
     mobile:
-      navigate: Naviguer
       back: Tournée
-      previous: Précédent
+      form: Formulaire
+      navigate: Naviguer
       next: Suivant
+      previous: Précédent
+      status: Status
       tracking: Partage de position
   stores:
     default:
