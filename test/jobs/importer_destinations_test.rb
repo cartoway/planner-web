@@ -378,15 +378,14 @@ class ImporterDestinationsTest < ActionController::TestCase
     end
   end
 
-  test 'should not import many-iso due to multi-refs error' do
+  test 'should import many-iso even with duplicate refs' do
     Planning.all.each(&:destroy)
     @customer.delete_all_destinations
-    assert_difference('Destination.count', 0) do
-        error = I18n.t('destinations.import_file.refs_duplicate', refs: "réf5")
+    assert_difference('Visit.count', 7) do
+      assert_difference('Destination.count', 5) do
         destinations_import = ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_multi_refs.csv', 'text.csv'))
-        assert_equal false, destinations_import.import
-        assert_equal true, Rails.logger.error
-        assert_equal error, destinations_import.errors.messages[:base][0].scan(error)[0]
+        destinations_import.import
+      end
     end
   end
 

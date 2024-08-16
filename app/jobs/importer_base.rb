@@ -59,7 +59,7 @@ class ImporterBase
                 if (ref = uniq_ref(row))
                   if refs.key?(ref)
                     raise ImportInvalidRef.new(I18n.t("destinations.import_file.#{ref.is_a?(Array) && ref[0].nil? ? 'refs_visit_duplicate' : 'refs_duplicate'}", refs: ref.is_a?(Array) ? ref.compact.join(' | ') : ref))
-                  else
+                  elsif !options[:allow_duplicate]
                     refs[ref] = nil
                   end
                 end

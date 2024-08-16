@@ -54,7 +54,8 @@ class ImportCsv
         last_row = last_line = nil
         Customer.transaction do
           importer_columns = @importer.columns
-          rows = @importer.import(data, name, synchronous, ignore_errors: false, replace: replace, delete_plannings: delete_plannings, replace_vehicles: replace_vehicles, line_shift: (without_header? ? 0 : 1), column_def: column_def) { |row, line|
+          allow_duplicated_ref = @importer.is_a?(ImporterDestinations)
+          rows = @importer.import(data, name, synchronous, allow_duplicate: allow_duplicated_ref, ignore_errors: false, replace: replace, delete_plannings: delete_plannings, replace_vehicles: replace_vehicles, line_shift: (without_header? ? 0 : 1), column_def: column_def) { |row, line|
             if row
               # Column Names: Strip Whitespaces
               row = row.each_with_object({}){ |(k, v), hash| hash[k.is_a?(String) ? k.strip : k] = v } if row.is_a? Hash
