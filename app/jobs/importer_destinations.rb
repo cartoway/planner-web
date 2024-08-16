@@ -162,7 +162,7 @@ class ImporterDestinations < ImporterBase
         m = Regexp.new("^" + I18n.t('destinations.import_file.quantity') + "\\[(.*)\\]$").match(name)
         if m && unit_labels.exclude?(m[1])
           unit_labels.delete_at(unit_labels.index(m[1])) if unit_labels.index(m[1])
-          @deliverable_units.build(label: m[1])
+          @customer.deliverable_units.build(label: m[1])
         end
       }
       @customer.save!
