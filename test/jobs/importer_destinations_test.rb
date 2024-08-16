@@ -564,6 +564,7 @@ class ImporterDestinationsTest < ActionController::TestCase
 
         @customer.reload
 
+        assert_equal ['2014-01-01', '2014-01-02', '2014-01-03'], @customer.plannings.map{ |p| p.date.to_s }
         assert_equal [['été'], ['été', 'hiver'], ['été', 'hiver']], @customer.plannings.map{ |p| p.tags.map(&:label) }
       end
     end

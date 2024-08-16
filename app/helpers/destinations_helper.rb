@@ -32,6 +32,10 @@ module DestinationsHelper
     }
   end
 
+  def columns_planning
+    %i[planning_ref planning_name planning_date]
+  end
+
   def columns_destination(customer)
     dest_columns = %i[ref name street detail postalcode city]
     dest_columns << :state if customer.with_state?
@@ -53,7 +57,8 @@ module DestinationsHelper
   end
 
   def columns(customer, options = {})
-    total_columns = columns_destination(customer)
+    total_columns = columns_planning
+    total_columns += columns_destination(customer)
     total_columns += options[:extra_destination_columns] if options[:extra_destination_columns]&.is_a?(Array)
     total_columns << :without_visit
     total_columns += columns_visit(customer)
