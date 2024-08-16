@@ -180,8 +180,12 @@ class ImporterDestinations < ImporterBase
     }
     @destinations_visits_attributes_by_ref[nil] = Hash.new
     @destinations_attributes_by_ref = {}
-    @visits_attributes_with_destination = []
-    @visits_attributes_without_destination = []
+    @visits_attributes_with_destination = {}
+    @visits_attributes_without_ref = []
+    @visits_attributes_without_destination_with_ref_visit = {}
+    @visits_attributes_without_destination_without_ref_visit = {}
+    @visits_attributes_with_destination_with_ref_visit = {}
+    @visits_attributes_with_destination_without_ref_visit = {}
 
     # @plannings_by_ref set in import_row in order to have internal row title
     @plannings_by_ref = {}
@@ -239,6 +243,13 @@ class ImporterDestinations < ImporterBase
     row[:quantities]&.each{ |k, v|
       v = v.gsub(/,/, '.') if v.is_a?(String)
       row[:quantities][k] = v&.to_f
+    }
+  end
+
+  def merge_visit_quantities(existing_visit, visit_attributes)
+    ((existing_visit&.dig(:quantites)&.keys || []) + (visit_attributes&.dig(:quantites)&.keys || [])).uniq.each{ |key|
+      visit_attributes[:quantities] ||= {}
+      visit_attributes[:quantities][key] = (visit_attributes&.dig(:quantites, key) || 0) + (existing_visit&.dig(:quantites, key) || 0)
     }
   end
 
@@ -482,7 +493,7 @@ class ImporterDestinations < ImporterBase
           validate: true, all_or_none: true, track_validation_failures: true
         )
 
-        raise ImportBulkError.new(import_destination_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
+        raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
 
         import_result.ids.each.with_index{ |id, index|
           @destination_index_to_id_hash[destination_import_indices[index]] = id
@@ -495,7 +506,13 @@ class ImporterDestinations < ImporterBase
 
   def bulk_import_visits
     # Every entry should have identical keys to be imported at the same time
-    (@visits_attributes_without_destination + @visits_attributes_with_destination).group_by{ |line, attributes|
+    (
+      @visits_attributes_without_ref +
+      @visits_attributes_without_destination_without_ref_visit.flat_map{ |k, dest_visits| dest_visits } +
+      @visits_attributes_without_destination_with_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash.values } +
+      @visits_attributes_with_destination_without_ref_visit.flat_map{ |k, dest_visits| dest_visits } +
+      @visits_attributes_with_destination_with_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash.values }
+    ).group_by{ |lines, attributes|
       attributes.keys
     }.flat_map{ |_keys, key_attributes|
       ids = []
@@ -503,11 +520,11 @@ class ImporterDestinations < ImporterBase
       key_attributes.each_slice(1000).with_index { |sliced_attributes, slice_index|
         visit_import_indices = []
         slice_lines = []
-        visits_attributes = sliced_attributes.map{ |line, attributes|
+        visits_attributes = sliced_attributes.map{ |lines, attributes|
           attributes.delete(:tag_ids)&.each{ |tag_id|
             @tag_visits << [attributes[:visit_index], tag_id]
           }
-          slice_lines << line
+          slice_lines << lines
           visit_import_indices << attributes[:visit_index]
           attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)] if attributes.key?(:destination_index)
           attributes.except(:visit_index)
@@ -519,7 +536,7 @@ class ImporterDestinations < ImporterBase
           validate: true, all_or_none: true, track_validation_failures: true
         )
 
-        raise ImportBulkError.new(import_visit_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
+        raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
 
         import_result.ids.each.with_index{ |id, index|
           @visit_index_to_id_hash[visit_import_indices[index]] = id
@@ -617,9 +634,27 @@ class ImporterDestinations < ImporterBase
           # Compact allows to avoid erasing nil fields
           visit_attributes.compact!
         end
-        @visits_attributes_with_destination << [line, visit_attributes]
+
+        if row[:ref_visit]
+          @visits_attributes_with_destination_with_ref_visit[row[:ref]] = {} if !@visits_attributes_with_destination_with_ref_visit.key?(row[:ref])
+          lines = (@visits_attributes_with_destination_with_ref_visit[row[:ref]][row[:ref_visit]]&.first || []) << line
+          merge_visit_quantities(@visits_attributes_with_destination_with_ref_visit[row[:ref]][row[:ref_visit]]&.last, visit_attributes)
+          @visits_attributes_with_destination_with_ref_visit[row[:ref]][row[:ref_visit]] = [lines, visit_attributes]
+        else
+          @visits_attributes_with_destination_without_ref_visit[row[:ref]] = [] if !@visits_attributes_with_destination_without_ref_visit.key?(row[:ref])
+          @visits_attributes_with_destination_without_ref_visit[row[:ref]] << [[line], visit_attributes]
+        end
       else
-        @visits_attributes_without_destination << [line, visit_attributes.merge(destination_index: destination_index)]
+        visit_attributes.merge!(destination_index: destination_index)
+        if row[:ref_visit]
+          @visits_attributes_without_destination_with_ref_visit[row[:ref]] = {} if !@visits_attributes_without_destination_with_ref_visit.key?(row[:ref])
+          lines = (@visits_attributes_without_destination_with_ref_visit[row[:ref]][row[:ref_visit]]&.first || []) << line
+          merge_visit_quantities(@visits_attributes_without_destination_with_ref_visit[row[:ref]][row[:ref_visit]]&.last, visit_attributes)
+          @visits_attributes_without_destination_with_ref_visit[row[:ref]][row[:ref_visit]] = [lines, visit_attributes]
+        else
+          @visits_attributes_without_destination_without_ref_visit[row[:ref]] = [] if !@visits_attributes_without_destination_without_ref_visit.key?(row[:ref])
+          @visits_attributes_without_destination_without_ref_visit[row[:ref]] << [[line], visit_attributes]
+        end
       end
     else
       destination&.visits&.destroy_all
@@ -627,7 +662,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_visit_without_destination_ref(row, line, destination_index, destination_attributes, visit_attributes)
-    @visits_attributes_without_destination << [line, visit_attributes.merge(destination_index: destination_index)]
+    @visits_attributes_without_ref << [[line], visit_attributes.merge(destination_index: destination_index)]
   end
 
   def prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
@@ -679,27 +714,15 @@ class ImporterDestinations < ImporterBase
     }
   end
 
-  def import_destination_errors_with_indices(slice_lines, slice_index, failed_instances)
+  def import_errors_with_indices(slice_lines, slice_index, failed_instances)
     failed_instances.group_by{ |index_in_dataset, object_with_errors|
     object_with_errors.errors.errors.map{ |err| [err.attribute, err.type] }
     }.map{ |errors, grouped_failed_instances|
-    errs = grouped_failed_instances[0][1].errors.errors
-    failed_indices = grouped_failed_instances.flat_map{ |index, _object| slice_lines[index].map{ |slice_line| slice_index * 1000 + slice_line + 1}}
-    I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' - ' + errs.map{ |err|
-      err.options[:message] || "#{@@col_dest_keys[errors.attribute]} #{I18n("import.data_erroneous.#{err.type}")}"
+      errs = grouped_failed_instances[0][1].errors.errors
+      failed_indices = grouped_failed_instances.flat_map{ |index, _object| slice_lines[index].map{ |slice_line| slice_index * 1000 + slice_line + 1}}
+      I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' - ' + errs.map{ |err|
+        err.options[:message] || "#{@@col_dest_keys[err.attribute]} #{I18n("import.data_erroneous.#{err.type}")}"
       }.join(', ')
     }.join(';')
-  end
-
-  def import_visit_errors_with_indices(slice_lines, slice_index, failed_instances)
-    failed_instances.group_by{ |index_in_dataset, object_with_errors|
-      object_with_errors.errors.errors.map{ |err| [err.attribute, err.type] }
-    }.map{ |errors, grouped_failed_instances|
-      errs = grouped_failed_instances[0][1]
-      failed_indices = grouped_failed_instances.flat_map{ |index, _object| slice_lines[index].map{ |slice_line| slice_index * 1000 + slice_line + 1}}
-      I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' ' + errs.map{ |err|
-        err.options[:message] || "#{@@col_dest_keys[errors.attribute]} - #{I18n("import.data_erroneous.#{err.type}")}"
-      }.join(', ')
-    }
   end
 end
