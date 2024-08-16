@@ -1181,6 +1181,7 @@ fr:
           desc: >-
             Votre fichier d'import peut contenir l'ensemble des colonnes et
             types de valeurs suivants :
+          columns_planning: Colonnes du plan
           columns_route: Colonnes de la tournée
           columns_destination: Colonnes de l'adresse visitée
           columns_visit: Colonnes de la visite
@@ -1256,6 +1257,8 @@ fr:
         plans à la fois, ou remplacer un plan existant)
       planning_name: plan
       planning_name_desc: nom du plan à créer/modifier
+      planning_date: date
+      planning_date_desc: date du plan à créer/modifier
       stop_type: type arrêt
       stop_type_desc: 'type d''arrêt dans la tournée. La valeur par défaut est [visite]'
       stop_type_visit: visite
@@ -1367,6 +1370,8 @@ fr:
         string: texte
         integer: nombre
         float: '0,123'
+        date: '%d/%m/%Y'
+        date_desc: 'JJ/MM/AAAA'
         hour: 'HH:MM'
         second: 'HH:MM:SS'
         yes_no: oui/non

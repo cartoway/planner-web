@@ -36,6 +36,7 @@ class ImporterDestinations < ImporterBase
     {
       planning_ref: {title: I18n.t('destinations.import_file.planning_ref'), desc: I18n.t('destinations.import_file.planning_ref_desc'), format: I18n.t('destinations.import_file.format.string')},
       planning_name: {title: I18n.t('destinations.import_file.planning_name'), desc: I18n.t('destinations.import_file.planning_name_desc'), format: I18n.t('destinations.import_file.format.string')},
+      planning_date: {title: I18n.t('destinations.import_file.planning_date'), desc: I18n.t('destinations.import_file.planning_date_desc'), format: I18n.t('destinations.import_file.format.date_desc')},
     }
   end
 
@@ -404,11 +405,13 @@ class ImporterDestinations < ImporterBase
     row[:planning_ref] = row[:planning_ref]&.strip&.to_sym
     row[:ref] = row[:ref]&.strip&.to_sym
     row[:ref_visit] = row[:ref_visit]&.strip&.to_sym
+    row.delete(:planning_date) if row[:planning_date] == ""
 
     @plannings_attributes[row[:planning_ref]] ||=
       {
         ref: row[:planning_ref],
         name: row[:planning_name],
+        date: row[:planning_date] && Date.strptime(row[:planning_date], I18n.t('destinations.import_file.format.date')).strftime(ACTIVE_RECORD_DATE_MASK),
         customer: @customer,
         vehicle_usage_set: @customer.vehicle_usage_sets[0]
       }

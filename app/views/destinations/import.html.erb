@@ -50,7 +50,7 @@
                   <div class="row overflow-500">
                     <%= t 'destinations.import.dialog.help.desc' %>
                     <table id="columns-table">
-                    <% [:columns_route, :columns_destination, :columns_visit].each do |columns| %>
+                    <% [:columns_planning, :columns_route, :columns_destination, :columns_visit].each do |columns| %>
                       <tr class="column-heading"><td colspan="3"><h5><%= t("destinations.import.dialog.help.#{columns.to_s}") %></h5></td></tr>
                       <% ImporterDestinations.new(current_user.customer).send(columns).each do |key, column| %>
                         <tr class="column">
