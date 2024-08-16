@@ -1,4 +1,4 @@
-référence plan,date, plan,référence,nom,ville,lat,lng,catégories,tournée
+référence plan,date,plan,référence,nom,ville,lat,lng,catégories,tournée
 p1,01/01/2014,plan1,réf1,Point 1,Nantes,47.2619410343,-1.58758074045,été,
 p1,01/01/2014,plan1,réf2,Point 2,Nantes,47.2615187289,-1.58688336611,été,
 p2,02/01/2014,plan2,réf3,Point 3,Nantes,47.2611947164,-1.58883064985,"été,hiver",1
