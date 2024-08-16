@@ -1140,6 +1140,7 @@ en:
         help:
           title: Columns in your file
           desc: 'Your import file can contain the following columns:'
+          columns_planning: Plan columns
           columns_route: Route columns
           columns_destination: Visited destination columns
           columns_visit: Visit columns
@@ -1212,6 +1213,8 @@ en:
         or update a specific one)
       planning_name: plan
       planning_name_desc: plan name for creation/update
+      planning_date: date
+      planning_date_desc: plan date for creation/update
       stop_type: stop type
       stop_type_desc: 'stop type in the plan. The default value is [visit]'
       stop_type_visit: visit
@@ -1314,6 +1317,8 @@ en:
         string: text
         integer: integer
         float: '0.123'
+        date: 'm%/%d/%Y'
+        date_desc: 'MM/DD/AAAA'
         hour: 'HH:MM'
         second: 'HH:MM:SS'
         yes_no: yes/no

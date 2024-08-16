@@ -1,6 +1,6 @@
-référence plan,plan,référence,nom,ville,lat,lng,catégories,tournée
-p1,plan1,réf1,Point 1,Nantes,47.2619410343,-1.58758074045,été,
-p1,plan1,réf2,Point 2,Nantes,47.2615187289,-1.58688336611,été,
-p2,plan2,réf3,Point 3,Nantes,47.2611947164,-1.58883064985,"été,hiver",1
-p2,plan2,réf4,Point 4,Nantes,47.2629203332,-1.59326970577,"été,hiver",1
-p3,plan3,réf5,Point 5,Nantes,47.2626054305,-1.58396244049,"été,hiver",1
+référence plan,date, plan,référence,nom,ville,lat,lng,catégories,tournée
+p1,01/01/2014,plan1,réf1,Point 1,Nantes,47.2619410343,-1.58758074045,été,
+p1,01/01/2014,plan1,réf2,Point 2,Nantes,47.2615187289,-1.58688336611,été,
+p2,02/01/2014,plan2,réf3,Point 3,Nantes,47.2611947164,-1.58883064985,"été,hiver",1
+p2,02/01/2014,plan2,réf4,Point 4,Nantes,47.2629203332,-1.59326970577,"été,hiver",1
+p3,03/01/2014,plan3,réf5,Point 5,Nantes,47.2626054305,-1.58396244049,"été,hiver",1
