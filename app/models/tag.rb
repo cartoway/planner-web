@@ -113,28 +113,3 @@ class Tag < ApplicationRecord
     }
   end
 end
-
-class TagDestination < ApplicationRecord
-  belongs_to :destination
-  belongs_to :tag
-end
-
-class TagPlanning < ApplicationRecord
-  belongs_to :planning
-  belongs_to :tag
-end
-
-class TagVehicle < ApplicationRecord
-  belongs_to :vehicle
-  belongs_to :tag
-end
-
-class TagVehicleUsage < ApplicationRecord
-  belongs_to :vehicle_usage
-  belongs_to :tag
-end
-
-class TagVisit < ApplicationRecord
-  belongs_to :visit
-  belongs_to :tag
-end
