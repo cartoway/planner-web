@@ -334,7 +334,10 @@ class OptimizerWrapper
           speed_multiplier: route.vehicle_usage.vehicle.default_speed_multiplier,
           area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:area].join(',') }&.join('|'),
           speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
-          timewindow: { start: vehicle[:open], end: vehicle[:close] }.delete_if{ |_k, v| v.nil? },
+          timewindow: {
+            start: route.vehicle_usage.default_time_window_start,
+            end: route.vehicle_usage.default_time_window_end
+          }.delete_if{ |_k, v| v.nil? },
           duration: route.vehicle_usage.default_work_time(true)&.to_f,
           distance: route.vehicle_usage.vehicle.max_distance,
           maximum_ride_distance: route.vehicle_usage.vehicle.max_ride_distance,
@@ -350,7 +353,7 @@ class OptimizerWrapper
           rest_ids: vehicle_rests.map{ |r| "r#{r[:id]}" },
           capacities: capacities || [],
           skills: [vehicle_skills]
-      }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? }
+      }.delete_if{ |_k, v| v.nil? || (v.respond_to?(:empty?) && v.empty?) }
     }
 
     [vrp_vehicles, point_hash.values]
@@ -456,7 +459,7 @@ class OptimizerWrapper
   end
 
   def insertion_only_vehicles(routes, vrp)
-    keys_to_remove = %i[capacities distance duration maximum_ride_distance maximum_ride_duration rest_ids skills]
+    keys_to_remove = %i[capacities distance duration maximum_ride_distance maximum_ride_time rest_ids skills]
     used_vehicle_hash = Hash.new { false }
     vrp[:services].each{ |service|
       service[:sticky_vehicle_ids]&.each{ |sticky_id|
