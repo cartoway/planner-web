@@ -37,6 +37,49 @@ class OptimizerWrapperTest < ActionController::TestCase
     end
   end
 
+  test 'should build vehicles' do
+    begin
+      routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
+
+      routes_with_vehicles.each{ |route|
+
+        route.vehicle_usage.update(time_window_start: 10, time_window_end: 150, work_time: 360)
+        route.vehicle_usage.vehicle.update(max_distance: 1000, max_ride_duration: 36, max_ride_distance: 100)
+      }
+      vrp = @optim.build_vrp(@planning, @planning.routes)
+      assert_equal routes_with_vehicles.size, vrp[:vehicles].size
+      vrp[:vehicles].each { |vehicle|
+        assert_equal 10, vehicle[:timewindow][:start]
+        assert_equal 150, vehicle[:timewindow][:end]
+        assert_equal 360, vehicle[:duration]
+        assert_equal 1000, vehicle[:distance]
+        assert_equal 36, vehicle[:maximum_ride_time]
+        assert_equal 100, vehicle[:maximum_ride_distance]
+      }
+    end
+  ensure
+    remove_request_stub(@stub_VrpJob)
+    remove_request_stub(@stub_VrpSubmit)
+  end
+
+  test 'should build services' do
+    begin
+      stops = @planning.routes.flat_map{ |route| route.stops.select{ |stop| stop.is_a?(StopVisit) } }
+      rest_stop = @planning.routes.select{ |route| route.vehicle_usage&.store_rest_id }
+
+      vrp = @optim.build_vrp(@planning, @planning.routes)
+      assert_equal stops.size + rest_stop.size, vrp[:services].size
+      stops.each.with_index{ |stop, index|
+        assert vrp[:services][index]
+        assert_equal stop.time_window_start_1, vrp[:services][index][:activity][:timewindows][0][:start]
+        assert_equal stop.time_window_end_1, vrp[:services][index][:activity][:timewindows][0][:end]
+      }
+    end
+  ensure
+    remove_request_stub(@stub_VrpJob)
+    remove_request_stub(@stub_VrpSubmit)
+  end
+
   test 'should return error if work time is not acceptable' do
     begin
       optim = OptimizerWrapper.new(ActiveSupport::Cache::NullStore.new, 'http://localhost:1791/0.1', 'demo')

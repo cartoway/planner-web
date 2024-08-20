@@ -28,7 +28,7 @@ class OptimizerJob < OptimizerJobStruct
   @@optimize_minimal_time = Mapotempo::Application.config.optimize_minimal_time
 
   def perform
-    return true if @job&.progress&.dig('failed') && @job.attempts > 0
+    return true if @job&.progress && JSON.parse(@job.progress)&.dig('failed') && @job.attempts > 0
 
     Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
