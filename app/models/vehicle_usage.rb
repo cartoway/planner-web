@@ -204,6 +204,18 @@ class VehicleUsage < ApplicationRecord
     default_work_time ? current_time - default_rest_duration.to_i > start_time + default_work_time : false
   end
 
+  def default_max_distance
+    vehicle.max_distance || vehicle_usage_set.max_distance
+  end
+
+  def default_max_ride_duration
+    vehicle.max_ride_duration || vehicle_usage_set.max_ride_duration
+  end
+
+  def default_max_ride_distance
+    vehicle.max_ride_distance || vehicle_usage_set.max_ride_distance
+  end
+
   def work_or_window_time
     hour_value = ChronicDuration.output(default_work_time || (default_time_window_end - default_time_window_start), limit_to_hours: true, format: :chrono, units: 5)
     hour_value.length < 5 ? '00:00'[0..4 - hour_value.length] + hour_value : hour_value
