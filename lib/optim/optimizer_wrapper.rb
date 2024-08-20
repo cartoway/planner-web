@@ -291,17 +291,16 @@ class OptimizerWrapper
       next if route.vehicle_usage.nil?
 
       %i(start stop).each{ |store_type|
-        type_label = "store_#{store_type}"
+        type_label = "default_store_#{store_type}"
         next if route.vehicle_usage.send(type_label).nil?
 
-        type_id_label = "store_#{store_type}_id"
-        if route.vehicle_usage.send(type_label).lat && route.vehicle_usage.send(type_label).lng
-          label = "d#{route.vehicle_usage.send(type_id_label)}"
-          point_hash[label] = {
-            id: label,
+        store = route.vehicle_usage.send(type_label)
+        if store.position?
+          point_hash["d#{store.id}"] = {
+            id: "d#{store.id}",
             location: {
-              lat: route.vehicle_usage.send(type_label).lat,
-              lon: route.vehicle_usage.send(type_label).lng
+              lat: store.lat,
+              lon: store.lng
             }
           }
         end
@@ -323,7 +322,6 @@ class OptimizerWrapper
           overload_multiplier: strict_capacity ? nil : (planning.customer.deliverable_units.find{ |du| du.id == k }.optimization_overload_multiplier || Mapotempo::Application.config.optimize_overload_multiplier)
         }
       }&.compact
-
         vrp_vehicles << {
           id: "v#{route.vehicle_usage_id}",
           router_mode: route.vehicle_usage.vehicle.default_router.try(&:mode),
@@ -339,11 +337,11 @@ class OptimizerWrapper
             end: route.vehicle_usage.default_time_window_end
           }.delete_if{ |_k, v| v.nil? },
           duration: route.vehicle_usage.default_work_time(true)&.to_f,
-          distance: route.vehicle_usage.vehicle.max_distance,
-          maximum_ride_distance: route.vehicle_usage.vehicle.max_ride_distance,
-          maximum_ride_time: route.vehicle_usage.vehicle.max_ride_duration,
-          start_point_id: route.vehicle_usage.store_start_id && "d#{route.vehicle_usage.store_start_id}",
-          end_point_id: route.vehicle_usage.store_start_id && "d#{route.vehicle_usage.store_start_id}",
+          distance: route.vehicle_usage.default_max_distance,
+          maximum_ride_distance: route.vehicle_usage.default_max_ride_distance,
+          maximum_ride_time: route.vehicle_usage.default_max_ride_duration,
+          start_point_id: route.vehicle_usage.default_store_start&.id && "d#{route.vehicle_usage.default_store_start.id}",
+          end_point_id: route.vehicle_usage.default_store_stop&.id && "d#{route.vehicle_usage.default_store_stop.id}",
           cost_fixed: 0,
           cost_distance_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'distance' ? 1 : 0,
           cost_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? 1 : 0,
