@@ -37,14 +37,73 @@ class OptimizerWrapperTest < ActionController::TestCase
     end
   end
 
+  test 'should build vehicles using vehicle_usage_set' do
+    begin
+      store_one = stores(:store_one)
+      routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
+      routes_with_vehicles.each{ |route|
+        route.vehicle_usage.update(
+          time_window_start: nil,
+          time_window_end: nil,
+          work_time: nil,
+          store_start: nil,
+          store_stop: nil
+        )
+        route.vehicle_usage.vehicle.update(
+          max_distance: nil,
+          max_ride_duration: nil,
+          max_ride_distance: nil
+        )
+
+        route.vehicle_usage.vehicle_usage_set.update(
+          time_window_start: 10,
+          time_window_end: 150,
+          work_time: 360,
+          store_start: store_one,
+          store_stop: store_one,
+          max_distance: 1000,
+          max_ride_duration: 36,
+          max_ride_distance: 100
+        )
+      }
+
+      vrp = @optim.build_vrp(@planning, @planning.routes)
+
+      vrp[:vehicles].each { |vehicle|
+        assert_equal 10, vehicle[:timewindow][:start]
+        assert_equal 150, vehicle[:timewindow][:end]
+        assert_equal 360, vehicle[:duration]
+        assert_equal 1000, vehicle[:distance]
+        assert_equal 36, vehicle[:maximum_ride_time]
+        assert_equal 100, vehicle[:maximum_ride_distance]
+        assert_equal "d#{store_one.id}", vehicle[:start_point_id]
+        assert_equal "d#{store_one.id}", vehicle[:end_point_id]
+      }
+    end
+  ensure
+    remove_request_stub(@stub_VrpJob)
+    remove_request_stub(@stub_VrpSubmit)
+  end
+
   test 'should build vehicles' do
     begin
       routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
+      store_one = stores(:store_one)
 
       routes_with_vehicles.each{ |route|
 
-        route.vehicle_usage.update(time_window_start: 10, time_window_end: 150, work_time: 360)
-        route.vehicle_usage.vehicle.update(max_distance: 1000, max_ride_duration: 36, max_ride_distance: 100)
+        route.vehicle_usage.update(
+          time_window_start: 10,
+          time_window_end: 150,
+          work_time: 360,
+          store_start: store_one,
+          store_stop: store_one
+        )
+        route.vehicle_usage.vehicle.update(
+          max_distance: 1000,
+          max_ride_duration: 36,
+          max_ride_distance: 100
+        )
       }
       vrp = @optim.build_vrp(@planning, @planning.routes)
       assert_equal routes_with_vehicles.size, vrp[:vehicles].size
@@ -55,6 +114,8 @@ class OptimizerWrapperTest < ActionController::TestCase
         assert_equal 1000, vehicle[:distance]
         assert_equal 36, vehicle[:maximum_ride_time]
         assert_equal 100, vehicle[:maximum_ride_distance]
+        assert_equal "d#{store_one.id}", vehicle[:start_point_id]
+        assert_equal "d#{store_one.id}", vehicle[:end_point_id]
       }
     end
   ensure
