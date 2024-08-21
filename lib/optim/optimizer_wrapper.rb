@@ -75,7 +75,7 @@ class OptimizerWrapper
     vrp
   end
 
-  def optimize(planning, routes, **options, &progress)
+  def optimize(planning, routes, options, &progress)
     vrp = build_vrp(planning, routes, **options)
     key = Digest::MD5.hexdigest(Marshal.dump(vrp))
 
