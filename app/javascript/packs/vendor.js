@@ -80,7 +80,7 @@ L.Icon.Default.mergeOptions({
 });
 
 // Manage flash messages
-$(document).on('page:change', function () {
+$(document).on('turbolinks:load', function () {
   hideNotices();
 
   $('.flash-message').each((index, element) => {
