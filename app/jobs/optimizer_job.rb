@@ -39,7 +39,7 @@ class OptimizerJob < OptimizerJobStruct
 
     if routes.select(&:vehicle_usage_id).any?
       begin
-        planning.optimize(routes, **options) do |planning, routes, **options|
+        planning.optimize(routes, **options) do |planning, routes, options|
           options = job_options(planning).merge(options)
           optimum = Mapotempo::Application.config.optimizer.optimize(planning, routes, **options) { |job_id, solution_data|
             if @job
