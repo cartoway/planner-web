@@ -2,6 +2,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
   row = {
     ref_planning: route.planning.ref,
     planning: route.planning.name,
+    planning_date: I18n.l(route.planning.date, format: :date),
     route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
     vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
     order: 0,
@@ -73,6 +74,7 @@ route.stops.each { |stop|
     row = {
       ref_planning: route.planning.ref,
       planning: route.planning.name,
+      planning_date: I18n.l(route.planning.date, format: :date),
       route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
       vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
       order: (index+=1 if route.vehicle_usage_id),
@@ -145,6 +147,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
   row = {
     ref_planning: route.planning.ref,
     planning: route.planning.name,
+    planning_date: I18n.l(route.planning.date, format: :date),
     route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
     vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
     order: index+1,
