@@ -29,6 +29,7 @@ en:
   date:
     formats:
       weekday: '%a %d %b'
+      date: '%m-%d-%Y'
   schedule_type:
     invalid: Invalid hour value
   default_time_zone: London
@@ -1317,7 +1318,7 @@ en:
         string: text
         integer: integer
         float: '0.123'
-        date: 'm%/%d/%Y'
+        date: 'm%-%d-%Y'
         date_desc: 'MM/DD/AAAA'
         hour: 'HH:MM'
         second: 'HH:MM:SS'
@@ -1962,6 +1963,7 @@ en:
     export_file:
       ref_planning: reference plan
       planning: plan
+      planning_date: date
       ref: reference
       vehicle: vehicle
       route: route

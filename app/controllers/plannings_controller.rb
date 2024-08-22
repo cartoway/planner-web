@@ -484,6 +484,7 @@ class PlanningsController < ApplicationController
     [
       :ref_planning,
       :planning,
+      :planning_date,
       :route,
       :vehicle,
       :order,
