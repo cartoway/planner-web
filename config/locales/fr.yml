@@ -29,6 +29,7 @@ fr:
   date:
     formats:
       weekday: '%a %d %b'
+      date: '%d/%m/%Y'
   schedule_type:
     invalid: Format d'heure invalide
   default_time_zone: Paris
@@ -2062,6 +2063,7 @@ fr:
     export_file:
       ref_planning: référence plan
       planning: plan
+      planning_date: date
       ref: référence
       vehicle: véhicule
       route: tournée
