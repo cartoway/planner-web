@@ -200,7 +200,7 @@ class OptimizerWrapper
   # A StopRest with a position is send as a service
   def build_rests(stops, options = {})
     stops.map{ |stop|
-      next unless stop.is_a?(StopRest) && stop.position?
+      next if !stop.is_a?(StopRest) || stop.position?
 
       {
         id: "r#{stop.id}",
