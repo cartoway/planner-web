@@ -141,6 +141,26 @@ class OptimizerWrapperTest < ActionController::TestCase
     remove_request_stub(@stub_VrpSubmit)
   end
 
+  test 'should build rests' do
+    begin
+      stops = @planning.routes.flat_map{ |route| route.stops.select{ |stop| stop.is_a?(StopVisit) } }
+      rest_stops = @planning.routes.flat_map{ |route| route.stops.select{ |stop| stop.is_a?(StopRest) && stop.position? } }
+      rest_service_stops = @planning.routes.flat_map{ |route| route.stops.select{ |stop| stop.is_a?(StopRest) && !stop.position? } }
+
+      vrp = @optim.build_vrp(@planning, @planning.routes)
+      assert_equal 1, vrp[:rests].size
+      assert_equal stops.size + rest_service_stops.size, vrp[:services].size
+      rest_stops.each.with_index{ |stop, index|
+        assert vrp[:rests][index]
+        assert_equal stop.time_window_start_1, vrp[:rests][index][:timewindows][0][:start]
+        assert_equal stop.time_window_end_1, vrp[:rests][index][:timewindows][0][:end]
+      }
+    end
+  ensure
+    remove_request_stub(@stub_VrpJob)
+    remove_request_stub(@stub_VrpSubmit)
+  end
+
   test 'should return error if work time is not acceptable' do
     begin
       optim = OptimizerWrapper.new(ActiveSupport::Cache::NullStore.new, 'http://localhost:1791/0.1', 'demo')
