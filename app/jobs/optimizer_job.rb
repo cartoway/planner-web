@@ -29,7 +29,7 @@ class OptimizerJob < OptimizerJobStruct
 
   def perform
     optimum = nil
-    return true if @job&.progress && JSON.parse(@job.progress)&.dig('failed') && @job.attempts > 0
+    return true if @job&.progress && @job.progress&.dig('failed') && @job.attempts > 0
 
     Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
