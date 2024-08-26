@@ -716,13 +716,10 @@ class ImporterDestinations < ImporterBase
 
   def import_errors_with_indices(slice_lines, slice_index, failed_instances)
     failed_instances.group_by{ |index_in_dataset, object_with_errors|
-    object_with_errors.errors.errors.map{ |err| [err.attribute, err.type] }
+      object_with_errors.errors.messages[:base]
     }.map{ |errors, grouped_failed_instances|
-      errs = grouped_failed_instances[0][1].errors.errors
       failed_indices = grouped_failed_instances.flat_map{ |index, _object| slice_lines[index].map{ |slice_line| slice_index * 1000 + slice_line + 1}}
-      I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' - ' + errs.map{ |err|
-        err.options[:message] || "#{@@col_dest_keys[err.attribute]} #{I18n("import.data_erroneous.#{err.type}")}"
-      }.join(', ')
+      I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' - ' + errors.join(', ')
     }.join(';')
   end
 end

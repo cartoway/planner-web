@@ -35,14 +35,16 @@ class PlanningTest < ActiveSupport::TestCase
 
   # return all services in reverse order in first route, rests at the end
   def optimizer_global(planning, routes, options)
-    all_stop_visits = routes.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
+    all_stop_visits = routes.select{ |r| r.vehicle_usage? }.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
+    unassigned_stop_visits = routes.select{ |r| !r.vehicle_usage? }.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
     routes.select{ |r| !r.vehicle_usage? }.map{ |r| [] } +
     routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i|
       (
         if options[:global] && i == 0
-          all_stop_visits.map(&:id)
+          unassigned_stop_visits.map(&:id) + all_stop_visits.map(&:id)
         elsif !options[:global]
-          r.stops.select{ |s| s.is_a?(StopVisit) }.map(&:id)
+          (i == 0 ? unassigned_stop_visits.select{ |s| s.is_a?(StopVisit) }.map(&:id) : []) +
+            r.stops.select{ |s| s.is_a?(StopVisit) }.map(&:id)
         else
           []
         end +

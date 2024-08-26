@@ -472,7 +472,7 @@ class Planning < ApplicationRecord
     solution
   end
 
-  def set_stops(routes, stop_ids, options)
+  def set_stops(routes, stop_ids, options = {})
     options = { global: false, active_only: true }.merge(options)
     raise 'Invalid routes count' if routes.size != stop_ids.size && !options[:insertion_only]
 
