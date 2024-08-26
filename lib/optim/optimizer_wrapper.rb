@@ -26,7 +26,7 @@ class OptimizerWrapper
 
   attr_accessor :cache, :url, :api_key
 
-  POSITION_KEYS = { always_first: :force_first, always_final: :force_end, never_first: :never_first}.freeze
+  POSITION_KEYS = { always_first: :always_first, always_final: :always_last, neutral: :neutral, never_first: :never_first}.freeze
 
   def initialize(cache, url, api_key)
     @cache, @url, @api_key = cache, url, api_key
@@ -53,7 +53,7 @@ class OptimizerWrapper
 
     vrp_services, s_points = build_services(planning, stops, options.merge(use_skills: all_skills.any?, problem_skills: all_skills))
     vrp_rests = build_rests(stops, options)
-    relations = collect_relations(planning, routes, options)
+    relations = collect_relations(planning, routes, stops, options)
 
     vrp_routes = build_routes(routes, options) if options[:insertion_only]
     vrp_units = vrp_vehicles.flat_map{ |v| v[:capacities]&.map{ |c| c[:unit_id] } }.compact.uniq.map{ |unit_id|
@@ -253,6 +253,7 @@ class OptimizerWrapper
           (options[:moving_stop_ids].nil? || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route.vehicle_usage_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
         activity: {
           point_id: service_point[:id],
+          position: POSITION_KEYS[stop.visit&.force_position&.to_sym || :neutral],
           timewindows: [
             (stop.time_window_start_1 || stop.time_window_end_1) && {
               start: stop.time_window_start_1.try(:to_f),
@@ -357,17 +358,14 @@ class OptimizerWrapper
     [vrp_vehicles, point_hash.values]
   end
 
-  def collect_relations(planning, routes, options)
+  def collect_relations(planning, routes, stops, options)
     return route_orders(routes, options) if options[:insertion_only]
 
-    stops = routes.flat_map{ |route|
-      next [] if route.vehicle_usage.nil? && !options[:global]
+    # Stops without positions are not vrp compatible or are rests
+    stops.reject!{ |stop| options[:active_only] && !stop.active || !stop.position? }
 
-      route.stops
-    }
     relations = []
-    relations += filter_planning_stops_relations(planning, stops, options)
-    relations += position_relations(stops)
+    relations += filter_planning_stops_relations(planning, stops, **options)
     relations += negative_quantities_relations(stops)
     relations
   end
@@ -391,20 +389,6 @@ class OptimizerWrapper
     relations.each{ |relation|
       relation[:linked_ids].map!{ |id| "s#{id}"}
     }
-    relations
-  end
-
-  def position_relations(stops)
-    relations = []
-    stops.select{ |stop| stop.is_a?(StopVisit) }
-         .group_by{ |stop| stop.visit.force_position }
-         .each{ |position, stps|
-           next if position.nil? || position == 'neutral'
-
-           relations << {
-             type: POSITION_KEYS[position.to_sym],
-             linked_ids: stps.map{ |stop| "s#{stop.id}" }}
-         }
     relations
   end
 
