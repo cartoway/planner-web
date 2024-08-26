@@ -180,6 +180,12 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test 'should show planning without date as excel' do
+    @planning.update(date: nil)
+    get :show, id: @planning, format: :excel
+    assert_response :success
+  end
+
   test 'should export and import with ref' do
     # Fix INVALID fixtures
     stops(:stop_three_one).destroy
