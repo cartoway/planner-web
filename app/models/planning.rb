@@ -921,6 +921,8 @@ class Planning < ApplicationRecord
     }.compact.sort_by{ |a|
       a[0] && a[0].position? ? a[0].distance(stop.position) : Float::INFINITY
     }
+    return available_routes.first if by_distance.empty?
+
     # If more than one available_routes take at least one stop from second route
     pos_second_route = by_distance.index{ |s| s[1].id != by_distance[0][1].id } if available_routes.size > 1
     # Take 5% from nearest stops (min: 3, max: 10) and a stop in second route if it exists
@@ -983,6 +985,7 @@ class Planning < ApplicationRecord
     }.compact.sort_by{ |a|
       a[0] && a[0].position? ? a[0].distance(destination) : Float::INFINITY
     }
+    return available_routes.first if by_distance.empty?
 
     tmp_visit = Visit.new(destination_id: destination.id)
     # If more than one available_routes take at least one stop from second route
