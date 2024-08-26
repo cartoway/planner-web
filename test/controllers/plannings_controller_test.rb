@@ -182,7 +182,7 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should show planning without date as excel' do
     @planning.update(date: nil)
-    get :show, id: @planning, format: :excel
+    get :show, params: { id: @planning, format: :excel }
     assert_response :success
   end
 
