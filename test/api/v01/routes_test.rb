@@ -22,7 +22,9 @@ class V01::RoutesTest < V01::RoutesBaseTest
     Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 60, '_ibE_seK_seK_seK'] } } ) do
       Routers::RouterWrapper.stub_any_instance(:matrix, lambda{ |url, mode, dimensions, row, column, options| [Array.new(row.size) { Array.new(column.size, 0) }] }) do
         # return all services in reverse order in first route, rests at the end
-        OptimizerWrapper.stub_any_instance(:optimize, lambda { |positions, services, vehicles, options| [[]] + [(services.reverse + vehicles[0][:rests]).collect{ |s| s[:stop_id] }] }) do
+        OptimizerWrapper.stub_any_instance(:optimize, lambda { |planning, routes, options|
+          [routes.flat_map{ |r| r.stops.sort_by(&:index) }.reverse.map(&:id)]
+        }) do
           yield
         end
       end
@@ -167,7 +169,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
 
   test 'should optimize route with one store rest' do
     customers(:customer_one).update(job_optimizer_id: nil)
-    default_order = @route.stops.collect(&:id)
+    default_order = @route.stops.sort_by(&:index).collect(&:id)
 
     patch api(@route.planning.id, "#{@route.id}/optimize")
     assert_equal 204, last_response.status, last_response.body
@@ -181,13 +183,13 @@ class V01::RoutesTest < V01::RoutesBaseTest
     vehicle_usages(:vehicle_usage_one_one).update! store_rest: nil
     vehicle_usage_sets(:vehicle_usage_set_one).update! store_rest: nil
 
-    default_order = @route.stops.sort_by(&:index).select{ |s| s.is_a? StopVisit }.collect(&:id)
+    default_order = @route.stops.sort_by(&:index).collect(&:id)
 
     patch api(@route.planning.id, "#{@route.id}/optimize")
     assert_equal 204, last_response.status, last_response.body
 
     get api(@route.planning.id, @route.id)
-    assert_equal default_order.reverse + @route.stops.select{ |s| s.is_a? StopRest }.collect(&:id), JSON.parse(last_response.body)['stops'].collect{ |s| s['id'] }
+    assert_equal default_order.reverse, JSON.parse(last_response.body)['stops'].collect{ |s| s['id'] }
   end
 
   test 'should optimize all stops in the current route' do
