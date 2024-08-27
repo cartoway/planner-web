@@ -225,6 +225,20 @@ class V01::CustomerTest < ActiveSupport::TestCase
     end
   end
 
+  test 'duplicate customer should keep vehicle tags' do
+    assert_difference('Customer.count', +1) do
+      @customer.vehicles.each{ |vehicle|
+        vehicle.tags << @customer.tags.first
+        vehicle.save
+      }
+      patch api_admin(@customer.id.to_s + '/duplicate')
+      Customer.last.vehicles.each.with_index{ |vehicle, index|
+        assert vehicle.tags.any?, @customer.vehicles[index].tags.map(&:label)
+        assert_equal vehicle.tags.map(&:label), @customer.vehicles[index].tags.map(&:label)
+      }
+    end
+  end
+
   test 'should update advanced options' do
     @customer.update advanced_options: {enable_test: true}
     params = { import: { destinations: { spreadsheetColumnsDef: { ref_vehicle: "driver" }}}, enable_test: true }

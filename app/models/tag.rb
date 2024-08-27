@@ -58,12 +58,11 @@ class Tag < ApplicationRecord
 
   amoeba do
     enable
-    exclude_association :destinations
-    exclude_association :plannings
-    exclude_association :vehicles
-    exclude_association :vehicle_usages
-    exclude_association :visits
+    exclude_association :tag_destinations
+    exclude_association :tag_plannings
+    exclude_association :tag_vehicles
     exclude_association :tag_vehicle_usages
+    exclude_association :tag_visits
 
     customize( lambda { |original, copy|
       def copy.update_outdated; end
