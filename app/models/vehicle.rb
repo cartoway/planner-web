@@ -103,6 +103,7 @@ class Vehicle < ApplicationRecord
   end
 
   amoeba do
+    exclude_association :tag_vehicles
     exclude_association :vehicle_usages
     exclude_association :zones
 

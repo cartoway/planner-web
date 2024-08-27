@@ -141,6 +141,7 @@ class Customer < ApplicationRecord
       copy.save! validate: Mapotempo::Application.config.validate_during_duplication
 
       deliverable_unit_ids_map = Hash[original.deliverable_units.map(&:id).zip(copy.deliverable_units)].merge(nil => nil)
+      original_vehicles_map = Hash[copy.vehicles.zip(original.vehicles)].merge(nil => nil)
       vehicles_map = Hash[original.vehicles.zip(copy.vehicles)].merge(nil => nil)
       vehicle_usage_sets_map = Hash[original.vehicle_usage_sets.zip(copy.vehicle_usage_sets)].merge(nil => nil)
       vehicle_usages_map = Hash[original.vehicle_usage_sets.collect(&:vehicle_usages).flatten.zip(copy.vehicle_usage_sets.collect(&:vehicle_usages).flatten)].merge(nil => nil)
@@ -150,8 +151,9 @@ class Customer < ApplicationRecord
       zonings_map = Hash[original.zonings.zip(copy.zonings)].merge(nil => nil)
 
       copy.vehicles.each{ |vehicle|
+        original_vehicle = original_vehicles_map[vehicle]
         vehicle.capacities = Hash[vehicle.capacities.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
-        vehicle.tags = vehicle.tags.map{ |tag| tags_map[tag] }
+        vehicle.tags = original_vehicle.tags.map{ |tag| tags_map[tag] }
         vehicle.force_check_consistency = true
         vehicle.save! validate: Mapotempo::Application.config.validate_during_duplication
       }
