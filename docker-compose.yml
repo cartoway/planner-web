@@ -41,7 +41,7 @@ services:
   web:
     <<: *web
     ports:
-      - "8080:8080" # HOST:CONTAINER, edit only HOST part
+      - "${WEB_BIND:-8080}:8080" # HOST:CONTAINER, edit only HOST part
     command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec puma -v -p 8080 --pidfile 'server.pid' -t ${PUMA_WORKERS:-0:1}"
 
   delayed-job:
