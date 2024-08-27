@@ -247,9 +247,10 @@ class ImporterDestinations < ImporterBase
   end
 
   def merge_visit_quantities(existing_visit, visit_attributes)
-    ((existing_visit&.dig(:quantites)&.keys || []) + (visit_attributes&.dig(:quantites)&.keys || [])).uniq.each{ |key|
-      visit_attributes[:quantities] ||= {}
-      visit_attributes[:quantities][key] = (visit_attributes&.dig(:quantites, key) || 0) + (existing_visit&.dig(:quantites, key) || 0)
+    ((existing_visit&.dig(:quantities)&.keys || []) + (visit_attributes&.dig(:quantities)&.keys || [])).uniq.each{ |key|
+      next unless visit_attributes&.dig(:quantities, key) || existing_visit&.dig(:quantities, key)
+
+      visit_attributes[:quantities][key] = (visit_attributes&.dig(:quantities, key) || 0) + (existing_visit&.dig(:quantities, key) || 0)
     }
   end
 
