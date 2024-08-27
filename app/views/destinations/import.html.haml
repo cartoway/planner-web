@@ -1,0 +1,96 @@
+- javascript 'destination'
+- content_for :title, t('.title')
+
+%h1= t '.title'
+.panel.panel-default.accordion
+  .panel-heading
+    %h2.panel-title
+      %a.accordion-toggle.collapsed{ "data-parent": "#accordion", "data-toggle": "collapse", href: "#collapseCsv" }
+        = t '.csv.title'
+  #collapseCsv.panel-collapse.collapse{ class: (!@import_csv.errors.empty? || @import_tomtom.errors.empty? ? 'in' : '') }
+  .panel-body
+    %p.help-block
+      = t('.csv.help')
+    = bootstrap_form_for(@import_csv, url: destinations_import_csv_path, layout: :horizontal, multipart: true) do |f|
+      = render 'shared/error_messages', model: @import_csv
+      = f.file_field :file, required: true
+      %p.help-block.col-md-offset-2
+        = t('.csv.file_help')
+        - if @columns_default && !@columns_default.empty?
+          %i.fa.fa-exclamation-triangle.fa-fw
+          = t('.csv.custom_columns', s: @columns_default.values.join(', '))
+        %a{ "data-keyboard": "true", "data-target": "#import-help-modal", "data-toggle": "modal", href: "#help", title: t('.import_template_help') }
+          %i.fa.fa-info-circle.fa-fw
+          = t('.import_template_help')
+      = f.form_group :destinations, { label: {text: t('.destinations') }} do
+        = f.radio_button :replace, 0, checked: !@import_csv.replace, label: t('.replace_no'), label_class: ''
+        %p.help-block= t('.replace_no_help')
+        = f.radio_button :replace, 1, checked: @import_csv.replace, label: t('.replace_yes')
+        %p.help-block= t('.replace_yes_help')
+      = render partial: 'shared/check_box', locals: { form: f, field: :delete_plannings, label: t('.delete_plannings'), help: t('.delete_plannings_help') }
+      = f.submit message: t('all.verb.import'), icon: 'fa fa-upload'
+      .row.form-group
+        .col-md-offset-2.col-md-6
+          %a.btn.btn-default{ href: "/destination/import_template.excel", role: "button" }
+            %i.fa.fa-download.fa-fw
+            = t 'import.template_excel'
+    #import-help-modal.modal.fade{ role: "dialog", tabindex: "-1" }
+      .modal-dialog
+        .modal-content
+          .modal-header
+            %button.close{ "data-dismiss": "modal", type: "button" }
+            %h4.modal-title= t 'destinations.import.dialog.help.title'
+          .modal-body
+            .container-fluid
+              .row.overflow-500
+                = t 'destinations.import.dialog.help.desc'
+                %table#columns-table
+                  - [:columns_planning, :columns_route, :columns_destination, :columns_visit].each do |columns|
+                    %tr.column-heading
+                      %td{colspan: "3"}
+                        %h5= t("destinations.import.dialog.help.#{columns.to_s}")
+                    - ImporterDestinations.new(current_user.customer).send(columns).each do |key, column|
+                      %tr.column
+                        %td
+                          %span.column-default{ class: ('hide' if @columns_default && @columns_default[key.to_s]) }
+                            &bull;
+                            %b
+                              = column[:title]
+                          = text_field_tag 'import_csv[column_def][' + key.to_s + ']', @columns_default && @columns_default[key.to_s], class: (@columns_default && @columns_default[key.to_s]) ? 'column-def' : 'column-def hide', placeholder: column[:title]
+                          %a.column-edit{ class: ('hide' if @columns_default && @columns_default[key.to_s]), title: t('destinations.import.dialog.help.def_help') }
+                            %i.fa.fa-edit.fa-fw
+                        %td= column[:format]
+                        %td= column[:required]
+                      %tr.column-desc
+                        %td{colspan: "3"}
+                          %p.help-block= column[:desc]
+          .modal-footer
+            %button.btn.btn-default{"data-dismiss": "modal", type: "button"}
+              = t 'all.verb.dismiss'
+            %button.btn.btn-primary{"data-dismiss": "modal", name: "columns-save", type: "button", class: (!@columns_default || @columns_default.empty? ? 'd-none': '')}
+              %i.fa.fa-floppy-disk.fa-fw
+              = t 'all.verb.save'
+- if current_user.customer.device.configured?(:tomtom)
+  .panel.panel-default.accordion
+    .panel-heading
+      %h2.panel-title
+        %a.accordion-toggle.collapsed{ "data-parent": "#accordion", "data-toggle": "collapse", href: "#collapseTomTom" }
+          = t('.tomtom.title')
+    #collapseTomTom.panel-collapse.collapse{ class: ('in' if !@import_tomtom.errors.empty?) }
+      .panel-body
+        %p.help-block= t '.tomtom.help'
+        = bootstrap_form_for(@import_tomtom, url: destinations_import_tomtom_path, layout: :horizontal, multipart: true) do |f|
+          = render 'shared/error_messages', model: @import_tomtom
+          = f.toggles t '.destinations' do
+            = f.radio_button :replace, t('.replace_no'), 0, checked: !@import_tomtom.replace
+            %p.help-block= t '.replace_no_help'
+            = f.radio_button :replace, t('.replace_yes'), 1, checked: @import_tomtom.replace
+            %p.help-block= t '.replace_yes_help'
+          = f.actions do
+            = f.submit t('all.verb.import'), {}, 'fa-upload'
+
+:ruby
+  controller.js(
+    customer_id: current_user.customer.id,
+    customer_advanced_options: current_user.customer.advanced_options
+  )
