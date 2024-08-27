@@ -339,6 +339,23 @@ class ImporterDestinationsTest < ActionController::TestCase
     end
   end
 
+  test 'should import and cumulate quantities' do
+    @customer.delete_all_destinations
+    assert_difference('Destination.count', 4) do
+      assert_difference('Visit.count', 5) do
+        assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_cumulative_quantities.csv', 'text.csv')).import
+      end
+    end
+    destination = Destination.find_by(ref:'a')
+    assert_equal [[2]], destination.visits.map{ |v| v.quantities.values }
+    destination = Destination.find_by(ref:'b')
+    assert_equal [[3]], destination.visits.map{ |v| v.quantities.values }
+    destination = Destination.find_by(ref:'c')
+    assert_equal [[5]], destination.visits.map{ |v| v.quantities.values }
+    destination = Destination.find_by(ref:'d')
+    assert_equal [[2], [4]], destination.visits.map{ |v| v.quantities.values }
+  end
+
   test 'should import with route error in new planning' do
     import_count = 2
     # vehicle_usage_set for new planning is hardcoded but random in tests... rest_count depends of it
