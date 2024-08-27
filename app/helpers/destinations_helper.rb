@@ -42,7 +42,7 @@ module DestinationsHelper
 
   def columns_visit(customer)
     visit_columns = %i[ref_visit duration time_window_start_1 time_window_end_1 time_window_start_2 time_window_end_2]
-    visit_columns += %i[priority tags_visit]
+    visit_columns += %i[priority tags_visit force_position]
     unless @customer.enable_orders
       customer.deliverable_units.each{ |du|
         visit_columns += ["quantity#{du.id}".to_sym, "quantity_operation#{du.id}".to_sym]
@@ -99,7 +99,8 @@ module DestinationsHelper
           visit.time_window_start_2_absolute_time,
           visit.time_window_end_2_absolute_time,
           visit.priority,
-          visit.tags.collect(&:label).join(',')
+          visit.tags.collect(&:label).join(','),
+          I18n.t("activerecord.models.visits.force_position.#{visit.force_position}")
         ] + (customer.enable_orders ?
           [] :
           customer.deliverable_units.flat_map{ |du|
