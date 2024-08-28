@@ -964,7 +964,7 @@ fr:
         compte.
       history_cron_hour_help: >-
         Heure à laquelle sont prises les données pour être historisé. Si non
-        rensigné, pas d'historisation.
+        renseigné, pas d'historisation.
       optimization_max_split_size_default: '%{n} (valeur par défaut)'
       optimization_max_split_size_help: >-
         Nombre de points maximal à regrouper dans le cas d'un problème à
