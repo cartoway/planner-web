@@ -66,14 +66,14 @@ module SharedParams
     optional :sms_concat, type: Boolean
     optional :sms_from_customer_name, type: Boolean
 
-    optional :optimization_max_split_size, type: Integer, default: Mapotempo::Application.config.optimize_max_split_size, documentation: { desc: 'Maximum number of visits to split problem'}
-    optional :optimization_cluster_size, type: Integer, default: Mapotempo::Application.config.optimize_cluster_size, documentation: { desc: 'Time in seconds to group near visits' }
-    optional :optimization_time, type: Float, default: Mapotempo::Application.config.optimize_time, documentation: { desc: 'Maximum optimization time (by vehicle)' }
-    optional :optimization_minimal_time, type: Float, default: Mapotempo::Application.config.optimize_minimal_time, documentation: { desc: 'Minimum optimization time (by vehicle)'}
-    optional :optimization_stop_soft_upper_bound, type: Float, default: Mapotempo::Application.config.optimize_stop_soft_upper_bound, documentation: { desc: 'Stops delay coefficient, 0 to avoid delay'}
-    optional :optimization_vehicle_soft_upper_bound, type: Float, default: Mapotempo::Application.config.optimize_vehicle_soft_upper_bound, documentation: { desc: 'Vehicles delay coefficient, 0 to avoid delay' }
-    optional :optimization_cost_waiting_time, type: Float, default: Mapotempo::Application.config.optimize_cost_waiting_time, documentation: { desc: 'Coefficient to manage waiting time'}
-    optional :optimization_force_start, type: Boolean, default: Mapotempo::Application.config.optimize_force_start, documentation: { desc: 'Force time for departure'}
+    optional :optimization_max_split_size, type: Integer, documentation: { desc: 'Maximum number of visits to split problem', example: Mapotempo::Application.config.optimize_max_split_size }
+    optional :optimization_cluster_size, type: Integer, documentation: { desc: 'Time in seconds to group near visits', example: Mapotempo::Application.config.optimize_cluster_size }
+    optional :optimization_time, type: Float, documentation: { desc: 'Maximum optimization time (by vehicle)', example: Mapotempo::Application.config.optimize_time }
+    optional :optimization_minimal_time, type: Float, documentation: { desc: 'Minimum optimization time (by vehicle)', example: Mapotempo::Application.config.optimize_minimal_time}
+    optional :optimization_stop_soft_upper_bound, type: Float, documentation: { desc: 'Stops delay coefficient, 0 to avoid delay', example: Mapotempo::Application.config.optimize_stop_soft_upper_bound}
+    optional :optimization_vehicle_soft_upper_bound, type: Float, documentation: { desc: 'Vehicles delay coefficient, 0 to avoid delay', example: Mapotempo::Application.config.optimize_vehicle_soft_upper_bound }
+    optional :optimization_cost_waiting_time, type: Float, documentation: { desc: 'Coefficient to manage waiting time', example: Mapotempo::Application.config.optimize_cost_waiting_time }
+    optional :optimization_force_start, type: Boolean, documentation: { desc: 'Force time for departure', example: Mapotempo::Application.config.optimize_force_start }
 
     optional :advanced_options, type: JSON, documentation: { desc: 'Advanced options' }
 
