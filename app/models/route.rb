@@ -273,7 +273,7 @@ class Route < ApplicationRecord
             if previous_with_pos&.is_a? Stop
               # max_ride only apply between stops (stores excluded)
               stop_attributes[:out_of_max_ride_distance] = max_ride_distance && stop_attributes[:distance] && (stop_attributes[:distance] > max_ride_distance)
-              stop_attributes[:out_of_max_ride_duration] = max_ride_duration && (stop_attributes[:time] > max_ride_duration)
+              stop_attributes[:out_of_max_ride_duration] = max_ride_duration && (stop_attributes[:drive_time] > max_ride_duration)
               route_attributes[:out_of_max_ride_distance] ||= stop_attributes[:out_of_max_ride_distance]
               route_attributes[:out_of_max_ride_duration] ||= stop_attributes[:out_of_max_ride_duration]
             else
