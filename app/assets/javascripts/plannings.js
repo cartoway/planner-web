@@ -720,6 +720,7 @@ export const plannings_edit = function(params) {
 
   // Used to highlight the current stop (or route if over 1t points) in sidebar routes
   var enlightenStop = function(stop) {
+    var route = $(".routes [data-route_id='" + stop.routeId + "']");
     var target;
 
     if (stop.index) {
@@ -729,7 +730,7 @@ export const plannings_edit = function(params) {
     }
 
     if (target.length === 0) {
-      target = $(".routes [data-route_id='" + stop.routeId + "']");
+      target = route;
     } else {
       target.css("background", "orange");
       setTimeout(function() {
@@ -737,10 +738,17 @@ export const plannings_edit = function(params) {
       }, 1500);
     }
 
-    if (target.offset() && (target.offset().top < 0 || target.offset().top > $(".sidebar-content").height())) {
-      $(".sidebar-content").animate({
-        scrollTop: target.offset().top + $(".sidebar-content").scrollTop() - 100
-      });
+    if (target.offset()) {
+      var out_container = $(".out-content");
+      if (route.hasClass('out_route') && (target.offset().top < out_container.offset().top || target.offset().top > out_container.offset().top + out_container.height())) {
+        out_container.animate({
+          scrollTop: target.offset().top - out_container.offset().top + out_container.scrollTop() - 40
+        });
+      } else if (!route.hasClass('out_route') && (target.offset().top < 0 || target.offset().top > $(".sidebar-content").height())) {
+        $(".sidebar-content").animate({
+          scrollTop: target.offset().top + $(".sidebar-content").scrollTop() - 100
+        });
+      }
     }
   };
 
