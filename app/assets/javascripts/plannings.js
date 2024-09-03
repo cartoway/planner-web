@@ -961,10 +961,15 @@ export const plannings_edit = function(params) {
       optimizationTimer.setOptimDuration(routeLen);
       $('div#optimization-global').show();
       var sizeRoutes = 0;
+      var activeSizeRoutes = 0;
       var allStopsActive = true;
       $.each($('li[data-route_id]:not(:last) [data-size-active]'), function() {
         var sizeRoute = $(this).attr('data-size');
-        sizeRoutes += parseInt(sizeRoute);
+        var activeSizeRoute = $(this).attr('data-size-active');
+        if ($(this).closest('.route-tools').find('button.lock.btn-default').length > 0) {
+          sizeRoutes += parseInt(sizeRoute);
+          activeSizeRoutes += parseInt(activeSizeRoute);
+        }
         if ($(this).attr('data-size-active') != sizeRoute)
           allStopsActive = false;
       });
@@ -975,6 +980,12 @@ export const plannings_edit = function(params) {
           $('div#optimization-global').hide();
         }
       }
+      if ($('li.out_route button.lock.btn-default').length != 0) {
+        sizeRoutes += $('li.out_route .stops li.waypoint').length;
+        activeSizeRoutes += $('li.out_route .stops li.waypoint').length;
+      }
+      $('div#optimization-visit-counter').text(activeSizeRoutes + '/'+ sizeRoutes);
+
       $('div#optimization-active').css({display: allStopsActive ? 'none' : 'block'});
       var dimensions = $.map(vehicles_usages_map, function(vehicle) { return vehicle.router_dimension; })
         .filter(function(elt, idx, array) { return idx == array.indexOf(elt); });

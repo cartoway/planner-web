@@ -10,9 +10,12 @@
         .container-fluid
           %input#optimization-route_id{:name => "route_id", :type => "hidden", :value => ""}
           %div
-            %h5
-              %i.fa.fa-map-marker.fa-fw
-              = t 'plannings.edit.dialog.optimization.visits.title'
+            %h5.d-flex.justify-content-between
+              .col-md-6
+                %i.fa.fa-map-marker.fa-fw
+                = t 'plannings.edit.dialog.optimization.visits.title'
+              .col-md-6.text-right
+                #optimization-visit-counter
             .ui-state-error.modal-optim-warning
               %span
                 %i.fa.fa-warning.fa-fw
