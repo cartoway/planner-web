@@ -39,7 +39,7 @@ class ImportCsv
   end
 
   def column_def=(values)
-    @column_def = values.symbolize_keys
+    @column_def = values&.symbolize_keys || {}
   end
 
   def name
