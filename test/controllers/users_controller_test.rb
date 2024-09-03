@@ -93,6 +93,6 @@ class UsersControllerTest < ActionController::TestCase
     vehicle = vehicles(:vehicle_one)
     get :edit, id: @user, driver_token: vehicle.driver_token
     assert_redirected_to root_url
-    assert response.forbidden?, response.body
+    assert response.redirection?, response.body
   end
 end
