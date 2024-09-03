@@ -122,18 +122,18 @@ class DestinationsController < ApplicationController
   end
 
   def import
-    @import_csv = ImportCsv.new
+    @columns_default = current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
+
+    @import_csv = ImportCsv.new(column_def: @columns_default)
     @import_tomtom = ImportTomtom.new
-    if current_user.customer.advanced_options
-      advanced_options = current_user.customer.advanced_options
-      @columns_default = advanced_options['import']['destinations']['spreadsheetColumnsDef'] if advanced_options['import'] && advanced_options['import']['destinations'] && advanced_options['import']['destinations']['spreadsheetColumnsDef']
-    end
   end
 
   def upload_csv
+    @columns_default = current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
+
     respond_to do |format|
       @importer = ImporterDestinations.new(current_user.customer)
-      @import_csv = ImportCsv.new(import_csv_params.merge(importer: @importer, content_code: :html))
+      @import_csv = ImportCsv.new(import_csv_params.merge(importer: @importer, content_code: :html, column_def: @columns_default))
       if @import_csv.valid? && @import_csv.import
         if @import_csv.importer.plannings.size == 1 && !current_user.customer.job_destination_geocoding
           format.html { redirect_to edit_planning_url(@import_csv.importer.plannings.last) }
@@ -144,10 +144,6 @@ class DestinationsController < ApplicationController
         end
       else
         @import_tomtom = ImportTomtom.new
-        if current_user.customer.advanced_options
-          advanced_options = current_user.customer.advanced_options
-          @columns_default = advanced_options['import']['destinations']['spreadsheetColumnsDef'] if advanced_options['import'] && advanced_options['import']['destinations'] && advanced_options['import']['destinations']['spreadsheetColumnsDef']
-        end
         format.html { render action: 'import' }
       end
     end
