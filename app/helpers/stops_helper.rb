@@ -65,7 +65,7 @@ module StopsHelper
     when 1
       text_area_tag field_name, current_value, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control'
     when 2
-      number_field_tag field_name, current_value, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control'
+      number_field_tag field_name, current_value, step: 1, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control', onkeypress: "return event.charCode >= 48 && event.charCode <= 57"
     when 3
       number_field_tag field_name, current_value, step: :any, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control'
     when 4

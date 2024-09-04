@@ -878,7 +878,12 @@ fr:
       object_class_help: Entité à laquelle lier la propriété
       object_type: Type
       object_type_help: Type de la propriété. Permet d'ajuster le format d'affichage
-      default_value: Valeur par défaut
+      default_value:
+        boolean: Valeur par défaut
+        integer: Valeur par défaut
+        float: Valeur par défaut
+        array: Valeurs
+        string: Valeur par défaut
       default_value_help: Valeur par défault
       description: Description
       description_help: Indication décrivant la propriété
