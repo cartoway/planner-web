@@ -21,7 +21,7 @@
         %th= t 'activerecord.attributes.custom_attribute.name'
         %th= t 'activerecord.attributes.custom_attribute.object_type'
         %th= t 'activerecord.attributes.custom_attribute.object_class'
-        %th= t 'activerecord.attributes.custom_attribute.default_value'
+        %th= t "activerecord.attributes.custom_attribute.default_value"
         %th= t 'activerecord.attributes.custom_attribute.description'
         %th
     %tbody
@@ -31,7 +31,7 @@
           %td= custom_attribute.name
           %td= t "custom_attributes.types.#{custom_attribute.object_type}"
           %td= t "activerecord.models.#{custom_attribute.object_class}"
-          %td= custom_attribute.default_value
+          %td= custom_attribute.display_default_value
           %td= custom_attribute.description
           %td.text-right
             = link_to edit_custom_attribute_path(custom_attribute), :class => 'btn btn-primary btn-sm' do

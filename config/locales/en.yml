@@ -860,7 +860,12 @@ en:
       object_class_help: Entity to which property is linked
       object_type: Type
       object_type_help: Property type. Used to adjust display format
-      default_value: Default value
+      default_value:
+        boolean: Default value
+        integer: Default value
+        float: Default value
+        array: Values
+        string: Default value
       default_value_help: Default value
       description: Description
       description_help: Indication describing the property

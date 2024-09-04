@@ -38,6 +38,21 @@ class CustomAttribute < ApplicationRecord
     end
   end
 
+  def display_default_value
+    case object_type
+    when 'boolean'
+      ActiveRecord::Type::Boolean.new.cast(default_value)
+    when 'integer'
+      default_value.to_i
+    when 'float'
+      default_value.to_f
+    when 'array'
+      default_value && JSON.parse(default_value)&.join(' / ') || []
+    else
+      default_value
+    end
+  end
+
   def self.ordered_object_classes
     (%w[stop vehicle visit] | object_classes.keys) # Set Union to be sure no object class is forgotten
   end
@@ -45,7 +60,7 @@ class CustomAttribute < ApplicationRecord
   private
 
   def default_value_to_type
-    return unless object_type_changed?
+    return if new_record? || !object_type_changed?
 
     case object_type
     when 'boolean'
