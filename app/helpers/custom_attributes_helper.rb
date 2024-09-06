@@ -15,11 +15,11 @@ module CustomAttributesHelper
   def object_type_cast(object_type, value)
     case object_type
     when 'boolean'
-      json_array?(value) ? ActiveRecord::Type::Boolean.new.cast(JSON.parse(value).first) : ActiveRecord::Type::Boolean.new.cast(value)
+      json_array?(value) ? ActiveRecord::Type::Boolean.new.cast(JSON.parse(value).first) : value && ActiveRecord::Type::Boolean.new.cast(value)
     when 'integer'
-      json_array?(value)? JSON.parse(value).first.to_i : value.to_i
+      json_array?(value)? JSON.parse(value).first.to_i : value&.to_i
     when 'float'
-      json_array?(value) ? JSON.parse(value).first.to_f : value.to_f
+      json_array?(value) ? JSON.parse(value).first.to_f : value&.to_f
     when 'array'
       json_array?(value) && JSON.parse(value) || [""]
     else

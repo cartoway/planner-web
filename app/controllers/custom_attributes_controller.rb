@@ -48,7 +48,7 @@ class CustomAttributesController < ApplicationController
 
   def reset_default_value_partial
     @object_type = params[:custom_attribute][:object_type]
-    @typed_default_value = helpers.object_type_cast(params[:custom_attribute][:object_type], params[:custom_attribute][:default_value])
+    @typed_default_value = nil
     respond_to do |format|
       format.js { render partial: 'update_default_value' }
     end
