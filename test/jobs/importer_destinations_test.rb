@@ -42,10 +42,8 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should import' do
-    without_loading Stop do
-      assert_difference('Destination.count', 1) do
-        assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_one_without_ref.csv', 'text.csv')).import
-      end
+    assert_difference('Destination.count', 1) do
+      assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_one_without_ref.csv', 'text.csv')).import
     end
   end
 

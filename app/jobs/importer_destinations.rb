@@ -391,7 +391,7 @@ class ImporterDestinations < ImporterBase
         planning.compute_saved(ignore_errors: true)
       }
     end
-    @customer.save!
+    @customer.save! && @customer.reload
   end
 
   private
@@ -687,6 +687,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_plannings(name, _options)
+    # Generate new plannings
     @plannings_routes.each{ |ref, routes_hash|
       next if @planning_hash.empty? && ref.nil? && routes_hash.keys.compact.empty?
 
@@ -712,6 +713,13 @@ class ImporterDestinations < ImporterBase
       end
       planning.split_by_zones(nil) if @planning_hash.key?(:zonings) || @planning_hash.key?(:zoning_ids)
       @plannings.push(planning)
+    }
+
+    puts "@plannings #{@plannings.size}"
+    # Add new visits to pre existing plannings
+    (@customer.plannings - @plannings).each{ |planning|
+      puts 'one plan'
+      planning.visit_filling
     }
   end
 

@@ -134,6 +134,14 @@ class Planning < ApplicationRecord
     routes.find{ |r| !r.vehicle_usage? }.add(visit)
   end
 
+  def visit_filling
+    visit_ids = routes.includes_stops.flat_map{ |route| route.stops.map{ |stop| stop.visit_id }}
+    Visit.includes_destinations.where(id: (customer.visit_ids - visit_ids)).select{ |visit|
+      tags_compatible?(visit.tags.to_a | visit.destination.tags.to_a)
+    }.each{ |visit| visit_add(visit) }
+    self.save!
+  end
+
   def visit_remove(visit)
     update_routes_changed
     routes.each{ |route|
