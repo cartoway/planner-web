@@ -58,7 +58,7 @@ module StopsHelper
 
   def custom_attribute_form_field(form, stop, custom_attribute)
     field_name = "stop[custom_attributes][#{custom_attribute.name}]"
-    current_value = stop.custom_attributes_typed_hash[custom_attribute.name] || custom_attribute.typed_default_value
+    current_value = stop.custom_attributes.key?(custom_attribute.name) ? stop.custom_attributes_typed_hash[custom_attribute.name] : custom_attribute.typed_default_value
     case custom_attribute.object_type_before_type_cast
     when 0
       render partial: 'shared/check_box', locals: { form: form, name: field_name, checked: current_value, help: custom_attribute.description, label: custom_attribute.name, options: { label_col: 'd-none', help_label_class: 'd-none'} }

@@ -8,7 +8,7 @@ module RecursiveParamsHelper
         { key => permit_recursive(value.first) }
       elsif value.is_a?(Hash) || value.is_a?(ActionController::Parameters)
         { key => permit_recursive(value) }
-      elsif value.present?
+      else
         key
       end
     end

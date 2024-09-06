@@ -30,7 +30,7 @@ window.CustomAttributes = {
 
     function addElement() {
       if (element) {
-        element.append('<div class="default-value-row input-group" id="row_added_' + i + '"><input id="custom_attribute_default_value" class="form-control" name="custom_attribute[default_value][]"><a id="delete_added_' + i + '" class="input-group-addon btn btn-danger btn-sm btn-remove"><i class="fa fa-trash fa-fw"></i>' + I18n.t('all.verb.destroy') + '</a></div>')
+        element.append('<div class="default-value-row input-group" id="row_added_' + i + '"><input id="custom_attribute_default_value" class="form-control" name="custom_attribute[default_value][]" required="true"><a id="delete_added_' + i + '" class="input-group-addon btn btn-danger btn-sm btn-remove"><i class="fa fa-trash fa-fw"></i> ' + I18n.t('all.verb.destroy') + ' </a></div>')
         $('.btn-remove').on('click', function() {
           var button_id = $(this).closest('.default-value-row').attr('id').split('_').pop();
           $('#row_added_'+ button_id).remove();
