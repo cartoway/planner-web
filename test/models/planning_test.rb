@@ -655,12 +655,14 @@ class PlanningTest < ActiveSupport::TestCase
 
   test 'should set stops for one route' do
     route = routes(:route_one_one)
-    original_order = route.stops.map(&:id)
-    route.planning.set_stops([route], [original_order.reverse])
-    assert_equal original_order.reverse, route.stops.map(&:id)
+    route_three = routes(:route_three_one)
+    original_order_one = route.stops.map(&:id)
+    original_order_three = route_three.stops.map(&:id)
+    route.planning.set_stops([route], [original_order_one + original_order_three.reverse])
+    assert_equal original_order_one + original_order_three.reverse, route.stops.map(&:id)
     route.planning.save!
     route.reload
-    assert_equal original_order.reverse, route.stops.map(&:id)
+    assert_equal original_order_one + original_order_three.reverse, route.stops.map(&:id)
   end
 
   test 'should set stops for planning' do
