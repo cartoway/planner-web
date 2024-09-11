@@ -417,9 +417,7 @@
         <% end %>
 
         <legend class="scheduler-border"><%= t 'vehicle_usages.form.driver.legend' %></legend>
-        <%= f.text_field :contact_email, {input_group: '@'} do %>
-          <p class="help-block"><%= t 'vehicles.form.contact_email.help' %></p>
-        <% end %>
+        <%= f.text_field :contact_email, {input_group: '@', help: t('vehicles.form.contact_email.help')} %>
 
         <div id="vehicle_usage_vehicle_phone_number" class="form-group">
           <label class="sr-only" for="vehicle_usage_vehicle_phone_number"><%= t 'activerecord.attributes.vehicle.phone_number' %></label>

@@ -2360,7 +2360,7 @@ en:
           A value higher than 100% means higher speed. The global tune up set on
           settings is also used on computation.
       contact_email:
-        help: Driver's device E-Mail
+        help: Driver's device E-Mail. Several emails might be transmitted separated by spaces, commas or semicolons.
       contact_phone:
         help: Driver's device phone number
       tags_empty: No skills found

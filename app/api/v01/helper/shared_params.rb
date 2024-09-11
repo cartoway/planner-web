@@ -160,7 +160,7 @@ module SharedParams
   params :request_vehicle do |options|
     optional :ref, type: String
     optional :name, type: String
-    optional :contact_email, type: String
+    optional :contact_email, type: String, documentation: { desc: 'Driver\'s device E-Mail. Several emails might be transmitted separated by spaces, commas or semicolons.' }
     optional :phone_number, type: String
     optional :emission, type: Float
     optional :consumption, type: Integer
