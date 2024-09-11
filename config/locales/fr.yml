@@ -2465,7 +2465,7 @@ fr:
           L'ajustement global au niveau du paramétrage est également utilisé
           lors des calculs.
       contact_email:
-        help: Email du terminal du chauffeur
+        help: Email du terminal du chauffeur. Il est possible de renseigner plusieurs emails séparés par des espaces, virgules ou points-virgules
       contact_phone:
         help: Numéro de téléphone du terminal du chauffeur
       tags_empty: Pas de compétences trouvées

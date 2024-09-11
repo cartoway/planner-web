@@ -51,7 +51,7 @@ class Vehicle < ApplicationRecord
   validates :color, presence: true
   validates_format_of :color, with: /\A(\#[A-Fa-f0-9]{6})\Z/
   validates :speed_multiplier, numericality: { greater_than_or_equal_to: 0.5, less_than_or_equal_to: 1.5 }, if: :speed_multiplier
-  validates :contact_email, format: { with: /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i }, allow_blank: true
+  validates :contact_email, format: { with: /\A(([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})(\s*,\s*|\s*;\s*|\s+)?)+\z/i }, allow_blank: true
   validate :capacities_validator
   validates :max_distance, numericality: true, allow_nil: true
   validates :max_ride_distance, numericality: true, allow_nil: true
