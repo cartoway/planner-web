@@ -7,7 +7,8 @@
     #wrapper
       .menu-left.hidden-print{style: "overflow: hidden;"}
         .top-menu
-          %a#logo.logo{href: "/"}= image_tag @reseller.logo_small.url || "logo.svg", width: 150, height: 40, alt: @reseller.name
+          %a#logo.logo.logo-small{href: "/"}= image_tag @reseller.logo_small.url || "logo.svg", alt: @reseller.name
+          %a#logo.logo.logo-large{href: "/"}= image_tag @reseller.logo_large.url || "logo.svg", alt: @reseller.name
 
         .divider.solid
         #accordion-menu.menu-content.panel-group
