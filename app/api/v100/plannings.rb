@@ -77,24 +77,21 @@ class V100::Plannings < Grape::API
       optional :active_only, type: Boolean, desc: 'Use only active stops.', default: true
     end
     patch ':id/optimized_insertion' do
-      puts params.inspect
       Route.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
-        stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
 
+        stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
         begin
           Planning.transaction do
             moving_stop_ids = stops.map(&:id)
-            Optimizer.optimize(planning, nil, { insertion_only: true, moving_stop_ids: moving_stop_ids })
+            Optimizer.optimize(planning, nil, { insertion_only: true, moving_stop_ids: moving_stop_ids, active_only: params[:active_only] })
             current_customer.save!
           end
         rescue VRPNoSolutionError
           error! V01::Status.code_response(:code_304), 304
         end
-        if params[:synchronous] && (params[:details] || params[:with_details])
-          present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
-        elsif planning.customer.job_optimizer
+        if planning.customer.job_optimizer
           present planning.customer.job_optimizer, with: V01::Entities::Job
         else
           status 204
