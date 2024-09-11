@@ -477,7 +477,7 @@ class Planning < ApplicationRecord
     raise 'Invalid routes count' if routes.size != stop_ids.size && !options[:insertion_only]
 
     Route.transaction do
-      stops_count = routes.collect{ |r| r.stops.size }.reduce(&:+)
+      stops_count = self.routes.collect{ |r| r.stops.size }.reduce(&:+)
       flat_stop_ids = stop_ids.flatten.compact
       inactive_stop_ids = []
 
@@ -490,7 +490,7 @@ class Planning < ApplicationRecord
 
         # Fetch sorted stops returned by optim from all routes
         # index dependent: route[0] == stop_ids[0]
-        ordered_stops = routes.flat_map{ |r| r.stops.select{ |s| stop_ids[index].include? s.id }}.sort_by { |s| stop_ids[index].index s.id }
+        ordered_stops = self.routes.flat_map{ |r| r.stops.select{ |s| stop_ids[index].include? s.id }}.sort_by { |s| stop_ids[index].index s.id }
 
         # 1. Set route and index (active stops returned by optim for instance)
         i = 0
@@ -533,9 +533,8 @@ class Planning < ApplicationRecord
         (route.no_stop_index_validation = true) && route.save!
         route.stops.reload # Refresh route.stops collection if stops have been moved
       }
-      raise 'Invalid stops count' unless routes.collect{ |r| r.stops.size }.reduce(&:+) == stops_count
-
       self.reload # Refresh route.stops collection if stops have been moved
+      raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.size }.reduce(&:+) == stops_count
     end
   end
 
