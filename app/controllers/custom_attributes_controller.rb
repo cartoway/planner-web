@@ -47,7 +47,7 @@ class CustomAttributesController < ApplicationController
 
   def reset_default_value_partial
     @object_type = params[:custom_attribute][:object_type]
-    @typed_default_value = nil
+    @typed_default_value = @object_type == 'array' ? [''] : nil
     respond_to do |format|
       format.js { render partial: 'update_default_value' }
     end
