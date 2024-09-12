@@ -150,7 +150,7 @@
                     - if definition[:route_operations].any?
                       %li.divider{role: "separator"}
                 %li
-                  = link_to api_web_v01_print_planning_path(@planning) do
+                  = link_to api_web_v01_print_planning_path(@planning), target: :_blank do
                     %i.fa.fa-print.fa-fw
                     = t '.export.print'
                 %li.divider{role: "separator"}
@@ -180,7 +180,7 @@
                     %i.fa.fa-chart-line.fa-fw
                     = t '.historize'
             - if @manage_planning[:manage_print]
-              = link_to api_web_v01_print_planning_path(@planning), class: 'btn btn-default btn-sm', title: t('.export.print') do
+              = link_to api_web_v01_print_planning_path(@planning), class: 'btn btn-default btn-sm', title: t('.export.print'), target: :_blank do
                 %i.fa.fa-print.fa-fw
       #planning.row
 

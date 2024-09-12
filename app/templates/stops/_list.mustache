@@ -261,7 +261,7 @@
                 </li>
                 <li role="separator" class="divider"></li>
               {{/praxedo}}
-              <li><a href="/api-web/0.1/plannings/{{planning_id}}/routes/{{route_id}}/print"><i class="fa fa-print fa-fw"></i> {{#i18n}}plannings.edit.export.print{{/i18n}}</a></li>
+              <li><a href="/api-web/0.1/plannings/{{planning_id}}/routes/{{route_id}}/print" target="_blank"><i class="fa fa-print fa-fw"></i> {{#i18n}}plannings.edit.export.print{{/i18n}}</a></li>
               <li role="separator" class="divider"></li>
               <li><a class="export_spreadsheet"><i class="fa fa-table fa-fw"></i> {{#i18n}}plannings.edit.export.spreadsheet{{/i18n}}</a></li>
               <li role="separator" class="divider"></li>
@@ -280,7 +280,7 @@
 
           {{^manage_export}}
             {{#manage_print}}
-              <a href="/api-web/0.1/plannings/{{planning_id}}/routes/{{route_id}}/print" class="btn btn-default btn-xs" title="{{#i18n}}plannings.edit.export.print{{/i18n}}"><i class="fa fa-print fa-fw"></i></a>
+              <a href="/api-web/0.1/plannings/{{planning_id}}/routes/{{route_id}}/print" class="btn btn-default btn-xs" title="{{#i18n}}plannings.edit.export.print{{/i18n}}" target="_blank"><i class="fa fa-print fa-fw"></i></a>
             {{/manage_print}}
           {{/manage_export}}
         </div>
