@@ -19,7 +19,7 @@ class ProfilesHelperTest < ActionView::TestCase
   test 'routers by profile should contains routers belonging to profiles' do
     h = {@profile.id => @routers.map{ |r| [r.id, r.time?, r.distance?]}, @profile2.id => @profile2.routers.map{ |r| [r.id, r.time?, r.distance?]}}
 
-    assert_equal h, routers_by_profile
+    assert_equal h.sort, routers_by_profile.sort
   end
 
   test 'format routers by profile know time and/or distance mode' do

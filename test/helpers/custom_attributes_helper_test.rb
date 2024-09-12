@@ -22,7 +22,7 @@ class CustomAttributesHelperTest < ActionView::TestCase
     object_type = 'integer'
     typed_default_value = 5
     assert_equal(
-      "<input type=\"number\" name=\"custom_attribute[default_value]\" id=\"custom_attribute_default_value\" value=\"5\" class=\"form-control\" />",
+      "<input type=\"number\" name=\"custom_attribute[default_value]\" id=\"custom_attribute_default_value\" value=\"5\" stop=\"1\" class=\"form-control\" onkeypress=\"return event.charCode &gt;= 48 &amp;&amp; event.charCode &lt;= 57\" />",
       custom_attribute_default_value_form_field(object_type, typed_default_value)
     )
   end

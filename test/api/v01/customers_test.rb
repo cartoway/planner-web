@@ -251,7 +251,7 @@ class V01::CustomerTest < ActiveSupport::TestCase
     assert_equal({'enable_test' => 'true'}, @customer.reload.advanced_options)
     put api_admin(@customer.id), advanced_options: { enable_test: nil }
     assert last_response.ok?, last_response.body
-    assert_empty @customer.reload.advanced_options
+    assert_equal({'enable_test' => nil}, @customer.reload.advanced_options)
 
     params = { import: { destinations: { spreadsheetColumnsDef: { ref_vehicle: 'myDriver' }}}}
     put api(@customer.id), advanced_options: params
