@@ -2,7 +2,7 @@ module ProfilesHelper
   def routers_by_profile
     h = {}
     Profile.all.each do |profile|
-      h[profile.id] = profile.routers.map{ |r| [r.id, r.time?, r.distance?]}
+      h[profile.id] = profile.routers.order(:id).map{ |r| [r.id, r.time?, r.distance?] }
     end
     h
   end
