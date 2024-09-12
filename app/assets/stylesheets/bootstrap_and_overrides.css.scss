@@ -1057,11 +1057,9 @@ div.grid-container {
 .form-check {
   display: block;
   min-height: $form-check-min-height;
-  padding-left: $form-check-padding-start;
   margin-bottom: $form-check-margin-bottom;
 
   .form-check-input {
-    float: right;
     margin-right: $form-switch-padding-start;
   }
 }
@@ -1183,7 +1181,6 @@ div.grid-container {
   .form-check-input {
 
     width: $form-switch-width;
-    margin-left: $form-switch-padding-start;
     background-position: left center;
     background-image: #{escape-svg($form-switch-bg-image)};
     @include border-radius($form-switch-border-radius, 0);
