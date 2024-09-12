@@ -17,7 +17,10 @@ class ProfilesHelperTest < ActionView::TestCase
   end
 
   test 'routers by profile should contains routers belonging to profiles' do
-    h = {@profile.id => @routers.map{ |r| [r.id, r.time?, r.distance?]}, @profile2.id => @profile2.routers.map{ |r| [r.id, r.time?, r.distance?]}}
+    h = {
+      @profile.id => @routers.order(:id).map{ |r| [r.id, r.time?, r.distance?] },
+      @profile2.id => @profile2.routers.order(:id).map{ |r| [r.id, r.time?, r.distance?] }
+    }
 
     assert_equal h.sort, routers_by_profile.sort
   end
