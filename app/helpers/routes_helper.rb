@@ -51,8 +51,7 @@ module RoutesHelper
   end
 
   def export_column_titles(customer, columns, custom_columns)
-    retrieve_matching_columns(customer, columns)
-    columns.map{ |c|
+    retrieve_matching_columns(customer, columns).map{ |c|
       if custom_columns&.key?(c)
         custom_columns[c]
       elsif (m = /^(.+)\[(.*)\]$/.match(c))
@@ -67,7 +66,7 @@ module RoutesHelper
   end
 
   def retrieve_matching_columns(customer, columns)
-    columns.map!{ |column|
+    columns.map{ |column|
       if (m = /^(.+)\[(.*)\]$/.match(column))
         deliverable_unit = customer.deliverable_units.where(label: m[2])&.first
 
