@@ -25,6 +25,8 @@ COMMENT ON EXTENSION hstore IS 'data type for storing sets of (key, value) pairs
 
 SET default_tablespace = '';
 
+SET default_table_access_method = heap;
+
 --
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
@@ -760,6 +762,7 @@ CREATE TABLE public.stops (
     out_of_max_ride_distance boolean,
     out_of_max_ride_duration boolean,
     status_updated_at timestamp without time zone,
+    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -2784,6 +2787,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20240624091527'),
 ('20240627142001'),
 ('20240704115843'),
-('20240719162433');
+('20240719162433'),
+('20240814065613');
 
 
