@@ -129,10 +129,9 @@ class DestinationsController < ApplicationController
   end
 
   def upload_csv
-    @columns_default = current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
-
     respond_to do |format|
       @importer = ImporterDestinations.new(current_user.customer)
+      @columns_default = (current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef') || {}).merge(import_csv_params[:column_def] || {})
       @import_csv = ImportCsv.new(import_csv_params.merge(importer: @importer, content_code: :html, column_def: @columns_default))
       if @import_csv.valid? && @import_csv.import
         if @import_csv.importer.plannings.size == 1 && !current_user.customer.job_destination_geocoding

@@ -1,4 +1,3 @@
-
 class CustomAttributesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_custom_attribute, only: [:edit, :update, :destroy, :update_default_value_partial]
