@@ -15,7 +15,7 @@
         %i.fa.fa-plus.fa-fw
         = t 'all.verb.new'
   - else
-    .col-md-offset-2.col-md-8.field{ class: ('form-switch' if typed_default_value == true || typed_default_value == false) }
+    .col-md-offset-2.col-md-8.field{ class: ('form-switch' if object_type == 'boolean') }
       = custom_attribute_default_value_form_field(object_type, typed_default_value)
       %small.form-text.text-muted
         = t 'custom_attributes.form.default_value_help'
