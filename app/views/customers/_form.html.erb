@@ -304,8 +304,8 @@
           <%= number_field 'customer', 'optimization_time' , value: @customer.optimization_time, placeholder: t('.optimization_time_default', n: LocalizedValues.localize_numeric_value(Mapotempo::Application.config.optimize_time)), min: 1, step: 1, class: 'form-control width_1_2' %>
           <span class="input-group-addon" ><%= t('all.unit.second') %></span>
         </div>
-        <p class="help-block"><%= t '.optimization_minimal_time_help' %></p>
-        <p class="help-block"><%= t '.optimization_time_help' %></p>
+        <small class="help-block"><%= t '.optimization_minimal_time_help' %></small>
+        <small class="help-block"><%= t '.optimization_time_help' %></small>
       </div>
     </div>
 
