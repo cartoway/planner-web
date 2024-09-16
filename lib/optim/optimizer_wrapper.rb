@@ -326,38 +326,37 @@ class OptimizerWrapper
           overload_multiplier: strict_capacity ? nil : (planning.customer.deliverable_units.find{ |du| du.id == k }.optimization_overload_multiplier || Mapotempo::Application.config.optimize_overload_multiplier)
         }
       }&.compact
-        vrp_vehicles << {
-          id: "v#{route.vehicle_usage_id}",
-          router_mode: route.vehicle_usage.vehicle.default_router.try(&:mode),
-          router_dimension: route.vehicle_usage.vehicle.default_router_dimension,
-          router_options: route.vehicle_usage.vehicle.default_router_options
-                               .symbolize_keys.except(:time, :distance, :isochrone, :isodistance, :avoid_zones)
-                               .delete_if{ |k, v| v.nil? } || {},
-          speed_multiplier: route.vehicle_usage.vehicle.default_speed_multiplier,
-          area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:area].join(',') }&.join('|'),
-          speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
-          timewindow: {
-            start: route.vehicle_usage.default_time_window_start,
-            end: route.vehicle_usage.default_time_window_end
-          }.delete_if{ |_k, v| v.nil? },
-          duration: route.vehicle_usage.default_work_time(true)&.to_f,
-          distance: route.vehicle_usage.default_max_distance,
-          maximum_ride_distance: route.vehicle_usage.default_max_ride_distance,
-          maximum_ride_time: route.vehicle_usage.default_max_ride_duration,
-          start_point_id: route.vehicle_usage.default_store_start&.id && "d#{route.vehicle_usage.default_store_start.id}",
-          end_point_id: route.vehicle_usage.default_store_stop&.id && "d#{route.vehicle_usage.default_store_stop.id}",
-          cost_fixed: 0,
-          cost_distance_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'distance' ? 1 : 0,
-          cost_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? 1 : 0,
-          cost_waiting_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? options[:optimization_cost_waiting_time] : 0,
-          cost_late_multiplier: vehicles_cost_late_multiplier,
-          shift_preference: (route.force_start || options[:force_start]) ? 'force_start' : nil,
-          rest_ids: vehicle_rests.map{ |r| "r#{r[:id]}" },
-          capacities: capacities || [],
-          skills: [vehicle_skills]
+      vrp_vehicles << {
+        id: "v#{route.vehicle_usage_id}",
+        router_mode: route.vehicle_usage.vehicle.default_router.try(&:mode),
+        router_dimension: route.vehicle_usage.vehicle.default_router_dimension,
+        router_options: route.vehicle_usage.vehicle.default_router_options
+                              .symbolize_keys.except(:time, :distance, :isochrone, :isodistance, :avoid_zones)
+                              .delete_if{ |k, v| v.nil? } || {},
+        speed_multiplier: route.vehicle_usage.vehicle.default_speed_multiplier,
+        area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:area].join(',') }&.join('|'),
+        speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
+        timewindow: {
+          start: route.vehicle_usage.default_time_window_start,
+          end: route.vehicle_usage.default_time_window_end
+        }.delete_if{ |_k, v| v.nil? },
+        duration: route.vehicle_usage.default_work_time(true)&.to_f,
+        distance: route.vehicle_usage.default_max_distance,
+        maximum_ride_distance: route.vehicle_usage.default_max_ride_distance,
+        maximum_ride_time: route.vehicle_usage.default_max_ride_duration,
+        start_point_id: route.vehicle_usage.default_store_start&.id && "d#{route.vehicle_usage.default_store_start.id}",
+        end_point_id: route.vehicle_usage.default_store_stop&.id && "d#{route.vehicle_usage.default_store_stop.id}",
+        cost_fixed: 0,
+        cost_distance_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'distance' ? 1 : 0,
+        cost_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? 1 : 0,
+        cost_waiting_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? options[:optimization_cost_waiting_time] : 0,
+        cost_late_multiplier: vehicles_cost_late_multiplier,
+        shift_preference: (route.force_start || options[:force_start]) ? 'force_start' : nil,
+        rest_ids: vehicle_rests.map{ |r| "r#{r[:id]}" },
+        capacities: capacities || [],
+        skills: [vehicle_skills]
       }.delete_if{ |_k, v| v.nil? || (v.respond_to?(:empty?) && v.empty?) }
     }
-
     [vrp_vehicles, point_hash.values]
   end
 
@@ -452,9 +451,11 @@ class OptimizerWrapper
         used_vehicle_hash[sticky_id] = true
       }
     }
-    vrp[:vehicles].delete_if{ |vehicle|
-      !used_vehicle_hash.key?(vehicle[:id])
-    }
+    if used_vehicle_hash.any?
+      vrp[:vehicles].delete_if{ |vehicle|
+        !used_vehicle_hash.key?(vehicle[:id])
+      }
+    end
     @removed_route_indices = routes.map.with_index{ |route, index|
       next unless route.vehicle_usage?
 

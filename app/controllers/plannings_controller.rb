@@ -146,28 +146,31 @@ class PlanningsController < ApplicationController
       begin
         Planning.transaction do
           route = @planning.routes.find{ |rt| rt.id == Integer(params[:route_id]) }
+          @routes = [route]
 
           if params[:stop_ids].nil?
             previous_route_id = Stop.find(params[:stop_id]).route_id
             move_stop(params[:stop_id], route, previous_route_id)
+            @routes << @planning.routes.find{ |r| r.id == previous_route_id } if previous_route_id != route.id
           else
             params[:stop_ids].map!(&:to_i)
-            ids = @planning.routes.flat_map{ |ro|
+            stops = @planning.routes.flat_map{ |ro|
               ro.stops.select{ |stop| params[:stop_ids].include? stop.id }
-                .collect{ |stop| {stop_id: stop.id, route_id: ro.id} }
             }
-            ids.reverse! if params[:index].to_i > 0
-            ids.each{ |id| move_stop(id[:stop_id], route, id[:route_id]) }
-          end
-
-          # save! is used to rollback all the transaction with associations
-          if @planning.compute && @planning.save!
-            @planning.reload
-            # Send in response only modified routes
-            @routes = [route]
-            if params[:stop_ids].nil?
-              @routes << @planning.routes.find{ |r| r.id == previous_route_id } if previous_route_id != route.id
+            if params[:index]&.empty? && route.vehicle_usage?
+              if Optimizer.optimize(@planning, route, { insertion_only: true, moving_stop_ids: stops.map(&:id) })
+                current_user.customer.save!
+                @routes += Route.where(id: stops.map{ |stop| stop.route_id }.uniq)
+                @routes.each(&:reload)
+              else
+                errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
+                format.json { render json: errors, status: :unprocessable_entity }
+                return
+              end
             else
+              ids = stops.collect{ |stop| {stop_id: stop.id, route_id: stop.route_id} }
+              ids.reverse! if params[:index].to_i > 0
+              ids.each{ |id| move_stop(id[:stop_id], route, id[:route_id]) }
               ids.uniq{ |id|
                 id[:route_id]
               }.each{ |id|
@@ -177,6 +180,10 @@ class PlanningsController < ApplicationController
                 }
               }
             end
+          end
+
+          # save! is used to rollback all the transaction with associations
+          if @planning.compute && @planning.save!
             format.json { render action: 'show', location: @planning }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
