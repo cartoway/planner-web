@@ -135,4 +135,15 @@ module VehicleUsagesHelper
       end
     end
   end
+
+  def router_grouped_options(routers, vehicle_usage)
+    grouped_options_for_select(
+      [[t('activerecord.attributes.router.router_dimensions.time'), routers.select(&:time?).collect{ |router|
+        [router.translated_name + ' - ' + t('activerecord.attributes.router.router_dimensions.time'), router.id.to_s + '_time']
+      }]] + [[t('activerecord.attributes.router.router_dimensions.distance'), routers.select(&:distance?).collect{ |router|
+        [router.translated_name + ' - ' + t('activerecord.attributes.router.router_dimensions.distance'), router.id.to_s + '_distance']
+      }]],
+      vehicle_usage.vehicle.router_id || vehicle_usage.vehicle.router_dimension ? (vehicle_usage.vehicle.router_id || vehicle_usage.vehicle.customer.router_id).to_s + '_' + (vehicle_usage.vehicle.router_dimension || vehicle_usage.vehicle.customer.router_dimension) : nil
+    )
+  end
 end

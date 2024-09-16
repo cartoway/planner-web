@@ -1,0 +1,453 @@
+= bootstrap_form_for @vehicle_usage, layout: :horizontal, html: { class: 'number-to-percentage form-horizontal'} do |f|
+  = render 'shared/error_messages', model: @vehicle_usage
+  %fieldset
+    %legend.scheduler-border
+      %a{"data-parent": "", "data-toggle": "collapse", href: "#collapseVehicle", class: ('collapsed' if @vehicle_usage_sets.count > 1) }
+        = t 'vehicle_usages.form.vehicle.legend'
+    #collapseVehicle.collapse{ class: ('in' if @vehicle_usage_sets.count < 2)}
+    - if @vehicle_usage_sets[0].customer.default_max_vehicle_usage_sets > 1
+      %p.help-block
+        = t 'vehicle_usages.form.vehicle.help'
+    = f.fields_for @vehicle_usage.vehicle, layout: :horizontal, builder: BootstrapForm::FormBuilder do |f|
+      = f.hidden_field :id
+      - if @vehicle_usage.vehicle.customer.enable_references
+        = f.text_field :ref, help: t('vehicles.form.ref.help')
+      .row
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_color"}
+          = t('activerecord.attributes.vehicle.color')
+        .col-md-offset-2.col-md-8.field.input-append
+          .input-group
+            = select_tag('vehicle_usage[vehicle][color]', options_for_select((COLORS_TABLE + [customised_color_verification(@vehicle_usage.vehicle[:color])]).compact.uniq, @vehicle_usage.vehicle[:color]), include_blank: '#000000') do
+              %i#customised_color_picker.fa.fa-paint-brush{title: t('activerecord.attributes.vehicle.customised_color')}
+            = color_field :vehicle, :color, { value: customised_color_verification(@vehicle_usage.vehicle[:color]), id: 'color_picker', name: 'fff' }
+      = f.text_field :name, required: true
+      #vehicle_usage_vehicle_consumption_input.row
+        %label.sr-only{for: "vehicle_usage_vehicle_emission"}
+          = t 'activerecord.attributes.vehicle.emission'
+        %label.sr-only{for: "vehicle_usage_vehicle_consumption"}
+          = t 'activerecord.attributes.vehicle.consumption'
+        %label.col-md-offset-2.col-md-8.field
+          = t 'activerecord.attributes.vehicle.emission'
+          \/ #{t 'activerecord.attributes.vehicle.consumption'}
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = select 'vehicle_usage[vehicle]', :emission, Vehicle.emissions_table, { include_blank: t('web.form.empty_entry'), selected: @vehicle_usage.vehicle.emission }, class: 'form-control'
+            %span.input-group-addon
+              = t 'all.unit.kgco2e_l_html'
+            = text_field 'vehicle_usage[vehicle]', :consumption, value: @vehicle_usage.vehicle.localized_consumption, class: 'form-control'
+            %span.input-group-addon
+              = current_user.prefered_unit == 'mi' ? t('all.unit.l_62Miles') : t('all.unit.l_100km')
+          %p.help-block
+            = t 'vehicles.form.emissions.help'
+            \- #{current_user.prefered_unit == 'mi' ? t('vehicles.form.consumption.help_miles') : t('vehicles.form.consumption.help')}
+      #vehicle_usage_vehicle_max_distance.row
+        %label.sr-only{for: "vehicle_usage_vehicle_max_distance"}
+          = t 'activerecord.attributes.vehicle.max_distance'
+        %label.col-md-offset-2.col-md-8.field
+          = t 'activerecord.attributes.vehicle.max_distance'
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            - max_distance = distance_in_user_unit(@vehicle_usage.vehicle.max_distance, @current_user.prefered_unit)
+            = number_field 'vehicle_usage[vehicle]',
+              :max_distance,
+              value: max_distance,
+              placeholder: (@vehicle_usage.vehicle_usage_set.max_distance ? t('customers.form.max_distance_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_distance, @current_user.prefered_unit)) : ''),
+              step: 'any', class: 'form-control', min: 0
+            %span.input-group-addon
+              = current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms')
+          %p.help-block= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_distance.help_miles') : t('vehicles.form.max_distance.help')
+      #vehicle_usage_vehicle_max_ride_distance_input.row
+        %label.sr-only{for: "vehicle_usage_vehicle_max_ride_distance"}= t 'activerecord.attributes.vehicle.max_ride_distance'
+        %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.vehicle.max_ride_distance'
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            - max_ride_distance = distance_in_user_unit(@vehicle_usage.vehicle.max_ride_distance, @current_user.prefered_unit)
+            = number_field 'vehicle_usage[vehicle]',
+              :max_ride_distance,
+              value: max_ride_distance ,
+              placeholder: @vehicle_usage.vehicle_usage_set.max_ride_distance ? t('customers.form.max_ride_distance_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_ride_distance, @current_user.prefered_unit)) : '',
+              step: 'any',
+              class: 'form-control', min: 0
+            %span.input-group-addon= current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms')
+          %p.help-block= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_ride_distance.help_miles') : t('vehicles.form.max_ride_distance.help')
+      #vehicle_usage_vehicle_max_ride_duration_input.row
+        %label.sr-only{for: "vehicle_usage_vehicle_max_ride_duration"}= t 'activerecord.attributes.vehicle.max_ride_duration'
+        %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.vehicle.max_ride_duration'
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = text_field 'vehicle_usage[vehicle]', :max_ride_duration, value: @vehicle_usage.vehicle.max_ride_duration_time,
+              placeholder: @vehicle_usage.vehicle_usage_set.max_ride_duration ? t('customers.form.max_ride_duration_default', n: @vehicle_usage.vehicle_usage_set.max_ride_duration_time) : t('all.unit.hour_minute'),
+              class: 'form-control'
+            %span.input-group-addon
+              %i.fa.fa-stopwatch.fa-fw
+          %p.help-block= t 'vehicles.form.max_ride_duration.help'
+      = f.fields_for 'vehicle_usage[vehicle][capacities]',@vehicle_usage.vehicle.capacities, layout: :horizontal, builder: BootstrapForm::FormBuilder do |capacity|
+        #vehicle_usage_vehicle_capacity_input.row{ class: ("has-error" if @vehicle_usage.vehicle.errors.messages[:capacities].present?)}
+          %label.col-md-offset-2.col-md-8.field
+            = t 'vehicles.form.capacities.label'
+          .col-md-offset-2.col-md-8.field
+            - @vehicle_usage.vehicle.customer.deliverable_units.each do |du|
+              .input-group
+                = number_field 'vehicle_usage[vehicle][capacities]', du.id, value: @vehicle_usage.vehicle.capacities && @vehicle_usage.vehicle.capacities[du.id], placeholder: du.default_capacity && t('vehicles.form.capacities.default', n: du.localized_default_capacity), class: 'form-control width_1_2', step: 'any', min: 0
+                = text_field 'vehicle_usage[vehicle][capacities_unit]', du.id, value: du.label ? du.label + (du.default_optimization_overload_multiplier == 0 ? t('vehicles.form.capacities.no_overload') : du.default_optimization_overload_multiplier == -1 ? t('vehicles.form.capacities.ignore_overload') : '') : du.label, class: 'form-control width_1_2', placeholder: t('deliverable_units.form.label_placeholder') + (du.default_optimization_overload_multiplier == 0 ? t('vehicles.form.capacities.no_overload') : du.default_optimization_overload_multiplier == -1 ? t('vehicles.form.capacities.ignore_overload') : ''), disabled: true
+                %span.input-group-addon
+                  = content_tag('i', '', class: 'fa ' + du.default_icon + ' fa-fw')
+            %p.help-block
+              = t 'vehicles.form.capacities.help'
+      - if @vehicle_usage_sets.count < 2 || (!@vehicle_usage.vehicle.tags.nil? && @vehicle_usage.vehicle.tags.count > 0)
+        #vehicle_usage_tag_ids_input
+          = f.select :tag_ids, options_for_select(@vehicle_usage.vehicle.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color': (tag.color && tag.color[1..-1]), 'data-icon': tag.icon}]}, @vehicle_usage.vehicle.tags.collect(&:id)), {label: t('activerecord.attributes.vehicle.tag_ids'), help: t('vehicles.form.tags_help') }, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
+      #vehicle_router_input.row
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_router"}
+          = t 'activerecord.attributes.vehicle.router'
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            - router_dimension_label = "activerecord.attributes.router.router_dimensions.#{@vehicle_usage.vehicle.customer.router_dimension}"
+            - routers = @vehicle_usage.vehicle.customer.profile.routers
+            = select_tag 'vehicle_usage[vehicle][router]', router_grouped_options(routers, @vehicle_usage), include_blank: "#{t('vehicles.form.router.default')} (#{@vehicle_usage.vehicle.customer.router.translated_name} - #{t(router_dimension_label)})", class: 'form-control'
+            %span.input-group-addon
+              %i.fa.fa-gear.fa-fw
+          %p.help-block= t 'vehicles.form.router.help'
+      #router_options_traffic_input{ class: (@vehicle_usage.vehicle.default_router.traffic? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_traffic"}
+          = t('activerecord.attributes.customer.router_options_traffic')
+        .col-md-offset-2.col-md-8.field.input-append.form-inline
+          %label
+            %input#vehicle_usage_vehicle_router_options_traffic_yes{name: "vehicle_usage[vehicle][router_options][traffic]", type: "radio", value: "true", checked: (@vehicle_usage.vehicle.router_options['traffic'] == true ? 'true' : '')}
+            = t('customers.form.router_options_traffic_yes')
+          %label
+            %input#vehicle_usage_vehicle_router_options_traffic_no{name: "vehicle_usage[vehicle][router_options][traffic]", type: "radio", value: "false", checked: (@vehicle_usage.vehicle.router_options['traffic'] == false ? 'true' : '')}
+            = t('customers.form.router_options_traffic_no')
+          %label.pull-right
+            %input#vehicle_usage_vehicle_router_options_traffic_default{name: "vehicle_usage[vehicle][router_options][traffic]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['traffic'].nil? ? 'true' : '')}
+            = t('customers.form.router_options_traffic_default', value: @vehicle_usage.vehicle.customer.router_options['traffic'] == true ? t('customers.form.router_options_traffic_yes') : t('customers.form.router_options_traffic_no'))
+      #router_options_track_input{ class: (@vehicle_usage.vehicle.default_router.track? ? '' : 'router-option-disabled')}
+      %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_track"}
+        = t('activerecord.attributes.customer.router_options_track')
+      .col-md-offset-2.col-md-8.field.input-append.form-inline
+        %label
+          %input#vehicle_usage_vehicle_router_options_track_yes{name: "vehicle_usage[vehicle][router_options][track]", type: "radio", value: "true", checked: (@vehicle_usage.vehicle.router_options['track'] == true ? 'true' : '')}
+          = t('customers.form.router_options_track_yes')
+        %label
+          %input#vehicle_usage_vehicle_router_options_track_no{name: "vehicle_usage[vehicle][router_options][track]", type: "radio", value: "false", checked: (@vehicle_usage.vehicle.router_options['track'] == false ? 'true' : '')}
+          = t('customers.form.router_options_track_no')
+        %label.pull-right
+          %input#vehicle_usage_vehicle_router_options_track_default{name: "vehicle_usage[vehicle][router_options][track]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['track'].nil? ? 'true' : '')}
+          = t('customers.form.router_options_track_default', value: @vehicle_usage.vehicle.customer.router_options['track'] == false ? t('customers.form.router_options_track_no') : t('customers.form.router_options_track_yes'))
+
+      #router_options_motorway_input{ class: (@vehicle_usage.vehicle.default_router.motorway? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_motorway"}
+          = t('activerecord.attributes.customer.router_options_motorway')
+        .col-md-offset-2.col-md-8.field.input-append.form-inline
+          %label
+            %input#vehicle_usage_vehicle_router_options_motorway_yes{name: "vehicle_usage[vehicle][router_options][motorway]", type: "radio", value: "true", checked: (@vehicle_usage.vehicle.router_options['motorway'] == true ? 'true' : '')}
+            = t('customers.form.router_options_motorway_yes')
+          %label
+            %input#vehicle_usage_vehicle_router_options_motorway_no{name: "vehicle_usage[vehicle][router_options][motorway]", type: "radio", value: "false", checked: (@vehicle_usage.vehicle.router_options['motorway'] == false ? 'true' : '')}
+            = t('customers.form.router_options_motorway_no')
+          %label.pull-right
+            %input#vehicle_usage_vehicle_router_options_motorway_default{name: "vehicle_usage[vehicle][router_options][motorway]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['motorway'].nil? ? 'true' : '')}
+            = t('customers.form.router_options_motorway_default', value: @vehicle_usage.vehicle.customer.router_options['motorway'] == 'false' ? t('customers.form.router_options_motorway_no') : t('customers.form.router_options_motorway_yes'))
+
+      #router_options_low_emission_zone_input{ class: (@vehicle_usage.vehicle.default_router.low_emission_zone? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_low_emission_zone"}
+          = t('activerecord.attributes.customer.router_options_low_emission_zone')
+        .col-md-offset-2.col-md-8.field.input-append.form-inline
+          %label
+            %input#vehicle_usage_vehicle_router_options_low_emission_zone_yes{name: "vehicle_usage[vehicle][router_options][low_emission_zone]", type: "radio", value: "true", checked: (@vehicle_usage.vehicle.router_options['low_emission_zone'] == true ? 'true' : '')}
+            = t('customers.form.router_options_low_emission_zone_yes')
+          %label
+            %input#vehicle_usage_vehicle_router_options_low_emission_zone_no{name: "vehicle_usage[vehicle][router_options][low_emission_zone]", type: "radio", value: "false", checked: (@vehicle_usage.vehicle.router_options['low_emission_zone'] == false ? 'true' : '')}
+            = t('customers.form.router_options_low_emission_zone_no')
+          %label.pull-right
+            %input#vehicle_usage_vehicle_router_options_low_emission_zone_default{name: "vehicle_usage[vehicle][router_options][low_emission_zone]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['low_emission_zone'].nil? ? 'true' : '')}
+            = t('customers.form.router_options_low_emission_zone_default', value: @vehicle_usage.vehicle.customer.router_options['low_emission_zone'] == 'false' ? t('customers.form.router_options_low_emission_zone_no') : t('customers.form.router_options_low_emission_zone_yes'))
+
+      #router_options_toll_input{ class: (@vehicle_usage.vehicle.default_router.toll? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_toll"}
+          = t('activerecord.attributes.customer.router_options_toll')
+        .col-md-offset-2.col-md-8.field.input-append.form-inline
+          %label
+            %input#vehicle_usage_vehicle_router_options_toll_yes{name: "vehicle_usage[vehicle][router_options][toll]", type: "radio", value: "true", checked: (@vehicle_usage.vehicle.router_options['toll'] == true ? 'true' : '')}
+            = t('customers.form.router_options_toll_yes')
+          %label
+            %input#vehicle_usage_vehicle_router_options_toll_no{name: "vehicle_usage[vehicle][router_options][toll]", type: "radio", value: "false", checked: (@vehicle_usage.vehicle.router_options['toll'] == false ? 'true' : '')}
+            = t('customers.form.router_options_toll_no')
+          %label.pull-right
+            %input#vehicle_usage_vehicle_router_options_toll_default{name: "vehicle_usage[vehicle][router_options][toll]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['toll'].nil? ? 'true' : '')}
+            = t('customers.form.router_options_toll_default', value: @vehicle_usage.vehicle.customer.router_options['toll'] == 'false' ? t('customers.form.router_options_toll_no') : t('customers.form.router_options_toll_yes'))
+
+      #router_options_trailers_input{ class: (@vehicle_usage.vehicle.default_router.trailers? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_trailers"}
+          = t('activerecord.attributes.customer.router_options_trailers')
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field_tag 'vehicle_usage[vehicle][router_options][trailers]', @vehicle_usage.vehicle.router_options['trailers'], { min: 0, max: 4, placeholder: !@vehicle_usage.vehicle.customer.trailers.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.trailers) : '', class: 'form-control' }
+            %span.input-group-addon
+              %i.fa.fa-truck-field.fa-fw
+          %p.help-block
+            = t('customers.form.router_options_trailers_range', from: 0, to: 4)
+
+      #router_options_weight_input{ class: (@vehicle_usage.vehicle.default_router.weight? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_weight"}
+          = t('activerecord.attributes.customer.router_options_weight')
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field_tag 'vehicle_usage[vehicle][router_options][weight]', @vehicle_usage.vehicle.router_options['weight'], { min: 0, max: 1000, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.weight.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.weight) : '', class: 'form-control' }
+            %span.input-group-addon= t('all.unit.ton')
+          %p.help-block= t('customers.form.router_options_weight_range', from: 0, to: 1000)
+
+      #router_options_weight_per_axle_input{ class: (@vehicle_usage.vehicle.default_router.weight_per_axle? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_weight_per_axle"}
+          = t('activerecord.attributes.customer.router_options_weight_per_axle')
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field_tag 'vehicle_usage[vehicle][router_options][weight_per_axle]', @vehicle_usage.vehicle.router_options['weight_per_axle'], { min: 0, max: 1000, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.weight_per_axle.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.weight_per_axle) : '', class: 'form-control' }
+            %span.input-group-addon= t('all.unit.ton')
+          %p.help-block= t('customers.form.router_options_weight_per_axle_range', from: 0, to: 1000)
+
+      #router_options_height_input{ class: (@vehicle_usage.vehicle.default_router.height? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_height"}
+          = t('activerecord.attributes.customer.router_options_height')
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field_tag 'vehicle_usage[vehicle][router_options][height]', @vehicle_usage.vehicle.router_options['height'], { min: 0, max: 50, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.height.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.height) : '', class: 'form-control' }
+            %span.input-group-addon= t('all.unit.m')
+          %p.help-block= t('customers.form.router_options_height_range', from: 0, to: 50)
+
+      #router_options_width_input{ class: (@vehicle_usage.vehicle.default_router.width? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_width"}
+          = t('activerecord.attributes.customer.router_options_width')
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field_tag 'vehicle_usage[vehicle][router_options][width]', @vehicle_usage.vehicle.router_options['width'], { min: 0, max: 50, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.width.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.width) : '', class: 'form-control' }
+            %span.input-group-addon= t('all.unit.m')
+          %p.help-block= t('customers.form.router_options_width_range', from: 0, to: 50)
+
+      #router_options_length_input{ class: (@vehicle_usage.vehicle.default_router.length? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_length"}
+          = t('activerecord.attributes.customer.router_options_length')
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field_tag 'vehicle_usage[vehicle][router_options][length]', @vehicle_usage.vehicle.router_options['length'], { min: 0, max: 300, step: 'any', placeholder: !@vehicle_usage.vehicle.customer.length.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.length) : '', class: 'form-control' }
+            %span.input-group-addon= t('all.unit.m')
+          %p.help-block= t('customers.form.router_options_length_range', from: 0, to: 300)
+
+      #router_options_hazardous_goods_input{ class: (@vehicle_usage.vehicle.default_router.hazardous_goods? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "customer_router_options_hazardous_goods"}
+          = t('activerecord.attributes.customer.router_options_hazardous_goods')
+        .col-md-offset-2.col-md-8.field
+          - hazardous_label = !!@vehicle_usage.vehicle.customer.hazardous_goods ? t("activerecord.attributes.router.options.hazardous_goods.#{@vehicle_usage.vehicle.customer.hazardous_goods}") : t('activerecord.attributes.router.options.hazardous_goods_none')
+          = select_tag 'vehicle_usage[vehicle][router_options][hazardous_goods]', options_for_select(t('activerecord.attributes.router.options.hazardous_goods').invert, current_router_options(@vehicle_usage.vehicle)['hazardous_goods']), include_blank: "#{t('vehicles.form.router.default')} (#{"activerecord.attributes.router.options.hazardous_goods.#{@vehicle_usage.vehicle.customer.hazardous_goods}"})", class: 'form-control'
+
+      #router_options_max_walk_distance_input{ class: (@vehicle_usage.vehicle.default_router.max_walk_distance? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_max_walk_distance"}
+          = t('activerecord.attributes.customer.router_options_max_walk_distance')
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field 'vehicle_usage[vehicle][router_options]', :max_walk_distance, value: @vehicle_usage.vehicle.router_options['max_walk_distance'], placeholder: !@vehicle_usage.vehicle.customer.max_walk_distance.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.max_walk_distance) : '', step: 'any', class: 'form-control'
+            %span.input-group-addon= t('all.unit.m')
+          %p.help-block= t('customers.form.router_options_max_walk_distance_range', from: 0)
+
+      #router_options_approach_input{ class: (@vehicle_usage.vehicle.default_router.approach? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "customer_router_options_approach"}
+          = t('activerecord.attributes.customer.router_options_approach')
+        .col-md-offset-2.col-md-8.field
+          - approach_label = !!@vehicle_usage.vehicle.customer.approach ? t("activerecord.attributes.router.options.approach.#{@vehicle_usage.vehicle.customer.approach}") : t('activerecord.attributes.router.options.approach_none')
+          = select_tag 'vehicle_usage[vehicle][router_options][approach]', options_for_select(t('activerecord.attributes.router.options.approach').invert, @vehicle_usage.vehicle.router_options['approach']), include_blank: "#{t('vehicles.form.router.default')} (#{approach_label})", class: 'form-control'
+          %p.help-block
+            = t('customers.form.router_options_approach_help')
+
+      #router_options_snap_input{ class: (@vehicle_usage.vehicle.default_router.snap? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_snap"}
+          = t('activerecord.attributes.customer.router_options_snap')
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field 'vehicle_usage[vehicle][router_options]', :snap, value: @vehicle_usage.vehicle.router_options['snap'], placeholder: !@vehicle_usage.vehicle.customer.snap.to_s.empty? ? t('customers.form.router_options_default', n: @vehicle_usage.vehicle.customer.snap) : '', step: 'any', class: 'form-control'
+            %span.input-group-addon
+              = t('all.unit.m')
+          %p.help-block= t('customers.form.router_options_snap_range')
+
+      #router_options_strict_restriction_input{ class: (@vehicle_usage.vehicle.default_router.strict_restriction? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_strict_restriction"}
+          = t('activerecord.attributes.customer.router_options_strict_restriction')
+        .col-md-offset-2.col-md-8.field.input-append.form-inline
+          = check_box_tag 'vehicle_usage[vehicle][router_options][strict_restriction]', current_router_options(@vehicle_usage.vehicle)['strict_restriction'], !!current_router_options(@vehicle_usage.vehicle)['strict_restriction']
+          %p.help-block= t('customers.form.router_options_strict_restriction')
+
+      .row
+        %label.col-md-offset-2.col-md-8.field{for: "speed_multiplier"}
+          = t('activerecord.attributes.vehicle.speed_multiplier')
+        .col-md-offset-2.col-md-8.field.input-append
+          .input-group
+            = number_field_tag :speed_multiplier, (@vehicle_usage.vehicle.speed_multiplier ? (@vehicle_usage.vehicle.speed_multiplier * 100).to_i : nil), { min: 50, max: 150, placeholder: t('vehicles.form.speed_multiplier.default', n: (@vehicle_usage.vehicle.customer.speed_multiplier ? (@vehicle_usage.vehicle.customer.speed_multiplier * 100).to_i : 75)), class: 'form-control number-to-percentage' }
+            %span.input-group-addon %
+          %p.help-block
+            = t('vehicles.form.speed_multiplier.help')
+      = f.fields_for 'devices', @vehicle_usage.vehicle, layout: :horizontal do |f|
+        - @vehicle_usage.vehicle.customer.device.configured_definitions.each do |key, definition|
+          - if definition[:forms].key?(:vehicle)
+            - definition[:forms][:vehicle].each do |field, type|
+              - if type == :text
+                = f.text_field field, t("activerecord.attributes.vehicle.devices.#{key}.#{field}")
+              - elsif type == :select
+                = f.select field, definition[:label],
+                  {include_blank: false, include_hidden: false},
+                  {data: {device: key}, multiple: field.to_s.include?(_ids) ? true : false }
+      %legend.scheduler-border
+        = t 'vehicle_usages.form.driver.legend'
+      = f.text_field :contact_email, {input_group: '@', help: t('vehicles.form.contact_email.help')}
+      #vehicle_usage_vehicle_phone_number.row
+        %label.sr-only{for: "vehicle_usage_vehicle_phone_number"}
+          = t 'activerecord.attributes.vehicle.phone_number'
+        %label.col-md-offset-2.col-md-8.field
+          = t 'activerecord.attributes.vehicle.phone_number'
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = text_field 'vehicle_usage[vehicle]',
+              :phone_number,
+              value: @vehicle_usage.vehicle.phone_number,
+              class: 'form-control'
+            %span.input-group-addon
+              %i.fa.fa-phone.fa-fw
+          %p.help-block= t('vehicles.form.contact_phone.help')
+  %fieldset
+    %legend.scheduler-border= t('vehicle_usages.form.vehicle_usage.legend', s: @vehicle_usage.vehicle_usage_set.name)
+    - if @vehicle_usage_sets[0].customer.default_max_vehicle_usage_sets > 1
+      %p.help-block= t 'vehicle_usages.form.vehicle_usage.help'
+    #vehicle_usage_store_input.row
+      %label.sr-only{for: "vehicle_usage_store_start"}= t 'activerecord.attributes.vehicle_usage.store_start'
+      %label.sr-only{for: "vehicle_usage_store_stop"}= t 'activerecord.attributes.vehicle_usage.store_stop'
+      %label.col-md-offset-2.col-md-8.field= t '.stores'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          - start_label = "#{t('vehicle_usages.form.store.default')} (#{@vehicle_usage.vehicle_usage_set.store_start ? @vehicle_usage.vehicle_usage_set.store_start.name : t('vehicle_usages.form.store.none')})"
+          - end_label = "#{t('vehicle_usages.form.store.default')} (#{@vehicle_usage.vehicle_usage_set.store_stop ? @vehicle_usage.vehicle_usage_set.store_stop.name : t('vehicle_usages.form.store.none')})"
+          = collection_select :vehicle_usage, :store_start_id, @vehicle_usage.vehicle.customer.stores, :id, :name, { include_blank: start_label }, { class: 'form-control width_1_2' }
+          = collection_select :vehicle_usage, :store_stop_id, @vehicle_usage.vehicle.customer.stores, :id, :name, { include_blank: end_label }, { class: 'form-control width_1_2' }
+          %span.input-group-addon= content_tag('i', '', class: 'fa fa-store fa-fw')
+        %p.help-block= t '.stores_help'
+    - if @vehicle_usage_sets.count > 1 || @vehicle_usage.tags.count > 0
+      #vehicle_usage_vehicle_tag_ids_input
+        = f.select :tag_ids, options_for_select(@vehicle_usage.vehicle.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color': tag.color && tag.color[1..-1], 'data-icon': tag.icon}]}, @vehicle_usage.tags.collect(&:id)),
+         {help: t('vehicle_usages.form.tags_help')},
+         {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
+    #vehicle_usage_time_window_start_time_window_end_input.row
+      %label.sr-only{for: "vehicle_usage_open"}= t 'activerecord.attributes.vehicle_usage.time_window_start'
+      %label.sr-only{for: "vehicle_usage_close"}= t 'activerecord.attributes.vehicle_usage.time_window_end'
+      %label.col-md-offset-2.col-md-8.field= t '.time_window_start_end'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          %span.input-group-addon= t 'web.form.from_time'
+          = text_field :vehicle_usage, :time_window_start, placeholder: t('vehicle_usages.form.time_window_start.default', n: @vehicle_usage.vehicle_usage_set.time_window_start_time),
+            class: 'form-control',
+            value: @vehicle_usage.time_window_start_time
+          %span.input-group-addon.input-group-borderless
+            = t 'web.form.days'
+          = number_field :vehicle_usage, :time_window_start_day,
+            class: 'form-control number-of-days',
+            placeholder: @vehicle_usage.time_window_start.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.time_window_start) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.time_window_start)) : 0,
+            min: 0,
+            value: number_of_days(@vehicle_usage.time_window_start)
+          %span.input-group-addon= t 'web.form.to_time'
+          = text_field :vehicle_usage, :time_window_end,
+            class: 'form-control',
+            placeholder: t('vehicle_usages.form.time_window_end.default', n: @vehicle_usage.vehicle_usage_set.time_window_end_time),
+            min: 0,
+            value: @vehicle_usage.time_window_end_time
+          %span.input-group-addon.input-group-borderless= t 'web.form.days'
+          = number_field :vehicle_usage, :time_window_end_day,
+            class: 'form-control number-of-days',
+            placeholder: @vehicle_usage.time_window_end.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.time_window_end) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.time_window_end)) : 0,
+            min: 0,
+            value: number_of_days(@vehicle_usage.time_window_end)
+          %span.input-group-addon
+            %i.fa.fa-arrows-left-right.fa-fw
+        %p.help-block= t '.time_window_start_end_help'
+    #vehicle_usage_service_time_input.row
+      %label.sr-only{for: "vehicle_usage_service_time_start"}= t 'activerecord.attributes.vehicle_usage.service_time_start'
+      %label.sr-only{for: "vehicle_usage_service_time_end"}= t 'activerecord.attributes.vehicle_usage.service_time_end'
+      %label.col-md-offset-2.col-md-8.field= t '.service_times'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          %span.input-group-addon= t '.service_time_start_addon'
+          = text_field :vehicle_usage, :service_time_start,
+            class: 'form-control',
+            placeholder: f.object.vehicle_usage_set.service_time_start ? t("vehicle_usages.form.service_time.default", n: f.object.vehicle_usage_set.service_time_start_time) : t('all.unit.hour_minute'),
+            value: @vehicle_usage.service_time_start_time
+          %span.input-group-addon
+            = t '.service_time_end_addon'
+          = text_field :vehicle_usage, :service_time_end,
+            class: 'form-control',
+            placeholder: f.object.vehicle_usage_set.service_time_end ? t("vehicle_usages.form.service_time.default", n: f.object.vehicle_usage_set.service_time_end_time) : t('all.unit.hour_minute'),
+            value: @vehicle_usage.service_time_end_time
+          %span.input-group-addon
+            %i.fa.fa-stopwatch.fa-fw
+        %p.help-block= t '.service_times_help'
+    #vehicle_usage_set_work_time_input.row
+      %label.sr-only{for: "vehicle_usage_work_time"}
+        = t 'activerecord.attributes.vehicle_usage.work_time'
+      %label.col-md-offset-2.col-md-8.field= t '.work_time'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          = text_field :vehicle_usage, :work_time,
+            value: @vehicle_usage.work_time_time,
+            placeholder: @vehicle_usage.vehicle_usage_set.work_time_time ? t('vehicle_usages.form.work_time_default', n: @vehicle_usage.vehicle_usage_set.work_time_time) : t('all.unit.hour_minute'),
+            class: 'form-control'
+          %span.input-group-addon
+            %i.fa.fa-repeat.fa-fw
+        %p.help-block
+          = t '.work_time_help'
+    #vehicle_usage_rest_input.row
+      %label.sr-only{for: "vehicle_usage_rest_duration"}= t 'activerecord.attributes.vehicle_usage.rest_duration'
+      %label.sr-only{for: "vehicle_usage_store_rest"}= t 'activerecord.attributes.vehicle_usage.store_rest'
+      %label.col-md-offset-2.col-md-8.field= t '.rest_duration_store'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          = text_field :vehicle_usage, :rest_duration,
+            value: @vehicle_usage.rest_duration_time,
+            placeholder: !@vehicle_usage.vehicle_usage_set.rest_duration.nil? ? t('vehicle_usages.form.rest_duration.default', n: @vehicle_usage.vehicle_usage_set.rest_duration_time) : t('all.unit.hour_minute'),
+            class: 'form-control width_1_2'
+          = collection_select :vehicle_usage, :store_rest_id, @vehicle_usage.vehicle.customer.stores, :id, :name,
+          { include_blank: t('vehicle_usages.form.store.default') + ' (' + (@vehicle_usage.vehicle_usage_set.store_rest ? @vehicle_usage.vehicle_usage_set.store_rest.name : t('vehicle_usages.form.store.none')) + ')'},
+          { class: 'form-control width_1_2' }
+          %span.input-group-addon= content_tag('i', '', class: 'fa fa-coffee fa-fw')
+        %p.help-block
+          = t '.rest_duration.help'
+    #vehicle_usage_rest_start_stop_input.row
+      %label.sr-only{for: "vehicle_usage_rest_start"}
+        = t 'activerecord.attributes.vehicle_usage.rest_start'
+      %label.sr-only{for: "vehicle_usage_rest_stop"}
+        = t 'activerecord.attributes.vehicle_usage.rest_stop'
+      %label.col-md-offset-2.col-md-8.field= t '.rest_start_stop'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          %span.input-group-addon= t 'web.form.from_time'
+          = text_field :vehicle_usage, :rest_start,
+            class: 'form-control',
+            placeholder: !@vehicle_usage.vehicle_usage_set.rest_start.nil? ? t('vehicle_usages.form.rest_start.default', n: @vehicle_usage.vehicle_usage_set.rest_start_time) : t('all.unit.hour_minute'),
+            value: @vehicle_usage.rest_start_time
+          %span.input-group-addon.input-group-borderless= t 'web.form.days'
+          = number_field :vehicle_usage, :rest_start_day,
+            class: 'form-control number-of-days',
+            placeholder: @vehicle_usage.rest_start.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_start) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_start)) : 0,
+            min: 0,
+            value: number_of_days(@vehicle_usage.rest_start)
+          %span.input-group-addon
+            = t 'web.form.to_time'
+          = text_field :vehicle_usage, :rest_stop,
+            class: 'form-control',
+            placeholder: !@vehicle_usage.vehicle_usage_set.rest_stop.nil? ? t('vehicle_usages.form.rest_stop.default', n: @vehicle_usage.vehicle_usage_set.rest_stop_time) : t('all.unit.hour_minute'),
+            min: 0,
+            value: @vehicle_usage.rest_stop_time
+          %span.input-group-addon.input-group-borderless= t 'web.form.days'
+          = number_field :vehicle_usage, :rest_stop_day,
+            class: 'form-control number-of-days',
+            placeholder: @vehicle_usage.rest_stop.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop)) : 0,
+            min: 0,
+            value: number_of_days(@vehicle_usage.rest_stop)
+          %span.input-group-addon
+            %i.fa.fa-arrows-left-right.fa-fw
+        %p.help-block
+          = t '.rest_start_stop_help'
+  = f.submit message: t('.save')
