@@ -28,34 +28,34 @@ class OptimizerJob < OptimizerJobStruct
   @@optimize_minimal_time = Mapotempo::Application.config.optimize_minimal_time
 
   def perform
+    optimum ||= nil
     return true if @job&.progress && JSON.parse(@job.progress)&.dig('failed') && @job.attempts > 0
 
-    Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
+    Delayed::Worker.logger.info "#{job_log} perform #{optimum || ""}"
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
     planning = Planning.where(id: planning_id).first!
 
     routes = route_filter(planning)
 
-    optimum = unless routes.select(&:vehicle_usage_id).empty?
+    if routes.select(&:vehicle_usage_id).any?
       begin
         planning.optimize(routes, options) do |planning, routes, options|
           options = job_options(planning).merge(options)
           optimum = Mapotempo::Application.config.optimizer.optimize(planning, routes, options) { |job_id, solution_data|
             if @job
               job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
-              Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+              Delayed::Worker.logger.info "#{job_log} #{@job.progress}"
             end
           }
           if @job
             job_progress_save(@job.progress.merge({ 'first_progression': 100, 'second_progression': 100, 'completed': true }))
-            Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+            Delayed::Worker.logger.info "#{job_log} #{@job.progress}"
           end
-          optimum
         end
       rescue VRPNoSolutionError, VRPUnprocessableError => e
         if @job
           job_progress_save(@job.progress.merge({ 'failed': 'true' }))
-          Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+          Delayed::Worker.logger.info "#{job_log} #{@job.progress}"
         end
         raise e
       end
@@ -63,6 +63,7 @@ class OptimizerJob < OptimizerJobStruct
 
     # Apply result
     if optimum
+      Delayed::Worker.logger.info "#{job_log} set #{routes.size} routes : #{optimum}"
       planning.set_stops(routes, optimum, { global: options[:global], active_only: options[:active_only], insertion_only: options[:insertion_only], moving_stop_ids: options[:moving_stop_ids] })
       planning.compute_saved
       planning.save!
@@ -107,5 +108,9 @@ class OptimizerJob < OptimizerJobStruct
       force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
       optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time
     }
+  end
+
+  def job_log
+    "OptimizerJob c_id=#{customer_id} p_id=#{planning_id} r_id=#{route_id} opts=#{options.values.join('/')}"
   end
 end
