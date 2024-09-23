@@ -37,7 +37,7 @@ class ImporterDestinationsTest < ActionController::TestCase
         di = ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_invalid.csv', 'text.csv'))
         assert !di.import
         assert di.errors[:base][0] =~ /lignes \[2\]/
-        assert di.errors[:base][0] =~ /Le code postal et la ville ne peuvent pas être vides si lat\/lng sont vides/
+        assert di.errors[:base][0] =~ %r{Le code postal et la ville ne peuvent pas être vides si lat/lng sont vides}
       end
     end
   end
