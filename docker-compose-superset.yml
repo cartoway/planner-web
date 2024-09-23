@@ -14,6 +14,7 @@ services:
       DATABASE_PASSWORD: postgres
       DATABASE_DB: superset
       REDIS_HOST: superset_redis
+      MAPBOX_API_KEY: ${SUPERSET_MAPBOX_API_KEY}
     volumes:
       - ./docker/superset:/app/pythonpath
     ports:

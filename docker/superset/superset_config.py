@@ -103,3 +103,5 @@ LANGUAGES = {
     "es": {"flag": "es", "name": "Español"},
     "fr": {"flag": "fr", "name": "Français"},
 }
+
+MAPBOX_API_KEY = os.getenv("MAPBOX_API_KEY")
