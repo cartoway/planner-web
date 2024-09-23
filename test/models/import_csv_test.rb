@@ -34,7 +34,8 @@ class ImportCsvTest < ActiveSupport::TestCase
     assert_difference('Destination.count', 0) do
       o = ImportCsv.new(importer: @importer, replace: false, file: file)
       assert !o.import
-      assert o.errors[:base][0].match('lignes \[1\]')
+      assert o.errors[:base][0].match('lignes \[2\]')
+      assert o.errors[:base][0].match('Le code postal et la ville ne peuvent pas être vides si lat\/lng sont vides')
     end
   end
 
