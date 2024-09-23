@@ -51,7 +51,7 @@ class OptimizerWrapper
     stops += Stop.where(id: options[:moving_stop_ids])
     stops.uniq!
 
-    vrp_services, s_points = build_services(planning, stops, options.merge(use_skills: all_skills.any?, problem_skills: all_skills))
+    vrp_services, s_points = build_services(planning, routes, stops, options.merge(use_skills: all_skills.any?, problem_skills: all_skills))
     vrp_rests = build_rests(stops, options)
     relations = collect_relations(planning, routes, stops, options)
 
@@ -161,7 +161,8 @@ class OptimizerWrapper
   private
 
   def build_configuration(options)
-    service_ratio = options[:moving_stop_ids]&.any? ? options[:moving_stop_ids].size.to_f / options[:service_count] : 1
+    service_ratio = options[:moving_stop_ids]&.any? && options[:service_count].to_i > 0 ? options[:moving_stop_ids].size.to_f / options[:service_count] : 1
+    service_ratio = [service_ratio, 0.2].max
     optim_duration_min = if options[:optimize_minimal_time]
       (service_ratio * options[:optimize_minimal_time] * options[:vehicle_count] * 1000).to_i
     end
@@ -233,12 +234,13 @@ class OptimizerWrapper
     }.compact
   end
 
-  def build_services(planning, stops, options = {})
+  def build_services(planning, routes, stops, options = {})
     point_hash = {}
+    route_ids = routes.map(&:id)
     services_late_multiplier = (options[:stop_soft_upper_bound] && options[:stop_soft_upper_bound] > 0) ? options[:stop_soft_upper_bound] : nil
     vrp_services = stops.map{ |stop|
       # A stop without position should not be part of an optimization
-      next if options[:active_only] && stop.route.vehicle_usage? && !stop.active || !stop.position?
+      next if options[:active_only] && stop.route.vehicle_usage? && !stop.active && options[:moving_stop_ids].exclude?(stop.id) || !stop.position?
 
       service_point = build_point(stop)
       point_hash[service_point[:id]] = service_point
@@ -250,7 +252,7 @@ class OptimizerWrapper
         sticky_vehicle_ids:
           stop.route.vehicle_usage_id &&
           (!options[:global] || stop.is_a?(StopRest)) &&
-          (options[:moving_stop_ids].nil? || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route.vehicle_usage_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
+          (options[:moving_stop_ids].nil? || route_ids.include?(stop.route.vehicle_usage_id) || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route.vehicle_usage_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
         activity: {
           point_id: service_point[:id],
           position: POSITION_KEYS[stop.visit&.force_position&.to_sym || :neutral],
@@ -365,7 +367,7 @@ class OptimizerWrapper
     stops.reject!{ |stop| options[:active_only] && stop.route.vehicle_usage? && !stop.active || !stop.position? }
 
     relations = []
-    relations += filter_planning_stops_relations(planning, stops, **options)
+    relations += filter_planning_stops_relations(planning, stops, options)
     relations += negative_quantities_relations(stops)
     relations
   end
@@ -437,6 +439,7 @@ class OptimizerWrapper
 
       timewindows.delete_at(1)
       timewindows[0].delete(:end)
+      service[:activity][:timewindows] = timewindows
     }
   end
 

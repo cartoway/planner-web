@@ -578,8 +578,10 @@ class Route < ApplicationRecord
   end
 
   # Split stops by active status, position and rest
-  def stops_segregate(active_only = true)
-    stops.group_by{ |stop| (!active_only ? true : stop.active) && (stop.position? || stop.is_a?(StopRest)) }
+  def stops_segregate(options = {})
+    stops.group_by{ |stop|
+      !options[:active_only] ? true : (stop.active || options[:moving_stop_ids]&.include?(stop.id)) && (stop.position? || stop.is_a?(StopRest))
+    }
   end
 
   def outdated=(value)
