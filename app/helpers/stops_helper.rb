@@ -70,7 +70,7 @@ module StopsHelper
       number_field_tag field_name, current_value, step: :any, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control'
     when 4
       current_value = stop.custom_attributes_typed_hash[custom_attribute.name]
-      select_tag field_name, options_for_select(custom_attribute.typed_default_value, current_value), {include_blank: true, help: custom_attribute.description, label: custom_attribute.name, class: 'selectpicker form-control' }
+      select_tag field_name, options_for_select(custom_attribute.typed_default_value, current_value), {include_blank: t('web.form.empty_entry'), help: custom_attribute.description, label: custom_attribute.name, class: 'selectpicker form-control' }
     end
   end
 end
