@@ -37,6 +37,30 @@ class OptimizerWrapperTest < ActionController::TestCase
     end
   end
 
+  test 'should build vrp with soft contraints' do
+    begin
+      moved_stop = @planning.routes.first.stops.first
+      vrp = @optim.build_vrp(@planning, @planning.routes.to_a.values_at(0, 2), **{ moving_stop_ids: [moved_stop.id], insertion_only: true })
+      refute_empty vrp[:relations]
+      assert_equal vrp[:relations].first[:linked_ids], @planning.routes.last.stops.map{ |s| "s#{s.id}" }
+      refute_empty vrp[:routes]
+      assert_equal vrp[:routes].first[:mission_ids], @planning.routes.last.stops.map{ |s| "s#{s.id}" }
+
+      vrp[:services].each{ |service|
+        service[:activity][:timewindows].each{ |tw|
+          refute tw[:end]
+        }
+      }
+      %i[capacities distance duration maximum_ride_distance maximum_ride_time rest_ids skills].each { |key|
+        refute vrp[:vehicles].first[key]
+      }
+      refute vrp[:vehicles].first[:timewindow][:end]
+    ensure
+      remove_request_stub(@stub_VrpJob)
+      remove_request_stub(@stub_VrpSubmit)
+    end
+  end
+
   test 'should build vehicles using vehicle_usage_set' do
     begin
       store_one = stores(:store_one)

@@ -33,11 +33,8 @@ class OptimizerJob < OptimizerJobStruct
     Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
     planning = Planning.where(id: planning_id).first!
-    routes = planning.routes.select { |r|
-      (route_id && r.id == route_id) || (!route_id && !options[:global] && r.vehicle_usage_id && r.size_active > 0) || (!route_id && options[:global])
-    }.reject(&:locked)
 
-    routes.unshift(planning.routes.first) if !options[:global] && !planning.routes.first[:locked] && !route_id
+    routes = route_filter(planning)
 
     optimum = unless routes.select(&:vehicle_usage_id).empty?
       begin
@@ -66,7 +63,7 @@ class OptimizerJob < OptimizerJobStruct
 
     # Apply result
     if optimum
-      planning.set_stops(routes, optimum, { global: options[:global], active_only: options[:active_only], insertion_only: options[:insertion_only] })
+      planning.set_stops(routes, optimum, { global: options[:global], active_only: options[:active_only], insertion_only: options[:insertion_only], moving_stop_ids: options[:moving_stop_ids] })
       planning.compute_saved
       planning.save!
     end
@@ -80,6 +77,20 @@ class OptimizerJob < OptimizerJobStruct
 
   def max_attempts
     1
+  end
+
+  def route_filter(planning)
+    routes = []
+    if options[:insertion_only] && options[:moving_stop_ids] && !route_id && !options[:global]
+      route_ids = Stop.where(id: options[:moving_stop_ids]).pluck(:route_id).uniq
+      routes = planning.routes.where(id: route_ids) if route_ids.exclude?(nil)
+    end
+    routes = planning.routes if routes.empty?
+    routes = routes.select { |r|
+      (route_id && r.id == route_id) || (!route_id && !options[:global] && r.vehicle_usage_id && r.size_active > 0 && !r.locked) || (!route_id && options[:global] && !r.locked)
+    }
+    routes.unshift(planning.routes.first) if !options[:global] && !planning.routes.first[:locked] && !route_id
+    routes
   end
 
   def job_options(planning)

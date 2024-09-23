@@ -480,21 +480,32 @@ class Planning < ApplicationRecord
     solution
   end
 
+  def outdate_drained_routes(route_ids)
+    self.routes.where(id: route_ids).each{ |route|
+      route.optimized_at = route.last_sent_to = route.last_sent_at = nil
+      route.outdated = true
+      route.save!
+    }
+  end
+
   def set_stops(routes, stop_ids, options = {})
     options = { global: false, active_only: true }.merge(options)
     raise 'Invalid routes count' if routes.size != stop_ids.size && !options[:insertion_only]
 
     Route.transaction do
+      updated_route_ids = []
       stops_count = self.routes.collect{ |r| r.stops.size }.reduce(&:+)
       flat_stop_ids = stop_ids.flatten.compact
       inactive_stop_ids = []
 
       routes.select(&:vehicle_usage?).each do |route|
-        inactive_stop_ids += route.stops.reject(&:active).map(&:id)
+        inactive_stop_ids += route.stops.reject(&:active).reject{ |stop| options[:moving_stop_ids]&.include?(stop.id) }.map(&:id)
       end
 
+      routes.unshift(self.routes.first) if stop_ids.size > routes.size
+
       routes.each_with_index{ |route, index|
-        stops_ = route.stops_segregate(options[:active_only]) # Split stops according to stop active statement
+        stops_ = route.stops_segregate(options) # Split stops according to stop active statement
 
         # Fetch sorted stops returned by optim from all routes
         # index dependent: route[0] == stop_ids[0]
@@ -520,9 +531,10 @@ class Planning < ApplicationRecord
             stop.index = i += 1
             stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
             if stop.route_id != route.id
+              updated_route_ids << stop.route_id
               stop.route_id = route.id
-              stop.save!
             end
+            stop.save!
           end
         }
 
@@ -541,6 +553,8 @@ class Planning < ApplicationRecord
         (route.no_stop_index_validation = true) && route.save!
         route.stops.reload # Refresh route.stops collection if stops have been moved
       }
+      updated_route_ids.uniq!
+      outdate_drained_routes(updated_route_ids - routes.map(&:id)) if updated_route_ids.any?
       self.reload # Refresh route.stops collection if stops have been moved
       raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.size }.reduce(&:+) == stops_count
     end
