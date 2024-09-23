@@ -705,8 +705,12 @@ GEM
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
     semantic_range (3.0.0)
-    sentry-raven (3.1.2)
-      faraday (>= 1.0)
+    sentry-rails (5.19.0)
+      railties (>= 5.0)
+      sentry-ruby (~> 5.19.0)
+    sentry-ruby (5.19.0)
+      bigdecimal
+      concurrent-ruby (~> 1.0, >= 1.0.2)
     shellany (0.0.1)
     sim_annealing (0.0.2)
     simplecov (0.22.0)
@@ -918,7 +922,8 @@ DEPENDENCIES
   savon-multipart
   select2-rails
   selenium-webdriver
-  sentry-raven
+  sentry-rails
+  sentry-ruby
   sidebar-v2-gh-pages-rails!
   sim_annealing
   simplecov
