@@ -63,8 +63,9 @@
         = f.hidden_field :status_updated_at, { name: 'stop[status_updated_at]', id: 'active_status_updated_at' }
         = f.hidden_field :status, { name: 'stop[status]', id: 'active_status', onchange: "this.form.submit()" }
         = f.hidden_field :id, { name: 'stop_id' }
-      %label
-        = t('stops.mobile.form')
+      - if custom_attributes.any?
+        %label
+          = t('stops.mobile.form')
       - custom_attributes.each do |custom_attribute|
         .custom_field.d-flex.align-items-center.justify-content-left.mb-1.row
           %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
