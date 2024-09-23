@@ -331,8 +331,8 @@ class OptimizerWrapper
         router_mode: route.vehicle_usage.vehicle.default_router.try(&:mode),
         router_dimension: route.vehicle_usage.vehicle.default_router_dimension,
         router_options: route.vehicle_usage.vehicle.default_router_options
-                              .symbolize_keys.except(:time, :distance, :isochrone, :isodistance, :avoid_zones)
-                              .delete_if{ |k, v| v.nil? } || {},
+                             .symbolize_keys.except(:time, :distance, :isochrone, :isodistance, :avoid_zones)
+                             .delete_if{ |k, v| v.nil? } || {},
         speed_multiplier: route.vehicle_usage.vehicle.default_speed_multiplier,
         area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:area].join(',') }&.join('|'),
         speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
