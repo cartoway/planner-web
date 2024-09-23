@@ -821,7 +821,7 @@ class Route < ApplicationRecord
 
     @no_stop_index_validation = nil
   rescue Exceptions::StopIndexError => e
-    Raven.capture_exception(e)
+    Sentry.capture_exception(e)
     Rails.logger.error e.message
     Rails.logger.error e.backtrace.join("\n")
   end

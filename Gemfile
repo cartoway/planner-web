@@ -197,8 +197,8 @@ gem 'iso_country_codes'
 gem 'phonelib'
 gem 'nexmo'
 
-# sentry-rails requires rails >= 5.0
-gem 'sentry-raven'
+gem 'sentry-ruby'
+gem 'sentry-rails'
 
 group :production do
   gem 'rails_12factor'
