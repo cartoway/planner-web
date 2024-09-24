@@ -55,7 +55,7 @@ class V01::Stores < Grape::API
                 type: 'Feature',
                 geometry: {
                     type: 'Point',
-                    coordinates: [store.lng.round(5), store.lat.round(5)]
+                    coordinates: [store.lng.round(6), store.lat.round(6)]
                 },
                 properties: {
                     store_id: store.id,

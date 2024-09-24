@@ -52,7 +52,7 @@ class V01::Destinations < Grape::API
             type: 'Feature',
             geometry: {
               type: 'Point',
-              coordinates: [d.lng.round(5), d.lat.round(5)]
+              coordinates: [d.lng.round(6), d.lat.round(6)]
             },
             properties: {
               destination_id: d.id,
