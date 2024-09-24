@@ -51,7 +51,7 @@ class V01::VisitsGet < Grape::API
               type: 'Feature',
               geometry: {
                 type: 'Point',
-                coordinates: [visit.lng.round(5), visit.lat.round(5)]
+                coordinates: [visit.lng.round(6), visit.lat.round(6)]
               },
               properties: {
                 visit_id: visit.id,

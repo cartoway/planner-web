@@ -34,8 +34,8 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
 
   row.merge!({
     country: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.country,
-    lat: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.lat,
-    lng: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.lng,
+    lat: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.lat&.round(6),
+    lng: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.lng&.round(6),
     comment: nil,
     phone_number: nil,
     tags: nil,
@@ -109,8 +109,8 @@ route.stops.each { |stop|
 
     row.merge!({
       country: stop.country,
-      lat: stop.lat,
-      lng: stop.lng,
+      lat: stop.lat&.round(6),
+      lng: stop.lng&.round(6),
       comment: stop.comment,
       phone_number: stop.phone_number,
       tags: (stop.visit.destination.tags.collect(&:label).join(',') if stop.is_a?(StopVisit)),
@@ -179,8 +179,8 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
 
   row.merge!({
     country: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.country,
-    lat: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.lat,
-    lng: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.lng,
+    lat: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.lat&.round(6),
+    lng: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.lng&.round(6),
     comment: nil,
     phone_number: nil,
     tags: nil,

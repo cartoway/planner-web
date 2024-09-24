@@ -70,8 +70,8 @@ module DestinationsHelper
       destination.city,
     ] + (customer.with_state? ? [destination.state] : []) + [
       destination.country,
-      destination.lat,
-      destination.lng,
+      destination.lat&.round(6),
+      destination.lng&.round(6),
       destination.geocoding_accuracy,
       destination.geocoding_level,
       destination.geocoding_result.dig('free'),
