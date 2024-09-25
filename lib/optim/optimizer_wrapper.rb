@@ -240,7 +240,7 @@ class OptimizerWrapper
     services_late_multiplier = (options[:stop_soft_upper_bound] && options[:stop_soft_upper_bound] > 0) ? options[:stop_soft_upper_bound] : nil
     vrp_services = stops.map{ |stop|
       # A stop without position should not be part of an optimization
-      next if options[:active_only] && stop.route.vehicle_usage? && !stop.active && options[:moving_stop_ids].exclude?(stop.id) || !stop.position?
+      next if options[:active_only] && stop.route.vehicle_usage? && !stop.active && !options[:moving_stop_ids]&.include?(stop.id) || !stop.position?
 
       service_point = build_point(stop)
       point_hash[service_point[:id]] = service_point

@@ -510,6 +510,11 @@ class Planning < ApplicationRecord
         # Fetch sorted stops returned by optim from all routes
         # index dependent: route[0] == stop_ids[0]
         ordered_stops = self.routes.flat_map{ |r| r.stops.select{ |s| stop_ids[index].include? s.id }}.sort_by { |s| stop_ids[index].index s.id }
+        if options[:global] && !route.vehicle_usage?
+          ordered_stops += self.routes.flat_map{ |r| r.stops.select{ |s| inactive_stop_ids.include? s.id }}
+        elsif !options[:global] && route.vehicle_usage?
+          ordered_stops += route.stops.select{ |s| inactive_stop_ids.include? s.id }
+        end
 
         # 1. Set route and index (active stops returned by optim for instance)
         i = 0
