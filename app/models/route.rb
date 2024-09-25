@@ -576,7 +576,7 @@ class Route < ApplicationRecord
   end
 
   # Split stops by active status, position and rest
-  def stops_segregate(options = {})
+  def stops_segregate(**options)
     stops.group_by{ |stop|
       !options[:active_only] ? true : (stop.active || options[:moving_stop_ids]&.include?(stop.id)) && (stop.position? || stop.is_a?(StopRest))
     }

@@ -505,7 +505,7 @@ class Planning < ApplicationRecord
       routes.unshift(self.routes.first) if stop_ids.size > routes.size
 
       routes.each_with_index{ |route, index|
-        stops_ = route.stops_segregate(options) # Split stops according to stop active statement
+        stops_ = route.stops_segregate(**options) # Split stops according to stop active statement
 
         # Fetch sorted stops returned by optim from all routes
         # index dependent: route[0] == stop_ids[0]
