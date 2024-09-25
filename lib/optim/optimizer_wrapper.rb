@@ -55,7 +55,6 @@ class OptimizerWrapper
     vrp_rests = build_rests(stops, **options)
     relations = collect_relations(planning, routes, stops, **options)
 
-
     vrp_routes = build_routes(routes, **options) if options[:insertion_only]
     vrp_units = vrp_vehicles.flat_map{ |v| v[:capacities]&.map{ |c| c[:unit_id] } }.compact.uniq.map{ |unit_id|
       { id: unit_id }
@@ -367,7 +366,7 @@ class OptimizerWrapper
     stops.reject!{ |stop| options[:active_only] && stop.route.vehicle_usage? && !stop.active || !stop.position? }
 
     relations = []
-    relations += filter_planning_stops_relations(planning, stops, options)
+    relations += filter_planning_stops_relations(planning, stops)
     relations += negative_quantities_relations(stops)
     relations
   end
@@ -380,7 +379,7 @@ class OptimizerWrapper
     end
   end
 
-  def filter_planning_stops_relations(planning, stops, **options)
+  def filter_planning_stops_relations(planning, stops)
     return [] unless planning.stops_relations
 
     stop_hash = stops.map{ |s| [s.id, s] }.to_h
