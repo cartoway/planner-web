@@ -28,6 +28,7 @@ class OptimizerJob < OptimizerJobStruct
   @@optimize_minimal_time = Mapotempo::Application.config.optimize_minimal_time
 
   def perform
+    optimum = nil
     return true if @job&.progress && JSON.parse(@job.progress)&.dig('failed') && @job.attempts > 0
 
     Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
@@ -36,7 +37,7 @@ class OptimizerJob < OptimizerJobStruct
 
     routes = route_filter(planning)
 
-    optimum = unless routes.select(&:vehicle_usage_id).empty?
+    if routes.select(&:vehicle_usage_id).any?
       begin
         planning.optimize(routes, options) do |planning, routes, options|
           options = job_options(planning).merge(options)
@@ -50,7 +51,6 @@ class OptimizerJob < OptimizerJobStruct
             job_progress_save(@job.progress.merge({ 'first_progression': 100, 'second_progression': 100, 'completed': true }))
             Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
           end
-          optimum
         end
       rescue VRPNoSolutionError, VRPUnprocessableError => e
         if @job
