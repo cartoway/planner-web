@@ -33,10 +33,12 @@ module Consistency
             attr = attr.to_s.gsub(/^(.+[^s])(s?)$/, '\1_id\2').to_sym unless attr.to_s =~ /_ids?$/
 
             if record.force_check_consistency || record.send("#{attr}_changed?".to_sym)
+              model_ids = nil
               model_name = attr.to_s.gsub(/_id(s?)$/, '\1').to_sym
               models = record.send(model_name)
               models = [models].compact unless models.is_a? ActiveRecord::Associations::CollectionProxy
-              record.errors.add(model_name, message: "#{consistent_value} " + I18n.t('activerecord.errors.attributes.inconsistent_customer')) if models.any?{ |m| m.customer_id != consistent_value }
+              model_ids = models.map(&:id).compact
+              record.errors.add(model_name, message: "#{model_ids.any? ? model_ids.join(',') : consistent_value} " + I18n.t('activerecord.errors.attributes.inconsistent_customer')) if models.any?{ |m| m.customer_id != consistent_value }
             end
           }
         end
