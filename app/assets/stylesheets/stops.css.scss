@@ -14,7 +14,8 @@
     color: $white;
 
     .company-logo {
-      height: calc(#{$mobile-header-height} - 8px);
+      max-height: calc(#{$mobile-header-height} - 8px);
+      width: 100%;
     }
 
     .form-check-input {
