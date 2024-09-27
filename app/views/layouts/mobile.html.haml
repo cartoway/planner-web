@@ -9,10 +9,10 @@
     = render partial: 'layouts/head'
   %body{"data-controller": "#{controller.controller_path.gsub('/', '_')}", "data-action": "#{controller.action_name}"}
     .mobile_header.d-flex.align-items-center.justify-content-between
-      .col
+      .col-xs-5
         - if @reseller.website_url
           %a{href: "#{@reseller.website_url.gsub('{LG}', I18n.locale.to_s)}"}
-        = image_tag @reseller.logo_small.url || 'logo.svg', alt: @reseller&.name, class: 'company-logo'
+        = image_tag @reseller.logo_small.url || 'logo.svg', alt: @reseller&.name
       .col
         .form-check.form-switch.mb-0
           %input#location-switch.form-check-input{checked: "checked", role: "switch", type: "checkbox"}
