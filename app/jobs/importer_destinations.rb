@@ -696,9 +696,12 @@ class ImporterDestinations < ImporterBase
         attributes = @plannings_attributes[ref]
         planning = Planning.new(attributes)
       end
-      planning.assign_attributes({
-        name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
-      }.merge(@planning_hash))
+      planning.assign_attributes(@planning_hash)
+      unless planning.name
+        planning.assign_attributes({
+          name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
+        })
+      end
       planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
       routes_hash.each{ |k, v|
         visit_ids = v[:visits].map{ |attribute, _active|
