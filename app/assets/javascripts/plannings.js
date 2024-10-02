@@ -1229,6 +1229,30 @@ export const plannings_edit = function(params) {
       }
     });
 
+    $('.export_spreadsheet', context).click(function() {
+      $('[name=spreadsheet-route]').val($(this).closest('[data-route_id]').attr('data-route_id'));
+      $('#planning-spreadsheet-modal').modal({
+        keyboard: true,
+        show: true
+      });
+    });
+
+    $('.kmz_email a', context).click(function(e) {
+      e.preventDefault();
+      $.ajax({
+        url: $(e.target).attr('href'),
+        type: 'GET',
+        beforeSend: beforeSendWaiting,
+        complete: completeWaiting,
+        success: function() {
+          notice(I18n.t('plannings.edit.export.kmz_email.success'));
+        },
+        error: function() {
+          stickyError(I18n.t('plannings.edit.export.kmz_email.fail'));
+        }
+      });
+    });
+
     // Following callbacks need to be set only once
     if (!options || !options.skipCallbacks) {
       externalCallbackUrl(context);
@@ -1238,30 +1262,6 @@ export const plannings_edit = function(params) {
           needUpdateStopStatus = true;
           requestUpdateStopsStatus();
         }
-      });
-
-      $('.export_spreadsheet', context).click(function() {
-        $('[name=spreadsheet-route]').val($(this).closest('[data-route_id]').attr('data-route_id'));
-        $('#planning-spreadsheet-modal').modal({
-          keyboard: true,
-          show: true
-        });
-      });
-
-      $('.kmz_email a', context).click(function(e) {
-        e.preventDefault();
-        $.ajax({
-          url: $(e.target).attr('href'),
-          type: 'GET',
-          beforeSend: beforeSendWaiting,
-          complete: completeWaiting,
-          success: function() {
-            notice(I18n.t('plannings.edit.export.kmz_email.success'));
-          },
-          error: function() {
-            stickyError(I18n.t('plannings.edit.export.kmz_email.fail'));
-          }
-        });
       });
 
       iCalendarExport(planning_id);
@@ -1783,9 +1783,9 @@ export const plannings_edit = function(params) {
 
         $.extend(route, params.manage_planning);
 
-        $(".route[data-route_id='" + route.route_id + "']").html(SMT['routes/edit'](route));
-
-        initRoutes($(".route[data-route_id='" + route.route_id + "']"), data, $.merge({skipCallbacks: true}, options));
+        const $routePanel = $(`.route[data-route_id="${route.route_id}"]`);
+        $routePanel.html(SMT['routes/edit'](route));
+        initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
 
         var regExp = new RegExp('/plannings/' + route.planning_id + '/' + route.route_id + '/[0-9]+/move.json');
         // popups are not selected follow
@@ -1818,8 +1818,9 @@ export const plannings_edit = function(params) {
 
         $.extend(route, params.manage_planning);
 
-        $(".route[data-route_id='" + route.route_id + "'] .route-details").html(SMT['stops/list'](route));
-
+        const $routePanel = $(`.route[data-route_id="${route.route_id}"]`);
+        $routePanel.html(SMT['routes/edit'](route));
+        initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
         if (!options || !options.skipMap) {
           routesLayer.refreshRoutes([route.route_id], routes)
         }
