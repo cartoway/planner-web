@@ -583,11 +583,11 @@ class Route < ApplicationRecord
   end
 
   def outdated=(value)
-    if vehicle_usage? && value
+    if vehicle_usage? && !value.nil?
       self.optimized_at = nil unless optimized_at_changed?
       self.last_sent_to = self.last_sent_at = nil
     end
-    self['outdated'] = value
+    super(value)
   end
 
   def vehicle_usage?
