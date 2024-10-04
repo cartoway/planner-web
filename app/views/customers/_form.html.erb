@@ -368,7 +368,9 @@
     <% end %>
 
     <% if current_user.admin? %>
-      <%= render partial: 'shared/check_box', locals: { form: f, value: @customer[:enable_external_callback], field: :enable_external_callback, label: t('activerecord.attributes.customer.enable_external_callback'), help: (t('.external_callback.enabled') if @customer.reseller[:enable_external_callback] && !@customer[:enable_external_callback]) } %>
+      <div class='row'>
+        <%= render partial: 'shared/check_box', locals: { form: f, value: @customer[:enable_external_callback], field: :enable_external_callback, label: t('activerecord.attributes.customer.enable_external_callback'), help: (t('.external_callback.enabled') if @customer.reseller[:enable_external_callback] && !@customer[:enable_external_callback]) } %>
+      </div>
     <% end %>
     <% if @customer.default_callback_enabled? %>
       <div id="external_callback_container" class="panel panel-default accordion">
