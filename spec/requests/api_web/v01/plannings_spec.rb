@@ -1,6 +1,6 @@
 RSpec.describe 'api_web/v01/plannings', type: :request do
   path '/api-web/0.1/plannings/{id}/edit' do
-    parameter name: 'id', in: :path, type: :integer, description: 'Planning id'
+    parameter name: 'id', in: :path, type: :integer, description: 'Planning\'s id or ref (as "ref:[VALUE]") to be displayed, separated by commas'
 
     get('edit planning') do
       tags 'Plannings'
