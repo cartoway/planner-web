@@ -17,17 +17,20 @@
 #
 class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
   skip_before_filter :verify_authenticity_token # because rails waits for a form token with POST
-  load_and_authorize_resource
   before_action :manage_planning
   around_action :includes_sub_models, only: [:print]
 
   def edit
+    @planning = current_user.customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+    authorize! :edit, @planning
     @spreadsheet_columns = []
     @with_devices = true
     capabilities
   end
 
   def print
+    @planning = current_user.customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+    authorize! :print, @planning
     @params = params
     respond_to do |format|
       format.html
