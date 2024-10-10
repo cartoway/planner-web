@@ -214,6 +214,11 @@ class DestinationsController < ApplicationController
         p[:quantities] = { current_user.customer.deliverable_units[0].id => p.delete(:quantity) }
       end
     }
+    if params.dig(:destination, :geocoding_result).to_s.empty?
+      params[:destination].delete(:geocoding_result)
+    else
+      params[:destination][:geocoding_result] = JSON.parse(params[:destination][:geocoding_result])
+    end
 
     o = params.require(:destination).permit(
       :ref,
@@ -232,6 +237,9 @@ class DestinationsController < ApplicationController
       :geocoding_level,
       :geocoder_version,
       :geocoded_at,
+      geocoding_result: [
+        :free
+      ],
       tag_ids: [],
       visits_attributes: [
         :id,

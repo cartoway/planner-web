@@ -214,6 +214,9 @@ const destinations_form = function(params, api) {
 
   var update = function(destination_id, destination, move) {
     var row = $('[data-destination_id=' + destination_id + ']');
+    if (destination.geocoding_result) {
+      $('#destination_geocoding_result', row).val(JSON.stringify(destination.geocoding_result));
+    }
     $('[name$=\\[name\\]]', row).val(destination.name);
     $('[name$=\\[street\\]]', row).val(destination.street);
     $('[name$=\\[postalcode\\]]', row).val(destination.postalcode);
@@ -222,7 +225,7 @@ const destinations_form = function(params, api) {
     $('[name$=\\[lat\\]]', row).val(destination.lat);
     $('[name$=\\[lng\\]]', row).val(destination.lng);
     $('[name$=\\[displayed_geocoding_result\\]]', row).val(destination.geocoding_result.free);
-    $("#geocoding_result").removeClass('d-none');
+    $("#geocoding_result_free").removeClass('d-none');
 
     setGeocoderInfo(destination);
     if ($.isNumeric(destination.lat) && $.isNumeric(destination.lng)) {
@@ -310,7 +313,8 @@ const destinations_form = function(params, api) {
             setGeocoderInfo(json.geocoder_info);
 
             $("#reverse-geocode").html(json.result.label).append(button);
-            $("#geocoding_result").addClass('d-none');
+            $("#destination_geocoding_result").val(null);
+            $("#geocoding_result_free").addClass('d-none');
 
           } else {
             $("#reverse-geocode").html('');
