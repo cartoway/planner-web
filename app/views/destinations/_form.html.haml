@@ -3,6 +3,7 @@
   %fieldset#destination-details
     - if @destination.customer.enable_references && !@destination.customer.enable_multi_visits
       = f.text_field :ref, help: t('.ref_help')
+    = hidden_field_tag "destination[geocoding_result]", @destination.geocoding_result.to_json
     = f.text_field :name, required: true
     = f.text_field :street, {help: t('web.form.helpers.street'), class: "pointing", append: content_tag('span', content_tag('button', content_tag('i', '', class: 'fa fa-crosshairs fa-fw'), class: 'btn btn-default', type: 'button', title: t('.locate_manually')), class: 'input-group-btn' )}
     = f.text_field :detail, help: t('.detail_help')
@@ -30,7 +31,6 @@
               %i.fa.fa-map.fa-fw
     - else
       = f.text_field :country, {placeholder: t('.country_default', n: @destination.customer.default_country)}
-    -# = @destination.geocoding_result
     .mb-3.row
       %label.col-md-offset-2.col-md-8.field{for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
       .col-md-offset-2.col-md-8.field
@@ -61,7 +61,7 @@
             %span#geocoding-level-value
               - if @destination.geocoding_level
                 = t("destinations.form.geocoding_level.#{@destination.geocoding_level}")
-      #geocoding_result.col-md-offset-2.col-md-8.field{ class: ('d-none' if @destination.geocoding_result.empty?)}
+      #geocoding_result_free.col-md-offset-2.col-md-8.field{ class: ('d-none' if @destination.geocoding_result.empty?)}
         %label= t 'activerecord.attributes.destination.geocoding_result'
         %input.form-control{ name: "destination[displayed_geocoding_result]", value: @destination.geocoding_result['free'], readonly: 'readonly'}
       .col-md-offset-2.col-md-8.field
