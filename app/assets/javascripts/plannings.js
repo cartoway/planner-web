@@ -1818,8 +1818,13 @@ export const plannings_edit = function(params) {
 
         $.extend(route, params.manage_planning);
 
-        const $routePanel = $(`.route[data-route_id="${route.route_id}"]`);
-        $routePanel.html(SMT['routes/edit'](route));
+        const $routePanel = $(`li.route[data-route_id="${route.route_id}"]`);
+        if ($($routePanel).hasClass('out_route')) {
+          $routePanel.html(SMT['routes/out_of_route'](route));
+        } else {
+          $routePanel.html(SMT['routes/edit'](route));
+        }
+
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
         if (!options || !options.skipMap) {
           routesLayer.refreshRoutes([route.route_id], routes)
