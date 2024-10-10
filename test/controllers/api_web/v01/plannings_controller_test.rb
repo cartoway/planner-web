@@ -18,7 +18,7 @@ class ApiWeb::V01::PlanningsControllerTest < ActionController::TestCase
     assert @controller.cannot?(:edit, plannings(:planning_three))
 
     get :edit, params: { id: plannings(:planning_three) }
-    assert_response :redirect
+    assert_response :not_found
   end
 
   test 'should sign in with api_key' do
