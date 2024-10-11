@@ -11,11 +11,14 @@ module ActiveSupport::Callbacks::ClassMethods
       raise Exception.new("Attempt to suppress a non existing callback") if Rails.env.development? || Rails.env.test?
     end
 
-    begin
-      skip_callback(*args)
-      yield
-    ensure
-      set_callback(*args)
+    mutex = Mutex.new
+    mutex.synchronize do
+      begin
+        skip_callback(*args)
+        yield
+      ensure
+        set_callback(*args)
+      end
     end
   end
 end
