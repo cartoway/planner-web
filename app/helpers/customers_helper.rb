@@ -43,4 +43,10 @@ module CustomersHelper
     customer.reseller[:external_callback_url] ? t('web.form.default', n: customer.reseller[:external_callback_url]) : ''
   end
 
+  def deliverable_unit_icons(customer)
+    customer.deliverable_units.map{ |du|
+      [du.id, du.default_icon]
+    }.to_h
+  end
+
 end

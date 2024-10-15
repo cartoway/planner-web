@@ -21,7 +21,7 @@ if @planning
       json.active route.vehicle_usage_id && stop.active
       unless @planning.customer.enable_orders
         json.quantities visit.default_quantities.map { |k, v|
-          {deliverable_unit_id: k, quantity: v, unit_icon: @planning.customer.deliverable_units.find { |du| du.id == k }.try(:default_icon)} unless v.nil?
+          {deliverable_unit_id: k, quantity: v, unit_icon: @deliverable_unit_icons[k]} unless v.nil?
         }.compact do |quantity|
           json.extract! quantity, :deliverable_unit_id, :quantity, :unit_icon
         end
