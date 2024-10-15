@@ -51,6 +51,21 @@ class Planning < ApplicationRecord
 
   include RefSanitizer
 
+  scope :includes_route_details, -> {
+    includes(
+      routes: [
+        stops: [
+          visit: [:tags, { destination: [:tags, {customer: :deliverable_units}] }]
+        ],
+        vehicle_usage: [
+          :store_start, :store_stop, :store_rest,
+          {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
+          {vehicle: [:customer]}
+        ]
+      ]
+    )
+  }
+
   amoeba do
     enable
 

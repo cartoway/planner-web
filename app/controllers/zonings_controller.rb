@@ -20,11 +20,13 @@ class ZoningsController < ApplicationController
   before_action :set_zoning, only: [:show, :edit, :update, :destroy, :duplicate, :automatic, :from_planning, :isochrone, :isodistance]
   before_action :set_planning, only: [:show, :edit, :new, :automatic, :from_planning]
   before_action :manage_zoning
+  before_action :set_deliverable_unit_icons, only: [:edit]
   around_action :includes_destinations, only: [:show, :edit, :update, :automatic, :from_planning]
   around_action :over_max_limit, only: [:create, :duplicate]
 
   load_and_authorize_resource
 
+  include CustomersHelper
   include LinkBack
 
   def index
@@ -179,8 +181,12 @@ class ZoningsController < ApplicationController
       [vehicle_usage_set, @zoning.isodistance?(vehicle_usage_set)]
     }
     @isoline_need_time = vehicle_usage_sets.map { |vehicle_usage_set|
-      [vehicle_usage_set, vehicle_usage_set.vehicle_usages.any?{ |vu| vu.vehicle.default_router_options['traffic'] }]
+      [vehicle_usage_set, vehicle_usage_set.vehicle_usages.any?{ |vu| vu.vehicle.default_router_options[:traffic] }]
     }
+  end
+
+  def set_deliverable_unit_icons
+    @deliverable_unit_icons = deliverable_unit_icons(current_user.customer)
   end
 
   # Use callbacks to share common setup or constraints between actions.
@@ -189,7 +195,7 @@ class ZoningsController < ApplicationController
   end
 
   def set_planning
-    @planning = params.key?(:planning_id) && !params[:planning_id].empty? ? current_user.customer.plannings.find(params[:planning_id]) : nil
+    @planning = params.key?(:planning_id) && !params[:planning_id].empty? ? current_user.customer.plannings.includes_route_details.find(params[:planning_id]) : nil
   end
 
   def includes_destinations

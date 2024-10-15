@@ -167,7 +167,7 @@ class Zoning < ApplicationRecord
     zones.clear
     vehicle_usage_set.vehicle_usages.select(&:active).each{ |vehicle_usage|
       # Use Time.zone.parse to preserve time zone from user (instead of to_time)
-      isowhat(what_qm, what, size, vehicle_usage, nil, date && vehicle_usage.vehicle.default_router_options['traffic'] ? Time.zone.parse(date.to_s) + vehicle_usage.default_time_window_start : nil)
+      isowhat(what_qm, what, size, vehicle_usage, nil, date && vehicle_usage.vehicle.default_router_options[:traffic] ? Time.zone.parse(date.to_s) + vehicle_usage.default_time_window_start : nil)
     }
   end
 

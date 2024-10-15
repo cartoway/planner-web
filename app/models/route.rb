@@ -41,7 +41,13 @@ class Route < ApplicationRecord
   after_save { @computed = false }
 
   scope :for_customer_id, ->(customer_id) { joins(:planning).where(plannings: {customer_id: customer_id}) }
-  scope :includes_vehicle_usages, -> { includes(vehicle_usage: [:vehicle_usage_set, :store_start, :store_stop, :store_rest, vehicle: [:customer]]) }
+  scope :includes_vehicle_usages, -> {
+    includes(vehicle_usage: [
+      :store_start, :store_stop, :store_rest,
+      vehicle_usage_set: [:store_start, :store_stop, :store_rest],
+      vehicle: :customer
+    ])
+  }
   scope :includes_stops, -> { includes(:stops) }
   # The second visit is for counting the visit index from all the visits of the destination
   scope :includes_destinations, (-> { includes(stops: {visit: [:tags, destination: %i[tags customer visits]]}) })
@@ -620,22 +626,31 @@ class Route < ApplicationRecord
     final_features = []
 
     if include_stores
-      stores_geojson = routes.select(&:vehicle_usage?).map(&:vehicle_usage).flat_map { |vu| [vu.default_store_start, vu.default_store_stop, vu.default_store_rest] }.compact.uniq.select(&:position?).map do |store|
-        coordinates = [store.lng, store.lat]
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: coordinates
-          },
-          properties: {
-            store_id: store.id,
-            color: store.color,
-            icon: store.icon,
-            icon_size: store.icon_size
-          }
-        }.to_json unless coordinates.empty?
-      end.compact
+      stores_geojson =
+        routes.select(&:vehicle_usage?)
+              .map(&:vehicle_usage)
+              .flat_map { |vu|
+                [vu.default_store_start, vu.default_store_stop, vu.default_store_rest]
+              }
+              .compact
+              .uniq
+              .select(&:position?)
+              .map do |store|
+                coordinates = [store.lng, store.lat]
+                {
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: coordinates
+                  },
+                  properties: {
+                    store_id: store.id,
+                    color: store.color,
+                    icon: store.icon,
+                    icon_size: store.icon_size
+                  }
+                }.to_json unless coordinates.empty?
+              end.compact
     end
 
     features = routes.select { |r| !respect_hidden || !r.hidden }.flat_map { |r|
@@ -671,7 +686,7 @@ class Route < ApplicationRecord
   def stops_to_geojson_points(options = {})
     unless stops.empty?
       inactive_stops = 0
-      stops.sort_by(&:index).map do |stop|
+      stops.includes_destinations.includes([:route]).map do |stop|
         inactive_stops += 1 unless stop.active
         if stop.position?
           feat = {
