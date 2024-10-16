@@ -173,6 +173,9 @@ Rails.application.configure do
 
   # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true
+
+  config.action_dispatch.cookies_same_site_protection = :strict
+  config.session_store :cookie_store, key: '_cartoway_session', same_site: :strict
 end
 
 I18n.available_locales = [:fr]
