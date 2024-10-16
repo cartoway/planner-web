@@ -181,7 +181,7 @@ class ZoningsController < ApplicationController
       [vehicle_usage_set, @zoning.isodistance?(vehicle_usage_set)]
     }
     @isoline_need_time = vehicle_usage_sets.map { |vehicle_usage_set|
-      [vehicle_usage_set, vehicle_usage_set.vehicle_usages.any?{ |vu| vu.vehicle.default_router_options[:traffic] }]
+      [vehicle_usage_set, vehicle_usage_set.vehicle_usages.any?{ |vu| vu.vehicle.default_router_options['traffic'] }]
     }
   end
 

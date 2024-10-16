@@ -108,13 +108,13 @@ class VehicleTest < ActiveSupport::TestCase
     }
     vehicle.save!
 
-    assert_equal false, vehicle.default_router_options[:motorway]
-    assert_equal 2, vehicle.default_router_options[:trailers]
-    assert_equal 10, vehicle.default_router_options[:weight]
-    assert_equal 3, vehicle.default_router_options[:weight_per_axle]
-    assert_equal 30, vehicle.default_router_options[:length]
-    assert_equal 'gas', vehicle.default_router_options[:hazardous_goods]
-    assert_equal 200, vehicle.default_router_options[:max_walk_distance]
+    assert_equal false, vehicle.default_router_options['motorway']
+    assert_equal 2, vehicle.default_router_options['trailers']
+    assert_equal 10, vehicle.default_router_options['weight']
+    assert_equal 3, vehicle.default_router_options['weight_per_axle']
+    assert_equal 30, vehicle.default_router_options['length']
+    assert_equal 'gas', vehicle.default_router_options['hazardous_goods']
+    assert_equal 200, vehicle.default_router_options['max_walk_distance']
   end
 
   test 'should return error if capacity is invalid' do
