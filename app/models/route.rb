@@ -684,37 +684,38 @@ class Route < ApplicationRecord
   end
 
   def stops_to_geojson_points(options = {})
-    unless stops.empty?
-      inactive_stops = 0
-      stops.includes_destinations.includes([:route]).map do |stop|
-        inactive_stops += 1 unless stop.active
-        if stop.position?
-          feat = {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [stop.lng, stop.lat]
-            },
-            properties: {
-              route_id: self.id,
-              index: stop.index,
-              active: stop.active,
-              number: vehicle_usage? ? stop.number(inactive_stops) : nil,
-              color: stop.default_color,
-              icon: stop.icon,
-              icon_size: stop.icon_size
-            }
-          }
-          feat[:properties][:quantities] = stop.visit.default_quantities.map { |k, v|
-            {
-              deliverable_unit_id: k,
-              quantity: v
-            }
-          } if options[:with_quantities] && stop.is_a?(StopVisit)
-          feat.to_json
-        end
-      end.compact
-    end
+    return if stops.empty?
+
+    inactive_stops = 0
+    (self.changed? ? self.stops : self.stops.includes_destinations).map do |stop|
+      inactive_stops += 1 unless stop.active
+
+      next unless stop.position?
+
+      feat = {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [stop.lng, stop.lat]
+        },
+        properties: {
+          route_id: self.id,
+          index: stop.index,
+          active: stop.active,
+          number: vehicle_usage? ? stop.number(inactive_stops) : nil,
+          color: stop.default_color,
+          icon: stop.icon,
+          icon_size: stop.icon_size
+        }
+      }
+      feat[:properties][:quantities] = stop.visit.default_quantities.map { |k, v|
+        {
+          deliverable_unit_id: k,
+          quantity: v
+        }
+      } if options[:with_quantities] && stop.is_a?(StopVisit)
+      feat.to_json
+    end.compact
   end
 
   def speed_average(unit = 'km')
