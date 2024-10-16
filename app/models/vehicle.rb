@@ -153,10 +153,10 @@ class Vehicle < ApplicationRecord
   def default_router_options
     default_router.options.each do |key, value|
       @current_router_options ||= {}
-      @current_router_options[key] = if router_options[key].nil?
-        customer.router_options[key]
+      @current_router_options[key.to_s] = if router_options[key.to_s].nil?
+        customer.router_options[key.to_s]
       else
-        router_options[key]
+        router_options[key.to_s]
       end
     end if !@current_router_options
 

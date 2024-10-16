@@ -49,7 +49,7 @@ class RoutesByVehiclesController < ApplicationController
     @isochrone = vehicle_usage_sets.map{ |v| [v, Zoning.new.isochrone?(v, false)] }
     @isodistance = vehicle_usage_sets.map{ |v| [v, Zoning.new.isodistance?(v, false)] }
     @isoline_need_time = vehicle_usage_sets.map{ |v|
-      [v, v.vehicle_usages.any?{ |vu| vu.vehicle.default_router_options[:traffic] }]
+      [v, v.vehicle_usages.any?{ |vu| vu.vehicle.default_router_options['traffic'] }]
     }
   end
 end

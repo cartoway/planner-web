@@ -552,7 +552,7 @@ class PlanningsController < ApplicationController
   def capabilities
     @isochrone = [[@planning.vehicle_usage_set, Zoning.new.isochrone?(@planning.vehicle_usage_set, false)]]
     @isodistance = [[@planning.vehicle_usage_set, Zoning.new.isodistance?(@planning.vehicle_usage_set, false)]]
-    @isoline_need_time = [[@planning.vehicle_usage_set, @planning.vehicle_usage_set.vehicle_usages.any?{ |vu| vu.vehicle.default_router_options[:traffic] }]]
+    @isoline_need_time = [[@planning.vehicle_usage_set, @planning.vehicle_usage_set.vehicle_usages.any?{ |vu| vu.vehicle.default_router_options['traffic'] }]]
   end
 
   def format_csv(format)
