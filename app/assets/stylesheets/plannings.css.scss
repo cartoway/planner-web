@@ -109,20 +109,107 @@ $sidebar-margins: 10px;
 
 
 [data-controller='plannings'] {
+  $planbar-height: 42px;
   .sidebar.extended {
     top: $planbar-height + $navbar-height !important;
   }
+
+  .sidebar-left {
+    left: 0 !important;
+    top: $planbar-height !important;
+    bottom: 0;
+  }
+
+  .sidebar-tabs {
+    top: ($planbar-height + 5px) !important;
+  }
+
+  .sidebar.sidebar-left.collapsed {
+    margin-left: $sidebar-margins;
+    height: $planbar-height + 40px;
+  }
+
+  .sidebar-left ~ .sidebar-map .leaflet-top {
+    top: $planbar-height;
+  }
+  .sidebar-left.collapsed ~ .sidebar-map .leaflet-top {
+    top: $planbar-height + 40px;
+    left: 0;
+  }
+
+  .planbar{
+    width: 100%;
+    position: absolute;
+    height: $planbar-height;
+    z-index: 1;
+    padding-left: 5px;
+    background-color: $white-background;
+    border-bottom: 1px solid $grey-color;
+
+    .col {
+      padding: 3px;
+    }
+    .row.form-group {
+      margin-bottom: 0px;
+
+      .label {
+        margin-bottom: 2px;
+      }
+    }
+  }
 }
 [data-controller='api_web_v01_plannings'] {
+  $planbar-height: 0;
   .sidebar.extended {
     top: 0px !important;
+  }
+
+  .sidebar-left {
+    left: 0 !important;
+    top: $planbar-height !important;
+    bottom: 0;
+  }
+
+  .sidebar-tabs {
+    top: ($planbar-height + 5px) !important;
+  }
+
+  .sidebar.sidebar-left.collapsed {
+    margin-left: $sidebar-margins;
+    height: $planbar-height + 40px;
+  }
+
+  .sidebar-left ~ .sidebar-map .leaflet-top {
+    top: $planbar-height;
+  }
+  .sidebar-left.collapsed ~ .sidebar-map .leaflet-top {
+    top: $planbar-height + 40px;
+    left: 0;
+  }
+
+  .planbar{
+    width: 100%;
+    position: absolute;
+    height: $planbar-height;
+    z-index: 1;
+    padding-left: 5px;
+    background-color: $white-background;
+    border-bottom: 1px solid $grey-color;
+
+    .col {
+      padding: 3px;
+    }
+    .row.form-group {
+      margin-bottom: 0px;
+
+      .label {
+        margin-bottom: 2px;
+      }
+    }
   }
 }
 
 [data-controller='plannings'], [data-controller='api_web_v01_plannings'] {
-  // override
-  $planbar-height: 42px;
-
   .leaflet-popup {
     margin-top: 10px;
   }
@@ -231,16 +318,6 @@ $sidebar-margins: 10px;
       color: #FF7F00;
       text-shadow: black 0 1px;
     }
-  }
-
-  .sidebar-left {
-    left: 0 !important;
-    top: $planbar-height !important;
-    bottom: 0;
-  }
-
-  .sidebar-tabs {
-    top: ($planbar-height + 5px) !important;
   }
 
   .sidebar {
@@ -472,40 +549,6 @@ $sidebar-margins: 10px;
 
   .sidebar-left ~ .sidebar-map .leaflet-left {
     left: $sidebar-width;
-  }
-
-  .sidebar.sidebar-left.collapsed {
-    margin-left: $sidebar-margins;
-    height: $planbar-height + 40px;
-  }
-
-  .sidebar-left ~ .sidebar-map .leaflet-top {
-    top: $planbar-height;
-  }
-  .sidebar-left.collapsed ~ .sidebar-map .leaflet-top {
-    top: $planbar-height + 40px;
-    left: 0;
-  }
-
-  .planbar{
-    width: 100%;
-    position: absolute;
-    height: $planbar-height;
-    z-index: 1;
-    padding-left: 5px;
-    background-color: $white-background;
-    border-bottom: 1px solid $grey-color;
-
-    .col {
-      padding: 3px;
-    }
-    .row.form-group {
-      margin-bottom: 0px;
-
-      .label {
-        margin-bottom: 2px;
-      }
-    }
   }
 
   .sidebar.extended {
