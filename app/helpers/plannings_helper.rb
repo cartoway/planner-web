@@ -31,7 +31,21 @@ module PlanningsHelper
   def planning_vehicles_usages_map(planning)
     PlanningConcern.vehicles_usages_map(planning)
     planning.vehicle_usage_set.vehicle_usages.active.each_with_object({}) do |vehicle_usage, hash|
-      hash[vehicle_usage.vehicle_id] = vehicle_usage.vehicle.slice(:name, :color, :capacities, :default_capacities).merge(vehicle_usage_id: vehicle_usage.id, vehicle_id: vehicle_usage.vehicle_id, router_dimension: vehicle_usage.vehicle.default_router_dimension, work_or_window_time: vehicle_usage.work_or_window_time, vehicle_quantities: PlanningsHelper.route_quantities(planning, vehicle_usage))
+      router_name =
+        vehicle_usage.vehicle.default_router.name_locale[I18n.locale.to_s] ||
+        vehicle_usage.vehicle.default_router.name_locale[I18n.default_locale.to_s] ||
+        vehicle_usage.vehicle.default_router.name
+      hash[vehicle_usage.vehicle_id] =
+        vehicle_usage
+        .vehicle.slice(:name, :color, :capacities, :default_capacities)
+        .merge(
+          vehicle_usage_id: vehicle_usage.id,
+          vehicle_id: vehicle_usage.vehicle_id,
+          router_dimension: vehicle_usage.vehicle.default_router_dimension,
+          work_or_window_time: vehicle_usage.work_or_window_time,
+          vehicle_quantities: PlanningsHelper.route_quantities(planning, vehicle_usage),
+          router_name: router_name
+        )
     end
   end
 
