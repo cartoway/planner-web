@@ -683,6 +683,21 @@ $sidebar-margins: 10px;
       margin-bottom: 1em;
 
       .panel-default {
+        .select2-container--default {
+          .select2-selection--single {
+            height: 34px;
+            line-height: 1.42857143 !important;
+            padding: 6px 24px 6px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            .select2-selection__rendered {
+              padding-left: 0 !important;
+              padding-right: 0 !important;
+              line-height: unset;
+            }
+          }
+        }
+
         .fa-reorder {
           width: 20px;
         }

@@ -35,6 +35,11 @@ if route.vehicle_usage_id
     json.devices route_devices(list_devices, route)
   end
   json.vehicle_id route.vehicle_usage.vehicle.id
+  if route.vehicle_usage.vehicle&.default_router
+    json.router_name route.vehicle_usage.vehicle.default_router.name_locale[I18n.locale.to_s] ||
+                     route.vehicle_usage.vehicle.default_router.name_locale[I18n.default_locale.to_s] ||
+                     route.vehicle_usage.vehicle.default_router.name
+  end
   if route.drive_time != 0 && !route.drive_time.nil?
     json.route_averages do
       json.drive_time time_over_day(route.drive_time)

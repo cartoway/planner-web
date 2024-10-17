@@ -1070,16 +1070,16 @@ export const plannings_edit = function(params) {
     if (vehicle.id) {
       var color = $('.color_select', $(vehicle.element).parent().parent()).val();
       if (color) {
-        return $("<span/>").text(vehicles_usages_map[vehicle.id].name);
+        return $("<span/>").text(vehicles_usages_map[vehicle.id].name + ' - ' + vehicles_usages_map[vehicle.id].router_name);
       } else {
-        return $("<span><span class='color_small' style='background:" + vehicles_usages_map[vehicle.id].color + "'></span>&nbsp;</span>").append($("<span/>").text(vehicles_usages_map[vehicle.id].name));
+        return $("<span><span class='color_small' style='background:" + vehicles_usages_map[vehicle.id].color + "'></span>&nbsp;</span>").append($("<span/>").text(vehicles_usages_map[vehicle.id].name + ' - ' + vehicles_usages_map[vehicle.id].router_name));
       }
     }
   };
 
   var templateResultVehicles = function(vehicle) {
     if (vehicle.id) {
-      return $("<span><span class='color_small' style='background:" + vehicles_usages_map[vehicle.id].color + "'></span>&nbsp;</span>").append($("<span/>").text(vehicles_usages_map[vehicle.id].name));
+      return $("<span><span class='color_small' style='background:" + vehicles_usages_map[vehicle.id].color + "'></span>&nbsp;</span>").append($("<span/>").text(vehicles_usages_map[vehicle.id].name + ' - ' + vehicles_usages_map[vehicle.id].router_name));
     }
   };
 
