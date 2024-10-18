@@ -56,7 +56,6 @@ class ImportCsv
       begin
         last_row = last_line = nil
         Customer.transaction do
-          importer_columns = @importer.columns
           allow_duplicated_ref = @importer.is_a?(ImporterDestinations)
           rows = @importer.import(data, name, synchronous, allow_duplicate: allow_duplicated_ref, ignore_errors: false, replace: replace, delete_plannings: delete_plannings, replace_vehicles: replace_vehicles, line_shift: (without_header? ? 0 : 1), column_def: column_def) { |row, line|
             if row
@@ -65,7 +64,7 @@ class ImportCsv
 
               # Switch from locale or custom to internal column name
               r, row = row, {}
-              importer_columns.each{ |key, v|
+              @importer.columns.each{ |key, v|
                 next unless v[:title]
 
                 if r.is_a?(Array)
