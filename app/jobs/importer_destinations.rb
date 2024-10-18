@@ -94,7 +94,10 @@ class ImporterDestinations < ImporterBase
   end
 
   def columns
-    @deliverable_units = @customer&.deliverable_units || []
+    @columns ||= import_columns
+  end
+
+  def import_columns
     columns_planning.merge(columns_route).merge(columns_destination).merge(columns_visit).merge(
       without_visit: {title: I18n.t('destinations.import_file.without_visit'), desc: I18n.t('destinations.import_file.without_visit_desc'), format: I18n.t('destinations.import_file.format.yes_no')},
       quantities: {}, # only for json import
@@ -162,7 +165,8 @@ class ImporterDestinations < ImporterBase
         m = Regexp.new("^" + I18n.t('destinations.import_file.quantity') + "\\[(.*)\\]$").match(name)
         if m && unit_labels.exclude?(m[1])
           unit_labels.delete_at(unit_labels.index(m[1])) if unit_labels.index(m[1])
-          @customer.deliverable_units.build(label: m[1])
+          @deliverable_units << @customer.deliverable_units.create(label: m[1])
+          @columns = nil # Reset columns "cache"
         end
       }
       @customer.save!
@@ -255,16 +259,17 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_tags(row, key)
-    if !row["#{key}s".to_sym].nil?
-      if row["#{key}s".to_sym].is_a?(String)
-        row["#{key}s".to_sym] = row["#{key}s".to_sym].split(',').uniq.select{ |key|
+    key_s = "#{key}s".to_sym
+    key_ids = "#{key}_ids".to_sym
+    if !row[key_s].nil?
+      if row[key_s].is_a?(String)
+        row[key_s] = row[key_s].split(',').uniq.select{ |key|
           !key.empty?
         }
       end
 
-      row["#{key}_ids".to_sym] = row["#{key}s".to_sym].collect{ |tag|
-        if tag.is_a?(Integer)
-          @tag_ids[tag]
+      row[key_ids] = row[key_s].collect{ |tag|
+        if tag.is_a?(Integer) && @tag_ids.key?(tag)
           tag
         else
           tag = tag.strip
@@ -274,10 +279,10 @@ class ImporterDestinations < ImporterBase
           @tag_labels[tag].id
         end
       }.compact
-      row.delete("#{key}s".to_sym)
+      row.delete(key_s)
     end
-    if row.key?("#{key}s".to_sym)
-      row.delete("#{key}s".to_sym)
+    if row.key?(key_s)
+      row.delete(key_s)
     end
   end
 
@@ -448,12 +453,14 @@ class ImporterDestinations < ImporterBase
       if destination_attributes[:lat].nil? || destination_attributes[:lat] == ''
         nil
       else
+        destination_attributes[:lat].gsub!(',', '.') if destination_attributes[:lat].is_a? String
         destination_attributes[:lat].to_f
       end
     destination_attributes[:lng] =
       if destination_attributes[:lng].nil? || destination_attributes[:lng] == ''
         nil
       else
+        destination_attributes[:lng].gsub!(',', '.') if destination_attributes[:lng].is_a? String
         destination_attributes[:lng].to_f
       end
   end
@@ -704,6 +711,8 @@ class ImporterDestinations < ImporterBase
       end
       planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
       routes_hash.each{ |k, v|
+        # Duplicated visit lines are only represented by a single visit
+        v[:visits].select!{ |attribute, _active| attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]] }
         visit_ids = v[:visits].map{ |attribute, _active|
           attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
         }
