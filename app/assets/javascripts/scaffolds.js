@@ -263,7 +263,7 @@ export const mapInitialize = function(params) {
   for (var layer_name in params.map_layers) {
     var layer = params.map_layers[layer_name];
     var l = L.tileLayer(layer.url, {
-      maxZoom: 18,
+      maxZoom: 19,
       attribution: layer.attribution
     });
     l.name = layer.name;
@@ -339,7 +339,7 @@ export const mapInitialize = function(params) {
     }).addTo(map);
   } else {
     map.tileLayer = L.tileLayer(mapLayer.url, {
-      maxZoom: 18,
+      maxZoom: 19,
       attribution: mapLayer.attribution
     });
   }
