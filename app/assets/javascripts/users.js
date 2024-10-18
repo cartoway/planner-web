@@ -30,7 +30,7 @@ const user_edit_settings = function(params) {
   $('[name=user\\[layer_id\\]]').change(function(event) {
     map.removeLayer(map.tileLayer);
     map.tileLayer = L.tileLayer(available_layers[event.target.value].url, {
-      maxZoom: 18,
+      maxZoom: 19,
       attribution: available_layers[event.target.value].attribution
     });
     map.addLayer(map.tileLayer);
