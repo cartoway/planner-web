@@ -208,19 +208,21 @@ class DestinationsController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def destination_params
+    p = params.to_unsafe_h
     # Deals with deprecated quantity
-    params[:visits_attributes]&.each{ |p|
+    p[:visits_attributes]&.each{ |p|
       if !p[:quantities] && p[:quantity] && !current_user.customer.deliverable_units.empty?
         p[:quantities] = { current_user.customer.deliverable_units[0].id => p.delete(:quantity) }
       end
     }
-    if params.dig(:destination, :geocoding_result).to_s.empty?
-      params[:destination].delete(:geocoding_result)
+    if p.dig(:destination, :geocoding_result).to_s.empty?
+      p[:destination].delete(:geocoding_result)
     else
-      params[:destination][:geocoding_result] = JSON.parse(params[:destination][:geocoding_result])
+      p[:destination][:geocoding_result] = JSON.parse(p[:destination][:geocoding_result])
     end
+    p = ActionController::Parameters.new(p)
 
-    o = params.require(:destination).permit(
+    o = p.require(:destination).permit(
       :ref,
       :name,
       :street,
