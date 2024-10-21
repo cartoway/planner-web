@@ -293,7 +293,7 @@
               - elsif type == :select
                 = f.select field, definition[:label],
                   {include_blank: false, include_hidden: false},
-                  {data: {device: key}, multiple: field.to_s.include?(_ids) ? true : false }
+                  {data: {device: key}, multiple: field.to_s.include?('_ids') ? true : false }
       %legend.scheduler-border
         = t 'vehicle_usages.form.driver.legend'
       = f.text_field :contact_email, {input_group: '@', help: t('vehicles.form.contact_email.help')}
