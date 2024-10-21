@@ -84,9 +84,16 @@ class V01::CustomerTest < ActiveSupport::TestCase
   end
 
   test 'should not update customer with invalid router options' do
-    put api(@customer.id), {router_options: {width: '3,55'}}.to_json, 'CONTENT_TYPE' => 'application/json'
+    put api(@customer.id), {router_options: {width: '3;55'}}.to_json, 'CONTENT_TYPE' => 'application/json'
     errors = JSON.parse(last_response.body)
     assert_equal errors['message'], 'router_options[width] is invalid'
+  end
+
+  test 'should update customer with router options with a comma' do
+    put api(@customer.id), {router_options: {width: '3,55'}}.to_json, 'CONTENT_TYPE' => 'application/json'
+    assert last_response.ok?, last_response.body
+    customer_response = JSON.parse(last_response.body, symbolize_names: true)
+    assert_equal 3.55, customer_response[:router_options][:width]
   end
 
   test 'should update a customer without modifying max vehicles' do
