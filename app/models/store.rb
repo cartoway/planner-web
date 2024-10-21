@@ -37,6 +37,8 @@ class Store < Location
 
   include RefSanitizer
 
+  scope :not_positioned, -> { where('lat IS NULL OR lng IS NULL') }
+
   amoeba do
     exclude_association :vehicle_usage_set_starts
     exclude_association :vehicle_usage_set_stops
