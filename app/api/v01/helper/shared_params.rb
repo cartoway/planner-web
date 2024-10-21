@@ -15,12 +15,14 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
+require 'coerce'
+
 module SharedParams # rubocop:disable Metrics/ModuleLength
   extend Grape::API::Helpers
 
   params :request_capacity do |options|
     optional :deliverable_unit_id, type: Integer
-    optional :quantity, type: Float
+    optional :quantity, type: Float, coerce_with: CoerceFloatString
     all_or_none_of :deliverable_unit_id, :quantity
   end
 
@@ -54,8 +56,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :router_options, type: Hash, documentation: { param_type: 'body' } do
       use(:request_router_options, options)
     end
-    optional :speed_multiplier, type: Float
-    optional :speed_multiplicator, type: Float, documentation: { desc: 'Deprecated, use speed_multiplier instead.', hidden: true }
+    optional :speed_multiplier, type: Float, coerce_with: CoerceFloatString
+    optional :speed_multiplicator, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Deprecated, use speed_multiplier instead.', hidden: true }
     mutually_exclusive :speed_multiplier, :speed_multiplicator
     optional :history_cron_hour, type: Integer
 
@@ -68,11 +70,11 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
 
     optional :optimization_max_split_size, type: Integer, documentation: { desc: 'Maximum number of visits to split problem', example: Mapotempo::Application.config.optimize_max_split_size }
     optional :optimization_cluster_size, type: Integer, documentation: { desc: 'Time in seconds to group near visits', example: Mapotempo::Application.config.optimize_cluster_size }
-    optional :optimization_time, type: Float, documentation: { desc: 'Maximum optimization time (by vehicle)', example: Mapotempo::Application.config.optimize_time }
-    optional :optimization_minimal_time, type: Float, documentation: { desc: 'Minimum optimization time (by vehicle)', example: Mapotempo::Application.config.optimize_minimal_time}
-    optional :optimization_stop_soft_upper_bound, type: Float, documentation: { desc: 'Stops delay coefficient, 0 to avoid delay', example: Mapotempo::Application.config.optimize_stop_soft_upper_bound}
-    optional :optimization_vehicle_soft_upper_bound, type: Float, documentation: { desc: 'Vehicles delay coefficient, 0 to avoid delay', example: Mapotempo::Application.config.optimize_vehicle_soft_upper_bound }
-    optional :optimization_cost_waiting_time, type: Float, documentation: { desc: 'Coefficient to manage waiting time', example: Mapotempo::Application.config.optimize_cost_waiting_time }
+    optional :optimization_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Maximum optimization time (by vehicle)', example: Mapotempo::Application.config.optimize_time }
+    optional :optimization_minimal_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Minimum optimization time (by vehicle)', example: Mapotempo::Application.config.optimize_minimal_time}
+    optional :optimization_stop_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Stops delay coefficient, 0 to avoid delay', example: Mapotempo::Application.config.optimize_stop_soft_upper_bound}
+    optional :optimization_vehicle_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Vehicles delay coefficient, 0 to avoid delay', example: Mapotempo::Application.config.optimize_vehicle_soft_upper_bound }
+    optional :optimization_cost_waiting_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient to manage waiting time', example: Mapotempo::Application.config.optimize_cost_waiting_time }
     optional :optimization_force_start, type: Boolean, documentation: { desc: 'Force time for departure', example: Mapotempo::Application.config.optimize_force_start }
 
     optional :advanced_options, type: JSON, documentation: { desc: 'Advanced options' }
@@ -88,8 +90,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :city, type: String
     optional :state, type: String
     optional :country, type: String
-    optional :lat, type: Float
-    optional :lng, type: Float
+    optional :lat, type: Float, coerce_with: CoerceFloatString
+    optional :lng, type: Float, coerce_with: CoerceFloatString
     optional :detail, type: String
     optional :comment, type: String
     optional :phone_number, type: String
@@ -126,15 +128,15 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :motorway, type: Boolean
     optional :toll, type: Boolean
     optional :trailers, type: Integer
-    optional :weight, type: Float, documentation: { desc: 'Total weight with trailers and shipping goods, in tons' }
-    optional :weight_per_axle, type: Float
-    optional :height, type: Float
-    optional :width, type: Float
-    optional :length, type: Float
+    optional :weight, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Total weight with trailers and shipping goods, in tons' }
+    optional :weight_per_axle, type: Float, coerce_with: CoerceFloatString
+    optional :height, type: Float, coerce_with: CoerceFloatString
+    optional :width, type: Float, coerce_with: CoerceFloatString
+    optional :length, type: Float, coerce_with: CoerceFloatString
     optional :hazardous_goods, type: String, values: %w(explosive gas flammable combustible organic poison radio_active corrosive poisonous_inhalation harmful_to_water other)
-    optional :max_walk_distance, type: Float
+    optional :max_walk_distance, type: Float, coerce_with: CoerceFloatString
     optional :approach, type: String, values: ['unrestricted', 'curb']
-    optional :snap, type: Float
+    optional :snap, type: Float, coerce_with: CoerceFloatString
     optional :strict_restriction, type: Boolean
   end
 
@@ -150,8 +152,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :city, type: String
     optional :state, type: String
     optional :country, type: String
-    optional :lat, type: Float
-    optional :lng, type: Float
+    optional :lat, type: Float, coerce_with: CoerceFloatString
+    optional :lng, type: Float, coerce_with: CoerceFloatString
     optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Mapotempo::Application.config.store_color_default}." }
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{Mapotempo::Application.config.store_icon_default}." }
     optional :icon_size, type: String, values: ::Store::ICON_SIZE, documentation: { desc: "Icon size. Default: #{Mapotempo::Application.config.store_icon_size_default}." }
@@ -162,7 +164,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :name, type: String
     optional :contact_email, type: String, documentation: { desc: 'Driver\'s device E-Mail. Several emails might be transmitted separated by spaces, commas or semicolons.' }
     optional :phone_number, type: String
-    optional :emission, type: Float
+    optional :emission, type: Float, coerce_with: CoerceFloatString
     optional :consumption, type: Integer
     optional :capacity, type: Integer, documentation: { desc: 'Deprecated, use capacities instead.'}
     optional :capacity_unit, type: String, documentation: { desc: 'Deprecated, use capacities and deliverable_unit entity instead.'}
@@ -176,8 +178,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :router_options, type: Hash do
       use :request_router_options
     end
-    optional :speed_multiplicator, type: Float, documentation: { desc: 'Deprecated, use speed_multiplier instead.' }
-    optional :speed_multiplier, type: Float
+    optional :speed_multiplicator, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Deprecated, use speed_multiplier instead.' }
+    optional :speed_multiplier, type: Float, coerce_with: CoerceFloatString
     optional :max_distance, type: Integer, documentation: { desc: 'Maximum achievable distance in meters' }
     optional :max_ride_distance, type: Integer, documentation: { desc: 'Maximum riding distance between two stops within a route in meters' }
     optional :max_ride_duration, type: Integer, documentation: { desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -232,7 +234,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
 
     optional :quantities, type: Array, documentation: { param_type: 'body' } do
       optional :deliverable_unit_id, type: Integer
-      optional :quantity, type: Float
+      optional :quantity, type: Float, coerce_with: CoerceFloatString
       all_or_none_of :deliverable_unit_id, :quantity
     end
     optional :quantity, type: Integer, documentation: { desc: 'Deprecated, use quantities instead.', hidden: true }
@@ -271,8 +273,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :name, type: String
     optional :vehicle_id, type: Integer
     optional :polygon, type: JSON do use :request_feature end
-    optional :speed_multiplier, type: Float
-    optional :speed_multiplicator, type: Float, documentation: { hidden: true }
+    optional :speed_multiplier, type: Float, coerce_with: CoerceFloatString
+    optional :speed_multiplicator, type: Float, coerce_with: CoerceFloatString, documentation: { hidden: true }
     mutually_exclusive :speed_multiplier, :speed_multiplicator
   end
 
