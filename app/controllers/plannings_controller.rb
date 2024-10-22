@@ -49,7 +49,7 @@ class PlanningsController < ApplicationController
     @params = params
     @routes = if params[:route_ids]
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
-      @planning.routes.select{ |r| route_ids.include?(r.id) }
+      @planning.routes.includes_destinations.where(id: route_ids)
     end
     respond_to do |format|
       format.html
