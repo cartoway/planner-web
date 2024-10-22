@@ -49,6 +49,9 @@ class Planning < ApplicationRecord
   before_destroy :unlink_job_optimizer
   before_save :update_vehicle_usage_set
 
+  after_save :invalidate_planning_cache
+  after_destroy :invalidate_planning_cache
+
   include RefSanitizer
 
   scope :includes_route_details, -> {
@@ -84,6 +87,12 @@ class Planning < ApplicationRecord
     copy = self.amoeba_dup
     copy.name += " (#{I18n.l(Time.zone.now, format: :long)})"
     copy
+  end
+
+  def cached_active_stops_sum
+    Rails.cache.fetch("#{cache_key_with_version}/active_stops_sum", expires_in: 1.hour) do
+      routes.to_a.sum(0) { |route| route.vehicle_usage_id ? route.size_active : 0 }
+    end
   end
 
   def changed?
@@ -780,6 +789,10 @@ class Planning < ApplicationRecord
   end
 
   private
+
+  def invalidate_planning_cache
+    Rails.cache.delete("#{self.cache_key_with_version}/active_stops_sum")
+  end
 
   def prefered_route_and_index(available_routes, stop, options = {})
     options[:active_only] = true if options[:active_only].nil?
