@@ -120,16 +120,27 @@ class Zone < ApplicationRecord
   end
 
   def feature_collection_as_geojson(features)
+    features.map!{ |feature|
+      SimplifyGeometry.polygones_to_coordinates(
+        RGeo::GeoJSON.encode(feature),
+        **{ precision: 1e-5 }
+      )
+    }
     {
       type: 'FeatureCollection',
-      features: features.map{ |feature| feature_as_geojson(feature) }
+      features: features
     }
   end
 
   def feature_as_geojson(feature)
+    feature =
+      SimplifyGeometry.polygones_to_coordinates(
+        RGeo::GeoJSON.encode(feature),
+        **{ precision: 1e-5 }
+      )
     {
       type: 'Feature',
-      geometry: RGeo::GeoJSON.encode(feature)
+      geometry: feature
     }
   end
 

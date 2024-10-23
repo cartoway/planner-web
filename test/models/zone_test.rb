@@ -28,7 +28,7 @@ class ZoneTest < ActiveSupport::TestCase
 
   test 'calculate distance between point and simple polygon' do
     zone = zones(:zone_one)
-    assert_equal 0.0014045718474348943, zone.inside_distance(49.538, -0.976)
+    assert_equal 0.0014045709186722257, zone.inside_distance(49.538, -0.976)
   end
 
   test 'calculate distance between point and isochrone' do
