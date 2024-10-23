@@ -5,14 +5,18 @@
   - API: Allow commas for float fields [#205](https://github.com/cartoway/planner-web/pull/205)
   - Planning: Add router name to vehicle selector [#202](https://github.com/cartoway/planner-web/pull/202)
   - Destination: Allow commas for float columns during import [#203](https://github.com/cartoway/planner-web/pull/203)
+  - Zoning: Simplify polygons geometries [#207](https://github.com/cartoway/planner-web/pull/207)
 
   ### Changed
   - Allow rails to use fallback in case of missing assets [#196](https://github.com/cartoway/planner-web/pull/196)
   - Rails 6 shares callbacks across threads [#197](https://github.com/cartoway/planner-web/pull/197)
   - Setup cookies with same site policy [#201](https://github.com/cartoway/planner-web/pull/201)
   - Set max zoom to 19 [#204](https://github.com/cartoway/planner-web/pull/204)
+  - Planning: stop counter now uses a cache [#207](https://github.com/cartoway/planner-web/pull/207)
   - Store: use `find_in_batches` within geocoder job [#205](https://github.com/cartoway/planner-web/pull/205)
-  - Zoning: Improve loading performances [#199](https://github.com/cartoway/planner-web/pull/199)
+  - Zoning:
+    - Improve loading performances [#199](https://github.com/cartoway/planner-web/pull/199)
+    - Increase zone border weight & Change edit marker style [#207](https://github.com/cartoway/planner-web/pull/207)
 
   ### Removed
 
