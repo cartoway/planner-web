@@ -85,6 +85,20 @@ class ZoningsControllerTest < ActionController::TestCase
     assert_equal @zoning.plannings.map(&:zoning_outdated), [true, true]
   end
 
+  test 'should simplify polygon' do
+    zoning = zonings(:zoning_two)
+    previous_zone_polygon = JSON.parse(zoning.zones.first.polygon)
+    patch :update, params: { id: zoning.id, zoning: { name: 'foo', zones_attributes: [{ id: zoning.zones.first.id, name: 'bar' }] } }
+    new_polygon = JSON.parse(zoning.zones.first.polygon)
+    assert_equal(
+      previous_zone_polygon['features'].first['geometry']['coordinates'].first.size - 1,
+      new_polygon['features'].first['coordinates'].first.size
+    )
+    assert new_polygon['features'].first['coordinates'].first.all?{ |coords|
+      coords.all?{ |l| l.to_s.split('.').last.size <= 6 }
+    }
+  end
+
   test 'should not create zoning' do
     assert_difference('Zoning.count', 0) do
       assert_difference('Zone.count', 0) do

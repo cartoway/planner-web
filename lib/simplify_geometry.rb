@@ -3,18 +3,33 @@ require 'simplify_rb'
 AUTHORIZED_GEOMETRY_TYPES = %w[Polygon MultiPolygon GeometryCollection].freeze
 
 class SimplifyGeometry
-  def self.polylines(feature, options = { precision: 1e-6 })
-    if feature['geometry'] && feature['geometry']['polylines']
-      simplified_polyline = process(feature, options).map{ |crd| crd.reverse } # Polylines return to initial order lat/lng
-      feature['geometry']['polylines'] = FastPolylines.encode(simplified_polyline, 6)
+  def self.polygones_to_coordinates(feature, **options)
+    if feature['type'] == 'Polygon' && feature['coordinates']
+      feature['coordinates'].map!{ |coords|
+        process(coords.map{ |a, b| {x: a, y: b} }, **options)
+      }
+      feature
     end
   end
 
-  def self.polylines_to_coordinates(feature, options = { precision: 1e-6 })
+  def self.polylines(feature, **options)
+    options = { geometry: 'polylines', encode_output: true }.merge(options)
     if feature['geometry'] && feature['geometry']['polylines']
-      simplified_polyline = process(feature, options) # coordinates require to keep the reversed order lng/lat
-      feature['geometry']['coordinates'] = simplified_polyline.map{ |crd| crd }
+      decoded_polyline = decoded_polyline = FastPolylines.decode(feature['geometry'].delete('polylines'), 6)
+      # Be aware the simplifier reverses polylines order lat/lng to lng/lat
+      coordinates = decoded_polyline.map{ |a, b| {x: b, y: a} }
+      simplified_polyline = process(coordinates, **options)
+      if options[:encode_output]
+        simplified_polyline.map!{ |crd| crd.reverse } # Polylines return to initial order lat/lng
+        feature['geometry']['polylines'] = FastPolylines.encode(simplified_polyline, 6)
+      else
+        feature['geometry']['coordinates'] = simplified_polyline.map{ |crd| crd }
+      end
     end
+  end
+
+  def self.polylines_to_coordinates(feature, **options)
+    polylines(feature, **options.merge!(encode_output: false))
   end
 
   def self.dump_multipolygons(zoning, import = false)
@@ -33,10 +48,8 @@ class SimplifyGeometry
 
   private
 
-  def self.process(feature, options = { precision: 1e-6 })
-    decoded_polyline = FastPolylines.decode(feature['geometry'].delete('polylines'), 6)
-    # Be aware the simplifier reverses polylines order lat/lng to lng/lat
-    coordinates = decoded_polyline.map{ |a, b| {x: b, y: a} }
+  def self.process(coordinates, **options)
+    options = { precision: 1e-6 }.merge(options)
     unless options[:skip_simplifier]
       coordinates = SimplifyRb::Simplifier.new.process(
         coordinates,

@@ -887,7 +887,7 @@ class Route < ApplicationRecord
         next final_features << feature unless feature.include?('polylines')
 
         polyline_feature = JSON.parse(feature)
-        SimplifyGeometry.polylines_to_coordinates(polyline_feature, { precision: 1e-6, skip_simplifier: true })
+        SimplifyGeometry.polylines_to_coordinates(polyline_feature, **{ precision: 1e-6, skip_simplifier: true })
         polyline_features << polyline_feature
       }
 
