@@ -106,7 +106,8 @@ export const zonings_edit = function(params) {
       polygon: {
         allowIntersection: false, // Restricts shapes to simple polygons
         shapeOptions: {
-          color: '#707070'
+          color: '#707070',
+          weight: 5
         }
       },
       rectangle: false,
@@ -243,7 +244,7 @@ export const zonings_edit = function(params) {
       color: ((vehicle_id && vehiclesMap[vehicle_id]) ? vehiclesMap[vehicle_id].color : '#707070'),
       fillColor: null,
       opacity: 0.5,
-      weight: 2,
+      weight: 3,
       dashArray: 'none',
       fillPattern: null
     });
@@ -274,7 +275,7 @@ export const zonings_edit = function(params) {
       this.on('mouseover', function() {
         that.setStyle({
           opacity: 0.9,
-          weight: (zone.speed_multiplier === 0) ? 5 : 3
+          weight: (zone.speed_multiplier === 0) ? 5 : 5
         });
         if (zone.name) {
           labelMarker = L.marker(that.getBounds().getCenter(), {
@@ -289,7 +290,7 @@ export const zonings_edit = function(params) {
       this.on('mouseout', function() {
         that.setStyle({
           opacity: 0.5,
-          weight: (zone.speed_multiplier === 0) ? 5 : 2
+          weight: (zone.speed_multiplier === 0) ? 5 : 3
         });
         if (labelMarker) {
           labelLayer.removeLayer(labelMarker);

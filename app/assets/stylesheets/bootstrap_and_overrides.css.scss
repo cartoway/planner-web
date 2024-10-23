@@ -133,6 +133,16 @@ a.btn-default {
     z-index: 900 !important; /* Bootstrap also use 1000 for control */
 }
 
+.leaflet-editing-icon {
+  border-radius: 10px;
+  border: 3px dimgrey solid;
+  opacity: unset;
+}
+
+.leaflet-draw-tooltip {
+  display: none;
+}
+
 hr {
   margin-bottom: 6px;
   margin-top: 6px;
