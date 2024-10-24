@@ -22,15 +22,24 @@ class V01::Destinations < Grape::API
   helpers do
     # Never trust parameters from the scary internet, only allow the white list through.
     def destination_params
+      visit_ref_ids = {}
+      existing_destination = nil
       p = ActionController::Parameters.new(params)
       p = p[:destination] if p.key?(:destination)
       if p[:visits]
         p[:visits_attributes] = p[:visits]
       end
+      if p[:id] && p[:visits_attributes]&.any?{ |visit_attr| visit_attr.key?(:ref) && !visit_attr.key?(:id)}
+        existing_destination = current_customer.destinations.find_by_id(p[:id])
+        existing_destination.visits.where.not(ref: nil).each{ |visit|
+          visit_ref_ids[visit.ref] = visit.id
+        } if existing_destination
+      end
       if p[:visits_attributes]
         p[:visits_attributes].each do |hash|
           convert_timewindows(hash)
           convert_deprecated_quantities(hash)
+          hash[:id] = visit_ref_ids[hash[:ref]] if existing_destination && !hash.key?(:id) && hash[:ref].present? && visit_ref_ids[hash[:ref]]
         end
       end
 

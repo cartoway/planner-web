@@ -4,7 +4,10 @@
   ### Added
   - API: Allow commas for float fields [#205](https://github.com/cartoway/planner-web/pull/205)
   - Planning: Add router name to vehicle selector [#202](https://github.com/cartoway/planner-web/pull/202)
-  - Destination: Allow commas for float columns during import [#203](https://github.com/cartoway/planner-web/pull/203) & [#208](https://github.com/cartoway/planner-web/pull/208)
+  - Destination:
+    - Allow commas for float columns during import [#203](https://github.com/cartoway/planner-web/pull/203) & [#208](https://github.com/cartoway/planner-web/pull/208)
+    - Validate ref uniqueness from API endpoints, nested visits are validated too [#209](https://github.com/cartoway/planner-web/pull/209)
+  - Device: Set a 2s timeout for StgTelematics[#209](https://github.com/cartoway/planner-web/pull/209)
   - Zoning: Simplify polygons geometries [#207](https://github.com/cartoway/planner-web/pull/207)
 
   ### Changed
@@ -19,6 +22,7 @@
     - Increase zone border weight & Change edit marker style [#207](https://github.com/cartoway/planner-web/pull/207)
 
   ### Removed
+  - `skip_callback` was not thread safe [#209](https://github.com/cartoway/planner-web/pull/209)
 
   ### Fixed
   - Api-web:  Remove blank header bar [#201](https://github.com/cartoway/planner-web/pull/201)

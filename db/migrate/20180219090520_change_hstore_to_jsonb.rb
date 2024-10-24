@@ -15,21 +15,19 @@ class ChangeHstoreToJsonb < ActiveRecord::Migration
       router.save!(validate: false)
     }
 
-    Customer.without_callback(:update, :before, :update_outdated) do
-      Customer.all.each { |customer|
-        next if customer.router_options.blank? || customer.router_options.empty?
-        customer = loop_and_assign_typed_values(customer)
-        customer.save!(validate: false)
-      }
-    end
+    Customer.all.each { |customer|
+      next if customer.router_options.blank? || customer.router_options.empty?
+      customer = loop_and_assign_typed_values(customer)
+      customer.migration_skip = true
+      customer.save!(validate: false)
+    }
 
-    Vehicle.without_callback(:update, :before, :update_outdated) do
-      Vehicle.all.each { |vehicle|
-        next if vehicle.router_options.blank? || vehicle.router_options.empty?
-        vehicle = loop_and_assign_typed_values(vehicle)
-        vehicle.save!(validate: false)
-      }
-    end
+    Vehicle.all.each { |vehicle|
+      next if vehicle.router_options.blank? || vehicle.router_options.empty?
+      vehicle = loop_and_assign_typed_values(vehicle)
+      vehicle.migration_skip = true
+      vehicle.save!(validate: false)
+    }
   end
 
   def down
@@ -56,21 +54,19 @@ class ChangeHstoreToJsonb < ActiveRecord::Migration
     change_column_null :routers, :options, true
     change_column :routers, :options, "hstore USING jsonb_to_hstore(options)", default: {}
 
-    Customer.without_callback(:update, :before, :update_outdated) do
-      Customer.find_each { |customer|
-        next unless customer.router_options.nil? || customer.router_options.blank? || customer.router_options.empty?
-        customer.router_options = {}
-        customer.save!(validate: false)
-      }
-    end
+    Customer.find_each { |customer|
+      next unless customer.router_options.nil? || customer.router_options.blank? || customer.router_options.empty?
+      customer.router_options = {}
+      customer.migration_skip = true
+      customer.save!(validate: false)
+    }
 
-    Vehicle.without_callback(:update, :before, :update_outdated) do
-      Vehicle.find_each { |vehicle|
-        next unless vehicle.router_options.nil? || vehicle.router_options.blank? || vehicle.router_options.empty?
-        vehicle.router_options = {}
-        vehicle.save!(validate: false)
-      }
-    end
+    Vehicle.find_each { |vehicle|
+      next unless vehicle.router_options.nil? || vehicle.router_options.blank? || vehicle.router_options.empty?
+      vehicle.router_options = {}
+      vehicle.migration_skip = true
+      vehicle.save!(validate: false)
+    }
 
     Router.find_each { |router|
       next unless router.options.nil? || router.options.blank? || router.options.empty?

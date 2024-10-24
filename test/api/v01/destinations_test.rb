@@ -52,9 +52,20 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert_difference('Destination.count', 1) do
       assert_difference('Stop.count', 0) do
         @destination.name = 'new dest'
-        post api(), @destination.attributes.update({tag_ids: @tags.map(&:id)})
+        post api(), @destination.attributes.update({ref: 'foo', tag_ids: @tags.map(&:id)})
         assert last_response.created?, last_response.body
         assert_equal @destination.name, JSON.parse(last_response.body)['name']
+      end
+    end
+  end
+
+  test 'should not create due to ref' do
+    assert_difference('Destination.count', 0) do
+      assert_difference('Stop.count', 0) do
+        post api(), @destination.attributes
+        refute last_response.created?, last_response.body
+        assert_equal 400, last_response.status, last_response.body
+        assert_match "Référence est déjà utilisé(e)", JSON.parse(last_response.body)['message']
       end
     end
   end
@@ -64,7 +75,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
       assert_difference('Visit.count', 2) do
         assert_difference('Stop.count', 4) do
           @destination.name = 'new dest'
-          post api(), nil, input: @destination.attributes.update({tag_ids: @tags.map(&:id)}).merge(visits: [{
+          post api(), nil, input: @destination.attributes.update({ref: 'foo', tag_ids: @tags.map(&:id)}).merge(visits: [{
             ref: 'v1',
             quantity1_1: 1,
             time_window_start_1: '08:00',
@@ -100,7 +111,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
       assert_difference('Destination.count', 1) do
         assert_difference('Stop.count', 0) do
           @destination.name = 'new dest'
-          post api(), @destination.attributes.update({tag_ids: @tags.map(&:id)})
+          post api(), @destination.attributes.update({ref: 'foo', tag_ids: @tags.map(&:id)})
           assert last_response.created?, last_response.body
           assert_equal @destination.name, JSON.parse(last_response.body)['name']
         end
@@ -109,10 +120,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   end
 
   test 'should create with none tag' do
-    ['', nil, []].each do |tags|
+    ['', nil, []].each.with_index do |tags, index|
       assert_difference('Destination.count', 1) do
         @destination.name = 'new dest'
-        post api(), @destination.attributes.update({tag_ids: tags})
+        post api(), @destination.attributes.update({ref: "foo#{index}", tag_ids: tags})
         assert last_response.created?, last_response.body
       end
     end
@@ -875,7 +886,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     end
 
     assert_difference('Destination.count', 0) do
-      post api(), @destination.attributes
+      post api(), @destination.attributes.merge(ref: 'foo')
       assert last_response.forbidden?, last_response.body
       assert_equal 'dépassement du nombre maximal de destinations', JSON.parse(last_response.body)['message']
     end

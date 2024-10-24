@@ -33,6 +33,7 @@ class Visit < ApplicationRecord
 
   nilify_blanks
   validates :destination, presence: true
+  validates :ref, uniqueness: { scope: :destination_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
   scope :positioned, -> { joins(:destination).merge(Destination.positioned) }
   scope :includes_destinations, -> { includes([:tags, destination: :tags]) }
@@ -43,6 +44,8 @@ class Visit < ApplicationRecord
     never_first: 2,
     always_final: 3
   }
+
+  attr_accessor :internal_skip, :outdate_skip
 
   include TimeAttr
   attribute :time_window_start_1, ScheduleType.new
@@ -65,8 +68,9 @@ class Visit < ApplicationRecord
   include Consistency
   validate_consistency([:tags]) { |visit| visit.destination.try :customer_id }
 
-  before_save :update_tags, :create_orders, :update_quantities
-  before_update :update_outdated
+  before_save :update_tags, unless: :internal_skip
+  before_save :create_orders, :update_quantities
+  before_update :update_outdated, unless: :outdate_skip
   after_save -> { @tag_ids_changed = false }
 
   include RefSanitizer
