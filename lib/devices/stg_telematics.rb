@@ -167,7 +167,9 @@ class StgTelematics < DeviceBase
       method: method,
       url: url,
       headers: { content_type: :json, accept: :json, 'auth-code': token }.delete_if{ |_k, v| v.nil? },
-      payload: params.to_json
+      payload: params.to_json,
+      open_timeout: 2,
+      read_timeout: 2
     )
   rescue RestClient::RequestTimeout
     raise DeviceServiceError.new("#{I18n.t('errors.stg_telemativs.timeout')}")
