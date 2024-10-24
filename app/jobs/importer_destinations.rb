@@ -272,7 +272,7 @@ class ImporterDestinations < ImporterBase
         if tag.is_a?(Integer) && @tag_ids.key?(tag)
           tag
         else
-          tag = tag.strip
+          tag = tag.strip if tag.is_a?(String)
           if !@tag_labels.key?(tag)
             @tag_labels[tag] = @customer.tags.create(label: tag)
           end

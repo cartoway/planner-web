@@ -45,6 +45,7 @@ end
 
 class CoerceFloatString
   def self.parse(str)
+    str = nil if str.is_a?(String) && str.empty?
     str.gsub!(',', '.') if str.is_a?(String) && str.match(',')
     Float(str) if str
   end
