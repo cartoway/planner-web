@@ -354,7 +354,6 @@ Layout/MultilineMethodCallBraceLayout:
 Layout/MultilineMethodCallIndentation:
   Exclude:
     - 'app/api/v01/routes.rb'
-    - 'config/initializers/without_callback.rb'
     - 'test/api/v01/devices/fleet_reporting_test.rb'
     - 'test/api/v01/zonings_test.rb'
     - 'test/controllers/zonings_controller_test.rb'
@@ -673,14 +672,6 @@ Lint/ParenthesesAsGroupedExpression:
     - 'app/views/routes/_edit.json.jbuilder'
     - 'app/views/stops/_show.json.jbuilder'
     - 'db/migrate/20160201165010_split_table_destination_to_visit.rb'
-
-# Offense count: 1
-# This cop supports unsafe autocorrection (--autocorrect-all).
-# Configuration parameters: AllowedImplicitNamespaces.
-# AllowedImplicitNamespaces: Gem
-Lint/RaiseException:
-  Exclude:
-    - 'config/initializers/without_callback.rb'
 
 # Offense count: 1
 # This cop supports unsafe autocorrection (--autocorrect-all).
@@ -1728,7 +1719,6 @@ Style/SoleNestedConditional:
     - 'app/models/vehicle.rb'
     - 'app/views/routes/_edit.json.jbuilder'
     - 'app/views/stops/_show.json.jbuilder'
-    - 'config/initializers/without_callback.rb'
     - 'lib/notifications.rb'
 
 # Offense count: 1

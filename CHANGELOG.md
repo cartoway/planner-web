@@ -41,6 +41,7 @@
     - Load using id order by default [#217](https://github.com/cartoway/planner-web/pull/217)
 
   ### Removed
+  - `skip_callback` was not thread safe [#214](https://github.com/cartoway/planner-web/pull/214)
 
   ### Fixed
   - Api-web:  Remove blank header bar [#201](https://github.com/cartoway/planner-web/pull/201)

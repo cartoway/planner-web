@@ -46,7 +46,7 @@ class Customer < ApplicationRecord
   has_many :stops_relations, inverse_of: :customer, autosave: true, dependent: :delete_all
   enum router_dimension: Router::DIMENSION
 
-  attr_accessor :deliverable_units_updated, :device, :exclude_users
+  attr_accessor :deliverable_units_updated, :device, :exclude_users, :migration_skip
 
   include HashBoolAttr
   store_accessor :router_options, :time, :distance, :avoid_zones, :isochrone, :isodistance, :traffic, :track, :motorway, :toll, :low_emission_zone, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction
@@ -100,7 +100,8 @@ class Customer < ApplicationRecord
   before_save :devices_update_vehicles, prepend: true
   after_create :create_default_store, :create_default_vehicle_usage_set, :create_default_deliverable_unit
 
-  before_update :update_max_vehicles, :update_enable_multi_visits, :update_outdated
+  before_update :update_max_vehicles, :update_enable_multi_visits
+  before_update :update_outdated, unless: :migration_skip
 
   include RefSanitizer
 
@@ -488,15 +489,13 @@ class Customer < ApplicationRecord
             destination.visits.each{ |visit|
               visit.ref ||= destination.ref
               visit.tags |= destination.tags
+              visit.internal_skip = true
             }
             destination.ref = nil
             destination.tag_ids = []
             # Don't load all plans to update them...
-            Destination.without_callback(:save, :before, :update_tags) do
-              Visit.without_callback(:save, :before, :update_tags) do
-                destination.save!
-              end
-            end
+            destination.internal_skip = true
+            destination.save!
           }
         else
           self.destinations.each{ |destination|
@@ -506,13 +505,11 @@ class Customer < ApplicationRecord
               destination.visits.each{ |visit|
                 visit.ref = nil
                 visit.tag_ids = []
+                visit.internal_skip = true
               }
               # Don't load all plans to update them...
-              Destination.without_callback(:save, :before, :update_tags) do
-                Visit.without_callback(:save, :before, :update_tags) do
-                  destination.save!
-                end
-              end
+              destination.internal_skip = true
+              destination.save!
             end
           }
         end
