@@ -1,6 +1,8 @@
 # Changelog
 
 ## Dev
+  ### Added
+    - Destination: Validate ref uniqueness from API endpoints, nested visits are validated too [#211](https://github.com/cartoway/planner-web/pull/211)
 
 ## V104.0.0
   ### Added
