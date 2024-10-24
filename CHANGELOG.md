@@ -4,7 +4,7 @@
   ### Added
   - API: Allow commas for float fields [#205](https://github.com/cartoway/planner-web/pull/205)
   - Planning: Add router name to vehicle selector [#202](https://github.com/cartoway/planner-web/pull/202)
-  - Destination: Allow commas for float columns during import [#203](https://github.com/cartoway/planner-web/pull/203)
+  - Destination: Allow commas for float columns during import [#203](https://github.com/cartoway/planner-web/pull/203) & [#208](https://github.com/cartoway/planner-web/pull/208)
   - Zoning: Simplify polygons geometries [#207](https://github.com/cartoway/planner-web/pull/207)
 
   ### Changed
@@ -25,7 +25,7 @@
   - Route: Avoid unexpected stops reloading during creation [#200](https://github.com/cartoway/planner-web/pull/200)
   - Destination
     - Import: New quantities columns are immediatly usable [#203](https://github.com/cartoway/planner-web/pull/203)
-    - Import: Cumulative lines with tags were failing [#203](https://github.com/cartoway/planner-web/pull/203)
+    - Import: Cumulative lines with tags were failing [#203](https://github.com/cartoway/planner-web/pull/203) & [#208](https://github.com/cartoway/planner-web/pull/208)
     - Controller: edit params indirectly [#205](https://github.com/cartoway/planner-web/pull/205)
   - Planning: Selectors are no more resizing on click [#202](https://github.com/cartoway/planner-web/pull/202)
   - Vehicle Usage: _form was unrechable with an active device [#205](https://github.com/cartoway/planner-web/pull/205)
