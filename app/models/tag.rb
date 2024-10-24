@@ -18,6 +18,8 @@
 class Tag < ApplicationRecord
   ICON_SIZE = %w(small medium large).freeze
 
+  attr_accessor :migration_skip
+
   default_scope { order(:label) }
 
   belongs_to :customer
@@ -52,7 +54,7 @@ class Tag < ApplicationRecord
 
   include RefSanitizer
 
-  before_update :update_outdated
+  before_update :update_outdated, unless: :migration_skip
   before_destroy :set_routes
   after_destroy :reset_routes_geojson_point
 

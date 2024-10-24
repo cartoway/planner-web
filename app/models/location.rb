@@ -44,7 +44,7 @@ class Location < ApplicationRecord
   validates_inclusion_of :geocoding_accuracy, in: 0..1, allow_nil: true, message: ->(*_) { I18n.t('activerecord.errors.models.location.geocoding_accuracy_outside_range') }
   validates_with LocalizationValidator, fields: [:street, :city, :lat, :lng]
 
-  before_validation :update_geocode
+  before_validation :update_geocode, unless: -> { validation_context == :import }
   before_update :update_outdated
 
   def position?

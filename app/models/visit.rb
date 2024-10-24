@@ -45,6 +45,8 @@ class Visit < ApplicationRecord
     always_final: 3
   }
 
+  attr_accessor :internal_skip, :outdate_skip
+
   include TimeAttr
   attribute :time_window_start_1, ScheduleType.new
   attribute :time_window_end_1, ScheduleType.new
@@ -66,8 +68,9 @@ class Visit < ApplicationRecord
   include Consistency
   validate_consistency([:tags]) { |visit| visit.destination.try :customer_id }
 
-  before_save :update_tags, :create_orders, :update_quantities
-  before_update :update_outdated
+  before_save :update_tags, unless: :internal_skip
+  before_save :create_orders, :update_quantities
+  before_update :update_outdated, unless: :outdate_skip
   after_save -> { @tag_ids_changed = false }
 
   include RefSanitizer
