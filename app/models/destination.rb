@@ -18,6 +18,7 @@
 class Destination < Location
   default_scope { order(:id) }
 
+  belongs_to :customer
   has_many :visits, inverse_of: :destination, dependent: :delete_all
   accepts_nested_attributes_for :visits, allow_destroy: true
   has_many :tag_destinations
@@ -27,6 +28,7 @@ class Destination < Location
 
   include Consistency
   validate_consistency [:tags]
+  validates :ref, uniqueness: { scope: :customer_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
   before_create :check_max_destination
   before_save :save_visits, :update_tags

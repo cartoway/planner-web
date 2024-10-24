@@ -33,6 +33,7 @@ class Visit < ApplicationRecord
 
   nilify_blanks
   validates :destination, presence: true
+  validates :ref, uniqueness: { scope: :destination_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
   scope :positioned, -> { joins(:destination).merge(Destination.positioned) }
   scope :includes_destinations, -> { includes([:tags, destination: :tags]) }

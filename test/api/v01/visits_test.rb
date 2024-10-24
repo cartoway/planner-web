@@ -60,10 +60,10 @@ class V01::VisitsTest < ActiveSupport::TestCase
     [
       tags(:tag_one).id.to_s + ',' + tags(:tag_two).id.to_s,
       [tags(:tag_one).id, tags(:tag_two).id]
-    ].each do |tags|
+    ].each.with_index do |tags, index|
       assert_difference('Visit.count', 1) do
         assert_difference('Stop.count', 2) do
-          post api_destination(@destination.id), @visit.attributes.merge({tag_ids: tags, 'quantities' => [{deliverable_unit_id: 1, quantity: 3.5}]}).except('id').to_json, 'CONTENT_TYPE' => 'application/json'
+          post api_destination(@destination.id), @visit.attributes.merge({ref: "foo#{index}", tag_ids: tags, 'quantities' => [{deliverable_unit_id: 1, quantity: 3.5}]}).except('id').to_json, 'CONTENT_TYPE' => 'application/json'
 
           assert last_response.created?, last_response.body
           visit = JSON.parse last_response.body
@@ -84,10 +84,10 @@ class V01::VisitsTest < ActiveSupport::TestCase
     [
       tags(:tag_one).id.to_s + ',' + tags(:tag_two).id.to_s,
       [tags(:tag_one).id, tags(:tag_two).id]
-    ].each do |tags|
+    ].each.with_index do |tags, index|
       assert_difference('Visit.count', 1) do
         assert_difference('Stop.count', 2) do
-          post api_destination(@destination.id), @visit.attributes.merge({tag_ids: tags, 'quantities' => [{deliverable_unit_id: 1, quantity: -3.5}]}).except('id').to_json, 'CONTENT_TYPE' => 'application/json'
+          post api_destination(@destination.id), @visit.attributes.merge({ref: "foo#{index}", tag_ids: tags, 'quantities' => [{deliverable_unit_id: 1, quantity: -3.5}]}).except('id').to_json, 'CONTENT_TYPE' => 'application/json'
 
           assert last_response.created?, last_response.body
           visit = JSON.parse last_response.body
@@ -103,9 +103,9 @@ class V01::VisitsTest < ActiveSupport::TestCase
   end
 
   test 'should create a visit with none tag' do
-    ['', nil, []].each do |tags|
+    ['', nil, []].each.with_index do |tags, index|
       assert_difference('Visit.count', 1) do
-        post api_destination(@destination.id), @visit.attributes.merge({tag_ids: tags, 'quantities' => nil}).except('id'), as: :json
+        post api_destination(@destination.id), @visit.attributes.merge({ref: "foo#{index}", tag_ids: tags, 'quantities' => nil}).except('id'), as: :json
         assert last_response.created?, last_response.body
       end
     end
@@ -215,7 +215,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
       visit_attributes.delete 'time_window_start_1'
       visit_attributes['close1'] = @visit.time_window_end_1_time_with_seconds
       visit_attributes.delete 'time_window_end_1'
-      post api_destination(@destination.id), visit_attributes.except('id', 'quantities'), as: :json
+      post api_destination(@destination.id), visit_attributes.merge(ref: 'foo').except('id', 'quantities'), as: :json
       assert last_response.created?, last_response.body
 
       visit = JSON.parse(last_response.body)
@@ -237,11 +237,22 @@ class V01::VisitsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should not create a visit using an existing ref' do
+    assert_difference('Visit.count', 0) do
+      @visit.update(ref: 'foo')
+      visit_attributes = @visit.attributes
+      post api_destination(@destination.id), visit_attributes.except('id', 'quantities'), as: :json
+      refute last_response.created?, last_response.body
+      assert_equal 400, last_response.status, last_response.body
+      assert_match "Référence est déjà utilisé(e)", JSON.parse(last_response.body)['message']
+    end
+  end
+
   test 'should create visit with correct position' do
     positions = %w[always_first always_final never_first neutral]
     positions.each{ |position|
       assert_difference('Visit.count', 1) do
-        post api_destination(@destination.id), @visit.attributes.merge(force_position: position).except('id', 'quantities'), as: :json
+        post api_destination(@destination.id), @visit.attributes.merge(force_position: position).except('id', 'quantities', 'ref'), as: :json
         assert last_response.created?, last_response.body
         visit = JSON.parse(last_response.body)
         assert_equal position, visit['force_position']
