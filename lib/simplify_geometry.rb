@@ -8,8 +8,8 @@ class SimplifyGeometry
       feature['coordinates'].map!{ |coords|
         process(coords.map{ |a, b| {x: a, y: b} }, **options)
       }
-      feature
     end
+    feature
   end
 
   def self.polylines(feature, **options)
