@@ -103,6 +103,9 @@ class Zone < ApplicationRecord
       }
       self.polygon = feature_collection_as_geojson(geometries).to_json
     end
+    decode_geom # Check post validation and simplification polygon consistency
+  rescue RGeo::Error::InvalidGeometry
+    self.destroy
   end
 
   def edit_invalid_feature(feature)
