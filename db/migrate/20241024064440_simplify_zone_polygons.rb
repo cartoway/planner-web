@@ -4,7 +4,7 @@ class SimplifyZonePolygons < ActiveRecord::Migration[6.1]
       next if zone.polygon.nil? || JSON.parse(zone.polygon)['geometry'].nil?
 
       zone.validate
-      zone.save!
+      zone.save! unless zone.destroyed?
     }
   end
 end
