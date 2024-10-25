@@ -100,6 +100,7 @@ class V100::Api < Grape::API
       response[:message] = messages.join(' ')
       error!(response.merge(status: 409), 409, e.backtrace)
     else
+      Sentry.capture_exception(e)
       error!(response.merge(status: 500), 500, e.backtrace)
     end
   end
