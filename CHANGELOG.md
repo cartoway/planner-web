@@ -2,9 +2,12 @@
 
 ## V103.0.1-dev
   ### Added
-  - API: Allow commas for float fields [#205](https://github.com/cartoway/planner-web/pull/205)
+  - API:
+    - Allow commas for float fields [#205](https://github.com/cartoway/planner-web/pull/205)
+    - Capture sentry from API [#209](https://github.com/cartoway/planner-web/pull/209)
   - Planning: Add router name to vehicle selector [#202](https://github.com/cartoway/planner-web/pull/202)
   - Destination: Allow commas for float columns during import [#203](https://github.com/cartoway/planner-web/pull/203) & [#208](https://github.com/cartoway/planner-web/pull/208)
+  - Device: Set a 2s timeout for StgTelematics[#209](https://github.com/cartoway/planner-web/pull/209)
   - Zoning:
     - Simplify polygons geometries [#207](https://github.com/cartoway/planner-web/pull/207)
     - Destroy unconsistent polygons [#210](https://github.com/cartoway/planner-web/pull/210)
