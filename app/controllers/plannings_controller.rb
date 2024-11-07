@@ -29,6 +29,7 @@ class PlanningsController < ApplicationController
 
   load_and_authorize_resource
 
+  include Pagy::Backend
   include PlanningExport
   include PlanningsHelper
 
@@ -211,15 +212,25 @@ class PlanningsController < ApplicationController
   end
 
   def refresh_route
-    @route = Route.includes_destinations.find(params[:route_id])
-
-    route_data = JSON.parse(render_to_string(template: 'routes/_edit.json.jbuilder', locals: { route: @route }), symbolize_names: true)
-
+    @route = @planning.routes.find(params[:route_id])
+    stops_count = @route.stops.count
+    page = params[:out_page] || 1
+    if @route.vehicle_usage_id
+      current_route = @route.stops.includes_destinations.load
+    else
+      @out_pagy, @out_stops = pagy_countless(@route.stops.includes_destinations, page: page, page_param: :out_page)
+      current_route = @route.dup
+      current_route.stops = @out_stops
+    end
+    route_data = JSON.parse(render_to_string(template: 'routes/_edit.json.jbuilder', locals: { route: current_route, stops_count: stops_count }), symbolize_names: true)
+    routes = planning_routes_move_array(@planning.routes)
     respond_to do |format|
-      if @route.vehicle_usage
+      if current_route.vehicle_usage_id
         format.js { render partial: 'routes/in_route.js.erb', locals: { route: route_data } }
+      elsif page == 1
+        format.js { render partial: 'routes/out_of_route.js.erb', locals: { route: route_data, routes: routes, out_pagy: @out_pagy } }
       else
-        format.js { render partial: 'routes/out_of_route.js.erb', locals: { route: route_data, routes: planning_routes_move_array(@planning.routes) } }
+        format.js { render partial: 'stops/out_list.js.erb', locals: { route: route_data, routes: routes, out_pagy: @out_pagy } }
       end
     end
   end

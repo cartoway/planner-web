@@ -29,7 +29,8 @@ gem 'rake'
 gem 'hashie'
 
 gem 'puma'
-gem 'mail', '~> 2.8.1'
+gem 'mail'
+gem 'net-ftp'
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
@@ -154,6 +155,7 @@ gem 'smt_rails', '0.2.9' # FIXME: JS not working in 0.3.0
 gem 'paloma'
 gem 'browser'
 gem 'color'
+gem 'pagy', '~> 9.1'
 
 gem 'daemons'
 gem 'delayed_job'

@@ -690,3 +690,20 @@ export const templateTag = function(item) {
     return item.text;
   }
 };
+
+export function continuousListLoading(listRef, linkRef, offset) {
+  var loadNextPage = function() {
+    var element = $(listRef);
+    if ($(linkRef + ' a').data("loading")) { return }  // prevent multiple loading
+    if (element[0].scrollHeight - element.scrollTop() - offset <= element.outerHeight()) {
+      var nextLink = $(linkRef + ' a')[0];
+      if (nextLink) {
+        $(linkRef + ' a')[0].click();
+        $(linkRef + ' a').data("loading", true);
+      }
+    }
+  };
+  window.addEventListener('resize', loadNextPage);
+  $(listRef).on('scroll', loadNextPage);
+  window.addEventListener('load', loadNextPage);
+};

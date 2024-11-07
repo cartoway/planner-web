@@ -19,6 +19,8 @@ require 'value_to_boolean'
 require 'exceptions'
 
 module ApplicationHelper
+  include Pagy::Frontend
+
   def javascript(*files)
     files.each do |file|
       content_for(:javascript) { javascript_pack_tag(file, **{'data-turbolinks-track': 'reload'}) }

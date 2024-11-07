@@ -30,6 +30,7 @@ import {
 import {
   templateTag,
   bootstrap_dialog,
+  continuousListLoading,
   mapInitialize,
   initializeMapHash,
   templateSelectionColor,
@@ -1558,7 +1559,10 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function() {
-            updateSuccess(locals, map, [locals.route])
+            updateSuccess(locals, map, [locals.route]);
+            if (!locals.route.vehicle_usage_id) {
+              continuousListLoading('#out_route_scroll', '#out_list_next_link', 100);
+            }
           }
         });
       });

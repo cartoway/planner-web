@@ -12,7 +12,7 @@ end
 json.extract! route, :ref, :hidden, :locked, :outdated, :size_active
 (json.duration time_over_day(route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + (route.vehicle_usage ? route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i : 0)))
 json.distance locale_distance(route.distance || 0, current_user.prefered_unit)
-json.size route.stops.size
+json.size stops_count || route.stops.size
 json.size_destinations route.size_destinations if route.size_destinations != route.size_active
 (json.start_time route.start_time) if route.start
 (json.start_day number_of_days(route.start)) if route.start
