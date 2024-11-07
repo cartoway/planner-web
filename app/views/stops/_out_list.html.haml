@@ -1,0 +1,51 @@
+%ul.stops.sortable.list-group{style: ('display: none;' if route[:hidden])}
+  - route[:stops]&.each&.with_index do |stop, index|
+    - if stop[:visits]
+      %li.waypoint.d-fake-flex.align-items-center.list-group-item{ class: ('ui-state-error' if stop[:error]), data: { "stop-id": stop[:stop_id], index: index }}
+        .row
+          .col-xs-6.col-md-1
+            %input{ checked: "checked", style: "display: none", type: "checkbox" }
+            %i.fa.fa-reorder.fa-fw{style: "display: none;", title: t("plannings.edit.drag_help")}
+          .col-xs-6.col-md-5
+            .title
+              - if !stop[:geocoded]
+                %i.fa.fa-map-marker.fa-fw{title: t("plannings.edit.error.no_geolocalization")}
+              - title = "#{stop[:name]}"
+              - title += " #{stop[:index_visit]}" if stop[:index_visit]
+              %span{title: title}
+                = stop[:name]
+              - if stop[:index_visit]
+                = stop[:index_visit]
+          .col-xs-6.col-md-3
+            - if stop[:time_window_start_end_1]
+              .timewindow-info{title: stop[:time_windows_condensed]}
+                %i.fa.fa-sort.fa-rotate-90.fa-fw
+                = stop[:time_windows_condensed]
+          .col-xs-6.col-md-3
+            .btn-group.pull-right.stop-tools
+              - if stop[:geocoded]
+                %button.automatic_insert.btn.btn-default.btn-xs{title: t("plannings.edit.automatic_insert_help")}
+                  %i.fa.fa-bolt
+              - if stop[:manage_destination]
+                %a.marker_edit.btn.btn-default.btn-xs{href: "/destinations/#{stop[:destination_id]}/edit?back=true#collapseVisit#{stop[:visit_id]}", title: t("plannings.edit.edit_visit_help")}
+                  %i.fa.fa-pencil
+              - if stop[:geocoded]
+                %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}>
+                  %i.fa.fa-map-marker
+              .btn-group
+                %button.btn.btn-default.btn-xs.dropdown-toggle{"data-toggle": "dropdown", title: t("plannings.edit.send_to_route_help"), type: "button"}
+                  %i.fa.fa-truck-field.fa-fw
+                  %span.caret
+                %ul.dropdown-menu.pull-right{role: "menu"}
+                  - routes.each do |o_route|
+                    - if o_route[:vehicle_usage_id]
+                      %li
+                        %a.send_to_route{href: "/plannings/#{@planning.id}/#{o_route[:route_id]}/#{stop[:stop_id]}/move.json", method: :patch}
+                          .color_small{style: "background:#{o_route[:color]}"}
+                          = o_route[:name]
+            .clearfix
+  - if !route[:with_stops] && route[:size]
+    .d-flex.justify-content-center.load-stops
+      %button.btn.btn-default{ title: t("plannings.edit.without_stops_title")}
+        %i.fa.fa-rectangle-list.fa-fw
+        = t("plannings.edit.load_stops")

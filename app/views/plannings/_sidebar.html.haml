@@ -1,0 +1,12 @@
+- outdated ||= nil
+.global_info
+  = render partial: 'edit_head', locals: local_assigns
+- if outdated
+  %p.text-center
+    %button#refresh.btn.btn-warning.btn-sm{title: t("plannings.edit.refresh_help"), type: "button"}
+      %i.fa.fa-refresh.fa-fw
+      = t("plannings.edit.refresh")
+%ol.routes
+  = render partial: 'routes/edit.html.haml', locals: { routes: routes }
+%ol.routes.out_routes
+  = render partial: 'routes/out_of_route.html.haml', locals: { routes: routes }

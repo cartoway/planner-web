@@ -1,0 +1,26 @@
+- route ||= routes.find{ |route| route[:vehicle_id].nil? }
+%li.route.out_route{"data-route-id": route[:route_id]}
+  #out_of_route.panel.panel-default
+    .panel-heading.out-header
+      %i.fa.fa-arrows-left-right
+      = t('plannings.edit.out_of_route')
+      .btn-group.pull-right
+        %button.automatic_insert_all.btn.btn-default.btn-xs{title: t('plannings.edit.automatic_insert_help_multiple'), type: "button"}
+          %i.fa.fa-bolt
+        %button.toggle.btn.btn-default.btn-xs{title: t('plannings.edit.toggle_help'), type: "button"}
+          %i.fa{class: "fa-eye#{'-slash' if route[:hidden]}"}
+        %button.lock.btn.btn-xs{class: (route[:locked] ? 'btn-warning': 'btn-default'), title: t('plannings.edit.locked_unplanned_help'), type: "button"}
+          %i.fa{class: "fa-#{'un' if !route[:locked]}lock"}
+        %button.btn.btn-default.btn-xs.dropdown-toggle{"data-toggle" => "dropdown", title: t('plannings.edit.move_stops'), type: "button"}
+          %i.fa.fa-share-nodes
+          %span.caret
+        %ul.dropdown-menu.pull-right{role: "menu"}
+          %li
+            %a{"data-route-id": route[:route_id], "data-target" => "#planning-move-stops-modal", "data-toggle" => "modal", href: "#"}
+              %i.fa.fa-external-link.fa-fw
+              = t('plannings.edit.move_stops')
+    .route-details.out-content.modern-scroll
+      .route-stops
+        .panel-body
+          = render partial: 'routes/edit_head', locals: { route: route }
+        = render partial: 'stops/out_list.html.haml', locals: { routes: routes, route: route}

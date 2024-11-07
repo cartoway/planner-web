@@ -1,0 +1,38 @@
+- averages ||= nil
+.row.route-data
+  .col-xs-4{title: t("plannings.edit.stops_help")}
+    .primary.route-info
+      %i.fa.fa-check-square.fa-fw>
+      = "#{size_active} / #{size}"
+  - if averages
+    .col-xs-4{title: t("plannings.edit.vehicles_used_help")}
+      .primary.route-info
+        %i.fa.fa-truck-field.fa-fw{"aria-hidden" => "true"}>
+        = "#{averages[:vehicles_used]} / #{averages[:vehicles]}"
+    .col-xs-4{title: t("plannings.edit.emission_help")}
+      .primary.route-info
+        %i.fa.fa-flask.fa-fw>
+        = "#{averages[:emission]} #{t('all.unit.kgco2e_html')}"
+  .col-xs-4{title: t("plannings.edit.duration_help")}
+    .route-info.primary
+      %i.fa.fa-stopwatch.fa-fw>
+      = duration
+  .col-xs-4{title: t("plannings.edit.distance_help")}
+    .route-info.primary
+      %i.fa.fa-road.fa-fw
+      = distance
+  - if averages
+    .col-xs-4{title: t("plannings.edit.route_speed_average_help")}
+      .primary.route-info
+        %i.fa.fa-tachometer.fa-fw{"aria-hidden": "true"}>
+        = "#{averages[:routes_speed_average]} #{averages[:prefered_unit]}/h"
+    - averages[:total_quantities].each do |unit|
+      .col-xs-4.route-data-advanced{title: t("plannings.edit.quantity_help")}
+        .primary.route-info{class: ("danger" if unit[:out_of_capacity])}
+          %i.fa.fa-fw{class: unit[:unit_icon]}
+          = unit[:quantity]
+          - if unit[:capacity]
+            = " / #{unit[:capacity]}"
+          /
+          - if unit[:label]
+            = " #{unit[:label]}"
