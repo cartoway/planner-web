@@ -96,13 +96,13 @@ const routesByVehicleShow = function(params) {
     var target;
 
     if (stop.index) {
-      target = $(".routes [data-route_id='" + stop.routeId + "'] [data-stop_index='" + stop.index + "']");
+      target = $(".routes [data-route-id='" + stop.routeId + "'] [data-stop_index='" + stop.index + "']");
     } else {
-      target = $("[data-stop_id='" + stop.id + "']");
+      target = $("[data-stop-id='" + stop.id + "']");
     }
 
     if (target.length === 0) {
-      target = $(".routes [data-route_id='" + stop.routeId + "']");
+      target = $(".routes [data-route-id='" + stop.routeId + "']");
     } else {
       target.css("background", "orange");
       setTimeout(function() {
@@ -156,7 +156,7 @@ const routesByVehicleShow = function(params) {
 
     $routes
       .off('change').on('change', "[name=route\\\[color\\\]]", function() {
-        var routeId = $(this).closest('[data-route_id]').attr('data-route_id');
+        var routeId = $(this).closest('[data-route-id]').attr('data-route-id');
         var planningId = $(this).closest('[data-planning_id]').attr('data-planning_id');
         var color = this.value;
         $.ajax({
@@ -172,13 +172,13 @@ const routesByVehicleShow = function(params) {
           },
           error: ajaxError
         });
-        $('li[data-route_id=' + routeId + '] li[data-store_id] > i.fa').css('color', color);
-        $('li[data-route_id=' + routeId + '] li[data-stop_id] .number:not(.color_force)').css('background', color);
+        $('li[data-route-id=' + routeId + '] li[data-store_id] > i.fa').css('color', color);
+        $('li[data-route-id=' + routeId + '] li[data-stop-id] .number:not(.color_force)').css('background', color);
       })
       .on("click", ".marker", function() {
         var stopIndex = $(this).closest("[data-stop_index]").attr("data-stop_index");
         if (stopIndex) {
-          var routeId = $(this).closest("[data-route_id]").attr("data-route_id");
+          var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
           routesLayer.focus({routeId: routeId, stopIndex: stopIndex});
         } else {
           var storeId = $(this).closest("[data-store_id]").attr("data-store_id");

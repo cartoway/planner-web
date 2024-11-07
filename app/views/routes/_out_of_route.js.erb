@@ -1,0 +1,2 @@
+$('ol.routes.out_routes').html("<%= j(render 'routes/out_of_route.html.haml', local_assigns)%>");
+var locals = <%= local_assigns.to_json.html_safe %>;

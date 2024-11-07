@@ -1,0 +1,304 @@
+
+- if route[:vehicle_id]
+  .last-sent-at
+    - if route[:last_sent_at_formatted]
+      = render partial: 'routes/last_sent_at', locals: { route: route }
+  .optimized-at
+    - if route[:optimized_at_formatted]
+      %label
+        %i.fa.fa-gear.fa-fw
+        = t('plannings.edit.optimized_at')
+      %span
+        = route[:optimized_at_formatted]
+  .route-tools
+    .btn-group.route-btn-group
+      - if @manage_planning[:manage_vehicle]
+        %a.btn.btn-primary.btn-xs{href: route[:path], title: t('plannings.edit.vehicle_help')}
+          %i.fa.fa-truck-field
+        %button.btn.btn-primary.btn-xs.optimize{"data-keyboard" => "true", "data-target" => "#optimization-modal", "data-toggle" => "modal", title: t('plannings.edit.optimize_help'), type: "button", disable: ('disabled' if route[:locked])}
+          %i.fa.fa-gear
+    .btn-group
+      %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", title: t("plannings.edit.route_stops_active_help"), type: "button", disabled: ('disabled' if !route[:with_stops])}
+        %span{data: {'size-active': route[:size_active], size: route[:size] }}
+          %i.fa.fa-check-square.fa-fw
+          = "#{route[:size_active]}/#{route[:size]}"
+          = t('plannings.edit.stops')
+          %span.caret
+      %ul.dropdown-menu{role: "menu"}
+        %li
+          %a.active_none{href: "#{route[:route_id]}/active/none"}
+            %i.fa.fa-regular.fa-square.fa-fw
+            = t('plannings.edit.active_none')
+        %li
+          %a.active_reverse{href: "#{route[:route_id]}/active/reverse"}
+            %i.fa.fa-random.fa-fw
+            = t('plannings.edit.active_reverse')
+        %li
+          %a.active_all{href: "#{route[:route_id]}/active/all"}
+            %i.fa.fa-check-square.fa-fw
+            = t('plannings.edit.active_all')
+        - if route[:status_any]
+          %li.divider{role: "separator"}
+          - if route[:status_all]
+            %li
+              %a.active_status{href: "#{route[:route_id]}/active/#{route[:code]}"}
+                %span.stop-status{class: "stop-status-#{route[:code]}", title: route[:status]}
+                route[:status]
+          %li
+            %a.active_status{href: "#{route[:route_id]}/active/status_any"}
+              %span.stop-status
+              = t('plannings.edit.stop_status.any')
+          %li
+            %a.active_status{href: "#{route[:route_id]}/active/status_none"}
+              %span.stop-status.stop-status-none
+              = t('plannings.edit.stop_status.none')
+        %li.divider{role: "separator"}
+        %li
+          %a.reverse_order{href: "#{route[:route_id]}/reverse_order"}
+            %i.fa.fa-arrow-right-arrow-left.fa-rotate-90.fa-fw
+            = t('plannings.edit.reverse_order')
+        %li
+          %a{"data-route-id": route[:route_id], "data-target": "#planning-move-stops-modal", "data-toggle": "modal", href: "#"}
+            %i.fa.fa-truck-ramp-box.fa-fw
+            = t('plannings.edit.move_stops')
+    .btn-group.route-btn-group.pull-right
+      %button.toggle.btn.btn-default.btn-xs{title: t('plannings.edit.toggle_help'), type: "button"}
+        %i.fa{class: "fa-eye#{'-slash' if route[:hidden]}"}
+      %button.lock.btn.btn-xs{class: (route[:locked] ? 'btn-warning' : 'btn-default'), title: t('plannings.edit.locked_help'), type: "button"}
+        %i.fa{class: "fa-#{'un' if !route[:locked]}lock"}
+      - if @manage_planning[:manage_export]
+        %button.btn.btn-default.btn-xs.dropdown-toggle{"data-toggle": "dropdown", title: t('plannings.edit.export_help'), type: "button"}
+          %i.fa.fa-share-nodes
+          %span.caret
+        %ul.dropdown-menu.pull-right{role: "menu"}
+          - if !route[:callback_button] && route[:customer_enable_external_callback] && routes[:customer_external_callback_url]
+            %li.link.customer_external_callback_url{"data-url" => route[:customer_external_callback_url]}
+              %i.fa.fa-desktop.fa-fw
+                - if route[:customer_external_callback_name]
+                  = route[:customer_external_callback_name]
+                - else
+                  = t('plannings.edit.customer_external_callback_url.action')
+            %li.divider{role: "separator"}
+          - if route[:tomtom]
+            .dropdown-spacing
+              = t('plannings.edit.dialog.tomtom.title')
+              \:
+              - if route[:devices][:tomtom_id]
+                = route[:devices][:tomtom_id][:text]
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "tomtom", "data-type" => "orders"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.tomtom_send_orders.action')
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "tomtom", "data-type" => "waypoints", title: "t('plannings.edit.tomtom_send_waypoints.title')"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.tomtom_send_waypoints.action')
+            %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "tomtom"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.tomtom_clear.action')
+            %li.divider{role: "separator"}
+
+          - if route[:teksat]
+            .dropdown-spacing
+              = t('plannings.edit.dialog.teksat.title')
+              \:
+              - if route[:devices][:teksat_id]
+                = route[:devices][:teksat_id][:text]
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "teksat"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.teksat_send.action')
+            %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "teksat"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.teksat_clear.action')
+            %li.divider{role: "separator"}
+          - if route[:orange]
+            .dropdown-spacing
+              = t('plannings.edit.dialog.orange.title')
+              \:
+              - if route[:devices][:orange_id]
+                route[:devices][:text]
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "orange"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.orange_send.action')
+            %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "orange"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.orange_clear.action')
+            %li.divider{role: "separator"}
+          - if route[:masternaut]
+            .dropdown-spacing
+              = t('plannings.edit.dialog.orange.title')
+              \:
+              - if route[:devices][:masternaut_ref]
+                route[:devices][:masternaut_ref][:text]
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "masternaut"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.masternaut_send.action')
+            %li.divider{role: "separator"}
+          - if route[:alyacom]
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "alyacom"}
+              %i.fa.fa-mobile.fa-fw
+                = t('plannings.edit.alyacom_send.action')
+            %li.divider{role: "separator"}
+          - if route[:trimble]
+            .dropdown-spacing
+              = t('plannings.edit.dialog.orange.title')
+              \:
+              - if route[:devices][:trimble_ref]
+                = route[:devices][:trimble_ref][:text]
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "trimble"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.trimble_send.action')
+            %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "trimble"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.trimble_clear.action')
+            %li.divider{role: "separator"}
+          - if route[:notico]
+            .dropdown-spacing
+              = t('plannings.edit.dialog.orange.title')
+              \:
+              - if route[:devices][:agent_id]
+                route[:devices][:agent_id][:text]
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "notico"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.notico_send.action')
+            %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "notico"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.notico_clear.action')
+            %li.divider{role: "separator"}
+          - if route[:deliver]
+            .dropdown-spacing
+              = t('plannings.edit.dialog.deliver.title')
+            %li
+              %a{href: "/routes/#{route[:route_id]}/mobile?driver_token=#{route[:driver_token]}"}
+                %i.fa.fa-link.fa-fw
+                = t('plannings.edit.deliver_send.access')
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "deliver"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.deliver_send.action')
+            %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "deliver"}
+              %i.fa.fa-rectangle-xmark.fa-fw
+              = t('plannings.edit.deliver_clear.action')
+            %li.divider{role: "separator"}
+          - if route[:praxedo]
+            .dropdown-spacing
+              = t('plannings.edit.dialog.praxedo.title')
+              \:
+              - if route[:devices][:praxedo_agent_id]
+                = route[:devices][:praxedo_agent_id][:text]
+            %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "praxedo"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.praxedo_send.action')
+            %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "praxedo"}
+              %i.fa.fa-mobile.fa-rotate-90.fa-fw
+              = t('plannings.edit.praxedo_clear.action')
+            %li.divider{role: "separator"}
+          %li
+            %a{href: "/api-web/0.1/plannings/#{route[:planning_id]}/routes/#{route[:route_id]}/print", target: "_blank"}
+              %i.fa.fa-print.fa-fw
+              = t('plannings.edit.export.print')
+          %li.divider{role: "separator"}
+          %li
+            %a.export_spreadsheet
+              %i.fa.fa-table.fa-fw
+              = t('plannings.edit.export.spreadsheet')
+          %li.divider{role: "separator"}
+          %li
+            %a{href: route[:calendar_url_api_key]}
+              %i.fa.fa-calendar.fa-fw
+              = t('plannings.edit.export.icalendar.action')
+          - if route[:contact_email]
+            %li.icalendar_email{"data-email" => "true"}
+              %a{href: route[:calendar_url]}
+                %i.fa.fa-envelope.fa-fw
+                = t('plannings.edit.export.icalendar.action_email')
+          - if route[:customer_enable_sms]
+            %li.divider{role: "separator"}
+            %li
+              %a.send_sms{href: "/api/0.1/plannings/#{route[:planning_id]}/routes/#{route[:route_id]}/send_sms"}
+                %i.fa.fa-mobile.fa-fw
+                = t('plannings.edit.send_sms')
+      - elsif route[:manage_print]
+        %a.btn.btn-default.btn-xs{href: "/api-web/0.1/plannings/#{route[:planning_id]}/routes/#{route[:route_id]}/print", target: "_blank", title: t('plannings.edit.export.print')}
+          %i.fa.fa-print.fa-fw
+.row.route-data{"data-route-id": route[:route_id]}
+  - if route[:vehicle_id]
+    .col-xs-4
+      .route-info.primary{class: ('danger' if route[:route_out_of_drive_time] || route[:route_out_of_work_time]), title: t('plannings.edit.route_duration_help')}
+        %i.fa.fa-stopwatch.fa-fw>
+        = route[:duration]
+        \/
+        = route[:work_or_window_time]
+    .col-xs-4
+      .route-info.primary{class: ('danger' if route[:route_out_of_max_distance]), title: t('plannings.edit.route_distance_help')}
+        %i.fa.fa-road.fa-fw>
+        = route[:distance]
+    - if route[:route_averages]
+      .col-xs-4
+        .primary.route-info{title: t('plannings.edit.route_speed_average_help')}
+          %i.fa.fa-tachometer.fa-fw{"aria-hidden" => "true"}>
+          = route[:route_averages][:speed]
+          = route[:route_averages][:prefered_unit]
+          \/h
+    .col-xs-4{title: t('plannings.edit.emission_help')}
+      .primary.route-info
+        %i.fa.fa-flask.fa-fw
+        = route[:emission]
+        = t('all.unit.kgco2e_html')
+  - else
+    .col-xs-4
+      .route-info.inactive
+        %i.fa.fa-check-square.fa-fw
+        = route[:size]
+  - route[:quantities].each do |unit|
+    .col-xs-4.route-data-advanced
+      .primary.route-info{class: ('danger' if unit[:out_of_capacity]), title: t('plannings.edit.route_quantity_help')}
+        %i.fa.fa-fw{class: unit[:unit_icon]}
+        = unit[:quantity_formatted]
+- if route[:route_error]
+  %ul.ui-state-error
+    - if route[:route_no_geolocalization]
+      %li{title: t('plannings.edit.error.no_geolocalization_help')}
+        %i.fa.fa-map-marker.fa-fw
+        = t('plannings.edit.error.no_geolocalization')
+    - if route[:route_out_of_window]
+      %li{title: t('plannings.edit.error.out_of_window_help')}
+        %i.fa.fa-stopwatch.fa-fw
+        = t('plannings.edit.error.out_of_window')
+    - if !route[:route_unmanageable_capacity] && route[:route_out_of_capacity]
+      %li{title: t('plannings.edit.error.out_of_capacity_help')}
+        %i.fa.fa-dumpster.fa-fw
+        = t('plannings.edit.error.out_of_capacity')
+    - if route[:route_unmanageable_capacity]
+      %li{title: t('plannings.edit.error.unmanageable_capacity_help')}
+        %i.fa.fa-times.fa-fw>
+        = t('plannings.edit.error.unmanageable_capacity')
+    - if route[:route_out_of_drive_time]
+      %li{title: t('plannings.edit.error.out_of_drive_time_help')}
+        %i.fa.fa-power-off.fa-fw
+        = t('plannings.edit.error.out_of_drive_time')
+    - if route[:route_out_of_force_position]
+      %li{title: t('plannings.edit.error.out_of_force_position')}
+        %i.fa.fa-angle-right.fa-fw
+        = t('plannings.edit.error.out_of_force_position')
+    - if route[:route_out_of_work_time]
+      %li{title: t('plannings.edit.error.out_of_work_time')}
+        %i.fa.fa-repeat.fa-fw
+        = t('plannings.edit.error.out_of_work_time')
+    - if route[:route_out_of_max_distance]
+      %li{title: t('plannings.edit.error.out_of_max_distance')}
+        %i.fa.fa-ruler.fa-fw
+        = t('plannings.edit.error.out_of_max_distance')
+    - if route[:route_out_of_max_ride_distance]
+      %li{title: t('plannings.edit.error.out_of_max_ride_distance')}
+        %i.fa.fa-compass-drafting.fa-fw
+        = t('plannings.edit.error.out_of_max_ride_distance')
+    - if route[:route_out_of_max_ride_duration]
+      %li{title: t('plannings.edit.error.out_of_max_ride_duration')}
+        %i.fa.fa-stopwatch-20.fa-fw
+        = t('plannings.edit.error.out_of_max_ride_duration')
+    - if route[:route_out_of_relation]
+      %li{title: t('plannings.edit.error.out_of_relation_help')}
+        %i.fa.fa-link-slash.fa-fw
+        = t('plannings.edit.error.out_of_relation')
+    - if route[:route_no_path]
+      %li{title: t('plannings.edit.error.no_path_help')}
+        %i.fa.fa-road.fa-fw
+        = t('plannings.edit.error.no_path')

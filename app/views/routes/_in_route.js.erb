@@ -1,0 +1,2 @@
+$('ol.routes').find("li.route[data-route-id='<%= @route.id %>']").html("<%= j(render 'routes/in_route.html.haml', local_assigns) %>");
+var locals = <%= local_assigns.to_json.html_safe %>;
