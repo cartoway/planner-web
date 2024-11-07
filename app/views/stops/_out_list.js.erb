@@ -1,2 +1,4 @@
-$('#list_box').append("<%= j(render 'out_list')%>");
-$('#div_next_link').html("<%= j(render 'next_link') %>");
+$('#list_box').append("<%= j(render 'stops/out_list.html.haml', local_assigns)%>");
+<% if local_assigns[:out_pagy].page < local_assigns[:out_pagy].last %>
+  $('#div_out_list_next_link').html("<%= j(render 'stops/out_list_next_link.html.haml', local_assigns) %>");
+<% end %>

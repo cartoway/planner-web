@@ -19,8 +19,12 @@
             %a{"data-route-id": route[:route_id], "data-target" => "#planning-move-stops-modal", "data-toggle" => "modal", href: "#"}
               %i.fa.fa-external-link.fa-fw
               = t('plannings.edit.move_stops')
-    .route-details.out-content.modern-scroll
+    #out_route_scroll.route-details.out-content.modern-scroll
       .route-stops
         .panel-body
           = render partial: 'routes/edit_head', locals: { route: route }
-        = render partial: 'stops/out_list.html.haml', locals: { routes: routes, route: route}
+        %ul#list_box.stops.sortable.list-group{style: ('display: none;' if route[:hidden])}
+          = render partial: 'stops/out_list.html.haml', locals: { routes: routes, route: route }
+        - if route[:with_stops]
+          #div_out_list_next_link
+            = render partial: 'stops/out_list_next_link', locals: { out_pagy: out_pagy }
