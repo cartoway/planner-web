@@ -965,7 +965,7 @@ $sidebar-margins: 10px;
     }
   }
 
-  .ui-sortable-disabled > .ui-sortable-handle {
+  .sidebar:not(.filtered) {
     #out_of_route{
 
       .out-header {

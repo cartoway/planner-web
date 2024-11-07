@@ -22,7 +22,7 @@ require 'zip'
 class PlanningsController < ApplicationController
   before_action :authenticate_user!
   UPDATE_ACTIONS = [:update, :move, :refresh, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  before_action :set_planning, only: [:show, :edit, :duplicate, :destroy, :cancel_optimize] + UPDATE_ACTIONS
+  before_action :set_planning, only: [:show, :edit, :duplicate, :destroy, :cancel_optimize, :refresh_route, :route_edit, :sidebar] + UPDATE_ACTIONS
   before_action :check_no_existing_job, only: UPDATE_ACTIONS
   around_action :includes_sub_models, except: [:index, :new, :create]
   around_action :over_max_limit, only: [:create, :duplicate]
@@ -30,6 +30,7 @@ class PlanningsController < ApplicationController
   load_and_authorize_resource
 
   include PlanningExport
+  include PlanningsHelper
 
   def index
     @plannings = current_user.customer.plannings.select{ |planning|
@@ -181,9 +182,11 @@ class PlanningsController < ApplicationController
               }
             end
           end
+          planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
 
           # save! is used to rollback all the transaction with associations
           if @planning.compute && @planning.save!
+            format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], routes: planning_routes_move_array(@planning.routes) } }
             format.json { render action: 'show', location: @planning }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
@@ -204,6 +207,28 @@ class PlanningsController < ApplicationController
       else
         format.json { render json: @planning.errors, status: :unprocessable_entity }
       end
+    end
+  end
+
+  def refresh_route
+    @route = Route.includes_destinations.find(params[:route_id])
+
+    route_data = JSON.parse(render_to_string(template: 'routes/_edit.json.jbuilder', locals: { route: @route }), symbolize_names: true)
+
+    respond_to do |format|
+      if @route.vehicle_usage
+        format.js { render partial: 'routes/in_route.js.erb', locals: { route: route_data } }
+      else
+        format.js { render partial: 'routes/out_of_route.js.erb', locals: { route: route_data, routes: planning_routes_move_array(@planning.routes) } }
+      end
+    end
+  end
+
+  def sidebar
+    json_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+
+    respond_to do |format|
+      format.js { render partial: 'sidebar', locals: json_data }
     end
   end
 
@@ -435,7 +460,7 @@ class PlanningsController < ApplicationController
   def set_planning
     @manage_planning = PlanningsController.manage
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
-
+    @colors = COLORS_TABLE
     @planning = current_user.customer.plannings.find(params[:id] || params[:planning_id])
   end
 

@@ -41,5 +41,5 @@ else
     end
   end
 
-  json.routes (@routes || (@with_stops ? @planning.routes.includes_destinations : @planning.routes)), partial: 'routes/edit', as: :route, locals: { list_devices: planning_devices(@planning.customer) }
+  json.routes (@routes || (@with_stops ? @planning.routes.includes_destinations : @planning.routes)), partial: 'routes/edit', formats: [:json], handlers: [:jbuilder], as: :route, locals: { list_devices: planning_devices(@planning.customer) }
 end

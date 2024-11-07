@@ -358,7 +358,7 @@ export const plannings_edit = function(params) {
           var isMoving = pos.speed && (Date.parse(pos.time) > Date.now() - 600 * 1000);
           var direction_icon = pos.direction ? '<i class="fa fa-location-arrow fa-stack-1x vehicle-direction" style="transform: rotate(' + (parseInt(pos.direction) - 45) + 'deg);" />' : '';
           var iconContent = isMoving ?
-            '<span class="fa-stack" data-route_id="' + route.route_id + '"><i class="fa fa-truck-field fa-stack-2x vehicle-icon pulse" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>' + direction_icon + '</span>' :
+            '<span class="fa-stack" data-route-id="' + route.route_id + '"><i class="fa fa-truck-field fa-stack-2x vehicle-icon pulse" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>' + direction_icon + '</span>' :
             '<i class="fa fa-truck-field fa-lg vehicle-icon" style="color: ' + (route.color || vehicles_usages_map[pos.vehicle_id].color) + '"></i>';
           vehicleLayer.removeLayer(vehicleMarkers[pos.vehicle_id]);
 
@@ -459,7 +459,7 @@ export const plannings_edit = function(params) {
 
       $.each(data, function(i, route) {
         if (route.vehicle_usage_id) {
-          var $route = $("[data-route_id='" + route.id + "']");
+          var $route = $("[data-route-id='" + route.id + "']");
           var startStop = $route.find('[data-store_id]');
 
           // Adapter pattern for stores
@@ -483,7 +483,7 @@ export const plannings_edit = function(params) {
                 marker.properties.tomtom = stop;
               }
             }
-            $.each($("[data-stop_id='" + stop.id + "']"), function(i, item) {
+            $.each($("[data-stop-id='" + stop.id + "']"), function(i, item) {
               // update list, active popup in map and active popover
               $item = $(item);
               updateStopAndStoreStatusContent($item, stop);
@@ -673,7 +673,7 @@ export const plannings_edit = function(params) {
 
     var successLock = function(data) {
       $.each(data, function(index, route) {
-        var element = $("[data-route_id='" + route.id + "']");
+        var element = $("[data-route-id='" + route.id + "']");
         if (route.locked) {
           element.find(".lock").removeClass("btn-default").addClass("btn-warning");
           element.find('.lock i').removeClass('fa-unlock').addClass('fa-lock');
@@ -691,7 +691,7 @@ export const plannings_edit = function(params) {
         routesLayer.hideAllRoutes();
       }
       $.each(data, function(index, route) {
-        var element = $("[data-route_id='" + route.id + "']");
+        var element = $("[data-route-id='" + route.id + "']");
         if (route.hidden) {
           element.find("ul.stops").hide();
           element.find('.toggle i').removeClass('fa-eye').addClass('fa-eye-slash');
@@ -720,13 +720,13 @@ export const plannings_edit = function(params) {
 
   // Used to highlight the current stop (or route if over 1t points) in sidebar routes
   var enlightenStop = function(stop) {
-    var route = $(".routes [data-route_id='" + stop.routeId + "']");
+    var route = $(".routes [data-route-id='" + stop.routeId + "']");
     var target;
 
     if (stop.index) {
-      target = $(".routes [data-route_id='" + stop.routeId + "'] [data-stop_index='" + stop.index + "']");
+      target = $(".routes [data-route-id='" + stop.routeId + "'] [data-stop_index='" + stop.index + "']");
     } else {
-      target = $("[data-stop_id='" + stop.id + "']");
+      target = $("[data-stop-id='" + stop.id + "']");
     }
 
     if (target.length === 0) {
@@ -895,7 +895,7 @@ export const plannings_edit = function(params) {
       var isLocked = unplannedRoute.find("button.lock > i").hasClass("fa-lock");
       var keepVisit = $('[name=sticky_vehicle]:checked').val() === 'true';
 
-      !isLocked && keepVisit && unplannedRoute.find("li[data-stop_id]").length ? _modalWarning.show() : _modalWarning.hide();
+      !isLocked && keepVisit && unplannedRoute.find("li[data-stop-id]").length ? _modalWarning.show() : _modalWarning.hide();
     };
   })();
 
@@ -963,7 +963,7 @@ export const plannings_edit = function(params) {
       var sizeRoutes = 0;
       var activeSizeRoutes = 0;
       var allStopsActive = true;
-      $.each($('li[data-route_id]:not(:last) [data-size-active]'), function() {
+      $.each($('li[data-route-id]:not(:last) [data-size-active]'), function() {
         var sizeRoute = $(this).attr('data-size');
         var activeSizeRoute = $(this).attr('data-size-active');
         if ($(this).closest('.route-tools').find('button.lock.btn-default').length > 0) {
@@ -993,7 +993,7 @@ export const plannings_edit = function(params) {
     } else {
       $('div#optimization-global').hide();
       optimizationTimer.setOptimDuration();
-      var sizeActive = $('li[data-route_id=' + routeId + '] [data-size-active]');
+      var sizeActive = $('li[data-route-id=' + routeId + '] [data-size-active]');
       $('div#optimization-active').css({display: (sizeActive.attr('data-size-active') == sizeActive.attr('data-size')) ? 'none' : 'block'});
       var route = routes.filter(function(route) {
         return route.route_id == routeId;
@@ -1029,22 +1029,25 @@ export const plannings_edit = function(params) {
   var sortPlanning = function(event, ui) {
     var item = $(ui.item),
       index = 0,
-      route = item.closest('[data-route_id]'),
-      stops = $('.sortable li[data-stop_id]', route),
-      route_id = route.attr('data-route_id'),
-      stop_id = item.closest("[data-stop_id]").attr("data-stop_id");
-    while (stops[index].attributes['data-stop_id'].value != stop_id) {
+      route = item.closest('[data-route-id]'),
+      stops = $('.sortable li[data-stop-id]', route),
+      route_id = route.attr('data-route-id'),
+      stop_id = item.closest("[data-stop-id]").attr("data-stop-id");
+    while (stops[index].attributes['data-stop-id'].value != stop_id) {
       index++;
     }
     $.ajax({
       type: 'PATCH',
-      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '/move/' + (index + 1) + '.json',
+      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '/move/' + (index + 1) + '.js',
       beforeSend: beforeSendWaiting,
-      success: updatePlanning,
+
+      success: function() {
+        updateSuccess(locals, map, locals.updated_routes)
+      },
       complete: completeAjaxMap,
       error: function(request, status, error) {
         ajaxError(request, status, error);
-        $(".route[data-route_id] .stops.sortable").sortable('cancel');
+        $(".route[data-route-id] .stops.sortable").sortable('cancel');
       }
     });
   };
@@ -1162,7 +1165,7 @@ export const plannings_edit = function(params) {
 
     // Following callbacks need to be set as many as route has changed
     $routes.off('change').on('change', "[name=route\\\[color\\\]]", function() {
-      var id = $(this).closest('[data-route_id]').attr('data-route_id');
+      var id = $(this).closest('[data-route-id]').attr('data-route-id');
       var color = this.value;
       if (color)
         $('.color_small', $('.vehicle_select', $(this).parent()).next()).hide();
@@ -1190,13 +1193,14 @@ export const plannings_edit = function(params) {
         url: '/api/0.1/plannings/' + planning_id + '/routes/' + id + '.json',
         success: function() {
           routesLayer.options.colorsByRoute[id] = color;
+          console.log(id);
           routesLayer.refreshRoutes([id], routes);
         },
         error: ajaxError
       });
-      $('li[data-route_id=' + id + '] li[data-store_id] > i.fa').css('color', color);
-      $('li[data-route_id=' + id + '] li[data-stop_id] .number:not(.color_force)').css('background', color);
-      $('span[data-route_id=' + id + '] i.vehicle-icon').css('color', color);
+      $('li[data-route-id=' + id + '] li[data-store_id] > i.fa').css('color', color);
+      $('li[data-route-id=' + id + '] li[data-stop-id] .number:not(.color_force)').css('background', color);
+      $('span[data-route-id=' + id + '] i.vehicle-icon').css('color', color);
     });
 
     $('.vehicle_select', context).off('change').change(function() {
@@ -1206,7 +1210,7 @@ export const plannings_edit = function(params) {
         $.ajax({
           type: 'PATCH',
           data: JSON.stringify({
-            route_id: $this.closest('[data-route_id]').attr('data-route_id'),
+            route_id: $this.closest('[data-route-id]').attr('data-route-id'),
             vehicle_usage_id: vehicles_usages_map[$this.val()].vehicle_usage_id
           }),
           contentType: 'application/json',
@@ -1230,7 +1234,7 @@ export const plannings_edit = function(params) {
     });
 
     $('.export_spreadsheet', context).click(function() {
-      $('[name=spreadsheet-route]').val($(this).closest('[data-route_id]').attr('data-route_id'));
+      $('[name=spreadsheet-route]').val($(this).closest('[data-route-id]').attr('data-route-id'));
       $('#planning-spreadsheet-modal').modal({
         keyboard: true,
         show: true
@@ -1270,10 +1274,10 @@ export const plannings_edit = function(params) {
         disabled: true,
         items: 'li.route'
       });
-
       $routes
         .on("click", ".toggle", function() {
-          var id = $(this).closest("[data-route_id]").attr("data-route_id");
+          var id = $(this).closest("[data-route-id]").attr("data-route-id");
+          console.log(id);
           var li = $("ul.stops, ol.stops", $(this).closest("li"));
           li.toggle();
           var hidden = !li.is(":visible");
@@ -1312,7 +1316,7 @@ export const plannings_edit = function(params) {
         .on("click", ".marker", function() {
           var stopIndex = $(this).closest("[data-stop_index]").attr("data-stop_index");
           if (stopIndex) {
-            var routeId = $(this).closest("[data-route_id]").attr("data-route_id");
+            var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
             routesLayer.focus({routeId: routeId, stopIndex: stopIndex});
           } else {
             var storeId = $(this).closest("[data-store_id]").attr("data-store_id");
@@ -1324,7 +1328,7 @@ export const plannings_edit = function(params) {
           return false;
         })
         .on('click', '.optimize', function() {
-          $('#optimization-route_id').val($(this).closest('[data-route_id]').attr('data-route_id')).trigger('change');
+          $('#optimization-route_id').val($(this).closest('[data-route-id]').attr('data-route-id')).trigger('change');
         })
         .on('click', '.send_sms', sendSMS)
         .on("click", ".active_all, .active_reverse, .active_none, .active_status, .reverse_order", function() {
@@ -1340,7 +1344,7 @@ export const plannings_edit = function(params) {
           return false;
         })
         .on("change", "[name=route\\\[ref\\\]]", function() {
-          var id = $(this).closest("[data-route_id]").attr("data-route_id");
+          var id = $(this).closest("[data-route-id]").attr("data-route-id");
           var ref = this.value;
           $.ajax({
             type: 'PUT',
@@ -1356,7 +1360,7 @@ export const plannings_edit = function(params) {
           });
         })
         .on('click', '.lock', function() {
-          var id = $(this).closest("[data-route_id]").attr("data-route_id");
+          var id = $(this).closest("[data-route-id]").attr("data-route-id");
           var i = $("i", this);
           i.toggleClass("fa-lock");
           i.toggleClass("fa-unlock");
@@ -1547,20 +1551,15 @@ export const plannings_edit = function(params) {
       /** End move_stops */
 
       $('.load-stops', context).click(function(event) {
-        var routeId = $(event.target).closest('[data-route_id]').attr('data-route_id');
+        var routeId = $(event.target).closest('[data-route-id]').attr('data-route-id');
         $.ajax({
           type: 'GET',
-          contentType: 'application/json',
-          url: '/plannings/' + planning_id + '.json',
-          data: {
-            route_ids: routeId
-          },
+          url: routeId + '/refresh.js?with_stops=' + true,
           beforeSend: beforeSendWaiting,
-          success: function(data) {
-            updatePlanning(data);
-          },
-          complete: completeAjaxMap,
-          error: ajaxError
+          error: ajaxError,
+          success: function() {
+            updateSuccess(locals, map, [locals.route])
+          }
         });
       });
     }
@@ -1568,7 +1567,7 @@ export const plannings_edit = function(params) {
 
   var checkLockAndActive = function() {
     var maxUnlockedStops = 0;
-    $('[data-route_id]').each(function() {
+    $('[data-route-id]').each(function() {
       var isRouteLocked = $(this).find('.lock i').hasClass('fa-lock');
       var stopCount = $(this).find('[data-size-active]').data('size-active');
 
@@ -1729,9 +1728,17 @@ export const plannings_edit = function(params) {
       data.ref = null; // here to prevent mustache template to get the value
       $.extend(data, params.manage_planning);
       data.callback_button = params.callback_button;
-      $("#planning").html(SMT['plannings/edit'](data));
 
-      initRoutes($('#edit-planning'), data, options);
+      $.ajax({
+        type: 'GET',
+        url: '/plannings/' + planning_id + '/sidebar.js?with_stops=' + withStopsInSidePanel,
+        beforeSend: beforeSendWaiting,
+        error: ajaxError,
+        success: function() {
+          updateSuccess(data, map, routes);
+          initRoutes($('#edit-planning'), data, options);
+        }
+      });
 
       if (options.firstTime) {
         routesLayer.showAllRoutes({stores: true}, function() {
@@ -1783,8 +1790,16 @@ export const plannings_edit = function(params) {
 
         $.extend(route, params.manage_planning);
 
-        const $routePanel = $(`.route[data-route_id="${route.route_id}"]`);
-        $routePanel.html(SMT['routes/edit'](route));
+        $.ajax({
+          type: 'GET',
+          url: '/routes/' + route.route_id + '/edit.js?with_stops=' + true,
+          beforeSend: beforeSendWaiting,
+          error: ajaxError,
+          success: function() {
+            updateSuccess(data, map, routes)
+          }
+        });
+        const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
 
         var regExp = new RegExp('/plannings/' + route.planning_id + '/' + route.route_id + '/[0-9]+/move.json');
@@ -1794,7 +1809,7 @@ export const plannings_edit = function(params) {
           if ($link.attr('href').match(regExp) != null)
             $link.html('<div class="color_small" style="background:' + (route.color || route.vehicle.color) + '"></div> ' + route.vehicle.name);
         });
-        $.each($('li[data-stop_id]'), function(i, stop) {
+        $.each($('li[data-stop-id]'), function(i, stop) {
           var popupContent = $(stop).data()['bs.popover'] && $($(stop).data()['bs.popover'].options.content);
           if (popupContent) {
             $.each($('.send_to_route', popupContent), function(j, link) {
@@ -1818,12 +1833,17 @@ export const plannings_edit = function(params) {
 
         $.extend(route, params.manage_planning);
 
-        const $routePanel = $(`li.route[data-route_id="${route.route_id}"]`);
-        if ($($routePanel).hasClass('out_route')) {
-          $routePanel.html(SMT['routes/out_of_route'](route));
-        } else {
-          $routePanel.html(SMT['routes/edit'](route));
-        }
+
+        $.ajax({
+          type: 'GET',
+          url: '/plannings/' + planning_id + '/' + route.route_id + '/refresh.js?with_stops=' + true,
+          beforeSend: beforeSendWaiting,
+          error: ajaxError,
+          success: function() {
+            updateSuccess(locals, map, [locals.route])
+          }
+        });
+        const $routePanel = $(`li.route[data-route-id="${route.route_id}"]`);
 
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
         if (!options || !options.skipMap) {
@@ -1832,17 +1852,19 @@ export const plannings_edit = function(params) {
       });
 
       $('.global_info').html(SMT['plannings/edit_head'](data));
+      updateSuccess(data, map, routes);
     }
-
+  };
+  var updateSuccess = function(data, map, routes) {
     $("#out_of_route").find(".sortable").sortable({
       connectWith: ".sortable",
       update: sortPlanning
     }).disableSelection();
 
     var routesWithVehicle = routes.filter(function(route) { return route.vehicle_usage_id; });
-    $.each(data.routes, function(i, route) {
+    $.each(routes, function(i, route) {
       var sortableUpdate = false;
-      $(".route[data-route_id='" + route.route_id + "'] .stops.sortable").sortable({
+      $(".route[data-route-id='" + route.route_id + "'] .stops.sortable").sortable({
         distance: 8,
         connectWith: ".sortable",
         items: "> li",
@@ -1859,7 +1881,7 @@ export const plannings_edit = function(params) {
           }
         }
       }).disableSelection();
-      $(".route[data-route_id='" + route.route_id + "'] li[data-stop_id]")
+      $(".route[data-route-id='" + route.route_id + "'] li[data-stop-id]")
         .mouseover(function() {
           if ($(window).width() >= 992) {
             $('.not-hover', this).css({
@@ -1880,7 +1902,7 @@ export const plannings_edit = function(params) {
         })
         .each(function() {
           var $this = $(this);
-          var stops = $.grep(route.stops, function(e) { return e.stop_id === $this.data('stop_id'); });
+          var stops = $.grep(route.stops, function(e) { return e.stop_id === $this.data('stop-id'); });
           if (stops.length > 0) {
             var stopData = $.extend(stops[0], {
               number: $('.number', $this).text(),
@@ -1915,7 +1937,7 @@ export const plannings_edit = function(params) {
         .click(function() {
           // Stack the last element activated
           lastPopover = $(this);
-          $("li[data-stop_id!='" + $(this).data('stop_id') + "']").popover('hide');
+          $("li[data-stop-id!='" + $(this).data('stop-id') + "']").popover('hide');
           $(this).popover($('.sidebar').hasClass('extended') ? 'toggle' : 'hide');
           $('.close-popover').click(function() {
             $(lastPopover).popover('hide');
@@ -1937,13 +1959,13 @@ export const plannings_edit = function(params) {
 
     var updateOptimButton = function(routes) {
       routes.forEach(function(route) {
-        $("li[data-route_id=\"" + route.route_id + "\"]").find('.optimize').toggleClass('btn-success', !!route.optimized_at_formatted);
+        $("li[data-route-id=\"" + route.route_id + "\"]").find('.optimize').toggleClass('btn-success', !!route.optimized_at_formatted);
       });
     };
 
-    updateOptimButton(data.routes);
+    updateOptimButton(routes);
 
-  };
+  }
 
   // Update only stops by default
   var updatePlanning = function(data, options) {
@@ -1968,7 +1990,7 @@ export const plannings_edit = function(params) {
   }
 
   $(".main").on("click", ".automatic_insert", function() {
-    var stop_id = $(this).closest("[data-stop_id]").attr("data-stop_id");
+    var stop_id = $(this).closest("[data-stop-id]").attr("data-stop-id");
 
     var dialog = bootstrap_dialog($.extend(modal_options(), {
       title: I18n.t('plannings.edit.dialog.automatic_insert.title'),
@@ -2018,8 +2040,8 @@ export const plannings_edit = function(params) {
   });
 
   $(".main").on('change', 'input:checkbox.stop_active', function(event) {
-    var route_id = $(event.target).closest("[data-route_id]").attr("data-route_id");
-    var stop_id = $(event.target).closest("[data-stop_id]").attr("data-stop_id");
+    var route_id = $(event.target).closest("[data-route-id]").attr("data-route-id");
+    var stop_id = $(event.target).closest("[data-stop-id]").attr("data-stop-id");
     var active = $(event.target).is(':checked');
     $.ajax({
       type: 'PATCH',
@@ -2038,7 +2060,7 @@ export const plannings_edit = function(params) {
   });
 
   $(".main").on("click", ".send_to_route", function() {
-    var stopId = $(this).closest("[data-stop_id]").attr("data-stop_id");
+    var stopId = $(this).closest("[data-stop-id]").attr("data-stop-id");
     var url = this.href;
     $.ajax({
       type: 'PATCH',
@@ -2321,7 +2343,7 @@ export const plannings_edit = function(params) {
     var _context;
 
     var _setLastSentAt = function(route) {
-      var container = $("[data-route_id='" + route.id + "'] .last-sent-at", _context);
+      var container = $("[data-route-id='" + route.id + "'] .last-sent-at", _context);
       route.i18n = mustache_i18n;
       container.html(SMT['routes/last_sent_at'](route));
       if (route.last_sent_at) {
@@ -2338,11 +2360,11 @@ export const plannings_edit = function(params) {
     };
 
     var _clearLastSentAt = function(route) {
-      $("[data-route_id='" + route.id + "'] .last-sent-at", _context).hide();
+      $("[data-route-id='" + route.id + "'] .last-sent-at", _context).hide();
     };
 
     var _showLastSentAt = function(route) {
-      $("[data-route_id='" + route.id + "'] .last-sent-at", _context).show();
+      $("[data-route-id='" + route.id + "'] .last-sent-at", _context).show();
     };
 
     var _clearPlanningRoutesLastSentAt = function(routes) {
