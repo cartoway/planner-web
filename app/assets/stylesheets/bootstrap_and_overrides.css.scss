@@ -1253,3 +1253,20 @@ div.grid-container {
 small {
   font-size: 95%;
 }
+
+.spinner-border {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: -.125em;
+  border: .25em solid currentColor;
+    border-right-color: currentcolor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  -webkit-animation: .75s linear infinite spinner-border;
+  animation: .75s linear infinite spinner-border;
+}
+
+@keyframes spinner-border {
+  to { transform: rotate(360deg) #{"/* rtl:ignore */"}; }
+}

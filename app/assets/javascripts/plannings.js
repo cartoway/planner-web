@@ -1561,7 +1561,7 @@ export const plannings_edit = function(params) {
           success: function() {
             updateSuccess(locals, map, [locals.route]);
             if (!locals.route.vehicle_usage_id) {
-              continuousListLoading('#out_route_scroll', '#out_list_next_link', 100);
+              continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
             }
           }
         });
