@@ -216,7 +216,8 @@ class PlanningsController < ApplicationController
     stops_count = @route.stops.count
     page = params[:out_page] || 1
     if @route.vehicle_usage_id
-      current_route = @route.stops.includes_destinations.load
+      current_route = @route
+      current_route.stops.includes_destinations.load
     else
       @out_pagy, @out_stops = pagy_countless(@route.stops.includes_destinations, page: page, page_param: :out_page)
       current_route = @route.dup

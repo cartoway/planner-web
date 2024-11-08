@@ -1844,7 +1844,7 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function() {
-            updateSuccess(locals, map, [locals.route])
+            updateSuccess(locals, map, [locals.route]);
           }
         });
         const $routePanel = $(`li.route[data-route-id="${route.route_id}"]`);
