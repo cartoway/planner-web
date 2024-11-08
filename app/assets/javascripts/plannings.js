@@ -1555,7 +1555,7 @@ export const plannings_edit = function(params) {
         var routeId = $(event.target).closest('[data-route-id]').attr('data-route-id');
         $.ajax({
           type: 'GET',
-          url: routeId + '/refresh.js?with_stops=' + true,
+          url: '/plannings/' + params.planning_id + '/' + routeId + '/refresh.js?with_stops=' + true,
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function() {
