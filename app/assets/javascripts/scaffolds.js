@@ -691,7 +691,7 @@ export const templateTag = function(item) {
   }
 };
 
-export function continuousListLoading(listRef, linkRef, offset) {
+export function continuousListLoading(listRef, linkRef, loadingRef, offset) {
   var loadNextPage = function() {
     var element = $(listRef);
     if ($(linkRef + ' a').data("loading")) { return }  // prevent multiple loading
@@ -700,6 +700,7 @@ export function continuousListLoading(listRef, linkRef, offset) {
       if (nextLink) {
         $(linkRef + ' a')[0].click();
         $(linkRef + ' a').data("loading", true);
+        $(loadingRef).removeClass('d-none');
       }
     }
   };
