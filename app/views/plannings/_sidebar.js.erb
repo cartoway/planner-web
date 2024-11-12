@@ -1,2 +1,3 @@
 
 $('#planning').html("<%= j(render partial: 'plannings/sidebar.html.haml', locals: local_assigns) %>");
+var locals = <%= local_assigns.to_json.html_safe %>;

@@ -1194,7 +1194,6 @@ export const plannings_edit = function(params) {
         url: '/api/0.1/plannings/' + planning_id + '/routes/' + id + '.json',
         success: function() {
           routesLayer.options.colorsByRoute[id] = color;
-          console.log(id);
           routesLayer.refreshRoutes([id], routes);
         },
         error: ajaxError
@@ -1278,7 +1277,6 @@ export const plannings_edit = function(params) {
       $routes
         .on("click", ".toggle", function() {
           var id = $(this).closest("[data-route-id]").attr("data-route-id");
-          console.log(id);
           var li = $("ul.stops, ol.stops", $(this).closest("li"));
           li.toggle();
           var hidden = !li.is(":visible");
@@ -1535,7 +1533,7 @@ export const plannings_edit = function(params) {
           .toArray();
         $.ajax({
           type: 'PATCH',
-          url: '/plannings/' + params.planning_id + '/' + $("#move-route-id").val() + '/move.json',
+          url: '/plannings/' + params.planning_id + '/' + $("#move-route-id").val() + '/move.js',
           data: {
             'stop_ids': stopIds,
             'index': $('#move-index').val()
@@ -1543,7 +1541,7 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function(data) {
-            updatePlanning(data);
+            updateSuccess(locals, map, locals.updated_routes)
             $('#planning-move-stops-modal').modal('hide');
           },
           complete: completeAjaxMap
@@ -1739,8 +1737,8 @@ export const plannings_edit = function(params) {
         beforeSend: beforeSendWaiting,
         error: ajaxError,
         success: function() {
-          updateSuccess(data, map, routes);
-          initRoutes($('#edit-planning'), data, options);
+          updateSuccess(locals, map, locals.routes);
+          initRoutes($('#edit-planning'), locals, options);
         }
       });
 
@@ -1806,7 +1804,7 @@ export const plannings_edit = function(params) {
         const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
 
-        var regExp = new RegExp('/plannings/' + route.planning_id + '/' + route.route_id + '/[0-9]+/move.json');
+        var regExp = new RegExp('/plannings/' + route.planning_id + '/' + route.route_id + '/[0-9]+/move.js');
         // popups are not selected follow
         $.each($('.send_to_route'), function(j, link) {
           var $link = $(link);
@@ -2071,7 +2069,7 @@ export const plannings_edit = function(params) {
       url: url,
       beforeSend: beforeSendWaiting,
       success: function(data) {
-        updatePlanning(data);
+        updateSuccess(locals, map, locals.updated_routes)
         enlightenStop({id: stopId});
         map.closePopup();
       },
