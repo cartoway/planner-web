@@ -1797,11 +1797,11 @@ export const plannings_edit = function(params) {
 
         $.ajax({
           type: 'GET',
-          url: '/routes/' + route.route_id + '/edit.js?with_stops=' + true,
+          url: '/plannings/' + route.planning_id + '/' + route.route_id + '/refresh.js?with_stops=' + true,
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function() {
-            updateSuccess(data, map, routes)
+            updateSuccess(locals.summary, map, [locals.route])
           },
           complete: completeAjaxMap
         });
