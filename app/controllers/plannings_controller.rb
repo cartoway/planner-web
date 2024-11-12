@@ -183,10 +183,9 @@ class PlanningsController < ApplicationController
               }
             end
           end
-          planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
-
           # save! is used to rollback all the transaction with associations
           if @planning.compute && @planning.save!
+            planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
             format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], routes: planning_routes_move_array(@planning.routes) } }
             format.json { render action: 'show', location: @planning }
           else
