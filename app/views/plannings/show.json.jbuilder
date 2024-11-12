@@ -12,6 +12,7 @@ if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
 else
   json.prefered_unit current_user.prefered_unit
   json.extract! @planning, :id, :ref
+  json.planning_id @planning.id
   json.customer_id @planning.customer.id
   json.customer_enable_sms @planning.customer.enable_sms if @planning.customer.reseller.sms_api_key
   json.customer_enable_external_callback current_user.customer.default_callback_enabled?

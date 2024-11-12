@@ -1043,7 +1043,7 @@ export const plannings_edit = function(params) {
       beforeSend: beforeSendWaiting,
 
       success: function() {
-        updateSuccess(locals, map, locals.updated_routes);
+        updateSuccess(locals.summary, map, locals.updated_routes);
         routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
       },
       complete: completeAjaxMap,
@@ -1542,7 +1542,7 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function(data) {
-            updateSuccess(locals, map, locals.updated_routes);
+            updateSuccess(locals.summary, map, locals.updated_routes);
             routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
             $('#planning-move-stops-modal').modal('hide');
           },
@@ -1559,7 +1559,7 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function() {
-            updateSuccess(locals, map, [locals.route]);
+            updateSuccess(locals.summary, map, [locals.route]);
             if (!locals.route.vehicle_usage_id) {
               continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
             }
@@ -1741,7 +1741,8 @@ export const plannings_edit = function(params) {
         success: function() {
           updateSuccess(locals, map, locals.routes);
           initRoutes($('#edit-planning'), locals, options);
-        }
+        },
+        complete: completeAjaxMap
       });
 
       if (options.firstTime) {
@@ -1801,7 +1802,8 @@ export const plannings_edit = function(params) {
           error: ajaxError,
           success: function() {
             updateSuccess(data, map, routes)
-          }
+          },
+          complete: completeAjaxMap
         });
         const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
@@ -1844,8 +1846,9 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function() {
-            updateSuccess(locals, map, [locals.route]);
-          }
+            updateSuccess(locals.summary, map, [locals.route]);
+          },
+          complete: completeAjaxMap
         });
         const $routePanel = $(`li.route[data-route-id="${route.route_id}"]`);
 
@@ -1854,17 +1857,26 @@ export const plannings_edit = function(params) {
           routesLayer.refreshRoutes([route.route_id], routes)
         }
       });
-
-      $('.global_info').html(SMT['plannings/edit_head'](data));
-      updateSuccess(data, map, routes);
     }
   };
+
+  var updateDataHeader = function(planning_id) {
+    $.ajax({
+      type: 'GET',
+      url: '/plannings/' + planning_id + '/data_header.js',
+      beforeSend: beforeSendWaiting,
+      error: ajaxError,
+      complete: completeAjaxMap
+    });
+  }
+
   var updateSuccess = function(data, map, routes) {
     $("#out_of_route").find(".sortable").sortable({
       connectWith: ".sortable",
       update: sortPlanning
     }).disableSelection();
 
+    updateDataHeader(data.planning_id);
     var routesWithVehicle = routes.filter(function(route) { return route.vehicle_usage_id; });
     $.each(routes, function(i, route) {
       var sortableUpdate = false;
@@ -2055,9 +2067,12 @@ export const plannings_edit = function(params) {
         }
       }),
       contentType: 'application/json',
-      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '.json',
+      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '.js',
       beforeSend: beforeSendWaiting,
-      success: updatePlanning,
+      success: function() {
+        updateSuccess(locals.summary, map, locals.updated_routes);
+        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
+      },
       complete: completeAjaxMap,
       error: ajaxError
     });
@@ -2070,8 +2085,8 @@ export const plannings_edit = function(params) {
       type: 'PATCH',
       url: url,
       beforeSend: beforeSendWaiting,
-      success: function(data) {
-        updateSuccess(locals, map, locals.updated_routes);
+      success: function() {
+        updateSuccess(locals.summary, map, locals.updated_routes);
         routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
         enlightenStop({id: stopId});
         map.closePopup();
@@ -2219,7 +2234,7 @@ export const plannings_edit = function(params) {
     })
     $.ajax({
       type: 'GET',
-      url: '/plannings/' + planning_id + (routeId ? '/' + routeId : '') + '/optimize.json',
+      url: '/plannings/' + planning_id + (routeId ? '/' + routeId : '') + '/optimize.js',
       data: {
         with_stops: routeId ? true : withStopsInSidePanel,
         active_only: $('input[name="active_only"]:checked').val(),
@@ -2241,8 +2256,9 @@ export const plannings_edit = function(params) {
             }
           }
         };
-        if (routeId) updatePlanning(data, options);
-        else displayPlanning(data, options);
+
+        updateSuccess(locals.summary, map, locals.updated_routes);
+        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
       },
       complete: completeAjaxMap,
       error: ajaxError

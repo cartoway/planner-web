@@ -123,6 +123,7 @@ Rails.application.routes.draw do
     patch ':route_id/:stop_id/move' => 'plannings#move'
     patch ':route_id/:stop_id/move/:index' => 'plannings#move'
     patch ':route_id/move/' => 'plannings#move'
+    get 'data_header'
     get 'refresh'
     get 'sidebar'
     patch 'switch'

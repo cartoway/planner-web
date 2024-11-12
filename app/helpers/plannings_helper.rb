@@ -49,15 +49,18 @@ module PlanningsHelper
     end
   end
 
-  def planning_routes_move_array(routes)
-    routes.map{ |route|
-      {
-        route_id: route.id,
-        vehicle_usage_id: route.vehicle_usage_id,
-        vehicle_id: route.vehicle_usage&.vehicle_id,
-        name: (route.ref || '') + (route.vehicle_usage&.vehicle&.name || ''),
-        color: route.color || route.vehicle_usage&.vehicle&.color,
-      }.delete_if{ |_k, v| v.nil? }
+  def planning_summary(planning)
+    {
+      planning_id: planning.id,
+      routes: planning.routes.map{ |route|
+        {
+          route_id: route.id,
+          vehicle_usage_id: route.vehicle_usage_id,
+          vehicle_id: route.vehicle_usage&.vehicle_id,
+          name: (route.ref || '') + (route.vehicle_usage&.vehicle&.name || ''),
+          color: route.color || route.vehicle_usage&.vehicle&.color,
+        }.delete_if{ |_k, v| v.nil? }
+      }
     }
   end
 
