@@ -4,11 +4,13 @@
     .primary.route-info
       %i.fa.fa-check-square.fa-fw>
       = "#{size_active} / #{size}"
+      = t('plannings.edit.stops')
   - if averages
     .col-xs-4{title: t("plannings.edit.vehicles_used_help")}
       .primary.route-info
         %i.fa.fa-truck-field.fa-fw{"aria-hidden" => "true"}>
         = "#{averages[:vehicles_used]} / #{averages[:vehicles]}"
+        = t('plannings.edit.routes')
     .col-xs-4{title: t("plannings.edit.emission_help")}
       .primary.route-info
         %i.fa.fa-flask.fa-fw>

@@ -1808,6 +1808,7 @@ fr:
       zoning_edit: Modifier cette sectorisation depuis ce plan de tournées
       last_sent_to: Envoi
       title: Modifier plan
+      routes: tournées
       stops: arrêts
       destinations: adresses
       without_stops_title: >-

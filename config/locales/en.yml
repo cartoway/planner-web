@@ -1728,6 +1728,7 @@ en:
       zoning_edit: Edit sectorisation from this plan
       last_sent_to: Sent to
       title: Editing plan
+      routes: routes
       stops: stops
       destinations: destinations
       without_stops_title: >-
