@@ -1,6 +1,6 @@
 - outdated ||= nil
 .global_info
-  = render partial: 'edit_head', locals: local_assigns
+  = render partial: 'edit_head.html.haml', locals: local_assigns
 - if outdated
   %p.text-center
     %button#refresh.btn.btn-warning.btn-sm{title: t("plannings.edit.refresh_help"), type: "button"}

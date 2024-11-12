@@ -1,0 +1,2 @@
+$('.global_info').html("<%= j(render partial: 'plannings/edit_head.html.haml', locals: local_assigns) %>");
+var locals = <%= local_assigns.to_json.html_safe %>;
