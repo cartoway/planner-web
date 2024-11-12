@@ -1043,7 +1043,8 @@ export const plannings_edit = function(params) {
       beforeSend: beforeSendWaiting,
 
       success: function() {
-        updateSuccess(locals, map, locals.updated_routes)
+        updateSuccess(locals, map, locals.updated_routes);
+        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
       },
       complete: completeAjaxMap,
       error: function(request, status, error) {
@@ -1541,7 +1542,8 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function(data) {
-            updateSuccess(locals, map, locals.updated_routes)
+            updateSuccess(locals, map, locals.updated_routes);
+            routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
             $('#planning-move-stops-modal').modal('hide');
           },
           complete: completeAjaxMap
@@ -2069,7 +2071,8 @@ export const plannings_edit = function(params) {
       url: url,
       beforeSend: beforeSendWaiting,
       success: function(data) {
-        updateSuccess(locals, map, locals.updated_routes)
+        updateSuccess(locals, map, locals.updated_routes);
+        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
         enlightenStop({id: stopId});
         map.closePopup();
       },
