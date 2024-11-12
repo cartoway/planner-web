@@ -117,7 +117,7 @@
               %i.fa.fa-reorder.fa-fw{title: t("plannings.edit.drag_help")}
               .btn-group.stop-tools
                 - if @manage_planning[:manage_destination]
-                  %a.marker_edit.btn.btn-default.btn-xs{href: "/destinations/#{stop[:destination_id]}/edit?back=true#collapseVisit#{stop[:visit_id]}", title: t("plannings.edit.edit_visit_help")}
+                  %a.marker_edit.btn.btn-default.btn-xs{href: "/destinations/#{stop[:destination][:destination_id]}/edit?back=true#collapseVisit#{stop[:visit_id]}", title: t("plannings.edit.edit_visit_help")}
                     %i.fa.fa-pencil
                 - if stop[:geocoded]
                   %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
