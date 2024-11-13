@@ -1,4 +1,5 @@
 - route ||= routes.find{ |route| route[:vehicle_id].nil? }
+- routes ||= summary[:routes]
 - out_pagy ||= nil
 %li.route.out_route{"data-route-id": route[:route_id]}
   #out_of_route.panel.panel-default
