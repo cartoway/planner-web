@@ -1,3 +1,4 @@
+- routes ||= summary[:routes]
 - route[:stops]&.each&.with_index do |stop, index|
   - if stop[:visits]
     %li.waypoint.d-fake-flex.align-items-center.list-group-item{ class: ('ui-state-error' if stop[:error]), data: { "stop-id": stop[:stop_id], index: index }}
@@ -43,7 +44,7 @@
                         .color_small{style: "background:#{o_route[:color]}"}
                         = o_route[:name]
           .clearfix
-- if !route[:with_stops] && route[:size]
+- if !route[:with_stops] && route[:size] > 0
   .d-flex.justify-content-center.load-stops
     %button.btn.btn-default{ title: t("plannings.edit.without_stops_title")}
       %i.fa.fa-rectangle-list.fa-fw
