@@ -96,7 +96,7 @@ const routesByVehicleShow = function(params) {
     var target;
 
     if (stop.index) {
-      target = $(".routes [data-route-id='" + stop.routeId + "'] [data-stop_index='" + stop.index + "']");
+      target = $(".routes [data-route-id='" + stop.routeId + "'] [data-stop-index='" + stop.index + "']");
     } else {
       target = $("[data-stop-id='" + stop.id + "']");
     }
@@ -176,7 +176,7 @@ const routesByVehicleShow = function(params) {
         $('li[data-route-id=' + routeId + '] li[data-stop-id] .number:not(.color_force)').css('background', color);
       })
       .on("click", ".marker", function() {
-        var stopIndex = $(this).closest("[data-stop_index]").attr("data-stop_index");
+        var stopIndex = $(this).closest("[data-stop-index]").attr("data-stop-index");
         if (stopIndex) {
           var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
           routesLayer.focus({routeId: routeId, stopIndex: stopIndex});
