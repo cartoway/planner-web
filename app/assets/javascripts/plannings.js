@@ -725,7 +725,7 @@ export const plannings_edit = function(params) {
     var target;
 
     if (stop.index) {
-      target = $(".routes [data-route-id='" + stop.routeId + "'] [data-stop_index='" + stop.index + "']");
+      target = $(".routes [data-route-id='" + stop.routeId + "'] [data-stop-index='" + stop.index + "']");
     } else {
       target = $("[data-stop-id='" + stop.id + "']");
     }
@@ -1314,7 +1314,7 @@ export const plannings_edit = function(params) {
           }
         })
         .on("click", ".marker", function() {
-          var stopIndex = $(this).closest("[data-stop_index]").attr("data-stop_index");
+          var stopIndex = $(this).closest("[data-stop-index]").attr("data-stop-index");
           if (stopIndex) {
             var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
             routesLayer.focus({routeId: routeId, stopIndex: stopIndex});
@@ -1873,6 +1873,9 @@ export const plannings_edit = function(params) {
   var updateSuccess = function(data, map, routes) {
     $("#out_of_route").find(".sortable").sortable({
       connectWith: ".sortable",
+      containment: "#edit-planning",
+      appendTo: document.body,
+      tolerance: "pointer",
       update: sortPlanning
     }).disableSelection();
 
@@ -1883,6 +1886,9 @@ export const plannings_edit = function(params) {
       $(".route[data-route-id='" + route.route_id + "'] .stops.sortable").sortable({
         distance: 8,
         connectWith: ".sortable",
+        containment: "#edit-planning",
+        tolerance: "pointer",
+        appendTo: document.body,
         items: "> li",
         cancel: '.wait',
         start: function() {

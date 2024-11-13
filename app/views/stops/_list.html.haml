@@ -14,7 +14,7 @@
             .title
               = t("plannings.edit.wait")
     - if stop[:rest]
-      %li.d-fake-flex.align-items-center.list-group-item{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop_index": stop[:stop_index], "data-store_id": stop[:store_id] }
+      %li.d-fake-flex.align-items-center.list-group-item{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store_id": stop[:store_id] }
         .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("stop-row-#{stop[:status_code]}" if stop[:status])}
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
             .col-xs-2.d-flex.align-items-center.justify-content-center
@@ -60,7 +60,7 @@
               %a.marker.btn.btn-default.btn-xs{class: ("invisible" if !stop[:geocoded]), href: "#", title: t("plannings.edit.marker_help")}
                 %i.fa.fa-map-marker
     - if stop[:destination] && stop[:visits]
-      %li.d-fake-flex.align-items-center.list-group-item{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop_index": stop[:stop_index]}
+      %li.d-fake-flex.align-items-center.list-group-item{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index]}
         .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("stop-row-#{stop[:status_code]}" if stop[:status])}
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
             .col-xs-2.d-flex.justify-content-center.align-items-center
