@@ -3,38 +3,37 @@
     .panel.panel-default
       .panel-heading
         .row
-          .input-group
-            .col-xs-5
-              %input#route_ref.form-control{name: "route[ref]", placeholder: t("plannings.edit.route_placeholder"), type: "text", value: route[:ref]}
-            .col-xs-5
-              %select.vehicle_select.select2-xs{"data-initial-value": route[:vehicle_id], name: "route[vehicle]", style: "display:none", value: route[:vehicle_id]}
-                %option{selected: "selected", value: route[:vehicle_id]}
-                  = route[:vehicle_id]
-              %span.select2.select2-container.select2-container--bootstrap.input-sm.select2-container--below{dir: "ltr", style: "display: inline-block;"}
-                %span.selection
-                  %span.select2-selection.select2-selection--single{"aria-autocomplete": "list", "aria-expanded": "false", "aria-haspopup": "true", "aria-labelledby": "select2-route[vehicle]-uj-container", role: "combobox", tabindex: "0"}
-                    %span.select2-selection__rendered{id: "select2-route[vehicle]-uj-container", title: route[:vehicle_id]}
+          .col-xs-5
+            %input#route_ref.form-control{name: "route[ref]", placeholder: t("plannings.edit.route_placeholder"), type: "text", value: route[:ref]}
+          .col-xs-5
+            %select.vehicle_select.select2-xs{"data-initial-value": route[:vehicle_id], name: "route[vehicle]", style: "display:none", value: route[:vehicle_id]}
+              %option{selected: "selected", value: route[:vehicle_id]}
+                = route[:vehicle_id]
+            %span.select2.select2-container.select2-container--bootstrap.input-sm.select2-container--below{dir: "ltr", style: "display: inline-block;"}
+              %span.selection
+                %span.select2-selection.select2-selection--single{"aria-autocomplete": "list", "aria-expanded": "false", "aria-haspopup": "true", "aria-labelledby": "select2-route[vehicle]-uj-container", role: "combobox", tabindex: "0"}
+                  %span.select2-selection__rendered{id: "select2-route[vehicle]-uj-container", title: route[:vehicle_id]}
+                    %span
+                      %span.color_small{style: "background:#{route[:color]};#{(' display: none;' if route[:color_fake])}"}
                       %span
-                        %span.color_small{style: "background:#{route[:color]};#{(' display: none;' if route[:color_fake])}"}
-                        %span
-                        = "#{route[:name]} - #{route[:router_name]}"
-                    %span.select2-selection__arrow{role: "presentation"}
-                      %b{role: "presentation"}
-                %span.dropdown-wrapper{"aria-hidden": "true"}
-            .col-xs-2
-              %select.color_select.select2-xs{name: "route[color]", style: "display:none", value: route[:color]}
-                - @colors.each do |color|
-                  %option{value: color, selected: ('selected' if color == route[:color])}
-              %span.select2.select2-container.select2-container--bootstrap.input-sm.select2-container--below{dir: "ltr", style: "display: inline-block;"}
-                %span.selection{title: t("plannings.edit.route_change_color_help")}
-                  %span.select2-selection.select2-selection--single{"aria-autocomplete": "list", "aria-expanded": "false", "aria-haspopup": "true", "aria-labelledby": "select2-route[color]-uj-container", role: "combobox", tabindex: "0"}
-                    %span.select2-selection__rendered{id: "select2-route[color]-uj-container"}
-                      %span.color_small{style: "background:#{route[:color_fake]};vertical-align: top;"}
-                        - if !route[:color_fake]
-                          %i.fa.fa-paint-brush{style: "color: $grey-color;"}
-                    %span.select2-selection__arrow{role: "presentation"}
-                      %b{role: "presentation"}
-                %span.dropdown-wrapper{"aria-hidden": "true"}
+                      = "#{route[:name]} - #{route[:router_name]}"
+                  %span.select2-selection__arrow{role: "presentation"}
+                    %b{role: "presentation"}
+              %span.dropdown-wrapper{"aria-hidden": "true"}
+          .col-xs-2
+            %select.color_select.select2-xs{name: "route[color]", style: "display:none", value: route[:color]}
+              - @colors.each do |color|
+                %option{value: color, selected: ('selected' if color == route[:color])}
+            %span.select2.select2-container.select2-container--bootstrap.input-sm.select2-container--below{dir: "ltr", style: "display: inline-block;"}
+              %span.selection{title: t("plannings.edit.route_change_color_help")}
+                %span.select2-selection.select2-selection--single{"aria-autocomplete": "list", "aria-expanded": "false", "aria-haspopup": "true", "aria-labelledby": "select2-route[color]-uj-container", role: "combobox", tabindex: "0"}
+                  %span.select2-selection__rendered{id: "select2-route[color]-uj-container"}
+                    %span.color_small{style: "background:#{route[:color_fake]};vertical-align: top;"}
+                      - if !route[:color_fake]
+                        %i.fa.fa-paint-brush{style: "color: $grey-color;"}
+                  %span.select2-selection__arrow{role: "presentation"}
+                    %b{role: "presentation"}
+              %span.dropdown-wrapper{"aria-hidden": "true"}
       .col-xs-1
         %i.fa.fa-arrows-left-right
       .route-skills

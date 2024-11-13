@@ -13,7 +13,7 @@
   .route-tools
     .btn-group.route-btn-group
       - if @manage_planning[:manage_vehicle]
-        %a.btn.btn-primary.btn-xs{href: route[:path], title: t('plannings.edit.vehicle_help')}
+        %a.btn.btn-primary.btn-xs{href: "/vehicle_usages/#{route[:vehicle_usage_id]}/edit?back=true", title: t('plannings.edit.vehicle_help')}
           %i.fa.fa-truck-field
         %button.btn.btn-primary.btn-xs.optimize{"data-keyboard" => "true", "data-target" => "#optimization-modal", "data-toggle" => "modal", title: t('plannings.edit.optimize_help'), type: "button", disable: ('disabled' if route[:locked])}
           %i.fa.fa-gear
