@@ -7,6 +7,6 @@
       %i.fa.fa-refresh.fa-fw
       = t("plannings.edit.refresh")
 %ol.routes
-  = render partial: 'routes/edit.html.haml', locals: { routes: routes }
+  = render partial: 'routes/edit.html.haml', locals: { routes: routes, summary: summary }
 %ol.routes.out_routes
-  = render partial: 'routes/out_of_route.html.haml', locals: { routes: routes }
+  = render partial: 'routes/out_of_route.html.haml', locals: { routes: routes, summary: summary }

@@ -1,4 +1,3 @@
-- routes ||= summary[:routes]
 - out_pagy ||= nil
 - route[:stops]&.each&.with_index do |stop, index|
   - if stop[:visits]
@@ -38,7 +37,7 @@
                 %i.fa.fa-truck-field.fa-fw
                 %span.caret
               %ul.dropdown-menu.pull-right{role: "menu"}
-                - routes.each do |o_route|
+                - summary[:routes].each do |o_route|
                   - if o_route[:vehicle_usage_id]
                     %li
                       %a.send_to_route{href: "/plannings/#{@planning.id}/#{o_route[:route_id]}/#{stop[:stop_id]}/move.js", method: :patch}
