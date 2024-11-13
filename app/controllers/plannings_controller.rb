@@ -246,7 +246,7 @@ class PlanningsController < ApplicationController
     json_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
 
     respond_to do |format|
-      format.js { render partial: 'sidebar', locals: json_data }
+      format.js { render partial: 'sidebar', locals: json_data.merge(summary: planning_summary(@planning)) }
     end
   end
 
@@ -482,7 +482,7 @@ class PlanningsController < ApplicationController
   def set_planning
     @manage_planning = PlanningsController.manage
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
-    @colors = COLORS_TABLE
+    @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.find(params[:id] || params[:planning_id])
   end
 

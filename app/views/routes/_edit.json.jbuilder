@@ -35,6 +35,7 @@ if route.vehicle_usage_id
     json.devices route_devices(list_devices, route)
   end
   json.vehicle_id route.vehicle_usage.vehicle.id
+  json.vehicle_name route.vehicle_usage.vehicle.name
   if route.vehicle_usage.vehicle&.default_router
     json.router_name route.vehicle_usage.vehicle.default_router.name_locale[I18n.locale.to_s] ||
                      route.vehicle_usage.vehicle.default_router.name_locale[I18n.default_locale.to_s] ||

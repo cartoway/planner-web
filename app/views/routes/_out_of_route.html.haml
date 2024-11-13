@@ -1,5 +1,5 @@
+- routes ||= updated_routes
 - route ||= routes.find{ |route| route[:vehicle_id].nil? }
-- routes ||= summary[:routes]
 - out_pagy ||= nil
 %li.route.out_route{"data-route-id": route[:route_id]}
   #out_of_route.panel.panel-default
@@ -24,9 +24,9 @@
     #out_route_scroll.route-details.out-content.modern-scroll
       .route-stops
         .panel-body
-          = render partial: 'routes/edit_head', locals: { route: route }
+          = render partial: 'routes/edit_head', locals: { route: route, summary: summary }
         %ul#list_box.stops.sortable.list-group{style: ('display: none;' if route[:hidden])}
-          = render partial: 'stops/out_list.html.haml', locals: { routes: routes, route: route }
+          = render partial: 'stops/out_list.html.haml', locals: { route: route, summary: summary }
         - if route[:with_stops] && out_pagy
           #div_out_list_next_link
             = render partial: 'stops/out_list_next_link', locals: { out_pagy: out_pagy }

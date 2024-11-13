@@ -191,7 +191,7 @@
               = t('plannings.edit.praxedo_clear.action')
             %li.divider{role: "separator"}
           %li
-            %a{href: "/api-web/0.1/plannings/#{route[:planning_id]}/routes/#{route[:route_id]}/print", target: "_blank"}
+            %a{href: "/api-web/0.1/plannings/#{summary[:planning_id]}/routes/#{route[:route_id]}/print", target: "_blank"}
               %i.fa.fa-print.fa-fw
               = t('plannings.edit.export.print')
           %li.divider{role: "separator"}
@@ -212,11 +212,11 @@
           - if route[:customer_enable_sms]
             %li.divider{role: "separator"}
             %li
-              %a.send_sms{href: "/api/0.1/plannings/#{route[:planning_id]}/routes/#{route[:route_id]}/send_sms"}
+              %a.send_sms{href: "/api/0.1/plannings/#{summary[:planning_id]}/routes/#{route[:route_id]}/send_sms"}
                 %i.fa.fa-mobile.fa-fw
                 = t('plannings.edit.send_sms')
       - elsif route[:manage_print]
-        %a.btn.btn-default.btn-xs{href: "/api-web/0.1/plannings/#{route[:planning_id]}/routes/#{route[:route_id]}/print", target: "_blank", title: t('plannings.edit.export.print')}
+        %a.btn.btn-default.btn-xs{href: "/api-web/0.1/plannings/#{summary[:planning_id]}/routes/#{route[:route_id]}/print", target: "_blank", title: t('plannings.edit.export.print')}
           %i.fa.fa-print.fa-fw
 .row.route-data{"data-route-id": route[:route_id]}
   - if route[:vehicle_id]

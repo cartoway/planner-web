@@ -1,8 +1,8 @@
 <% local_assigns[:updated_routes].each do |route| %>
   <% if route[:vehicle_usage_id] %>
-    $('ol.routes').find("li.route[data-route-id='<%= route[:route_id] %>']").html("<%= j(render 'routes/in_route.html.haml', route: route) %>");
+    $('ol.routes').find("li.route[data-route-id='<%= route[:route_id] %>']").html("<%= j(render 'routes/in_route.html.haml', route: route, summary: local_assigns[:summary]) %>");
   <% else %>
-    $('ol.routes.out_routes').find('li.route').html("<%= j(render 'routes/out_of_route.html.haml', route: route, routes: local_assigns[:routes] || local_assigns[:summary][:routes])%>");
+    $('ol.routes.out_routes').find('li.route').html("<%= j(render 'routes/out_of_route.html.haml', local_assigns) %>");
   <% end %>
 <% end %>
 var locals = <%= local_assigns.to_json.html_safe %>;
