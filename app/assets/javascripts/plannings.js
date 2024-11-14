@@ -1897,6 +1897,10 @@ export const plannings_edit = function(params) {
     updateDataHeader(data.planning_id);
     var routesWithVehicle = data.routes.filter(function(route) { return route.vehicle_usage_id; });
     $.each(routes, function(i, route) {
+
+      const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
+      initRoutes($routePanel, data, {skipCallbacks: true});
+
       var sortableUpdate = false;
       $(".route[data-route-id='" + route.route_id + "'] .stops.sortable").sortable({
         distance: 8,
