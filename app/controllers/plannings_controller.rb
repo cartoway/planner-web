@@ -223,6 +223,7 @@ class PlanningsController < ApplicationController
     end
     planning_summary = planning_summary(@planning)
     route_data = JSON.parse(render_to_string(template: 'routes/_edit.json.jbuilder', locals: { route: current_route, stops_count: stops_count }), symbolize_names: true)
+    route_data[:route_id] = @route.id
     respond_to do |format|
       if current_route.vehicle_usage_id
         format.js { render partial: 'routes/in_route.js.erb', locals: { route: route_data, summary: planning_summary } }

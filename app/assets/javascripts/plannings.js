@@ -1566,7 +1566,8 @@ export const plannings_edit = function(params) {
             if (!locals.route.vehicle_usage_id) {
               continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
             }
-          }
+          },
+          complete: completeAjaxMap
         });
       });
     }
@@ -1866,7 +1867,6 @@ export const plannings_edit = function(params) {
           complete: completeAjaxMap
         });
         const $routePanel = $(`li.route[data-route-id="${route.route_id}"]`);
-
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
         if (!options || !options.skipMap) {
           routesLayer.refreshRoutes([route.route_id], routes)
