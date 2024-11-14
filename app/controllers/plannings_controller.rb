@@ -341,7 +341,7 @@ class PlanningsController < ApplicationController
       begin
         if Optimizer.optimize(@planning, nil, { global: global, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers, nb_route: nb_route}) && @planning.customer.save!
           planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
-          format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
+          format.js { render partial: 'routes/update.js.erb', locals: { optimizer: planning_data[:optimizer], updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
           format.json { render json: @planning.errors, status: :unprocessable_entity }
@@ -365,7 +365,7 @@ class PlanningsController < ApplicationController
         if route && Optimizer.optimize(@planning, route, { global: false, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers }) && @planning.customer.save!
           @routes = [route.reload]
           planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
-          format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
+          format.js { render partial: 'routes/update.js.erb', locals: { optimizer: planning_data[:optimizer], updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
           format.json { render json: errors, status: :unprocessable_entity }
@@ -400,9 +400,10 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       if route && route.active(params[:active].to_s.to_sym) && route.compute! && @planning.save
         @routes = [route]
-        format.json { render action: 'show', location: @planning }
+        planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+        format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
       else
-        format.json { render json: @planning.errors, status: :unprocessable_entity }
+        format.js { render json: @planning.errors, status: :unprocessable_entity }
       end
     end
   end
