@@ -4,7 +4,7 @@ if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
     json.error !!@planning.customer.job_optimizer.failed_at
     json.customer_id @planning.customer.id
     json.dispatch_params_delayed_job do
-      json.nb_route Job.nb_routes(@planning.customer.job_optimizer) unless @routes
+      json.nb_route Job.nb_routes(@planning.customer.job_optimizer)
       json.with_stops @with_stops
       json.route_ids @routes.map(&:id).join(',') if @routes
     end

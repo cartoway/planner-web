@@ -1,4 +1,4 @@
-<% local_assigns[:updated_routes].each do |route| %>
+<% local_assigns[:updated_routes]&.each do |route| %>
   <% if route[:vehicle_usage_id] %>
     $('ol.routes').find("li.route[data-route-id='<%= route[:route_id] %>']").html("<%= j(render 'routes/in_route.html.haml', route: route, summary: local_assigns[:summary]) %>");
   <% else %>

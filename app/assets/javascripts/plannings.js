@@ -1625,6 +1625,18 @@ export const plannings_edit = function(params) {
     });
   };
 
+  var displayOptimModal = function(locals, options) {
+    if (locals.optimizer) {
+      optimizationTimer
+        .setOptimDuration(locals.optimizer.dispatch_params_delayed_job.nb_route)
+        .displayOptimDuration(locals.optimizer.dispatch_params_delayed_job.error);
+    }
+
+    if (!progressDialog(locals.optimizer, dialog_optimizer, '/plannings/' + planning_id + '.json' + (options.firstTime ? '?with_stops=' + withStopsInSidePanel : ''), displayPlanning, options)) {
+      return;
+    }
+  }
+
   // Depending 'options.partial' this function is called for initialization or for pieces of planning
   var displayPlanning = function(data, options) {
 
@@ -2252,7 +2264,7 @@ export const plannings_edit = function(params) {
         nb_route: optimizationTimer.getNbRoute()
       },
       beforeSend: beforeSendWaiting,
-      success: function(data) {
+      success: function() {
         var options = {
           error: function() {
             stickyError(I18n.t('plannings.edit.optimize_failed'));
@@ -2265,7 +2277,10 @@ export const plannings_edit = function(params) {
             }
           }
         };
-        if (locals.updated_routes) {
+        if (locals.optimizer) {
+          displayOptimModal(locals, options)
+        }
+        else {
           updateSuccess(locals.summary, map, locals.updated_routes);
           routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
         }
