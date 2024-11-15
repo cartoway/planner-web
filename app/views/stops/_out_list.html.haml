@@ -26,8 +26,8 @@
             - if stop[:geocoded]
               %button.automatic_insert.btn.btn-default.btn-xs{title: t("plannings.edit.automatic_insert_help")}
                 %i.fa.fa-bolt
-            - if stop[:manage_destination]
-              %a.marker_edit.btn.btn-default.btn-xs{href: "/destinations/#{stop[:destination_id]}/edit?back=true#collapseVisit#{stop[:visit_id]}", title: t("plannings.edit.edit_visit_help")}
+            - if @manage_planning[:manage_destination]
+              %a.marker_edit.btn.btn-default.btn-xs{href: "/destinations/#{stop[:destination][:destination_id]}/edit?back=true#collapseVisit#{stop[:visit_id]}", title: t("plannings.edit.edit_visit_help")}
                 %i.fa.fa-pencil
             - if stop[:geocoded]
               %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}>
