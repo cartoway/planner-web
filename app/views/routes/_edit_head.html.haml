@@ -244,7 +244,7 @@
         = t('all.unit.kgco2e_html')
   - else
     .col-xs-4
-      .route-info.inactive
+      .route-info.inactive{ data: { "size-active": route[:size]}}
         %i.fa.fa-check-square.fa-fw
         = route[:size]
         = t('plannings.edit.stops')

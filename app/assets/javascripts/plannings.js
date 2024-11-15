@@ -1575,7 +1575,7 @@ export const plannings_edit = function(params) {
 
   var checkLockAndActive = function() {
     var maxUnlockedStops = 0;
-    $('[data-route-id]').each(function() {
+    $('.route[data-route-id]').each(function() {
       var isRouteLocked = $(this).find('.lock i').hasClass('fa-lock');
       var stopCount = $(this).find('[data-size-active]').data('size-active');
 
@@ -1894,6 +1894,7 @@ export const plannings_edit = function(params) {
       update: sortPlanning
     }).disableSelection();
 
+    checkLockAndActive();
     updateDataHeader(data.planning_id);
     var routesWithVehicle = data.routes.filter(function(route) { return route.vehicle_usage_id; });
     $.each(routes, function(i, route) {
