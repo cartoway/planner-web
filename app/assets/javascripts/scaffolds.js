@@ -708,3 +708,59 @@ export function continuousListLoading(listRef, linkRef, loadingRef, offset) {
   $(listRef).on('scroll', loadNextPage);
   window.addEventListener('load', loadNextPage);
 };
+
+export function updateSelectionCount(containerRef, selectorRef) {
+  var $select = $(selectorRef);
+  var selectedValues = $select.val() || [];
+
+  var filteredSelectedValues = selectedValues.filter(function(value) {
+    return !['all', 'clear', 'reverse'].includes(value);
+  });
+  var selectedCount = filteredSelectedValues.length;
+
+  var text = '';
+  if (selectedCount === 0) {
+    text = I18n.t('web.select2.route_none');
+  } else if (selectedCount === 1) {
+    text = "1 " + I18n.t('web.select2.route_selected');
+  } else {
+    text = selectedCount + " "  + I18n.t('web.select2.routes_selected');
+  }
+  $('.select2-selection__rendered', containerRef).html(
+    '<li class="select2-selection__choice"><span class="select2-selection__choice__display">' + text + '<span></li>'
+  );
+}
+
+export function selectGlobalActions(context, e) {
+  switch(e.params.data.id) {
+    case 'clear':
+      context.find('option').prop('selected', false);
+      break;
+    case 'reverse':
+      context.find('option').each(function() {
+        $(this).prop('selected', !$(this).prop('selected'));
+      });
+      break;
+    case 'all':
+      context.find('option').prop('selected', true);
+      break;
+  }
+  if (['all', 'clear', 'reverse'].includes(e.params.data.id)) {
+    context.trigger('change');
+    context.select2('close');
+  }
+}
+
+export function selectFormatOption(option) {
+  switch(option.id) {
+    case 'clear':
+      return $('<span class="global"><i class="fa fa-regular fa-square fa-fw"></i> ' + I18n.t('web.select2.route_clear') + '</span>');
+    case 'reverse':
+      return $('<span class="global"><i class="fa fa-random fa-fw"></i> ' + I18n.t('web.select2.route_reverse') + '</span>');
+    case 'all':
+      return $('<span class="global"><i class="fa fa-check-square fa-fw"></i> ' + I18n.t('web.select2.route_all') + '</span>');
+    default:
+      return option.text;
+  }
+}
+

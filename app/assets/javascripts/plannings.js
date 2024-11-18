@@ -33,8 +33,11 @@ import {
   continuousListLoading,
   mapInitialize,
   initializeMapHash,
+  selectFormatOption,
+  selectGlobalActions,
   templateSelectionColor,
   templateResultColor,
+  updateSelectionCount,
   dropdownAutoDirection,
   modal_options
 } from '../../assets/javascripts/scaffolds';
@@ -1126,6 +1129,52 @@ export const plannings_edit = function(params) {
     return false;
   };
 
+  var initRouteSelector = function() {
+    $('#planning_route_ids').select2({
+      dropdownParent: $('#route_selector .multiple'),
+      closeOnSelect : false,
+      allowClear: true,
+      theme: 'bootstrap',
+      placeholder: I18n.t('web.select2.search_placeholder'),
+      templateSelection: selectFormatOption,
+      templateResult: selectFormatOption,
+    }).on('select2:select', function(e) {
+      selectGlobalActions($(this), e)
+    }).on('select2:open', function(e) {
+      setTimeout(function() {
+        $('#route_selector .select2-results__option').each(function() {
+          var optionValue = $(this).attr('id').split('-').pop();
+          if (['clear', 'reverse', 'all'].includes(optionValue)) {
+            $(this).addClass('global');
+          }
+        });
+      }, 0);
+    }).on('select2:select select2:unselect', function() {
+      updateSelectionCount('#route_selector', '#planning_route_ids');
+    })
+      .on('select2:close', function(e) {
+      var selectedIds = $(this).val();
+
+      $.ajax({
+        type: 'PATCH',
+        url: '/plannings/' + planning_id + '/filter_routes.js?with_stops=' + withStopsInSidePanel,
+        contentType: 'application/json',
+        data: JSON.stringify({ route_ids: selectedIds }),
+        dataType: 'script',
+        beforeSend: beforeSendWaiting,
+        success: function() {
+          updateSuccess(locals.summary, map, locals.routes);
+          initRoutes($('#edit-planning'), locals, {});
+          initRouteSelector();
+          updateSelectionCount('#route_selector', '#planning_route_ids');
+          initPlanningDisplay(locals, planning_id, { fitbound: true, firstTime: true, withStops: withStopsInSidePanel })
+        },
+        complete: completeAjaxMap,
+        error: ajaxError
+      });
+    });
+  };
+
   // called first during plan initialization (context: plan), and several times after a route need to be refreshed (context: route)
   var initRoutes = function(context, data, options) {
     fake_select2($(".color_select", context), function(select) {
@@ -1757,38 +1806,11 @@ export const plannings_edit = function(params) {
         success: function() {
           updateSuccess(locals, map, locals.routes);
           initRoutes($('#edit-planning'), locals, options);
+          initRouteSelector();
+          updateSelectionCount('#route_selector', '#planning_route_ids');
+          initPlanningDisplay(locals, planning_id, $.extend(options, {fitBounds: fitBounds, withStops: withStopsInSidePanel}));
         },
         complete: completeAjaxMap
-      });
-
-      if (options.firstTime) {
-        routesLayer.showAllRoutes({stores: true}, function() {
-          if (fitBounds) {
-            var bounds = routesLayer.getBounds();
-            if (bounds && bounds.isValid()) {
-              map.invalidateSize();
-              map.fitBounds(bounds, {
-                maxZoom: 15,
-                animate: false,
-                padding: [20, 20]
-              });
-            }
-          }
-        });
-      }
-      else {
-        routesLayer.showAllRoutes();
-      }
-
-      $('#refresh').click(function() {
-        $.ajax({
-          type: 'GET',
-          url: '/plannings/' + planning_id + '/refresh.json?with_stops=' + withStopsInSidePanel,
-          beforeSend: beforeSendWaiting,
-          success: displayPlanning,
-          complete: completeAjaxMap,
-          error: ajaxError
-        });
       });
     }
     // 2nd case: several routes needs to be displayed (header and map), for instance by switching vehicles
@@ -2204,6 +2226,52 @@ export const plannings_edit = function(params) {
         url: "/api/0.1/zonings/" + zoningId + ".json",
         beforeSend: beforeSendWaiting,
         success: displayZoning,
+        complete: completeAjaxMap,
+        error: ajaxError
+      });
+    });
+  }
+
+  var initPlanningDisplay = function(locals, planning_id, options) {
+    $.ajax({
+      type: 'GET',
+      url: '/plannings/' + planning_id + '/sidebar.js?with_stops=' + options.withStops,
+      beforeSend: beforeSendWaiting,
+      error: ajaxError,
+      success: function() {
+        updateSuccess(locals, map, locals.routes);
+        initRoutes($('#edit-planning'), locals, options);
+        initRouteSelector();
+        updateSelectionCount('#route_selector', '#planning_route_ids');
+      },
+      complete: completeAjaxMap
+    });
+
+    if (options.firstTime) {
+      routesLayer.showAllRoutes({stores: true}, function() {
+        if (options.fitBounds) {
+          var bounds = routesLayer.getBounds();
+          if (bounds && bounds.isValid()) {
+            map.invalidateSize();
+            map.fitBounds(bounds, {
+              maxZoom: 15,
+              animate: false,
+              padding: [20, 20]
+            });
+          }
+        }
+      });
+    }
+    else {
+      routesLayer.showAllRoutes();
+    }
+
+    $('#refresh').click(function() {
+      $.ajax({
+        type: 'GET',
+        url: '/plannings/' + planning_id + '/refresh.json?with_stops=' + withStops,
+        beforeSend: beforeSendWaiting,
+        success: displayPlanning,
         complete: completeAjaxMap,
         error: ajaxError
       });

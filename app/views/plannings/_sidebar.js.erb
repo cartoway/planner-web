@@ -1,3 +1,4 @@
 
 $('#planning').html("<%= j(render partial: 'plannings/sidebar.html.haml', locals: local_assigns) %>");
+$('#route_selector').html("<%= j(render partial: 'plannings/selector.html.haml', locals: local_assigns) %>");
 var locals = <%= local_assigns.to_json.html_safe %>;
