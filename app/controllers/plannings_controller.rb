@@ -22,7 +22,7 @@ require 'zip'
 class PlanningsController < ApplicationController
   before_action :authenticate_user!
   UPDATE_ACTIONS = [:update, :move, :refresh, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  before_action :set_planning, only: [:show, :edit, :duplicate, :destroy, :cancel_optimize, :data_header, :refresh_route, :route_edit, :sidebar] + UPDATE_ACTIONS
+  before_action :set_planning, only: [:show, :edit, :duplicate, :destroy, :cancel_optimize, :data_header, :filter_routes, :refresh_route, :route_edit, :sidebar] + UPDATE_ACTIONS
   before_action :check_no_existing_job, only: UPDATE_ACTIONS
   around_action :includes_sub_models, except: [:index, :new, :create]
   around_action :over_max_limit, only: [:create, :duplicate]
@@ -244,10 +244,37 @@ class PlanningsController < ApplicationController
   end
 
   def sidebar
+    @routes =
+      if @with_stops
+        @planning.routes.includes_destinations.where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)")
+      else
+        @planning.routes.where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)")
+      end
     json_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
 
     respond_to do |format|
       format.js { render partial: 'sidebar', locals: json_data.merge(summary: planning_summary(@planning)) }
+    end
+  end
+
+  def filter_routes
+    route_ids = filter_params[:route_ids] || []
+    active_route_ids = route_ids.map(&:to_i) + @planning.routes.where(vehicle_usage_id: nil).pluck(:id)
+    planning_route_ids = @planning.routes.where.not(vehicle_usage_id: nil).pluck(:id)
+    @planning.routes.where(id: planning_route_ids - route_ids).update_all(locked: true, hidden: true)
+    @planning.routes.where(id: route_ids).where(locked: true, hidden: true).update_all(locked: false, hidden: false)
+
+    active_route_ids.sort!
+    @routes =
+      if @with_stops
+        @planning.routes.includes_destinations.where(id: active_route_ids)
+      else
+        @planning.routes.where(id: active_route_ids)
+      end
+
+    json_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+    respond_to do |format|
+      format.js { render partial: 'plannings/sidebar.js.erb', locals: json_data.merge(summary: planning_summary(@planning)) }
     end
   end
 
@@ -522,6 +549,10 @@ class PlanningsController < ApplicationController
     p[:begin_date] = Date.strptime(p[:begin_date], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK) unless p[:begin_date].blank?
     p[:end_date] = Date.strptime(p[:end_date], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK) unless p[:end_date].blank?
     p
+  end
+
+  def filter_params
+    params.permit(route_ids: [])
   end
 
   def stop_params

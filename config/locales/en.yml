@@ -2763,6 +2763,13 @@ en:
     select2:
       empty_result: No results matched
       new: New
+      route_all: All
+      route_reverse: Reverse
+      route_clear: None
+      route_none: No selected route
+      route_selected: selected route
+      routes_selected: selected routes
+      search_placeholder: Search
       placeholder: Write here
     dialog:
       close: Close

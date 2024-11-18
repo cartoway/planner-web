@@ -186,7 +186,4 @@ Rails.application.configure do
   config.validate_during_duplication = false
 
   config.logger_sms = nil
-
-  config.action_dispatch.cookies_same_site_protection = :none
-  config.session_store :cookie_store, key: '_cartoway_session', same_site: :none, secure: true
 end

@@ -2894,6 +2894,13 @@ fr:
     select2:
       empty_result: Pas de résultat
       new: Nouveau
+      route_all: Tous
+      route_reverse: Inverser
+      route_clear: Aucun
+      route_none: Aucune tournée sélectionnée
+      route_selected: tournées sélectionnée
+      routes_selected: tournées sélectionnées
+      search_placeholder: Rechercher
       placeholder: Écrire ici
     dialog:
       close: Fermer

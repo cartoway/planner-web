@@ -1,0 +1,8 @@
+.col-xs-12.multiple
+  %label
+    = t('activerecord.models.route')
+  - to_select_options = [{name: t('web.select2.route_clear'), route_id: 'clear', hidden: true, locked: true, class: 'global'}]
+  - to_select_options << {name: t('web.select2.route_reverse'), route_id: 'reverse', hidden: true, locked: true, class: 'global'}
+  - to_select_options << {name: t('web.select2.route_all'), route_id: 'all', hidden: true, locked: true, class: 'global'}
+  - to_select_options += local_assigns[:summary][:routes].select{ |r| r[:vehicle_usage_id] }
+  = select_tag :planning_route_ids, options_for_select(to_select_options.map{ |r| [r[:name], r[:route_id], { class: r[:class] }] }, to_select_options.select{ |r| !(r[:hidden] && r[:locked]) }.map{ |r| r[:route_id] }), { multiple: true, include_blank: false, class: 'form-control width_1_2 selectpicker', 'data-live-search': true, 'data-placeholder': ['', nil] }

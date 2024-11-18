@@ -38,6 +38,7 @@
  * font awesome must be after bootstrap to overwrite glyphicons
  *= require bootstrap_and_overrides
  *= require jquery-ui-overrides
+ *= require select2-overrides
 
  * From local
  *= require_self

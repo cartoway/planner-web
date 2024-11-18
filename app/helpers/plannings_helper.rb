@@ -59,6 +59,8 @@ module PlanningsHelper
           vehicle_id: route.vehicle_usage&.vehicle_id,
           name: (route.ref || '') + (route.vehicle_usage&.vehicle&.name || ''),
           color: route.color || route.vehicle_usage&.vehicle&.color,
+          hidden: route.hidden,
+          locked: route.locked
         }.delete_if{ |_k, v| v.nil? }
       }
     }
