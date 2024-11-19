@@ -513,43 +513,56 @@ class Planning < ApplicationRecord
     }
   end
 
+
   def set_stops(optimum, **options)
     raise "Optimum and planning have no route in common #{self.routes.map(&:id)} & #{optimum.keys}" if (self.routes.map(&:id) & optimum.keys.compact).empty?
 
-    Route.transaction do
-      updated_route_ids = []
-      stops_count = self.routes.collect{ |r| r.stops.size }.reduce(&:+)
-      flat_stop_ids = optimum.values.flatten.compact
-      out_stop_ids = optimum[nil] || optimum[self.routes.find{ |route| !route.vehicle_usage? }&.id] || []
+    Route.no_touching do
+      Route.transaction do
+        updated_route_ids = []
+        stops_count = self.routes.collect{ |r| r.stops.size }.reduce(&:+)
+        flat_stop_ids = optimum.values.flatten.compact
+        out_stop_ids = optimum[nil] || optimum[self.routes.find{ |route| !route.vehicle_usage? }&.id] || []
 
-      self.routes.each{ |route|
-        next unless optimum.key?(route.id)
+        self.routes.each{ |route|
+          next unless optimum.key?(route.id)
 
-        stops_ = route.stops_segregate(**options) # Split stops according to stop active statement
+          stops_ = route.stops_segregate(**options) # Split stops according to stop active statement
 
-        # Collect the stops assigned to the route
-        ordered_stops = self.routes.flat_map{ |r| r.stops.select{ |s| optimum[route.id].include? s.id }}.sort_by { |s| optimum[route.id].index s.id }
-        # Retrieve inactive stops provided by optimization
-        deactivated_stops =
-          if !options[:global] && route.vehicle_usage?
-            route.stops.select{ |s| out_stop_ids.include? s.id }
-          end || []
-        # Retrieve inactive stops unused in optimization
-        inactive_stops = stops_[false]&.reject{ |stop| flat_stop_ids.include?(stop.id) }&.sort_by(&:index) || []
+          # Collect the stops assigned to the route
+          ordered_stops = self.routes.flat_map{ |r| r.stops.select{ |s| optimum[route.id].include? s.id }}.sort_by { |s| optimum[route.id].index s.id }
+          # Retrieve inactive stops provided by optimization
+          deactivated_stops =
+            if !options[:global] && route.vehicle_usage?
+              route.stops.select{ |s| out_stop_ids.include? s.id }
+            end || []
+          # Retrieve inactive stops unused in optimization
+          inactive_stops = stops_[false]&.reject{ |stop| flat_stop_ids.include?(stop.id) }&.sort_by(&:index) || []
 
-        # Set route, active, index and reset route data
-        i = 0
-        ordered_stops.each{ |stop|
-          if stop.is_a?(StopRest) && !route.vehicle_usage?
-            flat_stop_ids.delete stop.id
-          else
-            if !options[:global] && !route.vehicle_usage? && route.id != stop.route_id
-              stop.active = false;
+          # Set route, active, index and reset route data
+          i = 0
+          ordered_stops.each{ |stop|
+            if stop.is_a?(StopRest) && !route.vehicle_usage?
+              flat_stop_ids.delete stop.id
+            else
+              if !options[:global] && !route.vehicle_usage? && route.id != stop.route_id
+                stop.active = false;
+                stop.index = i += 1
+                stop.save!
+                next
+              end
+              stop.active = true if route.vehicle_usage? && route.id != stop.route_id
               stop.index = i += 1
+              stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
+              if stop.route_id != route.id
+                updated_route_ids << stop.route_id
+                stop.route_id = route.id
+              end
               stop.save!
-              next
             end
-            stop.active = true if route.vehicle_usage? && route.id != stop.route_id
+          }
+          deactivated_stops.each{ |stop|
+            stop.active = false if route.vehicle_usage?
             stop.index = i += 1
             stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
             if stop.route_id != route.id
@@ -557,36 +570,26 @@ class Planning < ApplicationRecord
               stop.route_id = route.id
             end
             stop.save!
-          end
+          }
+          inactive_stops.each{ |stop|
+            stop.active = false if route.vehicle_usage?
+            stop.index = i += 1
+            stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
+            stop.save!
+          }
         }
-        deactivated_stops.each{ |stop|
-          stop.active = false if route.vehicle_usage?
-          stop.index = i += 1
-          stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
-          if stop.route_id != route.id
-            updated_route_ids << stop.route_id
-            stop.route_id = route.id
-          end
-          stop.save!
-        }
-        inactive_stops.each{ |stop|
-          stop.active = false if route.vehicle_usage?
-          stop.index = i += 1
-          stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
-          stop.save!
-        }
-      }
 
-      # Save route to update now stop.route_id
-      self.routes.each{ |route|
-        route.outdated = true
-        (route.no_stop_index_validation = true) && route.save!
-        route.stops.reload # Refresh route.stops collection if stops have been moved
-      }
-      updated_route_ids.uniq!
-      outdate_drained_routes(updated_route_ids - self.routes.map(&:id)) if updated_route_ids.any?
-      self.reload # Refresh route.stops collection if stops have been moved
-      raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.size }.reduce(&:+) == stops_count
+        # Save route to update now stop.route_id
+        self.routes.each{ |route|
+          route.outdated = true
+          (route.no_stop_index_validation = true) && route.save!
+          route.stops.reload # Refresh route.stops collection if stops have been moved
+        }
+        updated_route_ids.uniq!
+        outdate_drained_routes(updated_route_ids - self.routes.map(&:id)) if updated_route_ids.any?
+        self.reload # Refresh route.stops collection if stops have been moved
+        raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.size }.reduce(&:+) == stops_count
+      end
     end
   end
 
