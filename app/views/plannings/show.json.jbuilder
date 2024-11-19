@@ -28,19 +28,5 @@ else
     json.extract! store, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
   end
 
-  averages = @planning.averages(current_user.prefered_unit)
-  if averages
-    json.averages do
-      json.routes_visits_duration time_over_day(averages[:routes_visits_duration]) if averages[:routes_visits_duration]
-      json.routes_drive_time time_over_day(averages[:routes_drive_time])
-      json.routes_wait_time time_over_day(averages[:routes_wait_time]) if averages[:routes_wait_time]
-      json.routes_speed_average averages[:routes_speed_average]
-      json.vehicles_used averages[:vehicles_used]
-      json.vehicles averages[:vehicles]
-      json.emission averages[:routes_emission] ? number_to_human(averages[:routes_emission], precision: 4) : '-'
-      json.total_quantities planning_quantities(@planning)
-    end
-  end
-
   json.routes (@routes || (@with_stops ? @planning.routes.includes_destinations : @planning.routes)), partial: 'routes/edit', formats: [:json], handlers: [:jbuilder], as: :route, locals: { list_devices: planning_devices(@planning.customer), stops_count: nil }
 end

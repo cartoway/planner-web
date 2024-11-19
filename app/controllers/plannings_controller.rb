@@ -236,7 +236,7 @@ class PlanningsController < ApplicationController
   end
 
   def data_header
-    json_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+    json_data = JSON.parse(render_to_string(template: 'plannings/head_data.json.jbuilder'), symbolize_names: true)
 
     respond_to do |format|
       format.js { render partial: 'edit_head', locals: json_data }
@@ -244,6 +244,8 @@ class PlanningsController < ApplicationController
   end
 
   def sidebar
+    stops_count = 0
+    @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops.size) >= 1000 }
     @routes =
       if @with_stops
         @planning.routes.includes_destinations.where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)")
@@ -258,25 +260,13 @@ class PlanningsController < ApplicationController
   end
 
   def filter_routes
-    stops_count = 0
-    @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.any?{ |r| (stops_count += r.stops.size) >= 1000 }
     route_ids = filter_params[:route_ids] || []
-    active_route_ids = route_ids.map(&:to_i) + @planning.routes.where(vehicle_usage_id: nil).pluck(:id)
     planning_route_ids = @planning.routes.where.not(vehicle_usage_id: nil).pluck(:id)
     @planning.routes.where(id: planning_route_ids - route_ids).update_all(locked: true, hidden: true)
     @planning.routes.where(id: route_ids).where(locked: true, hidden: true).update_all(locked: false, hidden: false)
 
-    active_route_ids.sort!
-    @routes =
-      if @with_stops
-        @planning.routes.includes_destinations.where(id: active_route_ids)
-      else
-        @planning.routes.where(id: active_route_ids)
-      end
-
-    json_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
     respond_to do |format|
-      format.js { render partial: 'plannings/sidebar.js.erb', locals: json_data.merge(summary: planning_summary(@planning)) }
+      format.json { render json: { locals: { summary: planning_summary(@planning) }}}
     end
   end
 
