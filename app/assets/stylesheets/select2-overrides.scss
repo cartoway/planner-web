@@ -1,6 +1,10 @@
 
 @import "variables";
 
+.select2 {
+  width: 100% !important;
+}
+
 .multiple {
   .select2-results__option {
     padding-right: 20px;
@@ -54,9 +58,6 @@
     border-radius: 6px;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
 
-  }
-  .select2-selection .select2-selection--multiple:after {
-    content: 'hhghgh';
   }
   /* select with icons badges single*/
   .select-icon .select2-selection__placeholder .badge {

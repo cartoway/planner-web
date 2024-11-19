@@ -501,7 +501,12 @@ class PlanningsController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_planning
-    @manage_planning = PlanningsController.manage
+    @manage_planning =
+      if request.referer.match('api-web')
+        ApiWeb::V01::PlanningsController.manage
+      else
+        PlanningsController.manage
+      end
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.find(params[:id] || params[:planning_id])
