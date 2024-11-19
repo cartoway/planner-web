@@ -1157,17 +1157,13 @@ export const plannings_edit = function(params) {
 
       $.ajax({
         type: 'PATCH',
-        url: '/plannings/' + planning_id + '/filter_routes.js?with_stops=' + withStopsInSidePanel,
+        url: '/plannings/' + planning_id + '/filter_routes.json',
         contentType: 'application/json',
         data: JSON.stringify({ route_ids: selectedIds }),
-        dataType: 'script',
+        dataType: 'json',
         beforeSend: beforeSendWaiting,
         success: function() {
-          updateSuccess(locals.summary, map, locals.routes);
-          initRoutes($('#edit-planning'), locals, {});
-          initRouteSelector();
-          updateSelectionCount('#route_selector', '#planning_route_ids');
-          initPlanningDisplay(locals, planning_id, { fitbound: true, firstTime: true, withStops: withStopsInSidePanel })
+          initPlanningDisplay(planning_id, { fitbound: true, firstTime: true })
         },
         complete: completeAjaxMap,
         error: ajaxError
@@ -1797,21 +1793,7 @@ export const plannings_edit = function(params) {
       data.ref = null; // here to prevent mustache template to get the value
       $.extend(data, params.manage_planning);
       data.callback_button = params.callback_button;
-
-      $.ajax({
-        type: 'GET',
-        url: '/plannings/' + planning_id + '/sidebar.js?with_stops=' + withStopsInSidePanel,
-        beforeSend: beforeSendWaiting,
-        error: ajaxError,
-        success: function() {
-          updateSuccess(locals, map, locals.routes);
-          initRoutes($('#edit-planning'), locals, options);
-          initRouteSelector();
-          updateSelectionCount('#route_selector', '#planning_route_ids');
-          initPlanningDisplay(locals, planning_id, $.extend(options, {fitBounds: fitBounds, withStops: withStopsInSidePanel}));
-        },
-        complete: completeAjaxMap
-      });
+      initPlanningDisplay(planning_id, $.extend(options, {fitBounds: fitBounds}));
     }
     // 2nd case: several routes needs to be displayed (header and map), for instance by switching vehicles
     else if (typeof options === 'object' && options.partial === 'routes') {
@@ -1917,7 +1899,6 @@ export const plannings_edit = function(params) {
     }).disableSelection();
 
     checkLockAndActive();
-    updateDataHeader(data.planning_id);
     var routesWithVehicle = data.routes.filter(function(route) { return route.vehicle_usage_id; });
     $.each(routes, function(i, route) {
 
@@ -2008,6 +1989,8 @@ export const plannings_edit = function(params) {
           });
         });
     });
+
+    updateDataHeader(data.planning_id);
 
     $(document).keyup(function(event) {
       if ($(".sidebar").hasClass('extended') && event.keyCode === 27 && typeof lastPopover !== 'undefined') {
@@ -2232,14 +2215,14 @@ export const plannings_edit = function(params) {
     });
   }
 
-  var initPlanningDisplay = function(locals, planning_id, options) {
+  var initPlanningDisplay = function(planning_id, options) {
     $.ajax({
       type: 'GET',
-      url: '/plannings/' + planning_id + '/sidebar.js?with_stops=' + options.withStops,
+      url: '/plannings/' + planning_id + '/sidebar.js',
       beforeSend: beforeSendWaiting,
       error: ajaxError,
       success: function() {
-        updateSuccess(locals, map, locals.routes);
+        updateSuccess(locals.summary, map, locals.routes);
         initRoutes($('#edit-planning'), locals, options);
         initRouteSelector();
         updateSelectionCount('#route_selector', '#planning_route_ids');

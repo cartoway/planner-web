@@ -40,6 +40,9 @@ class Route < ApplicationRecord
   after_create :complete_geojson
   after_save { @computed = false }
 
+  after_save :invalidate_route_cache
+  after_destroy :invalidate_route_cache
+
   scope :for_customer_id, ->(customer_id) { joins(:planning).where(plannings: {customer_id: customer_id}) }
   scope :includes_vehicle_usages, -> {
     includes(vehicle_usage: [
@@ -495,7 +498,9 @@ class Route < ApplicationRecord
   end
 
   def size_active
-    vehicle_usage_id ? (stops.loaded? ? stops.select(&:active).size : stops.where(active: true).count) : 0
+    Rails.cache.fetch("#{cache_key_with_version}/active_stops", expires_in: 1.hour) do
+      vehicle_usage_id ? (stops.loaded? ? stops.select(&:active).size : stops.where(active: true).count) : 0
+    end
   end
 
   def size_destinations
@@ -812,6 +817,10 @@ class Route < ApplicationRecord
   def assign_defaults
     self.hidden = false
     self.locked = false
+  end
+
+  def invalidate_route_cache
+    Rails.cache.delete("#{self.cache_key_with_version}/active_stops")
   end
 
   def remove_stop(stop)
