@@ -258,6 +258,8 @@ class PlanningsController < ApplicationController
   end
 
   def filter_routes
+    stops_count = 0
+    @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.any?{ |r| (stops_count += r.stops.size) >= 1000 }
     route_ids = filter_params[:route_ids] || []
     active_route_ids = route_ids.map(&:to_i) + @planning.routes.where(vehicle_usage_id: nil).pluck(:id)
     planning_route_ids = @planning.routes.where.not(vehicle_usage_id: nil).pluck(:id)
