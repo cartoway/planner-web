@@ -17,48 +17,54 @@
       %li.d-fake-flex.align-items-center.list-group-item{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store_id": stop[:store_id] }
         .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("stop-row-#{stop[:status_code]}" if stop[:status])}
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
-            .col-xs-2.d-flex.align-items-center.justify-content-center
+            .col-xs-2.d-flex.justify-content-center.align-items-center
               %input.stop_active{type: "checkbox", checked: ("checked" if stop[:active]), disabled: (true if !@manage_planning[:manage_organize]), title: t('plannings.edit.active_help') }
             .col-xs-10.d-flex.align-items-center
               .col-xs-5.d-flex.justify-content-center
-                %span.number.stop-label.label{style: "background-color: #{stop[:active] ? stop[:color] : 'transparent'};" }
-                  - eta_statement = " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" if stop[:eta_formated]
-                  %span.stop-status{class: ("stop-status-#{stop[:status_code]} if stop.status"), title: "#{stop[:status]}#{eta_statement}", style: ("style=display: none;" if !stop[:status])}
-                = stop[:number]
-            .col-xs-7
-              .primary.stop-info{class: ("danger" if stop[:error])}
-                - if stop[:active]
-                  = stop[:time]
-                  - if stop[:time_day]
-                    = "(+#{stop[:time_day]})"
-        .col-xs-4.col-md-5.d-flex
-          .title
-            - if stop[:out_of_window]
-              i.fa.fa-stopwatch.fa-fw{title: t("plannings.edit.error.out_of_window_help")}
-            - if stop[:out_of_drive_time]
-              %i.fa.fa-power-off.fa-fw{title: t("plannings.edit.error.out_of_drive_time_help")}
-            - if stop[:out_of_work_time]
-              %i.fa.fa-repeat.fa-fw{title: t("plannings.edit.error.out_of_work_time_help")}
-            - if stop[:out_of_max_distance]
-              %i.fa.fa-ruler.fa-fw{title: t("plannings.edit.error.out_of_max_distance_help")}
-            - if stop[:out_of_max_ride_distance]
-              %i.fa.fa-compass-drafting.fa-fw{title: t("plannings.edit.error.out_of_max_ride_distance_help")}
-            - if stop[:out_of_max_ride_duration]
-              %i.fa.fa-stopwatch-20.fa-fw{title: t("plannings.edit.error.out_of_max_ride_duration_help")}
-            - if stop[:no_path]
-              %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path_help")}
-            %span.name{title: stop[:name]}
-              %i.fa.fa-coffee.fa-fw
-              = stop[:name]
-        .col-xs-2.col-md-3.hover-tools{style: "display: none;"}
-          .col-xs-0.col-md-6
-          .col-xs-12.col-md-6.d-flex.align-items-center
-            %i.fa.fa-reorder.fa-fw{title: t("plannings.edit.drag_help")}
-            .btn-group.pull-right.stop-tools
-              %a.marker_edit.btn.btn-default.btn-xs.invisible{href: "/"}
-                %i.fa.fa-pencil
-              %a.marker.btn.btn-default.btn-xs{class: ("invisible" if !stop[:geocoded]), href: "#", title: t("plannings.edit.marker_help")}
-                %i.fa.fa-map-marker
+                %span.number.stop-label.label{class: ("color_force" if stop[:color_force]), style: "background-color: #{ stop[:active] ? route[:color] : 'transparent' };"}
+                  = stop[:number]
+              .col-xs-7
+                .stop-info{class: "#{stop[:active] ? 'primary' : 'info'} #{('danger' if stop[:error])}"}
+                  - if stop[:active]
+                    = stop[:time]
+                    - if stop[:time_day]
+                      = "(+#{stop[:time_day]})"
+          .col-xs-4.col-md-4.d-flex
+            .title
+              - if stop[:out_of_window]
+                %i.fa.fa-stopwatch.fa-fw{title: t("plannings.edit.error.out_of_window_help")}
+              - if stop[:out_of_drive_time]
+                %i.fa.fa-power-off.fa-fw{title: t("plannings.edit.error.out_of_drive_time_help")}
+              - if stop[:out_of_work_time]
+                %i.fa.fa-repeat.fa-fw{title: t("plannings.edit.error.out_of_work_time_help")}
+              - if stop[:out_of_max_distance]
+                %i.fa.fa-ruler.fa-fw{title: t("plannings.edit.error.out_of_max_distance_help")}
+              - if stop[:out_of_max_ride_distance]
+                %i.fa.fa-compass-drafting.fa-fw{title: t("plannings.edit.error.out_of_max_ride_distance_help")}
+              - if stop[:out_of_max_ride_duration]
+                %i.fa.fa-stopwatch-20.fa-fw{title: t("plannings.edit.error.out_of_max_ride_duration_help")}
+              - if stop[:no_path]
+                %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path_help")}
+
+              - title = stop[:name]
+              - if stop[:index_visit]
+                - title += " #{stop[:index_visit]}"
+              - if stop[:status]
+                - title += " - #{stop[:status]}"
+              - if stop[:eta_formated]
+                - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
+              %span.name{title: title}
+                %i.fa.fa-coffee.fa-fw
+                = stop[:name]
+          .col-xs-2.col-md-4.hover-tools{style: "display: none;"}
+            .col-xs-0.col-md-6
+            .col-xs-12.col-md-6.d-flex.align-items-center
+              %i.fa.fa-reorder.fa-fw{title: t("plannings.edit.drag_help")}
+              .btn-group.pull-right.stop-tools
+                %a.marker_edit.btn.btn-default.btn-xs.invisible{href: "/"}
+                  %i.fa.fa-pencil
+                %a.marker.btn.btn-default.btn-xs{class: ("invisible" if !stop[:geocoded]), href: "#", title: t("plannings.edit.marker_help")}
+                  %i.fa.fa-map-marker
     - if stop[:destination] && stop[:visits]
       %li.d-fake-flex.align-items-center.list-group-item{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index]}
         .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("stop-row-#{stop[:status_code]}" if stop[:status])}

@@ -2,7 +2,7 @@
 - if route[:vehicle_id]
   .last-sent-at
     - if route[:last_sent_at_formatted]
-      = render partial: 'routes/last_sent_at', locals: { route: route }
+      = render partial: 'routes/last_sent_at.html.haml', locals: { route: route }
   .optimized-at
     - if route[:optimized_at_formatted]
       %label
