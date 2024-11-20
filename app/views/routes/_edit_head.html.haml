@@ -26,35 +26,35 @@
           %span.caret
       %ul.dropdown-menu{role: "menu"}
         %li
-          %a.active_none{href: "#{route[:route_id]}/active/none"}
+          %a.active_none{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/none"}
             %i.fa.fa-regular.fa-square.fa-fw
             = t('plannings.edit.active_none')
         %li
-          %a.active_reverse{href: "#{route[:route_id]}/active/reverse"}
+          %a.active_reverse{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/reverse"}
             %i.fa.fa-random.fa-fw
             = t('plannings.edit.active_reverse')
         %li
-          %a.active_all{href: "#{route[:route_id]}/active/all"}
+          %a.active_all{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/all"}
             %i.fa.fa-check-square.fa-fw
             = t('plannings.edit.active_all')
         - if route[:status_any]
           %li.divider{role: "separator"}
           - if route[:status_all]
             %li
-              %a.active_status{href: "#{route[:route_id]}/active/#{route[:code]}"}
+              %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/#{route[:code]}"}
                 %span.stop-status{class: "stop-status-#{route[:code]}", title: route[:status]}
                 route[:status]
           %li
-            %a.active_status{href: "#{route[:route_id]}/active/status_any"}
+            %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/status_any"}
               %span.stop-status
               = t('plannings.edit.stop_status.any')
           %li
-            %a.active_status{href: "#{route[:route_id]}/active/status_none"}
+            %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/status_none"}
               %span.stop-status.stop-status-none
               = t('plannings.edit.stop_status.none')
         %li.divider{role: "separator"}
         %li
-          %a.reverse_order{href: "#{route[:route_id]}/reverse_order"}
+          %a.reverse_order{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/reverse_order"}
             %i.fa.fa-arrow-right-arrow-left.fa-rotate-90.fa-fw
             = t('plannings.edit.reverse_order')
         %li
