@@ -115,11 +115,13 @@ class PlanningsController < ApplicationController
 
   def update
     respond_to do |format|
-      if @planning.update(planning_params)
-        format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.updated', model: @planning.class.model_name.human) }
-      else
-        capabilities
-        format.html { render action: 'edit' }
+      Route.no_touching do
+        if @planning.update(planning_params)
+          format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.updated', model: @planning.class.model_name.human) }
+        else
+          capabilities
+          format.html { render action: 'edit' }
+        end
       end
     end
   end
