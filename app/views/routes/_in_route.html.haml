@@ -153,7 +153,7 @@
                     %span.store-status{class: "stop-status-#{route[:store_stop][:status_code]}", title: "#{route[:store_stop][:status]}#{eta_statement}", style: ("display: none;" if !route[:store_stop][:status])}
                     .btn-group.pull-right.stop-tools
                       - if @manage_planning[:manage_store]
-                        %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_start][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
+                        %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_stop][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
                           %i.fa.fa-pencil
                       %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                         %i.fa.fa-map-marker

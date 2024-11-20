@@ -5,6 +5,12 @@
   width: 100% !important;
 }
 
+.extended {
+  .multiple {
+    width: 80% !important;
+  }
+}
+
 .multiple {
   .select2-results__option {
     padding-right: 20px;
@@ -33,6 +39,11 @@
     padding-left: 5px;
     padding-top: 1px;
   }
+
+  .select2-results > .select2-results__options {
+    max-height: 400px;
+  }
+
   .select2-container--default .select2-results__option[aria-selected=true] {
     background-color: #fff;
   }
