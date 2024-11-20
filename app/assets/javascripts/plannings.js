@@ -464,7 +464,7 @@ export const plannings_edit = function(params) {
       $.each(data, function(i, route) {
         if (route.vehicle_usage_id) {
           var $route = $("[data-route-id='" + route.id + "']");
-          var startStop = $route.find('[data-store_id]');
+          var startStop = $route.find('[data-store-id]');
 
           // Adapter pattern for stores
           var startAdapter = { store: true, status: route.departure_status, status_code: route.departure_status_code, eta_formated: route.departure_eta_formated };
@@ -1046,7 +1046,7 @@ export const plannings_edit = function(params) {
       beforeSend: beforeSendWaiting,
 
       success: function() {
-        updateSuccess(locals.summary, map, locals.updated_routes);
+        updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
         routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
       },
       complete: completeAjaxMap,
@@ -1246,7 +1246,7 @@ export const plannings_edit = function(params) {
         },
         error: ajaxError
       });
-      $('li[data-route-id=' + id + '] li[data-store_id] > i.fa').css('color', color);
+      $('li[data-route-id=' + id + '] li[data-store-id] > i.fa').css('color', color);
       $('li[data-route-id=' + id + '] li[data-stop-id] .number:not(.color_force)').css('background', color);
       $('span[data-route-id=' + id + '] i.vehicle-icon').css('color', color);
     });
@@ -1366,7 +1366,7 @@ export const plannings_edit = function(params) {
             var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
             routesLayer.focus({routeId: routeId, stopIndex: stopIndex});
           } else {
-            var storeId = $(this).closest("[data-store_id]").attr("data-store_id");
+            var storeId = $(this).closest("[data-store-id]").attr("data-store-id");
             if (storeId) {
               routesLayer.focus({storeId: storeId});
             }
@@ -1384,7 +1384,7 @@ export const plannings_edit = function(params) {
             url: this.href,
             beforeSend: beforeSendWaiting,
             success: function() {
-              updateSuccess(locals.summary, map, locals.updated_routes);
+              updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
               routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
             },
             complete: completeAjaxMap,
@@ -1592,7 +1592,7 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function(data) {
-            updateSuccess(locals.summary, map, locals.updated_routes);
+            updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
             routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
             $('#planning-move-stops-modal').modal('hide');
           },
@@ -1823,7 +1823,7 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function() {
-            updateSuccess(locals.summary, map, [locals.route])
+            updateSuccess(locals.summary, map, [locals.route], {skipCallbacks: true})
           },
           complete: completeAjaxMap
         });
@@ -1868,7 +1868,7 @@ export const plannings_edit = function(params) {
           beforeSend: beforeSendWaiting,
           error: ajaxError,
           success: function() {
-            updateSuccess(locals.summary, map, [locals.route]);
+            updateSuccess(locals.summary, map, [locals.route], {skipCallbacks: true});
           },
           complete: completeAjaxMap
         });
@@ -1891,7 +1891,7 @@ export const plannings_edit = function(params) {
     });
   }
 
-  var updateSuccess = function(data, map, routes) {
+  var updateSuccess = function(data, map, routes, options) {
     $("#out_of_route").find(".sortable").sortable({
       connectWith: ".sortable",
       containment: "#edit-planning",
@@ -1905,7 +1905,7 @@ export const plannings_edit = function(params) {
     $.each(routes, function(i, route) {
 
       const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
-      initRoutes($routePanel, data, {skipCallbacks: true});
+      initRoutes($routePanel, data, options);
 
       var sortableUpdate = false;
       $(".route[data-route-id='" + route.route_id + "'] .stops.sortable").sortable({
@@ -2103,7 +2103,7 @@ export const plannings_edit = function(params) {
       url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '.js',
       beforeSend: beforeSendWaiting,
       success: function() {
-        updateSuccess(locals.summary, map, locals.updated_routes);
+        updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
         routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
       },
       complete: completeAjaxMap,
@@ -2119,7 +2119,7 @@ export const plannings_edit = function(params) {
       url: url,
       beforeSend: beforeSendWaiting,
       success: function() {
-        updateSuccess(locals.summary, map, locals.updated_routes);
+        updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
         routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
         enlightenStop({id: stopId});
         map.closePopup();
@@ -2338,7 +2338,7 @@ export const plannings_edit = function(params) {
           displayOptimModal(locals, options)
         }
         else {
-          updateSuccess(locals.summary, map, locals.updated_routes);
+          updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
           routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
         }
       },

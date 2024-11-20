@@ -74,7 +74,7 @@
             = render partial: 'routes/edit_head', locals: { route: route, summary: summary }
           - if route[:store_start]
             %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
-              %li.d-fake-flex.align-items-center.list-group-item{class:('ui-state-error' if route[:store_start][:error]), "data-store_id": route[:id]}
+              %li.d-fake-flex.align-items-center.list-group-item{class:('ui-state-error' if route[:store_start][:error]), "data-store-id": route[:store_start][:id]}
                 .row.store-row
                   .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
                     .col-xs-2.d-flex.align-items-center.justify-content-center
@@ -123,7 +123,7 @@
           = render partial: 'stops/list', locals: { route: route }
           - if route[:store_stop]
             %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
-              %li.d-fake-flex.align-items-center.list-group-item{class: ('ui-state-error' if route[:store_stop][:error]), "data-store_id": route[:id]}
+              %li.d-fake-flex.align-items-center.list-group-item{class: ('ui-state-error' if route[:store_stop][:error]), "data-store-id": route[:store_stop][:id]}
                 .row.store-row
                   .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
                     .col-xs-2.d-flex.align-items-center.justify-content-center
