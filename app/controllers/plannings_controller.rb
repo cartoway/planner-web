@@ -52,6 +52,13 @@ class PlanningsController < ApplicationController
     @routes = if params[:route_ids]
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
       @planning.routes.includes_destinations.where(id: route_ids)
+    else
+      stops_count = 0
+      if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops.size) >= 1000 }
+        @planning.routes.includes_destinations.where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)")
+      else
+        @planning.routes.where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)")
+      end
     end
     respond_to do |format|
       format.html
