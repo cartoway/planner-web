@@ -172,7 +172,7 @@ const routesByVehicleShow = function(params) {
           },
           error: ajaxError
         });
-        $('li[data-route-id=' + routeId + '] li[data-store_id] > i.fa').css('color', color);
+        $('li[data-route-id=' + routeId + '] li[data-store-id] > i.fa').css('color', color);
         $('li[data-route-id=' + routeId + '] li[data-stop-id] .number:not(.color_force)').css('background', color);
       })
       .on("click", ".marker", function() {
@@ -181,7 +181,7 @@ const routesByVehicleShow = function(params) {
           var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
           routesLayer.focus({routeId: routeId, stopIndex: stopIndex});
         } else {
-          var storeId = $(this).closest("[data-store_id]").attr("data-store_id");
+          var storeId = $(this).closest("[data-store-id]").attr("data-store-id");
           if (storeId) {
             routesLayer.focus({storeId: storeId});
           }
