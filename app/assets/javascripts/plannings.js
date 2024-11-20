@@ -1131,15 +1131,17 @@ export const plannings_edit = function(params) {
 
   var initRouteSelector = function() {
     $('#planning_route_ids').select2({
-      dropdownParent: $('#route_selector .multiple'),
+      dropdownParent: $('#planning_route_ids').parent(),
       closeOnSelect : false,
       allowClear: true,
       theme: 'bootstrap',
       placeholder: I18n.t('web.select2.search_placeholder'),
       templateSelection: selectFormatOption,
       templateResult: selectFormatOption,
-    }).on('select2:select', function(e) {
-      selectGlobalActions($(this), e)
+    }).off('select2:close select2:open select2:select select2:unselect'
+
+    ).on('select2:select', function(e) {
+      selectGlobalActions($(this), e);
     }).on('select2:open', function(e) {
       setTimeout(function() {
         $('#route_selector .select2-results__option').each(function() {
@@ -2223,7 +2225,6 @@ export const plannings_edit = function(params) {
       error: ajaxError,
       success: function() {
         updateSuccess(locals.summary, map, locals.routes);
-        initRoutes($('#edit-planning'), locals, options);
         initRouteSelector();
         updateSelectionCount('#route_selector', '#planning_route_ids');
       },

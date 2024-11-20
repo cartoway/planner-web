@@ -64,13 +64,16 @@
   .select2-container--default .select2-selection--multiple {
     border-width: 2px;
   }
+  .select2-container--bootstrap.select2-container--open {
+    position: relative !important;
+    top: 0 !important;
+  }
   .select2-container--open .select2-dropdown--below {
 
     border-radius: 6px;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
 
   }
-  /* select with icons badges single*/
   .select-icon .select2-selection__placeholder .badge {
     display: none;
   }
@@ -80,13 +83,5 @@
   .select-icon .select2-results__option:before,
   .select-icon .select2-results__option[aria-selected=true]:before {
     display: none !important;
-    /* content: "" !important; */
   }
-  // .select-icon  .select2-search--dropdown {
-  //   display: none;
-  // }
-  // .select2-search__field {
-  //   display: block !important;
-  //   width: 100% !important;
-  // }
 }
