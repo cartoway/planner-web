@@ -195,7 +195,7 @@ gem 'chronic_duration'
 # SMS
 gem 'iso_country_codes'
 gem 'phonelib'
-gem 'nexmo'
+gem "vonage", "~> 7.28"
 
 gem 'sentry-ruby'
 gem 'sentry-rails'
