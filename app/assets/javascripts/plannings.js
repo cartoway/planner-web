@@ -791,9 +791,11 @@ export const plannings_edit = function(params) {
           setTimeout(function() {
             route.css('box-shadow', '');
           }, 1500);
-          $('.sidebar-content').animate({
-            scrollTop: route.offset().top + $('.sidebar-content').scrollTop() - 100
-          });
+          if (route.length) {
+            $('.sidebar-content').animate({
+              scrollTop: route.offset().top + $('.sidebar-content').scrollTop() - 100
+            });
+          }
         });
       }
 
