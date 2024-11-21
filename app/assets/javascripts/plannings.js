@@ -1248,7 +1248,7 @@ export const plannings_edit = function(params) {
         error: ajaxError
       });
       $('li[data-route-id=' + id + '] li[data-store-id] > i.fa').css('color', color);
-      $('li[data-route-id=' + id + '] li[data-stop-id] .number:not(.color_force)').css('background', color);
+      $('li[data-route-id=' + id + '] li[data-stop-id] .number:not(.color_force):not(.inactive)').css('background', color);
       $('span[data-route-id=' + id + '] i.vehicle-icon').css('color', color);
     });
 
