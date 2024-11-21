@@ -606,6 +606,14 @@ export const RoutesLayer = L.FeatureGroup.extend({
     }
   },
 
+  switchRoutePolylines: function() {
+    this.options.disableRoutePolylines = !this.options.disableRoutePolylines;
+
+    this.hideAllRoutes();
+    this.options.withPolylines = !this.options.disableRoutePolylines;
+    this._loadAll();
+  },
+
   focus: function(options) {
     if (options.routeId && options.stopIndex) {
       if (this.clustersByRoute[options.routeId]) {
@@ -654,7 +662,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
       $.ajax({
         url: '/api/0.1' + (this.planningId ? '/plannings/' + this.planningId : '') + '/routes.geojson',
         data: {
-          geojson: this.options.withPolylines ? 'polyline' : 'point',
+          with_geojson: this.options.withPolylines ? 'polyline' : 'point',
           ids: routeIds.join(','),
           stores: includeStores//,
         },
@@ -681,7 +689,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
     var requestData = options || {};
     requestData.quantities = this.options.withQuantities;
     if (this.planningId) {
-      requestData.geojson = this.options.withPolylines ? 'polyline' : 'point';
+      requestData.with_geojson = this.options.withPolylines ? 'polyline' : 'point';
     }
 
     $.ajax({

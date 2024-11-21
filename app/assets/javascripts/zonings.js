@@ -129,6 +129,9 @@ export const zonings_edit = function(params) {
   }).addTo(map);
 
   L.disableClustersControl(map, markersGroup);
+  if ($('#from_planning').length) {
+    L.disableRoutePolylinesControl(map, markersGroup);
+  }
 
   var fitBounds = initializeMapHash(map);
 

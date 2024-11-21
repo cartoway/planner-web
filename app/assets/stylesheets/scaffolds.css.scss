@@ -286,7 +286,7 @@ span.color[data-color=''][data-selected]:after {
     }
   }
 
-  .leaflet-control-disable-clusters {
+  .leaflet-control-disable-clusters, .leaflet-control-disable-route-polylines {
     &:hover {
       cursor: pointer;
     }

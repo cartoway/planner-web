@@ -638,6 +638,7 @@ export const plannings_edit = function(params) {
   }).addTo(map);
 
   L.disableClustersControl(map, routesLayer);
+  L.disableRoutePolylinesControl(map, routesLayer);
 
   var fitBounds = initializeMapHash(map);
 

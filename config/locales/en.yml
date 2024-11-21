@@ -1714,6 +1714,7 @@ en:
       temperature_label: 'Temperature:'
       vehicles: Vehicles
       marker_clusters: Switch clusters of stops
+      route_polylines: Switch route tracks
       current_position: 'Vehicle position:'
       optimize_routes: Optimize routes
       lock_routes: Lock routes
