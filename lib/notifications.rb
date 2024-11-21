@@ -21,14 +21,14 @@ class CountryCodeNotFoundError < StandardError; end
 
 #
 # Usage:
-# notif = Notifications.new(service: :nexmo, api_key: XXX, api_secret: XXX, logger: XXX)
+# notif = Notifications.new(service: :vonage, api_key: XXX, api_secret: XXX, logger: XXX)
 # notif.send_sms(to, country, notif.content(template, name: XXX, time: XXX), message_id)
 #
 class Notifications
 
   def initialize(options)
     @options = options
-    @options[:service] ||= :nexmo
+    @options[:service] ||= :vonage
   end
 
   def content(template, replacements = {}, truncate = true)
@@ -77,8 +77,8 @@ class Notifications
     if phone.country_code
       to = phone.country_code + phone.raw_national
 
-      if @options[:service] == :nexmo
-        client = Nexmo::Client.new(api_key: @options[:api_key], api_secret: @options[:api_secret])
+      if @options[:service] == :vonage
+        client = Vonage::Client.new(api_key: @options[:api_key], api_secret: @options[:api_secret])
         response = client.sms.send(from: @options[:from].gsub(/[^0-9a-z]+/i, '')[0..10], to: to, text: content, message_id: message_id)
 
         response.messages.map{ |message|
