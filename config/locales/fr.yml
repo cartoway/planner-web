@@ -1794,6 +1794,7 @@ fr:
       temperature_label: 'Température :'
       vehicles: Véhicules
       marker_clusters: Activer/Désactiver les groupes de points
+      route_polylines: Activer/Désactiver les tracés des routes
       current_position: 'Position véhicule :'
       optimize_routes: Optimiser le plan de tournées
       lock_routes: Verrouiller les tournées
