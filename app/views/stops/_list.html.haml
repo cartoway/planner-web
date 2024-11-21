@@ -21,7 +21,7 @@
               %input.stop_active{type: "checkbox", checked: ("checked" if stop[:active]), disabled: (true if !@manage_planning[:manage_organize]), title: t('plannings.edit.active_help') }
             .col-xs-10.d-flex.align-items-center
               .col-xs-5.d-flex.justify-content-center
-                %span.number.stop-label.label{class: ("color_force" if stop[:color_force]), style: "background-color: #{ stop[:active] ? route[:color] : 'transparent' };"}
+                %span.number.stop-label.label{class: (stop[:color_force] ? "color_force" : "" ) + (stop[:active] ? "" : " inactive" ), style: "background-color: #{ stop[:active] ? route[:color] : 'transparent' };"}
                   = stop[:number]
               .col-xs-7
                 .stop-info{class: "#{stop[:active] ? 'primary' : 'info'} #{('danger' if stop[:error])}"}
@@ -73,7 +73,7 @@
               %input.stop_active{type: "checkbox", checked: ("checked" if stop[:active]), disabled: (true if !@manage_planning[:manage_organize]), title: t('plannings.edit.active_help') }
             .col-xs-10.d-flex.align-items-center
               .col-xs-5.d-flex.justify-content-center
-                %span.number.stop-label.label{class: ("color_force" if stop[:color_force]), style: "background-color: #{ stop[:active] ? route[:color] : 'transparent' };"}
+                %span.number.stop-label.label{class: (stop[:color_force] ? "color_force" : "" ) + (stop[:active] ? "" : " inactive" ), style: "background-color: #{ stop[:active] ? route[:color] : 'transparent' };"}
                   = stop[:number]
               .col-xs-7
                 .stop-info{class: "#{stop[:active] ? 'primary' : 'info'} #{('danger' if stop[:error])}"}
