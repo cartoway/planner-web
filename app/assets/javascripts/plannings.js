@@ -2181,14 +2181,16 @@ export const plannings_edit = function(params) {
     }
   };
 
-  $(".routes").sortable({disabled: true}); // initialization needed before enable/disable use
   $('.btn.extend').click(function() {
+    if ($(".routes").hasClass('ui-sortable')) {
+      $(".routes").sortable('destroy');
+    }
+    $(".routes").sortable();
     $('.sidebar').toggleClass('extended');
     if ($('.sidebar').hasClass('extended')) {
-      $(".routes").sortable("enable");
       $('#planning_name_extended').text($('#planning_name').val()).removeClass("hidden-block");
     } else {
-      $(".routes").sortable("disable");
+      $(".routes").sortable("destroy");
       $('#planning_name_extended').addClass("hidden-block");
     }
 
