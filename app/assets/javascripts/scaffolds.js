@@ -627,7 +627,7 @@ L.disableClustersControl = function(map, routesLayer) {
       var button = L.DomUtil.create('a', '', container);
       button.title = I18n.t('plannings.edit.marker_clusters');
 
-      var icon = L.DomUtil.create('i', 'cluster-icon fa fa-arrows-to-circle fa-lg', button);
+      var icon = L.DomUtil.create('i', 'cluster-icon fa fa-shapes fa-lg', button);
       icon.style.marginLeft = '2px';
 
       container.onclick = function() {
@@ -658,7 +658,7 @@ L.disableRoutePolylinesControl = function(map, routesLayer) {
       var button = L.DomUtil.create('a', '', container);
       button.title = I18n.t('plannings.edit.route_polylines');
 
-      var icon = L.DomUtil.create('i', 'route-polyline-icon fa fa-location-dot fa-lg', button);
+      var icon = L.DomUtil.create('i', 'route-polyline-icon fa fa-route fa-lg', button);
       icon.style.marginLeft = '2px';
 
       container.onclick = function() {
