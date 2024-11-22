@@ -95,6 +95,10 @@ const spreadsheetModalExport = function(columns, planningId) {
     else
       $('[name=spreadsheet-out-of-route]').parent().parent().show();
   });
+  $('#planning-spreadsheet-modal').on('hidden.bs.modal', function () {
+    $('[name=spreadsheet-route]').val('');
+  });
+
   if (localStorage.spreadsheetStops) {
     $.each($('.spreadsheet-stops'), function(i, cb) {
       $(cb).prop('checked', localStorage.spreadsheetStops.split('|').indexOf($(cb).val()) >= 0);
