@@ -1,7 +1,7 @@
 - out_pagy ||= nil
-- route[:stops]&.each&.with_index do |stop, index|
+- route[:stops]&.each do |stop|
   - if stop[:visits]
-    %li.waypoint.d-fake-flex.align-items-center.list-group-item{ class: ('ui-state-error' if stop[:error]), data: { "stop-id": stop[:stop_id], "stop-index": (out_pagy&.offset || 0) + index }}
+    %li.waypoint.d-fake-flex.align-items-center.list-group-item{ class: ('ui-state-error' if stop[:error]), data: { "stop-id": stop[:stop_id], "stop-index": stop[:stop_index] }}
       .row
         .col-xs-6.col-md-1
           %input{ checked: "checked", style: "display: none", type: "checkbox" }
