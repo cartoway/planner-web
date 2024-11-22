@@ -229,12 +229,14 @@ class Customer < ApplicationRecord
 
   def duplicate
     Customer.transaction do
-      copy = self.amoeba_dup
-      copy.name += " (#{I18n.l(Time.zone.now, format: :long)})"
-      copy.ref = copy.ref ? Time.new.to_i.to_s : nil
-      copy.test = Mapotempo::Application.config.customer_test_default
-      copy.save! validate: Mapotempo::Application.config.validate_during_duplication
-      copy
+      Route.no_touching do
+        copy = self.amoeba_dup
+        copy.name += " (#{I18n.l(Time.zone.now, format: :long)})"
+        copy.ref = copy.ref ? Time.new.to_i.to_s : nil
+        copy.test = Mapotempo::Application.config.customer_test_default
+        copy.save! validate: Mapotempo::Application.config.validate_during_duplication
+        copy
+      end
     end
   end
 
