@@ -1907,6 +1907,13 @@ export const plannings_edit = function(params) {
       update: sortPlanning
     }).disableSelection();
 
+    if ($('.sidebar').hasClass('extended')) {
+      if ($("#planning.routes").hasClass('ui-sortable')) {
+        $(".routes").sortable('destroy');
+      }
+      $(".routes").sortable();
+    }
+
     checkLockAndActive();
     var routesWithVehicle = data.routes.filter(function(route) { return route.vehicle_usage_id; });
     $.each(routes, function(i, route) {
@@ -2188,7 +2195,7 @@ export const plannings_edit = function(params) {
   };
 
   $('.btn.extend').click(function() {
-    if ($(".routes").hasClass('ui-sortable')) {
+    if ($("#planning.routes").hasClass('ui-sortable')) {
       $(".routes").sortable('destroy');
     }
     $(".routes").sortable();
