@@ -596,7 +596,7 @@ class Planning < ApplicationRecord
   def fetch_stops_status
     Visit.transaction do
       if customer.enable_stop_status
-        stops_map = Hash[routes.select(&:vehicle_usage?).flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
+        stops_map = Hash[routes.includes_destinations.available.flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
         routes.each(&:clear_eta_data)
         routes_quantities_changed = []
 

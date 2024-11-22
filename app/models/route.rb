@@ -57,6 +57,8 @@ class Route < ApplicationRecord
   scope :includes_deliverable_units, -> { includes(vehicle_usage: [:vehicle_usage_set, vehicle: [customer: :deliverable_units]]) }
   scope :stop_visits, -> { includes(:stops).where(type: StopVisit.name) }
 
+  scope :available, -> { where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)") }
+
   include RefSanitizer
 
   amoeba do
