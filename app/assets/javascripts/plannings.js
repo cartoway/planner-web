@@ -2676,6 +2676,9 @@ export const plannings_edit = function(params) {
     return { init: init };
 
   })();
+
+  // Init device global tools
+  devicesObservePlanning.init($('#edit-planning'));
 };
 
 var plannings_show = function(params) {
