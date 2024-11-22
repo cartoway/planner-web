@@ -383,7 +383,7 @@ class V01::Plannings < Grape::API
           service.fetch_stops_status(planning)
           planning.save!
           if params[:details] || params[:with_details]
-            present planning.routes, with: V01::Entities::RouteStatus
+            present planning.routes.includes_destinations.available, with: V01::Entities::RouteStatus
           else
             status 204
           end

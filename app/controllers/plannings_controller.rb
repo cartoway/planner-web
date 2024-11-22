@@ -55,9 +55,9 @@ class PlanningsController < ApplicationController
     else
       stops_count = 0
       if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops.size) >= 1000 }
-        @planning.routes.includes_destinations.where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)")
+        @planning.routes.includes_destinations.available
       else
-        @planning.routes.where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)")
+        @planning.routes.available
       end
     end
     respond_to do |format|
@@ -257,9 +257,9 @@ class PlanningsController < ApplicationController
     @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops.size) >= 1000 }
     @routes =
       if @with_stops
-        @planning.routes.includes_destinations.where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)")
+        @planning.routes.includes_destinations.available
       else
-        @planning.routes.where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)")
+        @planning.routes.available
       end
     json_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
 
