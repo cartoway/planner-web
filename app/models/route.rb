@@ -43,6 +43,7 @@ class Route < ApplicationRecord
   after_save :invalidate_route_cache
   after_destroy :invalidate_route_cache
 
+  scope :available, -> { where("vehicle_usage_id IS NULL OR NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
   scope :for_customer_id, ->(customer_id) { joins(:planning).where(plannings: {customer_id: customer_id}) }
   scope :includes_vehicle_usages, -> {
     includes(vehicle_usage: [
@@ -57,7 +58,6 @@ class Route < ApplicationRecord
   scope :includes_deliverable_units, -> { includes(vehicle_usage: [:vehicle_usage_set, vehicle: [customer: :deliverable_units]]) }
   scope :stop_visits, -> { includes(:stops).where(type: StopVisit.name) }
 
-  scope :available, -> { where("vehicle_usage_id IS NULL OR NOT (locked AND hidden)") }
 
   include RefSanitizer
 

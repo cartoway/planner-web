@@ -248,7 +248,7 @@
         %i.fa.fa-check-square.fa-fw
         = route[:size]
         = t('plannings.edit.stops')
-  - route[:quantities].each do |unit|
+  - route[:quantities]&.each do |unit|
     .col-xs-4.route-data-advanced
       .primary.route-info{class: ('danger' if unit[:out_of_capacity]), title: t('plannings.edit.route_quantity_help')}
         %i.fa.fa-fw{class: unit[:unit_icon]}

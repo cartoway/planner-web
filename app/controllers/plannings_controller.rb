@@ -20,6 +20,8 @@ require 'value_to_boolean'
 require 'zip'
 
 class PlanningsController < ApplicationController
+  protect_from_forgery except: [:optimize, :optimize_route]
+
   before_action :authenticate_user!
   UPDATE_ACTIONS = [:update, :move, :refresh, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:show, :edit, :duplicate, :destroy, :cancel_optimize, :data_header, :filter_routes, :refresh_route, :route_edit, :sidebar] + UPDATE_ACTIONS
@@ -55,8 +57,10 @@ class PlanningsController < ApplicationController
     else
       stops_count = 0
       if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops.size) >= 1000 }
+        @with_stops = true
         @planning.routes.includes_destinations.available
       else
+        @with_stops = false
         @planning.routes.available
       end
     end
@@ -174,8 +178,8 @@ class PlanningsController < ApplicationController
                 @routes += Route.where(id: stops.map{ |stop| stop.route_id }.uniq)
                 @routes.each(&:reload)
               else
-                errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
-                format.json { render json: errors, status: :unprocessable_entity }
+                flash[:error] = errors
+                format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
                 return
               end
             else
@@ -197,11 +201,13 @@ class PlanningsController < ApplicationController
             planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
             format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
           else
-            format.js { render json: @planning.errors, status: :unprocessable_entity }
+            flash[:error] = @planning.errors.full_messages
+            format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
           end
         end
       rescue ActiveRecord::RecordInvalid
-        format.js { render json: @planning.errors, status: :unprocessable_entity }
+        flash[:error] = @planning.errors.full_messages
+        format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       end
     end
   end
@@ -358,6 +364,8 @@ class PlanningsController < ApplicationController
         end
       rescue ActiveRecord::RecordInvalid => e
         format.json { render json: @planning.errors, status: :unprocessable_entity }
+        flash[:error] = @planning.errors.full_messages
+        format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       end
     end
   end
@@ -373,14 +381,17 @@ class PlanningsController < ApplicationController
           format.js { render partial: 'routes/update.js.erb', locals: { optimizer: planning_data[:optimizer], updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
-          format.json { render json: @planning.errors, status: :unprocessable_entity }
+          flash[:error] = errors
+          format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
         end
       rescue VRPNoSolutionError
         @planning.errors.add(:base, I18n.t('plannings.edit.dialog.optimizer.no_solution'))
-        format.json { render json: @planning.errors, status: :unprocessable_entity }
+        flash[:error] = @planning.errors.full_messages
+        format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       rescue ActiveRecord::RecordInvalid
         errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
-        format.json { render json: errors, status: :unprocessable_entity }
+        flash[:error] = errors
+        format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       end
     end
   end
@@ -397,14 +408,17 @@ class PlanningsController < ApplicationController
           format.js { render partial: 'routes/update.js.erb', locals: { optimizer: planning_data[:optimizer], updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
-          format.json { render json: errors, status: :unprocessable_entity }
+          flash[:error] = errors
+          format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
         end
       rescue VRPNoSolutionError
         @planning.errors.add(:base, I18n.t('plannings.edit.dialog.optimizer.no_solution'))
-        format.json { render json: @planning.errors, status: :unprocessable_entity }
+        flash[:error] = @planning.errors.full_messages
+        format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       rescue ActiveRecord::RecordInvalid
         errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
-        format.json { render json: errors, status: :unprocessable_entity }
+        flash[:error] = errors
+        format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       end
     end
   end
@@ -432,7 +446,8 @@ class PlanningsController < ApplicationController
         planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
         format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
       else
-        format.js { render json: @planning.errors, status: :unprocessable_entity }
+        flash[:error] = @planning.errors.full_messages
+        format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       end
     end
   end
@@ -511,7 +526,7 @@ class PlanningsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_planning
     @manage_planning =
-      if request.referer.match('api-web')
+      if request.referer&.match('api-web')
         ApiWeb::V01::PlanningsController.manage
       else
         PlanningsController.manage

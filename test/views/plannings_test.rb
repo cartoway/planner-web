@@ -23,7 +23,7 @@ class PlanningsTest < ActiveSupport::TestCase
     get "/plannings/#{@planning.id}.json?api_key=testkey1"
     assert last_response.ok?, last_response.body
     json = JSON.parse(last_response.body)
-    assert_equal @planning.routes.size, json['routes'].size
+    assert_equal @planning.routes.available.size, json['routes'].size
   end
 
   test 'should return devices with json for planning' do

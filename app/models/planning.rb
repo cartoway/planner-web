@@ -596,7 +596,7 @@ class Planning < ApplicationRecord
   def fetch_stops_status
     Visit.transaction do
       if customer.enable_stop_status
-        stops_map = Hash[routes.includes_destinations.available.flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
+        stops_map = Hash[routes.includes_destinations.available.where.not(vehicle_usage_id: nil).flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
         routes.each(&:clear_eta_data)
         routes_quantities_changed = []
 
@@ -623,7 +623,7 @@ class Planning < ApplicationRecord
                 }
               end
               route = routes.select { |r| r.id == s[:route_id].to_i }.first
-              route && route.assign_attributes(attr)
+              route && route.update(attr)
             end
 
             false
@@ -649,11 +649,14 @@ class Planning < ApplicationRecord
               routes_quantities_changed << stops_map[s[:order_id]].route
             end
 
-            stops_map[s[:order_id]].assign_attributes(status: s[:status], eta: s[:eta])
+            stops_map[s[:order_id]].update(status: s[:status], eta: s[:eta])
           end
         }
 
-        routes_quantities_changed.each(&:compute_quantities)
+        routes_quantities_changed.each{ |route|
+          route.compute_quantities
+          route.save
+        }
 
         stops_status
       end
