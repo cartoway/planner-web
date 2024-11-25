@@ -376,14 +376,16 @@ class ImporterDestinations < ImporterBase
   end
 
   def save_plannings
-    @plannings.each { |planning|
-      if !planning.id
-        planning.save_import!
-      else
-        planning.save!
-      end
-      planning.reload
-    }
+    Route.no_touching do
+      @plannings.each { |planning|
+        if !planning.id
+          planning.save_import!
+        else
+          planning.save!
+        end
+        planning.reload
+      }
+    end
   end
 
   def finalize_import(_name, _options)

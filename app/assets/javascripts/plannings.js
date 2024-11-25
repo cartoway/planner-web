@@ -2353,7 +2353,7 @@ export const plannings_edit = function(params) {
         if (locals.optimizer) {
           displayOptimModal(locals, options)
         }
-        else {
+        else if (locals.updated_routes) {
           updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
           routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
         }

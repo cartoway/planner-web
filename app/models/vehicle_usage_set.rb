@@ -146,10 +146,12 @@ class VehicleUsageSet < ApplicationRecord
       errors.add(:base, I18n.t('activerecord.errors.models.vehicle_usage_set.at_least_one'))
       throw :abort
     else
-      customer.plannings.select{ |planning| planning.vehicle_usage_set == self }.each{ |planning|
-        planning.vehicle_usage_set = default
-        planning.save!
-      }
+      Route.no_touching do
+        customer.plannings.select{ |planning| planning.vehicle_usage_set == self }.each{ |planning|
+          planning.vehicle_usage_set = default
+          planning.save!
+        }
+      end
     end
   end
 

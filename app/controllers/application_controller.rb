@@ -213,6 +213,8 @@ class ApplicationController < ActionController::Base
     Rails.logger.fatal(exception.backtrace.join("\n"))
 
     respond_to do |format|
+      flash[:error] = [t('errors.management.status.explanation.404')]
+      format.js { render partial: 'shared/error_messages.js.erb', status: :not_found }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 404 }, status: 404 }
       format.json { render json: { error: t('errors.management.status.explanation.404') }, status: :not_found }
       format.all { render body: nil, status: :not_found }
@@ -225,6 +227,8 @@ class ApplicationController < ActionController::Base
     Rails.logger.fatal(exception.backtrace.join("\n"))
 
     respond_to do |format|
+      flash[:error] = [t('errors.management.status.explanation.default')]
+      format.js { render partial: 'shared/error_messages.js.erb', status: :internal_server_error }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 500 }, status: 500 }
       format.json { render json: { error: t('errors.management.status.explanation.default') }, status: :internal_server_error }
       format.all { render body: nil, status: :internal_server_error }
@@ -245,6 +249,8 @@ class ApplicationController < ActionController::Base
     end
 
     respond_to do |format|
+      flash[:error] = errors
+      format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 422 }, status: 422 }
       format.json { render json: { error: errors.join(' ') }, status: :unprocessable_entity }
     end
@@ -256,6 +262,8 @@ class ApplicationController < ActionController::Base
     Rails.logger.warn(exception.backtrace.join("\n"))
 
     respond_to do |format|
+      flash[:error] = [I18n.t('errors.planning.job_in_progress')]
+      format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       format.json { render json: { error: I18n.t('errors.planning.job_in_progress') }, status: :unprocessable_entity }
     end
   end
@@ -264,6 +272,8 @@ class ApplicationController < ActionController::Base
     Rails.logger.fatal(exception.class.to_s + ' : ' + exception.to_s)
     Rails.logger.fatal(exception.backtrace.join("\n"))
     respond_to do |format|
+      flash[:error] = [exception.to_s]
+      format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 422 }, status: 422 }
       format.json { render json: { error: exception.to_s }, status: :unprocessable_entity }
     end

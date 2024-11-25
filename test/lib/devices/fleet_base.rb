@@ -24,6 +24,7 @@ module FleetBase
     end
 
     @route = routes(:route_one_one)
+    @route.update!(hidden: false)
     @vehicle = @route.vehicle_usage.vehicle
     @vehicle.update!(devices: { fleet_user: 'driver1' })
     @customer.reload # TODO: Check if necessary

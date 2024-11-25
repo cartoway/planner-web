@@ -67,10 +67,7 @@ class FleetTest < ActionController::TestCase
       planning.routes.select(&:vehicle_usage_id).each { |route|
         route.last_sent_at = Time.now.utc
       }
-      planning.save
-
       planning.fetch_stops_status
-      planning.save
       planning.reload
       assert_equal ['Planned', 'Finished'], planning.routes.find{ |r| r.ref == 'route_one' }.stops.map(&:status).compact
     end
