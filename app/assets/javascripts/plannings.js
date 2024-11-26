@@ -906,7 +906,7 @@ export const plannings_edit = function(params) {
       var isLocked = unplannedRoute.find("button.lock > i").hasClass("fa-lock");
       var keepVisit = $('[name=sticky_vehicle]:checked').val() === 'true';
 
-      !isLocked && keepVisit && unplannedRoute.find("li[data-stop-id]").length ? _modalWarning.show() : _modalWarning.hide();
+      !isLocked && keepVisit && (unplannedRoute.find("li[data-stop-id]").length || unplannedRoute.find(".load-stops").length)? _modalWarning.show() : _modalWarning.hide();
     };
   })();
 
@@ -1771,7 +1771,11 @@ export const plannings_edit = function(params) {
     data.i18n = mustache_i18n;
     data.planning_id = data.id;
 
-    $.each(data.routes, function(i, route) {
+    var displayed_routes = data.routes.filter(function(route) {
+      return $(`.route[data-route-id="${route.route_id}"]`).length > 0;
+    });
+
+    $.each(displayed_routes, function(i, route) {
       setRouteVariables(i, route);
       // update global routes
       updateRouteModel(i, route);
@@ -1817,7 +1821,7 @@ export const plannings_edit = function(params) {
     }
     // 2nd case: several routes needs to be displayed (header and map), for instance by switching vehicles
     else if (typeof options === 'object' && options.partial === 'routes') {
-      $.each(data.routes, function(i, route) {
+      $.each(displayed_routes, function(i, route) {
         var vehicle_usage = {};
         $.each(vehicles_usages_map, function(i, v) {
           if (v.vehicle_usage_id == route.vehicle_usage_id) vehicle_usage = v;
@@ -1826,12 +1830,14 @@ export const plannings_edit = function(params) {
       });
 
       var routeIds = [];
-      $.each(data.routes, function(i, route) {
+      $.each(displayed_routes, function(i, route) {
         routeIds.push(route.route_id);
         route.i18n = mustache_i18n;
         route.planning_id = data.id;
         route.routes = routes;
-        route.devices = $.grep(routes_devices, function(r) { return route.vehicle_id == r.vehicle_id })[0].devices;
+        var associated_route = $.grep(routes_devices, function(r) { return route.vehicle_id == r.vehicle_id })
+        if (associated_route.length)
+          route.devices = associated_route[0].devices;
 
         $.extend(route, params.manage_planning);
 
@@ -1872,7 +1878,7 @@ export const plannings_edit = function(params) {
     }
     // 3rd case: only stops needs to be refreshed, for instance after moving stop
     else if (typeof options === 'object' && options.partial === 'stops') {
-      $.each(data.routes, function(i, route) {
+      $.each(displayed_routes, function(i, route) {
         route.i18n = mustache_i18n;
         route.planning_id = data.id;
         route.routes = routes;
