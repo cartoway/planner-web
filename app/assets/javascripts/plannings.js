@@ -1331,7 +1331,7 @@ export const plannings_edit = function(params) {
         items: 'li.route'
       });
       $routes
-        .off("click")
+        .off("click", ".toggle")
         .on("click", ".toggle", function() {
           var id = $(this).closest("[data-route-id]").attr("data-route-id");
           var li = $("ul.stops, ol.stops", $(this).closest("li"));
@@ -1360,6 +1360,7 @@ export const plannings_edit = function(params) {
             error: ajaxError
           });
         })
+        .off("click", ".route-data-toggle")
         .on("click", ".route-data-toggle", function() {
           var row = $(this).parents('.panel-body').find(".route-data");
           row.toggle();
@@ -1371,6 +1372,7 @@ export const plannings_edit = function(params) {
             i.removeClass("fa-book").addClass("fa-book-open");
           }
         })
+        .off("click", ".marker")
         .on("click", ".marker", function() {
           var stopIndex = $(this).closest("[data-stop-index]").attr("data-stop-index");
           if (stopIndex) {
@@ -1385,10 +1387,13 @@ export const plannings_edit = function(params) {
           $(this).blur();
           return false;
         })
+        .off("click", ".optimize")
         .on('click', '.optimize', function() {
           $('#optimization-route_id').val($(this).closest('[data-route-id]').attr('data-route-id')).trigger('change');
         })
+        .off("click", ".send_sms")
         .on('click', '.send_sms', sendSMS)
+        .off("click", ".active_all, .active_reverse, .active_none, .active_status, .reverse_order")
         .on("click", ".active_all, .active_reverse, .active_none, .active_status, .reverse_order", function() {
           $.ajax({
             type: 'PATCH',
@@ -1404,6 +1409,7 @@ export const plannings_edit = function(params) {
           $(this).closest(".dropdown-menu").prev().dropdown("toggle");
           return false;
         })
+        .off("change", "[name=route\\\[ref\\\]]")
         .on("change", "[name=route\\\[ref\\\]]", function() {
           var id = $(this).closest("[data-route-id]").attr("data-route-id");
           var ref = this.value;
@@ -1420,6 +1426,7 @@ export const plannings_edit = function(params) {
             error: ajaxError
           });
         })
+        .off('click', '.lock')
         .on('click', '.lock', function() {
           var id = $(this).closest("[data-route-id]").attr("data-route-id");
           var i = $("i", this);
