@@ -1049,13 +1049,15 @@ export const plannings_edit = function(params) {
     }
     $.ajax({
       type: 'PATCH',
-      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '/move/' + (index + 1) + '.js',
+      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '/move/' + (index + 1) + '.json',
       beforeSend: beforeSendWaiting,
 
-      success: function(_data, _status, xhr) {
+      success: function(data, _status, xhr) {
         if (xhr.status === 204) return ;
-        updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
-        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
+        data.route_ids.forEach(function(route_id) {
+          refreshSidebarRoute(planning_id, route_id);
+        });
+        routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
       },
       complete: completeAjaxMap,
       error: function(request, status, error) {
@@ -1602,16 +1604,20 @@ export const plannings_edit = function(params) {
           .toArray();
         $.ajax({
           type: 'PATCH',
-          url: '/plannings/' + params.planning_id + '/' + $("#move-route-id").val() + '/move.js',
+          url: '/plannings/' + params.planning_id + '/' + $("#move-route-id").val() + '/move.json',
           data: {
             'stop_ids': stopIds,
             'index': $('#move-index').val()
           },
           beforeSend: beforeSendWaiting,
           error: ajaxError,
-          success: function(data) {
-            updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
-            routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
+          success: function(data, _status, xhr) {
+            if (xhr.status === 204) return ;
+
+            data.route_ids.forEach(function(route_id) {
+              refreshSidebarRoute(params.planning_id, route_id);
+            });
+            routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
             $('#planning-move-stops-modal').modal('hide');
           },
           complete: completeAjaxMap
@@ -1621,19 +1627,7 @@ export const plannings_edit = function(params) {
 
       $('.load-stops', context).click(function(event) {
         var routeId = $(event.target).closest('[data-route-id]').attr('data-route-id');
-        $.ajax({
-          type: 'GET',
-          url: '/plannings/' + params.planning_id + '/' + routeId + '/refresh.js?with_stops=' + true,
-          beforeSend: beforeSendWaiting,
-          error: ajaxError,
-          success: function() {
-            updateSuccess(locals.summary, map, [locals.route]);
-            if (!locals.route.vehicle_usage_id) {
-              continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
-            }
-          },
-          complete: completeAjaxMap
-        });
+        refreshSidebarRoute(params.planning_id, routeId);
       });
     }
   };
@@ -1854,7 +1848,7 @@ export const plannings_edit = function(params) {
         const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
 
-        var regExp = new RegExp('/plannings/' + route.planning_id + '/' + route.route_id + '/[0-9]+/move.js');
+        var regExp = new RegExp('/plannings/' + route.planning_id + '/' + route.route_id + '/[0-9]+/move.json');
         // popups are not selected follow
         $.each($('.send_to_route'), function(j, link) {
           var $link = $(link);
@@ -1885,17 +1879,7 @@ export const plannings_edit = function(params) {
 
         $.extend(route, params.manage_planning);
 
-
-        $.ajax({
-          type: 'GET',
-          url: '/plannings/' + planning_id + '/' + route.route_id + '/refresh.js?with_stops=' + true,
-          beforeSend: beforeSendWaiting,
-          error: ajaxError,
-          success: function() {
-            updateSuccess(locals.summary, map, [locals.route], {skipCallbacks: true});
-          },
-          complete: completeAjaxMap
-        });
+        refreshSidebarRoute(planning_id, route.route_id, {skipCallbacks: true});
         const $routePanel = $(`li.route[data-route-id="${route.route_id}"]`);
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
         if (!options || !options.skipMap) {
@@ -1904,6 +1888,22 @@ export const plannings_edit = function(params) {
       });
     }
   };
+
+  var refreshSidebarRoute = function(planning_id, route_id, options) {
+    $.ajax({
+      type: 'GET',
+      url: '/plannings/' + planning_id + '/' + route_id + '/refresh.js?with_stops=' + true,
+      beforeSend: beforeSendWaiting,
+      error: ajaxError,
+      success: function() {
+        updateSuccess(locals.summary, map, [locals.route], options);
+        if (!locals.route.vehicle_usage_id) {
+          continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
+        }
+      },
+      complete: completeAjaxMap
+    });
+  }
 
   var updateDataHeader = function(planning_id) {
     $.ajax({
@@ -2149,13 +2149,18 @@ export const plannings_edit = function(params) {
       type: 'PATCH',
       url: url,
       beforeSend: beforeSendWaiting,
-      success: function() {
-        updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
-        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
-        enlightenStop({id: stopId});
+      success: function(data, _status, xhr) {
+        if (xhr.status === 204) return ;
+        data.route_ids.forEach(function(route_id) {
+          refreshSidebarRoute(planning_id, route_id, {skipCallbacks: true});
+        });
+        routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
         map.closePopup();
       },
-      complete: completeAjaxMap,
+      complete: function() {
+        enlightenStop({id: stopId});
+        completeAjaxMap;
+      },
       error: ajaxError
     });
     return false;

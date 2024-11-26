@@ -24,11 +24,11 @@
   </span>
   <ul class="dropdown-menu" role="menu">
     {{#vehicle_name}}
-      <li><a href="/plannings/{{planning_id}}/{{out_of_route_id}}/{{stop_id}}/move/-1.js" class="send_to_route">{{#i18n}}plannings.edit.out_of_route{{/i18n}}</a></li>
+      <li><a href="/plannings/{{planning_id}}/{{out_of_route_id}}/{{stop_id}}/move/-1.json" class="send_to_route">{{#i18n}}plannings.edit.out_of_route{{/i18n}}</a></li>
     {{/vehicle_name}}
     {{#routes}}
       {{#vehicle_usage_id}}
-        <li><a href="/plannings/{{planning_id}}/{{route_id}}/{{stop_id}}/move.js" class="send_to_route"><div class="color_small" style="background:{{color}}"></div> {{name}}</a></li>
+        <li><a href="/plannings/{{planning_id}}/{{route_id}}/{{stop_id}}/move.json" class="send_to_route"><div class="color_small" style="background:{{color}}"></div> {{name}}</a></li>
       {{/vehicle_usage_id}}
     {{/routes}}
   </ul>

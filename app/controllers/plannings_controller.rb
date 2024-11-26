@@ -161,16 +161,16 @@ class PlanningsController < ApplicationController
       begin
         Planning.transaction do
           route = @planning.routes.find{ |rt| rt.id == Integer(params[:route_id]) }
-          @routes = [route]
+          route_ids = [route.id]
 
           if params[:stop_ids].nil?
             previous_route_id = Stop.find(params[:stop_id]).route_id
             if route.vehicle_usage_id.nil? && previous_route_id == route.id
-              format.js { head :ok }
+              format.json { head :ok }
               return
             end
             move_stop(params[:stop_id], route, previous_route_id)
-            @routes << @planning.routes.find{ |r| r.id == previous_route_id } if previous_route_id != route.id
+            route_ids << previous_route_id if previous_route_id != route.id
           else
             params[:stop_ids].map!(&:to_i)
             stops = @planning.routes.flat_map{ |ro|
@@ -179,11 +179,11 @@ class PlanningsController < ApplicationController
             if params[:index]&.empty? && route.vehicle_usage?
               if Optimizer.optimize(@planning, route, { insertion_only: true, moving_stop_ids: stops.map(&:id) })
                 current_user.customer.save!
-                @routes += Route.where(id: stops.map{ |stop| stop.route_id }.uniq)
-                @routes.each(&:reload)
+                route_ids += stops.map{ |stop| stop.route_id }
+                route_ids.uniq!
               else
-                flash[:error] = errors
-                format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
+                errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
+                format.json { render json: errors, status: :unprocessable_entity }
                 return
               end
             else
@@ -194,24 +194,22 @@ class PlanningsController < ApplicationController
                 id[:route_id]
               }.each{ |id|
                 next if id[:route_id] == route.id
-                @routes << @planning.routes.find{ |r|
-                  r.id == id[:route_id]
+
+                @planning.routes.each{ |r|
+                  route_ids << r.id if r.id == id[:route_id]
                 }
               }
             end
           end
           # save! is used to rollback all the transaction with associations
           if @planning.compute && @planning.save!
-            planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
-            format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
+            format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
           else
-            flash[:error] = @planning.errors.full_messages
-            format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
+            format.json { render json: @planning.errors, status: :unprocessable_entity }
           end
         end
       rescue ActiveRecord::RecordInvalid
-        flash[:error] = @planning.errors.full_messages
-        format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
+        format.json { render json: @planning.errors, status: :unprocessable_entity }
       end
     end
   end

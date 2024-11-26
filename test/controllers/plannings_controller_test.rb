@@ -337,10 +337,9 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should move' do
     without_loading Stop, if: -> (obj) { obj.route_id != @planning.routes[0].id && obj.route_id != @planning.routes[1].id } do
-      patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :js }
+      patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
       assert_response :success
-      json_content = JSON.parse(@response.body.match(/var locals = (.*);/)[1])
-      assert_equal 2, json_content['updated_routes'].size
+      assert_equal 2, JSON.parse(response.body)['route_ids'].size
       @planning.routes.select(&:vehicle_usage).each{ |vu|
         assert_not vu.outdated
       }
@@ -349,9 +348,9 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should move many stops' do
     stop_ids = @planning.routes.reject { |ro| ro.id == @planning.routes[1].id }.flat_map { |ro| ro.stops.map(&:id) }
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: stop_ids, format: :js }
+    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: stop_ids, format: :json }
     assert_response :success
-    assert_equal 3, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
+    assert_equal 3, JSON.parse(response.body)['route_ids'].size
     @planning.routes.select(&:vehicle_usage).each{ |vu|
       assert_not vu.outdated
     }
@@ -360,26 +359,28 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'can move many stops at the start of planning' do
     moving_stop_ids = @planning.routes.reject { |route| route.id == @planning.routes[1].id }.flat_map { |route| route.stops.pluck(:id) }
 
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: moving_stop_ids, index: '1', format: :js }
+    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: moving_stop_ids, index: '1', format: :json }
 
     assert_response :success
 
-    JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'][0]['stops'][0,4].each do |stop|
-      assert moving_stop_ids.include?(stop['stop_id'])
-      assert (1..5).include?(stop['stop_index'])
+    @planning.routes[1].reload
+    @planning.routes[1].stops[0,4].each do |stop|
+      assert moving_stop_ids.include?(stop.id)
+      assert (1..5).include?(stop.index)
     end
   end
 
   test 'can move many stops at the end of planning' do
     moving_stop_ids = @planning.routes.reject { |route| route.id == @planning.routes[1].id }.flat_map { |route| route.stops.pluck(:id) }
 
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: moving_stop_ids, index: '-1', format: :js }
+    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: moving_stop_ids, index: '-1', format: :json }
 
     assert_response :success
 
-    JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'][0]['stops'][2,7].each do |stop|
-      assert moving_stop_ids.include?(stop['stop_id'])
-      assert (3..6).include?(stop['stop_index'])
+    @planning.routes[1].reload
+    @planning.routes[1].stops[2,7].each do |stop|
+      assert moving_stop_ids.include?(stop.id)
+      assert (3..6).include?(stop.index)
     end
   end
 
@@ -398,14 +399,14 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should move with automatic index' do
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], format: :js }
+    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], format: :json }
     assert_response :success
-    assert_equal 2, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
+    assert_equal 2, JSON.parse(response.body)['route_ids'].size
   end
 
   test 'should not move' do
     assert_no_difference('Stop.count') do
-      patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 666, format: :js }
+      patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 666, format: :json }
       assert_valid response
       assert_response 422
     end
@@ -809,12 +810,12 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should not move on unprocessable entity' do
     without_loading Stop, if: -> (obj) { obj.route_id != @planning.routes[0].id && obj.route_id != @planning.routes[1].id } do
       Planning.stub_any_instance(:compute, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
-        patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :js }
+        patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
         assert_response :unprocessable_entity
       end
 
       Planning.stub_any_instance(:save!, lambda { |*a| false }) do
-        patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :js }
+        patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
         assert_response :unprocessable_entity
       end
     end

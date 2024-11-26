@@ -54,10 +54,9 @@ class Route < ApplicationRecord
   }
   scope :includes_stops, -> { includes(:stops) }
   # The second visit is for counting the visit index from all the visits of the destination
-  scope :includes_destinations, (-> { includes(stops: {visit: [:tags, destination: %i[tags customer visits]]}) })
+  scope :includes_destinations, -> { includes(stops: {visit: [:tags, destination: [:tags, :visits, { customer: :deliverable_units }]]}) }
   scope :includes_deliverable_units, -> { includes(vehicle_usage: [:vehicle_usage_set, vehicle: [customer: :deliverable_units]]) }
   scope :stop_visits, -> { includes(:stops).where(type: StopVisit.name) }
-
 
   include RefSanitizer
 
@@ -542,7 +541,8 @@ class Route < ApplicationRecord
   attr_localized :quantities
 
   def compute_quantities(stops_sort = nil)
-    return {} if planning.customer.deliverable_units.empty?
+    deliverable_units = planning.customer.deliverable_units
+    return {} if deliverable_units.empty?
 
     quantities_ = Hash.new(0)
 
@@ -551,7 +551,7 @@ class Route < ApplicationRecord
         out_of_capacity = nil
         unmanageable_capacity = nil
 
-        stop.route.planning.customer.deliverable_units.each do |du|
+        deliverable_units.each do |du|
           if vehicle_usage && (stop.visit.quantities_operations[du.id].nil? || stop.visit.quantities_operations[du.id].empty?)
             quantities_[du.id] = (quantities_[du.id] || 0) + (stop.visit.default_quantities[du.id] || 0)
           elsif vehicle_usage && stop.visit.quantities_operations[du.id] == 'fill'
