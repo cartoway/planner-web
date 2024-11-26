@@ -1,2 +1,4 @@
 - routes.each do |route|
-  = render partial: 'routes/in_route.html.haml', locals: { route: route, summary: summary }
+  - if route[:vehicle_id]
+    %li.route{"data-color": route[:color], "data-route-id": route[:route_id]}
+      = render partial: 'routes/in_route.html.haml', locals: { route: route, summary: summary }
