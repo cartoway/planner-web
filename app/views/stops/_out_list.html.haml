@@ -40,7 +40,7 @@
                 - summary[:routes].each do |o_route|
                   - if o_route[:vehicle_usage_id]
                     %li
-                      %a.send_to_route{href: "/plannings/#{@planning.id}/#{o_route[:route_id]}/#{stop[:stop_id]}/move.js", method: :patch}
+                      %a.send_to_route{href: "/plannings/#{@planning.id}/#{o_route[:route_id]}/#{stop[:stop_id]}/move.json", method: :patch}
                         .color_small{style: "background:#{o_route[:color]}"}
                         = o_route[:name]
           .clearfix
