@@ -165,6 +165,10 @@ class PlanningsController < ApplicationController
 
           if params[:stop_ids].nil?
             previous_route_id = Stop.find(params[:stop_id]).route_id
+            if route.vehicle_usage_id.nil? && previous_route_id == route.id
+              format.js { head :ok }
+              return
+            end
             move_stop(params[:stop_id], route, previous_route_id)
             @routes << @planning.routes.find{ |r| r.id == previous_route_id } if previous_route_id != route.id
           else

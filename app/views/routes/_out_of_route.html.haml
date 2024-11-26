@@ -29,5 +29,5 @@
         %ul#list_box.stops.sortable.list-group{style: ('display: none;' if route[:hidden])}
           = render partial: 'stops/out_list.html.haml', locals: { route: route, summary: summary }
         - if route[:with_stops] && out_pagy
-          #div_out_list_next_link
+          #div_out_list_next_link{style: ('display: none;' if route[:hidden])}
             = render partial: 'stops/out_list_next_link', locals: { out_pagy: out_pagy }

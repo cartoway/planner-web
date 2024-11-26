@@ -895,14 +895,14 @@ export const plannings_edit = function(params) {
     _modalWarning.find(".lock").on("click", function(e) {
       e.preventDefault();
 
-      var unplannedRoute = $("ol.routes.ui-sortable > li:last");
+      var unplannedRoute = $("ol.routes.out_routes");
       unplannedRoute.find("button.lock").trigger("click");
 
       toggleModalWarning();
     });
 
     return function toggleModalWarning() {
-      var unplannedRoute = $("ol.routes.ui-sortable > li:last");
+      var unplannedRoute = $("ol.routes.out_routes");
       var isLocked = unplannedRoute.find("button.lock > i").hasClass("fa-lock");
       var keepVisit = $('[name=sticky_vehicle]:checked').val() === 'true';
 
@@ -1052,7 +1052,8 @@ export const plannings_edit = function(params) {
       url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '/move/' + (index + 1) + '.js',
       beforeSend: beforeSendWaiting,
 
-      success: function() {
+      success: function(_data, _status, xhr) {
+        if (xhr.status === 204) return ;
         updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
         routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
       },
@@ -1330,6 +1331,7 @@ export const plannings_edit = function(params) {
         items: 'li.route'
       });
       $routes
+        .off("click")
         .on("click", ".toggle", function() {
           var id = $(this).closest("[data-route-id]").attr("data-route-id");
           var li = $("ul.stops, ol.stops", $(this).closest("li"));
@@ -1348,9 +1350,11 @@ export const plannings_edit = function(params) {
               if (hidden) {
                 i.removeClass("fa-eye").addClass("fa-eye-slash");
                 routesLayer.hideRoutes([id]);
+                li.closest(".route-stops").find("#div_out_list_next_link").hide();
               } else {
                 i.removeClass("fa-eye-slash").addClass("fa-eye");
                 routesLayer.showRoutes([id], JSON.parse(data.geojson));
+                li.closest(".route-stops").find("#div_out_list_next_link").show();
               }
             },
             error: ajaxError
