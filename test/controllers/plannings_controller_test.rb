@@ -667,9 +667,9 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should reverse route stops' do
     without_loading Stop, if: -> (obj) { obj.route_id != routes(:route_one_one).id } do
-      patch :reverse_order, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id }
+      patch :reverse_order, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
       assert_response :success, response.body
-      assert_equal 1, JSON.parse(response.body)['routes'].size
+      assert_equal 1, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
     end
   end
 
@@ -854,7 +854,7 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should not reverse order on unprocessable entity' do
     without_loading Stop, if: -> (obj) { obj.route_id != routes(:route_one_one).id } do
       Planning.stub_any_instance(:save, lambda { |*a| false } ) do
-        patch :reverse_order, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id }
+        patch :reverse_order, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
         assert_response :unprocessable_entity
       end
     end
