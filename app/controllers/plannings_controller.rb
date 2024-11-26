@@ -467,9 +467,11 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       if route && route.reverse_order && route.compute! && @planning.save
         @routes = [route]
-        format.json { render action: 'show', location: @planning }
+        planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+        format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
       else
-        format.json { render json: @planning.errors, status: :unprocessable_entity }
+        flash[:error] = @planning.errors.full_messages
+        format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       end
     end
   end
