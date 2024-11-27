@@ -1255,16 +1255,34 @@ small {
 }
 
 .spinner-border {
-  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(210, 210, 210, 0.7); /* Fond semi-transparent */
+}
+
+.spinner-border::after {
+  content: "";
   width: 2rem;
   height: 2rem;
-  vertical-align: -.125em;
-  border: .25em solid currentColor;
-    border-right-color: currentcolor;
+  border: .25em solid currentcolor;
   border-right-color: transparent;
   border-radius: 50%;
   -webkit-animation: .75s linear infinite spinner-border;
   animation: .75s linear infinite spinner-border;
+}
+
+.spinner-container {
+  position: relative;
 }
 
 @keyframes spinner-border {

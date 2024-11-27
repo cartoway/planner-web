@@ -1040,13 +1040,11 @@ export const plannings_edit = function(params) {
   var sortLoading = function(route, origin_route_id) {
     var route_id = route.attr('data-route-id');
     if (route_id != origin_route_id || !route.hasClass('out_route')) {
-      $('.stops.sortable', route).sortable('disable')
-        .html('<span class="list-group-item d-flex justify-content-center d-none" id="loading-indicator"><div class="spinner-border" role="status"></div></span>');
+      $('.stops.sortable', route).sortable('disable').addClass('.spinner-container').append('<div class="spinner-border"></div>');
     }
     if (route_id != origin_route_id) {
       $('.stops.sortable', 'li[data-route-id=' + origin_route_id + ']')
-        .sortable('disable')
-        .html('<span class="list-group-item d-flex justify-content-center d-none" id="loading-indicator"><div class="spinner-border" role="status"></div></span>');
+        .sortable('disable').addClass('.spinner-container').append('<div class="spinner-border"></div>');
     }
   };
 
