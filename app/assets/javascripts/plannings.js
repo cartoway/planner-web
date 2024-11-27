@@ -1037,29 +1037,41 @@ export const plannings_edit = function(params) {
     vehicleCostLate();
   });
 
-  var sortPlanning = function(event, ui) {
-    var item = $(ui.item),
-      index = 0,
-      route = item.closest('[data-route-id]'),
-      stops = $('.sortable li[data-stop-id]', route),
-      route_id = route.attr('data-route-id'),
-      stop_id = item.closest("[data-stop-id]").attr("data-stop-id"),
-      origin_route_id = item.closest("[data-stop-id]").attr('data-origin-route-id');
-    while (stops[index].attributes['data-stop-id'].value != stop_id) {
-      index++;
-    }
+  var sortLoading = function(route, origin_route_id) {
+    var route_id = route.attr('data-route-id');
     if (route_id != origin_route_id || !route.hasClass('out_route')) {
       $('.stops.sortable', route).sortable('disable')
         .html('<span class="list-group-item d-flex justify-content-center d-none" id="loading-indicator"><div class="spinner-border" role="status"></div></span>');
     }
     if (route_id != origin_route_id) {
-      $('.stops.sortable', 'li[data-route-id=' + origin_route_id + ']:not(.out_route)')
+      $('.stops.sortable', 'li[data-route-id=' + origin_route_id + ']')
         .sortable('disable')
         .html('<span class="list-group-item d-flex justify-content-center d-none" id="loading-indicator"><div class="spinner-border" role="status"></div></span>');
     }
+  };
+
+  var sortPlanning = function(event, ui) {
+    var item = $(ui.item),
+      index = 0,
+      stop = item.closest("[data-stop-id]"),
+      route = item.closest('[data-route-id]'),
+      stops = $('.sortable li[data-stop-id]', route),
+      route_id = route.attr('data-route-id'),
+      stop_id = stop.attr("data-stop-id"),
+      origin_route_id = stop.attr('data-origin-route-id');
+    if (route.hasClass('out_route')) {
+      index = -1;
+      $('#div_out_list_next_link').hide();
+    } else if (stops.length > 0) {
+      while (stops[index].attributes['data-stop-id'].value != stop_id) {
+        index++;
+      }
+      index++;
+    }
+    sortLoading(route, origin_route_id);
     $.ajax({
       type: 'PATCH',
-      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '/move/' + (index + 1) + '.json',
+      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '/move/' + (index) + '.json',
       beforeSend: beforeSendWaiting,
 
       success: function(data, _status, xhr) {
@@ -2150,8 +2162,11 @@ export const plannings_edit = function(params) {
   });
 
   $(".main").on("click", ".send_to_route", function() {
+    var route_id = $(this).closest("[data-route-id]").attr("data-route-id");
     var stopId = $(this).closest("[data-stop-id]").attr("data-stop-id");
     var url = this.href;
+    var matches = url.match(new RegExp('([0-9]+)/([0-9]+)/move'));
+    sortLoading($(`.route[data-route-id="${matches[1]}"]`), route_id);
     $.ajax({
       type: 'PATCH',
       url: url,
