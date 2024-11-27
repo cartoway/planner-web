@@ -1043,9 +1043,19 @@ export const plannings_edit = function(params) {
       route = item.closest('[data-route-id]'),
       stops = $('.sortable li[data-stop-id]', route),
       route_id = route.attr('data-route-id'),
-      stop_id = item.closest("[data-stop-id]").attr("data-stop-id");
+      stop_id = item.closest("[data-stop-id]").attr("data-stop-id"),
+      origin_route_id = item.closest("[data-stop-id]").attr('data-origin-route-id');
     while (stops[index].attributes['data-stop-id'].value != stop_id) {
       index++;
+    }
+    if (route_id != origin_route_id || !route.hasClass('out_route')) {
+      $('.stops.sortable', route).sortable('disable')
+        .html('<span class="list-group-item d-flex justify-content-center d-none" id="loading-indicator"><div class="spinner-border" role="status"></div></span>');
+    }
+    if (route_id != origin_route_id) {
+      $('.stops.sortable', 'li[data-route-id=' + origin_route_id + ']:not(.out_route)')
+        .sortable('disable')
+        .html('<span class="list-group-item d-flex justify-content-center d-none" id="loading-indicator"><div class="spinner-border" role="status"></div></span>');
     }
     $.ajax({
       type: 'PATCH',
