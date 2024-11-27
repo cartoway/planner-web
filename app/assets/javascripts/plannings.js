@@ -1140,6 +1140,7 @@ export const plannings_edit = function(params) {
   };
 
   var initRouteSelector = function() {
+    var previousSelection = [];
     $('#planning_route_ids').select2({
       dropdownParent: $('#planning_route_ids').parent(),
       closeOnSelect : false,
@@ -1148,9 +1149,11 @@ export const plannings_edit = function(params) {
       placeholder: I18n.t('web.select2.search_placeholder'),
       templateSelection: selectFormatOption,
       templateResult: selectFormatOption,
-    }).off('select2:close select2:open select2:select select2:unselect'
-
-    ).on('select2:select', function(e) {
+    })
+    .off('select2:close select2:open select2:select select2:unselect')
+    .on('select2:open', function(e) {
+      previousSelection = $(this).val() || [];
+    }).on('select2:select', function(e) {
       selectGlobalActions($(this), e);
     }).on('select2:open', function(e) {
       setTimeout(function() {
@@ -1166,6 +1169,8 @@ export const plannings_edit = function(params) {
     })
       .on('select2:close', function(e) {
       var selectedIds = $(this).val();
+
+      if (JSON.stringify(previousSelection)==JSON.stringify(selectedIds)) return;
 
       $.ajax({
         type: 'PATCH',
@@ -1834,17 +1839,7 @@ export const plannings_edit = function(params) {
           route.devices = associated_route[0].devices;
 
         $.extend(route, params.manage_planning);
-
-        $.ajax({
-          type: 'GET',
-          url: '/plannings/' + route.planning_id + '/' + route.route_id + '/refresh.js?with_stops=' + true,
-          beforeSend: beforeSendWaiting,
-          error: ajaxError,
-          success: function() {
-            updateSuccess(locals.summary, map, [locals.route], {skipCallbacks: true})
-          },
-          complete: completeAjaxMap
-        });
+        refreshSidebarRoute(route.planning_id, route.route_id, {skipCallbacks: true});
         const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
 
@@ -1897,6 +1892,8 @@ export const plannings_edit = function(params) {
       error: ajaxError,
       success: function() {
         updateSuccess(locals.summary, map, [locals.route], options);
+        initRouteSelector();
+        updateSelectionCount('#route_selector', '#planning_route_ids');
         if (!locals.route.vehicle_usage_id) {
           continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
         }
