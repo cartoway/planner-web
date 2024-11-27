@@ -1935,14 +1935,6 @@ export const plannings_edit = function(params) {
   }
 
   var updateSuccess = function(data, map, routes, options) {
-    $("#out_of_route").find(".sortable").sortable({
-      connectWith: ".sortable",
-      containment: "#edit-planning",
-      appendTo: document.body,
-      tolerance: "pointer",
-      update: sortPlanning
-    }).disableSelection();
-
     if ($('.sidebar').hasClass('extended')) {
       if ($("#planning.routes").hasClass('ui-sortable')) {
         $(".routes").sortable('destroy');
@@ -1958,7 +1950,11 @@ export const plannings_edit = function(params) {
       initRoutes($routePanel, data, options);
 
       var sortableUpdate = false;
-      $(".route[data-route-id='" + route.route_id + "'] .stops.sortable").sortable({
+      var $sortable_route = $(".route[data-route-id='" + route.route_id + "'] .stops.sortable");
+      if ($sortable_route.hasClass('ui-sortable')) {
+        $sortable_route.sortable('destroy');
+      }
+      $sortable_route.sortable({
         distance: 8,
         connectWith: ".sortable",
         containment: "#edit-planning",
