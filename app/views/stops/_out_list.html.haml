@@ -1,7 +1,7 @@
 - out_pagy ||= nil
 - route[:stops]&.each do |stop|
   - if stop[:visits]
-    %li.waypoint.d-fake-flex.align-items-center.list-group-item{ class: ('ui-state-error' if stop[:error]), data: { "stop-id": stop[:stop_id], "stop-index": stop[:stop_index] }}
+    %li.waypoint.d-fake-flex.align-items-center.list-group-item{ class: ('ui-state-error' if stop[:error]), data: { "stop-id": stop[:stop_id], "stop-index": stop[:stop_index], "origin-route-id": route[:route_id] }}
       .row
         .col-xs-6.col-md-1
           %input{ checked: "checked", style: "display: none", type: "checkbox" }
