@@ -2180,16 +2180,17 @@ export const plannings_edit = function(params) {
         sortLoading($(`.route[data-route-id="${matches[1]}"]`), route_id);
       },
       success: function(data, _status, xhr) {
-        if (xhr.status === 204) return ;
+        if (xhr.status === 204) return;
+
         data.route_ids.forEach(function(route_id) {
-          refreshSidebarRoute(planning_id, route_id, {skipCallbacks: true});
+          refreshSidebarRoute(planning_id, route_id);
         });
         routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
         map.closePopup();
       },
       complete: function() {
         enlightenStop({id: stopId});
-        completeAjaxMap;
+        completeAjaxMap();
       },
       error: ajaxError
     });
