@@ -127,7 +127,7 @@ gem 'webpacker'
 gem "font-awesome-sass", "~> 6.4.2"
 gem 'twitter-bootstrap-rails'
 gem 'bootstrap_form'
-gem 'bootstrap-wysihtml5-rails'
+gem 'bootstrap-wysihtml5-rails', "< 0.3.3.5" # CVE-2019-19919
 gem 'bootstrap-datepicker-rails'
 
 gem 'leaflet-rails', '> 1.0.2'

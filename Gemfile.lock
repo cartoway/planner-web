@@ -172,7 +172,7 @@ GEM
       msgpack (~> 1.2)
     bootstrap-datepicker-rails (1.10.0.1)
       railties (>= 3.0)
-    bootstrap-wysihtml5-rails (0.3.3.8)
+    bootstrap-wysihtml5-rails (0.3.3.4)
       railties (>= 3.0)
     bootstrap_form (5.4.0)
       actionpack (>= 6.1)
@@ -618,8 +618,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
-    rexml (3.3.2)
-      strscan
+    rexml (3.3.9)
     rgeo (3.0.1)
     rgeo-geojson (2.2.0)
       multi_json (~> 1.15)
@@ -817,7 +816,7 @@ DEPENDENCIES
   binding_of_caller
   bootsnap
   bootstrap-datepicker-rails
-  bootstrap-wysihtml5-rails
+  bootstrap-wysihtml5-rails (< 0.3.3.5)
   bootstrap_form
   brakeman
   browser
