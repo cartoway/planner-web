@@ -461,7 +461,7 @@ class Route < ApplicationRecord
   def move_stop_out(stop, force = false)
     if force || stop.is_a?(StopVisit)
       shift_index(stop.index + 1, -1)
-      stop.route.stops.destroy(stop)
+      self.stops.destroy(stop)
       self.outdated = true
     end
   end
@@ -694,7 +694,7 @@ class Route < ApplicationRecord
     return if stops.empty?
 
     inactive_stops = 0
-    (self.changed? ? self.stops : self.stops.includes_destinations).map do |stop|
+    stops.map do |stop|
       inactive_stops += 1 unless stop.active
 
       next unless stop.position?
@@ -811,7 +811,7 @@ class Route < ApplicationRecord
   end
 
   def preload_compute_scopes
-    Route.includes_vehicle_usages.where(id: self.id).includes_destinations
+    Route.includes_vehicle_usages.includes_destinations.where(id: self.id)
   end
 
   private

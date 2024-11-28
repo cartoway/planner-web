@@ -160,7 +160,7 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       begin
         Planning.transaction do
-          route = @planning.routes.find{ |rt| rt.id == Integer(params[:route_id]) }
+          route = @planning.routes.find(Integer(params[:route_id]))
           route_ids = [route.id]
 
           if params[:stop_ids].nil?
@@ -169,8 +169,8 @@ class PlanningsController < ApplicationController
               format.json { head :ok }
               return
             end
-            move_stop(params[:stop_id], route, previous_route_id)
             route_ids << previous_route_id if previous_route_id != route.id
+            move_stop(params[:stop_id], route, previous_route_id)
           else
             params[:stop_ids].map!(&:to_i)
             stops = @planning.routes.flat_map{ |ro|
@@ -537,7 +537,7 @@ class PlanningsController < ApplicationController
       end
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
-    @planning = current_user.customer.plannings.find(params[:id] || params[:planning_id])
+    @planning = current_user.customer.plannings.preload_route_details.find(params[:id] || params[:planning_id])
   end
 
   def includes_destinations
