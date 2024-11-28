@@ -634,6 +634,7 @@ $sidebar-margins: 10px;
 
   .sidebar {
     .out_routes {
+      z-index: 20;
       margin-bottom: 0;
       bottom: 0;
       position: sticky;
