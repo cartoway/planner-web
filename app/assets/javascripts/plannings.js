@@ -1663,6 +1663,7 @@ export const plannings_edit = function(params) {
 
       $('.load-stops', context).click(function(event) {
         var routeId = $(event.target).closest('[data-route-id]').attr('data-route-id');
+        panelLoading(routeId);
         refreshSidebarRoute(params.planning_id, routeId);
       });
     }
