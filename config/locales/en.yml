@@ -2094,6 +2094,7 @@ en:
       visit_quantities: Quantities
   routes:
     show:
+      selector: Routes selector
       print: Print
       wait: 'Waiting time:'
       annotating:
