@@ -2196,6 +2196,7 @@ fr:
       visit_quantities: Quantités
   routes:
     show:
+      selector: Sélecteur de tournées
       print: Imprimer
       wait: 'Temps d''attente :'
       annotating:
