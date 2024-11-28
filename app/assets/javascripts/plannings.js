@@ -1037,14 +1037,18 @@ export const plannings_edit = function(params) {
     vehicleCostLate();
   });
 
+  var panelLoading = function(route_id) {
+    $('.stops.sortable', 'li[data-route-id=' + route_id + ']')
+        .sortable('disable').closest('.panel').addClass('spinner-container').append('<div class="spinner-border"></div>');
+  }
+
   var sortLoading = function(route, origin_route_id) {
     var route_id = route.attr('data-route-id');
     if (route_id != origin_route_id || !route.hasClass('out_route')) {
-      $('.stops.sortable', route).sortable('disable').closest('.panel').addClass('spinner-container').append('<div class="spinner-border"></div>');
+      panelLoading(route_id);
     }
     if (route_id != origin_route_id) {
-      $('.stops.sortable', 'li[data-route-id=' + origin_route_id + ']')
-        .sortable('disable').closest('.panel').addClass('spinner-container').append('<div class="spinner-border"></div>');
+      panelLoading(origin_route_id);
     }
   };
 
@@ -1066,12 +1070,13 @@ export const plannings_edit = function(params) {
       }
       index++;
     }
-    sortLoading(route, origin_route_id);
     $.ajax({
       type: 'PATCH',
       url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '/move/' + (index) + '.json',
-      beforeSend: beforeSendWaiting,
-
+      beforeSend: function() {
+        beforeSendWaiting();
+        sortLoading(route, origin_route_id);
+      },
       success: function(data, _status, xhr) {
         if (xhr.status === 204) return ;
         data.route_ids.forEach(function(route_id) {
@@ -1289,17 +1294,19 @@ export const plannings_edit = function(params) {
     $('.vehicle_select', context).off('change').change(function() {
       var $this = $(this);
       var initial_value = $this.data("initial-value");
+      var route_id =  $this.closest('[data-route-id]').attr('data-route-id')
       if (initial_value !== $this.val()) {
         $.ajax({
           type: 'PATCH',
           data: JSON.stringify({
-            route_id: $this.closest('[data-route-id]').attr('data-route-id'),
+            route_id: route_id,
             vehicle_usage_id: vehicles_usages_map[$this.val()].vehicle_usage_id
           }),
           contentType: 'application/json',
           url: '/plannings/' + planning_id + '/switch.json',
           beforeSend: function() {
             beforeSendWaiting();
+            panelLoading(route_id);
             switchVehicleModal.modal('show');
           },
           success: function(data) {
@@ -1422,10 +1429,14 @@ export const plannings_edit = function(params) {
         .on('click', '.send_sms', sendSMS)
         .off("click", ".active_all, .active_reverse, .active_none, .active_status, .reverse_order")
         .on("click", ".active_all, .active_reverse, .active_none, .active_status, .reverse_order", function() {
+          var route_id = $(this).closest('[data-route-id]').attr('data-route-id')
           $.ajax({
             type: 'PATCH',
             url: this.href,
-            beforeSend: beforeSendWaiting,
+            beforeSend: function() {
+              panelLoading(route_id);
+              beforeSendWaiting();
+            },
             success: function() {
               updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
               routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
@@ -2160,11 +2171,13 @@ export const plannings_edit = function(params) {
     var stopId = $(this).closest("[data-stop-id]").attr("data-stop-id");
     var url = this.href;
     var matches = url.match(new RegExp('([0-9]+)/([0-9]+)/move'));
-    sortLoading($(`.route[data-route-id="${matches[1]}"]`), route_id);
     $.ajax({
       type: 'PATCH',
       url: url,
-      beforeSend: beforeSendWaiting,
+      beforeSend: function() {
+        beforeSendWaiting();
+        sortLoading($(`.route[data-route-id="${matches[1]}"]`), route_id);
+      },
       success: function(data, _status, xhr) {
         if (xhr.status === 204) return ;
         data.route_ids.forEach(function(route_id) {
