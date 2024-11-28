@@ -69,6 +69,21 @@ class Planning < ApplicationRecord
     )
   }
 
+  scope :preload_route_details, -> {
+    preload(
+      routes: [
+        stops: [
+          visit: [:tags, { destination: [:tags, {customer: :deliverable_units}] }]
+        ],
+        vehicle_usage: [
+          :store_start, :store_stop, :store_rest,
+          {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
+          {vehicle: [:customer]}
+        ]
+      ]
+    )
+  }
+
   amoeba do
     enable
 
@@ -256,12 +271,12 @@ class Planning < ApplicationRecord
       if stop.is_a?(StopVisit)
         visit, active = stop.visit, stop.active
         stop_id = stop.id
-        stop.route.move_stop_out(stop)
+        routes.find(stop.route_id).move_stop_out(stop)
         route.add(visit, index || 1, active || stop.route.vehicle_usage.nil?, stop_id)
       elsif force && stop.is_a?(StopRest)
         active = stop.active
         stop_id = stop.id
-        stop.route.move_stop_out(stop, force)
+        routes.find(stop.route_id).move_stop_out(stop, force)
         route.add_rest(active, stop_id)
       end
     else
