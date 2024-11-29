@@ -1969,7 +1969,6 @@ export const plannings_edit = function(params) {
         connectWith: ".sortable",
         containment: "#edit-planning",
         tolerance: "pointer",
-        appendTo: document.body,
         items: "> li",
         cancel: '.wait',
         start: function() {
