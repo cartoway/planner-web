@@ -1969,8 +1969,14 @@ export const plannings_edit = function(params) {
         connectWith: ".sortable",
         containment: "#edit-planning",
         tolerance: "pointer",
+        appendTo: '#planning',
         items: "> li",
         cancel: '.wait',
+        helper: function(event, ui) {
+          var $clone = $(ui).clone();
+          $clone.wrap('<ol class="routes"><li class="route"><ul class="stops"></ol></li></ol>');
+          return $clone.parent().parent().parent();
+        },
         start: function() {
           sortableUpdate = false;
         },
