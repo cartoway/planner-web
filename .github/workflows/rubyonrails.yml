@@ -38,7 +38,7 @@ jobs:
         uses: ruby/setup-ruby@55283cc23133118229fd3f97f9336ee23a179fcf # v1.146.0
         with:
           bundler-cache: true
-          ruby-version: '3.0.6'
+          ruby-version: '3.1.4'
       - name: Rebuild rgeo gem
         run: bundle pristine rgeo
       - name: Set Node.js 14.x
@@ -66,7 +66,7 @@ jobs:
         uses: ruby/setup-ruby@55283cc23133118229fd3f97f9336ee23a179fcf # v1.146.0
         with:
           bundler-cache: true
-          ruby-version: '3.0.6'
+          ruby-version: '3.1.4'
       # Add or replace any other lints here
       # - name: Security audit dependencies
       #   run: bin/rake bundle:audit
