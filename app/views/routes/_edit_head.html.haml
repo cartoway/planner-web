@@ -61,7 +61,7 @@
             %i.fa.fa-truck-ramp-box.fa-fw
             = t('plannings.edit.move_stops')
     .btn-group.route-btn-group.pull-right
-      %button.btn.btn-xs.btn-default.center_view{ title: t('plannings.edit.center_view_help'), type: "button"}
+      %button.btn.btn-xs.btn-default.center_view{ disabled: route[:hidden], title: t('plannings.edit.center_view_help'), type: "button"}
         %i.fa.fa-expand
       %button.toggle.btn.btn-default.btn-xs{title: t('plannings.edit.toggle_help'), type: "button"}
         %i.fa{class: "fa-eye#{'-slash' if route[:hidden]}"}
