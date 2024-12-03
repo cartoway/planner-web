@@ -704,9 +704,11 @@ export const plannings_edit = function(params) {
         if (route.hidden) {
           element.find("ul.stops").hide();
           element.find('.toggle i').removeClass('fa-eye').addClass('fa-eye-slash');
+          element.find('.center_view').prop('disabled', true);
         } else {
           element.find("ul.stops").show();
           element.find('.toggle i').removeClass('fa-eye-slash').addClass('fa-eye');
+          element.find('.center_view').removeAttr('disabled');
         }
       });
     };
@@ -1372,6 +1374,7 @@ export const plannings_edit = function(params) {
           li.toggle();
           var hidden = !li.is(":visible");
           var i = $("i", this);
+          var route_tools = i.closest('.route-tools');
           $.ajax({
             type: 'PUT',
             data: JSON.stringify({
@@ -1385,10 +1388,12 @@ export const plannings_edit = function(params) {
                 i.removeClass("fa-eye").addClass("fa-eye-slash");
                 routesLayer.hideRoutes([id]);
                 li.closest(".route-stops").find("#div_out_list_next_link").hide();
+                route_tools.find('.center_view').prop('disabled', true);
               } else {
                 i.removeClass("fa-eye-slash").addClass("fa-eye");
                 routesLayer.showRoutes([id], JSON.parse(data.geojson));
                 li.closest(".route-stops").find("#div_out_list_next_link").show();
+                route_tools.find('.center_view').removeAttr('disabled');
               }
             },
             error: ajaxError
