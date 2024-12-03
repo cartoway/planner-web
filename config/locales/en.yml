@@ -1819,6 +1819,7 @@ en:
       toggle_route_data_help: Toggle route stats
       locked_unplanned_help: Lock the out of route on global plan operations
       locked_help: Lock the route on global plan operations
+      center_view_help: Center the map on the route
       vehicle_help: Vehicle parameters
       export_help: Export route
       route_stops_active_help: Select active stops
