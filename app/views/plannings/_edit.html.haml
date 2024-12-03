@@ -61,7 +61,6 @@
                 = zoning_select f, @planning
                 .d-flex.justify-content-center
                   = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: @planning.zoning_outdated && t('.outdated_zoning')
-      %h4#planning_name_extended
       #global_tools.row
         .btn-group
           %button#optimize_all.btn.btn-primary.btn-sm.optimize{title: t('.optimize'), type: "button", "data-toggle": "modal", "data-target": "#optimization-modal" }

@@ -2019,7 +2019,7 @@ export const plannings_edit = function(params) {
               routes: routesWithVehicle,
               out_of_route_id: outOfRouteId,
               route_id: route.route_id,
-              vehicle_name: route.vehicle && route.vehicle.name,
+              vehicle_name: route.vehicle_name,
               popover: true,
               manage_organize: true,
               manage_destination: true,
@@ -2259,10 +2259,8 @@ export const plannings_edit = function(params) {
     $(".routes").sortable();
     $('.sidebar').toggleClass('extended');
     if ($('.sidebar').hasClass('extended')) {
-      $('#planning_name_extended').text($('#planning_name').val()).removeClass("hidden-block");
     } else {
       $(".routes").sortable("destroy");
-      $('#planning_name_extended').addClass("hidden-block");
     }
 
     $(".route-btn-group").each(function(idx, elem) {
