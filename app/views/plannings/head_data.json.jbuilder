@@ -1,4 +1,3 @@
-
 json.prefered_unit current_user.prefered_unit
 json.extract! @planning, :id, :ref
 json.planning_id @planning.id
