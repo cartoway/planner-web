@@ -1421,6 +1421,14 @@ export const plannings_edit = function(params) {
           $(this).blur();
           return false;
         })
+        .off("click", ".center_view")
+        .on("click", ".center_view", function() {
+          console.log('center view')
+          var route_id = $(this).closest("[data-route-id]").attr("data-route-id");
+          if (route_id) {
+            routesLayer.focus({routeId: route_id});
+          }
+        })
         .off("click", ".optimize")
         .on('click', '.optimize', function() {
           $('#optimization-route_id').val($(this).closest('[data-route-id]').attr('data-route-id')).trigger('change');

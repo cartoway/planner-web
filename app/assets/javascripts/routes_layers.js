@@ -630,6 +630,8 @@ export const RoutesLayer = L.FeatureGroup.extend({
         reset: true
       });
       popupModule.createPopupForLayer(this.markerStores[options.storeId], this.map);
+    } else if (options.routeId) {
+      this._setViewForRoute(options.routeId);
     }
   },
 
@@ -654,6 +656,21 @@ export const RoutesLayer = L.FeatureGroup.extend({
         popupModule.createPopupForLayer(marker, this.map);
         popupModule.activeClickMarker = marker;
       }.bind(this));
+    }
+  },
+
+  _setViewForRoute: function(routeId) {
+    if (!routeId || !this.clustersByRoute[routeId]) return;
+
+    this.map.closePopup();
+    var bounds = this.clustersByRoute[routeId].getBounds();
+    if (bounds && bounds.isValid()) {
+      this.map.invalidateSize();
+      this.map.fitBounds(bounds, {
+        maxZoom: 15,
+        animate: false,
+        padding: [20, 20]
+      });
     }
   },
 
