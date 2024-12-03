@@ -1911,6 +1911,7 @@ fr:
       locked_help: >-
         Verrouille la tournée pour les opérations globales sur le plan de
         tournées
+      center_view_help: Centre la carte sur la tournée
       vehicle_help: Paramétrer le véhicule
       export_help: Exporter la tournée
       route_stops_active_help: Sélectionner les arrêts actifs
