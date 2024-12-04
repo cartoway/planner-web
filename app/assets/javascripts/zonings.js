@@ -457,7 +457,9 @@ export const zonings_edit = function(params) {
     });
 
     $('.delete', ele).click(function() {
-      deleteZone(geom);
+      if (confirm(I18n.t('all.verb.destroy_confirm'))) {
+        deleteZone(geom);
+      }
     });
   };
 
