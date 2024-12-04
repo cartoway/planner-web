@@ -16,6 +16,7 @@
   - Zoning:
     - Simplify polygons geometries [#207](https://github.com/cartoway/planner-web/pull/207)
     - Destroy unconsistent polygons [#210](https://github.com/cartoway/planner-web/pull/210)
+    - Confirmation on zone delete [#217](https://github.com/cartoway/planner-web/pull/217)
 
   ### Changed
   - Allow rails to use fallback in case of missing assets [#196](https://github.com/cartoway/planner-web/pull/196)
