@@ -5,7 +5,12 @@
   - API:
     - Allow commas for float fields [#205](https://github.com/cartoway/planner-web/pull/205)
     - Capture sentry from API [#209](https://github.com/cartoway/planner-web/pull/209)
-  - Planning: Add router name to vehicle selector [#202](https://github.com/cartoway/planner-web/pull/202)
+  - Planning:
+    - Add router name to vehicle selector [#202](https://github.com/cartoway/planner-web/pull/202)
+    - Display unassigned using a continuous loading on scroll method using Pagy [#217](https://github.com/cartoway/planner-web/pull/217)
+    - Introduce the route selector [#217](https://github.com/cartoway/planner-web/pull/217)
+    - Allow to hide route polylines [#217](https://github.com/cartoway/planner-web/pull/217)
+    - Center the view on a route [#217](https://github.com/cartoway/planner-web/pull/217)
   - Destination: Allow commas for float columns during import [#203](https://github.com/cartoway/planner-web/pull/203) & [#208](https://github.com/cartoway/planner-web/pull/208)
   - Device: Set a 2s timeout for StgTelematics[#209](https://github.com/cartoway/planner-web/pull/209)
   - Zoning:
@@ -17,13 +22,20 @@
   - Rails 6 shares callbacks across threads [#197](https://github.com/cartoway/planner-web/pull/197)
   - Setup cookies with same site policy [#201](https://github.com/cartoway/planner-web/pull/201)
   - Set max zoom to 19 [#204](https://github.com/cartoway/planner-web/pull/204)
+  - Bump Ruby version to 3.1.4 [#217](https://github.com/cartoway/planner-web/pull/217)
+  - Touch routes and plannings while updating routes to reset cache (with some exceptions) [#217](https://github.com/cartoway/planner-web/pull/217)
+  - Bump select2 version to 4.0.13
   - Planning:
-      - stop counter now uses a cache [#207](https://github.com/cartoway/planner-web/pull/207)
-      - set_stops now requires a hash {route_id: [stops_ids]} to be applied [#221](https://github.com/cartoway/planner-web/pull/221)
+   - Stop counter now uses a cache [#207](https://github.com/cartoway/planner-web/pull/207)
+   - Use erb and haml view files instead of Mustache templates for main planning components [#217](https://github.com/cartoway/planner-web/pull/217)
+   - Load and update the planning by fragment using .js.erb [#217](https://github.com/cartoway/planner-web/pull/217)
+   - Freeze modified and loading routes [#217](https://github.com/cartoway/planner-web/pull/217)
+   - set_stops now requires a hash {route_id: [stops_ids]} to be applied [#221](https://github.com/cartoway/planner-web/pull/221)
   - Store: use `find_in_batches` within geocoder job [#205](https://github.com/cartoway/planner-web/pull/205)
   - Zoning:
     - Improve loading performances [#199](https://github.com/cartoway/planner-web/pull/199)
     - Increase zone border weight & Change edit marker style [#207](https://github.com/cartoway/planner-web/pull/207)
+    - Load using id order by default [#217](https://github.com/cartoway/planner-web/pull/217)
 
   ### Removed
 
@@ -35,5 +47,6 @@
     - Import: Cumulative lines with tags were failing [#203](https://github.com/cartoway/planner-web/pull/203) & [#208](https://github.com/cartoway/planner-web/pull/208)
     - Controller: edit params indirectly [#205](https://github.com/cartoway/planner-web/pull/205)
   - Planning: Selectors are no more resizing on click [#202](https://github.com/cartoway/planner-web/pull/202)
+  - RoutesLayers: fix `with_geojson` option [#217](https://github.com/cartoway/planner-web/pull/217)
   - Vehicle Usage: _form was unrechable with an active device [#205](https://github.com/cartoway/planner-web/pull/205)
 
