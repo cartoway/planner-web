@@ -20,6 +20,8 @@ class Zoning < ApplicationRecord
   has_many :zones, inverse_of: :zoning, dependent: :delete_all, autosave: true, after_add: :touch_zones, after_remove: :touch_zones
   has_and_belongs_to_many :plannings, autosave: true
 
+  default_scope { order(:id) }
+
   accepts_nested_attributes_for :zones, allow_destroy: true
 
   nilify_blanks
