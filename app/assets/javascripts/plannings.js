@@ -705,10 +705,12 @@ export const plannings_edit = function(params) {
           element.find("ul.stops").hide();
           element.find('.toggle i').removeClass('fa-eye').addClass('fa-eye-slash');
           element.find('.center_view').prop('disabled', true);
+          if (element.hasClass('out_route')) { $('#div_out_list_next_link').hide(); }
         } else {
           element.find("ul.stops").show();
           element.find('.toggle i').removeClass('fa-eye-slash').addClass('fa-eye');
           element.find('.center_view').removeAttr('disabled');
+          if (element.hasClass('out_route')) { $('#div_out_list_next_link').show(); }
         }
       });
     };
