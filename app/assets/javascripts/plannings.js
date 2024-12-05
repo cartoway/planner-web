@@ -2138,7 +2138,7 @@ export const plannings_edit = function(params) {
   });
 
   $(".main").on("click", ".automatic_insert_all", function() {
-    if ($('#out_of_route .stops > li').length > 20) {
+    if ($('#out_of_route .route-info').data('size-active') > 20) {
       alert(I18n.t('plannings.edit.automatic_insert_too_many'));
       return false;
     }
