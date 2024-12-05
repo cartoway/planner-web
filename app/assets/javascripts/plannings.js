@@ -2295,10 +2295,12 @@ export const plannings_edit = function(params) {
     var sidebar = $('.sidebar');
     sidebar.toggleClass('extended');
     if (sidebar.hasClass('extended')) {
+      $('#toggle_routes_dropdown_button').attr('disabled', true);
       sidebar.find('.toggle').prop('disabled', true);
       sidebar.find('.center_view').prop('disabled', true);
     } else {
       routes.sortable("destroy");
+      $('#toggle_routes_dropdown_button').removeAttr('disabled');
       routes.find('.route-tools').each(function(_idx, elem) {
         if (!!$(elem).find('.toggle', 'fa-eye-slash')) {
           sidebar.find('.toggle').removeAttr('disabled');
