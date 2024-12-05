@@ -352,7 +352,7 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       begin
         Planning.transaction do
-          @route = @planning.routes.includes_destinations.where(id: Integer(params[:route_id])).first
+          @route = @planning.routes.find(Integer(params[:route_id]))
           @stop = @route.stops.find(Integer(params[:stop_id])) if @route
           @stop.assign_attributes(stop_params) if @stop
           if @stop && @route.compute! && @route.save! && @route.reload
