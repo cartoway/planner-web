@@ -1963,10 +1963,13 @@ export const plannings_edit = function(params) {
   }
 
   var updateSuccess = function(data, map, routes, options) {
-    if ($('.sidebar').hasClass('extended')) {
+    var sidebar = $('.sidebar');
+    if (sidebar.hasClass('extended')) {
       if ($("#planning.routes").hasClass('ui-sortable')) {
         $(".routes").sortable('destroy');
       }
+      sidebar.find('.toggle').prop('disabled', true);
+      sidebar.find('.center_view').prop('disabled', true);
       $(".routes").sortable();
     }
     $("#planning").on("click", "#refresh", function() {
@@ -2284,14 +2287,24 @@ export const plannings_edit = function(params) {
   };
 
   $('.btn.extend').click(function() {
+    var routes = $(".routes");
     if ($("#planning.routes").hasClass('ui-sortable')) {
-      $(".routes").sortable('destroy');
+      routes.sortable('destroy');
     }
-    $(".routes").sortable();
-    $('.sidebar').toggleClass('extended');
-    if ($('.sidebar').hasClass('extended')) {
+    routes.sortable();
+    var sidebar = $('.sidebar');
+    sidebar.toggleClass('extended');
+    if (sidebar.hasClass('extended')) {
+      sidebar.find('.toggle').prop('disabled', true);
+      sidebar.find('.center_view').prop('disabled', true);
     } else {
-      $(".routes").sortable("destroy");
+      routes.sortable("destroy");
+      routes.find('.route-tools').each(function(_idx, elem) {
+        if (!!$(elem).find('.toggle', 'fa-eye-slash')) {
+          sidebar.find('.toggle').removeAttr('disabled');
+        }
+        sidebar.find('.center_view').removeAttr('disabled');
+      });
     }
 
     $(".route-btn-group").each(function(idx, elem) {
