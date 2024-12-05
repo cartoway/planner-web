@@ -990,7 +990,7 @@ class Planning < ApplicationRecord
 
   def update_vehicle_usage_set
     if vehicle_usage_set_id_changed? && !vehicle_usage_set_id_was.nil? && !id.nil?
-      h = Hash[routes.includes_vehicle_usages.select(&:vehicle_usage).collect{ |route| [route.vehicle_usage.vehicle, route] }]
+      h = Hash[routes.select(&:vehicle_usage).collect{ |route| [route.vehicle_usage.vehicle, route] }]
       vehicle_usage_set.vehicle_usages.each{ |vehicle_usage|
         if h[vehicle_usage.vehicle] && vehicle_usage.active
           h[vehicle_usage.vehicle].vehicle_usage = vehicle_usage
