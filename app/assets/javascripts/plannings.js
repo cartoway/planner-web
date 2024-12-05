@@ -1040,8 +1040,11 @@ export const plannings_edit = function(params) {
   });
 
   var panelLoading = function(route_id) {
-    $('.stops.sortable', 'li[data-route-id=' + route_id + ']')
-        .sortable('disable').closest('.panel').addClass('spinner-container').append('<div class="spinner-border"></div>');
+    var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
+    route_panel.sortable('disable')
+               .closest('.panel')
+               .addClass('spinner-container')
+               .append('<div class="spinner-border"></div>');
   }
 
   var sortLoading = function(route, origin_route_id) {
@@ -1964,6 +1967,19 @@ export const plannings_edit = function(params) {
       }
       $(".routes").sortable();
     }
+    $("#planning").on("click", "#refresh", function() {
+        $.ajax({
+          type: 'GET',
+          url: '/plannings/' + planning_id + '/refresh.json?with_stops=' + withStopsInSidePanel,
+          beforeSend: function() {
+            beforeSendWaiting();
+            panelLoading();
+          },
+          success: displayPlanning,
+          complete: completeAjaxMap,
+          error: ajaxError
+        });
+      });
 
     checkLockAndActive();
     var routesWithVehicle = data.routes.filter(function(route) { return route.vehicle_usage_id; });
