@@ -68,7 +68,7 @@
             = t('plannings.edit.dialog.optimization.optimize')
         .pull-right.btn-group
           .dropdown.btn-group
-            %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.toggle_routes'), type: "button"}
+            %a#toggle_routes_dropdown_button.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.toggle_routes'), type: "button"}
               %i.fa.fa-eye
               %span.caret
             -# https://github.com/twbs/bootstrap/issues/1411
