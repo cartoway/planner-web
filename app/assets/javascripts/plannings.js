@@ -720,7 +720,10 @@ export const plannings_edit = function(params) {
       type: 'PATCH',
       data: {
         selection: selection,
-        action: action
+        action: action,
+        route_ids: $('[data-route-id]').map(function() {
+          return $(this).data('route-id');
+        }).get()
       },
       dataType: 'json',
       beforeSend: beforeSendWaiting,
@@ -1447,7 +1450,9 @@ export const plannings_edit = function(params) {
         .on('click', '.send_sms', sendSMS)
         .off("click", ".active_all, .active_reverse, .active_none, .active_status, .reverse_order")
         .on("click", ".active_all, .active_reverse, .active_none, .active_status, .reverse_order", function() {
-          var route_id = $(this).closest('[data-route-id]').attr('data-route-id')
+          var route_id = $(this).closest('[data-route-id]').attr('data-route-id');
+          if (!route_id) return false;
+
           $.ajax({
             type: 'PATCH',
             url: this.href,
