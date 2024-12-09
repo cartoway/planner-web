@@ -252,6 +252,7 @@
         route_id: r.id,
         color: r.default_color,
         vehicle_usage_id: r.vehicle_usage_id,
+        name: !r.vehicle_usage_id ? t("plannings.edit.out_of_route") : (r.ref ? (r.ref + ' ') : '') + r.vehicle_usage.vehicle.name,
         ref: r.ref,
         outdated: r.outdated,
         fleet_user: r.vehicle_usage ? r.vehicle_usage.vehicle.devices[:fleet_user] : ''
