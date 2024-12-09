@@ -86,22 +86,27 @@ class OptimizerWrapper
       result = solve(vrp, progress, key)
     end
 
-    optimum = [result['solutions'][0]['unassigned'] ? result['solutions'][0]['unassigned'].select{ |activity| activity['service_id'] }.collect{ |activity|
-      activity['service_id'][1..-1].to_i
-    } : []] + vrp[:vehicles].collect{ |vehicle|
-      route = result['solutions'][0]['routes'].find{ |r| r['vehicle_id'] == vehicle[:id] }
-      !route ? [] : route['activities'].collect{ |activity|
+    optimum = {}
+    if result['solutions'][0]['unassigned']
+      unassigned_route = routes.find{ |route| !route.vehicle_usage? }
+      optimum[unassigned_route&.id] =
+        result['solutions'][0]['unassigned']
+        .select{ |activity| activity['service_id'] }
+        .map{ |activity|
+          activity['service_id'][1..-1].to_i
+        }
+    end
+
+    result['solutions'][0]['routes'].each{ |s_route|
+      optimum[s_route['vehicle_id'][1..-1].to_i] = s_route['activities'].map{ |activity|
         if activity.key?('service_id')
           activity['service_id'][1..-1].to_i
         elsif activity.key?('rest_id')
           activity['rest_id'][1..-1].to_i
         end
-      }.compact # stores are not returned anymore
+      }.compact
+
     }
-    optimum = optimum[1..-1] if routes.none?{ |route| !route.vehicle_usage? }
-    if @removed_route_indices&.any?
-      @removed_route_indices.each{ |index| optimum.insert(index, [])}
-    end
     optimum
   end
 
@@ -228,7 +233,7 @@ class OptimizerWrapper
 
       next if mission_ids.empty?
       {
-        vehicle_id: "v#{route.vehicle_usage_id}",
+        vehicle_id: "v#{route.id}",
         mission_ids: mission_ids
       }
     }.compact
@@ -252,7 +257,7 @@ class OptimizerWrapper
         sticky_vehicle_ids:
           stop.route.vehicle_usage_id &&
           (!options[:global] || stop.is_a?(StopRest)) &&
-          (options[:moving_stop_ids].nil? || route_ids.include?(stop.route.vehicle_usage_id) || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route.vehicle_usage_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
+          (options[:moving_stop_ids].nil? || route_ids.include?(stop.route_id) || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
         activity: {
           point_id: service_point[:id],
           position: POSITION_KEYS[stop.visit&.force_position&.to_sym || :neutral],
@@ -326,7 +331,7 @@ class OptimizerWrapper
         }
       }&.compact
       vrp_vehicles << {
-        id: "v#{route.vehicle_usage_id}",
+        id: "v#{route.id}",
         router_mode: route.vehicle_usage.vehicle.default_router.try(&:mode),
         router_dimension: route.vehicle_usage.vehicle.default_router_dimension,
         router_options: route.vehicle_usage.vehicle.default_router_options
@@ -455,13 +460,6 @@ class OptimizerWrapper
         !used_vehicle_hash.key?(vehicle[:id])
       }
     end
-    @removed_route_indices = routes.map.with_index{ |route, index|
-      next unless route.vehicle_usage?
-
-      next if used_vehicle_hash.key?("v#{route.vehicle_usage.vehicle_id}")
-
-      index
-    }.compact
 
     vrp[:vehicles].each{ |vehicle|
       keys_to_remove.each{ |key| vehicle.delete(key) }

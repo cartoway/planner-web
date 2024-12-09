@@ -22,7 +22,10 @@ class PlanningsControllerTest < ActionController::TestCase
           returned_stops = routes.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
           first_route = routes.find{ |r| r.vehicle_usage? }
           first_route_rests = first_route.stops.select{ |stop| stop.is_a?(StopRest) }.compact
-          routes.select{ |r| !r.vehicle_usage? }.map{ |r| [] } + routes.select{ |r| r.vehicle_usage? }.map.with_index{ |v, i| ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map(&:id) }
+          (
+            routes.select{ |r| !r.vehicle_usage? }.map{ |r| [r.id, []] } +
+            routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i| [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map(&:id)] }.uniq
+          ).to_h
         }) do
           yield
         end

@@ -23,7 +23,9 @@ class V01::RoutesTest < V01::RoutesBaseTest
       Routers::RouterWrapper.stub_any_instance(:matrix, lambda{ |url, mode, dimensions, row, column, options| [Array.new(row.size) { Array.new(column.size, 0) }] }) do
         # return all services in reverse order in first route, rests at the end
         OptimizerWrapper.stub_any_instance(:optimize, lambda { |planning, routes, options|
-          [routes.flat_map{ |r| r.stops.sort_by(&:index) }.reverse.map(&:id)]
+          (
+            [[routes.first.id, routes.flat_map{ |r| r.stops.sort_by(&:index) }.reverse.map(&:id)]]
+          ).to_h
         }) do
           yield
         end
