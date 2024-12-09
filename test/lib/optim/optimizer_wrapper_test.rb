@@ -19,7 +19,7 @@ class OptimizerWrapperTest < ActionController::TestCase
     begin
       OptimizerWrapper.stub_any_instance(:build_vrp, JSON.parse(File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/submitted-vrp.json').read, symbolize_names: true)) do
         routes = @planning.routes.select{ |route| route.vehicle_usage? }
-        assert_equal [[1, 2, 3, 4, 5], []], @optim.optimize(@planning, routes, **{ optimize_minimal_time: 3 })
+        assert_equal ({1 => [1, 2, 3, 4, 5]}), @optim.optimize(@planning, routes, **{ optimize_minimal_time: 3 })
       end
     ensure
       remove_request_stub(@stub_VrpJob)
