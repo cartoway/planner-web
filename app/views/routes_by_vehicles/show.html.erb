@@ -46,7 +46,15 @@ controller.js(
   vehicle_id: @vehicle.id,
   color: @vehicle.color,
   color_codes: COLORS_TABLE,
-  routes_array: @routes.map{ |r| { route_id: r.id, planning_id: r.planning_id, color: r.default_color, outdated: r.outdated } },
+  routes_array: @routes.map{ |r|
+    {
+      route_id: r.id,
+      planning_id: r.planning_id,
+      name: !r.vehicle_usage_id ? t("plannings.edit.out_of_route") : (r.ref ? (r.ref + ' ') : '') + r.vehicle_usage.vehicle.name,
+      color: r.default_color,
+      outdated: r.outdated
+    }
+  },
   colors_by_route: Hash[@routes.map{ |r| [r.id, r.default_color] }],
   manage_routes: @manage_routes,
   disable_clusters: @routes.all?{ |r| (stops_count += r.stops.size) < 1000 }

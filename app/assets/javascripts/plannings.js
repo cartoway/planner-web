@@ -1812,7 +1812,7 @@ export const plannings_edit = function(params) {
             color: route.color || vehicle_usage.color,
             vehicle_usage_id: route.vehicle_usage_id,
             ref: route.ref,
-            name: (route.ref ? (route.ref + ' ') : '') + vehicle_usage.name,
+            name: route.name,
             fleet_user: route.fleet_user || rv.fleet_user,
             outdated: route.outdated,
             devices: route.devices || params.devices

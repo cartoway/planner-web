@@ -91,6 +91,8 @@ if route.vehicle_usage_id
     end
     json.status_any status_uniq.size > 0 || route.planning.customer.device.available_stop_status?
   end
+else
+  json.name t("plannings.edit.out_of_route")
 end
 json.store_start do
   json.extract! route.vehicle_usage.default_store_start, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
