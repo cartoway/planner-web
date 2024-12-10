@@ -1652,11 +1652,11 @@ export const plannings_edit = function(params) {
         }).filter(function(element) { return element; })[0];
       };
 
-      $('#planning-move-stops-modal').on('hide.bs.modal', function() {
+      $('#planning-move-stops-modal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
         $('#planning-move-stops-modal').attr('data-route-id', null);
       });
 
-      $("#move-stops-modal").off().on('click', function() {
+      $("#move-stops-modal").off('click').on('click', function() {
         var stopIds = $("#planning-move-stops-modal")
           .find('form input[name="stop_ids"]:checked:visible')
           .map(function() { return $(this).val(); })
@@ -1668,16 +1668,18 @@ export const plannings_edit = function(params) {
             'stop_ids': stopIds,
             'index': $('#move-index').val()
           },
-          beforeSend: beforeSendWaiting,
+          beforeSend: function() {
+            beforeSendWaiting();
+            $('#planning-move-stops-modal').modal('hide');
+          },
           error: ajaxError,
           success: function(data, _status, xhr) {
-            if (xhr.status === 204) return ;
+            if (xhr.status === 204) return;
 
             data.route_ids.forEach(function(route_id) {
               refreshSidebarRoute(params.planning_id, route_id);
             });
             routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
-            $('#planning-move-stops-modal').modal('hide');
           },
           complete: completeAjaxMap
         });
