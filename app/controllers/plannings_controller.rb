@@ -537,7 +537,7 @@ class PlanningsController < ApplicationController
       end
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
-    @planning = current_user.customer.plannings.preload_route_details.find(params[:id] || params[:planning_id])
+    @planning = current_user.customer.plannings.find(params[:id] || params[:planning_id])
   end
 
   def includes_destinations
@@ -557,10 +557,8 @@ class PlanningsController < ApplicationController
   end
 
   def includes_sub_models
-    VehicleUsage.with_stores.scoping do
-      includes_destinations do
-        yield
-      end
+    Planning.preload_route_details.scoping do
+      yield
     end
   end
 

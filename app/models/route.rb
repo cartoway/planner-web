@@ -49,7 +49,7 @@ class Route < ApplicationRecord
     includes(vehicle_usage: [
       :store_start, :store_stop, :store_rest,
       vehicle_usage_set: [:store_start, :store_stop, :store_rest],
-      vehicle: :customer
+      vehicle: [:router, {customer: :router}]
     ])
   }
   scope :includes_stops, -> { includes(:stops) }

@@ -63,8 +63,11 @@ class Planning < ApplicationRecord
         vehicle_usage: [
           :store_start, :store_stop, :store_rest,
           {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
-          {vehicle: [:customer]}
+          {vehicle: [:router, {customer: :router}]}
         ]
+      ],
+      vehicle_usage_set: [
+        { vehicle_usages: :vehicle }
       ]
     )
   }
@@ -78,7 +81,7 @@ class Planning < ApplicationRecord
         vehicle_usage: [
           :store_start, :store_stop, :store_rest,
           {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
-          {vehicle: [:customer]}
+          {vehicle: [:router, {customer: :router}]}
         ]
       ]
     )
