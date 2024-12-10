@@ -199,6 +199,7 @@ gem "vonage", "~> 7.28"
 
 gem 'sentry-ruby'
 gem 'sentry-rails'
+gem 'sentry-delayed_job'
 
 group :production do
   gem 'rails_12factor'

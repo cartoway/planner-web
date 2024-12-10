@@ -700,6 +700,9 @@ GEM
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
     semantic_range (3.0.0)
+    sentry-delayed_job (5.19.0)
+      delayed_job (>= 4.0)
+      sentry-ruby (~> 5.19.0)
     sentry-rails (5.19.0)
       railties (>= 5.0)
       sentry-ruby (~> 5.19.0)
@@ -738,7 +741,6 @@ GEM
       activesupport (>= 6.1)
       sprockets (>= 3.0.0)
     ssrf_filter (1.1.2)
-    strscan (3.1.0)
     systemu (2.6.5)
     temple (0.10.3)
     terminal-table (3.0.2)
@@ -926,6 +928,7 @@ DEPENDENCIES
   savon-multipart
   select2-rails
   selenium-webdriver
+  sentry-delayed_job
   sentry-rails
   sentry-ruby
   sidebar-v2-gh-pages-rails!
