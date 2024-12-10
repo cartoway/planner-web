@@ -17,7 +17,9 @@
   - Rails 6 shares callbacks across threads [#197](https://github.com/cartoway/planner-web/pull/197)
   - Setup cookies with same site policy [#201](https://github.com/cartoway/planner-web/pull/201)
   - Set max zoom to 19 [#204](https://github.com/cartoway/planner-web/pull/204)
-  - Planning: stop counter now uses a cache [#207](https://github.com/cartoway/planner-web/pull/207)
+  - Planning:
+      - stop counter now uses a cache [#207](https://github.com/cartoway/planner-web/pull/207)
+      - set_stops now requires a hash {route_id: [stops_ids]} to be applied [#221](https://github.com/cartoway/planner-web/pull/221)
   - Store: use `find_in_batches` within geocoder job [#205](https://github.com/cartoway/planner-web/pull/205)
   - Zoning:
     - Improve loading performances [#199](https://github.com/cartoway/planner-web/pull/199)
