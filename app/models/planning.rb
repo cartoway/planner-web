@@ -528,7 +528,6 @@ class Planning < ApplicationRecord
     }
   end
 
-
   def set_stops(optimum, **options)
     raise "Optimum and planning have no route in common #{self.routes.map(&:id)} & #{optimum.keys}" if (self.routes.map(&:id) & optimum.keys.compact).empty?
 
