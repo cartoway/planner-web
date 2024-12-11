@@ -903,7 +903,6 @@ DEPENDENCIES
   mocha
   mustache
   net-ftp
-  nexmo
   nilify_blanks
   nokogiri (~> 1.15.1)
   pagy (~> 9.1)
