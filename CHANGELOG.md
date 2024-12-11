@@ -1,6 +1,8 @@
 # Changelog
 
-## V103.0.1-dev
+## Dev
+
+## V104.0.0
   ### Added
   - API:
     - Allow commas for float fields [#205](https://github.com/cartoway/planner-web/pull/205)
