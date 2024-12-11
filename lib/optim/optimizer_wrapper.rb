@@ -63,7 +63,7 @@ class OptimizerWrapper
     vrp = {
       configuration: build_configuration(**options.merge(service_count: vrp_services.size, vehicle_count: vrp_vehicles.size)),
       name: options[:name],
-      points: v_points + s_points,
+      points: (v_points + s_points).uniq,
       relations: relations,
       rests: vrp_rests,
       routes: vrp_routes,
