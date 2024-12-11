@@ -61,7 +61,7 @@ class StopsController < ApplicationController
     end
     @route = @stop.route
     @visit = @stop.visit
-    @destination = @stop.visit.destination
+    @destination = @stop.visit&.destination
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
