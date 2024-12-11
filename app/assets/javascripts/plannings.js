@@ -1436,7 +1436,6 @@ export const plannings_edit = function(params) {
         })
         .off("click", ".center_view")
         .on("click", ".center_view", function() {
-          console.log('center view')
           var route_id = $(this).closest("[data-route-id]").attr("data-route-id");
           if (route_id) {
             routesLayer.focus({routeId: route_id});
