@@ -26,7 +26,6 @@ class PlanningsController < ApplicationController
   UPDATE_ACTIONS = [:update, :move, :refresh, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:show, :edit, :duplicate, :destroy, :cancel_optimize, :data_header, :filter_routes, :refresh_route, :route_edit, :sidebar] + UPDATE_ACTIONS
   before_action :check_no_existing_job, only: UPDATE_ACTIONS
-  around_action :includes_sub_models, except: [:index, :new, :create]
   around_action :over_max_limit, only: [:create, :duplicate]
 
   load_and_authorize_resource
@@ -537,7 +536,7 @@ class PlanningsController < ApplicationController
       end
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
-    @planning = current_user.customer.plannings.find(params[:id] || params[:planning_id])
+    @planning = current_user.customer.plannings.preload_route_details.find(params[:id] || params[:planning_id])
   end
 
   def includes_destinations
@@ -552,12 +551,6 @@ class PlanningsController < ApplicationController
         yield
       end
     else
-      yield
-    end
-  end
-
-  def includes_sub_models
-    Planning.preload_route_details.scoping do
       yield
     end
   end
