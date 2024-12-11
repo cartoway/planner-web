@@ -80,15 +80,15 @@
                   %i.fa.fa-fw{class: (route[:store_start][:icon] ? route[:store_start][:icon] : 'fa-store'), style: "color: #{color};"}
                 - if route[:store_start][:time]
                   .col-xs-10.d-flex.justify-content-end
-                    %div{class: "#{route[:store_start][:start_with_service] ? 'col-xs-12' : 'col-xs-7'}"}
-                      .primary.stop-info{class: "#{('danger' if route[:store_start][:error])} #{('ml-0' if route[:store_start][:start_with_service]) }"}
+                    %div{class: "#{route[:start_with_service] ? 'col-xs-12' : 'col-xs-7'}"}
+                      .primary.stop-info{class: "#{('danger' if route[:store_start][:error])} #{('ml-0' if route[:start_with_service]) }"}
                         = route[:store_start][:time]
                         - if route[:store_start][:time_day]
                           = "(+#{route[:store_start][:time_day]})"
-                        - if route[:store_start][:start_with_service]
-                          = "-#{route[:store_start][:start_with_service]}"
-                        - if route[:store_start][:start_with_service_day]
-                          = "(+#{route[:store_start][:start_with_service_day]})"
+                        - if route[:start_with_service]
+                          = "-#{route[:start_with_service]}"
+                        - if route[:start_with_service_day]
+                          = "(+#{route[:start_with_service_day]})"
               .col-xs-4.col-md-6
                 .title
                   - if !route[:store_start][:geocoded]
@@ -129,12 +129,12 @@
                   %i.fa.fa-fw{class: (route[:store_stop][:icon] || 'fa-store'), style: "color: #{color};"}
                 - if route[:store_stop][:time]
                   .col-xs-10.d-flex.justify-content-end
-                    %div{class: "#{route[:store_stop][:end_without_service] ? 'col-xs-12' : 'col-xs-7'}"}
-                      .primary.stop-info{class: "#{('danger' if route[:store_stop][:error])} #{('ml-0' if route[:store_stop][:end_without_service]) }"}
-                        - if route[:store_stop][:end_without_service]
-                          = route[:store_stop][:end_without_service]
-                          - if route[:store_stop][:end_without_service_day]
-                            = "(+#{route[:store_stop][:end_without_service_day]})"
+                    %div{class: "#{route[:end_without_service] ? 'col-xs-12' : 'col-xs-7'}"}
+                      .primary.stop-info{class: "#{('danger' if route[:store_stop][:error])} #{('ml-0' if route[:end_without_service]) }"}
+                        - if route[:end_without_service]
+                          = route[:end_without_service]
+                          - if route[:end_without_service_day]
+                            = "(+#{route[:end_without_service_day]})"
                         = route[:store_stop][:time]
                         - if route[:store_stop][:time_day]
                           = "(+#{route[:store_stop][:time_day]})"
