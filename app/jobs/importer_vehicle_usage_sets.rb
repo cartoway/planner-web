@@ -243,6 +243,7 @@ class ImporterVehicleUsageSets < ImporterBase
       @vehicle_usage_set.vehicle_usages.each{ |vu|
         vu.assign_attributes Hash[@common_configuration.keys.select{ |k| excluded_keys.exclude? k }.map{ |k| [k, nil] }]
       }
+      @vehicle_usage_set.import_skip = true
       @vehicle_usage_set.save!
     end
 

@@ -4,6 +4,9 @@
   ### Added
     - Misc: Add `rails_performance` gem to monitor performances [#227](https://github.com/cartoway/planner-web/pull/227)
 
+  ### Removed
+  - `skip_callback` was not thread safe [#214](https://github.com/cartoway/planner-web/pull/214)
+
 ## V104.0.0
   ### Added
   - API:
@@ -41,8 +44,6 @@
     - Improve loading performances [#199](https://github.com/cartoway/planner-web/pull/199)
     - Increase zone border weight & Change edit marker style [#207](https://github.com/cartoway/planner-web/pull/207)
     - Load using id order by default [#217](https://github.com/cartoway/planner-web/pull/217)
-
-  ### Removed
 
   ### Fixed
   - Api-web:  Remove blank header bar [#201](https://github.com/cartoway/planner-web/pull/201)

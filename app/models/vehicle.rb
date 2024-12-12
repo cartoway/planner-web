@@ -24,6 +24,8 @@ class Vehicle < ApplicationRecord
 
   default_scope { order(:id) }
 
+  attr_accessor :migration_skip
+
   belongs_to :customer
   belongs_to :router, optional: true
   has_many :vehicle_usages, inverse_of: :vehicle, dependent: :destroy, autosave: true
@@ -61,7 +63,8 @@ class Vehicle < ApplicationRecord
   before_validation :check_router_options_format
   before_create :create_vehicle_usage
   before_save :nilify_router_options_blanks
-  before_update :update_outdated, :update_color
+  before_update :update_color
+  before_update :update_outdated, unless: :migration_skip
 
   include Consistency
   validate_consistency [:tags]

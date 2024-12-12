@@ -18,6 +18,8 @@
 class VehicleUsageSet < ApplicationRecord
   default_scope { order(:id) }
 
+  attr_accessor :import_skip
+
   belongs_to :customer, inverse_of: :vehicle_usage_sets
   belongs_to :store_start, class_name: 'Store', inverse_of: :vehicle_usage_set_starts, optional: true
   belongs_to :store_stop, class_name: 'Store', inverse_of: :vehicle_usage_set_stops, optional: true
@@ -57,7 +59,7 @@ class VehicleUsageSet < ApplicationRecord
   validates :max_ride_distance, numericality: true, allow_nil: true
 
   after_initialize :assign_defaults, if: :new_record?
-  before_create :check_max_vehicle_usage_set
+  before_create :check_max_vehicle_usage_set, unless: :import_skip
   before_update :update_outdated
 
   amoeba do
