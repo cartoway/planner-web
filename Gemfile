@@ -97,6 +97,11 @@ group :test do
 end
 
 gem 'bullet'  # Used in production for api-web doc generation
+gem 'rails_performance'
+
+gem 'sys-filesystem'
+gem 'sys-cpu'
+gem 'get_process_mem'
 
 gem 'grape'
 gem 'grape-entity'

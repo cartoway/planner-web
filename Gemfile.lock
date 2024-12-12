@@ -289,6 +289,9 @@ GEM
     font-awesome-sass (6.4.2)
       sassc (~> 2.0)
     formatador (1.1.0)
+    get_process_mem (1.0.0)
+      bigdecimal (>= 2.0)
+      ffi (~> 1.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
     grape (2.1.3)
@@ -499,6 +502,8 @@ GEM
     nokogiri (1.15.6)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
+    nokogiri (1.15.6-x86_64-linux)
+      racc (~> 1.4)
     nori (2.7.0)
       bigdecimal
     notiffany (0.1.3)
@@ -576,6 +581,10 @@ GEM
     rails_12factor (0.0.3)
       rails_serve_static_assets
       rails_stdout_logging
+    rails_performance (1.4.1)
+      browser
+      railties
+      redis
     rails_serve_static_assets (0.0.5)
     rails_stdout_logging (0.0.5)
     railties (6.1.7.8)
@@ -746,6 +755,10 @@ GEM
       activesupport (>= 6.1)
       sprockets (>= 3.0.0)
     ssrf_filter (1.1.2)
+    sys-cpu (1.1.0)
+      ffi (~> 1.1)
+    sys-filesystem (1.5.3)
+      ffi (~> 1.1)
     systemu (2.6.5)
     temple (0.10.3)
     terminal-table (3.0.2)
@@ -856,6 +869,7 @@ DEPENDENCIES
   fast-polylines
   figaro
   font-awesome-sass (~> 6.4.2)
+  get_process_mem
   grape
   grape-entity
   grape-swagger
@@ -918,6 +932,7 @@ DEPENDENCIES
   rails-controller-testing
   rails-i18n (>= 7)
   rails_12factor
+  rails_performance
   railties (~> 6.1, >= 6.1.7.8)
   rake
   redis
@@ -946,6 +961,8 @@ DEPENDENCIES
   simplify_rb
   smt_rails (= 0.2.9)
   sprockets
+  sys-cpu
+  sys-filesystem
   tidy-html5!
   turbolinks (< 5)
   twitter-bootstrap-rails
