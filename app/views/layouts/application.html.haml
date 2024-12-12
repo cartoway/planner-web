@@ -41,6 +41,12 @@
                       .hidden-menu
                         = t 'admin.jobs.menu.observation'
                 %li.menu-section.menu-list-item
+                  = link_to rails_performance_path do
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-chart-area.fa-fw
+                      .hidden-menu
+                        = t 'admin.jobs.menu.performance'
+                %li.menu-section.menu-list-item
                   = link_to admin_profiles_path do
                     .d-flex.align-items-center.justify-content-center
                       %i.fa.fa-gear.fa-fw

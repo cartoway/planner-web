@@ -1,6 +1,8 @@
 # Changelog
 
 ## Dev
+  ### Added
+    - Misc: Add `rails_performance` gem to monitor performances [#227](https://github.com/cartoway/planner-web/pull/227)
 
 ## V104.0.0
   ### Added

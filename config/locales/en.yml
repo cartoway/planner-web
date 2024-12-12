@@ -744,6 +744,7 @@ en:
     jobs:
       menu:
         observation: Jobs
+        performance: Performances
     profiles:
       menu:
         profiles: Profiles
