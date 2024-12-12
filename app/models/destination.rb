@@ -30,6 +30,7 @@ class Destination < Location
 
   include Consistency
   validate_consistency [:tags]
+  validates :ref, uniqueness: { scope: :customer_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
   before_create :check_max_destination
   before_save :save_visits
