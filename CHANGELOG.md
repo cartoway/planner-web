@@ -1,6 +1,9 @@
 # Changelog
 
 ## Dev
+  ### Added
+    - Misc: Add `rails_performance` gem to monitor performances [#227](https://github.com/cartoway/planner-web/pull/227)
+
   ### Removed
   - `skip_callback` was not thread safe [#214](https://github.com/cartoway/planner-web/pull/214)
 
