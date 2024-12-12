@@ -292,7 +292,7 @@ class Planning < ApplicationRecord
   # active_only (true by default, only for prefered_route_and_index)
   # max_time
   # max_distance
-  def automatic_insert(stop, options = {})
+  def automatic_insert(stop, options = { exclusion: :locked })
     options[:out_of_zone] = true if options[:out_of_zone] == nil
 
     available_routes = []
@@ -304,7 +304,7 @@ class Planning < ApplicationRecord
 
     # If zoning, get appropriate route
     if available_routes.empty?
-      zone_route = get_associated_route_from_zones(stop.visit.destination)
+      zone_route = get_associated_route_from_zones(stop.visit.destination, options)
       available_routes = [zone_route] if zone_route
     end
 
@@ -330,14 +330,14 @@ class Planning < ApplicationRecord
     end
   end
 
-  def candidate_insert(destination, options = {})
+  def candidate_insert(destination, options = { exclusion: :locked })
     options[:out_of_zone] = true if options[:out_of_zone] == nil
 
     available_routes = []
 
     # If zoning, get appropriate route
     if available_routes.empty?
-      zone_route = get_associated_route_from_zones(destination)
+      zone_route = get_associated_route_from_zones(destination, options)
       available_routes = [zone_route] if zone_route
     end
 
@@ -356,15 +356,15 @@ class Planning < ApplicationRecord
     prefered_route_data(available_routes, destination, options)
   end
 
-  def get_associated_route_from_zones(destination)
+  def get_associated_route_from_zones(destination, options = {})
     # If zoning, get appropriate route
     if zonings.any?
       # Directly assigning zones to a new zoning update their zoning_id
       collect_zones = zonings.collect{ |zoning| zoning.zones.map{ |z| z.dup }}.flatten
       zone = Zoning.new(zones: collect_zones).inside(destination)
       if zone && zone.vehicle
-        route = routes.find{ |route|
-          route.vehicle_usage? && route.vehicle_usage.vehicle == zone.vehicle && !route.locked
+        route = get_routes_without_exclusion(options[:exclusion]).find{ |route|
+          route.vehicle_usage? && route.vehicle_usage.vehicle == zone.vehicle
         }
         route
       end
@@ -374,16 +374,27 @@ class Planning < ApplicationRecord
   def get_routes_from_skills(tags, options = {})
     if options[:out_of_zone]
       skill_tags = all_skills & tags
-      routes.select{ |route|
+      get_routes_without_exclusion(options[:exclusion]).select{ |route|
         next unless route.vehicle_usage?
 
-        if skill_tags.any?
-          common_tags = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten & tags
-          !route.locked && !common_tags.empty?
-        else
-          !route.locked
-        end
+        next true if skill_tags.empty?
+
+        common_tags = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten & tags
+        !common_tags.empty?
       }
+    end
+  end
+
+  def get_routes_without_exclusion(exclusion)
+    case exclusion
+    when :hidden
+      routes.select{ |r| !r.hidden }
+    when :locked
+      routes.select{ |r| !r.locked }
+    when :unavailable
+      routes.select{ |r| !r.locked && !r.hidden}
+    else
+      routes
     end
   end
 
