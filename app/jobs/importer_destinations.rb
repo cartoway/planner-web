@@ -176,7 +176,7 @@ class ImporterDestinations < ImporterBase
     @existing_destinations_by_ref = {}
     @existing_visits_by_ref = {}
     @destinations_visits_attributes_by_ref = {}
-    @customer.destinations.where.not(ref: nil).find_each{ |destination|
+    @customer.destinations.includes_visits.where.not(ref: nil).find_each{ |destination|
       @existing_destinations_by_ref[destination.ref.to_sym] = destination
       @existing_visits_by_ref[destination.ref.to_sym] = Hash[destination.visits.map{ |visit| [visit.ref&.to_sym, visit]}]
       @destinations_visits_attributes_by_ref[destination.ref.to_sym] = Hash.new
@@ -500,7 +500,8 @@ class ImporterDestinations < ImporterBase
         import_result = Destination.import(
           destinations_attributes,
           on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-          validate: true, all_or_none: true, track_validation_failures: true
+          validate: true, all_or_none: true, track_validation_failures: true,
+          validate_with_context: :import
         )
 
         raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?

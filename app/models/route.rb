@@ -18,6 +18,8 @@
 class Route < ApplicationRecord
   RELATION_ORDER_KEYS = %i[pickup_delivery order sequence]
 
+  attr_accessor :migration_skip
+
   belongs_to :planning, touch: true
   belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
@@ -34,7 +36,7 @@ class Route < ApplicationRecord
   attribute :end, ScheduleType.new
   time_attr :start, :end
 
-  before_update :update_vehicle_usage, :update_geojson
+  before_update :update_vehicle_usage, :update_geojson, unless: :migration_skip
 
   after_initialize :assign_defaults, if: -> { new_record? }
   after_create :complete_geojson

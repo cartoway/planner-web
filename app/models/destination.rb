@@ -18,6 +18,8 @@
 class Destination < Location
   default_scope { order(:id) }
 
+  attr_accessor :internal_skip
+
   belongs_to :customer
   has_many :visits, inverse_of: :destination, dependent: :delete_all
   accepts_nested_attributes_for :visits, allow_destroy: true
@@ -31,7 +33,8 @@ class Destination < Location
   validates :ref, uniqueness: { scope: :customer_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
   before_create :check_max_destination
-  before_save :save_visits, :update_tags
+  before_save :save_visits
+  before_save :update_tags, unless: :internal_skip
   after_save -> { @tag_ids_changed = false }
 
   include RefSanitizer
