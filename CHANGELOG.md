@@ -2,6 +2,7 @@
 
 ## Dev
   ### Added
+    - API: Add option `exclusion` to filter routes applied on Destination candidate_insert [#228](https://github.com/cartoway/planner-web/pull/228)
     - Destination: Validate ref uniqueness from API endpoints, nested visits are validated too [#211](https://github.com/cartoway/planner-web/pull/211)
     - Misc: Add `rails_performance` gem to monitor performances [#227](https://github.com/cartoway/planner-web/pull/227)
 
