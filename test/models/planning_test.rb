@@ -358,13 +358,16 @@ class PlanningTest < ActiveSupport::TestCase
     planning = plannings(:planning_one)
     destination = destinations(:destination_one)
     planning.zonings = []
-    assert_difference('Stop.count', 0) do
-      data = planning.candidate_insert(destination)
-      assert_kind_of Hash, data
-      assert_kind_of Route, data[:route]
-      assert_kind_of Integer, data[:index]
-      assert_kind_of Integer, data[:time]
-      assert_kind_of Float, data[:distance]
+
+    [:none, :locked, :hidden, :unavailable].each do |exclusion|
+      assert_difference('Stop.count', 0) do
+        data = planning.candidate_insert(destination, exclusion: exclusion)
+        assert_kind_of Hash, data
+        assert_kind_of Route, data[:route]
+        assert_kind_of Integer, data[:index]
+        assert_kind_of Integer, data[:time]
+        assert_kind_of Float, data[:distance]
+      end
     end
   end
 

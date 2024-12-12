@@ -25,6 +25,7 @@ class V100::Destinations < Grape::API
           optional :max_distance, type: Float, desc: 'Maximum distance for best routes (in meters).'
           optional :active_only, type: Boolean, desc: 'Use only active stops.', default: true
           optional :out_of_zone, type: Boolean, desc: 'Take into account points out of zones.', default: true
+          optional :exclusion, type: Symbol, values: [:none, :hidden, :locked, :unavailable], default: :locked, desc: 'Exclude the routes with the corresponding status (unavailable means hidden & locked)'
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         get ':id/candidate_insert' do
@@ -40,7 +41,8 @@ class V100::Destinations < Grape::API
                 max_time: params[:max_time],
                 max_distance: params[:max_distance],
                 out_of_zone: params[:out_of_zone],
-                active_only: params[:active_only]
+                active_only: params[:active_only],
+                exclusion: params[:exclusion]
               ) || raise(Exceptions::LoopError.new)
               present data, with: V100::Entities::RouteInsertData, geojson: params[:with_geojson]
               status 201
