@@ -1986,7 +1986,7 @@ export const plannings_edit = function(params) {
             beforeSendWaiting();
             panelLoading();
           },
-          success: displayPlanning,
+          success: displayPlanningFirstTime,
           complete: completeAjaxMap,
           error: ajaxError
         });
@@ -2379,7 +2379,7 @@ export const plannings_edit = function(params) {
         type: 'GET',
         url: '/plannings/' + planning_id + '/refresh.json?with_stops=' + withStops,
         beforeSend: beforeSendWaiting,
-        success: displayPlanning,
+        success: displayPlanningFirstTime,
         complete: completeAjaxMap,
         error: ajaxError
       });
