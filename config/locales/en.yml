@@ -2591,9 +2591,9 @@ en:
       rest_duration_desc: rest duration time for delivery man
       store_rest_ref: rest facility reference
       store_rest_desc: facility rest reference for delivery man
-      service_time_start: service Time Before
+      service_time_start: service time before
       service_time_start_desc: durations added before the first stop
-      service_time_end: service Time After
+      service_time_end: service time after
       service_time_end_desc: durations added before the last stop
       work_time: work time
       work_time_desc: 'work time, less or equal than working window time'
