@@ -1444,6 +1444,7 @@ fr:
     reverse_geocoding:
       apply: Appliquer la nouvelle adresse
   index:
+    motto: Prêt à simplifier la planification de vos tournées ?
     unsupported_browser:
       unsupported_browser: Navigateur non pris en charge
       unsupported_browser_modern: >-

@@ -1,3 +1,0 @@
-<% if @reseller.welcome_url %>
-  <iframe src="<%= @reseller.welcome_url.gsub('{LG}', I18n.locale.to_s) %>"></iframe>
-<% end %>
