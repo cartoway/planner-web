@@ -8,13 +8,14 @@
       = t('plannings.edit.dialog.deliver.title')
     = render partial: 'layouts/head'
   %body{"data-controller": "#{controller.controller_path.gsub('/', '_')}", "data-action": "#{controller.action_name}"}
-    .mobile_header.d-flex.align-items-center.justify-content-between
-      .col-xs-5
+    .row.mobile_header.d-flex.align-items-center.justify-content-between
+      .col-xs-4.col-md-2
         - if @reseller.website_url
           %a{href: "#{@reseller.website_url.gsub('{LG}', I18n.locale.to_s)}"}
-        = image_tag @reseller.logo_small.url || 'logo.svg', alt: @reseller&.name
-      .col
-        .form-check.form-switch.mb-0
+        .text-left
+          = image_tag @reseller.logo_small.url || 'logo.svg', alt: @reseller&.name, class: 'company-logo'
+      .col-xs-8.col-md-10
+        .form-check.form-switch.mb-0.text-right
           %input#location-switch.form-check-input{checked: "checked", role: "switch", type: "checkbox"}
           %label.mb-0
             .fa.fa-location-dot.fa-fw
