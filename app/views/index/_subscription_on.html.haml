@@ -1,0 +1,11 @@
+- if @reseller.welcome_url
+  %iframe{src: "#{@reseller.welcome_url.gsub('{LG}', I18n.locale.to_s)}"}
+- else
+  .row
+    .col-md-offset-2.col-md-8.header
+      .company-logo.text-center
+        = image_tag @reseller.logo_large.url || "logo.svg", width: 250, alt: @reseller.name
+  .row
+    .col-md-offset-2.col-md-8
+      %h2
+        = t('index.motto')
