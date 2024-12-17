@@ -195,7 +195,7 @@ class ZoningsController < ApplicationController
   end
 
   def set_planning
-    @planning = params.key?(:planning_id) && !params[:planning_id].empty? ? current_user.customer.plannings.includes_route_details.find(params[:planning_id]) : nil
+    @planning = params.key?(:planning_id) && !params[:planning_id].empty? ? current_user.customer.plannings.preload_route_details.find(params[:planning_id]) : nil
   end
 
   def includes_destinations

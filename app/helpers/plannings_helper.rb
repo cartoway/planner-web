@@ -17,13 +17,14 @@
 #
 module PlanningsHelper
   def planning_vehicles_array(planning)
-    planning.vehicle_usage_set.vehicle_usages.active.map(&:vehicle).map{ |vehicle|
+    customer = planning.customer
+    planning.vehicle_usage_set.vehicle_usages.active.map{ |vehicle_usage|
       {
-        id: vehicle.id,
-        text: vehicle.name,
-        color: vehicle.color,
-        available_position: vehicle.customer.device.available_position?(vehicle) && vehicle.vehicle_usages.detect{ |item| item.vehicle_usage_set == @planning.vehicle_usage_set }.active?,
-        cache_position: vehicle.customer.device.available_cache_position?(vehicle) && vehicle.vehicle_usages.detect{ |item| item.vehicle_usage_set == @planning.vehicle_usage_set }.active?
+        id: vehicle_usage.vehicle.id,
+        text: vehicle_usage.vehicle.name,
+        color: vehicle_usage.vehicle.color,
+        available_position: customer.device.available_position?(vehicle_usage.vehicle) && vehicle_usage.active?,
+        cache_position: customer.device.available_cache_position?(vehicle_usage.vehicle) && vehicle_usage.active?
       }
     }
   end
