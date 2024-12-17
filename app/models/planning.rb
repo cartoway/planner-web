@@ -54,12 +54,9 @@ class Planning < ApplicationRecord
 
   include RefSanitizer
 
-  scope :includes_route_details, -> {
-    includes(
+  scope :preload_routes_without_stops, -> {
+    preload(
       routes: [
-        stops: [
-          visit: [:tags, { destination: [:tags, {customer: :deliverable_units}] }]
-        ],
         vehicle_usage: [
           :store_start, :store_stop, :store_rest,
           {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
@@ -67,7 +64,7 @@ class Planning < ApplicationRecord
         ]
       ],
       vehicle_usage_set: [
-        { vehicle_usages: :vehicle }
+        { vehicle_usages: {vehicle: [:router, {customer: :router}]} }
       ]
     )
   }
@@ -83,6 +80,9 @@ class Planning < ApplicationRecord
           {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
           {vehicle: [:router, {customer: :router}]}
         ]
+      ],
+      vehicle_usage_set: [
+        { vehicle_usages: {vehicle: [:router, {customer: :router}]} }
       ]
     )
   }

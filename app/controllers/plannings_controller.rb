@@ -24,7 +24,8 @@ class PlanningsController < ApplicationController
 
   before_action :authenticate_user!
   UPDATE_ACTIONS = [:update, :move, :refresh, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :data_header, :filter_routes, :refresh_route, :route_edit, :sidebar] + UPDATE_ACTIONS
+  before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :filter_routes, :refresh_route, :route_edit] + UPDATE_ACTIONS
+  before_action :set_planning_without_stops, only: [:sidebar, :data_header]
   before_action :check_no_existing_job, only: UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
 
@@ -525,6 +526,18 @@ class PlanningsController < ApplicationController
     else
       []
     end
+  end
+
+  def set_planning_without_stops
+    @manage_planning =
+      if request.referer&.match('api-web')
+        ApiWeb::V01::PlanningsController.manage
+      else
+        PlanningsController.manage
+      end
+    @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
+    @colors = COLORS_TABLE.dup.unshift(nil)
+    @planning = current_user.customer.plannings.preload_routes_without_stops.find(params[:id] || params[:planning_id])
   end
 
   # Use callbacks to share common setup or constraints between actions.
