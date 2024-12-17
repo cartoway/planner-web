@@ -451,7 +451,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert last_response.ok?, last_response.body
 
     planning = Planning.last
-    assert_not_nil planning.routes.last.stop_drive_time
+    assert_not_nil planning.routes.load.last.stop_drive_time
   end
 
   test 'should create bulk from json with tag_id' do
