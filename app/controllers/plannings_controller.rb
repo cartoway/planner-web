@@ -24,7 +24,7 @@ class PlanningsController < ApplicationController
 
   before_action :authenticate_user!
   UPDATE_ACTIONS = [:update, :move, :refresh, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  before_action :set_planning, only: [:show, :edit, :duplicate, :destroy, :cancel_optimize, :data_header, :filter_routes, :refresh_route, :route_edit, :sidebar] + UPDATE_ACTIONS
+  before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :data_header, :filter_routes, :refresh_route, :route_edit, :sidebar] + UPDATE_ACTIONS
   before_action :check_no_existing_job, only: UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
 
@@ -50,12 +50,13 @@ class PlanningsController < ApplicationController
 
   def show
     @params = params
+    @planning = current_user.customer.plannings.includes(:routes).find(params[:id] || params[:planning_id])
     @routes = if params[:route_ids]
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
       @planning.routes.includes_destinations.where(id: route_ids)
     else
       stops_count = 0
-      if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops.size) >= 1000 }
+      if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
         @with_stops = true
         @planning.routes.includes_destinations.available
       else
@@ -261,7 +262,7 @@ class PlanningsController < ApplicationController
 
   def sidebar
     stops_count = 0
-    @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops.size) >= 1000 }
+    @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
     @routes =
       if @with_stops
         @planning.routes.includes_destinations.available

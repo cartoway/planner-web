@@ -22,7 +22,7 @@ class Planning < ApplicationRecord
 
   belongs_to :customer
   has_and_belongs_to_many :zonings, autosave: true, after_add: :update_zonings_track, after_remove: :update_zonings_track
-  has_many :routes, -> { order(Arel.sql('CASE WHEN vehicle_usage_id IS NULL THEN 0 ELSE routes.id END')) }, inverse_of: :planning, autosave: true, dependent: :delete_all
+  has_many :routes, -> { order("vehicle_usage_id NULLS FIRST, id") }, inverse_of: :planning, autosave: true, dependent: :delete_all
 
   has_many :tag_plannings
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
@@ -694,7 +694,7 @@ class Planning < ApplicationRecord
   end
 
   def large?
-    routes.map{ |r| r.stops.size }.reduce(&:+) >= 1000
+    routes.map{ |r| r.stops_size }.reduce(&:+) >= 1000
   end
 
   def to_geojson(include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false, large = large?)
@@ -842,7 +842,7 @@ class Planning < ApplicationRecord
       stops = stops.map { |s| [s.visit.destination, route, s.index] }
       stops ||= []
       stops << [route.vehicle_usage.default_store_start, route, 1] if stops.empty? && route.vehicle_usage.default_store_start&.position?
-      stops << [route.vehicle_usage.default_store_stop, route, route.stops.size + 1] if route.vehicle_usage&.default_store_stop&.position?
+      stops << [route.vehicle_usage.default_store_stop, route, route.stops_size + 1] if route.vehicle_usage&.default_store_stop&.position?
       stops
     }.compact.sort_by{ |a|
       a[0] && a[0].position? ? a[0].distance(stop.position) : Float::INFINITY

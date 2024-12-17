@@ -97,7 +97,7 @@ options.merge!(url: "/api-web/0.1/zonings/#{@zoning.id}/#{params[:action]}") if 
       vehicles_array: zoning_vehicles(@zoning, @planning, active: true).map{|vehicle| vehicle.slice(:id, :name, :color).merge(router_avoid_zones: vehicle.default_router.avoid_zones) },
       vehicles_map: zoning_vehicles(@zoning, @planning).each_with_object({}){|vehicle, hash| hash[vehicle.id] = vehicle.slice(:id, :name, :color).merge(router_avoid_zones: vehicle.default_router.avoid_zones, capacities: vehicle.default_capacities.map{ |k, v| {unit_id: k, capacity: v, unit_label: @zoning.customer.deliverable_units.find{ |du| du.id == k }.label, unit_icon: @zoning.customer.deliverable_units.find{ |du| du.id == k }.default_icon } }) },
       colors_by_route: @planning ? Hash[@planning.routes.select(&:vehicle_usage).map{ |r| [r.id, r.default_color] }] : {},
-      disable_clusters: @planning ? @planning.routes.all?{ |r| (stops_count += r.stops.size) < 1000 } : @zoning.customer.destinations.size < 1000,
+      disable_clusters: @planning ? @planning.routes.all?{ |r| (stops_count += r.stops_size) < 1000 } : @zoning.customer.destinations.size < 1000,
       deliverable_units: @zoning.customer.deliverable_units.map{ |du| {unit_id: du.id, unit_label: du.label, unit_icon: du.default_icon} },
       url_click2call: current_user.link_phone_number,
       show_deliverable_units: !@zoning.customer.enable_orders

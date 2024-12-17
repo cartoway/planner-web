@@ -238,7 +238,7 @@
     }
   }
   stops_count = 0
-  large_plannning = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.any?{ |r| (stops_count += r.stops.size) >= 1000 }
+  large_plannning = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.any?{ |r| (stops_count += r.stops_size) >= 1000 }
 
   controller.js(
     manage_planning: @manage_planning,
