@@ -22,7 +22,7 @@ else
   json.duration time_over_day(duration)
   json.distance locale_distance(@planning.routes.to_a.sum(0){ |route| route.distance || 0 }, current_user.prefered_unit)
   (json.outdated true) if @planning.outdated
-  json.size @planning.routes.to_a.sum(0){ |route| route.stops.size }
+  json.size @planning.routes.to_a.sum(0){ |route| route.stops_size }
   json.size_active @planning.cached_active_stops_sum
   json.stores (@planning.vehicle_usage_set.vehicle_usages.collect(&:default_store_start) + @planning.vehicle_usage_set.vehicle_usages.collect(&:default_store_stop) + @planning.vehicle_usage_set.vehicle_usages.collect(&:default_store_rest)).compact.uniq do |store|
     json.extract! store, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size

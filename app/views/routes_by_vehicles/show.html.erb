@@ -57,6 +57,6 @@ controller.js(
   },
   colors_by_route: Hash[@routes.map{ |r| [r.id, r.default_color] }],
   manage_routes: @manage_routes,
-  disable_clusters: @routes.all?{ |r| (stops_count += r.stops.size) < 1000 }
+  disable_clusters: @routes.all?{ |r| (stops_count += r.stops_size) < 1000 }
 )
 %>

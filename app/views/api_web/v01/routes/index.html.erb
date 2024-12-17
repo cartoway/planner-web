@@ -1,10 +1,10 @@
 <% javascript 'api_web/v01/route' %>
 
 <div id="map"></div>
-<% if !@routes.select{ |route| route.vehicle_usage_id && route.stops.size > 0 }.empty? %>
+<% if !@routes.select{ |route| route.vehicle_usage_id && route.stops_size > 0 }.empty? %>
   <div id="routes-caption" class="map-caption">
     <% @routes && @routes.each do |route| %>
-      <% if route.vehicle_usage_id && route.stops.size > 0 %>
+      <% if route.vehicle_usage_id && route.stops_size > 0 %>
         <div class="map-caption-item">
           <span class="color_small" style="background: <%= route.default_color %>"></span>
           <%= route.vehicle_usage.vehicle.name %>
@@ -36,7 +36,7 @@ controller.js(
   out_of_route_id: @planning.routes.find{ |r| !r.vehicle_usage_id },
   routes_array: @routes ? @routes.map{ |r| {route_id: r.id, outdated: r.outdated} } : [],
   colors_by_route: Hash[@routes.select(&:vehicle_usage).map{ |r| [r.id, r.default_color] }],
-  disable_clusters: @disable_clusters || @routes.all?{ |r| (stops_count += r.stops.size) < 1000 },
+  disable_clusters: @disable_clusters || @routes.all?{ |r| (stops_count += r.stops_size) < 1000 },
   print: params[:print],
   map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)],
   map_lat: @planning.vehicle_usage_set.vehicle_usages.collect(&:default_store_start).compact.find{ |s| s.lat }.try(:lat) || @planning.customer.default_position[:lat],

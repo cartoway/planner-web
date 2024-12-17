@@ -89,7 +89,8 @@ class OptimizerJob < OptimizerJobStruct
     routes = routes.select { |r|
       (route_id && r.id == route_id) || (!route_id && !options[:global] && r.vehicle_usage_id && r.size_active > 0 && !r.locked) || (!route_id && options[:global] && !r.locked)
     }
-    routes.unshift(planning.routes.first) if !options[:global] && !planning.routes.first[:locked] && !route_id
+    out_of_route = planning.routes.find{ |route| !route.vehicle_usage_id }
+    routes.unshift(out_of_route) if !options[:global] && !out_of_route[:locked] && !route_id
     routes
   end
 
