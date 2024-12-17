@@ -168,19 +168,17 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   end
 
   test 'should switch two vehicles' do
-    initial_first_route = @planning.routes.second.vehicle_usage.id
-    initial_second_route = @planning.routes.third.vehicle_usage.id
-
+    routes = @planning.routes.load.select{ |route| route.vehicle_usage_id }
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
-      patch api("#{@planning.id}/switch"), {id: @planning.id, route_id: @planning.routes.second.id, vehicle_usage_id: @planning.routes.third.vehicle_usage.id}
+      patch api("#{@planning.id}/switch"), {id: @planning.id, route_id: routes.first.id, vehicle_usage_id: routes.second.vehicle_usage_id}
       if mode
         assert_equal 409, last_response.status, last_response.body
       else
         assert_equal 204, last_response.status, last_response.body
-        @planning.reload
-        assert_equal initial_second_route, @planning.routes.second.vehicle_usage.id
-        assert_equal initial_first_route, @planning.routes.third.vehicle_usage.id
+        @planning.routes.reload
+        assert_equal routes.first.vehicle_usage_id, @planning.routes.find{ |route| route.id == routes.second.id }.vehicle_usage_id
+        assert_equal routes.second.vehicle_usage_id, @planning.routes.find{ |route| route.id == routes.first.id }.vehicle_usage_id
         @planning.routes.select(&:vehicle_usage).each{ |vu|
           assert_not vu.outdated
         }
