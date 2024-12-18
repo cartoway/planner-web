@@ -54,6 +54,7 @@ class PlanningsController < ApplicationController
     @planning = current_user.customer.plannings.includes(:routes).find(params[:id] || params[:planning_id])
     @routes = if params[:route_ids]
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
+      @with_stops = true
       @planning.routes.includes_destinations.where(id: route_ids)
     else
       stops_count = 0

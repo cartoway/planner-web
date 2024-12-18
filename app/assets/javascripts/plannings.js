@@ -1554,7 +1554,7 @@ export const plannings_edit = function(params) {
             var stops = data.routes[0].stops;
             var obj = {
               color: data.routes[0].color,
-              count: stops.length,
+              count: data.routes[0].size,
               i18n: mustache_i18n,
               quantities: data.routes[0].quantities,
               routes: _routes,
