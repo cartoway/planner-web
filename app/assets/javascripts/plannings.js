@@ -2275,7 +2275,7 @@ export const plannings_edit = function(params) {
         show: true
       });
       $("#refresh-modal").click(function() {
-        $('#planning-refresh-modal').off('hidden.bs.modal', displayPlanningAfterModal);
+        $('#planning-refresh-modal').off('hidden.bs.modal');
         $('#planning-refresh-modal').modal('hide');
         $.ajax({
           type: 'GET',
@@ -2286,7 +2286,7 @@ export const plannings_edit = function(params) {
           error: ajaxError
         });
       });
-      $('#planning-refresh-modal').on('hidden.bs.modal', displayPlanningAfterModal);
+      $('#planning-refresh-modal').on('hidden.bs.modal', displayPlanningFirstTime(data));
     } else {
       displayPlanningFirstTime(data);
     }
