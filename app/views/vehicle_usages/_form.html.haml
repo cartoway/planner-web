@@ -122,18 +122,18 @@
             %input#vehicle_usage_vehicle_router_options_traffic_default{name: "vehicle_usage[vehicle][router_options][traffic]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['traffic'].nil? ? 'true' : '')}
             = t('customers.form.router_options_traffic_default', value: @vehicle_usage.vehicle.customer.router_options['traffic'] == true ? t('customers.form.router_options_traffic_yes') : t('customers.form.router_options_traffic_no'))
       #router_options_track_input{ class: (@vehicle_usage.vehicle.default_router.track? ? '' : 'router-option-disabled')}
-      %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_track"}
-        = t('activerecord.attributes.customer.router_options_track')
-      .col-md-offset-2.col-md-8.field.input-append.form-inline
-        %label
-          %input#vehicle_usage_vehicle_router_options_track_yes{name: "vehicle_usage[vehicle][router_options][track]", type: "radio", value: "true", checked: (@vehicle_usage.vehicle.router_options['track'] == true ? 'true' : '')}
-          = t('customers.form.router_options_track_yes')
-        %label
-          %input#vehicle_usage_vehicle_router_options_track_no{name: "vehicle_usage[vehicle][router_options][track]", type: "radio", value: "false", checked: (@vehicle_usage.vehicle.router_options['track'] == false ? 'true' : '')}
-          = t('customers.form.router_options_track_no')
-        %label.pull-right
-          %input#vehicle_usage_vehicle_router_options_track_default{name: "vehicle_usage[vehicle][router_options][track]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['track'].nil? ? 'true' : '')}
-          = t('customers.form.router_options_track_default', value: @vehicle_usage.vehicle.customer.router_options['track'] == false ? t('customers.form.router_options_track_no') : t('customers.form.router_options_track_yes'))
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_track"}
+          = t('activerecord.attributes.customer.router_options_track')
+        .col-md-offset-2.col-md-8.field.input-append.form-inline
+          %label
+            %input#vehicle_usage_vehicle_router_options_track_yes{name: "vehicle_usage[vehicle][router_options][track]", type: "radio", value: "true", checked: (@vehicle_usage.vehicle.router_options['track'] == true ? 'true' : '')}
+            = t('customers.form.router_options_track_yes')
+          %label
+            %input#vehicle_usage_vehicle_router_options_track_no{name: "vehicle_usage[vehicle][router_options][track]", type: "radio", value: "false", checked: (@vehicle_usage.vehicle.router_options['track'] == false ? 'true' : '')}
+            = t('customers.form.router_options_track_no')
+          %label.pull-right
+            %input#vehicle_usage_vehicle_router_options_track_default{name: "vehicle_usage[vehicle][router_options][track]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['track'].nil? ? 'true' : '')}
+            = t('customers.form.router_options_track_default', value: @vehicle_usage.vehicle.customer.router_options['track'] == false ? t('customers.form.router_options_track_no') : t('customers.form.router_options_track_yes'))
 
       #router_options_motorway_input{ class: (@vehicle_usage.vehicle.default_router.motorway? ? '' : 'router-option-disabled')}
         %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_motorway"}
