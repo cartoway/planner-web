@@ -30,7 +30,7 @@
     <i class="fa fa-stopwatch fa-fw"></i> <%= '%i:%02i' %  [(route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i) / 60 / 60, (route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i) / 60 % 60] %>
     <i class="fa fa-road fa-fw"></i> <%= number_to_human(route.distance, units: :distance, precision: 3, format: '%n %u') %>
     <% if !route.planning.customer.enable_orders %>
-      <% route_quantities(route).each do |units| %>
+      <% route_quantities(route.planning, route).each do |units| %>
         <i class="fa <%= units[:unit_icon] %> fa-fw" data-quantity_id="<%= units[:id] %>"></i> <%= units[:quantity_formatted] %>
       <% end %>
     <% end %>

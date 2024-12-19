@@ -44,7 +44,7 @@ module PlanningsHelper
           vehicle_id: vehicle_usage.vehicle_id,
           router_dimension: vehicle_usage.vehicle.default_router_dimension,
           work_or_window_time: vehicle_usage.work_or_window_time,
-          vehicle_quantities: PlanningsHelper.route_quantities(planning, vehicle_usage),
+          vehicle_quantities: PlanningsHelper.vehicle_usage_quantities(planning, vehicle_usage),
           router_name: router_name
         )
     end
@@ -67,7 +67,7 @@ module PlanningsHelper
     }
   end
 
-  def self.route_quantities(planning, vehicle_usage)
+  def self.vehicle_usage_quantities(planning, vehicle_usage)
     quantities = []
     planning.routes.find{ |route|
       route.vehicle_usage == vehicle_usage

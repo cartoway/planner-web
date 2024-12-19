@@ -28,5 +28,5 @@ else
     json.extract! store, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
   end
 
-  json.routes (@routes || (@with_stops ? @planning.routes.includes_destinations : @planning.routes)), partial: 'routes/edit', formats: [:json], handlers: [:jbuilder], as: :route, locals: { list_devices: planning_devices(@planning.customer), stops_count: nil }
+  json.routes (@routes || (@with_stops ? @planning.routes.includes_destinations.available : @planning.routes)), partial: 'routes/edit', formats: [:json], handlers: [:jbuilder], as: :route, locals: { list_devices: planning_devices(@planning.customer), stops_count: nil, planning: @planning }
 end

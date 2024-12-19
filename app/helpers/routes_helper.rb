@@ -26,12 +26,13 @@ module RoutesHelper
     route.end - route.service_time_end_value if route.end && route.service_time_end_value
   end
 
-  def route_quantities(route)
+  def route_quantities(planning, route)
+    deliverable_units = planning.customer.deliverable_units
     vehicle = route.vehicle_usage.try(:vehicle)
     route.quantities.select{ |_k, v|
       v > 0
     }.collect{ |id, v|
-      unit = route.planning.customer.deliverable_units.find{ |du| du.id == id }
+      unit = deliverable_units.find{ |du| du.id == id }
       next unless unit
 
       capacity = vehicle && vehicle.default_capacities[id]

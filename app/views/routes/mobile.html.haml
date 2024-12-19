@@ -16,7 +16,7 @@
         .label.label-default.p-3.mr-2
           %i.fa.fa-calendar.fa-fw
         = date
-    - route_quantities(@route).each do |unit|
+    - route_quantities(@route.planning, @route).each do |unit|
       - next if unit[:quantity]&.zero?
 
       %h4.d-flex.align-items-center.justify-items-center
