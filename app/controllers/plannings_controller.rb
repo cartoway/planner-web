@@ -23,10 +23,10 @@ class PlanningsController < ApplicationController
   protect_from_forgery except: [:optimize, :optimize_route]
 
   before_action :authenticate_user!
-  UPDATE_ACTIONS = [:update, :move, :refresh, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :filter_routes, :refresh_route, :route_edit] + UPDATE_ACTIONS
-  before_action :set_planning_without_stops, only: [:sidebar, :data_header]
-  before_action :check_no_existing_job, only: UPDATE_ACTIONS
+  UPDATE_ACTIONS = [:update, :move, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
+  before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh_route, :route_edit] + UPDATE_ACTIONS
+  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :refresh, :sidebar]
+  before_action :check_no_existing_job, only: [:refresh] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
 
   load_and_authorize_resource
@@ -218,7 +218,8 @@ class PlanningsController < ApplicationController
 
   def refresh
     respond_to do |format|
-      @planning.compute
+      @routes = @planning.routes.includes_destinations.available_or_outdated
+      @planning.compute(skip_preload: true)
       if @planning.save
         @with_devices = true
         format.json { render action: 'show', location: @planning }
@@ -241,7 +242,7 @@ class PlanningsController < ApplicationController
       current_route.stops = @out_stops
     end
     planning_summary = planning_summary(@planning)
-    route_data = JSON.parse(render_to_string(template: 'routes/_edit.json.jbuilder', locals: { route: current_route, stops_count: stops_count }), symbolize_names: true)
+    route_data = JSON.parse(render_to_string(template: 'routes/_edit.json.jbuilder', locals: { route: current_route, stops_count: stops_count, planning: @planning }), symbolize_names: true)
     route_data[:route_id] = @route.id
     respond_to do |format|
       if current_route.vehicle_usage_id
@@ -267,9 +268,9 @@ class PlanningsController < ApplicationController
     @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
     @routes =
       if @with_stops
-        @planning.routes.includes_destinations.available
+        @planning.routes.includes_vehicle_usages.includes_destinations.available
       else
-        @planning.routes.available
+        @planning.routes.includes_vehicle_usages.available
       end
     json_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
 
