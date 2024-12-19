@@ -46,12 +46,13 @@ class Route < ApplicationRecord
   after_destroy :invalidate_route_cache
 
   scope :available, -> { where("vehicle_usage_id IS NULL OR NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
+  scope :available_or_outdated, -> { where("vehicle_usage_id IS NULL OR NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
   scope :for_customer_id, ->(customer_id) { joins(:planning).where(plannings: {customer_id: customer_id}) }
   scope :includes_vehicle_usages, -> {
     includes(vehicle_usage: [
-      :store_start, :store_stop, :store_rest,
+      :store_start, :store_stop, :store_rest, :tags,
       vehicle_usage_set: [:store_start, :store_stop, :store_rest],
-      vehicle: [:router, {customer: :router}]
+      vehicle: [:router, :tags, {customer: :router}]
     ])
   }
   scope :includes_stops, -> { includes(:stops) }

@@ -1,9 +1,9 @@
 json.route_id route.id
 if @with_planning
   json.planning_id route.planning_id
-  json.name (route.ref ? "#{route.ref} | " : '') + route.planning.name
-  json.date I18n.l(route.planning.date) if route.planning.date
-  json.tags route.planning.tags do |tag|
+  json.name (route.ref ? "#{route.ref} | " : '') + planning.name
+  json.date I18n.l(planning.date) if planning.date
+  json.tags planning.tags do |tag|
     json.icon tag.default_icon
     json.label tag.label
     json.color tag.default_color
@@ -23,8 +23,8 @@ json.color_fake route.color
 json.last_sent_to route.last_sent_to if route.last_sent_to
 json.last_sent_at_formatted l(route.last_sent_at) if route.last_sent_at
 json.optimized_at_formatted l(route.optimized_at) if route.optimized_at
-unless route.planning.customer.enable_orders
-  json.quantities route_quantities(route)
+unless planning.customer.enable_orders
+  json.quantities route_quantities(planning, route)
 end
 if route.vehicle_usage_id
   json.name (route.ref ? "#{route.ref} " : '') + route.vehicle_usage.vehicle.name unless @with_planning
@@ -60,7 +60,7 @@ if route.vehicle_usage_id
   end
 
   # Devices
-  route.planning.customer.device.configured_definitions.each do |key, definition|
+  planning.customer.device.configured_definitions.each do |key, definition|
     has_route_operation = !definition[:route_operations].empty?
     has_vehicle = definition[:forms][:vehicle]
     has_blank_key = definition[:forms][:vehicle].keys.all?{ |k| !route.vehicle_usage.vehicle.devices[k].blank? }
@@ -89,14 +89,14 @@ if route.vehicle_usage_id
         }
       }
     end
-    json.status_any status_uniq.size > 0 || route.planning.customer.device.available_stop_status?
+    json.status_any status_uniq.size > 0 || planning.customer.device.available_stop_status?
   end
 else
   json.name t("plannings.edit.out_of_route")
 end
 json.store_start do
   json.extract! route.vehicle_usage.default_store_start, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
-  if route.departure_status && route.planning.customer.enable_stop_status
+  if route.departure_status && planning.customer.enable_stop_status
     json.status_code route.departure_status.downcase
     json.status t("plannings.edit.stop_status.#{route.departure_status.downcase}", default: route.departure_status.downcase)
     json.eta_formated l(route.departure_eta, format: :hour_minute) if route.departure_eta
@@ -118,7 +118,7 @@ if @with_stops
     json.stop_id stop.id
     json.stop_index stop.index
     json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_relation, :no_path, :unmanageable_capacity
-    json.ref stop.ref if route.planning.customer.enable_references
+    json.ref stop.ref if planning.customer.enable_references
     json.time_window_start_end_1 !!stop.time_window_start_1 || !!stop.time_window_end_1
     (json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1
     (json.time_window_start_1_day number_of_days(stop.time_window_start_1)) if stop.time_window_start_1
@@ -162,7 +162,7 @@ if @with_stops
           end
         end
       end
-      if route.planning.customer.enable_orders
+      if planning.customer.enable_orders
         order = stop.order
         if order
           json.orders order.products.collect(&:code).join(', ')
@@ -171,7 +171,7 @@ if @with_stops
         # Hash { id, quantity, icon, label } for deliverable units
         json.quantities visit_quantities(visit, route.vehicle_usage_id && route.vehicle_usage.vehicle)
       end
-      if stop.status && route.planning.customer.enable_stop_status
+      if stop.status && planning.customer.enable_stop_status
         json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
         json.status_code stop.status.downcase
       end
@@ -192,7 +192,7 @@ end
 
 json.store_stop do
   json.extract! route.vehicle_usage.default_store_stop, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
-  if route.arrival_status && route.planning.customer.enable_stop_status
+  if route.arrival_status && planning.customer.enable_stop_status
     json.status_code route.arrival_status.downcase
     json.status t("plannings.edit.stop_status.#{route.arrival_status.downcase}", default: route.arrival_status.downcase)
     json.eta_formated l(route.arrival_eta, format: :hour_minute) if route.arrival_eta

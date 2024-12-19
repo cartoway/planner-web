@@ -76,9 +76,9 @@ class Planning < ApplicationRecord
           visit: [:tags, { destination: [:tags, {customer: :deliverable_units}] }]
         ],
         vehicle_usage: [
-          :store_start, :store_stop, :store_rest,
+          :store_start, :store_stop, :store_rest, :tags,
           {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
-          {vehicle: [:router, {customer: :router}]}
+          {vehicle: [:router, :tags, {customer: :router}]}
         ]
       ],
       vehicle_usage_set: [
@@ -212,7 +212,7 @@ class Planning < ApplicationRecord
   def compute(options = {})
     routes.each{ |r|
       # Load necessary scopes just in time for outdated routes
-      r.preload_compute_scopes if r.outdated
+      r.preload_compute_scopes if r.outdated && !options[:skip_preload]
       r.compute(options)
     }
   end
