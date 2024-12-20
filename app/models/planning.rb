@@ -110,7 +110,7 @@ class Planning < ApplicationRecord
   end
 
   def cached_active_stops_sum
-    Rails.cache.fetch("#{cache_key_with_version}/active_stops_sum", expires_in: 1.hour) do
+    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/active_stops_sum") do
       routes.to_a.sum(0) { |route| route.vehicle_usage_id ? route.size_active : 0 }
     end
   end
@@ -830,7 +830,7 @@ class Planning < ApplicationRecord
   private
 
   def invalidate_planning_cache
-    Rails.cache.delete("#{self.cache_key_with_version}/active_stops_sum")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/active_stops_sum")
   end
 
   def prefered_route_and_index(available_routes, stop, options = {})

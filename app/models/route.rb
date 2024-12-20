@@ -502,19 +502,19 @@ class Route < ApplicationRecord
   end
 
   def size_active
-    Rails.cache.fetch("#{cache_key_with_version}/active_stops", expires_in: 1.hour) do
+    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/active_stops") do
       vehicle_usage_id ? (stops.loaded? ? stops.select(&:active).size : stops.where(active: true).count) : 0
     end
   end
 
   def stops_size
-    Rails.cache.fetch("#{cache_key_with_version}/stops_size", expires_in: 1.hour) do
+    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/stops_size") do
       stops.size
     end
   end
 
   def size_destinations
-    Rails.cache.fetch("#{cache_key_with_version}/destination_stops", expires_in: 1.hour) do
+    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/destination_stops") do
       stops.loaded? ?
         stops.select(&:active).map{ |s| s.is_a?(StopVisit) ? s.visit.destination_id : nil }.compact.uniq.size :
         nil # TODO: should count with ActiveRecord::Base.connection.execute("SELECT COUNT(DISTINCT id) FROM destinations")
@@ -522,7 +522,7 @@ class Route < ApplicationRecord
   end
 
   def no_geolocalization
-    Rails.cache.fetch("#{cache_key_with_version}/no_location_stops", expires_in: 1.hour) do
+    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/no_location_stops") do
       stops.loaded? ?
         stops.any?{ |s| s.is_a?(StopVisit) && !s.position? } :
         stops.joins(visit: :destination).where('destinations.lat IS NULL AND destinations.lng IS NULL').count > 0
@@ -530,7 +530,7 @@ class Route < ApplicationRecord
   end
 
   def no_path
-    Rails.cache.fetch("#{cache_key_with_version}/no_path_stops", expires_in: 1.hour) do
+    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/no_path_stops") do
       vehicle_usage_id && (stop_no_path ||
         (stops.loaded? ?
           stops.any?{ |s| s.is_a?(StopVisit) && s.no_path } :
@@ -540,7 +540,7 @@ class Route < ApplicationRecord
 
   [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation].each do |s|
     define_method "#{s}" do
-      Rails.cache.fetch("#{cache_key_with_version}/out_of_#{s}_cache", expires_in: 1.hour) do
+      Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/out_of_#{s}_cache") do
         vehicle_usage_id && (respond_to?("stop_#{s}") && send("stop_#{s}") ||
           if stops.loaded?
             stops.any?(&s)
@@ -843,13 +843,13 @@ class Route < ApplicationRecord
   end
 
   def invalidate_route_cache
-    Rails.cache.delete("#{self.cache_key_with_version}/active_stops")
-    Rails.cache.delete("#{self.cache_key_with_version}/stops_size")
-    Rails.cache.delete("#{self.cache_key_with_version}/destination_stops")
-    Rails.cache.delete("#{self.cache_key_with_version}/no_location_stops")
-    Rails.cache.delete("#{self.cache_key_with_version}/no_path_stops")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/active_stops")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/stops_size")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/destination_stops")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_location_stops")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_path_stops")
     [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation].each do |s|
-      Rails.cache.delete("#{self.cache_key_with_version}/out_of_#{s}_cache")
+      Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/out_of_#{s}_cache")
     end
   end
 

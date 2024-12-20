@@ -69,6 +69,8 @@ Rails.application.configure do
     ActiveSupport::Cache::NullStore.new
   end
 
+  config.planner_cache = cache_factory('planner', 60*60*12*1)
+
   config.optimizer = OptimizerWrapper.new(
     cache_factory('optimizer_wrapper', 60*60*24*10),
     ENV['OPTIMIZER_URL'] || 'http://localhost:1791/0.1',
