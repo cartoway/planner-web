@@ -614,7 +614,7 @@ class Route < ApplicationRecord
 
   def outdated=(value)
     if vehicle_usage? && !value.nil?
-      self.optimized_at = nil unless optimized_at_changed?
+      self.optimized_at = nil unless in_optimization_context?
       self.last_sent_to = self.last_sent_at = nil
     end
     super(value)
@@ -836,6 +836,10 @@ class Route < ApplicationRecord
   def assign_defaults
     self.hidden = false
     self.locked = false
+  end
+
+  def in_optimization_context?
+    planning&.in_optimization_context?
   end
 
   def invalidate_route_cache

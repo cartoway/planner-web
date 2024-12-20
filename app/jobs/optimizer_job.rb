@@ -34,6 +34,7 @@ class OptimizerJob < OptimizerJobStruct
     Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
     planning = Planning.where(id: planning_id).first!
+    Planning.optimizer_context = true
 
     routes = route_filter(planning)
 
@@ -73,6 +74,8 @@ class OptimizerJob < OptimizerJobStruct
       puts e.backtrace.join("\n")
     end
     raise e
+  ensure
+    Planning.optimizer_context = false
   end
 
   def max_attempts
