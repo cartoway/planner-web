@@ -67,7 +67,7 @@
                   %span
                     = t('plannings.edit.last_temperature_statement_label')
   .route-details
-    .route-stops{class: (optimum if route[:optimized_at_formatted])}
+    .route-stops{class: ('optimum' if route[:optimized_at_formatted])}
       .panel-body
         = render partial: 'routes/edit_head', locals: { route: route, summary: summary }
       - if route[:store_start]

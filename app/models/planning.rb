@@ -52,6 +52,8 @@ class Planning < ApplicationRecord
   after_save :invalidate_planning_cache
   after_destroy :invalidate_planning_cache
 
+  thread_mattr_accessor :optimizer_context
+
   include RefSanitizer
 
   scope :preload_routes_without_stops, -> {
@@ -115,6 +117,10 @@ class Planning < ApplicationRecord
 
   def changed?
     routes_changed? || super
+  end
+
+  def in_optimization_context?
+    self.class.optimizer_context
   end
 
   def set_routes(routes_visits, recompute = true, ignore_errors = false)
