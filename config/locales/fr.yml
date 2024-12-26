@@ -1432,6 +1432,7 @@ fr:
       not_csv: Le fichier importé n'est pas au format CSV
       empty_file: ne contient aucune donnée
       refs_duplicate: 'La référence « %{refs} » est présente en double dans le fichier.'
+      refs_route_discordant: 'Les références tournées et véhicules doivent coïncider.'
       refs_visit_duplicate: 'La référence visite « %{refs} » est présente en double dans le fichier.'
       too_many_lines: 'Import stoppé, trop de lignes (max: %{n}).'
       none_column: Aucune correspondance de colonne trouvée

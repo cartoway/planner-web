@@ -144,6 +144,9 @@ class ImporterDestinations < ImporterBase
         }
       }
     }
+    @plannings_vehicles = Hash.new{ |h, k|
+      h[k] = Hash.new
+    }
     @deliverable_units ||= @customer&.deliverable_units || []
     @destinations_to_geocode_count = 0
     @visit_ids = []
@@ -689,7 +692,17 @@ class ImporterDestinations < ImporterBase
       if row.key?(:route) && (visit_attributes[:id].nil? || !@visit_ids.include?(visit_attributes[:id]))
         ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref]
         ref_route = row[:route].blank? ? nil : row[:route] # ref has to be nil for out-of-route
-        @plannings_routes[ref_planning][ref_route][:ref_vehicle] = row[:ref_vehicle].gsub(%r{[\./\\]}, ' ') if row[:ref_vehicle]
+        if row[:ref_vehicle]
+          ref_vehicle = row[:ref_vehicle].gsub(%r{[\./\\]}, ' ')
+          if @plannings_routes[ref_planning][ref_route].key?(:ref_vehicle) &&
+             @plannings_routes[ref_planning][ref_route][:ref_vehicle] != ref_vehicle ||
+             @plannings_vehicles[ref_planning][ref_vehicle] &&
+             @plannings_vehicles[ref_planning][ref_vehicle] != ref_route
+            raise ImportInvalidRow.new(I18n.t('destinations.import_file.refs_route_discordant'))
+          end
+          @plannings_routes[ref_planning][ref_route][:ref_vehicle] = ref_vehicle
+          @plannings_vehicles[ref_planning][ref_vehicle] = ref_route
+        end
         @plannings_routes[ref_planning][ref_route][:visits] << [visit_attributes, ValueToBoolean.value_to_boolean(row[:active], true)]
         @visit_ids << visit_attributes[:id] if visit_attributes[:id]
       end
