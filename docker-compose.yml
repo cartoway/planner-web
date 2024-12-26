@@ -2,7 +2,7 @@ version: '3.3'
 
 x-web: &web
   build: .
-  image: planner-web:${CARTOWAY_VERSION:-latest}
+  image: ghcr.io/cartoway/planner-web:${CARTOWAY_VERSION:-dev}
   environment:
     RAILS_ENV: ${RAILS_ENV:-production}
     NODE_ENV: ${NODE_ENV:-production}
