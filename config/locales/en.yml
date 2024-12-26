@@ -1378,6 +1378,7 @@ en:
       not_csv: Imported file is not a CSV
       empty_file: content is blank
       refs_duplicate: 'The reference "%{refs}" is duplicated.'
+      refs_route_discordant: 'Route and vehicle references must match.'
       refs_visit_duplicate: 'The visit reference "%{refs}" is duplicated.'
       too_many_lines: 'Stop import, too many lines (max: %{n}).'
       none_column: No matched column found
