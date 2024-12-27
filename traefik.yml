@@ -1,0 +1,19 @@
+providers:
+  file:
+    filename: /traefik-services.yml
+
+entryPoints:
+  web:
+    address: :8080
+
+# api:
+#   insecure: true
+#   dashboard: true
+
+# log:
+#   level: TRACE
+
+# accesslog:
+#   addInternals: true
+#   # filters:
+#   #   retryAttempts: true
