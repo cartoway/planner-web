@@ -1,0 +1,22 @@
+http:
+  routers:
+    web:
+      service: web
+      entrypoints: web
+      rule: Host(`localhost`)
+      middlewares:
+        - retry
+
+  services:
+    web:
+      loadbalancer:
+        servers:
+          - url: http://web:8080
+        healthcheck:
+          path: /
+
+  middlewares:
+    retry:
+      retry:
+        attempts: 5
+        initialinterval: 1000ms
