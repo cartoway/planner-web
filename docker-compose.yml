@@ -1,5 +1,3 @@
-version: '3.3'
-
 x-web: &web
   build: .
   image: ghcr.io/cartoway/planner-web:${CARTOWAY_VERSION:-dev}
