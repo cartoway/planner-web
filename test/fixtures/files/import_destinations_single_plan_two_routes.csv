@@ -1,0 +1,5 @@
+référence plan,date,plan,référence,référence visite, nom,ville,lat,lng,catégories,tournée,véhicule
+p1,01/01/2014,plan1,réf1,v1,Point 1,Nantes,47.2619410343,-1.58758074045,été,t1,t1
+p1,01/01/2014,plan1,réf2,v2,Point 2,Nantes,47.2615187289,-1.58688336611,été,t1,t1
+p1,01/01/2014,plan1,réf3,v3,Point 3,Nantes,47.2619410343,-1.58758074045,été,t2,t2
+p1,01/01/2014,plan1,réf4,v4,Point 4,Nantes,47.2615187289,-1.58688336611,été,t2,t2

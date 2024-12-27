@@ -2065,6 +2065,13 @@ CREATE INDEX index_visits_on_destination_id ON public.visits USING btree (destin
 
 
 --
+-- Name: index_visits_on_destination_id_and_ref; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_visits_on_destination_id_and_ref ON public.visits USING btree (destination_id, ref);
+
+
+--
 -- Name: stops_idx_customer_id_date; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2789,7 +2796,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20240704115843'),
 ('20240719162433'),
 ('20240814065613'),
-('20241024064440');
-
+('20241024064440'),
+('20241227140855');
 
 
