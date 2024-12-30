@@ -2,6 +2,11 @@
 
 ## Dev
 
+  ### Changed
+    - Destination
+      - Import: The route and vehicle columns should be consistent, otherwise an error is raised [#242](https://github.com/cartoway/planner-web/pull/242)
+      - Import: Allows to update a single route in a pre-existing plan [#242](https://github.com/cartoway/planner-web/pull/242)
+
 ## V104.1.0
   ### Added
     - API: Add option `exclusion` to filter routes applied on Destination candidate_insert [#228](https://github.com/cartoway/planner-web/pull/228)
