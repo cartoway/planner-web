@@ -33,7 +33,7 @@ First, install Ruby:
 
 Next, install Postgresql environement:
 
-    sudo apt install postgresql postgresql-client-9.6 postgresql-server-dev-9.6
+    sudo apt install postgresql
 
 You need some others libs:
 

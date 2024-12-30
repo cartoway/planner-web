@@ -2,7 +2,6 @@ version: '3.3'
 
 services:
   db:
-    image: postgres:9.6 # Required version to run tests with Rails 4
     volumes:
       - ./app:/srv/app/app
 
