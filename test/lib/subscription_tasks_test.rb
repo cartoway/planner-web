@@ -13,6 +13,7 @@ class SubscriptionTasksTest < ActiveSupport::TestCase
       assert_difference 'User.count', - @customer.users.size do
         assert_difference 'VehicleUsageSet.count', - @customer.vehicle_usage_sets.size do
           Rake::Task['subscription:delete'].invoke(number_of_days)
+          Rake::Task['subscription:delete'].reenable
         end
       end
     end
@@ -21,8 +22,14 @@ class SubscriptionTasksTest < ActiveSupport::TestCase
   test 'should not delete customers with invalid parameters through rake task' do
     invalid_parameters = [0, -10, 0.1, 'A']
     invalid_parameters.each do |param|
-      assert_nil Rake::Task['subscription:delete'].invoke(param)
+      assert_no_difference 'Customer.count' do
+        Rake::Task['subscription:delete'].invoke(param)
+        Rake::Task['subscription:delete'].reenable
+      end
     end
-    assert_nil Rake::Task['subscription:delete'].invoke(invalid_parameters)
+    assert_no_difference 'Customer.count' do
+      Rake::Task['subscription:delete'].invoke(invalid_parameters)
+      Rake::Task['subscription:delete'].reenable
+    end
   end
 end
