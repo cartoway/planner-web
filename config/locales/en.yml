@@ -1411,7 +1411,7 @@ en:
       end_date: End date
       with_actions: history of status
   index:
-    motto: Welcome ! The Cartoway team is here to support you on every route.
+    motto: Welcome! The Cartoway team is here to support you on every route.
     unsupported_browser:
       unsupported_browser: Unsupported Browser
       unsupported_browser_modern: 'Your browser is too old, please use any recent browser.'
