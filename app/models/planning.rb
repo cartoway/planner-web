@@ -999,8 +999,8 @@ class Planning < ApplicationRecord
     {
       route: data[0],
       index: data[1],
-      time: data[2].abs,
-      distance: data[3].abs
+      time: data[2]&.abs,
+      distance: data[3]&.abs
     }
   end
 
