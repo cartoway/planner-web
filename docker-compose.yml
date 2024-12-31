@@ -52,7 +52,7 @@ services:
       - --configFile=/traefik.yml
     ports:
       - ${WEB_BIND:-8080}:8080
-      - 127.0.0.1:8280:8080 # Dashborad
+      - 127.0.0.1:8280:8080 # Dashboard
     volumes:
       - ./traefik.yml:/etc/traefik/traefik.yml
       - ./traefik-services.yml:/traefik-services.yml
