@@ -2,6 +2,7 @@
 
 ## Dev
 
+## V104.2.0
   ### Changed
     - Destination
       - Import: The route and vehicle columns should be consistent, otherwise an error is raised [#242](https://github.com/cartoway/planner-web/pull/242)
