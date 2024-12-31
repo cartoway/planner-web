@@ -6,6 +6,8 @@
     - Destination
       - Import: The route and vehicle columns should be consistent, otherwise an error is raised [#242](https://github.com/cartoway/planner-web/pull/242)
       - Import: Allows to update a single route in a pre-existing plan [#242](https://github.com/cartoway/planner-web/pull/242)
+  ### Fixed
+   - Planning: `candidate_insert` was failing if no route is available [#246](https://github.com/cartoway/planner-web/pull/246)
 
 ## V104.1.0
   ### Added
