@@ -1,5 +1,5 @@
 # Planner
-Route optimization with numerous stops. Based on [OpenStreetMap](http://www.openstreetmap.org) and [OR-Tools](http://code.google.com).
+Organizing Routes with numerous stops. Based on [OpenStreetMap](http://www.openstreetmap.org).
 
 ## Installation
 
@@ -153,15 +153,6 @@ Add new locale:
 * Update `config/application.rb`
 * Require the translation assets into `app/assets/javascripts/application.js`
 
-# CI
-Build is generated on each push to ce, beta or prod branch.
-To be able to generate the image, add the following variable to your CI settings.
-
- - USER (registry user login name)
- - PASSWORD (registry user login password)
- - PRIVATE_TOKEN: user private token
-
-
 # Docker
 ## Prerequisite
 
@@ -179,6 +170,12 @@ cp .env.template .env
 cp config/environments/production.rb docker/
 ```
 
+The two last lines are specific for https, these should be commented if no SSL certificate is setup
+```
+# config.action_dispatch.cookies_same_site_protection = :none
+# config.session_store :cookie_store, key: '_cartoway_session', same_site: :none, secure: true
+```
+
 For dev setup, enable the `docker-compose-dev.yml` by enabling it in .env file.
 ```yaml
 COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml
@@ -194,10 +191,8 @@ docker compose up -d
 
 ```
 docker compose up -d
-docker compose exec --user postgres db psql -c "CREATE ROLE planner PASSWORD 'planner' LOGIN;"
-docker compose exec --user postgres db psql -c "CREATE DATABASE planner OWNER planner ENCODING 'utf-8';"
-docker compose exec --user postgres db psql planner -c "CREATE EXTENSION hstore;"
 docker compose run --rm web bundle exec rake db:setup
+docker compose restart
 ```
 
 Update the database schema after version update with
@@ -207,17 +202,12 @@ docker compose run --rm web bundle exec rake db:migrate
 
 ## Dev in Docker
 
-For dev in docker add `SUPERUSER`.
-```
-# docker compose exec --user postgres db psql -c "ALTER USER planner WITH SUPERUSER;"
-```
-
 To reset the instance
 ```
-docker compose down
-docker compose up -d db
-docker compose exec --user postgres db psql -c "DROP DATABASE planner;"
-docker compose exec --user postgres db psql -c "DROP ROLE planner;"
+docker compose down -v
+docker compose up -d
+docker compose run --rm web bundle exec rake db:setup
+docker compose restart
 ```
 
 Update the `db/structure.sql` file
@@ -237,7 +227,7 @@ docker compose run --rm web bundle exec rake db:structure:dump
 
 Prepare for tests:
 ```
-docker compose exec --user postgres db psql -c "CREATE DATABASE test OWNER planner;"
+docker compose exec --user postgres db psql -c "CREATE DATABASE test OWNER postgres;"
 RAILS_ENV=test docker compose run --rm web bundle exec rake i18n:js:export
 RAILS_ENV=test docker compose run --rm web bundle exec rake assets:precompile
 ```
