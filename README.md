@@ -118,7 +118,7 @@ Start Webpack to auto-compile JS assets (and reload browser on change):
 
     ./bin/webpack-dev-server
 
-Enjoy at [http://localhost:3000](http://localhost:3000)
+Enjoy at [http://localhost:8080](http://localhost:8080)
 
 To run both server in on command, you can launch Guard (configuration in _Guardfile_):
 

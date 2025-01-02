@@ -73,12 +73,12 @@ Rails.application.configure do
   config.raise_on_standard_error = false
 
   # Application config
-  # Display sent email at http://localhost:3000/letter_opener
+  # Display sent email at http://localhost:8080/letter_opener
   # Use :letter_opener to automatically open email in browser
   config.action_mailer.delivery_method = :letter_opener
 
   config.action_mailer.delivery_method = :smtp
-  config.action_mailer.default_url_options = { :host => 'localhost:3000' } # Needed by devise
+  config.action_mailer.default_url_options = { :host => 'localhost:8080' } # Needed by devise
   config.action_mailer.smtp_settings = {
     address: 'smtp.example.com',
     port: 587,
@@ -91,7 +91,7 @@ Rails.application.configure do
   }
   config.default_from_mail = 'root@localhost'
 
-  config.swagger_docs_base_path = 'http://localhost:3000/'
+  config.swagger_docs_base_path = 'http://localhost:8080/'
   config.api_contact_email = 'tech@cartoway.com'
   config.api_contact_url = 'https://github.com/cartoway/planner-web'
 
