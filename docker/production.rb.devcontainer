@@ -85,7 +85,7 @@ Rails.application.configure do
   # Moreover the gem `letter_opener_web` should be reachable in Gemfile
   # and the route to /letter_opener should be open (routes.rb)
   config.action_mailer.delivery_method = :smtp
-  config.action_mailer.default_url_options = { :host => 'localhost:3000' } # Needed by devise
+  config.action_mailer.default_url_options = { :host => 'localhost:8080' } # Needed by devise
   config.action_mailer.smtp_settings = {
     address: 'smtp.example.com',
     port: 587,
@@ -98,7 +98,7 @@ Rails.application.configure do
   }
   config.default_from_mail = 'root@localhost'
 
-  config.swagger_docs_base_path = 'http://localhost:3000/'
+  config.swagger_docs_base_path = 'http://localhost:8080/'
   config.api_contact_email = 'tech@cartoway.com'
   config.api_contact_url = 'https://github.com/cartoway/planner-web'
 

@@ -14,7 +14,7 @@ group :server do
   end
 
   # Option "force_run: true" does not work on Windows
-  guard :rails, port: 3000, timeout: 60 do
+  guard :rails, port: 8080, timeout: 60 do
     # watch(%r{^Gemfile\.lock$})
     watch(%r{^app/api/(.+)\.rb})
     watch(%r{^app/jobs/(.+)\.rb})
