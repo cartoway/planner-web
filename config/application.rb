@@ -80,6 +80,10 @@ module Mapotempo
     Hashie.logger = Rails.logger
     config.assets.quiet = true
 
+    logger = ActiveSupport::Logger.new(STDOUT)
+    logger.formatter = config.log_formatter
+    config.logger = ActiveSupport::TaggedLogging.new(logger)
+
     config.lograge.enabled = true
     config.lograge.custom_options = lambda do |event|
       unwanted_keys = %w[format action controller]
