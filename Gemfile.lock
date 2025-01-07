@@ -309,6 +309,9 @@ GEM
     grape-swagger-entity (0.5.4)
       grape-entity (~> 1)
       grape-swagger (~> 2)
+    grape_logging (1.8.4)
+      grape
+      rack
     guard (2.18.1)
       formatador (>= 0.2.4)
       listen (>= 2.7, < 4.0)
@@ -869,6 +872,7 @@ DEPENDENCIES
   grape-entity
   grape-swagger
   grape-swagger-entity
+  grape_logging
   guard
   guard-delayed
   guard-migrate

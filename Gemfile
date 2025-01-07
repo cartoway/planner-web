@@ -110,6 +110,7 @@ gem 'grape-swagger-entity'
 gem 'rack-cors'
 gem 'rswag-api'
 gem 'rswag-specs'
+gem 'grape_logging'
 
 gem 'rails-i18n', '>= 7'
 gem 'http_accept_language'
