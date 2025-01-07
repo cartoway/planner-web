@@ -209,8 +209,6 @@ gem 'sentry-rails'
 gem 'sentry-delayed_job'
 
 group :production do
-  gem 'rails_12factor'
-
   gem 'redis'
   gem 'redis-store', '~> 1.4.1' # Ensure redis-store dependency is at least 1.4.1 for CVE-2017-1000248 correction
   gem 'redis-rails'
