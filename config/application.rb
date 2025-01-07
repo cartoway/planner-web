@@ -94,6 +94,10 @@ module Mapotempo
       {customer_id: customer_id, time: event.time, sub_api: sub_api, params: params}.delete_if{ |k, v| !v || v == 0 }
     end
 
+    if ENV['LOG_FORMAT'] == 'json'
+      config.lograge.formatter = Lograge::Formatters::Json.new
+    end
+
     # Errors handling
     config.exceptions_app = self.routes
 
