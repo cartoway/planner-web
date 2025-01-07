@@ -16,16 +16,31 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 require 'grape-swagger'
+require 'grape_logging'
 
 class ApiRootDef < Grape::API
   include Grape::Extensions::Hash::ParamBuilder
+
+  logger.formatter = ENV['LOG_FORMAT'] == 'json' ? GrapeLogging::Formatters::Json.new : GrapeLogging::Formatters::Default.new
+  insert_before Grape::Middleware::Error, GrapeLogging::Middleware::RequestLogger, logger: logger, include: (
+    (logger.level > logger.class::DEBUG ? [] : [
+      GrapeLogging::Loggers::Response.new,
+    ]) + [
+      GrapeLogging::Loggers::FilterParameters.new,
+      GrapeLogging::Loggers::ClientEnv.new,
+    ]
+  )
+
+  rescue_from(:all) { |error|
+    logger.error(error)
+    raise error
+  }
 
   mount ApiV01
   mount ApiV100
 end
 
 ApiRoot = Rack::Builder.new do
-  use ApiLogger
   use ApiCors
   run ApiRootDef
 end
