@@ -78,6 +78,7 @@ module Mapotempo
     config.middleware.use ::ResellerByHost
 
     Hashie.logger = Rails.logger
+    config.assets.quiet = true
 
     config.lograge.enabled = true
     config.lograge.custom_options = lambda do |event|
