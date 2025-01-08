@@ -528,7 +528,7 @@ class ImporterDestinations < ImporterBase
       @visits_attributes_with_destination_with_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash.values }
     ).group_by{ |lines, attributes|
       attributes.keys
-    }.flat_map{ |keys, key_attributes|
+    }.flat_map{ |_keys, key_attributes|
       ids = []
       # Slice to reduce memory spike
       key_attributes.each_slice(1000).with_index { |sliced_attributes, slice_index|
@@ -546,7 +546,7 @@ class ImporterDestinations < ImporterBase
 
         import_result = Visit.import(
           visits_attributes,
-          on_duplicate_key_update: { conflict_target: (keys.include?(:id) ? [:id] : [:destination_id, :ref]), columns: Visit.column_names - ['id', 'updated_at'] },
+          on_duplicate_key_update: { conflict_target: [:id], columns: :all },
           validate: true, all_or_none: true, track_validation_failures: true
         )
 
@@ -732,11 +732,11 @@ class ImporterDestinations < ImporterBase
         visit_ids = v[:visits].map{ |attribute, _active|
           attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
         }
-        visits = Visit.includes_destinations.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
+        visits = Visit.includes_destinations.where(id: visit_ids)
 
         v[:visits].map!.with_index{ |(_attribute, active), index| [visits[index], active] }
       }
-      if !(planning.id ? planning.update_routes(routes_hash, recompute = true) : planning.set_routes(routes_hash, false, true))
+      unless planning.set_routes routes_hash, false, true
         raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if routes_hash.keys.size > planning.routes.size || routes_hash.keys.compact.size > @customer.max_vehicles
       end
       planning.split_by_zones(nil) if @planning_hash.key?(:zonings) || @planning_hash.key?(:zoning_ids)

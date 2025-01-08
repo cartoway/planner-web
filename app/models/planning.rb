@@ -150,41 +150,6 @@ class Planning < ApplicationRecord
     end
   end
 
-  def update_routes(routes_visits, recompute = true)
-    if routes_visits.size <= routes.size - 1
-      existing_visits = routes.select{ |route| route.vehicle_usage? && routes_visits.key?(route.vehicle_usage.vehicle.ref) }.flat_map{ |route| route.stops.map(&:visit) }
-      import_visits = routes_visits.flat_map{ |_ref, r| r[:visits] }
-
-      routes.find{ |route| !route.vehicle_usage? }.add_visits(existing_visits - import_visits)
-
-      index_routes = (1..routes.size).to_a
-      routes_visits.each{ |_ref, r|
-        index_routes.delete(routes.index{ |rr| rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref == r[:ref_vehicle] }) if r[:ref_vehicle]
-      }
-
-      routes_visits.each{ |ref, r|
-        next if r[:visits].empty?
-
-        i =
-          if ref
-            routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref == r[:ref_vehicle] } || index_routes.shift
-          else
-            routes.index{ |route| !route.vehicle_usage? }
-          end
-        r[:visits].each{ |visit, active|
-          if visit.id
-            move_visit(routes[i], visit, -1)
-          else
-            routes[i].add(visit, nil, active)
-          end
-        }
-      }
-      true
-    else
-      false
-    end
-  end
-
   def vehicle_usage_add(vehicle_usage, ignore_errors = false)
     route = routes.build(vehicle_usage: vehicle_usage, outdated: false)
     vehicle_usage.routes << route unless vehicle_usage.id

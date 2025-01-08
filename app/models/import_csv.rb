@@ -55,45 +55,43 @@ class ImportCsv
     if data
       begin
         last_row = last_line = nil
-        Route.no_touching do
-          Customer.transaction do
-            allow_duplicated_ref = @importer.is_a?(ImporterDestinations)
-            rows = @importer.import(data, name, synchronous, allow_duplicate: allow_duplicated_ref, ignore_errors: false, replace: replace, delete_plannings: delete_plannings, replace_vehicles: replace_vehicles, line_shift: (without_header? ? 0 : 1), column_def: column_def) { |row, line|
-              if row
-                # Column Names: Strip Whitespaces
-                row = row.each_with_object({}){ |(k, v), hash| hash[k.is_a?(String) ? k.strip : k] = v } if row.is_a? Hash
+        Customer.transaction do
+          allow_duplicated_ref = @importer.is_a?(ImporterDestinations)
+          rows = @importer.import(data, name, synchronous, allow_duplicate: allow_duplicated_ref, ignore_errors: false, replace: replace, delete_plannings: delete_plannings, replace_vehicles: replace_vehicles, line_shift: (without_header? ? 0 : 1), column_def: column_def) { |row, line|
+            if row
+              # Column Names: Strip Whitespaces
+              row = row.each_with_object({}){ |(k, v), hash| hash[k.is_a?(String) ? k.strip : k] = v } if row.is_a? Hash
 
-                # Switch from locale or custom to internal column name
-                r, row = row, {}
-                @importer.columns.each{ |key, v|
-                  next unless v[:title]
+              # Switch from locale or custom to internal column name
+              r, row = row, {}
+              @importer.columns.each{ |key, v|
+                next unless v[:title]
 
-                  if r.is_a?(Array)
-                    # Import without column name or by merging columns
-                    values = (column_def[key] && !column_def[key].empty? ? column_def[key] : (without_header? ? '' : v[:title])).split(',').map{ |c|
-                      c.strip!
-                      if c.to_i != 0
-                        r[c.to_i - 1].is_a?(Array) ? r[c.to_i - 1][1] : r[c.to_i - 1]
-                      else
-                        r.find{ |rr| rr[0] == c }.try{ |rr| rr[1] }
-                      end
-                    }.compact
-                    # lat or lng must be set even if empty but only when specified in columns
-                    row[key] = values.join(' ') if should_fill_row?(key, r, values)
-                  elsif r.key?(v[:title])
-                    # Import with column name
-                    row[key] = r[v[:title]]
-                  end
-                }
-              end
-              last_row = row
-              last_line = line
+                if r.is_a?(Array)
+                  # Import without column name or by merging columns
+                  values = (column_def[key] && !column_def[key].empty? ? column_def[key] : (without_header? ? '' : v[:title])).split(',').map{ |c|
+                    c.strip!
+                    if c.to_i != 0
+                      r[c.to_i - 1].is_a?(Array) ? r[c.to_i - 1][1] : r[c.to_i - 1]
+                    else
+                      r.find{ |rr| rr[0] == c }.try{ |rr| rr[1] }
+                    end
+                  }.compact
+                  # lat or lng must be set even if empty but only when specified in columns
+                  row[key] = values.join(' ') if should_fill_row?(key, r, values)
+                elsif r.key?(v[:title])
+                  # Import with column name
+                  row[key] = r[v[:title]]
+                end
+              }
+            end
+            last_row = row
+            last_line = line
 
-              row
-            }
-            last_row = last_line = nil
-            rows
-          end
+            row
+          }
+          last_row = last_line = nil
+          rows
         end
       rescue StandardError => e
         raise e if Rails.env.test? && !e.is_a?(ImportBaseError) && !e.is_a?(ImportBulkError) && !e.is_a?(Exceptions::OverMaxLimitError)
