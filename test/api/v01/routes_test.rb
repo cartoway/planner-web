@@ -132,9 +132,9 @@ class V01::RoutesTest < V01::RoutesBaseTest
         else
           assert_equal 204, last_response.status, last_response.body
           stops_visit = r.stops.select{ |s| s.is_a? StopVisit }
-          # visit_one already belongs to the current route, so it did not move
-          assert_equal visits(:visit_one).ref, stops_visit[0].visit.ref
-          assert_equal visits(:visit_two).ref, stops_visit[1].visit.ref
+         # visit_one already belongs to the current route, but is moved at the end of the route
+          assert_equal visits(:visit_one).ref, stops_visit[1].visit.ref
+          assert_equal visits(:visit_two).ref, stops_visit[0].visit.ref
           @route.planning.routes.select(&:vehicle_usage).each{ |vu|
             assert_not vu.outdated
           }
