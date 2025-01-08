@@ -1,6 +1,8 @@
 # Changelog
 
 ## Dev
+  ### Added
+    - Add geocoder on zonning map
 
 ## V104.2.0
   ### Changed
