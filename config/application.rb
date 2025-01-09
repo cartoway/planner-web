@@ -34,6 +34,8 @@ Bundler.require(*Rails.groups)
 require 'devise'
 require 'hashie'
 
+Rails.logger = StructuredLog.new($stdout)
+
 module Mapotempo
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -84,7 +86,7 @@ module Mapotempo
     Hashie.logger = Rails.logger
     config.assets.quiet = true
 
-    logger = ActiveSupport::Logger.new(STDOUT)
+    logger = StructuredLog.new($stdout)
     logger.formatter = config.log_formatter
     config.logger = ActiveSupport::TaggedLogging.new(logger)
 
