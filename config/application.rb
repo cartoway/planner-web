@@ -9,6 +9,7 @@ require_relative '../lib/routers/here'
 require_relative '../lib/routers/router_wrapper'
 require_relative '../lib/optim/optimizer_wrapper'
 require_relative '../lib/exceptions'
+require_relative '../lib/json_logs_formatter'
 
 require_relative '../lib/devices/device_base'
 [
@@ -77,6 +78,9 @@ module Mapotempo
 
     config.middleware.use ::ResellerByHost
 
+    if ENV['LOG_FORMAT'] == 'json'
+      config.log_formatter = JsonLogsFormatter.new
+    end
     Hashie.logger = Rails.logger
     config.assets.quiet = true
 
