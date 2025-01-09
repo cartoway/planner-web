@@ -2700,6 +2700,7 @@ en:
         engine restrictions
       failed: Failed to generate Isochrone
       success: Isochrone generated successfully
+      center_view_help: Center the map on the zone
     index:
       title: Listing sectorisations
       new: New Sectorisation

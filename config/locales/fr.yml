@@ -2822,6 +2822,7 @@ fr:
         d'une restriction du calculateur d'itinéraire
       failed: Échec lors de la génération de l'isochrone
       success: Isochrone généré avec succès
+      center_view_help: Centre la carte sur le secteur généré
     index:
       title: Liste sectorisations
       new: Nouvelle sectorisation
