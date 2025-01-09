@@ -31,7 +31,7 @@ class OptimizerJob < OptimizerJobStruct
     optimum = nil
     return true if @job&.progress && @job.progress&.dig('failed') && @job.attempts > 0
 
-    Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} perform"
+    Delayed::Worker.logger.info("OptimizerJob perform", customer_id: customer_id, planning_id: planning_id)
     job_progress_save({ 'status': 'queued', 'first_progression': 0, 'second_progression': 0, 'completed': false })
     planning = Planning.where(id: planning_id).first!
     Planning.optimizer_context = true
@@ -45,18 +45,18 @@ class OptimizerJob < OptimizerJobStruct
           optimum = Mapotempo::Application.config.optimizer.optimize(planning, routes, **options) { |job_id, solution_data|
             if @job
               job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
-              Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+              Delayed::Worker.logger.info("OptimizerJob", customer_id: customer_id, planning_id: planning_id, progress: @job.progress)
             end
           }
           if @job
             job_progress_save(@job.progress.merge({ 'first_progression': 100, 'second_progression': 100, 'completed': true }))
-            Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+            Delayed::Worker.logger.info("OptimizerJob", customer_id: customer_id, planning_id: planning_id, progress: @job.progress)
           end
         end
       rescue VRPNoSolutionError, VRPUnprocessableError => e
         if @job
           job_progress_save(@job.progress.merge({ 'failed': 'true' }))
-          Delayed::Worker.logger.info "OptimizerJob customer_id=#{customer_id} planning_id=#{planning_id} #{@job.progress}"
+          Delayed::Worker.logger.info("OptimizerJob", customer_id: customer_id, planning_id: planning_id, progress: @job.progress)
         end
         raise e
       end

@@ -16,6 +16,43 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
+class StructuredLog < ActiveSupport::Logger
+  def merge(message, **args)
+    if ENV['LOG_FORMAT'] == 'json'
+      if message[0] == '{' && message[-1] == '}' && args.empty?
+        message
+      elsif message[0] == '{' && message[-1] == '}'
+        JSON.parse(message).merge(args).to_json
+      else
+        args[:message] = message
+        args.to_json
+      end
+    else
+      [message.to_s, args&.to_json].compact.join(' ')
+    end
+  end
+
+  def debug(message, **args)
+    super(merge(message, **args))
+  end
+
+  def info(message, **args)
+    super(merge(message, **args))
+  end
+
+  def warn(message, **args)
+    super(merge(message, **args))
+  end
+
+  def fatal(message, **args)
+    super(merge(message, **args))
+  end
+
+  def unknown(message, **args)
+    super(merge(message, **args))
+  end
+end
+
 class JsonLogsFormatter < ActiveSupport::Logger::SimpleFormatter
   MAGIC = 'ncdjjfaherifjrefjl'.freeze
 
