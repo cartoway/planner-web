@@ -488,6 +488,10 @@ export const zonings_edit = function(params) {
         deleteZone(geom);
       }
     });
+
+    $('.center_view').click(function() {
+      map.fitBounds(geom.getBounds());
+    });
   };
 
   var deleteZone = function(geom) {
