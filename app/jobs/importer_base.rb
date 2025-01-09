@@ -50,8 +50,9 @@ class ImporterBase
         dests = data.map.with_index{ |row, line|
           # Switch from locale or custom to internal column name in case of csv
           row = yield(row, line + 1 + (options[:line_shift] || 0))
+          p "base import #{line}: #{row}, #{row.reject{|k, v| [:lat, :lng].include?(k)}.all?(&:nil?)}"
 
-          next if row.empty? # Skip empty line
+          next if row.reject{|k, v| [:lat, :lng].include?(k)}.all?(&:nil?)
 
           begin
             if (ref = uniq_ref(row))
