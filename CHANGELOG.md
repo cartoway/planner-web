@@ -4,6 +4,7 @@
   ### Added
     - Add geocoder on zonning map
     - Add color selector on zonning map
+    - Add center to zone feature on zonning map
 
   ### Fixed
     - Add space in route filter selector
