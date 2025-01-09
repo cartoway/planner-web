@@ -4,6 +4,9 @@
   ### Added
     - Add geocoder on zonning map
 
+  ### Fixed
+    - Add space in route filter selector
+
 ## V104.2.0
   ### Changed
     - Destination
