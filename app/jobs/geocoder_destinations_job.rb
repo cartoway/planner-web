@@ -19,7 +19,7 @@ GeocoderDestinationsJobStruct ||= Job.new(:customer_id, :planning_ids)
 class GeocoderDestinationsJob < GeocoderDestinationsJobStruct
   def perform
     customer = Customer.find(customer_id)
-    Delayed::Worker.logger.info "GeocoderDestinationsJob customer_id=#{customer_id} perform"
+    Delayed::Worker.logger.info("GeocoderDestinationsJob perform", customer_id: customer_id)
     count = customer.destinations.not_positioned.count
     i = 0
     customer.destinations.includes_visits.not_positioned.find_in_batches(batch_size: 50){ |destinations|
@@ -42,7 +42,7 @@ class GeocoderDestinationsJob < GeocoderDestinationsJobStruct
         rescue GeocodeError # avoid stop import because of geocoding job
         end
         job_progress_save({ 'first_progression': i * 100.0 / count, status: 'working' })
-        Delayed::Worker.logger.info "GeocoderDestinationsJob customer_id=#{customer_id} #{@job.progress}%"
+        Delayed::Worker.logger.info("GeocoderDestinationsJob", customer_id: customer_id, progress: @job.progress)
       end
     }
     customer.reload
