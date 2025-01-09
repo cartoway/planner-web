@@ -58,7 +58,7 @@ module PlanningsHelper
           route_id: route.id,
           vehicle_usage_id: route.vehicle_usage_id,
           vehicle_id: route.vehicle_usage&.vehicle_id,
-          name: (route.ref || '') + (route.vehicle_usage&.vehicle&.name || ''),
+          name: [route.ref || '', route.vehicle_usage&.vehicle&.name || ''].compact_blank!.join(' - '),
           color: route.color || route.vehicle_usage&.vehicle&.color,
           hidden: route.hidden,
           locked: route.locked
