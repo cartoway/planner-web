@@ -51,7 +51,7 @@ class ImporterBase
           # Switch from locale or custom to internal column name in case of csv
           row = yield(row, line + 1 + (options[:line_shift] || 0))
 
-          next if row.empty? # Skip empty line
+          next if row.except(:lat, :lng).all?(&:nil?) # Skip empty line
 
           begin
             if (ref = uniq_ref(row))
