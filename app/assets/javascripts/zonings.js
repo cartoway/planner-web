@@ -513,7 +513,7 @@ export const zonings_edit = function(params) {
   var displayZoningFirstTime = function(data) {
     displayZoning(data);
     if (planning_id) {
-      markersGroup.showAllRoutes({ stores: true }, function() {
+      markersGroup.showAllRoutes({stores: true}, function() {
         $.each(featureGroup.getLayers(), function(idx, zone) {
           countPointInPolygon(zonesMap[zone._leaflet_id].layer, zonesMap[zone._leaflet_id].ele);
         });
@@ -523,7 +523,7 @@ export const zonings_edit = function(params) {
   };
 
   $("#edit-zoning form").submit(function() {
-    if (typeof (editing_drawing) == 'object') {
+    if (typeof(editing_drawing) == 'object') {
       for (var thisLayer in editing_drawing) {
         if (editing_drawing.hasOwnProperty(thisLayer)) {
           if (editing_drawing[thisLayer].hasOwnProperty("edited")) {
@@ -548,13 +548,13 @@ export const zonings_edit = function(params) {
   $('[name=all-destinations]').change(function() {
     if ($(this).is(':checked')) {
       if (!destLoaded) {
-        markersGroup.showAllDestinations({ quantities: true }, function() {
-          destLoaded = true;
-          $.each(featureGroup.getLayers(), function(idx, zone) {
-            countPointInPolygon(zonesMap[zone._leaflet_id].layer, zonesMap[zone._leaflet_id].ele);
-          });
-          fitBounds = true;
-          resetBounds(markersGroup);
+          markersGroup.showAllDestinations({ quantities: true }, function() {
+            destLoaded = true;
+            $.each(featureGroup.getLayers(), function(idx, zone) {
+              countPointInPolygon(zonesMap[zone._leaflet_id].layer, zonesMap[zone._leaflet_id].ele);
+            });
+            fitBounds = true;
+            resetBounds(markersGroup);
         });
       } else {
         markersGroup.showClusters();
@@ -714,7 +714,7 @@ export const zonings_edit = function(params) {
   });
 
   $.ajax({
-    url: '/zonings/' + (zoning_id ? zoning_id + '/edit' : 'new') + (planning_id ? '/planning/' + planning_id : '') + '.json',
+    url: '/zonings/' + (zoning_id ? zoning_id + '/edit' : 'new') + (planning_id ? '/planning/' + planning_id : '') +'.json',
     beforeSend: beforeSendWaiting,
     success: displayZoningFirstTime,
     complete: completeWaiting,
