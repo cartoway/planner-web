@@ -1,6 +1,12 @@
 # Changelog
 
 ## Dev
+  ### Added
+    - Add geocoder on zonning map
+
+  ### Fixed
+    - Add space in route filter selector
+    - Fix how empty lines are skip from CSV on import
 
 ## V104.2.0
   ### Changed

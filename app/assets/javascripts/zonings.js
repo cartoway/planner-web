@@ -69,6 +69,8 @@ export const zonings_edit = function(params) {
   });
   sidebar.open('zoning');
 
+  params.geocoder = true;
+
   var map = mapInitialize(params);
   L.control.attribution({
     prefix: false,

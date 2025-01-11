@@ -39,14 +39,14 @@ jobs:
           packages: libz-dev libicu-dev build-essential g++ libgeos-dev libgeos++-dev
           version: 1.0
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@55283cc23133118229fd3f97f9336ee23a179fcf # v1.146.0
+        uses: ruby/setup-ruby@4a9ddd6f338a97768b8006bf671dfbad383215f4 # v1.146.0
         with:
           bundler-cache: true
           ruby-version: 3.1.4
       - name: Rebuild rgeo gem
         run: bundle pristine rgeo
       - name: Set Node.js 14.x
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 14.x
           cache: yarn
@@ -67,7 +67,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@55283cc23133118229fd3f97f9336ee23a179fcf # v1.146.0
+        uses: ruby/setup-ruby@4a9ddd6f338a97768b8006bf671dfbad383215f4 # v1.146.0
         with:
           bundler-cache: true
           ruby-version: 3.1.4
@@ -106,6 +106,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.description=${{ env.branch }}.${{ env.sha_short }} ${{ github.event.head_commit.message }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

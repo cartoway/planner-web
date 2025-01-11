@@ -546,7 +546,7 @@ class ImporterDestinations < ImporterBase
 
         import_result = Visit.import(
           visits_attributes,
-          on_duplicate_key_update: { conflict_target: (keys.include?(:id) ? [:id] : [:destination_id, :ref]), columns: Visit.column_names - ['id', 'updated_at'] },
+          on_duplicate_key_update: { conflict_target: (keys.include?(:id) ? [:id] : [:destination_id, :ref]), columns: (Visit.column_names & keys.collect(&:to_s)) - ['id', 'updated_at'] },
           validate: true, all_or_none: true, track_validation_failures: true
         )
 
