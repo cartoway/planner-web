@@ -548,7 +548,7 @@ export const zonings_edit = function(params) {
   $('[name=all-destinations]').change(function() {
     if ($(this).is(':checked')) {
       if (!destLoaded) {
-          markersGroup.showAllDestinations({ quantities: true }, function() {
+        markersGroup.showAllDestinations({ quantities: true }, function() {
             destLoaded = true;
             $.each(featureGroup.getLayers(), function(idx, zone) {
               countPointInPolygon(zonesMap[zone._leaflet_id].layer, zonesMap[zone._leaflet_id].ele);
