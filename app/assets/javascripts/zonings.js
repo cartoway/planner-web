@@ -18,8 +18,8 @@
 'use strict';
 
 import { RoutesLayer } from '../../assets/javascripts/routes_layers';
-import { mapInitialize, initializeMapHash } from '../../assets/javascripts/scaffolds';
-import { mustache_i18n, beforeSendWaiting, completeAjaxMap, ajaxError, completeWaiting } from '../../assets/javascripts/ajax';
+import { mapInitialize, initializeMapHash, templateSelectionColor, templateResultColor } from '../../assets/javascripts/scaffolds';
+import { mustache_i18n, beforeSendWaiting, completeAjaxMap, ajaxError, completeWaiting, fake_select2 } from '../../assets/javascripts/ajax';
 
 import 'leaflet-draw';
 import './i18n/leaflet.draw.i18n';
@@ -30,6 +30,7 @@ export const zonings_edit = function(params) {
   /**********************************************
    Override by prototype _onTouch() leaflet Draw
   ************************************************/
+
   L.Draw.Polyline.prototype._onTouch = function(e) {
     var originalEvent = e.originalEvent;
     var clientX;
@@ -235,7 +236,7 @@ export const zonings_edit = function(params) {
     }
   };
 
-  var setColor = function(polygon, vehicle_id, speed_multiplier) {
+  var setColor = function(polygon, obj, speed_multiplier) {
     polygon.setStyle((speed_multiplier === 0) ? {
       color: '#FF0000',
       fillColor: '#707070',
@@ -244,7 +245,7 @@ export const zonings_edit = function(params) {
       dashArray: '10, 10',
       fillPattern: stripes
     } : {
-      color: ((vehicle_id && vehiclesMap[vehicle_id]) ? vehiclesMap[vehicle_id].color : '#707070'),
+      color: ((obj) ? obj.color : '#707070'),
       fillColor: null,
       opacity: 0.5,
       weight: 3,
@@ -320,6 +321,17 @@ export const zonings_edit = function(params) {
   var addZone = function(zone, geom) {
 
     function observeChanges(element) {
+      
+      // Initialize fake_select2 for color selection
+      fake_select2($(".color_select", element), function(select) {
+        select.select2({
+          minimumResultsForSearch: -1,
+          templateSelection: templateSelectionColor,
+          templateResult: templateResultColor,
+          formatNoMatches: I18n.t('web.select2.empty_result')
+        }).select2("open");
+        select.next('.select2-container--bootstrap').addClass('input-sm');
+      });
 
       var zone_id = $(element).find("input[name='zoning[zones_attributes][][id]']").val();
       if (zone_id == '') return;
@@ -376,9 +388,16 @@ export const zonings_edit = function(params) {
         name: vehiclesMap[zone.vehicle_id].name
       });
     }
+    zone.colors = params.color_codes.map(function(color) {
+      return {
+        name: color,
+        selected: vehiclesMap[zone.vehicle_id].color === color
+      };
+    });;
     zone.avoid_zone = zone.speed_multiplier == 0;
     zone.router_avoid_zones = zone.vehicle_id && vehiclesMap[zone.vehicle_id] ? vehiclesMap[zone.vehicle_id].router_avoid_zones : router_avoid_zones;
     zone.show_deliverable_units = showUnits;
+    console.log(zone);
     if (showUnits) {
       if (zone.vehicle_id)
         zone.deliverable_units = vehiclesMap[zone.vehicle_id].capacities;
@@ -400,7 +419,7 @@ export const zonings_edit = function(params) {
     countPointInPolygon(geoJsonLayer, ele);
 
     var formatNoMatches = I18n.t('web.select2.empty_result');
-    $('select', ele).select2({
+    $('select.vehicle_select', ele).select2({
       minimumResultsForSearch: -1,
       templateResult: template,
       templateSelection: template,
@@ -412,7 +431,7 @@ export const zonings_edit = function(params) {
       }
     });
 
-    $('select', ele).change(function(e) {
+    $('select.vehicle_select', ele).change(function(e) {
       if (e.added) {
         $.each($('#zones').find('.zone select option[value=' + e.added.id + ']'), function(index, option) {
           option = $(option);
@@ -437,7 +456,7 @@ export const zonings_edit = function(params) {
         $('.avoid-zone', $(this).closest('.zone')).addClass('disabled');
       }
 
-      setColor(geom, vehicleId, ($('[name$=\\[avoid_zone\\]]', ele).is(':checked') && !$('[name$=\\[avoid_zone\\]]', ele).is(':disabled')) ? 0 : undefined);
+      setColor(geom, vehiclesMap[vehicleId], ($('[name$=\\[avoid_zone\\]]', ele).is(':checked') && !$('[name$=\\[avoid_zone\\]]', ele).is(':disabled')) ? 0 : undefined);
 
       if (showUnits) {
         $('.capacity_number', $(this).closest('.zone')).html('-');
@@ -452,8 +471,16 @@ export const zonings_edit = function(params) {
       }
     });
 
+    $('select.color_select', ele).change(function(e) {
+      var selectedColor = e.val || e.target.value;
+      // Update the zone color
+      zone.color = selectedColor;
+      // console.log('Zone color updated:', vehiclesMap[zoneId]);
+      setColor(geom, zone, zone.speed_multiplier);
+    });
+
     $('[name$=\\[avoid_zone\\]]', ele).change(function(e) {
-      setColor(geom, $('select', ele).val(), e.target.checked ? 0 : undefined);
+      setColor(geom, vehiclesMap[$('select', ele).val()], e.target.checked ? 0 : undefined);
     });
 
     $('.delete', ele).click(function() {
@@ -496,7 +523,7 @@ export const zonings_edit = function(params) {
     $.each(data.zoning, function(index, zone) {
       var geom = (new zoneGeometry(JSON.parse(zone.polygon))).addOverlay(zone);
       if (geom) {
-        setColor(geom, zone.vehicle_id, zone.speed_multiplier);
+        setColor(geom, vehiclesMap[zone.vehicle_id], zone.speed_multiplier);
         addZone(zone, geom);
       }
     });
