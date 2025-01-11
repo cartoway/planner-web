@@ -18,13 +18,34 @@
     <input name="zoning[zones_attributes][][polygon]" type="hidden" value="{{polygon}}" />
     <div class="row form-group">
       <label class="col-md-3 control-label" for="vehicle_select">{{#i18n}}zonings.form.zone_vehicle{{/i18n}}</label>
-      <div class="col-md-9">
+      <div class="col-md-6">
         <select name="zoning[zones_attributes][][vehicle_id]" class="vehicle_select select2-xs">
             <option value=""></option>
           {{#vehicles}}
             <option value="{{id}}"{{#selected}} selected="selected"{{/selected}}>{{name}}</option>
           {{/vehicles}}
         </select>
+      </div>
+      <div class="col-md-3">
+        {{zone}}
+        <select name="zone[color]" class="color_select select2-xs" value="{{color}}" style="display: none;">
+          {{#colors}}
+            <option value="{{name}}"{{#selected}} selected="selected"{{/selected}}></option>
+          {{/colors}}
+        </select>
+        <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="display: inline-block;">
+          <span class="selection" title="{{#i18n}}plannings.edit.route_change_color_help{{/i18n}}">
+            <span aria-labelledby="select2-zone[color]-uj-container" tabindex="0" class="select2-selection select2-selection--single" role="combobox" aria-autocomplete="list" aria-haspopup="true" aria-expanded="false">
+              <span id="select2-zone[color]-uj-container" class="select2-selection__rendered">
+                <span class="color_small" style="background:{{color}};vertical-align: top;">
+                  {{^color}}<i class="fa fa-paint-brush" style="color: $grey-color;"></i>{{/color}}
+                </span>
+              </span>
+              <span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>
+            </span>
+          </span>
+          <span class="dropdown-wrapper" aria-hidden="true"></span>
+        </span>
       </div>
     </div>
     <div class="form-group avoid-zone"{{^router_avoid_zones}} style="display: none"{{/router_avoid_zones}}>
