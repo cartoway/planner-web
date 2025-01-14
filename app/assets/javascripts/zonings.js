@@ -476,7 +476,6 @@ export const zonings_edit = function(params) {
       var selectedColor = e.val || e.target.value;
       // Update the zone color
       zone.color = selectedColor;
-      // console.log('Zone color updated:', vehiclesMap[zoneId]);
       setColor(geom, zone, zone.speed_multiplier);
     });
 
