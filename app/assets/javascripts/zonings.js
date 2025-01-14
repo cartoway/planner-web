@@ -399,7 +399,6 @@ export const zonings_edit = function(params) {
     zone.avoid_zone = zone.speed_multiplier == 0;
     zone.router_avoid_zones = zone.vehicle_id && vehiclesMap[zone.vehicle_id] ? vehiclesMap[zone.vehicle_id].router_avoid_zones : router_avoid_zones;
     zone.show_deliverable_units = showUnits;
-    console.log(zone);
     if (showUnits) {
       if (zone.vehicle_id)
         zone.deliverable_units = vehiclesMap[zone.vehicle_id].capacities;
