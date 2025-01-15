@@ -149,20 +149,6 @@
             %input#vehicle_usage_vehicle_router_options_motorway_default{name: "vehicle_usage[vehicle][router_options][motorway]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['motorway'].nil? ? 'true' : nil)}
             = t('customers.form.router_options_motorway_default', value: @vehicle_usage.vehicle.customer.router_options['motorway'] == 'false' ? t('customers.form.router_options_motorway_no') : t('customers.form.router_options_motorway_yes'))
 
-      #router_options_low_emission_zone_input{ class: (@vehicle_usage.vehicle.default_router.low_emission_zone? ? '' : 'router-option-disabled')}
-        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_low_emission_zone"}
-          = t('activerecord.attributes.customer.router_options_low_emission_zone')
-        .col-md-offset-2.col-md-8.field.input-append.form-inline
-          %label
-            %input#vehicle_usage_vehicle_router_options_low_emission_zone_yes{name: "vehicle_usage[vehicle][router_options][low_emission_zone]", type: "radio", value: "true", checked: (@vehicle_usage.vehicle.router_options['low_emission_zone'] == true ? 'true' : nil)}
-            = t('customers.form.router_options_low_emission_zone_yes')
-          %label
-            %input#vehicle_usage_vehicle_router_options_low_emission_zone_no{name: "vehicle_usage[vehicle][router_options][low_emission_zone]", type: "radio", value: "false", checked: (@vehicle_usage.vehicle.router_options['low_emission_zone'] == false ? 'true' : nil)}
-            = t('customers.form.router_options_low_emission_zone_no')
-          %label.pull-right
-            %input#vehicle_usage_vehicle_router_options_low_emission_zone_default{name: "vehicle_usage[vehicle][router_options][low_emission_zone]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['low_emission_zone'].nil? ? 'true' : nil)}
-            = t('customers.form.router_options_low_emission_zone_default', value: @vehicle_usage.vehicle.customer.router_options['low_emission_zone'] == 'false' ? t('customers.form.router_options_low_emission_zone_no') : t('customers.form.router_options_low_emission_zone_yes'))
-
       #router_options_toll_input{ class: (@vehicle_usage.vehicle.default_router.toll? ? '' : 'router-option-disabled')}
         %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_toll"}
           = t('activerecord.attributes.customer.router_options_toll')
@@ -176,6 +162,20 @@
           %label.pull-right
             %input#vehicle_usage_vehicle_router_options_toll_default{name: "vehicle_usage[vehicle][router_options][toll]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['toll'].nil? ? 'true' : nil)}
             = t('customers.form.router_options_toll_default', value: @vehicle_usage.vehicle.customer.router_options['toll'] == 'false' ? t('customers.form.router_options_toll_no') : t('customers.form.router_options_toll_yes'))
+
+      #router_options_low_emission_zone_input{ class: (@vehicle_usage.vehicle.default_router.low_emission_zone? ? '' : 'router-option-disabled')}
+        %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_low_emission_zone"}
+          = t('activerecord.attributes.customer.router_options_low_emission_zone')
+        .col-md-offset-2.col-md-8.field.input-append.form-inline
+          %label
+            %input#vehicle_usage_vehicle_router_options_low_emission_zone_yes{name: "vehicle_usage[vehicle][router_options][low_emission_zone]", type: "radio", value: "true", checked: (@vehicle_usage.vehicle.router_options['low_emission_zone'] == true ? 'true' : nil)}
+            = t('customers.form.router_options_low_emission_zone_yes')
+          %label
+            %input#vehicle_usage_vehicle_router_options_low_emission_zone_no{name: "vehicle_usage[vehicle][router_options][low_emission_zone]", type: "radio", value: "false", checked: (@vehicle_usage.vehicle.router_options['low_emission_zone'] == false ? 'true' : nil)}
+            = t('customers.form.router_options_low_emission_zone_no')
+          %label.pull-right
+            %input#vehicle_usage_vehicle_router_options_low_emission_zone_default{name: "vehicle_usage[vehicle][router_options][low_emission_zone]", type: "radio", value: "", checked: (@vehicle_usage.vehicle.router_options['low_emission_zone'].nil? ? 'true' : nil)}
+            = t('customers.form.router_options_low_emission_zone_default', value: @vehicle_usage.vehicle.customer.router_options['low_emission_zone'] == 'false' ? t('customers.form.router_options_low_emission_zone_no') : t('customers.form.router_options_low_emission_zone_yes'))
 
       #router_options_trailers_input{ class: (@vehicle_usage.vehicle.default_router.trailers? ? '' : 'router-option-disabled')}
         %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_vehicle_router_options_trailers"}
