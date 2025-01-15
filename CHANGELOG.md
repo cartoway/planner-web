@@ -9,6 +9,7 @@
   ### Fixed
     - Add space in route filter selector
     - Fix how empty lines are skip from CSV on import
+    - Permute the order of inputs for vehicle usage form (option toll and option low emission)
 
 ## V104.2.0
   ### Changed
