@@ -3,6 +3,7 @@
 ## Dev
   ### Added
     - Add geocoder on zonning map
+    - Add color selector on zonning map
 
   ### Fixed
     - Add space in route filter selector

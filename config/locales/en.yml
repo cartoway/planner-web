@@ -1860,6 +1860,7 @@ en:
       vehicle_speed: 'Speed:'
       vehicle_last_position_time: 'Last position:'
       route_change_color_help: Change route color
+      zone_change_color_help: Change zone color
       send_sms: Send a SMS to destinations
       send_sms_success: 'Succeed to send %{c} SMS'
       historize: Historize

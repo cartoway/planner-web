@@ -1952,6 +1952,7 @@ fr:
       vehicle_speed: 'Vitesse :'
       vehicle_last_position_time: 'Dernier relevé :'
       route_change_color_help: Changer la couleur de la tournée
+      zone_change_color_help: Changer la couleur du secteur
       send_sms: Envoyer un SMS aux clients
       send_sms_success: 'Envoi de %{c} SMS avec succès'
       historize: Historiser
