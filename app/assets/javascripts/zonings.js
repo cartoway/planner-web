@@ -391,9 +391,10 @@ export const zonings_edit = function(params) {
       });
     }
     zone.colors = params.color_codes.map(function(color) {
+      const selectedColor = vehiclesMap[zone.vehicle_id] ? vehiclesMap[zone.vehicle_id].color : '#707070';
       return {
         name: color,
-        selected: vehiclesMap[zone.vehicle_id].color === color
+        selected: selectedColor === color
       };
     });;
     zone.avoid_zone = zone.speed_multiplier == 0;
