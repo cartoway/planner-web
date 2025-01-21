@@ -1,6 +1,6 @@
 référence;date;quantité[COLIS A TOTAL SURGELé];quantité[COLIS B FRAIS];quantité[COLIS C GÂTEAUX];quantité[COLIS D SEC];quantité[COLIS E ALCOOL];quantité[COLIS F TOTAL FRAIS + SEC];quantité[COLIS G TOTAL GENERAL];nom;voie;complément;Contact;code postal;ville;téléphone;commentaire;horaire début 1;horaire fin 1;horaire début 2;horaire fin 2;lat;lng;tournée;durée visite
 ;;;;;;;;;;; ;;;;;;;;;;;;;
-C0007-1;10-18-2025;78;35;49;2;;86;164;CARREFOUR PONTAULT-COMBAULT - FRA084 POUR LUSIFOOD;RN4;;Guillaume Bonnet;77340;PONTAULT-COMBAULT;164434720;;06:00:00;;;;48.776156;2.610715;Tournée;
+C0007-1;18/10/2025;78;35;49;2;;86;164;CARREFOUR PONTAULT-COMBAULT - FRA084 POUR LUSIFOOD;RN4;;Guillaume Bonnet;77340;PONTAULT-COMBAULT;164434720;;06:00:00;;;;48.776156;2.610715;Tournée;;
 ;;;;;;;;;;;;;; ;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
