@@ -41,18 +41,6 @@ You need some others libs:
 
 __It's important to have all of this installed packages before installing following gems.__
 
-#### On Fedora
-
-Install ruby (>2.2 is needed), bundler and some dependencies from system package.
-
-    yum install ruby ruby-devel rubygem-bundler postgresql-devel libgeos++-dev
-
-#### On Mac OS
-
-Install ruby (>2.2 is needed), bundler and some dependencies from system package.
-
-    brew install postgresql icu4c geos
-
 ### Install Node modules
 
 In addition to gems, node modules must be installed for Javascript files.
