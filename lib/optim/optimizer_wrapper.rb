@@ -120,7 +120,7 @@ class OptimizerWrapper
               elsif json && json['error']
                 json['error']
               end
-        Delayed::Worker.logger.info("VRP submit #{response.code} " + (msg || ''), request)
+        Delayed::Worker.logger.info("VRP submit", code: response.code, message: msg, request: request)
         raise VRPUnprocessableError, msg || 'Unexpected error'
       end
       response
