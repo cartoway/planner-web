@@ -1,6 +1,6 @@
 providers:
   file:
-    filename: /traefik-services.yml
+    filename: /etc/traefik/traefik-services.yml
 
 entryPoints:
   web:
