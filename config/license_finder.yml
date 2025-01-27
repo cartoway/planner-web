@@ -16,4 +16,4 @@ whitelist:
 - WTFPL
 ignore_groups: []
 dependencies_file_dir: ./doc/
-project_name: mapotempo-web
+project_name: planner-web

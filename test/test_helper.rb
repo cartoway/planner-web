@@ -51,7 +51,7 @@ class ActiveSupport::TestCase
       request.body.include?("methodName='LocationUtilityService'")
     }.to_return(File.new(File.expand_path('../', __FILE__) + '/fixtures/gpp3-wxs.ign.fr/LocationUtilityService.xml').read)
 
-    @stub_GeocodeMapotempo = stub_request(:get, %r{/0.1/geocode.json}).with(:query => hash_including({})).
+    @stub_GeocodePlanner = stub_request(:get, %r{/0.1/geocode.json}).with(:query => hash_including({})).
       to_return(File.new(File.expand_path('../', __FILE__) + '/fixtures/geocoder/geocode.json').read)
 
     @stub_GeocodeComplete = stub_request(:patch, %r{/0.1/geocode.json}).with(:query => hash_including({})).
@@ -67,7 +67,7 @@ class ActiveSupport::TestCase
   def teardown
     remove_request_stub(@stub_GeocodeRequest)
     remove_request_stub(@stub_LocationUtilityService)
-    remove_request_stub(@stub_GeocodeMapotempo)
+    remove_request_stub(@stub_GeocodePlanner)
     remove_request_stub(@stub_GeocodeComplete)
     remove_request_stub(@stub_Analytics)
 

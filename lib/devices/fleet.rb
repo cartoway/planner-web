@@ -63,7 +63,7 @@ class Fleet < DeviceBase
     }
   end
 
-  # Available status in Mapotempo: Planned / Started / Finished / Rejected
+  # Available status: Planned / Started / Finished / Rejected
   @@order_status = {
     'mission_to_do' => 'Planned',
     'departure_to_do' => 'Planned',
