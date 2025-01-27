@@ -3,7 +3,7 @@ http:
     web:
       service: web
       entrypoints: web
-      rule: Host(`localhost`)
+      rule: HostRegexp(`.*`)
       middlewares:
         - retry
 
