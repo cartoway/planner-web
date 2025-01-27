@@ -97,9 +97,9 @@ puts "Imported %s destinations and created plan" % [ JSON.parse(response).length
 
 # EXAMPLE 4
 # import destinations and create a new planning by uploading csv using cURL
-CSV.open("/tmp/mapotempo_csv", "wb") do |csv|
+CSV.open("/tmp/planner_csv", "wb") do |csv|
   csv << ["référence","nom","voie","complément","code postal","ville","lat","lng","tournée","catégories","livré"]
   csv << ["ref-id","Test Name","123 Test","","33000","Bordeaux","44.8798","-0.544917","planning-1","tag-1","T"]
 end
 # Send Accept-Language => "en" headers when parsing files with header columns in english
-response = RestClient::Request.execute method: :put, url: destinations_url, headers: { "Accept-Language" => "fr" }, payload: { multipart: true, file: File.open("/tmp/mapotempo_csv") }
+response = RestClient::Request.execute method: :put, url: destinations_url, headers: { "Accept-Language" => "fr" }, payload: { multipart: true, file: File.open("/tmp/planner_csv") }
