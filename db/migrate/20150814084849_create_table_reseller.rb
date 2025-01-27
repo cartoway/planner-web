@@ -9,7 +9,7 @@ class CreateTableReseller < ActiveRecord::Migration
       t.timestamps
     end
 
-    reseller = Reseller.create(host: 'localhost:3000', name: 'Mapotempo')
+    reseller = Reseller.create(host: 'localhost:3000', name: 'Planner')
 
     add_column :customers, :reseller_id, :integer
     Customer.all.each{ |customer|
