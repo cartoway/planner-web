@@ -55,7 +55,7 @@ services:
       - 127.0.0.1:8280:8080 # Dashboard
     volumes:
       - ./traefik.yml:/etc/traefik/traefik.yml
-      - ./traefik-services.yml:/traefik-services.yml
+      - ./traefik-services.yml:/etc/traefik/traefik-services.yml
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - web
