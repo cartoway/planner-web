@@ -3,7 +3,7 @@
 = csrf_meta_tags
 %meta{charset: "utf-8"}/
 %meta{content: "width=device-width, initial-scale=1.0", name: "viewport"}/
-= stylesheet_pack_tag 'vendor_stylesheet'
+= stylesheet_pack_tag 'vendor_stylesheet', media: 'all', 'data-turbolinks-track': true
 = stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true
 = favicon_link_tag 'apple-touch-57.png', :rel => 'apple-touch-icon', :type => 'image/png'
 = favicon_link_tag 'apple-touch-72.png', :rel => 'apple-touch-icon', :type => 'image/png', :sizes => '72x72'
