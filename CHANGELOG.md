@@ -2,14 +2,18 @@
 
 ## Dev
   ### Added
-    - Add geocoder on zonning map
-    - Add color selector on zonning map
-    - Add center to zone feature on zonning map
+    - Zoning
+      - Activate geocoding search [#250](https://github.com/cartoway/planner-web/pull/250)
+      - Add color selector [#255](https://github.com/cartoway/planner-web/pull/255)
+      - Center the view on a zone [#253](https://github.com/cartoway/planner-web/pull/253) & [#257](https://github.com/cartoway/planner-web/pull/257)
+
+  ### Changed
+    - Space route name in route filter selector [#251](https://github.com/cartoway/planner-web/pull/251)
 
   ### Fixed
-    - Add space in route filter selector
-    - Fix how empty lines are skip from CSV on import
-    - Permute the order of inputs for vehicle usage form (option toll and option low emission)
+    - Fix how empty lines are skip from CSV on import [#252](https://github.com/cartoway/planner-web/pull/252)
+    - Permute the order of inputs for vehicle usage form (option toll and option low emission) [#256](https://github.com/cartoway/planner-web/pull/256)
+    - Map on route print now displays correctly [#259](https://github.com/cartoway/planner-web/pull/259)
 
 ## V104.2.0
   ### Changed
