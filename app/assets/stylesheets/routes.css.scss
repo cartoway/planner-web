@@ -188,3 +188,13 @@
     }
   }
 }
+
+[data-controller='api_web_v01_routes'][data-action='print'],
+[data-controller='api_web_v01_plannings'][data-action='print'] {
+  .routes-print {
+    width: 20cm !important;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
