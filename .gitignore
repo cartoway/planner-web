@@ -27,7 +27,9 @@ config/initializers/dev.rb
 .ruby-version
 .rake_tasks~
 .byebug_history
-docker/postgres/
+docker
+docker-compose*.yml
+Dockerfile
 
 # Ignore application configuration
 /config/application.yml
