@@ -50,13 +50,13 @@ services:
   traefik:
     image: traefik:v3.2
     command:
-      - --configFile=/traefik.yml
+      - --configFile=/etc/traefik/traefik.yml
     ports:
       - ${WEB_BIND:-8080}:8080
       - 127.0.0.1:8280:8080 # Dashboard
     volumes:
-      - ./traefik.yml:/etc/traefik/traefik.yml
-      - ./traefik-services.yml:/etc/traefik/traefik-services.yml
+      - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./docker/traefik/traefik-services.yml:/etc/traefik/traefik-services.yml
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - web
