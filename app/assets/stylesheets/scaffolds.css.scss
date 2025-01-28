@@ -281,7 +281,7 @@ span.color[data-color=''][data-selected]:after {
 
 #map {
   @media print {
-    .leaflet-control-zoom {
+    .leaflet-control-zoom, .leaflet-control-layers, #routes-caption {
       display: none;
     }
   }
