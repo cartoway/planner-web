@@ -6,39 +6,39 @@
       .company-logo.text-center
         = image_tag @reseller.logo_large.url || "logo.svg", width: 250, alt: @reseller.name
   .row
-    .col-md-offset-2.col-md-8
+    .col-md-offset-1.col-md-10
       %h2
         = t('index.motto')
 
   - if !current_user.admin?
-    .row.gx-4
+    .row.m-4.d-flex.justify-content-center
       .col-md-2
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
           .card-body.d-flex.flex-column.justify-content-center.align-items-center
-            %h3.card-title.text-center.fw-bold= t 'activerecord.models.plannings', :count => @kpis[:plannings][:total]
+            %h3.card-title.text-center.fw-bold.text-uppercase= t 'activerecord.models.plannings', :count => @kpis[:plannings][:total]
             %span.card-text.h5= @kpis[:plannings][:total]
       .col-md-2 
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
           .card-body.d-flex.flex-column.justify-content-center.align-items-center
-            %h3.card-title.text-center.fw-bold= t 'activerecord.models.zonings', :count => @kpis[:zonings][:total]
+            %h3.card-title.text-center.fw-bold.text-uppercase= t 'activerecord.models.zonings', :count => @kpis[:zonings][:total]
             %span.card-text.h5= @kpis[:zonings][:total]
       .col-md-2 
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
           .card-body.d-flex.flex-column.justify-content-center.align-items-center
-            %h3.card-title.text-center.fw-bold= t 'activerecord.models.destinations', :count => @kpis[:destinations][:total]
+            %h3.card-title.text-center.fw-bold.text-uppercase= t 'activerecord.models.destinations', :count => @kpis[:destinations][:total]
             %span.card-text.h5= @kpis[:destinations][:total]
       .col-md-2 
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
           .card-body.d-flex.flex-column.justify-content-center.align-items-center
-            %h3.card-title.text-center.fw-bold= t 'activerecord.models.stores', :count => @kpis[:stores][:total]
+            %h3.card-title.text-center.fw-bold.text-uppercase= t 'activerecord.models.stores', :count => @kpis[:stores][:total]
             %span.card-text.h5= @kpis[:stores][:total]
       .col-md-2 
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
           .card-body.d-flex.flex-column.justify-content-center.align-items-center
-            %h3.card-title.text-center.fw-bold= t 'activerecord.models.vehicles', :count => @kpis[:vehicles][:total]
+            %h3.card-title.text-center.fw-bold.text-uppercase= t 'activerecord.models.vehicles', :count => @kpis[:vehicles][:total]
             %span.card-text.h5= @kpis[:vehicles][:total]
 
-    .row.gx-4.justify-content-center
+    .row.m-4.justify-content-center
       .col-md-4.my-4
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
           .card-body
@@ -140,7 +140,7 @@
                           = link_to edit_store_path(store), :class => "btn btn-primary btn-sm" do
                             %i.fa.fa-edit.fa-fw
 
-    .row.gx-4.justify-content-center
+    .row.m-4.justify-content-center
       .col-md-4.my-4
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
           .card-body
@@ -241,4 +241,8 @@
 
   .flex-column {
     flex-direction: column !important;
+  }
+
+  .m-4 {
+    margin: 1.5rem !important;
   }
