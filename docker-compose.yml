@@ -12,6 +12,7 @@ x-web: &web
     OPTIMIZER_API_KEY: ${OPTIMIZER_API_KEY:-demo}
     SENTRY_DSN: ${SENTRY_DSN}
     HERE_MAP_APIKEY: ${HERE_MAP_APIKEY}
+    LOG_FORMAT: ${LOG_FORMAT}
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/production.rb:/srv/app/config/environments/production.rb
@@ -38,8 +39,6 @@ services:
 
   web:
     <<: *web
-    ports:
-      - "${WEB_BIND:-8080}:8080" # HOST:CONTAINER, edit only HOST part
     command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec puma -v -p 8080 --pidfile 'server.pid' -t ${PUMA_WORKERS:-0:1}"
 
   delayed-job:
@@ -47,6 +46,21 @@ services:
     command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec './bin/delayed_job run'"
     deploy:
       replicas: ${DELAYED_JOB_REPLICAS:-1}
+
+  traefik:
+    image: traefik:v3.2
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    ports:
+      - ${WEB_BIND:-8080}:8080
+      - 127.0.0.1:8280:8080 # Dashboard
+    volumes:
+      - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./docker/traefik/traefik-services.yml:/etc/traefik/traefik-services.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - web
+    restart: unless-stopped
 
 volumes:
   pg_data:

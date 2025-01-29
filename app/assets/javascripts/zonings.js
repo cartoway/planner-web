@@ -323,7 +323,7 @@ export const zonings_edit = function(params) {
   var addZone = function(zone, geom) {
 
     function observeChanges(element) {
-      
+
       // Initialize fake_select2 for color selection
       fake_select2($(".color_select", element), function(select) {
         select.select2({
@@ -490,7 +490,7 @@ export const zonings_edit = function(params) {
       }
     });
 
-    $('.center_view').click(function() {
+    $('.center_view', ele).click(function() {
       map.fitBounds(geom.getBounds());
     });
   };

@@ -9,6 +9,7 @@ require_relative '../lib/routers/here'
 require_relative '../lib/routers/router_wrapper'
 require_relative '../lib/optim/optimizer_wrapper'
 require_relative '../lib/exceptions'
+require_relative '../lib/json_logs_formatter'
 
 require_relative '../lib/devices/device_base'
 [
@@ -32,6 +33,8 @@ Bundler.require(*Rails.groups)
 
 require 'devise'
 require 'hashie'
+
+Rails.logger = StructuredLog.new($stdout)
 
 module Mapotempo
   class Application < Rails::Application
@@ -77,7 +80,15 @@ module Mapotempo
 
     config.middleware.use ::ResellerByHost
 
+    if ENV['LOG_FORMAT'] == 'json'
+      config.log_formatter = JsonLogsFormatter.new
+    end
     Hashie.logger = Rails.logger
+    config.assets.quiet = true
+
+    logger = StructuredLog.new($stdout)
+    logger.formatter = config.log_formatter
+    config.logger = ActiveSupport::TaggedLogging.new(logger)
 
     config.lograge.enabled = true
     config.lograge.custom_options = lambda do |event|
@@ -87,6 +98,10 @@ module Mapotempo
       params = event.payload[:params].reject { |key,_| unwanted_keys.include? key }
 
       {customer_id: customer_id, time: event.time, sub_api: sub_api, params: params}.delete_if{ |k, v| !v || v == 0 }
+    end
+
+    if ENV['LOG_FORMAT'] == 'json'
+      config.lograge.formatter = Lograge::Formatters::Json.new
     end
 
     # Errors handling

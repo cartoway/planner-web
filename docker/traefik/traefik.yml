@@ -1,0 +1,23 @@
+providers:
+  file:
+    filename: /etc/traefik/traefik-services.yml
+
+entryPoints:
+  web:
+    address: :8080
+    forwardedHeaders:
+      insecure: true
+      trustedIPs:
+        - "0.0.0.0/0"
+
+# api:
+#   insecure: true
+#   dashboard: true
+
+# log:
+#   level: TRACE
+
+# accesslog:
+#   addInternals: true
+#   # filters:
+#   #   retryAttempts: true

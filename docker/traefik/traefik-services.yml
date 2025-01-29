@@ -1,0 +1,27 @@
+http:
+  routers:
+    web:
+      service: web
+      entrypoints: web
+      rule: HostRegexp(`.*`)
+      middlewares:
+        - retry
+
+  services:
+    web:
+      loadbalancer:
+        servers:
+          - url: http://web:8080
+        healthcheck:
+          path: /
+        sticky:
+          cookie:
+            secure: true
+            httpOnly: true
+            samesite: none
+
+  middlewares:
+    retry:
+      retry:
+        attempts: 5
+        initialinterval: 1000ms

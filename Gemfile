@@ -110,6 +110,7 @@ gem 'grape-swagger-entity'
 gem 'rack-cors'
 gem 'rswag-api'
 gem 'rswag-specs'
+gem 'grape_logging'
 
 gem 'rails-i18n', '>= 7'
 gem 'http_accept_language'
@@ -209,8 +210,6 @@ gem 'sentry-rails'
 gem 'sentry-delayed_job'
 
 group :production do
-  gem 'rails_12factor'
-
   gem 'redis'
   gem 'redis-store', '~> 1.4.1' # Ensure redis-store dependency is at least 1.4.1 for CVE-2017-1000248 correction
   gem 'redis-rails'
