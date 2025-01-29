@@ -83,6 +83,9 @@ class VehicleUsagesController < ApplicationController
       parse_router_options(params.dig('vehicle_usage', 'vehicle'))
     end
     parameters = params.require(:vehicle_usage).permit(
+      :cost_distance,
+      :cost_fixed,
+      :cost_time,
       :time_window_start,
       :time_window_end,
       :store_start_id,

@@ -14,6 +14,7 @@
     %span.col-md-offset-2.col-md-8
       #map.map-fixed-size
   = f.select :prefered_unit, User.unities, {}, {control_class: 'form-control'}
+  = f.select :prefered_currency, currencies_table, {}, {control_class: 'form-control'}
   = f.text_field :url_click2call do
     %p.help-block= t '.url_click2call_help'
   = f.text_field :api_key, {readonly: true, input_group: content_tag('i', '', class: 'fa fa-key fa-fw')}

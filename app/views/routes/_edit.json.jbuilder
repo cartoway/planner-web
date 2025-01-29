@@ -45,6 +45,7 @@ if route.vehicle_usage_id
     json.route_averages do
       json.drive_time time_over_day(route.drive_time)
       json.prefered_unit current_user.prefered_unit
+      json.prefered_currency current_user.prefered_currency
       json.speed route.speed_average(current_user.prefered_unit)
 
       json.visits_duration time_over_day(route.visits_duration) if route.visits_duration && route.visits_duration > 0
@@ -52,6 +53,7 @@ if route.vehicle_usage_id
     end
   end
   json.emission route.emission ? number_to_human(route.emission, precision: 4) : '-'
+  json.cost_total ((route.revenue || 0) - [0, route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+)).round(2)
   json.work_or_window_time route.vehicle_usage.work_or_window_time
   json.skills [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten.compact do |tag|
     json.icon tag.default_icon
