@@ -4,7 +4,7 @@ require 'routers/osrm'
 class RouteTest < ActiveSupport::TestCase
 
   def around
-    Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1, 720, '_ibE_seK_seK_seK'] } } ) do
+    Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 720, '_ibE_seK_seK_seK'] } } ) do
       Routers::RouterWrapper.stub_any_instance(:matrix, lambda{ |url, mode, dimensions, row, column, options| [Array.new(row.size) { Array.new(column.size, 0) }] }) do
         yield
       end
@@ -47,10 +47,14 @@ class RouteTest < ActiveSupport::TestCase
     route.compute
     assert_not route.outdated
     assert route.distance
+    assert route.revenue
     assert route.emission
     assert route.start
     assert route.end
-    assert_equal route.stops.size + 1, route.distance
+    assert_equal 50.0, route.cost_fixed
+    assert_equal route.cost_distance, route.vehicle_usage.cost_distance * (route.distance.to_f / 1000)
+    assert_equal route.cost_time, route.vehicle_usage.cost_time * ((route.end - route.start).to_f / 3600)
+    assert_equal 1000 * (route.stops.size + 1), route.distance
     route.save!
   end
 
@@ -59,7 +63,7 @@ class RouteTest < ActiveSupport::TestCase
     assert route.stops.size > 1
     route.outdated = true
     route.compute
-    assert_equal route.stops.size + 1, route.distance
+    assert_equal 1000 * (route.stops.size + 1), route.distance
 
     route.stops.each{ |stop|
       stop.active = false
@@ -67,7 +71,7 @@ class RouteTest < ActiveSupport::TestCase
 
     route.outdated = true
     route.compute
-    assert_equal 1, route.distance
+    assert_equal 1000.0, route.distance
     route.save!
   end
 

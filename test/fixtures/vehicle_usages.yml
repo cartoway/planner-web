@@ -11,6 +11,9 @@ vehicle_usage_one_one:
   rest_stop: 14:00:00
   rest_duration: 00:45:00
   store_rest: store_one
+  cost_distance: 1.25
+  cost_fixed: 50
+  cost_time: 0.5
 
 vehicle_usage_two_one:
   vehicle_usage_set: vehicle_usage_set_two
