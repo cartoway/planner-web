@@ -698,7 +698,11 @@ CREATE TABLE public.routes (
     arrival_status character varying,
     force_start boolean,
     out_of_max_ride_distance boolean,
-    out_of_max_ride_duration boolean
+    out_of_max_ride_duration boolean,
+    cost_distance double precision,
+    cost_fixed double precision,
+    cost_time double precision,
+    revenue double precision
 );
 
 
@@ -1003,7 +1007,8 @@ CREATE TABLE public.users (
     confirmation_sent_at timestamp without time zone,
     time_zone character varying DEFAULT 'UTC'::character varying NOT NULL,
     prefered_unit character varying DEFAULT 'km'::character varying,
-    locale character varying
+    locale character varying,
+    prefered_currency integer DEFAULT 0
 );
 
 
@@ -1049,7 +1054,10 @@ CREATE TABLE public.vehicle_usage_sets (
     work_time integer,
     max_distance integer,
     max_ride_duration integer,
-    max_ride_distance integer
+    max_ride_distance integer,
+    cost_distance double precision,
+    cost_fixed double precision,
+    cost_time double precision
 );
 
 
@@ -1093,7 +1101,10 @@ CREATE TABLE public.vehicle_usages (
     rest_duration integer,
     service_time_start integer,
     service_time_end integer,
-    work_time integer
+    work_time integer,
+    cost_distance double precision,
+    cost_fixed double precision,
+    cost_time double precision
 );
 
 
@@ -1185,7 +1196,8 @@ CREATE TABLE public.visits (
     quantities_operations public.hstore,
     priority integer,
     force_position integer DEFAULT 0,
-    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL
+    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
+    revenue double precision
 );
 
 
@@ -2797,6 +2809,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20240719162433'),
 ('20240814065613'),
 ('20241024064440'),
-('20241227140855');
+('20241227140855'),
+('20250128131504');
 
 
