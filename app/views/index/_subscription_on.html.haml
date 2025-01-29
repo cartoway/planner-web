@@ -9,3 +9,236 @@
     .col-md-offset-2.col-md-8
       %h2
         = t('index.motto')
+
+  - if !current_user.admin?
+    .row.gx-4
+      .col-md-2
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body.d-flex.flex-column.justify-content-center.align-items-center
+            %h3.card-title.text-center.fw-bold= t 'activerecord.models.plannings', :count => @kpis[:plannings][:total]
+            %span.card-text.h5= @kpis[:plannings][:total]
+      .col-md-2 
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body.d-flex.flex-column.justify-content-center.align-items-center
+            %h3.card-title.text-center.fw-bold= t 'activerecord.models.zonings', :count => @kpis[:zonings][:total]
+            %span.card-text.h5= @kpis[:zonings][:total]
+      .col-md-2 
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body.d-flex.flex-column.justify-content-center.align-items-center
+            %h3.card-title.text-center.fw-bold= t 'activerecord.models.destinations', :count => @kpis[:destinations][:total]
+            %span.card-text.h5= @kpis[:destinations][:total]
+      .col-md-2 
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body.d-flex.flex-column.justify-content-center.align-items-center
+            %h3.card-title.text-center.fw-bold= t 'activerecord.models.stores', :count => @kpis[:stores][:total]
+            %span.card-text.h5= @kpis[:stores][:total]
+      .col-md-2 
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body.d-flex.flex-column.justify-content-center.align-items-center
+            %h3.card-title.text-center.fw-bold= t 'activerecord.models.vehicles', :count => @kpis[:vehicles][:total]
+            %span.card-text.h5= @kpis[:vehicles][:total]
+
+    .row.gx-4.justify-content-center
+      .col-md-4.my-4
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body
+            - if @kpis[:plannings][:total] == 0
+              %h3.card-title.fw-bold= I18n.t('activerecord.models.plannings.other')
+              %p.card-text.text-muted= I18n.t('admin.users.kpi.plannings.none')
+              = link_to new_planning_path, class: "btn btn-primary" do
+                = I18n.t('admin.users.kpi.plannings.create')
+            - else
+              %h3.card-title.fw-bold= t 'admin.users.kpi.plannings.last'
+              .table-responsive
+                %table.table.table-hover
+                  %thead
+                    %tr
+                      %th= t 'activerecord.attributes.planning.ref'
+                      %th= t 'activerecord.attributes.planning.name'
+                      %th= t 'activerecord.attributes.planning.date'
+                      %th= t 'activerecord.attributes.planning.tags'
+                      %th= t 'activerecord.attributes.planning.updated_at'
+                      %th
+                  %tbody
+                    - @kpis[:plannings][:last].each do |planning|
+                      %tr
+                        %td
+                          = planning.ref
+                        %td
+                          = planning.name
+                        %td
+                          = planning.date ? planning.date.strftime(I18n.t('admin.users.kpi.format')) : ''
+                        %td
+                          - planning.tags.each do |tag|
+                            %span
+                              = tag_icon tag
+                              %span
+                              = tag.label
+                        %td
+                          = planning.updated_at.strftime(I18n.t('admin.users.kpi.format'))
+                        %td.text-right
+                          = link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do
+                            %i.fa.fa-edit.fa-fw
+      .col-md-4.my-4
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body
+            - if @kpis[:zonings][:total] == 0
+              %h3.card-title.fw-bold= I18n.t('activerecord.models.zonings.other')
+              %p.card-text.text-muted= I18n.t('admin.users.kpi.zonings.none')
+              = link_to new_zoning_path, class: "btn btn-primary" do
+                = I18n.t('admin.users.kpi.zonings.create')
+            - else
+              %h3.card-title.fw-bold= t 'admin.users.kpi.zonings.last'
+              .table-responsive
+                %table.table.table-hover
+                  %thead
+                    %tr
+                      %th= t 'activerecord.attributes.zoning.name'
+                      %th= t 'activerecord.attributes.zoning.updated_at'
+                      %th
+                  %tbody
+                    - @kpis[:zonings][:last].each do |zoning|
+                      %tr
+                        %td
+                          = zoning.name
+                        %td
+                          = zoning.updated_at.strftime(I18n.t('admin.users.kpi.format'))
+                        %td.text-right
+                          = link_to edit_zoning_path(zoning), :class => "btn btn-primary btn-sm" do
+                            %i.fa.fa-edit.fa-fw
+      .col-md-4.my-4
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body
+            - if @kpis[:stores][:total] == 0
+              %h3.card-title.fw-bold= I18n.t('activerecord.models.stores.other')
+              %p.card-text.text-muted= I18n.t('admin.users.kpi.stores.none')
+              = link_to new_store_path, class: "btn btn-primary" do
+                = I18n.t('admin.users.kpi.stores.create')
+            - else
+              %h3.card-title.fw-bold= t 'admin.users.kpi.stores.last'
+              .table-responsive
+                %table.table.table-hover
+                  %thead
+                    %tr
+                      %th= t 'activerecord.attributes.store.icon'
+                      %th= t 'activerecord.attributes.store.name'
+                      %th= t 'activerecord.attributes.store.city'
+                      %th= t 'activerecord.attributes.store.updated_at'
+                      %th
+                  %tbody
+                    - @kpis[:stores][:last].each do |store|
+                      %tr
+                        %td
+                          = store_icon store
+                        %td
+                          = store.name
+                        %td
+                          = store.city
+                        %td
+                          = store.updated_at.strftime(I18n.t('admin.users.kpi.format'))
+                        %td.text-right
+                          = link_to edit_store_path(store), :class => "btn btn-primary btn-sm" do
+                            %i.fa.fa-edit.fa-fw
+
+    .row.gx-4.justify-content-center
+      .col-md-4.my-4
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body
+            - if @kpis[:destinations][:total] == 0
+              %h3.card-title.fw-bold= I18n.t('activerecord.models.destinations.other')
+              %p.card-text.text-muted= I18n.t('admin.users.kpi.destinations.none')
+              = link_to new_store_path, class: "btn btn-primary" do
+                = I18n.t('admin.users.kpi.destinations.create')
+              
+            - else
+              %h3.card-title.fw-bold= t 'admin.users.kpi.destinations.last'
+              .table-responsive
+                %table.table.table-hover
+                  %thead
+                    %tr
+                      %th= t 'activerecord.attributes.destination.ref'
+                      %th= t 'activerecord.attributes.destination.name'
+                      %th= t 'activerecord.attributes.destination.city'
+                      %th= t 'activerecord.attributes.destination.updated_at'
+                      %th
+                  %tbody
+                    - @kpis[:destinations][:last].each do |destination|
+                      %tr
+                        %td
+                          = destination.ref
+                        %td
+                          = destination.name
+                        %td
+                          = destination.city
+                        %td
+                          = destination.updated_at.strftime(I18n.t('admin.users.kpi.format'))
+                        %td.text-right
+                          = link_to edit_destination_path(destination), :class => "btn btn-primary btn-sm" do
+                            %i.fa.fa-edit.fa-fw
+      - if @kpis[:vehicles][:nb_set] < 2
+        .col-md-4.my-4
+          .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+            .card-body
+              - if @kpis[:vehicles][:total] == 0
+                %h3.card-title.fw-bold= I18n.t('activerecord.models.vehicles.other')
+                %p.card-text.text-muted= I18n.t('admin.users.kpi.vehicles.none')
+                = link_to new_store_path, class: "btn btn-primary" do
+                  = I18n.t('admin.users.kpi.vehicles.create')
+              - else
+                %h3.card-title.fw-bold= t 'admin.users.kpi.vehicles.last'
+                .table-responsive
+                  %table.table.table-hover
+                    %thead
+                      %tr
+                        %th= t 'activerecord.attributes.vehicles.ref'
+                        %th= t 'activerecord.attributes.vehicles.name'
+                        %th= t 'activerecord.attributes.vehicles.consumption'
+                        %th= t 'activerecord.attributes.vehicles.updated_at'
+                        %th
+                    %tbody
+                      - @kpis[:vehicles][:last].each do |vehicle|
+                        %tr
+                          %td
+                            = vehicle.ref
+                          %td
+                            = vehicle.name
+                          %td
+                            = vehicle.consumption
+                          %td
+                            = vehicle.updated_at.strftime(I18n.t('admin.users.kpi.format'))
+                          %td.text-right
+                            = link_to edit_vehicle_usage_path(vehicle), :class => "btn btn-primary btn-sm" do
+                              %i.fa.fa-edit.fa-fw
+      .col-md-4.my-4
+        .card.shadow{style: "border-radius: 10px; transition: transform 0.2s;"}
+          .card-body
+            - if @kpis[:statistics][:exists]
+              = link_to statistics_path, class: "btn btn-primary" do
+                = I18n.t('admin.users.kpi.statistics')
+            - else
+              %h3.card-title.fw-bold Configuration
+              %p.card-text.text-muted= I18n.t('admin.users.kpi.statistics.none')
+            - if @kpis[:vehicles][:nb_set] > 1
+              = link_to vehicles_path, class: "btn btn-primary" do
+                = I18n.t('admin.users.kpi.vehicles.show')
+:css
+  .table td {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+  }
+  
+  .table tbody tr {
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .shadow {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .flex-column {
+    flex-direction: column !important;
+  }
