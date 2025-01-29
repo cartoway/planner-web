@@ -429,6 +429,7 @@ en:
         ref: Reference
         confirmed_at: Confirmed at
         prefered_unit: Preferred unit
+        prefered_currency: Prefered currency
       vehicle:
         max_distance: Maximum distance
         max_ride_distance: Maximum ride distance
@@ -497,6 +498,7 @@ en:
         work_time: Work time
         tag_ids: Skills
         vehicle: Vehicle
+        costs: Costs
       vehicle_usage_set:
         name: Name
         time_window_start: Open
@@ -513,6 +515,7 @@ en:
         service_time_start: Service Time Before
         service_time_end: Service Time After
         work_time: Work time
+        costs: Costs
       visit:
         ref: Reference
         ref_small: Ref.
@@ -533,6 +536,7 @@ en:
         time_window_start_end_2small: Open/Close 2
         time_window_start_2_time_window_end_2_days: D+
         priority: Priority
+        revenue: Revenue
         multi_visit: Multi
         tags: Categories
         tag_ids: Categories
@@ -556,6 +560,7 @@ en:
         time_window_start_end_2small: Open/Close 2
         time_window_start_2_time_window_end_2_days: D+
         priority: Priority
+        revenue: Revenue
         multi_visit: Multi
         tags: Categories
         tag_ids: Categories
@@ -1810,6 +1815,8 @@ en:
       duration_help: Total duration
       distance_help: Total distance
       emission_help: Total emission
+      cost_help: Route costs
+      total_cost_help: Total cost
       driving_time_help: Total driving time
       visit_duration_help: Total visits duration
       wait_time_help: Total waiting time
@@ -1878,6 +1885,7 @@ en:
         orders: 'Orders:'
         duration: 'Visit duration:'
         priority: 'Priority: '
+        revenue: 'Revenue: '
         tags: 'Categories:'
         stop_drive_time: 'Duration:'
         stop_distance: 'Distance:'
@@ -2461,6 +2469,11 @@ en:
         help: >-
           The following informations on the vehicle are common to all vehicles
           configurations
+      cost:
+        help: >-
+          The cost of a route is a formula that takes into account a fixed cost
+          for the use of a vehicle, then costs related to the total time of the
+          route and to the total distance.
       driver:
         legend: Driver
       vehicle_usage:
@@ -2670,6 +2683,8 @@ en:
       priority_help: >-
         Insertion priority when optimizing (useful when you know all your
         vehicles will not be able to visit all clients)
+      revenue: Revenue
+      revenue_help: Gain obtained by performing the visit
       close_help: Without taking into account visit duration
       tags_help: Visit categories
       force_position_help: Forced position of the visit within the route
@@ -2851,6 +2866,14 @@ en:
     multiple-actions:
       none_selected_element: None selected element
     unit:
+      currency:
+        eur: Euro
+        usd: Dollar
+        gbp: Pound
+      currency_symbol:
+        eur: €
+        usd: $
+        gbp: £
       m: m
       kms: km
       mile: mi.

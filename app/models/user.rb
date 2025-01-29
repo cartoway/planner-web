@@ -38,6 +38,12 @@ class User < ApplicationRecord
 
   attr_accessor :send_email
 
+  enum prefered_currency: {
+    eur: 0,
+    usd: 1,
+    gbp: 2
+  }
+
   after_create :send_password_email, if: -> (user) { user.send_email.to_i == 1 }
   after_save :send_connection_email, if: -> (user) { user.confirmed_at_changed? && user.confirmed_at_was.nil? }
 

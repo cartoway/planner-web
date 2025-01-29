@@ -87,6 +87,20 @@
             %span.input-group-addon
               %i.fa.fa-arrows-left-right.fa-fw
           %p.help-block= t '.close_help'
+      #visit_revenue_input
+        %label.col-md-offset-2.col-md-8.field
+          = t('.revenue')
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field "destination[visits_attributes][#{i}]", :revenue,
+              class: 'form-control',
+              min: 0,
+              step: 'any',
+              value: visit.revenue
+            %span.input-group-addon
+              = t("all.unit.currency_symbol.#{current_user.prefered_currency}")
+          %p.help-block
+            = t('.revenue_help')
       #visit_priority_input{class: "#{nested_has_error?(:priority, visit.id)}"}
         %label.col-md-offset-2.col-md-8.field= t '.priority'
         .col-md-offset-2.col-md-8.field
