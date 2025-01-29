@@ -177,6 +177,9 @@ class VehicleUsageSetsController < ApplicationController
   # Never trust parameters from the scary internet, only allow the white list through.
   def vehicle_usage_set_params
     parameters = params.require(:vehicle_usage_set).permit(:name,
+                                              :cost_distance,
+                                              :cost_fixed,
+                                              :cost_time,
                                               :time_window_start,
                                               :time_window_end,
                                               :store_start_id,

@@ -77,6 +77,18 @@ class VehicleUsage < ApplicationRecord
     })
   end
 
+  def default_cost_distance
+    cost_distance || vehicle_usage_set.cost_distance
+  end
+
+  def default_cost_fixed
+    cost_fixed || vehicle_usage_set.cost_fixed
+  end
+
+  def default_cost_time
+    cost_time || vehicle_usage_set.cost_time
+  end
+
   def default_time_window_start
     time_window_start || vehicle_usage_set.time_window_start
   end
@@ -286,7 +298,10 @@ class VehicleUsage < ApplicationRecord
       update_rest
     end
 
-    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? || store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? || store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed?
+    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? ||
+       store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? ||
+       store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed? ||
+       cost_distance_changed? || cost_fixed_changed? || cost_time_changed?
       routes.each{ |route|
         route.outdated = true
       }

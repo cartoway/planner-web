@@ -21,4 +21,10 @@ module UnitsHelper
   def distance_in_user_unit(meters, unit)
     unit == 'mi' ? DistanceUnits.meters_to_miles(meters).round(2) : DistanceUnits.meters_to_kms(meters).round(2) if meters
   end
+
+  def currencies_table
+    User.prefered_currencies.keys.map{ |key|
+      ["#{t("all.unit.currency.#{key}")} - #{t("all.unit.currency_symbol.#{key}")}", key]
+    }
+  end
 end

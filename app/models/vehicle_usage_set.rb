@@ -110,7 +110,11 @@ class VehicleUsageSet < ApplicationRecord
       vehicle_usages.each(&:update_rest)
     end
 
-    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? || store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? || store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed? || max_distance || max_ride_distance_changed? || max_ride_duration_changed?
+    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? ||
+       store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? ||
+       store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? ||
+       work_time_changed? || max_distance || max_ride_distance_changed? || max_ride_duration_changed? ||
+       cost_distance_changed? || cost_fixed_changed? || cost_time_changed?
       vehicle_usages.each{ |vehicle_usage|
         if (time_window_start_changed? && vehicle_usage.default_time_window_start == time_window_start) ||
           (time_window_end_changed? && vehicle_usage.default_time_window_end == time_window_end) ||
@@ -132,7 +136,10 @@ class VehicleUsageSet < ApplicationRecord
 
           (max_distance_changed? && vehicle_usage.vehicle.max_distance == max_distance) ||
           (max_ride_distance_changed? && vehicle_usage.vehicle.max_ride_distance == max_ride_distance) ||
-          (max_ride_duration_changed? && vehicle_usage.vehicle.max_ride_duration == max_ride_duration)
+          (max_ride_duration_changed? && vehicle_usage.vehicle.max_ride_duration == max_ride_duration) ||
+          (cost_distance_changed? && vehicle_usage.cost_distance == cost_distance) ||
+          (cost_fixed_changed? && vehicle_usage.cost_fixed == cost_fixed) ||
+          (cost_time_changed? && vehicle_usage.cost_time == cost_time)
 
           vehicle_usage.routes.each{ |route|
             route.outdated = true
