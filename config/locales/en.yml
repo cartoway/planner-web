@@ -586,6 +586,7 @@ en:
           neutral: Neutral
       zoning:
         name: Name
+        updated_at: Updated
       zone:
         vehicle: Vehicle
         name: Name
@@ -858,6 +859,32 @@ en:
         success: Users deleted successfully
       send_email:
         success: E-Mail sent to user successfully
+      kpi:
+        format: '%b %d, %Y'
+        actions: Actions
+        plannings:
+          last: 5 last plans
+          none: No plan
+          create: Create plan
+        zonings:
+          last: 5 last sectorisations
+          none: No sectorisation
+          create: Create sectorisation
+        destinations:
+          last: 5 last destinations
+          none: No destination
+          create: Create destination
+        stores:
+          last: 5 last facilities
+          none: No facility
+          create: Create facility
+        vehicles:
+          last: 5 last vehicles
+          none: No vehicle
+          create: Create vehicle
+        statistics:
+          show: Show statistics
+          none: Statistics not configured
     vehicles:
       devices:
         create_company: Initialize Cartoway Field Account
