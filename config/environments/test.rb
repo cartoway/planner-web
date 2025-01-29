@@ -154,6 +154,7 @@ Rails.application.configure do
   config.logger_sms = nil
 
   config.after_initialize do
+    ActiveRecord::Base.logger   = nil
     Bullet.enable               = false
     Bullet.alert                = false
     Bullet.bullet_logger        = false
