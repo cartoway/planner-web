@@ -20,6 +20,7 @@ class IndexController < ApplicationController
 
   def index
     @customer = current_user && current_user.customer
+    @kpis = @customer ? kpis : {}
   end
 
   def unsupported_browser
@@ -39,5 +40,36 @@ class IndexController < ApplicationController
     end
   end
 
+  private
+
+  def kpis
+    {
+      plannings: {
+        total: @customer.plannings.count,
+        last: @customer.plannings.reorder(updated_at: :desc).first(5)
+      },
+      zonings: {
+        total: @customer.zonings.count,
+        last: @customer.zonings.reorder(updated_at: :desc).first(5)
+      },
+      destinations: {
+        total: @customer.destinations.count,
+        last: @customer.destinations.reorder(updated_at: :desc).first(5)
+      },
+      stores: {
+        total: @customer.stores.count,
+        last: @customer.stores.reorder(updated_at: :desc).first(5)
+      },
+      vehicles: {
+        total: @customer.vehicles.count,
+        nb_set: @customer.vehicle_usage_sets.count,
+        last: @customer.vehicles.reorder(updated_at: :desc).first(5)
+      },
+      statistics: {
+        exists: @customer.reseller.customer_dashboard_url.present?,
+        url: @customer.reseller.customer_dashboard_url&.gsub('{LG}', I18n.locale.to_s)&.gsub('{ID}', @customer.id.to_s)
+      }
+    }
+  end
 
 end
