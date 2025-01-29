@@ -1,4 +1,5 @@
 json.prefered_unit current_user.prefered_unit
+json.prefered_currency current_user.prefered_currency
 json.extract! @planning, :id, :ref
 json.planning_id @planning.id
 duration = @planning.routes.includes_vehicle_usages.select(&:vehicle_usage).to_a.sum(0){ |route| route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i}
@@ -17,6 +18,7 @@ if averages
     json.vehicles_used averages[:vehicles_used]
     json.vehicles averages[:vehicles]
     json.emission averages[:routes_emission] ? number_to_human(averages[:routes_emission], precision: 4) : '-'
+    json.total_cost (averages[:routes_cost]).round(2)
     json.total_quantities planning_quantities(@planning)
   end
 end

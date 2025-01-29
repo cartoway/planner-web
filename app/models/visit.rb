@@ -225,7 +225,9 @@ class Visit < ApplicationRecord
   end
 
   def update_outdated
-    if @tag_ids_changed || time_window_start_1_changed? || time_window_end_1_changed? || time_window_start_2_changed? || time_window_end_2_changed? || quantities_changed? || duration_changed? || force_position_changed?
+    if @tag_ids_changed || time_window_start_1_changed? || time_window_end_1_changed? ||
+       time_window_start_2_changed? || time_window_end_2_changed? || quantities_changed? ||
+       duration_changed? || force_position_changed? || revenue_changed?
       outdated
     end
   end

@@ -429,6 +429,7 @@ fr:
         ref: Référence
         confirmed_at: Date de confirmation
         prefered_unit: Choix unité
+        prefered_currency: Choix devise
       vehicle:
         max_distance: Distance maximale
         max_ride_distance: Distance trajet maximale
@@ -497,6 +498,7 @@ fr:
         work_time: Durée de travail
         tag_ids: Compétences
         vehicle: Véhicule
+        costs: Coûts
       vehicle_usage_set:
         name: Nom
         time_window_start: Horaire début
@@ -513,6 +515,7 @@ fr:
         service_time_start: Durée de service avant
         service_time_end: Durée de service après
         work_time: Durée de travail
+        costs: Coûts
       visit:
         ref: Référence
         ref_small: Réf.
@@ -532,6 +535,7 @@ fr:
         time_window_end_2_small: Fin 2
         time_window_start_end_2small: Début/Fin 2
         time_window_start_2_time_window_end_2_days: J+
+        revenue: Revenu
         priority: Priorité
         multi_visit: Multi
         tags: Catégories
@@ -555,6 +559,7 @@ fr:
         time_window_end_2_small: Fin 2
         time_window_start_end_2small: Début/Fin 2
         time_window_start_2_time_window_end_2_days: J+
+        revenue: Revenu
         priority: Priorité
         multi_visit: Multi
         tags: Catégories
@@ -1898,6 +1903,8 @@ fr:
       duration_help: Somme des durées des tournées
       distance_help: Somme des distances des tournées
       emission_help: Somme des émissions
+      cost_help: Coût de la tournées
+      total_cost_help: Somme des coûts
       driving_time_help: Somme des durées de conduite
       visit_duration_help: Somme des durées des visites
       wait_time_help: Somme des temps d'attentes
@@ -1972,6 +1979,7 @@ fr:
         orders: 'Commandes : '
         duration: 'Durée : '
         priority: 'Priorité : '
+        revenue: 'Revenu : '
         tags: 'Catégories : '
         stop_drive_time: 'Durée :'
         stop_distance: 'Distance :'
@@ -2568,6 +2576,11 @@ fr:
         help: >-
           Les informations ci-dessous sur le véhicule sont communes à toutes les
           configurations de véhicules
+      cost:
+        help: >-
+          Le coût d'une tournée est une formule prenant en compte un coût fixe à
+          l'utilisation d'un véhicule, puis de coûts liés au temps total de la
+          tournée ainsi qu'à la distance de celle-ci.
       driver:
         legend: Chauffeur
       vehicle_usage:
@@ -2787,6 +2800,8 @@ fr:
       duration_help: 'Si vide utilise la valeur par défaut, format hh:mm:ss'
       time_window_start_end_1: Plage horaire 1
       time_window_start_end_2: Plage horaire 2
+      revenue: Revenu
+      revenue_help: Revenu obtenu en effectuant la visite
       priority: Priorité
       priority_help: >-
         Priorité d’insertion lors de l’optimisation (utile lorsque vous savez
@@ -2982,6 +2997,14 @@ fr:
     multiple-actions:
       none_selected_element: Aucun élément sélectionné
     unit:
+      currency:
+        eur: Euro
+        usd: Dollar
+        gbp: Livre Sterling
+      currency_symbol:
+        eur: €
+        usd: $
+        gbp: £
       m: m
       kms: km
       mile: mi.

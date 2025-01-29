@@ -252,6 +252,7 @@ class DestinationsController < ApplicationController
         :time_window_start_2,
         :time_window_end_2,
         :priority,
+        :revenue,
         :force_position,
         :_destroy,
         tag_ids: [],

@@ -238,11 +238,16 @@
           = route[:route_averages][:speed]
           = route[:route_averages][:prefered_unit]
           \/h
-    .col-xs-4{title: t('plannings.edit.emission_help')}
-      .primary.route-info
-        %i.fa.fa-flask.fa-fw
-        = route[:emission]
-        = t('all.unit.kgco2e_html')
+      .col-xs-4{title: t('plannings.edit.emission_help')}
+        .primary.route-info
+          %i.fa.fa-flask.fa-fw
+          = route[:emission]
+          = t('all.unit.kgco2e_html')
+      .col-xs-4{title: t('plannings.edit.cost_help')}
+        .primary.route-info
+          %i.fa.fa-coins.fa-fw
+          = route[:cost_total]
+          = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
   - else
     .col-xs-4
       .route-info.inactive{ data: { "size-active": route[:size]}}

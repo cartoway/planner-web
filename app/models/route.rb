@@ -140,7 +140,11 @@ class Route < ApplicationRecord
       drive_time: nil,
       wait_time: nil,
       visits_duration: nil,
-      quantities: nil
+      quantities: nil,
+      revenue: 0,
+      cost_distance: 0,
+      cost_fixed: 0,
+      cost_time: 0
     }
   end
 
@@ -273,7 +277,7 @@ class Route < ApplicationRecord
               stop_attributes[:wait_time] = nil
             end
             stop_attributes[:out_of_window] = !!(late_wait && late_wait > 0)
-
+            route_attributes[:revenue] += stop.visit.revenue || 0
             route_attributes[:distance] += stop_attributes[:distance] if stop_attributes[:distance]
             route_attributes[:end] = stop_attributes[:time] + stop.duration
             route_attributes[:visits_duration] = (route_attributes[:visits_duration] || 0) + stop.duration if stop.is_a?(StopVisit)
@@ -310,6 +314,9 @@ class Route < ApplicationRecord
         route_attributes[:end] += drive_time
         route_attributes[:stop_distance], route_attributes[:stop_drive_time] = distance, drive_time
         route_attributes[:drive_time] += drive_time if route_attributes[:drive_time]
+        route_attributes[:cost_distance] = route_attributes[:distance] / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
+        route_attributes[:cost_fixed] = vehicle_usage.default_cost_fixed if vehicle_usage.default_cost_fixed
+        route_attributes[:cost_time] = (route_attributes[:end] - route_attributes[:start]) / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
       end
       route_attributes[:stop_no_path] = vehicle_usage.default_store_stop.try(:position?) && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?
 
