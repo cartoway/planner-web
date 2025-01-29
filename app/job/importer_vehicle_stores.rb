@@ -21,6 +21,9 @@ class ImporterVehicleStores < ImporterStores
 
   def columns_vehicle
     {
+      cost_distance: {title: I18n.t('vehicle_stores.import_file.cost_distance')},
+      cost_fixed: {title: I18n.t('vehicle_stores.import_file.cost_fixed')},
+      cost_time: {title: I18n.t('vehicle_stores.import_file.cost_time')},
       emission: {title: I18n.t('vehicle_stores.import_file.emission')},
       consumption: {title: I18n.t('vehicle_stores.import_file.consumption')},
       capacities: {},
