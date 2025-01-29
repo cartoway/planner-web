@@ -206,6 +206,7 @@ class Vehicle < ApplicationRecord
 
   def assign_defaults
     self.color ||= COLORS_TABLE[0]
+    self.consumption ||= Mapotempo::Application.config.vehicle_consumption_default
   end
 
   def increment_max_vehicles
