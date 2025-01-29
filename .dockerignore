@@ -1,6 +1,7 @@
 docker
 Dockerfile
 .git
+.github
 .env
 node_modules
 log/*
