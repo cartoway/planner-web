@@ -156,6 +156,7 @@ module Planner
     config.store_color_default = '#000000'.freeze
     config.store_icon_default = 'fa-store'.freeze
     config.store_icon_size_default = 'large'.freeze
+    config.vehicle_consumption_default = 7.7
   end
 end
 
