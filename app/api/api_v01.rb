@@ -73,10 +73,10 @@ class ApiV01 < Grape::API
       description: '
 [Simplified view of domain model](' + Mapotempo::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
 ## Model
-Model is structured around four majors concepts: the Customer account, Destinations, Vehicles and Plannings.
+Model is structured around four majors concepts: the Customer account, Destinations/Visits, Vehicles and Plannings.
 * `Customers`: many of objects are linked to a customer account (relating to the user calling API).
 The customer has many `Users`, each user has his own `api_key`. Be carefull not to confuse with following model `Destination`, `Customer`can only be created by a admin `User`.
-* `Destinations`: location points to visit with constraints. The same `Destination` can be visited several times : in this case several `Visits` are associated to one `Destination`.
+* `Destinations` describes the geographical points or entity. `Visits` holds the actions to be performed and the constraints associated. `Visits` which might be directly nested in the destination definition. The same `Destination` can be visited several times. A `Visit` might have multiple quantities and should be linked to a `DeliverableUnit`.
 * `Vehicles`: vehicles definition are splited in two parts:
  * the structural definition named `Vehicle` (car, truck, bike, consumption, etc.)
  * and the vehicle usage `VehicleUsage`, a specific usage of a physical vehicle in a specific context. Vehicles can be used in many contexts called `VehicleUsageSet` (set of all vehicles usages under a context). Multiple values are only available if dedicated option for customer is active. For instance, if customer needs to use its vehicle 2 times per day (morning and evening), he needs 2 `VehicleUsageSet` called "Morning" and "Evening" : each can have different values defined for stores, rest, etc... `VehicleUsageSet` defines default values for vehicle usage.
