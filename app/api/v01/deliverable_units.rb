@@ -29,7 +29,7 @@ class V01::DeliverableUnits < Grape::API
   end
 
   resource :deliverable_units do
-    desc 'Fetch customer\'s deliverable units. At least one deliverable unit exists per customer.',
+    desc 'Fetch customer\'s deliverable units. At least one deliverable unit exists per customer. The deliverable unit purposes is to link quantities associated to visits to vehicle capacities.<',
       nickname: 'getDeliverableUnits',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::DeliverableUnit),
@@ -63,7 +63,7 @@ class V01::DeliverableUnits < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::DeliverableUnit),
       failure: V01::Status.failures
     params do
-      use :params_from_entity, entity: V01::Entities::DeliverableUnit.documentation.except(:id)
+      use(:request_deliverable_unit)
     end
     post do
       deliverable_unit = current_customer.deliverable_units.build(deliverable_unit_params)
@@ -77,7 +77,7 @@ class V01::DeliverableUnits < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      use :params_from_entity, entity: V01::Entities::DeliverableUnit.documentation.except(:id)
+      use(:request_deliverable_unit)
     end
     put ':id' do
       id = ParseIdsRefs.read(params[:id])
