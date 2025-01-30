@@ -82,8 +82,17 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :devices, type: Hash, coerce_with: JSON, documentation: { desc: EDIT_ONLY_ADMIN }
   end
 
+  params :request_deliverable_unit do |options|
+    optional :label, type: String, documentation: { example: 'Regular parcel' }
+    optional :ref, type: String, documentation: { example: 'RP' }
+    optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{::DeliverableUnit::ICON_DEFAULT}.", example: ::DeliverableUnit::ICON_DEFAULT}
+    optional :default_quantity, type: Float, documentation: { example: '1.0' }
+    optional :default_capacity, type: Float, documentation: { example: '48.5' }
+    optional :optimization_overload_multiplier, type: Integer
+  end
+
   params :request_destination do |options|
-    optional :ref, type: String
+    optional :ref, type: String, documentation: { desc: 'unique reference'}
     optional :name, type: String
     optional :street, type: String
     optional :postalcode, type: String
@@ -141,7 +150,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   end
 
   params :request_store do |options|
-    optional :ref, type: String
+    optional :ref, type: String, documentation: { desc: 'unique reference'}
     if options[:require_store_name]
       requires :name, type: String
     else
@@ -160,7 +169,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   end
 
   params :request_vehicle do |options|
-    optional :ref, type: String
+    optional :ref, type: String, documentation: { desc: 'unique reference'}
     optional :name, type: String
     optional :contact_email, type: String, documentation: { desc: 'Driver\'s device E-Mail. Several emails might be transmitted separated by spaces, commas or semicolons.' }
     optional :phone_number, type: String
@@ -230,7 +239,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
 
   params :request_visit do |options|
     optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { param_type: 'form', desc: 'Ids separated by comma.' }
-    optional :ref, type: String
+    optional :ref, type: String, documentation: { desc: 'unique reference among the visits of the related destination'}
 
     optional :quantities, type: Array, documentation: { param_type: 'body' } do
       optional :deliverable_unit_id, type: Integer
