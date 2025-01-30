@@ -881,29 +881,30 @@ fr:
         format: '%d %b %Y'
         actions: Actions
         plannings:
-          last: 5 dernières tournées
-          none: Aucune tournée
-          create: Créer une tournée
+          last: Derniers plans (%{count})
+          none: Aucune plan
+          create: Créer un plan
+          show: Voir plus
         zonings:
-          last: 5 dernières sectorisations
+          last: Dernières sectorisations (%{count})
           none: Aucune sectorisation
           create: Créer une sectorisation
+          show: Voir plus
         destinations:
-          last: 5 dernières destinations
-          none: Aucune destination
-          create: Créer une destination
+          last: Destinations (%{count})
+          show: Voir tout
+          import: Importer
+          export: Exporter
         stores:
-          last: 5 derniers sites
+          last: Derniers sites (%{count})
           none: Aucun site
           create: Créer un site
+          show: Voir plus
         vehicles:
-          last: 5 derniers véhicules
+          last: Derniers véhicules (%{count})
           none: Aucun véhicule
           create: Créer un véhicule
-          show: Voir les véhicules
-        statistics:
-          show: Voir les statistiques
-          none: Les statistiques ne sont pas configurées
+          show: Voir plus
     vehicles:
       devices:
         create_company: Initialiser le compte Cartoway Field
