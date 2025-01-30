@@ -39,8 +39,8 @@ class ImporterBase
     end
   end
 
-  def empty_row?(pair)
-    pair[1].nil? || pair[1].to_s.strip.empty?
+  def empty_value?(value)
+    value.nil? || value.to_s.strip.empty?
   end
 
   def import(data, name, synchronous, options)
@@ -56,7 +56,7 @@ class ImporterBase
           # Switch from locale or custom to internal column name in case of csv
           row = yield(row, line + 1 + (options[:line_shift] || 0))
 
-          next if row.nil? || row.except(:lat, :lng).all?{ |r| empty_row?(r) } # Skip empty line
+          next if row.nil? || row.except(:lat, :lng).all?{ |_k, v| empty_value?(v) } # Skip empty line
 
           begin
             if (ref = uniq_ref(row))
