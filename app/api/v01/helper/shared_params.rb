@@ -239,7 +239,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
 
   params :request_visit do |options|
     optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { param_type: 'form', desc: 'Ids separated by comma.' }
-    optional :ref, type: String, documentation: { desc: 'unique reference among the visits of the destination related'}
+    optional :ref, type: String, documentation: { desc: 'unique reference among the visits of the related destination'}
 
     optional :quantities, type: Array, documentation: { param_type: 'body' } do
       optional :deliverable_unit_id, type: Integer

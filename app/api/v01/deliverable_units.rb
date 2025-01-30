@@ -29,7 +29,7 @@ class V01::DeliverableUnits < Grape::API
   end
 
   resource :deliverable_units do
-    desc 'Fetch customer\'s deliverable units. At least one deliverable unit exists per customer. The deliverable unit purposes is to link quantities associated to visits to vehicle capacities.<',
+    desc 'Fetch customer\'s deliverable units. At least one deliverable unit exists per customer. The deliverable unit purposes is to link quantities associated to visits to vehicle capacities.',
       nickname: 'getDeliverableUnits',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::DeliverableUnit),
