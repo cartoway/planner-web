@@ -129,4 +129,32 @@ class ImportCsvTest < ActiveSupport::TestCase
     assert_equal 1.0, destination.reload.lat
     assert_equal 1.0, destination.reload.lng
   end
+
+  test 'should import destinations with empty lines in FR locale' do
+    I18n.locale = :fr
+
+    stub_request(:post, %r{/0.1/routes.json}).to_return(status: 200)
+
+    file = Rack::Test::UploadedFile.new('test/fixtures/files/import_destinations_with_empty_lines.csv')
+    import_csv = ImportCsv.new(file: file, importer: @importer, content_code: :html, replace: false, delete_plannings: false)
+
+    assert import_csv.valid?
+    expected_result = [{ ref: :"C0007-1", name: "CARREFOUR PONTAULT-COMBAULT - FRA084 POUR LUSIFOOD", street: "RN4", detail: nil, geocoding_result: {}, geocoding_accuracy: nil, geocoding_level: 1, postalcode: "77340", city: "PONTAULT-COMBAULT", lat: 48.776156, lng: 2.610715, phone_number: "164434720", comment: nil, customer_id: customers(:customer_one).id }]
+    assert_equal expected_result, import_csv.import.compact.map { |h| h.sort.to_h }
+
+    I18n.locale = I18n.default_locale
+  end
+
+  test 'should import destinations in EN locale' do
+    I18n.locale = :en
+
+    file = Rack::Test::UploadedFile.new('test/fixtures/files/import_destinations_EN.csv')
+    import_csv = ImportCsv.new(file: file, importer: @importer, content_code: :html, replace: false, delete_plannings: false)
+
+    assert import_csv.valid?
+    expected_result = [{ city: "PARIS 12", comment: nil, country: nil, customer_id: customers(:customer_one).id, detail: nil, lat: 49.173419, lng: -0.326613, name: "LEPAGE JEONG", phone_number: "610549758", postalcode: "75012", ref: nil, street: "7ter Rue du Colonel Oudot" }]
+    assert_equal expected_result, import_csv.import.map { |h| h.sort.to_h }
+
+    I18n.locale = I18n.default_locale
+  end
 end
