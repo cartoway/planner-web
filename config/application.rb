@@ -147,16 +147,22 @@ module Planner
     config.tag_icon_default = 'fa-location-pin'.freeze
     config.tag_icon_size_default = 'medium'.freeze
 
+    # Default values for destinations
     config.destination_color_default = '#707070'.freeze
     config.destination_icon_default = 'fa-location-pin'.freeze
     config.destination_icon_size_default = 'medium'.freeze
 
+    # Default values for routes
     config.route_color_default = config.destination_color_default
 
+    # Default values for stores
     config.store_color_default = '#000000'.freeze
     config.store_icon_default = 'fa-store'.freeze
     config.store_icon_size_default = 'large'.freeze
+
+    # Default values for vehicles
     config.vehicle_consumption_default = 7.7
+    config.vehicle_fuel_type_default = "VL - Gazole".freeze
   end
 end
 
