@@ -206,7 +206,7 @@ export const zonings_edit = function(params) {
 
   var countPointInPolygon = function(layer, ele) {
     var markers = [];
-    var results = [];
+
     for (var routeId in markersGroup.clustersByRoute) {
       if (!$('#hide_out_of_route').is(':checked') || routeId != params.out_of_route_id)
         markers = markers.concat(markersGroup.clustersByRoute[routeId].getLayers());
