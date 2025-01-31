@@ -206,6 +206,7 @@ export const zonings_edit = function(params) {
 
   var countPointInPolygon = function(layer, ele) {
     var markers = [];
+    var results = [];
     for (var routeId in markersGroup.clustersByRoute) {
       if (!$('#hide_out_of_route').is(':checked') || routeId != params.out_of_route_id)
         markers = markers.concat(markersGroup.clustersByRoute[routeId].getLayers());
@@ -366,7 +367,7 @@ export const zonings_edit = function(params) {
       geoJsonLayer = geom;
       geom = geom.getLayers()[0];
     } else {
-      geoJsonLayer = (new zoneGeometry).addOverlay(zone);
+      geoJsonLayer = (new zoneGeometry(JSON.parse(zone.polygon))).addOverlay(zone);
       geoJsonLayer.addLayer(geom);
     }
 
@@ -417,6 +418,7 @@ export const zonings_edit = function(params) {
       layer: geoJsonLayer,
       ele: ele
     };
+
     countPointInPolygon(geoJsonLayer, ele);
 
     var formatNoMatches = I18n.t('web.select2.empty_result');
