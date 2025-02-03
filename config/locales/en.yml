@@ -824,6 +824,7 @@ en:
       menu:
         users: Users
         send_email: Send Confirmation E-Mail
+        send_sms_driver: Send SMS to drivers
       index:
         title: Editing users
         new: New user
@@ -1871,6 +1872,7 @@ en:
       route_change_color_help: Change route color
       zone_change_color_help: Change zone color
       send_sms: Send a SMS to destinations
+      send_sms_drivers: Send a SMS to drivers
       send_sms_success: 'Succeed to send %{c} SMS'
       historize: Historize
       historize_success: Historize Succeed
@@ -2005,6 +2007,11 @@ en:
         automatic_insert:
           title: Finding best position for your stops
           in_progress: Please wait
+        send_sms_drivers:
+          title: Send the routes to the drivers
+          send: Send
+          route: Route
+          phone_number: Number
         spreadsheet:
           title: Export to spreadsheet
           stops: Extra stops
@@ -2842,6 +2849,8 @@ en:
       alert_plan: >-
         Hello {NAME}. Your visit is planned {DATE} between {TIME-60} and
         {TIME+60} in {CITY}.
+      alert_driver: >-
+        Hello, the {ROUTE_NAME} route has been assigned to you for {DATE} with {SIZE_ACTIVE} stops - {LINK}
   all:
     datepicker: mm-dd-yyyy
     map_attribution:

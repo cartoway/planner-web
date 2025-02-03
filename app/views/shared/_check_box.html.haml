@@ -2,16 +2,15 @@
 - options = { help_label_class: 'col-md-offset-2 col-md-7', label_class: 'col-md-offset-2 col-md-7 hidden', label_col: 'col-md-offset-2 col-md-6', control_col: 'form-switch col-md-offset-2 col-md-6', check_box_class: 'form-check-input' }.merge(options || {})
 - if form
   - if local_assigns.key? :field
-    = form.form_group field, { label: { text: label }, style: ('margin-bottom: 0 !important;' if local_assigns.key?(:help)) }.merge(options) do
+    = form.form_group field, { label: { text: label }, style: (local_assigns.fetch(:key, 'margin-bottom: 0 !important;')) }.merge(options) do
       = form.check_box field, { label: '' }.merge(options).merge(layout: :vertical)
   - else
-    = form.form_group label, { label: { text: label }, style: ('margin-bottom: 0 !important;' if local_assigns.key?(:help)) }.merge(options) do
+    = form.form_group label, { label: { text: label }, style: (local_assigns.fetch(:key, 'margin-bottom: 0 !important;')) }.merge(options) do
       .form-check
         %input{ name: name, value: "false", type: "hidden" }
         = check_box_tag name, 1, checked, options.merge(class: options[:check_box_class])
 - else
   .form-check
-    %input{ name: name, value: "false", type: "hidden" }
     = check_box_tag name, 1, checked, options.merge(class: options[:check_box_class])
 - if local_assigns[:help]
   %small.form-text.text-muted.check-box.help-block{ class: options[:help_label_class] }

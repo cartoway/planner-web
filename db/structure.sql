@@ -132,7 +132,8 @@ CREATE TABLE public.customers (
     sms_concat boolean DEFAULT false NOT NULL,
     sms_from_customer_name boolean DEFAULT false NOT NULL,
     optimization_minimal_time double precision,
-    history_cron_hour integer
+    history_cron_hour integer,
+    sms_driver_template character varying
 );
 
 
@@ -2810,6 +2811,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20240814065613'),
 ('20241024064440'),
 ('20241227140855'),
-('20250128131504');
+('20250128131504'),
+('20250203114002');
 
 

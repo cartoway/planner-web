@@ -128,6 +128,7 @@ Rails.application.routes.draw do
     patch 'filter_routes'
     get 'refresh'
     get 'sidebar'
+    get 'modal'
     patch 'switch'
     patch 'duplicate'
     patch ':route_id/active/:active' => 'plannings#active'
@@ -157,7 +158,9 @@ Rails.application.routes.draw do
   resources :products
   delete 'products' => 'products#destroy_multiple'
 
-  resources :routes
+  resources :routes do
+    get 'modal'
+  end
   get 'routes/:id/mobile' => 'routes#mobile'
   patch 'routes/:id/update_position' => 'routes#update_position'
 

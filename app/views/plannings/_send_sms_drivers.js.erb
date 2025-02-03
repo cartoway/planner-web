@@ -1,0 +1,30 @@
+$('#planning-send-sms-drivers-modal' ).html("<%= j(render partial: 'plannings/send_sms_drivers.html.haml', locals: local_assigns) %>");
+var locals = <%= local_assigns.to_json.html_safe %>;
+
+$(".phone-number-override-button").off('click').on('click', function() {
+  $(this).closest('#send_route').find('#phone_number_override').prop("readonly", function(i, val){
+    return !val;
+  });
+});
+
+$('#send-sms-form').off('submit').on('submit', function() {
+  event.preventDefault();
+  $.ajax({
+    url: $(this).attr('action'),
+    method: $(this).attr('method'),
+    data: $(this).serialize(),
+    success: function(response) {
+      notice(I18n.t('plannings.edit.deliver_sends.success'));
+    },
+    complete: function() {
+      $('#planning-send-sms-drivers-modal').modal('hide');
+    },
+    error: function(xhr, status, error) {
+      stickyError(I18n.t('plannings.edit.deliver_sends.fail'));
+    }
+  });
+});
+
+$('#send-routes-toggle').off('click').on('click', function() {
+  $('.routes .form-check-input').trigger('click');
+});
