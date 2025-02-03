@@ -171,6 +171,11 @@
               %a{href: "/routes/#{route[:route_id]}/mobile?driver_token=#{route[:driver_token]}"}
                 %i.fa.fa-link.fa-fw
                 = t('plannings.edit.deliver_send.access')
+            - if @planning.customer.enable_sms
+              %li
+                = link_to route_modal_path(route[:route_id], modal: 'sms_drivers'), remote: true, format: 'js', 'data-toggle': "modal", 'data-target': "#planning-send-sms-drivers-modal", 'data-keyboard': "true", id: 'send-sms-drivers' do
+                  %i.fa.fa-fw.fa-comment-sms
+                  = t('plannings.edit.deliver_send.send_sms')
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "deliver"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
               = t('plannings.edit.deliver_send.action')

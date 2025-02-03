@@ -32,13 +32,13 @@ module BootstrapForm
       Haml::Template.new { haml.strip_heredoc }.render(self, locals)
     end
 
-    def submit(action: nil, message: nil, icon: nil, button: nil, title: nil, disable_with: nil)
+    def submit(action: nil, message: nil, icon: nil, button: nil, title: nil, disable_with: nil, col_class: nil, row_class: nil)
       action = action == 'new' ? 'create' : 'update'
       object = self.object.class.name.underscore
 
-      output = render_haml <<-HAML, object: object, action: action, message: message, icon: icon, disable_with: disable_with
-        .row.form-group{ id: "#{object}_div_input" }
-          .col-md-offset-2.col-md-6
+      output = render_haml <<-HAML, object: object, action: action, message: message, icon: icon, disable_with: disable_with, col_class: col_class, row_class: row_class
+        %div{ id: "#{object}_div_input", class: "#{row_class || 'row form-group'}" }
+          %div{ class: "#{col_class || 'col-md-offset-2 col-md-6'}" }
             %button{ name: 'button', type: 'submit', class: "#{button || 'btn btn-primary'}", title: "#{title}", data: disable_with ? { disable_with:  "#{disable_with}" } : {}}
               %i.fa{ class: "#{icon || 'fa-floppy-disk'}" }
               = message || I18n.t("helpers.submit.#{action}", model: I18n.t("activerecord.models.#{object.pluralize}.one"))
