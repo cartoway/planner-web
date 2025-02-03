@@ -37,7 +37,7 @@ class V01::Plannings < Grape::API
 
   # Planning get is located in plannings_get file because it needs to return specific content types (js, xml and ics)
 
-  resource :plannings do
+  resource :plannings do # rubocop:disable Metrics/BlockLength
     desc 'Create planning.',
       detail: 'Create a planning. An out-of-route (unplanned) route and a route for each vehicle are automatically created. If some visits exist (or fetch if you use tags), as many stops as fetching visits will be created (ie: there is no specific operation to create routes and stops, the application create them for you).',
       nickname: 'createPlanning',
@@ -404,6 +404,30 @@ class V01::Plannings < Grape::API
         Route.includes_destinations.scoping do
           send_sms_planning current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         end
+      else
+        error! V01::Status.code_response(:code_403), 403
+      end
+    end
+
+    desc 'Send SMS to drivers.',
+      detail: 'Send SMS to drivers of each routes',
+      nickname: 'sendSMS',
+      success: V01::Status.success(:code_200),
+      failure: V01::Status.failures
+    params do
+      requires :id, type: String, desc: SharedParams::ID_DESC
+      optional :routes, type: Array, documentation: { desc: 'Select a subset of routes' } do
+        requires :id, type: Integer, documentation: { desc: 'Route id'}
+        optional :send, type: Boolean, default: true, documentation: { desc: 'Determines if the current route should be sent' }
+        optional :phone_number, type: String, documentation: { desc: 'Overrides the existing phone number during this request' }
+      end
+    end
+    post ':id/send_driver_sms' do
+      if current_customer.enable_sms && current_customer.reseller.sms_api_key
+        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+        routes = planning.routes.where(id: params[:routes].map{ |r| r[:id] })
+        phone_number_hash = params[:routes].map{ |r| [r[:id], r[:phone_number]] if r[:send] }.compact.to_h
+        send_sms_drivers(routes, phone_number_hash)
       else
         error! V01::Status.code_response(:code_403), 403
       end

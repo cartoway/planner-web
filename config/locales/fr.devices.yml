@@ -302,8 +302,14 @@ fr:
         access: Accéder à la tournée
         transmit: Transmettre au livreur
         action: Envoyer au livreur
+        send_sms: Envoyer SMS au livreur
         success: Envoyé au livreur avec succès
         fail: Échec lors de l'envoi
+      deliver_sends:
+        send_sms: Envoyer SMS aux livreurs
+        success: Envoyé aux livreurs avec succès
+        fail: Échec lors de l'envoi
+
       deliver_clear:
         action: Réinitialiser les statuts
         success: Les statuts ont été réinitialisés avec succès

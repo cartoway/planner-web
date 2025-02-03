@@ -1,0 +1,43 @@
+.modal-dialog
+  = bootstrap_form_tag(url: "/api/0.1/plannings/#{planning.id}/send_driver_sms", method: :post, layout: :horizontal, remote: true, html: {id: 'send-sms-form', class: "form-horizontal", "data-planning-id" => planning.id}) do |f|
+    .modal-content
+      %form
+        .modal-header
+          %button.close{type: "button", "data-dismiss": "modal"}
+            &times;
+          %h4.modal-title
+            %i.fa.fa-external-link.fa-fw
+            = t('plannings.edit.dialog.send_sms_drivers.title')
+        .modal-body
+          - if routes.size > 1
+            .form-inline.pull-left.send-routes-toggle
+              %button#send-routes-toggle.btn.btn-default.btn-xs{title: t('all.verb.toggle_selection'), type: "button"}
+                %i.fa.fa-arrow-right-arrow-left.fa-fw
+          #send-sms-drivers.col-md-12
+            .routes.mb-1
+              .col-xs-12
+                .col-xs-2
+                  = t('plannings.edit.dialog.send_sms_drivers.send')
+                .col-xs-5
+                  = t('plannings.edit.dialog.send_sms_drivers.route')
+                .col-xs-5
+                  = t('plannings.edit.dialog.send_sms_drivers.phone_number')
+              - routes.each.with_index do |route, route_index|
+                - next if !route.vehicle_usage_id || route.hidden && route.locked
+
+                .col-xs-12{ id: "send_route",'data-route-id': route.id }
+                  .d-none
+                    = number_field_tag "routes[][id]", route.id
+                  .col-xs-2.form-switch
+                    = render partial: 'shared/check_box', locals: { name: "routes[][send]", checked: !route.locked && route.vehicle_usage.vehicle.phone_number.present? }
+                  .col-xs-5
+                    = [route.ref, route.vehicle_usage.vehicle.name].compact.join(' - ')
+                  .col-xs-5.d-flex
+                    .input-group
+                      = text_field_tag "routes[][phone_number]", route.vehicle_usage.vehicle.phone_number, class: 'form-control', readonly: true, id: "phone_number_override"
+                      .input-group-btn
+                        .btn.btn-default.phone-number-override-button
+                          %i.fa.fa-fw.fa-pencil
+        .clearfix
+        .modal-footer
+          = f.submit message: t('plannings.edit.send_sms_drivers'), icon: '', col_class: '', row_class: ''
