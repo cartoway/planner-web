@@ -842,6 +842,7 @@ fr:
       menu:
         users: Utilisateurs
         send_email: Envoyer email de confirmation
+        send_sms_driver: Envoyer SMS aux livreurs
       index:
         title: Modifier utilisateurs
         new: Nouvel utilisateur
@@ -1963,6 +1964,7 @@ fr:
       route_change_color_help: Changer la couleur de la tournée
       zone_change_color_help: Changer la couleur du secteur
       send_sms: Envoyer un SMS aux clients
+      send_sms_drivers: Envoyer un SMS aux livreurs
       send_sms_success: 'Envoi de %{c} SMS avec succès'
       historize: Historiser
       historize_success: Historisé avec succès
@@ -2106,6 +2108,11 @@ fr:
         automatic_insert:
           title: Recherche du meilleur endroit pour vos arrêts
           in_progress: Veuillez patienter
+        send_sms_drivers:
+          title: Envoi des tournées aux livreurs
+          send: Envoyer
+          route: Tournée
+          phone_number: Numéro
         spreadsheet:
           title: Export vers un tableur
           stops: Arrêts additionnels
@@ -2974,6 +2981,8 @@ fr:
       alert_plan: >-
         Bonjour {NAME}. Votre visite est planifiée le {DATE} entre {TIME-60} et
         {TIME+60} à {CITY}.
+      alert_driver: >-
+        Bonjour, La tournée {ROUTE_NAME} vous a été attribuée pour le {DATE} avec {SIZE_ACTIVE} arrêts - {LINK}
   all:
     datepicker: dd-mm-yyyy
     map_attribution:

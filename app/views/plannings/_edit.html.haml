@@ -139,6 +139,11 @@
                       = current_user.customer.default_callback_name || t('plannings.edit.customer_external_callback_url.action')
                     %li.divider{role: "separator"}
                 - @planning.customer.device.configured_definitions.each do |key, definition|
+                  - if key == :deliver && @planning.customer.enable_sms
+                    %li
+                      = link_to planning_modal_path(@planning, modal: 'sms_drivers'), remote: true, format: 'js', 'data-toggle': "modal", 'data-target': "#planning-send-sms-drivers-modal", 'data-keyboard': "true", id: 'send-sms-drivers' do
+                        %i.fa.fa-fw.fa-comment-sms
+                        = t('plannings.edit.deliver_sends.send_sms')
                   - if @planning.routes.any?{ |route| route.vehicle_usage_id && !route.vehicle_usage.vehicle.devices.key?(definition[:device]) }
                     - definition[:route_operations].each do |route_operation|
                       - options = { planning_id: "#{@planning.id}" }
@@ -221,6 +226,8 @@
         .modal-footer
           %button#move-stops-modal.btn.btn-primary{type: "button"}
             = t('plannings.edit.move_stops')
+
+#planning-send-sms-drivers-modal.modal.fade{role: "dialog", tabindex: "-1"}
 
 = render partial: 'layouts/modal_csv'
 

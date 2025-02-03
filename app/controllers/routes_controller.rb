@@ -22,7 +22,7 @@ require 'zip'
 
 class RoutesController < ApplicationController
   before_action :authenticate_user!, except: [:mobile, :update_position]
-  before_action :set_route, only: [:update]
+  before_action :set_route, only: [:update, :modal]
 
   before_action :authenticate_driver!, only: [:mobile, :update_position]
   before_action :set_driver_route, only: [:mobile]
@@ -45,6 +45,15 @@ class RoutesController < ApplicationController
         },
         layout: 'mobile'
       }
+    end
+  end
+
+  def modal
+    case params[:modal]
+    when 'sms_drivers'
+      respond_to do |format|
+        format.js { render partial: 'plannings/send_sms_drivers', locals: { planning: @route.planning, routes: [@route] } }
+      end
     end
   end
 
@@ -126,7 +135,7 @@ class RoutesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_route
-    @route = Route.for_customer_id(current_user.customer_id).find params[:id]
+    @route = Route.for_customer_id(current_user.customer_id).find(params[:id] || params[:route_id])
   end
 
   def set_driver_route

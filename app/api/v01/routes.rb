@@ -195,6 +195,23 @@ class V01::Routes < Grape::API
             error! V01::Status.code_response(:code_403), 403
           end
         end
+
+        desc 'Send SMS to driver.',
+          detail: 'Send SMS to the driver of the specified route.',
+          nickname: 'sendSMS',
+          success: V01::Status.success(:code_200),
+          failure: V01::Status.failures
+        params do
+          requires :id, type: String, desc: SharedParams::ID_DESC
+          optional :phone_number, type: String, documentation: { desc: 'Overrides the existing phone number during this request' }
+        end
+        get ':id/send_driver_sms' do
+          if current_customer.enable_sms && current_customer.reseller.sms_api_key
+            send_sms_driver(get_route, params[:phone_number])
+          else
+            error! V01::Status.code_response(:code_403), 403
+          end
+        end
       end
 
       resource :routes_by_vehicle do

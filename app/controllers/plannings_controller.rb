@@ -25,7 +25,7 @@ class PlanningsController < ApplicationController
   before_action :authenticate_user!
   UPDATE_ACTIONS = [:update, :move, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh_route, :route_edit] + UPDATE_ACTIONS
-  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :refresh, :sidebar]
+  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :refresh, :sidebar]
   before_action :check_no_existing_job, only: [:refresh] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
 
@@ -287,6 +287,15 @@ class PlanningsController < ApplicationController
 
     respond_to do |format|
       format.json { render json: { locals: { summary: planning_summary(@planning) }}}
+    end
+  end
+
+  def modal
+    case params[:modal]
+    when 'sms_drivers'
+      respond_to do |format|
+        format.js { render partial: 'send_sms_drivers', locals: { planning: @planning, routes: @planning.routes } }
+      end
     end
   end
 
