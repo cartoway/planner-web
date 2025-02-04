@@ -7,7 +7,7 @@ $(".phone-number-override-button").off('click').on('click', function() {
   });
 });
 
-$('#send-sms-form').off('submit').on('submit', function() {
+$('#send-sms-form').off('submit').on('submit', function(event) {
   event.preventDefault();
   $.ajax({
     url: $(this).attr('action'),
@@ -23,6 +23,7 @@ $('#send-sms-form').off('submit').on('submit', function() {
       stickyError(I18n.t('plannings.edit.deliver_sends.fail'));
     }
   });
+  return false;
 });
 
 $('#send-routes-toggle').off('click').on('click', function() {

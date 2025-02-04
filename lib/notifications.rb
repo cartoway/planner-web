@@ -79,6 +79,7 @@ class Notifications
 
       if @options[:service] == :vonage
         client = Vonage::Client.new(api_key: @options[:api_key], api_secret: @options[:api_secret])
+        content = I18n.transliterate(content)
         response = client.sms.send(from: @options[:from].gsub(/[^0-9a-z]+/i, '')[0..10], to: to, text: content, message_id: message_id)
 
         response.messages.map{ |message|
