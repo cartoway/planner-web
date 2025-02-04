@@ -78,7 +78,7 @@ module PlanningsHelperApi
       size_active: route.size_active,
       link: (customer.reseller.url_protocol + '://' + customer.reseller.host + '/routes/' + route.id.to_s + '/mobile?driver_token=' + route.vehicle_usage.vehicle.driver_token).html_safe
     }
-    template = route.planning.customer.sms_driver_template || route.planning.customer.name + '. ' + I18n.t('notifications.sms.alert_driver')
+    template = route.planning.customer.sms_driver_template || I18n.t('notifications.sms.alert_driver')
 
     notif.send_sms(
       phone_number || route.vehicle_usage.vehicle.phone_number,
