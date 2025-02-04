@@ -2479,9 +2479,9 @@ en:
           configurations
       cost:
         help: >-
-          The cost of a route is a formula that takes into account a fixed cost
-          for the use of a vehicle, then costs related to the total time of the
-          route and to the total distance.
+          The cost of a route is a formula. It applies the fixed cost if the
+          vehicle is used. Then costs related to time and distance are applied
+          regarding the total time and total distance of the route.
       driver:
         legend: Driver
       vehicle_usage:
