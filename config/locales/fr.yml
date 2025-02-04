@@ -2586,9 +2586,10 @@ fr:
           configurations de véhicules
       cost:
         help: >-
-          Le coût d'une tournée est une formule prenant en compte un coût fixe à
-          l'utilisation d'un véhicule, puis de coûts liés au temps total de la
-          tournée ainsi qu'à la distance de celle-ci.
+          Le coût d'une tournée est une formule. Le coût fixe est appliqué si le
+          véhicule est utilisé. Ensuite, les coûts liés au temps et à la distance
+          sont appliqués en fonction de la durée totale et de la distance totale
+          de la tournée.
       driver:
         legend: Chauffeur
       vehicle_usage:
