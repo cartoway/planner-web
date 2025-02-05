@@ -347,11 +347,23 @@
       </div>
       <div id="collapseSms" class="panel-collapse collapse">
         <div class="panel-body">
-          <%= f.text_area :sms_template, placeholder: @customer.name + '. ' + t('notifications.sms.alert_plan') do %>
-            <div id="sms_character_count"></div>
-            <p class="help-block"><%= t '.sms_template_help' %></p>
-            <p class="help-block"><%= t '.sms_keys_help' %></p>
-          <% end %>
+          <%= f.text_area :sms_template, placeholder: t('notifications.sms.alert_plan'), value: @customer.sms_template || t('notifications.sms.alert_plan') %>
+          <div class="row">
+            <div class="col-md-offset-2 col-md-8">
+              <div id="sms_character_count"></div>
+              <p class="help-block"><%= t '.sms_template_help' %></p>
+              <p class="help-block"><%= t '.sms_keys_help' %></p>
+            </div>
+          </div>
+
+          <%= f.text_area :sms_driver_template, placeholder: t('notifications.sms.alert_driver'), value: @customer.sms_driver_template || t('notifications.sms.alert_driver') %>
+          <div class="row">
+            <div class="col-md-offset-2 col-md-8">
+              <div id="sms_driver_character_count"></div>
+              <p class="help-block"><%= t '.sms_driver_template_help' %></p>
+              <p class="help-block"><%= t '.sms_driver_keys_help' %></p>
+            </div>
+          </div>
           <%= render partial: 'shared/check_box', locals: { form: f, field: :sms_concat, label: t('activerecord.attributes.customer.sms_concat'), help: t('.sms_concat_help') } %>
           <%= render partial: 'shared/check_box', locals: { form: f, field: :sms_from_customer_name, label: t('activerecord.attributes.customer.sms_from_customer_name'), help: t('.sms_from_customer_name_help') } %>
         </div>
@@ -360,10 +372,12 @@
   <% end %>
 
   <% if current_user.admin? %>
-    <%= render partial: 'shared/check_box', locals: { form: f, value: @customer[:enable_external_callback], field: :enable_external_callback, label: t('activerecord.attributes.customer.enable_external_callback'), help: (t('.external_callback.enabled') if @customer.reseller[:enable_external_callback] && !@customer[:enable_external_callback]) } %>
+    <div class="row">
+      <%= render partial: 'shared/check_box', locals: { form: f, value: @customer[:enable_external_callback], field: :enable_external_callback, label: t('activerecord.attributes.customer.enable_external_callback'), help: (t('.external_callback.enabled') if @customer.reseller[:enable_external_callback] && !@customer[:enable_external_callback]) } %>
+    </div>
   <% end %>
   <% if @customer.default_callback_enabled? %>
-    <div id="external_callback_container" class="panel panel-default accordion">
+    <div id="external_callback_container" class="panel panel-default accordion col-md-12 p0">
       <div class="panel-heading">
         <h2 class="panel-title">
           <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseExternalCallback">
@@ -383,9 +397,11 @@
   <% end %>
 
   <% if current_user.admin? %>
-    <% @customer.device.definitions.slice(:deliver, :sopac, :stg_telematics).each do |key, device| %>
-      <%= render partial: 'shared/check_box', locals: { form: f, name: "customer[devices][#{key}][enable]", checked: to_bool(@customer.devices[key] && @customer.devices[key][:enable]), label: device[:label], help: (t("customers.form.devices.#{key}.help") if device[:help]) } %>
-    <% end %>
+    <div class="row">
+      <% @customer.device.definitions.slice(:deliver, :sopac, :stg_telematics).each do |key, device| %>
+        <%= render partial: 'shared/check_box', locals: { form: f, name: "customer[devices][#{key}][enable]", checked: to_bool(@customer.devices[key] && @customer.devices[key][:enable]), label: device[:label], help: (t("customers.form.devices.#{key}.help") if device[:help]) } %>
+      <% end %>
+    </div>
   <% end %>
 
   <% if !@customer.device.enabled_definitions.empty? %>

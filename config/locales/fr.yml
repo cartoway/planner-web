@@ -192,6 +192,7 @@ fr:
         enable_stop_status: Activer les statuts des visites
         enable_sms: Activer l'envoi de SMS
         sms_template: Modèle SMS
+        sms_driver_template: Modèle SMS livreurs
         sms_concat: SMS longs
         sms_from_customer_name: Expéditeur SMS
         enable_external_callback: Activer URL de rappel
@@ -1076,11 +1077,17 @@ fr:
       sms:
         title: SMS
       sms_character_count: 'Votre message comporte %{c} caractères'
+      sms_driver_template_help: >-
+        Modèle de SMS envoyé aux livreurs. {URL} sera remplacé par le lien permettant d'accéder
+        à la tournée à réaliser. Votre texte ne doit pas comporter de caractères non standards
+        (GSM 03.38) et ne devrait pas dépasser 160 caractères.
       sms_template_help: >-
         Modèle de SMS envoyé à vos clients. {NAME} sera remplacé par le nom de
         votre client renseigné sur l'application. Votre texte ne doit pas
         comporter de caractères non standards (GSM 03.38) et ne devrait pas
-        dépasser 160 caractères (ou 70 en cas de caractères spéciaux).
+        dépasser 160 caractères.
+      sms_driver_keys_help: >-
+        Chaînes de remplacements disponibles : {ROUTE_NAME} {DATE} {SIZE_ACTIVE} {URL}.
       sms_keys_help: >-
         Chaînes de remplacements disponibles : {NAME} {REF} {VISIT_REF} {DATE}
         {TIME} {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME}
@@ -2982,7 +2989,8 @@ fr:
         Bonjour {NAME}. Votre visite est planifiée le {DATE} entre {TIME-60} et
         {TIME+60} à {CITY}.
       alert_driver: >-
-        Bonjour, La tournée {ROUTE_NAME} vous a été attribuée pour le {DATE} avec {SIZE_ACTIVE} arrêts - {LINK}
+        Bonjour, La tournée {ROUTE_NAME} vous a été attribuée pour le {DATE} avec
+        {SIZE_ACTIVE} arrêts - {URL}
   all:
     datepicker: dd-mm-yyyy
     map_attribution:

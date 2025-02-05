@@ -192,6 +192,7 @@ en:
         enable_stop_status: Enable visits status
         enable_sms: Enable SMS
         sms_template: SMS template
+        sms_driver_template: Driver SMS template
         sms_concat: Long SMS
         sms_from_customer_name: SMS sender
         enable_external_callback: Enable Callback URL
@@ -1045,11 +1046,17 @@ en:
       sms:
         title: SMS
       sms_character_count: 'Your message contains %{c} characters'
+      sms_driver_template_help: >-
+        SMS template sent to the drivers. {URL} will be replaced by the link to access the
+        route to be done. Your text should not contain non
+        standard characters (GSM 03.38) and not exceed 160 characters.
       sms_template_help: >-
         SMS template sent for your visits. {NAME} will be replaced by
         destination name filled in app. Your text should not contain non
         standard characters (GSM 03.38) and not exceed 160 characters (or 70 in
         case of special characters).
+      sms_driver_keys_help: >-
+        Available replacement strings: {ROUTE_NAME} {DATE} {SIZE_ACTIVE} {URL}.
       sms_keys_help: >-
         Available replacement strings: {NAME} {REF} {VISIT_REF} {DATE} {TIME}
         {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER}.
@@ -2850,7 +2857,7 @@ en:
         Hello {NAME}. Your visit is planned {DATE} between {TIME-60} and
         {TIME+60} in {CITY}.
       alert_driver: >-
-        Hello, the {ROUTE_NAME} route has been assigned to you for {DATE} with {SIZE_ACTIVE} stops - {LINK}
+        Hello, the {ROUTE_NAME} route has been assigned to you for {DATE} with {SIZE_ACTIVE} stops - {URL}
   all:
     datepicker: mm-dd-yyyy
     map_attribution:
