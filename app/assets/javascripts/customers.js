@@ -193,9 +193,19 @@ const customers_edit = function (params) {
     var color = count > 160 ? 'red' : count > 140 ? 'darkorange' : 'black';
     $('#sms_character_count').html('<span style="color: ' + color + '">' + I18n.t('customers.form.sms_character_count', {c: count}) + '</span>');
   };
+  const smsDriverCharacterCount = function() {
+    var count = ($('#customer_sms_driver_template').val() || $('#customer_sms_driver_template').attr('placeholder')).length;
+    var color = count > 160 ? 'red' : count > 140 ? 'darkorange' : 'black';
+    $('#sms_driver_character_count').html('<span style="color: ' + color + '">' + I18n.t('customers.form.sms_character_count', {c: count}) + '</span>');
+  };
+
   if ($('#customer_sms_template').length) {
     smsCharacterCount();
     $('#customer_sms_template').on('keyup', smsCharacterCount);
+  }
+  if ($('#customer_sms_driver_template').length) {
+    smsDriverCharacterCount();
+    $('#customer_sms_driver_template').on('keyup', smsDriverCharacterCount);
   }
 
   routerOptionsSelect('#customer_router', params);
