@@ -32,23 +32,23 @@ class StructuredLog < ActiveSupport::Logger
     end
   end
 
-  def debug(message, **args)
+  def debug(message = '', **args)
     super(merge(message, **args))
   end
 
-  def info(message, **args)
+  def info(message = '', **args)
     super(merge(message, **args))
   end
 
-  def warn(message, **args)
+  def warn(message = '', **args)
     super(merge(message, **args))
   end
 
-  def fatal(message, **args)
+  def fatal(message = '', **args)
     super(merge(message, **args))
   end
 
-  def unknown(message, **args)
+  def unknown(message = '', **args)
     super(merge(message, **args))
   end
 end
