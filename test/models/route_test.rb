@@ -47,10 +47,10 @@ class RouteTest < ActiveSupport::TestCase
     route.compute
     assert_not route.outdated
     assert route.distance
-    assert route.revenue
     assert route.emission
     assert route.start
     assert route.end
+    assert_nil route.revenue
     assert_equal 50.0, route.cost_fixed
     assert_equal route.cost_distance, route.vehicle_usage.cost_distance * (route.distance.to_f / 1000)
     assert_equal route.cost_time, route.vehicle_usage.cost_time * ((route.end - route.start).to_f / 3600)
