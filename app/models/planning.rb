@@ -777,6 +777,7 @@ class Planning < ApplicationRecord
     converter = metric == 'km' ? 3.6 : 2.237
     result = {
       routes_cost: 0,
+      routes_revenue: nil,
       routes_emission: nil,
       routes_visits_duration: 0,
       routes_speed_average: 0,
@@ -791,8 +792,8 @@ class Planning < ApplicationRecord
         result[:routes_drive_time] += route.drive_time
         result[:vehicles_used] += 1 if route.drive_time > 0
 
-        result[:routes_cost] += (route.revenue || 0) - [0, route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+)
-
+        result[:routes_cost] += [0, route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+)
+        result[:routes_revenue] = result[:routes_revenue].nil? ? route.revenue : result[:routes_revenue] + (route.revenue || 0)
         if route.emission
           result[:routes_emission] = 0 unless result[:routes_emission]
           result[:routes_emission] += route.emission

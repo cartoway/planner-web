@@ -15,11 +15,23 @@
       .primary.route-info
         %i.fa.fa-flask.fa-fw>
         = "#{averages[:emission]} #{t('all.unit.kgco2e_html')}"
-    .col-xs-4{title: t('plannings.edit.cost_help')}
+    - if averages[:total_revenue]
+      .col-xs-4{title: t('plannings.edit.revenue_help')}
+        .primary.route-info
+          %i.fa.fa-hand-holding-dollar.fa-fw
+          = averages[:total_revenue]
+          = t("all.unit.currency_symbol.#{prefered_currency}")
+    .col-xs-4{title: t('plannings.edit.total_cost_help')}
       .primary.route-info
         %i.fa.fa-coins.fa-fw
         = averages[:total_cost]
         = t("all.unit.currency_symbol.#{prefered_currency}")
+    - if averages[:total_revenue]
+      .col-xs-4{title: t('plannings.edit.balance_help')}
+        .primary.route-info
+          %i.fa.fa-scale-balanced.fa-fw
+          = averages[:total_balance]
+          = t("all.unit.currency_symbol.#{prefered_currency}")
   .col-xs-4{title: t("plannings.edit.duration_help")}
     .route-info.primary
       %i.fa.fa-stopwatch.fa-fw>

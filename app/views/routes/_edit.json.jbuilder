@@ -53,7 +53,9 @@ if route.vehicle_usage_id
     end
   end
   json.emission route.emission ? number_to_human(route.emission, precision: 4) : '-'
-  json.cost_total ((route.revenue || 0) - [0, route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+)).round(2)
+  json.total_cost [0, route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+).round(2)
+  json.total_revenue route.revenue && route.revenue.round(2)
+  json.total_balance ((route.revenue || 0) - [0, route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+)).round(2)
   json.work_or_window_time route.vehicle_usage.work_or_window_time
   json.skills [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten.compact do |tag|
     json.icon tag.default_icon

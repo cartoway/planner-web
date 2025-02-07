@@ -141,7 +141,7 @@ class Route < ApplicationRecord
       wait_time: nil,
       visits_duration: nil,
       quantities: nil,
-      revenue: 0,
+      revenue: nil,
       cost_distance: 0,
       cost_fixed: 0,
       cost_time: 0
@@ -277,7 +277,7 @@ class Route < ApplicationRecord
               stop_attributes[:wait_time] = nil
             end
             stop_attributes[:out_of_window] = !!(late_wait && late_wait > 0)
-            route_attributes[:revenue] += stop.visit&.revenue || 0
+            route_attributes[:revenue] = route_attributes[:revenue].nil? ? stop.visit&.revenue : route_attributes[:revenue] + (stop.visit&.revenue || 0)
             route_attributes[:distance] += stop_attributes[:distance] if stop_attributes[:distance]
             route_attributes[:end] = stop_attributes[:time] + stop.duration
             route_attributes[:visits_duration] = (route_attributes[:visits_duration] || 0) + stop.duration if stop.is_a?(StopVisit)
