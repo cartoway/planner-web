@@ -1913,7 +1913,9 @@ fr:
       duration_help: Somme des durées des tournées
       distance_help: Somme des distances des tournées
       emission_help: Somme des émissions
-      cost_help: Coût de la tournées
+      cost_help: Coût de la tournée
+      revenue_help: Revenus
+      balance_help: Solde
       total_cost_help: Somme des coûts
       driving_time_help: Somme des durées de conduite
       visit_duration_help: Somme des durées des visites

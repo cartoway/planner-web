@@ -248,11 +248,23 @@
           %i.fa.fa-flask.fa-fw
           = route[:emission]
           = t('all.unit.kgco2e_html')
+      - if route[:total_revenue]
+        .col-xs-4{title: t('plannings.edit.revenue_help')}
+          .primary.route-info
+            %i.fa.fa-hand-holding-dollar.fa-fw
+            = route[:total_revenue]
+            = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
       .col-xs-4{title: t('plannings.edit.cost_help')}
         .primary.route-info
           %i.fa.fa-coins.fa-fw
-          = route[:cost_total]
+          = route[:total_cost]
           = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
+      - if route[:total_revenue]
+        .col-xs-4{title: t('plannings.edit.balance_help')}
+          .primary.route-info
+            %i.fa.fa-scale-balanced.fa-fw
+            = route[:total_balance]
+            = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
   - else
     .col-xs-4
       .route-info.inactive{ data: { "size-active": route[:size]}}
