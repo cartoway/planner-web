@@ -54,10 +54,9 @@
                         %td.text-right
                           = link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do
                             %i.fa.fa-edit.fa-fw
-          - if @kpis[:plannings][:total] > 5
-            .card-footer.text-center
-              = link_to plannings_path do
-                = I18n.t('admin.users.kpi.plannings.show')
+          .card-footer.text-center
+            = link_to plannings_path do
+              = I18n.t('admin.users.kpi.plannings.show')
 
       .col-md-4.my-4
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
@@ -88,10 +87,9 @@
                         %td.text-right
                           = link_to edit_zoning_path(zoning), :class => "btn btn-primary btn-sm" do
                             %i.fa.fa-edit.fa-fw
-          - if @kpis[:zonings][:total] > 5
-            .card-footer.text-center
-              = link_to zonings_path do
-                = I18n.t('admin.users.kpi.zonings.show')
+          .card-footer.text-center
+            = link_to zonings_path do
+              = I18n.t('admin.users.kpi.zonings.show')
 
       .col-md-4.my-4
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
@@ -151,12 +149,11 @@
                         %td.text-right
                           = link_to edit_store_path(store), :class => "btn btn-primary btn-sm" do
                             %i.fa.fa-edit.fa-fw
-          -if @kpis[:stores][:total] > 5
-            .card-footer.text-center
-              = link_to stores_path do
-                = I18n.t('admin.users.kpi.stores.show')
+          .card-footer.text-center
+            = link_to stores_path do
+              = I18n.t('admin.users.kpi.stores.show')
 
-      - if @kpis[:vehicles][:nb_set] < 2
+      - if @kpis[:vehicles][:nb_set] < 2 and @kpis[:vehicles][:total] <= 5
         .col-md-4.my-4
           .card.shadow{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
             .card-body
@@ -192,7 +189,6 @@
                           %td.text-right
                             = link_to edit_vehicle_usage_path(vehicle), :class => "btn btn-primary btn-sm" do
                               %i.fa.fa-edit.fa-fw
-            - if @kpis[:vehicles][:total] > 5
-              .card-footer.text-center
-                = link_to vehicle_usage_sets_path do
-                  = I18n.t('admin.users.kpi.vehicles.show')
+            .card-footer.text-center
+              = link_to vehicle_usage_sets_path do
+                = I18n.t('admin.users.kpi.vehicles.show')
