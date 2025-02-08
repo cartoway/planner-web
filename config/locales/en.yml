@@ -863,30 +863,30 @@ en:
         format: '%b %d, %Y'
         actions: Actions
         plannings:
-          last: Last plans (%{count})
+          last: Plans
           none: No plan
           create: Create plan
-          show: See more
+          show: See the full list (%{count})
         zonings:
-          last: Last sectorisations (%{count})
+          last: Sectorisations
           none: No sectorisation
           create: Create sectorisation
-          show: See more
+          show: See the full list (%{count})
         destinations:
-          last: Destinations (%{count})
+          last: Addresses
           import: Import
           export: Export
           show: See all
         stores:
-          last: Last facilities (%{count})
+          last: Sites
           none: No facility
           create: Create facility
-          show: See more
+          show: See the full list (%{count})
         vehicles:
-          last: Last vehicles (%{count})
+          last: Fleet
           none: No vehicle
           create: Create vehicle
-          show: See more
+          show: See the full list (%{count})
     vehicles:
       devices:
         create_company: Initialize Cartoway Field Account
