@@ -1,7 +1,6 @@
 'use strict';
 
 export const stops_edit = function(params) {
-
   $.find('.no-toggle').forEach(function(button) {
     button.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -26,7 +25,6 @@ export const stops_edit = function(params) {
     panel.find('.input-group').find('#'+toggled).prop('value', selected);
     panel.find('.input-group').find('#'+toggled+'_updated_at').prop('value', new Date().toUTCString());
 
-
     panel.find('#radiobtn a[data-toggle="'+toggled+'"]').not('[data-title="'+selected+'"]').removeClass('active');
     panel.find('#radiobtn a[data-toggle="'+toggled+'"][data-title="'+selected+'"]').addClass('active');
 
@@ -37,9 +35,8 @@ export const stops_edit = function(params) {
     panel.find('.panel-heading').removeClass(match.shift())
                      .addClass('panel-heading-'+selected);
 
-    var next_status;
     if(selected == 'intransit') {
-      next_status = 'delivered';
+      var next_status = 'delivered';
       panel.find('#quick-status').removeClass('d-none');
       panel.find('#quick-status').data('title', next_status);
       panel.find('#quick-status-text').text(I18n.t("plannings.edit.stop_status.delivered"));
@@ -49,7 +46,41 @@ export const stops_edit = function(params) {
     submitForm(panel);
   }
 
+  function storeStopUpdate(url, formData) {
+    const updateData = {
+      id: Date.now(),
+      url: url,
+      formData: formData,
+      timestamp: new Date().toISOString()
+    };
+
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'STORE_STOP',
+        payload: updateData
+      });
+    } else {
+      localStorage.setItem(`stop_update_${updateData.id}`, JSON.stringify(updateData));
+    }
+  }
+
   function submitForm(current_context) {
-    current_context.find('form').submit();
+    const formData = new FormData(current_context.find('form')[0]);
+    const formObject = {};
+    formData.forEach((value, key) => {
+      formObject[key] = value;
+    });
+
+    if (navigator.onLine) {
+      $.ajax({
+        type: 'PATCH',
+        url: current_context.find('form').attr('action'),
+        data: formData,
+        processData: false,
+        contentType: false
+      });
+    } else {
+      storeStopUpdate(current_context.find('form').attr('action'), formObject);
+    }
   }
 };
