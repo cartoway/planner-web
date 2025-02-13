@@ -1,4 +1,3 @@
-
 const positionsSync = {
   sync: () => syncPositions(),
   getStored: () => getStoredPositions(),
@@ -128,6 +127,14 @@ function syncStops() {
     .then(() => {
       pendingRequests.stops.delete(stop);
       notifyClients('STOP_SYNCED', stop);
+    })
+    .catch(error => {
+      notifyClients('SYNC_ERROR', {
+        type: 'stop',
+        url: stop.url,
+        error: error.message
+      });
+      throw error;
     });
   }));
 }

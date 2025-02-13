@@ -33,6 +33,10 @@ const tracking = function(params) {
       if (event.data.type === 'POSITION_SYNCED') {
         startInterval();
       }
+
+      if (event.data.type === 'SYNC_ERROR') {
+        stickyError(I18n.t('errors.sync_failed'));
+      }
     };
 
     navigator.serviceWorker.addEventListener('message', messageListener);
@@ -99,6 +103,10 @@ const tracking = function(params) {
         contentType: 'application/json',
         beforeSend: function() {
           beforeSendWaiting();
+        },
+        error: function(request, status, error) {
+          ajaxError(request, status, error);
+          completeWaiting();
         },
         complete: function() {
           completeWaiting();
