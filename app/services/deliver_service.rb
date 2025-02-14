@@ -2,7 +2,7 @@ class DeliverService < DeviceService
   def initialize(params)
     super(params)
     # Increase specificaly the cache duration as the position are set directly
-    @cache_object = Mapotempo::Application.config.devices.deliver_cache_object
+    @cache_object = Planner::Application.config.devices.deliver_cache_object
   end
 
   def get_vehicles_pos

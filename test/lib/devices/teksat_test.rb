@@ -7,7 +7,7 @@ class TeksatTest < ActionController::TestCase
 
   setup do
     @customer = add_teksat_credentials customers(:customer_one)
-    @service = Mapotempo::Application.config.devices.teksat
+    @service = Planner::Application.config.devices.teksat
   end
 
   test 'authenticate' do

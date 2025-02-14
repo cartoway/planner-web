@@ -48,13 +48,13 @@ class ApiV100 < Grape::API
     }],
     info: {
       title: 'API',
-      contact_email: Mapotempo::Application.config.api_contact_email,
-      contact_url: Mapotempo::Application.config.api_contact_url,
+      contact_email: Planner::Application.config.api_contact_email,
+      contact_url: Planner::Application.config.api_contact_url,
       license: 'GNU Affero General Public License 3',
       license_url: 'https://raw.githubusercontent.com/cartoway/planner-web/master/LICENSE',
       version: '100',
       description: '
-[Simplified view of domain model](' + Mapotempo::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
+[Simplified view of domain model](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
 ## Model
 Model is structured around four majors concepts: the Customer account, Destinations, Vehicles and Plannings.
 * `Customers`: many of objects are linked to a customer account (relating to the user calling API).
@@ -100,7 +100,7 @@ Several default profiles are available and can be listed with an admin `api_key`
 
 ## Code samples
 * Create and display destinations or visits.
-Here some samples for these operations: [using PHP](' + Mapotempo::Application.config.swagger_docs_base_path + '/api/0.1/examples/php/example.php), [using Ruby](' + Mapotempo::Application.config.swagger_docs_base_path + '/api/0.1/examples/ruby/example.rb).
+Here some samples for these operations: [using PHP](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/php/example.php), [using Ruby](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/ruby/example.rb).
 Note you can import destinations/visits and create a planning at the same time if you know beforehand the route for each destination/visit. See the details of importDestinations operation to import your data and create a planning in only one call.
 * Same operations are available for stores (note you have an existing default store).
 * With created destinations/visits, you can create a planning (routes and stops are automatically created depending of yours vehicles and destinations/visits)

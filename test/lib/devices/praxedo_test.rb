@@ -7,7 +7,7 @@ class PraxedoTest < ActionController::TestCase
 
   setup do
     @customer = add_praxedo_credentials customers(:customer_one)
-    @service = Mapotempo::Application.config.devices.praxedo
+    @service = Planner::Application.config.devices.praxedo
   end
 
   test 'check authentication' do

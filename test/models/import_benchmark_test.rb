@@ -5,7 +5,7 @@ require 'benchmark'
 if ENV['BENCHMARK'] == 'true'
   class ImportBenchmarkTest < ActiveSupport::TestCase
     setup do
-      Mapotempo::Application.config.max_destinations = 30_000
+      Planner::Application.config.max_destinations = 30_000
 
       # Disable logs
       dev_null = Logger.new('/dev/null')

@@ -361,11 +361,11 @@ class ImporterDestinations < ImporterBase
     @customer.reload
     @destinations_to_geocode_count = @customer.destinations.not_positioned.count
 
-    if @destinations_to_geocode_count > 0 && (@synchronous || !Mapotempo::Application.config.delayed_job_use)
+    if @destinations_to_geocode_count > 0 && (@synchronous || !Planner::Application.config.delayed_job_use)
       @customer.destinations.includes_visits.not_positioned.find_in_batches(batch_size: 50){ |destinations|
         geocode_args = destinations.collect(&:geocode_args)
         begin
-          results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)
+          results = Planner::Application.config.geocoder.code_bulk(geocode_args)
           destinations.zip(results).each { |destination, result|
             if result
               destination.geocode_result(result)
@@ -393,7 +393,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def finalize_import(_name, _options)
-    if @destinations_to_geocode_count > 0 && !@synchronous && Mapotempo::Application.config.delayed_job_use
+    if @destinations_to_geocode_count > 0 && !@synchronous && Planner::Application.config.delayed_job_use
       save_plannings
       @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderDestinationsJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
     elsif !@plannings.empty?

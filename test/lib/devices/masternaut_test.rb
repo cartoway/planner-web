@@ -7,7 +7,7 @@ class MasternautTest < ActionController::TestCase
 
   setup do
     @customer = add_masternaut_credentials customers(:customer_one)
-    @service = Mapotempo::Application.config.devices.masternaut
+    @service = Planner::Application.config.devices.masternaut
   end
 
   test 'send route' do

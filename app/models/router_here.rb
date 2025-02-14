@@ -19,7 +19,7 @@ require 'routers/here'
 
 class RouterHere < Router
   def trace(speed_multiplicator, lat1, lng1, lat2, lng2, _dimension = :time, _options = {})
-    distance, time, trace = Mapotempo::Application.config.router_here.compute(lat1, lng1, lat2, lng2)
+    distance, time, trace = Planner::Application.config.router_here.compute(lat1, lng1, lat2, lng2)
     if time
       time *= 1.0 / speed_multiplicator
     end
@@ -29,7 +29,7 @@ class RouterHere < Router
   def matrix(row, column, speed_multiplicator, dimension = :time, _options = {}, &block)
     time_multiplicator = 1.0 / speed_multiplicator
     row, column = pack_vector(row, column)
-    matrix = Mapotempo::Application.config.router_here.matrix(row, column, dimension, &block)
+    matrix = Planner::Application.config.router_here.matrix(row, column, dimension, &block)
     matrix = unpack_vector(row, column, matrix)
     matrix.collect{ |row|
       row.collect{ |distance, time|

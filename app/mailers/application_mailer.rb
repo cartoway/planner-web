@@ -1,6 +1,6 @@
 class ApplicationMailer < ActionMailer::Base
   helper(EmailHelper)
 
-  default from: Mapotempo::Application.config.default_from_mail
+  default from: Planner::Application.config.default_from_mail
   layout 'mailer'
 end

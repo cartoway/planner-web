@@ -23,7 +23,7 @@ class V01::Entities::Tag < Grape::Entity
   expose(:id, documentation: { type: Integer })
   expose(:label, documentation: { type: String })
   expose(:ref, documentation: { type: String })
-  expose(:color, documentation: { type: String, desc: "Color code with #. Default: #{Mapotempo::Application.config.tag_color_default}." })
-  expose(:icon, documentation: { type: String, desc: "Icon name from font-awesome. Default: #{Mapotempo::Application.config.tag_icon_default}." })
-  expose(:icon_size, documentation: { type: String, values: ::Tag::ICON_SIZE, desc: "Icon size. Default: #{Mapotempo::Application.config.tag_icon_size_default}." })
+  expose(:color, documentation: { type: String, desc: "Color code with #. Default: #{Planner::Application.config.tag_color_default}." })
+  expose(:icon, documentation: { type: String, desc: "Icon name from font-awesome. Default: #{Planner::Application.config.tag_icon_default}." })
+  expose(:icon_size, documentation: { type: String, values: ::Tag::ICON_SIZE, desc: "Icon size. Default: #{Planner::Application.config.tag_icon_size_default}." })
 end

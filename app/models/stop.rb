@@ -78,7 +78,7 @@ class Stop < ApplicationRecord
     if open && time < open
       time - open # Negative
     elsif close && time > close
-      soft_upper_bound = self.route.planning.customer.optimization_stop_soft_upper_bound || Mapotempo::Application.config.optimize_stop_soft_upper_bound
+      soft_upper_bound = self.route.planning.customer.optimization_stop_soft_upper_bound || Planner::Application.config.optimize_stop_soft_upper_bound
       if soft_upper_bound > 0
         (time - close) * soft_upper_bound # Positive
       else

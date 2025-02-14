@@ -62,15 +62,15 @@ class Store < Location
   end
 
   def default_color
-    color || Mapotempo::Application.config.store_color_default
+    color || Planner::Application.config.store_color_default
   end
 
   def default_icon
-    icon || Mapotempo::Application.config.store_icon_default
+    icon || Planner::Application.config.store_icon_default
   end
 
   def default_icon_size
-    icon_size || Mapotempo::Application.config.store_icon_size_default
+    icon_size || Planner::Application.config.store_icon_size_default
   end
 
   private

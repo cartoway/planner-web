@@ -7,16 +7,16 @@ class TomtomTest < ActionController::TestCase
 
   setup do
     @customer = add_tomtom_credentials customers(:customer_one)
-    @service = Mapotempo::Application.config.devices.tomtom
+    @service = Planner::Application.config.devices.tomtom
   end
 
   test 'tomtom proxy configuration should get environnement variable' do
     ENV['http_proxy'] = @http_proxy = 'http://127.0.0.1:8080'
-    Mapotempo::Application.config.devices.tomtom = Tomtom.new
-    Mapotempo::Application.config.devices.tomtom.api_url = 'https://tomtom.example.com'
+    Planner::Application.config.devices.tomtom = Tomtom.new
+    Planner::Application.config.devices.tomtom.api_url = 'https://tomtom.example.com'
 
     %w[savon_client_objects savon_client_address savon_client_orders].each do |fct|
-      assert_equal @http_proxy, Mapotempo::Application.config.devices.tomtom.send(fct).globals[:proxy]
+      assert_equal @http_proxy, Planner::Application.config.devices.tomtom.send(fct).globals[:proxy]
     end
   end
 

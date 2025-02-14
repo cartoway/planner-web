@@ -25,7 +25,7 @@ class V01::Devices::Teksat < Grape::API
     namespace :teksat do
       before do
         current_customer params[:customer_id]
-        Mapotempo::Application.config.devices[:teksat].authenticate @current_customer, params
+        Planner::Application.config.devices[:teksat].authenticate @current_customer, params
         teksat_authenticate @current_customer
       end
 

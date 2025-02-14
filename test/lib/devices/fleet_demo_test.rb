@@ -5,7 +5,7 @@ class FleetDemoTest < ActionController::TestCase
   setup do
     @customer = customers(:customer_one)
     @customer.update devices: { fleet_demo: { enable: true } }, enable_vehicle_position: true, enable_stop_status: true
-    @service = Mapotempo::Application.config.devices.fleet_demo
+    @service = Planner::Application.config.devices.fleet_demo
   end
 
   test 'should send route' do

@@ -25,7 +25,7 @@ module PlanningsHelperApi
       api_key: route.planning.customer.reseller.sms_api_key,
       api_secret: route.planning.customer.reseller.sms_api_secret,
       from: route.planning.customer.sms_from_customer_name ? route.planning.customer.name : route.planning.customer.reseller.name,
-      logger: Mapotempo::Application.config.logger_sms)
+      logger: Planner::Application.config.logger_sms)
 
     template = route.planning.customer.sms_template || I18n.t('notifications.sms.alert_plan')
     date = route.planning.date || Time.zone.today
@@ -68,7 +68,7 @@ module PlanningsHelperApi
       api_key: route.planning.customer.reseller.sms_api_key,
       api_secret: route.planning.customer.reseller.sms_api_secret,
       from: route.planning.customer.sms_from_customer_name ? route.planning.customer.name : route.planning.customer.reseller.name,
-      logger: Mapotempo::Application.config.logger_sms
+      logger: Planner::Application.config.logger_sms
     )
     date = route.planning.date || Time.zone.today
 

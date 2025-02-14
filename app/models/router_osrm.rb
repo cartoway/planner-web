@@ -21,7 +21,7 @@ class RouterOsrm < Router
   validates :url_time, presence: true
 
   def trace(speed_multiplicator, lat1, lng1, lat2, lng2, _dimension = :time, _options = {})
-    distance, time, trace = Mapotempo::Application.config.router_osrm.compute(url_time, lat1, lng1, lat2, lng2)
+    distance, time, trace = Planner::Application.config.router_osrm.compute(url_time, lat1, lng1, lat2, lng2)
     if time
       time *= 1.0 / speed_multiplicator
     end
@@ -36,7 +36,7 @@ class RouterOsrm < Router
       nil
     else
       rectangular2square_matrix(row, column) { |vector|
-        Mapotempo::Application.config.router_osrm.matrix(url, vector)
+        Planner::Application.config.router_osrm.matrix(url, vector)
       }.map{ |row|
         row.map{ |v| [v, v * time_multiplicator] }
       }
@@ -57,7 +57,7 @@ class RouterOsrm < Router
 
 
   def compute_isochrone(lat, lng, size, speed_multiplicator, _options = {})
-    Mapotempo::Application.config.router_osrm.isochrone(url_isochrone, lat, lng, size * speed_multiplicator)
+    Planner::Application.config.router_osrm.isochrone(url_isochrone, lat, lng, size * speed_multiplicator)
   end
 
   def isodistance?
@@ -66,6 +66,6 @@ class RouterOsrm < Router
 
   def compute_isodistance(lat, lng, size, _speed_multiplicator, _options = {})
     # No speed_multiplicator
-    Mapotempo::Application.config.router_osrm.isochrone(url_isodistance, lat, lng, size)
+    Planner::Application.config.router_osrm.isochrone(url_isodistance, lat, lng, size)
   end
 end

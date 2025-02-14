@@ -6,7 +6,7 @@ class SopacTest < ActionController::TestCase
 
   setup do
     @customer = add_sopac_credentials customers(:customer_one)
-    @service = Mapotempo::Application.config.devices.sopac
+    @service = Planner::Application.config.devices.sopac
   end
 
   test 'list devices' do

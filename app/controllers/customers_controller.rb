@@ -75,14 +75,14 @@ class CustomersController < ApplicationController
   end
 
   def delete_vehicle
-    if current_user.admin? || !Mapotempo::Application.config.manage_vehicles_only_admin
+    if current_user.admin? || !Planner::Application.config.manage_vehicles_only_admin
       @customer.vehicles.find(params[:vehicle_id]).destroy
     end
     redirect_to [:edit, @customer], notice: t('.success')
   end
 
   def duplicate
-    @customer.duplicate.save! validate: Mapotempo::Application.config.validate_during_duplication
+    @customer.duplicate.save! validate: Planner::Application.config.validate_during_duplication
     redirect_to [:customers], notice: t('.success')
   end
 
@@ -260,7 +260,7 @@ class CustomersController < ApplicationController
           :low_emission_zone
         ]
       ]
-      allowed_params << :max_vehicles unless Mapotempo::Application.config.manage_vehicles_only_admin
+      allowed_params << :max_vehicles unless Planner::Application.config.manage_vehicles_only_admin
 
       p.require(:customer).permit(*allowed_params)
     end

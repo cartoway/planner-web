@@ -24,7 +24,7 @@ module MasternautBase
     begin
       stubs = []
       names.each do |name|
-        api_url = URI.parse Mapotempo::Application.config.devices.masternaut.api_url
+        api_url = URI.parse Planner::Application.config.devices.masternaut.api_url
         case name
           when :poi_wsdl
             expected_response = File.read(Rails.root.join("test/web_mocks/masternaut/POI.xml")).strip

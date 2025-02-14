@@ -543,8 +543,8 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should duplicate with error' do
     begin
-      orig_validate_during_duplication = Mapotempo::Application.config.validate_during_duplication
-      Mapotempo::Application.config.validate_during_duplication = false
+      orig_validate_during_duplication = Planner::Application.config.validate_during_duplication
+      Planner::Application.config.validate_during_duplication = false
 
       assert_difference('Planning.count') do
         @planning.routes[1].stops[0].index = 666
@@ -555,7 +555,7 @@ class PlanningsControllerTest < ActionController::TestCase
 
       assert_redirected_to edit_planning_path(assigns(:planning))
     ensure
-      Mapotempo::Application.config.validate_during_duplication = orig_validate_during_duplication
+      Planner::Application.config.validate_during_duplication = orig_validate_during_duplication
     end
   end
 
