@@ -78,7 +78,7 @@ const tracking = function(params) {
     navigator.serviceWorker.addEventListener('message', messageListener);
 
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    navigator.serviceWorker.register('/service-worker.js?' + Date.now(), {
+    navigator.serviceWorker.register('/service-worker.js', {
       scope: '/'
     })
     .then(registration => {
