@@ -23,13 +23,13 @@ class RouterWrapper < Router
   end
 
   def trace_batch(segments, dimension = :time, options = {})
-    Mapotempo::Application.config.router.compute_batch(default_url, mode, dimension, segments, sanitize_options(options))
+    Planner::Application.config.router.compute_batch(default_url, mode, dimension, segments, sanitize_options(options))
   end
 
   def matrix(row, column, dimension = :time, options = {}, &block)
     block.call(nil, nil) if block
 
-    matrix = Mapotempo::Application.config.router.matrix(default_url, mode, [dimension], row, column, sanitize_options(options))
+    matrix = Planner::Application.config.router.matrix(default_url, mode, [dimension], row, column, sanitize_options(options))
     matrix ||= [Array.new(row.size) { Array.new(column.size, 2147483647) }]
 
     matrix[0].map{ |row|
@@ -38,17 +38,17 @@ class RouterWrapper < Router
   end
 
   def compute_isochrone(lat, lng, size, options = {})
-    Mapotempo::Application.config.router.isoline(default_url, mode, :time, lat, lng, size, sanitize_options(options))
+    Planner::Application.config.router.isoline(default_url, mode, :time, lat, lng, size, sanitize_options(options))
   end
 
   def compute_isodistance(lat, lng, size, options = {})
-    Mapotempo::Application.config.router.isoline(default_url, mode, :distance, lat, lng, size, sanitize_options(options))
+    Planner::Application.config.router.isoline(default_url, mode, :distance, lat, lng, size, sanitize_options(options))
   end
 
   private
 
   def default_url
-    url || Mapotempo::Application.config.router.url
+    url || Planner::Application.config.router.url
   end
 
   def sanitize_options(options, extra_options = {})

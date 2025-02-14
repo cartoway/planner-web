@@ -17,15 +17,15 @@
 #
 OptimizerJobStruct ||= Job.new(:customer_id, :planning_id, :route_id, :options)
 class OptimizerJob < OptimizerJobStruct
-  @@optimize_time = Mapotempo::Application.config.optimize_time
-  @@optimize_time_force = Mapotempo::Application.config.optimize_time_force
-  @@max_split_size = Mapotempo::Application.config.optimize_max_split_size
-  @@stop_soft_upper_bound = Mapotempo::Application.config.optimize_stop_soft_upper_bound
-  @@vehicle_soft_upper_bound = Mapotempo::Application.config.optimize_vehicle_soft_upper_bound
-  @@cluster_size = Mapotempo::Application.config.optimize_cluster_size
-  @@cost_waiting_time = Mapotempo::Application.config.optimize_cost_waiting_time
-  @@force_start = Mapotempo::Application.config.optimize_force_start
-  @@optimize_minimal_time = Mapotempo::Application.config.optimize_minimal_time
+  @@optimize_time = Planner::Application.config.optimize_time
+  @@optimize_time_force = Planner::Application.config.optimize_time_force
+  @@max_split_size = Planner::Application.config.optimize_max_split_size
+  @@stop_soft_upper_bound = Planner::Application.config.optimize_stop_soft_upper_bound
+  @@vehicle_soft_upper_bound = Planner::Application.config.optimize_vehicle_soft_upper_bound
+  @@cluster_size = Planner::Application.config.optimize_cluster_size
+  @@cost_waiting_time = Planner::Application.config.optimize_cost_waiting_time
+  @@force_start = Planner::Application.config.optimize_force_start
+  @@optimize_minimal_time = Planner::Application.config.optimize_minimal_time
 
   def perform
     optimum = nil
@@ -42,7 +42,7 @@ class OptimizerJob < OptimizerJobStruct
       begin
         planning.optimize(routes, **options) do |planning, routes, options|
           options = job_options(planning).merge(options)
-          optimum = Mapotempo::Application.config.optimizer.optimize(planning, routes, **options) { |job_id, solution_data|
+          optimum = Planner::Application.config.optimizer.optimize(planning, routes, **options) { |job_id, solution_data|
             if @job
               job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
               Delayed::Worker.logger.info("OptimizerJob", customer_id: customer_id, planning_id: planning_id, progress: @job.progress)

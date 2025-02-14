@@ -7,11 +7,11 @@ class NoticoTest < ActionController::TestCase
 
   setup do
     @customer = add_notico_credentials(customers(:customer_one))
-    @service = Mapotempo::Application.config.devices.notico
+    @service = Planner::Application.config.devices.notico
   end
 
   def around
-    Mapotempo::Application.config.devices.notico.class.stub_any_instance(:get, lambda { |_credentials, _options = {}| true }) do
+    Planner::Application.config.devices.notico.class.stub_any_instance(:get, lambda { |_credentials, _options = {}| true }) do
       yield
     end
   end

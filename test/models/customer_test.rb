@@ -98,7 +98,7 @@ class CustomerTest < ActiveSupport::TestCase
   end
 
   test 'should update max vehicles up' do
-    assert !Mapotempo::Application.config.manage_vehicles_only_admin
+    assert !Planner::Application.config.manage_vehicles_only_admin
     customer = customers(:customer_one)
     assert_difference('Vehicle.count', 1) do
       assert_difference('VehicleUsage.count', customer.vehicle_usage_sets.length) do
@@ -111,7 +111,7 @@ class CustomerTest < ActiveSupport::TestCase
   end
 
   test 'should update max vehicles down' do
-    assert !Mapotempo::Application.config.manage_vehicles_only_admin
+    assert !Planner::Application.config.manage_vehicles_only_admin
     customer = customers(:customer_one)
     assert_difference('Vehicle.count', -1) do
       assert_difference('VehicleUsage.count', -customer.vehicle_usage_sets.length) do
@@ -314,7 +314,7 @@ class CustomerTest < ActiveSupport::TestCase
                     assert_equal @customer.destinations.flat_map { |dest| dest.visits.map { |v| v.quantities.delete_if { |k, v| unit_ids.exclude? k }.values } }, duplicate.destinations.flat_map { |dest| dest.visits.map { |v| v.quantities.values } }
                     assert_equal [], @customer.destinations.flat_map { |dest| dest.visits.flat_map { |v| v.quantities.delete_if { |k, v| unit_ids.exclude? k }.keys } } & duplicate.destinations.flat_map { |dest| dest.visits.flat_map { |v| v.quantities.keys } }
 
-                    assert duplicate.test, Mapotempo::Application.config.customer_test_default
+                    assert duplicate.test, Planner::Application.config.customer_test_default
                     # end
                   end
                 end

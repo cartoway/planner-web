@@ -19,7 +19,7 @@ class Deliver < DeviceBase
     email = route.vehicle_usage.vehicle.contact_email
     return if email.nil?
 
-    if Mapotempo::Application.config.delayed_job_use
+    if Planner::Application.config.delayed_job_use
       RouteMailer.delay.send_driver_route(customer, I18n.locale, email, route)
     else
       RouteMailer.send_driver_route(customer, I18n.locale, email, route).deliver_now

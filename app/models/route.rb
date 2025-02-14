@@ -378,7 +378,7 @@ class Route < ApplicationRecord
 
         time -= vehicle_usage.default_service_time_start if vehicle_usage.default_service_time_start
 
-        force_start = !self.force_start.nil? ? self.force_start : planning.customer.optimization_force_start.nil? ? Mapotempo::Application.config.optimize_force_start : planning.customer.optimization_force_start
+        force_start = !self.force_start.nil? ? self.force_start : planning.customer.optimization_force_start.nil? ? Planner::Application.config.optimize_force_start : planning.customer.optimization_force_start
         if time > start && !force_start
           # We can sleep a bit more on morning, shift departure
           plan(time, options)
@@ -645,7 +645,7 @@ class Route < ApplicationRecord
   end
 
   def default_color
-    self.color || (self.vehicle_usage? && self.vehicle_usage.vehicle.color) || Mapotempo::Application.config.route_color_default
+    self.color || (self.vehicle_usage? && self.vehicle_usage.vehicle.color) || Planner::Application.config.route_color_default
   end
 
   def to_s

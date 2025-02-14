@@ -669,7 +669,7 @@ class Planning < ApplicationRecord
         routes.each(&:clear_eta_data)
         routes_quantities_changed = []
 
-        stops_status = Mapotempo::Application.config.devices.each_pair.flat_map { |key, device|
+        stops_status = Planner::Application.config.devices.each_pair.flat_map { |key, device|
           if device.respond_to?(:fetch_stops) && customer.device.configured?(key)
             device.fetch_stops(self.customer, device.planning_date(self), self) rescue nil
           end

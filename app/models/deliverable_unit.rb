@@ -42,7 +42,7 @@ class DeliverableUnit < ApplicationRecord
   attr_localized :default_quantity, :default_capacity, :optimization_overload_multiplier
 
   def default_optimization_overload_multiplier
-    optimization_overload_multiplier || Mapotempo::Application.config.optimize_overload_multiplier
+    optimization_overload_multiplier || Planner::Application.config.optimize_overload_multiplier
   end
 
   def default_icon

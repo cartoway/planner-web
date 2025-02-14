@@ -113,7 +113,7 @@ class VehicleUsageSetsController < ApplicationController
   def duplicate
     respond_to do |format|
       @vehicle_usage_set = @vehicle_usage_set.duplicate
-      @vehicle_usage_set.save! validate: Mapotempo::Application.config.validate_during_duplication
+      @vehicle_usage_set.save! validate: Planner::Application.config.validate_during_duplication
       format.html { redirect_to edit_vehicle_usage_set_path(@vehicle_usage_set), notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human) }
     end
   end

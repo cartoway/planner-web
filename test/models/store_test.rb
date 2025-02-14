@@ -69,7 +69,7 @@ class StoreTest < ActiveSupport::TestCase
   end
 
   test 'should geocode with error' do
-    Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
       store = stores(:store_one)
       assert store.geocode
       assert 1, store.warnings.size
@@ -90,7 +90,7 @@ class StoreTest < ActiveSupport::TestCase
   end
 
   test 'should update_geocode with error' do
-    Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
       store = stores(:store_one)
       store.city = 'Toulouse'
       store.state = 'Midi-Pyrénées'
@@ -108,15 +108,15 @@ class StoreTest < ActiveSupport::TestCase
   test 'should return default color' do
     store = stores :store_one
 
-    assert_equal Mapotempo::Application.config.store_color_default, store.default_color
-    assert_equal Mapotempo::Application.config.store_icon_default, store.default_icon
-    assert_equal Mapotempo::Application.config.store_icon_size_default, store.default_icon_size
+    assert_equal Planner::Application.config.store_color_default, store.default_color
+    assert_equal Planner::Application.config.store_icon_default, store.default_icon
+    assert_equal Planner::Application.config.store_icon_size_default, store.default_icon_size
 
     store.color = '#beef'
     store.icon = 'beef'
     assert_equal store.color, store.default_color
     assert_equal store.icon, store.default_icon
-    assert_equal Mapotempo::Application.config.store_icon_size_default, store.default_icon_size
+    assert_equal Planner::Application.config.store_icon_size_default, store.default_icon_size
   end
 
   test 'should have geocoder version' do

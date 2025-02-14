@@ -295,7 +295,7 @@ class V01::Customers < Grape::API
         customer = @current_user.reseller.customers.where(ParseIdsRefs.read(params[:id])).first!
         customer.exclude_users = params[:exclude_users]
         customer = customer.duplicate
-        customer.save! validate: Mapotempo::Application.config.validate_during_duplication
+        customer.save! validate: Planner::Application.config.validate_during_duplication
 
         present customer, with: V01::Entities::CustomerAdmin
       else

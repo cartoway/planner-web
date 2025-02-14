@@ -98,13 +98,13 @@ class V01::CustomerTest < ActiveSupport::TestCase
 
   test 'should update a customer without modifying max vehicles' do
     begin
-      Mapotempo::Application.config.manage_vehicles_only_admin = true
+      Planner::Application.config.manage_vehicles_only_admin = true
       assert_no_difference('Vehicle.count') do
         put api(@customer.id), { max_vehicles: @customer.max_vehicles + 1 }
         assert last_response.ok?, last_response.body
       end
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = false
+      Planner::Application.config.manage_vehicles_only_admin = false
     end
   end
 
@@ -144,9 +144,9 @@ class V01::CustomerTest < ActiveSupport::TestCase
   test 'should create a customer' do
     begin
       # test with 2 different configs
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
       [true, false].each { |v|
-        Mapotempo::Application.config.manage_vehicles_only_admin = v
+        Planner::Application.config.manage_vehicles_only_admin = v
 
         assert_difference('Customer.count', 1) do
           assert_difference('Store.count', 1) do
@@ -162,7 +162,7 @@ class V01::CustomerTest < ActiveSupport::TestCase
         end
       }
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 

@@ -18,18 +18,18 @@
 require 'optimizer_job'
 
 class Optimizer
-  @@optimize_time = Mapotempo::Application.config.optimize_time
-  @@optimize_time_force = Mapotempo::Application.config.optimize_time_force
-  @@max_split_size = Mapotempo::Application.config.optimize_max_split_size
-  @@stop_soft_upper_bound = Mapotempo::Application.config.optimize_stop_soft_upper_bound
-  @@vehicle_soft_upper_bound = Mapotempo::Application.config.optimize_vehicle_soft_upper_bound
-  @@cluster_size = Mapotempo::Application.config.optimize_cluster_size
-  @@cost_waiting_time = Mapotempo::Application.config.optimize_cost_waiting_time
-  @@force_start = Mapotempo::Application.config.optimize_force_start
-  @@optimize_minimal_time = Mapotempo::Application.config.optimize_minimal_time
+  @@optimize_time = Planner::Application.config.optimize_time
+  @@optimize_time_force = Planner::Application.config.optimize_time_force
+  @@max_split_size = Planner::Application.config.optimize_max_split_size
+  @@stop_soft_upper_bound = Planner::Application.config.optimize_stop_soft_upper_bound
+  @@vehicle_soft_upper_bound = Planner::Application.config.optimize_vehicle_soft_upper_bound
+  @@cluster_size = Planner::Application.config.optimize_cluster_size
+  @@cost_waiting_time = Planner::Application.config.optimize_cost_waiting_time
+  @@force_start = Planner::Application.config.optimize_force_start
+  @@optimize_minimal_time = Planner::Application.config.optimize_minimal_time
 
   def self.kill_optimize(optim_job_id)
-    Mapotempo::Application.config.optimizer.kill_solve(optim_job_id)
+    Planner::Application.config.optimizer.kill_solve(optim_job_id)
   end
 
   def self.optimize(planning, route, options = { global: false, synchronous: false, active_only: true, ignore_overload_multipliers: [], nb_route: 0 })
@@ -44,7 +44,7 @@ class Optimizer
         false
       else
         job = OptimizerJob.new(planning.customer.id, planning.id, route&.id, **options)
-        if !options[:synchronous] && Mapotempo::Application.config.delayed_job_use
+        if !options[:synchronous] && Planner::Application.config.delayed_job_use
           planning.customer.job_optimizer = Delayed::Job.enqueue(job)
           planning.customer.job_optimizer.save!
         else

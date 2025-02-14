@@ -20,10 +20,10 @@ class DeviceService
 
   def initialize(params)
     @customer = params[:customer]
-    @cache_object = Mapotempo::Application.config.devices.cache_object
+    @cache_object = Planner::Application.config.devices.cache_object
     @name = self.class.name.gsub('Service', '')
     @service_name = @name.underscore.to_sym
-    @service = Mapotempo::Application.config.devices[service_name]
+    @service = Planner::Application.config.devices[service_name]
   end
 
   def send_route(route, options = {})

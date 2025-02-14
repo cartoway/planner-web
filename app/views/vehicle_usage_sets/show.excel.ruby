@@ -40,7 +40,7 @@ CSV.generate(**{col_sep: ';', row_sep: "\r\n"}) { |csv|
   ]
 
   device_keys = {}
-  Mapotempo::Application.config.devices.to_h.each { |device_name, device_object|
+  Planner::Application.config.devices.to_h.each { |device_name, device_object|
       if device_object.respond_to?('definition')
         device_definition = device_object.definition
         if device_definition.key?(:forms) && device_definition[:forms].key?(:vehicle)

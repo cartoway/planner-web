@@ -12,7 +12,7 @@ class AddVehicleDriverToken < ActiveRecord::Migration
 
   def generate_token
     Vehicle.find_each{ |vehicle|
-      vehicle.update_columns(driver_token: JWT.encode({ vehicle_id: vehicle.id }, Mapotempo::Application.config.secret_key_base, 'HS256'))
+      vehicle.update_columns(driver_token: JWT.encode({ vehicle_id: vehicle.id }, Planner::Application.config.secret_key_base, 'HS256'))
     }
   end
 end

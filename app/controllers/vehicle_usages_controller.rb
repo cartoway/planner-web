@@ -153,7 +153,7 @@ class VehicleUsagesController < ApplicationController
   def permit_devices
     permit = []
     permit_multiples = []
-    Mapotempo::Application.config.devices.to_h.each{ |_device_name, device_object|
+    Planner::Application.config.devices.to_h.each{ |_device_name, device_object|
       if device_object.respond_to?('definition')
         device_definition = device_object.definition
         if device_definition.key?(:forms) && device_definition[:forms].key?(:vehicle)
