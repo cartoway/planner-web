@@ -194,7 +194,7 @@ class ApplicationController < ActionController::Base
 
   def over_max_limit
     yield
-  rescue Exceptions::OverMaxLimitError => e
+  rescue Exceptions::OverMaxLimitError
     respond_to do |format|
       flash.now[:alert] = I18n.t("activerecord.errors.models.customer.attributes.#{controller_name}.over_max_limit")
       if action_name == 'create'
@@ -208,37 +208,31 @@ class ApplicationController < ActionController::Base
   end
 
   def not_found_error(exception)
-    # Display in logger
-    Rails.logger.fatal(exception.class.to_s + ' : ' + exception.to_s)
-    Rails.logger.fatal(exception.backtrace.join("\n"))
+    log_error(exception, :error)
 
     respond_to do |format|
-      flash[:error] = [t('errors.management.status.explanation.404')]
+      flash[:error] = [I18n.t('errors.management.status.title.404')]
       format.js { render partial: 'shared/error_messages.js.erb', status: :not_found }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 404 }, status: 404 }
-      format.json { render json: { error: t('errors.management.status.explanation.404') }, status: :not_found }
+      format.json { render json: { error: I18n.t('errors.management.status.title.404') }, status: 404 }
       format.all { render body: nil, status: :not_found }
     end
   end
 
   def server_error(exception)
-    # Display in logger
-    Rails.logger.fatal(exception.class.to_s + ' : ' + exception.to_s)
-    Rails.logger.fatal(exception.backtrace.join("\n"))
+    log_error(exception, :error)
 
     respond_to do |format|
-      flash[:error] = [t('errors.management.status.explanation.default')]
+      flash[:error] = [I18n.t('errors.management.description')]
       format.js { render partial: 'shared/error_messages.js.erb', status: :internal_server_error }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 500 }, status: 500 }
-      format.json { render json: { error: t('errors.management.status.explanation.default') }, status: :internal_server_error }
+      format.json { render json: { error: I18n.t('errors.management.description') }, status: 500 }
       format.all { render body: nil, status: :internal_server_error }
     end
   end
 
   def database_error(exception)
-    # Display in logger
-    Rails.logger.warn(exception.class.to_s + ' : ' + exception.to_s)
-    Rails.logger.warn(exception.backtrace.join("\n"))
+    log_error(exception, :warn)
 
     errors = [I18n.t('errors.database.default')]
     case exception
@@ -257,9 +251,7 @@ class ApplicationController < ActionController::Base
   end
 
   def job_in_progress(exception)
-    # Display in logger
-    Rails.logger.warn(exception.class.to_s + ' : ' + exception.to_s)
-    Rails.logger.warn(exception.backtrace.join("\n"))
+    log_error(exception, :warn)
 
     respond_to do |format|
       flash[:error] = [I18n.t('errors.planning.job_in_progress')]
@@ -269,8 +261,7 @@ class ApplicationController < ActionController::Base
   end
 
   def stop_index_error(exception)
-    Rails.logger.fatal(exception.class.to_s + ' : ' + exception.to_s)
-    Rails.logger.fatal(exception.backtrace.join("\n"))
+    log_error(exception)
     respond_to do |format|
       flash[:error] = [exception.to_s]
       format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
@@ -291,5 +282,14 @@ class ApplicationController < ActionController::Base
         params['router_options'][key] = value.to_f
       end
     }
+  end
+
+  private
+
+  def log_error(exception, level = :fatal)
+    return if Rails.env.test?
+
+    Rails.logger.send(level, "#{exception.class} : #{exception}")
+    Rails.logger.send(level, exception.backtrace.join("\n"))
   end
 end
