@@ -728,6 +728,7 @@ fr:
     mobile:
       default: Une erreur s'est produite
       denied_geolocation: Vous avez refusé le partage de position
+      sync_failed: La synchronisation a échoué
       unsupported_geolocation: Votre navigateur ne supporte pas la remontée de position
     planning:
       import_too_many_routes: Tentative d'importer plus de tournées que de véhicules disponibles
