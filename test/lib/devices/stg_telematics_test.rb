@@ -7,7 +7,7 @@ class StgTelematicsTest < ActionController::TestCase
 
   setup do
     @customer = add_stg_telematics_credentials customers(:customer_one)
-    @service = Mapotempo::Application.config.devices.stg_telematics
+    @service = Planner::Application.config.devices.stg_telematics
   end
 
   test 'authenticate' do

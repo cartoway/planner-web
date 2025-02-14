@@ -26,7 +26,7 @@ class GeocoderDestinationsJob < GeocoderDestinationsJobStruct
       Destination.transaction do
         geocode_args = destinations.collect(&:geocode_args)
         begin
-          results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)
+          results = Planner::Application.config.geocoder.code_bulk(geocode_args)
           destinations.zip(results).each { |destination, result|
             destination.geocode_result(result) if result
             destination.visits.each{ |v| v.outdated }

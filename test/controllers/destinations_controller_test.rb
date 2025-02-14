@@ -212,7 +212,7 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should update destination with geocode error' do
-    Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
       patch :update, params: { id: @destination, destination: { city: 'Nantes', lat: nil, lng: nil } }
       assert_redirected_to edit_destination_path(assigns(:destination))
       assert_not_nil flash[:warning]

@@ -72,15 +72,15 @@ class Tag < ApplicationRecord
   end
 
   def default_color
-    color || Mapotempo::Application.config.tag_color_default
+    color || Planner::Application.config.tag_color_default
   end
 
   def default_icon
-    icon || Mapotempo::Application.config.tag_icon_default
+    icon || Planner::Application.config.tag_icon_default
   end
 
   def default_icon_size
-    icon_size || Mapotempo::Application.config.tag_icon_size_default
+    icon_size || Planner::Application.config.tag_icon_size_default
   end
 
   private

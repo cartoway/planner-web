@@ -25,7 +25,7 @@ class FleetTest < ActionController::TestCase
   setup do
     @customer = customers(:customer_one)
     @customer.update(devices: { fleet: { enable: true, user: 'test', api_key: '123456' } }, enable_vehicle_position: true, enable_stop_status: true)
-    @service = Mapotempo::Application.config.devices.fleet
+    @service = Planner::Application.config.devices.fleet
   end
 
   test 'should check authentication' do

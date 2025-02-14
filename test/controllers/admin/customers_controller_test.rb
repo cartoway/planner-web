@@ -40,7 +40,7 @@ class Admin::CustomersControllerTest < ActionController::TestCase
 
   test 'should use environment variable for customer test' do
     begin
-      Mapotempo::Application.config.customer_test_default = true
+      Planner::Application.config.customer_test_default = true
       sign_in users(:user_admin)
       get :new
       assert_response :success
@@ -50,11 +50,11 @@ class Admin::CustomersControllerTest < ActionController::TestCase
         end
       end
     ensure
-      Mapotempo::Application.config.customer_test_default = true
+      Planner::Application.config.customer_test_default = true
     end
 
     begin
-      Mapotempo::Application.config.customer_test_default = false
+      Planner::Application.config.customer_test_default = false
       sign_in users(:user_admin)
       get :new
       assert_response :success
@@ -64,7 +64,7 @@ class Admin::CustomersControllerTest < ActionController::TestCase
         end
       end
     ensure
-      Mapotempo::Application.config.customer_test_default = true
+      Planner::Application.config.customer_test_default = true
     end
   end
 

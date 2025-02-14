@@ -86,7 +86,7 @@ class PlanningsController < ApplicationController
             vehicle = route.vehicle_usage.vehicle
             content = kmz_string_io(route: route, with_home_markers: true).string
             name = export_filename route.planning, route.ref || route.vehicle_usage.vehicle.name
-            if Mapotempo::Application.config.delayed_job_use
+            if Planner::Application.config.delayed_job_use
               RouteMailer.delay.send_kmz_route current_user, I18n.locale, vehicle, route, name + '.kmz', content
             else
               RouteMailer.send_kmz_route(current_user, I18n.locale, vehicle, route, name + '.kmz', content).deliver_now
@@ -469,7 +469,7 @@ class PlanningsController < ApplicationController
   def duplicate
     respond_to do |format|
       @planning = @planning.duplicate
-      @planning.save! validate: Mapotempo::Application.config.validate_during_duplication
+      @planning.save! validate: Planner::Application.config.validate_during_duplication
       format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.updated', model: @planning.class.model_name.human) }
     end
   end

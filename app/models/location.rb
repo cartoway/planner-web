@@ -52,14 +52,14 @@ class Location < ApplicationRecord
   end
 
   def geocode
-    geocode_result(Mapotempo::Application.config.geocoder.code(*geocode_args))
+    geocode_result(Planner::Application.config.geocoder.code(*geocode_args))
   rescue GeocodeError => e # avoid stop save
     @warnings = [I18n.t('errors.location.geocoding_fail') + ' ' + e.message]
     Rails.logger.info "Destination Geocode Failed: ID=#{self.id}"
   end
 
   def reverse_geocoding(lat, lng)
-    json = ActiveSupport::JSON.decode(Mapotempo::Application.config.geocoder.reverse(lat, lng))
+    json = ActiveSupport::JSON.decode(Planner::Application.config.geocoder.reverse(lat, lng))
     if json['features'].present?
       {
         success: true,
@@ -81,9 +81,9 @@ class Location < ApplicationRecord
   def geocode_progress_bar_class
     return unless self.geocoding_accuracy
 
-    if self.geocoding_accuracy > Mapotempo::Application.config.geocoder.accuracy_success
+    if self.geocoding_accuracy > Planner::Application.config.geocoder.accuracy_success
       'success'
-    elsif self.geocoding_accuracy > Mapotempo::Application.config.geocoder.accuracy_warning
+    elsif self.geocoding_accuracy > Planner::Application.config.geocoder.accuracy_warning
       'warning'
     else
       'danger'

@@ -37,7 +37,7 @@ class V01::StoresTest < ActiveSupport::TestCase
   end
 
   test 'should create a store with geocode error' do
-    Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
       assert_difference('Store.count', 1) do
         @store.name = 'new dest'
         post api(), @store.attributes
@@ -135,7 +135,7 @@ class V01::StoresTest < ActiveSupport::TestCase
   end
 
   test 'should geocode with error' do
-    Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
       patch api('geocode'), format: :json, store: { city: @store.city, name: @store.name, postalcode: @store.postalcode, street: @store.street, state: @store.state }
       assert last_response.ok?, last_response.body
     end
@@ -148,7 +148,7 @@ class V01::StoresTest < ActiveSupport::TestCase
   end
 
   test 'should reverse geocoding' do
-    Mapotempo::Application.config.geocoder.expects(:reverse).with(44.821934, -0.6211603).returns("{\"type\":\"FeatureCollection\",\"geocoding\":{\"version\":\"draft#namespace#score\",\"licence\":\"ODbL\",\"attribution\":\"BANO\"},\"features\":[{\"properties\":{\"geocoding\":{\"geocoder_version\":\"Wrapper:1.0.0 - addok:1.1.0-rc1\",\"score\":0.9999997217790441,\"type\":\"house\",\"label\":\"35 Rue de Marseille 33700 Mérignac\",\"name\":\"35 Rue de Marseille\",\"housenumber\":\"35\",\"street\":\"Rue de Marseille\",\"postcode\":\"33700\",\"city\":\"Mérignac\",\"country\":\"France\",\"id\":\"33281_1980_addff9\"}},\"type\":\"Feature\",\"geometry\":{\"coordinates\":[-0.620826,44.821944],\"type\":\"Point\"}}]}")
+    Planner::Application.config.geocoder.expects(:reverse).with(44.821934, -0.6211603).returns("{\"type\":\"FeatureCollection\",\"geocoding\":{\"version\":\"draft#namespace#score\",\"licence\":\"ODbL\",\"attribution\":\"BANO\"},\"features\":[{\"properties\":{\"geocoding\":{\"geocoder_version\":\"Wrapper:1.0.0 - addok:1.1.0-rc1\",\"score\":0.9999997217790441,\"type\":\"house\",\"label\":\"35 Rue de Marseille 33700 Mérignac\",\"name\":\"35 Rue de Marseille\",\"housenumber\":\"35\",\"street\":\"Rue de Marseille\",\"postcode\":\"33700\",\"city\":\"Mérignac\",\"country\":\"France\",\"id\":\"33281_1980_addff9\"}},\"type\":\"Feature\",\"geometry\":{\"coordinates\":[-0.620826,44.821944],\"type\":\"Point\"}}]}")
 
     patch api('reverse', {lat: 44.821934, lng: -0.6211603})
 

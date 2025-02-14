@@ -10,7 +10,7 @@ class OrangeTest < ActionController::TestCase
 
   setup do
     @customer = add_orange_credentials customers(:customer_one)
-    @service = Mapotempo::Application.config.devices.orange
+    @service = Planner::Application.config.devices.orange
   end
 
   test 'test authentication' do

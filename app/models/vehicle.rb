@@ -132,7 +132,7 @@ class Vehicle < ApplicationRecord
   end
 
   # Used in form helpers (store_accessor cannot be used since devices keys are symbolized)
-  Mapotempo::Application.config.devices.to_h.each{ |_device_name, device_object|
+  Planner::Application.config.devices.to_h.each{ |_device_name, device_object|
     if device_object.respond_to?('definition')
       device_definition = device_object.definition
       if device_definition.key?(:forms) && device_definition[:forms].key?(:vehicle)
@@ -269,7 +269,7 @@ class Vehicle < ApplicationRecord
   def generate_driver_token
     self.update_attribute(
       :driver_token,
-      JWT.encode({ vehicle_id: self.id }, Mapotempo::Application.config.secret_key_base, 'HS256')
+      JWT.encode({ vehicle_id: self.id }, Planner::Application.config.secret_key_base, 'HS256')
     )
   end
 end

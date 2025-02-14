@@ -123,8 +123,8 @@ module PlanningsHelper
 
   def optimization_duration(customer)
     {
-      min: customer.optimization_minimal_time || Mapotempo::Application.config.optimize_minimal_time,
-      max: customer.optimization_time || Mapotempo::Application.config.optimize_time
+      min: customer.optimization_minimal_time || Planner::Application.config.optimize_minimal_time,
+      max: customer.optimization_time || Planner::Application.config.optimize_time
     }
   end
 

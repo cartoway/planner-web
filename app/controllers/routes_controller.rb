@@ -73,7 +73,7 @@ class RoutesController < ApplicationController
         if params[:email]
           vehicle = @route.vehicle_usage.vehicle
           content = kmz_string_io(route: @route).string
-          if Mapotempo::Application.config.delayed_job_use
+          if Planner::Application.config.delayed_job_use
             RouteMailer.delay.send_kmz_route current_user, I18n.locale, vehicle, @route, filename + '.kmz', content
           else
             RouteMailer.send_kmz_route(current_user, I18n.locale, vehicle, @route, filename + '.kmz', content).deliver_now
@@ -115,7 +115,7 @@ class RoutesController < ApplicationController
   def update_position
     @customer = current_vehicle.customer
     if params['latitude'] && params['longitude'] && params['latitude'].is_a?(Float) && params['longitude'].is_a?(Float)
-      Mapotempo::Application.config.devices.to_h.each{ |key, device|
+      Planner::Application.config.devices.to_h.each{ |key, device|
         next if @customer.device.enabled_definitions.exclude?(key)
 
         service = Object.const_get(device.class.name + 'Service').new({customer: @customer})

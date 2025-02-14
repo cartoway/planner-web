@@ -291,7 +291,7 @@ class V01::Plannings < Grape::API
       Route.includes_destinations.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         planning = planning.duplicate
-        planning.save! validate: Mapotempo::Application.config.validate_during_duplication
+        planning.save! validate: Planner::Application.config.validate_during_duplication
         present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
       end
     end

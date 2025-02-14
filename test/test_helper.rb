@@ -59,7 +59,7 @@ class ActiveSupport::TestCase
 
     @stub_Analytics = stub_request(:post, %r{analytics}).to_return(status: 200)
 
-    def (Mapotempo::Application.config.geocoder).code_bulk(addresses)
+    def (Planner::Application.config.geocoder).code_bulk(addresses)
       addresses.map{ |a| {lat: 1, lng: 1, quality: 'street', accuracy: 0.9} }
     end
   end

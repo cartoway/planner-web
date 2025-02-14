@@ -5,7 +5,7 @@ class DeliverTest < ActionController::TestCase
   setup do
     @customer = customers(:customer_one)
     @customer.update devices: { deliver: { enable: true } }, enable_vehicle_position: true, enable_stop_status: true
-    @service = Mapotempo::Application.config.devices.deliver
+    @service = Planner::Application.config.devices.deliver
   end
 
   test 'should send route' do

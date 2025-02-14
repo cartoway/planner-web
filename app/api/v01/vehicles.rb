@@ -57,7 +57,7 @@ class V01::Vehicles < Grape::API
 
     def permit_devices
       permit = []
-      Mapotempo::Application.config.devices.to_h.each{ |device_name, device_object|
+      Planner::Application.config.devices.to_h.each{ |device_name, device_object|
         if device_object.respond_to?('definition')
           device_definition = device_object.definition
           if device_definition.key?(:forms) && device_definition[:forms].key?(:vehicle)
@@ -120,7 +120,7 @@ class V01::Vehicles < Grape::API
       positions = []
       errors = []
       begin
-        Mapotempo::Application.config.devices.to_h.each{ |key, device|
+        Planner::Application.config.devices.to_h.each{ |key, device|
           if customer.device.configured?(key)
             options = {customer: customer}
             if key == :teksat
@@ -167,7 +167,7 @@ class V01::Vehicles < Grape::API
       errors = []
       begin
         if customer.device.configured?(:sopac)
-          device = Mapotempo::Application.config.devices[:sopac]
+          device = Planner::Application.config.devices[:sopac]
           service = Object.const_get(device.class.name + 'Service').new(options)
           if service.respond_to?(:vehicles_temperature)
             temperatures += service.vehicles_temperature(customer)
@@ -211,16 +211,16 @@ class V01::Vehicles < Grape::API
     end
 
     detailCreate = 'For each new created Vehicle and VehicleUsageSet a new VehicleUsage will be created at the same time (i.e. customer has 2 VehicleUsageSets \'Morning\' and \'Evening\', a new Vehicle is created: 2 new VehicleUsages will be automatically created with the new vehicle).'
-    if Mapotempo::Application.config.manage_vehicles_only_admin
+    if Planner::Application.config.manage_vehicles_only_admin
       detailCreate = 'Only available with an admin api_key. ' + detailCreate
     end
-    desc "Create vehicle#{Mapotempo::Application.config.manage_vehicles_only_admin ? ' (admin)' : ''}.",
+    desc "Create vehicle#{Planner::Application.config.manage_vehicles_only_admin ? ' (admin)' : ''}.",
       detail: detailCreate,
       nickname: 'createVehicle',
       success: V01::Status.success(:code_201, V01::Entities::Vehicle),
       failure: V01::Status.failures
     params do
-      if Mapotempo::Application.config.manage_vehicles_only_admin
+      if Planner::Application.config.manage_vehicles_only_admin
         requires :customer_id, type: Integer
       end
 
@@ -228,7 +228,7 @@ class V01::Vehicles < Grape::API
       use :request_vehicle_usage
     end
     post do
-      if Mapotempo::Application.config.manage_vehicles_only_admin
+      if Planner::Application.config.manage_vehicles_only_admin
         if @current_user.admin?
           customer = @current_user.reseller.customers.where(id: params[:customer_id]).first!
           vehicle = customer.vehicles.create(vehicle_params)
@@ -249,8 +249,8 @@ class V01::Vehicles < Grape::API
       present vehicle, with: V01::Entities::Vehicle
     end
 
-    detailDelete = Mapotempo::Application.config.manage_vehicles_only_admin ? 'Only available with an admin api_key.' : nil
-    desc "Delete vehicle#{Mapotempo::Application.config.manage_vehicles_only_admin ? ' (admin)' : ''}.",
+    detailDelete = Planner::Application.config.manage_vehicles_only_admin ? 'Only available with an admin api_key.' : nil
+    desc "Delete vehicle#{Planner::Application.config.manage_vehicles_only_admin ? ' (admin)' : ''}.",
       detail: detailDelete,
       nickname: 'deleteVehicle',
       success: V01::Status.success(:code_204),
@@ -260,7 +260,7 @@ class V01::Vehicles < Grape::API
     end
     delete ':id' do
       id = ParseIdsRefs.read(params[:id])
-      if Mapotempo::Application.config.manage_vehicles_only_admin
+      if Planner::Application.config.manage_vehicles_only_admin
         if @current_user.admin?
           vehicle = Vehicle.for_reseller_id(@current_user.reseller.id).where(id).first!
           vehicle.destroy!
@@ -274,7 +274,7 @@ class V01::Vehicles < Grape::API
       end
     end
 
-    desc "Delete multiple vehicles#{Mapotempo::Application.config.manage_vehicles_only_admin ? ' (admin)' : ''}.",
+    desc "Delete multiple vehicles#{Planner::Application.config.manage_vehicles_only_admin ? ' (admin)' : ''}.",
       detail: detailDelete,
       nickname: 'deleteVehicles',
       success: V01::Status.success(:code_204),
@@ -284,7 +284,7 @@ class V01::Vehicles < Grape::API
     end
     delete do
       Vehicle.transaction do
-        if Mapotempo::Application.config.manage_vehicles_only_admin || @current_user.admin?
+        if Planner::Application.config.manage_vehicles_only_admin || @current_user.admin?
           if @current_user.admin?
             Vehicle.for_reseller_id(@current_user.reseller.id).select{ |vehicle|
               params[:ids].any?{ |s| ParseIdsRefs.match(s, vehicle) }

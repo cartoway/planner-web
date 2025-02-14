@@ -298,7 +298,7 @@
                     %i.fa.fa-user-gear.fa-fw
                     .hidden-menu
                       = t 'devise.sessions.new.sign_in'
-                - if Mapotempo::Application.config.self_care
+                - if Planner::Application.config.self_care
                   %li.menu-list-item
                     = link_to new_user_registration_path, class: 'btn' do
                       %i.fa.fa-user-gear.fa-fw

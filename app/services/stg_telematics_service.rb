@@ -3,7 +3,7 @@ class StgTelematicsService < DeviceService
   def initialize(params)
     super(params)
     # Increase specificaly the cache duration as the api delays are longer
-    @cache_object = Mapotempo::Application.config.devices.stg_telematics_cache_object
+    @cache_object = Planner::Application.config.devices.stg_telematics_cache_object
   end
 
   def get_vehicles_pos

@@ -37,7 +37,7 @@ module PraxedoBase
     begin
       stubs = []
       names.each do |name|
-        api_url = Mapotempo::Application.config.devices.praxedo.api_url
+        api_url = Planner::Application.config.devices.praxedo.api_url
         case name
           when :get_events_wsdl
             url = Addressable::Template.new "#{api_url}cxf/v6/BusinessEventManager?wsdl"

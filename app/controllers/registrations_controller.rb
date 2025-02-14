@@ -22,7 +22,7 @@ class RegistrationsController < Devise::RegistrationsController
   def sign_up_params
     params = super
 
-    if Mapotempo::Application.config.self_care
+    if Planner::Application.config.self_care
       # Create a customer in same time as user
       profile = Profile.first
       customer = @reseller.customers.create(name: params['email'], max_vehicles: 1, router: profile.routers.first, profile: profile)

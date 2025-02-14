@@ -57,7 +57,7 @@ If a npm package includes assets, they must be declared in the _config/initializ
 ## Configuration
 
 ### Background Tasks
-Delayed job (background task) can be activated by setting `Mapotempo::Application.config.delayed_job_use = true` it's allow asynchronous running of import geocoder and optimization computation.
+Delayed job (background task) can be activated by setting `Planner::Application.config.delayed_job_use = true` it's allow asynchronous running of import geocoder and optimization computation.
 
 ## Initialization
 
@@ -118,7 +118,7 @@ Start the background jobs runner with
 
 Or set the use of delayed job to false in your app config:
 
-    Mapotempo::Application.config.delayed_job_use = false
+    Planner::Application.config.delayed_job_use = false
 
 ## Running on production
 
