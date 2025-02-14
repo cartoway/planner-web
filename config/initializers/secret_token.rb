@@ -9,4 +9,4 @@
 
 # Make sure your secret_key_base is kept private
 # if you're sharing your code publicly.
-Mapotempo::Application.config.secret_key_base = 'ebd6d2c7a79697d0564883ab82f19bf7cbb6ee31ef10fcf7911fb03f4df4bfe313dc133457eac5361186ab5515b6daabb1ca5f2779da5c17148bc09a5d269110'
+Planner::Application.config.secret_key_base = 'ebd6d2c7a79697d0564883ab82f19bf7cbb6ee31ef10fcf7911fb03f4df4bfe313dc133457eac5361186ab5515b6daabb1ca5f2779da5c17148bc09a5d269110'

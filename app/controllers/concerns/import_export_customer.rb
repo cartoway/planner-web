@@ -21,7 +21,7 @@ module ImportExportCustomer
     customer = Marshal.load(string_customer)
     customer = customer.duplicate
     self.assign_miscellaneous_attributes(customer, options)
-    customer.save! validate: Mapotempo::Application.config.validate_during_duplication
+    customer.save! validate: Planner::Application.config.validate_during_duplication
     customer
   end
 

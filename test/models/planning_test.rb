@@ -598,7 +598,7 @@ class PlanningTest < ActiveSupport::TestCase
 
   test 'shoud set late_multiplier to nil when stop is a geolocalized rest during optimization' do
     planning = plannings(:planning_one)
-    uri_template = Addressable::Template.new("#{Mapotempo::Application.config.optimizer.url}/vrp/submit.json")
+    uri_template = Addressable::Template.new("#{Planner::Application.config.optimizer.url}/vrp/submit.json")
     stub_request(:any, uri_template)
       .with(body: /"late_multiplier":null/)
       .to_return(File.new(File.expand_path('../../web_mocks/', __FILE__) + '/optimizer/optimize.json').read)
@@ -613,7 +613,7 @@ class PlanningTest < ActiveSupport::TestCase
 
   test "shoud transfer vehicle's max_distance (distance) during optimization" do
     planning = plannings(:planning_one)
-    uri_template = Addressable::Template.new("#{Mapotempo::Application.config.optimizer.url}/vrp/submit.json")
+    uri_template = Addressable::Template.new("#{Planner::Application.config.optimizer.url}/vrp/submit.json")
     stub_request(:any, uri_template)
       .with(body: /distance/)
       .to_return(File.new(File.expand_path('../../web_mocks/', __FILE__) + '/optimizer/optimize.json').read)

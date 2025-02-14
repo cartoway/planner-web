@@ -119,7 +119,7 @@ class OrderArraysController < ApplicationController
   def duplicate
     respond_to do |format|
       @order_array = @order_array.duplicate
-      @order_array.save! validate: Mapotempo::Application.config.validate_during_duplication
+      @order_array.save! validate: Planner::Application.config.validate_during_duplication
       format.html { redirect_to edit_order_array_path(@order_array), notice: t('activerecord.successful.messages.updated', model: @order_array.class.model_name.human) }
     end
   end

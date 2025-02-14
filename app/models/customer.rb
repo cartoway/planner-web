@@ -70,7 +70,7 @@ class Customer < ApplicationRecord
   validates :name, presence: true
   validates :default_country, presence: true
   # TODO default_max_destinations
-  validates :stores, length: { maximum: Mapotempo::Application.config.max_destinations / 10, message: :over_max_limit }
+  validates :stores, length: { maximum: Planner::Application.config.max_destinations / 10, message: :over_max_limit }
   validate :validate_plannings_length
   validate :validate_zonings_length
   validate :validate_destinations_length
@@ -81,10 +81,10 @@ class Customer < ApplicationRecord
     errors.add(:max_vehicles, :not_an_integer) if @invalid_max_vehicle
     !@invalid_max_vehicle
   end
-  validates :max_plannings, numericality: { greater_than: 0, less_than_or_equal_to: Mapotempo::Application.config.max_plannings }, allow_nil: true
-  validates :max_zonings, numericality: { greater_than: 0, less_than_or_equal_to: Mapotempo::Application.config.max_zonings }, allow_nil: true
-  validates :max_destinations, numericality: { greater_than: 0, less_than_or_equal_to: Mapotempo::Application.config.max_destinations }, allow_nil: true
-  validates :max_vehicle_usage_sets, numericality: { greater_than: 0, less_than_or_equal_to: Mapotempo::Application.config.max_vehicle_usage_sets }, allow_nil: true
+  validates :max_plannings, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_plannings }, allow_nil: true
+  validates :max_zonings, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_zonings }, allow_nil: true
+  validates :max_destinations, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_destinations }, allow_nil: true
+  validates :max_vehicle_usage_sets, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_vehicle_usage_sets }, allow_nil: true
   validates :speed_multiplier, numericality: { greater_than_or_equal_to: 0.5, less_than_or_equal_to: 1.5 }, if: :speed_multiplier
   validates :optimization_minimal_time, numericality: true, allow_nil: true
   validates :optimization_time, numericality: true, allow_nil: true
@@ -139,7 +139,7 @@ class Customer < ApplicationRecord
 
       def copy.devices_update_vehicles; end
 
-      copy.save! validate: Mapotempo::Application.config.validate_during_duplication
+      copy.save! validate: Planner::Application.config.validate_during_duplication
 
       deliverable_unit_ids_map = Hash[original.deliverable_units.map(&:id).zip(copy.deliverable_units)].merge(nil => nil)
       original_vehicles_map = Hash[copy.vehicles.zip(original.vehicles)].merge(nil => nil)
@@ -156,7 +156,7 @@ class Customer < ApplicationRecord
         vehicle.capacities = Hash[vehicle.capacities.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
         vehicle.tags = original_vehicle.tags.map{ |tag| tags_map[tag] }
         vehicle.force_check_consistency = true
-        vehicle.save! validate: Mapotempo::Application.config.validate_during_duplication
+        vehicle.save! validate: Planner::Application.config.validate_during_duplication
       }
 
       copy.vehicle_usage_sets.each{ |vehicle_usage_set|
@@ -171,9 +171,9 @@ class Customer < ApplicationRecord
           vehicle_usage.store_rest = stores_map[vehicle_usage.store_rest]
           vehicle_usage.tags = vehicle_usage.tags.map{ |tag| tags_map[tag] }
           vehicle_usage.force_check_consistency = true
-          vehicle_usage.save! validate: Mapotempo::Application.config.validate_during_duplication
+          vehicle_usage.save! validate: Planner::Application.config.validate_during_duplication
         }
-        vehicle_usage_set.save! validate: Mapotempo::Application.config.validate_during_duplication
+        vehicle_usage_set.save! validate: Planner::Application.config.validate_during_duplication
       }
 
       copy.destinations.each{ |destination|
@@ -184,16 +184,16 @@ class Customer < ApplicationRecord
           visit.quantities = Hash[visit.quantities.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
           visit.quantities_operations = Hash[visit.quantities_operations.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
           visit.force_check_consistency = true
-          visit.save! validate: Mapotempo::Application.config.validate_during_duplication
+          visit.save! validate: Planner::Application.config.validate_during_duplication
         }
         destination.force_check_consistency = true
-        destination.save! validate: Mapotempo::Application.config.validate_during_duplication
+        destination.save! validate: Planner::Application.config.validate_during_duplication
       }
 
       copy.zonings.each{ |zoning|
         zoning.zones.each{ |zone|
           zone.vehicle = vehicles_map[zone.vehicle]
-          zone.save! validate: Mapotempo::Application.config.validate_during_duplication
+          zone.save! validate: Planner::Application.config.validate_during_duplication
         }
       }
 
@@ -209,21 +209,21 @@ class Customer < ApplicationRecord
 
           route.stops.each{ |stop|
             stop.visit = visits_map[stop.visit]
-            stop.save! validate: Mapotempo::Application.config.validate_during_duplication
+            stop.save! validate: Planner::Application.config.validate_during_duplication
           }
-          route.save! validate: Mapotempo::Application.config.validate_during_duplication
+          route.save! validate: Planner::Application.config.validate_during_duplication
         }
         planning.force_check_consistency = true
-        planning.save! validate: Mapotempo::Application.config.validate_during_duplication
+        planning.save! validate: Planner::Application.config.validate_during_duplication
       }
 
       copy.stops_relations.each{ |relation|
         relation.current = visits_map[relation.current]
         relation.successor = visits_map[relation.successor]
-        relation.save! validate: Mapotempo::Application.config.validate_during_duplication
+        relation.save! validate: Planner::Application.config.validate_during_duplication
       }
 
-      copy.save! validate: Mapotempo::Application.config.validate_during_duplication
+      copy.save! validate: Planner::Application.config.validate_during_duplication
       copy.reload
     })
   end
@@ -234,8 +234,8 @@ class Customer < ApplicationRecord
         copy = self.amoeba_dup
         copy.name += " (#{I18n.l(Time.zone.now, format: :long)})"
         copy.ref = copy.ref ? Time.new.to_i.to_s : nil
-        copy.test = Mapotempo::Application.config.customer_test_default
-        copy.save! validate: Mapotempo::Application.config.validate_during_duplication
+        copy.test = Planner::Application.config.customer_test_default
+        copy.save! validate: Planner::Application.config.validate_during_duplication
         copy
       end
     end
@@ -285,7 +285,7 @@ class Customer < ApplicationRecord
   end
 
   def is_editable?
-    destinations.count <= Mapotempo::Application.config.max_destinations_editable
+    destinations.count <= Planner::Application.config.max_destinations_editable
   end
 
   def max_vehicles
@@ -381,7 +381,7 @@ class Customer < ApplicationRecord
 
   def devices_update_vehicles
     # Remove device association on vehicles if devices credentials have changed
-    Mapotempo::Application.config.devices.to_h.each{ |device_name, device_object|
+    Planner::Application.config.devices.to_h.each{ |device_name, device_object|
       if device_object.respond_to?('definition')
         device_definition = device_object.definition
         if device_definition.key?(:forms) && device_definition[:forms].key?(:settings) && device_definition[:forms].key?(:vehicle)
@@ -395,7 +395,7 @@ class Customer < ApplicationRecord
     }
   end
 
-  Mapotempo::Application.config.devices.to_h.each{ |device_name, device_object|
+  Planner::Application.config.devices.to_h.each{ |device_name, device_object|
     if device_object.respond_to?('definition')
       device_definition = device_object.definition
       if device_definition.key?(:forms) && device_definition[:forms].key?(:settings)
@@ -421,8 +421,8 @@ class Customer < ApplicationRecord
 
   def assign_defaults
     self.default_country ||= I18n.t('customers.default.country')
-    self.enable_references ||= Mapotempo::Application.config.enable_references
-    self.enable_multi_visits ||= Mapotempo::Application.config.enable_multi_visits
+    self.enable_references ||= Planner::Application.config.enable_references
+    self.enable_multi_visits ||= Planner::Application.config.enable_multi_visits
   end
 
   def create_default_store
@@ -571,8 +571,8 @@ class Customer < ApplicationRecord
   end
 
   def validate_optimization_times
-    optimization_minimal_time = self.optimization_minimal_time || Mapotempo::Application.config.optimize_minimal_time
-    optimization_time = self.optimization_time || Mapotempo::Application.config.optimize_time
+    optimization_minimal_time = self.optimization_minimal_time || Planner::Application.config.optimize_minimal_time
+    optimization_time = self.optimization_time || Planner::Application.config.optimize_time
 
     if optimization_minimal_time && optimization_time && optimization_time < optimization_minimal_time
       errors.add(:optimization_time, I18n.t('activerecord.errors.models.optimization_time.must_be_greater_than_minimal_time'))

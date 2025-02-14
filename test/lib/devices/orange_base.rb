@@ -24,7 +24,7 @@ module OrangeBase
     begin
       stubs = []
       names.each do |name|
-        api_url = URI.parse Mapotempo::Application.config.devices.orange.api_url
+        api_url = URI.parse Planner::Application.config.devices.orange.api_url
         case name
           when :auth
             expected_response = File.read(Rails.root.join("test/web_mocks/orange/blank.xml")).strip

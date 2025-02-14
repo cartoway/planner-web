@@ -319,7 +319,7 @@ class V01::Destinations < Grape::API
       destination.reverse_geocoding(params[:lat], params[:lng])
     end
 
-    if Mapotempo::Application.config.geocode_complete
+    if Planner::Application.config.geocode_complete
       desc 'Auto completion on destination.',
         nickname: 'autocompleteDestination',
         success: V01::Status.success(:code_200, V01::Entities::Destination),
@@ -330,7 +330,7 @@ class V01::Destinations < Grape::API
       patch 'geocode_complete' do
         p = destination_params.except(:id, :visits_attributes)
         store = current_customer.stores.select(&:position?).last
-        address_list = Mapotempo::Application.config.geocoder.complete(p[:street], p[:postalcode], p[:city], p[:state], p[:country] || current_customer.default_country, store.try(&:lat), store.try(&:lng))
+        address_list = Planner::Application.config.geocoder.complete(p[:street], p[:postalcode], p[:city], p[:state], p[:country] || current_customer.default_country, store.try(&:lat), store.try(&:lng))
         address_list = address_list.collect(&:compact)
         # TODO: returns results and priority location
         address_list

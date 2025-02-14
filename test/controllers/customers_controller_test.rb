@@ -66,7 +66,7 @@ class CustomersControllerTest < ActionController::TestCase
 
   test 'should disabled max_vehicles field' do
     begin
-      Mapotempo::Application.config.manage_vehicles_only_admin = true
+      Planner::Application.config.manage_vehicles_only_admin = true
       sign_in users(:user_one)
       get :edit, params: { id: @customer.id }
       assert_response :success
@@ -76,7 +76,7 @@ class CustomersControllerTest < ActionController::TestCase
         end
       end
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = false
+      Planner::Application.config.manage_vehicles_only_admin = false
     end
   end
 
@@ -100,8 +100,8 @@ class CustomersControllerTest < ActionController::TestCase
 
   test 'should duplicate customer with error' do
     begin
-      orig_validate_during_duplication = Mapotempo::Application.config.validate_during_duplication
-      Mapotempo::Application.config.validate_during_duplication = false
+      orig_validate_during_duplication = Planner::Application.config.validate_during_duplication
+      Planner::Application.config.validate_during_duplication = false
 
       @customer.plannings[1].routes[1].stops[0].index = 666
       @customer.plannings[1].routes[1].stops[0].save!
@@ -111,7 +111,7 @@ class CustomersControllerTest < ActionController::TestCase
         patch :duplicate, params: { id: @customer.id }
       end
     ensure
-      Mapotempo::Application.config.validate_during_duplication = orig_validate_during_duplication
+      Planner::Application.config.validate_during_duplication = orig_validate_during_duplication
     end
   end
 

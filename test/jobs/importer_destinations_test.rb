@@ -386,7 +386,7 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_difference('Planning.count', 1) do
       assert_difference('Destination.count', import_count) do
         assert_difference('Stop.count', (@visit_tag1_count + (import_count * (@plan_tag1_count + 1)) + rest_count)) do
-          Mapotempo::Application.config.geocoder.class.stub_any_instance(:code_bulk, lambda{ |*a| raise GeocodeError.new }) do
+          Planner::Application.config.geocoder.class.stub_any_instance(:code_bulk, lambda{ |*a| raise GeocodeError.new }) do
             assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_one_postalcode.csv', 'text.csv')).import
           end
         end

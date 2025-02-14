@@ -4,7 +4,7 @@ require 'routers/here'
 
 class Routers::HereTest < ActionController::TestCase
   setup do
-    @here = Mapotempo::Application.config.router_here
+    @here = Planner::Application.config.router_here
     @customer = customers(:customer_one)
   end
 

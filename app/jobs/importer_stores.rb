@@ -119,11 +119,11 @@ class ImporterStores < ImporterBase
       @customer.stores.destroy(@tmp_store)
     end
 
-    if !@stores_to_geocode.empty? && (@synchronous || !Mapotempo::Application.config.delayed_job_use)
+    if !@stores_to_geocode.empty? && (@synchronous || !Planner::Application.config.delayed_job_use)
       @stores_to_geocode.each_slice(50){ |stores|
         geocode_args = stores.collect(&:geocode_args)
         begin
-          results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)
+          results = Planner::Application.config.geocoder.code_bulk(geocode_args)
           stores.zip(results).each { |store, result|
             store.geocode_result(result) if result
           }
@@ -136,7 +136,7 @@ class ImporterStores < ImporterBase
   end
 
   def finalize_import(_name, _options)
-    if !@stores_to_geocode.empty? && !@synchronous && Mapotempo::Application.config.delayed_job_use
+    if !@stores_to_geocode.empty? && !@synchronous && Planner::Application.config.delayed_job_use
       @customer.job_store_geocoding = Delayed::Job.enqueue(GeocoderStoresJob.new(@customer.id))
     end
 

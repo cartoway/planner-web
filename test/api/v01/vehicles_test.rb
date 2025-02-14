@@ -114,8 +114,8 @@ class V01::VehiclesTest < ActiveSupport::TestCase
 
   test 'should create a vehicle' do
     begin
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
-      Mapotempo::Application.config.manage_vehicles_only_admin = false
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = false
 
       customer = customers(:customer_one)
 
@@ -132,14 +132,14 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         end
       end
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
   test 'should not create a vehicle' do
     begin
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
-      Mapotempo::Application.config.manage_vehicles_only_admin = true
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = true
 
       assert_no_difference('Vehicle.count') do
         post api, nil, input: { ref: 'new', name: 'Vh1', time_window_start: '10:00', store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id, customer_id: customers(:customer_one).id, color: '#bebeef', capacities: [{deliverable_unit_id: 1, quantity: 30}] }.to_json, CONTENT_TYPE: 'application/json'
@@ -147,14 +147,14 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         assert_equal 403, last_response.status, 'Bad response: ' + last_response.body
       end
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
   test 'should create a vehicle with admin key' do
     begin
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
-      Mapotempo::Application.config.manage_vehicles_only_admin = true
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = true
 
       customer = customers(:customer_one)
 
@@ -171,14 +171,14 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         end
       end
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
   test 'should create a vehicle with tag_ids' do
     begin
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
-      Mapotempo::Application.config.manage_vehicles_only_admin = false
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = false
 
       customer = customers(:customer_one)
       tags_str = tags(:tag_one).id.to_s + ',' + tags(:tag_two).id.to_s
@@ -203,14 +203,14 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         end
       }
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
   test 'should create a vehicle with restricted list of custom_attributes' do
     begin
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
-      Mapotempo::Application.config.manage_vehicles_only_admin = false
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = false
 
       customer = customers(:customer_one)
       valid_custom_attribute_names = customer.custom_attributes.map(&:name)
@@ -235,14 +235,14 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         end
       end
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
   test 'should create a vehicle with time exceeding one day' do
     begin
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
-      Mapotempo::Application.config.manage_vehicles_only_admin = false
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = false
 
       customer = customers(:customer_one)
 
@@ -266,7 +266,7 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         end
       end
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
@@ -274,9 +274,9 @@ class V01::VehiclesTest < ActiveSupport::TestCase
     begin
       customer = customers(:customer_one)
       # test with 2 different configs
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
       [true, false].each { |v|
-        Mapotempo::Application.config.manage_vehicles_only_admin = v
+        Planner::Application.config.manage_vehicles_only_admin = v
 
         new_name = 'new vehicle'
         # test creation and callbacks
@@ -313,7 +313,7 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         end
       }
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
@@ -321,9 +321,9 @@ class V01::VehiclesTest < ActiveSupport::TestCase
     begin
       customer = customers(:customer_one)
       # test with 2 different configs
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
       [true, false].each { |v|
-        Mapotempo::Application.config.manage_vehicles_only_admin = v
+        Planner::Application.config.manage_vehicles_only_admin = v
 
         new_name = 'new vehicle 1'
         post v ? api_admin : api, { ref: 'new1', name: new_name, store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id, customer_id: customers(:customer_one).id }
@@ -342,14 +342,14 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         end
       }
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
   test 'should not destroy a vehicle' do
     begin
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
-      Mapotempo::Application.config.manage_vehicles_only_admin = true
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = true
 
       assert_no_difference('Vehicle.count') do
         delete api("/#{@vehicle.id}")
@@ -365,22 +365,22 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         assert_equal 404, last_response.status, 'Bad response: ' + last_response.body
       end
 
-      Mapotempo::Application.config.manage_vehicles_only_admin = false
+      Planner::Application.config.manage_vehicles_only_admin = false
 
       assert_no_difference('Vehicle.count') do
         delete api("/#{vehicles(:vehicle_two).id}")
         assert_equal 404, last_response.status, 'Bad response: ' + last_response.body
       end
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
   test 'should not destroy last vehicle' do
     begin
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
       [true, false].each { |v|
-        Mapotempo::Application.config.manage_vehicles_only_admin = v
+        Planner::Application.config.manage_vehicles_only_admin = v
         @vehicle.customer.vehicles[0..-2].each{ |vehicle|
           delete (v ? api_admin("/#{vehicle.id}") : api("/#{vehicle.id}")) + "&customer_id=#{@vehicle.customer.id}"
         }
@@ -391,22 +391,22 @@ class V01::VehiclesTest < ActiveSupport::TestCase
         end
       }
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 
   test 'should not destroy all vehicles' do
     begin
-      manage_vehicles_only_admin = Mapotempo::Application.config.manage_vehicles_only_admin
+      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
       [true, false].each { |v|
-        Mapotempo::Application.config.manage_vehicles_only_admin = v
+        Planner::Application.config.manage_vehicles_only_admin = v
         assert_no_difference('Vehicle.count') do
           delete (v ? api_admin() : api) + "&customer_id=#{@vehicle.customer.id}&ids=#{vehicles(:vehicle_one).id},#{vehicles(:vehicle_three).id}"
           assert last_response.server_error?, last_response.body
         end
       }
     ensure
-      Mapotempo::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
+      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
     end
   end
 

@@ -68,14 +68,14 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :sms_concat, type: Boolean
     optional :sms_from_customer_name, type: Boolean
 
-    optional :optimization_max_split_size, type: Integer, documentation: { desc: 'Maximum number of visits to split problem', example: Mapotempo::Application.config.optimize_max_split_size }
-    optional :optimization_cluster_size, type: Integer, documentation: { desc: 'Time in seconds to group near visits', example: Mapotempo::Application.config.optimize_cluster_size }
-    optional :optimization_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Maximum optimization time (by vehicle)', example: Mapotempo::Application.config.optimize_time }
-    optional :optimization_minimal_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Minimum optimization time (by vehicle)', example: Mapotempo::Application.config.optimize_minimal_time}
-    optional :optimization_stop_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Stops delay coefficient, 0 to avoid delay', example: Mapotempo::Application.config.optimize_stop_soft_upper_bound}
-    optional :optimization_vehicle_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Vehicles delay coefficient, 0 to avoid delay', example: Mapotempo::Application.config.optimize_vehicle_soft_upper_bound }
-    optional :optimization_cost_waiting_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient to manage waiting time', example: Mapotempo::Application.config.optimize_cost_waiting_time }
-    optional :optimization_force_start, type: Boolean, documentation: { desc: 'Force time for departure', example: Mapotempo::Application.config.optimize_force_start }
+    optional :optimization_max_split_size, type: Integer, documentation: { desc: 'Maximum number of visits to split problem', example: Planner::Application.config.optimize_max_split_size }
+    optional :optimization_cluster_size, type: Integer, documentation: { desc: 'Time in seconds to group near visits', example: Planner::Application.config.optimize_cluster_size }
+    optional :optimization_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Maximum optimization time (by vehicle)', example: Planner::Application.config.optimize_time }
+    optional :optimization_minimal_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Minimum optimization time (by vehicle)', example: Planner::Application.config.optimize_minimal_time}
+    optional :optimization_stop_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Stops delay coefficient, 0 to avoid delay', example: Planner::Application.config.optimize_stop_soft_upper_bound}
+    optional :optimization_vehicle_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Vehicles delay coefficient, 0 to avoid delay', example: Planner::Application.config.optimize_vehicle_soft_upper_bound }
+    optional :optimization_cost_waiting_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient to manage waiting time', example: Planner::Application.config.optimize_cost_waiting_time }
+    optional :optimization_force_start, type: Boolean, documentation: { desc: 'Force time for departure', example: Planner::Application.config.optimize_force_start }
 
     optional :advanced_options, type: JSON, documentation: { desc: 'Advanced options' }
 
@@ -163,9 +163,9 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :country, type: String
     optional :lat, type: Float, coerce_with: CoerceFloatString
     optional :lng, type: Float, coerce_with: CoerceFloatString
-    optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Mapotempo::Application.config.store_color_default}." }
-    optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{Mapotempo::Application.config.store_icon_default}." }
-    optional :icon_size, type: String, values: ::Store::ICON_SIZE, documentation: { desc: "Icon size. Default: #{Mapotempo::Application.config.store_icon_size_default}." }
+    optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Planner::Application.config.store_color_default}." }
+    optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{Planner::Application.config.store_icon_default}." }
+    optional :icon_size, type: String, values: ::Store::ICON_SIZE, documentation: { desc: "Icon size. Default: #{Planner::Application.config.store_icon_size_default}." }
   end
 
   params :request_vehicle do |options|

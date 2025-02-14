@@ -7,7 +7,7 @@ class AlyacomTest < ActionController::TestCase
 
   setup do
     @customer = add_alyacom_credentials customers(:customer_one)
-    @service = Mapotempo::Application.config.devices.alyacom
+    @service = Planner::Application.config.devices.alyacom
   end
 
   test 'send route' do

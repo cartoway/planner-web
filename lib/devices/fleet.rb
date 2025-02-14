@@ -113,7 +113,7 @@ class Fleet < DeviceBase
   end
 
   def create_company(customer)
-    admin_api_key = Mapotempo::Application.config.devices.fleet.admin_api_key
+    admin_api_key = Planner::Application.config.devices.fleet.admin_api_key
     raise DeviceServiceError.new("Mapo. Live: #{I18n.t('errors.fleet.create_company.no_admin_api_key')}") unless admin_api_key
 
     begin

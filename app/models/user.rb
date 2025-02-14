@@ -108,13 +108,13 @@ class User < ApplicationRecord
 
   def send_password_email
     locale = (self.locale) ? self.locale.to_sym : I18n.locale
-    Mapotempo::Application.config.delayed_job_use ? UserMailer.delay.password_message(self, locale) : UserMailer.password_message(self, locale).deliver_now
+    Planner::Application.config.delayed_job_use ? UserMailer.delay.password_message(self, locale) : UserMailer.password_message(self, locale).deliver_now
     self.update! confirmation_sent_at: Time.now
   end
 
   def send_connection_email
     locale = (self.locale) ? self.locale.to_sym : I18n.locale
-    Mapotempo::Application.config.delayed_job_use ? UserMailer.delay.connection_message(self, locale) : UserMailer.connection_message(self, locale).deliver_now
+    Planner::Application.config.delayed_job_use ? UserMailer.delay.connection_message(self, locale) : UserMailer.connection_message(self, locale).deliver_now
   end
 
   private

@@ -33,7 +33,7 @@ class DestinationTest < ActiveSupport::TestCase
   end
 
   test 'should geocode with error' do
-    Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
       destination = destinations(:destination_one)
       assert destination.geocode
       assert 1, destination.warnings.size
@@ -54,7 +54,7 @@ class DestinationTest < ActiveSupport::TestCase
   end
 
   test 'should update_geocode with error' do
-    Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
       destination = destinations(:destination_one)
       destination.city = 'Toulouse'
       destination.state = 'Midi-Pyrénées'
@@ -65,7 +65,7 @@ class DestinationTest < ActiveSupport::TestCase
   end
 
   test 'should not update_geocode' do
-    Mapotempo::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise }) do
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise }) do
       destination = destinations(:destination_one)
       destination.street = 'rue'
       destination.lat, destination.lng = 1, 1

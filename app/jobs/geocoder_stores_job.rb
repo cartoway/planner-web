@@ -26,7 +26,7 @@ class GeocoderStoresJob < GeocoderStoresJobStruct
       Store.transaction do
         geocode_args = stores.collect(&:geocode_args)
         begin
-          results = Mapotempo::Application.config.geocoder.code_bulk(geocode_args)
+          results = Planner::Application.config.geocoder.code_bulk(geocode_args)
           stores.zip(results).each { |store, result|
             store.geocode_result(result) if result
             store.save!

@@ -26,7 +26,7 @@ module TomtomBase
     begin
       stubs = []
       names.each do |name|
-        api_url = Mapotempo::Application.config.devices.tomtom.api_url
+        api_url = Planner::Application.config.devices.tomtom.api_url
         case name
           when :client_objects_wsdl
             url = Addressable::Template.new "#{api_url}/objectsAndPeopleReportingService?wsdl"

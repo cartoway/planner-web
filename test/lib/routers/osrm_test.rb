@@ -4,7 +4,7 @@ require 'routers/osrm'
 
 class Routers::OsrmTest < ActionController::TestCase
   setup do
-    @osrm = Mapotempo::Application.config.router_osrm
+    @osrm = Planner::Application.config.router_osrm
     @customer = customers(:customer_one)
   end
 

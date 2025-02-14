@@ -188,7 +188,7 @@ class V01::Stores < Grape::API
       present store, with: V01::Entities::Store
     end
 
-    if Mapotempo::Application.config.geocode_complete
+    if Planner::Application.config.geocode_complete
       desc 'Auto completion on store.',
         nickname: 'autocompleteStore',
         is_array: true,
@@ -200,7 +200,7 @@ class V01::Stores < Grape::API
       patch 'geocode_complete' do
         p = store_params
         store = current_customer.stores.select(&:position?).last
-        address_list = Mapotempo::Application.config.geocoder.complete(p[:street], p[:postalcode], p[:city], p[:state], p[:country] || current_customer.default_country, store.try(&:lat), store.try(&:lng))
+        address_list = Planner::Application.config.geocoder.complete(p[:street], p[:postalcode], p[:city], p[:state], p[:country] || current_customer.default_country, store.try(&:lat), store.try(&:lng))
         address_list = address_list.collect(&:compact)
         # TODO: returns results and priority location
         address_list
