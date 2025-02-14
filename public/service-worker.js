@@ -1,28 +1,43 @@
-const positionsSync = {
-  sync: () => syncPositions(),
-  getStored: () => getStoredPositions(),
-  remove: (id) => removeStoredPosition(id)
-};
-
-const stopsSync = {
-  sync: () => syncStops(),
-  getStored: () => getStoredStopUpdates(),
-  remove: (id) => removeStoredStopUpdate(id)
-};
-
 self.addEventListener('sync', event => {
+  if (!csrfToken) {
+    event.waitUntil(
+      new Promise((resolve) => {
+        let attempts = 0;
+        const checkToken = setInterval(() => {
+          attempts++;
+          if (csrfToken) {
+            clearInterval(checkToken);
+            switch(event.tag) {
+              case 'sync-positions':
+                resolve(syncPositions());
+                break;
+              case 'sync-stops':
+                resolve(syncStops());
+                break;
+            }
+          } else if (attempts >= 5) {
+            clearInterval(checkToken);
+            if (event.tag === 'sync-positions') {
+              notifyClients('STORE_POSITIONS', Array.from(pendingRequests.positions));
+            } else {
+              notifyClients('STORE_STOPS', Array.from(pendingRequests.stops));
+            }
+            resolve();
+          }
+        }, 1000);
+      })
+    );
+    return;
+  }
+
   switch(event.tag) {
     case 'sync-positions':
-      event.waitUntil(positionsSync.sync());
+      event.waitUntil(syncPositions());
       break;
     case 'sync-stops':
-      event.waitUntil(stopsSync.sync());
+      event.waitUntil(syncStops());
       break;
   }
-});
-
-self.addEventListener('online', () => {
-  syncPendingData();
 });
 
 const pendingRequests = {
@@ -32,8 +47,59 @@ const pendingRequests = {
 
 let csrfToken;
 
+function getAllPendingData() {
+  return new Promise((resolve) => {
+    self.clients.matchAll().then(clients => {
+      if (!clients.length) {
+        resolve({ positions: [], stops: [] });
+        return;
+      }
+
+      const activeClient = clients[0];
+
+      let messageHandler = function(event) {
+        if (event.data.type === 'PENDING_DATA') {
+          self.removeEventListener('message', messageHandler);
+          event.data.data.positions.forEach(position => {
+            pendingRequests.positions.add(position);
+          });
+          event.data.data.stops.forEach(stop => {
+            pendingRequests.stops.add(stop);
+          });
+          resolve(event.data.data);
+        }
+      };
+
+      self.addEventListener('message', messageHandler);
+      activeClient.postMessage({ type: 'GET_PENDING_DATA' });
+
+      setTimeout(() => {
+        self.removeEventListener('message', messageHandler);
+        resolve({ positions: [], stops: [] });
+      }, 3000);
+    });
+  });
+}
+
+function checkAndSync() {
+  if (navigator.onLine) {
+    setTimeout(() => {
+      if (!csrfToken) {
+        return;
+      }
+      syncPendingData();
+    }, 1000);
+  }
+}
+
+self.addEventListener('online', checkAndSync);
+setInterval(checkAndSync, 10000);
+
 self.addEventListener('message', event => {
   switch(event.data.type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting();
+      break;
     case 'STORE_POSITION':
       pendingRequests.positions.add(event.data.payload);
       break;
@@ -64,7 +130,8 @@ function notifyClients(type, data) {
 self.addEventListener('install', event => {
   event.waitUntil(
     Promise.all([
-      self.skipWaiting()
+      self.skipWaiting(),
+      getAllPendingData()
     ])
   );
 });
@@ -72,7 +139,8 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     Promise.all([
-      self.clients.claim()
+      self.clients.claim(),
+      getAllPendingData()
     ])
   );
 });
@@ -92,22 +160,27 @@ function syncPositions() {
         'X-Requested-With': 'XMLHttpRequest'
       }
     })
-    .then(() => {
-      pendingRequests.positions.delete(position);
-      notifyClients('POSITION_SYNCED', position);
+    .then(response => {
+      if (response.ok) {
+        pendingRequests.positions.delete(position);
+        notifyClients('POSITION_SYNCED', position);
+      }
+    })
+    .catch(error => {
+      notifyClients('SYNC_ERROR', {
+        type: 'position',
+        error: error.message
+      });
+      throw error;
     });
   }));
 }
 
 function syncStops() {
   if (!csrfToken) {
-    Array.from(pendingRequests.stops).forEach(stop => {
-      localStorage.setItem(`stop_update_${stop.id}`, JSON.stringify(stop));
-      pendingRequests.stops.delete(stop);
-    });
+    notifyClients('STORE_STOPS', Array.from(pendingRequests.stops));
     return Promise.reject(new Error('No CSRF token available'));
   }
-
   return Promise.all(Array.from(pendingRequests.stops).map(stop => {
     const formData = new FormData();
     Object.keys(stop.formData).forEach(key => {
@@ -124,9 +197,11 @@ function syncStops() {
         'X-Requested-With': 'XMLHttpRequest'
       }
     })
-    .then(() => {
-      pendingRequests.stops.delete(stop);
-      notifyClients('STOP_SYNCED', stop);
+    .then(response => {
+      if (response.ok) {
+        pendingRequests.stops.delete(stop);
+        notifyClients('STOP_SYNCED', stop);
+      }
     })
     .catch(error => {
       notifyClients('SYNC_ERROR', {

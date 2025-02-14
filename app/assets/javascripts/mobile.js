@@ -1,6 +1,5 @@
 'use strict';
 
-import { beforeSendWaiting, completeWaiting, ajaxError } from '../../assets/javascripts/ajax';
 import { stops_edit } from '../../assets/javascripts/stops';
 
 const tracking = function(params) {
@@ -35,23 +34,67 @@ const tracking = function(params) {
       }
 
       if (event.data.type === 'SYNC_ERROR') {
-        stickyError(I18n.t('errors.sync_failed'));
+        stickyError(I18n.t('errors.mobile.sync_failed'));
+      }
+
+      if (event.data.type === 'STORE_STOPS') {
+        event.data.data.forEach(stop => {
+          localStorage.setItem(`stop_update_${stop.id}`, JSON.stringify(stop));
+        });
+      }
+
+      if (event.data.type === 'STORE_POSITIONS') {
+        event.data.data.forEach(position => {
+          localStorage.setItem(`position_${position.id}`, JSON.stringify(position));
+        });
+      }
+
+      if (event.data.type === 'GET_PENDING_DATA') {
+        const data = {
+          positions: [],
+          stops: []
+        };
+
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key.startsWith('position_')) {
+            const position = JSON.parse(localStorage.getItem(key));
+            data.positions.push(position);
+            localStorage.removeItem(key);
+          } else if (key.startsWith('stop_update_')) {
+            const stop = JSON.parse(localStorage.getItem(key));
+            data.stops.push(stop);
+            localStorage.removeItem(key);
+          }
+        }
+
+        event.source.postMessage({
+          type: 'PENDING_DATA',
+          data: data
+        });
       }
     };
 
     navigator.serviceWorker.addEventListener('message', messageListener);
 
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    navigator.serviceWorker.register('/service-worker.js', {
+    navigator.serviceWorker.register('/service-worker.js?' + Date.now(), {
       scope: '/'
     })
     .then(registration => {
-      if (registration.active) {
-        registration.active.postMessage({
-          type: 'SET_CSRF_TOKEN',
-          token: token
-        });
+      if (registration.waiting) {
+        registration.waiting.postMessage({type: 'SKIP_WAITING'});
       }
+
+      registration.addEventListener('activate', () => {
+        if (registration.active) {
+          registration.active.postMessage({
+            type: 'SET_CSRF_TOKEN',
+            token: token
+          });
+          checkPendingData();
+        }
+      });
 
       if ('SyncManager' in window) {
         window.syncManagerAvailable = true;
@@ -101,19 +144,11 @@ const tracking = function(params) {
         url: '/routes/' + params.route_id + '/update_position',
         data: JSON.stringify(coords),
         contentType: 'application/json',
-        beforeSend: function() {
-          beforeSendWaiting();
-        },
         error: function(request, status, error) {
-          ajaxError(request, status, error);
-          completeWaiting();
-        },
-        complete: function() {
-          completeWaiting();
+          storePosition(coords);
         }
       });
     } else {
-      stopInterval();
       storePosition(coords);
       if ('serviceWorker' in navigator && 'SyncManager' in window) {
         navigator.serviceWorker.ready.then(registration => {
@@ -169,18 +204,18 @@ const tracking = function(params) {
   function checkPendingData() {
     if (navigator.onLine) {
       if ('serviceWorker' in navigator && 'SyncManager' in window) {
-        if (hasPendingData('position_')) {
-          navigator.serviceWorker.ready
-            .then(registration => {
-              return registration.sync.register('sync-positions');
-            })
+        if (navigator.serviceWorker.controller) {
+          const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+          navigator.serviceWorker.controller.postMessage({
+            type: 'SET_CSRF_TOKEN',
+            token: token
+          });
         }
-        if (hasPendingData('stop_update_')) {
-          navigator.serviceWorker.ready
-            .then(registration => {
-              return registration.sync.register('sync-stops');
-            })
-        }
+
+        navigator.serviceWorker.ready.then(registration => {
+          registration.sync.register('sync-positions');
+          registration.sync.register('sync-stops');
+        });
       } else {
         if (hasPendingData('position_')) {
           syncPositionsWithoutServiceWorker();
@@ -196,30 +231,12 @@ const tracking = function(params) {
     return Object.keys(localStorage).some(key => key.startsWith(prefix));
   }
 
-  function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) {
-      return;
-    }
-
-    if (!navigator.serviceWorker) {
-      return;
-    }
-
-    navigator.serviceWorker.register('/service-worker.js', {
-      scope: '/'
-    })
-  }
-
-  if (window.isSecureContext && 'serviceWorker' in navigator && 'SyncManager' in window) {
-    registerServiceWorker();
-  }
-
   getPosition();
 
   initTracking();
 
-  window.addEventListener('online', () => {
-    checkPendingData();
+  ['DOMContentLoaded', 'online'].forEach(event => {
+    window.addEventListener(event, checkPendingData);
   });
 
   function syncPositionsWithoutServiceWorker() {

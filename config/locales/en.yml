@@ -716,6 +716,7 @@ en:
     mobile:
       default: An error has occurred
       denied_geolocation: You have denied position sharing
+      sync_failed: Synchronization failed
       unsupported_geolocation: Your browser does not support geolocation
     planning:
       import_too_many_routes: Tried to import more routes than available vehicles
@@ -2961,5 +2962,3 @@ en:
       speed_multiplicator: speed multiplicator
       speed_multiplier: speed multiplier
       many_usage_sets: Many vehicle configurations present
-  errors:
-    sync_failed: "Synchronization failed"

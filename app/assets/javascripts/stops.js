@@ -71,16 +71,20 @@ export const stops_edit = function(params) {
       formObject[key] = value;
     });
 
-    if (navigator.onLine) {
-      $.ajax({
-        type: 'PATCH',
-        url: current_context.find('form').attr('action'),
-        data: formData,
-        processData: false,
-        contentType: false
-      });
-    } else {
-      storeStopUpdate(current_context.find('form').attr('action'), formObject);
+    const url = current_context.find('form').attr('action');
+
+    if (!navigator.onLine) {
+      storeStopUpdate(url, formObject);
+      return;
     }
+
+    $.ajax({
+      type: 'PATCH',
+      url: url,
+      data: formData,
+      processData: false,
+      contentType: false,
+      error: () => storeStopUpdate(url, formObject)
+    });
   }
 };
