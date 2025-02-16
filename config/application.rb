@@ -162,7 +162,7 @@ module Planner
 
     # Default values for vehicles
     config.vehicle_consumption_default = 7.7
-    config.vehicle_fuel_type_default = "VL - Gazole".freeze
+    config.vehicle_fuel_type_default = "light_lgp".freeze
   end
 end
 
