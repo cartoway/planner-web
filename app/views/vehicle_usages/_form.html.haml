@@ -31,7 +31,7 @@
           \/ #{t 'activerecord.attributes.vehicle.consumption'}
         .col-md-offset-2.col-md-8.field
           .input-group
-            = select 'vehicle_usage[vehicle]', :emission, Vehicle.emissions_table, { include_blank: t('web.form.empty_entry'), selected: @vehicle_usage.vehicle.emission }, class: 'form-control'
+            = select 'vehicle_usage[vehicle]', :emission, Vehicle.emissions_hash.values, { include_blank: t('web.form.empty_entry'), selected: @vehicle_usage.vehicle.emission }, class: 'form-control'
             %span.input-group-addon
               = t 'all.unit.kgco2e_l_html'
             = text_field 'vehicle_usage[vehicle]', :consumption, value: @vehicle_usage.vehicle.localized_consumption, class: 'form-control'
