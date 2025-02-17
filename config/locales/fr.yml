@@ -2273,6 +2273,7 @@ fr:
       previous: Précédent
       status: Status
       tracking: Partage de position
+      transfer: Transférer
   stores:
     default:
       name: Site numéro 1
