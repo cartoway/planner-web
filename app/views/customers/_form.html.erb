@@ -277,6 +277,8 @@
   <%= f.text_field :default_country, required: true %>
   <%= render partial: 'shared/check_box', locals: { form: f, field: :with_state, label: t('activerecord.attributes.customer.with_state') } %>
 
+  <%= f.date_field :stop_max_upper_bound %>
+
   <% if current_user.admin? %>
     <legend class="scheduler-border col-md-8">
       <%= t '.options' %>
@@ -314,6 +316,7 @@
     <%= f.number_field :optimization_cost_waiting_time, { help: t('.optimization_cost_waiting_time_help'), placeholder: t('.optimization_cost_waiting_time_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_cost_waiting_time)), min: 0, step: 'any', append: '×'} %>
 
     <%= render partial: 'shared/check_box', locals: { form: f, field: :optimization_force_start, label: t('activerecord.attributes.customer.optimization_force_start'), help: t('.optimization_force_start_help') } %>
+    <%= render partial: 'shared/check_box', locals: { form: f, field: :authorize_overtake, label: t('activerecord.attributes.customer.authorize_overtake'), help: t('.authorize_overtake') %>
   <% end %>
 
   <legend class="scheduler-border col-md-8">
