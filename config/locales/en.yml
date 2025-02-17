@@ -160,6 +160,7 @@ en:
         default_value: Default value
         description: Description
       customer:
+        authorize_overtake: Allow delays
         ref: Reference
         ref_help: Reference must be unique
         name: Name
@@ -942,6 +943,9 @@ en:
       success: Vehicles deleted successfully
     form:
       field_default: '%{n} (default value)'
+      max_distance_default: '%{n} (default value)'
+      max_ride_distance_default: '%{n} (default value)'
+      max_ride_duration_default: '%{n} (default value)'
       name: Account
       default_value: Default values
       outputs: Outputs

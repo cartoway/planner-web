@@ -160,6 +160,7 @@ fr:
         default_value: Valeur par défaut
         description: Description
       customer:
+        authorize_overtake: Autoriser le retard
         ref: Référence
         ref_help: La référence doit être unique
         name: Nom
@@ -961,6 +962,9 @@ fr:
       success: Véhicules supprimés avec succès
     form:
       field_default: '%{n} (valeur par défaut)'
+      max_distance_default: '%{n} (valeur par défaut)'
+      max_ride_distance_default: '%{n} (valeur par défaut)'
+      max_ride_duration_default: '%{n} (valeur par défaut)'
       name: Compte
       default_value: Valeurs par défaut
       outputs: Diffusion des tournées
