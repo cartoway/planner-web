@@ -228,30 +228,44 @@ const tracking = function(params) {
     }
   }
 
-  function checkPendingData() {
-    if (navigator.onLine) {
-      if ('serviceWorker' in navigator && 'SyncManager' in window) {
-        if (navigator.serviceWorker.controller) {
-          const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-          navigator.serviceWorker.controller.postMessage({
-            type: 'SET_CSRF_TOKEN',
-            token: token
-          });
-        }
+  function checkConnection() {
+    return new Promise((resolve) => {
+      fetch('/', {
+        method: 'HEAD',
+        cache: 'no-cache'
+      })
+      .then(() => resolve(true))
+      .catch(() => resolve(false));
+      setTimeout(() => resolve(false), 5000);
+    });
+  }
 
-        navigator.serviceWorker.ready.then(registration => {
-          registration.sync.register('sync-positions');
-          registration.sync.register('sync-stops');
-        });
-      } else {
-        if (hasPendingData('position_')) {
-          syncPositionsWithoutServiceWorker();
-        }
-        if (hasPendingData('stop_update_')) {
-          syncStopsWithoutServiceWorker();
+  function checkPendingData() {
+    checkConnection().then(isOnline => {
+      if (isOnline) {
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+          if (navigator.serviceWorker.controller) {
+            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            navigator.serviceWorker.controller.postMessage({
+              type: 'SET_CSRF_TOKEN',
+              token: token
+            });
+          }
+
+          navigator.serviceWorker.ready.then(registration => {
+            registration.sync.register('sync-positions');
+            registration.sync.register('sync-stops');
+          });
+        } else {
+          if (hasPendingData('position_')) {
+            syncPositionsWithoutServiceWorker();
+          }
+          if (hasPendingData('stop_update_')) {
+            syncStopsWithoutServiceWorker();
+          }
         }
       }
-    }
+    });
   }
 
   function hasPendingData(prefix) {
@@ -259,10 +273,9 @@ const tracking = function(params) {
   }
 
   getPosition();
-
   initTracking();
 
-  ['DOMContentLoaded', 'online'].forEach(event => {
+  ['DOMContentLoaded', 'online', 'visibilitychange', 'networkchange'].forEach(event => {
     window.addEventListener(event, checkPendingData);
   });
 
