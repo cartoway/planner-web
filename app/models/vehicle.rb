@@ -105,16 +105,6 @@ class Vehicle < ApplicationRecord
     }
   end
 
-  def self.emissions_table
-    [
-      [I18n.t('vehicles.emissions_nothing', n: 0), '0.0'],
-      [I18n.t('vehicles.emissions_light_petrol', n: self.localize_numeric_value(2.71)), '2.71'],
-      [I18n.t('vehicles.emissions_light_diesel', n: self.localize_numeric_value(3.07)), '3.07'],
-      [I18n.t('vehicles.emissions_light_lgp', n: self.localize_numeric_value(1.77)), '1.77'],
-      [I18n.t('vehicles.emissions_ngv', n: self.localize_numeric_value(2.13)), '2.13'],
-    ]
-  end
-
   amoeba do
     exclude_association :tag_vehicles
     exclude_association :vehicle_usages
