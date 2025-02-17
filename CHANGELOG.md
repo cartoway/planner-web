@@ -2,19 +2,28 @@
 
 ## Dev
   ### Added
+    - Mobile: Introduce asynchronous status update when offline [#272](https://github.com/cartoway/planner-web/pull/272)
+    - Planning
+      - Display route costs and revenue [#264](https://github.com/cartoway/planner-web/pull/264)
+      - Add the possibility to send the route to drivers using an SMS [#269](https://github.com/cartoway/planner-web/pull/269)
     - Zoning
       - Activate geocoding search [#250](https://github.com/cartoway/planner-web/pull/250)
-      - Add color selector [#255](https://github.com/cartoway/planner-web/pull/255)
+      - Add color selector [#255](https://github.com/cartoway/planner-web/pull/255) & [#263](https://github.com/cartoway/planner-web/pull/263)
       - Center the view on a zone [#253](https://github.com/cartoway/planner-web/pull/253) & [#257](https://github.com/cartoway/planner-web/pull/257)
 
   ### Changed
     - Space route name in route filter selector [#251](https://github.com/cartoway/planner-web/pull/251)
+    - Update logo [#265](https://github.com/cartoway/planner-web/pull/265)
+    - Update API documentation [#266](https://github.com/cartoway/planner-web/pull/266)
+    - Balance default optimization costs [#267](https://github.com/cartoway/planner-web/pull/267) & [#270](https://github.com/cartoway/planner-web/pull/270)
+    - Unbranding [#261](https://github.com/cartoway/planner-web/pull/261) & [#272]
 
   ### Fixed
     - Fix how empty lines are skip from CSV on import [#252](https://github.com/cartoway/planner-web/pull/252)
     - Permute the order of inputs for vehicle usage form (option toll and option low emission) [#256](https://github.com/cartoway/planner-web/pull/256)
     - Map on route print now displays correctly [#259](https://github.com/cartoway/planner-web/pull/259)
-
+    - New zones correctly count elements [#268](https://github.com/cartoway/planner-web/pull/268)
+    - Clear logs in test environment [#272](https://github.com/cartoway/planner-web/pull/272)
 ## V104.2.0
   ### Changed
     - Destination
