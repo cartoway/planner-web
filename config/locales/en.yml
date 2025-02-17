@@ -2171,6 +2171,7 @@ en:
       previous: Previous
       status: Status
       tracking: Position sharing
+      transfer: Transfer
   stores:
     default:
       name: Depot number 1

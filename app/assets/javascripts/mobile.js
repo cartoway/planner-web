@@ -1,10 +1,37 @@
 'use strict';
 
 import { stops_edit } from '../../assets/javascripts/stops';
+import {
+  beforeSendWaiting,
+  ajaxError,
+  completeWaiting,
+} from '../../assets/javascripts/ajax';
 
 const tracking = function(params) {
   let positionInterval = null;
   let messageListener;
+  let stop_id;
+  $(".route-select").on("click", ".send_to_route", function() {
+    stop_id = $(this).data('stop-id');
+    var url = this.href;
+    $.ajax({
+      type: 'PATCH',
+      url: url,
+      beforeSend: function() {
+        beforeSendWaiting();
+      },
+      complete: function() {
+        completeWaiting();
+        removeStop(stop_id);
+      },
+      error: ajaxError
+    });
+    return false;
+  });
+
+  function removeStop(stop_id) {
+    $('#heading-' + stop_id).closest('.panel').remove();
+  }
 
   $('#location-switch').on('change', function(){
     setTracking($(this).prop('checked'));

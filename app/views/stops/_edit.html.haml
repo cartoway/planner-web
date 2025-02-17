@@ -75,3 +75,19 @@
           .col-xs-12
             %p.help-block
               = custom_attribute.description
+      - if @manage_planning[:manage_organize]
+        %label
+          = t('stops.mobile.transfer')
+        .d-flex.align-items-center.justify-content-left.mb-1.row
+          .col-xs-12
+            .dropdown.route-select
+              %a.btn.btn-default.col-xs-12.dropdown-toggle{ data: { toggle: 'dropdown', title: t('plannings.edit.send_to_route_help') }, type: "button" }
+                = t('stops.mobile.back')
+                %span.caret
+              %ul.col-xs-12.dropdown-menu{ role: 'menu' }
+                - planning_summary(@route.planning)[:routes].each do |route_data|
+                  - next if route_data[:route_id] == @route.id || route_data[:vehicle_usage_id].nil?
+                  %li
+                    %a.send_to_route{ href: "/plannings/#{@route.planning_id}/#{route_data[:route_id]}/#{stop.id}/move.json", data: { stop_id: stop.id } }
+                      %div.color_small{ style: "background: #{route_data[:color]};" }
+                      = route_data[:name]
