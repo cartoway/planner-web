@@ -32,6 +32,7 @@ class RoutesController < ApplicationController
   include PlanningExport
 
   def mobile
+    manage_planning
     @params = params
     @stops = @route.stops.only_active_stop_visits
     respond_to do |format|
@@ -132,6 +133,11 @@ class RoutesController < ApplicationController
   end
 
   private
+
+  def manage_planning
+    @manage_planning = ApiWeb::V01::PlanningsController.manage
+    @callback_button = true
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_route
