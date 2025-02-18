@@ -2236,6 +2236,7 @@ fr:
         signature: 'Signature :'
     mobile:
       empty_route: Tournée vide
+      sync_pending: Synchro en attente
   deliverables_by_vehicles:
     show:
       title_page: État de charge par tournée

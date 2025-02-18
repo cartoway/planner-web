@@ -2134,6 +2134,7 @@ en:
         signature: 'Signature:'
     mobile:
       empty_route: Empty tour
+      sync_pending: Sync pending
   deliverables_by_vehicles:
     show:
       title_page: Charge by plans

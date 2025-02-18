@@ -54,6 +54,8 @@ export const stops_edit = function(params) {
       timestamp: new Date().toISOString()
     };
 
+    $('#mobile-sync-pending').removeClass('d-none');
+
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
         type: 'STORE_STOP',

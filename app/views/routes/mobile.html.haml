@@ -83,4 +83,12 @@
           .alert.alert-warning
             = t("routes.mobile.empty_route")
 
+  .row
+    #mobile-sync-pending.d-none.fixed-spinner-container.spinner-container.alert-warning.col-xs-12.p-0
+      .d-flex.align-items-center.justify-content-center
+        .col-xs-1
+          .spinner-border{role: "status"}
+        .col-xs-7
+          = t('routes.mobile.sync_pending')
+
 - controller.js(route_id: @route.id)
