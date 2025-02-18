@@ -161,9 +161,14 @@ function syncPositions() {
       }
     })
     .then(response => {
+      pendingRequests.positions.delete(position);
       if (response.ok) {
-        pendingRequests.positions.delete(position);
         notifyClients('POSITION_SYNCED', position);
+      } else if (response.status === 0 || response.status === 408 || response.status === 502 || response.status === 503 || response.status === 504) {
+          notifyClients('STORE_POSITIONS', Array.from([position]));
+      }
+      else {
+        throw new Error(`Failed to sync position: ${response.status}`);
       }
     })
     .catch(error => {
@@ -171,7 +176,6 @@ function syncPositions() {
         type: 'position',
         error: error.message
       });
-      throw error;
     });
   }));
 }
@@ -198,9 +202,13 @@ function syncStops() {
       }
     })
     .then(response => {
+      pendingRequests.stops.delete(stop);
       if (response.ok) {
-        pendingRequests.stops.delete(stop);
         notifyClients('STOP_SYNCED', stop);
+      } else if (response.status === 404 || response.status === 408 || response.status === 502) {
+        notifyClients('STORE_STOPS', Array.from([stop]));
+      } else {
+        throw new Error(`Failed to sync stop: ${response.status}`);
       }
     })
     .catch(error => {
@@ -209,7 +217,6 @@ function syncStops() {
         url: stop.url,
         error: error.message
       });
-      throw error;
     });
   }));
 }

@@ -1267,7 +1267,14 @@ small {
   justify-content: center;
   width: 100%;
   height: 100%;
-  background-color: rgba(210, 210, 210, 0.6); /* Fond semi-transparent */
+}
+
+.spinner-border-default {
+  background-color: rgba(210, 210, 210, 0.6);
+}
+
+.spinner-border-warning {
+  background-color: rgba(252, 248, 227, 0.6);
 }
 
 .spinner-border::after {
@@ -1279,6 +1286,15 @@ small {
   border-radius: 50%;
   -webkit-animation: .75s linear infinite spinner-border;
   animation: .75s linear infinite spinner-border;
+}
+
+.fixed-spinner-container {
+  position: fixed !important;
+  pointer-events: none;
+  z-index: 1000;
+  right: 0;
+  bottom: 0;
+  left:0;
 }
 
 .spinner-container {

@@ -57,7 +57,12 @@ const tracking = function(params) {
 
     messageListener = event => {
       if (event.data.type === 'POSITION_SYNCED') {
+        $('#mobile-sync-pending').addClass('d-none');
         startInterval();
+      }
+
+      if (event.data.type === 'STOP_SYNCED') {
+        $('#mobile-sync-pending').addClass('d-none');
       }
 
       if (event.data.type === 'SYNC_ERROR') {
@@ -193,6 +198,8 @@ const tracking = function(params) {
       timestamp: new Date().toISOString()
     };
 
+    $('#mobile-sync-pending').removeClass('d-none');
+
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
         type: 'STORE_POSITION',
@@ -228,44 +235,39 @@ const tracking = function(params) {
     }
   }
 
-  function checkConnection() {
-    return new Promise((resolve) => {
-      fetch('/', {
-        method: 'HEAD',
-        cache: 'no-cache'
-      })
-      .then(() => resolve(true))
-      .catch(() => resolve(false));
-      setTimeout(() => resolve(false), 5000);
-    });
-  }
+  let lastSyncAttempt = 0;
+  const SYNC_COOLDOWN = 30000;
 
   function checkPendingData() {
-    checkConnection().then(isOnline => {
-      if (isOnline) {
-        if ('serviceWorker' in navigator && 'SyncManager' in window) {
-          if (navigator.serviceWorker.controller) {
-            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            navigator.serviceWorker.controller.postMessage({
-              type: 'SET_CSRF_TOKEN',
-              token: token
-            });
-          }
+    const now = Date.now();
+    if (now - lastSyncAttempt < SYNC_COOLDOWN) {
+      return;
+    }
 
-          navigator.serviceWorker.ready.then(registration => {
-            registration.sync.register('sync-positions');
-            registration.sync.register('sync-stops');
+    lastSyncAttempt = now;
+    if (navigator.onLine) {
+      if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        if (navigator.serviceWorker.controller) {
+          const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+          navigator.serviceWorker.controller.postMessage({
+            type: 'SET_CSRF_TOKEN',
+            token: token
           });
-        } else {
-          if (hasPendingData('position_')) {
-            syncPositionsWithoutServiceWorker();
-          }
-          if (hasPendingData('stop_update_')) {
-            syncStopsWithoutServiceWorker();
-          }
+        }
+
+        navigator.serviceWorker.ready.then(registration => {
+          registration.sync.register('sync-positions');
+          registration.sync.register('sync-stops');
+        });
+      } else {
+        if (hasPendingData('position_')) {
+          syncPositionsWithoutServiceWorker();
+        }
+        if (hasPendingData('stop_update_')) {
+          syncStopsWithoutServiceWorker();
         }
       }
-    });
+    }
   }
 
   function hasPendingData(prefix) {
@@ -296,6 +298,7 @@ const tracking = function(params) {
         contentType: 'application/json',
         success: function() {
           localStorage.removeItem(`position_${position.id}`);
+          $('#mobile-sync-pending').addClass('d-none');
         }
       });
     });
@@ -324,6 +327,7 @@ const tracking = function(params) {
         contentType: false,
         success: function() {
           localStorage.removeItem(`stop_update_${update.id}`);
+        $('#mobile-sync-pending').addClass('d-none');
         }
       });
     });
