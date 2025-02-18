@@ -2,41 +2,43 @@
 
 ## Dev
   ### Added
-    - Mobile: Introduce asynchronous status update when offline [#272](https://github.com/cartoway/planner-web/pull/272)
-    - Planning
-      - Display route costs and revenue [#264](https://github.com/cartoway/planner-web/pull/264)
-      - Add the possibility to send the route to drivers using an SMS [#269](https://github.com/cartoway/planner-web/pull/269)
-    - Zoning
-      - Activate geocoding search [#250](https://github.com/cartoway/planner-web/pull/250)
-      - Add color selector [#255](https://github.com/cartoway/planner-web/pull/255) & [#263](https://github.com/cartoway/planner-web/pull/263)
-      - Center the view on a zone [#253](https://github.com/cartoway/planner-web/pull/253) & [#257](https://github.com/cartoway/planner-web/pull/257)
+  - Mobile
+    - Introduce asynchronous status update when offline [#272](https://github.com/cartoway/planner-web/pull/272) & [#274](https://github.com/cartoway/planner-web/pull/274) & [#275](https://github.com/cartoway/planner-web/pull/275)
+    - Allow to send stops to another route [#274](https://github.com/cartoway/planner-web/pull/274)
+  - Planning
+    - Display route costs and revenue [#264](https://github.com/cartoway/planner-web/pull/264) & [#270](https://github.com/cartoway/planner-web/pull/270)
+    - Add the possibility to send the route to drivers using an SMS [#269](https://github.com/cartoway/planner-web/pull/269)
+  - Zoning
+    - Activate geocoding search [#250](https://github.com/cartoway/planner-web/pull/250)
+    - Add color selector [#255](https://github.com/cartoway/planner-web/pull/255) & [#263](https://github.com/cartoway/planner-web/pull/263)
+    - Center the view on a zone [#253](https://github.com/cartoway/planner-web/pull/253) & [#257](https://github.com/cartoway/planner-web/pull/257)
 
   ### Changed
-    - Space route name in route filter selector [#251](https://github.com/cartoway/planner-web/pull/251)
-    - Update logo [#265](https://github.com/cartoway/planner-web/pull/265)
-    - Update API documentation [#266](https://github.com/cartoway/planner-web/pull/266)
-    - Balance default optimization costs [#267](https://github.com/cartoway/planner-web/pull/267) & [#270](https://github.com/cartoway/planner-web/pull/270)
-    - Unbranding [#261](https://github.com/cartoway/planner-web/pull/261) & [#272]
+  - Space route name in route filter selector [#251](https://github.com/cartoway/planner-web/pull/251)
+  - Update logo [#265](https://github.com/cartoway/planner-web/pull/265)
+  - Update API documentation [#266](https://github.com/cartoway/planner-web/pull/266)
+  - Balance default optimization costs [#267](https://github.com/cartoway/planner-web/pull/267)
+  - Unbranding [#261](https://github.com/cartoway/planner-web/pull/261) & [#272](https://github.com/cartoway/planner-web/pull/272)
 
   ### Fixed
-    - Fix how empty lines are skip from CSV on import [#252](https://github.com/cartoway/planner-web/pull/252)
-    - Permute the order of inputs for vehicle usage form (option toll and option low emission) [#256](https://github.com/cartoway/planner-web/pull/256)
-    - Map on route print now displays correctly [#259](https://github.com/cartoway/planner-web/pull/259)
-    - New zones correctly count elements [#268](https://github.com/cartoway/planner-web/pull/268)
-    - Clear logs in test environment [#272](https://github.com/cartoway/planner-web/pull/272)
+  - Fix how empty lines are skip from CSV on import [#252](https://github.com/cartoway/planner-web/pull/252)
+  - Permute the order of inputs for vehicle usage form (option toll and option low emission) [#256](https://github.com/cartoway/planner-web/pull/256)
+  - Map on route print now displays correctly [#259](https://github.com/cartoway/planner-web/pull/259)
+  - New zones correctly count elements [#268](https://github.com/cartoway/planner-web/pull/268)
+  - Clear logs in test environment [#272](https://github.com/cartoway/planner-web/pull/272)
 ## V104.2.0
   ### Changed
-    - Destination
-      - Import: The route and vehicle columns should be consistent, otherwise an error is raised [#242](https://github.com/cartoway/planner-web/pull/242)
-      - Import: Allows to update a single route in a pre-existing plan [#242](https://github.com/cartoway/planner-web/pull/242)
+  - Destination
+    - Import: The route and vehicle columns should be consistent, otherwise an error is raised [#242](https://github.com/cartoway/planner-web/pull/242)
+    - Import: Allows to update a single route in a pre-existing plan [#242](https://github.com/cartoway/planner-web/pull/242)
   ### Fixed
-   - Planning: `candidate_insert` was failing if no route is available [#246](https://github.com/cartoway/planner-web/pull/246)
+  - Planning: `candidate_insert` was failing if no route is available [#246](https://github.com/cartoway/planner-web/pull/246)
 
 ## V104.1.0
   ### Added
-    - API: Add option `exclusion` to filter routes applied on Destination candidate_insert [#228](https://github.com/cartoway/planner-web/pull/228)
-    - Destination: Validate ref uniqueness from API endpoints, nested visits are validated too [#211](https://github.com/cartoway/planner-web/pull/211)
-    - Misc: Add `rails_performance` gem to monitor performances [#227](https://github.com/cartoway/planner-web/pull/227)
+  - API: Add option `exclusion' to filter routes applied on Destination candidate_insert [#228](https://github.com/cartoway/planner-web/pull/228)
+  - Destination: Validate ref uniqueness from API endpoints, nested visits are validated too [#211](https://github.com/cartoway/planner-web/pull/211)
+  - Misc: Add `rails_performance` gem to monitor performances [#227](https://github.com/cartoway/planner-web/pull/227)
 
   ### Removed
   - `skip_callback` was not thread safe [#214](https://github.com/cartoway/planner-web/pull/214)
