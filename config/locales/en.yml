@@ -2575,6 +2575,12 @@ en:
     new:
       title: New vehicles configuration
     import:
+      cost_distance: cost per km
+      cost_distance_desc: cost applied per km of the vehicle's route
+      cost_fixed: fixed cost
+      cost_fixed_desc: fixed cost applied if the vehicle is used
+      cost_time: hourly cost
+      cost_time_desc: hourly cost of the vehicle's route
       max_distance: Maximum achievable vehicle distance (in metres)
       max_ride_distance: Maximum ride distance between route stops (in metres)
       max_ride_duration: Maximum ride duration between route stops
