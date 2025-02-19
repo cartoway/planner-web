@@ -2186,6 +2186,7 @@ fr:
       time_window_start_2: horaire début 2
       time_window_end_2: horaire fin 2
       priority: priorité
+      revenue: revenu
       tags_visit: catégories visite
       out_of_window: hors créneau visite
       out_of_capacity: hors capacité véhicule
