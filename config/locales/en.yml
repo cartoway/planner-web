@@ -2085,6 +2085,7 @@ en:
       time_window_start_2: open 2
       time_window_end_2: close 2
       priority: priority
+      revenue: revenue
       tags_visit: categories visit
       out_of_window: out of visit time window
       out_of_capacity: out of capacity

@@ -656,6 +656,7 @@ class PlanningsController < ApplicationController
       :time_window_start_2,
       :time_window_end_2,
       :priority,
+      :revenue,
       :force_position,
       :tags_visit
     ] + (
