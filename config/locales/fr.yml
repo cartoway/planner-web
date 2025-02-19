@@ -2684,6 +2684,12 @@ fr:
     new:
       title: Nouvelle configuration de la flotte
     import:
+      cost_distance: coût au kilomètre
+      cost_distance_desc: coût appliqué par kilomètre de la tournée
+      cost_fixed: coût fixe
+      cost_fixed_desc: coût appliqué lorsque le véhicule est utilisé
+      cost_time: coût horaire
+      cost_time_desc: coût horaire de la tournée du véhicule
       max_distance: Distance maximale du véhicule
       max_ride_distance: Distance trajet maximale entre arrêts de la tournée du véhicule
       max_ride_duration: Durée trajet maximale entre arrêts de la tournée du véhicule
