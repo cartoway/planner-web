@@ -226,6 +226,25 @@
           %i.fa.fa-print.fa-fw
 .row.route-data{"data-route-id": route[:route_id]}
   - if route[:vehicle_id]
+    - if route[:route_averages]
+      - if route[:total_revenue]
+        .col-xs-4{title: t('plannings.edit.revenue_help')}
+          .primary.route-info
+            %i.fa.fa-hand-holding-dollar.fa-fw
+            = route[:total_revenue]
+            = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
+      - if route[:total_cost]
+        .col-xs-4{title: t('plannings.edit.cost_help')}
+          .primary.route-info
+            %i.fa.fa-coins.fa-fw
+            = route[:total_cost]
+            = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
+      - if route[:total_revenue] && route[:total_cost]
+        .col-xs-4{title: t('plannings.edit.balance_help')}
+          .route-info{ class: (route[:total_balance] < 0 ? 'danger' : route[:total_balance] == 0 ? 'secondary' : 'success')}
+            %i.fa.fa-scale-balanced.fa-fw
+            = route[:total_balance]
+            = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
     .col-xs-4
       .route-info.primary{class: ('danger' if route[:route_out_of_drive_time] || route[:route_out_of_work_time]), title: t('plannings.edit.route_duration_help')}
         %i.fa.fa-stopwatch.fa-fw>
@@ -248,23 +267,6 @@
           %i.fa.fa-flask.fa-fw
           = route[:emission]
           = t('all.unit.kgco2e_html')
-      - if route[:total_revenue]
-        .col-xs-4{title: t('plannings.edit.revenue_help')}
-          .primary.route-info
-            %i.fa.fa-hand-holding-dollar.fa-fw
-            = route[:total_revenue]
-            = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
-      .col-xs-4{title: t('plannings.edit.cost_help')}
-        .primary.route-info
-          %i.fa.fa-coins.fa-fw
-          = route[:total_cost]
-          = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
-      - if route[:total_revenue]
-        .col-xs-4{title: t('plannings.edit.balance_help')}
-          .primary.route-info
-            %i.fa.fa-scale-balanced.fa-fw
-            = route[:total_balance]
-            = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")
   - else
     .col-xs-4
       .route-info.inactive{ data: { "size-active": route[:size]}}

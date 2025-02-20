@@ -142,9 +142,9 @@ class Route < ApplicationRecord
       visits_duration: nil,
       quantities: nil,
       revenue: nil,
-      cost_distance: 0,
-      cost_fixed: 0,
-      cost_time: 0
+      cost_distance: nil,
+      cost_fixed: nil,
+      cost_time: nil
     }
   end
 

@@ -408,6 +408,11 @@ $sidebar-margins: 10px;
           background-color: $primary-background-color;
         }
 
+        .success.route-info, .success.stop-info {
+          border: 1px solid $success-border-color;
+          background-color: $success-background-color;
+        }
+
         .danger.route-info, .danger.stop-info {
           border: 1px solid $danger-border-color !important;
           background-color: $warning-color !important;
