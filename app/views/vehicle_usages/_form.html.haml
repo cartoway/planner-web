@@ -48,13 +48,13 @@
           .input-group
             = number_field :vehicle_usage, :cost_fixed,
               value: @vehicle_usage.cost_fixed,
-              placeholder: @vehicle_usage.default_cost_fixed,
+              placeholder: t('customers.form.cost_fixed_default', n: @vehicle_usage.default_cost_fixed),
               step: 'any', class: 'form-control', min: 0
             %span.input-group-addon
               = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
             = number_field :vehicle_usage, :cost_time,
               value: @vehicle_usage.cost_time,
-              placeholder: @vehicle_usage.default_cost_time,
+              placeholder: t('customers.form.cost_time_default', n: @vehicle_usage.default_cost_time),
               step: 'any', class: 'form-control', min: 0
             %span.input-group-addon
               = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
@@ -62,7 +62,7 @@
               = t('time.hour')
             = number_field :vehicle_usage, :cost_distance,
               value: @vehicle_usage.cost_distance,
-              placeholder: @vehicle_usage.default_cost_distance,
+              placeholder: t('customers.form.cost_distance_default', n: @vehicle_usage.default_cost_distance),
               step: 'any', class: 'form-control', min: 0
             %span.input-group-addon
               = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
