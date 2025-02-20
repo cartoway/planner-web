@@ -940,12 +940,7 @@ en:
     delete_multiple_vehicles:
       success: Vehicles deleted successfully
     form:
-      cost_distance_default: '%{n} (default value)'
-      cost_fixed_default: '%{n} (default value)'
-      cost_time_default: '%{n} (default value)'
-      max_distance_default: '%{n} (default value)'
-      max_ride_distance_default: '%{n} (default value)'
-      max_ride_duration_default: '%{n} (default value)'
+      field_default: '%{n} (default value)'
       name: Account
       default_value: Default values
       outputs: Outputs

@@ -48,13 +48,13 @@
           .input-group
             = number_field :vehicle_usage, :cost_fixed,
               value: @vehicle_usage.cost_fixed,
-              placeholder: t('customers.form.cost_fixed_default', n: @vehicle_usage.default_cost_fixed),
+              placeholder: t('customers.form.field_default', n: @vehicle_usage.default_cost_fixed),
               step: 'any', class: 'form-control', min: 0
             %span.input-group-addon
               = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
             = number_field :vehicle_usage, :cost_time,
               value: @vehicle_usage.cost_time,
-              placeholder: t('customers.form.cost_time_default', n: @vehicle_usage.default_cost_time),
+              placeholder: t('customers.form.field_default', n: @vehicle_usage.default_cost_time),
               step: 'any', class: 'form-control', min: 0
             %span.input-group-addon
               = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
@@ -62,7 +62,7 @@
               = t('time.hour')
             = number_field :vehicle_usage, :cost_distance,
               value: @vehicle_usage.cost_distance,
-              placeholder: t('customers.form.cost_distance_default', n: @vehicle_usage.default_cost_distance),
+              placeholder: t('customers.form.field_default', n: @vehicle_usage.default_cost_distance),
               step: 'any', class: 'form-control', min: 0
             %span.input-group-addon
               = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
@@ -81,7 +81,7 @@
             = number_field 'vehicle_usage[vehicle]',
               :max_distance,
               value: max_distance,
-              placeholder: (@vehicle_usage.vehicle_usage_set.max_distance ? t('customers.form.max_distance_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_distance, @current_user.prefered_unit)) : ''),
+              placeholder: (@vehicle_usage.vehicle_usage_set.max_distance ? t('customers.form.field_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_distance, @current_user.prefered_unit)) : ''),
               step: 'any', class: 'form-control', min: 0
             %span.input-group-addon
               = current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms')
@@ -95,7 +95,7 @@
             = number_field 'vehicle_usage[vehicle]',
               :max_ride_distance,
               value: max_ride_distance ,
-              placeholder: @vehicle_usage.vehicle_usage_set.max_ride_distance ? t('customers.form.max_ride_distance_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_ride_distance, @current_user.prefered_unit)) : '',
+              placeholder: @vehicle_usage.vehicle_usage_set.max_ride_distance ? t('customers.form.field_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_ride_distance, @current_user.prefered_unit)) : '',
               step: 'any',
               class: 'form-control', min: 0
             %span.input-group-addon= current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms')
@@ -106,7 +106,7 @@
         .col-md-offset-2.col-md-8.field
           .input-group
             = text_field 'vehicle_usage[vehicle]', :max_ride_duration, value: @vehicle_usage.vehicle.max_ride_duration_time,
-              placeholder: @vehicle_usage.vehicle_usage_set.max_ride_duration ? t('customers.form.max_ride_duration_default', n: @vehicle_usage.vehicle_usage_set.max_ride_duration_time) : t('all.unit.hour_minute'),
+              placeholder: @vehicle_usage.vehicle_usage_set.max_ride_duration ? t('customers.form.field_default', n: @vehicle_usage.vehicle_usage_set.max_ride_duration_time) : t('all.unit.hour_minute'),
               class: 'form-control'
             %span.input-group-addon
               %i.fa.fa-stopwatch.fa-fw
