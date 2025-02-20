@@ -18,9 +18,9 @@ if averages
     json.vehicles_used averages[:vehicles_used]
     json.vehicles averages[:vehicles]
     json.emission averages[:routes_emission] ? number_to_human(averages[:routes_emission], precision: 4) : '-'
-    json.total_cost (averages[:routes_cost]).round(2)
-    json.total_revenue averages[:routes_revenue] && (averages[:routes_revenue]).round(2)
-    json.total_balance ((averages[:routes_revenue] || 0) - averages[:routes_cost]).round(2)
+    json.total_cost averages[:routes_cost]&.round(2)
+    json.total_revenue averages[:routes_revenue]&.round(2)
+    json.total_balance ((averages[:routes_revenue] || 0) - (averages[:routes_cost] || 0)).round(2)
     json.total_quantities planning_quantities(@planning)
   end
 end
