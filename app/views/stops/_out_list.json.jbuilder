@@ -56,6 +56,7 @@ if @with_stops
     (json.time_window_end_2_day number_of_days(stop.time_window_end_2)) if stop.time_window_end_2
     (json.time_windows_condensed stop_condensed_time_windows(stop))
     (json.priority stop.priority) if stop.priority
+    (json.revenue stop.revenue) if stop.revenue
     (json.geocoded true) if stop.position?
     (json.time stop.time_time) if stop.time
     (json.time_day number_of_days(stop.time)) if stop.time
