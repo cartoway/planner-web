@@ -959,6 +959,9 @@ fr:
     delete_multiple_vehicles:
       success: Véhicules supprimés avec succès
     form:
+      cost_distance_default: '%{n} (valeur par défaut)'
+      cost_fixed_default: '%{n} (valeur par défaut)'
+      cost_time_default: '%{n} (valeur par défaut)'
       max_distance_default: '%{n} (valeur par défaut)'
       max_ride_distance_default: '%{n} (valeur par défaut)'
       max_ride_duration_default: '%{n} (valeur par défaut)'
