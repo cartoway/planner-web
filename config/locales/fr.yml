@@ -167,6 +167,7 @@ fr:
         description_title: Description
         description_label: Informations du compte
         description_help: Détails sur le compte et les utilisateurs courants
+        enable_optimization_soft_upper_bound: Authoriser les retards
         end_subscription: Fin de souscription
         test: Test
         max_vehicles: Nombre livreurs
@@ -1071,6 +1072,7 @@ fr:
         Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus court :
         non pris en compte
       optimization_force_start_help: Forcer le départ du véhicule à son horaire de début.
+      enable_optimization_soft_upper_bound_help: Permettre les retards au niveau des arrêts et/ou des véhicules.
       enable_global_optimization_test: Actif si Test
       print_header_help: Bloc de texte ajouté avant chaque tournée
       print:
