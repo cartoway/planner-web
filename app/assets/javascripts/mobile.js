@@ -57,16 +57,25 @@ const tracking = function(params) {
 
     messageListener = event => {
       if (event.data.type === 'POSITION_SYNCED') {
-        $('#mobile-sync-pending').addClass('d-none');
+        $('#mobile-sync-pending').fadeOut(500, function() {
+          $(this).addClass('d-none').show();
+        });
         startInterval();
       }
 
       if (event.data.type === 'STOP_SYNCED') {
-        $('#mobile-sync-pending').addClass('d-none');
+        $('#mobile-sync-pending').fadeOut(500, function() {
+          $(this).addClass('d-none').show();
+        });
       }
 
       if (event.data.type === 'SYNC_ERROR') {
-        stickyError(I18n.t('errors.mobile.sync_failed'));
+        $('#mobile-sync-failed').removeClass('d-none');
+        setTimeout(() => {
+          $('#mobile-sync-failed').fadeOut(500, function() {
+            $(this).addClass('d-none').show();
+          });
+        }, 3000);
       }
 
       if (event.data.type === 'STORE_STOPS') {
@@ -235,16 +244,7 @@ const tracking = function(params) {
     }
   }
 
-  let lastSyncAttempt = 0;
-  const SYNC_COOLDOWN = 30000;
-
   function checkPendingData() {
-    const now = Date.now();
-    if (now - lastSyncAttempt < SYNC_COOLDOWN) {
-      return;
-    }
-
-    lastSyncAttempt = now;
     if (navigator.onLine) {
       if ('serviceWorker' in navigator && 'SyncManager' in window) {
         if (navigator.serviceWorker.controller) {
