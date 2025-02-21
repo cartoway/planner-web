@@ -10,6 +10,13 @@ entryPoints:
       trustedIPs:
         - "0.0.0.0/0"
 
+  url_shortener:
+    address: :8635
+    forwardedHeaders:
+      insecure: true
+      trustedIPs:
+        - "0.0.0.0/0"
+
 # api:
 #   insecure: true
 #   dashboard: true

@@ -7,6 +7,13 @@ http:
       middlewares:
         - retry
 
+    url_shortener:
+      service: url_shortener
+      entrypoints: url_shortener
+      rule: HostRegexp(`.*`)
+      middlewares:
+        - retry
+
   services:
     web:
       loadbalancer:
@@ -19,6 +26,13 @@ http:
             secure: true
             httpOnly: true
             samesite: none
+
+    url_shortener:
+      loadbalancer:
+        servers:
+          - url: http://url_shortener:8635
+        healthcheck:
+          path: /
 
   middlewares:
     retry:
