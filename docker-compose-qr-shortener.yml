@@ -9,6 +9,6 @@ services:
       - ./data:/data
     environment:
       RACK_ENV: production
-      URL_BASE: ${URL_SHORTNER}
+      URL_BASE: ${URL_SHORTNER_PUBLIC}
       STORAGE_PATH: /data
     restart: unless-stopped
