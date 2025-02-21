@@ -90,5 +90,9 @@
           .spinner-border{role: "status"}
         .col-xs-7
           = t('routes.mobile.sync_pending')
+    #mobile-sync-failed.d-none.fixed-spinner-container.spinner-container.alert-danger.col-xs-12.p-0
+      .d-flex.align-items-center.justify-content-center
+        .col-xs-8
+          = t('routes.mobile.sync_failed')
 
 - controller.js(route_id: @route.id)
