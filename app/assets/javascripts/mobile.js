@@ -18,16 +18,25 @@ const tracking = function(params) {
       type: 'PATCH',
       url: url,
       beforeSend: function() {
+        addSpinner(stop_id);
         beforeSendWaiting();
       },
       complete: function() {
         completeWaiting();
+      },
+      success: function() {
         removeStop(stop_id);
       },
       error: ajaxError
     });
     return false;
   });
+
+  function addSpinner(stop_id) {
+    $('#heading-' + stop_id).closest('.panel').find('#transfer-label')
+      .addClass('spinner-container row')
+      .prepend('<div class="col-xs-1"><div class="spinner-border"></div></div>');
+  }
 
   function removeStop(stop_id) {
     $('#heading-' + stop_id).closest('.panel').remove();

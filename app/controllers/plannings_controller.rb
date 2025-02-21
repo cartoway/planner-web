@@ -22,14 +22,17 @@ require 'zip'
 class PlanningsController < ApplicationController
   protect_from_forgery except: [:optimize, :optimize_route]
 
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [:driver_move]
+  before_action :authenticate_driver!, only: [:driver_move]
+
   UPDATE_ACTIONS = [:update, :move, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh_route, :route_edit] + UPDATE_ACTIONS
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :refresh, :sidebar]
-  before_action :check_no_existing_job, only: [:refresh] + UPDATE_ACTIONS
+  before_action :set_driver_planning, only: [:driver_move]
+  before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
 
-  load_and_authorize_resource
+  load_and_authorize_resource except: [:driver_move]
 
   include Pagy::Backend
   include PlanningExport
@@ -159,61 +162,11 @@ class PlanningsController < ApplicationController
   end
 
   def move
-    respond_to do |format|
-      begin
-        Planning.transaction do
-          route = @planning.routes.find(Integer(params[:route_id]))
-          route_ids = [route.id]
+    move_respond
+  end
 
-          if params[:stop_ids].nil?
-            previous_route_id = Stop.find(params[:stop_id]).route_id
-            if route.vehicle_usage_id.nil? && previous_route_id == route.id
-              format.json { head :ok }
-              return
-            end
-            route_ids << previous_route_id if previous_route_id != route.id
-            move_stop(params[:stop_id], route, previous_route_id)
-          else
-            params[:stop_ids].map!(&:to_i)
-            stops = @planning.routes.flat_map{ |ro|
-              ro.stops.select{ |stop| params[:stop_ids].include? stop.id }
-            }
-            if params[:index]&.empty? && route.vehicle_usage?
-              if Optimizer.optimize(@planning, route, { insertion_only: true, moving_stop_ids: stops.map(&:id) })
-                current_user.customer.save!
-                route_ids += stops.map{ |stop| stop.route_id }
-                route_ids.uniq!
-              else
-                errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
-                format.json { render json: errors, status: :unprocessable_entity }
-                return
-              end
-            else
-              ids = stops.collect{ |stop| {stop_id: stop.id, route_id: stop.route_id} }
-              ids.reverse! if params[:index].to_i > 0
-              ids.each{ |id| move_stop(id[:stop_id], route, id[:route_id]) }
-              ids.uniq{ |id|
-                id[:route_id]
-              }.each{ |id|
-                next if id[:route_id] == route.id
-
-                @planning.routes.each{ |r|
-                  route_ids << r.id if r.id == id[:route_id]
-                }
-              }
-            end
-          end
-          # save! is used to rollback all the transaction with associations
-          if @planning.compute && @planning.save!
-            format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
-          else
-            format.json { render json: @planning.errors, status: :unprocessable_entity }
-          end
-        end
-      rescue ActiveRecord::RecordInvalid
-        format.json { render json: @planning.errors, status: :unprocessable_entity }
-      end
-    end
+  def driver_move
+    move_respond
   end
 
   def refresh
@@ -514,6 +467,64 @@ class PlanningsController < ApplicationController
 
   private
 
+  def move_respond
+    respond_to do |format|
+      begin
+        Planning.transaction do
+          route = @planning.routes.find(Integer(params[:route_id]))
+          route_ids = [route.id]
+
+          if params[:stop_ids].nil?
+            previous_route_id = Stop.find(params[:stop_id]).route_id
+            if route.vehicle_usage_id.nil? && previous_route_id == route.id
+              format.json { head :ok }
+              return
+            end
+            route_ids << previous_route_id if previous_route_id != route.id
+            move_stop(params[:stop_id], route, previous_route_id)
+          else
+            params[:stop_ids].map!(&:to_i)
+            stops = @planning.routes.flat_map{ |ro|
+              ro.stops.select{ |stop| params[:stop_ids].include? stop.id }
+            }
+            if params[:index]&.empty? && route.vehicle_usage?
+              if Optimizer.optimize(@planning, route, { insertion_only: true, moving_stop_ids: stops.map(&:id) })
+                current_user.customer.save!
+                route_ids += stops.map{ |stop| stop.route_id }
+                route_ids.uniq!
+              else
+                errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
+                format.json { render json: errors, status: :unprocessable_entity }
+                return
+              end
+            else
+              ids = stops.collect{ |stop| {stop_id: stop.id, route_id: stop.route_id} }
+              ids.reverse! if params[:index].to_i > 0
+              ids.each{ |id| move_stop(id[:stop_id], route, id[:route_id]) }
+              ids.uniq{ |id|
+                id[:route_id]
+              }.each{ |id|
+                next if id[:route_id] == route.id
+
+                @planning.routes.each{ |r|
+                  route_ids << r.id if r.id == id[:route_id]
+                }
+              }
+            end
+          end
+          # save! is used to rollback all the transaction with associations
+          if @planning.compute && @planning.save!
+            format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
+          else
+            format.json { render json: @planning.errors, status: :unprocessable_entity }
+          end
+        end
+      rescue ActiveRecord::RecordInvalid
+        format.json { render json: @planning.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
   def move_stop(stop_id, route, previous_route_id)
     # -1 Means latest position in the route
     index = Integer(params[:index]) if params[:index] && !params[:index].empty?
@@ -549,6 +560,22 @@ class PlanningsController < ApplicationController
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.preload_routes_without_stops.find(params[:id] || params[:planning_id])
+  end
+
+  def set_driver_planning
+    @manage_planning =
+      if request.referer&.match('api-web')
+        ApiWeb::V01::PlanningsController.manage
+      else
+        PlanningsController.manage
+      end
+    planning = Planning.find(params[:planning_id])
+    associated_route = planning.routes.find{ |route| route.vehicle_usage&.vehicle_id == current_vehicle.id }
+    if associated_route && Stop.find(params[:stop_id]).route_id == associated_route.id
+      @planning = planning
+    else
+      head :not_found
+    end
   end
 
   # Use callbacks to share common setup or constraints between actions.
