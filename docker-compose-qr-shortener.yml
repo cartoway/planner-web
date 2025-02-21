@@ -1,0 +1,14 @@
+services:
+  traefik:
+    depends_on:
+      - url_shortener
+
+  url_shortener:
+    image: ghcr.io/teritorio/qr-shortener:master
+    volumes:
+      - ./data:/data
+    environment:
+      RACK_ENV: production
+      URL_BASE: ${URL_SHORTNER}
+      STORAGE_PATH: /data
+    restart: unless-stopped
