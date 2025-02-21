@@ -87,7 +87,9 @@ function checkAndSync() {
       if (!csrfToken) {
         return;
       }
-      syncPendingData();
+      getAllPendingData().then(() => {
+        syncPendingData();
+      });
     }, 1000);
   }
 }
@@ -164,11 +166,18 @@ function syncPositions() {
       pendingRequests.positions.delete(position);
       if (response.ok) {
         notifyClients('POSITION_SYNCED', position);
-      } else if (response.status === 0 || response.status === 408 || response.status === 502 || response.status === 503 || response.status === 504) {
-          notifyClients('STORE_POSITIONS', Array.from([position]));
-      }
-      else {
-        throw new Error(`Failed to sync position: ${response.status}`);
+      } else {
+        switch(response.status) {
+          case 404:
+          case 408:
+          case 502:
+          case 503:
+          case 504:
+            notifyClients('STORE_POSITIONS', Array.from([position]));
+            break;
+          default:
+            throw new Error(`Failed to sync position: ${response.status}`);
+        }
       }
     })
     .catch(error => {
@@ -205,10 +214,18 @@ function syncStops() {
       pendingRequests.stops.delete(stop);
       if (response.ok) {
         notifyClients('STOP_SYNCED', stop);
-      } else if (response.status === 404 || response.status === 408 || response.status === 502) {
-        notifyClients('STORE_STOPS', Array.from([stop]));
       } else {
-        throw new Error(`Failed to sync stop: ${response.status}`);
+        switch(response.status) {
+          case 404:
+          case 408:
+          case 502:
+          case 503:
+          case 504:
+            notifyClients('STORE_STOPS', Array.from([stop]));
+            break;
+          default:
+            throw new Error(`Failed to sync stop: ${response.status}`);
+        }
       }
     })
     .catch(error => {
