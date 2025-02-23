@@ -205,6 +205,8 @@ fr:
         print_stop_time: Inclure les horaires de passage
         print_barcode: Code barre
         speed_multiplier: Ajustement de la vitesse
+        stop_max_upper_bound: Coefficient de retards / arrêts
+        vehicle_max_upper_bound: Coefficient de retards / véhicules
         router: Calculateur d'itinéraire
         router_warning: Ce calculateur d'itinéraire n'est pas autorisé dans ce profil
         layer_warning: Ce fond de carte n'est pas autorisé dans ce profil
@@ -1074,6 +1076,8 @@ fr:
       optimization_force_start_help: Forcer le départ du véhicule à son horaire de début.
       enable_optimization_soft_upper_bound_help: Permettre les retards au niveau des arrêts et/ou des véhicules.
       enable_global_optimization_test: Actif si Test
+      stop_max_upper_bound_help: Autoriser les retards sur les arrêts
+      vehicle_max_upper_bound_help: Autoriser les retards sur les véhicules
       print_header_help: Bloc de texte ajouté avant chaque tournée
       print:
         title: Impressions
