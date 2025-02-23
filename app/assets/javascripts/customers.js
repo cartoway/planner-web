@@ -222,35 +222,40 @@ const customers_edit = function (params) {
     removeLayerWarning();
   });
 
-    // Delete multiple vehicles
-    var requestPending = false;
-    $("#delete-action").click(function() {
-        if (confirm(I18n.t('all.verb.destroy_confirm')) && !requestPending) {
-            requestPending = true;
-            let vehicleIds = $.map($('table tbody :checkbox:checked').closest('tr'), function(val) {
-                return $(val).find('input').attr('id');
-            });
-            $.ajax({
-                type: "delete",
-                url: '/api/0.1/vehicles?' + $.param({
-                    ids: vehicleIds.join(',')
-                }),
-                beforeSend: beforeSendWaiting,
-                success: function() {
-                    $.map($('table tbody :checkbox:checked').closest('tr'), function(row) {
-                        $(row).remove();
-                    });
-                    notice(I18n.t('customers.delete_multiple_vehicles.success'))
-                },
-                complete: function() {
-                    requestPending = false;
+  // Delete multiple vehicles
+  var requestPending = false;
+  $("#delete-action").click(function() {
+      if (confirm(I18n.t('all.verb.destroy_confirm')) && !requestPending) {
+          requestPending = true;
+          let vehicleIds = $.map($('table tbody :checkbox:checked').closest('tr'), function(val) {
+              return $(val).find('input').attr('id');
+          });
+          $.ajax({
+              type: "delete",
+              url: '/api/0.1/vehicles?' + $.param({
+                  ids: vehicleIds.join(',')
+              }),
+              beforeSend: beforeSendWaiting,
+              success: function() {
+                  $.map($('table tbody :checkbox:checked').closest('tr'), function(row) {
+                      $(row).remove();
+                  });
+                  notice(I18n.t('customers.delete_multiple_vehicles.success'))
+              },
+              complete: function() {
+                  requestPending = false;
 
-                    completeWaiting();
-                },
-                error: ajaxError
-            });
-        }
-    });
+                  completeWaiting();
+              },
+              error: ajaxError
+          });
+      }
+  });
+
+  $("#customer_enable_optimization_soft_upper_bound_button").change(function(e) {
+    $("#optimization_soft_upper_bound").toggleClass('d-none');
+  });
+  
 };
 
 var routersAllowedForProfile = function(params) {
