@@ -165,6 +165,9 @@ class CustomersController < ApplicationController
         :enable_vehicle_position,
         :enable_stop_status,
         :enable_sms,
+        :enable_optimization_soft_upper_bound,
+        :stop_max_upper_bound,
+        :vehicle_max_upper_bound,
         :sms_template,
         :sms_concat,
         :sms_from_customer_name,
@@ -219,6 +222,9 @@ class CustomersController < ApplicationController
       return parameters
     else
       allowed_params = [
+        :enable_optimization_soft_upper_bound,
+        :stop_max_upper_bound,
+        :vehicle_max_upper_bound,
         :visit_duration,
         :default_country,
         :with_state,
