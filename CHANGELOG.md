@@ -26,6 +26,7 @@
   - Map on route print now displays correctly [#259](https://github.com/cartoway/planner-web/pull/259)
   - New zones correctly count elements [#268](https://github.com/cartoway/planner-web/pull/268)
   - Clear logs in test environment [#272](https://github.com/cartoway/planner-web/pull/272)
+  - Fix computation of stops during creation and editing [#282] (https://github.com/cartoway/planner-web/pull/282)
 ## V104.2.0
   ### Changed
   - Destination
