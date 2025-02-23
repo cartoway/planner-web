@@ -97,11 +97,11 @@ class Vehicle < ApplicationRecord
 
   def self.emissions_hash
     {
-      "nothing" => [I18n.t('vehicles.emissions.nothing', n: 0), '0.0'],
-      "light_petrol" => [I18n.t('vehicles.emissions.light_petrol', n: self.localize_numeric_value(2.71)), '2.71'],
-      "light_diesel" => [I18n.t('vehicles.emissions.light_diesel', n: self.localize_numeric_value(3.07)), '3.07'],
-      "light_lgp" => [I18n.t('vehicles.emissions.light_lgp', n: self.localize_numeric_value(1.77)), '1.77'],
-      "ngv" => [I18n.t('vehicles.emissions.ngv', n: self.localize_numeric_value(2.13)), '2.13'],
+      'nothing' => [I18n.t('vehicles.emissions.nothing', n: 0), '0.0'],
+      'light_petrol' => [I18n.t('vehicles.emissions.light_petrol', n: self.localize_numeric_value(2.71)), '2.71'],
+      'light_diesel' => [I18n.t('vehicles.emissions.light_diesel', n: self.localize_numeric_value(3.07)), '3.07'],
+      'light_lgp' => [I18n.t('vehicles.emissions.light_lgp', n: self.localize_numeric_value(1.77)), '1.77'],
+      'ngv' => [I18n.t('vehicles.emissions.ngv', n: self.localize_numeric_value(2.13)), '2.13'],
     }
   end
 

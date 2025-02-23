@@ -2169,11 +2169,11 @@ de:
   vehicles:
     default_name: 'Fahrzeug %{n}'
     emissions:
-      nothing: "Nichts - %{n}"
-      light_petrol: "Licht - Benzin - %{n}"
-      light_diesel: "Licht - Diesel - %{n}"
-      light_lgp: "Licht - Flüssiggas - %{n}"
-      ngv: "Erdgasfahrzeug - %{n}"
+      nothing: 'Nichts - %{n}'
+      light_petrol: 'Licht - Benzin - %{n}'
+      light_diesel: 'Licht - Diesel - %{n}'
+      light_lgp: 'Licht - Flüssiggas - %{n}'
+      ngv: 'Erdgasfahrzeug - %{n}'
     import:
       max_distance: maximale Entfernung (in Metern)
       max_distance_desc: maximal erreichbarer Fahrzeugabstand

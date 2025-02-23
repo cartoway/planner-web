@@ -2171,10 +2171,10 @@ pt:
   vehicles:
     default_name: 'Veículo %{n}'
     emissions:
-      nothing: "Nenhum - %{n}"
-      light_petrol: "Ligeiro - Gasolina - %{n}"
-      light_diesel: "Ligeiro - Gasóleo - %{n}"
-      light_lgp: "Ligeiro - GPL - %{n}"
+      nothing: 'Nenhum - %{n}'
+      light_petrol: 'Ligeiro - Gasolina - %{n}'
+      light_diesel: 'Ligeiro - Gasóleo - %{n}'
+      light_lgp: 'Ligeiro - GPL - %{n}'
     import:
       ref_vehicle: referência veículo
       ref_desc: referência do veículo
