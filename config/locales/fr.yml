@@ -780,6 +780,7 @@ fr:
         help_urls: Liens centre d'aide & contact
         social_urls: Liens réseaux sociaux
         analysis_urls: Liens tableaux de bord analytiques
+        messagings: Service d'envoi
       form:
         host_help: Nom d'hôte et port de l'URL web utilisés pour détecter ce revendeur
         name_help: Marque du revendeur
