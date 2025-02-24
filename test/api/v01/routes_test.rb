@@ -291,10 +291,10 @@ class V01::RoutesTest < V01::RoutesBaseTest
   end
 
   test 'should send SMS for each stop visit' do
-    @route.planning.customer.reseller.update sms_api_key: :sms_api_key, sms_api_secret: :sms_api_secret
+    @route.planning.customer.reseller.update(messagings: {sms_partner: { enable: true, api_key: :sms_api_key, api_secret: :sms_api_secret }})
     @route.planning.customer.update enable_sms: true
 
-    Notifications.stub_any_instance(:send_sms, [true]) do
+    SmsPartnerService.stub_any_instance(:send_message, true) do
       get api(@route.planning_id, "#{@route.id}/send_sms")
       assert last_response.ok?, 'Bad response: ' + last_response.body
       assert_equal '3', last_response.body

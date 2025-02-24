@@ -1,0 +1,30 @@
+%legend
+  %i.fa.fa-message{"aria-hidden" => "true"}
+  = t 'admin.resellers.edit.messagings'
+.row
+  .col-md-offset-2.col-md-8
+    %label
+      = t('resellers.form.messagings.title')
+
+    .form-group
+      - messaging_services.each do |service|
+        - service_name = service[:name]
+        - service_hash = @reseller.messagings[service_name] || {}
+        .radio
+          %label
+            = radio_button_tag "reseller[messagings][active_service]", service_name, to_bool(service_hash && service_hash['enable'])
+            = t("resellers.form.messagings.#{service_name}.title")
+            %small.text-muted= t("resellers.form.messagings.#{service_name}.help")
+
+        .messaging-fields{class: to_bool(service_hash && service_hash['enable']) ? '' : 'd-none', data: { service: service_name }}
+          - service[:definition].each do |field, field_options|
+            - case field_options[:field]
+            - when :text
+              = f.text_field "messagings[#{service_name}][#{field}]", value: service_hash[field.to_s], label: t("resellers.form.messagings.#{service_name}.#{field}"), autocomplete: 'new-password', class: 'form-control', label_col: 'col-md-12', control_col: 'col-md-12'
+            - when :password
+              = f.password_field "messagings[#{service_name}][#{field}]", value: service_hash[field.to_s], label: t("resellers.form.messagings.#{service_name}.#{field}"), autocomplete: 'new-password', class: 'form-control', label_col: 'col-md-12', control_col: 'col-md-12'
+      .radio
+        %label
+          = radio_button_tag "reseller[messagings][active_service]", '', @reseller.messagings.none? { |k,v| v['enable'] }
+          = t("resellers.form.messagings.none.title")
+          %small.text-muted= t("resellers.form.messagings.none.help")

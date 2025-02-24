@@ -54,6 +54,20 @@ en:
           sopac:
             username: Username
             password: Password
+      reseller:
+        messagings:
+          vonage:
+            api_key: API key
+            api_secret: API secret
+          sms_partner:
+            api_key: API key
+      reseller:
+        messagings:
+          vonage:
+            api_key: API key
+            api_secret: API secret
+          sms_partner:
+            api_key: API key
       vehicle:
         devices:
           fleet_demo:
@@ -314,6 +328,9 @@ en:
         action: Clear Praxedo
         success: Praxedo interventions have been cleared successfully
         fail: Failed to clear Praxedo interventions
+      messaging:
+        vonage: Vonage SMS
+        sms_partner: SMS Partner
       dialog:
         fleet_demo:
           title: Cartoway Field (demo)
@@ -348,3 +365,25 @@ en:
         praxedo:
           title: Praxedo
           in_progress: Please wait
+        messaging:
+          vonage: Vonage SMS
+          sms_partner: SMS Partner
+        send_sms: Send SMS
+        send_sms_all: Send SMS to all
+        send_sms_selected: Send SMS to selected
+  resellers:
+    form:
+      messagings:
+        title: Messaging service
+        vonage:
+          title: Vonage
+          help: Allows sending SMS with Vonage.
+          api_key: API key
+          api_secret: API secret
+        sms_partner:
+          title: SMS Partner
+          help: Allows sending SMS with SMS Partner.
+          api_key: API key
+        none:
+          title: None
+          help: No messaging service is enabled.

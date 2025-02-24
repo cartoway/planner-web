@@ -5,6 +5,14 @@ reseller_one:
   name: Test&Co Ltd.
   welcome_url:
   help_url:
+  messagings:
+    vonage:
+      enable: true
+      api_key: test_key
+      api_secret: test_secret
+    sms_partner:
+      enable: false
+      api_key: test_key
 
 reseller_two:
   host: localhost:3000
