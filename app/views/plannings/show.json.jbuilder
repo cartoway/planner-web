@@ -14,7 +14,7 @@ else
   json.extract! @planning, :id, :ref
   json.planning_id @planning.id
   json.customer_id @planning.customer.id
-  json.customer_enable_sms @planning.customer.enable_sms if @planning.customer.reseller.sms_api_key
+  json.customer_enable_sms @planning.customer.enable_sms if @planning.customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
   json.customer_enable_external_callback current_user.customer.default_callback_enabled?
   json.customer_external_callback_name current_user.customer.default_callback_name
   json.customer_external_callback_url current_user.customer.default_callback_url

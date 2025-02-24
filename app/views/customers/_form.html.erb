@@ -287,7 +287,7 @@
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_global_optimization, label: t('activerecord.attributes.customer.enable_global_optimization'), help: (t('.enable_global_optimization_test') if !@customer.id || @customer.test) } %>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_vehicle_position, label: t('activerecord.attributes.customer.enable_vehicle_position') } %>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_stop_status, label: t('activerecord.attributes.customer.enable_stop_status') } %>
-    <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_sms, label: t('activerecord.attributes.customer.enable_sms'), options: { disabled: !@customer.reseller.sms_api_key } } %>
+    <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_sms, label: t('activerecord.attributes.customer.enable_sms'), options: { disabled: @customer.reseller.messagings.none?{ |_k, v| v['enable'] == true } } } %>
     <%= f.number_field :history_cron_hour, { help: t('.history_cron_hour_help'), min: 0, max: 23, append: content_tag('i', '', class: 'fa fa-chart-line fa-fw')} %>
 
     <legend class="scheduler-border col-md-8">

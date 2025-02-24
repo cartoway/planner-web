@@ -1,0 +1,32 @@
+= bootstrap_form_for [:admin, @reseller], layout: :horizontal do |f|
+  = render 'shared/error_messages', model: @reseller
+  = f.text_field :host, required: true, help: t('.host_help')
+  .row.form-group
+    %label.control-label.col-md-offset-2.col-md-7{for: "reseller_url_protocol_http"}
+      = t('activerecord.attributes.reseller.url_protocol')
+    .col-md-offset-2.col-md-8.field
+      %label
+        %input#reseller_url_protocol_http{name: "reseller[url_protocol]", type: "radio", value: "http", checked: (@reseller.url_protocol == 'http') }
+        = t('admin.resellers.form.protocol_url_http')
+      %label
+        %input#reseller_url_protocol_https{name: "reseller[url_protocol]", type: "radio", value: "https", checked: (@reseller.url_protocol == 'https') }
+        = t('admin.resellers.form.protocol_url_https')
+  = f.text_field :name, required: true, help: t('.name_help')
+  = f.text_field :application_name, help: t('.application_name_help')
+  = render partial: 'shared/check_box', locals: { form: f, field: :enable_external_callback, label: t('activerecord.attributes.customer.enable_external_callback') }
+
+  - if @reseller.enable_external_callback
+    %fieldset
+      %legend
+        %i.fa.fa-link{"aria-hidden" => "true"}
+        = t('customers.form.external_callback.title')
+      = f.text_field :external_callback_url_name, label: t('customers.form.external_callback.name'), value: @reseller.external_callback_url_name, placeholder: t('web.form.default', n: t('customers.form.external_callback.name_placeholder'))
+      = f.text_field :external_callback_url, label: t('customers.form.external_callback.url'), value: @reseller.external_callback_url do
+        .help-block
+          = simple_format t('customers.form.external_callback.url_help')
+  = render 'messagings', f: f
+  = render 'help_urls', f: f
+  = render 'analysis_urls', f: f
+  = render 'social_urls', f: f
+  = render 'logo', f: f
+  = f.submit

@@ -57,7 +57,15 @@ module Planner
 
     I18n.available_locales = %w(en fr he pt es de id)
 
-    config.autoload_paths += %W(#{config.root}/app/services #{config.root}/app/api/v01/helper #{config.root}/app/models/types)
+    config.autoload_paths += %W(
+      #{config.root}/app/services
+      #{config.root}/app/services/devices
+      #{config.root}/app/services/messagings
+      #{config.root}/app/api/v01/helper
+      #{config.root}/app/models/types
+    )
+
+    config.eager_load_paths += %W(#{config.root}/app/services)
 
     config.active_record.schema_format = :sql
 

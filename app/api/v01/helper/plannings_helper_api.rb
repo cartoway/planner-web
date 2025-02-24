@@ -15,20 +15,15 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-require 'notifications'
 require "visit_quantities"
 
 module PlanningsHelperApi
-
   def send_sms_route(route)
-    notif = Notifications.new(
-      api_key: route.planning.customer.reseller.sms_api_key,
-      api_secret: route.planning.customer.reseller.sms_api_secret,
-      from: route.planning.customer.sms_from_customer_name ? route.planning.customer.name : route.planning.customer.reseller.name,
-      logger: Planner::Application.config.logger_sms)
-
     template = route.planning.customer.sms_template || I18n.t('notifications.sms.alert_plan')
     date = route.planning.date || Time.zone.today
+
+    messaging_service = get_messaging_service(route.planning.customer)
+
     route.stops.select{ |s| s.active && s.is_a?(StopVisit) && s.visit.destination.phone_number }.map{ |s|
       repl = {
         date: I18n.l(date, format: :weekday),
@@ -39,12 +34,15 @@ module PlanningsHelperApi
         phone_number: route.vehicle_usage.vehicle.phone_number
       }.merge(s.visit.destination.attributes.slice('name', 'ref', 'street', 'city', 'comment'))
 
-      notif.send_sms(
+      message_id = "#{messaging_service.service_name}c#{route.planning.customer_id}r#{route.id}t#{(date.beginning_of_day + s.time).to_i}"
+      content = messaging_service.content(template, replacements: repl, truncate: !route.planning.customer.sms_concat)
+
+      messaging_service.send_message(
         s.visit.destination.phone_number,
-        s.visit.destination.country || route.planning.customer.default_country,
-        notif.content(template, repl, !route.planning.customer.sms_concat),
-        "SMc#{route.planning.customer_id}r#{route.id}t#{(date.beginning_of_day + s.time).to_i}"
-      ).count{ |v| v }
+        content,
+        country: s.visit.destination.country || route.planning.customer.default_country,
+        message_id: message_id
+      ) ? 1 : 0
     }.sum
   end
 
@@ -55,37 +53,43 @@ module PlanningsHelperApi
   def send_sms_drivers(routes, phone_number_hash)
     routes.map.with_index{ |route, route_index|
       next unless route.vehicle_usage_id
+      next if phone_number_hash[route.id].nil? && route.vehicle_usage.vehicle.phone_number.nil?
 
-      send_sms_driver(route, phone_number_hash[route.id])
-    }
+      customer = route.planning.customer
+      messaging_service = get_messaging_service(customer)
+      date = route.planning.date || Time.zone.today
+
+      content = {
+        route_name: [route.ref, route.vehicle_usage.vehicle.name].compact.join(' - '),
+        date: I18n.l(date, format: :weekday),
+        size_active: route.size_active,
+        url: (customer.reseller.url_protocol + '://' + customer.reseller.host + '/routes/' + route.id.to_s + '/mobile?driver_token=' + route.vehicle_usage.vehicle.driver_token).html_safe
+      }
+
+      template = customer.sms_driver_template || I18n.t('notifications.sms.alert_driver')
+      message_id = "#{messaging_service.class.name.demodulize}c#{customer.id}r#{route.id}t#{date}D"
+      formatted_content = messaging_service.content(template, replacements: content, truncate: !customer.sms_concat)
+
+      messaging_service.send_message(
+        phone_number_hash[route.id] || route.vehicle_usage.vehicle.phone_number,
+        formatted_content,
+        country: customer.default_country,
+        message_id: message_id,
+        from: customer.reseller.name
+      ) ? 1 : 0
+    }.compact.sum
   end
 
-  def send_sms_driver(route, phone_number)
-    return if phone_number.nil? && route.vehicle_usage.vehicle.phone_number.nil?
+  private
 
-    customer = route.planning.customer
-    notif = Notifications.new(
-      api_key: route.planning.customer.reseller.sms_api_key,
-      api_secret: route.planning.customer.reseller.sms_api_secret,
-      from: route.planning.customer.sms_from_customer_name ? route.planning.customer.name : route.planning.customer.reseller.name,
-      logger: Planner::Application.config.logger_sms
-    )
-    date = route.planning.date || Time.zone.today
-
-    content = {
-      route_name: [route.ref, route.vehicle_usage.vehicle.name].compact.join(' - '),
-      date: I18n.l(date, format: :weekday),
-      size_active: route.size_active,
-      url: (customer.reseller.url_protocol + '://' + customer.reseller.host + '/routes/' + route.id.to_s + '/mobile?driver_token=' + route.vehicle_usage.vehicle.driver_token).html_safe
-    }
-    template = route.planning.customer.sms_driver_template || I18n.t('notifications.sms.alert_driver')
-
-    notif.send_sms(
-      phone_number || route.vehicle_usage.vehicle.phone_number,
-      customer.default_country,
-      notif.content(template, content, !route.planning.customer.sms_concat),
-      "SMc#{customer.id}r#{route.id}t#{date}D"
-    ).count{ |v| v }
+  def get_messaging_service(customer)
+    if VonageService.configured?(customer)
+      VonageService.new(customer)
+    elsif SmsPartnerService.configured?(customer)
+      SmsPartnerService.new(customer)
+    else
+      raise ArgumentError.new("No SMS service configured for reseller #{customer.reseller.id}")
+    end
   end
 end
 
