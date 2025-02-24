@@ -54,6 +54,13 @@ fr:
           sopac:
             username: Utilisateur
             password: Mot de passe
+      reseller:
+        messagings:
+          vonage:
+            api_key: Clé API
+            api_secret: Secret API
+          sms_partner:
+            api_key: Clé API
       vehicle:
         devices:
           fleet_demo:
@@ -309,7 +316,9 @@ fr:
         send_sms: Envoyer SMS aux livreurs
         success: Envoyé aux livreurs avec succès
         fail: Échec lors de l'envoi
-
+      messaging:
+        vonage: Vonage SMS
+        sms_partner: SMS Partner
       deliver_clear:
         action: Réinitialiser les statuts
         success: Les statuts ont été réinitialisés avec succès
@@ -356,3 +365,25 @@ fr:
         praxedo:
           title: Praxedo
           in_progress: Veuillez patienter
+        messaging:
+          vonage: Vonage SMS
+          sms_partner: SMS Partner
+        send_sms: Envoyer SMS
+        send_sms_all: Envoyer SMS à tous
+        send_sms_selected: Envoyer SMS aux sélectionnés
+  resellers:
+    form:
+      messagings:
+        title: Service d'envoi
+        vonage:
+          api_key: Clé API
+          api_secret: Secret API
+          title: Vonage
+          help: Permet d'envoyer des SMS avec Vonage.
+        sms_partner:
+          api_key: Clé API
+          title: SMS Partner
+          help: Permet d'envoyer des SMS avec SMS Partner.
+        none:
+          title: Aucun service
+          help: Aucun service d'envoi de SMS n'est activé.

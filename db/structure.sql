@@ -354,6 +354,42 @@ CREATE TABLE public.layers_profiles (
 
 
 --
+-- Name: messaging_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.messaging_logs (
+    id bigint NOT NULL,
+    customer_id bigint NOT NULL,
+    service character varying NOT NULL,
+    recipient character varying,
+    content text,
+    message_id character varying,
+    details jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: messaging_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.messaging_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: messaging_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.messaging_logs_id_seq OWNED BY public.messaging_logs.id;
+
+
+--
 -- Name: order_arrays; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -593,13 +629,12 @@ CREATE TABLE public.resellers (
     behavior_url character varying,
     customer_audience_url character varying,
     customer_behavior_url character varying,
-    sms_api_key character varying,
-    sms_api_secret character varying,
     authorized_fleet_administration boolean DEFAULT false,
     external_callback_url character varying,
     external_callback_url_name character varying,
     enable_external_callback boolean,
-    customer_dashboard_url character varying
+    customer_dashboard_url character varying,
+    messagings jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -1331,6 +1366,13 @@ ALTER TABLE ONLY public.layers ALTER COLUMN id SET DEFAULT nextval('public.layer
 
 
 --
+-- Name: messaging_logs id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.messaging_logs ALTER COLUMN id SET DEFAULT nextval('public.messaging_logs_id_seq'::regclass);
+
+
+--
 -- Name: order_arrays id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1517,6 +1559,14 @@ ALTER TABLE ONLY public.destinations
 
 ALTER TABLE ONLY public.layers
     ADD CONSTRAINT layers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: messaging_logs messaging_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.messaging_logs
+    ADD CONSTRAINT messaging_logs_pkey PRIMARY KEY (id);
 
 
 --
@@ -1882,6 +1932,20 @@ CREATE UNIQUE INDEX index_deliverable_units_on_customer_id_and_ref ON public.del
 
 
 --
+-- Name: index_messaging_logs_on_customer_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_messaging_logs_on_customer_id ON public.messaging_logs USING btree (customer_id);
+
+
+--
+-- Name: index_messaging_logs_on_message_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_messaging_logs_on_message_id ON public.messaging_logs USING btree (message_id);
+
+
+--
 -- Name: index_orders_on_visit_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2176,6 +2240,14 @@ ALTER TABLE ONLY public.tag_plannings
 
 ALTER TABLE ONLY public.products
     ADD CONSTRAINT fk_products_customer_id FOREIGN KEY (customer_id) REFERENCES public.customers(id) ON DELETE CASCADE;
+
+
+--
+-- Name: messaging_logs fk_rails_0ba90c3e53; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.messaging_logs
+    ADD CONSTRAINT fk_rails_0ba90c3e53 FOREIGN KEY (customer_id) REFERENCES public.customers(id);
 
 
 --
@@ -2812,6 +2884,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20241024064440'),
 ('20241227140855'),
 ('20250128131504'),
-('20250203114002');
+('20250203114002'),
+('20250221144341');
 
 

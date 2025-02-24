@@ -21,6 +21,14 @@ function admin_resellers_form(params, api) {
     iconName: "fa fa-folder-open",
     buttonText: I18n.t('web.choose_file')
   });
+
+  $('input[name="reseller[messagings][active_service]"]').on('change', function() {
+    $('.messaging-fields').addClass('d-none');
+
+    if (this.checked) {
+      $('.messaging-fields[data-service="' + this.value + '"]').removeClass('d-none');
+    }
+  });
 }
 
 

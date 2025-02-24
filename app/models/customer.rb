@@ -44,6 +44,7 @@ class Customer < ApplicationRecord
   has_many :deliverable_units, inverse_of: :customer, autosave: true, dependent: :delete_all, after_add: :update_deliverable_units_track, after_remove: :update_deliverable_units_track
   has_many :custom_attributes, inverse_of: :customer, autosave: true, dependent: :delete_all
   has_many :stops_relations, inverse_of: :customer, autosave: true, dependent: :delete_all
+  has_many :messaging_logs, dependent: :destroy
   enum router_dimension: Router::DIMENSION
 
   attr_accessor :deliverable_units_updated, :device, :exclude_users, :migration_skip

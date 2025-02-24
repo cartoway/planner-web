@@ -173,7 +173,7 @@
                     = link_to api_planning_calendar_path(@planning, email: 1) do
                       %i.fa.fa-envelope.fa-fw
                       = t '.export.icalendar.action_email'
-                - if @planning.customer.enable_sms && @planning.customer.reseller.sms_api_key
+                - if @planning.customer.enable_sms && @planning.customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
                   %li.divider{role: "separator"}
                   %li
                     %a.send_sms{href: "/api/0.1/plannings/#{@planning.id}/send_sms"}

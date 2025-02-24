@@ -400,7 +400,7 @@ class V01::Plannings < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     get ':id/send_sms' do
-      if current_customer.enable_sms && current_customer.reseller.sms_api_key
+      if current_customer.enable_sms && current_customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
         Route.includes_destinations.scoping do
           send_sms_planning current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         end
@@ -423,7 +423,7 @@ class V01::Plannings < Grape::API
       end
     end
     post ':id/send_driver_sms' do
-      if current_customer.enable_sms && current_customer.reseller.sms_api_key
+      if current_customer.enable_sms && current_customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         routes = planning.routes.where(id: params[:routes].map{ |r| r[:id] })
         phone_number_hash = params[:routes].map{ |r| [r[:id], r[:phone_number]] if r[:send] }.compact.to_h
