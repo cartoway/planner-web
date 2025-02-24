@@ -1442,7 +1442,8 @@ he:
       replace_no: עידכון / בנוסף
   vehicles:
     default_name: 'רכב %{n}'
-    emissions_nothing: 'ריק - %{n}'
+    emissions:
+      nothing: 'ריק - %{n}'
     form:
       capacities:
         label: מיגבלה

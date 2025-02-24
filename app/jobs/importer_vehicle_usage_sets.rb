@@ -38,7 +38,7 @@ class ImporterVehicleUsageSets < ImporterBase
       cost_distance: { title: I18n.t('vehicles.import.cost_distance'), desc: I18n.t('vehicles.import.cost_distance_desc'), format: I18n.t('vehicles.import.format.float') },
       cost_fixed: { title: I18n.t('vehicles.import.cost_fixed'), desc: I18n.t('vehicles.import.cost_fixed_desc'), format: I18n.t('vehicles.import.format.float') },
       cost_time: { title: I18n.t('vehicles.import.cost_time'), desc: I18n.t('vehicles.import.cost_time_desc'), format: I18n.t('vehicles.import.format.float') },
-      emission: { title: I18n.t('vehicles.import.emission'), desc: I18n.t('vehicles.import.emission_desc'), format: '[' + ::Vehicle.emissions_table.map { |emission| emission[0] }.join(' | ') + ']' },
+      emission: { title: I18n.t('vehicles.import.emission'), desc: I18n.t('vehicles.import.emission_desc'), format: '[' + ::Vehicle.emissions_hash.values.map { |emission| emission[0] }.join(' | ') + ']' },
       consumption: { title: I18n.t('vehicles.import.consumption'), desc: I18n.t('vehicles.import.consumption_desc'), format: I18n.t('vehicles.import.format.float') },
       max_distance: { title: I18n.t('vehicles.import.max_distance'), desc: I18n.t('vehicles.import.max_distance_desc'), format: I18n.t('vehicles.import.format.integer') },
       max_ride_distance: { title: I18n.t('vehicles.import.max_ride_distance'), desc: I18n.t('vehicles.import.max_ride_distance_desc'), format: I18n.t('vehicles.import.format.integer') },

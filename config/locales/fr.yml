@@ -2458,11 +2458,12 @@ fr:
       success: Utilisateur mis à jour avec succès
   vehicles:
     default_name: 'Véhicule %{n}'
-    emissions_nothing: 'Aucun - %{n}'
-    emissions_light_petrol: 'VL - Essence - %{n}'
-    emissions_light_diesel: 'VL - Gazole - %{n}'
-    emissions_light_lgp: 'VL - GPL - %{n}'
-    emissions_ngv: 'VL - Natural gas vehicle - %{n}'
+    emissions:
+      nothing: 'Aucun - %{n}'
+      light_petrol: 'VL - Essence - %{n}'
+      light_diesel: 'VL - Gazole - %{n}'
+      light_lgp: 'VL - GPL - %{n}'
+      ngv: 'VL - Natural gas vehicle - %{n}'
     import:
       max_distance: distance maximale (en mètres)
       max_distance_desc: distance maximale réalisable du véhicule
