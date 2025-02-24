@@ -12,6 +12,8 @@
     - Activate geocoding search [#250](https://github.com/cartoway/planner-web/pull/250)
     - Add color selector [#255](https://github.com/cartoway/planner-web/pull/255) & [#263](https://github.com/cartoway/planner-web/pull/263)
     - Center the view on a zone [#253](https://github.com/cartoway/planner-web/pull/253) & [#257](https://github.com/cartoway/planner-web/pull/257)
+  - Vehicles
+    - Add default fuel type and fuel consumption [#262](https://github.com/cartoway/planner-web/pull/262)
 
   ### Changed
   - Space route name in route filter selector [#251](https://github.com/cartoway/planner-web/pull/251)

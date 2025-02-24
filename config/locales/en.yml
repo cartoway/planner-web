@@ -2355,11 +2355,12 @@ en:
       success: User updated successfully
   vehicles:
     default_name: 'Vehicle %{n}'
-    emissions_nothing: 'Nothing - %{n}'
-    emissions_light_petrol: 'Light - Petrol - %{n}'
-    emissions_light_diesel: 'Light - Diesel - %{n}'
-    emissions_light_lgp: 'Light - LGP - %{n}'
-    emissions_ngv: 'Natural Gas Vehicle - %{n}'
+    emissions:
+      nothing: 'Nothing - %{n}'
+      light_petrol: 'Light - Petrol - %{n}'
+      light_diesel: 'Light - Diesel - %{n}'
+      light_lgp: 'Light - LGP - %{n}'
+      ngv: 'Natural Gas Vehicle - %{n}'
     import:
       max_distance: maximum distance (in meters)
       max_distance_desc: maximum achievable vehicle distance
