@@ -191,7 +191,6 @@ export const zonings_edit = function(params) {
     creating_drawing = false;
     editing_drawing = false;
     drawing_changed = true;
-    console.log(e);
     e.layers.eachLayer(function(layer) {
       updateZone(layer);
     });
