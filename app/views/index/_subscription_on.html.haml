@@ -17,7 +17,7 @@
           .card-body
             %h3.card-title.fw-bold
               %i.fa.fa-map-location.fa-fw
-              = t 'admin.users.kpi.plannings.last', count: @kpis[:plannings][:total]
+              = t 'admin.users.kpi.plannings.last'
             - if @kpis[:plannings][:total] == 0
               %p.card-text.text-muted= I18n.t('admin.users.kpi.plannings.none')
               = link_to new_planning_path, class: "btn btn-primary" do
@@ -56,14 +56,14 @@
                             %i.fa.fa-edit.fa-fw
           .card-footer.text-center
             = link_to plannings_path do
-              = I18n.t('admin.users.kpi.plannings.show')
+              = I18n.t('admin.users.kpi.plannings.show', count: @kpis[:plannings][:total])
 
       .col-md-4.my-4
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
           .card-body
             %h3.card-title.fw-bold
               %i.fa.fa-draw-polygon.fa-fw
-              = t 'admin.users.kpi.zonings.last', count: @kpis[:zonings][:total]
+              = t 'admin.users.kpi.zonings.last'
             - if @kpis[:zonings][:total] == 0
               %p.card-text.text-muted= I18n.t('admin.users.kpi.zonings.none')
               = link_to new_zoning_path, class: "btn btn-primary" do
@@ -89,7 +89,7 @@
                             %i.fa.fa-edit.fa-fw
           .card-footer.text-center
             = link_to zonings_path do
-              = I18n.t('admin.users.kpi.zonings.show')
+              = I18n.t('admin.users.kpi.zonings.show', count: @kpis[:zonings][:total])
 
       .col-md-4.my-4
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
@@ -97,21 +97,24 @@
             .d-flex.justify-content-between
               %h3.card-title.fw-bold
                 %i.fa.fa-map-marker.fa-fw
-                = t 'admin.users.kpi.destinations.last', count: @kpis[:destinations][:total]
+                = t 'admin.users.kpi.destinations.last'
   
             %ul.nav.nav-pills.nav-fill.d-flex.flex-column
-              %li.nav-item
-                = link_to destinations_path do
-                  %i.fa.fa-map-marker.fa-fw
-                  = t 'admin.users.kpi.destinations.show'
-              %li.nav-item
-                = link_to destination_import_path do
-                  %i.fa.fa-upload.fa-fw
-                  = t 'admin.users.kpi.destinations.import'
-              %li.nav-item
-                = link_to destinations_path({format: :excel}) do
-                  %i.fa.fa-download.fa-fw
-                  = t 'admin.users.kpi.destinations.export' 
+              %li.nav-item.m-4
+                %span
+                  = link_to destinations_path, class: "btn btn-primary" do
+                    %i.fa.fa-map-marker.fa-fw
+                    = t 'admin.users.kpi.destinations.show'
+              %li.nav-item.ml-0.m-4
+                %span
+                  = link_to destination_import_path, class: "btn btn-primary" do
+                    %i.fa.fa-upload.fa-fw
+                    = t 'admin.users.kpi.destinations.import'
+              %li.nav-item.ml-0.m-4
+                %div 
+                  = link_to destinations_path({format: :excel}), class: "btn btn-primary" do
+                    %i.fa.fa-download.fa-fw
+                    = t 'admin.users.kpi.destinations.export' 
 
     .row.m-4.justify-content-center
       .col-md-4.my-4
@@ -119,7 +122,7 @@
           .card-body
             %h3.card-title.fw-bold
               %i.fa.fa-store.fa-fw
-              = t 'admin.users.kpi.stores.last', count: @kpis[:stores][:total]
+              = t 'admin.users.kpi.stores.last'
             - if @kpis[:stores][:total] == 0
               %p.card-text.text-muted= I18n.t('admin.users.kpi.stores.none')
               = link_to new_store_path, class: "btn btn-primary" do
@@ -151,7 +154,7 @@
                             %i.fa.fa-edit.fa-fw
           .card-footer.text-center
             = link_to stores_path do
-              = I18n.t('admin.users.kpi.stores.show')
+              = I18n.t('admin.users.kpi.stores.show', count: @kpis[:stores][:total])
 
       - if @kpis[:vehicles][:nb_set] < 2 and @kpis[:vehicles][:total] <= 5
         .col-md-4.my-4
@@ -159,7 +162,7 @@
             .card-body
               %h3.card-title.fw-bold
                 %i.fa.fa-truck-field.fa-fw
-                = t 'admin.users.kpi.vehicles.last', count: @kpis[:vehicles][:total]
+                = t 'admin.users.kpi.vehicles.last'
               - if @kpis[:vehicles][:total] == 0
                 %p.card-text.text-muted= I18n.t('admin.users.kpi.vehicles.none')
                 = link_to new_store_path, class: "btn btn-primary" do
@@ -172,7 +175,6 @@
                       %tr
                         %th= t 'activerecord.attributes.vehicles.ref'
                         %th= t 'activerecord.attributes.vehicles.name'
-                        %th= t 'activerecord.attributes.vehicles.consumption'
                         %th= t 'activerecord.attributes.vehicles.updated_at'
                         %th
                     %tbody
@@ -183,12 +185,10 @@
                           %td
                             = vehicle.name
                           %td
-                            = vehicle.consumption
-                          %td
                             = vehicle.updated_at.strftime(I18n.t('admin.users.kpi.format'))
                           %td.text-right
                             = link_to edit_vehicle_usage_path(vehicle), :class => "btn btn-primary btn-sm" do
                               %i.fa.fa-edit.fa-fw
             .card-footer.text-center
               = link_to vehicle_usage_sets_path do
-                = I18n.t('admin.users.kpi.vehicles.show')
+                = I18n.t('admin.users.kpi.vehicles.show', count: @kpis[:vehicles][:total])
