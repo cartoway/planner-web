@@ -26,7 +26,7 @@
   - Fix how empty lines are skip from CSV on import [#252](https://github.com/cartoway/planner-web/pull/252)
   - Permute the order of inputs for vehicle usage form (option toll and option low emission) [#256](https://github.com/cartoway/planner-web/pull/256)
   - Map on route print now displays correctly [#259](https://github.com/cartoway/planner-web/pull/259)
-  - New zones correctly count elements [#268](https://github.com/cartoway/planner-web/pull/268)
+   - Zones correctly count elements during creation and edition [#268](https://github.com/cartoway/planner-web/pull/268) & [#282] (https://github.com/cartoway/planner-web/pull/282)
   - Clear logs in test environment [#272](https://github.com/cartoway/planner-web/pull/272)
 ## V104.2.0
   ### Changed
