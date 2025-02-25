@@ -14,6 +14,7 @@
     - Center the view on a zone [#253](https://github.com/cartoway/planner-web/pull/253) & [#257](https://github.com/cartoway/planner-web/pull/257)
   - Vehicles
     - Add default fuel type and fuel consumption [#262](https://github.com/cartoway/planner-web/pull/262)
+  - Allow max delay for optimization [#281](https://github.com/cartoway/planner-web/pull/281)
 
   ### Changed
   - Space route name in route filter selector [#251](https://github.com/cartoway/planner-web/pull/251)
@@ -26,7 +27,7 @@
   - Fix how empty lines are skip from CSV on import [#252](https://github.com/cartoway/planner-web/pull/252)
   - Permute the order of inputs for vehicle usage form (option toll and option low emission) [#256](https://github.com/cartoway/planner-web/pull/256)
   - Map on route print now displays correctly [#259](https://github.com/cartoway/planner-web/pull/259)
-   - Zones correctly count elements during creation and edition [#268](https://github.com/cartoway/planner-web/pull/268) & [#282] (https://github.com/cartoway/planner-web/pull/282)
+   - Zones correctly count elements during creation and edition [#268](https://github.com/cartoway/planner-web/pull/268) & [#282](https://github.com/cartoway/planner-web/pull/282)
   - Clear logs in test environment [#272](https://github.com/cartoway/planner-web/pull/272)
 ## V104.2.0
   ### Changed
