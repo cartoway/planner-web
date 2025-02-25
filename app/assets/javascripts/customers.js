@@ -252,7 +252,7 @@ const customers_edit = function (params) {
       }
   });
 
-  $("#customer_enable_optimization_soft_upper_bound_button").click(function() {
+  $("#customer_enable_optimization_soft_upper_bound").click(function() {
     $("#optimization_soft_upper_bound").toggleClass('d-none');
   });
   
