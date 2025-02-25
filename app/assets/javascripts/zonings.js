@@ -367,8 +367,9 @@ export const zonings_edit = function(params) {
       geoJsonLayer = geom;
       geom = geom.getLayers()[0];
     } else {
-      geoJsonLayer = (new zoneGeometry(JSON.parse(zone.polygon))).addOverlay(zone);
-      geoJsonLayer.addLayer(geom);
+      geom = (new zoneGeometry(JSON.parse(zone.polygon))).addOverlay(zone);
+      geoJsonLayer = geom;
+      geom = geom.getLayers()[0];
     }
 
     featureGroup.addLayer(geom);
