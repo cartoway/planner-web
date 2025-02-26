@@ -1044,7 +1044,9 @@ en:
       optimization_force_start_help: Force vehicle start to the beginning of its schedule.
       enable_optimization_soft_upper_bound_help: Enable the delays in optimization
       enable_global_optimization_test: Enabled if Test
+      stop_max_upper_bound: Stops maximum delay
       stop_max_upper_bound_help: Enable delays for stops
+      vehicle_max_upper_bound: Vehicles maximum delay
       vehicle_max_upper_bound_help: Enable delays for vehicles
       print_header_help: Block of text added before each route
       print:

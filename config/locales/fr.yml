@@ -1075,7 +1075,9 @@ fr:
       optimization_force_start_help: Forcer le départ du véhicule à son horaire de début.
       enable_optimization_soft_upper_bound_help: Autoriser les retards durant l'optimisation
       enable_global_optimization_test: Actif si Test
+      stop_max_upper_bound: Retard max / arrêts
       stop_max_upper_bound_help: Autoriser les retards sur les arrêts
+      vehicle_max_upper_bound: Retard max / véhicules
       vehicle_max_upper_bound_help: Autoriser les retards sur les véhicules
       print_header_help: Bloc de texte ajouté avant chaque tournée
       print:
