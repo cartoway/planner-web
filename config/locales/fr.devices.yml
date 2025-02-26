@@ -113,7 +113,7 @@ fr:
         already_created: Utilisateurs déjà existants
       update_drivers:
         update_failed: Échec lors de la mise à jour de l'utilisateur
-      get_vehicles_pos: Impossible de lister la position des véhicules
+      vehicle_pos: Impossible de lister la position des véhicules
       fetch_stops: Impossible de récupérer la liste des missions
       fetch_routes: Impossible de récupérer la liste des tournées
       no_missions: Aucune mission à envoyer
@@ -147,14 +147,14 @@ fr:
       bad_url: URL non valide
       get_ticket: Échec de l'identification. Veuillez vérifier vos identifiants
       list: Impossible de lister les appareils
-      get_vehicles_pos: Impossible de lister les positions des véhicules
+      vehicle_pos: Impossible de lister les positions des véhicules
       set_mission: Échec lors de la création de la mission
       unauthorized: Non autorisé
     orange:
       no_equipment: "Véhicule: Aucun équipement trouvé"
       unauthorized: Non autorisé
       list: Impossible de lister les appareils
-      get_vehicles_pos: Impossible de lister les positions des véhicules
+      vehicle_pos: Impossible de lister les positions des véhicules
       timeout: Délai d'attente depassé
     alyacom:
       unauthorized: Non autorisé
@@ -168,7 +168,7 @@ fr:
         Impossible d'obtenir le token d'authentification. Veuillez Réessayer
         ultérieurement.
       list: Impossible de lister les appareils
-      get_vehicles_pos: Impossible de lister les positions des véhicules
+      vehicle_pos: Impossible de lister les positions des véhicules
       refresh_token_expired: >-
         Impossible de mettre à jour le token d'authentification. Veuillez
         Réessayer ultérieurement.

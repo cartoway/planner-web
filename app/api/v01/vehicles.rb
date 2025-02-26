@@ -128,16 +128,16 @@ class V01::Vehicles < Grape::API
               options[:ticket_id] = session[:teksat_ticket_id]
             end
             service = Object.const_get(device.class.name + 'Service').new(options)
-            if service.respond_to?(:get_vehicles_pos)
+            if service.respond_to?(:vehicle_pos)
               if device.definition[:forms][:vehicle].try(&:length) && device.definition[:forms][:vehicle].length > 0
-                (service.get_vehicles_pos || []).each do |item|
+                (service.vehicle_pos || []).each do |item|
                   vehicle_id = item.delete "#{key}_vehicle_id".to_sym
                   vehicle = vehicles.detect{ |v| v.devices[device.definition[:forms][:vehicle].keys.first] == vehicle_id }
                   next unless vehicle
                   positions << item.merge(vehicle_id: vehicle.id)
                 end
               else
-                positions += service.get_vehicles_pos
+                positions += service.vehicle_pos
               end
             end
           end

@@ -68,7 +68,7 @@ class FleetDemo < DeviceBase
     }.compact
   end
 
-  def get_vehicles_pos(customer)
+  def vehicle_pos(customer)
     planning = customer.plannings.sort_by(&:updated_at).last
     customer.vehicles.map{ |v|
       route = planning.routes.find{ |r| r.vehicle_usage && r.vehicle_usage.vehicle_id == v.id }

@@ -16,9 +16,9 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class FleetDemoService < DeviceService
-  def get_vehicles_pos
+  def vehicle_pos
     if customer.devices[service_name]
-      service.get_vehicles_pos customer
+      service.vehicle_pos customer
     end
   end
 end

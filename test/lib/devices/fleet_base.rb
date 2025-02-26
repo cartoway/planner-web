@@ -57,8 +57,8 @@ module FleetBase
               ]
             }.to_json
             stubs << stub_request(:get, url).to_return(status: 200, body: expected_response)
-          when :get_vehicles_pos_url
-            url = FleetService.new(customer: @customer).service.send(:get_vehicles_pos_url)
+          when :vehicle_pos_url
+            url = FleetService.new(customer: @customer).service.send(:vehicle_pos_url)
             expected_response = {
               user_current_locations: [
                 {

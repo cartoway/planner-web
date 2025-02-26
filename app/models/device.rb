@@ -63,7 +63,7 @@ class Device
       next if key == :deliver
 
       configured_vehicle = device.definition[:forms][:vehicle] && device.definition[:forms][:vehicle].keys.all?{ |k| !vehicle.devices[k].blank? }
-      has_position ||= configured_vehicle && device.respond_to?(:get_vehicles_pos) && @customer.device.configured?(key)
+      has_position ||= configured_vehicle && device.respond_to?(:vehicle_pos) && @customer.device.configured?(key)
     }
     @customer.enable_vehicle_position? && has_position
   end

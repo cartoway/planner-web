@@ -29,8 +29,8 @@ class MessagingService
         regexp = Regexp.new("{#{k}([\-\+]?[0-9]*)}".upcase)
         template = template.gsub(regexp) { |s|
           shift_time = 0
-          if m = regexp.match(s)
-            shift_time = Integer(m[1]).minutes unless m[1].blank?
+          if (m = regexp.match(s)) && !m[1].blank?
+            shift_time = Integer(m[1]).minutes
           end
 
           if shift_time != 0
