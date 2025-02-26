@@ -67,10 +67,10 @@ class StgTelematics < DeviceBase
     raise DeviceServiceError.new('STG Telematics: %s' % [I18n.t('errors.stg_telematics.list')])
   end
 
-  def get_vehicles_pos(customer)
+  def vehicle_pos(customer)
     retry_counter = 0
     begin
-      response = get_vehicles_position(customer.devices[:stg_telematics])
+      response = vehicle_position(customer.devices[:stg_telematics])
       body = JSON.parse(response.body)
       raise DeviceExpiredTokenError if !customer.devices[:stg_telematics].key?(:token) || body['result'] == 0 && body['message'].match(/Refresh Token Expired/)
 
@@ -86,7 +86,7 @@ class StgTelematics < DeviceBase
           }
         end
       else
-        raise DeviceServiceError.new('STG Telematics: %s' % [I18n.t('errors.stg_telematics.get_vehicles_pos')])
+        raise DeviceServiceError.new('STG Telematics: %s' % [I18n.t('errors.stg_telematics.vehicle_pos')])
       end
     rescue DeviceExpiredTokenError
       if retry_counter == 0
@@ -137,9 +137,9 @@ class StgTelematics < DeviceBase
     )
   end
 
-  def get_vehicles_position(params)
+  def vehicle_position(params)
     rest_client_with_method(
-      get_vehicles_position_url(params),
+      vehicle_position_url(params),
       params[:token],
       nil,
       :post
@@ -158,7 +158,7 @@ class StgTelematics < DeviceBase
     URI::DEFAULT_PARSER.escape("#{api_url}/webservice?token=getTokenBaseLiveData&ProjectId=37")
   end
 
-  def get_vehicles_position_url(_params)
+  def vehicle_position_url(_params)
     URI::DEFAULT_PARSER.escape("#{api_url}/webservice?token=getVehicleLiveInformation")
   end
 

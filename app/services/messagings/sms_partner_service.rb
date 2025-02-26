@@ -37,9 +37,6 @@ class SmsPartnerService < MessagingService
       log_error("SMS sending failed", errors: response.errors.join(", "))
       false
     end
-  rescue => e
-    log_error("Failed to send SMS", error: e.message)
-    false
   end
 
   private

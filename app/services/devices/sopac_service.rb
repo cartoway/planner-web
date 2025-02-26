@@ -34,5 +34,4 @@ class SopacService < DeviceService
       []
     end
   end
-
 end

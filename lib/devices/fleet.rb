@@ -216,8 +216,8 @@ class Fleet < DeviceBase
     end
   end
 
-  def get_vehicles_pos(customer)
-    response = rest_client_get(get_vehicles_pos_url, customer.devices[:fleet][:api_key])
+  def vehicle_pos(customer)
+    response = rest_client_get(vehicle_pos_url, customer.devices[:fleet][:api_key])
     data = JSON.parse(response.body)
 
     if response.code == 200 && data['user_current_locations']
@@ -233,10 +233,10 @@ class Fleet < DeviceBase
         }
       end
     else
-      raise DeviceServiceError.new("Mapo. Live: #{I18n.t('errors.fleet.get_vehicles_pos')}")
+      raise DeviceServiceError.new("Mapo. Live: #{I18n.t('errors.fleet.vehicle_pos')}")
     end
   rescue RestClient::Unauthorized, RestClient::InternalServerError
-    raise DeviceServiceError.new("Mapo. Live: #{I18n.t('errors.fleet.get_vehicles_pos')}")
+    raise DeviceServiceError.new("Mapo. Live: #{I18n.t('errors.fleet.vehicle_pos')}")
   end
 
   def fetch_stops(customer, date, planning)
@@ -428,7 +428,7 @@ class Fleet < DeviceBase
     URI::DEFAULT_PARSER.escape("#{api_url}/api/0.1/users")
   end
 
-  def get_vehicles_pos_url
+  def vehicle_pos_url
     URI::DEFAULT_PARSER.escape("#{api_url}/api/0.1/user_current_locations")
   end
 

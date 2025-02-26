@@ -120,7 +120,7 @@ class Tomtom < DeviceBase
     end
   end
 
-  def get_vehicles_pos(customer)
+  def vehicle_pos(customer)
     objects = get customer, savon_client_objects, :show_object_report, {}, {}, true
     objects = [objects] if objects.is_a?(Hash)
     objects.select{ |object| !object[:deleted] }.collect do |object|

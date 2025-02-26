@@ -538,14 +538,14 @@ he:
       bad_url: קישור לא תקין
       get_ticket: אימות שגוי. נא לאמת הפרטים שוב
       list: לא ניתן להציג רשימה של התקנים
-      get_vehicles_pos: לא ניתן לאתר את מיקום הרכב
+      vehicle_pos: לא ניתן לאתר את מיקום הרכב
       set_mission: יצירת המשימה ניכשלה
       unauthorized: לא מורשה
     orange:
       no_equipment: 'רכב: לא נמצא ציוד המשוייך לרכב'
       unauthorized: לא מורשה
       list: לא ניתן להציג רשימה של התקנים
-      get_vehicles_pos: לא ניתן לאתר את מיקום הרכב
+      vehicle_pos: לא ניתן לאתר את מיקום הרכב
     alyacom:
       unauthorized: לא מורשה
       timeout: המשימה נכשלה

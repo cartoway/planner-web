@@ -36,10 +36,10 @@ class FleetService < DeviceService
     end
   end
 
-  def get_vehicles_pos
+  def vehicle_pos
     if customer.devices[service_name] && customer.devices[:fleet][:user]
-      with_cache [:get_vehicles_pos, service_name, customer.id, customer.devices[:fleet][:user]] do
-        service.get_vehicles_pos(customer)
+      with_cache [:vehicle_pos, service_name, customer.id, customer.devices[:fleet][:user]] do
+        service.vehicle_pos(customer)
       end
     end
   end
