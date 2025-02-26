@@ -348,7 +348,7 @@ class OptimizerWrapper
         start_point_id: route.vehicle_usage.default_store_start&.id && "d#{route.vehicle_usage.default_store_start.id}",
         end_point_id: route.vehicle_usage.default_store_stop&.id && "d#{route.vehicle_usage.default_store_stop.id}",
         cost_fixed: vrp_vehicles.size,
-        cost_distance_multiplier: 1,
+        cost_distance_multiplier: 0,
         cost_time_multiplier: 1,
         cost_waiting_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? options[:optimization_cost_waiting_time] : 0,
         cost_late_multiplier: vehicles_cost_late_multiplier,
