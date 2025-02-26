@@ -86,7 +86,7 @@ class PraxedoTest < ActionController::TestCase
   # FIXME: not used for now
   # test 'get vehicles positions' do
   #   with_stubs [:client_geolocalisation_wsdl, :get_last_position_for_agents] do
-  #     assert @service.get_vehicles_pos(@customer)
+  #     assert @service.vehicle_pos(@customer)
   #   end
   # end
 end

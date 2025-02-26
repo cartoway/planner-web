@@ -45,7 +45,7 @@ module StgTelematicsBase
           when :vehicles_pos
             params = { url: @customer.devices[:stg_telematics][:url]}
             expected_response = File.read(Rails.root.join("test/web_mocks/stg_telematics/getVehicleLiveInformation.json")).strip
-            url = StgTelematicsService.new(customer: @customer).service.send :get_vehicles_position_url, params
+            url = StgTelematicsService.new(customer: @customer).service.send :vehicle_position_url, params
             stubs << stub_request(:post, url).to_return(status: 200, body: expected_response)
         end
       end

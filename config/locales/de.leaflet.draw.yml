@@ -96,7 +96,7 @@ de:
         already_created: Bereits angelegte Benutzer
       update_drivers:
         update_failed: Benutzer konnte nicht aktualisiert werden
-      get_vehicles_pos: Fahrzeugposition kann nicht ermittelt werden
+      vehicle_pos: Fahrzeugposition kann nicht ermittelt werden
       fetch_stops: Missionsliste kann nicht abgerufen werden
       fetch_routes: Streckenliste kann nicht abgerufen werden
       no_missions: Keine Missionen zu versenden
@@ -132,14 +132,14 @@ de:
       bad_url: Fehlerhafte URL
       get_ticket: Authentifizierung nicht möglich. Bitte prüfen Sie Ihre Zugangsdaten
       list: Geräte können nicht aufgelistet werden
-      get_vehicles_pos: Kein Abruf der Fahrzeugpositionen möglich
+      vehicle_pos: Kein Abruf der Fahrzeugpositionen möglich
       set_mission: Erstellen der Mission fehlgeschlagen
       unauthorized: Unbefugt
     orange:
       no_equipment: 'Fahrzeug: Keine Geräte gefunden'
       unauthorized: Unbefugt
       list: Geräte können nicht aufgelistet werden
-      get_vehicles_pos: Kein Abruf der Fahrzeugpositionen möglich
+      vehicle_pos: Kein Abruf der Fahrzeugpositionen möglich
       timeout: Timeout bei Anfrage
     alyacom:
       unauthorized: Unbefugt

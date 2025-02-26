@@ -44,7 +44,7 @@ module TeksatBase
             stubs << stub_request(:get, url).to_return(status: 200, body: expected_response)
           when :vehicles_pos
             expected_response = File.read(Rails.root.join("test/web_mocks/teksat/get_vehicles_pos.xml")).strip
-            url = TeksatService.new(customer: @customer, ticket_id: @ticket_id).service.send :get_vehicles_pos_url, @customer
+            url = TeksatService.new(customer: @customer, ticket_id: @ticket_id).service.send :vehicle_pos_url, @customer
             stubs << stub_request(:get, url).to_return(status: 200, body: expected_response)
           when :send_route
             expected_response = File.read(Rails.root.join("test/web_mocks/teksat/mission_data.xml")).strip

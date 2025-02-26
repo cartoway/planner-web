@@ -229,7 +229,7 @@ class Praxedo < DeviceBase
   end
 
   # FIXME: not used for now
-  # def get_vehicles_pos(customer)
+  # def vehicle_pos(customer)
   #   objects = get(savon_client_geolocalisation(customer), :get_last_position_for_agents, { authenticationString: "#{customer.devices[:praxedo][:login]}|#{customer.devices[:praxedo][:password]}" })
   #   objects.collect do |object|
   #     {

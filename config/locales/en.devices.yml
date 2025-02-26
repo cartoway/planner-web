@@ -120,7 +120,7 @@ en:
         already_created: Users already created
       update_drivers:
         update_failed: Failed to update user
-      get_vehicles_pos: Cannot get vehicles position
+      vehicle_pos: Cannot get vehicles position
       fetch_stops: Cannot get missions list
       fetch_routes: Cannot get routes list
       no_missions: No missions to send
@@ -153,14 +153,14 @@ en:
       bad_url: Bad URL
       get_ticket: Can't authenticate. Please check your credentials
       list: Can't list devices
-      get_vehicles_pos: Can't get vehicles positions
+      vehicle_pos: Can't get vehicles positions
       set_mission: Failed to create mission
       unauthorized: Unauthorized
     orange:
       no_equipment: 'Vehicle: No equipments found'
       unauthorized: Unauthorized
       list: Can't list devices
-      get_vehicles_pos: Can't get vehicles positions
+      vehicle_pos: Can't get vehicles positions
       timeout: Request Timeout
     alyacom:
       unauthorized: Unauthorized
@@ -170,7 +170,7 @@ en:
     stg_telematics:
       get_access_token: Can't get access token. Retry later.
       list: Can't list devices
-      get_vehicles_pos: Can't get vehicles positions
+      vehicle_pos: Can't get vehicles positions
       refresh_token_expired: Can't update access token. Retry later.
       timeout: Request Timeout
       unauthorized: Can't authenticate. Please check your credentials

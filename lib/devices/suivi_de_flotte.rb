@@ -54,7 +54,7 @@ class SuiviDeFlotte < DeviceBase
     }
   end
 
-  def get_vehicles_pos(credentials, refs)
+  def vehicle_pos(credentials, refs)
     session_id = check_auth credentials
     response = get(savon_client, nil, :fleet_devices_info, {session_id: session_id}, {})
 

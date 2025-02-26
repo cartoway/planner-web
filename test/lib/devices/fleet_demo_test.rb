@@ -21,7 +21,7 @@ class FleetDemoTest < ActionController::TestCase
   end
 
   test 'should get vehicles positions' do
-    o = @service.get_vehicles_pos @customer
+    o = @service.vehicle_pos @customer
     assert_equal 2, o.size
     assert o.all?{ |v| v[:lat] && v[:lng] }
   end

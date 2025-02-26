@@ -78,7 +78,7 @@ class TomtomTest < ActionController::TestCase
 
   test 'get vehicles positions' do
     with_stubs [:client_objects_wsdl, :show_object_report] do
-      assert @service.get_vehicles_pos @customer
+      assert @service.vehicle_pos @customer
     end
   end
 

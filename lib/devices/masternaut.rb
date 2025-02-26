@@ -165,7 +165,7 @@ class Masternaut < DeviceBase
     end
   end
 
-  def get_vehicles_pos(customer, refs)
+  def vehicle_pos(customer, refs)
     params = {
       group_reference: nil, # All vehicles
       geoloc: false # No address, only coordinates

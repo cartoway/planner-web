@@ -85,14 +85,14 @@ class Teksat < DeviceBase
     Nokogiri::XML(response).xpath('//mission').map{ |item| RestClient.get(delete_mission_url(customer, mi_id: item['id'])) }
   end
 
-  def get_vehicles_pos(customer)
-    response = RestClient.get get_vehicles_pos_url(customer)
+  def vehicle_pos(customer)
+    response = RestClient.get vehicle_pos_url(customer)
     if response.code == 200
       Nokogiri::XML(response).xpath('//vehicle_pos').map do |item|
         { teksat_vehicle_id: item['v_id'], lat: item['lat'], lng: item['lng'], speed: item['speed'], time: item['data_time_gmt'] + '+00:00', device_name: item['code'] }
       end
     else
-      raise DeviceServiceError.new('Teksat: %s' % [I18n.t('errors.teksat.get_vehicles_pos')])
+      raise DeviceServiceError.new('Teksat: %s' % [I18n.t('errors.teksat.vehicle_pos')])
     end
   end
 
@@ -136,7 +136,7 @@ class Teksat < DeviceBase
     ).to_s
   end
 
-  def get_vehicles_pos_url(customer)
+  def vehicle_pos_url(customer)
     Addressable::Template.new('http://%s/webservices/map/get-vehicles-pos.jsp{?query*}' % [customer.devices[:teksat][:url]]).expand(
       query: { custID: customer.devices[:teksat][:teksat_customer_id], tck: ticket_id }
     ).to_s
