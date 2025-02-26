@@ -45,7 +45,7 @@ class OrangeTest < ActionController::TestCase
 
   test 'get vehicles positions' do
     with_stubs [:vehicles_pos] do
-      assert @service.get_vehicles_pos @customer
+      assert @service.vehicle_pos @customer
     end
   end
 

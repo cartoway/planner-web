@@ -16,10 +16,10 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class SuiviDeFlotteService < DeviceService
-  def get_vehicles_pos
+  def vehicle_pos
     if customer.devices[service_name] && customer.devices[:suivi_de_flotte][:username]
-      with_cache [:get_vehicles_pos, service_name, customer.id, customer.devices[:suivi_de_flotte][:username]] do
-        service.get_vehicles_pos customer.devices[:suivi_de_flotte], customer.vehicles.map{ |v| v.suivi_de_flotte_id }.compact
+      with_cache [:vehicle_pos, service_name, customer.id, customer.devices[:suivi_de_flotte][:username]] do
+        service.vehicle_pos customer.devices[:suivi_de_flotte], customer.vehicles.map{ |v| v.suivi_de_flotte_id }.compact
       end
     end
   end

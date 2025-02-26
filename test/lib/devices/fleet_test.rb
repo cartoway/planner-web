@@ -53,8 +53,8 @@ class FleetTest < ActionController::TestCase
   end
 
   test 'should get vehicles positions' do
-    with_stubs [:get_vehicles_pos_url] do
-      response = @service.get_vehicles_pos(@customer)
+    with_stubs [:vehicle_pos_url] do
+      response = @service.vehicle_pos(@customer)
       assert_kind_of Array, response
       assert response.all? { |v| v[:fleet_vehicle_id] && v[:device_name] && v[:lat] && v[:lng] }
     end

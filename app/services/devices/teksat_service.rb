@@ -35,10 +35,10 @@ class TeksatService < DeviceService
     end
   end
 
-  def get_vehicles_pos
+  def vehicle_pos
     if customer.devices[service_name] && customer.devices[:teksat][:username]
-      with_cache [:get_vehicles_pos, service_name, customer.id, customer.devices[:teksat][:username]] do
-        service.get_vehicles_pos customer
+      with_cache [:vehicle_pos, service_name, customer.id, customer.devices[:teksat][:username]] do
+        service.vehicle_pos customer
       end
     end
   end

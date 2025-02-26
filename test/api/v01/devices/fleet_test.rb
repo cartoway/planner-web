@@ -64,7 +64,7 @@ class V01::Devices::FleetTest < ActiveSupport::TestCase
   end
 
   test 'should return vehicle positions' do
-    with_stubs [:get_vehicles_pos_url] do
+    with_stubs [:vehicle_pos_url] do
       get api('vehicles/current_position'), { ids: @customer.vehicle_ids }
       assert_equal 200, last_response.status, last_response.body
       response = JSON.parse(last_response.body)

@@ -47,7 +47,7 @@ class Orange < DeviceBase
     # ===============
     #     Unused
     # ===============
-    
+
     # options = {}
     # options.merge!(auth: params.slice(:user, :password)) if !params.blank?
     # response = send_request get_vehicles(customer, options)
@@ -75,7 +75,7 @@ class Orange < DeviceBase
     send_request send_xml_file(customer, route, delete: true)
   end
 
-  def get_vehicles_pos(customer)
+  def vehicle_pos(customer)
     response = send_request(get_positions(customer))
     if response.code.to_i == 200
       vehicle_infos = []
@@ -85,7 +85,7 @@ class Orange < DeviceBase
       end
       return vehicle_infos
     else
-      raise DeviceServiceError.new('Orange: %s' % [I18n.t('errors.orange.get_vehicles_pos')])
+      raise DeviceServiceError.new('Orange: %s' % [I18n.t('errors.orange.vehicle_pos')])
     end
   end
 
