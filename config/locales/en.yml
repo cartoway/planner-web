@@ -945,9 +945,6 @@ en:
       success: Vehicles deleted successfully
     form:
       field_default: '%{n} (default value)'
-      max_distance_default: '%{n} (default value)'
-      max_ride_distance_default: '%{n} (default value)'
-      max_ride_duration_default: '%{n} (default value)'
       name: Account
       default_value: Default values
       outputs: Outputs
