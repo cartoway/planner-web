@@ -123,6 +123,7 @@ route.stops.each { |stop|
       time_window_end_2: (stop.time_window_end_2_absolute_time if stop.time_window_end_2),
       force_position: (I18n.t("plannings.export_file.force_position_#{stop.force_position}") if stop.is_a?(StopVisit) && stop.force_position),
       priority: (stop.priority if stop.priority),
+      revenue: (stop.visit.revenue if stop.is_a?(StopVisit)),
       tags_visit: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
     })
 
