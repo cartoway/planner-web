@@ -28,23 +28,25 @@ class SmsPartnerServiceTest < ActiveSupport::TestCase
   end
 
   test 'should send message' do
-    Smspartner.expects(:configure).yields(mock.tap { |m|
-      m.expects(:api_key=).with('test_key')
-      m.expects(:sender=).with('SENDER')
-      m.expects(:range_value=).with(:premium)
-    })
-
     response = mock
-    response.expects(:success?).returns(true)
-    response.expects(:message_id).returns('msg_id')
-    response.expects(:raw_data).returns({
-      'total_cost' => '0.05',
-      'total_sms' => 1
-    }).twice
+    response.expects(:body).returns({
+      'success' => true,
+      'message_id' => 'msg_id',
+      'code' => 200
+    }.to_json)
 
-    Smspartner.expects(:send_sms).with(
-      to: '+33612345678',
-      body: 'Test message'
+    RestClient.expects(:post).with(
+      SmsPartnerService::SEND_SMS_URL,
+      {
+        phoneNumbers: '+33612345678',
+        message: 'Test message',
+        apiKey: 'test_key',
+        sender: 'SENDER',
+        gamme: 1,
+        isStopSms: false,
+        tag: "c#{@customer.id}"
+      }.to_json,
+      { content_type: :json, accept: :json }
     ).returns(response)
 
     assert @service.send_message(
