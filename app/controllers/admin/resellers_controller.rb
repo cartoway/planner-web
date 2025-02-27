@@ -32,8 +32,7 @@ class Admin::ResellersController < ApplicationController
         messagings[service_name][:enable] = (service_name == active_service)
       end
 
-      @reseller.messagings = messagings
-      @reseller.save
+      @reseller.update!(messagings: messagings)
 
       respond_to do |format|
         format.html { redirect_to edit_admin_reseller_path(@reseller), notice: t('activerecord.successful.messages.updated', model: @reseller.class.model_name.human) }
@@ -78,10 +77,10 @@ class Admin::ResellersController < ApplicationController
       :external_callback_url,
       :external_callback_url_name,
       :enable_external_callback,
-      messagings: [
-        { vonage: [:api_key, :api_secret],
-          sms_partner: [:api_key] }
-      ]
+      messagings: {
+        vonage: [:api_key, :api_secret],
+        sms_partner: [:api_key]
+      }
     )
   end
 end
