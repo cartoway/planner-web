@@ -204,7 +204,6 @@ gem 'chronic_duration'
 gem 'iso_country_codes'
 gem 'phonelib'
 gem 'vonage', '~> 7.28'
-gem 'smspartner', '~> 0.1'
 
 gem 'sentry-ruby'
 gem 'sentry-rails'
