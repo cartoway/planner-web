@@ -1,6 +1,6 @@
 class VonageService < MessagingService
-  def self.configured?(customer, service_name = 'vonage')
-    super(customer, service_name)
+  def self.configured?(reseller, service_name = 'vonage')
+    super(reseller, service_name)
   end
 
   def self.definition
@@ -10,8 +10,17 @@ class VonageService < MessagingService
     }
   end
 
+  def balance
+    config = service_config
+    service = Vonage::Client.new(
+      api_key: config['api_key'],
+      api_secret: config['api_secret']
+    )
+    service.account.balance.value
+  end
+
   def send_message(to, content, options = {})
-    config = check_service_config
+    config = service_config
 
     service = Vonage::Client.new(
       api_key: config['api_key'],

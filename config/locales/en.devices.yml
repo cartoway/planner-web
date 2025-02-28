@@ -374,6 +374,8 @@ en:
   resellers:
     form:
       messagings:
+        balance: Balance
+        balance_help: Balance of the SMS sending service.
         title: Messaging service
         vonage:
           title: Vonage

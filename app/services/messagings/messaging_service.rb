@@ -9,13 +9,16 @@ class MessagingService
     MESSAGING_SERVICES[key]
   end
 
-  def initialize(customer, options = {})
-    @customer = customer
-    @reseller = customer.reseller
+  def initialize(reseller, options = {})
+    @reseller = reseller
     @options = options
   end
 
   def send_message(to, content, options = {})
+    raise NotImplementedError
+  end
+
+  def balance
     raise NotImplementedError
   end
 
@@ -44,7 +47,7 @@ class MessagingService
         }
       elsif v.is_a?(Date)
         template = template.gsub("{#{k}}".upcase, I18n.l(v, format: :date))
-      elsif k == :url && v.is_a?(String) && v.include?('{URL}')
+      elsif k == :url && v.is_a?(String) && template.include?('{URL}')
         url_shortener = UrlShortenerService.new
         template = template.gsub("{#{k}}".upcase, url_shortener.shorten(v))
       else
@@ -55,10 +58,10 @@ class MessagingService
     truncate ? template[0..159] : template
   end
 
-  def self.configured?(customer, service_name)
-    return false unless customer.reseller.messagings&.key?(service_name)
+  def self.configured?(reseller, service_name)
+    return false unless reseller.messagings&.key?(service_name)
 
-    config = customer.reseller.messagings[service_name]
+    config = reseller.messagings[service_name]
     ValueToBoolean.value_to_boolean(config['enable'])
   end
 
@@ -68,10 +71,8 @@ class MessagingService
 
   protected
 
-  def check_service_config
-    config = @reseller.messagings&.dig(service_name)
-    raise ArgumentError.new("#{self.class.name.split('::').last} not configured") unless config&.dig('enable')
-    config
+  def service_config
+    @reseller.messagings&.dig(service_name)
   end
 
   def format_phone_number(phone, country = nil)
@@ -96,7 +97,9 @@ class MessagingService
   end
 
   def create_message_log(to, content, response = {})
-    @customer.messaging_logs.create!(
+    return unless @options[:customer]
+
+    @options[:customer].messaging_logs.create!(
       service: service_name,
       recipient: to,
       content: content,

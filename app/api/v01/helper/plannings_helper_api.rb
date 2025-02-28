@@ -83,10 +83,10 @@ module PlanningsHelperApi
   private
 
   def get_messaging_service(customer)
-    if VonageService.configured?(customer)
-      VonageService.new(customer)
-    elsif SmsPartnerService.configured?(customer)
-      SmsPartnerService.new(customer)
+    if VonageService.configured?(customer.reseller)
+      VonageService.new(customer.reseller, customer: customer)
+    elsif SmsPartnerService.configured?(customer.reseller)
+      SmsPartnerService.new(customer.reseller, customer: customer)
     else
       raise ArgumentError.new("No SMS service configured for reseller #{customer.reseller.id}")
     end
