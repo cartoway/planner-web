@@ -7,7 +7,7 @@ class MessagingServiceTest < ActiveSupport::TestCase
   end
 
   test 'should format content with replacements' do
-    service = MessagingService.new(@customer)
+    service = MessagingService.new(@reseller, customer: @customer)
     template = "Hello {NAME}, your delivery is scheduled for {DATE} at {TIME}"
     time = Time.zone.parse('2024-02-25 14:30')
 
@@ -24,7 +24,7 @@ class MessagingServiceTest < ActiveSupport::TestCase
   end
 
   test 'should truncate content by default' do
-    service = MessagingService.new(@customer)
+    service = MessagingService.new(@reseller, customer: @customer)
     long_text = 'x' * 200
 
     content = service.content(long_text)
@@ -32,7 +32,7 @@ class MessagingServiceTest < ActiveSupport::TestCase
   end
 
   test 'should not truncate content when specified' do
-    service = MessagingService.new(@customer)
+    service = MessagingService.new(@reseller, customer: @customer)
     long_text = 'x' * 200
 
     content = service.content(long_text, truncate: false)
@@ -40,7 +40,7 @@ class MessagingServiceTest < ActiveSupport::TestCase
   end
 
   test 'should format phone numbers' do
-    service = MessagingService.new(@customer)
+    service = MessagingService.new(@reseller, customer: @customer)
 
     assert_raises(CountryCodeError) { service.send(:format_phone_number, '0612345678') }
     assert_equal '+33612345678', service.send(:format_phone_number, '0612345678', 'France')

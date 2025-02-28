@@ -374,6 +374,8 @@ fr:
   resellers:
     form:
       messagings:
+        balance: Solde
+        balance_help: Solde du service d'envoi de SMS.
         title: Service d'envoi
         vonage:
           api_key: Clé API
