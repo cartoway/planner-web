@@ -13,6 +13,7 @@ x-web: &web
     SENTRY_DSN: ${SENTRY_DSN}
     HERE_MAP_APIKEY: ${HERE_MAP_APIKEY}
     LOG_FORMAT: ${LOG_FORMAT}
+    URL_SHORTENER: ${URL_SHORTENER:-http://url_shortener:8635}
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/production.rb:/srv/app/config/environments/production.rb
