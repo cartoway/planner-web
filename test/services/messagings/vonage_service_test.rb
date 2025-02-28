@@ -4,7 +4,7 @@ class VonageServiceTest < ActiveSupport::TestCase
   setup do
     @customer = customers(:customer_one)
     @reseller = @customer.reseller
-    @service = VonageService.new(@customer)
+    @service = VonageService.new(@reseller, customer: @customer)
 
     @reseller.update!(
       messagings: {

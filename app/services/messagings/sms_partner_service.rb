@@ -1,8 +1,9 @@
 class SmsPartnerService < MessagingService
   SEND_SMS_URL = 'https://api.smspartner.fr/v1/send'.freeze
+  BALANCE_URL = 'https://api.smspartner.fr/v1/me'.freeze
 
-  def self.configured?(customer, service_name = 'sms_partner')
-    super(customer, service_name)
+  def self.configured?(reseller, service_name = 'sms_partner')
+    super(reseller, service_name)
   end
 
   def self.definition
@@ -12,7 +13,7 @@ class SmsPartnerService < MessagingService
   end
 
   def send_message(to, content, options = {})
-    config = check_service_config
+    config = service_config
 
     formatted_number = format_phone_number(to, options[:country])
     return false unless formatted_number
@@ -39,6 +40,18 @@ class SmsPartnerService < MessagingService
       true
     else
       log_error("SMS sending failed", errors: response.errors.join(", "))
+      false
+    end
+  end
+
+  def balance
+    config = service_config
+    response = RestClient.get(BALANCE_URL, params: { apiKey: config['api_key'] })
+    response = SmsPartnerResponse.new(parse_response(response))
+    if response.success?
+      response.raw_data['credits']['balance']&.to_f
+    else
+      log_error("SMS balance fetching failed", errors: response.errors.join(", "))
       false
     end
   end

@@ -4,7 +4,7 @@ class SmsPartnerServiceTest < ActiveSupport::TestCase
   setup do
     @customer = customers(:customer_one)
     @reseller = @customer.reseller
-    @service = SmsPartnerService.new(@customer)
+    @service = SmsPartnerService.new(@reseller, customer: @customer)
 
     @reseller.update!(
       messagings: {

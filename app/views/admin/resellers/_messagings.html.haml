@@ -7,14 +7,15 @@
       = t('resellers.form.messagings.title')
 
     .form-group
-      - messaging_services.each do |service|
+      - messaging_services(@reseller).each do |service|
         - service_name = service[:name]
         - service_hash = @reseller.messagings[service_name] || {}
         .radio
           %label
             = radio_button_tag "reseller[messagings][active_service]", service_name, to_bool(service_hash && service_hash['enable'])
             = t("resellers.form.messagings.#{service_name}.title")
-            %small.text-muted= t("resellers.form.messagings.#{service_name}.help")
+            %p.help-block
+              = t("resellers.form.messagings.#{service_name}.help")
 
         .messaging-fields{class: to_bool(service_hash && service_hash['enable']) ? '' : 'd-none', data: { service: service_name }}
           - service[:definition].each do |field, field_options|
@@ -23,8 +24,15 @@
               = f.text_field "messagings[#{service_name}][#{field}]", value: service_hash[field.to_s], label: t("resellers.form.messagings.#{service_name}.#{field}"), autocomplete: 'new-password', class: 'form-control', label_col: 'col-md-12', control_col: 'col-md-12'
             - when :password
               = f.password_field "messagings[#{service_name}][#{field}]", value: service_hash[field.to_s], label: t("resellers.form.messagings.#{service_name}.#{field}"), autocomplete: 'new-password', class: 'form-control', label_col: 'col-md-12', control_col: 'col-md-12'
+          .row
+            %label.col-md-12
+              = t("resellers.form.messagings.balance")
+            .col-md-12
+              .label{class: "label-#{service[:balance][:color_class]}"}
+                = service[:balance][:value]
       .radio
         %label
           = radio_button_tag "reseller[messagings][active_service]", '', @reseller.messagings.none? { |k,v| v['enable'] }
           = t("resellers.form.messagings.none.title")
-          %small.text-muted= t("resellers.form.messagings.none.help")
+          %p.help-block
+            = t("resellers.form.messagings.none.help")

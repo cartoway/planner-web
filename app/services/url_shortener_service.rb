@@ -1,6 +1,6 @@
 class UrlShortenerService
   def initialize
-    @base_url = ENV['SHORTENER_URL']&.chomp('/')
+    @base_url = ENV['URL_SHORTENER']&.chomp('/')
   end
 
   def shorten(url)
