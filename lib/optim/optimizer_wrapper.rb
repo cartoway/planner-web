@@ -240,6 +240,7 @@ class OptimizerWrapper
   end
 
   def build_services(planning, routes, stops, **options)
+    p options
     point_hash = {}
     route_ids = routes.map(&:id)
     services_late_multiplier = (options[:stop_soft_upper_bound] && options[:stop_soft_upper_bound] > 0) ? options[:stop_soft_upper_bound] : nil
@@ -343,7 +344,7 @@ class OptimizerWrapper
         timewindow: {
           start: route.vehicle_usage.default_time_window_start,
           end: route.vehicle_usage.default_time_window_end,
-          maximum_lateness: options[:vehicule_maximum_lateness] || nil
+          maximum_lateness: options[:vehicle_maximum_lateness] || nil
         }.delete_if{ |_k, v| v.nil? },
         duration: route.vehicle_usage.default_work_time(true)&.to_f,
         distance: route.vehicle_usage.default_max_distance,
