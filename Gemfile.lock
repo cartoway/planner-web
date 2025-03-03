@@ -42,6 +42,13 @@ GIT
     sidebar-v2-gh-pages-rails (0.0.1)
 
 GIT
+  remote: https://github.com/cartoway/simplify_rb
+  revision: 035cd45a7b53db487d6b5c81928a25199a8b3125
+  branch: dev
+  specs:
+    simplify_rb (0.4.0)
+
+GIT
   remote: https://github.com/frodrigo/jquery-timeentry-rails.git
   revision: ccecc885d334b772d065bb722e2d4528a9f9a40c
   specs:
@@ -729,7 +736,6 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
-    simplify_rb (0.4.0)
     sinatra (3.2.0)
       mustermann (~> 3.0)
       rack (~> 2.2, >= 2.2.4)
@@ -956,7 +962,7 @@ DEPENDENCIES
   sidebar-v2-gh-pages-rails!
   sim_annealing
   simplecov
-  simplify_rb
+  simplify_rb!
   smt_rails (= 0.2.9)
   sprockets
   sys-cpu
