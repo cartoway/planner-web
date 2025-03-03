@@ -191,6 +191,7 @@ fr:
         enable_vehicle_position: Activer la position des véhicules
         enable_stop_status: Activer les statuts des visites
         enable_sms: Activer l'envoi de SMS
+        enable_optimization_soft_upper_bound: Autoriser les retards
         sms_template: Modèle SMS
         sms_driver_template: Modèle SMS livreurs
         sms_concat: SMS longs
@@ -203,6 +204,8 @@ fr:
         print_stop_time: Inclure les horaires de passage
         print_barcode: Code barre
         speed_multiplier: Ajustement de la vitesse
+        stop_max_upper_bound: Retard max / arrêts
+        vehicle_max_upper_bound: Retard max / véhicules
         router: Calculateur d'itinéraire
         router_warning: Ce calculateur d'itinéraire n'est pas autorisé dans ce profil
         layer_warning: Ce fond de carte n'est pas autorisé dans ce profil
@@ -1067,7 +1070,12 @@ fr:
         Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus court :
         non pris en compte
       optimization_force_start_help: Forcer le départ du véhicule à son horaire de début.
+      enable_optimization_soft_upper_bound_help: Autoriser les retards durant l'optimisation
       enable_global_optimization_test: Actif si Test
+      stop_max_upper_bound: Retard max / arrêts
+      stop_max_upper_bound_help: Autoriser les retards sur les arrêts
+      vehicle_max_upper_bound: Retard max / véhicules
+      vehicle_max_upper_bound_help: Autoriser les retards sur les véhicules
       print_header_help: Bloc de texte ajouté avant chaque tournée
       print:
         title: Impressions
