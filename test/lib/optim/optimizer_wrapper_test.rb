@@ -15,6 +15,19 @@ class OptimizerWrapperTest < ActionController::TestCase
     @planning = plannings(:planning_one)
   end
 
+  test 'should return a maximum lateness option' do
+    begin
+      planning = plannings(:planning_one)
+      vrp = @optim.build_vrp(planning, planning.routes, **{ vehicle_maximum_lateness: 10, stop_maximum_lateness: 15})
+
+      assert_equal 10, vrp[:vehicles][0][:timewindow][:maximum_lateness]
+      assert_equal 15, vrp[:services][0][:activity][:timewindows][0][:maximum_lateness]
+    ensure
+      remove_request_stub(@stub_VrpJob)
+      remove_request_stub(@stub_VrpSubmit)
+    end
+  end
+
   test 'should optimize' do
     begin
       OptimizerWrapper.stub_any_instance(:build_vrp, JSON.parse(File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/submitted-vrp.json').read, symbolize_names: true)) do
