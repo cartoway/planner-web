@@ -150,7 +150,7 @@
                       - options.merge!({ service: "#{definition[:device]}", operation: "#{route_operation.is_a?(Hash) ? route_operation.keys[0] : route_operation}" })
                       %li.link.device-operation{data: options}
                         %i.fa.fa-fw{ class: (route_operation == :clear ? 'fa-rectangle-xmark' : 'fa-mobile fa-rotate-90') }
-                          - translation = "#{definition[:device]}_#{route_operation.is_a?(Hash) ? route_operation.keys[0].to_s + '_' + route_operation.values[0].to_s : route_operation}.action"
+                          - translation = "#{definition[:device]}_#{route_operation.is_a?(Hash) ? route_operation.keys[0].to_s + '_' + route_operation.values[0].to_s.pluralize : route_operation.to_s.pluralize}.action"
                         = t("plannings.edit.#{translation}")
                     - if definition[:route_operations].any?
                       %li.divider{role: "separator"}
