@@ -23,7 +23,7 @@ class SmsPartnerService < MessagingService
       sender: options[:sender] || @reseller.name,
       gamme: 1,
       isStopSms: false,
-      tag: options[:tag] || "c#{@customer.id}"
+      tag: options[:tag] || @options[:customer] && "c#{@options[:customer].id}"
     }
 
     response = send_sms(
@@ -46,13 +46,15 @@ class SmsPartnerService < MessagingService
 
   def balance
     config = service_config
+    return nil if !config['api_key']&.blank?
+
     response = RestClient.get(BALANCE_URL, params: { apiKey: config['api_key'] })
     response = SmsPartnerResponse.new(parse_response(response))
     if response.success?
       response.raw_data['credits']['balance']&.to_f
     else
       log_error("SMS balance fetching failed", errors: response.errors.join(", "))
-      false
+      nil
     end
   end
 
