@@ -308,11 +308,12 @@ en:
       deliver_send:
         access: Access the tour
         transmit: Transmit to driver
-        action: Send to driver
+        action: Send mail to driver
         send_sms: Send SMS to driver
         success: Sent to driver successfully
         fail: Failed to send
       deliver_sends:
+        action: Send mail to drivers
         send_sms: Send SMS to drivers
         success: Sent to driver successfully
         fail: Failed to send
