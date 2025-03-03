@@ -240,7 +240,6 @@ class OptimizerWrapper
   end
 
   def build_services(planning, routes, stops, **options)
-    p options
     point_hash = {}
     route_ids = routes.map(&:id)
     services_late_multiplier = (options[:stop_soft_upper_bound] && options[:stop_soft_upper_bound] > 0) ? options[:stop_soft_upper_bound] : nil
