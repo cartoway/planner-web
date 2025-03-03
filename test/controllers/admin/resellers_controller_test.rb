@@ -10,6 +10,12 @@ class Admin::ResellersControllerTest < ActionController::TestCase
   end
 
   test 'should get edit' do
+    [VonageService, SmsPartnerService].each do |service_class|
+      service_class.any_instance.stubs(:balance).returns(42.0)
+    end
+
+    Rails.application.config.url_shortener.stubs(:available?).returns(false)
+
     get :edit, params: { id: @reseller }
     assert_response :success
     assert_valid response
