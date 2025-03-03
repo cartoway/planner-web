@@ -133,7 +133,10 @@ CREATE TABLE public.customers (
     sms_from_customer_name boolean DEFAULT false NOT NULL,
     optimization_minimal_time double precision,
     history_cron_hour integer,
-    sms_driver_template character varying
+    sms_driver_template character varying,
+    enable_optimization_soft_upper_bound boolean,
+    stop_max_upper_bound integer,
+    vehicle_max_upper_bound integer
 );
 
 
@@ -2885,6 +2888,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20241227140855'),
 ('20250128131504'),
 ('20250203114002'),
+('20250219113043'),
 ('20250221144341');
 
 

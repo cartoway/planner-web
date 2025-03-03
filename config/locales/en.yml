@@ -191,6 +191,7 @@ en:
         enable_vehicle_position: Enable vehicle's position
         enable_stop_status: Enable visits status
         enable_sms: Enable SMS
+        enable_optimization_soft_upper_bound: Enable delays
         sms_template: SMS template
         sms_driver_template: Driver SMS template
         sms_concat: Long SMS
@@ -203,6 +204,8 @@ en:
         print_stop_time: Include stop time
         print_barcode: Barcode
         speed_multiplier: Speed multiplier
+        stop_max_upper_bound: Stops maximum delay
+        vehicle_max_upper_bound: Vehicles maximum delay
         router: Routing Engine
         router_warning: This routing engine is unauthorized in this profile
         layer_warning: This layer is unauthorized in this profile
@@ -1036,7 +1039,12 @@ en:
         more the delay before time slot opening is important (0 to disallow the
         waiting time).
       optimization_force_start_help: Force vehicle start to the beginning of its schedule.
+      enable_optimization_soft_upper_bound_help: Enable the delays in optimization
       enable_global_optimization_test: Enabled if Test
+      stop_max_upper_bound: Stops maximum delay
+      stop_max_upper_bound_help: Enable delays for stops
+      vehicle_max_upper_bound: Vehicles maximum delay
+      vehicle_max_upper_bound_help: Enable delays for vehicles
       print_header_help: Block of text added before each route
       print:
         title: Printing
