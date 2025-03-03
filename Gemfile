@@ -171,7 +171,7 @@ gem 'delayed_job_web'
 gem 'fast-polylines'
 gem 'rgeo'
 gem 'rgeo-geojson'
-gem 'simplify_rb' # Gem simplifying polylines using Douglas-Peucker algorithm
+gem 'simplify_rb', git: 'https://github.com/cartoway/simplify_rb', branch: 'dev' # Gem simplifying polylines using Douglas-Peucker algorithm
 
 gem 'ai4r'
 gem 'sim_annealing'
