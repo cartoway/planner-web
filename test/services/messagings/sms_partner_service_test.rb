@@ -17,14 +17,14 @@ class SmsPartnerServiceTest < ActiveSupport::TestCase
   end
 
   test 'should be configured when enabled' do
-    assert SmsPartnerService.configured?(@customer)
+    assert SmsPartnerService.configured?(@reseller)
   end
 
   test 'should not be configured when disabled' do
     @reseller.messagings['sms_partner']['enable'] = false
     @reseller.save!
 
-    refute SmsPartnerService.configured?(@customer)
+    refute SmsPartnerService.configured?(@reseller)
   end
 
   test 'should send message' do

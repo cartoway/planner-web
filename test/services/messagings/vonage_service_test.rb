@@ -18,14 +18,14 @@ class VonageServiceTest < ActiveSupport::TestCase
   end
 
   test 'should be configured when enabled' do
-    assert VonageService.configured?(@customer)
+    assert VonageService.configured?(@reseller)
   end
 
   test 'should not be configured when disabled' do
     @reseller.messagings['vonage']['enable'] = false
     @reseller.save!
 
-    refute VonageService.configured?(@customer)
+    refute VonageService.configured?(@reseller)
   end
 
   test 'should send message' do

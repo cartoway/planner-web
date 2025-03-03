@@ -48,8 +48,7 @@ class MessagingService
       elsif v.is_a?(Date)
         template = template.gsub("{#{k}}".upcase, I18n.l(v, format: :date))
       elsif k == :url && v.is_a?(String) && template.include?('{URL}')
-        url_shortener = UrlShortenerService.new
-        template = template.gsub("{#{k}}".upcase, url_shortener.shorten(v))
+        template = template.gsub("{#{k}}".upcase, Rails.application.config.url_shortener.shorten(v))
       else
         template = template.gsub("{#{k}}".upcase, "#{v}")
       end

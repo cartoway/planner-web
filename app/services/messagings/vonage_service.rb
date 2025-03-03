@@ -12,6 +12,8 @@ class VonageService < MessagingService
 
   def balance
     config = service_config
+    return nil if !config['api_key']&.blank? || !config['api_secret']&.blank?
+
     service = Vonage::Client.new(
       api_key: config['api_key'],
       api_secret: config['api_secret']
