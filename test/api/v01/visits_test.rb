@@ -116,6 +116,11 @@ class V01::VisitsTest < ActiveSupport::TestCase
     assert_equal 400, last_response.status, last_response.body
   end
 
+  test 'should not create a visit with invalid revenue' do
+    post api_destination(@destination.id), @visit.attributes.merge(revenue: 'aaa').except('id'), as: :json
+    assert_equal 400, last_response.status, last_response.body
+  end
+
   test 'should update a visit' do
     [
       tags(:tag_one).id.to_s + ',' + tags(:tag_two).id.to_s,
