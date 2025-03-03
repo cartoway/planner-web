@@ -14,7 +14,7 @@ module ResellersHelper
   def balance_hash(service)
     balance = service.balance
     color_class =
-      case balance.round
+      case balance&.round
       when 0
         'danger'
       when 1..20
