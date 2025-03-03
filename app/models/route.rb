@@ -805,8 +805,8 @@ class Route < ApplicationRecord
   def compute_out_of_relations
     stops.each{ |s| s.out_of_relation = false }
 
-    stop_hash = stops.only_stop_visits.map{ |stop| [stop.visit.id, stop] }.to_h
-    stops_sort = stops.only_stop_visits.sort_by(&:index)
+    stop_visits = stops.select{ |s| s.is_a?(StopVisit) }
+    stop_hash = stop_visits.map{ |stop| [stop.visit.id, stop] }.to_h
 
     route_relations = stops.only_stop_visits.includes_relations.flat_map{ |stop_visit|
       stop_visit.visit.relation_currents + stop_visit.visit.relation_successors

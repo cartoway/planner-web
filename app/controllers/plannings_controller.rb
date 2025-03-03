@@ -26,8 +26,8 @@ class PlanningsController < ApplicationController
   before_action :authenticate_driver!, only: [:driver_move]
 
   UPDATE_ACTIONS = [:update, :move, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh_route, :route_edit] + UPDATE_ACTIONS
-  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :refresh, :sidebar]
+  before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
+  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
@@ -171,9 +171,9 @@ class PlanningsController < ApplicationController
 
   def refresh
     respond_to do |format|
-      @routes = @planning.routes.includes_destinations.available_or_outdated
       @planning.compute(skip_preload: true)
       if @planning.save
+        @routes = @planning.routes
         @with_devices = true
         format.json { render action: 'show', location: @planning }
       else

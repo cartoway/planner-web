@@ -470,13 +470,13 @@ class Planning < ApplicationRecord
 
   def visits
     routes.flat_map{ |route|
-      route.stops.only_stop_visits.map(&:visit)
+      route.stops.only_stop_visits.includes_destinations.map(&:visit)
     }
   end
 
   def visits_to_stop_hash
     routes.flat_map{ |route|
-      route.stops.only_stop_visits.map{ |stop| [stop.visit.id, stop] }
+      route.stops.only_stop_visits.includes_destinations.map{ |stop| [stop.visit.id, stop] }
     }.to_h
   end
 
