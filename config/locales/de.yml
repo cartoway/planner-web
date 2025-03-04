@@ -164,7 +164,6 @@ de:
         enable_sms: SMS aktivieren
         sms_template: SMS-Vorlage
         sms_concat: Lange SMS
-        sms_from_customer_name: SMS-Absender
         enable_external_callback: Rückruf-URL aktivieren
         print_planning_annotating: Plananmerkungen einbinden
         print_header: Streckenkopf
@@ -939,7 +938,6 @@ de:
         der maximalen Zeichenzahl werden jedoch mehrere SMS zum jeweiligen Preis
         berechnet). Wenn es nicht aktiviert ist, wird Ihre SMS abgeschnitten
         werden.
-      sms_from_customer_name_help: 'Wenn angekreuzt, wird "%{c}" als SMS-Absendername verwendet'
       speed_multiplier_default: '%{n} (Standardwert)'
       speed_multiplier_help: Ein Wert über 100 % bedeutet eine höhere Geschwindigkeit.
       audience_url_help: Gehen Sie zur Zielgruppenseite des Kunden-Dashboards.

@@ -66,7 +66,6 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :print_barcode, type: String, values: ::Customer::PRINT_BARCODE, documentation: { desc: 'Print the Reference as Barcode'}
     optional :sms_template, type: String
     optional :sms_concat, type: Boolean
-    optional :sms_from_customer_name, type: Boolean
 
     optional :optimization_max_split_size, type: Integer, documentation: { desc: 'Maximum number of visits to split problem', example: Planner::Application.config.optimize_max_split_size }
     optional :optimization_cluster_size, type: Integer, documentation: { desc: 'Time in seconds to group near visits', example: Planner::Application.config.optimize_cluster_size }

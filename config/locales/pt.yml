@@ -194,7 +194,6 @@ pt:
         enable_sms: Ativar envio de SMS
         sms_template: SMS modelo
         sms_concat: SMS longos
-        sms_from_customer_name: Expedidor de SMS
         print_barcode: Código de barras
         router_options_traffic: Ter em conta o tráfego
       deliverable_unit:
@@ -929,7 +928,6 @@ pt:
         nome do ponto preenchido na applicação. O texto não deverà conter
         caracteres inusuais (GSM 03.38) e não exceder 160 caracteres (ou 70 no
         caso de caracteres especiais).
-      sms_from_customer_name_help: 'Se selecionado, "%{c}" serà utilizado como expeditor da mensagém'
   stores:
     default:
       lat: '38.78280'
