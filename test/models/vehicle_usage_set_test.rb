@@ -7,6 +7,10 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     end
   end
 
+  setup do
+    @vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+  end
+
   test 'should not save' do
     vehicle_usage_set = customers(:customer_one).vehicle_usage_sets.build
     assert_not vehicle_usage_set.save, 'Saved without required fields'
@@ -140,5 +144,72 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     assert_raises ActiveRecord::RecordInvalid do
       vehicle_usage_set.update! time_window_end: '09:00', time_window_start: '10:00'
     end
+  end
+
+  test 'should validate cost_distance as float' do
+    @vehicle_usage_set.cost_distance = 10.5
+    assert @vehicle_usage_set.valid?
+
+    @vehicle_usage_set.cost_distance = 'not a float'
+    assert_not @vehicle_usage_set.valid?
+
+    @vehicle_usage_set.cost_distance = nil
+    assert @vehicle_usage_set.valid?
+  end
+
+  test 'should validate cost_fixed as float' do
+    @vehicle_usage_set.cost_fixed = 15.75
+    assert @vehicle_usage_set.valid?
+
+    @vehicle_usage_set.cost_fixed = 'not a float'
+    assert_not @vehicle_usage_set.valid?
+
+    @vehicle_usage_set.cost_fixed = nil
+    assert @vehicle_usage_set.valid?
+  end
+
+  test 'should validate cost_time as float' do
+    @vehicle_usage_set.cost_time = 20.25
+    assert @vehicle_usage_set.valid?
+
+    @vehicle_usage_set.cost_time = 'not a float'
+    assert_not @vehicle_usage_set.valid?
+
+    @vehicle_usage_set.cost_time = nil
+    assert @vehicle_usage_set.valid?
+  end
+
+  test 'should accept integer values for costs' do
+    @vehicle_usage_set.cost_distance = 10
+    @vehicle_usage_set.cost_fixed = 15
+    @vehicle_usage_set.cost_time = 20
+    assert @vehicle_usage_set.valid?
+  end
+
+  test 'should accept zero values for costs' do
+    @vehicle_usage_set.cost_distance = 0
+    @vehicle_usage_set.cost_fixed = 0
+    @vehicle_usage_set.cost_time = 0
+    assert @vehicle_usage_set.valid?
+  end
+
+  test 'should reject negative values for costs' do
+    @vehicle_usage_set.cost_distance = -10.5
+    @vehicle_usage_set.cost_fixed = -15.75
+    @vehicle_usage_set.cost_time = -20.25
+    assert_not @vehicle_usage_set.valid?
+  end
+
+  test 'should inherit costs from vehicle_usage_set' do
+    @vehicle_usage_set.update!(
+      cost_distance: 10.5,
+      cost_fixed: 15.75,
+      cost_time: 20.25
+    )
+
+    vehicle_usage = @vehicle_usage_set.vehicle_usages.first
+    assert_equal 10.5, vehicle_usage.default_cost_distance
+    assert_equal 15.75, vehicle_usage.default_cost_fixed
+    assert_equal 20.25, vehicle_usage.default_cost_time
   end
 end

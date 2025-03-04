@@ -44,6 +44,9 @@ class VehicleUsage < ApplicationRecord
   attribute :work_time, ScheduleType.new
   time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
 
+  validates :cost_distance, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
+  validates :cost_fixed, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
+  validates :cost_time, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
   validate :time_window_end_after_end
   validate :rest_stop_after_rest_start
   validate :rest_duration_range
