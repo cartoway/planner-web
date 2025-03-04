@@ -234,6 +234,10 @@ const tracking = function(params) {
         alert(I18n.t('errors.mobile.denied_geolocation'));
         clearInterval(positionInterval);
         break;
+      case error.POSITION_UNAVAILABLE:
+        alert(I18n.t('errors.mobile.position_unavailable'));
+        clearInterval(positionInterval);
+        break;
       default:
         alert(I18n.t('errors.mobile.default'));
         clearInterval(positionInterval);
