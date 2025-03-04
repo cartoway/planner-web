@@ -107,9 +107,9 @@ const spreadsheetModalExport = function(columns, planningId, columns_preferences
   $('.columns-export-list').sortable({
     connectWith: '#spreadsheet-columns .ui-sortable'
   });
-  var columnsExport = columns_preferences['keep'] || [];
+  var columnsExport = columns_preferences['keep'] || (localStorage.spreadsheetColumnsSkip && localStorage.spreadsheetColumnsSkip.split('|')) || [];
   var columnsSkip = columns_preferences['skip'] || (localStorage.spreadsheetColumnsSkip && localStorage.spreadsheetColumnsSkip.split('|'));
-  if (localStorage.spreadsheetColumnsExport) {
+  if (columnsExport != []) {
     $.each(columns, function(i, c) {
       if (columnsExport.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
         columnsExport.push(c);
