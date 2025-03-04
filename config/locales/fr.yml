@@ -192,7 +192,7 @@ fr:
         enable_stop_status: Activer les statuts des visites
         enable_sms: Activer l'envoi de SMS
         enable_optimization_soft_upper_bound: Autoriser les retards
-        sms_template: Modèle SMS
+        sms_template: Modèle SMS clients
         sms_driver_template: Modèle SMS livreurs
         sms_concat: SMS longs
         sms_from_customer_name: Expéditeur SMS

@@ -324,6 +324,10 @@ fr:
         action: Réinitialiser les statuts
         success: Les statuts ont été réinitialisés avec succès
         fail: Échec de la réinitialisation
+      deliver_clears:
+        action: Réinitialiser les statuts
+        success: Les statuts ont été réinitialisés avec succès
+        fail: Échec de la réinitialisation
       praxedo_send:
         action: Envoyer à Praxedo
         success: Envoyé à Praxedo avec succès

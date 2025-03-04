@@ -192,7 +192,7 @@ en:
         enable_stop_status: Enable visits status
         enable_sms: Enable SMS
         enable_optimization_soft_upper_bound: Enable delays
-        sms_template: SMS template
+        sms_template: Customer SMS template
         sms_driver_template: Driver SMS template
         sms_concat: Long SMS
         sms_from_customer_name: SMS sender

@@ -321,6 +321,10 @@ en:
         action: Reset status
         success: Status have been successfully reset
         fail: Reset failed
+      deliver_clears:
+        action: Reset status
+        success: Status have been successfully reset
+        fail: Reset failed
       praxedo_send:
         action: Send to Praxedo
         success: Sent to Praxedo successfully
