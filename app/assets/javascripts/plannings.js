@@ -107,14 +107,14 @@ const spreadsheetModalExport = function(columns, planningId, columns_preferences
   $('.columns-export-list').sortable({
     connectWith: '#spreadsheet-columns .ui-sortable'
   });
-  var columnsExport = columns_preferences['keep'];
+  var columnsExport = columns_preferences['keep'] || [];
   var columnsSkip = columns_preferences['skip'] || (localStorage.spreadsheetColumnsSkip && localStorage.spreadsheetColumnsSkip.split('|'));
-  // if (localStorage.spreadsheetColumnsExport) {
-  //   $.each(columns, function(i, c) {
-  //     if (columns.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
-  //       columnsExport.push(c);
-  //   });
-  // }
+  if (localStorage.spreadsheetColumnsExport) {
+    $.each(columns, function(i, c) {
+      if (columns.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
+        columnsExport.push(c);
+    });
+  }
   var appendElement = function(parentSel, columnKey) {
     var displayName;
     var match = columnKey.match(new RegExp('^(.+)\\[(.*)\\]$'));
