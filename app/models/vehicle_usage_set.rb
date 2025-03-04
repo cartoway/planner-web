@@ -46,7 +46,9 @@ class VehicleUsageSet < ApplicationRecord
 
   validates :customer, presence: true
   validates :name, presence: true
-
+  validates :cost_distance, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
+  validates :cost_fixed, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
+  validates :cost_time, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
   validates :time_window_start, presence: true
   validates :time_window_end, presence: true
   validate :time_window_end_after_end
