@@ -223,4 +223,62 @@ class VehicleUsageTest < ActiveSupport::TestCase
       vehicle_usage.update! time_window_end: '09:00', time_window_start: '10:00'
     end
   end
+
+  setup do
+    @vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+  end
+
+  test 'should validate cost_distance as float' do
+    @vehicle_usage.cost_distance = 10.5
+    assert @vehicle_usage.valid?
+
+    @vehicle_usage.cost_distance = 'not a float'
+    assert_not @vehicle_usage.valid?
+
+    @vehicle_usage.cost_distance = nil
+    assert @vehicle_usage.valid?
+  end
+
+  test 'should validate cost_fixed as float' do
+    @vehicle_usage.cost_fixed = 15.75
+    assert @vehicle_usage.valid?
+
+    @vehicle_usage.cost_fixed = 'not a float'
+    assert_not @vehicle_usage.valid?
+
+    @vehicle_usage.cost_fixed = nil
+    assert @vehicle_usage.valid?
+  end
+
+  test 'should validate cost_time as float' do
+    @vehicle_usage.cost_time = 20.25
+    assert @vehicle_usage.valid?
+
+    @vehicle_usage.cost_time = 'not a float'
+    assert_not @vehicle_usage.valid?
+
+    @vehicle_usage.cost_time = nil
+    assert @vehicle_usage.valid?
+  end
+
+  test 'should accept integer values for costs' do
+    @vehicle_usage.cost_distance = 10
+    @vehicle_usage.cost_fixed = 15
+    @vehicle_usage.cost_time = 20
+    assert @vehicle_usage.valid?
+  end
+
+  test 'should accept zero values for costs' do
+    @vehicle_usage.cost_distance = 0
+    @vehicle_usage.cost_fixed = 0
+    @vehicle_usage.cost_time = 0
+    assert @vehicle_usage.valid?
+  end
+
+  test 'should reject negative values for costs' do
+    @vehicle_usage.cost_distance = -10.5
+    @vehicle_usage.cost_fixed = -15.75
+    @vehicle_usage.cost_time = -20.25
+    assert_not @vehicle_usage.valid?
+  end
 end
