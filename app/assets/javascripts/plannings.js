@@ -107,8 +107,8 @@ const spreadsheetModalExport = function(columns, planningId, columns_preferences
   $('.columns-export-list').sortable({
     connectWith: '#spreadsheet-columns .ui-sortable'
   });
-  var columnsExport = columns_preferences['keep'] || (localStorage.spreadsheetColumnsSkip && localStorage.spreadsheetColumnsSkip.split('|')) || [];
-  var columnsSkip = columns_preferences['skip'] || (localStorage.spreadsheetColumnsSkip && localStorage.spreadsheetColumnsSkip.split('|'));
+  var columnsExport = (columns_preferences && columns_preferences['keep']) || [];
+  var columnsSkip = (columns_preferences && columns_preferences['skip']) || [];
   if (columnsExport != []) {
     $.each(columns, function(i, c) {
       if (columnsExport.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
@@ -169,10 +169,10 @@ const spreadsheetModalExport = function(columns, planningId, columns_preferences
     var spreadsheetStops = localStorage.spreadsheetStops = $('.spreadsheet-stops:checked').map(function(i, e) {
       return $(e).val();
     }).get().join('|');
-    var spreadsheetColumnsExport = localStorage.spreadsheetColumnsExport = $('#columns-export').find('li').map(function(i, e) {
+    var spreadsheetColumnsExport = $('#columns-export').find('li').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
-    var spreadsheetColumnsSkip = localStorage.spreadsheetColumnsSkip = $('#columns-skip').find('li').map(function(i, e) {
+    var spreadsheetColumnsSkip = $('#columns-skip').find('li').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
     var spreadsheetFormat = localStorage.spreadsheetFormat = $('[name=spreadsheet-format]:checked').val();
