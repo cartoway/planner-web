@@ -53,7 +53,7 @@ module PlanningsHelperApi
   def send_sms_drivers(routes, phone_number_hash)
     routes.map.with_index{ |route, route_index|
       next unless route.vehicle_usage_id
-      next if phone_number_hash[route.id].nil? && route.vehicle_usage.vehicle.phone_number.nil?
+      next if phone_number_hash[route.id].blank? && route.vehicle_usage.vehicle.phone_number.blank?
 
       customer = route.planning.customer
       messaging_service = get_messaging_service(customer)

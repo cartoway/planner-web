@@ -215,7 +215,7 @@
               %a{href: route[:calendar_url]}
                 %i.fa.fa-envelope.fa-fw
                 = t('plannings.edit.export.icalendar.action_email')
-          - if route[:customer_enable_sms]
+          - if @planning.customer.enable_sms
             %li.divider{role: "separator"}
             %li
               %a.send_sms{href: "/api/0.1/plannings/#{summary[:planning_id]}/routes/#{route[:route_id]}/send_sms"}
