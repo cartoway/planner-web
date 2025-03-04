@@ -88,7 +88,7 @@ const iCalendarExport = function(planningId) {
   });
 };
 
-const spreadsheetModalExport = function(columns, planningId) {
+const spreadsheetModalExport = function(columns, planningId, columns_preferences) {
   $('#planning-spreadsheet-modal').on('show.bs.modal', function() {
     if ($('[name=spreadsheet-route]').val())
       $('[name=spreadsheet-out-of-route]').parent().parent().hide();
@@ -107,15 +107,14 @@ const spreadsheetModalExport = function(columns, planningId) {
   $('.columns-export-list').sortable({
     connectWith: '#spreadsheet-columns .ui-sortable'
   });
-  var columnsExport = columns;
-  var columnsSkip = localStorage.spreadsheetColumnsSkip && localStorage.spreadsheetColumnsSkip.split('|');
-  if (localStorage.spreadsheetColumnsExport) {
-    columnsExport = localStorage.spreadsheetColumnsExport.split('|');
-    $.each(columns, function(i, c) {
-      if (columnsExport.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
-        columnsExport.push(c);
-    });
-  }
+  var columnsExport = columns_preferences['keep'];
+  var columnsSkip = columns_preferences['skip'] || (localStorage.spreadsheetColumnsSkip && localStorage.spreadsheetColumnsSkip.split('|'));
+  // if (localStorage.spreadsheetColumnsExport) {
+  //   $.each(columns, function(i, c) {
+  //     if (columns.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
+  //       columnsExport.push(c);
+  //   });
+  // }
   var appendElement = function(parentSel, columnKey) {
     var displayName;
     var match = columnKey.match(new RegExp('^(.+)\\[(.*)\\]$'));
@@ -179,7 +178,7 @@ const spreadsheetModalExport = function(columns, planningId) {
     var spreadsheetFormat = localStorage.spreadsheetFormat = $('[name=spreadsheet-format]:checked').val();
     var basePath = $('[name=spreadsheet-route]').val() ? ('/routes/' + $('[name=spreadsheet-route]').val()) : (planningId) ? '/plannings/' + planningId : '/plannings';
 
-    window.location.href = basePath + '.' + spreadsheetFormat + '?stops=' + spreadsheetStops + '&columns=' + spreadsheetColumnsExport + "&ids=" + planningsId;
+    window.location.href = basePath + '.' + spreadsheetFormat + '?stops=' + spreadsheetStops + '&columns=' + spreadsheetColumnsExport + "&ids=" + planningsId + '&columns_skip=' + spreadsheetColumnsSkip;
 
     $('#planning-spreadsheet-modal').modal('toggle');
   });
@@ -2564,7 +2563,7 @@ export const plannings_edit = function(params) {
     });
   });
 
-  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id);
+  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id, params.columns_preferences);
 
   var devicesObservePlanning = (function() {
 
@@ -2730,7 +2729,7 @@ var plannings_index = function(params) {
   var requestPending = false;
 
   iCalendarExport();
-  spreadsheetModalExport(params.spreadsheet_columns);
+  spreadsheetModalExport(params.spreadsheet_columns, null, params.columns_preferences);
 
   var vehicle_id = $('#vehicle_id').val(),
     planning_ids;
