@@ -218,32 +218,27 @@
                       %span.menu_label
                         = t 'web.subscription'
               - if @reseller.help_url
-                %li#menu-help.dropdown.help.menu-sectqion.menu-list-item
-                  = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), class: 'dropdown-toggle', 'data-toggle': "dropdown" do
-                    %i.fa.fa-info-circle.fa-fw
-                    .hidden-menu
-                      %span.menu_label
-                        = t 'web.help_menu'
-                  %ul.dropdown-menu
-              - if @reseller.help_search_url
-                %li.menu-list-item{style: "padding-left: 10px; padding-right: 15px;"}
-                  .hidden-menu
-                    = form_tag @reseller.help_search_url, method: 'get', target: '_blank' do
-                      = text_field_tag :q, nil, class: 'form-control', placeholder: t('web.help_search_placeholder')
-              - if @reseller.help_url
-                %li.menu-list-item{ class: ("disabled" if !@reseller.help_search_url && !@reseller.contact_urlcurrent_user.customer.too_many_destinations?) }
-                  = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                    %i.fa.fa-info-circle.fa-fw
-                    .hidden-menu
-                      = t 'web.help'
-
-                    = t 'web.help'
-              - if @reseller.contact_url
-                %li.menu-list-item
-                  = link_to @reseller.contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                    %i.fa.fa-phone.fa-fw
-                    .hidden-menu
-                      = t 'web.contact'
+                %li#menu-help.menu-list-item{ class: ("disabled" if !@reseller.help_search_url && !@reseller.contact_url) }
+                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#helpCollpase'}
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-hand-holding-hand.fa-fw
+                      .hidden-menu.menu_label
+                        = t 'web.help'
+                  %ul#helpCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                    %li
+                      = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                        %i.fa.fa-book-open-reader.fa-fw
+                        = t 'web.help_documentation'
+                    - if @reseller.help_search_url
+                      %li
+                        = link_to @reseller.help_search_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                          %i.fa.fa-search.fa-fw
+                          = t 'web.help_search'
+                    - if @reseller.contact_url
+                      %li
+                        = link_to @reseller.contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                          %i.fa.fa-phone.fa-fw
+                          = t 'web.contact'
 
               #menu-settings
                 .divider.solid
