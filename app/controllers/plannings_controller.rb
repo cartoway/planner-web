@@ -716,7 +716,6 @@ class PlanningsController < ApplicationController
     format.excel do
       @customer ||= @planning.customer
       @columns = (@params[:columns] && @params[:columns].split('|')) || export_columns
-      @customer = @planning.customer
       current_user.save_columns_preferences(@columns, @params["columns_skip"].split('|'))
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
