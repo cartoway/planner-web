@@ -40,7 +40,7 @@ services:
 
   web:
     <<: *web
-    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec puma -v -p 8080 --pidfile 'server.pid' -t ${PUMA_WORKERS:-0:1}"
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec rake db:prepare && bundle exec puma -v -p 8080 --pidfile 'server.pid' -t ${PUMA_WORKERS:-0:1}"
 
   delayed-job:
     <<: *web
