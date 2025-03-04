@@ -195,7 +195,6 @@ en:
         sms_template: Customer SMS template
         sms_driver_template: Driver SMS template
         sms_concat: Long SMS
-        sms_from_customer_name: SMS sender
         enable_external_callback: Enable Callback URL
         history_cron_hour: Hour of historisation
         print_planning_annotating: Include plan annotating
@@ -1071,7 +1070,6 @@ en:
       sms_concat_help: >-
         If checked your SMS will be complete (but charged several SMS for price
         when exceeding), if not checked your SMS will be truncated.
-      sms_from_customer_name_help: 'If checked "%{c}" will be used for SMS sender name'
       speed_multiplier_default: '%{n} (default value)'
       speed_multiplier_help: A value higher than 100% means higher speed.
       audience_url_help: Go to the customer dashboard Audience page

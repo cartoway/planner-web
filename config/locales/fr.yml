@@ -195,7 +195,6 @@ fr:
         sms_template: Modèle SMS clients
         sms_driver_template: Modèle SMS livreurs
         sms_concat: SMS longs
-        sms_from_customer_name: Expéditeur SMS
         enable_external_callback: Activer URL de rappel
         history_cron_hour: Heure de l'historisation
         print_planning_annotating: Inclure un émargement client
@@ -1104,7 +1103,6 @@ fr:
         Si coché vos SMS seront complets (mais facturés le prix de plusieurs SMS
         en cas de dépassement), si non coché vos SMS seront tronqués en cas de
         dépassement.
-      sms_from_customer_name_help: 'Si coché « %{c} » sera utilisé comme nom d''expéditeur du SMS'
       speed_multiplier_default: '%{n} (valeur par défaut)'
       speed_multiplier_help: Une valeur supérieure à 100% signifie une vitesse plus élevée.
       audience_url_help: Se rendre sur le tableau de bord d'audience pour ce compte client
