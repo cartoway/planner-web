@@ -2,6 +2,10 @@ require 'test_helper'
 
 class VisitTest < ActiveSupport::TestCase
 
+  setup do
+    @visit = visits(:visit_one)
+  end
+
   test 'should not save' do
     visit = Visit.new
     assert_not visit.save, 'Saved without required fields'
@@ -304,5 +308,31 @@ class VisitTest < ActiveSupport::TestCase
     assert_equal du2.id, quantities[1][:deliverable_unit_id]
     assert_equal(-20, quantities[1][:quantity])
     assert_equal 'empty', quantities[1][:operation]
+  end
+
+  test 'should validate revenue as float' do
+    @visit.revenue = 100.50
+    assert @visit.valid?
+
+    @visit.revenue = 'not a float'
+    assert_not @visit.valid?
+
+    @visit.revenue = nil
+    assert @visit.valid?
+  end
+
+  test 'should accept integer values for revenue' do
+    @visit.revenue = 100
+    assert @visit.valid?
+  end
+
+  test 'should accept zero values for revenue' do
+    @visit.revenue = 0
+    assert @visit.valid?
+  end
+
+  test 'should reject negative values for revenue' do
+    @visit.revenue = -100.50
+    assert_not @visit.valid?
   end
 end
