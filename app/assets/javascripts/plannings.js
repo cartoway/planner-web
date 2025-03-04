@@ -111,7 +111,7 @@ const spreadsheetModalExport = function(columns, planningId, columns_preferences
   var columnsSkip = columns_preferences['skip'] || (localStorage.spreadsheetColumnsSkip && localStorage.spreadsheetColumnsSkip.split('|'));
   if (localStorage.spreadsheetColumnsExport) {
     $.each(columns, function(i, c) {
-      if (columns.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
+      if (columnsExport.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
         columnsExport.push(c);
     });
   }
