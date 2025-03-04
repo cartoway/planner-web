@@ -718,6 +718,7 @@ en:
     mobile:
       default: An error has occurred
       denied_geolocation: You have denied position sharing
+      position_unavailable: Position is not available
       sync_failed: Synchronization failed
       unsupported_geolocation: Your browser does not support geolocation
     planning:
