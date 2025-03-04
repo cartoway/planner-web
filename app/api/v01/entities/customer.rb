@@ -45,7 +45,6 @@ class V01::Entities::Customer < Grape::Entity
   expose(:print_barcode, documentation: { type: String, values: ::Customer::PRINT_BARCODE, desc: 'Print the Reference as Barcode'})
   expose(:sms_template, documentation: { type: String })
   expose(:sms_concat, documentation: { type: 'Boolean' })
-  expose(:sms_from_customer_name, documentation: { type: 'Boolean' })
 
   expose(:optimization_max_split_size, documentation: { type: Integer, desc: 'Maximum number of visits to split problem', default: Planner::Application.config.optimize_max_split_size })
   expose(:optimization_cluster_size, documentation: { type: Integer, desc: 'Time in seconds to group near visits', default: Planner::Application.config.optimize_cluster_size })
