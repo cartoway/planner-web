@@ -2972,7 +2972,9 @@ fr:
       close: Fermer
     placeholder_filter: filtrer
     subscription: S'abonner
+    help_documentation: Documentation
     help_menu: Aide
+    help_search: Rechercher
     help_search_placeholder: Termes à rechercher...
     help: Aide en ligne
     contact: Contacter le support

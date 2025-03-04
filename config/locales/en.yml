@@ -2840,7 +2840,9 @@ en:
       close: Close
     placeholder_filter: filter
     subscription: Subscribe
+    help_documentation: Documentation
     help_menu: Help
+    help_search: Search
     help_search_placeholder: Keywords to search...
     help: Online help
     contact: Contact support
