@@ -786,7 +786,7 @@ GEM
       execjs (>= 0.3.0, < 3)
     unicode-display_width (2.5.0)
     uniform_notifier (1.16.0)
-    uri (0.13.0)
+    uri (1.0.3)
     validates_timeliness (6.0.1)
       activemodel (>= 6.0.0, < 7)
       timeliness (>= 0.3.10, < 1)
