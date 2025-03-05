@@ -46,7 +46,7 @@ class SmsPartnerService < MessagingService
 
   def balance
     config = service_config
-    return nil if !config['api_key']&.blank?
+    return nil if config['api_key'].blank?
 
     response = RestClient.get(BALANCE_URL, params: { apiKey: config['api_key'] })
     response = SmsPartnerResponse.new(parse_response(response))
@@ -78,20 +78,20 @@ class SmsPartnerService < MessagingService
   def parse_response(response)
     JSON.parse(response.body)
   end
+end
 
-  class SmsPartnerResponse
-    def initialize(body)
-      @success    = body['success']
-      @errors     = body['error']
-      @code       = body['code']
-      @message_id = body['message_id']
-      @raw_data   = body
-    end
-
-    def success?
-      @success
-    end
-
-    attr_reader :errors, :code, :message_id, :raw_data
+class SmsPartnerResponse
+  def initialize(body)
+    @success    = body['success']
+    @errors     = body['error']
+    @code       = body['code']
+    @message_id = body['message_id']
+    @raw_data   = body
   end
+
+  def success?
+    @success
+  end
+
+  attr_reader :errors, :code, :message_id, :raw_data
 end
