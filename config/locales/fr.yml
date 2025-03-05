@@ -2487,7 +2487,7 @@ fr:
       contact_email_desc: email du terminal du chauffeur
       phone_number: numéro de téléphone
       phone_number_desc: numéro de téléphone du chauffeur
-      cost_distance: coût kilométrique
+      cost_distance: coût au kilomètre
       cost_distance_desc: coût au kilomètre de la tournée du véhicule
       cost_fixed: coût fixe
       cost_fixed_desc: coût fixe appliqué si le véhicule est utilisé pour une tournée
@@ -3107,7 +3107,7 @@ fr:
         remember_me: Se souvenir de moi
   vehicle_stores:
     import_file:
-      cost_distance: coût kilométrique
+      cost_distance: coût au kilomètre
       cost_fixed: coût fixe
       cost_time: coût horaire
       emission: émission
