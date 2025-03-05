@@ -13,8 +13,8 @@ $('#send-sms-form').off('submit').on('submit', function(event) {
     url: $(this).attr('action'),
     method: $(this).attr('method'),
     data: $(this).serialize(),
-    success: function(response) {
-      notice(I18n.t('plannings.edit.deliver_sends.success'));
+    success: function(data) {
+      stickyNotice(I18n.t('plannings.edit.send_sms_success', {c: data}));
     },
     complete: function() {
       $('#planning-send-sms-drivers-modal').modal('hide');
