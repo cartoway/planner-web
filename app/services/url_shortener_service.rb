@@ -39,7 +39,7 @@ class UrlShortenerService
     return false if @base_url.blank?
 
     begin
-      RestClient.get("#{@base_url}/health").code == 200
+      RestClient.get("#{@base_url}/").code == 204
     rescue RestClient::Exception, SocketError => e
       Rails.logger.warn("URL Shortener service unavailable: #{e.message}")
       false
