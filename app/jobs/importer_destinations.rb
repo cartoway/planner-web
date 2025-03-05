@@ -337,6 +337,7 @@ class ImporterDestinations < ImporterBase
     return unless is_visit?(row[:stop_type])
 
     convert_deprecated_fields(row)
+    convert_typed_fields(row)
     prepare_quantities(row)
     prepare_custom_attributes(row)
 
@@ -421,6 +422,10 @@ class ImporterDestinations < ImporterBase
 
     # Deals with deprecated take_over
     row[:duration] = row.delete(:duration) if !row.key?(:duration) && row.key?(:duration)
+  end
+
+  def convert_typed_fields(row)
+    row[:revenue] = row[:revenue].gsub(/,/, '.')&.to_f if row[:revenue].is_a?(String)
   end
 
   def build_attributes(row)

@@ -170,6 +170,7 @@ class ImporterVehicleUsageSets < ImporterBase
       raise ImportInvalidRow.new(I18n.t('vehicles.import.missing_name'))
     end
 
+    convert_typed_fields(row)
     prepare_capacities(row)
     prepare_custom_attributes(row)
     [:tags, :tags_vehicle].each{ |key| prepare_tags(row, key) }
@@ -255,5 +256,13 @@ class ImporterVehicleUsageSets < ImporterBase
 
   def finalize_import(_name, options)
     options[:dests].each(&:reload)
+  end
+
+  private
+
+  def convert_typed_fields(row)
+    [:cost_distance, :cost_fixed, :cost_time].each do |field|
+      row[field] = row[field].gsub(/,/, '.')&.to_f if row[field].is_a?(String)
+    end
   end
 end
