@@ -116,4 +116,11 @@ module RoutesHelper
       end
     }.join("\n").html_safe
   end
+
+  def driver_url(planning, route_hash)
+    reseller = planning.customer.reseller
+    url = "#{reseller.url_protocol}://#{reseller.host}/routes/#{route_hash[:route_id]}/mobile?driver_token=#{route_hash[:driver_token]}"
+
+    Rails.application.config.url_shortener.shorten(url)
+  end
 end
