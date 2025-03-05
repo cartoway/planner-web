@@ -168,7 +168,7 @@
             .dropdown-spacing
               = t('plannings.edit.dialog.deliver.title')
             %li
-              %a{href: "/routes/#{route[:route_id]}/mobile?driver_token=#{route[:driver_token]}"}
+              %a{ href: driver_url(@planning, route) }
                 %i.fa.fa-link.fa-fw
                 = t('plannings.edit.deliver_send.access')
             - if @planning.customer.enable_sms
