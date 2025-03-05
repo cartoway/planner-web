@@ -26,7 +26,6 @@ class PlanningsHelperApiTest < ActionController::TestCase
     @destination.update!(phone_number: '+33600000000')
     @stop.update!(active: true)
     @route.reload
-    puts @route.stops.map{ |stop| stop&.visit&.destination&.phone_number }.inspect
 
     assert_equal 1, send_sms_route(@route)
   end
