@@ -2,6 +2,22 @@ class SmsPartnerService < MessagingService
   SEND_SMS_URL = 'https://api.smspartner.fr/v1/send'.freeze
   BALANCE_URL = 'https://api.smspartner.fr/v1/me'.freeze
 
+  class SmsPartnerResponse
+    def initialize(body)
+      @success    = body['success']
+      @errors     = body['error']
+      @code       = body['code']
+      @message_id = body['message_id']
+      @raw_data   = body
+    end
+
+    def success?
+      @success
+    end
+
+    attr_reader :errors, :code, :message_id, :raw_data
+  end
+
   def self.configured?(reseller, service_name = 'sms_partner')
     super(reseller, service_name)
   end
@@ -78,20 +94,4 @@ class SmsPartnerService < MessagingService
   def parse_response(response)
     JSON.parse(response.body)
   end
-end
-
-class SmsPartnerResponse
-  def initialize(body)
-    @success    = body['success']
-    @errors     = body['error']
-    @code       = body['code']
-    @message_id = body['message_id']
-    @raw_data   = body
-  end
-
-  def success?
-    @success
-  end
-
-  attr_reader :errors, :code, :message_id, :raw_data
 end
