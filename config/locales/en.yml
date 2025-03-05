@@ -483,6 +483,9 @@ en:
         work_time: Work time
         tag_ids: Skills
         vehicle: Vehicle
+        cost_distance: Distance cost
+        cost_fixed: Fixed cost
+        cost_time: Hourly cost
       vehicle_usages:
         vehicle_id: Vehicle
         time_window_start: Open
@@ -502,6 +505,9 @@ en:
         tag_ids: Skills
         vehicle: Vehicle
         costs: Costs
+        cost_distance: Distance cost
+        cost_fixed: Fixed cost
+        cost_time: Hourly cost
       vehicle_usage_set:
         name: Name
         time_window_start: Open
@@ -519,6 +525,9 @@ en:
         service_time_end: Service Time After
         work_time: Work time
         costs: Costs
+        cost_distance: Distance cost
+        cost_fixed: Fixed cost
+        cost_time: Hourly cost
       visit:
         ref: Reference
         ref_small: Ref.

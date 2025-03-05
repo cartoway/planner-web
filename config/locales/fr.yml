@@ -483,6 +483,9 @@ fr:
         work_time: Durée de travail
         tag_ids: Compétences
         vehicle: Véhicule
+        cost_distance: Coût au kilomètre
+        cost_fixed: Coût fixe
+        cost_time: Coût horaire
       vehicle_usages:
         vehicle_id: Véhicule
         time_window_start: Horaire début
@@ -502,6 +505,9 @@ fr:
         tag_ids: Compétences
         vehicle: Véhicule
         costs: Coûts
+        cost_distance: Coût au kilomètre
+        cost_fixed: Coût fixe
+        cost_time: Coût horaire
       vehicle_usage_set:
         name: Nom
         time_window_start: Horaire début
@@ -519,6 +525,9 @@ fr:
         service_time_end: Durée de service après
         work_time: Durée de travail
         costs: Coûts
+        cost_distance: Coût au kilomètre
+        cost_fixed: Coût fixe
+        cost_time: Coût horaire
       visit:
         ref: Référence
         ref_small: Réf.
