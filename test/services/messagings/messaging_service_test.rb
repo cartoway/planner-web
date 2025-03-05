@@ -159,8 +159,8 @@ class MessagingServiceTest < ActiveSupport::TestCase
     )
     service = SmsPartnerService.new(@customer.reseller, customer: @customer)
     RestClient.stubs(:get).returns(OpenStruct.new(body: { success: false }.to_json))
-    SmsPartnerResponse.any_instance.stubs(:success?).returns(false)
-    SmsPartnerResponse.any_instance.stubs(:errors).returns(['Invalid API key'])
+    SmsPartnerService::SmsPartnerResponse.any_instance.stubs(:success?).returns(false)
+    SmsPartnerService::SmsPartnerResponse.any_instance.stubs(:errors).returns(['Invalid API key'])
 
     assert_nil service.balance
   end
