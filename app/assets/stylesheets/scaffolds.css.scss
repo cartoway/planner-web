@@ -591,17 +591,6 @@ span.color[data-color=''][data-selected]:after {
   }
 }
 
-.help {
-  background-color: $focus-background-color;
-  > a {
-    color: $focus-font-color !important;
-    font-weight: bold;
-  }
-  &.open > a {
-    color: #777 !important;
-  }
-}
-
 input.form-control.number-of-days {
   width: 40px;
   padding-left: 3px;
@@ -772,6 +761,10 @@ input.form-control.number-of-days {
       background-color: $primary-color;
       border-left: 3px solid $focus-menu-border;
     }
+  }
+
+  .help.menu-section {
+      background-color: rgba(255,255,255,.4);
   }
 
   .menu-content {

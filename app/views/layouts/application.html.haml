@@ -210,36 +210,6 @@
                       %i.fa.fa-line-chart.fa-fw
                       %span.menu_label= t('reporting.index.title')
             - if user_signed_in?
-              - if current_user.customer && @reseller.subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
-                %li#menu-subscription.subscription.menu-section.menu-list-item
-                  = link_to @reseller.subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                    %i.fa.fa-rocket.fa-fw
-                    .hidden-menu
-                      %span.menu_label
-                        = t 'web.subscription'
-              - if @reseller.help_url
-                %li#menu-help.menu-list-item{ class: ("disabled" if !@reseller.help_search_url && !@reseller.contact_url) }
-                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#helpCollpase'}
-                    .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-hand-holding-hand.fa-fw
-                      .hidden-menu.menu_label
-                        = t 'web.help'
-                  %ul#helpCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                    %li
-                      = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                        %i.fa.fa-book-open-reader.fa-fw
-                        = t 'web.help_documentation'
-                    - if @reseller.help_search_url
-                      %li
-                        = link_to @reseller.help_search_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                          %i.fa.fa-search.fa-fw
-                          = t 'web.help_search'
-                    - if @reseller.contact_url
-                      %li
-                        = link_to @reseller.contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                          %i.fa.fa-phone.fa-fw
-                          = t 'web.contact'
-
               #menu-settings
                 .divider.solid
 
@@ -250,6 +220,21 @@
                         %i.fa.fa-chart-line.fa-fw
                         .hidden-menu
                           = t 'customers.menu.analytics'
+
+                - if current_user.customer && @reseller.subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
+                  %li#menu-subscription.subscription.menu-section.menu-list-item
+                    = link_to @reseller.subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                      %i.fa.fa-rocket.fa-fw
+                      .hidden-menu
+                        %span.menu_label
+                          = t 'web.subscription'
+                - if @reseller.help_url
+                  %li#menu-help.help.menu-section.menu-list-item
+                    = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-hand-holding-hand.fa-fw
+                        .hidden-menu.menu_label
+                          = t 'web.help'
                 %li.dropdown.menu-list-item
                   - if current_user.customer
                     %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#customerCollpase'}
