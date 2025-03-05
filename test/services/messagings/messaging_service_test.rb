@@ -48,4 +48,120 @@ class MessagingServiceTest < ActiveSupport::TestCase
     assert_equal [], service.send(:format_phone_number, '0112345678', 'France')
     assert_equal '+447105850070', service.send(:format_phone_number, '07105850070', 'United Kingdom')
   end
+
+  test 'should raise NotImplementedError for balance in base class' do
+    service = MessagingService.new(@customer.reseller, customer: @customer)
+    assert_raises(NotImplementedError) { service.balance }
+  end
+
+  test 'should return nil for vonage balance when api_key is missing' do
+    @reseller.update!(
+      messagings: {
+        sms_partner: { enable: false },
+        vonage: { enable: true, api_secret: 'secret' }
+      }
+    )
+    service = VonageService.new(@customer.reseller, customer: @customer)
+    assert_nil service.balance
+  end
+
+  test 'should return nil for vonage balance when api_secret is missing' do
+    @reseller.update!(
+      messagings: {
+        vonage: { enable: true, api_key: 'key' }
+      }
+    )
+    service = VonageService.new(@customer.reseller, customer: @customer)
+    assert_nil service.balance
+  end
+
+  test 'should return nil for vonage balance when both credentials are missing' do
+    @reseller.update!(
+      messagings: {
+        vonage: { enable: true }
+      }
+    )
+    service = VonageService.new(@customer.reseller, customer: @customer)
+    assert_nil service.balance
+  end
+
+  test 'should return nil for sms_partner balance when api_key is missing' do
+    @reseller.update!(
+      messagings: {
+        sms_partner: { enable: true }
+      }
+    )
+    service = SmsPartnerService.new(@customer.reseller, customer: @customer)
+    assert_nil service.balance
+  end
+
+  test 'should return nil for sms_partner balance when api_key is empty' do
+    @reseller.update!(
+      messagings: {
+        sms_partner: { enable: true, api_key: '' }
+      }
+    )
+    service = SmsPartnerService.new(@customer.reseller, customer: @customer)
+    assert_nil service.balance
+  end
+
+  test 'should return nil for sms_partner balance when api_key is blank' do
+    @reseller.update!(
+      messagings: {
+        sms_partner: { enable: true, api_key: '   ' }
+      }
+    )
+    service = SmsPartnerService.new(@customer.reseller, customer: @customer)
+    assert_nil service.balance
+  end
+
+  test 'should return balance for vonage when credentials are present' do
+    @reseller.update!(
+      messagings: {
+        vonage: { enable: true, api_key: 'key', api_secret: 'secret' },
+        sms_partner: { enable: false }
+      }
+    )
+    service = VonageService.new(@customer.reseller, customer: @customer)
+
+    Vonage::Client.any_instance.stubs(:account).returns(
+      OpenStruct.new(balance: OpenStruct.new(value: 100.0))
+    )
+
+    assert_equal 100.0, service.balance
+  end
+
+  test 'should return balance for sms_partner when api_key is present' do
+    @reseller.update!(
+      messagings: {
+        sms_partner: { enable: true, api_key: 'key' }
+      }
+    )
+    service = SmsPartnerService.new(@customer.reseller, customer: @customer)
+
+    RestClient.stubs(:get).returns(
+      OpenStruct.new(
+        body: {
+          success: true,
+          credits: { balance: 100.0 }
+        }.to_json
+      )
+    )
+
+    assert_equal 100.0, service.balance
+  end
+
+  test 'should return nil for sms_partner when response is not successful' do
+    @reseller.update!(
+      messagings: {
+        sms_partner: { enable: true, api_key: 'key' }
+      }
+    )
+    service = SmsPartnerService.new(@customer.reseller, customer: @customer)
+    RestClient.stubs(:get).returns(OpenStruct.new(body: { success: false }.to_json))
+    SmsPartnerResponse.any_instance.stubs(:success?).returns(false)
+    SmsPartnerResponse.any_instance.stubs(:errors).returns(['Invalid API key'])
+
+    assert_nil service.balance
+  end
 end
