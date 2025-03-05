@@ -41,35 +41,6 @@
             = t 'vehicles.form.emissions.help'
             \- #{current_user.prefered_unit == 'mi' ? t('vehicles.form.consumption.help_miles') : t('vehicles.form.consumption.help')}
 
-      #vehicle_usage_display_costs.row
-        %label.col-md-offset-2.col-md-8.field
-          = t 'activerecord.attributes.vehicle_usages.costs'
-        .col-md-offset-2.col-md-8.field
-          .input-group
-            = number_field :vehicle_usage, :cost_fixed,
-              value: @vehicle_usage.cost_fixed,
-              placeholder: @vehicle_usage.default_cost_fixed && t('customers.form.field_default', n: @vehicle_usage.default_cost_fixed),
-              step: 'any', class: 'form-control', min: 0
-            %span.input-group-addon
-              = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
-            = number_field :vehicle_usage, :cost_time,
-              value: @vehicle_usage.cost_time,
-              placeholder: @vehicle_usage.default_cost_time && t('customers.form.field_default', n: @vehicle_usage.default_cost_time),
-              step: 'any', class: 'form-control', min: 0
-            %span.input-group-addon
-              = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
-              \/
-              = t('time.hour')
-            = number_field :vehicle_usage, :cost_distance,
-              value: @vehicle_usage.cost_distance,
-              placeholder: @vehicle_usage.default_cost_distance && t('customers.form.field_default', n: @vehicle_usage.default_cost_distance),
-              step: 'any', class: 'form-control', min: 0
-            %span.input-group-addon
-              = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
-              \/
-              = current_user.prefered_unit == 'mi' ? t('all.unit.mile') : t('all.unit.kms')
-          %p.help-block
-            = t 'vehicle_usages.form.cost.help'
       #vehicle_usage_vehicle_max_distance.row
         %label.sr-only{for: "vehicle_usage_vehicle_max_distance"}
           = t 'activerecord.attributes.vehicle.max_distance'
@@ -357,6 +328,35 @@
           = collection_select :vehicle_usage, :store_stop_id, @vehicle_usage.vehicle.customer.stores, :id, :name, { include_blank: end_label }, { class: 'form-control width_1_2' }
           %span.input-group-addon= content_tag('i', '', class: 'fa fa-store fa-fw')
         %p.help-block= t '.stores_help'
+    #vehicle_usage_display_costs.row
+      %label.col-md-offset-2.col-md-8.field
+        = t 'activerecord.attributes.vehicle_usages.costs'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          = number_field :vehicle_usage, :cost_fixed,
+            value: @vehicle_usage.cost_fixed,
+            placeholder: @vehicle_usage.default_cost_fixed && t('customers.form.field_default', n: @vehicle_usage.default_cost_fixed),
+            step: 'any', class: 'form-control', min: 0
+          %span.input-group-addon
+            = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
+          = number_field :vehicle_usage, :cost_time,
+            value: @vehicle_usage.cost_time,
+            placeholder: @vehicle_usage.default_cost_time && t('customers.form.field_default', n: @vehicle_usage.default_cost_time),
+            step: 'any', class: 'form-control', min: 0
+          %span.input-group-addon
+            = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
+            \/
+            = t('time.hour')
+          = number_field :vehicle_usage, :cost_distance,
+            value: @vehicle_usage.cost_distance,
+            placeholder: @vehicle_usage.default_cost_distance && t('customers.form.field_default', n: @vehicle_usage.default_cost_distance),
+            step: 'any', class: 'form-control', min: 0
+          %span.input-group-addon
+            = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
+            \/
+            = current_user.prefered_unit == 'mi' ? t('all.unit.mile') : t('all.unit.kms')
+        %p.help-block
+          = t 'vehicle_usages.form.cost.help'
     - if @vehicle_usage_sets.count > 1 || @vehicle_usage.tags.count > 0
       #vehicle_usage_vehicle_tag_ids_input
         = f.select :tag_ids, options_for_select(@vehicle_usage.vehicle.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color': tag.color && tag.color[1..-1], 'data-icon': tag.icon}]}, @vehicle_usage.tags.collect(&:id)),
