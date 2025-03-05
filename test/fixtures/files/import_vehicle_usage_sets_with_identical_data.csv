@@ -1,3 +1,3 @@
-référence véhicule,nom véhicule,email,émission,consommation,calculateur d'itinéraire,objectif du calculateur,options du calculateur,ajustement de la vitesse,couleur,appareils,horaire début,horaire fin,référence site départ,référence site arrivée,début plage repos,fin plage repos,durée de repos,référence site repos,durée de service avant,durée de service après
-,Véhicule 1,vehicle1@example.com,,10,,,,,,,26800,57600,b,,10:00,12:00,,,,
-,Véhicule 2,vehicle2@example.com,,15,,,,,,,26800,57600,b,,10:00,14:00,,,,
+référence véhicule,nom véhicule,email,émission,consommation,calculateur d'itinéraire,objectif du calculateur,options du calculateur,ajustement de la vitesse,couleur,appareils,horaire début,horaire fin,référence site départ,référence site arrivée,début plage repos,fin plage repos,durée de repos,référence site repos,durée de service avant,durée de service après,coût au kilomètre,coût fixe,coût horaire
+,Véhicule 1,vehicle1@example.com,,10,,,,,,,26800,57600,b,,10:00,12:00,,,,,1,2,3
+,Véhicule 2,vehicle2@example.com,,15,,,,,,,26800,57600,b,,10:00,14:00,,,,,1,2,3

@@ -54,14 +54,23 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
           assert_equal imported_data.first.name, 'Véhicule 1'
           assert_nil imported_data.first.vehicle_usages.first.time_window_start
           assert_nil imported_data.first.vehicle_usages.first.time_window_end
+          assert_nil imported_data.first.vehicle_usages.first.cost_distance
+          assert_nil imported_data.first.vehicle_usages.first.cost_fixed
+          assert_nil imported_data.first.vehicle_usages.first.cost_time
 
           assert_equal imported_data.second.name, 'Véhicule 2'
           assert_nil imported_data.second.vehicle_usages.first.time_window_start
           assert_nil imported_data.second.vehicle_usages.first.time_window_end
+          assert_nil imported_data.second.vehicle_usages.first.cost_distance
+          assert_nil imported_data.second.vehicle_usages.first.cost_fixed
+          assert_nil imported_data.second.vehicle_usages.first.cost_time
 
           assert_equal @customer.vehicle_usage_sets.last.time_window_start, 26800
           assert_equal @customer.vehicle_usage_sets.last.time_window_end, 57600
           assert_equal @customer.vehicle_usage_sets.last.store_start.ref, 'b'
+          assert_equal @customer.vehicle_usage_sets.last.cost_distance, 1
+          assert_equal @customer.vehicle_usage_sets.last.cost_fixed, 2
+          assert_equal @customer.vehicle_usage_sets.last.cost_time, 3
         end
       end
     end
