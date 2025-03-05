@@ -34,7 +34,7 @@ class VonageService < MessagingService
 
     content = I18n.transliterate(content)
     response = service.sms.send(
-      from: options[:from] || config['sender'].gsub(/[^0-9a-z]+/i, '')[0..10],
+      from: options[:from] || @reseller.name.gsub(/[^0-9a-z]+/i, '')[0..10],
       to: formatted_number,
       text: content,
       message_id: options[:message_id]
