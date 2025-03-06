@@ -105,7 +105,9 @@ class Planning < ApplicationRecord
 
   def duplicate
     copy = self.amoeba_dup
-    copy.name += " (#{I18n.l(Time.zone.now, format: :long)})"
+    now = " (#{I18n.l(Time.zone.now, format: :long)})"
+    copy.name += now
+    copy.ref += now if self.ref
     copy
   end
 

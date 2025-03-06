@@ -120,6 +120,14 @@ class PlanningTest < ActiveSupport::TestCase
     }
   end
 
+  test 'duplicate should change name and ref' do
+    planning = plannings(:planning_one)
+    planning_dup = planning.duplicate
+
+    assert_not_equal planning.name, planning_dup.name
+    assert_not_equal planning.ref, planning_dup.ref
+  end
+
   test 'should set_routes' do
     planning = plannings(:planning_one)
 

@@ -17,6 +17,7 @@
   - Allow max delay for optimization [#281](https://github.com/cartoway/planner-web/pull/281)
 
   ### Changed
+  - Planning: Duplication adds current DateTime to the reference [#301](https://github.com/cartoway/planner-web/pull/301)
   - Space route name in route filter selector [#251](https://github.com/cartoway/planner-web/pull/251)
   - Update logo [#265](https://github.com/cartoway/planner-web/pull/265)
   - Update API documentation [#266](https://github.com/cartoway/planner-web/pull/266)
