@@ -150,6 +150,9 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     @vehicle_usage_set.cost_distance = 10.5
     assert @vehicle_usage_set.valid?
 
+    @vehicle_usage_set.cost_distance = '10,5'
+    assert @vehicle_usage_set.valid?
+
     @vehicle_usage_set.cost_distance = 'not a float'
     assert_not @vehicle_usage_set.valid?
 
@@ -161,6 +164,9 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     @vehicle_usage_set.cost_fixed = 15.75
     assert @vehicle_usage_set.valid?
 
+    @vehicle_usage_set.cost_fixed = '15,75'
+    assert @vehicle_usage_set.valid?
+
     @vehicle_usage_set.cost_fixed = 'not a float'
     assert_not @vehicle_usage_set.valid?
 
@@ -170,6 +176,9 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
 
   test 'should validate cost_time as float' do
     @vehicle_usage_set.cost_time = 20.25
+    assert @vehicle_usage_set.valid?
+
+    @vehicle_usage_set.cost_time = '20,25'
     assert @vehicle_usage_set.valid?
 
     @vehicle_usage_set.cost_time = 'not a float'
