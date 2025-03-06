@@ -5,9 +5,13 @@
   - Mobile
     - Introduce asynchronous status update when offline [#272](https://github.com/cartoway/planner-web/pull/272) & [#274](https://github.com/cartoway/planner-web/pull/274) & [#275](https://github.com/cartoway/planner-web/pull/275)
     - Allow to send stops to another route [#274](https://github.com/cartoway/planner-web/pull/274)
+    - Shorten URL to acess routes [#280](https://github.com/cartoway/planner-web/pull/280) & [#288](https://github.com/cartoway/planner-web/pull/288)
   - Planning
     - Display route costs and revenue [#264](https://github.com/cartoway/planner-web/pull/264) & [#270](https://github.com/cartoway/planner-web/pull/270)
     - Add the possibility to send the route to drivers using an SMS [#269](https://github.com/cartoway/planner-web/pull/269)
+  - Reseller
+    - Introduce SMS Partner as SMS provider [#283](https://github.com/cartoway/planner-web/pull/283)
+    - Allow to switch between SMS providers [#283](https://github.com/cartoway/planner-web/pull/283)
   - Zoning
     - Activate geocoding search [#250](https://github.com/cartoway/planner-web/pull/250)
     - Add color selector [#255](https://github.com/cartoway/planner-web/pull/255) & [#263](https://github.com/cartoway/planner-web/pull/263)
@@ -18,18 +22,23 @@
 
   ### Changed
   - Planning: Duplication adds current DateTime to the reference [#301](https://github.com/cartoway/planner-web/pull/301)
+  - Route: Reduce db usage & improve Douglas Peucker algorithm performances during compute [#290](https://github.com/cartoway/planner-web/pull/290)
   - Space route name in route filter selector [#251](https://github.com/cartoway/planner-web/pull/251)
   - Update logo [#265](https://github.com/cartoway/planner-web/pull/265)
   - Update API documentation [#266](https://github.com/cartoway/planner-web/pull/266)
-  - Balance default optimization costs [#267](https://github.com/cartoway/planner-web/pull/267)
+  - Balance default optimization costs [#267](https://github.com/cartoway/planner-web/pull/267) & [#284]((https://github.com/cartoway/planner-web/pull/284))
   - Unbranding [#261](https://github.com/cartoway/planner-web/pull/261) & [#272](https://github.com/cartoway/planner-web/pull/272)
+  - Automatically launch db setup or migrate on docker service startup [#295](https://github.com/cartoway/planner-web/pull/295)
 
   ### Fixed
   - Fix how empty lines are skip from CSV on import [#252](https://github.com/cartoway/planner-web/pull/252)
   - Permute the order of inputs for vehicle usage form (option toll and option low emission) [#256](https://github.com/cartoway/planner-web/pull/256)
   - Map on route print now displays correctly [#259](https://github.com/cartoway/planner-web/pull/259)
-   - Zones correctly count elements during creation and edition [#268](https://github.com/cartoway/planner-web/pull/268) & [#282](https://github.com/cartoway/planner-web/pull/282)
+  - Zones
+    - Correctly count elements during creation and edition [#268](https://github.com/cartoway/planner-web/pull/268) & [#282](https://github.com/cartoway/planner-web/pull/282)
+    - Generate zones from a planning was missing deliverable units [#300](https://github.com/cartoway/planner-web/pull/300)
   - Clear logs in test environment [#272](https://github.com/cartoway/planner-web/pull/272)
+  - Help center link now displays correctly [#296](https://github.com/cartoway/planner-web/pull/296)
 ## V104.2.0
   ### Changed
   - Destination
