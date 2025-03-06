@@ -32,6 +32,7 @@ class VehicleUsageSet < ApplicationRecord
 
   auto_strip_attributes :name
 
+  include LocalizedAttr
   include TimeAttr
   attribute :time_window_start, ScheduleType.new
   attribute :time_window_end, ScheduleType.new
@@ -43,6 +44,7 @@ class VehicleUsageSet < ApplicationRecord
   attribute :work_time, ScheduleType.new
   attribute :max_ride_duration, ScheduleType.new
   time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time, :max_ride_duration
+  attr_localized :cost_distance, :cost_fixed, :cost_time
 
   validates :customer, presence: true
   validates :name, presence: true

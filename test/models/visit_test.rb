@@ -289,6 +289,9 @@ class VisitTest < ActiveSupport::TestCase
     @visit.revenue = 100.50
     assert @visit.valid?
 
+    @visit.revenue = '100,50'
+    assert @visit.valid?
+
     @visit.revenue = 'not a float'
     assert_not @visit.valid?
 
