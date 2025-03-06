@@ -33,6 +33,7 @@ class VehicleUsage < ApplicationRecord
 
   nilify_blanks
 
+  include LocalizedAttr
   include TimeAttr
   attribute :time_window_start, ScheduleType.new
   attribute :time_window_end, ScheduleType.new
@@ -43,6 +44,7 @@ class VehicleUsage < ApplicationRecord
   attribute :service_time_end, ScheduleType.new
   attribute :work_time, ScheduleType.new
   time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
+  attr_localized :cost_distance, :cost_fixed, :cost_time
 
   validates :cost_distance, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
   validates :cost_fixed, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true

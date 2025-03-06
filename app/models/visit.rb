@@ -78,7 +78,7 @@ class Visit < ApplicationRecord
 
   include LocalizedAttr
 
-  attr_localized :quantities
+  attr_localized :quantities, :revenue
 
   include TypedAttribute
   typed_attr :custom_attributes
