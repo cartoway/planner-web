@@ -764,7 +764,20 @@ input.form-control.number-of-days {
   }
 
   .help.menu-section {
-      background-color: rgba(255,255,255,.4);
+    .btn {
+      color: $primary-color;
+    }
+
+    > a {
+      &:hover, &:focus {
+        border-left: none !important;
+      }
+    }
+
+    &:hover, &:focus {
+      background-color: $primary-color;
+      border-left: none;
+    }
   }
 
   .menu-content {
