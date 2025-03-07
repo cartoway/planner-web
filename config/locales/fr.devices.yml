@@ -3,9 +3,8 @@ fr:
     attributes:
       customer:
         devices:
-          fleet:
-            user: Nom d'utilisateur
-            api_key: Clé API
+          deliver:
+            driver_move: Autoriser transferts des arrêts
           tomtom:
             account: Compte
             user: Utilisateur
@@ -189,6 +188,8 @@ fr:
           action: Synchroniser les véhicules
           no_credentials: Pas d'identifiants renseignés pour l'appareil
         deliver:
+          driver_move: Autoriser transferts des arrêts
+          driver_move_help: Permet de déplacer les arrêts entre tournées depuis l'application mobile
           help: Permet d'effectuer les tournées depuis les vues mobiles du planner
         fleet_demo:
           help: >-

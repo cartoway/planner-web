@@ -75,7 +75,7 @@
           .col-xs-12
             %p.help-block
               = custom_attribute.description
-      - if @manage_planning[:manage_organize]
+      - if enable_driver_move
         %label#transfer-label
           .col-xs-11.p-0
             = t('stops.mobile.transfer')
