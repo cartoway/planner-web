@@ -410,49 +410,49 @@
   <% end %>
 
   <% if !@customer.device.enabled_definitions.empty? %>
-    <div class="row">
-      <div class="col-md-12" id="devices_settings">
-        <% @customer.device.enabled_definitions.each do |key, definition| %>
-          <% if definition[:forms].key?(:settings) %>
-            <div id="<%= key %>_container" class="panel panel-default device">
-              <div class="panel-heading">
-                <h2 class="panel-title">
-                  <%= definition[:label] %>
-                </h2>
-              </div>
-              <div class="panel-body">
-                <div class="col-md-12">
-                  <% definition[:forms][:settings].each{ |field, type| %>
-                    <div class="row">
-                      <% name = "customer[devices][#{key}][#{field}]" %>
-                      <%= f.label_tag name, t("activerecord.attributes.customer.devices.#{key}.#{field}"), class: 'control-label' %>
-                      <div class="input-append">
-                        <%= case type
-                          when :text
-                            f.text_field_tag name, @customer.devices[key] && @customer.devices[key][field], autocomplete: 'off', class: 'form-control'
-                          when :password
-                            f.password_field_tag name, @customer.devices[key] && @customer.devices[key][field], autocomplete: 'new-password', class: 'form-control'
-                          end %>
-                      </div>
-                    </div>
-                  <% } %>
-                  <% if definition[:has_sync] %>
-                    <!-- SYNC BUTTON TODO IMPLEMENTATION -->
-                  <% end %>
-                  <% if current_user.admin? && current_user.reseller.authorized_fleet_administration? %>
-                    <% if definition[:has_create_device] %>
-                      <%= link_to '#', id: 'create-customer-device',  class: "btn btn-default btn-sm", disabled: @customer.users.empty?, remote: true do %><i class="fa fa-plus-square fa-fw"></i> <%= t('admin.vehicles.devices.create_company') %><% end %>
-                    <% end %>
-                    <% if definition[:has_create_user] %>
-                      <%= link_to '#', id: 'create-user-device',  class: "btn btn-default btn-sm", disabled: 'disabled', remote: true do %><i class="fa fa-user-gear-plus fa-fw"></i> <%= t('admin.vehicles.devices.create_drivers') %><% end %>
-                    <% end %>
-                  <% end %>
-                </div>
-              </div>
+    <div id="devices_settings">
+      <% @customer.device.enabled_definitions.each do |key, definition| %>
+        <% if definition[:forms].key?(:settings) %>
+          <div id="<%= key %>_container" class="panel panel-default device">
+            <div class="panel-heading">
+              <h2 class="panel-title">
+                <%= definition[:label] %>
+              </h2>
             </div>
-          <% end %>
+            <div class="panel-body">
+              <% definition[:forms][:settings].each{ |field, type| %>
+                <div class="row">
+                  <% name = "customer[devices][#{key}][#{field}]" %>
+                  <div class="col-md-offset-2 col-md-7">
+                    <%= f.label_tag name, t("activerecord.attributes.customer.devices.#{key}.#{field}"), class: 'control-label' %>
+                  </div>
+                  <div class="col-md-offset-2 col-md-8 field">
+                    <%= case type
+                      when :text
+                        f.text_field_tag name, @customer.devices[key] && @customer.devices[key][field], autocomplete: 'off', class: 'form-control'
+                      when :password
+                        f.password_field_tag name, @customer.devices[key] && @customer.devices[key][field], autocomplete: 'new-password', class: 'form-control'
+                      when :boolean
+                        render partial: 'shared/check_box', locals: { form: f, name: "customer[devices][#{key}][#{field}]", checked: to_bool(@customer.devices[key] && @customer.devices[key][field]), help: t("customers.form.devices.#{key}.#{field}_help"), label: t("activerecord.attributes.customer.devices.#{key}.#{field}"), options: { label_col: 'd-none', control_col: 'form-switch', help_label_class: ''} }
+                      end %>
+                  </div>
+                </div>
+              <% } %>
+              <% if definition[:has_sync] %>
+                <!-- SYNC BUTTON TODO IMPLEMENTATION -->
+              <% end %>
+              <% if current_user.admin? && current_user.reseller.authorized_fleet_administration? %>
+                <% if definition[:has_create_device] %>
+                  <%= link_to '#', id: 'create-customer-device',  class: "btn btn-default btn-sm", disabled: @customer.users.empty?, remote: true do %><i class="fa fa-plus-square fa-fw"></i> <%= t('admin.vehicles.devices.create_company') %><% end %>
+                <% end %>
+                <% if definition[:has_create_user] %>
+                  <%= link_to '#', id: 'create-user-device',  class: "btn btn-default btn-sm", disabled: 'disabled', remote: true do %><i class="fa fa-user-gear-plus fa-fw"></i> <%= t('admin.vehicles.devices.create_drivers') %><% end %>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
         <% end %>
-      </div>
+      <% end %>
     </div>
   <% end %>
 

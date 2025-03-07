@@ -10,6 +10,9 @@ class Deliver < DeviceBase
       has_sync: true,
       help: true,
       forms: {
+        settings: {
+          driver_move: :boolean
+        },
         vehicle: {}
       }
     }
@@ -53,5 +56,10 @@ class Deliver < DeviceBase
         }
       }
     }.compact
+  end
+
+  def transfer_stops(customer, route, stop_id)
+    stop = route.stops.find(stop_id)
+    stop.update(route_idstatus: nil, eta: nil)
   end
 end
