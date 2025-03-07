@@ -885,26 +885,31 @@ fr:
           none: Aucune plan
           create: Créer un plan
           show: Voir la liste complète (%{count})
+          add: + Nouveau plan
         zonings:
           last: Sectorisations
           none: Aucune sectorisation
           create: Créer une sectorisation
           show: Voir la liste complète (%{count})
+          add: + Nouvelle sectorisation
         destinations:
           last: Adresses
           show: Voir tout
           import: Importer
           export: Exporter
+          add: + Nouvelle adresse
         stores:
           last: Sites
           none: Aucun site
           create: Créer un site
           show: Voir la liste complète (%{count})
+          add: + Nouveau site
         vehicles:
           last: Flotte
           none: Aucun véhicule
           create: Créer un véhicule
           show: Voir la liste complète (%{count})
+          add: + Nouveau véhicule
     vehicles:
       devices:
         create_company: Initialiser le compte Cartoway Field

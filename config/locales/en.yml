@@ -867,26 +867,31 @@ en:
           none: No plan
           create: Create plan
           show: See the full list (%{count})
+          add: + New plan
         zonings:
           last: Sectorisations
           none: No sectorisation
           create: Create sectorisation
           show: See the full list (%{count})
+          add: + New sectorisation
         destinations:
           last: Addresses
           import: Import
           export: Export
           show: See all
+          add: + New address
         stores:
           last: Sites
-          none: No facility
-          create: Create facility
+          none: No site
+          create: Create site
           show: See the full list (%{count})
+          add: + New site
         vehicles:
           last: Fleet
           none: No vehicle
           create: Create vehicle
           show: See the full list (%{count})
+          add: + New vehicle
     vehicles:
       devices:
         create_company: Initialize Cartoway Field Account
