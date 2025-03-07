@@ -20,11 +20,11 @@
             %i.fa.fa-caret-left
       #planning_tools.row
         #route_selector.row
-        - if @callback_button && @planning.customer.default_callback_enabled? && @planning.customer.default_callback_url
+        - if @callback_button && @planning.customer.enable_external_callback? && @planning.customer.external_callback_url
           %p.text-center.col-md-12
             %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{"data-url": @planning.customer.external_callback_url, type: "button"}
               %i.fa.fa-desktop.fa-fw
-              = @planning.customer.default_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
+              = @planning.customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
         - if (@planning.id && !@planning.tags.empty?) || !@planning.id
           .d-flex.justify-content-center
             .col-xs-12.col-md-12
@@ -132,10 +132,10 @@
                   %h5
                     = t('plannings.edit.all_plannings_related')
                 %hr
-                  - if current_user.customer.default_callback_enabled? && current_user.customer.default_callback_url
+                  - if current_user.customer.enable_external_callback? && current_user.customer.external_callback_url
                     %li.link.customer_external_callback_url
                       %i.fa.fa-desktop.fa-fw
-                      = current_user.customer.default_callback_name || t('plannings.edit.customer_external_callback_url.action')
+                      = current_user.customer.external_callback_name || t('plannings.edit.customer_external_callback_url.action')
                     %li.divider{role: "separator"}
                 - @planning.customer.device.configured_definitions.each do |key, definition|
                   - if key == :deliver && @planning.customer.enable_sms
