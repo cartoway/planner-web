@@ -3,9 +3,8 @@ en:
     attributes:
       customer:
         devices:
-          fleet:
-            user: User name
-            api_key: API key
+          deliver:
+            driver_move: Allow stop transfers
           tomtom:
             account: Account name
             user: User
@@ -191,6 +190,8 @@ en:
           action: Sync Vehicles
           no_credentials: No credentials given for the device
         deliver:
+          driver_move: Allow stop transfers
+          driver_move_help: Allows moving stops between routes from the mobile app
           help: Allows routes to be carried out from the planner's mobile views
         fleet_demo:
           help: >-
