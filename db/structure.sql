@@ -633,9 +633,6 @@ CREATE TABLE public.resellers (
     customer_audience_url character varying,
     customer_behavior_url character varying,
     authorized_fleet_administration boolean DEFAULT false,
-    external_callback_url character varying,
-    external_callback_url_name character varying,
-    enable_external_callback boolean,
     customer_dashboard_url character varying,
     messagings jsonb DEFAULT '{}'::jsonb NOT NULL
 );
@@ -2889,6 +2886,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250128131504'),
 ('20250203114002'),
 ('20250219113043'),
-('20250221144341');
+('20250221144341'),
+('20250307133104');
 
 

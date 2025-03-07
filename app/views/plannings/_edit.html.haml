@@ -136,7 +136,7 @@
                   - if current_user.customer.enable_external_callback? && current_user.customer.external_callback_url
                     %li.link.customer_external_callback_url{ data: { url: external_callback_converted_url(planning_summary(@planning), current_user) } }
                       %i.fa.fa-desktop.fa-fw
-                      = current_user.customer.default_callback_name || t('plannings.edit.customer_external_callback_url.action')
+                      = current_user.customer.external_callback_name || t('plannings.edit.customer_external_callback_url.action')
                     %li.divider{role: "separator"}
                 - @planning.customer.device.configured_definitions.each do |key, definition|
                   - if key == :deliver && @planning.customer.enable_sms

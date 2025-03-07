@@ -74,9 +74,6 @@ class Admin::ResellersController < ApplicationController
       :customer_audience_url,
       :customer_behavior_url,
       :customer_dashboard_url,
-      :external_callback_url,
-      :external_callback_url_name,
-      :enable_external_callback,
       messagings: {
         vonage: [:api_key, :api_secret],
         sms_partner: [:api_key]
