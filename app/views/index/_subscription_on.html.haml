@@ -18,6 +18,9 @@
             %h3.card-title.fw-bold
               %i.fa.fa-map-location.fa-fw
               = t 'admin.users.kpi.plannings.last'
+              - if @kpis[:plannings][:total] != 0
+                = link_to new_planning_path, class: "btn btn-primary" do
+                  = I18n.t('admin.users.kpi.plannings.add')
             - if @kpis[:plannings][:total] == 0
               %p.card-text.text-muted= I18n.t('admin.users.kpi.plannings.none')
               = link_to new_planning_path, class: "btn btn-primary" do
@@ -64,6 +67,9 @@
             %h3.card-title.fw-bold
               %i.fa.fa-draw-polygon.fa-fw
               = t 'admin.users.kpi.zonings.last'
+              - if @kpis[:zonings][:total] != 0
+                = link_to new_zoning_path, class: "btn btn-primary" do
+                  = I18n.t('admin.users.kpi.zonings.add')
             - if @kpis[:zonings][:total] == 0
               %p.card-text.text-muted= I18n.t('admin.users.kpi.zonings.none')
               = link_to new_zoning_path, class: "btn btn-primary" do
@@ -98,6 +104,8 @@
               %h3.card-title.fw-bold
                 %i.fa.fa-map-marker.fa-fw
                 = t 'admin.users.kpi.destinations.last'
+                = link_to new_destination_path, class: "btn btn-primary" do
+                  = I18n.t('admin.users.kpi.destinations.add')
   
             %ul.nav.nav-pills.nav-fill.d-flex.flex-column
               %li.nav-item.m-4
@@ -123,6 +131,9 @@
             %h3.card-title.fw-bold
               %i.fa.fa-store.fa-fw
               = t 'admin.users.kpi.stores.last'
+              - if @kpis[:stores][:total] != 0
+                = link_to new_store_path, class: "btn btn-primary" do
+                  = I18n.t('admin.users.kpi.stores.add')
             - if @kpis[:stores][:total] == 0
               %p.card-text.text-muted= I18n.t('admin.users.kpi.stores.none')
               = link_to new_store_path, class: "btn btn-primary" do
@@ -163,9 +174,12 @@
               %h3.card-title.fw-bold
                 %i.fa.fa-truck-field.fa-fw
                 = t 'admin.users.kpi.vehicles.last'
+                - if @kpis[:vehicles][:total] != 0
+                  = link_to new_vehicle_usage_set_path, class: "btn btn-primary" do
+                    = I18n.t('admin.users.kpi.vehicles.add')
               - if @kpis[:vehicles][:total] == 0
                 %p.card-text.text-muted= I18n.t('admin.users.kpi.vehicles.none')
-                = link_to new_store_path, class: "btn btn-primary" do
+                = link_to new_vehicle_usage_set_path, class: "btn btn-primary" do
                   = I18n.t('admin.users.kpi.vehicles.create')
               - else
       
