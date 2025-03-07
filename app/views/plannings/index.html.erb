@@ -96,8 +96,8 @@
           <a class="export_spreadsheet" href="#"><i class="fa fa-table fa-fw"></i> <%= t '.export.spreadsheet' %></a>
         </li>
       </ul>
-      <% if @customer.default_callback_enabled? %>
-        <button id="external-url" class="btn btn-sm btn-default"><i class="fa fa-desktop fa-fw"></i> <%= @customer.default_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action') %></button>
+      <% if @customer.enable_external_callback? && @customer.external_callback_url %>
+        <button id="external-url" class="btn btn-sm btn-default"><i class="fa fa-desktop fa-fw"></i> <%= @customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action') %></button>
       <% end %>
     </div>
   </div>
@@ -112,6 +112,6 @@ controller.js(
   customer_id: @customer.id,
   spreadsheet_columns: @spreadsheet_columns,
   vehicles: Hash[@customer.vehicles.map{ |v| [v.id, {name: v.name, color: v.color}] }],
-  external_url: @customer.default_callback_url
+  external_url: @customer.external_callback_url
 )
 %>

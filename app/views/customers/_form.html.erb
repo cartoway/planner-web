@@ -381,20 +381,22 @@
       <%= render partial: 'shared/check_box', locals: { form: f, value: @customer[:enable_external_callback], field: :enable_external_callback, label: t('activerecord.attributes.customer.enable_external_callback'), help: (t('.external_callback.enabled') if @customer.reseller[:enable_external_callback] && !@customer[:enable_external_callback]) } %>
     </div>
   <% end %>
-  <% if @customer.default_callback_enabled? %>
-    <div id="external_callback_container" class="panel panel-default accordion col-md-12 p0">
-      <div class="panel-heading">
-        <h2 class="panel-title">
-          <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseExternalCallback">
-            <%= t '.external_callback.title' %>
-          </a>
-        </h2>
-      </div>
-      <div id="collapseExternalCallback" class="panel-collapse">
-        <div class="panel-body">
-          <div class="col-md-10">
-            <%= f.text_field :external_callback_name, label: t('.external_callback.name'), placeholder: customer_external_callback_name(@customer, t('.external_callback.name_placeholder')) %>
-            <%= f.text_field :external_callback_url, label: t('.external_callback.url'), help: simple_format(t('.external_callback.url_help')),  placeholder: customer_external_callback_url(@customer), value: @customer.external_callback_url%>
+  <% if @customer.enable_external_callback? %>
+    <div class="row">
+      <div id="external_callback_container" class="panel panel-default accordion col-md-12 p0">
+        <div class="panel-heading">
+          <h2 class="panel-title">
+            <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseExternalCallback">
+              <%= t '.external_callback.title' %>
+            </a>
+          </h2>
+        </div>
+        <div id="collapseExternalCallback" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="col-md-10">
+              <%= f.text_field :external_callback_name, label: t('.external_callback.name'), placeholder: customer_external_callback_name(@customer, t('.external_callback.name_placeholder')) %>
+              <%= f.text_field :external_callback_url, label: t('.external_callback.url'), help: simple_format(t('.external_callback.url_help')),  placeholder: customer_external_callback_url(@customer), value: @customer.external_callback_url%>
+            </div>
           </div>
         </div>
       </div>
