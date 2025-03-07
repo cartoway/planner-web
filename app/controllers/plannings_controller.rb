@@ -635,6 +635,10 @@ class PlanningsController < ApplicationController
     params.require(:stop).permit(:active)
   end
 
+  def preferences_params
+    params.permit(:columns, :columns_skip, :additional_stops)
+  end
+
   def filename
     if @planning
       format_filename(export_filename(@planning, @planning.ref))
@@ -716,7 +720,7 @@ class PlanningsController < ApplicationController
     format.excel do
       @customer ||= @planning.customer
       @columns = (@params[:columns] && @params[:columns].split('|')) || export_columns
-      current_user.save_columns_preferences(@columns, @params["columns_skip"].split('|'))
+      current_user.save_columns_preferences(preferences_params["columns"].split('|'), preferences_params["columns_skip"].split('|'), preferences_params["additional_stops"].split('|'), 'excel')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
       type: 'text/csv',
@@ -726,7 +730,7 @@ class PlanningsController < ApplicationController
     format.csv do
       @customer ||= @planning.customer
       @columns = (@params[:columns] && @params[:columns].split('|')) || export_columns
-      current_user.save_columns_preferences(@columns, @params["columns_skip"].split('|'))
+      current_user.save_columns_preferences(preferences_params["columns"].split('|'), preferences_params["columns_skip"].split('|'), preferences_params["additional_stops"].split('|'), 'csv')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
     end
