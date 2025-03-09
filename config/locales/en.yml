@@ -888,10 +888,10 @@ en:
           add: + New site
         vehicles:
           last: Fleet
-          none: No vehicle
-          create: Create vehicle
+          none: No vehicle settings
+          create: Create vehicle settings
           show: See the full list (%{count})
-          add: + New vehicle
+          add: + New vehicle settings
     vehicles:
       devices:
         create_company: Initialize Cartoway Field Account

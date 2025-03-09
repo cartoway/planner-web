@@ -906,10 +906,10 @@ fr:
           add: + Nouveau site
         vehicles:
           last: Flotte
-          none: Aucun véhicule
-          create: Créer un véhicule
+          none: Aucune configuration de véhicules
+          create: Créer une configuration de véhicules
           show: Voir la liste complète (%{count})
-          add: + Nouveau véhicule
+          add: + Nouvelle configuration de véhicules
     vehicles:
       devices:
         create_company: Initialiser le compte Cartoway Field
