@@ -15,9 +15,10 @@
       .col-md-4.my-4
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
           .card-body
-            %h3.card-title.fw-bold
-              %i.fa.fa-map-location.fa-fw
-              = t 'admin.users.kpi.plannings.last'
+            %h3.card-title.fw-bold.d-flex.justify-content-between
+              %span
+                %i.fa.fa-map-location.fa-fw
+                = t 'admin.users.kpi.plannings.last'
               - if @kpis[:plannings][:total] != 0
                 = link_to new_planning_path, class: "btn btn-primary" do
                   = I18n.t('admin.users.kpi.plannings.add')
@@ -64,9 +65,10 @@
       .col-md-4.my-4
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
           .card-body
-            %h3.card-title.fw-bold
-              %i.fa.fa-draw-polygon.fa-fw
-              = t 'admin.users.kpi.zonings.last'
+            %h3.card-title.fw-bold.d-flex.justify-content-between
+              %span
+                %i.fa.fa-draw-polygon.fa-fw
+                = t 'admin.users.kpi.zonings.last'
               - if @kpis[:zonings][:total] != 0
                 = link_to new_zoning_path, class: "btn btn-primary" do
                   = I18n.t('admin.users.kpi.zonings.add')
@@ -101,9 +103,10 @@
         .card.shadow{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
           .card-body
             .d-flex.justify-content-between
-              %h3.card-title.fw-bold
-                %i.fa.fa-map-marker.fa-fw
-                = t 'admin.users.kpi.destinations.last'
+              %h3.card-title.fw-bold.d-flex.justify-content-between
+                %span
+                  %i.fa.fa-map-marker.fa-fw
+                  = t 'admin.users.kpi.destinations.last'
                 = link_to new_destination_path, class: "btn btn-primary" do
                   = I18n.t('admin.users.kpi.destinations.add')
   
@@ -128,9 +131,10 @@
       .col-md-4.my-4
         .card{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
           .card-body
-            %h3.card-title.fw-bold
-              %i.fa.fa-store.fa-fw
-              = t 'admin.users.kpi.stores.last'
+            %h3.card-title.fw-bold.d-flex.justify-content-between
+              %span
+                %i.fa.fa-store.fa-fw
+                = t 'admin.users.kpi.stores.last'
               - if @kpis[:stores][:total] != 0
                 = link_to new_store_path, class: "btn btn-primary" do
                   = I18n.t('admin.users.kpi.stores.add')
@@ -171,9 +175,10 @@
         .col-md-4.my-4
           .card.shadow{style: "border-radius: 10px; transition: transform 0.2s; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);"}
             .card-body
-              %h3.card-title.fw-bold
-                %i.fa.fa-truck-field.fa-fw
-                = t 'admin.users.kpi.vehicles.last'
+              %h3.card-title.fw-bold.d-flex.justify-content-between
+                %span
+                  %i.fa.fa-truck-field.fa-fw
+                  = t 'admin.users.kpi.vehicles.last'
                 - if @kpis[:vehicles][:total] != 0
                   = link_to new_vehicle_usage_set_path, class: "btn btn-primary" do
                     = I18n.t('admin.users.kpi.vehicles.add')
