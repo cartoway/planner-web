@@ -926,8 +926,28 @@ CREATE TABLE public.tag_destinations (
     destination_id integer NOT NULL,
     tag_id integer NOT NULL,
     created_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.129478'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.129478'::timestamp without time zone
+    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.129478'::timestamp without time zone,
+    id bigint NOT NULL
 );
+
+
+--
+-- Name: tag_destinations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tag_destinations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tag_destinations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tag_destinations_id_seq OWNED BY public.tag_destinations.id;
 
 
 --
@@ -938,8 +958,28 @@ CREATE TABLE public.tag_plannings (
     planning_id integer NOT NULL,
     tag_id integer NOT NULL,
     created_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.151915'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.151915'::timestamp without time zone
+    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.151915'::timestamp without time zone,
+    id bigint NOT NULL
 );
+
+
+--
+-- Name: tag_plannings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tag_plannings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tag_plannings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tag_plannings_id_seq OWNED BY public.tag_plannings.id;
 
 
 --
@@ -947,11 +987,31 @@ CREATE TABLE public.tag_plannings (
 --
 
 CREATE TABLE public.tag_vehicle_usages (
-    vehicle_usage_id integer,
-    tag_id integer,
+    vehicle_usage_id integer NOT NULL,
+    tag_id integer NOT NULL,
     created_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.059601'::timestamp without time zone NOT NULL,
-    updated_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.059601'::timestamp without time zone NOT NULL
+    updated_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.059601'::timestamp without time zone NOT NULL,
+    id bigint NOT NULL
 );
+
+
+--
+-- Name: tag_vehicle_usages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tag_vehicle_usages_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tag_vehicle_usages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tag_vehicle_usages_id_seq OWNED BY public.tag_vehicle_usages.id;
 
 
 --
@@ -959,11 +1019,31 @@ CREATE TABLE public.tag_vehicle_usages (
 --
 
 CREATE TABLE public.tag_vehicles (
-    vehicle_id integer,
-    tag_id integer,
+    vehicle_id integer NOT NULL,
+    tag_id integer NOT NULL,
     created_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.047754'::timestamp without time zone NOT NULL,
-    updated_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.047754'::timestamp without time zone NOT NULL
+    updated_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.047754'::timestamp without time zone NOT NULL,
+    id bigint NOT NULL
 );
+
+
+--
+-- Name: tag_vehicles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tag_vehicles_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tag_vehicles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tag_vehicles_id_seq OWNED BY public.tag_vehicles.id;
 
 
 --
@@ -974,8 +1054,28 @@ CREATE TABLE public.tag_visits (
     visit_id integer NOT NULL,
     tag_id integer NOT NULL,
     created_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.173027'::timestamp without time zone,
-    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.173027'::timestamp without time zone
+    updated_at timestamp without time zone DEFAULT '2024-03-20 14:17:36.173027'::timestamp without time zone,
+    id bigint NOT NULL
 );
+
+
+--
+-- Name: tag_visits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tag_visits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tag_visits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tag_visits_id_seq OWNED BY public.tag_visits.id;
 
 
 --
@@ -1450,6 +1550,41 @@ ALTER TABLE ONLY public.stores ALTER COLUMN id SET DEFAULT nextval('public.store
 
 
 --
+-- Name: tag_destinations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_destinations ALTER COLUMN id SET DEFAULT nextval('public.tag_destinations_id_seq'::regclass);
+
+
+--
+-- Name: tag_plannings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_plannings ALTER COLUMN id SET DEFAULT nextval('public.tag_plannings_id_seq'::regclass);
+
+
+--
+-- Name: tag_vehicle_usages id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_vehicle_usages ALTER COLUMN id SET DEFAULT nextval('public.tag_vehicle_usages_id_seq'::regclass);
+
+
+--
+-- Name: tag_vehicles id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_vehicles ALTER COLUMN id SET DEFAULT nextval('public.tag_vehicles_id_seq'::regclass);
+
+
+--
+-- Name: tag_visits id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_visits ALTER COLUMN id SET DEFAULT nextval('public.tag_visits_id_seq'::regclass);
+
+
+--
 -- Name: tags id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1655,6 +1790,46 @@ ALTER TABLE ONLY public.stops_relations
 
 ALTER TABLE ONLY public.stores
     ADD CONSTRAINT stores_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tag_destinations tag_destinations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_destinations
+    ADD CONSTRAINT tag_destinations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tag_plannings tag_plannings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_plannings
+    ADD CONSTRAINT tag_plannings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tag_vehicle_usages tag_vehicle_usages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_vehicle_usages
+    ADD CONSTRAINT tag_vehicle_usages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tag_vehicles tag_vehicles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_vehicles
+    ADD CONSTRAINT tag_vehicles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tag_visits tag_visits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_visits
+    ADD CONSTRAINT tag_visits_pkey PRIMARY KEY (id);
 
 
 --
@@ -2023,10 +2198,45 @@ CREATE INDEX index_tag_destinations_on_tag_id ON public.tag_destinations USING b
 
 
 --
+-- Name: index_tag_destinations_on_tag_id_and_destination_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_tag_destinations_on_tag_id_and_destination_id ON public.tag_destinations USING btree (tag_id, destination_id);
+
+
+--
+-- Name: index_tag_plannings_on_tag_id_and_planning_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_tag_plannings_on_tag_id_and_planning_id ON public.tag_plannings USING btree (tag_id, planning_id);
+
+
+--
+-- Name: index_tag_vehicle_usages_on_tag_id_and_vehicle_usage_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_tag_vehicle_usages_on_tag_id_and_vehicle_usage_id ON public.tag_vehicle_usages USING btree (tag_id, vehicle_usage_id);
+
+
+--
+-- Name: index_tag_vehicles_on_tag_id_and_vehicle_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_tag_vehicles_on_tag_id_and_vehicle_id ON public.tag_vehicles USING btree (tag_id, vehicle_id);
+
+
+--
 -- Name: index_tag_visits_on_tag_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_tag_visits_on_tag_id ON public.tag_visits USING btree (tag_id);
+
+
+--
+-- Name: index_tag_visits_on_tag_id_and_visit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_tag_visits_on_tag_id_and_visit_id ON public.tag_visits USING btree (tag_id, visit_id);
 
 
 --
@@ -2219,27 +2429,19 @@ ALTER TABLE ONLY public.plannings
 
 
 --
--- Name: tag_plannings fk_plannings_tags_planning_id; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tag_plannings
-    ADD CONSTRAINT fk_plannings_tags_planning_id FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
-
-
---
--- Name: tag_plannings fk_plannings_tags_tag_id; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tag_plannings
-    ADD CONSTRAINT fk_plannings_tags_tag_id FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
-
-
---
 -- Name: products fk_products_customer_id; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.products
     ADD CONSTRAINT fk_products_customer_id FOREIGN KEY (customer_id) REFERENCES public.customers(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tag_plannings fk_rails_02f534284a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_plannings
+    ADD CONSTRAINT fk_rails_02f534284a FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
 
 
 --
@@ -2280,6 +2482,14 @@ ALTER TABLE ONLY public.layers_profiles
 
 ALTER TABLE ONLY public.vehicle_usages
     ADD CONSTRAINT fk_rails_2494c76b6d FOREIGN KEY (vehicle_usage_set_id) REFERENCES public.vehicle_usage_sets(id);
+
+
+--
+-- Name: tag_plannings fk_rails_2a380b8abf; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_plannings
+    ADD CONSTRAINT fk_rails_2a380b8abf FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
 
 
 --
@@ -2411,11 +2621,11 @@ ALTER TABLE ONLY public.plannings_zonings
 
 
 --
--- Name: tag_visits fk_rails_921d431096; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tag_visits fk_rails_b0e5132e91; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tag_visits
-    ADD CONSTRAINT fk_rails_921d431096 FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_rails_b0e5132e91 FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
 
 
 --
@@ -2451,19 +2661,19 @@ ALTER TABLE ONLY public.tag_visits
 
 
 --
--- Name: tag_destinations fk_rails_d7d57d2bd1; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tag_destinations
-    ADD CONSTRAINT fk_rails_d7d57d2bd1 FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
-
-
---
 -- Name: vehicle_usage_sets fk_rails_d7ffafb662; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vehicle_usage_sets
     ADD CONSTRAINT fk_rails_d7ffafb662 FOREIGN KEY (store_stop_id) REFERENCES public.stores(id);
+
+
+--
+-- Name: tag_destinations fk_rails_dda13ef84d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_destinations
+    ADD CONSTRAINT fk_rails_dda13ef84d FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
 
 
 --
@@ -2887,6 +3097,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250203114002'),
 ('20250219113043'),
 ('20250221144341'),
-('20250307133104');
+('20250307133104'),
+('20250310095030');
 
 

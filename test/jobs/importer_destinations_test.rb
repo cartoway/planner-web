@@ -63,6 +63,18 @@ class ImporterDestinationsTest < ActionController::TestCase
     end
   end
 
+  test 'should keep existing tags and intermediate models' do
+    ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_new_tag.csv', 'text.csv')).import
+
+    assert_difference('TagDestination.count', 0) do
+      assert_difference('TagVisit.count', 0) do
+        assert_difference('Tag.count', 0) do
+          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_new_tag.csv', 'text.csv')).import
+        end
+      end
+    end
+  end
+
   test 'should import only ref in new planning' do
     # No visit_ref means new visit
     Visit.all.each{ |v| v.update! ref: nil }
