@@ -235,7 +235,7 @@ class V01::CustomerTest < ActiveSupport::TestCase
   test 'duplicate customer should keep vehicle tags' do
     assert_difference('Customer.count', +1) do
       @customer.vehicles.each{ |vehicle|
-        vehicle.tags << @customer.tags.first
+        vehicle.tags |= [@customer.tags.first]
         vehicle.save
       }
       patch api_admin(@customer.id.to_s + '/duplicate')
