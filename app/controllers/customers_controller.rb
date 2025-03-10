@@ -262,7 +262,8 @@ class CustomersController < ApplicationController
           :snap,
           :strict_restriction,
           :low_emission_zone
-        ]
+        ],
+        devices: RecursiveParamsHelper.permit_recursive(devices_params)
       ]
       allowed_params << :max_vehicles unless Planner::Application.config.manage_vehicles_only_admin
 
