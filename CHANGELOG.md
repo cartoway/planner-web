@@ -39,6 +39,7 @@
     - Generate zones from a planning was missing deliverable units [#300](https://github.com/cartoway/planner-web/pull/300)
   - Clear logs in test environment [#272](https://github.com/cartoway/planner-web/pull/272)
   - Help center link now displays correctly [#296](https://github.com/cartoway/planner-web/pull/296)
+  - Destination and Visit tags were duplicated on import update [#305](https://github.com/cartoway/planner-web/pull/296)
 ## V104.2.0
   ### Changed
   - Destination
