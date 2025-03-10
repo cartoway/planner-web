@@ -141,7 +141,7 @@ class DestinationTest < ActiveSupport::TestCase
     route = routes(:route_zero_one)
     assert !route.outdated
     dest = destinations(:destination_unaffected_one)
-    dest.tags << [tags(:tag_one), tags(:tag_two)]
+    dest.tags |= [tags(:tag_one), tags(:tag_two)]
     dest.save!
     assert route.reload.outdated
   end
