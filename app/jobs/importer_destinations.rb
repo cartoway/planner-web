@@ -583,7 +583,10 @@ class ImporterDestinations < ImporterBase
       destination_ids_and_tag_ids = @tag_destinations.map{ |visit_index, tag_id|
         { destination_id: @destination_index_to_id_hash[visit_index], tag_id: tag_id }
       }
-      import_result = TagDestination.import(destination_ids_and_tag_ids)
+      import_result = TagDestination.import(
+        destination_ids_and_tag_ids,
+        on_duplicate_key_ignore: true
+      )
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
 
       if @customer.plannings.any?
@@ -601,7 +604,10 @@ class ImporterDestinations < ImporterBase
       visit_ids_and_tag_ids = @tag_visits.map{ |visit_index, tag_id|
         { visit_id: @visit_index_to_id_hash[visit_index], tag_id: tag_id }
       }
-      import_result = TagVisit.import(visit_ids_and_tag_ids)
+      import_result = TagVisit.import(
+        visit_ids_and_tag_ids,
+        on_duplicate_key_ignore: true
+      )
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
 
       if @customer.plannings.any?
