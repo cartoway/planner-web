@@ -27,22 +27,23 @@
                 = @planning.customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
         #route_selector.row
         - if (@planning.id && !@planning.tags.empty?) || !@planning.id
-          .d-flex.justify-content-center
-            .col-xs-12.col-md-12
-              %label
-                = t('activerecord.attributes.planning.tags')
-              .row.form-group
-                .input-append
-                  #planning_tag_ids_input.input-group
-                    = select_tag 'planning[tag_ids]', options_for_select(@planning.customer.tags.map { |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}] }, @planning.tags.collect(&:id)), { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control input-group-radiusless', disabled: @planning.id }
-                    - if @planning.id
-                      %span.input-group-addon.input-group-borderless.borderless-disabled= t("activerecord.attributes.planning.tag_operation.#{@planning.tag_operation}")
-                    - else
-                      %span.input-group-addon.input-group-borderless.borderless-empty
-                      = select_tag 'planning[tag_operation]', options_for_select(t('activerecord.attributes.planning.tag_operation').invert), class: 'form-control tag-operation-field', disabled: @planning.id
-                    %span.input-group-addon= content_tag('i', '', class: 'fa fa-tags fa-fw')
-                  - unless @planning.id
-                    %p.help-block= t('activerecord.attributes.planning.tags_help')
+          #route_selector.row
+            .d-flex.justify-content-center
+              .col-xs-12.col-md-12
+                %label
+                  = t('activerecord.attributes.planning.tags')
+                .row.form-group
+                  .input-append
+                    #planning_tag_ids_input.input-group
+                      = select_tag 'planning[tag_ids]', options_for_select(@planning.customer.tags.map { |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}] }, @planning.tags.collect(&:id)), { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control input-group-radiusless', disabled: @planning.id }
+                      - if @planning.id
+                        %span.input-group-addon.input-group-borderless.borderless-disabled= t("activerecord.attributes.planning.tag_operation.#{@planning.tag_operation}")
+                      - else
+                        %span.input-group-addon.input-group-borderless.borderless-empty
+                        = select_tag 'planning[tag_operation]', options_for_select(t('activerecord.attributes.planning.tag_operation').invert), class: 'form-control tag-operation-field', disabled: @planning.id
+                      %span.input-group-addon= content_tag('i', '', class: 'fa fa-tags fa-fw')
+                    - unless @planning.id
+                      %p.help-block= t('activerecord.attributes.planning.tags_help')
           %br
         - if @planning.customer.vehicle_usage_sets.size > 1
           = bootstrap_form_for @planning, {layout: :horizontal, default_div_class: ''} do |f|
