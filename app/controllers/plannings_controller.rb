@@ -553,6 +553,7 @@ class PlanningsController < ApplicationController
   def set_planning_without_stops
     @manage_planning =
       if request.referer&.match('api-web')
+        @callback_button = true
         ApiWeb::V01::PlanningsController.manage
       else
         PlanningsController.manage
@@ -582,6 +583,7 @@ class PlanningsController < ApplicationController
   def set_planning
     @manage_planning =
       if request.referer&.match('api-web')
+        @callback_button = true
         ApiWeb::V01::PlanningsController.manage
       else
         PlanningsController.manage
