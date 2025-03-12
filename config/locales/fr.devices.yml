@@ -219,124 +219,189 @@ fr:
   plannings:
     edit:
       all_plannings_related: Concerne toutes les tournées
-      fleet_demo_send:
-        action: Envoyer à Cartoway Field (demo)
-        success: Envoyé à Cartoway Field (demo) avec succès
-        fail: Échec lors de l'envoi vers Cartoway Field (demo)
-      fleet_demo_clear:
-        action: Vider Cartoway Field (demo)
-        success: Les interventions Cartoway Field (demo) ont été vidées avec succès
-        fail: Échec lors de la suppression des interventions Cartoway Field (demo)
-      fleet_send:
-        action: Envoyer à l'app mobile Cartoway Field
-        success: Envoyé à l'app mobile Cartoway Field avec succès
-        fail: Échec lors de l'envoi vers l'app mobile Cartoway Field
-      fleet_clear:
-        action: Vider l'app mobile Cartoway Field
-        success: L'app mobile Cartoway Field a été vidée avec succès
-        fail: Échec lors de la suppression dans l'app mobile Cartoway Field
-        button: Vider la sélection
-        button_empty: Fermer
-        empty: Aucune tournée trouvée sur Cartoway Field
-        route:
-          name: Nom de tournée
-          number: Numéro de tournée
-      fleet_fetch_routes:
-        action: Vider l'app mobile Cartoway Field
       teksat_send:
-        action: Envoyer à Teksat
-        success: Envoi vers Teksat terminé avec succès
-        fail: Échec lors de l'envoi vers Teksat
+        singular:
+          action: Envoyer à Teksat
+          success: Envoi vers Teksat terminé avec succès
+          fail: Échec lors de l'envoi vers Teksat
+        plural:
+          action: Envoyer à Teksat
+          success: Envoi vers Teksat terminé avec succès
+          fail: Échec lors de l'envoi vers Teksat
       teksat_clear:
-        action: Vider Teksat
-        success: Les commandes Teksat ont été vidées avec succès
-        fail: Échec lors de la suppression des commandes Teksat
+        singular:
+          action: Vider Teksat
+          success: Les commandes Teksat ont été vidées avec succès
+          fail: Échec lors de la suppression des commandes Teksat
+        plural:
+          action: Vider Teksat
+          success: Les commandes Teksat ont été vidées avec succès
+          fail: Échec lors de la suppression des commandes Teksat
       tomtom_send_orders:
-        action: Commandes vers TomTom
-        success: Envoi vers TomTom terminé avec succès
-        fail: Échec lors de l'envoi vers TomTom
+        singular:
+          action: Commandes vers TomTom
+          success: Envoi vers TomTom terminé avec succès
+          fail: Échec lors de l'envoi vers TomTom
+        plural:
+          action: Commandes vers TomTom
+          success: Envoi vers TomTom terminé avec succès
+          fail: Échec lors de l'envoi vers TomTom
       tomtom_send_waypoints:
-        action: Points de passage vers TomTom
-        success: Envoi vers TomTom terminé avec succès
-        fail: Échec lors de l'envoi vers TomTom
+        singular:
+          action: Points de passage vers TomTom
+          success: Envoi vers TomTom terminé avec succès
+          fail: Échec lors de l'envoi vers TomTom
+        plural:
+          action: Points de passage vers TomTom
+          success: Envoi vers TomTom terminé avec succès
+          fail: Échec lors de l'envoi vers TomTom
         title: >-
           Attention tous les appareils tomtom ne supportent pas cette méthode
           d'envoi
       tomtom_clear:
-        action: Vider TomTom
-        success: Les commandes TomTom ont été vidées avec succès
-        fail: Échec lors de la suppression des commandes TomTom
+        singular:
+          action: Vider TomTom
+          success: Les commandes TomTom ont été vidées avec succès
+          fail: Échec lors de la suppression des commandes TomTom
+        plural:
+          action: Vider TomTom
+          success: Les commandes TomTom ont été vidées avec succès
+          fail: Échec lors de la suppression des commandes TomTom
       orange_send:
-        action: Envoyer à Orange Fleet Performance
-        success: Envoyé à Orange Fleet Performance avec succès
-        fail: Échec lors de l'envoi vers Orange Fleet Performance
+        singular:
+          action: Envoyer à Orange Fleet Performance
+          success: Envoyé à Orange Fleet Performance avec succès
+          fail: Échec lors de l'envoi vers Orange Fleet Performance
+        plural:
+          action: Envoyer à Orange Fleet Performance
+          success: Envoyé à Orange Fleet Performance avec succès
+          fail: Échec lors de l'envoi vers Orange Fleet Performance
       orange_clear:
-        action: Vider Orange Fleet Performance
-        success: Les commandes Orange Fleet Performance ont été vidées avec succès
-        fail: Échec lors de la suppression des commandes Orange Fleet Performance
+        singular:
+          action: Vider Orange Fleet Performance
+          success: Les commandes Orange Fleet Performance ont été vidées avec succès
+          fail: Échec lors de la suppression des commandes Orange Fleet Performance
+        plural:
+          action: Vider Orange Fleet Performance
+          success: Les commandes Orange Fleet Performance ont été vidées avec succès
+          fail: Échec lors de la suppression des commandes Orange Fleet Performance
       alyacom_send:
-        action: Envoyer à Alyacom
-        success: Envoyé à Alyacom avec succès
-        fail: Échec lors de l'envoi vers Alyacom
+        singular:
+          action: Envoyer à Alyacom
+          success: Envoyé à Alyacom avec succès
+          fail: Échec lors de l'envoi vers Alyacom
+        plural:
+          action: Envoyer à Alyacom
+          success: Envoyé à Alyacom avec succès
+          fail: Échec lors de l'envoi vers Alyacom
       masternaut_send:
-        action: Envoyer à Masternaut
-        success: Envoyé à Masternaut avec succès
-        fail: Échec lors de l'envoi vers Masternaut
+        singular:
+          action: Envoyer à Masternaut
+          success: Envoyé à Masternaut avec succès
+          fail: Échec lors de l'envoi vers Masternaut
+        plural:
+          action: Envoyer à Masternaut
+          success: Envoyé à Masternaut avec succès
+          fail: Échec lors de l'envoi vers Masternaut
       trimble_send:
-        action: Envoyer à Trimble
-        success: Envoyé à Trimble avec succès
-        fail: Échec lors de l'envoi vers Trimble
+        singular:
+          action: Envoyer à Trimble
+          success: Envoyé à Trimble avec succès
+          fail: Échec lors de l'envoi vers Trimble
+        plural:
+          action: Envoyer à Trimble
+          success: Envoyé à Trimble avec succès
+          fail: Échec lors de l'envoi vers Trimble
       trimble_clear:
-        action: Vider Trimble
-        success: Trimble a été vidé avec succès
-        fail: Échec lors de la suppression de Trimble
+        singular:
+          action: Vider Trimble
+          success: Trimble a été vidé avec succès
+          fail: Échec lors de la suppression de Trimble
+        plural:
+          action: Vider Trimble
+          success: Trimble a été vidé avec succès
+          fail: Échec lors de la suppression de Trimble
       locster_send:
-        action: Envoyer à Locster
-        success: Envoyé à Locster avec succès
-        fail: Échec lors de l'envoi vers Locster
-      suivi_de_flote_send:
-        action: Envoyer à SuiviDeFlote
-        success: Envoyé à SuiviDeFlote avec succès
-        fail: Échec lors de l'envoi vers SuiviDeFlote
+        singular:
+          action: Envoyer à Locster
+          success: Envoyé à Locster avec succès
+          fail: Échec lors de l'envoi vers Locster
+        plural:
+          action: Envoyer à Locster
+          success: Envoyé à Locster avec succès
+          fail: Échec lors de l'envoi vers Locster
+      suivi_de_flotte_send:
+        singular:
+          action: Envoyer à SuiviDeFlotte
+          success: Envoyé à SuiviDeFlotte avec succès
+          fail: Échec lors de l'envoi vers SuiviDeFlotte
+        plural:
+          action: Envoyer à SuiviDeFlotte
+          success: Envoyé à SuiviDeFlotte avec succès
+          fail: Échec lors de l'envoi vers SuiviDeFlotte
       notico_send:
-        action: Envoyer à Notico Deliv
-        success: Envoyé à Notico Deliv avec succès
-        fail: Échec lors de l'envoi vers Notico Deliv
+        singular:
+          action: Envoyer à Notico Deliv
+          success: Envoyé à Notico Deliv avec succès
+          fail: Échec lors de l'envoi vers Notico Deliv
+        plural:
+          action: Envoyer à Notico Deliv
+          success: Envoyé à Notico Deliv avec succès
+          fail: Échec lors de l'envoi vers Notico Deliv
       notico_clear:
-        action: Vider Notico Deliv
-        success: Notico Deliv a été vidé avec succès
-        fail: Échec lors de la suppression de Notico Deliv
+        singular:
+          action: Vider Notico Deliv
+          success: Notico Deliv a été vidé avec succès
+          fail: Échec lors de la suppression de Notico Deliv
+        plural:
+          action: Vider Notico Deliv
+          success: Notico Deliv a été vidé avec succès
+          fail: Échec lors de la suppression de Notico Deliv
       deliver_send:
-        access: Accéder à la tournée
-        transmit: Transmettre au livreur
-        action: Envoyer email au livreur
-        send_sms: Envoyer SMS au livreur
-        success: Envoyé au livreur avec succès
-        fail: Échec lors de l'envoi
-      deliver_sends:
-        action: Envoyer email aux livreurs
-        send_sms: Envoyer SMS aux livreurs
-        success: Envoyé aux livreurs avec succès
-        fail: Échec lors de l'envoi
+        singular:
+          access: Accéder à la tournée
+          transmit: Transmettre au livreur
+          action: Envoyer email au livreur
+          send_sms: Envoyer SMS au livreur
+          success: Envoyé au livreur avec succès
+          fail: Échec lors de l'envoi
+        plural:
+          access: Accéder aux tournées
+          transmit: Transmettre aux livreurs
+          action: Envoyer email aux livreurs
+          send_sms: Envoyer SMS aux livreurs
+          success: Envoyé aux livreurs avec succès
+          fail: Échec lors de l'envoi
+      deliver_clear:
+        singular:
+          action: Réinitialiser les statuts
+          success: Les statuts ont été réinitialisés avec succès
+          fail: Échec de la réinitialisation
+        plural:
+          action: Réinitialiser les statuts
+          success: Les statuts ont été réinitialisés avec succès
+          fail: Échec de la réinitialisation
+      praxedo_send:
+        singular:
+          action: Envoyer à Praxedo
+          success: Envoyé à Praxedo avec succès
+          fail: Échec lors de l'envoi vers Praxedo
+        plural:
+          action: Envoyer à Praxedo
+          success: Envoyé à Praxedo avec succès
+          fail: Échec lors de l'envoi vers Praxedo
+      praxedo_clear:
+        singular:
+          action: Vider Praxedo
+          success: Les interventions Praxedo ont été vidées avec succès
+          fail: Échec lors de la suppression des interventions Praxedo
+        plural:
+          action: Vider Praxedo
+          success: Les interventions Praxedo ont été vidées avec succès
+          fail: Échec lors de la suppression des interventions Praxedo
       messaging:
         vonage: Vonage SMS
         sms_partner: SMS Partner
-      deliver_clear:
-        action: Réinitialiser les statuts
-        success: Les statuts ont été réinitialisés avec succès
-        fail: Échec de la réinitialisation
-      deliver_clears:
-        action: Réinitialiser les statuts
-        success: Les statuts ont été réinitialisés avec succès
-        fail: Échec de la réinitialisation
-      praxedo_send:
-        action: Envoyer à Praxedo
-        success: Envoyé à Praxedo avec succès
-        fail: Échec lors de l'envoi vers Praxedo
-      praxedo_clear:
-        action: Vider Praxedo
-        success: Les interventions Praxedo ont été vidées avec succès
-        fail: Échec lors de la suppression des interventions Praxedo
       dialog:
         fleet_demo:
           title: Cartoway Field (démo)

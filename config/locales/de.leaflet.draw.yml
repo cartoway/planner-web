@@ -213,8 +213,6 @@ de:
         route:
           name: Name der Strecke
           number: Streckennummer
-      fleet_fetch_routes:
-        action: Mobile App Cartoway Field löschen
       teksat_send:
         action: An Teksat senden
         success: Erfolgreich an Teksat gesendet
@@ -264,10 +262,6 @@ de:
         action: Senden an Locster
         success: Erfolgreich an Locster gesendet
         fail: Senden an Locster fehlgeschlagen
-      suivi_de_flote_send:
-        action: Senden an SuiviDeFlote
-        success: Erfolgreich an SuiviDeFlote gesendet
-        fail: Senden an SuiviDeFlote fehlgeschlagen
       notico_send:
         action: Senden an Notico Deliv
         success: Erfolgreich an Notico Deliv gesendet
