@@ -88,13 +88,13 @@
                 = route[:devices][:tomtom_id][:text]
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "tomtom", "data-type" => "orders"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.tomtom_send_orders.action')
+              = t('plannings.edit.tomtom_send_orders.singular.action')
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "tomtom", "data-type" => "waypoints", title: "t('plannings.edit.tomtom_send_waypoints.title')"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.tomtom_send_waypoints.action')
+              = t('plannings.edit.tomtom_send_waypoints.singular.action')
             %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "tomtom"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.tomtom_clear.action')
+              = t('plannings.edit.tomtom_clear.singular.action')
             %li.divider{role: "separator"}
 
           - if route[:teksat]
@@ -105,10 +105,10 @@
                 = route[:devices][:teksat_id][:text]
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "teksat"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.teksat_send.action')
+              = t('plannings.edit.teksat_send.singular.action')
             %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "teksat"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.teksat_clear.action')
+              = t('plannings.edit.teksat_clear.singular.action')
             %li.divider{role: "separator"}
           - if route[:orange]
             .dropdown-spacing
@@ -118,10 +118,10 @@
                 route[:devices][:text]
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "orange"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.orange_send.action')
+              = t('plannings.edit.orange_send.singular.action')
             %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "orange"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.orange_clear.action')
+              = t('plannings.edit.orange_clear.singular.action')
             %li.divider{role: "separator"}
           - if route[:masternaut]
             .dropdown-spacing
@@ -131,12 +131,12 @@
                 route[:devices][:masternaut_ref][:text]
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "masternaut"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.masternaut_send.action')
+              = t('plannings.edit.masternaut_send.singular.action')
             %li.divider{role: "separator"}
           - if route[:alyacom]
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "alyacom"}
               %i.fa.fa-mobile.fa-fw
-                = t('plannings.edit.alyacom_send.action')
+                = t('plannings.edit.alyacom_send.singular.action')
             %li.divider{role: "separator"}
           - if route[:trimble]
             .dropdown-spacing
@@ -146,10 +146,10 @@
                 = route[:devices][:trimble_ref][:text]
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "trimble"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.trimble_send.action')
+              = t('plannings.edit.trimble_send.singular.action')
             %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "trimble"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.trimble_clear.action')
+              = t('plannings.edit.trimble_clear.singular.action')
             %li.divider{role: "separator"}
           - if route[:notico]
             .dropdown-spacing
@@ -159,10 +159,10 @@
                 route[:devices][:agent_id][:text]
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "notico"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.notico_send.action')
+              = t('plannings.edit.notico_send.singular.action')
             %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "notico"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.notico_clear.action')
+              = t('plannings.edit.notico_clear.singular.action')
             %li.divider{role: "separator"}
           - if route[:deliver]
             .dropdown-spacing
@@ -170,18 +170,18 @@
             %li
               %a{ href: driver_url(@planning, route) }
                 %i.fa.fa-link.fa-fw
-                = t('plannings.edit.deliver_send.access')
+                = t('plannings.edit.deliver_send.singular.access')
             - if @planning.customer.enable_sms
               %li
                 = link_to route_modal_path(route[:route_id], modal: 'sms_drivers'), remote: true, format: 'js', 'data-toggle': "modal", 'data-target': "#planning-send-sms-drivers-modal", 'data-keyboard': "true", id: 'send-sms-drivers' do
                   %i.fa.fa-fw.fa-comment-sms
-                  = t('plannings.edit.deliver_send.send_sms')
+                  = t('plannings.edit.deliver_send.singular.send_sms')
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "deliver"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.deliver_send.action')
+              = t('plannings.edit.deliver_send.singular.action')
             %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "deliver"}
               %i.fa.fa-rectangle-xmark.fa-fw
-              = t('plannings.edit.deliver_clear.action')
+              = t('plannings.edit.deliver_clear.singular.action')
             %li.divider{role: "separator"}
           - if route[:praxedo]
             .dropdown-spacing
@@ -191,10 +191,10 @@
                 = route[:devices][:praxedo_agent_id][:text]
             %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "praxedo"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.praxedo_send.action')
+              = t('plannings.edit.praxedo_send.singular.action')
             %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "praxedo"}
               %i.fa.fa-mobile.fa-rotate-90.fa-fw
-              = t('plannings.edit.praxedo_clear.action')
+              = t('plannings.edit.praxedo_clear.singular.action')
             %li.divider{role: "separator"}
           %li
             %a{href: "/api-web/0.1/plannings/#{summary[:planning_id]}/routes/#{route[:route_id]}/print", target: "_blank"}
