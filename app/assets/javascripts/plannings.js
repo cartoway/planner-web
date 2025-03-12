@@ -1814,7 +1814,6 @@ export const plannings_edit = function(params) {
             vehicle_usage_id: route.vehicle_usage_id,
             ref: route.ref,
             name: route.name,
-            fleet_user: route.fleet_user || rv.fleet_user,
             outdated: route.outdated,
             devices: route.devices || params.devices
           };
@@ -2600,97 +2599,6 @@ export const plannings_edit = function(params) {
       });
     };
 
-    /* global bootstrap_dialog */
-    var getDevicesFromFleetUsers = function(fleetUsers, fleetUserId) {
-      return $.grep(fleetUsers, function(obj) {
-        return obj.id === fleetUserId;
-      })[0];
-    };
-
-    var _fetchFleetRoutes = function(vehicleRoutesArray) {
-      for (var index = 0; index < vehicleRoutesArray.length; index++) {
-        var obj = vehicleRoutesArray[index];
-        for (var rbv = 0; rbv < obj.routes_by_fleet_user.length; rbv++) {
-          var fleetUserId = obj.routes_by_fleet_user[rbv].fleet_user;
-          var route = $.grep(routes, function(route) {
-            return route.fleet_user === fleetUserId;
-          })[0];
-          if (route) {
-            if (route.devices) {
-              if ($.isArray(route.devices.fleet_user)) {
-                route.devices = getDevicesFromFleetUsers(route.devices.fleet_user, fleetUserId);
-                route.devices.color = route.color;
-              } else if (route.devices.fleet_user){
-                route.devices.fleet_user.color = route.color;
-              } else {
-                route.devices.color = route.color;
-              }
-            } else {
-              if (params.devices.fleet_user) {
-                route.devices = getDevicesFromFleetUsers(params.devices.fleet_user, fleetUserId);
-              }
-            }
-            obj.routes_by_fleet_user[rbv].devices = route.devices;
-          }
-        }
-      }
-
-      var refs = {},
-        btnName = (vehicleRoutesArray.length <= 0) ? I18n.t('plannings.edit.fleet_clear.button_empty') : I18n.t('plannings.edit.fleet_clear.button');
-
-      var modal = bootstrap_dialog({
-        title: I18n.t('plannings.edit.fleet_fetch_routes.action'),
-        icon: 'fa fa-mobile fa-rotate-90 fa-fw',
-        replaceOnlyModalIcon: true,
-        message: SMT['modals/fleet_fetch_routes']({
-          i18n: mustache_i18n,
-          vra: vehicleRoutesArray,
-        }),
-        footer: '<button id="clear_multiple" class="btn btn-primary"> ' + btnName + ' </button>',
-        dataDismiss: true
-      }).modal('show');
-
-      // Out Callback Previously settled
-      modal.off('click', '#clear_multiple').off('change', '.fleet-routes-selected');
-
-      // Control Route Selection (Add&Remove ext_ref)
-      modal.find('.fleet-routes-selection').change(function() {
-        if ($(this).is(':checked')) {
-          refs[$(this).val()] = { fleet_user: $(this).data('user'), external_ref: $(this).val() };
-        } else if (refs[$(this).val()]) {
-          delete refs[$(this).val()];
-        }
-      });
-
-      // Send Request with ext_ref selected
-      modal.find('#clear_multiple').click(function() {
-        if (Object.keys(refs).length <= 0) { modal.modal('hide'); return; }
-        $(this).off('click'); // Don't let user call multiple times
-
-        $.ajax({
-          url: '/api/0.1/devices/fleet/clear_multiple',
-          type: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({ external_refs: $.map(refs, function(obj) { return obj; }) }),
-          beforeSend: function() {
-            beforeSendWaiting();
-          },
-          success: function(data) {
-            if (data && data.error) { stickyError(data.error); return; }
-            _setPlanningRoutesLastSentAt(data);
-            notice(I18n.t('plannings.edit.fleet_clear.success'));
-          },
-          complete: function() {
-            completeAjaxMap();
-            modal.modal('hide');
-          },
-          error: function() {
-            stickyError(I18n.t('plannings.edit.fleet_clear.fail'));
-          }
-        });
-      });
-    };
-
     var _devicesInitVehicle = function(callback) {
 
       $.each($('.last-sent-at', _context), function(i, element) {
@@ -2752,7 +2660,9 @@ export const plannings_edit = function(params) {
             if (data && data.error) {
               stickyError(data.error);
             } else {
-              var serviceTranslation = 'plannings.edit.' + service + '_' + operation + (from.data('type') ? '_' + from.data('type') : '') + '.success';
+              var serviceTranslation = 'plannings.edit.' + service + '_' + operation +
+                (from.data('type') ? '_' + from.data('type') : '') +
+                (from.data('route-id') ? '.singular' : '.plural') + '.success';
               if (operation !== 'fetch_routes') notice(I18n.t(serviceTranslation));
 
               if (from.data('planning-id') && operation === 'send')
@@ -2776,7 +2686,9 @@ export const plannings_edit = function(params) {
             dialog.modal('hide');
           },
           error: function() {
-            var serviceErrorTranslation = 'plannings.edit.' + service + '_' + operation + (from.data('type') ? '_' + from.data('type') : '') + '.fail';
+            var serviceErrorTranslation = 'plannings.edit.' + service + '_' + operation +
+              (from.data('type') ? '_' + from.data('type') : '') +
+              (from.data('route-id') ? '.singular' : '.plural') + '.fail';
             stickyError(I18n.t(serviceErrorTranslation));
           }
         });

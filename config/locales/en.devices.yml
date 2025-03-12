@@ -221,119 +221,184 @@ en:
   plannings:
     edit:
       all_plannings_related: Relates to all routes
-      fleet_demo_send:
-        action: Send to Cartoway Field demo
-        success: Sent to Cartoway Field demo successfully
-        fail: Failed to send to Cartoway Field demo
-      fleet_demo_clear:
-        action: Clear Cartoway Field (demo)
-        success: Cartoway Field (demo) interventions have been cleared successfully
-        fail: Failed to clear Cartoway Field (demo) interventions
-      fleet_send:
-        action: Send to Cartoway Field mobile app
-        success: Sent to Cartoway Field mobile app successfully
-        fail: Failed to send to Cartoway Field mobile app
-      fleet_clear:
-        action: Clear Cartoway Field mobile app
-        success: Cartoway Field mobile app trip has been cleared successfully
-        fail: Failed to clear Cartoway Field mobile app
-        button: Clear Selection
-        button_empty: Close
-        empty: No Routes found on Cartoway Field
-        route:
-          name: Route name
-          number: Route number
-      fleet_fetch_routes:
-        action: Clear Cartoway Field mobile app
       teksat_send:
-        action: Send to Teksat
-        success: Sent to Teksat successfully
-        fail: Failed to send to Teksat
+        singular:
+          action: Send to Teksat
+          success: Sent to Teksat successfully
+          fail: Failed to send to Teksat
+        plural:
+          action: Send to Teksat
+          success: Sent to Teksat successfully
+          fail: Failed to send to Teksat
       teksat_clear:
-        action: Clear Teksat
-        success: Teksat commands have been cleared successfully
-        fail: Failed to clear Teksat commands
+        singular:
+          action: Clear Teksat
+          success: Teksat commands have been cleared successfully
+          fail: Failed to clear Teksat commands
+        plural:
+          action: Clear Teksat
+          success: Teksat commands have been cleared successfully
+          fail: Failed to clear Teksat commands
       tomtom_send_orders:
-        action: Send to TomTom as Orders
-        success: Sent to TomTom successfully
-        fail: Failed to send to TomTom
+        singular:
+          action: Send to TomTom as Orders
+          success: Sent to TomTom successfully
+          fail: Failed to send to TomTom
+        plural:
+          action: Send to TomTom as Orders
+          success: Sent to TomTom successfully
+          fail: Failed to send to TomTom
       tomtom_send_waypoints:
-        action: Send to TomTom as Waypoints
-        success: Sent to TomTom successfully
-        fail: Failed to send to TomTom
+        singular:
+          action: Send to TomTom as Waypoints
+          success: Sent to TomTom successfully
+          fail: Failed to send to TomTom
+        plural:
+          action: Send to TomTom as Waypoints
+          success: Sent to TomTom successfully
+          fail: Failed to send to TomTom
         title: 'Warning, this method is not handled by all devices'
       tomtom_clear:
-        action: Clear TomTom
-        success: TomTom commands have been cleared successfully
-        fail: Failed to clear TomTom commands
+        singular:
+          action: Clear TomTom
+          success: TomTom commands have been cleared successfully
+          fail: Failed to clear TomTom commands
+        plural:
+          action: Clear TomTom
+          success: TomTom commands have been cleared successfully
+          fail: Failed to clear TomTom commands
       orange_send:
-        action: Send to Orange Fleet Performance
-        success: Sent to Orange Fleet Performance Successfully
-        fail: Failed to send to Orange Fleet Performance
+        singular:
+          action: Send to Orange Fleet Performance
+          success: Sent to Orange Fleet Performance Successfully
+          fail: Failed to send to Orange Fleet Performance
+        plural:
+          action: Send to Orange Fleet Performance
+          success: Sent to Orange Fleet Performance Successfully
+          fail: Failed to send to Orange Fleet Performance
       orange_clear:
-        action: Clear Orange Fleet Performance
-        success: Orange Fleet Performance commands have been cleared successfully
-        fail: Failed to clear Orange Fleet Performance commands
+        singular:
+          action: Clear Orange Fleet Performance
+          success: Orange Fleet Performance commands have been cleared successfully
+          fail: Failed to clear Orange Fleet Performance commands
+        plural:
+          action: Clear Orange Fleet Performance
+          success: Orange Fleet Performance commands have been cleared successfully
+          fail: Failed to clear Orange Fleet Performance commands
       alyacom_send:
-        action: Send to Alyacom
-        success: Sent to Alyacom successfully
-        fail: Failed to send to Alyacom
+        singular:
+          action: Send to Alyacom
+          success: Sent to Alyacom successfully
+          fail: Failed to send to Alyacom
+        plural:
+          action: Send to Alyacom
+          success: Sent to Alyacom successfully
+          fail: Failed to send to Alyacom
       masternaut_send:
-        action: Send to Masternaut
-        success: Sent to Masternaut successfully
-        fail: Failed to send to Masternaut
+        singular:
+          action: Send to Masternaut
+          success: Sent to Masternaut successfully
+          fail: Failed to send to Masternaut
+        plural:
+          action: Send to Masternaut
+          success: Sent to Masternaut successfully
+          fail: Failed to send to Masternaut
       trimble_send:
-        action: Send to Trimble
-        success: Sent to Trimble successfully
-        fail: Failed to send to Trimble
+        singular:
+          action: Send to Trimble
+          success: Sent to Trimble successfully
+          fail: Failed to send to Trimble
+        plural:
+          action: Send to Trimble
+          success: Sent to Trimble successfully
+          fail: Failed to send to Trimble
       trimble_clear:
-        action: Clear Trimble
-        success: Trimble trip has been cleared successfully
-        fail: Failed to clear Trimble
+        singular:
+          action: Clear Trimble
+          success: Trimble trip has been cleared successfully
+          fail: Failed to clear Trimble
+        plural:
+          action: Clear Trimble
+          success: Trimble trip has been cleared successfully
+          fail: Failed to clear Trimble
       locster_send:
-        action: Send to Locster
-        success: Sent to Locster successfully
-        fail: Failed to send to Locster
-      suivi_de_flote_send:
-        action: Send to SuiviDeFlote
-        success: Sent to SuiviDeFlote successfully
-        fail: Failed to send to SuiviDeFlote
+        singular:
+          action: Send to Locster
+          success: Sent to Locster successfully
+          fail: Failed to send to Locster
+        plural:
+          action: Send to Locster
+          success: Sent to Locster successfully
+          fail: Failed to send to Locster
+      suivi_de_flotte_send:
+        singular:
+          action: Send to SuiviDeFlotte
+          success: Sent to SuiviDeFlotte successfully
+          fail: Failed to send to SuiviDeFlotte
+        plural:
+          action: Send to SuiviDeFlotte
+          success: Sent to SuiviDeFlotte successfully
+          fail: Failed to send to SuiviDeFlotte
       notico_send:
-        action: Send to Notico Deliv
-        success: Sent to Notico Deliv successfully
-        fail: Failed to send to Notico Deliv
+        singular:
+          action: Send to Notico Deliv
+          success: Sent to Notico Deliv successfully
+          fail: Failed to send to Notico Deliv
+        plural:
+          action: Send to Notico Deliv
+          success: Sent to Notico Deliv successfully
+          fail: Failed to send to Notico Deliv
       notico_clear:
-        action: Clear Notico Deliv
-        success: Notico Deliv trip has been cleared successfully
-        fail: Failed to clear Notico Deliv
+        singular:
+          action: Clear Notico Deliv
+          success: Notico Deliv trip has been cleared successfully
+          fail: Failed to clear Notico Deliv
+        plural:
+          action: Clear Notico Deliv
+          success: Notico Deliv trip has been cleared successfully
+          fail: Failed to clear Notico Deliv
       deliver_send:
-        access: Access the tour
-        transmit: Transmit to driver
-        action: Send mail to driver
-        send_sms: Send SMS to driver
-        success: Sent to driver successfully
-        fail: Failed to send
-      deliver_sends:
-        action: Send mail to drivers
-        send_sms: Send SMS to drivers
-        success: Sent to driver successfully
-        fail: Failed to send
+        singular:
+          access: Access the tour
+          transmit: Transmit to driver
+          action: Send mail to driver
+          send_sms: Send SMS to driver
+          success: Sent to driver successfully
+          fail: Failed to send
+        plural:
+          access: Access the tour
+          transmit: Transmit to driver
+          action: Send mail to drivers
+          send_sms: Send SMS to drivers
+          success: Sent to driver successfully
+          fail: Failed to send
       deliver_clear:
-        action: Reset status
-        success: Status have been successfully reset
-        fail: Reset failed
-      deliver_clears:
-        action: Reset status
-        success: Status have been successfully reset
-        fail: Reset failed
+        singular:
+          action: Reset status
+          success: Status have been successfully reset
+          fail: Reset failed
+        plural:
+          action: Reset status
+          success: Status have been successfully reset
+          fail: Reset failed
       praxedo_send:
-        action: Send to Praxedo
-        success: Sent to Praxedo successfully
-        fail: Failed to send to Praxedo
+        singular:
+          action: Send to Praxedo
+          success: Sent to Praxedo successfully
+          fail: Failed to send to Praxedo
+        plural:
+          action: Send to Praxedo
+          success: Sent to Praxedo successfully
+          fail: Failed to send to Praxedo
       praxedo_clear:
-        action: Clear Praxedo
-        success: Praxedo interventions have been cleared successfully
-        fail: Failed to clear Praxedo interventions
+        singular:
+          action: Clear Praxedo
+          success: Praxedo interventions have been cleared successfully
+          fail: Failed to clear Praxedo interventions
+        plural:
+          action: Clear Praxedo
+          success: Praxedo interventions have been cleared successfully
+          fail: Failed to clear Praxedo interventions
       messaging:
         vonage: Vonage SMS
         sms_partner: SMS Partner
