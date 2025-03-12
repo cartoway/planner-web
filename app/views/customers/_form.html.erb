@@ -409,6 +409,8 @@
         <%= render partial: 'shared/check_box', locals: { form: f, name: "customer[devices][#{key}][enable]", checked: to_bool(@customer.devices[key] && @customer.devices[key][:enable]), label: device[:label], help: (t("customers.form.devices.#{key}.help") if device[:help]) } %>
       <% end %>
     </div>
+  <% else %>
+    <div class="row"></div>
   <% end %>
 
   <% if !@customer.device.enabled_definitions.empty? %>
