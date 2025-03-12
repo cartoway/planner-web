@@ -712,6 +712,7 @@ fr:
       status:
         title:
           '404': Page introuvable
+          '409': Conflit
           '422': Action impossible
           '500': Une erreur interne est survenue
           default: Une erreur est survenue dans l'application
@@ -719,6 +720,9 @@ fr:
           '404': >-
             La page n'a pas été trouvée sur le serveur, elle a peut-être été
             supprimée.
+          '409': >-
+            L'action que vous essayez de réaliser est rentrée en conflit avec
+            l'état actuel du serveur.
           '422': L'action que vous avez tentée de réaliser est impossible.
           '500': >-
             Une erreur interne s'est produite. Le problème a été signalé, merci
