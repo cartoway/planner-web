@@ -37,7 +37,7 @@ class StopsController < ApplicationController
   end
 
   def update
-    if stop_params[:status_updated_at].nil? || stop_params[:status_updated_at] > (@stop.status_updated_at || 0)
+    if stop_params[:status_updated_at].nil? || DateTime.parse(stop_params[:status_updated_at]) > (@stop.status_updated_at || 0)
       if @stop.update(stop_params)
         if request.xhr?
           render json: { success: true }
