@@ -208,10 +208,6 @@ function syncPositions() {
 }
 
 function syncStops() {
-  if (syncInProgress) {
-    return Promise.resolve();
-  }
-
   if (!csrfToken) {
     notifyClients('STORE_STOPS', Array.from(pendingRequests.stops));
     return Promise.reject(new Error('No CSRF token available'));
