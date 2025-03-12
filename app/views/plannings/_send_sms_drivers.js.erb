@@ -20,7 +20,7 @@ $('#send-sms-form').off('submit').on('submit', function(event) {
       $('#planning-send-sms-drivers-modal').modal('hide');
     },
     error: function(xhr, status, error) {
-      stickyError(I18n.t('plannings.edit.deliver_sends.fail'));
+      stickyError(I18n.t('plannings.edit.deliver_send.plural.fail'));
     }
   });
   return false;
