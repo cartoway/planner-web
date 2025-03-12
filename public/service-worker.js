@@ -153,7 +153,13 @@ function syncPositions() {
   }
 
   return Promise.all(Array.from(pendingRequests.positions).map(position => {
-    return fetch(`/routes/${position.routeId}/update_position`, {
+    if (position.retryAfter && position.retryAfter > Date.now()) {
+      pendingRequests.positions.delete(position);
+      notifyClients('STORE_POSITIONS', Array.from([position]));
+      return Promise.resolve();
+    }
+
+    return fetch(`/routes/${position.routeId}/update_position.json`, {
       method: 'PATCH',
       body: JSON.stringify(position.coords),
       headers: {
@@ -167,17 +173,29 @@ function syncPositions() {
       if (response.ok) {
         notifyClients('POSITION_SYNCED', position);
       } else {
-        switch(response.status) {
-          case 404:
-          case 408:
-          case 502:
-          case 503:
-          case 504:
-            notifyClients('STORE_POSITIONS', Array.from([position]));
-            break;
-          default:
-            throw new Error(`Failed to sync position: ${response.status}`);
-        }
+        return response.json().then(data => {
+          const errorType = data.type;
+
+          switch(response.status) {
+            case 404:
+            case 408:
+            case 502:
+            case 503:
+            case 504:
+              notifyClients('STORE_POSITIONS', Array.from([position]));
+              break;
+            case 422:
+              if (errorType.includes('deadlock')) {
+                position.retryAfter = Date.now() + 500;
+                notifyClients('STORE_POSITIONS', Array.from([{
+                  position
+                }]));
+                throw new Error('retry_later');
+              }
+            default:
+              throw new Error(`Failed to sync position: ${response.status}`);
+          }
+        });
       }
     })
     .catch(error => {
@@ -190,11 +208,22 @@ function syncPositions() {
 }
 
 function syncStops() {
+  if (syncInProgress) {
+    return Promise.resolve();
+  }
+
   if (!csrfToken) {
     notifyClients('STORE_STOPS', Array.from(pendingRequests.stops));
     return Promise.reject(new Error('No CSRF token available'));
   }
+
   return Promise.all(Array.from(pendingRequests.stops).map(stop => {
+    if (stop.retryAfter && stop.retryAfter > Date.now()) {
+      pendingRequests.stops.delete(stop);
+      notifyClients('STORE_STOPS', Array.from([stop]));
+      return Promise.resolve();
+    }
+
     const formData = new FormData();
     Object.keys(stop.formData).forEach(key => {
       formData.append(key, stop.formData[key]);
@@ -202,10 +231,13 @@ function syncStops() {
     formData.append('authenticity_token', csrfToken);
     formData.append('_method', 'PATCH');
 
-    return fetch(stop.url, {
+    const jsonUrl = stop.url + (stop.url.includes('?') ? '&' : '?') + 'format=json';
+
+    return fetch(jsonUrl, {
       method: 'PATCH',
       body: formData,
       headers: {
+        'Content-Type': 'application/json',
         'X-CSRF-Token': csrfToken,
         'X-Requested-With': 'XMLHttpRequest'
       }
@@ -215,17 +247,29 @@ function syncStops() {
       if (response.ok) {
         notifyClients('STOP_SYNCED', stop);
       } else {
-        switch(response.status) {
-          case 404:
-          case 408:
-          case 502:
-          case 503:
-          case 504:
-            notifyClients('STORE_STOPS', Array.from([stop]));
-            break;
-          default:
-            throw new Error(`Failed to sync stop: ${response.status}`);
-        }
+        return response.json().then(data => {
+          const errorType = data.type;
+
+          switch(response.status) {
+            case 404:
+            case 408:
+            case 502:
+            case 503:
+            case 504:
+              notifyClients('STORE_STOPS', Array.from([stop]));
+              break;
+            case 422:
+              if (errorType.includes('deadlock')) {
+                stop.retryAfter = Date.now() + 500;
+                notifyClients('STORE_STOPS', Array.from([{
+                  stop
+                }]));
+                throw new Error('retry_later');
+              }
+            default:
+              throw new Error(`Failed to sync stop: ${response.status}`);
+          }
+        });
       }
     })
     .catch(error => {

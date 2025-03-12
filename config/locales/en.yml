@@ -704,11 +704,15 @@ en:
       status:
         title:
           '404': Cannot find the page
+          '409': Conflict
           '422': Unprocessable request
           '500': Internal error occurred
           default: An error occurred in the application
         explanation:
           '404': 'This page was not found on server, perhaps it was deleted.'
+          '409': >-
+            The action you try to perform is in conflict with the current state
+            of the server.
           '422': The action you try to perform is impossible.
           '500': >-
             An internal error occurred. The problem was reported, please try
