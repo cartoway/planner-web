@@ -27,7 +27,7 @@
                 = @planning.customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
         #route_selector.row
         - if (@planning.id && !@planning.tags.empty?) || !@planning.id
-          #route_selector.row
+          .row
             .d-flex.justify-content-center
               .col-xs-12.col-md-12
                 %label
