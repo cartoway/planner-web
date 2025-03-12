@@ -212,7 +212,7 @@ class ImporterVehicleUsageSets < ImporterBase
         key = :store_rest
       end
 
-      if !@common_configuration.key?(key) && !vehicle_usage_attributes[key].blank?
+      if !@common_configuration.key?(key)
         @common_configuration[key] = vehicle_usage_attributes[key]
       elsif @common_configuration[key] != vehicle_usage_attributes[key]
         @common_configuration[key] = nil
