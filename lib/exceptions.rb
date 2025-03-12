@@ -4,6 +4,7 @@ module Exceptions
   class LoopError < StandardError; end
   class JobInProgressError < StandardError; end
   class JobInTransmissionError < StandardError; end
+  class OutdatedRequestError < StandardError; end
   class OverMaxLimitError < StandardError; end
   class PolygonValidityError < StandardError; end
 

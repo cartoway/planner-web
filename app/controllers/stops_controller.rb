@@ -37,16 +37,20 @@ class StopsController < ApplicationController
   end
 
   def update
-    if @stop.update(stop_params)
-      if request.xhr?
-        render json: { success: true }
+    if stop_params[:status_updated_at].nil? || stop_params[:status_updated_at] > (@stop.status_updated_at || 0)
+      if @stop.update(stop_params)
+        if request.xhr?
+          render json: { success: true }
+        end
+      else
+        format.json do
+          flash.now[:alert] = I18n.t('stops.error_messages.update.failure')
+          render json:   { error: I18n.t('stops.error_messages.update.failure') }.to_json,
+                status: :unprocessable_entity
+        end
       end
     else
-      format.json do
-        flash.now[:alert] = I18n.t('stops.error_messages.update.failure')
-        render json:   { error: I18n.t('stops.error_messages.update.failure') }.to_json,
-               status: :unprocessable_entity
-      end
+      raise Exceptions::OutdatedRequestError
     end
   end
 

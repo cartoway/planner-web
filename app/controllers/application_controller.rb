@@ -32,6 +32,7 @@ class ApplicationController < ActionController::Base
   rescue_from PG::TRSerializationFailure, with: :database_error
   rescue_from Exceptions::JobInProgressError, with: :job_in_progress
   rescue_from Exceptions::StopIndexError, with: :stop_index_error
+  rescue_from Exceptions::OutdatedRequestError, with: :conflict_error
 
   layout :layout_by_resource
 
@@ -214,8 +215,20 @@ class ApplicationController < ActionController::Base
       flash[:error] = [I18n.t('errors.management.status.title.404')]
       format.js { render partial: 'shared/error_messages.js.erb', status: :not_found }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 404 }, status: 404 }
-      format.json { render json: { error: I18n.t('errors.management.status.title.404') }, status: 404 }
+      format.json { render json: { type: 'not_found', error: I18n.t('errors.management.status.title.404') }, status: 404 }
       format.all { render body: nil, status: :not_found }
+    end
+  end
+
+  def conflict_error(exception)
+    log_error(exception)
+
+    respond_to do |format|
+      flash[:error] = [I18n.t('errors.management.status.title.409')]
+      format.js { render partial: 'shared/error_messages.js.erb', status: :conflict }
+      format.html { render 'errors/show', layout: 'full_page', locals: { status: 409 }, status: 409 }
+      format.json { render json: { type: 'conflict', error: I18n.t('errors.management.status.title.409') }, status: 409 }
+      format.all { render body: nil, status: :conflict }
     end
   end
 
@@ -226,7 +239,7 @@ class ApplicationController < ActionController::Base
       flash[:error] = [I18n.t('errors.management.description')]
       format.js { render partial: 'shared/error_messages.js.erb', status: :internal_server_error }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 500 }, status: 500 }
-      format.json { render json: { error: I18n.t('errors.management.description') }, status: 500 }
+      format.json { render json: { type: 'server', error: I18n.t('errors.management.description') }, status: 500 }
       format.all { render body: nil, status: :internal_server_error }
     end
   end
@@ -235,18 +248,21 @@ class ApplicationController < ActionController::Base
     log_error(exception, :warn)
 
     errors = [I18n.t('errors.database.default')]
+    types = ['database']
     case exception
     when ActiveRecord::StatementInvalid
       errors << I18n.t('errors.database.invalid_statement')
+      types << 'invalid_statement'
     when PG::TRDeadlockDetected, ActiveRecord::StaleObjectError, PG::TRSerializationFailure
       errors << I18n.t('errors.database.deadlock')
+      types << 'deadlock'
     end
 
     respond_to do |format|
       flash[:error] = errors
       format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 422 }, status: 422 }
-      format.json { render json: { error: errors.join(' ') }, status: :unprocessable_entity }
+      format.json { render json: { type: types.join('/'), error: errors.join(' ') }, status: :unprocessable_entity }
     end
   end
 
@@ -256,7 +272,7 @@ class ApplicationController < ActionController::Base
     respond_to do |format|
       flash[:error] = [I18n.t('errors.planning.job_in_progress')]
       format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
-      format.json { render json: { error: I18n.t('errors.planning.job_in_progress') }, status: :unprocessable_entity }
+      format.json { render json: { type: 'job_in_progress', error: I18n.t('errors.planning.job_in_progress') }, status: :unprocessable_entity }
     end
   end
 
@@ -266,7 +282,7 @@ class ApplicationController < ActionController::Base
       flash[:error] = [exception.to_s]
       format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 422 }, status: 422 }
-      format.json { render json: { error: exception.to_s }, status: :unprocessable_entity }
+      format.json { render json: { type: 'stop_index', error: exception.to_s }, status: :unprocessable_entity }
     end
   end
 

@@ -312,6 +312,17 @@ const tracking = function(params) {
         success: function() {
           localStorage.removeItem(`position_${position.id}`);
           $('#mobile-sync-pending').addClass('d-none');
+        },
+        error: function(xhr) {
+          if (xhr.status === 409) {
+            localStorage.removeItem(`position_${position.id}`);
+            $('#mobile-sync-pending').addClass('d-none');
+          } else if ([404, 408, 502, 503, 504].includes(xhr.status)) {
+            return;
+          } else {
+            localStorage.removeItem(`position_${position.id}`);
+            $('#mobile-sync-failed').removeClass('d-none');
+          }
         }
       });
     });
@@ -341,6 +352,17 @@ const tracking = function(params) {
         success: function() {
           localStorage.removeItem(`stop_update_${update.id}`);
         $('#mobile-sync-pending').addClass('d-none');
+        },
+        error: function(xhr) {
+          if (xhr.status === 409) {
+            localStorage.removeItem(`stop_update_${update.id}`);
+            $('#mobile-sync-pending').addClass('d-none');
+          } else if ([404, 408, 502, 503, 504].includes(xhr.status)) {
+            return;
+          } else {
+            localStorage.removeItem(`stop_update_${update.id}`);
+            $('#mobile-sync-failed').removeClass('d-none');
+          }
         }
       });
     });
