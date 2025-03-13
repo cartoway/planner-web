@@ -927,7 +927,6 @@ input.form-control.number-of-days {
   }
 }
 
-
 .main {
   height: 100vh;
   max-height: 100vh;
@@ -978,3 +977,12 @@ input.form-control.number-of-days {
 .p0 {
   padding: 0;
 }
+
+.card-shadow {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-height-uniform {
+  height: 100%;
+}
+
