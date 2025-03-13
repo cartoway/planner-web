@@ -586,6 +586,7 @@ fr:
           neutral: Neutre
       zoning:
         name: Nom
+        updated_at: Mise à jour
       zone:
         vehicle: Véhicule
         name: Nom
@@ -880,6 +881,39 @@ fr:
         success: Utilisateurs supprimés avec succès
       send_email:
         success: Email envoyé à l'utilisateur avec succès
+      kpi:
+        format: '%d %b %Y'
+        actions: Actions
+        plannings:
+          last: Plans
+          none: Aucune plan
+          create: Créer un plan
+          show: Voir la liste complète (%{count})
+          add: + Nouveau plan
+        zonings:
+          last: Sectorisations
+          none: Aucune sectorisation
+          create: Créer une sectorisation
+          show: Voir la liste complète (%{count})
+          add: + Nouvelle sectorisation
+        destinations:
+          last: Adresses
+          show: Voir tout
+          import: Importer
+          export: Exporter
+          add: + Nouvelle adresse
+        stores:
+          last: Sites
+          none: Aucun site
+          create: Créer un site
+          show: Voir la liste complète (%{count})
+          add: + Nouveau site
+        vehicles:
+          last: Flotte
+          none: Aucune configuration de véhicules
+          create: Créer une configuration de véhicules
+          show: Voir la liste complète (%{count})
+          add: + Nouvelle configuration de véhicules
     vehicles:
       devices:
         create_company: Initialiser le compte Cartoway Field
