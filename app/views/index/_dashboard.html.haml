@@ -1,16 +1,16 @@
 - if current_user && !current_user.admin?
-  .row.d-flex
+  .row.d-flex.flex-wrap
     .col-xs-12.col-md-6.col-lg-4.my-4
       .card.card-shadow.card-height-uniform
         .card-body.pv-1
-          %h3.card-title.fw-bold.d-flex.justify-content-between
+          %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
             %span
               %i.fa.fa-map-location.fa-fw
-              = t 'plannings.menu.plannings'
-            = link_to new_planning_path, class: "btn btn-primary" do
+              %span= t 'plannings.menu.plannings'
+            = link_to new_planning_path, class: "ml-auto btn #{@customer_summary[:plannings][:count] >= @customer_summary[:plannings][:limit] ? 'btn-default disabled' : 'btn-primary'}" do
               %i.fa.fa-fw.fa-plus
               = t('plannings.index.new')
-          - if @customer_summary[:plannings][:total] == 0
+          - if @customer_summary[:plannings][:count] == 0
             .d-flex.justify-content-center.align-items-center.my-4
               %p.card-text.text-muted= t('plannings.index.none')
           - else
@@ -24,7 +24,7 @@
                     %th= t 'activerecord.attributes.planning.updated_at'
                     %th
                 %tbody
-                  - @customer_summary[:plannings][:last].each do |planning|
+                  - @customer_summary[:plannings][:latest].each do |planning|
                     %tr
                       %td
                         = planning.name
@@ -43,19 +43,19 @@
                           %i.fa.fa-edit.fa-fw
         .card-footer.text-center
           = link_to plannings_path do
-            = t('plannings.index.show', count: @customer_summary[:plannings][:total])
+            = t('plannings.index.show', count: @customer_summary[:plannings][:count])
 
     .col-xs-12.col-md-6.col-lg-4.my-4
       .card.card-shadow.card-height-uniform
         .card-body.pv-1
-          %h3.card-title.fw-bold.d-flex.justify-content-between
+          %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
             %span
               %i.fa.fa-draw-polygon.fa-fw
               = t 'zonings.menu.zonings'
-            = link_to new_zoning_path, class: "btn btn-primary" do
+            = link_to new_zoning_path, class: "ml-auto btn #{@customer_summary[:zonings][:count] >= @customer_summary[:zonings][:limit] ? 'btn-default disabled' : 'btn-primary'}" do
               %i.fa.fa-fw.fa-plus
               = t('zonings.index.new')
-          - if @customer_summary[:zonings][:total] == 0
+          - if @customer_summary[:zonings][:count] == 0
             .d-flex.justify-content-center.my-4
               %p.card-text.text-muted= t('zonings.index.none')
           - else
@@ -68,7 +68,7 @@
                     %th= t 'activerecord.attributes.zoning.updated_at'
                     %th
                 %tbody
-                  - @customer_summary[:zonings][:last].each do |zoning|
+                  - @customer_summary[:zonings][:latest].each do |zoning|
                     %tr
                       %td
                         = zoning.name
@@ -79,43 +79,43 @@
                           %i.fa.fa-edit.fa-fw
         .card-footer.text-center
           = link_to zonings_path do
-            = t('zonings.index.show', count: @customer_summary[:zonings][:total])
+            = t('zonings.index.show', count: @customer_summary[:zonings][:count])
 
     .col-xs-12.col-md-6.col-lg-4.my-4
       .card.card-shadow.card-height-uniform
         .card-body.pv-1
-          %h3.card-title.fw-bold.d-flex.justify-content-between
+          %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
             %span
               %i.fa.fa-map-marker.fa-fw
               = t 'destinations.menu.destinations'
-            = link_to new_destination_path, class: "btn btn-primary" do
+            = link_to new_destination_path, class: "ml-auto btn #{@customer_summary[:destinations][:count] >= @customer_summary[:destinations][:limit] ? 'btn-default disabled' : 'btn-primary'}" do
               %i.fa.fa-fw.fa-plus
               = t('destinations.index.new')
-          .row.d-flex.align-items-center.justify-content-center.my-4
-            .col-xs-4.d-flex.justify-content-center
+          .row.d-flex.align-items-center.justify-content-between.my-4
+            .col.d-flex.justify-content-center
               = link_to destination_import_path, class: "btn btn-primary" do
                 %i.fa.fa-upload.fa-fw
                 = t 'destinations.import.title'
-            .col-xs-4.d-flex.justify-content-center
+            .col.d-flex.justify-content-center
               = link_to destinations_path({format: :excel}), class: "btn btn-default" do
                 %i.fa.fa-download.fa-fw
                 = t 'all.verb.export.button'
         .card-footer.text-center
           = link_to destinations_path do
-            = t('destinations.index.show', count: @customer_summary[:destinations][:total])
+            = t('destinations.index.show', count: @customer_summary[:destinations][:count])
 
   .row.justify-content-center
     .col-xs-12.col-md-6.col-lg-4.my-4
       .card.card-shadow.card-height-uniform
         .card-body.pv-1
-          %h3.card-title.fw-bold.d-flex.justify-content-between
+          %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
             %span
               %i.fa.fa-store.fa-fw
               = t 'stores.menu.stores'
-            = link_to new_store_path, class: "btn btn-primary" do
+            = link_to new_store_path, class: "ml-auto btn btn-primary" do
               .fa.fa-fw.fa-plus
               = t('stores.index.new')
-          - if @customer_summary[:stores][:total] == 0
+          - if @customer_summary[:stores][:count] == 0
             .d-flex.justify-content-center.my-4
               %p.card-text.text-muted= t('stores.index.none')
           - else
@@ -127,7 +127,7 @@
                     %th= t 'activerecord.attributes.store.updated_at'
                     %th
                 %tbody
-                  - @customer_summary[:stores][:last].each do |store|
+                  - @customer_summary[:stores][:latest].each do |store|
                     %tr
                       %td
                         = store.name
@@ -138,22 +138,21 @@
                           %i.fa.fa-edit.fa-fw
         .card-footer.text-center
           = link_to stores_path do
-            = t('stores.index.show', count: @customer_summary[:stores][:total])
+            = t('stores.index.show', count: @customer_summary[:stores][:count])
 
-    - if @customer_summary[:vehicles][:nb_set] < 2 and @customer_summary[:vehicles][:total] <= 5
+
+
+    - if @customer_summary[:vehicle_usage_sets][:count] < 2 && @customer_summary[:vehicles][:count] <= 5
       .col-xs-12.col-md-6.col-lg-4.my-4
         .card.card-shadow.card-height-uniform
           .card-body.pv-1
-            %h3.card-title.fw-bold.d-flex.justify-content-between
+            %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
               %span
                 %i.fa.fa-truck-field.fa-fw
-                = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
-              = link_to new_vehicle_usage_set_path, class: "btn btn-primary" do
-                %i.fa.fa-fw.fa-plus
-                = t('vehicle_usage_sets.index.new')
-            - if @customer_summary[:vehicles][:total] == 0
+                = t 'vehicles.menu.vehicles'
+            - if @customer_summary[:vehicles][:count] == 0
               .d-flex.justify-content-center.my-4
-                %p.card-text.text-muted= t('vehicle_usage_sets.index.none')
+                %p.card-text.text-muted= t('vehicles.index.none')
             - else
               .table-responsive
                 %table.table.table-hover.mb-1
@@ -163,7 +162,7 @@
                       %th= t 'activerecord.attributes.vehicles.updated_at'
                       %th
                   %tbody
-                    - @customer_summary[:vehicles][:last].each do |vehicle|
+                    - @customer_summary[:vehicles][:latest].each do |vehicle|
                       %tr
                         %td
                           = vehicle.name
@@ -172,6 +171,38 @@
                         %td.text-right
                           = link_to edit_vehicle_usage_path(vehicle), :class => "btn btn-primary btn-sm" do
                             %i.fa.fa-edit.fa-fw
+    - elsif @customer_summary[:vehicle_usage_sets][:limit] > 1
+      .col-xs-12.col-md-6.col-lg-4.my-4
+        .card.card-shadow.card-height-uniform
+          .card-body.pv-1
+            %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
+              %span
+                %i.fa.fa-truck-field.fa-fw
+                = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
+              = link_to new_vehicle_usage_set_path, class: "ml-auto btn #{@customer_summary[:vehicle_usage_sets][:count] >= @customer_summary[:vehicle_usage_sets][:limit] ? 'btn-default disabled' : 'btn-primary'}" do
+                %i.fa.fa-fw.fa-plus
+                = t('vehicle_usage_sets.index.new')
+            - if @customer_summary[:vehicles][:count] == 0
+              .d-flex.justify-content-center.my-4
+                %p.card-text.text-muted= t('vehicle_usage_sets.index.none')
+            - else
+              .table-responsive
+                %table.table.table-hover.mb-1
+                  %thead
+                    %tr
+                      %th= t 'activerecord.attributes.vehicle_usage_set.name'
+                      %th= t 'activerecord.attributes.vehicle_usage_set.updated_at'
+                      %th
+                  %tbody
+                    - @customer_summary[:vehicle_usage_sets][:latest].each do |vehicle_usage_set|
+                      %tr
+                        %td
+                          = vehicle_usage_set.name
+                        %td
+                          = l(vehicle_usage_set.updated_at, format: :datepicker)
+                        %td.text-right
+                          = link_to edit_vehicle_usage_set_path(vehicle_usage_set), :class => "btn btn-primary btn-sm" do
+                            %i.fa.fa-edit.fa-fw
           .card-footer.text-center
             = link_to vehicle_usage_sets_path do
-              = t('vehicle_usage_sets.index.show', count: @customer_summary[:vehicles][:total])
+              = t('vehicle_usage_sets.index.show', count: @customer_summary[:vehicle_usage_sets][:count])
