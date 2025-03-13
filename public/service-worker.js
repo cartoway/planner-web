@@ -233,7 +233,6 @@ function syncStops() {
       method: 'PATCH',
       body: formData,
       headers: {
-        'Content-Type': 'application/json',
         'X-CSRF-Token': csrfToken,
         'X-Requested-With': 'XMLHttpRequest'
       }
