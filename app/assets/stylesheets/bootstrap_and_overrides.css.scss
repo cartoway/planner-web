@@ -1301,6 +1301,14 @@ small {
   position: relative;
 }
 
+.flex-column {
+  flex-direction: column !important;
+}
+
+.m-4 {
+  margin: $spacer * 1.5 !important;
+}
+
 @keyframes spinner-border {
   to { transform: rotate(360deg) #{"/* rtl:ignore */"}; }
 }
