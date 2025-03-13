@@ -184,13 +184,14 @@ function syncPositions() {
             case 504:
               notifyClients('STORE_POSITIONS', Array.from([position]));
               break;
+            case 409:
+              break;
             case 422:
               if (errorType.includes('deadlock')) {
                 position.retryAfter = Date.now() + 500;
                 notifyClients('STORE_POSITIONS', Array.from([{
                   position
                 }]));
-                throw new Error('retry_later');
               }
             default:
               throw new Error(`Failed to sync position: ${response.status}`);
@@ -253,13 +254,14 @@ function syncStops() {
             case 504:
               notifyClients('STORE_STOPS', Array.from([stop]));
               break;
+            case 409:
+              break;
             case 422:
               if (errorType.includes('deadlock')) {
                 stop.retryAfter = Date.now() + 500;
                 notifyClients('STORE_STOPS', Array.from([{
                   stop
                 }]));
-                throw new Error('retry_later');
               }
             default:
               throw new Error(`Failed to sync stop: ${response.status}`);
