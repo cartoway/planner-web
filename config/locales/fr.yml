@@ -534,6 +534,8 @@ fr:
         cost_distance: Coût au kilomètre
         cost_fixed: Coût fixe
         cost_time: Coût horaire
+        created_at: Création
+        updated_at: Mise à jour
       visit:
         ref: Référence
         ref_small: Réf.
@@ -2602,6 +2604,10 @@ fr:
         Compétences associées au véhicule. (Attention : si un seul véhicule
         possède des compétences alors tous les autres véhicules ne pourront
         utiliser cette compétence si non déclaré)
+    menu:
+      vehicles: Véhicules
+    index:
+      none: Aucun véhicule
   vehicle_usages:
     menu:
       vehicle_usages: Configurations de véhicules

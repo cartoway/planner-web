@@ -21,25 +21,32 @@ module IndexHelper
 
     {
       plannings: {
-        total: @customer.plannings.count,
-        last: @customer.plannings.reorder(updated_at: :desc).first(5)
+        count: @customer.plannings.count,
+        latest: @customer.plannings.reorder(updated_at: :desc).first(5),
+        limit: @customer.default_max_plannings
       },
       zonings: {
-        total: @customer.zonings.count,
-        last: @customer.zonings.reorder(updated_at: :desc).first(5)
+        count: @customer.zonings.count,
+        latest: @customer.zonings.reorder(updated_at: :desc).first(5),
+        limit: @customer.default_max_zonings
       },
       destinations: {
-        total: @customer.destinations.count,
-        last: @customer.destinations.reorder(updated_at: :desc).first(5)
+        count: @customer.destinations.count,
+        latest: @customer.destinations.reorder(updated_at: :desc).first(5),
+        limit: @customer.default_max_destinations
       },
       stores: {
-        total: @customer.stores.count,
-        last: @customer.stores.reorder(updated_at: :desc).first(5)
+        count: @customer.stores.count,
+        latest: @customer.stores.reorder(updated_at: :desc).first(5)
       },
       vehicles: {
-        total: @customer.vehicles.count,
-        nb_set: @customer.vehicle_usage_sets.count,
-        last: @customer.vehicles.reorder(updated_at: :desc).first(5)
+        count: @customer.vehicles.count,
+        latest: @customer.vehicles.reorder(updated_at: :desc).first(5)
+      },
+      vehicle_usage_sets: {
+        count: @customer.vehicle_usage_sets.count,
+        latest: @customer.vehicle_usage_sets.reorder(updated_at: :desc).first(5),
+        limit: @customer.default_max_vehicle_usage_sets
       },
       statistics: {
         exists: @customer.reseller.customer_dashboard_url.present?,
