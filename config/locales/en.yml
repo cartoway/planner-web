@@ -1113,6 +1113,11 @@ en:
 
           Example: http://www.example.com?p_id={PLANNING_ID}
         enabled: (Activated on reseller account)
+  analytics:
+    menu:
+      dashboard: Statistics
+    index:
+      link: Access Statistics
   deliverable_units:
     edit:
       title: Editing deliverable unit

@@ -104,7 +104,6 @@
           = link_to destinations_path do
             = t('destinations.index.show', count: @customer_summary[:destinations][:count])
 
-  .row.justify-content-center
     .col-xs-12.col-md-6.col-lg-4.my-4
       .card.card-shadow.card-height-uniform
         .card-body.pv-1
@@ -206,3 +205,16 @@
           .card-footer.text-center
             = link_to vehicle_usage_sets_path do
               = t('vehicle_usage_sets.index.show', count: @customer_summary[:vehicle_usage_sets][:count])
+    - if @customer.reseller.customer_dashboard_url
+      .col-xs-12.col-md-6.col-lg-4.my-4
+        .card.card-shadow.card-height-uniform
+          .card-body.pv-1
+            %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
+              %span
+                %i.fa.fa-chart-line.fa-fw
+                = t 'analytics.menu.dashboard'
+            .row.d-flex.align-items-center.justify-content-between.my-4
+              .col.d-flex.justify-content-center
+                = link_to @customer.reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s), target: '_blank', :class => "btn btn-default" do
+                  %i.fa.fa-chart-line.fa-fw
+                  = t 'analytics.index.link'
