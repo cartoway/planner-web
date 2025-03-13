@@ -400,6 +400,8 @@ en:
         color: Color
         icon: Icon
         icon_size: Icon size
+        created_at: Created
+        updated_at: Updated
       stores:
         name: Name
         address: Address
@@ -451,6 +453,8 @@ en:
         phone_number: Driver's phone number
         capacities: Capacities
         tag_ids: Vehicle skills
+        created_at: Created
+        updated_at: Updated
       vehicles:
         name: Name
         emission: Emission
@@ -465,6 +469,8 @@ en:
         contact_email: E-Mail
         capacities: Capacities
         tag_ids: Vehicle skills
+        created_at: Created
+        updated_at: Updated
       vehicle_usage:
         vehicle_id: Vehicle
         time_window_start: Open
@@ -863,39 +869,6 @@ en:
         success: Users deleted successfully
       send_email:
         success: E-Mail sent to user successfully
-      kpi:
-        format: '%b %d, %Y'
-        actions: Actions
-        plannings:
-          last: Plans
-          none: No plan
-          create: Create plan
-          show: See the full list (%{count})
-          add: + New plan
-        zonings:
-          last: Sectorisations
-          none: No sectorisation
-          create: Create sectorisation
-          show: See the full list (%{count})
-          add: + New sectorisation
-        destinations:
-          last: Addresses
-          import: Import
-          export: Export
-          show: See all
-          add: + New address
-        stores:
-          last: Sites
-          none: No site
-          create: Create site
-          show: See the full list (%{count})
-          add: + New site
-        vehicles:
-          last: Fleet
-          none: No vehicle settings
-          create: Create vehicle settings
-          show: See the full list (%{count})
-          add: + New vehicle settings
     vehicles:
       devices:
         create_company: Initialize Cartoway Field Account
@@ -1273,6 +1246,7 @@ en:
     index:
       title: Listing destinations
       new: New Destination
+      show: See the full list (%{count})
       default_name: New Destination
       columns: Columns
       no_position: missing
@@ -1766,6 +1740,8 @@ en:
     index:
       title: Listing plans
       new: New Plan
+      none: No plan
+      show: See the full list (%{count})
       export_selection: Export selection
       export:
         icalendar: Calendar iCal
@@ -2281,6 +2257,10 @@ en:
           in_progress: 'Please wait, import in progress'
       title: Listing facilities
       new: New facility
+      none: No facility
+      show: See the full list (%{count})
+    menu:
+      stores: Facilities
     new:
       title: New facility
     import_file:
@@ -2621,6 +2601,8 @@ en:
     index:
       title: Listing vehicles configurations
       new: New vehicles configuration
+      none: No vehicle configuration
+      show: See the full list (%{count})
       stores: Start - End
       time: Open - Close
       service_time: Service Time
@@ -2808,6 +2790,8 @@ en:
     index:
       title: Listing sectorisations
       new: New Sectorisation
+      none: No sectorisation
+      show: See the full list (%{count})
       over_max_limit: >-
         You have reached the sectorisations number limit for your account
         (Account Limit: %{limit})

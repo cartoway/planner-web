@@ -1,0 +1,177 @@
+- if current_user && !current_user.admin?
+  .row.d-flex
+    .col-xs-12.col-md-6.col-lg-4.my-4
+      .card.card-shadow.card-height-uniform
+        .card-body.pv-1
+          %h3.card-title.fw-bold.d-flex.justify-content-between
+            %span
+              %i.fa.fa-map-location.fa-fw
+              = t 'plannings.menu.plannings'
+            = link_to new_planning_path, class: "btn btn-primary" do
+              %i.fa.fa-fw.fa-plus
+              = t('plannings.index.new')
+          - if @customer_summary[:plannings][:total] == 0
+            .d-flex.justify-content-center.align-items-center.my-4
+              %p.card-text.text-muted= t('plannings.index.none')
+          - else
+            .table-responsive
+              %table.table.table-hover.mb-1
+                %thead
+                  %tr
+                    %th= t 'activerecord.attributes.planning.name'
+                    %th= t 'activerecord.attributes.planning.date'
+                    %th= t 'activerecord.attributes.planning.tags'
+                    %th= t 'activerecord.attributes.planning.updated_at'
+                    %th
+                %tbody
+                  - @customer_summary[:plannings][:last].each do |planning|
+                    %tr
+                      %td
+                        = planning.name
+                      %td
+                        = planning.date && l(planning.date, format: :date)
+                      %td
+                        - planning.tags.each do |tag|
+                          %span
+                            = tag_icon tag
+                            %span
+                            = tag.label
+                      %td
+                        = l(planning.updated_at, format: :datepicker)
+                      %td.text-right
+                        = link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do
+                          %i.fa.fa-edit.fa-fw
+        .card-footer.text-center
+          = link_to plannings_path do
+            = t('plannings.index.show', count: @customer_summary[:plannings][:total])
+
+    .col-xs-12.col-md-6.col-lg-4.my-4
+      .card.card-shadow.card-height-uniform
+        .card-body.pv-1
+          %h3.card-title.fw-bold.d-flex.justify-content-between
+            %span
+              %i.fa.fa-draw-polygon.fa-fw
+              = t 'zonings.menu.zonings'
+            = link_to new_zoning_path, class: "btn btn-primary" do
+              %i.fa.fa-fw.fa-plus
+              = t('zonings.index.new')
+          - if @customer_summary[:zonings][:total] == 0
+            .d-flex.justify-content-center.my-4
+              %p.card-text.text-muted= t('zonings.index.none')
+          - else
+
+            .table-responsive
+              %table.table.table-hover.mb-1
+                %thead
+                  %tr
+                    %th= t 'activerecord.attributes.zoning.name'
+                    %th= t 'activerecord.attributes.zoning.updated_at'
+                    %th
+                %tbody
+                  - @customer_summary[:zonings][:last].each do |zoning|
+                    %tr
+                      %td
+                        = zoning.name
+                      %td
+                        = l(zoning.updated_at, format: :datepicker)
+                      %td.text-right
+                        = link_to edit_zoning_path(zoning), :class => "btn btn-primary btn-sm" do
+                          %i.fa.fa-edit.fa-fw
+        .card-footer.text-center
+          = link_to zonings_path do
+            = t('zonings.index.show', count: @customer_summary[:zonings][:total])
+
+    .col-xs-12.col-md-6.col-lg-4.my-4
+      .card.card-shadow.card-height-uniform
+        .card-body.pv-1
+          %h3.card-title.fw-bold.d-flex.justify-content-between
+            %span
+              %i.fa.fa-map-marker.fa-fw
+              = t 'destinations.menu.destinations'
+            = link_to new_destination_path, class: "btn btn-primary" do
+              %i.fa.fa-fw.fa-plus
+              = t('destinations.index.new')
+          .row.d-flex.align-items-center.justify-content-center.my-4
+            .col-xs-4.d-flex.justify-content-center
+              = link_to destination_import_path, class: "btn btn-primary" do
+                %i.fa.fa-upload.fa-fw
+                = t 'destinations.import.title'
+            .col-xs-4.d-flex.justify-content-center
+              = link_to destinations_path({format: :excel}), class: "btn btn-default" do
+                %i.fa.fa-download.fa-fw
+                = t 'all.verb.export.button'
+        .card-footer.text-center
+          = link_to destinations_path do
+            = t('destinations.index.show', count: @customer_summary[:destinations][:total])
+
+  .row.justify-content-center
+    .col-xs-12.col-md-6.col-lg-4.my-4
+      .card.card-shadow.card-height-uniform
+        .card-body.pv-1
+          %h3.card-title.fw-bold.d-flex.justify-content-between
+            %span
+              %i.fa.fa-store.fa-fw
+              = t 'stores.menu.stores'
+            = link_to new_store_path, class: "btn btn-primary" do
+              .fa.fa-fw.fa-plus
+              = t('stores.index.new')
+          - if @customer_summary[:stores][:total] == 0
+            .d-flex.justify-content-center.my-4
+              %p.card-text.text-muted= t('stores.index.none')
+          - else
+            .table-responsive
+              %table.table.table-hover.mb-1
+                %thead
+                  %tr
+                    %th= t 'activerecord.attributes.store.name'
+                    %th= t 'activerecord.attributes.store.updated_at'
+                    %th
+                %tbody
+                  - @customer_summary[:stores][:last].each do |store|
+                    %tr
+                      %td
+                        = store.name
+                      %td
+                        = l(store.updated_at, format: :datepicker)
+                      %td.text-right
+                        = link_to edit_store_path(store), :class => "btn btn-primary btn-sm" do
+                          %i.fa.fa-edit.fa-fw
+        .card-footer.text-center
+          = link_to stores_path do
+            = t('stores.index.show', count: @customer_summary[:stores][:total])
+
+    - if @customer_summary[:vehicles][:nb_set] < 2 and @customer_summary[:vehicles][:total] <= 5
+      .col-xs-12.col-md-6.col-lg-4.my-4
+        .card.card-shadow.card-height-uniform
+          .card-body.pv-1
+            %h3.card-title.fw-bold.d-flex.justify-content-between
+              %span
+                %i.fa.fa-truck-field.fa-fw
+                = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
+              = link_to new_vehicle_usage_set_path, class: "btn btn-primary" do
+                %i.fa.fa-fw.fa-plus
+                = t('vehicle_usage_sets.index.new')
+            - if @customer_summary[:vehicles][:total] == 0
+              .d-flex.justify-content-center.my-4
+                %p.card-text.text-muted= t('vehicle_usage_sets.index.none')
+            - else
+              .table-responsive
+                %table.table.table-hover.mb-1
+                  %thead
+                    %tr
+                      %th= t 'activerecord.attributes.vehicles.name'
+                      %th= t 'activerecord.attributes.vehicles.updated_at'
+                      %th
+                  %tbody
+                    - @customer_summary[:vehicles][:last].each do |vehicle|
+                      %tr
+                        %td
+                          = vehicle.name
+                        %td
+                          = l(vehicle.updated_at, format: :datepicker)
+                        %td.text-right
+                          = link_to edit_vehicle_usage_path(vehicle), :class => "btn btn-primary btn-sm" do
+                            %i.fa.fa-edit.fa-fw
+          .card-footer.text-center
+            = link_to vehicle_usage_sets_path do
+              = t('vehicle_usage_sets.index.show', count: @customer_summary[:vehicles][:total])

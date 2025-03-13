@@ -810,6 +810,11 @@ div.grid-container {
   margin-top: 3px !important;
 }
 
+.my-4 {
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
 // Backports
 .p-0 {
   padding: 0 !important;
@@ -996,8 +1001,6 @@ div.grid-container {
 .card-img-bottom {
   @include border-bottom-radius(var(--#{$prefix}card-inner-border-radius));
 }
-
-
 //
 // Card groups
 //
