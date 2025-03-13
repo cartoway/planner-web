@@ -534,6 +534,8 @@ en:
         cost_distance: Distance cost
         cost_fixed: Fixed cost
         cost_time: Hourly cost
+        created_at: Created
+        updated_at: Updated
       visit:
         ref: Reference
         ref_small: Ref.
@@ -2389,6 +2391,10 @@ en:
       action: Set My Password
       success: User updated successfully
   vehicles:
+    menu:
+      vehicles: Vehicles
+    index:
+      none: No vehicle
     default_name: 'Vehicle %{n}'
     emissions:
       nothing: 'Nothing - %{n}'
