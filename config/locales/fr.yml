@@ -1147,6 +1147,11 @@ fr:
 
           Exemple : http://www.example.com?p_id={PLANNING_ID}
         enabled: (Actif sur le compte revendeur)
+  analytics:
+    menu:
+      dashboard: Statistiques
+    index:
+      link: Accéder aux statistiques
   deliverable_units:
     edit:
       title: Modifier capacité
