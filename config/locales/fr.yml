@@ -400,6 +400,8 @@ fr:
         color: Couleur
         icon: Icône
         icon_size: Taille d'icône
+        created_at: Création
+        updated_at: Mise à jour
       stores:
         name: Nom
         address: Adresse
@@ -451,6 +453,8 @@ fr:
         phone_number: Numéro de téléphone
         capacities: Capacités
         tag_ids: Compétences du véhicule
+        created_at: Création
+        updated_at: Mise à jour
       vehicles:
         name: Nom
         emission: Émission
@@ -465,6 +469,8 @@ fr:
         contact_email: Email
         capacities: Capacités
         tag_ids: Compétences du véhicule
+        created_at: Création
+        updated_at: Mise à jour
       vehicle_usage:
         vehicle_id: Véhicule
         time_window_start: Horaire début
@@ -881,39 +887,6 @@ fr:
         success: Utilisateurs supprimés avec succès
       send_email:
         success: Email envoyé à l'utilisateur avec succès
-      kpi:
-        format: '%d %b %Y'
-        actions: Actions
-        plannings:
-          last: Plans
-          none: Aucune plan
-          create: Créer un plan
-          show: Voir la liste complète (%{count})
-          add: + Nouveau plan
-        zonings:
-          last: Sectorisations
-          none: Aucune sectorisation
-          create: Créer une sectorisation
-          show: Voir la liste complète (%{count})
-          add: + Nouvelle sectorisation
-        destinations:
-          last: Adresses
-          show: Voir tout
-          import: Importer
-          export: Exporter
-          add: + Nouvelle adresse
-        stores:
-          last: Sites
-          none: Aucun site
-          create: Créer un site
-          show: Voir la liste complète (%{count})
-          add: + Nouveau site
-        vehicles:
-          last: Flotte
-          none: Aucune configuration de véhicules
-          create: Créer une configuration de véhicules
-          show: Voir la liste complète (%{count})
-          add: + Nouvelle configuration de véhicules
     vehicles:
       devices:
         create_company: Initialiser le compte Cartoway Field
@@ -1317,6 +1290,7 @@ fr:
     index:
       title: Liste adresses
       new: Nouvelle adresse
+      show: Voir la liste complète (%{count})
       default_name: Nouvelle adresse
       columns: Colonnes
       no_position: manquant
@@ -1845,6 +1819,8 @@ fr:
     index:
       title: Liste plans de tournées
       new: Nouveau plan
+      none: Aucun plan
+      show: Voir la liste complète (%{count})
       export_selection: Exporter sélection
       export:
         icalendar: Agenda iCal
@@ -2383,6 +2359,10 @@ fr:
           in_progress: 'Import des sites en cours, merci de patienter'
       title: Liste sites
       new: Nouveau site
+      none: Aucun site
+      show: Voir la liste complète (%{count})
+    menu:
+      stores: Sites
     new:
       title: Nouveau site
     import_file:
@@ -2729,6 +2709,8 @@ fr:
     index:
       title: Configurations de la flotte
       new: Nouvelle configuration de la flotte
+      none: Aucune configuration
+      show: Voir la liste complète (%{count})
       stores: Départ - Arrivée
       time: Début - Fin
       service_time: Durées de service
@@ -2931,6 +2913,8 @@ fr:
     index:
       title: Liste sectorisations
       new: Nouvelle sectorisation
+      none: Aucune sectorisation
+      show: Voir la liste complète (%{count})
       over_max_limit: >-
         Vous avez atteint la limite de sectorisations autorisés pour votre
         compte (Limite : %{limit}), veuillez supprimer vos précédentes

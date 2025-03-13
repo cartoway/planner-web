@@ -21,7 +21,7 @@ class IndexController < ApplicationController
 
   def index
     @customer = current_user && current_user.customer
-    @kpis = kpis
+    @customer_summary = customer_summary
   end
 
   def unsupported_browser
