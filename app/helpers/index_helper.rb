@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 module IndexHelper
-  def kpis
+  def customer_summary
     return {} unless @customer
 
     {

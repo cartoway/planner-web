@@ -2,8 +2,9 @@
 - if user_signed_in?
   - if @customer || current_user.admin?
     - if current_user.admin? || (!@customer.end_subscription || @customer.end_subscription > Time.now)
-      = render 'subscription_on'
+      = render partial:'subscription_on'
+      = render partial: 'dashboard'
     - else
-      = render 'subscription_end'
+      = render partial: 'subscription_end'
 - else
-  = render 'default_home_page'
+  = render partial: 'default_home_page'
