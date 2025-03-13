@@ -16,10 +16,12 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class IndexController < ApplicationController
+  include IndexHelper
   before_action :customer_payment_period_month, if: :current_user
 
   def index
     @customer = current_user && current_user.customer
+    @kpis = kpis
   end
 
   def unsupported_browser
@@ -38,6 +40,4 @@ class IndexController < ApplicationController
       end
     end
   end
-
-
 end
