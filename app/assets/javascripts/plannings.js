@@ -1407,18 +1407,6 @@ export const plannings_edit = function(params) {
             error: ajaxError
           });
         })
-        .off("click", ".route-data-toggle")
-        .on("click", ".route-data-toggle", function() {
-          var row = $(this).parents('.panel-body').find(".route-data");
-          row.toggle();
-          var hidden = !row.is(":visible");
-          var i = $("i", this);
-          if (hidden) {
-            i.removeClass("fa-book-open").addClass("fa-book");
-          } else {
-            i.removeClass("fa-book").addClass("fa-book-open");
-          }
-        })
         .off("click", ".marker")
         .on("click", ".marker", function() {
           var stopIndex = $(this).closest("[data-stop-index]").attr("data-stop-index");
