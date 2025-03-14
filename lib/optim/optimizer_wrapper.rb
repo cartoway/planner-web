@@ -242,8 +242,8 @@ class OptimizerWrapper
   def build_services(planning, routes, stops, **options)
     point_hash = {}
     route_ids = routes.map(&:id)
-    services_late_multiplier = (options[:stop_soft_upper_bound] && options[:stop_soft_upper_bound] > 0) ? options[:stop_soft_upper_bound] : nil
-    maximum_lateness = options[:stop_maximum_lateness] || nil
+    services_late_multiplier = (options[:enable_optimization_soft_upper_bound] && options[:stop_soft_upper_bound] > 0) ? options[:stop_soft_upper_bound] : nil
+    maximum_lateness = options[:stop_max_upper_bound] || nil
     vrp_services = stops.map{ |stop|
       # A stop without position should not be part of an optimization
       next if options[:active_only] && stop.route.vehicle_usage? && !stop.active && !options[:moving_stop_ids]&.include?(stop.id) || !stop.position?
@@ -293,7 +293,7 @@ class OptimizerWrapper
   end
 
   def build_vehicles(planning, routes, **options)
-    vehicles_cost_late_multiplier = (options[:vehicle_soft_upper_bound] && options[:vehicle_soft_upper_bound] > 0) ? options[:vehicle_soft_upper_bound] : nil
+    vehicles_cost_late_multiplier = (options[:enable_optimization_soft_upper_bound] && options[:vehicle_max_upper_bound] > 0) ? options[:vehicle_max_upper_bound] : nil
 
     vrp_vehicles = []
     point_hash = {}
@@ -343,7 +343,7 @@ class OptimizerWrapper
         timewindow: {
           start: route.vehicle_usage.default_time_window_start,
           end: route.vehicle_usage.default_time_window_end,
-          maximum_lateness: options[:vehicle_maximum_lateness] || nil
+          maximum_lateness: options[:vehicle_max_upper_bound] || nil
         }.delete_if{ |_k, v| v.nil? },
         duration: route.vehicle_usage.default_work_time(true)&.to_f,
         distance: route.vehicle_usage.default_max_distance,
