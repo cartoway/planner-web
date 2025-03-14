@@ -1044,6 +1044,17 @@ export const plannings_edit = function(params) {
     vehicleCostLate();
   });
 
+
+  $('#optimization-vehicle-max-upper-bound, #optimization-stop-max-upper-bound').timeEntry({
+    show24Hours: true,
+    defaultTime: '00:00',
+    spinnerImage: ''
+  });
+
+  $('input[name="enable_optimization_soft_upper_bound"]').change(function() {
+    $("#optimization-vehicle-max-upper-bound, #optimization-stop-max-upper-bound").toggleClass('d-none');
+  });
+
   var panelLoading = function(route_id) {
     var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
     route_panel.sortable('disable')
@@ -2429,7 +2440,10 @@ export const plannings_edit = function(params) {
         active_only: $('input[name="active_only"]:checked').val(),
         global: !routeId && (($('input[name="sticky_vehicle"]:checked').val() == 'true') ? 'false' : 'true'),
         ignore_overload_multipliers: ignore_overload_multipliers,
-        nb_route: optimizationTimer.getNbRoute()
+        nb_route: optimizationTimer.getNbRoute(),
+        enable_optimization_soft_upper_bound: $('input[name="enable_optimization_soft_upper_bound"]:checked').val(),
+        vehicle_max_upper_bound: $('#optimization-vehicle-max-upper-bound').val(),
+        stop_max_upper_bound: $('#optimization-stop-max-upper-bound').val()
       },
       beforeSend: beforeSendWaiting,
       success: function() {

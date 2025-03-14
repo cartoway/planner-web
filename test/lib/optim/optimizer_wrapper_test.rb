@@ -18,7 +18,7 @@ class OptimizerWrapperTest < ActionController::TestCase
   test 'should return a maximum lateness option' do
     begin
       planning = plannings(:planning_one)
-      vrp = @optim.build_vrp(planning, planning.routes, **{ vehicle_maximum_lateness: 10, stop_maximum_lateness: 15})
+      vrp = @optim.build_vrp(planning, planning.routes, **{ vehicle_max_upper_bound: 10, stop_max_upper_bound: 15})
 
       assert_equal 10, vrp[:vehicles][0][:timewindow][:maximum_lateness]
       assert_equal 15, vrp[:services][0][:activity][:timewindows][0][:maximum_lateness]
