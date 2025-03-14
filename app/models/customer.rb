@@ -61,7 +61,9 @@ class Customer < ApplicationRecord
 
   include TimeAttr
   attribute :visit_duration, ScheduleType.new
-  time_attr :visit_duration
+  attribute :stop_max_upper_bound, ScheduleType.new
+  attribute :vehicle_max_upper_bound, ScheduleType.new
+  time_attr :visit_duration, :stop_max_upper_bound, :vehicle_max_upper_bound
 
   attr_reader :layer_id # used for importation
 
@@ -258,18 +260,6 @@ class Customer < ApplicationRecord
     store = stores.find{ |s| !s.lat.nil? && !s.lng.nil? }
     # store ? [store.lat, store.lng] : [I18n.t('stores.default.lat'), I18n.t('stores.default.lng')]
     {lat: store ? store.lat : I18n.t('stores.default.lat'), lng: store ? store.lng : I18n.t('stores.default.lng')}
-  end
-
-  def default_callback_url
-    external_callback_url || reseller.external_callback_url
-  end
-
-  def default_callback_name
-    external_callback_name || reseller.external_callback_url_name
-  end
-
-  def default_callback_enabled?
-    enable_external_callback || reseller.enable_external_callback
   end
 
   def delete_all_destinations
