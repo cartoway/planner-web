@@ -11,6 +11,8 @@ const tracking = function(params) {
   let positionInterval = null;
   let messageListener;
   let stop_id;
+  let pendingDataInterval = null;
+
   $(".route-select").on("click", ".send_to_route", function() {
     stop_id = $(this).data('stop-id');
     var url = this.href;
@@ -116,6 +118,10 @@ const tracking = function(params) {
             data.stops.push(stop);
             localStorage.removeItem(key);
           }
+        }
+
+        if (data.stops.length === 0) {
+          $('#mobile-sync-pending').addClass('d-none');
         }
 
         event.source.postMessage({
@@ -293,6 +299,10 @@ const tracking = function(params) {
   ['DOMContentLoaded', 'online', 'visibilitychange', 'networkchange'].forEach(event => {
     window.addEventListener(event, checkPendingData);
   });
+
+  if (!('serviceWorker' in navigator && 'SyncManager' in window)) {
+    pendingDataInterval = setInterval(checkPendingData, 30 * 1000);
+  }
 
   function syncPositionsWithoutServiceWorker() {
     const positions = [];
