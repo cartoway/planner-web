@@ -110,8 +110,9 @@ class OptimizerJob < OptimizerJobStruct
       cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
       force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
       optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
-      vehicule_maximum_lateness: planning.customer.vehicle_max_upper_bound,
-      stop_maximum_lateness: planning.customer.stop_max_upper_bound
+      enable_optimization_soft_upper_bound: planning.customer.enable_optimization_soft_upper_bound,
+      vehicle_max_upper_bound: planning.customer.vehicle_max_upper_bound,
+      stop_max_upper_bound: planning.customer.stop_max_upper_bound
     }
   end
 end
