@@ -318,8 +318,8 @@
 
   <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_optimization_soft_upper_bound, label: t('activerecord.attributes.customer.enable_optimization_soft_upper_bound'), help: t('.enable_optimization_soft_upper_bound_help') } %>
   <div class="<%= @customer.enable_optimization_soft_upper_bound ? "" : "d-none" %>" id="optimization_soft_upper_bound">
-    <%= f.number_field :stop_max_upper_bound, { help: t(".stop_max_upper_bound"), min: 0, step: 1 } %>
-    <%= f.number_field :vehicle_max_upper_bound, { help: t(".vehicle_max_upper_bound"), min: 0, step: 1 } %>
+    <%= f.text_field :stop_max_upper_bound, {help: t('.stop_max_upper_bound_help'), placeholder: t('all.unit.hour_minute'), value: @customer.stop_max_upper_bound_time, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} %>
+    <%= f.text_field :vehicle_max_upper_bound, { help: t(".vehicle_max_upper_bound"), placeholder: t('all.unit.hour_minute'), value: @customer.vehicle_max_upper_bound_time, append: content_tag('i', '', class: 'fa fa-repeat fa-fw')} %>
   </div>
 
   <legend class="scheduler-border col-md-8">

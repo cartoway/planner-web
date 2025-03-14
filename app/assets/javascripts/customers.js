@@ -169,6 +169,12 @@ const customers_edit = function (params) {
     spinnerImage: ''
   });
 
+  $('#customer_stop_max_upper_bound, #customer_vehicle_max_upper_bound').timeEntry({
+    show24Hours: true,
+    defaultTime: '00:00',
+    spinnerImage: ''
+  });
+
   const getLocaleFromCurrentLocale = function() {
     for (var locale in $.fn.wysihtml5.locale) {
       if (locale.indexOf(I18n.currentLocale()) !== -1) {
@@ -255,7 +261,6 @@ const customers_edit = function (params) {
   $("#customer_enable_optimization_soft_upper_bound").click(function() {
     $("#optimization_soft_upper_bound").toggleClass('d-none');
   });
-  
 };
 
 var routersAllowedForProfile = function(params) {
