@@ -45,31 +45,34 @@
                 %label{"data-toggle" => "tooltip", :title => "#{t('plannings.edit.dialog.optimization.visits.active_only_false_help')}"}
                   = radio_button_tag :active_only, :false, false
                   = t 'all.value._no'
-            - if current_user.customer.optimization_stop_soft_upper_bound.to_f > 0 && (!@with_stops || !@planning.routes.all?{ |r| r.stops.loaded? } || @planning.routes.any?{ |r| !r.stops.flat_map{ |s| [s.visit.try(:time_window_start_1), s.visit.try(:time_window_end_1), s.visit.try(:time_window_start_2), s.visit.try(:time_window_end_2)] }.compact.empty? })
-              .row
+            - if current_user.customer.enable_optimization_soft_upper_bound && (!@with_stops || !@planning.routes.all?{ |r| r.stops.loaded? } || @planning.routes.any?{ |r| !r.stops.flat_map{ |s| [s.visit.try(:time_window_start_1), s.visit.try(:time_window_end_1), s.visit.try(:time_window_start_2), s.visit.try(:time_window_end_2)] }.compact.empty? })
+              #optimization-lateness.row
+
                 .col-xs-7
-                  = t 'plannings.edit.dialog.optimization.visits.cost_late_multiplier'
-                .col-xs-5
                   %label
-                    - if current_user.customer.optimization_stop_soft_upper_bound != 0
-                      = t 'all.value._yes'
-                    - else
-                      = t 'all.value._no'
-          - if current_user.customer.optimization_vehicle_soft_upper_bound.to_f > 0 || current_user.customer.optimization_force_start
+                    = t 'plannings.edit.dialog.optimization.enable_soft_upper_bound'
+                .col-xs-5
+                  %label{"data-toggle" => "tooltip", :title => "#{t('plannings.edit.dialog.optimization.enable_optimization_soft_upper_bound_true_help')}"}
+                    = radio_button_tag :enable_optimization_soft_upper_bound, :true, true
+                    = t 'all.value._yes'
+                  %label{"data-toggle" => "tooltip", :title => "#{t('plannings.edit.dialog.optimization.enable_optimization_soft_upper_bound_false_help')}"}
+                    = radio_button_tag :enable_optimization_soft_upper_bound, :false, false
+                    = t 'all.value._no'
+              #optimization-vehicle-max-upper-bound.row{ class: ('d-none' unless current_user.customer.enable_optimization_soft_upper_bound) }
+                .col-xs-7
+                  = t 'plannings.edit.dialog.optimization.vehicle_max_upper_bound'
+                .col-xs-5
+                  = text_field_tag :vehicle_max_upper_bound, current_user.customer.vehicle_max_upper_bound_time, class: 'form-control', placeholder: t('all.unit.hour_minute')
+              #optimization-stop-max-upper-bound.row{ class: ('d-none' unless current_user.customer.enable_optimization_soft_upper_bound) }
+                .col-xs-7
+                  = t 'plannings.edit.dialog.optimization.stop_max_upper_bound'
+                .col-xs-5
+                  = text_field_tag :stop_max_upper_bound, current_user.customer.stop_max_upper_bound_time, class: 'form-control', placeholder: t('all.unit.hour_minute')
+          - if current_user.customer.optimization_force_start
             %div
               %h5
                 %i.fa.fa-truck-field.fa-fw
                 = t 'plannings.edit.dialog.optimization.vehicles.title'
-              - if current_user.customer.optimization_vehicle_soft_upper_bound.to_f > 0
-                #optimization-vehicle-late.row
-                  .col-xs-7
-                    = t 'plannings.edit.dialog.optimization.vehicles.cost_late_multiplier'
-                  .col-xs-5
-                    %label
-                      - if current_user.customer.optimization_vehicle_soft_upper_bound != 0
-                        = t 'all.value._yes'
-                      - else
-                        = t 'all.value._no'
               - if current_user.customer.optimization_force_start
                 .row
                   .col-xs-7

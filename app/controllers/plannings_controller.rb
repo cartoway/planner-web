@@ -341,9 +341,12 @@ class PlanningsController < ApplicationController
     global = ValueToBoolean::value_to_boolean(params[:global])
     active_only = ValueToBoolean::value_to_boolean(params[:active_only])
     nb_route = params[:nb_route].nil? ? 0 : Integer(params[:nb_route])
+    enable_optimization_soft_upper_bound = ValueToBoolean::value_to_boolean(params[:enable_optimization_soft_upper_bound])
+    vehicle_max_upper_bound = params[:vehicle_max_upper_bound].nil? ? 0 : Integer(params[:vehicle_max_upper_bound])
+    stop_max_upper_bound = params[:stop_max_upper_bound].nil? ? 0 : Integer(params[:stop_max_upper_bound])
     respond_to do |format|
       begin
-        if Optimizer.optimize(@planning, nil, { global: global, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers, nb_route: nb_route}) && @planning.customer.save!
+        if Optimizer.optimize(@planning, nil, { global: global, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers, nb_route: nb_route, enable_optimization_soft_upper_bound: enable_optimization_soft_upper_bound, vehicle_max_upper_bound: vehicle_max_upper_bound, stop_max_upper_bound: stop_max_upper_bound }) && @planning.customer.save!
           planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
           format.js { render partial: 'routes/update.js.erb', locals: { optimizer: planning_data[:optimizer], updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
         else
@@ -366,10 +369,13 @@ class PlanningsController < ApplicationController
   def optimize_route
     active_only = ValueToBoolean::value_to_boolean(params[:active_only])
     optimize_overload_multiplier = ValueToBoolean::value_to_boolean(params[:optimize_overload_multiplier])
+    enable_optimization_soft_upper_bound = ValueToBoolean::value_to_boolean(params[:enable_optimization_soft_upper_bound])
+    vehicle_max_upper_bound = params[:vehicle_max_upper_bound].nil? ? 0 : Integer(params[:vehicle_max_upper_bound])
+    stop_max_upper_bound = params[:stop_max_upper_bound].nil? ? 0 : Integer(params[:stop_max_upper_bound])
     respond_to do |format|
       route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
       begin
-        if route && Optimizer.optimize(@planning, route, { global: false, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers }) && @planning.customer.save!
+        if route && Optimizer.optimize(@planning, route, { global: false, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers, enable_optimization_soft_upper_bound: enable_optimization_soft_upper_bound, vehicle_max_upper_bound: vehicle_max_upper_bound, stop_max_upper_bound: stop_max_upper_bound }) && @planning.customer.save!
           @routes = [route.reload]
           planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
           format.js { render partial: 'routes/update.js.erb', locals: { optimizer: planning_data[:optimizer], updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
