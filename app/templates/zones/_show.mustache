@@ -30,6 +30,7 @@
       <div class="col-md-3">
         {{zone}}
         <select name="zone[color]" class="color_select select2-xs" value="{{color}}" style="display: none;">
+          <option value=""></option>
           {{#colors}}
             <option value="{{name}}"{{#selected}} selected="selected"{{/selected}}></option>
           {{/colors}}
