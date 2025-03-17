@@ -117,9 +117,9 @@ class User < ApplicationRecord
     Planner::Application.config.delayed_job_use ? UserMailer.delay.connection_message(self, locale) : UserMailer.connection_message(self, locale).deliver_now
   end
 
-  def save_columns_preferences(columns, skip_columns, additional_stops, format = "excel")
-    self.update(exportable_columns: {
-      keep: columns,
+  def save_export_settings(export_columns, skip_columns, additional_stops, format = "excel")
+    self.update(export_settings: {
+      keep: export_columns,
       skip: skip_columns,
       additional_stops: additional_stops,
       format: format
