@@ -119,7 +119,7 @@ class User < ApplicationRecord
 
   def save_export_settings(export_columns, skip_columns, additional_stops, format = "excel")
     self.update(export_settings: {
-      keep: export_columns,
+      export: export_columns,
       skip: skip_columns,
       additional_stops: additional_stops,
       format: format
