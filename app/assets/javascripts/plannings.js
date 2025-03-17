@@ -88,7 +88,7 @@ const iCalendarExport = function(planningId) {
   });
 };
 
-const spreadsheetModalExport = function(columns, planningId, columns_preferences) {
+const spreadsheetModalExport = function(columns, planningId, export_settings) {
   $('#planning-spreadsheet-modal').on('show.bs.modal', function() {
     if ($('[name=spreadsheet-route]').val())
       $('[name=spreadsheet-out-of-route]').parent().parent().hide();
@@ -99,16 +99,16 @@ const spreadsheetModalExport = function(columns, planningId, columns_preferences
     $('[name=spreadsheet-route]').val('');
   });
 
-  if (columns_preferences && columns_preferences['additional_stops']) {
+  if (export_settings && export_settings['additional_stops']) {
     $.each($('.spreadsheet-stops'), function(i, cb) {
-      $(cb).prop('checked', columns_preferences['additional_stops'].indexOf($(cb).val()) >= 0);
+      $(cb).prop('checked', export_settings['additional_stops'].indexOf($(cb).val()) >= 0);
     });
   }
   $('.columns-export-list').sortable({
     connectWith: '#spreadsheet-columns .ui-sortable'
   });
-  var columnsExport = (columns_preferences && columns_preferences['keep']) || [];
-  var columnsSkip = (columns_preferences && columns_preferences['skip']) || [];
+  var columnsExport = (export_settings && export_settings['export']) || [];
+  var columnsSkip = (export_settings && export_settings['skip']) || [];
   if (columnsExport != []) {
     $.each(columns, function(i, c) {
       if (columnsExport.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
@@ -156,8 +156,8 @@ const spreadsheetModalExport = function(columns, planningId, columns_preferences
   }).mouseleave(function(evt) {
     $('a.remove', evt.currentTarget).hide();
   });
-  if (columns_preferences && columns_preferences['format']) {
-    $('[name=spreadsheet-format][value=' + columns_preferences['format'] + ']').prop('checked', true);
+  if (export_settings && export_settings['format']) {
+    $('[name=spreadsheet-format][value=' + export_settings['format'] + ']').prop('checked', true);
   }
   $('#btn-spreadsheet').click(function() {
     var planningsId = getPlanningsId();
@@ -2563,7 +2563,7 @@ export const plannings_edit = function(params) {
     });
   });
 
-  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id, params.columns_preferences);
+  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id, params.export_settings);
 
   var devicesObservePlanning = (function() {
 
@@ -2729,7 +2729,7 @@ var plannings_index = function(params) {
   var requestPending = false;
 
   iCalendarExport();
-  spreadsheetModalExport(params.spreadsheet_columns, null, params.columns_preferences);
+  spreadsheetModalExport(params.spreadsheet_columns, null, params.export_settings);
 
   var vehicle_id = $('#vehicle_id').val(),
     planning_ids;
