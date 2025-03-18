@@ -99,16 +99,16 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
     $('[name=spreadsheet-route]').val('');
   });
 
-  if (export_settings && export_settings['additional_stops']) {
+  if (export_settings && export_settings['stops']) {
     $.each($('.spreadsheet-stops'), function(i, cb) {
-      $(cb).prop('checked', export_settings['additional_stops'].indexOf($(cb).val()) >= 0);
+      $(cb).prop('checked', export_settings['stops'].indexOf($(cb).val()) >= 0);
     });
   }
   $('.columns-export-list').sortable({
     connectWith: '#spreadsheet-columns .ui-sortable'
   });
   var columnsExport = (export_settings && export_settings['export']) || [];
-  var columnsSkip = (export_settings && export_settings['skip']) || [];
+  var columnsSkip = (export_settings && export_settings['skips']) || [];
   if (columnsExport != []) {
     $.each(columns, function(i, c) {
       if (columnsExport.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
@@ -178,7 +178,7 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
     var spreadsheetFormat = $('[name=spreadsheet-format]:checked').val();
     var basePath = $('[name=spreadsheet-route]').val() ? ('/routes/' + $('[name=spreadsheet-route]').val()) : (planningId) ? '/plannings/' + planningId : '/plannings';
 
-    window.location.href = basePath + '.' + spreadsheetFormat + '?stops=' + spreadsheetStops + '&columns=' + spreadsheetColumnsExport + "&ids=" + planningsId + '&columns_skip=' + spreadsheetColumnsSkip + '&additional_stops=' + spreadsheetStops;
+    window.location.href = basePath + '.' + spreadsheetFormat + '?stops=' + spreadsheetStops + '&columns=' + spreadsheetColumnsExport + "&ids=" + planningsId + '&skips=' + spreadsheetColumnsSkip;
 
     $('#planning-spreadsheet-modal').modal('toggle');
   });
