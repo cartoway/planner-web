@@ -1045,7 +1045,7 @@ export const plannings_edit = function(params) {
   });
 
 
-  $('#optimization-vehicle-max-upper-bound, #optimization-stop-max-upper-bound').timeEntry({
+  $('#vehicle_max_upper_bound, #stop-max-upper-bound').timeEntry({
     show24Hours: true,
     defaultTime: '00:00',
     spinnerImage: ''
@@ -2436,8 +2436,8 @@ export const plannings_edit = function(params) {
         ignore_overload_multipliers: ignore_overload_multipliers,
         nb_route: optimizationTimer.getNbRoute(),
         enable_optimization_soft_upper_bound: $('input[name="enable_optimization_soft_upper_bound"]:checked').val(),
-        vehicle_max_upper_bound: $('#optimization-vehicle-max-upper-bound').val(),
-        stop_max_upper_bound: $('#optimization-stop-max-upper-bound').val()
+        vehicle_max_upper_bound: $('input[name="vehicle_max_upper_bound"]').val(),
+        stop_max_upper_bound: $('input[name="stop_max_upper_bound"]').val()
       },
       beforeSend: beforeSendWaiting,
       success: function() {
