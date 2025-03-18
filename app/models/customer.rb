@@ -74,10 +74,10 @@ class Customer < ApplicationRecord
   validates :default_country, presence: true
   # TODO default_max_destinations
   validates :stores, length: { maximum: Planner::Application.config.max_destinations / 10, message: :over_max_limit }
-  validate :validate_plannings_length
-  validate :validate_zonings_length
-  validate :validate_destinations_length
-  validate :validate_vehicle_usage_sets_length
+  validate :validate_plannings_count
+  validate :validate_zonings_count
+  validate :validate_destinations_count
+  validate :validate_vehicle_usage_sets_count
   validates :optimization_cluster_size, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :max_vehicles, numericality: { greater_than: 0 }
   validate do
@@ -533,29 +533,29 @@ class Customer < ApplicationRecord
     end
   end
 
-  def validate_plannings_length
-    if self.default_max_plannings && self.default_max_plannings < self.plannings.length
+  def validate_plannings_count
+    if self.default_max_plannings && self.default_max_plannings < self.plannings.count
       errors.add(:max_plannings, I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))
       false
     end
   end
 
-  def validate_zonings_length
-    if self.default_max_zonings && self.default_max_zonings < self.zonings.length
+  def validate_zonings_count
+    if self.default_max_zonings && self.default_max_zonings < self.zonings.count
       errors.add(:max_zonings, I18n.t('activerecord.errors.models.customer.attributes.zonings.over_max_limit'))
       false
     end
   end
 
-  def validate_destinations_length
-    if self.default_max_destinations && self.default_max_destinations < self.destinations.length
+  def validate_destinations_count
+    if self.default_max_destinations && self.default_max_destinations < self.destinations.count
       errors.add(:max_destinations, I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit'))
       false
     end
   end
 
-  def validate_vehicle_usage_sets_length
-    if self.default_max_vehicle_usage_sets && self.default_max_vehicle_usage_sets < self.vehicle_usage_sets.length
+  def validate_vehicle_usage_sets_count
+    if self.default_max_vehicle_usage_sets && self.default_max_vehicle_usage_sets < self.vehicle_usage_sets.count
       errors.add(:max_vehicle_usage_sets, I18n.t('activerecord.errors.models.customer.attributes.vehicle_usage_sets.over_max_limit'))
       false
     end
