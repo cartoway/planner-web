@@ -9,6 +9,9 @@ class PlanningsControllerTest < ActionController::TestCase
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
     @planning = plannings(:planning_one)
+    @export_settings_params = { columns: 'ref_planning|planning|planning_date|route|vehicle|order|stop_type|active|wait_time|time|distance|drive_time|out_of_window|out_of_capacity|out_of_drive_time|out_of_force_position|out_of_work_time|out_of_max_distance|out_of_max_ride_distance|out_of_max_ride_duration|status|status_updated_at|eta|ref|name|street|detail|postalcode|city|country|lat|lng|comment|phone_number|tags|ref_visit|duration|time_window_start_1|time_window_end_1|time_window_start_2|time_window_end_2|priority|revenue|force_position|tags_visit|quantity1',
+                                skips: '',
+                                stops: 'out-of-route|store|rest|inactive'}
     sign_in users(:user_one)
     customers(:customer_one).update(job_optimizer_id: nil, job_destination_geocoding_id: nil)
   end
@@ -172,14 +175,22 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should show planning as excel' do
-    get :show, params: { id: @planning, format: :excel }
+    get :show, params: { id: @planning, format: :excel, **@export_settings_params }
     assert_response :success
   end
 
   test 'should show planning without date as excel' do
     @planning.update(date: nil)
-    get :show, params: { id: @planning, format: :excel }
+    get :show, params: { id: @planning, format: :excel, **@export_settings_params }
     assert_response :success
+  end
+
+  test 'should save export preferences' do
+    get :show, params: { id: @planning, format: :excel, columns: 'ref|route|planning', skips: 'planning_date|quantity1', stops: 'out-of-route|store|rest|inactive' }
+    assert_response :success
+    assert_equal User.find(users(:user_one).id).export_settings['export'], ['ref','route','planning']
+    assert_equal User.find(users(:user_one).id).export_settings['skips'], ['planning_date','quantity1']
+    assert_equal User.find(users(:user_one).id).export_settings['stops'], ['out-of-route','store','rest','inactive']
   end
 
   test 'should export and import with ref' do
@@ -190,7 +201,7 @@ class PlanningsControllerTest < ActionController::TestCase
     # Activate all vehicles (first vehicle_usage_set is random)
     customers(:customer_one).vehicle_usage_sets[0].vehicle_usages.each{ |vu| vu.update active: true }
 
-    get :show, params: { id: @planning, format: :csv }
+    get :show, params: { id: @planning, format: :csv, **@export_settings_params }
     assert_response :success
     tempfile = Tempfile.new('text.csv')
     tempfile.write(response.body)
@@ -216,7 +227,7 @@ class PlanningsControllerTest < ActionController::TestCase
     # Remove ref
     @planning.update! ref: nil
 
-    get :show, params: { id: @planning, format: :csv }
+    get :show, params: { id: @planning, format: :csv, **@export_settings_params }
     assert_response :success
     tempfile = Tempfile.new('text.csv')
     tempfile.write(response.body)
@@ -256,7 +267,7 @@ class PlanningsControllerTest < ActionController::TestCase
       route.save!
     end
 
-    get :show, params: { id: @planning, format: :csv }
+    get :show, params: { id: @planning, format: :csv, **@export_settings_params }
     assert_response :success
     assert_equal 'r1,planning1,10/10/2015,vehicle      ,003,0,site,,,07:00,0,0,,,,,,,,,,,,,store nogeo,MyString,,MyString,MyString,,,,,,,,,,,,,,,,,', response.body.split("\n")[2]
   end
