@@ -952,9 +952,9 @@ class Planning < ApplicationRecord
     by_distance = available_routes.flat_map { |route|
       stops =
       if options[:active_only]
-        route.stops.where(type: StopVisit.name).where(active: true).joins(:visit).merge(Visit.positioned)
+        route.stops.where(type: StopVisit.name).where(active: true).joins(:visit).merge(Visit.positioned).includes_destinations
       else
-        route.stops.where(type: StopVisit.name).joins(:visit).merge(Visit.positioned)
+        route.stops.where(type: StopVisit.name).joins(:visit).merge(Visit.positioned).includes_destinations
       end
       stops = stops.map { |s| [s.visit.destination, route, s.index] }
       stops ||= []
@@ -974,6 +974,7 @@ class Planning < ApplicationRecord
       (pos_second_route ? [by_distance[pos_second_route]] : [])).flat_map{ |dest_route_idx|
       [[dest_route_idx[1], dest_route_idx[2]], [dest_route_idx[1], dest_route_idx[2] + 1]]
     }.uniq.map { |ri|
+      ri[0] = ri[0].preload_compute_scopes
       ri[0].class.amoeba do
         clone :stops # Only duplicate stops just for compute evaluation
         nullify :planning_id
@@ -981,6 +982,15 @@ class Planning < ApplicationRecord
 
       tmp_routes[ri[0].id] = ri[0].amoeba_dup if !tmp_routes[ri[0].id]
       r = tmp_routes[ri[0].id]
+      # Rebranch old references
+      r.vehicle_usage = ri[0].vehicle_usage
+      r.stops.each.with_index do |stop, index|
+        original_stop = ri[0].stops[index]
+        next unless stop.is_a?(StopVisit)
+
+        stop.visit = original_stop.visit
+        stop.visit.destination = original_stop.visit.destination
+      end
       r.add(tmp_visit, ri[1], true)
       r.compute(no_geojson: true, no_quantities: true)
 
