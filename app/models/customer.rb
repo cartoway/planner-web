@@ -381,16 +381,19 @@ class Customer < ApplicationRecord
 
   def devices_update_vehicles
     # Remove device association on vehicles if devices credentials have changed
+    vehicles_with_devices = self.vehicles.select(&:devices)
     Mapotempo::Application.config.devices.to_h.each{ |device_name, device_object|
-      if device_object.respond_to?('definition')
-        device_definition = device_object.definition
-        if device_definition.key?(:forms) && device_definition[:forms].key?(:settings) && device_definition[:forms].key?(:vehicle)
-          device_definition[:forms][:vehicle].keys.each{ |key|
-            self.vehicles.select(&:devices).each{ |vehicle|
-              vehicle.devices[key] = nil if self.send("#{device_name}_changed?")
-            }
+      next unless device_object.respond_to?('definition')
+
+      device_definition = device_object.definition
+      next if !device_definition.dig(:forms, :settings) || !device_definition.dig(:forms, :vehicle)
+
+      if send("#{device_name}_changed?")
+        device_definition.dig(:forms, :vehicle).keys.each{ |key|
+          vehicles_with_devices.each{ |vehicle|
+            vehicle.devices[key] = nil
           }
-        end
+        }
       end
     }
   end
