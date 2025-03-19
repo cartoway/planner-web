@@ -18,13 +18,26 @@ class OptimizerWrapperTest < ActionController::TestCase
   test 'should return a maximum lateness option' do
     begin
       planning = plannings(:planning_one)
-      vrp = @optim.build_vrp(planning, planning.routes, **{ vehicle_max_upper_bound: 10, stop_max_upper_bound: 15})
+      vrp = @optim.build_vrp(planning, planning.routes)
 
+      assert_equal 3, vrp[:vehicles][0][:cost_late_multiplier]
+      assert_equal 60, vrp[:vehicles][0][:timewindow][:maximum_lateness]
+      assert_equal 3, vrp[:services][0][:activity][:late_multiplier]
+      assert_equal 120, vrp[:services][0][:activity][:timewindows][0][:maximum_lateness]
+
+      vrp = @optim.build_vrp(planning, planning.routes, **{ enable_optimization_soft_upper_bound: true, vehicle_max_upper_bound: 10, stop_max_upper_bound: 15})
+
+      assert_equal 3, vrp[:vehicles][0][:cost_late_multiplier]
       assert_equal 10, vrp[:vehicles][0][:timewindow][:maximum_lateness]
+      assert_equal 3, vrp[:services][0][:activity][:late_multiplier]
       assert_equal 15, vrp[:services][0][:activity][:timewindows][0][:maximum_lateness]
-    ensure
-      remove_request_stub(@stub_VrpJob)
-      remove_request_stub(@stub_VrpSubmit)
+
+      vrp = @optim.build_vrp(planning, planning.routes, **{ enable_optimization_soft_upper_bound: false, vehicle_max_upper_bound: 10, stop_max_upper_bound: 15})
+
+      refute vrp[:vehicles][0][:cost_late_multiplier]
+      assert_equal 10, vrp[:vehicles][0][:timewindow][:maximum_lateness]
+      refute vrp[:services][0][:activity][:late_multiplier]
+      assert_equal 15, vrp[:services][0][:activity][:timewindows][0][:maximum_lateness]
     end
   end
 

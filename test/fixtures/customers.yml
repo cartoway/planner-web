@@ -12,8 +12,11 @@ customer_one:
   enable_orders: true
   optimization_time: 10
   optimization_minimal_time: 3
+  enable_optimization_soft_upper_bound: true
   optimization_stop_soft_upper_bound: 3
   optimization_vehicle_soft_upper_bound: 3
+  stop_max_upper_bound: 120
+  vehicle_max_upper_bound: 60
   profile: profile_one
   speed_multiplier: 1
   default_country: France
