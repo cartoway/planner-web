@@ -117,6 +117,15 @@ class User < ApplicationRecord
     Planner::Application.config.delayed_job_use ? UserMailer.delay.connection_message(self, locale) : UserMailer.connection_message(self, locale).deliver_now
   end
 
+  def save_export_settings(export_columns, skips, stops, format = "excel")
+    self.update(export_settings: {
+      export: export_columns,
+      skips: skips,
+      stops: stops,
+      format: format
+    })
+  end
+
   private
 
   def set_default_time_zone

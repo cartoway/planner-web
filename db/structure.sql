@@ -1144,7 +1144,8 @@ CREATE TABLE public.users (
     time_zone character varying DEFAULT 'UTC'::character varying NOT NULL,
     prefered_unit character varying DEFAULT 'km'::character varying,
     locale character varying,
-    prefered_currency integer DEFAULT 0
+    prefered_currency integer DEFAULT 0,
+    export_settings jsonb DEFAULT '{}'::jsonb
 );
 
 
@@ -3095,6 +3096,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20241227140855'),
 ('20250128131504'),
 ('20250203114002'),
+('20250217092158'),
 ('20250219113043'),
 ('20250221144341'),
 ('20250307133104'),

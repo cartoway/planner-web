@@ -29,6 +29,7 @@
   - Balance default optimization costs [#267](https://github.com/cartoway/planner-web/pull/267) & [#284]((https://github.com/cartoway/planner-web/pull/284))
   - Unbranding [#261](https://github.com/cartoway/planner-web/pull/261) & [#272](https://github.com/cartoway/planner-web/pull/272)
   - Automatically launch db setup or migrate on docker service startup [#295](https://github.com/cartoway/planner-web/pull/295)
+  - Update user's export preferences from localStorage to db storage [#292](https://github.com/cartoway/planner-web/pull/292)
 
   ### Fixed
   - Fix how empty lines are skip from CSV on import [#252](https://github.com/cartoway/planner-web/pull/252)
