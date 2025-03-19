@@ -719,8 +719,8 @@ class PlanningsController < ApplicationController
   def format_csv(format)
     format.excel do
       @customer ||= @planning.customer
-      @columns = (export_params[:columns] && export_params[:columns].split('|')) || export_columns
-      current_user.save_export_settings(@columns, export_params["skips"]&.split('|'), export_params["stops"]&.split('|'), 'excel')
+      @columns = (export_params[:columns]&.split('|')) || export_columns
+      current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), 'excel')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
       type: 'text/csv',
@@ -729,8 +729,8 @@ class PlanningsController < ApplicationController
     end
     format.csv do
       @customer ||= @planning.customer
-      @columns = (export_params[:columns] && export_params[:columns].split('|')) || export_columns
-      current_user.save_export_settings(@columns, export_params["skips"]&.split('|'), export_params["stops"]&.split('|'), 'csv')
+      @columns = (export_params[:columns]&.split('|')) || export_columns
+      current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), 'csv')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
     end
