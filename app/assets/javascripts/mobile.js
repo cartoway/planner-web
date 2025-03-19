@@ -215,11 +215,11 @@ const tracking = function(params) {
   }
 
   function storePosition(coords) {
+    var now = Date.now();
     const positionData = {
-      id: Date.now(),
+      id: now,
       routeId: params.route_id,
-      coords: coords,
-      timestamp: new Date().toISOString()
+      coords: coords
     };
 
     $('#mobile-sync-pending').removeClass('d-none');

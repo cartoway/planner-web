@@ -50,8 +50,7 @@ export const stops_edit = function(params) {
     const updateData = {
       id: Date.now(),
       url: url,
-      formData: formData,
-      timestamp: new Date().toISOString()
+      formData: formData
     };
 
     $('#mobile-sync-pending').removeClass('d-none');
@@ -68,6 +67,7 @@ export const stops_edit = function(params) {
 
   function submitForm(current_context) {
     const formData = new FormData(current_context.find('form')[0]);
+    formData.append('stop[status_updated_at]', new Date().toISOString());
     const formObject = {};
     formData.forEach((value, key) => {
       formObject[key] = value;
