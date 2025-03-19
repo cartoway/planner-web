@@ -88,7 +88,7 @@ const iCalendarExport = function(planningId) {
   });
 };
 
-const spreadsheetModalExport = function(columns, planningId) {
+const spreadsheetModalExport = function(columns, planningId, export_settings) {
   $('#planning-spreadsheet-modal').on('show.bs.modal', function() {
     if ($('[name=spreadsheet-route]').val())
       $('[name=spreadsheet-out-of-route]').parent().parent().hide();
@@ -99,18 +99,17 @@ const spreadsheetModalExport = function(columns, planningId) {
     $('[name=spreadsheet-route]').val('');
   });
 
-  if (localStorage.spreadsheetStops) {
+  if (export_settings && export_settings['stops']) {
     $.each($('.spreadsheet-stops'), function(i, cb) {
-      $(cb).prop('checked', localStorage.spreadsheetStops.split('|').indexOf($(cb).val()) >= 0);
+      $(cb).prop('checked', export_settings['stops'].indexOf($(cb).val()) >= 0);
     });
   }
   $('.columns-export-list').sortable({
     connectWith: '#spreadsheet-columns .ui-sortable'
   });
-  var columnsExport = columns;
-  var columnsSkip = localStorage.spreadsheetColumnsSkip && localStorage.spreadsheetColumnsSkip.split('|');
-  if (localStorage.spreadsheetColumnsExport) {
-    columnsExport = localStorage.spreadsheetColumnsExport.split('|');
+  var columnsExport = (export_settings && export_settings['export']) || [];
+  var columnsSkip = (export_settings && export_settings['skips']) || [];
+  if (columnsExport != []) {
     $.each(columns, function(i, c) {
       if (columnsExport.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
         columnsExport.push(c);
@@ -157,9 +156,9 @@ const spreadsheetModalExport = function(columns, planningId) {
   }).mouseleave(function(evt) {
     $('a.remove', evt.currentTarget).hide();
   });
-  if (localStorage.spreadsheetFormat)
-    $('[name=spreadsheet-format][value=' + localStorage.spreadsheetFormat + ']').prop('checked', true);
-
+  if (export_settings && export_settings['format']) {
+    $('[name=spreadsheet-format][value=' + export_settings['format'] + ']').prop('checked', true);
+  }
   $('#btn-spreadsheet').click(function() {
     var planningsId = getPlanningsId();
     if (!planningId && planningsId.length == 0) {
@@ -167,19 +166,19 @@ const spreadsheetModalExport = function(columns, planningId) {
       return;
     }
 
-    var spreadsheetStops = localStorage.spreadsheetStops = $('.spreadsheet-stops:checked').map(function(i, e) {
+    var spreadsheetStops = $('.spreadsheet-stops:checked').map(function(i, e) {
       return $(e).val();
     }).get().join('|');
-    var spreadsheetColumnsExport = localStorage.spreadsheetColumnsExport = $('#columns-export').find('li').map(function(i, e) {
+    var spreadsheetColumnsExport = $('#columns-export').find('li').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
-    var spreadsheetColumnsSkip = localStorage.spreadsheetColumnsSkip = $('#columns-skip').find('li').map(function(i, e) {
+    var spreadsheetColumnsSkip = $('#columns-skip').find('li').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
-    var spreadsheetFormat = localStorage.spreadsheetFormat = $('[name=spreadsheet-format]:checked').val();
+    var spreadsheetFormat = $('[name=spreadsheet-format]:checked').val();
     var basePath = $('[name=spreadsheet-route]').val() ? ('/routes/' + $('[name=spreadsheet-route]').val()) : (planningId) ? '/plannings/' + planningId : '/plannings';
 
-    window.location.href = basePath + '.' + spreadsheetFormat + '?stops=' + spreadsheetStops + '&columns=' + spreadsheetColumnsExport + "&ids=" + planningsId;
+    window.location.href = basePath + '.' + spreadsheetFormat + '?stops=' + spreadsheetStops + '&columns=' + spreadsheetColumnsExport + "&ids=" + planningsId + '&skips=' + spreadsheetColumnsSkip;
 
     $('#planning-spreadsheet-modal').modal('toggle');
   });
@@ -2564,7 +2563,7 @@ export const plannings_edit = function(params) {
     });
   });
 
-  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id);
+  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id, params.export_settings);
 
   var devicesObservePlanning = (function() {
 
@@ -2730,7 +2729,7 @@ var plannings_index = function(params) {
   var requestPending = false;
 
   iCalendarExport();
-  spreadsheetModalExport(params.spreadsheet_columns);
+  spreadsheetModalExport(params.spreadsheet_columns, null, params.export_settings);
 
   var vehicle_id = $('#vehicle_id').val(),
     planning_ids;

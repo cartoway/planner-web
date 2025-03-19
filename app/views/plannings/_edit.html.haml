@@ -250,6 +250,7 @@
   large_plannning = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.any?{ |r| (stops_count += r.stops_size) >= 1000 }
 
   controller.js(
+    export_settings: current_user.export_settings,
     manage_planning: @manage_planning,
     with_stops: !large_plannning,
     prefered_unit: current_user.prefered_unit,
