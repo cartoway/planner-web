@@ -342,8 +342,8 @@ class PlanningsController < ApplicationController
     active_only = ValueToBoolean::value_to_boolean(params[:active_only])
     nb_route = params[:nb_route].nil? ? 0 : Integer(params[:nb_route])
     enable_optimization_soft_upper_bound = ValueToBoolean::value_to_boolean(params[:enable_optimization_soft_upper_bound])
-    vehicle_max_upper_bound = params[:vehicle_max_upper_bound].blank? ? 0 : ScheduleType.new.cast(params[:vehicle_max_upper_bound])
-    stop_max_upper_bound = params[:stop_max_upper_bound].blank? ? 0 : ScheduleType.new.cast(params[:stop_max_upper_bound])
+    vehicle_max_upper_bound = params[:vehicle_max_upper_bound].blank? ? nil : ScheduleType.new.cast(params[:vehicle_max_upper_bound])
+    stop_max_upper_bound = params[:stop_max_upper_bound].blank? ? nil : ScheduleType.new.cast(params[:stop_max_upper_bound])
     respond_to do |format|
       begin
         if Optimizer.optimize(@planning, nil, { global: global, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers, nb_route: nb_route, enable_optimization_soft_upper_bound: enable_optimization_soft_upper_bound, vehicle_max_upper_bound: vehicle_max_upper_bound, stop_max_upper_bound: stop_max_upper_bound }) && @planning.customer.save!
@@ -369,8 +369,8 @@ class PlanningsController < ApplicationController
   def optimize_route
     active_only = ValueToBoolean::value_to_boolean(params[:active_only])
     enable_optimization_soft_upper_bound = ValueToBoolean::value_to_boolean(params[:enable_optimization_soft_upper_bound])
-    vehicle_max_upper_bound = params[:vehicle_max_upper_bound].blank? ? 0 : ScheduleType.new.cast(params[:vehicle_max_upper_bound])
-    stop_max_upper_bound = params[:stop_max_upper_bound].blank? ? 0 : ScheduleType.new.cast(params[:stop_max_upper_bound])
+    vehicle_max_upper_bound = params[:vehicle_max_upper_bound].blank? ? nil : ScheduleType.new.cast(params[:vehicle_max_upper_bound])
+    stop_max_upper_bound = params[:stop_max_upper_bound].blank? ? nil : ScheduleType.new.cast(params[:stop_max_upper_bound])
     respond_to do |format|
       route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
       begin
