@@ -332,7 +332,7 @@ export const zonings_edit = function(params) {
           templateSelection: templateSelectionColor,
           templateResult: templateResultColor,
           formatNoMatches: I18n.t('web.select2.empty_result')
-        }).select2("open");
+        }).val('').trigger('change').select2("open");
         select.next('.select2-container--bootstrap').addClass('input-sm');
       });
 
