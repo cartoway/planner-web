@@ -79,6 +79,8 @@ class Customer < ApplicationRecord
   validate :validate_destinations_count
   validate :validate_vehicle_usage_sets_count
   validates :optimization_cluster_size, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :optimization_vehicle_soft_upper_bound, numericality: { greater_than: 0 }, allow_nil: true
+  validates :optimization_stop_soft_upper_bound, numericality: { greater_than: 0 }, allow_nil: true
   validates :max_vehicles, numericality: { greater_than: 0 }
   validate do
     errors.add(:max_vehicles, :not_an_integer) if @invalid_max_vehicle
