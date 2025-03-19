@@ -835,7 +835,7 @@ class Route < ApplicationRecord
   end
 
   def preload_compute_scopes
-    Route.includes_vehicle_usages.includes_destinations.where(id: self.id)
+    Route.includes_vehicle_usages.includes_destinations.where(id: self.id).first
   end
 
   private
