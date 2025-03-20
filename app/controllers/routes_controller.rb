@@ -88,17 +88,21 @@ class RoutesController < ApplicationController
         end
       end
       format.excel do
+        permitted_export_params = export_params
         @customer = current_user.customer
         @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
-        @columns = (@params[:columns] && @params[:columns].split('|')) || export_columns
+        @columns = permitted_export_params[:columns]&.split('|') || export_columns
+        current_user.save_export_settings(@columns, permitted_export_params[:skips]&.split('|'), permitted_export_params[:stops]&.split('|'), 'excel')
         send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
           type: 'text/csv',
           filename: filename + '.csv'
       end
       format.csv do
+        permitted_export_params = export_params
         @customer = current_user.customer
         @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
-        @columns = (@params[:columns] && @params[:columns].split('|')) || export_columns
+        @columns = permitted_export_params[:columns]&.split('|') || export_columns
+        current_user.save_export_settings(@columns, permitted_export_params[:skips]&.split('|'), permitted_export_params[:stops]&.split('|'), 'csv')
         response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
       end
     end
@@ -158,6 +162,10 @@ class RoutesController < ApplicationController
   # Never trust parameters from the scary internet, only allow the white list through.
   def route_params
     params.require(:route).permit(:hidden, :locked, :ref, :color)
+  end
+
+  def export_params
+    params.permit(:columns, :skips, :stops)
   end
 
   def filename
