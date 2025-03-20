@@ -14,29 +14,29 @@
             .d-flex.justify-content-center.align-items-center.my-4
               %p.card-text.text-muted= t('plannings.index.none')
           - else
-            .table-responsive
+            .table-responsive.table-container
               %table.table.table-hover.mb-1
                 %thead
                   %tr
                     %th= t 'activerecord.attributes.planning.name'
-                    %th= t 'activerecord.attributes.planning.date'
-                    %th= t 'activerecord.attributes.planning.tags'
-                    %th= t 'activerecord.attributes.planning.updated_at'
+                    %th.hide-md= t 'activerecord.attributes.planning.date'
+                    %th.hide-md= t 'activerecord.attributes.planning.tags'
+                    %th.hide-xs= t 'activerecord.attributes.planning.updated_at'
                     %th
                 %tbody
                   - @customer_summary[:plannings][:latest].each do |planning|
                     %tr
                       %td
                         = planning.name
-                      %td
+                      %td.hide-md
                         = planning.date && l(planning.date, format: :date)
-                      %td
+                      %td.hide-md
                         - planning.tags.each do |tag|
                           %span
                             = tag_icon tag
                             %span
                             = tag.label
-                      %td
+                      %td.hide-xs
                         = l(planning.updated_at, format: :datepicker)
                       %td.text-right
                         = link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do
@@ -91,7 +91,7 @@
             = link_to new_destination_path, class: "ml-auto btn #{@customer_summary[:destinations][:count] >= @customer_summary[:destinations][:limit] ? 'btn-default disabled' : 'btn-primary'}" do
               %i.fa.fa-fw.fa-plus
               = t('destinations.index.new')
-          .row.d-flex.align-items-center.justify-content-between.my-4
+          .row.d-flex.flex-wrap.align-items-center.justify-content-between.my-4
             .col.d-flex.justify-content-center
               = link_to destination_import_path, class: "btn btn-primary" do
                 %i.fa.fa-upload.fa-fw
