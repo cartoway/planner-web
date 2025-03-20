@@ -227,6 +227,14 @@ class Customer < ApplicationRecord
         relation.successor = visits_map[relation.successor]
         relation.save! validate: Planner::Application.config.validate_during_duplication
       }
+      column_def = copy.advanced_options.dig('import', 'destinations', 'spreadsheetColumnsDef')
+      if column_def.present?
+        column_def.keys.select{ |key| key.start_with?('quantity') }.each do |key|
+          prefix = key.start_with?('quantity_operation') ? 'quantity_operation' : 'quantity'
+          d_id = deliverable_unit_ids_map[key.delete_prefix(prefix).to_i].id
+          column_def["#{prefix}#{d_id}"] = column_def.delete(key)
+        end
+      end
 
       copy.save! validate: Planner::Application.config.validate_during_duplication
       copy.reload
