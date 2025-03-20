@@ -194,6 +194,22 @@ a.disabled {
   }
 }
 
+.table-container {
+  container-type: inline-size;
+
+  @container (max-width: 500px) {
+    .hide-md {
+      display: none;
+    }
+  }
+
+  @container (max-width: 400px) {
+    .hide-xs {
+      display: none;
+    }
+  }
+}
+
 /* Colors */
 
 .color_small {
