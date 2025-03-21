@@ -12,7 +12,7 @@
     .col
       = f.text_field :name, required: true, placeholder: "#{t('activerecord.attributes.planning.name')},", label_class: 'hidden'
     .col
-      = f.text_field :date, { placeholder: t('plannings.form.default_date'), value: @planning.date ? l(@planning.date.to_time, format: :datepicker) : nil, input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'}), label_class: 'hidden'}
+      = f.text_field :date, { placeholder: t('plannings.form.default_date'), value: @planning.date && l(@planning.date, format: :datepicker), input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'}), label_class: 'hidden'}
     - if @planning.new_record?
       = zoning_select f, @planning, t('plannings.edit.zonings.label')
     .col.d-flex
