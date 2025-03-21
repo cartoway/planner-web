@@ -30,6 +30,7 @@ fr:
     formats:
       weekday: '%a %d %b'
       date: '%d/%m/%Y'
+      datepicker: '%d-%m-%Y'
   schedule_type:
     invalid: Format d'heure invalide
   default_time_zone: Paris
@@ -208,6 +209,7 @@ fr:
         router: Calculateur d'itinéraire
         router_warning: Ce calculateur d'itinéraire n'est pas autorisé dans ce profil
         layer_warning: Ce fond de carte n'est pas autorisé dans ce profil
+        planning_date_offset: Date de base des plans
         router_id: Calculateur d'itinéraire
         router_dimension: Objectif du calculateur
         router_options_traffic: Tenir compte du trafic
@@ -992,6 +994,8 @@ fr:
       limits: Limites
       options: Options
       optimization_parameters: Paramètres d'optimisation
+      planning_date_offset_help: >-
+        Nombre de jours à ajouter à la date du plan de tournées par rapport à la date du jour.
       router_help: Profil utilisé pour les calculs d'itinéraires par défaut
       router_options_default: '%{n} (valeur par défaut)'
       router_options_traffic_yes: Oui
@@ -1032,14 +1036,11 @@ fr:
       user_layer_unauthorized: >-
         Au moins un utilisateur a un calque non autorisé pour ce profil :
         <strong>%{profile}</strong>
+      value_default: '%{n} (valeur par défaut)'
       visit_duration_help: Durée de visite moyenne par client
-      max_plannings_default: '%{n} (valeur par défaut)'
       max_plannings_help: Nombre maximal de plans autorisés dans le compte.
-      max_zonings_default: '%{n} (valeur par défaut)'
       max_zonings_help: Nombre maximal de sectorisations autorisés dans le compte.
-      max_destinations_default: '%{n} (valeur par défaut)'
       max_destinations_help: Nombre maximal d'adresses autorisés dans le compte.
-      max_vehicle_usage_sets_default: '%{n} (valeur par défaut)'
       max_vehicle_usage_sets_help: >-
         Nombre maximal de configurations des véhicules autorisées dans le
         compte.
@@ -2258,7 +2259,7 @@ fr:
         Permet d'affecter automatiquement des visites/adresses à des véhicules
         suivant des secteurs géographiques prédéfinies.
       avoid_zones_help: Permet également de définir des secteurs où ne pas circuler.
-      default_date: Date du jour par défaut
+      default_date: Date du plan
       default: Défaut
     show:
       print: Imprimer
