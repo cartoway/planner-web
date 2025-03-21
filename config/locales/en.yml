@@ -30,6 +30,7 @@ en:
     formats:
       weekday: '%a %d %b'
       date: '%m-%d-%Y'
+      datepicker: '%m-%d-%Y'
   schedule_type:
     invalid: Invalid hour value
   default_time_zone: London
@@ -208,6 +209,7 @@ en:
         router: Routing Engine
         router_warning: This routing engine is unauthorized in this profile
         layer_warning: This layer is unauthorized in this profile
+        planning_date_offset: Planning date offset
         router_id: Routing Engine
         router_dimension: Router objective
         router_options_traffic: Take into account traffic
@@ -973,6 +975,8 @@ en:
       limits: Limits
       options: Options
       optimization_parameters: Optimization settings
+      planning_date_offset_help: >-
+        Number of days to add to the date of the route plan compared to the current date.
       router_help: Profile used by route plan by default
       router_options_default: '%{n} (default value)'
       router_options_traffic_yes: 'Yes'
@@ -1013,13 +1017,10 @@ en:
         At least one user have an unauthorized layer for this profile:
         <strong>%{profile}</strong>
       visit_duration_help: Average time per account
-      max_plannings_default: '%{n} (default value)'
+      value_default: '%{n} (default value)'
       max_plannings_help: Maximum number of allowed plans into the account.
-      max_zonings_default: '%{n} (default value)'
       max_zonings_help: Maximum number of allowed sectorisations into the account.
-      max_destinations_default: '%{n} (default value)'
       max_destinations_help: Maximum number of allowed destinations into the account.
-      max_vehicle_usage_sets_default: '%{n} (default value)'
       max_vehicle_usage_sets_help: Maximum number of allowed vehicle base settings into the account.
       history_cron_hour_help: >-
         Hour at which the data is taken to be historised. If not filled in, no
@@ -2156,7 +2157,7 @@ en:
         Allow to automatically assign vehicles to visits/destinations with
         geographic zones.
       avoid_zones_help: 'In addition, allow to define sectors where vehicle cannot circulate.'
-      default_date: Current date by default
+      default_date: Plan date
       default: Default
     show:
       print: Print

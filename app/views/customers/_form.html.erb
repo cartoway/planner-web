@@ -19,15 +19,17 @@
   </legend>
   <%= f.number_field :max_vehicles, min: 1, required: (Planner::Application.config.manage_vehicles_only_admin && current_user.admin?), disabled: (Planner::Application.config.manage_vehicles_only_admin && !current_user.admin?), append: content_tag('i', '', class: 'fa fa-truck-field fa-fw') %>
   <% if current_user.admin? %>
-    <%= f.number_field :max_plannings, help: t('.max_plannings_help'), placeholder: (Planner::Application.config.max_plannings_default || Planner::Application.config.max_plannings) && t('.max_plannings_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_plannings_default || Planner::Application.config.max_plannings)), min: 1, append: content_tag('i', '', class: 'fa fa-map-location fa-fw') %>
-    <%= f.number_field :max_zonings, help: t('.max_zonings_help'), placeholder: (Planner::Application.config.max_zonings_default || Planner::Application.config.max_zonings) && t('.max_zonings_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_zonings_default || Planner::Application.config.max_zonings)), min: 1, append: content_tag('i', '', class: 'fa fa-draw-polygon fa-fw') %>
-    <%= f.number_field :max_destinations, help: t('.max_destinations_help'), placeholder: (Planner::Application.config.max_destinations_default || Planner::Application.config.max_destinations) && t('.max_destinations_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_destinations_default || Planner::Application.config.max_destinations)), min: 1, append: content_tag('i', '', class: 'fa fa-map-marker fa-fw') %>
-    <%= f.number_field :max_vehicle_usage_sets, help: t('.max_vehicle_usage_sets_help'), placeholder: (Planner::Application.config.max_vehicle_usage_sets_default || Planner::Application.config.max_vehicle_usage_sets) && t('.max_vehicle_usage_sets_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_vehicle_usage_sets_default || Planner::Application.config.max_vehicle_usage_sets)), min: 1, append: content_tag('i', '', class: 'fa fa-truck-field fa-fw') %>
+    <%= f.number_field :max_plannings, help: t('.max_plannings_help'), placeholder: (Planner::Application.config.max_plannings_default || Planner::Application.config.max_plannings) && t('.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_plannings_default || Planner::Application.config.max_plannings)), min: 1, append: content_tag('i', '', class: 'fa fa-map-location fa-fw') %>
+    <%= f.number_field :max_zonings, help: t('.max_zonings_help'), placeholder: (Planner::Application.config.max_zonings_default || Planner::Application.config.max_zonings) && t('.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_zonings_default || Planner::Application.config.max_zonings)), min: 1, append: content_tag('i', '', class: 'fa fa-draw-polygon fa-fw') %>
+    <%= f.number_field :max_destinations, help: t('.max_destinations_help'), placeholder: (Planner::Application.config.max_destinations_default || Planner::Application.config.max_destinations) && t('.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_destinations_default || Planner::Application.config.max_destinations)), min: 1, append: content_tag('i', '', class: 'fa fa-map-marker fa-fw') %>
+    <%= f.number_field :max_vehicle_usage_sets, help: t('.max_vehicle_usage_sets_help'), placeholder: (Planner::Application.config.max_vehicle_usage_sets_default || Planner::Application.config.max_vehicle_usage_sets) && t('.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_vehicle_usage_sets_default || Planner::Application.config.max_vehicle_usage_sets)), min: 1, append: content_tag('i', '', class: 'fa fa-truck-field fa-fw') %>
   <% end %>
 
   <legend class="scheduler-border col-md-8">
     <%= t '.default_value' %>
   </legend>
+
+  <%= f.number_field :planning_date_offset, help: t('.planning_date_offset_help'), placeholder: t('.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.planning_date_offset_default)), min: 0, append: content_tag('i', '', class: 'fa fa-calendar fa-fw') %>
 
   <%= render partial: 'profile_router_inputs', locals: { f: f } %>
 

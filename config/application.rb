@@ -150,6 +150,8 @@ module Planner
     config.max_vehicle_usage_sets = 100
     config.max_vehicle_usage_sets_default = 1
 
+    config.planning_date_offset_default = 1
+
     # Default values for icons
     config.tag_color_default = '#000000'.freeze
     config.tag_icon_default = 'fa-location-pin'.freeze

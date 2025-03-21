@@ -455,7 +455,7 @@ class ImporterDestinations < ImporterBase
       {
         ref: row[:planning_ref],
         name: row[:planning_name],
-        date: row[:planning_date] && Date.strptime(row[:planning_date], I18n.t('destinations.import_file.format.date')).strftime(ACTIVE_RECORD_DATE_MASK),
+        date: row[:planning_date] && Date.strptime(row[:planning_date], I18n.t('destinations.import_file.format.date')).strftime(ACTIVE_RECORD_DATE_MASK)  || Date.today + @customer.planning_date_offset,
         customer: @customer,
         vehicle_usage_set: @customer.vehicle_usage_sets[0]
       }
