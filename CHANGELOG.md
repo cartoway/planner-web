@@ -19,6 +19,7 @@
   - Vehicles
     - Add default fuel type and fuel consumption [#262](https://github.com/cartoway/planner-web/pull/262)
   - Allow max delay for optimization [#281](https://github.com/cartoway/planner-web/pull/281)
+  - Welcome page now contains a summary of the customer data [#306](https://github.com/cartoway/planner-web/pull/306) & [#311](https://github.com/cartoway/planner-web/pull/311) & [#312](https://github.com/cartoway/planner-web/pull/312)
 
   ### Changed
   - Planning: Duplication adds current DateTime to the reference [#301](https://github.com/cartoway/planner-web/pull/301)
@@ -30,6 +31,8 @@
   - Unbranding [#261](https://github.com/cartoway/planner-web/pull/261) & [#272](https://github.com/cartoway/planner-web/pull/272)
   - Automatically launch db setup or migrate on docker service startup [#295](https://github.com/cartoway/planner-web/pull/295)
   - Update user's export preferences from localStorage to db storage [#292](https://github.com/cartoway/planner-web/pull/292)
+  - Customer validations use `.count` instead of `.length` to reduce computation time [#319](https://github.com/cartoway/planner-web/pull/319)
+  - `candidate_insert` now preloads data before route method `compute`
 
   ### Fixed
   - Fix how empty lines are skip from CSV on import [#252](https://github.com/cartoway/planner-web/pull/252)
@@ -42,6 +45,7 @@
   - Help center link now displays correctly [#296](https://github.com/cartoway/planner-web/pull/296)
   - Destination and Visit tags were duplicated on import update [#305](https://github.com/cartoway/planner-web/pull/305)
   - Api-Web Planning callback button were breaking the panel structure [#305](https://github.com/cartoway/planner-web/pull/305)
+  - Customer duplication now correctly transfer custom quantity related import headers [#323](https://github.com/cartoway/planner-web/pull/323)
 ## V104.2.0
   ### Changed
   - Destination
