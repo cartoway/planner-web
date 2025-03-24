@@ -1472,6 +1472,7 @@ fr:
         integer: nombre
         float: '0,123'
         date: '%d/%m/%Y'
+        date_short: '%d/%m/%y'
         date_desc: 'JJ/MM/AAAA'
         hour: 'HH:MM'
         second: 'HH:MM:SS'

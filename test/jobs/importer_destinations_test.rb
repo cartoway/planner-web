@@ -584,15 +584,15 @@ class ImporterDestinationsTest < ActionController::TestCase
   test 'should import several plans from one file' do
     Planning.all.each(&:destroy)
     @customer.delete_all_destinations
-    assert_difference('Planning.count', 3) do
-      stops_count = 5 + 3 + 3 + 3 # visits plan1 + plan2 + plan3 + rests
+    assert_difference('Planning.count', 4) do
+      stops_count = 5 + 3 + 3 + 1 + 4 # visits plan1 + plan2 + plan3 + plan4 + rests
       assert_difference('Stop.count', stops_count) do
         assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_several_plans.csv', 'text.csv')).import
 
         @customer.reload
 
-        assert_equal ['2014-01-01', '2014-01-02', '2014-01-03'], @customer.plannings.map{ |p| p.date.to_s }
-        assert_equal [['été'], ['été', 'hiver'], ['été', 'hiver']], @customer.plannings.map{ |p| p.tags.map(&:label) }
+        assert_equal ['2014-01-01', '2014-01-02', '2014-01-03', '2014-01-04'], @customer.plannings.map{ |p| p.date.to_s }
+        assert_equal [['été'], ['été', 'hiver'], ['été', 'hiver'], ['printemps']], @customer.plannings.map{ |p| p.tags.map(&:label) }
       end
     end
   end
