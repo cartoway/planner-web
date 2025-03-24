@@ -191,7 +191,7 @@ gem 'barby'
 
 gem 'pnotify-rails'
 
-gem 'nokogiri', '~> 1.15.1'
+gem 'nokogiri'
 gem 'addressable'
 gem 'icalendar'
 

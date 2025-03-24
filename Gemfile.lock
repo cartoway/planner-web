@@ -463,7 +463,7 @@ GEM
     mime-types-data (3.2024.0702)
     mini_magick (4.13.2)
     mini_mime (1.1.5)
-    mini_portile2 (2.8.7)
+    mini_portile2 (2.8.8)
     minitest (5.24.1)
     minitest-around (0.5.0)
       minitest (~> 5.0)
@@ -509,10 +509,10 @@ GEM
       activesupport (>= 4.0.0)
     nio4r (2.7.3)
     nkf (0.2.0)
-    nokogiri (1.15.6)
+    nokogiri (1.18.5)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    nokogiri (1.15.6-x86_64-linux)
+    nokogiri (1.18.5-x86_64-linux-gnu)
       racc (~> 1.4)
     nori (2.7.0)
       bigdecimal
@@ -923,7 +923,7 @@ DEPENDENCIES
   mustache
   net-ftp
   nilify_blanks
-  nokogiri (~> 1.15.1)
+  nokogiri
   pagy (~> 9.1)
   paloma
   pg
