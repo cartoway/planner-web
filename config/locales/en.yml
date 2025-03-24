@@ -340,6 +340,8 @@ en:
         url_protocol: Connection type
         audience_url: Audience URL
         behavior_url: Behavior URL
+        carbon_dioxyde_average: Average CO<sub>2</sub> emissions per delivery
+        carbon_dioxyde_average_default: 0.194
         customer_audience_url: Customer's Audience URL
         customer_behavior_url: Customer's Behavior URL
         customer_dashboard_url: Customer's Dashboard URL
@@ -794,6 +796,7 @@ en:
         logo: Logos & Favicon
         help_urls: Help center and contact urls
         social_urls: Social networks urls
+        misc: Other parameters
         analysis_urls: Dashboard Analytics urls
         messagings: Messaging services
       form:
@@ -850,6 +853,9 @@ en:
         favicon_help: 'Website icon, 16×16 pixels in PNG or ICO format.'
         protocol_url_http: HTTP
         protocol_url_https: HTTPS
+        carbon_dioxyde_average_help: >-
+          Average carbon dioxide emissions per delivery in kgCO<sub>2</sub>.
+          Source: <a href="https://clean-mobility.org/wp-content/uploads/2022/07/Secret-Emissions-of-E-Commerce.pdf" target="_blank">Secret Emissions of E-Commerce</a>
     users:
       menu:
         users: Users
@@ -1462,6 +1468,11 @@ en:
       end_date: End date
       with_actions: history of status
   index:
+    carbon_dioxyde_average: 'Your average CO<sub>2</sub> emissions per delivery:'
+    carbon_dioxyde_average_reseller: For comparison, the average* emissions are %{n} kgCO<SUB>2</SUB>/delivery
+    carbon_dioxyde_average_reseller_help: '*Source: <a href="https://clean-mobility.org/wp-content/uploads/2022/07/Secret-Emissions-of-E-Commerce.pdf" target="_blank">Secret Emissions of E-Commerce</a>'
+    carbon_dioxyde_average_discussion: Need to discuss?
+    carbon_dioxyde_average_discussion_button: Contact us
     motto: Welcome! The Cartoway team is here to support you on every route.
     unsupported_browser:
       unsupported_browser: Unsupported Browser
@@ -2981,6 +2992,7 @@ en:
       ton: tons
       kgco2e_html: kgCO<sub>2</sub>e
       kgco2e_l_html: kgCO<sub>2</sub>e/l
+      kgco2e_delivery_html: kgCO<sub>2</sub>e/delivery
       l_100km: l/100 km
       l_62Miles: l/62.1 mi.
       hour_minute: 'hour: minute'

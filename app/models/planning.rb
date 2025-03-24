@@ -837,6 +837,11 @@ class Planning < ApplicationRecord
     all_skills.any?
   end
 
+  def average_carbon_dioxyde_emissions
+    return 0 if routes.empty?
+    routes.sum(:emission) / cached_active_stops_sum
+  end
+
   def quantities
     Route.includes_deliverable_units.scoping do
       hashy_map = {}

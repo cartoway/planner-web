@@ -340,6 +340,8 @@ fr:
         url_protocol: Type de connexion
         audience_url: URL d'audience
         behavior_url: URL de comportement
+        carbon_dioxyde_average: Emission moyenne de CO<sub>2</sub> par livraison
+        carbon_dioxyde_average_default: 0.194
         customer_audience_url: URL d'audience compte
         customer_behavior_url: URL de comportement compte
         customer_dashboard_url: URL du tableau de bord du compte
@@ -806,6 +808,7 @@ fr:
         logo: Logos & Favicon
         help_urls: Liens centre d'aide & contact
         social_urls: Liens réseaux sociaux
+        misc: Autres paramètres
         analysis_urls: Liens tableaux de bord analytiques
         messagings: Service d'envoi
       form:
@@ -868,6 +871,9 @@ fr:
         favicon_help: 'Icône du site web, 16x16 pixels au format PNG ou ICO.'
         protocol_url_http: HTTP
         protocol_url_https: HTTPS
+        carbon_dioxyde_average_help: >-
+          Emission moyenne de CO<sub>2</sub>e par livraison en kgCO<sub>2</sub>.
+          Source: <a href="https://clean-mobility.org/wp-content/uploads/2022/07/Secret-Emissions-of-E-Commerce.pdf" target="_blank">Secret Emissions of E-Commerce</a>
     users:
       menu:
         users: Utilisateurs
@@ -1496,6 +1502,11 @@ fr:
     reverse_geocoding:
       apply: Appliquer la nouvelle adresse
   index:
+    carbon_dioxyde_average: 'Votre moyenne de CO<sub>2</sub> émis par livraison :'
+    carbon_dioxyde_average_discussion: Besoin d'en discuter ?
+    carbon_dioxyde_average_discussion_button: Contactez-nous
+    carbon_dioxyde_average_reseller: À titre de comparaison, les émissions moyennes* sont de %{n} kgCO<SUB>2</SUB>/livraison
+    carbon_dioxyde_average_reseller_help: '*Source : <a href="https://clean-mobility.org/wp-content/uploads/2022/07/Secret-Emissions-of-E-Commerce.pdf" target="_blank">Secret Emissions of E-Commerce</a>'
     motto: Bienvenue ! L'équipe Cartoway est là pour vous accompagner sur chaque tournée.
     unsupported_browser:
       unsupported_browser: Navigateur non pris en charge
@@ -3114,6 +3125,7 @@ fr:
       ton: tonnes
       kgco2e_html: kgCO<sub>2</sub>e
       kgco2e_l_html: kgCO<sub>2</sub>e/l
+      kgco2e_delivery_html: kgCO<sub>2</sub>e/livraison
       l_100km: l/100 km
       l_62Miles: l/62.1 mi.
       hour_minute: 'heure : minute'
