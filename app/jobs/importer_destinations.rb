@@ -439,7 +439,7 @@ class ImporterDestinations < ImporterBase
       {
         ref: row[:planning_ref],
         name: row[:planning_name],
-        date: row[:planning_date] && Date.strptime(row[:planning_date], I18n.t('destinations.import_file.format.date')).strftime(ACTIVE_RECORD_DATE_MASK)  || Date.today + @customer.planning_date_offset,
+        date: row[:planning_date] && custom_date_parse(row[:planning_date]) || Date.today + @customer.planning_date_offset,
         customer: @customer,
         vehicle_usage_set: @customer.vehicle_usage_sets[0]
       }
@@ -770,5 +770,12 @@ class ImporterDestinations < ImporterBase
       failed_indices = grouped_failed_instances.flat_map{ |index, _object| slice_lines[index].map{ |slice_line| slice_index * 1000 + slice_line + 2 }} # index start at 0 + header
       I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' - ' + errors.join(', ')
     }.join(';')
+  end
+
+  def custom_date_parse(date_string)
+    parsed_date = Date.strptime(date_string, I18n.t('destinations.import_file.format.date'))
+    return parsed_date if parsed_date.year > 100
+
+    Date.strptime(date_string, I18n.t('destinations.import_file.format.date_short'))
   end
 end

@@ -1418,6 +1418,7 @@ en:
         integer: integer
         float: '0.123'
         date: '%m-%d-%Y'
+        date_short: '%m-%d-%y'
         date_desc: 'MM/DD/AAAA'
         hour: 'HH:MM'
         second: 'HH:MM:SS'
