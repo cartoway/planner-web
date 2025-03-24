@@ -27,7 +27,8 @@
         "donjayamanne.git-extension-pack",
         "ms-azuretools.vscode-docker",
         "vayan.haml",
-        "imgildev.vscode-mustache-snippets"
+        "imgildev.vscode-mustache-snippets",
+        "lokalise.i18n-ally"
       ]
     }
   },

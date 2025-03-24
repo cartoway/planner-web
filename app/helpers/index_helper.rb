@@ -19,11 +19,28 @@ module IndexHelper
   def customer_summary
     return {} unless @customer
 
+    carbon_dioxyde_average = @customer.vehicles.all?(&:emission) && (@customer.plannings.map(&:average_carbon_dioxyde_emissions).sum.to_f / @customer.plannings.count if @customer.plannings.any?)
+    carbon_dioxyde_average_reseller = @customer.reseller.carbon_dioxyde_average
+    carbon_dioxyde_color_class =
+      if carbon_dioxyde_average.present?
+        if carbon_dioxyde_average.nil?
+          'default'
+        elsif carbon_dioxyde_average < carbon_dioxyde_average_reseller
+          'success'
+        elsif carbon_dioxyde_average == carbon_dioxyde_average_reseller
+          'primary'
+        else
+          'danger'
+        end
+      end
+
     {
       plannings: {
         count: @customer.plannings.count,
         latest: @customer.plannings.reorder(updated_at: :desc).first(5),
-        limit: @customer.default_max_plannings
+        limit: @customer.default_max_plannings,
+        carbon_dioxyde_average: carbon_dioxyde_average,
+        carbon_dioxyde_color_class: carbon_dioxyde_color_class
       },
       zonings: {
         count: @customer.zonings.count,
@@ -51,6 +68,10 @@ module IndexHelper
       statistics: {
         exists: @customer.reseller.customer_dashboard_url.present?,
         url: @customer.reseller.customer_dashboard_url&.gsub('{LG}', I18n.locale.to_s)&.gsub('{ID}', @customer.id.to_s)
+      },
+      reseller: {
+        carbon_dioxyde_average: carbon_dioxyde_average_reseller,
+        contact_url: @customer.reseller.contact_url&.gsub('{LG}', I18n.locale.to_s)
       }
     }
   end
