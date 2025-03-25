@@ -243,9 +243,7 @@ class OptimizerWrapper
     point_hash = {}
     route_ids = routes.map(&:id)
     enable_upper_bound = options.key?(:enable_optimization_soft_upper_bound) ? options[:enable_optimization_soft_upper_bound] : planning.customer.enable_optimization_soft_upper_bound
-    stop_soft_upper_bound = options[:stop_soft_upper_bound] || planning.customer.optimization_stop_soft_upper_bound
-    services_late_multiplier = (enable_upper_bound && stop_soft_upper_bound > 0) ? stop_soft_upper_bound : nil
-    maximum_lateness = options[:stop_max_upper_bound] || planning.customer.stop_max_upper_bound
+    extra_time = enable_upper_bound && (options[:stop_max_upper_bound] || planning.customer.stop_max_upper_bound) || 0
     vrp_services = stops.map{ |stop|
       # A stop without position should not be part of an optimization
       next if options[:active_only] && stop.route.vehicle_usage? && !stop.active && !options[:moving_stop_ids]&.include?(stop.id) || !stop.position?
@@ -267,17 +265,14 @@ class OptimizerWrapper
           timewindows: [
             (stop.time_window_start_1 || stop.time_window_end_1) && {
               start: stop.time_window_start_1.try(:to_f),
-              end: stop.time_window_end_1.try(:to_f),
-              maximum_lateness: maximum_lateness
+              end: stop.time_window_end_1.try(:to_f) + extra_time
             },
             (stop.time_window_start_2 || stop.time_window_end_2) && {
               start: stop.time_window_start_2.try(:to_f),
-              end: stop.time_window_end_2.try(:to_f),
-              maximum_lateness: maximum_lateness
+              end: stop.time_window_end_2.try(:to_f) + extra_time
             },
           ].compact,
-          duration: stop.duration,
-          late_multiplier: services_late_multiplier
+          duration: stop.duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
         priority: stop.priority && (stop.priority.to_i - 4).abs,
         quantities: stop.visit&.default_quantities&.map{ |k, v|
@@ -296,9 +291,7 @@ class OptimizerWrapper
 
   def build_vehicles(planning, routes, **options)
     enable_upper_bound = options.key?(:enable_optimization_soft_upper_bound) ? options[:enable_optimization_soft_upper_bound] : planning.customer.enable_optimization_soft_upper_bound
-    vehicle_soft_upper_bound = options[:vehicle_soft_upper_bound] || planning.customer.optimization_vehicle_soft_upper_bound
-    vehicles_cost_late_multiplier = (enable_upper_bound && vehicle_soft_upper_bound > 0) ? vehicle_soft_upper_bound : nil
-
+    extra_time = enable_upper_bound && (options[:vehicle_max_upper_bound] || planning.customer.vehicle_max_upper_bound) || 0
     vrp_vehicles = []
     point_hash = {}
 
@@ -346,8 +339,7 @@ class OptimizerWrapper
         speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
         timewindow: {
           start: route.vehicle_usage.default_time_window_start,
-          end: route.vehicle_usage.default_time_window_end,
-          maximum_lateness: options[:vehicle_max_upper_bound] || planning.customer.vehicle_max_upper_bound
+          end: route.vehicle_usage.default_time_window_end + extra_time
         }.delete_if{ |_k, v| v.nil? },
         duration: route.vehicle_usage.default_work_time(true)&.to_f,
         distance: route.vehicle_usage.default_max_distance,
@@ -359,7 +351,6 @@ class OptimizerWrapper
         cost_distance_multiplier: 0,
         cost_time_multiplier: 1,
         cost_waiting_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? options[:optimization_cost_waiting_time] : 0,
-        cost_late_multiplier: vehicles_cost_late_multiplier,
         shift_preference: (route.force_start || options[:force_start]) ? 'force_start' : nil,
         rest_ids: vehicle_rests.map{ |r| "r#{r[:id]}" },
         capacities: capacities || [],

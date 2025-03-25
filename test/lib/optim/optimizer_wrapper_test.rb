@@ -15,29 +15,25 @@ class OptimizerWrapperTest < ActionController::TestCase
     @planning = plannings(:planning_one)
   end
 
-  test 'should return a maximum lateness option' do
+  test 'should provide extra time for timewindow ends' do
     begin
       planning = plannings(:planning_one)
+      planning.customer.update(enable_optimization_soft_upper_bound: true)
       vrp = @optim.build_vrp(planning, planning.routes)
 
-      assert_equal 3, vrp[:vehicles][0][:cost_late_multiplier]
-      assert_equal 60, vrp[:vehicles][0][:timewindow][:maximum_lateness]
-      assert_equal 3, vrp[:services][0][:activity][:late_multiplier]
-      assert_equal 120, vrp[:services][0][:activity][:timewindows][0][:maximum_lateness]
+      # Default values are 54000 (15:00) and 39600 (11:00)
+      assert_equal 54060, vrp[:vehicles][0][:timewindow][:end]
+      assert_equal 39720, vrp[:services][0][:activity][:timewindows][0][:end]
 
       vrp = @optim.build_vrp(planning, planning.routes, **{ enable_optimization_soft_upper_bound: true, vehicle_max_upper_bound: 10, stop_max_upper_bound: 15})
 
-      assert_equal 3, vrp[:vehicles][0][:cost_late_multiplier]
-      assert_equal 10, vrp[:vehicles][0][:timewindow][:maximum_lateness]
-      assert_equal 3, vrp[:services][0][:activity][:late_multiplier]
-      assert_equal 15, vrp[:services][0][:activity][:timewindows][0][:maximum_lateness]
+      assert_equal 54010, vrp[:vehicles][0][:timewindow][:end]
+      assert_equal 39615, vrp[:services][0][:activity][:timewindows][0][:end]
 
       vrp = @optim.build_vrp(planning, planning.routes, **{ enable_optimization_soft_upper_bound: false, vehicle_max_upper_bound: 10, stop_max_upper_bound: 15})
 
-      refute vrp[:vehicles][0][:cost_late_multiplier]
-      assert_equal 10, vrp[:vehicles][0][:timewindow][:maximum_lateness]
-      refute vrp[:services][0][:activity][:late_multiplier]
-      assert_equal 15, vrp[:services][0][:activity][:timewindows][0][:maximum_lateness]
+      assert_equal 54000, vrp[:vehicles][0][:timewindow][:end]
+      assert_equal 39600, vrp[:services][0][:activity][:timewindows][0][:end]
     end
   end
 
