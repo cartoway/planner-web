@@ -2,6 +2,9 @@ RailsPerformance.setup do |config|
   config.redis = Redis.new(url: "redis://redis-cache:6379/1")
   config.duration = 4.hours
   config.enabled = !Rails.env.test?
+
+  config.ignored_endpoints = ['Devise::SessionsController#new']
+  config.ignored_paths = ['/rails/performance']
 end
 
 # Monkey patch, to log in JSON format
