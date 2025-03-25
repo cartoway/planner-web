@@ -181,8 +181,6 @@ en:
         optimization_cluster_size: Optimization cluster size
         optimization_time: Maximum optimization time by vehicle
         optimization_minimal_time: Minimum optimization time by vehicle
-        optimization_stop_soft_upper_bound: Stops delay coefficient
-        optimization_vehicle_soft_upper_bound: Vehicles delay coefficient
         optimization_cost_waiting_time: Waiting time coefficient
         optimization_force_start: Force schedule start vehicle
         enable_orders: Enable orders
@@ -192,7 +190,7 @@ en:
         enable_vehicle_position: Enable vehicle's position
         enable_stop_status: Enable visits status
         enable_sms: Enable SMS
-        enable_optimization_soft_upper_bound: Enable delays
+        enable_optimization_soft_upper_bound: Enable overtimes
         sms_template: Customer SMS template
         sms_driver_template: Driver SMS template
         sms_concat: Long SMS
@@ -204,8 +202,8 @@ en:
         print_stop_time: Include stop time
         print_barcode: Barcode
         speed_multiplier: Speed multiplier
-        stop_max_upper_bound: Visit outside time window
-        vehicle_max_upper_bound: Driver outside work shift
+        stop_max_upper_bound: Visit overtime
+        vehicle_max_upper_bound: Driver shift overtime
         router: Routing Engine
         router_warning: This routing engine is unauthorized in this profile
         layer_warning: This layer is unauthorized in this profile
@@ -1048,25 +1046,17 @@ en:
       optimization_minimal_time_help: >-
         You can specify here a minimum duration, per vehicle, else optimization
         stops automatically.
-      optimization_soft_upper_bound_default: '%{n} (default value)'
-      optimization_stop_soft_upper_bound_help: >-
-        More the value is important, more delays are detrimental (0 to disallow
-        delays strictly: turn clusters off in this case).
-      optimization_vehicle_soft_upper_bound_help: >-
-        For global optimization, allow to manage distribution on vehicles. More
-        the value is important, more delays are detrimental (0 to disallow
-        delays strictly: turn clusters off in this case).
       optimization_cost_waiting_time_default: '%{n} (default value)'
       optimization_cost_waiting_time_help: >-
         Evaluate the importance of waiting times. More the value is important,
         more the delay before time slot opening is important (0 to disallow the
         waiting time).
       optimization_force_start_help: Force vehicle start to the beginning of its schedule.
-      enable_optimization_soft_upper_bound_help: Enable the delays in optimization
+      enable_optimization_soft_upper_bound_help: Enable overtimes in optimization
       enable_global_optimization_test: Enabled if Test
-      stop_max_upper_bound: Visit outside time window
-      stop_max_upper_bound_help: Allow stop lateness
-      vehicle_max_upper_bound: Driver outside work shift
+      stop_max_upper_bound: Visit overtime
+      stop_max_upper_bound_help: Allow to visit a stop within an overtime
+      vehicle_max_upper_bound: Driver shift overtime
       vehicle_max_upper_bound_help: Authorise overtime on routes
       print_header_help: Block of text added before each route
       print:
@@ -2023,13 +2013,13 @@ en:
             Warning: all non planned destination will be assigned to vehicles
             during optimisation process. If you do not want this to happen,
             please lock ( <i class="fa fa-lock" ></i> ) unplanned destination.
-          enable_soft_upper_bound: Allow lateness
+          enable_soft_upper_bound: Allow overtimes
           enable_optimization_soft_upper_bound_true_help: >-
-            Allow lateness
+            Allow overtimes
           enable_optimization_soft_upper_bound_false_help: >-
-            Deny lateness
-          vehicle_max_upper_bound: 'Driver outside work shift'
-          stop_max_upper_bound: 'Visit outside time window'
+            Deny overtimes
+          vehicle_max_upper_bound: Driver shift overtime
+          stop_max_upper_bound: Visit overtime
         optimizer:
           title: Optimization
           in_progress: 'Please wait, processing.'

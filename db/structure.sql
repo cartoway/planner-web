@@ -135,8 +135,8 @@ CREATE TABLE public.customers (
     history_cron_hour integer,
     sms_driver_template character varying,
     enable_optimization_soft_upper_bound boolean,
-    stop_max_upper_bound integer,
-    vehicle_max_upper_bound integer,
+    stop_max_upper_bound integer DEFAULT 0,
+    vehicle_max_upper_bound integer DEFAULT 0,
     planning_date_offset integer DEFAULT 1
 );
 
@@ -3103,6 +3103,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250307133104'),
 ('20250310095030'),
 ('20250314130549'),
-('20250321085637');
+('20250321085637'),
+('20250325123806');
 
 
