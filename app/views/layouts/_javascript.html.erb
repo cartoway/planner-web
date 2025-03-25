@@ -4,16 +4,4 @@
   </script>
 <% end %>
 
-<% if browser.edge? || browser.ie? %>
-  <script>
-    $(document).on('ready page:load', function() {
-      var name = (navigator.userAgent.indexOf('Edge') !== -1) ? '<i class="fa fa-edge" aria-hidden="true"></i> Edge' : '<i class="fa fa-internet-explorer" aria-hidden="true"></i> Internet Explorer';
-      $('body').append('<div class="footer-message">' + I18n.t('web.slow_browser', {n: name}) + ' <a class="link" id="footer-message-close"><i class="fa fa-times" aria-hidden="true"></i> ' +  I18n.t('web.dialog.close') + '</a></div>');
-      $('#footer-message-close').click(function() {
-        $(this).parent().hide();
-      });
-    });
-  </script>
-<% end %>
-
 <%= insert_paloma_hook %>
