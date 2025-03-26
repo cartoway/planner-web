@@ -82,9 +82,6 @@ class Customer < ApplicationRecord
   validates :optimization_vehicle_soft_upper_bound, numericality: { greater_than: 0 }, allow_nil: true
   validates :optimization_stop_soft_upper_bound, numericality: { greater_than: 0 }, allow_nil: true
 
-  validates :stop_max_upper_bound, numericality: { greater_than_or_equal_to: 0 }, allow_nil: false
-  validates :vehicle_max_upper_bound, numericality: { greater_than_or_equal_to: 0 }, allow_nil: false
-
   validates :max_vehicles, numericality: { greater_than: 0 }
   validate do
     errors.add(:max_vehicles, :not_an_integer) if @invalid_max_vehicle
