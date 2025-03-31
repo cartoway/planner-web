@@ -48,6 +48,10 @@
     - API documentation now correctly displays the two alternative to import tags. Directly with a list of ids (through `tag_ids`) or with a list of strings (through `tags`) [#337](https://github.com/cartoway/planner-web/pull/337)
   - Api-Web Planning callback button were breaking the panel structure [#305](https://github.com/cartoway/planner-web/pull/305)
   - Customer duplication now correctly transfer custom quantity related import headers [#323](https://github.com/cartoway/planner-web/pull/323)
+
+  ### Removed
+  - Customer parameters `optimization_stop_soft_upper_bound` and `optimization_vehicle_soft_upper_bound` are replaced by the combination of `enable_optimization_soft_upper_bound` with respectively `stop_max_upper_bound` and `vehicle_max_upper_bound` [#336](https://github.com/cartoway/planner-web/pull/336)
+
 ## V104.2.0
   ### Changed
   - Destination
