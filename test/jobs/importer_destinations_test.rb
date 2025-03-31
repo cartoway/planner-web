@@ -656,4 +656,27 @@ class ImporterDestinationsTest < ActionController::TestCase
       end
     end
   end
+
+  test 'should import one plan and update same plan with various cases' do
+    Planning.all.each(&:destroy)
+    @customer.delete_all_destinations
+    @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}
+    @customer.reload
+    assert_difference('Planning.count', 1) do
+      assert_difference('Route.count', 3) do
+        assert_difference('Stop.count', 6) do
+          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes_multiple_cases.csv', 'text.csv')).import
+          @customer.reload
+          planning = @customer.plannings.last
+          route_1 = planning.routes.find{ |r| r.ref == 't1' }
+          route_2 = planning.routes.find{ |r| r.ref == 't2' }
+          assert_equal 'plan1', planning.ref
+          assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+          assert_equal 2, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
+          assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
+          assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
+        end
+      end
+    end
+  end
 end
