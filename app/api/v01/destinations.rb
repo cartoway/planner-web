@@ -195,7 +195,7 @@ class V01::Destinations < Grape::API
 
       if params[:destinations]
         d_params = declared(params) # Filter undeclared parameters
-        destinations_params = d_params[:destinations].each{ |dest_params| dest_params[:visits]&.each{ |hash|
+        import_destination_params = d_params[:destinations].each{ |dest_params| dest_params[:visits]&.each{ |hash|
           convert_timewindows(hash)
           convert_deprecated_quantities(hash);
         } }
@@ -212,7 +212,7 @@ class V01::Destinations < Grape::API
       end
       import = if params[:destinations]
         # FIXME ImportJSON has its own conversion methods. It should be done at the API level
-        ImportJson.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], json: destinations_params)
+        ImportJson.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], json: import_destination_params)
       elsif params[:remote]
         case params[:remote]
         when :tomtom then ImportTomtom.new(importer: ImporterDestinations.new(current_customer, params[:planning]), customer: current_customer, replace: params[:replace])
