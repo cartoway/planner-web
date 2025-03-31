@@ -300,4 +300,37 @@ class OptimizerWrapperTest < ActionController::TestCase
   ensure
     remove_request_stub(stub_vrp_job) if stub_vrp_job
   end
+
+  test 'should handle service time in vehicle timewindows' do
+    begin
+      planning = plannings(:planning_one)
+      route = planning.routes[1]
+
+      route.vehicle_usage.update(
+        service_time_start: 300,
+        service_time_end: 600
+      )
+
+      vrp = @optim.build_vrp(planning, planning.routes)
+
+      assert_equal 36000 + 300, vrp[:vehicles][0][:timewindow][:start]
+      assert_equal 54000 - 600, vrp[:vehicles][0][:timewindow][:end]
+
+      route.vehicle_usage.vehicle_usage_set.update(
+        service_time_start: 120,
+        service_time_end: 180
+      )
+
+      vrp = @optim.build_vrp(planning, planning.routes)
+
+      assert_equal 36000 + 300, vrp[:vehicles][0][:timewindow][:start]
+      assert_equal 54000 - 600, vrp[:vehicles][0][:timewindow][:end]
+
+      route.vehicle_usage.update(service_time_start: nil, service_time_end: nil)
+      vrp = @optim.build_vrp(planning, planning.routes)
+
+      assert_equal 36000 + 120, vrp[:vehicles][0][:timewindow][:start]
+      assert_equal 54000 - 180, vrp[:vehicles][0][:timewindow][:end]
+    end
+  end
 end

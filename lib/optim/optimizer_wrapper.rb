@@ -264,12 +264,12 @@ class OptimizerWrapper
           position: POSITION_KEYS[stop.visit&.force_position&.to_sym || :neutral],
           timewindows: [
             (stop.time_window_start_1 || stop.time_window_end_1) && {
-              start: stop.time_window_start_1.try(:to_f),
-              end: stop.time_window_end_1.try(:to_f) + extra_time
+              start: stop.time_window_start_1,
+              end: stop.time_window_end_1 && (stop.time_window_end_1 + extra_time)
             },
             (stop.time_window_start_2 || stop.time_window_end_2) && {
-              start: stop.time_window_start_2.try(:to_f),
-              end: stop.time_window_end_2.try(:to_f) + extra_time
+              start: stop.time_window_start_2,
+              end: stop.time_window_end_2 && (stop.time_window_end_2 + extra_time)
             },
           ].compact,
           duration: stop.duration
@@ -338,10 +338,10 @@ class OptimizerWrapper
         area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:area].join(',') }&.join('|'),
         speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
         timewindow: {
-          start: route.vehicle_usage.default_time_window_start,
-          end: route.vehicle_usage.default_time_window_end + extra_time
+          start: route.vehicle_usage.default_time_window_start + route.vehicle_usage.default_service_time_start,
+          end: route.vehicle_usage.default_time_window_end + extra_time - route.vehicle_usage.default_service_time_end
         }.delete_if{ |_k, v| v.nil? },
-        duration: route.vehicle_usage.default_work_time(true)&.to_f,
+        duration: route.vehicle_usage.default_work_time(true),
         distance: route.vehicle_usage.default_max_distance,
         maximum_ride_distance: route.vehicle_usage.default_max_ride_distance,
         maximum_ride_time: route.vehicle_usage.default_max_ride_duration,
