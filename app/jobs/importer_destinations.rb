@@ -431,11 +431,12 @@ class ImporterDestinations < ImporterBase
   def build_attributes(row)
     # Convert references to symbol
     row[:planning_ref] = row[:planning_ref]&.strip&.to_sym
+    ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
     row[:ref] = row[:ref]&.strip&.to_sym
     row[:ref_visit] = row[:ref_visit]&.strip&.to_sym
     row.delete(:planning_date) if row[:planning_date] == ""
 
-    @plannings_attributes[row[:planning_ref]] ||=
+    @plannings_attributes[ref_planning] ||=
       {
         ref: row[:planning_ref],
         name: row[:planning_name],
@@ -644,9 +645,10 @@ class ImporterDestinations < ImporterBase
   def prepare_visit_with_destination_ref(row, line, destination, destination_index, destination_attributes, visit_attributes)
     if row[:without_visit].nil? || row[:without_visit].strip.empty?
       if destination
-        visit = if row[:ref_visit] || @nil_visit_available[row[:ref_planning]][row[:ref]]
+        ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
+        visit = if row[:ref_visit] || @nil_visit_available[ref_planning][row[:ref]]
           # If nil_visit available retrieve the first visit of the destination with a nil ref_visit
-          @nil_visit_available[row[:ref_planning]][row[:ref]] = false
+          @nil_visit_available[ref_planning][row[:ref]] = false
           @existing_visits_by_ref[row[:ref]][row[:ref_visit]]
         end
         @destinations_visits_attributes_by_ref[destination.ref] ||= Hash.new
@@ -693,16 +695,16 @@ class ImporterDestinations < ImporterBase
 
   def prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
     if visit_attributes
+      ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
       # Instersection of tags of all rows for tags of new planning
-      if !@common_tags[row[:planning_ref]]
-        @common_tags[row[:planning_ref]] = (visit_attributes[:tag_ids].to_a | destination_attributes[:tag_ids].to_a)
+      if !@common_tags[ref_planning]
+        @common_tags[ref_planning] = (visit_attributes[:tag_ids].to_a | destination_attributes[:tag_ids].to_a)
       else
-        @common_tags[row[:planning_ref]] &= (visit_attributes[:tag_ids].to_a | destination_attributes[:tag_ids].to_a)
+        @common_tags[ref_planning] &= (visit_attributes[:tag_ids].to_a | destination_attributes[:tag_ids].to_a)
       end
 
       # Add visit to route if needed
       if row.key?(:route) && (visit_attributes[:id].nil? || !@visit_ids.include?(visit_attributes[:id]))
-        ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref]
         ref_route = row[:route].blank? ? nil : row[:route] # ref has to be nil for out-of-route
         if row[:ref_vehicle]
           ref_vehicle = row[:ref_vehicle].gsub(%r{[\./\\]}, ' ')
