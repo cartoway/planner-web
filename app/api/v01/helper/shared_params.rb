@@ -71,12 +71,16 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :external_callback_url, type: String, documentation: { desc: 'External callback URL' }
     optional :external_callback_name, type: String, documentation: { desc: 'External callback name' }
 
+    optional :enable_optimization_soft_upper_bound, type: Boolean, documentation: { desc: 'Enable overtimes' }
+    optional :stop_max_upper_bound, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :vehicle_max_upper_bound, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+
     optional :optimization_max_split_size, type: Integer, documentation: { desc: 'Maximum number of visits to split problem', example: Planner::Application.config.optimize_max_split_size }
     optional :optimization_cluster_size, type: Integer, documentation: { desc: 'Time in seconds to group near visits', example: Planner::Application.config.optimize_cluster_size }
     optional :optimization_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Maximum optimization time (by vehicle)', example: Planner::Application.config.optimize_time }
     optional :optimization_minimal_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Minimum optimization time (by vehicle)', example: Planner::Application.config.optimize_minimal_time}
-    optional :optimization_stop_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Stops delay coefficient, 0 to avoid delay', example: Planner::Application.config.optimize_stop_soft_upper_bound}
-    optional :optimization_vehicle_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Vehicles delay coefficient, 0 to avoid delay', example: Planner::Application.config.optimize_vehicle_soft_upper_bound }
+    optional :optimization_stop_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: '[Obsolete] use enable_optimization_soft_upper_bound and stop_max_upper_bound instead', example: Planner::Application.config.optimize_stop_soft_upper_bound}
+    optional :optimization_vehicle_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: '[Obsolete] use enable_optimization_soft_upper_bound and vehicle_max_upper_bound instead', example: Planner::Application.config.optimize_vehicle_soft_upper_bound }
     optional :optimization_cost_waiting_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient to manage waiting time', example: Planner::Application.config.optimize_cost_waiting_time }
     optional :optimization_force_start, type: Boolean, documentation: { desc: 'Force time for departure', example: Planner::Application.config.optimize_force_start }
 
