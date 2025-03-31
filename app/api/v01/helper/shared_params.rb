@@ -68,6 +68,10 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :sms_concat, type: Boolean
     optional :sms_from_customer_name, type: Boolean
 
+    optional :enable_external_callback, type: Boolean, documentation: { desc: 'Enable external callback' }
+    optional :external_callback_url, type: String, documentation: { desc: 'External callback URL' }
+    optional :external_callback_name, type: String, documentation: { desc: 'External callback name' }
+
     optional :optimization_max_split_size, type: Integer, documentation: { desc: 'Maximum number of visits to split problem', example: Mapotempo::Application.config.optimize_max_split_size }
     optional :optimization_cluster_size, type: Integer, documentation: { desc: 'Time in seconds to group near visits', example: Mapotempo::Application.config.optimize_cluster_size }
     optional :optimization_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Maximum optimization time (by vehicle)', example: Mapotempo::Application.config.optimize_time }
@@ -97,8 +101,10 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :phone_number, type: String
     optional :geocoding_accuracy, type: Float
     optional :geocoding_level, type: String, values: ['point', 'house', 'street', 'intersection', 'city']
-    optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { param_type: 'form', desc: 'Ids separated by comma.' }
-    optional :tags, type: Array[String], documentation: { desc: 'Tag labels separated by comma.', hidden: true }
+    optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'Ids separated by comma.', example: '1,2,3' }
+    if options[:json_import]
+      optional :tags, type: Array[String], coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: 'tag1,tag2,tag3' }
+    end
     optional :geocoded_at,  type: Time, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(val) { val.is_a?(String) ? Time.parse(val + ' UTC') : val }
     optional :geocoder_version, type: String
     optional :visits, type: Array, documentation: { param_type: 'body' } do
@@ -183,7 +189,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :max_distance, type: Integer, documentation: { desc: 'Maximum achievable distance in meters' }
     optional :max_ride_distance, type: Integer, documentation: { desc: 'Maximum riding distance between two stops within a route in meters' }
     optional :max_ride_duration, type: Integer, documentation: { desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
-    optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+    optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'Ids separated by comma.', param_type: 'form', example: '1,2,3' }
     optional :devices, type: Hash
     optional :custom_attributes, type: Hash, documentation: { desc: 'Additional properties'}
   end
@@ -198,7 +204,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
-    optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+    optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'Ids separated by comma.', param_type: 'form', example: '1,2,3' }
 
     # Deprecated fields
     optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -229,8 +235,12 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   end
 
   params :request_visit do |options|
-    optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { param_type: 'form', desc: 'Ids separated by comma.' }
-    optional :ref, type: String
+    optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'Ids separated by comma.', example: '1,2,3' }
+    if options[:json_import]
+      optional :tags, type: Array[String], coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: 'tag1,tag2,tag3' }
+    end
+
+    optional :ref, type: String, documentation: { desc: 'unique reference among the visits of the related destination'}
 
     optional :quantities, type: Array, documentation: { param_type: 'body' } do
       optional :deliverable_unit_id, type: Integer
