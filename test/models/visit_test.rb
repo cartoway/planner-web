@@ -280,4 +280,29 @@ class VisitTest < ActiveSupport::TestCase
       visit.update force_position: 'invalid_value'
     end
   end
+
+  test 'should format quantities in attributes' do
+    visit = visits(:visit_one)
+    customer = visit.destination.customer
+
+    du1 = customer.deliverable_units.create!(label: 'Unit 1')
+    du2 = customer.deliverable_units.create!(label: 'Unit 2')
+
+    visit.quantities = { du1.id => 10, du2.id => 20 }
+    visit.quantities_operations = { du1.id => 'fill', du2.id => 'empty' }
+    visit.save!
+
+    attributes = visit.api_attributes
+    quantities = attributes['quantities']
+
+    assert_equal 2, quantities.size
+
+    assert_equal du1.id, quantities[0][:deliverable_unit_id]
+    assert_equal 10, quantities[0][:quantity]
+    assert_equal 'fill', quantities[0][:operation]
+
+    assert_equal du2.id, quantities[1][:deliverable_unit_id]
+    assert_equal(-20, quantities[1][:quantity])
+    assert_equal 'empty', quantities[1][:operation]
+  end
 end
