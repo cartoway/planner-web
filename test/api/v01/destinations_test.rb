@@ -265,6 +265,48 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should create bulk from json with string tags' do
+    assert_difference('Destination.count', 1) do
+      assert_difference('Visit.count', 1) do
+        assert_difference('Stop.count',
+          @customer.plannings.select{ |p| p.tags_compatible?([tags(:tag_one), tags(:tag_two)]) }.size * 1) do
+          put api(), nil, input: {
+            destinations: [{
+              name: 'Nouveau client',
+              street: nil,
+              postalcode: nil,
+              city: 'Tule',
+              state: 'Limousin',
+              lat: 43.5710885456786,
+              lng: 3.89636993408203,
+              detail: nil,
+              comment: nil,
+              phone_number: nil,
+              ref: 'z',
+              tags: 'tag1,tag2,tag3',
+              geocoding_accuracy: nil,
+              foo: 'bar',
+              visits: [{
+                ref: 'v1',
+                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, quantity: 1}],
+                time_window_start_1: '08:00',
+                time_window_end_1: '12:00',
+                time_window_start_2: '14:00',
+                time_window_end_2: '18:00',
+                duration: nil
+              }]
+            }]
+          }.to_json, CONTENT_TYPE: 'application/json'
+          assert last_response.ok?, last_response.body
+          assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
+
+          get api()
+          assert_equal 3, JSON.parse(last_response.body).find{ |destination| destination['name'] == 'Nouveau client' }['tag_ids'].size
+        end
+      end
+    end
+  end
+
   test 'should create bulk from json with time exceeding one day' do
     assert_difference('Destination.count', 1) do
       assert_difference('Planning.count', 1) do
