@@ -26,6 +26,7 @@ class ImporterDestinations < ImporterBase
     super customer
     @planning_hash = planning_hash || {}
     @deliverable_units = customer&.deliverable_units || []
+    @deliverable_unit_hash = customer&.deliverable_units&.map{ |d_u| [d_u.label, d_u] }.to_h || {}
   end
 
   def max_lines
@@ -122,7 +123,18 @@ class ImporterDestinations < ImporterBase
           v[:ref_visit] = v.delete(:ref)
           v[:tag_visits] = v[:tag_ids].collect(&:to_i) if !v.key?(:tags) && v.key?(:tag_ids)
           v[:tag_visits] = v.delete(:tags) if v.key?(:tags)
-          v[:quantities] = Hash[v[:quantities].map{ |q| [q[:deliverable_unit_id], q[:quantity]] }] if v[:quantities] && v[:quantities].is_a?(Array)
+          if v[:quantities] && v[:quantities].is_a?(Array)
+            quantity_hash = {}
+            v[:quantities].map{ |q|
+              if q[:deliverable_unit_label] && !q[:deliverable_unit_id]
+                du = @deliverable_unit_hash[q[:deliverable_unit_label]] || @customer.deliverable_units.create(label: q[:deliverable_unit_label])
+                @deliverable_unit_hash[q[:deliverable_unit_label]] = du
+                q[:deliverable_unit_id] = du.id
+              end
+              quantity_hash[q[:deliverable_unit_id]] = q[:quantity]
+            }
+            v[:quantities] = quantity_hash
+          end
           dest.except(:visits).merge(v)
         }
       else
@@ -171,6 +183,7 @@ class ImporterDestinations < ImporterBase
         if m && unit_labels.exclude?(m[1])
           unit_labels.delete_at(unit_labels.index(m[1])) if unit_labels.index(m[1])
           @deliverable_units << @customer.deliverable_units.create(label: m[1])
+          @deliverable_unit_hash[m[1]] = @deliverable_units.last
           @columns = nil # Reset columns "cache"
         end
       }

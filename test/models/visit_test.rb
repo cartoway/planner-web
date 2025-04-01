@@ -313,4 +313,34 @@ class VisitTest < ActiveSupport::TestCase
     @visit.revenue = -100.50
     assert_not @visit.valid?
   end
+
+  test 'should format quantities in attributes' do
+    visit = visits(:visit_one)
+    customer = visit.destination.customer
+
+    # Créer des deliverable_units pour le test
+    du1 = customer.deliverable_units.create!(label: 'Unit 1')
+    du2 = customer.deliverable_units.create!(label: 'Unit 2')
+
+    # Définir les quantities et operations
+    visit.quantities = { du1.id => 10, du2.id => 20 }
+    visit.quantities_operations = { du1.id => 'fill', du2.id => 'empty' }
+    visit.save!
+
+    # Vérifier le format dans attributes
+    attributes = visit.api_attributes
+    quantities = attributes['quantities']
+
+    assert_equal 2, quantities.size
+
+    # Vérifier le premier deliverable unit
+    assert_equal du1.id, quantities[0][:deliverable_unit_id]
+    assert_equal 10, quantities[0][:quantity]
+    assert_equal 'fill', quantities[0][:operation]
+
+    # Vérifier le deuxième deliverable unit
+    assert_equal du2.id, quantities[1][:deliverable_unit_id]
+    assert_equal(-20, quantities[1][:quantity])
+    assert_equal 'empty', quantities[1][:operation]
+  end
 end

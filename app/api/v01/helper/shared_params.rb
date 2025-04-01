@@ -255,8 +255,12 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
 
     optional :quantities, type: Array, documentation: { param_type: 'body' } do
       optional :deliverable_unit_id, type: Integer
-      optional :quantity, type: Float, coerce_with: CoerceFloatString
-      all_or_none_of :deliverable_unit_id, :quantity
+      if options[:json_import]
+        optional :deliverable_unit_label, type: String
+      end
+      optional :operation, type: String, values: %w[fill empty]
+      requires :quantity, type: Float, coerce_with: CoerceFloatString
+      at_least_one_of :deliverable_unit_id, :deliverable_unit_label
     end
     optional :quantity, type: Integer, documentation: { desc: 'Deprecated, use quantities instead.', hidden: true }
     optional :quantity1_1, type: Integer, documentation: { desc: 'Deprecated, use quantities instead.', hidden: true }
