@@ -40,11 +40,23 @@ class V01::Destinations < Grape::API
           convert_timewindows(hash)
           convert_deprecated_quantities(hash)
           hash[:id] = visit_ref_ids[hash[:ref]] if existing_destination && !hash.key?(:id) && hash[:ref].present? && visit_ref_ids[hash[:ref]]
+
+          # Serialize quantities
+          if hash[:quantities]
+            hash[:quantities] = hash[:quantities].reject { |q| q.blank? }
+            if hash[:quantities].empty?
+              hash.delete(:quantities)
+            else
+              hash[:quantities_operations] = Hash[hash[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:operation]] }]
+              hash[:quantities] = Hash[hash[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }]
+            end
+          end
         end
       end
 
+      deliverable_unit_ids = current_customer.deliverable_units.map{ |du| du.id.to_s }
       nested_visit_custom_attributes = current_customer.custom_attributes.select(&:visit?).map(&:name)
-      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :force_position, tag_ids: [], quantities: current_customer.deliverable_units.map{ |du| du.id.to_s }, custom_attributes: nested_visit_custom_attributes])
+      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :force_position, tag_ids: [], quantities: deliverable_unit_ids, quantities_operations: deliverable_unit_ids, custom_attributes: nested_visit_custom_attributes])
     end
 
     def present_geojson_destinations(params)
@@ -90,15 +102,14 @@ class V01::Destinations < Grape::API
     end
 
     def convert_deprecated_quantities(hash)
-      hash[:quantities] = Hash[hash[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }] if hash[:quantities] && hash[:quantities].is_a?(Array)
       # Deals with deprecated quantity
       if hash[:quantities].blank?
+        hash[:quantities] = []
         # hash[:quantities] keys must be string here because of permit below
-        hash[:quantities] = { current_customer.deliverable_units[0].id.to_s => hash.delete(:quantity) } if hash[:quantity] && current_customer.deliverable_units.size > 0
+        hash[:quantities] << { deliverable_unit_id: current_customer.deliverable_units[0].id, quantity: hash.delete(:quantity) } if hash[:quantity] && current_customer.deliverable_units.size > 0
         if hash[:quantity1_1] || hash[:quantity1_2]
-          hash[:quantities] = {}
-          hash[:quantities].merge!({ current_customer.deliverable_units[0].id.to_s => hash.delete(:quantity1_1) }) if hash[:quantity1_1] && current_customer.deliverable_units.size > 0
-          hash[:quantities].merge!({ current_customer.deliverable_units[1].id.to_s => hash.delete(:quantity1_2) }) if hash[:quantity1_2] && current_customer.deliverable_units.size > 1
+          hash[:quantities] << { deliverable_unit_id: current_customer.deliverable_units[0].id, quantity: hash.delete(:quantity1_1) } if hash[:quantity1_1] && current_customer.deliverable_units.size > 0
+          hash[:quantities] << { deliverable_unit_id: current_customer.deliverable_units[1].id, quantity: hash.delete(:quantity1_2) } if hash[:quantity1_2] && current_customer.deliverable_units.size > 1
         end
       end
     end

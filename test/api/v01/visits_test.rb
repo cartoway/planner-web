@@ -154,7 +154,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
     put api_destination(@destination.id, @visit.id), { quantities: [{ deliverable_unit: 1, quantity: 'aaa' }] }.to_json, 'CONTENT_TYPE' => 'application/json'
     assert last_response.bad_request?
     response = JSON.parse(last_response.body)
-    assert_equal response['message'], 'quantities[0][quantity] is invalid, quantities[0][deliverable_unit_id], quantities[0][quantity] provide all or none of parameters'
+    assert_equal response['message'], 'quantities[0][quantity] is invalid, quantities[0][deliverable_unit_id], quantities[0][deliverable_unit_label] are missing, at least one parameter must be provided'
   end
 
   test 'should destroy a visit' do

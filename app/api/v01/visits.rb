@@ -24,10 +24,6 @@ class V01::Visits < Grape::API
     def visit_params
       p = ActionController::Parameters.new(params)
       p = p[:visit] if p.key?(:visit)
-      if p[:quantities]
-        p[:quantities_operations] = Hash[p[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:operation]] }]
-        p[:quantities] = Hash[p[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }]
-      end
 
       # Deals with deprecated quantity
       unless p[:quantities]
@@ -36,6 +32,16 @@ class V01::Visits < Grape::API
           p[:quantities] = {}
           p[:quantities].merge!({current_customer.deliverable_units[0].id.to_s => p.delete(:quantity1_1)}) if p[:quantity1_1] && current_customer.deliverable_units.size > 0
           p[:quantities].merge!({current_customer.deliverable_units[1].id.to_s => p.delete(:quantity1_2)}) if p[:quantity1_2] && current_customer.deliverable_units.size > 1
+        end
+      end
+      # Serialize quantities
+      if p[:quantities]
+        p[:quantities] = p[:quantities].reject { |q| q.blank? }
+        if p[:quantities].empty?
+          p.delete(:quantities)
+        else
+          p[:quantities_operations] = Hash[p[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:operation]] }]
+          p[:quantities] = Hash[p[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }]
         end
       end
 
