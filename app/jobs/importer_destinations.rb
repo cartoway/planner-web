@@ -121,6 +121,7 @@ class ImporterDestinations < ImporterBase
         dest[:visits].collect{ |v|
           v[:ref_visit] = v.delete(:ref)
           v[:tag_visits] = v[:tag_ids].collect(&:to_i) if !v.key?(:tags) && v.key?(:tag_ids)
+          v[:tag_visits] = v.delete(:tags) if v.key?(:tags)
           v[:quantities] = Hash[v[:quantities].map{ |q| [q[:deliverable_unit_id], q[:quantity]] }] if v[:quantities] && v[:quantities].is_a?(Array)
           dest.except(:visits).merge(v)
         }
