@@ -103,7 +103,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :geocoding_level, type: String, values: ['point', 'house', 'street', 'intersection', 'city']
     optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'Ids separated by comma.', example: '1,2,3' }
     if options[:json_import]
-      optional :tags, type: Array[String], coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: 'tag1,tag2,tag3' }
+      optional :tags, type: Array, coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: ['tag1', 'tag2', 'tag3'] }
     end
     optional :geocoded_at,  type: Time, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(val) { val.is_a?(String) ? Time.parse(val + ' UTC') : val }
     optional :geocoder_version, type: String
@@ -237,7 +237,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   params :request_visit do |options|
     optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'Ids separated by comma.', example: '1,2,3' }
     if options[:json_import]
-      optional :tags, type: Array[String], coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: 'tag1,tag2,tag3' }
+      optional :tags, type: Array, coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: ['tag1', 'tag2', 'tag3'] }
     end
 
     optional :ref, type: String, documentation: { desc: 'unique reference among the visits of the related destination'}
