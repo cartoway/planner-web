@@ -829,7 +829,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     body = JSON.parse(last_response.body)
 
     assert_equal 400, last_response.status
-    assert_equal 'destinations[0][visits][0][quantities][0][deliverable_unit_id], destinations[0][visits][0][quantities][0][quantity] provide all or none of parameters', body['message']
+    assert_equal 'destinations[0][visits][0][quantities][0][deliverable_unit_id], destinations[0][visits][0][quantities][0][deliverable_unit_label] are missing, at least one parameter must be provided', body['message']
   end
 
   test 'should destroy a destination' do
@@ -888,7 +888,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   test 'Update Destination' do
     visit = visits :visit_one
     destination_params = @destination.attributes.slice *@destination.attributes.keys - ['id']
-    visit_attributes = visit.attributes.slice *visit.attributes.keys - ['created_at', 'updated_at']
+    visit_attributes = visit.api_attributes.slice *visit.api_attributes.keys - ['created_at', 'updated_at']
     destination_params.merge! 'visits_attributes' => [visit_attributes]
     put api(@destination.id), destination_params
     assert last_response.ok?, last_response.body

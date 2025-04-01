@@ -154,6 +154,25 @@ class Visit < ApplicationRecord
     visit_attributes
   end
 
+  def api_attributes
+    visit_attributes = attributes
+
+    # Deserialize quantities and quantities_operations
+    if destination&.customer&.deliverable_units
+      visit_attributes['quantities'] = destination.customer.deliverable_units.map { |du|
+        next if !quantities.key?(du.id) && !quantities_operations.key?(du.id)
+        {
+          deliverable_unit_id: du.id,
+          quantity: quantities[du.id],
+          operation: quantities_operations[du.id]
+        }.delete_if { |_k, v| v.nil? || v == "" }
+      }.compact
+      visit_attributes.delete('quantities_operations')
+    end
+
+    visit_attributes
+  end
+
   def default_duration
     duration || destination.customer.visit_duration
   end
