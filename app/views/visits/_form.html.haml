@@ -112,3 +112,12 @@
           = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
 
       = f.select :force_position, options_for_select(visit_force_position_options_for_select, selected: visit_force_position_options_for_select_selected(visit)), {label: t('activerecord.attributes.visit.force_position'), help: t('.force_position_help')}, { control_class: 'form-control' }
+
+      - @visit_custom_attributes.each do |custom_attribute|
+        .custom_field
+          %label.col-md-offset-2.col-md-8.field
+            = custom_attribute.name
+          .col-md-offset-2.col-md-8.field
+            = custom_attribute_form_field(f, visit, custom_attribute, "destination[visits_attributes][#{i}]")
+            %p.help-block
+              = custom_attribute.description
