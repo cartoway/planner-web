@@ -68,6 +68,7 @@ class DestinationsController < ApplicationController
   end
 
   def edit
+    @visit_custom_attributes = current_user.customer.custom_attributes.for_visit
   end
 
   def create
@@ -257,7 +258,8 @@ class DestinationsController < ApplicationController
         :_destroy,
         tag_ids: [],
         quantities: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
-        quantities_operations: current_user.customer.deliverable_units.map{ |du| du.id.to_s }
+        quantities_operations: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
+        custom_attributes: current_user.customer.custom_attributes.for_visit.map{ |c_u| c_u.name.to_sym }
       ]
     )
     o[:visits_attributes].each do |_k, v|

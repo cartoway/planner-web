@@ -48,7 +48,7 @@ module DestinationsHelper
         visit_columns += ["quantity#{du.id}".to_sym, "quantity_operation#{du.id}".to_sym]
       }
     end
-    visit_columns += @customer.custom_attributes.select(&:visit?).map{ |ca| "custom_attributes_visit[#{ca.name}]" }
+    visit_columns += @customer.custom_attributes.for_visit.map{ |ca| "custom_attributes_visit[#{ca.name}]" }
     visit_columns
   end
 
@@ -108,7 +108,7 @@ module DestinationsHelper
             [visit.quantities[du.id],
             visit.quantities_operations[du.id] && I18n.t("destinations.import_file.quantity_operation_#{visit.quantities_operations[du.id]}")]
           }) +
-          customer.custom_attributes.select(&:visit?).map{ |ca|
+          customer.custom_attributes.for_visit.map{ |ca|
             visit.custom_attributes_typed_hash[ca.name]
           }
       }

@@ -50,7 +50,7 @@ class ImporterVehicleUsageSets < ImporterBase
       color: { title: I18n.t('vehicles.import.color'), desc: I18n.t('vehicles.import.color_desc'), format: I18n.t('vehicles.import.format.string') },
       tags_vehicle: { title: I18n.t('vehicles.import.tags'), desc: I18n.t('vehicles.import.tags_desc'), format: I18n.t('vehicles.import.tags_format') },
       devices: { title: I18n.t('vehicles.import.devices'), desc: I18n.t('vehicles.import.devices_desc'), format: I18n.t('vehicles.import.format.string') }
-    ).merge(Hash[@customer.custom_attributes.select(&:vehicle?).map { |ca|
+    ).merge(Hash[@customer.custom_attributes.for_vehicle.map { |ca|
       ["custom_attributes[#{ca.name}]", { title: "#{I18n.t('vehicles.import.custom_attributes')}[#{ca.name}]", format: I18n.t("vehicles.import.format.#{ca.object_type}")}]
     }])
   end

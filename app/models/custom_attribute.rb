@@ -20,6 +20,10 @@ class CustomAttribute < ApplicationRecord
     stop: 2
   }
 
+  scope :for_vehicle, -> { where(object_class: :vehicle) }
+  scope :for_visit, -> { where(object_class: :visit) }
+  scope :for_stop, -> { where(object_class: :stop) }
+
   auto_strip_attributes :name
   validates :name, presence: true
 
