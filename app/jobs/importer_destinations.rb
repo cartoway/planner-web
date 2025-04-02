@@ -90,7 +90,7 @@ class ImporterDestinations < ImporterBase
     }.merge(Hash[@deliverable_units.flat_map{ |du|
       [["quantity#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.quantity_desc'), format: I18n.t('destinations.import_file.format.float')}],
       ["quantity_operation#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity_operation') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.quantity_operation_desc'), format: I18n.t('destinations.import_file.quantity_operation_format')}]]
-    }]).merge(Hash[@customer.custom_attributes.select(&:visit?).map { |ca|
+    }]).merge(Hash[@customer.custom_attributes.for_visit.map { |ca|
     ["custom_attributes_visit[#{ca.name}]", { title: "#{I18n.t('destinations.import_file.custom_attributes_visit')}[#{ca.name}]", format: I18n.t("destinations.import_file.format.#{ca.object_type}")}]
   }])
   end

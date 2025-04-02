@@ -52,7 +52,7 @@ class V01::Visits < Grape::API
       p[:time_window_end_2] ||= p.delete(:close2) if p[:close2]
 
       deliverable_unit_ids = current_customer.deliverable_units.map{ |du| du.id.to_s }
-      nested_visit_custom_attributes = current_customer.custom_attributes.select(&:visit?).map(&:name)
+      nested_visit_custom_attributes = current_customer.custom_attributes.for_visit.map(&:name)
 
       p.permit(:ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :revenue, :force_position, tag_ids: [], quantities: deliverable_unit_ids, quantities_operations: deliverable_unit_ids, custom_attributes: nested_visit_custom_attributes)
     end
