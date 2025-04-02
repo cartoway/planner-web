@@ -705,7 +705,7 @@ class PlanningsController < ApplicationController
           ('quantity_operation' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym]
         }
     ) +
-    (@customer || @planning.customer).custom_attributes.select(&:visit?).map{ |ca|
+    (@customer || @planning.customer).custom_attributes.for_visit.map{ |ca|
       "custom_attributes_visit[#{ca.name}]".to_sym
     }
   end
