@@ -348,6 +348,10 @@ $sidebar-margins: 10px;
         padding-left: 20px;
         cursor: pointer;
       }
+      .dropdown-menu > li > a {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
       .dropdown-menu li.link:hover {
         background-color: #EEE;
       }
