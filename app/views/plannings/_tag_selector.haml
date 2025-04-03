@@ -1,0 +1,9 @@
+.col-xs-12.multiple
+  %label
+    = t('plannings.statistics.select_tags')
+  = select_tag :planning_tag_ids,
+    options_from_collection_for_select(current_user.customer.tags, :id, :label),
+    { multiple: true,
+      class: 'form-control width_1_2 selectpicker',
+      'data-live-search': true,
+      'data-none-selected-text': t('plannings.statistics.select_tags_placeholder') }
