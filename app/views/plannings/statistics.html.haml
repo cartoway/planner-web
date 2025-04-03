@@ -1,0 +1,15 @@
+- javascript 'planning'
+- content_for :title, t('.title')
+.container
+  %h1
+    = t '.title'
+  #route_selector.row
+    = render 'tag_selector'
+
+  #statistics-container
+    = render partial: 'statistics', locals: { cumulated_stats: @cumulated_stats, current_user: current_user  }
+
+:ruby
+  controller.js(
+    planning_id: @planning.id
+  )
