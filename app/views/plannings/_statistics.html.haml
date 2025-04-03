@@ -1,0 +1,12 @@
+- cumulated_stats&.each do |tag_id, data|
+  %div{class: 'tag-stats'}
+    .row
+      .col-xs-12
+        %h3.tag-info
+          = tag_icon(data[:tag])
+          = data[:label]
+    .row.route-data
+      - data[:stats].each do |key, hash|
+        .col-xs-4.col-md-3.col-lg-2
+          %b= hash[:label]
+          = planning_stat_value(key, hash, current_user)

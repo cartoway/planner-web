@@ -347,8 +347,17 @@ en:
         customer_dashboard_url: Customer's Dashboard URL
         planning_dashboard_url: Planning's Dashboard URL
       route:
+        route_size: Routes
+        size_active: Stops
         distance: Distance
         emission: Emission
+        duration: Duration
+        drive_time: Drive time
+        wait_time: Wait time
+        visits_duration: Visits duration
+        revenue: Revenue
+        total_cost: Total cost
+        balance: Balance
         outdated: Outdated
         start: Start
         end: End
@@ -1851,6 +1860,7 @@ en:
           success: CSV file successfully exported
         print: Print
         spreadsheet: Spreadsheet CSV
+        statistics: Statistics by Categories
         gpx_route: GPX Route
         gpx_track: GPX Track
         kmz_track: KMZ Track
@@ -1873,6 +1883,7 @@ en:
       refresh: Refresh
       refresh_help: 'Plan parameters have been changed, it is required to recalculate'
       outdated_zoning: Sectorisation changed. Apply again to refresh.
+      size_active_help: Active stops
       stops_help: Plan stops / total
       duration_help: Total duration
       distance_help: Total distance
@@ -1901,6 +1912,7 @@ en:
       route_distance_help: Route distance
       route_quantity_help: Quantity / Vehicle capacity
       route_quantity_loading_help: Quantity to load before the start of the route
+      route_size_help: Number of Routes
       route_speed_average_help: Vehicle's speed average
       route_driving_time_help: Driving time
       route_visits_duration_help: Visits duration
@@ -2178,6 +2190,12 @@ en:
       default: Default
     show:
       print: Print
+    statistics:
+      title: Statistics
+      select_tags: Select the categories
+      select_tags_placeholder: Select the categories to display
+      min: 'min:'
+      max: 'max:'
   plannings_by_destinations:
     show:
       affect_destinations: Move visits
@@ -2904,6 +2922,9 @@ en:
       route_selected: selected route
       routes_selected: selected routes
       search_placeholder: Search
+      tag_none: No selected category
+      tag_selected: selected category
+      tags_selected: selected categories
       placeholder: Write here
     dialog:
       close: Close

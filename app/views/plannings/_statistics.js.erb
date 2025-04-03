@@ -1,0 +1,2 @@
+$('#statistics-container').html("<%= j(render partial: 'plannings/statistics.html.haml', locals: local_assigns) %>");
+var locals = <%= local_assigns.to_json.html_safe %>;

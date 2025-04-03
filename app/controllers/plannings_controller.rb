@@ -27,7 +27,7 @@ class PlanningsController < ApplicationController
 
   UPDATE_ACTIONS = [:update, :move, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
-  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route]
+  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :statistics]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
@@ -169,6 +169,48 @@ class PlanningsController < ApplicationController
 
   def driver_move
     move_respond
+  end
+
+  def statistics
+    stat_keys = [:size_active, :emission, :distance, :duration, :drive_time, :wait_time, :visits_duration, :revenue, :total_cost, :balance]
+    @cumulated_stats = {}
+
+    tags = params['tag_ids'].present? ? current_user.customer.tags.where(id: params['tag_ids'].split(',')) : current_user.customer.tags
+    tags.each { |tag|
+      next if tag.nil?
+
+      routes = @planning.routes
+                        .joins(vehicle_usage: [:vehicle])
+                        .joins('LEFT JOIN tag_vehicles ON tag_vehicles.vehicle_id = vehicles.id')
+                        .joins('LEFT JOIN tag_vehicle_usages ON tag_vehicle_usages.vehicle_usage_id = vehicle_usages.id')
+                        .where('tag_vehicles.tag_id = ? OR tag_vehicle_usages.tag_id = ?', tag.id, tag.id)
+                        .distinct
+
+      @cumulated_stats[tag.id] = { label: tag.label, tag: tag, stats: stat_init_hash }
+      routes.each { |route|
+        stat_keys.each { |key|
+          value = route.send(key)
+          if value
+            @cumulated_stats[tag.id][:stats][key][:value] = 0 if @cumulated_stats[tag.id][:stats][key][:value].nil?
+            @cumulated_stats[tag.id][:stats][key][:value] += value
+            @cumulated_stats[tag.id][:stats][key][:min] = value if @cumulated_stats[tag.id][:stats][key][:min].nil? || value < @cumulated_stats[tag.id][:stats][key][:min]
+            @cumulated_stats[tag.id][:stats][key][:max] = value if @cumulated_stats[tag.id][:stats][key][:max].nil? || value > @cumulated_stats[tag.id][:stats][key][:max]
+          end
+        }
+        route.quantities.each { |du_id, value|
+          @cumulated_stats[tag.id][:stats][du_id][:value] = 0 if @cumulated_stats[tag.id][:stats][du_id][:value].nil?
+          @cumulated_stats[tag.id][:stats][du_id][:value] += value
+          @cumulated_stats[tag.id][:stats][du_id][:min] = value if @cumulated_stats[tag.id][:stats][du_id][:min].nil? || value < @cumulated_stats[tag.id][:stats][du_id][:min]
+          @cumulated_stats[tag.id][:stats][du_id][:max] = value if @cumulated_stats[tag.id][:stats][du_id][:max].nil? || value > @cumulated_stats[tag.id][:stats][du_id][:max]
+        }
+      }
+      @cumulated_stats[tag.id][:stats][:route_size][:value] = routes.length
+    }
+
+    respond_to do |format|
+      format.html
+      format.js { render partial: 'statistics', locals: { cumulated_stats: @cumulated_stats, current_user: current_user } }
+    end
   end
 
   def refresh
@@ -734,5 +776,23 @@ class PlanningsController < ApplicationController
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
     end
+  end
+
+  def stat_init_hash
+    {
+      route_size: { label: t('activerecord.attributes.route.route_size'), help: t('plannings.edit.route_size_help'), icon: 'fa-truck-field', value: nil, min: nil, max: nil},
+      size_active: { label: t('activerecord.attributes.route.size_active'), help: t('plannings.edit.size_active_help'), icon: 'fa-check-square', value: nil, min: nil, max: nil},
+      emission: { label: t('activerecord.attributes.route.emission'), suffix: t('all.unit.kgco2e_html'), help: t('plannings.edit.emission_help'), icon: 'fa-flask', value: nil, min: nil, max: nil},
+      distance: { label: t('activerecord.attributes.route.distance'), help: t('plannings.edit.route_distance_help'), icon: 'fa-road', value: nil, min: nil, max: nil},
+      duration: { label: t('activerecord.attributes.route.duration'), help: t('plannings.edit.route_duration_help'), icon: 'fa-stopwatch', value: nil, min: nil, max: nil},
+      drive_time: { label: t('activerecord.attributes.route.drive_time'), help: t('plannings.edit.route_duration_help'), icon: 'fa-stopwatch', value: nil, min: nil, max: nil},
+      wait_time: { label: t('activerecord.attributes.route.wait_time'), help: t('plannings.edit.wait_time_help'), icon: 'fa-hourglass-half', value: nil, min: nil, max: nil},
+      visits_duration: { label: t('activerecord.attributes.route.visits_duration'), help: t('plannings.edit.route_visits_duration_help'), icon: 'fa-hourglass-half', value: nil, min: nil, max: nil},
+      revenue: { label: t('activerecord.attributes.route.revenue'), suffix: t("all.unit.currency_symbol.#{current_user.prefered_currency}"), help: t('plannings.edit.revenue_help'), icon: 'fa-hand-holding-dollar', value: nil, min: nil, max: nil},
+      total_cost: { label: t('activerecord.attributes.route.total_cost'), suffix: t("all.unit.currency_symbol.#{current_user.prefered_currency}"), help: t('plannings.edit.cost_help'), icon: 'fa-coins', value: nil, min: nil, max: nil},
+      balance: { label: t('activerecord.attributes.route.balance'), suffix: t("all.unit.currency_symbol.#{current_user.prefered_currency}"), help: t('plannings.edit.balance_help'), icon: 'fa-balance-scale', value: nil, min: nil, max: nil},
+    }.merge(current_user.customer.deliverable_units.map{ |du|
+      [du.id, { label: du.label&.capitalize || du.id, suffix: du.label || du.id, icon: du.icon || 'fa-boxes', value: nil, min: nil, max: nil}]
+    }.to_h)
   end
 end

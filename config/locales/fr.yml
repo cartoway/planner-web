@@ -347,7 +347,16 @@ fr:
         customer_dashboard_url: URL du tableau de bord du compte
         planning_dashboard_url: URL du tableau de bord de planification
       route:
+        route_size: Tournées
+        size_active: Arrêts
         distance: Distance
+        duration: Durée
+        drive_time: Temps de conduite
+        wait_time: Temps d'attente
+        visits_duration: Durée des visites
+        revenue: Recettes
+        total_cost: Coût total
+        balance: Solde
         emission: Émissions
         outdated: Obsolète
         start: Début
@@ -1935,6 +1944,7 @@ fr:
           success: CSV exporté avec succès
         print: Imprimer
         spreadsheet: Tableur CSV
+        statistics: Statistiques par Compétences
         gpx_route: Route GPX
         gpx_track: Tracé GPX
         kmz_track: Tracé KMZ
@@ -1959,6 +1969,7 @@ fr:
         Des paramètres ou des adresses utilisés par ce plan de tournées ont été
         modifiés, il est nécessaire de le recalculer
       outdated_zoning: La sectorisation a été modifiée. Appliquez à nouveau pour actualiser.
+      size_active_help: Arrêts planifiés
       stops_help: Arrêts planifiés / total
       duration_help: Somme des durées des tournées
       distance_help: Somme des distances des tournées
@@ -1991,6 +2002,7 @@ fr:
       route_distance_help: Distance de la tournée
       route_quantity_help: Chargement / Capacité véhicule
       route_quantity_loading_help: À charger avant le début de la tournée
+      route_size_help: Nombre de Tournées
       route_speed_average_help: Vitesse moyenne du véhicule
       route_driving_time_help: Durée de conduite
       route_visits_duration_help: Durée des visites
@@ -2278,6 +2290,12 @@ fr:
       default: Défaut
     show:
       print: Imprimer
+    statistics:
+      title: Statistiques
+      select_tags: "Sélectionner les Compétences"
+      select_tags_placeholder: "Choisir les Compétences à afficher"
+      min: 'min :'
+      max: 'max :'
   plannings_by_destinations:
     show:
       affect_destinations: Déplacer les visites
@@ -3033,6 +3051,9 @@ fr:
       route_none: Aucune tournée sélectionnée
       route_selected: tournées sélectionnée
       routes_selected: tournées sélectionnées
+      tag_none: Aucune compétence sélectionnée
+      tag_selected: compétences sélectionnées
+      tags_selected: compétences sélectionnées
       search_placeholder: Rechercher
       placeholder: Écrire ici
     dialog:

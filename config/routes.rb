@@ -133,6 +133,7 @@ Rails.application.routes.draw do
     get 'modal'
     patch 'switch'
     patch 'duplicate'
+    get 'statistics'
     patch ':route_id/active/:active' => 'plannings#active'
     patch ':route_id/reverse_order' => 'plannings#reverse_order'
     patch ':route_id/:stop_id' => 'plannings#update_stop'
