@@ -236,8 +236,8 @@ fr:
         ref: Référence
         icon: Icône
         default_quantity: Quantité par défaut
+        default_initial_load: Chargement initial max par défaut
         default_capacity: Capacité par défaut
-        default_initial_load: Chargement initial par défaut
         operation_fill: Remplissage
         operation_empty: Vidage
         optimization_overload_multiplier: Coefficient dépassement chargement
@@ -343,7 +343,16 @@ fr:
         customer_behavior_url: URL de comportement compte
         customer_dashboard_url: URL du tableau de bord du compte
       route:
+        route_size: Tournées
+        size_active: Arrêts
         distance: Distance
+        duration: Durée
+        drive_time: Temps de conduite
+        wait_time: Temps d'attente
+        visits_duration: Durée des visites
+        revenue: Recettes
+        total_cost: Coût total
+        balance: Solde
         emission: Émissions
         outdated: Obsolète
         start: Début
@@ -1161,9 +1170,7 @@ fr:
         Quantité à livrer par défaut à toutes vos visites (laisser vide si pas
         de quantité).
       default_capacity_help: Capacité par défaut de tous vos véhicules (laisser vide si illimité).
-      default_initial_load_help: >-
-        Charge initiale maximale par défaut de tous vos véhicules (laisser vide si pas
-        de charge initiale).
+      default_initial_load_help: Chargement initial maximal par défaut de tous vos véhicules (laisser vide si illimité).
       optimization_overload_multiplier_no: Non
       optimization_overload_multiplier_no_help: >-
         Lors de l'optimisation, si vous indiquez une capacité pour vos
@@ -1914,6 +1921,7 @@ fr:
           success: CSV exporté avec succès
         print: Imprimer
         spreadsheet: Tableur CSV
+        statistics: Statistiques par Compétences
         gpx_route: Route GPX
         gpx_track: Tracé GPX
         kmz_track: Tracé KMZ
@@ -1938,6 +1946,7 @@ fr:
         Des paramètres ou des adresses utilisés par ce plan de tournées ont été
         modifiés, il est nécessaire de le recalculer
       outdated_zoning: La sectorisation a été modifiée. Appliquez à nouveau pour actualiser.
+      size_active_help: Arrêts planifiés
       stops_help: Arrêts planifiés / total
       duration_help: Somme des durées des tournées
       distance_help: Somme des distances des tournées
@@ -1969,6 +1978,7 @@ fr:
       route_duration_help: Durée de la tournée / Créneau horaire ou durée de travail véhicule
       route_distance_help: Distance de la tournée
       route_quantity_help: Quantité / Capacité véhicule
+      route_size_help: Nombre de Tournées
       route_speed_average_help: Vitesse moyenne du véhicule
       route_driving_time_help: Durée de conduite
       route_visits_duration_help: Durée des visites
@@ -2254,6 +2264,12 @@ fr:
       default: Défaut
     show:
       print: Imprimer
+    statistics:
+      title: Statistiques
+      select_tags: "Sélectionner les Compétences"
+      select_tags_placeholder: "Choisir les Compétences à afficher"
+      min: 'min :'
+      max: 'max :'
   plannings_by_destinations:
     show:
       affect_destinations: Déplacer les visites
@@ -2585,7 +2601,7 @@ fr:
         help: Consommation moyenne aux 100 km en litres de carburant
         help_miles: Consommation moyenne aux 62.1 mi. en litres de carburant
       capacities:
-        label: Chargement initial max. / Capacités
+        label: Chargement initial max / Capacités
         default: '%{n} (valeur par défaut)'
         no_overload: ' (sans dépassement)'
         ignore_overload: ' (ignoré)'
@@ -3009,6 +3025,9 @@ fr:
       route_none: Aucune tournée sélectionnée
       route_selected: tournées sélectionnée
       routes_selected: tournées sélectionnées
+      tag_none: Aucune compétence sélectionnée
+      tag_selected: compétences sélectionnées
+      tags_selected: compétences sélectionnées
       search_placeholder: Rechercher
       placeholder: Écrire ici
     dialog:

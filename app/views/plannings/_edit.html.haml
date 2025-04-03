@@ -165,6 +165,10 @@
                   %a.export_spreadsheet
                     %i.fa.fa-table.fa-fw
                     = t '.export.spreadsheet'
+                %li
+                  = link_to planning_statistics_path(@planning) do
+                    %i.fa.fa-chart-column.fa-fw
+                    = t '.export.statistics'
                 %li.divider{role: "separator"}
                 %li
                   = link_to api_planning_calendar_path(@planning, api_key: current_user.api_key) do
