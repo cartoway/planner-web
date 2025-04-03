@@ -30,6 +30,16 @@ module CustomAttributesHelper
     end
   end
 
+  def custom_attribute_template(custom_attribute, object)
+    current_value = object.custom_attributes.key?(custom_attribute.name) ? object.custom_attributes_typed_hash[custom_attribute.name] : custom_attribute.typed_default_value
+    case custom_attribute.object_type_before_type_cast
+    when 0
+      { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : <i class='fa #{current_value ? 'fa-circle-check' : 'fa-circle-xmark'} fa-fw'></i></li>" }
+     else
+      { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : #{current_value}" }
+    end
+  end
+
   def object_type_cast(object_type, value)
     case object_type
     when 'boolean'
