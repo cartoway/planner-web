@@ -227,4 +227,13 @@ class VehicleTest < ActiveSupport::TestCase
     assert_equal({ "custom_attribute_three" => "there", "custom_attribute_one" => 2, "custom_attribute_two" => true },
                  vehicle.custom_attributes_typed_hash)
   end
+
+  test 'should serialize capacities_initial_loads' do
+    vehicle = vehicles(:vehicle_one)
+    vehicle.capacities_initial_loads = { 1 => 10.5 }
+    vehicle.save
+    vehicle.reload
+
+    assert_equal({ 2 => nil, 1 => 10.5 }, vehicle.default_capacities_initial_loads)
+  end
 end

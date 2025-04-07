@@ -87,7 +87,7 @@ class DeliverableUnitsController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def deliverable_unit_params
-    params.require(:deliverable_unit).permit(:label, :ref, :default_quantity, :default_capacity, :optimization_overload_multiplier, :icon)
+    params.require(:deliverable_unit).permit(:label, :ref, :default_quantity, :default_capacity, :default_initial_load, :optimization_overload_multiplier, :icon)
   end
 
   def icons_table

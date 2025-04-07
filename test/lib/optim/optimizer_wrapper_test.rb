@@ -13,6 +13,7 @@ class OptimizerWrapperTest < ActionController::TestCase
     @stub_VrpJob = stub_request(:get, uri_template).to_return(status: 200, body: File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/vrp-job.json').read)
 
     @planning = plannings(:planning_one)
+    @deliverable_unit = deliverable_units(:deliverable_unit_one_one)
   end
 
   test 'should provide extra time for timewindow ends' do
@@ -332,5 +333,21 @@ class OptimizerWrapperTest < ActionController::TestCase
       assert_equal 36000 + 120, vrp[:vehicles][0][:timewindow][:start]
       assert_equal 54000 - 180, vrp[:vehicles][0][:timewindow][:end]
     end
+  end
+
+  test 'includes initial load in unit configuration' do
+    routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
+    routes_with_vehicles.first.vehicle_usage.vehicle.capacities_initial_loads = { @deliverable_unit.id => 10.5 }
+
+    vrp = @optim.build_vrp(@planning, @planning.routes)
+    assert_equal 10.5, vrp[:vehicles].first[:capacities][0][:initial]
+  end
+
+  test 'does not include initial load when capacity is ignored' do
+    routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
+    routes_with_vehicles.first.vehicle_usage.vehicle.capacities_initial_loads = { @deliverable_unit.id => 10.5 }
+
+    vrp = @optim.build_vrp(@planning, @planning.routes, **{ ignore: [{ unit_id: @deliverable_unit.id }] })
+    assert_nil vrp[:vehicles].first[:capacities][0][:initial]
   end
 end
