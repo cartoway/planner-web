@@ -237,6 +237,7 @@ en:
         icon: Icon
         default_quantity: Default quantity
         default_capacity: Default capacity
+        default_initial_load: Default maximum initial load
         operation_fill: Fill
         operation_empty: Empty
         optimization_overload_multiplier: Overload coefficient
@@ -1125,6 +1126,7 @@ en:
       ref_help: A free reference
       default_quantity_help: Quantity to deliver for all your visits (keep empty if no quantity).
       default_capacity_help: Capacity for all your vehicles (keep empty if no limit).
+      default_initial_load_help: Maximum initial load for all your vehicles (keep empty if no limit).
       optimization_overload_multiplier_no: 'No'
       optimization_overload_multiplier_no_help: >-
         During optimisation, if you set some capacities for your vehicles,
@@ -2482,7 +2484,7 @@ en:
         help: Average fuel consumption in liters per 100 km
         help_miles: Average fuel consumption in liters per 62.1 mi.
       capacities:
-        label: Capacities
+        label: Maximum initial load / Capacities
         default: '%{n} (default value)'
         no_overload: ' (no overload)'
         ignore_overload: ' (ignored)'
