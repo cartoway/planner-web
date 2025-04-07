@@ -29,6 +29,7 @@ class DeliverableUnit < ApplicationRecord
   auto_strip_attributes :label
   validates :default_quantity, numericality: true, allow_nil: true
   validates :default_capacity, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :default_initial_load, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :optimization_overload_multiplier, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :ref, uniqueness: { scope: :customer_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
@@ -39,7 +40,7 @@ class DeliverableUnit < ApplicationRecord
   include LocalizedAttr
   include RefSanitizer
 
-  attr_localized :default_quantity, :default_capacity, :optimization_overload_multiplier
+  attr_localized :default_quantity, :default_initial_load, :default_capacity, :optimization_overload_multiplier
 
   def default_optimization_overload_multiplier
     optimization_overload_multiplier || Planner::Application.config.optimize_overload_multiplier
