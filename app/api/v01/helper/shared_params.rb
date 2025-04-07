@@ -21,9 +21,9 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   extend Grape::API::Helpers
 
   params :request_capacity do |options|
-    optional :deliverable_unit_id, type: Integer
-    optional :quantity, type: Float, coerce_with: CoerceFloatString
-    all_or_none_of :deliverable_unit_id, :quantity
+    requires :deliverable_unit_id, type: Integer
+    requires :quantity, type: Float, coerce_with: CoerceFloatString
+    optional :initial_load, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Maximum initial load', example: '0.0' }
   end
 
   params :request_customer do |options|
@@ -95,6 +95,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{::DeliverableUnit::ICON_DEFAULT}.", example: ::DeliverableUnit::ICON_DEFAULT}
     optional :default_quantity, type: Float, documentation: { example: '1.0' }
     optional :default_capacity, type: Float, documentation: { example: '48.5' }
+    optional :default_initial_load, type: Float, documentation: { desc: 'Default maximum initial load for vehicles', example: '0.0' }
     optional :optimization_overload_multiplier, type: Integer
   end
 
