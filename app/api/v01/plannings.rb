@@ -54,8 +54,10 @@ class V01::Plannings < Grape::API
     post do
       planning = current_customer.plannings.build(planning_params)
       planning.default_routes
-      planning.compute
+      raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if current_customer.too_many_plannings?
+
       planning.save_import!
+      planning.compute_saved
       present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
     end
 
@@ -130,8 +132,7 @@ class V01::Plannings < Grape::API
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
-        planning.compute
-        planning.save!
+        planning.compute_saved
         present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
       end
     end
@@ -199,8 +200,7 @@ class V01::Plannings < Grape::API
                 out_of_zone: params[:out_of_zone],
                 active_only: params[:active_only]) || raise(Exceptions::LoopError.new)
             end
-            planning.compute
-            planning.save!
+            planning.compute_saved
             status 204
           end
         rescue Exceptions::LoopError => e
@@ -228,8 +228,7 @@ class V01::Plannings < Grape::API
 
         planning.zoning_outdated = true
         planning.split_by_zones(nil)
-        planning.compute
-        planning.save!
+        planning.compute_saved
         if params[:details] || params[:with_details]
           present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
         else

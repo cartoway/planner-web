@@ -68,7 +68,7 @@ class V01::Stops < Grape::API
               Planning.transaction do
                 stop.update! stop_params
                 route.save!
-                route.compute && planning.save!
+                route.compute_saved
                 status 204
               end
             end
@@ -98,7 +98,7 @@ class V01::Stops < Grape::API
 
               begin
                 planning.move_stop(route, stop, Integer(params[:index]))
-                planning.compute && planning.save!
+                planning.compute_saved
                   status 204
               rescue Exceptions::StopIndexError => e
                 if e.route == route && e.bad_index == Integer(params[:index])

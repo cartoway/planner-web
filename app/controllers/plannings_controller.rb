@@ -54,19 +54,19 @@ class PlanningsController < ApplicationController
 
   def show
     @params = params
-    @planning = current_user.customer.plannings.includes(:routes).find(params[:id] || params[:planning_id])
+    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).includes(:routes).first!
     @routes = if params[:route_ids]
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
       @with_stops = true
-      @planning.routes.includes_destinations.where(id: route_ids)
+      @planning.routes.where(id: route_ids).includes_destinations.includes_vehicle_usages
     else
       stops_count = 0
       if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
         @with_stops = true
-        @planning.routes.includes_destinations.available
+        @planning.routes.available.includes_destinations.includes_vehicle_usages
       else
         @with_stops = false
-        @planning.routes.available
+        @planning.routes.available.includes_vehicle_usages
       end
     end
     respond_to do |format|
@@ -121,7 +121,9 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       @planning = current_user.customer.plannings.build(planning_params)
       @planning.default_routes
-      if @planning.compute && @planning.save_import
+      raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if current_user.customer.too_many_plannings?
+
+      if @planning.save_import && @planning.compute_saved
         format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.created', model: @planning.class.model_name.human) }
       else
         format.html { render action: 'new' }
@@ -171,9 +173,8 @@ class PlanningsController < ApplicationController
 
   def refresh
     respond_to do |format|
-      @planning.compute(skip_preload: true)
-      if @planning.save
-        @routes = @planning.routes
+      if @planning.compute_saved
+        @routes = @planning.routes.includes_vehicle_usages.includes_destinations
         @with_devices = true
         format.json { render action: 'show', location: @planning }
       else
@@ -183,7 +184,7 @@ class PlanningsController < ApplicationController
   end
 
   def refresh_route
-    @route = @planning.routes.find(params[:route_id])
+    @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.includes_destinations.first!
     stops_count = @route.stops.count
     page = params[:out_page] || 1
     if @route.vehicle_usage_id
@@ -259,7 +260,7 @@ class PlanningsController < ApplicationController
           route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
           vehicle_usage_id_was = route.vehicle_usage_id
           vehicle_usage = @planning.vehicle_usage_set.vehicle_usages.find(Integer(params[:vehicle_usage_id]))
-          if route && vehicle_usage && @planning.switch(route, vehicle_usage) && @planning.save! && @planning.compute && @planning.save!
+          if route && vehicle_usage && @planning.switch(route, vehicle_usage) && @planning.save! && @planning.compute_saved
             @routes = [route]
             @routes << @planning.routes.find{ |r| r.vehicle_usage_id == vehicle_usage_id_was } if vehicle_usage_id_was != route.vehicle_usage.id
             format.json { render action: 'show', location: @planning }
@@ -296,18 +297,18 @@ class PlanningsController < ApplicationController
             end
           end
 
-          if @planning.compute && @planning.save! && @planning.reload
+          if @planning.compute_saved
             @routes = @planning.routes.select{ |r| route_ids.include? r.id }
             format.json { render action: :show }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
           end
         end
-      rescue ActiveRecord::RecordNotFound => e
+      rescue ActiveRecord::RecordNotFound
         format.json { render json: { error: t('errors.planning.automatic_insert_no_result') }, status: :unprocessable_entity }
-      rescue Exceptions::LoopError => e
+      rescue Exceptions::LoopError
         format.json { render json: { error: t('errors.planning.automatic_insert_no_result') }, status: :unprocessable_entity }
-      rescue ActiveRecord::RecordInvalid => e
+      rescue ActiveRecord::RecordInvalid
         format.json { render json: @planning.errors, status: :unprocessable_entity }
       end
     end
@@ -320,7 +321,7 @@ class PlanningsController < ApplicationController
           @route = @planning.routes.find(Integer(params[:route_id]))
           @stop = @route.stops.find(Integer(params[:stop_id])) if @route
           @stop.assign_attributes(stop_params) if @stop
-          if @stop && @route.compute! && @route.save! && @route.reload
+          if @stop && @route.compute_saved! && @route.reload && @planning.reload
             @routes = [@route]
             planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
             format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
@@ -329,7 +330,7 @@ class PlanningsController < ApplicationController
             format.json { render json: @planning.errors, status: :unprocessable_entity }
           end
         end
-      rescue ActiveRecord::RecordInvalid => e
+      rescue ActiveRecord::RecordInvalid
         format.json { render json: @planning.errors, status: :unprocessable_entity }
         flash[:error] = @planning.errors.full_messages
         format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
@@ -413,7 +414,7 @@ class PlanningsController < ApplicationController
   def active
     route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
     respond_to do |format|
-      if route && route.active(params[:active].to_s.to_sym) && route.compute! && @planning.save
+      if route && route.active(params[:active].to_s.to_sym) && route.compute_saved!
         @routes = [route]
         planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
         format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
@@ -435,7 +436,7 @@ class PlanningsController < ApplicationController
   def reverse_order
     route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
     respond_to do |format|
-      if route && route.reverse_order && route.compute! && @planning.save
+      if route && route.reverse_order && route.compute_saved!
         @routes = [route]
         planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
         format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
@@ -453,14 +454,13 @@ class PlanningsController < ApplicationController
       begin
         Planning.transaction do
           @planning.split_by_zones(nil)
-          @planning.compute
-          if @planning.save!
+          if @planning.compute_saved!
             format.json { render action: :show }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
           end
         end
-      rescue ActiveRecord::RecordInvalid => e
+      rescue ActiveRecord::RecordInvalid
         format.json { render json: @planning.errors, status: :unprocessable_entity }
       end
     end
@@ -566,7 +566,7 @@ class PlanningsController < ApplicationController
     @callback_button = true
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
-    @planning = current_user.customer.plannings.preload_routes_without_stops.find(params[:id] || params[:planning_id])
+    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
   end
 
   def set_driver_planning
@@ -596,7 +596,7 @@ class PlanningsController < ApplicationController
       end
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
-    @planning = current_user.customer.plannings.preload_route_details.find(params[:id] || params[:planning_id])
+    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_route_details.first!
   end
 
   def includes_destinations

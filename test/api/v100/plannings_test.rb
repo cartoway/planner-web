@@ -118,12 +118,14 @@ class V100::PlanningsTest < V100::PlanningsBaseTest
   test 'should automatic insert or not with max distance' do
     customers(:customer_one).update(job_optimizer_id: nil)
     unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
+    # Fixtures route time and distance are 1.5 (and should be updated)
+    @planning.routes.each{ |r| r.outdated = true }
 
     patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 500}.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 400, last_response.status
     assert_not @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id)}
 
-    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 1_000}.to_json, CONTENT_TYPE: 'application/json'
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 2_001}.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 201, last_response.status
     assert @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id) }
   end

@@ -54,7 +54,7 @@ class StopVisit < Stop
   end
 
   def position?
-    !visit.destination.lat.nil? && !visit.destination.lng.nil?
+    visit.destination.lat.present? && visit.destination.lng.present?
   end
 
   def position

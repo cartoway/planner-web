@@ -24,9 +24,6 @@ else
   (json.outdated true) if @planning.outdated
   json.size @planning.routes.to_a.sum(0){ |route| route.stops_size }
   json.size_active @planning.cached_active_stops_sum
-  json.stores (@planning.vehicle_usage_set.vehicle_usages.collect(&:default_store_start) + @planning.vehicle_usage_set.vehicle_usages.collect(&:default_store_stop) + @planning.vehicle_usage_set.vehicle_usages.collect(&:default_store_rest)).compact.uniq do |store|
-    json.extract! store, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
-  end
 
-  json.routes (@routes || (@with_stops ? @planning.routes.includes_destinations.available : @planning.routes)), partial: 'routes/edit', formats: [:json], handlers: [:jbuilder], as: :route, locals: { list_devices: planning_devices(@planning.customer), stops_count: nil, planning: @planning }
+  json.routes (@routes || (@with_stops ? @planning.routes.includes_vehicle_usages.includes_destinations.available : @planning.routes)), partial: 'routes/edit', formats: [:json], handlers: [:jbuilder], as: :route, locals: { list_devices: planning_devices(@planning.customer), stops_count: nil, planning: @planning }
 end

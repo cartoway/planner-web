@@ -35,8 +35,10 @@ module Routers
     def compute_batch(url, mode, dimension, segments, options = {})
       results = {}
       nocache_segments = []
+      sorted_options = options.to_a.sort_by{ |i| i[0].to_s }
+
       segments.each{ |s|
-        key_segment = ['c', url, mode, dimension, Digest::MD5.hexdigest(Marshal.dump([s, options.to_a.sort_by{ |i| i[0].to_s }]))]
+        key_segment = ['c', url, mode, dimension, Digest::MD5.hexdigest(Marshal.dump([s, sorted_options]))]
         request_segment = @cache_request.read key_segment
         if request_segment
           results[s] = JSON.parse request_segment
@@ -44,56 +46,15 @@ module Routers
           nocache_segments << s if !request_segment
         end
       }
-      if !nocache_segments.empty?
-        nocache_segments.each_slice(50){ |slice_segments|
-          resource = RestClient::Resource.new(url + '/routes.json', timeout: nil)
-          request = resource.post(params(mode, dimension, options).merge({
-            locs: slice_segments.collect{ |segment| segment.join(',') }.join('|'),
-            precision: 6
-          })) { |response, request, result, &block|
-            case response.code
-            when 200
-              response
-            when 204 # UnreachablePointError
-              ''
-            when 417 # OutOfSupportedAreaError
-              ''
-            else
-              response = (response && /json/.match(response.headers[:content_type]) && response.size > 1) ? JSON.parse(response) : nil
-              raise RouterError.new(result.message + (response && response['message'] ? ' - ' + response['message'] : ''))
-            end
-          }
-          if request != ''
-            datas = JSON.parse request
-            if datas && datas.key?('features') && !datas['features'].empty?
-              slice_segments.each_with_index{ |s, i|
-                data = datas['features'][i]
-                if data
-                  key_segment = ['c', url, mode, dimension, Digest::MD5.hexdigest(Marshal.dump([s, options.to_a.sort_by{ |i| i[0].to_s }]))]
-                  @cache_request.write(key_segment, data.to_json)
-                  results[s] = data
-                end
-              }
-            end
-          end
-        }
-      end
 
-      if results.empty?
-        []
-      else
-        segments.collect{ |segment|
-          feature = results[segment]
-          if feature
-            SimplifyGeometry.polylines(feature)
-            distance = feature['properties']['router']['total_distance'] if feature['properties'] && feature['properties']['router']
-            time = feature['properties']['router']['total_time'] if feature['properties'] && feature['properties']['router']
-            trace = feature['geometry']['polylines'] if feature['geometry']
-            [distance, time, trace]
-          else
-            [nil, nil, nil]
-          end
-        }
+      process_nocache_segments(nocache_segments, url, mode, dimension, options, sorted_options, results) unless nocache_segments.empty?
+
+      return [] if results.empty?
+
+      segments.map do |segment|
+        next [nil, nil, nil] unless (feature = results[segment])
+
+        extract_feature_data(feature)
       end
     end
 
@@ -210,6 +171,80 @@ module Routers
         snap: options[:snap],
         strict_restriction: options[:strict_restriction] || false
       }.compact
+    end
+
+    def cache_key(url, mode, dimension, segment, sorted_options)
+      ['c', url, mode, dimension, Digest::MD5.hexdigest(Marshal.dump([segment, sorted_options]))]
+    end
+
+    def process_nocache_segments(nocache_segments, url, mode, dimension, options, sorted_options, results)
+      nocache_segments.each_slice(50) do |slice_segments|
+        response = fetch_route_data(url, mode, dimension, options, slice_segments)
+        next if response.empty?
+
+        process_response(response, slice_segments, url, mode, dimension, sorted_options, results)
+      end
+    end
+
+    def fetch_route_data(url, mode, dimension, options, segments)
+      resource = RestClient::Resource.new(url + '/routes.json', timeout: nil)
+
+      resource.post(build_params(mode, dimension, options, segments)) do |response, request, result|
+        handle_response(response, result)
+      end
+    end
+
+    def build_params(mode, dimension, options, segments)
+      params(mode, dimension, options).merge({
+        locs: segments.map{ |segment| segment.join(',') }.join('|'),
+        precision: 6
+      })
+    end
+
+    def handle_response(response, result)
+      case response.code
+      when 200 then response
+      when 204 then '' # UnreachablePointError
+      when 417 then '' # OutOfSupportedAreaError
+      else
+        response_data = parse_error_response(response)
+        raise RouterError.new(result.message + response_data)
+      end
+    end
+
+    def parse_error_response(response)
+      return '' unless response && /json/.match(response.headers[:content_type]) && response.size > 1
+
+      data = JSON.parse(response)
+      data['message'] ? " - #{data['message']}" : ''
+    rescue JSON::ParserError
+      ''
+    end
+
+    def process_response(response, segments, url, mode, dimension, sorted_options, results)
+      return unless response.present?
+
+      data = JSON.parse(response)
+      return unless data && data['features']&.any?
+
+      segments.each_with_index do |segment, index|
+        next unless (feature = data['features'][index])
+
+        key = cache_key(url, mode, dimension, segment, sorted_options)
+        @cache_request.write(key, feature.to_json)
+        results[segment] = feature
+      end
+    end
+
+    def extract_feature_data(feature)
+      properties = feature['properties']&.dig('router')
+      geometry = feature['geometry']
+
+      [
+        properties&.dig('total_distance'),
+        properties&.dig('total_time'),
+        geometry&.dig('polylines')
+      ]
     end
   end
 end
