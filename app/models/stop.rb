@@ -72,6 +72,10 @@ class Stop < ApplicationRecord
     end
   end
 
+  def import_attributes
+    self.attributes.except('lock_version')
+  end
+
   private
 
   def eval_open_close(open, close, time)

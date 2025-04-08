@@ -385,7 +385,7 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should not move with error' do
     ApplicationController.stub_any_instance(:server_error, lambda { |*a| raise }) do
-      Route.stub_any_instance(:compute, lambda { |*a| raise }) do
+      Route.stub_any_instance(:compute_saved, lambda { |*a| raise }) do
         assert_no_difference('Stop.count') do
           assert_raise do
             patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :js }
@@ -469,10 +469,13 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should switch' do
-    @planning.routes.each(&:compute!) # To get correct colors for linestrings
+    @planning.routes.each(&:compute_saved!) # To get correct colors for linestrings
 
     assert_equal 0, JSON.parse(@planning.to_geojson)['features'].select{ |f|
       f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#00FF00'
+    }.size
+    assert_equal 5, JSON.parse(@planning.to_geojson)['features'].select{ |f|
+      f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#004499'
     }.size
 
     patch :switch, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, vehicle_usage_id: vehicle_usages(:vehicle_usage_one_three).id }
@@ -484,6 +487,9 @@ class PlanningsControllerTest < ActionController::TestCase
     }
     assert_equal 2, JSON.parse(@planning.to_geojson)['features'].select{ |f|
       f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#00FF00'
+    }.size
+    assert_equal 3, JSON.parse(@planning.to_geojson)['features'].select{ |f|
+      f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#004499'
     }.size
   end
 
@@ -503,7 +509,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should not update stop with error' do
-    Route.stub_any_instance(:compute!, lambda { |*a| raise }) do
+    Route.stub_any_instance(:compute_saved!, lambda { |*a| raise }) do
       stop = stops(:stop_one_one)
       assert_raise do
         patch :update_stop, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, stop_id: stop.id, stop: { active: false } }
@@ -640,7 +646,7 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should not automatic insert with error' do
     ApplicationController.stub_any_instance(:server_error, lambda { |*a| raise }) do
-      Route.stub_any_instance(:compute, lambda { |*a| raise }) do
+      Planning.stub_any_instance(:compute_saved, lambda { |*a| raise }) do
         assert_no_difference('Stop.count') do
           assert_raise do
             patch :automatic_insert, params: { id: @planning.id, format: :json, stop_ids: [stops(:stop_unaffected).id] }
@@ -719,7 +725,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should not switch on unprocessable entity' do
-    @planning.routes.each(&:compute!) # To get correct colors for linestrings
+    @planning.routes.each(&:compute_saved!) # To get correct colors for linestrings
 
     Planning.stub_any_instance(:switch, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
       patch :switch, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, vehicle_usage_id: vehicle_usages(:vehicle_usage_one_three).id }
@@ -743,12 +749,12 @@ class PlanningsControllerTest < ActionController::TestCase
       assert_response :unprocessable_entity
     end
 
-    Planning.stub_any_instance(:save!, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
+    Planning.stub_any_instance(:compute_saved, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
       patch :automatic_insert, params: { id: @planning.id, format: :json, stop_ids: [stops(:stop_unaffected).id] }
       assert_response :unprocessable_entity
     end
 
-    Planning.stub_any_instance(:save!, lambda { |*a| nil }) do
+    Planning.stub_any_instance(:compute_saved, lambda { |*a| nil }) do
       patch :automatic_insert, params: { id: @planning.id, format: :json, stop_ids: [stops(:stop_unaffected).id] }
       assert_response :unprocessable_entity
     end
@@ -797,7 +803,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should not move on unprocessable entity' do
-    Planning.stub_any_instance(:compute, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
+    Planning.stub_any_instance(:save!, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
       patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
       assert_response :unprocessable_entity
     end
@@ -809,45 +815,45 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should not refresh on unprocessable entity' do
-    Planning.stub_any_instance(:save, lambda { false } ) do
+    Planning.stub_any_instance(:compute_saved, lambda { false } ) do
       get :refresh, params: { planning_id: @planning, format: :json }
       assert_response :unprocessable_entity
     end
   end
 
   test 'should not update stop on unprocessable entity' do
-    Route.stub_any_instance(:compute!, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
+    Route.stub_any_instance(:compute_saved!, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
       patch :update_stop, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, stop_id: stops(:stop_one_one).id, stop: { active: false } }
       assert_response :unprocessable_entity
     end
 
-    Route.stub_any_instance(:compute!, lambda { |*a| nil }) do
+    Route.stub_any_instance(:compute_saved!, lambda { |*a| nil }) do
       patch :update_stop, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, stop_id: stops(:stop_one_one).id, stop: { active: false } }
       assert_response :unprocessable_entity
     end
   end
 
   test 'should not update active on unprocessable entity' do
-    Planning.stub_any_instance(:save, lambda { |*a| false }) do
+    Route.stub_any_instance(:compute_saved!, lambda { |*a| false }) do
       patch :active, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id, active: :none }
       assert_response :unprocessable_entity
     end
   end
 
   test 'should not reverse order on unprocessable entity' do
-    Planning.stub_any_instance(:save, lambda { |*a| false } ) do
+    Route.stub_any_instance(:compute_saved!, lambda { |*a| false } ) do
       patch :reverse_order, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
       assert_response :unprocessable_entity
     end
   end
 
   test 'should not apply zonings on unprocessable entity' do
-    Planning.stub_any_instance(:save!, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) } ) do
+    Planning.stub_any_instance(:compute_saved!, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) } ) do
       patch :apply_zonings, params: { id: @planning, format: :json, planning: { zoning_ids: [zonings(:zoning_one).id] } }
       assert_response :unprocessable_entity
     end
 
-    Planning.stub_any_instance(:save!, lambda { |*a| false } ) do
+    Planning.stub_any_instance(:compute_saved!, lambda { |*a| false } ) do
       patch :apply_zonings, params: { id: @planning, format: :json, planning: { zoning_ids: [zonings(:zoning_one).id] } }
       assert_response :unprocessable_entity
     end

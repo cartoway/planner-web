@@ -10,6 +10,7 @@
   - Bump `babel` to 7.23.2 [#330](https://github.com/cartoway/planner-web/pull/330)
   - Hide irrelevant logs in `rails_performance` [#331](https://github.com/cartoway/planner-web/pull/331)
   - Route optimizatopn: service time is now considered in working shift [#335](https://github.com/cartoway/planner-web/pull/335)
+  - Routes: Improve compute performances [#345](https://github.com/cartoway/planner-web/pull/345)
 
   ### Removed
   - The option `enable_multi_visits` is removed, having multi visits is standard. Letting access to both destination and visit references simultaneously [#375](https://github.com/cartoway/planner-web/pull/375)

@@ -121,6 +121,7 @@ gem 'cancancan'
 gem 'lograge'
 gem 'validates_timeliness'
 gem 'activerecord-import'
+gem 'activerecord-postgis-adapter'
 
 gem 'sanitize'
 gem 'iconv'

@@ -75,7 +75,10 @@ class Planning < ApplicationRecord
     preload(
       routes: [
         stops: [
-          visit: [:tags, { destination: [:tags, {customer: :deliverable_units}] }]
+          visit: [
+            :relation_currents, :relation_successors, :tags,
+            { destination: [:tags, {customer: :deliverable_units}] }
+          ]
         ],
         vehicle_usage: [
           :store_start, :store_stop, :store_rest, :tags,
@@ -263,15 +266,86 @@ class Planning < ApplicationRecord
   end
 
   def compute_saved(options = {})
-    routes.find_in_batches(batch_size: 10){ |group|
-      group.each{ |r|
-        # Load necessary scopes just in time for outdated routes
-        r.preload_compute_scopes
-        r.compute(options)
-        r.save
-      }
-      self.save! && self.reload
+    compute_saved!(options.merge(bang: false))
+  end
+
+  def compute_saved!(options = {})
+    stop_rests = []
+    stop_visits = []
+
+    # Collect all segments from all routes that need routing
+    all_segments = []
+    routes.each{ |r|
+      if options[:bang]!= false || r.outdated && r.vehicle_usage?
+        segments = r.collect_segments_for_routing
+        all_segments << { route: r, segments: segments } if segments.any?
+      end
     }
+
+    # Batch process all segments in parallel
+    precompute_traces(all_segments, options)
+
+    routes.each{ |r|
+      if options[:bang] == false
+        r.compute(options.merge(skip_preload: true))
+      else
+        r.compute!(options.merge(skip_preload: true))
+      end
+      stops_by_type = r.stops.group_by(&:type)
+      stop_visits += stops_by_type['StopVisit'].to_a.map(&:import_attributes)
+      stop_rests += stops_by_type['StopRest'].to_a.map(&:import_attributes)
+
+    }
+    Route.import(routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopRest.import(stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+
+    routes.each{ |r|
+      r.invalidate_route_cache && r.reload
+      next unless Planner::Application.config.delayed_job_use
+
+      Delayed::Job.enqueue(SimplifyGeojsonTracksJob.new(self.customer_id, r.id))
+    }
+    self.update_columns(updated_at: Time.current) && self.invalidate_planning_cache
+    true
+  end
+
+  def precompute_traces(all_segments, options = {})
+    if all_segments.any?
+      threads = []
+      all_segments.each_slice(5) do |batch|
+        batch.each do |route_data|
+          threads << Thread.new do
+            begin
+              ActiveRecord::Base.connection_pool.with_connection do
+                route = route_data[:route]
+                segments = route_data[:segments]
+                router = route.vehicle_usage.vehicle.default_router
+                router_options = route.vehicle_usage.vehicle.default_router_options.symbolize_keys
+                router_options[:geometry] = false if options[:no_geojson]
+                router_options[:speed_multiplier] = route.vehicle_usage.vehicle.default_speed_multiplier
+                router_options[:speed_multiplier_areas] = Zoning.speed_multiplier_areas(self.zonings)
+                router_options[:departure] = Time.zone.parse((self.date || Date.today).to_s) + route.start if route.start
+                ts = router.trace_batch(segments.reject(&:nil?), route.vehicle_usage.vehicle.default_router_dimension, router_options)
+                traces = segments.map{ |segment|
+                  next [nil, nil, nil] if segment.nil?
+
+                  (ts && !ts.empty? && ts.shift) || [nil, nil, nil]
+                }
+                route.store_precomputed_traces(traces, options)
+              end
+            rescue ActiveRecord::ConnectionTimeoutError
+              Rails.logger.warn("Traces precompute failed for route #{route.id} because of connection timeout")
+              # Do nothing, the compute will be performed by the route compute
+            rescue RouterError
+              raise unless options[:ignore_errors]
+            end
+          end
+        end
+        threads.each(&:join)
+        threads.clear
+      end
+    end
   end
 
   def switch(route, vehicle_usage)
@@ -371,6 +445,9 @@ class Planning < ApplicationRecord
     if route
       stop.active = true
       move_stop(route, stop, index || 1)
+
+      # FIXME: Moving rest inside its route might generate invalid stop index
+      route.force_reindex if stop.is_a?(StopRest)
       return route
     end
   end
@@ -734,6 +811,10 @@ class Planning < ApplicationRecord
     end
   end
 
+  def import_attributes
+    self.attributes.except('lock_version')
+  end
+
   def to_s
     "#{name}=>" + routes.collect(&:to_s).join(' ')
   end
@@ -880,6 +961,7 @@ class Planning < ApplicationRecord
 
   def invalidate_planning_cache
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/active_stops_sum")
+    true
   end
 
   def prefered_route_and_index(available_routes, stop, options = {})
@@ -888,12 +970,15 @@ class Planning < ApplicationRecord
     tmp_routes = {}
 
     by_distance = available_routes.flat_map { |route|
-      stops =
-      if options[:active_only]
-        route.stops.where(type: StopVisit.name).where(active: true).joins(:visit).merge(Visit.positioned)
-      else
-        route.stops.where(type: StopVisit.name).joins(:visit).merge(Visit.positioned)
+      if stop.route_id == route.id
+        route.move_stop_out(stop)
       end
+      route.compute # Update the eventual outdated route
+      stops = route.stops.select { |stop|
+        stop.is_a?(StopVisit) &&
+          stop.visit.destination.position? &&
+          (!options[:active_only] || stop.active)
+      }
       stops = stops.map { |s| [s.visit.destination, route, s.index] }
       stops ||= []
       stops << [route.vehicle_usage.default_store_start, route, 1] if stops.empty? && route.vehicle_usage.default_store_start&.position?
@@ -952,12 +1037,12 @@ class Planning < ApplicationRecord
     tmp_routes = {}
 
     by_distance = available_routes.flat_map { |route|
-      stops =
-      if options[:active_only]
-        route.stops.where(type: StopVisit.name).where(active: true).joins(:visit).merge(Visit.positioned).includes_destinations
-      else
-        route.stops.where(type: StopVisit.name).joins(:visit).merge(Visit.positioned).includes_destinations
-      end
+      route.compute # Update the eventual outdated route
+      stops = route.stops.select { |stop|
+        stop.is_a?(StopVisit) &&
+          stop.visit.destination.position? &&
+          (!options[:active_only] || stop.active)
+      }
       stops = stops.map { |s| [s.visit.destination, route, s.index] }
       stops ||= []
       stops << [route.vehicle_usage.default_store_start, route, 1] if stops.empty? && route.vehicle_usage.default_store_start&.position?

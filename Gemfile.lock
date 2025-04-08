@@ -131,6 +131,9 @@ GEM
       activesupport (= 6.1.7.8)
     activerecord-import (1.7.0)
       activerecord (>= 4.2)
+    activerecord-postgis-adapter (7.1.1)
+      activerecord (~> 6.1)
+      rgeo-activerecord (~> 7.0.0)
     activestorage (6.1.7.8)
       actionpack (= 6.1.7.8)
       activejob (= 6.1.7.8)
@@ -635,6 +638,9 @@ GEM
       netrc (~> 0.8)
     rexml (3.3.9)
     rgeo (3.0.1)
+    rgeo-activerecord (7.0.1)
+      activerecord (>= 5.0)
+      rgeo (>= 1.0.0)
     rgeo-geojson (2.2.0)
       multi_json (~> 1.15)
       rgeo (>= 1.0.0)
@@ -838,6 +844,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord-import
+  activerecord-postgis-adapter
   addressable
   ai4r
   amoeba

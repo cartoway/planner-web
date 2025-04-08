@@ -27,7 +27,7 @@ unless planning.customer.enable_orders
   json.quantities route_quantities(planning, route)
 end
 if route.vehicle_usage_id
-  json.name (route.ref ? "#{route.ref} " : '') + route.vehicle_usage.vehicle.name unless @with_planning
+  json.name [route.ref, route.vehicle_usage.vehicle.name].compact.join(' ') unless @with_planning
   json.color route.color || route.vehicle_usage.vehicle.color
   json.contact_email route.vehicle_usage.vehicle.contact_email if route.vehicle_usage.vehicle.contact_email
   json.vehicle_usage_id route.vehicle_usage.id
@@ -78,22 +78,24 @@ if route.vehicle_usage_id
     end
   end
   if @with_stops && @with_devices
-    status_uniq = route.stops.map{ |stop|
-        {
-          code: stop.status.downcase,
-          status: t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
-        } if stop.status
-      }.uniq.compact
+    status_map = {}
+    route.stops.each do |stop|
+      next unless stop.status
+      status_map[stop.status.downcase] ||= {
+        code: stop.status.downcase,
+        status: t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
+      }
+    end
+
     json.status_all do
-      # FIXME: to avoid refreshing select active stops, combined here with hardcoded status
-      json.array! status_uniq | [:planned, :intransit, :started, :finished, :delivered, :exception, :rejected, :undelivered].map{ |status|
+      json.array! (status_map.values + [:planned, :intransit, :started, :finished, :delivered, :exception, :rejected, :undelivered].map { |status|
         {
           code: status.to_s.downcase,
           status: t("plannings.edit.stop_status.#{status.to_s}")
         }
-      }
+      }).uniq
     end
-    json.status_any status_uniq.size > 0 || planning.customer.device.available_stop_status?
+    json.status_any status_map.any? || planning.customer.device.available_stop_status?
   end
 else
   json.name t("plannings.edit.out_of_route")
@@ -117,7 +119,7 @@ end if route.vehicle_usage && route.vehicle_usage.default_store_start
 json.with_stops @with_stops
 if @with_stops
   inactive_stops = 0
-  json.stops route.vehicle_usage_id ? route.stops.sort_by{ |s| s.index || Float::INFINITY } : (route.stops.all?{ |s| s.name.to_i != 0 } ? route.stops.sort_by{ |s| s.name.to_i } : route.stops.sort_by{ |s| s.name.to_s.downcase }) do |stop|
+  json.stops route.vehicle_usage_id ? route.stops : (route.stops.all?{ |s| s.name.to_i != 0 } ? route.stops.sort_by{ |s| s.name.to_i } : route.stops.sort_by{ |s| s.name.to_s.downcase }) do |stop|
     (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_relation || stop.no_path || stop.unmanageable_capacity
     json.stop_id stop.id
     json.stop_index stop.index
