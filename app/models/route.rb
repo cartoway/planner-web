@@ -15,6 +15,9 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
+
+require 'simplify_geojson_tracks_job'
+
 class Route < ApplicationRecord
   RELATION_ORDER_KEYS = %i[pickup_delivery order sequence]
 
@@ -57,7 +60,7 @@ class Route < ApplicationRecord
   }
   scope :includes_stops, -> { includes(:stops) }
   # The second visit is for counting the visit index from all the visits of the destination
-  scope :includes_destinations, -> { includes(stops: {visit: [:tags, destination: [:tags, :visits, { customer: :deliverable_units }]]}) }
+  scope :includes_destinations, -> { includes(stops: {visit: [:relation_currents, :relation_successors, :tags, destination: [:tags, :visits, { customer: :deliverable_units }]]}) }
   scope :includes_deliverable_units, -> { includes(vehicle_usage: [:vehicle_usage_set, vehicle: [customer: :deliverable_units]]) }
   scope :stop_visits, -> { includes(:stops).where(type: StopVisit.name) }
 
@@ -154,9 +157,9 @@ class Route < ApplicationRecord
     planning.date + stops.only_active_stop_visits.last.time.seconds + 12.hour < DateTime.now
   end
 
-  def store_traces(geojson_tracks, trace, options = {})
+  def store_traces(geojson_tracks_store, trace, options = {})
     if trace && !options[:no_geojson]
-      geojson_tracks << {
+      geojson_tracks_store << {
         type: 'Feature',
         geometry: {
           type: 'LineString',
@@ -175,9 +178,8 @@ class Route < ApplicationRecord
   def plan(departure = nil, options = {})
     options[:ignore_errors] = false if options[:ignore_errors].nil?
 
-    geojson_tracks = []
+    geojson_tracks_store = []
 
-    last_lat, last_lng = nil, nil
     route_attributes = init_route_data
 
     if vehicle_usage?
@@ -185,9 +187,6 @@ class Route < ApplicationRecord
       service_time_end = service_time_end_value
       route_attributes[:end] = route_attributes[:start] = departure || vehicle_usage.default_time_window_start
       speed_multiplier = vehicle_usage.vehicle.default_speed_multiplier
-      if vehicle_usage.default_store_stop.try(&:position?)
-        last_lat, last_lng = vehicle_usage.default_store_stop.lat, vehicle_usage.default_store_stop.lng
-      end
       router = vehicle_usage.vehicle.default_router
       router_dimension = vehicle_usage.vehicle.default_router_dimension
       stops_drive_time = {}
@@ -201,60 +200,25 @@ class Route < ApplicationRecord
         route_attributes[:end] += service_time_start
       end
 
-      stops_sort = stops.sort_by(&:index)
+      stops_sort = stops #.sort_by(&:index) # default scope is sorted by index
 
       # Collect route legs
-      segments = stops_sort.select{ |stop|
-        stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
-      }.reverse.collect{ |stop|
-        if stop.position?
-          ret = [stop.lat, stop.lng, last_lat, last_lng] if !last_lat.nil? && !last_lng.nil?
-          last_lat, last_lng = stop.lat, stop.lng
-        elsif stop.is_a?(StopRest)
-          ret = [last_lat, last_lng, last_lat, last_lng] if !last_lat.nil? && !last_lng.nil?
-        end
-        ret
-      }.reverse
+      segments = collect_segments_for_routing
 
-      if !last_lat.nil? && !last_lng.nil? && vehicle_usage.default_store_start.try(&:position?)
-        segments.insert(0, [vehicle_usage.default_store_start.lat, vehicle_usage.default_store_start.lng, last_lat, last_lng])
-      else
-        segments.insert(0, nil)
-      end
-
-      # Compute legs traces
-      begin
-        router_options = vehicle_usage.vehicle.default_router_options.symbolize_keys
-        router_options[:geometry] = false if options[:no_geojson]
-        router_options[:speed_multiplier] = speed_multiplier
-        router_options[:speed_multiplier_areas] = Zoning.speed_multiplier_areas(planning.zonings)
-        # Use Time.zone.parse to preserve time zone from user (instead of to_time)
-        router_options[:departure] = Time.zone.parse((planning.date || Date.today).to_s) + departure if departure
-
-        ts = router.trace_batch(segments.reject(&:nil?), router_dimension, router_options)
-        traces = segments.collect{ |segment|
-          if segment.nil?
-            [nil, nil, nil]
-          else
-            (ts && !ts.empty? && ts.shift) || [nil, nil, nil]
-          end
-        }
-      rescue RouterError
-        raise unless options[:ignore_errors]
-        traces = [nil, nil, nil] * segments.size
-      end
-      traces[0] = [0, 0, nil] unless vehicle_usage.default_store_start.try(&:position?)
+      # Use pre-computed traces if available, otherwise compute them
+      traces = @traces.dup || process_traces(segments, router, router_dimension, speed_multiplier, departure, options = {})
+      traces[0] = [0, 0, nil] unless vehicle_usage.default_store_start&.position?
 
       # Recompute Stops
       stops_time_windows = {}
-      previous_with_pos = vehicle_usage.default_store_start.try(:position?)
+      previous_with_pos = vehicle_usage.default_store_start&.position?
       stops_sort.each{ |stop|
         stop_attributes = {}
         if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
           stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
           stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
 
-          store_traces(geojson_tracks, trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance]))
+          store_traces(geojson_tracks_store, trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance]))
 
           if stop_attributes[:drive_time]
             stops_drive_time[stop] = stop_attributes[:drive_time]
@@ -318,13 +282,14 @@ class Route < ApplicationRecord
         route_attributes[:cost_fixed] = vehicle_usage.default_cost_fixed if vehicle_usage.default_cost_fixed
         route_attributes[:cost_time] = (route_attributes[:end] - route_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
       end
-      route_attributes[:stop_no_path] = vehicle_usage.default_store_stop.try(:position?) && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?
+      route_attributes[:stop_no_path] = vehicle_usage.default_store_stop&.position? && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?
 
       # Add service time to end point
       route_attributes[:end] += service_time_end unless service_time_end.nil?
 
-      store_traces(geojson_tracks, trace, options.merge(drive_time: drive_time, distance: stop_distance))
-      route_attributes[:geojson_tracks] = geojson_tracks unless options[:no_geojson]
+      store_traces(geojson_tracks_store, trace, options.merge(drive_time: drive_time, distance: stop_distance))
+      route_attributes[:geojson_tracks] = geojson_tracks_store unless options[:no_geojson]
+
       route_attributes[:stop_out_of_drive_time] = route_attributes[:end] > vehicle_usage.default_time_window_end
       route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], route_attributes[:end])
       max_distance = vehicle_usage.vehicle.max_distance || planning.vehicle_usage_set.max_distance
@@ -395,8 +360,95 @@ class Route < ApplicationRecord
     true
   end
 
+  def collect_segments_for_routing
+    segments = []
+    last_lat, last_lng = nil, nil
+
+    if vehicle_usage?
+      if vehicle_usage.default_store_stop&.position?
+        last_lat, last_lng = vehicle_usage.default_store_stop.lat, vehicle_usage.default_store_stop.lng
+      end
+      segments = stops.select{ |stop|
+        stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
+      }.reverse.collect{ |stop|
+        if stop.position?
+          ret = [stop.lat, stop.lng, last_lat, last_lng] if !last_lat.nil? && !last_lng.nil?
+          last_lat, last_lng = stop.lat, stop.lng
+        elsif stop.is_a?(StopRest)
+          ret = [last_lat, last_lng, last_lat, last_lng] if !last_lat.nil? && !last_lng.nil?
+        end
+        ret
+      }.reverse
+
+      if !last_lat.nil? && !last_lng.nil? && vehicle_usage.default_store_start&.position?
+        segments.insert(0, [vehicle_usage.default_store_start.lat, vehicle_usage.default_store_start.lng, last_lat, last_lng])
+      else
+        segments.insert(0, nil)
+      end
+    end
+
+    segments
+  end
+
+  def process_traces(segments, router, router_dimension, speed_multiplier, departure, options = {})
+    begin
+      router_options = vehicle_usage.vehicle.default_router_options.symbolize_keys
+      router_options[:geometry] = false if options[:no_geojson]
+      router_options[:speed_multiplier] = speed_multiplier
+      router_options[:speed_multiplier_areas] = Zoning.speed_multiplier_areas(planning.zonings)
+      # Use Time.zone.parse to preserve time zone from user (instead of to_time)
+      router_options[:departure] = Time.zone.parse((planning.date || Date.today).to_s) + departure if departure
+
+      ts = router.trace_batch(segments.reject(&:nil?), router_dimension, router_options)
+      traces = segments.map{ |segment|
+        next [nil, nil, nil] if segment.nil?
+
+        (ts && !ts.empty? && ts.shift) || [nil, nil, nil]
+      }
+      store_precomputed_traces(traces, options)
+      traces.dup
+    rescue RouterError
+      raise unless options[:ignore_errors]
+      [nil, nil, nil] * segments.size
+    end
+  end
+
+  def store_precomputed_traces(traces, options = {})
+    return if traces.blank?
+
+    @traces = traces
+  end
+
+  def reset_traces!
+    @traces = nil
+  end
+
   def compute(options = {})
     compute!(options) if self.outdated
+    true
+  end
+
+  def compute_saved(options = {})
+    compute_saved!(options) if self.outdated
+    true
+  end
+
+  def compute_saved!(options = {})
+    compute!(options)
+
+    group_stop_visits = stops.select{ |s| s.is_a?(StopVisit) }.map(&:import_attributes)
+    group_stop_rests = stops.select{ |s| s.is_a?(StopRest) }.map(&:import_attributes)
+
+    StopVisit.import(group_stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopRest.import(group_stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    complete_geojson
+    # Indirectly save route to avoid Stops callbacks
+    self.update_columns(self.import_attributes)
+    invalidate_route_cache
+
+    if Planner::Application.config.delayed_job_use
+      Delayed::Job.enqueue(SimplifyGeojsonTracksJob.new(self.planning.customer_id, self.id))
+    end
     true
   end
 
@@ -565,44 +617,12 @@ class Route < ApplicationRecord
   attr_localized :quantities
 
   def compute_quantities(stops_sort = nil)
-    deliverable_units = planning.customer.deliverable_units
-    return {} if deliverable_units.empty?
-
-    quantities_ = Hash.new(0)
-
+    # Utiliser find_each pour traiter de grands ensembles de données
+    quantities = Hash.new(0)
     (stops_sort || stops).each do |stop|
-      if stop.active && stop.position? && stop.is_a?(StopVisit)
-        out_of_capacity = nil
-        unmanageable_capacity = nil
-
-        deliverable_units.each do |du|
-          if vehicle_usage && (stop.visit.quantities_operations[du.id].nil? || stop.visit.quantities_operations[du.id].empty?)
-            quantities_[du.id] = (quantities_[du.id] || 0) + (stop.visit.default_quantities[du.id] || 0)
-          elsif vehicle_usage && stop.visit.quantities_operations[du.id] == 'fill'
-            quantities_[du.id] = vehicle_usage.vehicle.default_capacities[du.id] if vehicle_usage.vehicle.default_capacities[du.id]
-          elsif vehicle_usage && stop.visit.quantities_operations[du.id] == 'empty'
-            quantities_[du.id] = 0
-          end
-
-          if vehicle_usage
-            # In this case, we reckon the stop as not out of its capacity. Because he's not going to deliver anything.
-            quantity = stop.visit.default_quantities[du.id]
-            skip_quantity = quantity.nil? || quantity == 0
-            # Don't evaluate out_of_capacity if already valuated by the a previous deliverable unit.
-            out_of_capacity ||= !skip_quantity & ((vehicle_usage.vehicle.default_capacities[du.id] && quantities_[du.id] > vehicle_usage.vehicle.default_capacities[du.id]) || quantities_[du.id] < 0)  # FIXME with initial quantity
-            unmanageable_capacity ||= !quantity.nil? && (quantity != 0 && vehicle_usage.vehicle.default_capacities[du.id] == 0)
-          end
-
-        end if stop.visit.try(:default_quantities?) # Avoid N+1 queries
-
-        stop.unmanageable_capacity = unmanageable_capacity
-        stop.out_of_capacity = out_of_capacity
-      end
+      process_stop_quantities(stop, quantities)
     end
-
-    quantities_.each { |k, v|
-      v = v.round(3)
-    }
+    quantities
   end
 
   def reverse_order
@@ -763,7 +783,7 @@ class Route < ApplicationRecord
 
   def compute_out_of_force_position
     stops.each{ |stop| stop.out_of_force_position = nil }
-    stops_sort = stops.sort_by(&:index)
+    stops_sort = stops #.sort_by(&:index) # default scope is sorted by index
 
     position_status = :first
     previous_stop = nil
@@ -805,12 +825,13 @@ class Route < ApplicationRecord
   def compute_out_of_relations
     stops.each{ |s| s.out_of_relation = false }
 
-    stop_visits = stops.select{ |s| s.is_a?(StopVisit) }
-    stop_hash = stop_visits.map{ |stop| [stop.visit.id, stop] }.to_h
+    stop_hash = {}
+    route_relations = stops.flat_map{ |stop|
+      next unless stop.is_a?(StopVisit)
 
-    route_relations = stops.only_stop_visits.includes_relations.flat_map{ |stop_visit|
-      stop_visit.visit.relation_currents + stop_visit.visit.relation_successors
-    }.uniq
+      stop_hash[stop.visit.id] = stop
+      stop.visit.relation_currents + stop.visit.relation_successors
+    }.compact.uniq
 
     route_relations.each{ |relation|
       if !stop_hash[relation.current_id] || !stop_hash[relation.successor_id]
@@ -835,7 +856,23 @@ class Route < ApplicationRecord
   end
 
   def preload_compute_scopes
-    Route.includes_vehicle_usages.includes_destinations.where(id: self.id).first
+    Route.where(id: self.id).includes_vehicle_usages.includes_destinations.first
+  end
+
+  def import_attributes
+    self.attributes.except('lock_version')
+  end
+
+  def invalidate_route_cache
+    @traces = nil
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/active_stops")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/stops_size")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/destination_stops")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_location_stops")
+    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_path_stops")
+    [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation].each do |s|
+      Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/out_of_#{s}_cache")
+    end
   end
 
   private
@@ -847,17 +884,6 @@ class Route < ApplicationRecord
 
   def in_optimization_context?
     planning&.in_optimization_context?
-  end
-
-  def invalidate_route_cache
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/active_stops")
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/stops_size")
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/destination_stops")
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_location_stops")
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_path_stops")
-    [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation].each do |s|
-      Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/out_of_#{s}_cache")
-    end
   end
 
   def remove_stop(stop)
@@ -961,5 +987,35 @@ class Route < ApplicationRecord
       final_features << fts.first.to_json
     }
     final_features
+  end
+
+  def process_stop_quantities(stop, quantities)
+    @deliverable_units ||= planning.customer.deliverable_units
+    return unless stop.active && stop.position? && stop.is_a?(StopVisit) && stop.visit.default_quantities?
+
+    @default_capacities ||= vehicle_usage&.vehicle&.default_capacities
+    default_quantities = stop.visit.default_quantities
+    out_of_capacity = nil
+    unmanageable_capacity = nil
+
+    @deliverable_units.each do |du|
+      if vehicle_usage && (stop.visit.quantities_operations[du.id].blank?)
+        quantities[du.id] = (quantities[du.id] || 0) + (default_quantities[du.id] || 0)
+      elsif vehicle_usage && stop.visit.quantities_operations[du.id] == 'fill'
+        quantities[du.id] = @default_capacities[du.id] if @default_capacities[du.id]
+      elsif vehicle_usage && stop.visit.quantities_operations[du.id] == 'empty'
+        quantities[du.id] = 0
+      end
+
+      if vehicle_usage
+        quantity = default_quantities[du.id]
+        skip_quantity = quantity.nil? || quantity == 0
+        out_of_capacity ||= !skip_quantity & ((@default_capacities[du.id] && quantities[du.id] > @default_capacities[du.id]) || quantities[du.id] < 0)
+        unmanageable_capacity ||= !quantity.nil? && (quantity != 0 && @default_capacities[du.id] == 0)
+      end
+    end
+
+    stop.unmanageable_capacity = unmanageable_capacity
+    stop.out_of_capacity = out_of_capacity
   end
 end

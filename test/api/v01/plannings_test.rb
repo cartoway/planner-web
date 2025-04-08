@@ -231,6 +231,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   end
 
   test 'should automatic insert stop with Ref from existing route with vehicle' do
+    @planning.compute_saved!
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
       last_stop = routes(:route_one_one).stops.select(&:position?).last
@@ -301,12 +302,15 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   test 'should automatic insert or not with max distance' do
     customers(:customer_one).update(job_optimizer_id: nil)
     unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
+    # Fixtures route time and distance are 1.5 (and should be updated)
+    @planning.routes.each{ |r| r.outdated = true }
 
     patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 500}.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 400, last_response.status
     assert_not @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id)}
 
-    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 1_000}.to_json, CONTENT_TYPE: 'application/json'
+    # Regarding the stub the insertion is 1000 back and 1000 forth
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 2_001}.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 204, last_response.status
     assert @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id) }
   end

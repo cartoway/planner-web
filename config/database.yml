@@ -1,5 +1,5 @@
 default: &default
-  adapter: postgresql
+  adapter: postgis
   pool: 5
   timeout: 5000
   checkout_timeout: 300
@@ -18,3 +18,4 @@ test:
 production:
   <<: *default
   database: <%= ENV['POSTGRES_DB'] || 'planner' %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 10 } %>

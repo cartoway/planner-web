@@ -182,18 +182,21 @@ class Visit < ApplicationRecord
   end
 
   def default_quantities
-    @default_quantities ||= Hash[destination.customer.deliverable_units.collect{ |du|
-      [du.id, quantities && quantities[du.id] ? quantities[du.id] : du.default_quantity]
-    }]
-    @default_quantities
+    @default_quantities ||= begin
+      @deliverable_units ||= destination.customer.deliverable_units
+
+      @deliverable_units.each_with_object({}) do |du, hash|
+        hash[du.id] = quantities && quantities[du.id] || du.default_quantity
+      end
+    end
   end
 
   def default_quantities?
-    default_quantities && default_quantities.values.any?{ |q| q }
+    default_quantities&.values&.any?{ |q| q.present? }
   end
 
   def quantities?
-    quantities && quantities.values.any?{ |q| q }
+    quantities&.values&.any?{ |q| q.present? }
   end
 
   def quantities_changed?
