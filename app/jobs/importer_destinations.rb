@@ -120,8 +120,10 @@ class ImporterDestinations < ImporterBase
       if dest.key?(:visits) && !dest[:visits].empty?
         dest[:visits].collect{ |v|
           v[:ref_visit] = v.delete(:ref)
-          v[:tag_visits] = v[:tag_ids].collect(&:to_i) if !v.key?(:tags) && v.key?(:tag_ids)
-          v[:tag_visits] = v.delete(:tags) if v.key?(:tags)
+          v[:tag_visits] = v[:tag_ids]&.map(&:to_i) || []
+          v[:tag_visits] += v[:tags] if v[:tags]&.any?
+          v.delete(:tags)
+          v[:tag_visits].uniq!
           if v[:quantities] && v[:quantities].is_a?(Array)
             quantity_hash = {}
             v[:quantities].map{ |q|

@@ -590,6 +590,57 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should create bulk from json with visit tag_id' do
+    assert_difference('Destination.count', 1) do
+      assert_difference('Planning.count', 1) do
+        put api(), {destinations: [{
+          name: 'Nouveau client',
+          street: nil,
+          postalcode: nil,
+          city: 'Tule',
+          state: 'Limousin',
+          lat: 43.5710885456786,
+          lng: 3.89636993408203,
+          detail: nil,
+          comment: nil,
+          phone_number: nil,
+          ref: 'z',
+          geocoding_accuracy: nil,
+          foo: 'bar',
+          visits: [{
+            ref: 'v1',
+            quantity1_1: nil,
+            time_window_start_1: nil,
+            time_window_end_1: nil,
+            time_window_start_2: nil,
+            time_window_end_2: nil,
+            duration: nil,
+            route: '1',
+            active: '1',
+            tag_ids: [tags(:tag_one).id, tags(:tag_two).id],
+          },{
+            ref: 'v2',
+            quantity1_1: nil,
+            time_window_start_1: nil,
+            time_window_end_1: nil,
+            time_window_start_2: nil,
+            time_window_end_2: nil,
+            duration: nil,
+            route: '1',
+            active: '1'
+          }]
+        }]}.to_json,
+        'CONTENT_TYPE' => 'application/json'
+        assert last_response.ok?, last_response.body
+        assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
+
+        get api()
+        assert_equal 2, JSON.parse(last_response.body).find{ |destination| destination['name'] == 'Nouveau client' }['visits'].find{ |v| v['ref'] == 'v1' }['tag_ids'].size
+        assert_equal 0, JSON.parse(last_response.body).find{ |destination| destination['name'] == 'Nouveau client' }['visits'].find{ |v| v['ref'] == 'v2' }['tag_ids'].size
+      end
+    end
+  end
+
   test 'should create bulk from json with visit ref' do
     assert_difference('Destination.count', 1) do
       assert_difference('Planning.count', 1) do
