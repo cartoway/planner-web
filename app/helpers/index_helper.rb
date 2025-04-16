@@ -22,7 +22,7 @@ module IndexHelper
     {
       plannings: {
         count: @customer.plannings.count,
-        latest: @customer.plannings.reorder(updated_at: :desc).first(5),
+        latest: @customer.plannings.reorder('date DESC NULLS LAST, updated_at DESC').first(5),
         limit: @customer.default_max_plannings
       },
       zonings: {

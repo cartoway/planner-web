@@ -19,25 +19,27 @@
                 %thead
                   %tr
                     %th= t 'activerecord.attributes.planning.name'
-                    %th.hide-md= t 'activerecord.attributes.planning.date'
+                    %th.hide-xs= t 'activerecord.attributes.planning.date'
+                    %th.hide-md= t 'activerecord.attributes.route.emission'
                     %th.hide-md= t 'activerecord.attributes.planning.tags'
-                    %th.hide-xs= t 'activerecord.attributes.planning.updated_at'
                     %th
                 %tbody
                   - @customer_summary[:plannings][:latest].each do |planning|
                     %tr
                       %td
                         = planning.name
-                      %td.hide-md
+                      %td.hide-xs
                         = planning.date && l(planning.date, format: :date)
+                      %td.hide-md
+                        - emission = planning.routes.map(&:emission).compact.reduce(&:+)
+                        - if emission
+                          = "#{emission.round(2)} #{t('all.unit.kgco2e_html')}"
                       %td.hide-md
                         - planning.tags.each do |tag|
                           %span
                             = tag_icon tag
                             %span
                             = tag.label
-                      %td.hide-xs
-                        = l(planning.updated_at, format: :datepicker)
                       %td.text-right
                         = link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do
                           %i.fa.fa-edit.fa-fw
