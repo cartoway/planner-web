@@ -51,8 +51,8 @@ class V01::Entities::Customer < Grape::Entity
   expose(:external_callback_name, documentation: { type: String, desc: 'External callback name' })
 
   expose(:enable_optimization_soft_upper_bound, documentation: { type: 'Boolean', desc: 'Enable overtimes' })
-  expose(:stop_max_upper_bound, documentation: { type: Integer, desc: 'Schedule time (HH:MM)' })
-  expose(:vehicle_max_upper_bound, documentation: { type: Integer, desc: 'Schedule time (HH:MM)' })
+  expose(:stop_max_upper_bound, documentation: { type: DateTime }) { |m| m.stop_max_upper_bound_absolute_time_with_seconds }
+  expose(:vehicle_max_upper_bound, documentation: { type: DateTime }){ |m| m.vehicle_max_upper_bound_absolute_time_with_seconds }
 
   expose(:optimization_max_split_size, documentation: { type: Integer, desc: 'Maximum number of visits to split problem', default: Planner::Application.config.optimize_max_split_size })
   expose(:optimization_cluster_size, documentation: { type: Integer, desc: 'Time in seconds to group near visits', default: Planner::Application.config.optimize_cluster_size })
