@@ -46,12 +46,20 @@ class V01::Entities::Customer < Grape::Entity
   expose(:sms_template, documentation: { type: String })
   expose(:sms_concat, documentation: { type: 'Boolean' })
 
+  expose(:enable_external_callback, documentation: { type: 'Boolean', desc: 'Enable external callback', default: false })
+  expose(:external_callback_url, documentation: { type: String, desc: 'External callback URL' })
+  expose(:external_callback_name, documentation: { type: String, desc: 'External callback name' })
+
+  expose(:enable_optimization_soft_upper_bound, documentation: { type: 'Boolean', desc: 'Enable overtimes' })
+  expose(:stop_max_upper_bound, documentation: { type: Integer, desc: 'Schedule time (HH:MM)' })
+  expose(:vehicle_max_upper_bound, documentation: { type: Integer, desc: 'Schedule time (HH:MM)' })
+
   expose(:optimization_max_split_size, documentation: { type: Integer, desc: 'Maximum number of visits to split problem', default: Planner::Application.config.optimize_max_split_size })
   expose(:optimization_cluster_size, documentation: { type: Integer, desc: 'Time in seconds to group near visits', default: Planner::Application.config.optimize_cluster_size })
   expose(:optimization_time, documentation: { type: Float, desc: 'Maximum optimization time (by vehicle)', default: Planner::Application.config.optimize_time })
   expose(:optimization_minimal_time, documentation: { type: Float, desc: 'Minimum optimization time (by vehicle)', default: Planner::Application.config.optimize_minimal_time })
-  expose(:optimization_stop_soft_upper_bound, documentation: { type: Float, desc: 'Stops delay coefficient, 0 to avoid delay', default: Planner::Application.config.optimize_stop_soft_upper_bound })
-  expose(:optimization_vehicle_soft_upper_bound, documentation: { type: Float, desc: 'Vehicles delay coefficient, 0 to avoid delay', default: Planner::Application.config.optimize_vehicle_soft_upper_bound })
+  expose(:optimization_stop_soft_upper_bound, documentation: { type: Float, desc: '[Obsolete] use enable_optimization_soft_upper_bound and stop_max_upper_bound instead' })
+  expose(:optimization_vehicle_soft_upper_bound, documentation: { type: Float, desc: '[Obsolete] use enable_optimization_soft_upper_bound and vehicle_max_upper_bound instead' })
   expose(:optimization_cost_waiting_time, documentation: { type: Float, desc: 'Coefficient to manage waiting time', default: Planner::Application.config.optimize_cost_waiting_time })
   expose(:optimization_force_start, documentation: { type: 'Boolean', desc: 'Force time for departure', default: Planner::Application.config.optimize_force_start })
 
