@@ -2532,6 +2532,8 @@ fr:
       consumption_desc: consommation du véhicule
       capacities: capacités
       capacities_desc: capacités maximales du véhicule
+      capacities_initial_loads: chargement initial
+      capacities_initial_loads_desc: chargement initial du véhicule
       custom_attributes: attributs
       router_mode: calculateur d'itinéraire
       router_mode_desc: forcer l'utilisation d'un calculateur d'itinéraire
