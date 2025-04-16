@@ -42,6 +42,8 @@ class ImporterVehicleUsageSets < ImporterBase
       max_ride_duration: { title: I18n.t('vehicles.import.max_ride_duration'), desc: I18n.t('vehicles.import.max_ride_duration_desc'), format: I18n.t('vehicles.import.format.integer') }
     }.merge(Hash[@customer.deliverable_units.map { |du|
       ["capacity#{du.id}".to_sym, { title: I18n.t('vehicles.import.capacities') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('vehicles.import.capacities_desc'), format: I18n.t('vehicles.import.format.float') }]
+    }]).merge(Hash[@customer.deliverable_units.map { |du|
+      ["capacity_initial_load#{du.id}".to_sym, { title: I18n.t('vehicles.import.capacities_initial_loads') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('vehicles.import.capacities_initial_loads_desc'), format: I18n.t('vehicles.import.format.float') }]
     }]).merge(
       router_mode: { title: I18n.t('vehicles.import.router_mode'), desc: I18n.t('vehicles.import.router_mode_desc'), format: "[#{router_modes.join(' | ')}]" },
       router_dimension: { title: I18n.t('vehicles.import.router_dimension'), desc: I18n.t('vehicles.import.router_dimension_desc'), format: "[#{router_dimensions.join(' | ')}]" },
@@ -101,6 +103,13 @@ class ImporterVehicleUsageSets < ImporterBase
           unit_labels.delete_at(unit_labels.index(capacities[1])) if unit_labels.index(capacities[1])
           @customer.deliverable_units.build(label: capacities[1])
         end
+
+        unit_labels = @customer.deliverable_units.map(&:label)
+        initial_loads = Regexp.new("^#{I18n.t('vehicles.import.capacities_initial_loads')}\\[(.*)\\]$").match(capacity_name)
+        if initial_loads && unit_labels.exclude?(initial_loads[1])
+          unit_labels.delete_at(unit_labels.index(initial_loads[1])) if unit_labels.index(initial_loads[1])
+          @customer.deliverable_units.build(label: initial_loads[1])
+        end
       }
       @customer.save!
     end
@@ -129,6 +138,13 @@ class ImporterVehicleUsageSets < ImporterBase
       }
     }
     row[:capacities] = capacities if capacities.length > 0
+    initial_loads = {}
+    row.each { |key, _value|
+      /^capacity_initial_load([0-9]+)$/.match(key.to_s) { |m|
+        initial_loads.merge!({ Integer(m[1]) => row.delete(m[0].to_sym) })
+      }
+    }
+    row[:capacities_initial_loads] = initial_loads if initial_loads.length > 0
   end
 
   def prepare_tags(row, key)
@@ -182,7 +198,7 @@ class ImporterVehicleUsageSets < ImporterBase
     end
 
     if options[:replace_vehicles]
-      vehicle_attributes = row.slice(*columns_vehicle.keys, :capacities, :custom_attributes)
+      vehicle_attributes = row.slice(*columns_vehicle.keys, :capacities, :capacities_initial_loads, :custom_attributes)
       vehicle_attributes[:ref] = vehicle_attributes.delete(:ref_vehicle)
       vehicle_attributes[:name] = vehicle_attributes.delete(:name_vehicle)
       vehicle_attributes[:color] = vehicle_attributes.delete(:color) || vehicle.color
