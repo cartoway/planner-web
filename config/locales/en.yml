@@ -2435,6 +2435,8 @@ en:
       consumption_desc: average fuel consumption in liters per 100 km
       capacities: capacities
       capacities_desc: maximum vehicle's capacities
+      capacities_initial_loads: initial loadings
+      capacities_initial_loads_desc: maximum initial loadings
       custom_attributes: attributes
       router_mode: routing engine
       router_mode_desc: force use of a specific routing engine
