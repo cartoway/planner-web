@@ -44,7 +44,7 @@ class RouteTest < ActiveSupport::TestCase
     route = routes(:route_one_one)
     route.distance = route.emission = route.start = route.end = nil
     route.outdated = true
-    route.compute
+    route.compute_saved
     assert_not route.outdated
     assert route.distance
     assert route.emission
@@ -55,14 +55,13 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal route.cost_distance, route.vehicle_usage.cost_distance * (route.distance.to_f / 1000)
     assert_equal route.cost_time, route.vehicle_usage.cost_time * ((route.end - route.start).to_f / 3600)
     assert_equal 1000 * (route.stops.size + 1), route.distance
-    route.save!
   end
 
   test 'should compute empty' do
     route = routes(:route_one_one)
     assert route.stops.size > 1
     route.outdated = true
-    route.compute
+    route.compute_saved
     assert_equal 1000 * (route.stops.size + 1), route.distance
 
     route.stops.each{ |stop|
@@ -70,9 +69,8 @@ class RouteTest < ActiveSupport::TestCase
     }
 
     route.outdated = true
-    route.compute
+    route.compute_saved
     assert_equal 1000.0, route.distance
-    route.save!
   end
 
   test 'should set visits' do
@@ -185,7 +183,7 @@ class RouteTest < ActiveSupport::TestCase
     stop.lat = stop.lng = 1 # Geocoded
     stop.save!
     route.outdated = true
-    route.compute
+    route.compute_saved
   end
 
   test 'should shift departure' do
@@ -203,7 +201,7 @@ class RouteTest < ActiveSupport::TestCase
     stops[2].visit.time_window_end_1 = '14:00:00'
 
     route.outdated = true
-    route.compute
+    route.compute_saved
     assert_equal Time.parse('10:55:27').seconds_since_midnight.to_i, route.start
   end
 
@@ -268,7 +266,7 @@ class RouteTest < ActiveSupport::TestCase
 
   test 'should return the drive time when compute' do
     route = routes(:route_one_one)
-    route.compute!
+    route.compute_saved!
     total_drive_time = route.stops.map(&:drive_time).sum(0) # Total stops drive time
     total_drive_time += route.stop_drive_time # The last stop (in case of store)
     assert_equal total_drive_time, route.drive_time # ensure compute, computed all stops drive time
@@ -276,7 +274,7 @@ class RouteTest < ActiveSupport::TestCase
 
   test 'should return the waiting time when compute' do
     route = routes(:route_one_one)
-    route.compute!
+    route.compute_saved!
     total_wait_time = route.stops.map(&:wait_time).sum(0) { |wait_time| wait_time || 0 }
     assert_equal route.wait_time, total_wait_time
   end
@@ -307,7 +305,7 @@ class RouteTest < ActiveSupport::TestCase
     visits.second.quantities = capacities
     visits.last.quantities = {}
 
-    route.compute({no_geojson: true})
+    route.compute_saved({no_geojson: true})
     stops_capacities = route.stops.map(&:out_of_capacity)
 
     # Second stop is out_of_capacity due to previous set up
@@ -318,7 +316,7 @@ class RouteTest < ActiveSupport::TestCase
 
   test 'should set stops as unmanageable capacity' do
     route = routes(:route_one_one)
-    c_hash = route.vehicle_usage.vehicle.capacities[1] = 0.0
+    route.vehicle_usage.vehicle.capacities[1] = 0.0
     route.compute_quantities
 
     route.stops.each { |s|
@@ -330,7 +328,7 @@ class RouteTest < ActiveSupport::TestCase
 
   test 'should not set stops as unmanageable capacity' do
     route = routes(:route_one_one)
-    c_hash = route.vehicle_usage.vehicle.capacities[1] = nil
+    route.vehicle_usage.vehicle.capacities[1] = nil
     route.compute_quantities
 
     route.stops.each { |s|
@@ -358,7 +356,7 @@ class RouteTest < ActiveSupport::TestCase
 
     always_first_visit.force_position = :neutral
     route.outdated = true
-    route.compute
+    route.compute_saved
     assert route.stops.none?(&:out_of_force_position)
   end
 end

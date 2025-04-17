@@ -55,8 +55,7 @@ class V100::Plannings < Grape::API
             end
             impacted_routes.compact!
             impacted_routes.uniq!
-            planning.compute
-            planning.save!
+            planning.compute_saved
             present :routes, impacted_routes, with: V100::Entities::Route, geojson: params[:with_geojson]
             status 201
           end

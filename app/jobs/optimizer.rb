@@ -36,8 +36,7 @@ class Optimizer
   def self.optimize(planning, route, options = { global: false, synchronous: false, active_only: true, ignore_overload_multipliers: [], nb_route: 0 })
     if route && route.size_active <= 1 && options[:active_only]
       # Nothing to optimize
-      route.compute
-      planning.save
+      route.compute_saved
     else
       if planning.customer.job_optimizer
         # Customer already run an optimization

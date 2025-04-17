@@ -58,7 +58,7 @@ class V01::Routes < Grape::API
           raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
 
           get_route.update! route_params
-          get_route.compute && get_route.save!
+          get_route.compute_saved
           present get_route, with: V01::Entities::RouteProperties
         end
 
@@ -76,8 +76,7 @@ class V01::Routes < Grape::API
           raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
 
           Stop.includes_destinations.scoping do
-            get_route.active(params[:active].to_s.to_sym) && get_route.compute
-            get_route.save!
+            get_route.active(params[:active].to_s.to_sym) && get_route.compute_saved
             present get_route, with: V01::Entities::Route, geojson: params[:with_geojson]
           end
         end
@@ -110,8 +109,7 @@ class V01::Routes < Grape::API
             unless visits_ordered.empty?
               Planning.transaction do
                 visits_ordered.each{ |visit| get_route.planning.move_visit(get_route, visit, params[:automatic_insert] ? nil : -1) }
-                get_route.planning.compute
-                get_route.planning.save!
+                get_route.planning.compute_saved
                 status 204
               end
             end
@@ -172,8 +170,7 @@ class V01::Routes < Grape::API
           Stop.includes_destinations.scoping do
             raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
 
-            get_route && get_route.reverse_order && get_route.compute!
-            get_route.save!
+            get_route && get_route.reverse_order && get_route.compute_saved!
             present get_route, with: V01::Entities::Route
           end
         end
