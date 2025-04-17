@@ -23,6 +23,7 @@ class OptimizerJob < OptimizerJobStruct
   @@stop_soft_upper_bound = Planner::Application.config.optimize_stop_soft_upper_bound
   @@vehicle_soft_upper_bound = Planner::Application.config.optimize_vehicle_soft_upper_bound
   @@cluster_size = Planner::Application.config.optimize_cluster_size
+  @@cost_fixed = Planner::Application.config.optimize_cost_fixed
   @@cost_waiting_time = Planner::Application.config.optimize_cost_waiting_time
   @@force_start = Planner::Application.config.optimize_force_start
   @@optimize_minimal_time = Planner::Application.config.optimize_minimal_time
@@ -107,6 +108,7 @@ class OptimizerJob < OptimizerJobStruct
       stop_soft_upper_bound: planning.customer.optimization_stop_soft_upper_bound || @@stop_soft_upper_bound,
       vehicle_soft_upper_bound: planning.customer.optimization_vehicle_soft_upper_bound || @@vehicle_soft_upper_bound,
       cluster_threshold: planning.customer.optimization_cluster_size || @@cluster_size,
+      cost_fixed: planning.customer.optimization_cost_fixed || @@cost_fixed,
       cost_waiting_time: planning.customer.optimization_cost_waiting_time || @@cost_waiting_time,
       force_start: planning.customer.optimization_force_start.nil? ? @@force_start : planning.customer.optimization_force_start,
       optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,

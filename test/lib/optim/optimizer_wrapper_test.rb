@@ -335,6 +335,11 @@ class OptimizerWrapperTest < ActionController::TestCase
     end
   end
 
+  test 'includes fixed cost in vehicle configuration' do
+    vrp = @optim.build_vrp(@planning, @planning.routes, **{ optimization_cost_fixed: 10 })
+    assert_equal 10, vrp[:vehicles].first[:cost_fixed]
+  end
+
   test 'includes initial load in unit configuration' do
     routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
     routes_with_vehicles.first.vehicle_usage.vehicle.capacities_initial_loads = { @deliverable_unit.id => 10.5 }

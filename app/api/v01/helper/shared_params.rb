@@ -81,6 +81,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :optimization_minimal_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Minimum optimization time (by vehicle)', example: Planner::Application.config.optimize_minimal_time}
     optional :optimization_stop_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: '[Obsolete] use enable_optimization_soft_upper_bound and stop_max_upper_bound instead', example: Planner::Application.config.optimize_stop_soft_upper_bound}
     optional :optimization_vehicle_soft_upper_bound, type: Float, coerce_with: CoerceFloatString, documentation: { desc: '[Obsolete] use enable_optimization_soft_upper_bound and vehicle_max_upper_bound instead', example: Planner::Application.config.optimize_vehicle_soft_upper_bound }
+    optional :optimization_cost_fixed, type: Integer, documentation: { desc: 'Fixed cost for vehicles used by optimization', example: Planner::Application.config.optimize_cost_fixed }
     optional :optimization_cost_waiting_time, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient to manage waiting time', example: Planner::Application.config.optimize_cost_waiting_time }
     optional :optimization_force_start, type: Boolean, documentation: { desc: 'Force time for departure', example: Planner::Application.config.optimize_force_start }
 

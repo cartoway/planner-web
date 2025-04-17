@@ -177,6 +177,7 @@ class CustomersController < ApplicationController
         :optimization_cluster_size,
         :optimization_time,
         :optimization_minimal_time,
+        :optimization_cost_fixed,
         :optimization_cost_waiting_time,
         :optimization_force_start,
         :planning_date_offset,
