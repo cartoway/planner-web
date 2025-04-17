@@ -186,7 +186,6 @@ fr:
         optimization_force_start: Forcer l'heure de départ du véhicule
         enable_orders: Activer les commandes
         enable_references: Montrer les références
-        enable_multi_visits: Autoriser les visites multiples
         enable_global_optimization: Activer l'optimisation globale
         enable_vehicle_position: Activer la position des véhicules
         enable_stop_status: Activer les statuts des visites
@@ -1225,9 +1224,6 @@ fr:
             Pour chaque ligne respective, permet de remplacer une catégorie
             donné par une autre catégorie existant
       visit:
-        enable_multi_visits: >-
-          Besoin de plusieurs visites pour le même client ? Contactez le support
-          pour avoir accès à cette fonctionnalité.
         new: Nouvelle visite
         new_help: Nouvelle visite si vous vous rendez plusieurs fois chez ce client.
         attributes_change_bulk: Changer catégories

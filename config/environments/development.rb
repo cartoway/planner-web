@@ -176,7 +176,6 @@ Rails.application.configure do
   config.manage_vehicles_only_admin = false # If true, only admin can add/remove vehicles
 
   config.enable_references = true # Default value when create new customer account of display or not references
-  config.enable_multi_visits = false # Default value when create new customer account of display or not the ability to support multiple visits per destination
 
   config.display_javascript_errors_on_screen = true
 

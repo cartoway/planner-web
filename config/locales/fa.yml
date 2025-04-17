@@ -162,7 +162,6 @@ fa:
         enable_orders: ''
         enable_multi_vehicle_usage_sets: ''
         enable_references: ''
-        enable_multi_visits: ''
         enable_global_optimization: ''
         test: ''
         jobs: ''
@@ -772,7 +771,6 @@ fa:
       dialog:
         confirm_overwrite_point: ''
       visit:
-        enable_multi_visits: ''
         new: ''
         new_help: ''
     edit:

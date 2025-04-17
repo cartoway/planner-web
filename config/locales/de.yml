@@ -157,7 +157,6 @@ de:
         optimization_force_start: Zeitplan für Fahrzeugstart erzwingen
         enable_orders: Aufträge aktivieren
         enable_references: Referenzen anzeigen
-        enable_multi_visits: Mehr als einen Besuch pro Zielort ermöglichen
         enable_global_optimization: Globale Optimierung ermöglichen
         enable_vehicle_position: Aktivieren der Fahrzeugposition
         enable_stop_status: Besuchsstatus aktivieren
@@ -1032,9 +1031,6 @@ de:
             Für jede Zeile können Sie ein bestimmtes Tag durch ein anderes
             bestehendes Tag ersetzen
       visit:
-        enable_multi_visits: >-
-          Brauchen Sie mehr als einen Besuch für diesen Zielort? Kontaktieren
-          Sie bitte den Support, um diese Funktion zu aktivieren.
         new: Neuer Besuch
         new_help: 'Neuer Besuch, wenn Sie diesen Zielort mehrmals besuchen.'
         attributes_change_bulk: Tags ändern

@@ -1,7 +1,7 @@
 = bootstrap_form_for(@destination, layout: :horizontal, html: {class: "form-horizontal", "data-destination_id" => (@destination.id or 0)}) do |f|
   = render 'shared/error_messages', model: @destination
   %fieldset#destination-details
-    - if @destination.customer.enable_references && !@destination.customer.enable_multi_visits
+    - if @destination.customer.enable_references
       = f.text_field :ref, help: t('.ref_help')
     = hidden_field_tag "destination[geocoding_result]", @destination.geocoding_result.to_json
     = f.text_field :name, required: true
@@ -81,7 +81,7 @@
           = number_field :destination, :lng, step: 'any', class: 'form-control width_1_2'
           %span.input-group-addon
             %i.fa.fa-globe.fa-fw
-    - if !@destination.customer.enable_multi_visits || @destination.tags.any?
+    - if @destination.customer.tags.any?
       .destination_visits_attributes_tag_ids_input
         = f.select :tag_ids, options_for_select(@destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @destination.tags.collect(&:id)), {label: t('activerecord.attributes.destination.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
     = f.text_field :phone_number, {input_group: content_tag('i', '', class: 'fa fa-phone fa-fw')}
@@ -101,15 +101,9 @@
         .col-md-2
     - ((!@destination.visits.empty? && @destination.visits) || [@destination.visits.build]).each_with_index do |visit, i|
       = render 'visits/form', visit: visit, i: i+1
-  - if @destination.visits.empty? || @destination.customer.enable_multi_visits
-    %button#visit-new.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button"}
-      %i.fa.fa-plus.fa-fw
-      = t('destinations.form.visit.new')
-  - unless @destination.customer.enable_multi_visits
-    .mb-3.row
-      .col-md-offset-2.col-md-8
-        %p.help-block
-          = t('destinations.form.visit.enable_multi_visits')
+  %button#visit-new.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button"}
+    %i.fa.fa-plus.fa-fw
+    = t('destinations.form.visit.new')
   = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
   = hidden_field :destination, :geocoded_at, :value => @destination.geocoded_at
   = f.submit
@@ -156,6 +150,5 @@
     destination_id: @destination.id || 0,
     map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)],
     map_lat: @destination.lat || @destination.customer.default_position[:lat],
-    map_lng: @destination.lng || @destination.customer.default_position[:lng],
-    enable_multi_visits: @destination.customer.enable_multi_visits
+    map_lng: @destination.lng || @destination.customer.default_position[:lng]
   )

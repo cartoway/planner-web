@@ -3,11 +3,9 @@
     <input id="destination_{{id}}" type="checkbox" value="1" name="destinations[{{id}}]"/>
   </td>
   {{#enable_references}}
-  {{^enable_multi_visits}}
     <td class="ref">
       <span class="form-control input-sm">{{ref}}</span>
     </td>
-  {{/enable_multi_visits}}
   {{/enable_references}}
   <td class="name">
     <span class="form-control input-sm">{{name}}</span>
@@ -80,33 +78,28 @@
   <td class="phone">
     <span class="form-control input-sm">{{phone_number}}</span>
   </td>
-  {{^enable_multi_visits}}
     <td class="tags">
-      {{#tags}}
-        {{#active}}
-          <span class="form-control input-sm">
-            {{#color}}{{#icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-            {{^color}}{{#icon}}<i class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-            {{#color}}{{^icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-            {{label}}
-          </span>
-        {{/active}}
-      {{/tags}}
-    </td>
-  {{/enable_multi_visits}}
+    {{#tags}}
+      {{#active}}
+        <span class="form-control input-sm">
+          {{#color}}{{#icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+          {{^color}}{{#icon}}<i class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+          {{#color}}{{^icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+          {{label}}
+        </span>
+      {{/active}}
+    {{/tags}}
+  </td>
   <td class="visit">
     <div class="destination-visits">
       {{#visits}}
         <div data-visit_id="{{id}}" class="block" role="visit">
           <input type="hidden" name="destination[visits_attributes][][id]" value="{{id}}"/>
           {{#enable_references}}
-          {{#enable_multi_visits}}
             <span style="min-width:3em">
               <span class="form-control input-sm">{{ref_visit}}</span>
             </span>
-          {{/enable_multi_visits}}
           {{/enable_references}}
-          {{#enable_multi_visits}}
           <span style="width:8em">
             <span class="form-control input-sm">
               {{#tags_visit}}
@@ -121,7 +114,6 @@
               {{/tags_visit}}
             </span>
             </span>
-          {{/enable_multi_visits}}
           {{#is_editable}}
             <span style="width:4em">
               <span class="form-control input-sm">{{duration}}</span>
