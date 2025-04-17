@@ -269,29 +269,6 @@ class CustomerTest < ActiveSupport::TestCase
     assert planning.customer.destroy
   end
 
-  test 'should update enable_multi_visits' do
-    customer = @customer
-    refs = customer.destinations.collect(&:ref)
-    assert_no_difference('Destination.count') do
-      assert_no_difference('Visit.count') do
-        customer.enable_multi_visits = true
-        customer.save
-        assert_equal refs, customer.destinations.flat_map { |d| d.visits.collect(&:ref) }
-        assert_equal [tags(:tag_one).label] * 4, customer.destinations.flat_map { |d| d.visits.flat_map { |v| v.tags.collect(&:label) } }
-      end
-    end
-
-    customer.reload
-    assert_no_difference('Destination.count') do
-      assert_no_difference('Visit.count') do
-        customer.enable_multi_visits = false
-        customer.save
-        assert_equal refs, customer.destinations.collect(&:ref)
-        assert_equal [tags(:tag_one).label] * 4, customer.destinations.flat_map { |d| d.tags.collect(&:label) }
-      end
-    end
-  end
-
   test 'should duplicate' do
     duplicate = nil
     unit_ids = @customer.deliverable_units.map(&:id)
@@ -477,14 +454,6 @@ class CustomerTest < ActiveSupport::TestCase
   test "should outdate all customer's routes" do
     @customer.update(optimization_force_start: true)
     assert_equal [[true, true, true], [true, true, true]], @customer.plannings.collect{ |p| p.routes.collect(&:outdated) }
-  end
-
-  test 'should not load plans on enable multi-visits' do
-    without_loading Planning do
-      without_loading Route do
-        @customer.update_attribute(:enable_multi_visits, !@customer.enable_multi_visits)
-      end
-    end
   end
 
   test 'should not load routes when updating plans' do

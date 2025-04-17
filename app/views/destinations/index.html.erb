@@ -53,7 +53,7 @@
         <th data-sorter="false" class="filter-false columnSelector-disable">
           <button type="button" class="btn btn-default btn-xs index_toggle_selection" title="<%= t 'all.verb.toggle_selection' %>"><i class="fa fa-check fa-fw"></i></button>
         </th>
-        <% if @customer.enable_references && !@customer.enable_multi_visits %>
+        <% if @customer.enable_references %>
           <th class="ref columnSelector-disable", style="max-width: 100px">
             <div class="col-title"><%= t 'activerecord.attributes.destination.ref_small' %></div>
           </th>
@@ -80,31 +80,27 @@
         <th data-sorter="digit" class="phone columnSelector-false">
           <div class="col-title"><%= t 'activerecord.attributes.destination.phone_number_small' %></div>
         </th>
-        <% if !@customer.enable_multi_visits %>
-          <th class="tags">
-            <div class="col-title"><%= t 'activerecord.attributes.destination.tags' %></div>
-          </th>
-        <% end %>
+        <th class="tags">
+          <div class="col-title"><%= t 'activerecord.attributes.destination.tags' %></div>
+        </th>
         <% if @customer.is_editable? %>
           <% visit_width = {}
-            visit_width[:ref] = 3 if @customer.enable_references && @customer.enable_multi_visits
+            visit_width[:ref] = 3 if @customer.enable_references
             visit_width[:quantity] = 3 unless @customer.enable_orders
-            visit_width[:tags] = 8 if @customer.enable_multi_visits
+            visit_width[:tags] = 8
             visit_width[:duration] = 4
             visit_width[:time_windows] = 16
           %>
           <th data-sorter="false" class="visit columnSelector-disable" style="min-width:<%= visit_width.values.reduce(&:+) %>em;">
             <div class="col-title"><%= t 'activerecord.models.visit' %></div>
             <div id="visit-subtitles" style="width: 100%;">
-              <% if @customer.enable_references && @customer.enable_multi_visits %>
+              <% if @customer.enable_references %>
                 <div class="visit-subtitle" style="min-width: <%= visit_width[:ref] %>em;"><%= t 'activerecord.attributes.visit.ref_small' %></div>
               <% end %>
               <% unless @customer.enable_orders %>
               <div class="visit-subtitle" style="width: <%= visit_width[:quantity] %>em;"><%= t '.quantity_small' %></div>
               <% end %>
-              <% if @customer.enable_multi_visits %>
-                <div class="visit-subtitle" style="width: <%= visit_width[:tags] %>em;"><%= t 'activerecord.attributes.visit.tags' %></div>
-              <% end %>
+              <div class="visit-subtitle" style="width: <%= visit_width[:tags] %>em;"><%= t 'activerecord.attributes.visit.tags' %></div>
 
               <div class="visit-subtitle" style="width: <%= visit_width[:duration] %>em;"><%= t 'activerecord.attributes.visit.duration_small' %></div>
               <div class="visit-subtitle" style="width: <%= visit_width[:time_windows] %>em;"><%= t 'activerecord.attributes.visit.time_windows_small' %></div>
@@ -181,7 +177,6 @@ controller.js(
   duration_default: @customer.visit_duration_time_with_seconds,
   url_click2call: current_user.link_phone_number,
   enable_references: @customer.enable_references,
-  enable_multi_visits: @customer.enable_multi_visits,
   enable_orders: @customer.enable_orders,
   disable_quantity: @customer.enable_orders || @customer.deliverable_units.size != 1
 )

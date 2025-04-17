@@ -159,7 +159,6 @@ pt:
         enable_orders: Permitir pedidos
         enable_multi_vehicle_usage_sets: Permitir parametrização de múltiplos veículos
         enable_references: Ver referências
-        enable_multi_visits: Permitir visitas múltiplas
         enable_global_optimization: Ativar a otimização global
         test: Teste
         jobs: Tarefas
@@ -1278,9 +1277,6 @@ pt:
           A localização anterior foi definida manualmente sobre o mapa. Pretende
           substituir pelo resultado da geocodificação?
       visit:
-        enable_multi_visits: >-
-          Necessárias diversas visitas ao mesmo destino? Por favor contactar o
-          suporte para ativar esta funcionalidade.
         new: Nova visita
         new_help: Nova visita caso vá a este destino diversas vezes.
     edit:

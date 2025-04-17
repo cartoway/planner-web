@@ -169,7 +169,6 @@ he:
         enable_orders: הפעל הזמנות
         enable_multi_vehicle_usage_sets: אפשר הגדרות לריבוי רכבים
         enable_references: הצג הפניות
-        enable_multi_visits: אפשר ריבוי עצירות ליעד אחד
         enable_global_optimization: הפעל אופטימיזציה גלובאלית
         test: ניסיון
         jobs: משימה
@@ -798,7 +797,6 @@ he:
       dialog:
         confirm_overwrite_point: המיקום הוגדר באופן ידני. עקוף עם תוצאות קידוד גיאוגרפי?
       visit:
-        enable_multi_visits: האם נדרשים מספר ביקורים ליעד זה ? אנא פנה לתמיכה.
         new: ביקור חדש
         new_help: ביקור חדש אם קיימים מספר ביקורים לאותו יעד.
     edit:
