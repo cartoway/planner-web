@@ -186,7 +186,6 @@ en:
         optimization_force_start: Force schedule start vehicle
         enable_orders: Enable orders
         enable_references: View references
-        enable_multi_visits: Enable more than one visit per destination
         enable_global_optimization: Enable global optimization
         enable_vehicle_position: Enable vehicle's position
         enable_stop_status: Enable visits status
@@ -1188,9 +1187,6 @@ en:
             For each respective line, allow to replace a specific tag with
             another existing tag
       visit:
-        enable_multi_visits: >-
-          Need more than one visit for this destination? Please contact support
-          to activate this feature.
         new: New visit
         new_help: New visit if you go to this destination several times.
         attributes_change_bulk: Change categories

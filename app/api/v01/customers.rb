@@ -49,7 +49,6 @@ class V01::Customers < Grape::API
           :max_vehicle_usage_sets,
           #:enable_orders,
           :enable_references,
-          :enable_multi_visits,
           :enable_global_optimization,
           :enable_vehicle_position,
           :enable_stop_status,
