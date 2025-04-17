@@ -154,7 +154,6 @@ Rails.application.configure do
   config.manage_vehicles_only_admin = false # If true, only admin can add/remove vehicles
 
   config.enable_references = true
-  config.enable_multi_visits = false
 
   config.display_javascript_errors_on_screen = false
 

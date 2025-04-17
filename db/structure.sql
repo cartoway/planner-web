@@ -103,7 +103,6 @@ CREATE TABLE public.customers (
     print_stop_time boolean DEFAULT true NOT NULL,
     ref character varying,
     enable_references boolean DEFAULT true,
-    enable_multi_visits boolean DEFAULT false NOT NULL,
     router_dimension integer DEFAULT 0 NOT NULL,
     advanced_options jsonb DEFAULT '{}'::jsonb NOT NULL,
     print_map boolean DEFAULT false NOT NULL,
@@ -3106,6 +3105,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250314130549'),
 ('20250321085637'),
 ('20250325123806'),
-('20250417055812');
-
-
+('20250417055812'),
+('20250417075753');

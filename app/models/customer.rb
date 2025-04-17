@@ -106,7 +106,7 @@ class Customer < ApplicationRecord
   before_save :devices_update_vehicles, prepend: true
   after_create :create_default_store, :create_default_vehicle_usage_set, :create_default_deliverable_unit
 
-  before_update :update_max_vehicles, :update_enable_multi_visits
+  before_update :update_max_vehicles
   before_update :update_outdated, unless: :migration_skip
 
   include RefSanitizer
@@ -138,8 +138,6 @@ class Customer < ApplicationRecord
       def copy.create_default_deliverable_unit; end
 
       def copy.update_outdated; end
-
-      def copy.update_enable_multi_visits; end
 
       def copy.sanitize_print_header; end
 
@@ -427,7 +425,6 @@ class Customer < ApplicationRecord
   def assign_defaults
     self.default_country ||= I18n.t('customers.default.country')
     self.enable_references ||= Planner::Application.config.enable_references
-    self.enable_multi_visits ||= Planner::Application.config.enable_multi_visits
   end
 
   def create_default_store
@@ -482,42 +479,6 @@ class Customer < ApplicationRecord
         }
       end
       @max_vehicles = vehicles.size
-    end
-  end
-
-  def update_enable_multi_visits
-    if enable_multi_visits_changed?
-      Destination.transaction do
-        if enable_multi_visits
-          self.destinations.each{ |destination|
-            destination.visits.each{ |visit|
-              visit.ref ||= destination.ref
-              visit.tags |= destination.tags
-              visit.internal_skip = true
-            }
-            destination.ref = nil
-            destination.tag_ids = []
-            # Don't load all plans to update them...
-            destination.internal_skip = true
-            destination.save!
-          }
-        else
-          self.destinations.each{ |destination|
-            if !destination.visits.empty?
-              destination.ref ||= destination.visits[0].ref
-              destination.tags |= destination.visits[0].tags
-              destination.visits.each{ |visit|
-                visit.ref = nil
-                visit.tag_ids = []
-                visit.internal_skip = true
-              }
-              # Don't load all plans to update them...
-              destination.internal_skip = true
-              destination.save!
-            end
-          }
-        end
-      end
     end
   end
 
