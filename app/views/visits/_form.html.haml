@@ -5,7 +5,7 @@
     %legend.scheduler-border
       %a.accordion-toggle{"data-parent" => "", "data-toggle" => "collapse", href: "#collapseVisit#{visit.id || 0}"}
         %span= t('.legend', n: i)
-      - if visit.destination.customer.enable_multi_visits || !current_page?(action: 'new')
+      - if !current_page?(action: 'new')
         .mb-3.row.destroy-block
           .col-md-3
             %button.btn.btn-default.btn-sm.flag-destroy{title: "#{t('.delete_help')}", type: "button"}
@@ -16,7 +16,7 @@
       = f.check_box :_destroy, class: 'd-none'
       = f.label :_destroy do
         = t('.destroy')
-      - if visit.destination.customer.enable_references && visit.destination.customer.enable_multi_visits
+      - if visit.destination.customer.enable_references
         = f.text_field :ref do
           %p.help-block= t '.ref_help'
       - unless visit.destination.customer.enable_orders
@@ -107,7 +107,7 @@
           .input-group
             = text_field "destination[visits_attributes][#{i}]", :priority, class: 'form-control', value: visit.priority, data: {'slider-value' => visit.priority || 0}
           %p.help-block= t '.priority_help'
-      - if visit.destination.customer.enable_multi_visits || !visit.tags.empty?
+      - if visit.destination.customer.tags.any?
         .destination_visits_attributes_tag_ids_input
           = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
 

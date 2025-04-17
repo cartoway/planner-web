@@ -2,13 +2,9 @@
   <td>
     <input id="destination_{{id}}" type="checkbox" value="1" name="destinations[{{id}}]"/>
   </td>
-  {{#enable_references}}
-  {{^enable_multi_visits}}
-    <td class="ref">
-      <input class="form-control input-sm" type="text" name="destination[ref]" value="{{ref}}"/>
-    </td>
-  {{/enable_multi_visits}}
-  {{/enable_references}}
+  <td class="ref">
+    <input class="form-control input-sm" type="text" name="destination[ref]" value="{{ref}}"/>
+  </td>
   <td class="name">
     <input class="form-control input-sm" type="text" name="destination[name]" value="{{name}}" size="99" required="required"/>
   </td>
@@ -88,99 +84,93 @@
       </span>
     </div>
   </td>
-  {{^enable_multi_visits}}
-    <td class="tags">
-      <div class="input-group select2-bootstrap-append input-group-tags">
-        <input type="hidden" value="" name="destination[tag_ids][]">
-        <select multiple="multiple" name="destination[tag_ids][]" class="select2" style="display:none">
-          {{#tags}}
-            <option value="{{id}}" {{#active}} selected="selected"{{/active}}{{#color}} data-color="{{color}}"{{/color}}{{#icon}} data-icon="{{icon}}"{{/icon}}>{{label}}</option>
-          {{/tags}}
-        </select>
-        <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="width: 100%;">
-          <span class="selection">
-            <span class="select2-selection select2-selection--multiple" aria-expanded="false" aria-haspopup="true" aria-autocomplete="list" role="combobox" tabindex="0" aria-owns="select2-destination[tag_ids][]-do-results">
-              <ul class="select2-selection__rendered">
-                {{#tags}}
-                  {{#active}}
-                    <li class="select2-selection__choice" title="{{label}}">
-                      <span class="select2-selection__choice__remove" role="presentation">×</span>
-                      <span>
-                        {{#color}}{{#icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-                        {{^color}}{{#icon}}<i class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-                        {{#color}}{{^icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-                        {{label}}
-                      </span>
-                    </li>
-                  {{/active}}
-                {{/tags}}
-                <li class="select2-search select2-search--inline">
-                 <input class="select2-search__field" type="search" role="textbox" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" tabindex="-1" placeholder="" style="width: 0.75em;">
-                </li>
-              </ul>
-            </span>
+  <td class="tags">
+    <div class="input-group select2-bootstrap-append input-group-tags">
+      <input type="hidden" value="" name="destination[tag_ids][]">
+      <select multiple="multiple" name="destination[tag_ids][]" class="select2" style="display:none">
+        {{#tags}}
+          <option value="{{id}}" {{#active}} selected="selected"{{/active}}{{#color}} data-color="{{color}}"{{/color}}{{#icon}} data-icon="{{icon}}"{{/icon}}>{{label}}</option>
+        {{/tags}}
+      </select>
+      <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="width: 100%;">
+        <span class="selection">
+          <span class="select2-selection select2-selection--multiple" aria-expanded="false" aria-haspopup="true" aria-autocomplete="list" role="combobox" tabindex="0" aria-owns="select2-destination[tag_ids][]-do-results">
+            <ul class="select2-selection__rendered">
+              {{#tags}}
+                {{#active}}
+                  <li class="select2-selection__choice" title="{{label}}">
+                    <span class="select2-selection__choice__remove" role="presentation">×</span>
+                    <span>
+                      {{#color}}{{#icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+                      {{^color}}{{#icon}}<i class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+                      {{#color}}{{^icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+                      {{label}}
+                    </span>
+                  </li>
+                {{/active}}
+              {{/tags}}
+              <li class="select2-search select2-search--inline">
+                <input class="select2-search__field" type="search" role="textbox" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" tabindex="-1" placeholder="" style="width: 0.75em;">
+              </li>
+            </ul>
           </span>
-          <span class="dropdown-wrapper" aria-hidden="true"></span>
         </span>
-        <span class="input-group-addon input-sm"><i class="fa fa-tags"></i></span>
-      </div>
-    </td>
-  {{/enable_multi_visits}}
+        <span class="dropdown-wrapper" aria-hidden="true"></span>
+      </span>
+      <span class="input-group-addon input-sm"><i class="fa fa-tags"></i></span>
+    </div>
+  </td>
   <td class="visit">
     <div class="destination-visits">
       {{#visits}}
         <div data-visit_id="{{id}}" class="block" role="visit">
           <input type="hidden" name="destination[visits_attributes][][id]" value="{{id}}"/>
           {{#enable_references}}
-          {{#enable_multi_visits}}
             <span style="min-width:3em">
               <input class="form-control input-sm" type="text" name="destination[visits_attributes][][ref]" value="{{ref_visit}}"/>
             </span>
-          {{/enable_multi_visits}}
           {{/enable_references}}
           {{^enable_orders}}
           <span style="width:3em">
             <input class="form-control input-sm" type="number" name="destination[visits_attributes][][quantity]" value="{{^multiple_quantities}}{{quantity}}{{/multiple_quantities}}" placeholder="{{#multiple_quantities}}#{{/multiple_quantities}}{{^multiple_quantities}}{{quantity_default}}{{/multiple_quantities}}"{{#disable_quantity}} disabled{{/disable_quantity}}/>
           </span>
           {{/enable_orders}}
-          {{#enable_multi_visits}}
-            <span>
-              <div class="input-group select2-bootstrap-append input-group-tags">
-                <input type="hidden" value="" name="destination[visits_attributes][][tag_ids][]">
-                <select multiple="multiple" name="destination[visits_attributes][][tag_ids][]" class="select2" style="display:none">
-                  {{#tags_visit}}
-                    <option value="{{id}}" {{#active}} selected="selected"{{/active}}{{#color}} data-color="{{color}}"{{/color}}{{#icon}} data-icon="{{icon}}"{{/icon}}>{{label}}</option>
-                  {{/tags_visit}}
-                </select>
-                <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="width: 100%;">
-                  <span class="selection">
-                    <span class="select2-selection select2-selection--multiple" aria-expanded="false" aria-haspopup="true" aria-autocomplete="list" role="combobox" tabindex="0" aria-owns="select2-destination[visits_attributes][][tag_ids][]-do-results">
-                      <ul class="select2-selection__rendered">
-                        {{#tags_visit}}
-                          {{#active}}
-                            <li class="select2-selection__choice" title="{{label}}">
-                              <span class="select2-selection__choice__remove" role="presentation">×</span>
-                              <span>
-                                {{#color}}{{#icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-                                {{^color}}{{#icon}}<i class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-                                {{#color}}{{^icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
-                                {{label}}
-                              </span>
-                            </li>
-                          {{/active}}
-                        {{/tags_visit}}
-                        <li class="select2-search select2-search--inline">
-                         <input class="select2-search__field" type="search" role="textbox" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" tabindex="-1" placeholder="" style="width: 0.75em;">
-                        </li>
-                      </ul>
-                    </span>
+          <span>
+            <div class="input-group select2-bootstrap-append input-group-tags">
+              <input type="hidden" value="" name="destination[visits_attributes][][tag_ids][]">
+              <select multiple="multiple" name="destination[visits_attributes][][tag_ids][]" class="select2" style="display:none">
+                {{#tags_visit}}
+                  <option value="{{id}}" {{#active}} selected="selected"{{/active}}{{#color}} data-color="{{color}}"{{/color}}{{#icon}} data-icon="{{icon}}"{{/icon}}>{{label}}</option>
+                {{/tags_visit}}
+              </select>
+              <span class="fake select2 select2-container select2-container--bootstrap input-sm select2-container--below" dir="ltr" style="width: 100%;">
+                <span class="selection">
+                  <span class="select2-selection select2-selection--multiple" aria-expanded="false" aria-haspopup="true" aria-autocomplete="list" role="combobox" tabindex="0" aria-owns="select2-destination[visits_attributes][][tag_ids][]-do-results">
+                    <ul class="select2-selection__rendered">
+                      {{#tags_visit}}
+                        {{#active}}
+                          <li class="select2-selection__choice" title="{{label}}">
+                            <span class="select2-selection__choice__remove" role="presentation">×</span>
+                            <span>
+                              {{#color}}{{#icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+                              {{^color}}{{#icon}}<i class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+                              {{#color}}{{^icon}}<i style="color:#{{color}}" class="fa {{icon}}" ></i>{{/icon}}{{/color}}
+                              {{label}}
+                            </span>
+                          </li>
+                        {{/active}}
+                      {{/tags_visit}}
+                      <li class="select2-search select2-search--inline">
+                        <input class="select2-search__field" type="search" role="textbox" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" tabindex="-1" placeholder="" style="width: 0.75em;">
+                      </li>
+                    </ul>
                   </span>
-                  <span class="dropdown-wrapper" aria-hidden="true"></span>
                 </span>
-                <span class="input-group-addon input-sm"><i class="fa fa-tags"></i></span>
-              </div>
-            </span>
-          {{/enable_multi_visits}}
+                <span class="dropdown-wrapper" aria-hidden="true"></span>
+              </span>
+              <span class="input-group-addon input-sm"><i class="fa fa-tags"></i></span>
+            </div>
+          </span>
           <span style="width:4em">
             <input class="form-control input-sm" type="datetime" name="destination[visits_attributes][][duration]" value="{{duration}}" placeholder="{{duration_default}}"/>
           </span>

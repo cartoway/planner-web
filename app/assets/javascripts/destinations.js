@@ -39,8 +39,7 @@ import {
 const destinations_form = function(params, api) {
   var destination_id = params.destination_id,
     marker_lat = $(":input[name$=\\[lat\\]]").val(),
-    marker_lng = $(":input[name$=\\[lng\\]]").val(),
-    enable_multi_visits = params.enable_multi_visits;
+    marker_lng = $(":input[name$=\\[lng\\]]").val();
 
   params.map_zoom = 15;
   var map = mapInitialize(params);
@@ -360,15 +359,13 @@ const destinations_form = function(params, api) {
 
   $('#visit-new').click(function() {
     var $fieldsets = $('#visits').find('fieldset');
-    if (enable_multi_visits || $fieldsets.length == 0) {
-      var fieldsetVisit = $('#visit-fieldset-template');
-      $('#visits').append(fieldsetVisit.html()
-        .replace('#0', '#' + ($fieldsets.length + 1))
-        .replace(/isit0/g, 'isit' + ($fieldsets.length + 1))
-        .replace(/destination([\[_])visits([^0]+)0([\]_])/g, "destination$1visits$2" + ($fieldsets.length + 1) + "$3")
-      );
-      initVisits($('#visits').find('fieldset:last-child'));
-    }
+    var fieldsetVisit = $('#visit-fieldset-template');
+    $('#visits').append(fieldsetVisit.html()
+      .replace('#0', '#' + ($fieldsets.length + 1))
+      .replace(/isit0/g, 'isit' + ($fieldsets.length + 1))
+      .replace(/destination([\[_])visits([^0]+)0([\]_])/g, "destination$1visits$2" + ($fieldsets.length + 1) + "$3")
+    );
+    initVisits($('#visits').find('fieldset:last-child'));
   });
 
   $("label[for$='destroy']").hide();
@@ -567,7 +564,6 @@ const destinations_index = function(params, api) {
     duration_default = params.duration_default,
     url_click2call = params.url_click2call,
     enable_references = params.enable_references,
-    enable_multi_visits = params.enable_multi_visits,
     enable_orders = params.enable_orders,
     isEditable = params.is_editable,
     disableQuantity = params.disable_quantity;
@@ -623,7 +619,6 @@ const destinations_index = function(params, api) {
   const prepare_display_destination = function(destination) {
     // must be set here instead of in json because api used for update don't expose all attributes...
     destination.enable_references = enable_references;
-    destination.enable_multi_visits = enable_multi_visits;
     destination.enable_orders = enable_orders;
     destination.i18n = mustache_i18n;
     if (destination.geocoding_accuracy) {
