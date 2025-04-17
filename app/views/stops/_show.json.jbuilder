@@ -79,6 +79,7 @@ if stop.is_a?(StopVisit)
       json.isodistance stop.route.planning.customer.router.isodistance
     end
   end
+  json.custom_attributes current_user.customer.custom_attributes.for_visit.map{ |c_a| custom_attribute_template(c_a, visit) }
 elsif stop.is_a?(StopRest)
   json.rest do
     json.rest true

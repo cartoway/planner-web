@@ -119,6 +119,5 @@
     destination_id: @store.id || 0,
     map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)],
     map_lat: @store.lat || @store.customer.default_position[:lat],
-    map_lng: @store.lng || @store.customer.default_position[:lng],
-    enable_multi_visits: @store.customer.enable_multi_visits
+    map_lng: @store.lng || @store.customer.default_position[:lng]
   )

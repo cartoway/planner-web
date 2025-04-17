@@ -13,6 +13,7 @@ class OptimizerWrapperTest < ActionController::TestCase
     @stub_VrpJob = stub_request(:get, uri_template).to_return(status: 200, body: File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/vrp-job.json').read)
 
     @planning = plannings(:planning_one)
+    @deliverable_unit = deliverable_units(:deliverable_unit_one_one)
   end
 
   test 'should provide extra time for timewindow ends' do
@@ -299,5 +300,59 @@ class OptimizerWrapperTest < ActionController::TestCase
     @optim.optimize(@planning, @planning.routes, **{ optimize_time: 30000 }, &progress)
   ensure
     remove_request_stub(stub_vrp_job) if stub_vrp_job
+  end
+
+  test 'should handle service time in vehicle timewindows' do
+    begin
+      planning = plannings(:planning_one)
+      route = planning.routes[1]
+
+      route.vehicle_usage.update(
+        service_time_start: 300,
+        service_time_end: 600
+      )
+
+      vrp = @optim.build_vrp(planning, planning.routes)
+
+      assert_equal 36000 + 300, vrp[:vehicles][0][:timewindow][:start]
+      assert_equal 54000 - 600, vrp[:vehicles][0][:timewindow][:end]
+
+      route.vehicle_usage.vehicle_usage_set.update(
+        service_time_start: 120,
+        service_time_end: 180
+      )
+
+      vrp = @optim.build_vrp(planning, planning.routes)
+
+      assert_equal 36000 + 300, vrp[:vehicles][0][:timewindow][:start]
+      assert_equal 54000 - 600, vrp[:vehicles][0][:timewindow][:end]
+
+      route.vehicle_usage.update(service_time_start: nil, service_time_end: nil)
+      vrp = @optim.build_vrp(planning, planning.routes)
+
+      assert_equal 36000 + 120, vrp[:vehicles][0][:timewindow][:start]
+      assert_equal 54000 - 180, vrp[:vehicles][0][:timewindow][:end]
+    end
+  end
+
+  test 'includes fixed cost in vehicle configuration' do
+    vrp = @optim.build_vrp(@planning, @planning.routes, **{ optimization_cost_fixed: 10 })
+    assert_equal 10, vrp[:vehicles].first[:cost_fixed]
+  end
+
+  test 'includes initial load in unit configuration' do
+    routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
+    routes_with_vehicles.first.vehicle_usage.vehicle.capacities_initial_loads = { @deliverable_unit.id => 10.5 }
+
+    vrp = @optim.build_vrp(@planning, @planning.routes)
+    assert_equal 10.5, vrp[:vehicles].first[:capacities][0][:initial]
+  end
+
+  test 'does not include initial load when capacity is ignored' do
+    routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
+    routes_with_vehicles.first.vehicle_usage.vehicle.capacities_initial_loads = { @deliverable_unit.id => 10.5 }
+
+    vrp = @optim.build_vrp(@planning, @planning.routes, **{ ignore: [{ unit_id: @deliverable_unit.id }] })
+    assert_nil vrp[:vehicles].first[:capacities][0][:initial]
   end
 end

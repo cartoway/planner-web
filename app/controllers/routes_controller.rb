@@ -43,7 +43,7 @@ class RoutesController < ApplicationController
           enable_driver_move: ValueToBoolean.value_to_boolean(current_vehicle.customer.devices.dig(:deliver, :driver_move)),
           date: @route.planning.date,
           is_expired: @route.is_expired?,
-          custom_attributes: current_vehicle.customer.custom_attributes.select{ |c_u| c_u.object_class == 'stop' }
+          custom_attributes: current_vehicle.customer.custom_attributes.for_stop
         },
         layout: 'mobile'
       }

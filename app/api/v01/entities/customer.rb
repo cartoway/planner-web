@@ -52,6 +52,7 @@ class V01::Entities::Customer < Grape::Entity
   expose(:optimization_minimal_time, documentation: { type: Float, desc: 'Minimum optimization time (by vehicle)', default: Planner::Application.config.optimize_minimal_time })
   expose(:optimization_stop_soft_upper_bound, documentation: { type: Float, desc: 'Stops delay coefficient, 0 to avoid delay', default: Planner::Application.config.optimize_stop_soft_upper_bound })
   expose(:optimization_vehicle_soft_upper_bound, documentation: { type: Float, desc: 'Vehicles delay coefficient, 0 to avoid delay', default: Planner::Application.config.optimize_vehicle_soft_upper_bound })
+  expose(:optimization_cost_fixed, documentation: { type: Integer, desc: 'Fixed cost for vehicles used by optimization', default: Planner::Application.config.optimize_cost_fixed })
   expose(:optimization_cost_waiting_time, documentation: { type: Float, desc: 'Coefficient to manage waiting time', default: Planner::Application.config.optimize_cost_waiting_time })
   expose(:optimization_force_start, documentation: { type: 'Boolean', desc: 'Force time for departure', default: Planner::Application.config.optimize_force_start })
 

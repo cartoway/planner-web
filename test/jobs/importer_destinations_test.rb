@@ -117,7 +117,6 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should import without ref and multi visit' do
-    @customer.update! enable_multi_visits: true # Move dest.ref to visit.ref !
     @customer.reload # Force reload after callback save
 
     import_count = 1
@@ -286,7 +285,6 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should import with many visits' do
-    @customer.update! enable_multi_visits: true # Adds visit.ref in addition to dest.ref
     @customer.reload # Force reload after callback save
 
     dest_import_count = 5 # 5 uniq ref
@@ -308,7 +306,6 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should replace with many visits' do
-    @customer.update! enable_multi_visits: true # Adds visit.ref in addition to dest.ref
     dest_import_count = 5 # 5 uniq ref
     visit_import_count = 7
     visit_tag1_import_count = 1
@@ -548,7 +545,6 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should import without error after update' do
-    @customer.update!(enable_multi_visits: true)
     @customer.reload
 
     Planning.all.each(&:destroy)

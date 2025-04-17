@@ -103,7 +103,6 @@ CREATE TABLE public.customers (
     print_stop_time boolean DEFAULT true NOT NULL,
     ref character varying,
     enable_references boolean DEFAULT true,
-    enable_multi_visits boolean DEFAULT false NOT NULL,
     router_dimension integer DEFAULT 0 NOT NULL,
     advanced_options jsonb DEFAULT '{}'::jsonb NOT NULL,
     print_map boolean DEFAULT false NOT NULL,
@@ -137,7 +136,8 @@ CREATE TABLE public.customers (
     enable_optimization_soft_upper_bound boolean,
     stop_max_upper_bound integer DEFAULT 0,
     vehicle_max_upper_bound integer DEFAULT 0,
-    planning_date_offset integer DEFAULT 1
+    planning_date_offset integer DEFAULT 1,
+    optimization_cost_fixed integer
 );
 
 
@@ -214,7 +214,8 @@ CREATE TABLE public.deliverable_units (
     ref character varying,
     icon character varying,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    default_initial_load double precision
 );
 
 
@@ -1292,7 +1293,8 @@ CREATE TABLE public.vehicles (
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     max_ride_duration integer,
     max_ride_distance integer,
-    driver_token character varying
+    driver_token character varying,
+    capacities_initial_loads public.hstore
 );
 
 
@@ -3104,6 +3106,9 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250310095030'),
 ('20250314130549'),
 ('20250321085637'),
-('20250325123806');
+('20250325123806'),
+('20250403081545'),
+('20250417055812'),
+('20250417075753');
 
 

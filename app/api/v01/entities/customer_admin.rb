@@ -28,7 +28,6 @@ class V01::Entities::CustomerAdmin < V01::Entities::Customer
   expose(:profile_id, documentation: { type: Integer, desc: EDIT_ONLY_ADMIN })
 
   expose(:enable_references, documentation: { type: 'Boolean', desc: 'Show references or not. ' + EDIT_ONLY_ADMIN })
-  expose(:enable_multi_visits, documentation: { type: 'Boolean', desc: 'More features to manage multiple visits by destinations. ' + EDIT_ONLY_ADMIN })
   expose(:enable_global_optimization, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
   expose(:enable_vehicle_position, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
   expose(:enable_stop_status, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })

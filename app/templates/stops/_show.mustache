@@ -120,6 +120,9 @@
   {{/quantities}}
   {{#orders}}<li><i class="fa fa-cube fa-fw"></i> {{#i18n}}plannings.edit.popup.orders{{/i18n}} {{orders}}</li>{{/orders}}
   {{#tags_present}}<li><i class="fa fa-tag fa-fw"></i> {{#i18n}}plannings.edit.popup.tags{{/i18n}} {{#tags}}{{label}} {{/tags}}</li>{{/tags_present}}
+  {{#custom_attributes}}
+    {{{html}}}
+  {{/custom_attributes}}
 </ul>
 {{#error}}
   <ul class="ui-state-error">

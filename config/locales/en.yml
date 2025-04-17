@@ -181,11 +181,11 @@ en:
         optimization_cluster_size: Optimization cluster size
         optimization_time: Maximum optimization time by vehicle
         optimization_minimal_time: Minimum optimization time by vehicle
+        optimization_cost_fixed: Fixed cost
         optimization_cost_waiting_time: Waiting time coefficient
         optimization_force_start: Force schedule start vehicle
         enable_orders: Enable orders
         enable_references: View references
-        enable_multi_visits: Enable more than one visit per destination
         enable_global_optimization: Enable global optimization
         enable_vehicle_position: Enable vehicle's position
         enable_stop_status: Enable visits status
@@ -237,6 +237,7 @@ en:
         icon: Icon
         default_quantity: Default quantity
         default_capacity: Default capacity
+        default_initial_load: Default maximum initial load
         operation_fill: Fill
         operation_empty: Empty
         optimization_overload_multiplier: Overload coefficient
@@ -1046,6 +1047,9 @@ en:
       optimization_minimal_time_help: >-
         You can specify here a minimum duration, per vehicle, else optimization
         stops automatically.
+      optimization_cost_fixed_default: '%{n} (default value)'
+      optimization_cost_fixed_help: >-
+        Fixed cost for vehicles used by optimization.
       optimization_cost_waiting_time_default: '%{n} (default value)'
       optimization_cost_waiting_time_help: >-
         Evaluate the importance of waiting times. More the value is important,
@@ -1125,6 +1129,7 @@ en:
       ref_help: A free reference
       default_quantity_help: Quantity to deliver for all your visits (keep empty if no quantity).
       default_capacity_help: Capacity for all your vehicles (keep empty if no limit).
+      default_initial_load_help: Maximum initial load for all your vehicles (keep empty if no limit).
       optimization_overload_multiplier_no: 'No'
       optimization_overload_multiplier_no_help: >-
         During optimisation, if you set some capacities for your vehicles,
@@ -1182,9 +1187,6 @@ en:
             For each respective line, allow to replace a specific tag with
             another existing tag
       visit:
-        enable_multi_visits: >-
-          Need more than one visit for this destination? Please contact support
-          to activate this feature.
         new: New visit
         new_help: New visit if you go to this destination several times.
         attributes_change_bulk: Change categories
@@ -2433,6 +2435,8 @@ en:
       consumption_desc: average fuel consumption in liters per 100 km
       capacities: capacities
       capacities_desc: maximum vehicle's capacities
+      capacities_initial_loads: initial loadings
+      capacities_initial_loads_desc: maximum initial loadings
       custom_attributes: attributes
       router_mode: routing engine
       router_mode_desc: force use of a specific routing engine
@@ -2482,7 +2486,7 @@ en:
         help: Average fuel consumption in liters per 100 km
         help_miles: Average fuel consumption in liters per 62.1 mi.
       capacities:
-        label: Capacities
+        label: Maximum initial load / Capacities
         default: '%{n} (default value)'
         no_overload: ' (no overload)'
         ignore_overload: ' (ignored)'

@@ -21,6 +21,7 @@ require 'importer_destinations'
 class DestinationsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_destination, only: [:show, :edit, :update, :destroy]
+  before_action :set_custom_attributes, only: [:show, :edit, :update, :destroy, :create, :new]
   after_action :warnings, only: [:create, :update]
   around_action :over_max_limit, only: [:create, :duplicate]
 
@@ -202,6 +203,10 @@ class DestinationsController < ApplicationController
     @destination = current_user.customer.destinations.find params[:id] || params[:destination_id]
   end
 
+  def set_custom_attributes
+    @visit_custom_attributes = current_user.customer.custom_attributes.for_visit
+  end
+
   def warnings
     flash[:warning] = @destination.warnings.join(', ') if @destination.warnings && @destination.warnings.any?
   end
@@ -257,7 +262,8 @@ class DestinationsController < ApplicationController
         :_destroy,
         tag_ids: [],
         quantities: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
-        quantities_operations: current_user.customer.deliverable_units.map{ |du| du.id.to_s }
+        quantities_operations: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
+        custom_attributes: current_user.customer.custom_attributes.for_visit.map{ |c_u| c_u.name.to_sym }
       ]
     )
     o[:visits_attributes].each do |_k, v|

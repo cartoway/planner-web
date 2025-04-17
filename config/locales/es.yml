@@ -161,7 +161,6 @@ es:
         enable_orders: Activar los mandos
         enable_multi_vehicle_usage_sets: Permitir las configuraciones de vehículos múltiples
         enable_references: Mostrar las referencias
-        enable_multi_visits: Permitir las visitas múltiples
         enable_global_optimization: Activar la optimización global
         test: Prueba
         jobs: Tareas

@@ -191,7 +191,7 @@ class VehicleUsage < ApplicationRecord
   end
 
   def default_service_time_start
-    service_time_start || vehicle_usage_set.service_time_start
+    service_time_start || vehicle_usage_set.service_time_start || 0
   end
 
   def default_service_time_start_time
@@ -199,7 +199,7 @@ class VehicleUsage < ApplicationRecord
   end
 
   def default_service_time_end
-    service_time_end || vehicle_usage_set.service_time_end
+    service_time_end || vehicle_usage_set.service_time_end || 0
   end
 
   def default_service_time_end_time

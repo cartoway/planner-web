@@ -115,6 +115,7 @@ Rails.application.configure do
   config.optimize_stop_soft_upper_bound = 0.0
   config.optimize_vehicle_soft_upper_bound = 0.0
   config.optimize_overload_multiplier = 0
+  config.optimize_cost_fixed = 3.hours.to_i
   config.optimize_cost_waiting_time = 1
   config.optimize_force_start = false
 
@@ -175,7 +176,6 @@ Rails.application.configure do
   config.manage_vehicles_only_admin = false # If true, only admin can add/remove vehicles
 
   config.enable_references = true # Default value when create new customer account of display or not references
-  config.enable_multi_visits = false # Default value when create new customer account of display or not the ability to support multiple visits per destination
 
   config.display_javascript_errors_on_screen = true
 
