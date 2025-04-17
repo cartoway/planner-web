@@ -4,6 +4,7 @@
   ### Added
   - Visits
     - Custom attributes are available in forms and displayed in plan stop pop-over [#338](https://github.com/cartoway/planner-web/pull/338)
+  - Customers: Admin have access to the `cost_fixed` transmitted during route optimization [#374](https://github.com/cartoway/planner-web/pull/374)
 
   ### Changed
   - Bump `babel` to 7.23.2 [#330](https://github.com/cartoway/planner-web/pull/330)

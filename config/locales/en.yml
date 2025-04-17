@@ -181,6 +181,7 @@ en:
         optimization_cluster_size: Optimization cluster size
         optimization_time: Maximum optimization time by vehicle
         optimization_minimal_time: Minimum optimization time by vehicle
+        optimization_cost_fixed: Fixed cost
         optimization_cost_waiting_time: Waiting time coefficient
         optimization_force_start: Force schedule start vehicle
         enable_orders: Enable orders
@@ -1046,6 +1047,9 @@ en:
       optimization_minimal_time_help: >-
         You can specify here a minimum duration, per vehicle, else optimization
         stops automatically.
+      optimization_cost_fixed_default: '%{n} (default value)'
+      optimization_cost_fixed_help: >-
+        Fixed cost for vehicles used by optimization.
       optimization_cost_waiting_time_default: '%{n} (default value)'
       optimization_cost_waiting_time_help: >-
         Evaluate the importance of waiting times. More the value is important,

@@ -311,6 +311,7 @@
       </div>
     </div>
 
+    <%= f.number_field :optimization_cost_fixed, { help: t('.optimization_cost_fixed_help'), placeholder: t('.optimization_cost_fixed_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_cost_fixed)), min: 0, step: 1, append: content_tag('i', '', class: 'fa fa-truck fa-fw')} %>
     <%= f.number_field :optimization_cost_waiting_time, { help: t('.optimization_cost_waiting_time_help'), placeholder: t('.optimization_cost_waiting_time_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_cost_waiting_time)), min: 0.1, step: '0.1', append: '×'} %>
 
     <%= render partial: 'shared/check_box', locals: { form: f, field: :optimization_force_start, label: t('activerecord.attributes.customer.optimization_force_start'), help: t('.optimization_force_start_help') } %>

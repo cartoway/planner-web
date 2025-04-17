@@ -333,4 +333,9 @@ class OptimizerWrapperTest < ActionController::TestCase
       assert_equal 54000 - 180, vrp[:vehicles][0][:timewindow][:end]
     end
   end
+
+  test 'includes fixed cost in vehicle configuration' do
+    vrp = @optim.build_vrp(@planning, @planning.routes, **{ optimization_cost_fixed: 10 })
+    assert_equal 10, vrp[:vehicles].first[:cost_fixed]
+  end
 end
