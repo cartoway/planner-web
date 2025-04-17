@@ -137,7 +137,8 @@ CREATE TABLE public.customers (
     enable_optimization_soft_upper_bound boolean,
     stop_max_upper_bound integer DEFAULT 0,
     vehicle_max_upper_bound integer DEFAULT 0,
-    planning_date_offset integer DEFAULT 1
+    planning_date_offset integer DEFAULT 1,
+    optimization_cost_fixed integer
 );
 
 
@@ -3107,6 +3108,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250314130549'),
 ('20250321085637'),
 ('20250325123806'),
-('20250403081545');
+('20250403081545'),
+('20250417055812');
 
 
