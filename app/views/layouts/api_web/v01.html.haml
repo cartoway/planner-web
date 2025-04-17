@@ -1,0 +1,22 @@
+!!!
+%html(lang="#{I18n.locale}")
+  %head
+    %meta(content="text/html; charset=UTF-8" http-equiv="Content-Type")/
+    = render partial: 'layouts/head'
+  %body.main.container.api-web(data-action="#{controller.action_name}" data-controller="#{controller.controller_path.gsub('/', '_')}")
+    = yield
+    = render partial: "shared/flash_messages"
+    = insert_paloma_hook
+
+    #default-modal.modal.bootstrap-dialog.type-primary.fade.size-small.in{"aria-hidden": "false", "data-backdrop": "static", "data-toggle": "modal", role: "dialog", style: "display:none;", tabindex: "-1"}
+      .modal-dialog
+        .modal-content
+          .modal-header
+            %h4
+              %i.fa.fa-hourglass-half.modal-icon{style: "display:none;"}
+              %span.modal-title
+              %button.close{"data-dismiss": "modal", style: "display:none;", type: "button"} ×
+          .modal-body
+          .modal-footer
+            %button.btn.btn-primary{"data-dismiss": "modal", style: "display:none;", type: "button"}
+              = t('web.dialog.close')

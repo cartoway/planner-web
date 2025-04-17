@@ -14,8 +14,8 @@
       - if @manage_planning[:manage_vehicle]
         %a.btn.btn-primary.btn-xs{href: "/vehicle_usages/#{route[:vehicle_usage_id]}/edit?back=true", title: t('plannings.edit.vehicle_help')}
           %i.fa.fa-truck-field
-        %button.btn.btn-primary.btn-xs.optimize{"data-keyboard" => "true", "data-target" => "#optimization-modal", "data-toggle" => "modal", title: t('plannings.edit.optimize_help'), type: "button", disable: ('disabled' if route[:locked])}
-          %i.fa.fa-gear
+      %button.btn.btn-primary.btn-xs.optimize{"data-keyboard" => "true", "data-target" => "#optimization-modal", "data-toggle" => "modal", title: t('plannings.edit.optimize_help'), type: "button", disable: ('disabled' if route[:locked])}
+        %i.fa.fa-gear
     .btn-group
       %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", title: t("plannings.edit.route_stops_active_help"), type: "button", disabled: ('disabled' if !route[:with_stops])}
         %span{data: {'size-active': route[:size_active], size: route[:size] }}
