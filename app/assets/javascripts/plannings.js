@@ -2356,6 +2356,7 @@ export const plannings_edit = function(params) {
     });
 
     if (options.firstTime) {
+      externalCallbackUrl($(`#planning_tools`));
       routesLayer.showAllRoutes({stores: true}, function() {
         if (options.fitBounds) {
           var bounds = routesLayer.getBounds();
