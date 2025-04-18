@@ -174,7 +174,7 @@ class ImporterDestinations < ImporterBase
     if options[:replace]
       @customer.delete_all_destinations
     end
-    @plannings_hash = Hash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref.to_sym, plan] }]
+    @plannings_hash = Hash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref.downcase.to_sym, plan] }]
 
     if options[:line_shift] == 1
       # Create missing deliverable units if needed
@@ -721,9 +721,9 @@ class ImporterDestinations < ImporterBase
 
       # Add visit to route if needed
       if row.key?(:route) && (visit_attributes[:id].nil? || !@visit_ids.include?(visit_attributes[:id]))
-        ref_route = row[:route].blank? ? nil : row[:route] # ref has to be nil for out-of-route
+        ref_route = row[:route].blank? ? nil : row[:route].downcase # ref has to be nil for out-of-route
         if row[:ref_vehicle]
-          ref_vehicle = row[:ref_vehicle].gsub(%r{[\./\\]}, ' ')
+          ref_vehicle = row[:ref_vehicle].gsub(%r{[\./\\]}, ' ').downcase
           if @plannings_routes[ref_planning][ref_route].key?(:ref_vehicle) &&
              @plannings_routes[ref_planning][ref_route][:ref_vehicle] != ref_vehicle ||
              @plannings_vehicles[ref_planning][ref_vehicle] &&
