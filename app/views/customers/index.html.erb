@@ -60,7 +60,7 @@
       <th class="center"><%= t 'activerecord.attributes.customer.test' %></th>
       <th class="center"><%= t '.status' %></th>
       <th class="center"><%= t '.created_end_subscription' %></th>
-      <th class="center" data-toggle="tooltip" data-placement="auto" title="Destination"><i class="fa fa-map-marker fa-fw"></i></th>
+      <th class="center" data-toggle="tooltip" data-placement="auto" title="Destinations/Visits"><i class="fa fa-map-marker fa-fw"></i></th>
       <th class="center" data-toggle="tooltip" data-placement="auto" title="Plannings"><i class="fa fa-map-location fa-fw"></i></th>
       <th></th>
     </tr>
@@ -113,7 +113,7 @@
             &infin;
           <% end %>
         </td>
-        <td><%= customer.destinations.count %></td>
+        <td><%= customer.destinations.count %> (<%= customer.visits.count %>)</td>
         <td><%= customer_plannings_count customer %></td>
         <td rowspan="2" class="text-right action-buttons">
           <div class="btn-group" role="group" aria-label="Actions">
