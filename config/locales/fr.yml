@@ -3156,6 +3156,11 @@ fr:
     sessions:
       new:
         remember_me: Se souvenir de moi
+  services:
+    external_callback:
+      success: Application externe appelée avec succès
+      fail: Échec lors de l'appel à l'application externe
+      invalid_url: L'URL est invalide
   vehicle_stores:
     import_file:
       cost_distance: coût au kilomètre

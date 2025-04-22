@@ -3021,6 +3021,11 @@ en:
     sessions:
       new:
         remember_me: Remember me
+  services:
+    external_callback:
+      success: External callback successful
+      fail: External callback failed
+      invalid_url: External callback URL is invalid
   vehicle_stores:
     import_file:
       cost_distance: distance cost
