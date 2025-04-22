@@ -72,13 +72,13 @@
           %i.fa.fa-share-nodes
           %span.caret
         %ul.dropdown-menu.pull-right{role: "menu"}
-          - if !route[:callback_button] && route[:customer_enable_external_callback] && routes[:customer_external_callback_url]
-            %li.link.customer_external_callback_url{"data-url" => route[:customer_external_callback_url]}
+          - if @callback_button && summary[:external_callback_url]
+            %li.link.customer_external_callback_url{"data-url" => external_callback_converted_url(summary, current_user, route)}
               %i.fa.fa-desktop.fa-fw
-                - if route[:customer_external_callback_name]
-                  = route[:customer_external_callback_name]
-                - else
-                  = t('plannings.edit.customer_external_callback_url.action')
+              - if summary[:external_callback_name]
+                = summary[:external_callback_name]
+              - else
+                = t('plannings.edit.customer_external_callback_url.action')
             %li.divider{role: "separator"}
           - if route[:tomtom]
             .dropdown-spacing

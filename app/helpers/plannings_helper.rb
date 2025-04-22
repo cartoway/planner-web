@@ -53,6 +53,9 @@ module PlanningsHelper
   def planning_summary(planning)
     {
       planning_id: planning.id,
+      planning_ref: planning.ref,
+      external_callback_name: planning.customer.enable_external_callback && planning.customer.external_callback_name,
+      external_callback_url: planning.customer.enable_external_callback && planning.customer.external_callback_url,
       routes: planning.routes.map{ |route|
         {
           route_id: route.id,
@@ -123,5 +126,23 @@ module PlanningsHelper
       min: customer.optimization_minimal_time || Mapotempo::Application.config.optimize_minimal_time,
       max: customer.optimization_time || Mapotempo::Application.config.optimize_time
     }
+  end
+
+  def external_callback_converted_url(planning_summary, current_user, route_hash = nil)
+    if planning_summary[:external_callback_url]
+      external_url =
+        planning_summary[:external_callback_url].gsub('{customer_id}', current_user.customer_id.to_s)
+                                                .gsub('{planning_id}', planning_summary[:planning_id].to_s)
+                                                .gsub('{planning_ref}', planning_summary[:planning_ref] || 'null')
+                                                .gsub('{api_key}', current_user.api_key)
+      if route_hash
+        external_url =
+          external_url.gsub('{route_id}', route_hash[:route_id].to_s)
+                      .gsub('{route_ref}', route_hash[:ref] || 'null')
+      end
+      external_url
+    else
+      ''
+    end
   end
 end
