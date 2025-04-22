@@ -19,12 +19,13 @@
           %button.btn.btn-default.btn-sm.sidebar-close{title: t('.collapse_planning_panel'), type: "button"}
             %i.fa.fa-caret-left
       #planning_tools.row
+        - if @callback_button && @planning.customer.enable_external_callback? && @planning.customer.external_callback_url
+          .row
+            %p.text-center.col-md-12
+              %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{"data-url": external_callback_converted_url(planning_summary(@planning), current_user), type: "button"}
+                %i.fa.fa-desktop.fa-fw
+                = @planning.customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
         #route_selector.row
-        - if @callback_button && @planning.customer.default_callback_enabled? && @planning.customer.default_callback_url
-          %p.text-center.col-md-12
-            %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{"data-url": @planning.customer.external_callback_url, type: "button"}
-              %i.fa.fa-desktop.fa-fw
-              = @planning.customer.default_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
         - if (@planning.id && !@planning.tags.empty?) || !@planning.id
           .d-flex.justify-content-center
             .col-xs-12.col-md-12
@@ -132,8 +133,8 @@
                   %h5
                     = t('plannings.edit.all_plannings_related')
                 %hr
-                  - if current_user.customer.default_callback_enabled? && current_user.customer.default_callback_url
-                    %li.link.customer_external_callback_url
+                  - if current_user.customer.enable_external_callback? && current_user.customer.external_callback_url
+                    %li.link.customer_external_callback_url{ data: { url: external_callback_converted_url(planning_summary(@planning), current_user) } }
                       %i.fa.fa-desktop.fa-fw
                       = current_user.customer.default_callback_name || t('plannings.edit.customer_external_callback_url.action')
                     %li.divider{role: "separator"}

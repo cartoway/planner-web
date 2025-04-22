@@ -537,6 +537,7 @@ class PlanningsController < ApplicationController
       else
         PlanningsController.manage
       end
+    @callback_button = true
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.preload_routes_without_stops.find(params[:id] || params[:planning_id])
