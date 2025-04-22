@@ -558,11 +558,11 @@ class PlanningsController < ApplicationController
   def set_planning_without_stops
     @manage_planning =
       if request.referer&.match('api-web')
-        @callback_button = true
         ApiWeb::V01::PlanningsController.manage
       else
         PlanningsController.manage
       end
+    @callback_button = true
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.preload_routes_without_stops.find(params[:id] || params[:planning_id])

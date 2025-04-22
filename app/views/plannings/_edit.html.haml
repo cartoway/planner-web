@@ -22,7 +22,7 @@
         - if @callback_button && @planning.customer.enable_external_callback? && @planning.customer.external_callback_url
           .row
             %p.text-center.col-md-12
-              %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{"data-url": @planning.customer.external_callback_url, type: "button"}
+              %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{"data-url": external_callback_converted_url(planning_summary(@planning), current_user), type: "button"}
                 %i.fa.fa-desktop.fa-fw
                 = @planning.customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
         #route_selector.row
@@ -135,7 +135,7 @@
                     = t('plannings.edit.all_plannings_related')
                 %hr
                   - if current_user.customer.enable_external_callback? && current_user.customer.external_callback_url
-                    %li.link.customer_external_callback_url
+                    %li.link.customer_external_callback_url{ data: { url: external_callback_converted_url(planning_summary(@planning), current_user) } }
                       %i.fa.fa-desktop.fa-fw
                       = current_user.customer.external_callback_name || t('plannings.edit.customer_external_callback_url.action')
                     %li.divider{role: "separator"}
