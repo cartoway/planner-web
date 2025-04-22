@@ -1789,14 +1789,6 @@ export const plannings_edit = function(params) {
         route.vehicle = vehicles_usages_map[route.vehicle_id];
         route.path = '/vehicle_usages/' + route.vehicle_usage_id + '/edit?back=true';
       }
-
-      route.customer_enable_external_callback = data.customer_enable_external_callback;
-      if (data.customer_external_callback_url) {
-        route.customer_external_callback_url = buildUrl(data.customer_external_callback_url, { planning_id: data.id, route_id: route.route_id, planning_ref: data.ref, route_ref: route.ref });
-
-        if (data.customer_enable_external_callback)
-          $("#global_tools .customer_external_callback_url, #external-callback-btn").data('url', buildUrl(data.customer_external_callback_url, { planning_id: data.id, planning_ref: data.ref }));
-      }
     }
 
     const updateRouteModel = function(i, route) {
@@ -2354,6 +2346,7 @@ export const plannings_edit = function(params) {
 
     if (options.firstTime) {
       externalCallbackUrl($(`#planning_tools`));
+      externalCallbackUrl($(`#global_tools`));
       routesLayer.showAllRoutes({stores: true}, function() {
         if (options.fitBounds) {
           var bounds = routesLayer.getBounds();
