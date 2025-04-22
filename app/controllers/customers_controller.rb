@@ -19,7 +19,7 @@
 #
 class CustomersController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_customer, only: %i[edit update delete_vehicle]
+  before_action :set_customer, only: %i[edit update delete_vehicle external_callback]
 
   load_and_authorize_resource
 
@@ -113,6 +113,36 @@ class CustomersController < ApplicationController
       customer = ImportExportCustomer.import(string_customer, options)
 
       redirect_to [:customers], notice: t('.success', customer_name: customer.name)
+    end
+  end
+
+  def external_callback
+    if current_user.customer.enable_external_callback
+      external_url = current_user.customer.external_callback_url
+      @planning = current_user.customer.plannings.find(params[:planning_id]) if params[:planning_id]
+      @route = @planning.routes.find(params[:route_id]) if @planning && params[:route_id]
+      @plannings = current_user.customer.plannings.where(id: params[:planning_ids].split(',')) if params[:planning_ids]
+
+      begin
+        external_url =
+          external_url.gsub('{PLANNING_ID}', @planning&.id&.to_s || 'null')
+                      .gsub('{PLANNING_REF}', @planning&.ref || 'null')
+                      .gsub('{PLANNING_IDS}', @plannings&.map(&:id)&.join(',') || 'null')
+                      .gsub('{ROUTE_ID}', @route&.id&.to_s || 'null')
+                      .gsub('{ROUTE_REF}', @route&.ref || 'null')
+                      .gsub('{API_KEY}', current_user.api_key)
+                      .gsub('{CUSTOMER_ID}', current_user.customer_id.to_s)
+
+        if ExternalCallbackService.new(external_url).call
+          render json: { status: :ok }
+        else
+          render json: { status: :unprocessable_entity, error: I18n.t('services.external_callback.fail') }, status: :unprocessable_entity
+        end
+      rescue ExternalCallbackService::ExternalCallbackError => e
+        render json: { status: :unprocessable_entity, error: e.message }, status: :unprocessable_entity
+      end
+    else
+      render json: {}, status: :forbidden
     end
   end
 

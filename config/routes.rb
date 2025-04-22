@@ -88,6 +88,7 @@ Rails.application.routes.draw do
       delete :delete_multiple_vehicles
       patch :duplicate
       get :export
+      post :external_callback
     end
   end
 
