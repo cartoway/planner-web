@@ -155,6 +155,7 @@ class Planning < ApplicationRecord
   def update_routes(routes_visits, recompute = true)
     if routes_visits.size <= routes.size - 1
       existing_visits = routes.select{ |route| route.vehicle_usage? && routes_visits.key?(route.vehicle_usage.vehicle.ref&.downcase) }.flat_map{ |route| route.stops.map(&:visit) }
+      stop_visit_ids = visits.each_with_object({}) { |visit, hash| hash[visit.id] = true }
       import_visits = routes_visits.flat_map{ |_ref, r| r[:visits] }
 
       routes.find{ |route| !route.vehicle_usage? }.add_visits(existing_visits - import_visits)
@@ -174,7 +175,7 @@ class Planning < ApplicationRecord
             routes.index{ |route| !route.vehicle_usage? }
           end
         r[:visits].each{ |visit, active|
-          if visit.id
+          if visit.id && stop_visit_ids[visit.id]
             move_visit(routes[i], visit, -1)
           else
             routes[i].add(visit, nil, active)
