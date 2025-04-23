@@ -121,17 +121,17 @@ class CustomersController < ApplicationController
       external_url = current_user.customer.external_callback_url
       @planning = current_user.customer.plannings.find(params[:planning_id]) if params[:planning_id]
       @route = @planning.routes.find(params[:route_id]) if @planning && params[:route_id]
-      @plannings = current_user.customer.plannings.where(id: params[:planning_ids].split(',')) if params[:planning_ids]
+      @planning_ids = current_user.customer.plannings.where(id: params[:planning_ids].split(',')).pluck(:id) if params[:planning_ids]
 
       begin
         external_url =
-          external_url.gsub('{PLANNING_ID}', @planning&.id&.to_s || 'null')
-                      .gsub('{PLANNING_REF}', @planning&.ref || 'null')
-                      .gsub('{PLANNING_IDS}', @plannings&.map(&:id)&.join(',') || 'null')
-                      .gsub('{ROUTE_ID}', @route&.id&.to_s || 'null')
-                      .gsub('{ROUTE_REF}', @route&.ref || 'null')
-                      .gsub('{API_KEY}', current_user.api_key)
-                      .gsub('{CUSTOMER_ID}', current_user.customer_id.to_s)
+          external_url.gsub(/\{PLANNING_ID\}/i, @planning&.id&.to_s || 'null')
+                      .gsub(/\{PLANNING_REF\}/i, @planning&.ref || 'null')
+                      .gsub(/\{PLANNING_IDS\}/i, @planning_ids&.join(',') || 'null')
+                      .gsub(/\{ROUTE_ID\}/i, @route&.id&.to_s || 'null')
+                      .gsub(/\{ROUTE_REF\}/i, @route&.ref || 'null')
+                      .gsub(/\{API_KEY\}/i, current_user.api_key)
+                      .gsub(/\{CUSTOMER_ID\}/i, current_user.customer_id.to_s)
 
         if ExternalCallbackService.new(external_url).call
           render json: { status: :ok }
