@@ -131,14 +131,14 @@ module PlanningsHelper
   def external_callback_converted_url(planning_summary, current_user, route_hash = nil)
     if planning_summary[:external_callback_url]
       external_url =
-        planning_summary[:external_callback_url].gsub('{customer_id}', current_user.customer_id.to_s)
-                                                .gsub('{planning_id}', planning_summary[:planning_id].to_s)
-                                                .gsub('{planning_ref}', planning_summary[:planning_ref] || 'null')
-                                                .gsub('{api_key}', current_user.api_key)
+        planning_summary[:external_callback_url].gsub(/\{customer_id\}/i, current_user.customer_id.to_s)
+                                                .gsub(/\{planning_id\}/i, planning_summary[:planning_id].to_s)
+                                                .gsub(/\{planning_ref\}/i, planning_summary[:planning_ref] || 'null')
+                                                .gsub(/\{api_key\}/i, current_user.api_key)
       if route_hash
         external_url =
-          external_url.gsub('{route_id}', route_hash[:route_id].to_s)
-                      .gsub('{route_ref}', route_hash[:ref] || 'null')
+          external_url.gsub(/\{route_id\}/i, route_hash[:route_id].to_s)
+                      .gsub(/\{route_ref\}/i, route_hash[:ref] || 'null')
       end
       external_url
     else
