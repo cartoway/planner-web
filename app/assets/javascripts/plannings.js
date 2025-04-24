@@ -2745,11 +2745,7 @@ var plannings_index = function(params) {
     e.preventDefault();
 
     planning_ids = $('[name^=planning]:checked').map(function() { return $(this).val(); }).toArray().join(',');
-
-    var url = params.external_url
-      .replace('{PLANNING_IDS}', planning_ids)
-      .replace('{API_KEY}', params.user_api_key)
-      .replace('{CUSTOMER_ID}', params.customer_id);
+    var url = $(this).data('url').replace(/{PLANNING_IDS}/i, planning_ids);
 
     if (!requestPending) {
       requestPending = true;

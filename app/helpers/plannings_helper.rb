@@ -50,6 +50,19 @@ module PlanningsHelper
     end
   end
 
+  def plannings_summary(customer)
+    {
+      external_callback_name: customer.enable_external_callback && customer.external_callback_name,
+      external_callback_url: customer.enable_external_callback && customer.external_callback_url,
+      plannings: customer.plannings.map{ |planning|
+        {
+          planning_id: planning.id,
+          planning_ref: planning.ref
+        }
+      }
+    }
+  end
+
   def planning_summary(planning)
     {
       planning_id: planning.id,
@@ -128,13 +141,17 @@ module PlanningsHelper
     }
   end
 
-  def external_callback_converted_url(planning_summary, current_user, route_hash = nil)
-    if planning_summary[:external_callback_url]
+  def external_callback_converted_url(summary, current_user, route_hash = nil)
+    if summary[:external_callback_url]
       external_url =
-        planning_summary[:external_callback_url].gsub(/\{customer_id\}/i, current_user.customer_id.to_s)
-                                                .gsub(/\{planning_id\}/i, planning_summary[:planning_id].to_s)
-                                                .gsub(/\{planning_ref\}/i, planning_summary[:planning_ref] || 'null')
-                                                .gsub(/\{api_key\}/i, current_user.api_key)
+        summary[:external_callback_url].gsub(/\{customer_id\}/i, current_user.customer_id.to_s)
+                                       .gsub(/\{api_key\}/i, current_user.api_key)
+
+      if summary[:planning_id]
+        external_url = external_url.gsub(/\{planning_id\}/i, summary[:planning_id]&.to_s || 'null')
+                                   .gsub(/\{planning_ref\}/i, summary[:planning_ref] || 'null')
+      end
+
       if route_hash
         external_url =
           external_url.gsub(/\{route_id\}/i, route_hash[:route_id].to_s)
