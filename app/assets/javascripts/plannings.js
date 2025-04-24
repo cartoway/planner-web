@@ -1112,11 +1112,12 @@ export const plannings_edit = function(params) {
     });
   };
 
-  var externalCallbackUrl = function(context) {
-    $('.customer_external_callback_url', context).off('click').click(function(e) {
+  var externalCallbackUrl = function() {
+    $('.customer_external_callback_url').off('click').click(function(e) {
       $.ajax({
-        url: $(e.target).data('url'),
-        type: 'GET',
+        url:  '/customers/' + $(this).data('customer-id') + '/external_callback',
+        type: 'POST',
+        data: $(this).data(),
         beforeSend: beforeSendWaiting,
         complete: completeWaiting,
         success: function() {
@@ -1369,8 +1370,6 @@ export const plannings_edit = function(params) {
 
     // Following callbacks need to be set only once
     if (!options || !options.skipCallbacks) {
-      externalCallbackUrl(context);
-
       devicesObservePlanning.init(context, function() {
         if (availableStopStatus) {
           needUpdateStopStatus = true;
@@ -2746,16 +2745,12 @@ var plannings_index = function(params) {
 
     planning_ids = $('[name^=planning]:checked').map(function() { return $(this).val(); }).toArray().join(',');
 
-    var url = params.external_url
-      .replace('{PLANNING_IDS}', planning_ids)
-      .replace('{API_KEY}', params.user_api_key)
-      .replace('{CUSTOMER_ID}', params.customer_id);
-
     if (!requestPending) {
       requestPending = true;
       $.ajax({
-        type: 'GET',
-        url: url,
+        type: 'POST',
+        url: '/customers/' + params.customer_id + '/external_callback',
+        data: { api_key: params.user_api_key, planning_ids: planning_ids },
         success: function() { notice(I18n.t('plannings.edit.export.customer_external_callback_url.success')); },
         error: function() { stickyError(I18n.t('plannings.edit.export.customer_external_callback_url.fail')); },
         complete: function() { requestPending = false; }
