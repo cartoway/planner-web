@@ -79,9 +79,7 @@ module PlanningsHelper
           hidden: route.hidden,
           locked: route.locked
         }.delete_if{ |_k, v| v.nil? }
-      },
-      external_callback_url: planning.customer.enable_external_callback && planning.customer.external_callback_url,
-      external_callback_name: planning.customer.enable_external_callback && planning.customer.external_callback_name
+      }
     }
   end
 
