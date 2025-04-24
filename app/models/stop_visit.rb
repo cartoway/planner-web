@@ -69,6 +69,14 @@ class StopVisit < Stop
     visit.duration_time_with_seconds || visit.customer.visit_duration_time_with_seconds || 0
   end
 
+  def destination_duration
+    visit.destination.duration || visit.customer.destination_duration || 0
+  end
+
+  def destination_duration_time_with_seconds
+    visit.destination.duration_time_with_seconds || visit.customer.destination_duration_time_with_seconds || 0
+  end
+
   def base_id
     "d#{visit.id}"
   end

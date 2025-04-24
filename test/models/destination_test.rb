@@ -161,4 +161,24 @@ class DestinationTest < ActiveSupport::TestCase
     assert destination.geocoded_at
     assert_not_equal nil, destination.geocoded_at
   end
+
+  test 'should set destination duration' do
+    destination = destinations(:destination_one)
+    destination.duration = '00:30:00'
+    assert destination.save!
+    assert_equal 1800, destination.default_duration
+    assert_equal '00:30:00', destination.default_duration_time_with_seconds
+  end
+
+  test 'should use customer destination duration as fallback' do
+    customer = customers(:customer_one)
+    customer.destination_duration = 3600
+    customer.save!
+
+    destination = destinations(:destination_one)
+    destination.duration = nil
+    assert destination.save!
+    assert_equal 3600, destination.default_duration
+    assert_equal '01:00:00', destination.default_duration_time_with_seconds
+  end
 end

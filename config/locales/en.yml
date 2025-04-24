@@ -175,6 +175,7 @@ en:
         max_destinations: Max destinations
         max_vehicle_usage_sets: Max vehicles base settings
         visit_duration: Visit duration
+        destination_duration: Destination duration
         default_country: Default country
         with_state: Add State field in addresses
         optimization_max_split_size: Optimization split size
@@ -1016,6 +1017,7 @@ en:
         At least one user have an unauthorized layer for this profile:
         <strong>%{profile}</strong>
       visit_duration_help: Average time per account
+      destination_duration_help: Average time per destination
       value_default: '%{n} (default value)'
       max_plannings_help: Maximum number of allowed plans into the account.
       max_zonings_help: Maximum number of allowed sectorisations into the account.
@@ -1166,6 +1168,8 @@ en:
       ref_help: A free reference
       detail_help: 'Non geocoded address complement, flat number for example'
       comment_help: Delivery informations
+      duration_default: 'default'
+      duration_help: Average time per destination
       locate_manually: Locate manually on the map
       geocoding_accuracy_none: Not applicable
       geocoding_fail: Geocoding has failed
@@ -1356,6 +1360,8 @@ en:
         level of precision reached when converting the destination's street
         address into geographic coordinates, expressed via human friendly
         levels.
+      destination_duration: destination duration
+      destination_duration_desc: destination duration
       duration: visit duration
       duration_desc: visit duration
       quantity: quantity
@@ -1927,6 +1933,7 @@ en:
         time: 'Planned:'
         quantity: 'Quantity:'
         orders: 'Orders:'
+        destination_duration: 'Destination duration:'
         duration: 'Visit duration:'
         priority: 'Priority: '
         revenue: 'Revenue: '
@@ -2113,6 +2120,7 @@ en:
       phone_number: phone
       ref_visit: reference visit
       duration: visit duration
+      destination_duration: destination duration
       quantity: quantity
       quantity_operation: operation
       orders: orders

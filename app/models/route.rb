@@ -244,8 +244,9 @@ class Route < ApplicationRecord
             route_attributes[:revenue] = route_attributes[:revenue].nil? ? stop.visit&.revenue : route_attributes[:revenue] + (stop.visit&.revenue || 0)
             route_attributes[:distance] += stop_attributes[:distance] if stop_attributes[:distance]
             route_attributes[:end] = stop_attributes[:time] + stop.duration
+            route_attributes[:end] += stop.destination_duration if stop.is_a?(StopVisit) && previous_with_pos.is_a?(StopVisit) && stop.position != previous_with_pos.position
             route_attributes[:visits_duration] = (route_attributes[:visits_duration] || 0) + stop.duration if stop.is_a?(StopVisit)
-
+            route_attributes[:visits_duration] += stop.destination_duration if stop.is_a?(StopVisit) && previous_with_pos.is_a?(StopVisit) && stop.position != previous_with_pos.position
             stop_attributes[:out_of_drive_time] = stop_attributes[:time] > vehicle_usage.default_time_window_end
             stop_attributes[:out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], stop_attributes[:time])
             stop_attributes[:out_of_max_distance] = max_distance && (route_attributes[:distance] > max_distance)

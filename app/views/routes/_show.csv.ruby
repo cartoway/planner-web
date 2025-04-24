@@ -27,7 +27,8 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     street: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.street,
     detail: nil,
     postalcode: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.postalcode,
-    city: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.city
+    city: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.city,
+    destination_duration: nil
   }
 
   row.merge!(state: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.state) if route.planning.customer.with_state?
@@ -103,6 +104,7 @@ route.stops.each { |stop|
       detail: stop.detail,
       postalcode: stop.postalcode,
       city: stop.city,
+      destination_duration: stop.is_a?(StopVisit) && stop.destination_duration
     }
 
     row.merge!(state: stop.state) if route.planning.customer.with_state?
@@ -174,6 +176,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     detail: nil,
     postalcode: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.postalcode,
     city: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.city,
+    destination_duration: nil
     }
 
   row.merge!(state: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.state) if route.planning.customer.with_state?
