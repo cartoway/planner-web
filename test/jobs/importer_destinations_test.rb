@@ -676,4 +676,15 @@ class ImporterDestinationsTest < ActionController::TestCase
       end
     end
   end
+
+  test 'should import destination with duration' do
+    import_count = 1
+    assert_difference('Destination.count', import_count) do
+      assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_with_destination_duration.csv', 'text.csv')).import
+
+      destination = Destination.last
+      assert_equal 2700, destination.duration
+      assert_equal '00:45:00', destination.duration_time_with_seconds
+    end
+  end
 end
