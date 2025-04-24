@@ -69,7 +69,8 @@ class ImporterDestinations < ImporterBase
       lng: {title: I18n.t('destinations.import_file.lng'), desc: I18n.t('destinations.import_file.lng_desc'), format: I18n.t('destinations.import_file.format.float')},
       phone_number: {title: I18n.t('destinations.import_file.phone_number'), desc: I18n.t('destinations.import_file.phone_number_desc'), format: I18n.t('destinations.import_file.format.integer')},
       comment: {title: I18n.t('destinations.import_file.comment'), desc: I18n.t('destinations.import_file.comment_desc'), format: I18n.t('destinations.import_file.format.string')},
-      tags: {title: I18n.t('destinations.import_file.tags'), desc: I18n.t('destinations.import_file.tags_desc'), format: I18n.t('destinations.import_file.tags_format')}
+      tags: {title: I18n.t('destinations.import_file.tags'), desc: I18n.t('destinations.import_file.tags_desc'), format: I18n.t('destinations.import_file.tags_format')},
+      destination_duration: {title: I18n.t('destinations.import_file.destination_duration'), desc: I18n.t('destinations.import_file.destination_duration_desc'), format: I18n.t('destinations.import_file.format.hour')}
     })
 
     columns_destination
@@ -462,6 +463,7 @@ class ImporterDestinations < ImporterBase
       }
 
     destination_attributes = row.slice(*(@@col_dest_keys)).merge(customer_id: @customer.id)
+    destination_attributes[:duration] = destination_attributes.delete :destination_duration
     convert_lat_lng_attributes(destination_attributes)
     visit_attributes = row.slice(*@col_visit_keys)
     visit_attributes[:ref] = visit_attributes.delete :ref_visit

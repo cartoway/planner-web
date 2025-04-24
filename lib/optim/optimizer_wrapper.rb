@@ -264,15 +264,18 @@ class OptimizerWrapper
           position: POSITION_KEYS[stop.visit&.force_position&.to_sym || :neutral],
           timewindows: [
             (stop.time_window_start_1 || stop.time_window_end_1) && {
-              start: stop.time_window_start_1,
+              # For the optimization setup duration starts before the time window start
+              start: stop.time_window_start_1 + stop.destination_duration,
               end: stop.time_window_end_1 && (stop.time_window_end_1 + extra_time)
             },
             (stop.time_window_start_2 || stop.time_window_end_2) && {
-              start: stop.time_window_start_2,
+              # For the optimization setup duration starts before the time window start
+              start: stop.time_window_start_2 + stop.destination_duration,
               end: stop.time_window_end_2 && (stop.time_window_end_2 + extra_time)
             },
           ].compact,
-          duration: stop.duration
+          duration: stop.duration,
+          setup_duration: stop.destination_duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
         priority: stop.priority && (stop.priority.to_i - 4).abs,
         quantities: stop.visit&.default_quantities&.map{ |k, v|

@@ -275,6 +275,7 @@
     </div>
   </div>
 
+  <%= f.text_field :destination_duration, {help: t('.destination_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.destination_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-map-marker fa-fw')} %>
   <%= f.text_field :visit_duration, {help: t('.visit_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.visit_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} %>
   <%= f.text_field :default_country, required: true %>
   <%= render partial: 'shared/check_box', locals: { form: f, field: :with_state, label: t('activerecord.attributes.customer.with_state') } %>

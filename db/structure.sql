@@ -137,7 +137,8 @@ CREATE TABLE public.customers (
     stop_max_upper_bound integer DEFAULT 0,
     vehicle_max_upper_bound integer DEFAULT 0,
     planning_date_offset integer DEFAULT 1,
-    optimization_cost_fixed integer
+    optimization_cost_fixed integer,
+    destination_duration integer
 );
 
 
@@ -263,7 +264,8 @@ CREATE TABLE public.destinations (
     state character varying,
     geocoded_at timestamp without time zone,
     geocoder_version character varying,
-    geocoding_result jsonb DEFAULT '{}'::jsonb NOT NULL
+    geocoding_result jsonb DEFAULT '{}'::jsonb NOT NULL,
+    duration integer
 );
 
 
@@ -3109,6 +3111,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250325123806'),
 ('20250403081545'),
 ('20250417055812'),
-('20250417075753');
+('20250417075753'),
+('20250424060314');
 
 

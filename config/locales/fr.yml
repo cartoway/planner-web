@@ -174,7 +174,8 @@ fr:
         max_zonings: Max sectorisations
         max_destinations: Max destinations
         max_vehicle_usage_sets: Max configurations des véhicules
-        visit_duration: Durée de visite des destinations
+        visit_duration: Durée de visite
+        destination_duration: Durée de visite par destination
         default_country: Pays par défaut
         with_state: Ajouter champ État dans les adresses
         optimization_max_split_size: Découper le problème
@@ -1037,6 +1038,7 @@ fr:
         <strong>%{profile}</strong>
       value_default: '%{n} (valeur par défaut)'
       visit_duration_help: Durée de visite moyenne par client
+      destination_duration_help: Durée de visite par destination
       max_plannings_help: Nombre maximal de plans autorisés dans le compte.
       max_zonings_help: Nombre maximal de sectorisations autorisés dans le compte.
       max_destinations_help: Nombre maximal d'adresses autorisés dans le compte.
@@ -1201,6 +1203,8 @@ fr:
       ref_help: Référence libre
       detail_help: 'Complément d''adresse non géocodable, ex. numéro d''escalier'
       comment_help: Informations nécessaires pour la livraison
+      duration_default: défaut
+      duration_help: 'Si vide utilise la valeur par défaut, format hh:mm:ss'
       locate_manually: Positionner manuellement sur la carte
       geocoding_accuracy_none: Non applicable
       geocoding_fail: Le géocodage a échoué
@@ -1401,7 +1405,9 @@ fr:
         en coordonnées géographiques, exprimé de manière sémantique.
       geocoding_result: adresse géocodage
       duration: durée visite
+      destination_duration: durée destination
       duration_desc: durée anticipée de la visite
+      destination_duration_desc: durée commune des visites à une même destination
       quantity: quantité
       quantity_desc: quantité d'unités à livrer.
       quantity_operation: opération
@@ -2019,7 +2025,8 @@ fr:
         time: 'Planifié : '
         quantity: 'Quantité : '
         orders: 'Commandes : '
-        duration: 'Durée : '
+        destination_duration: 'Durée destination : '
+        duration: 'Durée visite : '
         priority: 'Priorité : '
         revenue: 'Revenu : '
         tags: 'Catégories : '
@@ -2212,6 +2219,7 @@ fr:
       phone_number: téléphone
       ref_visit: référence visite
       duration: durée visite
+      destination_duration: durée destination
       quantity: quantité
       quantity_operation: opération
       orders: commandes

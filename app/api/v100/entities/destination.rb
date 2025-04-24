@@ -21,6 +21,7 @@ class V100::Entities::Destination < Grape::Entity
   expose(:geocoding_result, documentation: { type: JSON })
   expose(:geocoded_at, documentation: { type: DateTime})
   expose(:geocoder_version, documentation: {type: String})
+  expose(:duration, documentation: { type: DateTime, desc: 'Destination duration.' })
 end
 
 class V100::Entities::DestinationWithVisit < V100::Entities::Destination

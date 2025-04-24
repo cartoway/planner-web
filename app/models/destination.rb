@@ -28,6 +28,10 @@ class Destination < Location
 
   auto_strip_attributes :name, :street, :postalcode, :city, :country, :detail, :comment, :phone_number
 
+  include TimeAttr
+  attribute :duration, ScheduleType.new
+  time_attr :duration
+
   include Consistency
   validate_consistency [:tags]
   validates :ref, uniqueness: { scope: :customer_id, case_sensitive: true }, allow_nil: true, allow_blank: true
@@ -65,6 +69,14 @@ class Destination < Location
 
   def changed?
     @tag_ids_changed || super
+  end
+
+  def default_duration
+    duration || self.customer.destination_duration
+  end
+
+  def default_duration_time_with_seconds
+    duration_time_with_seconds || self.customer.destination_duration_time_with_seconds
   end
 
   def visits_color
