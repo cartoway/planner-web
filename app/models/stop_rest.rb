@@ -92,6 +92,14 @@ class StopRest < Stop
     route.vehicle_usage.default_rest_duration_time_with_seconds || 0
   end
 
+  def destination_duration
+    0
+  end
+
+  def destination_duration_time_with_seconds
+    0
+  end
+
   def base_id
     "r#{route.vehicle_usage.id}"
   end

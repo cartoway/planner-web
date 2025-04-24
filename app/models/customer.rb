@@ -61,9 +61,10 @@ class Customer < ApplicationRecord
 
   include TimeAttr
   attribute :visit_duration, ScheduleType.new
+  attribute :destination_duration, ScheduleType.new
   attribute :stop_max_upper_bound, ScheduleType.new
   attribute :vehicle_max_upper_bound, ScheduleType.new
-  time_attr :visit_duration, :stop_max_upper_bound, :vehicle_max_upper_bound
+  time_attr :visit_duration, :destination_duration, :stop_max_upper_bound, :vehicle_max_upper_bound
 
   attr_reader :layer_id # used for importation
 
@@ -451,7 +452,7 @@ class Customer < ApplicationRecord
   end
 
   def update_outdated
-    if optimization_force_start_changed? || visit_duration_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || @deliverable_units_updated
+    if optimization_force_start_changed? || visit_duration_changed? || destination_duration_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || @deliverable_units_updated
       plannings.each { |planning|
         planning.routes.each { |route|
           route.outdated = true

@@ -40,4 +40,5 @@ class V01::Entities::Destination < Grape::Entity
   expose(:visits, using: V01::Entities::Visit, documentation: { type: V01::Entities::Visit, is_array: true, param_type: 'form' })
   expose(:geocoded_at, documentation: { type: DateTime})
   expose(:geocoder_version, documentation: {type: String})
+  expose(:duration, documentation: { type: DateTime, desc: 'Destination duration.' })
 end

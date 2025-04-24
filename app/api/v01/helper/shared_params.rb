@@ -116,6 +116,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :geocoding_accuracy, type: Float
     optional :geocoding_level, type: String, values: ['point', 'house', 'street', 'intersection', 'city']
     optional :tag_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'Ids separated by comma.', example: '1,2,3' }
+    optional :duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     if options[:json_import]
       optional :tags, type: Array, coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: ['tag1', 'tag2', 'tag3'] }
     end
