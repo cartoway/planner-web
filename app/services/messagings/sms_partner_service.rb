@@ -72,6 +72,9 @@ class SmsPartnerService < MessagingService
       log_error("SMS balance fetching failed", errors: response.errors.join(", "))
       nil
     end
+  rescue RestClient::Forbidden => e
+    log_error("403 error received from RestClient", error: e.message)
+    I18n.t('resellers.form.messagings.credentials_invalid')
   end
 
   private

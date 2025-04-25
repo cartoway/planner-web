@@ -19,6 +19,9 @@ class VonageService < MessagingService
       api_secret: config['api_secret']
     )
     service.account.balance.value
+  rescue Vonage::APIError => e
+    log_error("SMS balance fetching failed", errors: e.message)
+    I18n.t('resellers.form.messagings.credentials_invalid')
   end
 
   def send_message(to, content, options = {})

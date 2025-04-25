@@ -71,7 +71,7 @@ class MessagingService
   protected
 
   def service_config
-    @reseller.messagings&.dig(service_name)
+    @reseller.messagings&.dig(service_name) || {}
   end
 
   def format_phone_number(phone, country = nil)
