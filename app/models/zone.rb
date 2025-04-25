@@ -122,7 +122,7 @@ class Zone < ApplicationRecord
 
         valid_geom
       rescue RGeo::Error, InvalidGeometryError
-        raise PolygonValidityError.new("Failed to make valid a zone with: #{invalidity.class}")
+        raise Exceptions::PolygonValidityError.new("Failed to make valid a zone with: #{invalidity.class}")
       end
     end
   end
