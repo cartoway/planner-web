@@ -33,12 +33,12 @@ class V01::Vehicles < Grape::API
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
-    def vehicle_params
+    def vehicle_params(vehicle_customer = nil)
       p = ActionController::Parameters.new(params)
       p = p[:vehicle] if p.key?(:vehicle)
       p[:capacities] = Hash[p[:capacities].map { |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }] if p[:capacities]
 
-      customer = current_customer || @current_user.admin? && @current_user.reseller.customers.where(id: params[:customer_id]).first!
+      customer = vehicle_customer || current_customer || @current_user.admin? && @current_user.reseller.customers.where(id: params[:customer_id]).first!
       # Deals with deprecated capacity
       unless p[:capacities]
         # p[:capacities] keys must be string here because of permit below
@@ -52,7 +52,7 @@ class V01::Vehicles < Grape::API
       # Deals with deprecated speed_multiplicator
       p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator] && !p[:speed_multiplier]
       nested_attributes = customer.custom_attributes.map(&:name)
-      p.permit(:contact_email, :phone_number, :ref, :name, :emission, :consumption, :color, :router_id, :router_dimension, :max_distance, :max_ride_distance, :max_ride_duration, :speed_multiplier, :history_cron_hour, router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction], capacities: (current_customer || @current_user.reseller.customers.where(id: params[:customer_id]).first!).deliverable_units.map{ |du| du.id.to_s }, devices: permit_devices, tag_ids: [], custom_attributes: nested_attributes)
+      p.permit(:contact_email, :phone_number, :ref, :name, :emission, :consumption, :color, :router_id, :router_dimension, :max_distance, :max_ride_distance, :max_ride_duration, :speed_multiplier, :history_cron_hour, router_options: [:time, :distance, :isochrone, :isodistance, :traffic, :avoid_zones, :track, :motorway, :toll, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction], capacities: customer.deliverable_units.map{ |du| du.id.to_s }, devices: permit_devices, tag_ids: [], custom_attributes: nested_attributes)
     end
 
     def permit_devices
@@ -231,7 +231,7 @@ class V01::Vehicles < Grape::API
       if Planner::Application.config.manage_vehicles_only_admin
         if @current_user.admin?
           customer = @current_user.reseller.customers.where(id: params[:customer_id]).first!
-          vehicle = customer.vehicles.create(vehicle_params)
+          vehicle = customer.vehicles.create(vehicle_params(customer))
           vehicle.vehicle_usages.each { |u|
             u.assign_attributes(vehicle_usage_params)
           }
