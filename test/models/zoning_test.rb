@@ -86,4 +86,42 @@ class ZoningTest < ActiveSupport::TestCase
       remove_request_stub(stub_isochrone) if stub_isochrone
     end
   end
+
+  test 'should raise error with self intersecting collection' do
+    zoning = zonings(:zoning_one)
+    zone = Zone.new(
+      zoning_id: zoning.id,
+      polygon: {
+        'type': 'Feature',
+        'geometry': {
+          'type' => 'GeometryCollection',
+          'geometries' => [
+            {
+              'type' => 'Polygon',
+              'coordinates' => [
+                [
+                  [0, 0],
+                  [1, 1],
+                  [2, 2],
+                  [0, 0]
+                ]
+              ]
+            },
+            {
+              'type' => 'Polygon',
+              'coordinates' => [
+                [
+                  [3, 3],
+                  [4, 4],
+                  [5, 5],
+                  [3, 3]
+                ]
+              ]
+            }
+          ]
+        }
+      }.to_json
+    )
+    assert_raises(Exceptions::PolygonValidityError) { zoning.zones << zone }
+  end
 end

@@ -16,6 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class Zone < ApplicationRecord
+  class InvalidGeometryError < StandardError; end
+
   default_scope { order(:id) }
 
   belongs_to :zoning, inverse_of: :zones
@@ -115,8 +117,11 @@ class Zone < ApplicationRecord
       feature.geometry
     else
       begin
-        feature.geometry.make_valid
-      rescue RGeo::Error
+        valid_geom = feature.geometry.make_valid
+        raise InvalidGeometryError.new if valid_geom.to_s.match?(/multilinestring/i)
+
+        valid_geom
+      rescue RGeo::Error, InvalidGeometryError
         raise PolygonValidityError.new("Failed to make valid a zone with: #{invalidity.class}")
       end
     end
