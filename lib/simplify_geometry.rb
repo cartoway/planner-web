@@ -1,6 +1,6 @@
 require 'simplify_rb'
 
-AUTHORIZED_GEOMETRY_TYPES = %w[Polygon MultiPolygon GeometryCollection].freeze
+AUTHORIZED_GEOMETRY_TYPES = %w[Feature Polygon MultiPolygon GeometryCollection].freeze
 
 class SimplifyGeometry
   def self.polygones_to_coordinates(feature, **options)
@@ -32,18 +32,24 @@ class SimplifyGeometry
     polylines(feature, **options.merge!(encode_output: false))
   end
 
-  def self.dump_multipolygons(zoning, import = false)
-    import &= zoning.zones.any?{ |zone| zone.polygon&.match('MultiPolygon') || zone.polygon&.match('GeometryCollection') }
+  def self.dump_multipolygons(zoning)
     new_zones = zoning.zones.flat_map{ |zone|
       geometry = zone.polygon && JSON.parse(zone.polygon)['geometry']
-      if geometry
-        multipolygon_to_polygons(zone, geometry, import)
-      else
-        zone.destroy
-      end
+      multipolygon_to_polygons(zone, geometry) if geometry
     }.compact
-    Zone.import(new_zones, import) if import && new_zones.any?
-    new_zones
+
+    ids = []
+    new_zones.group_by{ |new_zone|
+      new_zone.attributes.keys
+    }.each_value{ |zone_group|
+      result = Zone.import(zone_group, on_duplicate_key_update: { conflict_target: [:id], columns: :all })
+      ids += result.ids
+    }
+    # Remove zones associated with the zoning that are not included in the imported zones
+    Zone.where(zoning_id: zoning.id).where.not(id: ids).destroy_all
+    zoning.reload
+
+    zoning
   end
 
   private
@@ -60,24 +66,27 @@ class SimplifyGeometry
     coordinates.map{ |crd| crd.values.map{ |a| a.round(6) } }
   end
 
-  def self.multipolygon_to_polygons(zone, feature, destroy = false)
-    if feature['type'] == 'MultiPolygon'
+  def self.multipolygon_to_polygons(zone, feature)
+    case feature['type']
+    when 'MultiPolygon'
       multipolygon_coordinates = feature['coordinates']
       multipolygon_coordinates.map.with_index{ |coords, index|
         new_zone = Zone.new(zone.attributes.merge(
           polygon: { type: 'Feature', 'geometry': { type: 'Polygon', coordinates: coords }}.to_json
         ).except('id'))
-        zone.destroy if destroy
         new_zone
       }
-    elsif feature['type'] == 'GeometryCollection'
-      new_zones = feature['geometries'].flat_map{ |sub_feature|
-        multipolygon_to_polygons(zone, sub_feature, destroy) if sub_feature && AUTHORIZED_GEOMETRY_TYPES.include?(sub_feature['type'])
-    }.compact
-      zone.destroy if zone && destroy
-      new_zones
+    when 'GeometryCollection'
+      feature['geometries'].flat_map{ |sub_feature|
+        multipolygon_to_polygons(Zone.new(zone.attributes.except('id')), sub_feature) if sub_feature && AUTHORIZED_GEOMETRY_TYPES.include?(sub_feature['type'])
+      }.compact
+    when 'Polygon'
+      zone.polygon = { type: 'Feature', 'geometry': feature }.to_json
+      [zone]
+    when 'Feature'
+      multipolygon_to_polygons(zone, feature['geometry'])
     else
-      [zone] unless destroy
+      []
     end
   end
 end
