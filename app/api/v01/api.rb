@@ -27,16 +27,18 @@ class V01::Api < Grape::API
       env && env['warden']
     end
 
-    def current_customer(customer_id = nil)
+    def current_customer(customer_id = nil, **options)
       api_key = headers['Api-Key'] || params[:api_key]
       @current_user ||= api_key && User.find_by(api_key: api_key)
       @current_user ||= warden.authenticated? && warden.user
       @current_customer ||= @current_user && (@current_user.admin? && customer_id ? @current_user.reseller.customers.find(customer_id) : @current_user.customer)
+      error!(V01::Status.code_response(:code_401, message: 'Customer required'), 401) if @current_customer.nil? && !options[:skip_customer_requirement]
+      @current_customer
     end
 
     def authenticate!
       error!(V01::Status.code_response(:code_401), 401) unless env
-      current_customer
+      current_customer(nil, skip_customer_requirement: true)
       error!(V01::Status.code_response(:code_401), 401) unless @current_user
       error!(V01::Status.code_response(:code_402, after: "Subscription expired (#{@current_customer.end_subscription.to_s}) - Contact your reseller."), 402) if @current_customer && @current_customer.end_subscription && @current_customer.end_subscription < Time.now
     end
