@@ -421,4 +421,19 @@ class V01::VehiclesTest < ActiveSupport::TestCase
     assert last_response.ok?, last_response.body
   end
 
+  test 'should create vehicles with rotating color even without the param' do
+    customer = customers(:customer_one)
+    vehicle_size = customer.vehicles.size
+    assert_difference('Vehicle.count', 2) do
+      post api, { ref: 'new1', name: 'Vh1', store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id, customer_id: customers(:customer_one).id }, as: :json
+      assert last_response.created?, last_response.body
+      vehicle = JSON.parse last_response.body
+      assert_equal COLORS_TABLE[vehicle_size], vehicle['color']
+
+      post api, { ref: 'new2', name: 'Vh2', store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id, customer_id: customers(:customer_one).id }, as: :json
+      assert last_response.created?, last_response.body
+      vehicle = JSON.parse last_response.body
+      assert_equal COLORS_TABLE[vehicle_size + 1], vehicle['color']
+    end
+  end
 end
