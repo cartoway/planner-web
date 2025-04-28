@@ -13,6 +13,14 @@ module ResellersHelper
 
   def balance_hash(service)
     balance = service.balance
+
+    if balance.is_a?(String)
+      return {
+        value: balance,
+        color_class: 'danger'
+      }
+    end
+
     color_class =
       case balance&.round
       when 0
