@@ -472,8 +472,7 @@ class Customer < ApplicationRecord
       if vehicles.size < max_vehicles
         # Add new
         (max_vehicles - vehicles.size).times{ |_i|
-          vehicle = vehicles.build(name: I18n.t('vehicles.default_name', n: vehicles.size + 1))
-          vehicle.color = COLORS_TABLE[(vehicles.size - 1) % COLORS_TABLE.size]
+          vehicles.build(name: I18n.t('vehicles.default_name', n: vehicles.size + 1))
         }
       elsif vehicles.size > max_vehicles
         # Delete

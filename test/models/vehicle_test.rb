@@ -227,4 +227,15 @@ class VehicleTest < ActiveSupport::TestCase
     assert_equal({ "custom_attribute_three" => "there", "custom_attribute_one" => 2, "custom_attribute_two" => true },
                  vehicle.custom_attributes_typed_hash)
   end
+
+  test 'test rotate color on create' do
+    customer = customers(:customer_one)
+    vehicle_size = customer.vehicles.size
+    assert_difference 'Vehicle.count', 2 do
+      customer.vehicles.create(name: 'Vh1')
+      customer.vehicles.create(name: 'Vh2')
+    end
+    assert_equal customer.vehicles[vehicle_size].color, COLORS_TABLE[vehicle_size]
+    assert_equal customer.vehicles[vehicle_size + 1].color, COLORS_TABLE[vehicle_size + 1]
+  end
 end

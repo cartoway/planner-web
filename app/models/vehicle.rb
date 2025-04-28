@@ -205,7 +205,7 @@ class Vehicle < ApplicationRecord
   private
 
   def assign_defaults
-    self.color ||= COLORS_TABLE[0]
+    self.color ||= COLORS_TABLE[customer.vehicles.size % COLORS_TABLE.size]
     self.consumption ||= Planner::Application.config.vehicle_consumption_default
     self.fuel_type ||= Planner::Application.config.vehicle_fuel_type_default
   end

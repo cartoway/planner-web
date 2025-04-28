@@ -110,6 +110,17 @@ class CustomerTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should rotate color while updating max vehicles' do
+    customer = customers(:customer_one)
+    vehicle_size = customer.vehicles.size
+    assert_difference 'Vehicle.count', 2 do
+      customer.max_vehicles += 2
+      customer.save!
+    end
+    assert_equal customer.vehicles[vehicle_size].color, COLORS_TABLE[vehicle_size]
+    assert_equal customer.vehicles[vehicle_size + 1].color, COLORS_TABLE[vehicle_size + 1]
+  end
+
   test 'should update max vehicles down' do
     assert !Planner::Application.config.manage_vehicles_only_admin
     customer = customers(:customer_one)
