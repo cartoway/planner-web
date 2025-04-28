@@ -342,7 +342,7 @@ class OptimizerWrapper
         area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:area].join(',') }&.join('|'),
         speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
         timewindow: {
-          start: route.vehicle_usage.default_time_window_start + route.vehicle_usage.default_service_time_start,
+          start: (route.departure || route.vehicle_usage.default_time_window_start) + route.vehicle_usage.default_service_time_start,
           end: route.vehicle_usage.default_time_window_end + extra_time - route.vehicle_usage.default_service_time_end
         }.delete_if{ |_k, v| v.nil? },
         duration: route.vehicle_usage.default_work_time(true),
