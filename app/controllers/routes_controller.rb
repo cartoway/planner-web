@@ -180,6 +180,7 @@ class RoutesController < ApplicationController
       :stop_type,
       :active,
       :wait_time,
+      :departure,
       :time,
       :distance,
       :drive_time,

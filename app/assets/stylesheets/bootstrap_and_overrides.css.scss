@@ -802,6 +802,14 @@ div.grid-container {
   margin-left: 0px !important;
 }
 
+.ml-1 {
+  margin-left: 3px !important;
+}
+
+.ml-2 {
+  margin-left: 6px !important;
+}
+
 .mr-2 {
   margin-right: 6px !important;
 }
@@ -815,6 +823,11 @@ div.grid-container {
   margin-bottom: 1.5rem !important;
 }
 
+.mh-0 {
+  margin-left: 0px !important;
+  margin-right: 0px !important;
+}
+
 // Backports
 .p-0 {
   padding: 0 !important;
@@ -824,9 +837,22 @@ div.grid-container {
   padding: 10px !important;
 }
 
+.pl-2 {
+  padding-left: 6px !important;
+}
+
+.pl-3 {
+  padding-left: 9px !important;
+}
+
 .pv-1 {
   padding-top: 3px !important;
   padding-bottom: 3px !important;
+}
+
+.ph-0 {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
 }
 
 .card {
@@ -1306,6 +1332,10 @@ small {
 
 .flex-column {
   flex-direction: column !important;
+}
+
+.flex-row-reverse {
+  flex-direction: row-reverse !important;
 }
 
 .m-4 {
