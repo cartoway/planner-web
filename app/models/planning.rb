@@ -174,6 +174,7 @@ class Planning < ApplicationRecord
           else
             routes.index{ |route| !route.vehicle_usage? }
           end
+        routes[i].ref = ref
         r[:visits].each{ |visit, active|
           if visit.id && stop_visit_ids[visit.id]
             move_visit(routes[i], visit, -1)
