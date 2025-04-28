@@ -36,6 +36,7 @@ if route.vehicle_usage_id
   end
   json.vehicle_id route.vehicle_usage.vehicle.id
   json.vehicle_name route.vehicle_usage.vehicle.name
+  json.time_window_start route.vehicle_usage.default_time_window_start_time
   if route.vehicle_usage.vehicle&.default_router
     json.router_name route.vehicle_usage.vehicle.default_router.name_locale[I18n.locale.to_s] ||
                      route.vehicle_usage.vehicle.default_router.name_locale[I18n.default_locale.to_s] ||
@@ -115,6 +116,7 @@ json.store_start do
 end if route.vehicle_usage && route.vehicle_usage.default_store_start
 (json.start_with_service Time.at(display_start_time(route)).utc.strftime('%H:%M')) if display_start_time(route)
 (json.start_with_service_day number_of_days(display_start_time(route))) if display_start_time(route)
+(json.departure route.departure if route.start_time)
 
 json.with_stops @with_stops
 if @with_stops

@@ -70,74 +70,69 @@
     .route-stops{class: ('optimum' if route[:optimized_at_formatted])}
       .panel-body
         = render partial: 'routes/edit_head', locals: { route: route, summary: summary }
-      - if route[:store_start]
+      - if route[:store_start] || route[:start_with_service]
         %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
-          %li.d-fake-flex.align-items-center.list-group-item{class:('ui-state-error' if route[:store_start][:error]), "data-store-id": route[:store_start][:id]}
+          %li.d-fake-flex.align-items-center.list-group-item{class:('ui-state-error' if route[:store_start]&.[](:error)), data: { store_id: route[:store_start]&.[](:id) }.compact}
             .row.store-row
               .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
                 .col-xs-2.d-flex.align-items-center.justify-content-center
-                  - color = route[:color_fake] || route[:color] || 'black'
-                  %i.fa.fa-fw{class: (route[:store_start][:icon] ? route[:store_start][:icon] : 'fa-store'), style: "color: #{color};"}
-                - if route[:store_start][:time]
-                  .col-xs-10.d-flex.justify-content-end
-                    %div{class: "#{route[:start_with_service] ? 'col-xs-12' : 'col-xs-7'}"}
-                      .primary.stop-info{class: "#{('danger' if route[:store_start][:error])} #{('ml-0' if route[:start_with_service]) }"}
-                        = route[:store_start][:time]
-                        - if route[:store_start][:time_day]
-                          = "(+#{route[:store_start][:time_day]})"
-                        - if route[:start_with_service]
-                          = "-#{route[:start_with_service]}"
-                        - if route[:start_with_service_day]
-                          = "(+#{route[:start_with_service_day]})"
-              .col-xs-4.col-md-6
-                .title
-                  - if !route[:store_start][:geocoded]
-                    %i.fa.fa-map-marker.fa-fw{title: t("plannings.edit.error.no_geolocalization")}
-                  - if route[:store_start][:no_path]
-                    %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path")}
-                  %span.name{title: route[:store_start][:name]}
-                    = route[:store_start][:name]
-              .col-xs-2.col-md-2.d-flex.justify-content-center.align-items-center
-                - eta_statement = " - #{t('plannings.edit.popup.eta')} #{route[:store_start][:eta_formated]}" if route[:store_start][:eta_formated]
-                %span.store-status{class: "stop-status-#{route[:store_start][:status_code]}", title: "#{route[:store_start][:status]}#{eta_statement}", style: ("display: none;" if !route[:store_start][:status])}
-                .btn-group.pull-right.stop-tools
-                  - if @manage_planning[:manage_store]
-                    %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_start][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
-                      %i.fa.fa-pencil
-                  %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
-                    %i.fa.fa-map-marker
-      - elsif route[:start_with_service]
-        %ul.stops.list_group{ class: ('d-none' if route[:hidden]) }
-          %li.list-group-item
-            .title
-              %span.info
-                = route[:start_time]
-                - if route[:time_day]
-                  = "(+#{route[:time_day]})"
-                - if route[:start_with_service]
-                  = "- #{route[:start_with_service]}"
-                - if route[:start_with_service_day]
-                  = "(+#{route[:start_with_service_day]})"
+                  - if route[:store_start]
+                    - color = route[:color_fake] || route[:color] || 'black'
+                    %i.fa.fa-fw{class: (route[:store_start][:icon] ? route[:store_start][:icon] : 'fa-store'), style: "color: #{color};"}
+                .col-xs-10.d-flex.align-items-center
+                  .col-xs-12
+                    .ml-0.ph-0.d-flex.align-items-center.justify-content-end{class: "#{('danger' if route[:store_start]&.[](:error))} #{('primary stop-info' if route[:start_with_service])}"}
+                      - value = route[:store_start] && (route[:store_start][:departure] || route[:start_time])
+                      .d-flex.justify-content-center{class: (route[:start_with_service] ? 'col-xs-5' : 'col-xs-6 primary stop-info pull-right pl-0 ml-0')}
+                        = text_field_tag :route_departure[route[:route_id]], value, min: 0, step: 1, placeholder: route[:time_window_start], class: 'form-control editable route-departure-field', data: { route_id: route[:route_id], planning_id: summary[:planning_id], summary: summary }
+                        - if route[:time_day]
+                          = "(+#{route[:time_day]})"
+                      - if route[:start_with_service]
+                        .col-xs-7.pl-2
+                          = route[:start_with_service]
+                          - if route[:start_with_service_day]
+                            = "(+#{route[:start_with_service_day]})"
+              - if route[:store_start]
+                .col-xs-4.col-md-6
+                  .title
+                    - if !route[:store_start][:geocoded]
+                      %i.fa.fa-map-marker.fa-fw{title: t("plannings.edit.error.no_geolocalization")}
+                    - if route[:store_start][:no_path]
+                      %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path")}
+                    %span.name{title: route[:store_start][:name]}
+                      = route[:store_start][:name]
+                .col-xs-2.col-md-2.d-flex.justify-content-center.align-items-center
+                  - eta_statement = " - #{t('plannings.edit.popup.eta')} #{route[:store_start][:eta_formated]}" if route[:store_start][:eta_formated]
+                  %span.store-status{class: "stop-status-#{route[:store_start][:status_code]}", title: "#{route[:store_start][:status]}#{eta_statement}", style: ("display: none;" if !route[:store_start][:status])}
+                  .btn-group.pull-right.stop-tools
+                    - if @manage_planning[:manage_store]
+                      %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_start][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
+                        %i.fa.fa-pencil
+                    %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
+                      %i.fa.fa-map-marker
       = render partial: 'stops/list', locals: { route: route }
-      - if route[:store_stop]
-        %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
-          %li.d-fake-flex.align-items-center.list-group-item{class: ('ui-state-error' if route[:store_stop][:error]), "data-store-id": route[:store_stop][:id]}
-            .row.store-row
-              .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
-                .col-xs-2.d-flex.align-items-center.justify-content-center
+      %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
+        %li.d-fake-flex.align-items-center.list-group-item{class: ('ui-state-error' if route[:store_stop]&.[](:error)), data: { store_id: route[:store_stop]&.[](:id)}.compact}
+          .row.store-row
+            .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
+              .col-xs-2.d-flex.align-items-center.justify-content-center
+                - if route[:store_stop]
                   - color = route[:color_fake] || route[:color] || 'black'
                   %i.fa.fa-fw{class: (route[:store_stop][:icon] || 'fa-store'), style: "color: #{color};"}
-                - if route[:store_stop][:time]
-                  .col-xs-10.d-flex.justify-content-end
-                    %div{class: "#{route[:end_without_service] ? 'col-xs-12' : 'col-xs-7'}"}
-                      .primary.stop-info{class: "#{('danger' if route[:store_stop][:error])} #{('ml-0' if route[:end_without_service]) }"}
-                        - if route[:end_without_service]
+              - if route[:end_time]
+                .col-xs-10
+                  .col-xs-12
+                    .ml-0.ph-0.d-flex.align-items-center.justify-content-end{class: "#{('danger' if route[:store_stop]&.[](:error))} #{('primary stop-info' if route[:end_without_service])}"}
+                      - if route[:end_without_service]
+                        .col-xs-5
                           = route[:end_without_service]
                           - if route[:end_without_service_day]
                             = "(+#{route[:end_without_service_day]})"
-                        = route[:store_stop][:time]
-                        - if route[:store_stop][:time_day]
-                          = "(+#{route[:store_stop][:time_day]})"
+                      .col-xs-6.d-flex.justify-content-center{class: "#{('danger' if route[:store_stop]&.[](:error))} #{(route[:end_without_service] ? '' : 'primary stop-info pull-right pl-0')}"}
+                        = route[:end_time]
+                        - if route[:end_day]
+                          = "(+#{route[:end_day]})"
+            - if route[:store_stop]
               .col-xs-4.col-md-6
                 .title
                   - if !route[:store_stop][:geocoded]
@@ -155,15 +150,3 @@
                       %i.fa.fa-pencil
                   %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                     %i.fa.fa-map-marker
-      - elsif route[:end_without_service]
-        %ul.stops.list_group{ class: ('d-none' if route[:hidden]) }
-          %li.list-group-item
-            .title
-              %span.info
-                = route[:end_without_service]
-                - if route[:end_without_service_day]
-                  = "(+#{route[:end_without_service_day]})"
-                \-
-                = route[:end_time]
-                - if route[:end_day]
-                  = "(+#{route[:end_day]})"

@@ -37,13 +37,16 @@ class Route < ApplicationRecord
   include TimeAttr
   attribute :start, ScheduleType.new
   attribute :end, ScheduleType.new
-  time_attr :start, :end
+  attribute :departure, ScheduleType.new
+  time_attr :start, :end, :departure
 
   before_update :update_vehicle_usage, :update_geojson, unless: :migration_skip
 
   after_initialize :assign_defaults, if: -> { new_record? }
   after_create :complete_geojson
   after_save { @computed = false }
+
+  before_save :outdated_if_changed
 
   after_save :invalidate_route_cache
   after_destroy :invalidate_route_cache
@@ -81,22 +84,10 @@ class Route < ApplicationRecord
     })
   end
 
-  # FIXME, probaly not in the rails ways
-  # Flag outdated if force_start changes
-  def force_start=(v)
-    if self.force_start != v
-      self.outdated = true
-    end
-    super(v)
-  end
-
-  # FIXME, probaly not in the rails ways
-  # Flag outdated if start changes
-  def start=(v)
-    if self.start != v
-      self.outdated = true
-    end
-    super(v)
+  def outdated_if_changed
+    return if !(will_save_change_to_departure? ||
+                will_save_change_to_force_start?)
+    self.outdated = true
   end
 
   def init_stops(compute = true, ignore_errors = false)
@@ -117,11 +108,11 @@ class Route < ApplicationRecord
   end
 
   def service_time_start_value
-    vehicle_usage.default_service_time_start if vehicle_usage? && vehicle_usage.default_service_time_start
+    vehicle_usage.default_service_time_start if vehicle_usage? && vehicle_usage.default_service_time_start&.positive?
   end
 
   def service_time_end_value
-    vehicle_usage.default_service_time_end if vehicle_usage? && vehicle_usage.default_service_time_end
+    vehicle_usage.default_service_time_end if vehicle_usage? && vehicle_usage.default_service_time_end&.positive?
   end
 
   def work_time_value
@@ -312,7 +303,7 @@ class Route < ApplicationRecord
       stops_sort, stops_drive_time, stops_time_windows = plan(
         # Hack to allow manual set of self.start from the API and keep the value
         # when used in conjunction with self.force_start
-        self.force_start ? self.start : vehicle_usage.default_time_window_start,
+        self.departure || (self.force_start ? self.start : vehicle_usage.default_time_window_start),
         options
       )
 
@@ -345,7 +336,7 @@ class Route < ApplicationRecord
         time -= vehicle_usage.default_service_time_start if vehicle_usage.default_service_time_start
 
         force_start = !self.force_start.nil? ? self.force_start : planning.customer.optimization_force_start.nil? ? Planner::Application.config.optimize_force_start : planning.customer.optimization_force_start
-        if time > start && !force_start
+        if self.departure.nil? && time > start && !force_start
           # We can sleep a bit more on morning, shift departure
           plan(time, options)
         end

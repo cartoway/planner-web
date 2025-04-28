@@ -384,7 +384,7 @@ $sidebar-margins: 10px;
           padding: 0 2px;
           text-align: center;
           height: 22px;
-          margin: 0 5px;
+          margin: 0 6px;
         }
 
         .timewindow-info {
@@ -433,6 +433,26 @@ $sidebar-margins: 10px;
         .info.stop-info {
           border: 1px solid lightgray;
           background-color: $primary-background-color;
+        }
+
+        .stop-info {
+          .editable:hover {
+            cursor: pointer;
+            text-decoration-line: underline !important;
+          }
+
+          input.editable {
+            border: solid darkgrey 1px;
+            background-color: unset;
+            border-radius: 4px;
+            font-size: unset;
+            height: 18px;
+            margin: 1px 0px;
+            padding: 0;
+            text-align: center;
+            width: 44px;
+          }
+
         }
 
         .route-tools {
