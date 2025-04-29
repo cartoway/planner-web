@@ -15,6 +15,9 @@
   ### Removed
   - The option `enable_multi_visits` is removed, having multi visits is standard. Letting access to both destination and visit references simultaneously [#375](https://github.com/cartoway/planner-web/pull/375)
 
+  ### Fixed
+  - Fix menu accordion ovelapping [#369](https://github.com/cartoway/planner-web/pull/369)
+
 ## V105.0.0
   ### Added
   - Mobile
