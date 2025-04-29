@@ -172,6 +172,6 @@ class StgTelematics < DeviceBase
       read_timeout: 2
     )
   rescue RestClient::RequestTimeout
-    raise DeviceServiceError.new("#{I18n.t('errors.stg_telemativs.timeout')}")
+    raise DeviceServiceError.new("#{I18n.t('errors.stg_telematics.timeout')}")
   end
 end
