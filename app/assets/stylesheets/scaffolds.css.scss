@@ -802,6 +802,12 @@ input.form-control.number-of-days {
     }
   }
 
+  #accordion-menu {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-bottom: 80px;
+  }
+
   .menu-content {
     li {
       color: white !important;
@@ -826,6 +832,14 @@ input.form-control.number-of-days {
 
   ul, li {
     list-style-type: none;
+  }
+
+  #menu-settings {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    z-index: 2;
+    background: $primary-color;
   }
 }
 

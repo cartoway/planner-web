@@ -209,81 +209,81 @@
                     = link_to reporting_index_path do
                       %i.fa.fa-line-chart.fa-fw
                       %span.menu_label= t('reporting.index.title')
-            - if user_signed_in?
-              #menu-settings
-                .divider.solid
+        - if user_signed_in?
+          #menu-settings.menu-content
+            .divider.solid
 
-                - if @reseller.customer_dashboard_url && current_user.customer
-                  %li.menu-section.menu-list-item
-                    = link_to @reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s), target: '_blank' do
-                      .d-flex.align-items-center.justify-content-center
-                        %i.fa.fa-chart-line.fa-fw
-                        .hidden-menu
-                          = t 'customers.menu.analytics'
+            - if @reseller.customer_dashboard_url && current_user.customer
+              %li.menu-section.menu-list-item
+                = link_to @reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s), target: '_blank' do
+                  .d-flex.align-items-center.justify-content-center
+                    %i.fa.fa-chart-line.fa-fw
+                    .hidden-menu
+                      = t 'customers.menu.analytics'
 
-                - if current_user.customer && @reseller.subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
-                  %li#menu-subscription.subscription.menu-section.menu-list-item
-                    = link_to @reseller.subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                      %i.fa.fa-rocket.fa-fw
-                      .hidden-menu
-                        %span.menu_label
-                          = t 'web.subscription'
-                - if @reseller.help_url
-                  %li#menu-help.help.menu-section.menu-list-item
-                    = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                      .d-flex.align-items-center.justify-content-center.col-md-12.btn.btn-default
-                        %i.fa.fa-book-open.fa-fw
-                        .hidden-menu.menu_label
-                          = t 'web.help'
-                %li.dropdown.menu-list-item
-                  - if current_user.customer
-                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#customerCollpase'}
-                      .d-flex.align-items-center.justify-content-center
-                        %i.fa.fa-user-gear.fa-fw
-                        .hidden-menu
-                          %span.menu_label
-                            = current_user.customer.name
-                  - else
-                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#customerCollpase'}
-                      .d-flex.align-items-center.justify-content-center
-                        %i.fa.fa-user-gear.fa-fw
-                        .hidden-menu
-                          %span.menu_label
-                            = current_user.email
-                  %ul#customerCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                    - if current_user.customer
-                      %li
-                        = link_to edit_customer_path(current_user.customer) do
-                          %i.fa.fa-wrench.fa-fw
-                          = t 'customers.menu.customer'
-                      %li
-                        = link_to custom_attributes_path do
-                          %i.fa.fa-file-lines.fa-fw
-                          = t 'custom_attributes.menu.custom_attributes'
-
-                    %li
-                      = link_to edit_user_path(current_user) do
-                        %i.fa.fa-user-gear.fa-fw
-                        = t 'customers.menu.user_settings'
-                    %li.divider
-                    %li
-                      = link_to destroy_user_session_path, method: :delete do
-                        %i.fa.fa-power-off.fa-fw
-                        = t 'users.menu.sign_out'
-            - else
-              #menu-settings
-                .divider.solid
-                %li.menu-list-item
-                  = link_to new_user_session_path, class: 'btn' do
+            - if current_user.customer && @reseller.subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
+              %li#menu-subscription.subscription.menu-section.menu-list-item
+                = link_to @reseller.subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                  %i.fa.fa-rocket.fa-fw
+                  .hidden-menu
+                    %span.menu_label
+                      = t 'web.subscription'
+            - if @reseller.help_url
+              %li#menu-help.help.menu-section.menu-list-item
+                = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                  .d-flex.align-items-center.justify-content-center.col-md-12.btn.btn-default
+                    %i.fa.fa-book-open.fa-fw
+                    .hidden-menu.menu_label
+                      = t 'web.help'
+            %li.dropdown.menu-list-item
+              - if current_user.customer
+                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#customerCollpase'}
+                  .d-flex.align-items-center.justify-content-center
                     %i.fa.fa-user-gear.fa-fw
                     .hidden-menu
-                      = t 'devise.sessions.new.sign_in'
-                - if Planner::Application.config.self_care
-                  %li.menu-list-item
-                    = link_to new_user_registration_path, class: 'btn' do
-                      %i.fa.fa-user-gear.fa-fw
-                      .hidden-menu
-                        = t 'devise.registrations.new.sign_up'
+                      %span.menu_label
+                        = current_user.customer.name
+              - else
+                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#customerCollpase'}
+                  .d-flex.align-items-center.justify-content-center
+                    %i.fa.fa-user-gear.fa-fw
+                    .hidden-menu
+                      %span.menu_label
+                        = current_user.email
+              %ul#customerCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                - if current_user.customer
+                  %li
+                    = link_to edit_customer_path(current_user.customer) do
+                      %i.fa.fa-wrench.fa-fw
+                      = t 'customers.menu.customer'
+                  %li
+                    = link_to custom_attributes_path do
+                      %i.fa.fa-file-lines.fa-fw
+                      = t 'custom_attributes.menu.custom_attributes'
+
+                %li
+                  = link_to edit_user_path(current_user) do
+                    %i.fa.fa-user-gear.fa-fw
+                    = t 'customers.menu.user_settings'
+                %li.divider
+                %li
+                  = link_to destroy_user_session_path, method: :delete do
+                    %i.fa.fa-power-off.fa-fw
+                    = t 'users.menu.sign_out'
+        - else
+          #menu-settings.menu-content
+            .divider.solid
+            %li.menu-list-item
+              = link_to new_user_session_path, class: 'btn' do
+                %i.fa.fa-user-gear.fa-fw
+                .hidden-menu
+                  = t 'devise.sessions.new.sign_in'
+            - if Planner::Application.config.self_care
+              %li.menu-list-item
+                = link_to new_user_registration_path, class: 'btn' do
+                  %i.fa.fa-user-gear.fa-fw
+                  .hidden-menu
+                    = t 'devise.registrations.new.sign_up'
 
       .main
         %div

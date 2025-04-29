@@ -10,6 +10,9 @@
   - Hide irrelevant logs in `rails_performance` [#331](https://github.com/cartoway/planner-web/pull/331)
   - Route optimizatopn: service time is now considered in working shift [#335](https://github.com/cartoway/planner-web/pull/335)
 
+  ### Fixed
+  - Fix menu accordion ovelapping [#369](https://github.com/cartoway/planner-web/pull/369)
+
 ## V105.0.0
   ### Added
   - Mobile
