@@ -14,7 +14,8 @@
   - Bump `babel` to 7.23.2 [#330](https://github.com/cartoway/planner-web/pull/330)
   - Hide irrelevant logs in `rails_performance` [#331](https://github.com/cartoway/planner-web/pull/331)
   - Plannings: disable refresh button during compute [#378](https://github.com/cartoway/planner-web/pull/378)
-  - Route optimizatopn: service time is now considered in working shift [#335](https://github.com/cartoway/planner-web/pull/335)
+  - Reseller: Invalidate reseller cache on change [#371](https://github.com/cartoway/planner-web/pull/371)
+  - Route optimization: service time is now considered in working shift [#335](https://github.com/cartoway/planner-web/pull/335)
   - Routes: Improve compute performances [#345](https://github.com/cartoway/planner-web/pull/345)
 
   ### Removed
