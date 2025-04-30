@@ -214,7 +214,8 @@ CREATE TABLE public.deliverable_units (
     ref character varying,
     icon character varying,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    default_initial_load double precision
 );
 
 
@@ -1292,7 +1293,8 @@ CREATE TABLE public.vehicles (
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     max_ride_duration integer,
     max_ride_distance integer,
-    driver_token character varying
+    driver_token character varying,
+    capacities_initial_loads public.hstore
 );
 
 
@@ -3104,6 +3106,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250310095030'),
 ('20250314130549'),
 ('20250321085637'),
-('20250325123806');
+('20250325123806'),
+('20250403081545');
 
 

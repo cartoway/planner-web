@@ -12,6 +12,8 @@ CSV.generate(**{col_sep: ';', row_sep: "\r\n"}) { |csv|
   ] +
     @vehicle_usage_set.customer.deliverable_units.map { |du|
       I18n.t('vehicles.import.capacities') + (du.label ? "[#{du.label}]" : "#{du.id}")
+    } + @vehicle_usage_set.customer.deliverable_units.map { |du|
+      I18n.t('vehicles.import.capacities_initial_loads') + (du.label ? "[#{du.label}]" : "#{du.id}")
     } +
     @vehicle_usage_set.customer.custom_attributes.select(&:vehicle?).map { |ca|
       I18n.t('vehicles.import.custom_attributes') + '[' + ca.name + ']'
@@ -66,6 +68,9 @@ CSV.generate(**{col_sep: ';', row_sep: "\r\n"}) { |csv|
     ] +
     @vehicle_usage_set.customer.deliverable_units.map { |du|
       vehicle_usage.vehicle.capacities[du.id]
+    } +
+    @vehicle_usage_set.customer.deliverable_units.map { |du|
+      vehicle_usage.vehicle.capacities_initial_loads[du.id]
     } +
     @vehicle_usage_set.customer.custom_attributes.select(&:vehicle?).map{ |ca|
       vehicle_usage.vehicle.custom_attributes_typed_hash[ca.name]

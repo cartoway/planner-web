@@ -4,6 +4,7 @@
   ### Added
   - Visits
     - Custom attributes are available in forms and displayed in plan stop pop-over [#338](https://github.com/cartoway/planner-web/pull/338)
+  - Vehicles: Introduce a maximum initial load associated to deliverable units [#373](https://github.com/cartoway/planner-web/pull/373)
 
   ### Changed
   - Bump `babel` to 7.23.2 [#330](https://github.com/cartoway/planner-web/pull/330)
