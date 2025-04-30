@@ -1129,7 +1129,7 @@ en:
       ref_help: A free reference
       default_quantity_help: Quantity to deliver for all your visits (keep empty if no quantity).
       default_capacity_help: Capacity for all your vehicles (keep empty if no limit).
-      default_initial_load_help: Maximum initial load for all your vehicles (keep empty if no limit).
+      default_initial_load_help: Default maximum initial load available for all your vehicle tours (leave empty if no initial load).
       optimization_overload_multiplier_no: 'No'
       optimization_overload_multiplier_no_help: >-
         During optimisation, if you set some capacities for your vehicles,
@@ -2435,8 +2435,8 @@ en:
       consumption_desc: average fuel consumption in liters per 100 km
       capacities: capacities
       capacities_desc: maximum vehicle's capacities
-      capacities_initial_loads: initial loadings
-      capacities_initial_loads_desc: maximum initial loadings
+      capacities_initial_loads: maximum loading available
+      capacities_initial_loads_desc: maximum load available for the vehicle at the start of the tour
       custom_attributes: attributes
       router_mode: routing engine
       router_mode_desc: force use of a specific routing engine
