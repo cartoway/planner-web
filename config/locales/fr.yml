@@ -237,7 +237,7 @@ fr:
         icon: Icône
         default_quantity: Quantité par défaut
         default_capacity: Capacité par défaut
-        default_initial_load: Chargement initial par défaut
+        default_initial_load: Chargement max disponible par défaut
         operation_fill: Remplissage
         operation_empty: Vidage
         optimization_overload_multiplier: Coefficient dépassement chargement
@@ -1162,7 +1162,7 @@ fr:
         de quantité).
       default_capacity_help: Capacité par défaut de tous vos véhicules (laisser vide si illimité).
       default_initial_load_help: >-
-        Charge initiale maximale par défaut de tous vos véhicules (laisser vide si pas
+        Chargement maximal disponible par défaut au départ des tournées de tous vos véhicules (laisser vide si pas
         de charge initiale).
       optimization_overload_multiplier_no: Non
       optimization_overload_multiplier_no_help: >-
@@ -2532,8 +2532,8 @@ fr:
       consumption_desc: consommation du véhicule
       capacities: capacités
       capacities_desc: capacités maximales du véhicule
-      capacities_initial_loads: chargement initial
-      capacities_initial_loads_desc: chargement initial du véhicule
+      capacities_initial_loads: chargement max disponible
+      capacities_initial_loads_desc: chargement max disponible pour le véhicule au départ de la tournée
       custom_attributes: attributs
       router_mode: calculateur d'itinéraire
       router_mode_desc: forcer l'utilisation d'un calculateur d'itinéraire
@@ -2585,7 +2585,7 @@ fr:
         help: Consommation moyenne aux 100 km en litres de carburant
         help_miles: Consommation moyenne aux 62.1 mi. en litres de carburant
       capacities:
-        label: Chargement initial max. / Capacités
+        label: Chargement max. / Capacités
         default: '%{n} (valeur par défaut)'
         no_overload: ' (sans dépassement)'
         ignore_overload: ' (ignoré)'
