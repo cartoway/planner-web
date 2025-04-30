@@ -29,7 +29,15 @@ class Reseller < ApplicationRecord
   mount_uploader :logo_small, Admin::LogoSmallUploader
   mount_uploader :favicon, Admin::FaviconUploader
 
+  after_save :invalidate_cache
+
   def help_search_url
     nil
+  end
+
+  private
+
+  def invalidate_cache
+    ResellerCacheService.invalidate(host)
   end
 end
