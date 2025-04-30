@@ -39,7 +39,7 @@ class V01::Entities::Route < V01::Entities::RouteProperties
 
   expose(:departure_status, documentation: { type: String, desc: 'Departure status of start store.' }) { |route| route.departure_status && I18n.t('plannings.edit.stop_status.' + route.departure_status.downcase, default: route.departure_status) }
   expose(:departure_eta, documentation: { type: DateTime, desc: 'Estimated time of departure from remote device for start store.' })
-
+  expose(:departure, documentation: { type: DateTime, desc: 'Forced departure time of start store.' })
   expose(:arrival_status, documentation: { type: String, desc: 'Arrival status of stop store.' }) { |route| route.arrival_status && I18n.t('plannings.edit.stop_status.' + route.arrival_status.downcase, default: route.arrival_status) }
   expose(:arrival_eta, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device for stop store.' })
 
@@ -94,6 +94,7 @@ class V01::Entities::RouteProperties < Grape::Entity
 
   expose(:id, documentation: { type: Integer })
   expose(:vehicle_usage_id, documentation: { type: Integer })
+  expose(:departure, documentation: { type: DateTime, desc: 'Forced departure time of start store.' })
   expose(:start, documentation: { type: DateTime }) { |m|
     (m.planning.date || Time.zone.today).beginning_of_day + m.start if m.start
   }
