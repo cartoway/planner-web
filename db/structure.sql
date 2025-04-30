@@ -740,7 +740,8 @@ CREATE TABLE public.routes (
     cost_distance double precision,
     cost_fixed double precision,
     cost_time double precision,
-    revenue double precision
+    revenue double precision,
+    departure integer
 );
 
 
@@ -3109,6 +3110,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250325123806'),
 ('20250403081545'),
 ('20250417055812'),
-('20250417075753');
+('20250417075753'),
+('20250428094719');
 
 
