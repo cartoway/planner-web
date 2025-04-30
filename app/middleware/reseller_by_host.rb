@@ -18,7 +18,6 @@
 class ResellerByHost
   def initialize(app)
     @app = app
-    @cache = {}
   end
 
   def call(env)
@@ -29,6 +28,6 @@ class ResellerByHost
   private
 
   def reseller(host)
-    @cache[host] ||= Reseller.where(host: host).first || Reseller.first
+    ResellerCacheService.fetch(host)
   end
 end
