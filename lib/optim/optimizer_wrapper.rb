@@ -265,11 +265,11 @@ class OptimizerWrapper
           timewindows: [
             (stop.time_window_start_1 || stop.time_window_end_1) && {
               start: stop.time_window_start_1.try(:to_f),
-              end: stop.time_window_end_1.try(:to_f) + extra_time
+              end: stop.time_window_end_1 && (stop.time_window_end_1 + extra_time)
             },
             (stop.time_window_start_2 || stop.time_window_end_2) && {
               start: stop.time_window_start_2.try(:to_f),
-              end: stop.time_window_end_2.try(:to_f) + extra_time
+              end: stop.time_window_end_2 && (stop.time_window_end_2 + extra_time)
             },
           ].compact,
           duration: stop.duration
