@@ -2,6 +2,16 @@
 
 ## Dev
   ### Added
+  - Visits
+    - Custom attributes are available in forms and displayed in plan stop pop-over [#338](https://github.com/cartoway/planner-web/pull/338)
+
+  ### Changed
+  - Bump `babel` to 7.23.2 [#330](https://github.com/cartoway/planner-web/pull/330)
+  - Hide irrelevant logs in `rails_performance` [#331](https://github.com/cartoway/planner-web/pull/331)
+  - Route optimizatopn: service time is now considered in working shift [#335](https://github.com/cartoway/planner-web/pull/335)
+
+## V105.0.0
+  ### Added
   - Mobile
     - Introduce asynchronous status update when offline [#272](https://github.com/cartoway/planner-web/pull/272) & [#274](https://github.com/cartoway/planner-web/pull/274) & [#275](https://github.com/cartoway/planner-web/pull/275)
     - Allow to send stops to another route [#274](https://github.com/cartoway/planner-web/pull/274)
