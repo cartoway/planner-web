@@ -4,6 +4,7 @@
   ### Added
   - Visits
     - Custom attributes are available in forms and displayed in plan stop pop-over [#338](https://github.com/cartoway/planner-web/pull/338)
+  - Tags: Introduce a new page to group route date by tags [#340](https://github.com/cartoway/planner-web/pull/340)
 
   ### Changed
   - Bump `babel` to 7.23.2 [#330](https://github.com/cartoway/planner-web/pull/330)
