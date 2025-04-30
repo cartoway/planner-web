@@ -11,6 +11,9 @@
   - Hide irrelevant logs in `rails_performance` [#331](https://github.com/cartoway/planner-web/pull/331)
   - Route optimizatopn: service time is now considered in working shift [#335](https://github.com/cartoway/planner-web/pull/335)
 
+  ### Removed
+  - The option `enable_multi_visits` is removed, having multi visits is standard. Letting access to both destination and visit references simultaneously [#375](https://github.com/cartoway/planner-web/pull/375)
+
 ## V105.0.0
   ### Added
   - Mobile
