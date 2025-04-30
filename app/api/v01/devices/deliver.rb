@@ -13,7 +13,7 @@ class V01::Devices::Deliver < Grape::API
       end
 
       rescue_from DeviceServiceError do |e|
-        error! e.message, 200
+        error! V01::Status.code_response(:code_408, before: e.message), 408
       end
 
       desc 'Send Planning Routes.',
