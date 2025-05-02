@@ -14,11 +14,19 @@ http:
       middlewares:
         - retry
 
+  serversTransports:
+    web_transport:
+      forwardingTimeouts:
+        dialTimeout: 30s # equivalent to ngnix proxy_connect_timeout
+        responseHeaderTimeout: 1000s # equivalent to ngnix proxy_read_timeout
+        idleConnTimeout: 1000s # roughly aligned with ngnix send_timeout
+
   services:
     web:
       loadbalancer:
         servers:
           - url: http://web:8080
+        serversTransport: web_transport
         healthcheck:
           path: /
         sticky:
