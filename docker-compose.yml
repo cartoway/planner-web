@@ -53,7 +53,7 @@ services:
     command:
       - --configFile=/etc/traefik/traefik.yml
     ports:
-      - ${WEB_BIND:-8080}:8080
+      - ${WEB_BIND:-8080}:80
       - ${SHORTNER_BIND:-8635}:8635
       - 127.0.0.1:8280:8080 # Dashboard
     volumes:
