@@ -351,7 +351,7 @@ class OptimizerWrapper
         maximum_ride_time: route.vehicle_usage.default_max_ride_duration,
         start_point_id: route.vehicle_usage.default_store_start&.id && "d#{route.vehicle_usage.default_store_start.id}",
         end_point_id: route.vehicle_usage.default_store_stop&.id && "d#{route.vehicle_usage.default_store_stop.id}",
-        cost_fixed: options[:optimization_cost_fixed] || 0,
+        cost_fixed: options[:cost_fixed] || 0,
         cost_distance_multiplier: 0,
         cost_time_multiplier: 1,
         cost_waiting_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? options[:optimization_cost_waiting_time] : 0,
