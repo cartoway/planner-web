@@ -2,7 +2,7 @@ SimplifyGeojsonTracksJobStruct ||= Job.new(:customer_id, :route_id)
 class SimplifyGeojsonTracksJob < SimplifyGeojsonTracksJobStruct
   def perform
     route = Route.find(route_id)
-    return if route.geojson_tracks.empty?
+    return if route.geojson_tracks.blank?
 
     simplified_tracks = route.geojson_tracks.map do |geojson_track|
       feature = JSON.parse(geojson_track)
