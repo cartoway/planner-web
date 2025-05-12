@@ -115,7 +115,7 @@
                 - if route[:time_day]
                   = "(+#{route[:time_day]})"
                 - if route[:start_with_service]
-                  = "- #{route.start_with_service}"
+                  = "- #{route[:start_with_service]}"
                 - if route[:start_with_service_day]
                   = "(+#{route[:start_with_service_day]})"
       = render partial: 'stops/list', locals: { route: route }
@@ -161,8 +161,8 @@
             .title
               %span.info
                 = route[:end_without_service]
-                - if route.end_without_service_day
-                  = "(+#{route.end_without_service_day})"
+                - if route[:end_without_service_day]
+                  = "(+#{route[:end_without_service_day]})"
                 \-
                 = route[:end_time]
                 - if route[:end_day]
