@@ -2289,6 +2289,7 @@ export const plannings_edit = function(params) {
         show: true
       });
       $("#refresh-modal").click(function() {
+        $('#refresh').prop('disabled', true);
         $('#planning-refresh-modal').off('hidden.bs.modal');
         $('#planning-refresh-modal').modal('hide');
         $.ajax({
@@ -2391,6 +2392,7 @@ export const plannings_edit = function(params) {
     }
 
     $('#refresh').click(function() {
+      $(this).prop('disabled', true);
       $.ajax({
         type: 'GET',
         url: '/plannings/' + planning_id + '/refresh.json?with_stops=' + withStops,
