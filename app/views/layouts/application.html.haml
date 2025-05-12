@@ -241,7 +241,7 @@
                   .d-flex.align-items-center.justify-content-center
                     %i.fa.fa-user-gear.fa-fw
                     .hidden-menu
-                      %span.menu_label
+                      %span.menu_label{ title: current_user.customer.name }
                         = current_user.customer.name
               - else
                 %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#customerCollpase'}
