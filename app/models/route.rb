@@ -191,7 +191,8 @@ class Route < ApplicationRecord
         route_attributes[:end] += service_time_start
       end
 
-      stops_sort = stops #.sort_by(&:index) # default scope is sorted by index
+      # default scope is sorted by index but in case of a move preloaded order might be invalid
+      stops_sort = stops.sort_by(&:index)
 
       # Collect route legs
       segments = collect_segments_for_routing
@@ -775,7 +776,9 @@ class Route < ApplicationRecord
 
   def compute_out_of_force_position
     stops.each{ |stop| stop.out_of_force_position = nil }
-    stops_sort = stops #.sort_by(&:index) # default scope is sorted by index
+
+    # default scope is sorted by index but in case of a move preloaded order might be invalid
+    stops_sort = stops.sort_by(&:index)
 
     position_status = :first
     previous_stop = nil
