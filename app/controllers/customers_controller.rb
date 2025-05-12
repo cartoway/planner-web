@@ -125,11 +125,11 @@ class CustomersController < ApplicationController
 
       begin
         external_url =
-          external_url.gsub(/\{PLANNING_ID\}/i, @planning&.id&.to_s || 'null')
-                      .gsub(/\{PLANNING_REF\}/i, @planning&.ref || 'null')
-                      .gsub(/\{PLANNING_IDS\}/i, @planning_ids&.join(',') || 'null')
-                      .gsub(/\{ROUTE_ID\}/i, @route&.id&.to_s || 'null')
-                      .gsub(/\{ROUTE_REF\}/i, @route&.ref || 'null')
+          external_url.gsub(/\{PLANNING_ID\}/i, @planning&.id.to_s)
+                      .gsub(/\{PLANNING_REF\}/i, @planning&.ref.to_s)
+                      .gsub(/\{PLANNING_IDS\}/i, @planning_ids&.join(',') || '')
+                      .gsub(/\{ROUTE_ID\}/i, @route&.id.to_s)
+                      .gsub(/\{ROUTE_REF\}/i, @route&.ref.to_s)
                       .gsub(/\{API_KEY\}/i, current_user.api_key)
                       .gsub(/\{CUSTOMER_ID\}/i, current_user.customer_id.to_s)
 
