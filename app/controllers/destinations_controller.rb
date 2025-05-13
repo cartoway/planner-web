@@ -240,6 +240,7 @@ class DestinationsController < ApplicationController
       :lng,
       :phone_number,
       :comment,
+      :duration,
       :geocoding_accuracy,
       :geocoding_level,
       :geocoder_version,
