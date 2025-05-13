@@ -805,7 +805,7 @@ input.form-control.number-of-days {
   #accordion-menu {
     flex: 1 1 auto;
     overflow-y: auto;
-    padding-bottom: 80px;
+    padding-bottom: 220px;
   }
 
   .menu-content {
@@ -840,6 +840,8 @@ input.form-control.number-of-days {
     width: 100%;
     z-index: 2;
     background: $primary-color;
+    margin-bottom: 0;
+    padding-bottom: 1rem;
   }
 }
 
@@ -971,12 +973,6 @@ input.form-control.number-of-days {
   position: relative;
   width: 100%;
   overflow-y: scroll;
-}
-
-#menu-settings {
-  bottom: 24px;
-  position: absolute;
-  width: 100%;
 }
 
 #edit-planning {
