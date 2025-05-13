@@ -73,7 +73,7 @@
           %span.caret
         %ul.dropdown-menu.pull-right{role: "menu"}
           - if @callback_button && summary[:external_callback_url]
-            %li.link.customer_external_callback_url{"data-url" => external_callback_converted_url(summary, current_user, route)}
+            %li.link.customer_external_callback_url{data: {customer_id: current_user.customer.id, planning_id: summary[:planning_id], route_id: route[:route_id]}}
               %i.fa.fa-desktop.fa-fw
               - if summary[:external_callback_name]
                 = summary[:external_callback_name]
