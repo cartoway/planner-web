@@ -162,4 +162,44 @@ module PlanningsHelper
       ''
     end
   end
+
+  def planning_stat_value(key, hash, current_user)
+    content_tag(:div) do
+      html = []
+
+      html << content_tag(:div, class: 'primary route-info') do
+        concat content_tag(:i, '', class: "fa fa-fw #{hash[:icon]}", help: hash[:help])
+        concat ' '
+        concat format_stat_value(key, hash, hash[:value], current_user)
+      end
+
+      if hash[:min] && hash[:max]
+        html << content_tag(:div, class: 'info route-info') do
+          concat t('plannings.statistics.min')
+          concat ' '
+          concat format_stat_value(key, hash, hash[:min], current_user)
+        end
+
+        html << content_tag(:div, class: 'info route-info') do
+          concat t('plannings.statistics.max')
+          concat ' '
+          concat format_stat_value(key, hash, hash[:max], current_user)
+        end
+      end
+
+      safe_join(html)
+    end
+  end
+
+  private
+
+  def format_stat_value(key, hash, value, current_user)
+    if key == :distance
+      locale_distance(value, current_user.prefered_unit)
+    elsif key.is_a?(Symbol) && (key.end_with?('_time') || key.end_with?('duration'))
+      value && time_over_day(value)
+    else
+      "#{value&.round(2)} #{hash[:suffix]}".html_safe
+    end
+  end
 end
