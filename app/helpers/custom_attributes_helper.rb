@@ -35,8 +35,10 @@ module CustomAttributesHelper
     case custom_attribute.object_type_before_type_cast
     when 0
       { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : <i class='fa #{current_value ? 'fa-circle-check' : 'fa-circle-xmark'} fa-fw'></i></li>" }
-     else
-      { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : #{current_value}" }
+    when 4
+      { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : #{object.custom_attributes.key?(custom_attribute.name) ? current_value : nil}</li>" }
+    else
+      { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : #{current_value}</li>" }
     end
   end
 
