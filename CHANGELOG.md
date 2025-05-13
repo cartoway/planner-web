@@ -17,6 +17,7 @@
   - Reseller: Invalidate reseller cache on change [#371](https://github.com/cartoway/planner-web/pull/371)
   - Route optimization: service time is now considered in working shift [#335](https://github.com/cartoway/planner-web/pull/335)
   - Routes: Improve compute performances [#345](https://github.com/cartoway/planner-web/pull/345)
+  - Grape API: Response logging disabled [#381](https://github.com/cartoway/planner-web/pull/381)
 
   ### Removed
   - The option `enable_multi_visits` is removed, having multi visits is standard. Letting access to both destination and visit references simultaneously [#375](https://github.com/cartoway/planner-web/pull/375)
