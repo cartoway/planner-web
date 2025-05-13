@@ -113,7 +113,12 @@ const popupModule = (function() {
         }).addTo(map).getPopup();
 
         data.i18n = mustache_i18n;
-        data.routes = _context.options.routes.filter(function(route) { return route.vehicle_usage_id; }); // unnecessary to load all for each stop
+        data.routes = _context.options.routes.filter(function(route) {
+          return route.vehicle_usage_id;
+        }).map(function(route) {
+          route.color = _context.options.colorsByRoute[route.route_id];
+          return route;
+        }); // unnecessary to load all for each stop
         data.out_of_route_id = _context.options.outOfRouteId;
         data.number = marker.properties.number;
         if (_context.options.url_click2call) {
