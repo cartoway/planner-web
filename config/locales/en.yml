@@ -257,6 +257,7 @@ en:
         lng: Longitude
         comment: Comment
         comment_small: Comment
+        duration: Duration at the destination
         phone_number: Phone number
         phone_number_small: Phone
         geocoding_accuracy: Geocoding accuracy
@@ -1169,7 +1170,7 @@ en:
       detail_help: 'Non geocoded address complement, flat number for example'
       comment_help: Delivery informations
       duration_default: 'default'
-      duration_help: Average time per destination
+      duration_help: Duration applied once per destination regardless of the number of successive visits
       locate_manually: Locate manually on the map
       geocoding_accuracy_none: Not applicable
       geocoding_fail: Geocoding has failed
