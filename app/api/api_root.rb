@@ -23,14 +23,10 @@ class ApiRootDef < Grape::API
 
   unless Rails.env.test?
     logger.formatter = ENV['LOG_FORMAT'] == 'json' ? GrapeLogging::Formatters::Json.new : GrapeLogging::Formatters::Default.new
-    insert_before Grape::Middleware::Error, GrapeLogging::Middleware::RequestLogger, logger: logger, include: (
-      (logger.level > logger.class::DEBUG ? [] : [
-        GrapeLogging::Loggers::Response.new,
-      ]) + [
-        GrapeLogging::Loggers::FilterParameters.new,
-        GrapeLogging::Loggers::ClientEnv.new,
-      ]
-    )
+    insert_before Grape::Middleware::Error, GrapeLogging::Middleware::RequestLogger, logger: logger, include: [
+      GrapeLogging::Loggers::FilterParameters.new,
+      GrapeLogging::Loggers::ClientEnv.new,
+    ]
   end
 
   rescue_from(:all) { |error|
