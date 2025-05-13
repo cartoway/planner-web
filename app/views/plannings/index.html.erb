@@ -97,7 +97,7 @@
         </li>
       </ul>
       <% if @customer.enable_external_callback? && @customer.external_callback_url %>
-        <button id="external-url" class="btn btn-sm btn-default" data-url="<%= external_callback_converted_url(plannings_summary(@customer), current_user) %>"><i class="fa fa-desktop fa-fw"></i> <%= @customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action') %></button>
+        <button id="external-url" class="btn btn-sm btn-default" data-customer-id="<%= @customer.id %>"><i class="fa fa-desktop fa-fw"></i> <%= @customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action') %></button>
       <% end %>
     </div>
   </div>

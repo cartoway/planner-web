@@ -1138,7 +1138,7 @@ export const plannings_edit = function(params) {
   };
 
   var externalCallbackUrl = function() {
-    $('.customer_external_callback_url').off('click').click(function(e) {
+    $(document).on('click', '.customer_external_callback_url', function(e) {
       $.ajax({
         url:  '/customers/' + $(this).data('customer-id') + '/external_callback',
         type: 'POST',
@@ -2370,8 +2370,7 @@ export const plannings_edit = function(params) {
     });
 
     if (options.firstTime) {
-      externalCallbackUrl($(`#planning_tools`));
-      externalCallbackUrl($(`#global_tools`));
+      externalCallbackUrl();
       routesLayer.showAllRoutes({stores: true}, function() {
         if (options.fitBounds) {
           var bounds = routesLayer.getBounds();
