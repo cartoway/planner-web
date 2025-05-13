@@ -116,7 +116,7 @@ json.store_start do
 end if route.vehicle_usage && route.vehicle_usage.default_store_start
 (json.start_with_service Time.at(display_start_time(route)).utc.strftime('%H:%M')) if display_start_time(route)
 (json.start_with_service_day number_of_days(display_start_time(route))) if display_start_time(route)
-(json.departure route.departure if route.start_time)
+(json.departure route.departure_time if route.start_time)
 
 json.with_stops @with_stops
 if @with_stops

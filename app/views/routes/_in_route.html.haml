@@ -84,6 +84,8 @@
                     .ml-0.ph-0.d-flex.align-items-center.justify-content-end{class: "#{('danger' if route[:store_start]&.[](:error))} #{('primary stop-info' if route[:start_with_service])}"}
                       - value = route[:store_start] && (route[:store_start][:departure] || route[:start_time])
                       .d-flex.justify-content-center{class: (route[:start_with_service] ? 'col-xs-5' : 'col-xs-6 primary stop-info pull-right pl-0 ml-0')}
+                        - if route[:store_start] && route[:departure]
+                          .mr-2.fa.fa-magnet.fa-fw.fa-rotate-90
                         = text_field_tag :route_departure[route[:route_id]], value, min: 0, step: 1, placeholder: route[:time_window_start], class: 'form-control editable route-departure-field', data: { route_id: route[:route_id], planning_id: summary[:planning_id], summary: summary }
                         - if route[:time_day]
                           = "(+#{route[:time_day]})"
