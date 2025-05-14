@@ -39,7 +39,8 @@ import {
   templateResultColor,
   updateSelectionCount,
   dropdownAutoDirection,
-  modal_options
+  modal_options,
+  camelToSnake
 } from '../../assets/javascripts/scaffolds';
 
 $(function() {
@@ -1141,10 +1142,14 @@ export const plannings_edit = function(params) {
 
   var externalCallbackUrl = function() {
     $(document).on('click', '.customer_external_callback_url', function(e) {
+      const data = {};
+      $.each($(this).data(), function(key, value) {
+        data[camelToSnake(key)] = value;
+      });
       $.ajax({
         url:  '/customers/' + $(this).data('customer-id') + '/external_callback',
         type: 'POST',
-        data: $(this).data(),
+        data: data,
         beforeSend: beforeSendWaiting,
         complete: completeWaiting,
         success: function() {

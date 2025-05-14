@@ -795,3 +795,6 @@ export function selectFormatOption(option) {
   }
 }
 
+export function camelToSnake(str) {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
