@@ -965,13 +965,14 @@ class Planning < ApplicationRecord
   end
 
   def prefered_route_and_index(available_routes, stop, options = {})
+    stop_dup = stop.dup
     options[:active_only] = true if options[:active_only].nil?
     cache_sum_out_of_window = Hash.new{ |h, k| h[k] = k.sum_out_of_window }
     tmp_routes = {}
 
     by_distance = available_routes.flat_map { |route|
-      if stop.route_id == route.id
-        route.move_stop_out(stop)
+      if stop_dup.route_id == route.id
+        route.move_stop_out(stop_dup)
       end
       route.compute # Update the eventual outdated route
       stops = route.stops.select { |stop|
@@ -985,7 +986,7 @@ class Planning < ApplicationRecord
       stops << [route.vehicle_usage.default_store_stop, route, route.stops_size + 1] if route.vehicle_usage&.default_store_stop&.position?
       stops
     }.compact.sort_by{ |a|
-      a[0] && a[0].position? ? a[0].distance(stop.position) : Float::INFINITY
+      a[0] && a[0].position? ? a[0].distance(stop_dup.position) : Float::INFINITY
     }
     return available_routes.first if by_distance.empty?
 
@@ -1003,8 +1004,8 @@ class Planning < ApplicationRecord
 
       tmp_routes[ri[0].id] = ri[0].amoeba_dup if !tmp_routes[ri[0].id]
       r = tmp_routes[ri[0].id]
-      if stop.is_a?(StopVisit)
-        r.add(stop.visit, ri[1], true)
+      if stop_dup.is_a?(StopVisit)
+        r.add(stop_dup.visit, ri[1], true)
       else
         r.add_or_update_rest(true)
       end
@@ -1015,7 +1016,7 @@ class Planning < ApplicationRecord
       # Delta distance
       ri[3] = r.distance - ri[0].distance.to_f
 
-      r.remove_visit(stop.visit) if stop.is_a?(StopVisit)
+      r.remove_visit(stop_dup.visit) if stop_dup.is_a?(StopVisit)
 
       # Return ri with time and distance added
       ri
