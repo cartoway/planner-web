@@ -71,7 +71,7 @@ class Customer < ApplicationRecord
   validates :profile, presence: true
   validates :router, presence: true
   validates :router_dimension, presence: true
-  validates :name, presence: true
+  validates :name, presence: true, length: { maximum: 255 }
   validates :default_country, presence: true
   # TODO default_max_destinations
   validates :stores, length: { maximum: Planner::Application.config.max_destinations / 10, message: :over_max_limit }
