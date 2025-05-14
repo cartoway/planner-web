@@ -37,6 +37,7 @@ class Destination < Location
   validates :ref, uniqueness: { scope: :customer_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
   before_create :check_max_destination
+  before_update :update_outdated
   before_save :save_visits
   before_save :update_tags, unless: :internal_skip
   after_save -> { @tag_ids_changed = false }
@@ -139,5 +140,9 @@ class Destination < Location
     Route.transaction do
       visits.each(&:outdated)
     end
+  end
+
+  def update_outdated
+    outdated if will_save_change_to_duration?
   end
 end

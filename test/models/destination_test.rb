@@ -181,4 +181,13 @@ class DestinationTest < ActiveSupport::TestCase
     assert_equal 3600, destination.default_duration
     assert_equal '01:00:00', destination.default_duration_time_with_seconds
   end
+
+  test 'should call outdated when duration changes' do
+    destination = destinations(:destination_one)
+    outdated_called = false
+    destination.define_singleton_method(:outdated) { outdated_called = true }
+    destination.duration = (destination.duration || 0) + 60
+    destination.save!
+    assert outdated_called, 'La méthode outdated doit être appelée lors du changement de duration'
+  end
 end
