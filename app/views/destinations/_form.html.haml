@@ -86,7 +86,11 @@
         = f.select :tag_ids, options_for_select(@destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @destination.tags.collect(&:id)), {label: t('activerecord.attributes.destination.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
     = f.text_field :phone_number, {input_group: content_tag('i', '', class: 'fa fa-phone fa-fw')}
     = f.text_area :comment, help: t('.comment_help')
-    = f.text_field :duration, {help: t('.duration_help'), placeholder: t('all.unit.hour_minute_second'), append: content_tag('i', '', class: 'fa fa-map-marker fa-fw')}
+    = f.text_field :duration,
+      value: @destination.duration_time_with_seconds,
+      placeholder: @destination.customer.destination_duration ? "#{@destination.customer.destination_duration_time_with_seconds} (#{t('.duration_default')})" : t('all.unit.hour_minute_second'),
+      append: content_tag('i', '', class: 'fa fa-map-marker fa-fw'),
+      help: t('.duration_help')
   #visits
     - if @destination.visits.size > 1
       #visits-header.row
