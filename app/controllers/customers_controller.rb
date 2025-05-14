@@ -134,7 +134,7 @@ class CustomersController < ApplicationController
                       .gsub(/\{CUSTOMER_ID\}/i, current_user.customer_id.to_s)
 
         if ExternalCallbackService.new(external_url).call
-          render json: { status: :ok }
+          render json: { status: :ok, url: external_url }
         else
           render json: { status: :unprocessable_entity, error: I18n.t('services.external_callback.fail') }, status: :unprocessable_entity
         end
