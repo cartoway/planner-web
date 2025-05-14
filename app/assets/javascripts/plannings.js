@@ -328,6 +328,7 @@ export const plannings_edit = function(params) {
     });
   }
   initUpdateRouteDeparture();
+  initRouteDepartureTimeEntry();
 
   var apply_zoning_modal = bootstrap_dialog({
     title: I18n.t('plannings.edit.dialog.zoning.title'),
@@ -1068,12 +1069,13 @@ export const plannings_edit = function(params) {
     vehicleCostLate();
   });
 
-
-  $('#vehicle_max_upper_bound, #stop-max-upper-bound, .route-departure-field').timeEntry({
-    show24Hours: true,
-    defaultTime: '00:00',
-    spinnerImage: ''
-  });
+  function initRouteDepartureTimeEntry() {
+    $('.route-departure-field').timeEntry('destroy').timeEntry({
+      show24Hours: true,
+      defaultTime: '00:00',
+      spinnerImage: ''
+    });
+  }
 
   $('input[name="enable_optimization_soft_upper_bound"]').change(function() {
     $("#optimization-vehicle-max-upper-bound, #optimization-stop-max-upper-bound").toggleClass('d-none');
@@ -2127,6 +2129,7 @@ export const plannings_edit = function(params) {
     };
 
     updateOptimButton(routes);
+    initRouteDepartureTimeEntry();
 
   }
 
