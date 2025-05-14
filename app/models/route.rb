@@ -195,7 +195,7 @@ class Route < ApplicationRecord
       stops_sort = stops.sort_by(&:index)
 
       # Collect route legs
-      segments = collect_segments_for_routing
+      segments = collect_segments_for_routing(stops_sort)
 
       # Use pre-computed traces if available, otherwise compute them
       traces = @traces.dup || process_traces(segments, router, router_dimension, speed_multiplier, departure, options = {})
@@ -353,7 +353,7 @@ class Route < ApplicationRecord
     true
   end
 
-  def collect_segments_for_routing
+  def collect_segments_for_routing(stops_sort)
     segments = []
     last_lat, last_lng = nil, nil
 
@@ -361,7 +361,7 @@ class Route < ApplicationRecord
       if vehicle_usage.default_store_stop&.position?
         last_lat, last_lng = vehicle_usage.default_store_stop.lat, vehicle_usage.default_store_stop.lng
       end
-      segments = stops.select{ |stop|
+      segments = stops_sort.select{ |stop|
         stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
       }.reverse.collect{ |stop|
         if stop.position?
