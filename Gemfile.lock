@@ -42,18 +42,18 @@ GIT
     sidebar-v2-gh-pages-rails (0.0.1)
 
 GIT
+  remote: https://github.com/cartoway/jquery-timeentry-rails.git
+  revision: a81eaaff48dbc156a2fdc77035950bf738c3a3b3
+  specs:
+    jquery-timeentry-rails (2.0.1)
+      railties (>= 3.1.0)
+
+GIT
   remote: https://github.com/cartoway/simplify_rb
   revision: 035cd45a7b53db487d6b5c81928a25199a8b3125
   branch: dev
   specs:
     simplify_rb (0.4.0)
-
-GIT
-  remote: https://github.com/frodrigo/jquery-timeentry-rails.git
-  revision: ccecc885d334b772d065bb722e2d4528a9f9a40c
-  specs:
-    jquery-timeentry-rails (1.5.2)
-      railties (>= 3.1.0)
 
 GIT
   remote: https://github.com/frodrigo/leaflet-draw-rails.git
