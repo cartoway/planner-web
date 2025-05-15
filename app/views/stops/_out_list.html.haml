@@ -11,11 +11,12 @@
             - if !stop[:geocoded]
               %i.fa.fa-map-marker.fa-fw{title: t("plannings.edit.error.no_geolocalization")}
             - title = "#{stop[:name]}"
-            - title += " #{stop[:index_visit]}" if stop[:index_visit]
+            - title += " # #{stop[:index_visit]}" if stop[:index_visit]
             %span{title: title}
               = stop[:name]
-            - if stop[:index_visit]
-              = stop[:index_visit]
+              - if stop[:index_visit]
+                \#
+                = stop[:index_visit]
         .col-xs-6.col-md-3
           - if stop[:time_window_start_end_1]
             .timewindow-info{title: stop[:time_windows_condensed]}
