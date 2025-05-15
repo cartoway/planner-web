@@ -48,7 +48,7 @@
 
               - title = stop[:name]
               - if stop[:index_visit]
-                - title += " #{stop[:index_visit]}"
+                - title += " # #{stop[:index_visit]}"
               - if stop[:status]
                 - title += " - #{stop[:status]}"
               - if stop[:eta_formated]
@@ -110,13 +110,16 @@
 
               - title = stop[:name]
               - if stop[:index_visit]
-                - title += " #{stop[:index_visit]}"
+                - title += " # #{stop[:index_visit]}"
               - if stop[:status]
                 - title += " - #{stop[:status]}"
               - if stop[:eta_formated]
                 - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
               %span.name{title: title}
                 = stop[:name]
+                - if stop[:index_visit]
+                  \#
+                  = stop[:index_visit]
           .col-xs-2.col-md-4.hover-tools{style: "display: none;"}
             .col-xs-0.col-md-6
             .col-xs-12.col-md-6.d-flex.align-items-center

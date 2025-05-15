@@ -27,6 +27,7 @@
   - Device services now returns a http code 408 when anavailable [#370](https://github.com/cartoway/planner-web/pull/370)
   - Route color reset correctly update stop popup "send_to_route" color [#381](https://github.com/cartoway/planner-web/pull/381)
   - Customers: Validates name length [#384](https://github.com/cartoway/planner-web/pull/384)
+  - Plannings: Reintroduce Stops visit index [#386](https://github.com/cartoway/planner-web/pull/386)
 
 ## V105.0.0
   ### Added
