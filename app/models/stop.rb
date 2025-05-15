@@ -23,6 +23,10 @@ class Stop < ApplicationRecord
 
   nilify_blanks
 
+  include LocalizedAttr
+  attr_localized :loads
+  serialize :loads, DeliverableUnitQuantity
+
   include TimeAttr
   attribute :time, ScheduleType.new
   time_attr :time

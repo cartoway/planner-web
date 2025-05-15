@@ -27,22 +27,28 @@ module RoutesHelper
   end
 
   def route_quantities(planning, route)
-    deliverable_units = planning.customer.deliverable_units
+    deliverable_unit_hash = planning.customer.deliverable_units.index_by(&:id)
     vehicle = route.vehicle_usage.try(:vehicle)
-    route.quantities.select{ |_k, v|
-      v > 0
-    }.collect{ |id, v|
-      unit = deliverable_units.find{ |du| du.id == id }
+    route.quantities.collect{ |id, v|
+      unit = deliverable_unit_hash[id]
       next unless unit
 
+      loading = vehicle && route.loadings[id]
       capacity = vehicle && vehicle.default_capacities[id]
+      next if v.zero? && !loading
 
-      q = number_with_precision(v, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
+      q =
+        if loading && loading > 0
+          number_with_precision(loading, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true)
+        else
+          number_with_precision(v, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
+        end
       q += ' / ' + number_with_precision(vehicle.default_capacities[id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[id]
       q += "\u202F" + unit.label if unit.label
       {
         id: id,
         quantity: v,
+        loading: loading,
         label: unit.label,
         unit_icon: unit.default_icon,
         quantity_formatted: q,

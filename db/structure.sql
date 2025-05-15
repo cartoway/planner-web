@@ -757,7 +757,8 @@ CREATE TABLE public.routes (
     cost_fixed double precision,
     cost_time double precision,
     revenue double precision,
-    departure integer
+    departure integer,
+    loadings public.hstore
 );
 
 
@@ -822,6 +823,7 @@ CREATE TABLE public.stops (
     out_of_max_ride_duration boolean,
     status_updated_at timestamp without time zone,
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
+    loads public.hstore,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -3129,4 +3131,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250408114821'),
 ('20250403081545'),
 ('20250424060314'),
-('20250428094719');
+('20250428094719'),
+('20250515082225');

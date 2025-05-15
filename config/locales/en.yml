@@ -1872,7 +1872,7 @@ en:
       wait_time_help: Total waiting time
       speed_help: Speed average for the whole planning
       vehicles_used_help: Vehicles used / Total
-      quantity_help: Quantities / Vehicles capacities
+      quantity_help: Loadings / Vehicles capacities
       out_of_route: Unaffected
       out_of_route_quantity_help: Quantity
       toggle_help: Toggle stops on map

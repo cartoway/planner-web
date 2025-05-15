@@ -1975,7 +1975,7 @@ fr:
       route_stops_active_help: Sélectionner les arrêts actifs
       route_duration_help: Durée de la tournée / Créneau horaire ou durée de travail véhicule
       route_distance_help: Distance de la tournée
-      route_quantity_help: Quantité / Capacité véhicule
+      route_quantity_help: Chargement / Capacité véhicule
       route_speed_average_help: Vitesse moyenne du véhicule
       route_driving_time_help: Durée de conduite
       route_visits_duration_help: Durée des visites
@@ -2024,7 +2024,7 @@ fr:
         time_window_start_2: début 2
         time_window_end_2: fin 2
         time: 'Planifié : '
-        quantity: 'Quantité : '
+        quantity: 'Charge : '
         orders: 'Commandes : '
         destination_duration: 'Durée destination : '
         duration: 'Durée visite : '
