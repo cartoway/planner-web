@@ -27,6 +27,7 @@ class Route < ApplicationRecord
   belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
   serialize :quantities, DeliverableUnitQuantity
+  serialize :loadings, DeliverableUnitQuantity
 
   nilify_blanks
   validates :planning, presence: true
@@ -261,8 +262,15 @@ class Route < ApplicationRecord
         stop.attributes = stop_attributes
       }
 
-      route_attributes[:quantities] = compute_quantities(stops_sort) unless options[:no_quantities]
+      unless options[:no_quantities]
+        route_attributes[:loadings], stop_load_hash, route_attributes[:quantities] = compute_quantities(stops_sort)
+        # loads assignment is only necessary for routes with vehicle_usage
+        stops_sort.each do |stop|
+          next unless stop_load_hash.key?(stop.id)
 
+          stop.attributes = stop.attributes.merge(loads: stop_load_hash[stop.id])
+        end
+      end
       # Last stop to store
       distance, drive_time, trace = traces.shift
       if drive_time
@@ -343,7 +351,7 @@ class Route < ApplicationRecord
         end
       end
     else
-      self.quantities = compute_quantities unless options[:no_quantities]
+      self.loadings, _load_stop_hash, self.quantities = compute_quantities unless options[:no_quantities]
     end
 
     self.geojson_points = stops_to_geojson_points unless options[:no_geojson]
@@ -610,12 +618,20 @@ class Route < ApplicationRecord
   attr_localized :quantities
 
   def compute_quantities(stops_sort = nil)
-    # Utiliser find_each pour traiter de grands ensembles de données
-    quantities = Hash.new(0)
-    (stops_sort || stops).each do |stop|
-      process_stop_quantities(stop, quantities)
-    end
-    quantities
+    current_loads = Hash.new(0)
+    min_loads = Hash.new(0)
+    stop_load_hash = (stops_sort || stops).map { |stop|
+      process_stop_quantities(stop, current_loads, min_loads)
+      [stop.id, current_loads.dup]
+    }.to_h
+    loadings = min_loads.transform_values{ |v| v.abs }
+    stop_load_hash.each{ |id, loads|
+      next unless loads
+
+      loads = loads.map{ |k, v| [k, v.abs + min_loads[k]] }.to_h
+    }
+    unloadings = current_loads.map{ |k, v| [k, v.abs + min_loads[k]] }.to_h
+    [loadings, stop_load_hash, unloadings]
   end
 
   def reverse_order
@@ -984,7 +1000,7 @@ class Route < ApplicationRecord
     final_features
   end
 
-  def process_stop_quantities(stop, quantities)
+  def process_stop_quantities(stop, current_quantities, min_loads)
     @deliverable_units ||= planning.customer.deliverable_units
     return unless stop.active && stop.position? && stop.is_a?(StopVisit) && stop.visit.default_quantities?
 
@@ -995,22 +1011,27 @@ class Route < ApplicationRecord
 
     @deliverable_units.each do |du|
       if vehicle_usage && (stop.visit.quantities_operations[du.id].blank?)
-        quantities[du.id] = (quantities[du.id] || 0) + (default_quantities[du.id] || 0)
+        current_quantities[du.id] = (current_quantities[du.id] || 0) + (default_quantities[du.id] || 0)
+        min_loads[du.id] = [min_loads[du.id], default_quantities[du.id]].compact.min
       elsif vehicle_usage && stop.visit.quantities_operations[du.id] == 'fill'
-        quantities[du.id] = @default_capacities[du.id] if @default_capacities[du.id]
+        current_quantities[du.id] = @default_capacities[du.id] if @default_capacities[du.id]
+        min_loads[du.id] = [min_loads[du.id], @default_capacities[du.id]].compact.min
       elsif vehicle_usage && stop.visit.quantities_operations[du.id] == 'empty'
-        quantities[du.id] = 0
+        current_quantities[du.id] = 0
+        min_loads[du.id] = [min_loads[du.id], 0].compact.min
       end
 
       if vehicle_usage
         quantity = default_quantities[du.id]
         skip_quantity = quantity.nil? || quantity == 0
-        out_of_capacity ||= !skip_quantity & ((@default_capacities[du.id] && quantities[du.id] > @default_capacities[du.id]) || quantities[du.id] < 0)
+        out_of_capacity ||= !skip_quantity & ((@default_capacities[du.id] && current_quantities[du.id] > @default_capacities[du.id]) || current_quantities[du.id] < 0)
         unmanageable_capacity ||= !quantity.nil? && (quantity != 0 && @default_capacities[du.id] == 0)
       end
     end
 
     stop.unmanageable_capacity = unmanageable_capacity
     stop.out_of_capacity = out_of_capacity
+
+    current_quantities
   end
 end

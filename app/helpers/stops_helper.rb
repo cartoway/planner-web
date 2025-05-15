@@ -15,7 +15,13 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
+require "#{Rails.root}/lib/stop_quantities"
+
 module StopsHelper
+  def stop_quantities(stop, vehicle, options = {})
+    StopQuantities.normalize(stop, vehicle, options)
+  end
+
   def stop_order_quantities(stop)
     stop.order.products.map(&:code).each_with_object({}){ |code, hash| hash.key?(code) ? hash[code] += 1 : hash[code] = 1 }
   end
