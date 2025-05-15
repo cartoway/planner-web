@@ -1088,6 +1088,7 @@ export const plannings_edit = function(params) {
   function initRouteDepartureTimeEntry() {
     $('.route-departure-field').timeEntry('destroy').timeEntry({
       show24Hours: true,
+      unlimitedHours: true,
       defaultTime: '00:00',
       spinnerImage: ''
     });

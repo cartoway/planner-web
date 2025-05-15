@@ -33,6 +33,7 @@
 //= require i18n/translations
 
 // Custom gems
+//= require jquery.plugin
 //= require jquery.timeentry
 //= require leaflet_numbered_markers
 //= require Leaflet.ControlledBounds

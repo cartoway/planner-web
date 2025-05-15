@@ -154,7 +154,7 @@ gem 'jquery-turbolinks'
 gem 'jquery-ui-rails', '< 6' # FIXME Support IE10 removed in jQuery UI 1.12 + bad performances for large list sortable
 gem 'jquery-tablesorter', '~> 1.27'
 gem 'jquery-simplecolorpicker-rails'
-gem 'jquery-timeentry-rails', git: 'https://github.com/frodrigo/jquery-timeentry-rails.git'
+gem 'jquery-timeentry-rails', git: 'https://github.com/cartoway/jquery-timeentry-rails.git'
 gem 'select2-rails'
 gem 'i18n-js', '< 4'
 gem 'mustache'
