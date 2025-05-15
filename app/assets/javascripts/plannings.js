@@ -40,7 +40,8 @@ import {
   updateSelectionCount,
   dropdownAutoDirection,
   modal_options,
-  camelToSnake
+  camelToSnake,
+  validateTimeFormat
 } from '../../assets/javascripts/scaffolds';
 
 $(function() {
@@ -306,26 +307,40 @@ export const plannings_edit = function(params) {
   }
 
   function initUpdateRouteDeparture() {
-    $(document).on('change', '.route-departure-field', function(e) {
-      var route_id = $(this).data('route-id');
-      var planning_id = $(this).data('planning-id');
-      var departure = $(this).val();
-      var routes = $(this).data('summary', 'routes');
-      $.ajax({
-        type: 'PUT',
-        url: '/api/0.1/plannings/' + planning_id + '/routes/' + route_id + '.json',
-        data: { departure: departure },
-        beforeSend: function() {
-          panelLoading(route_id);
-          beforeSendWaiting();
-        },
-        success: function() {
-          completeAjaxMap();
-          refreshSidebarRoute(planning_id, route_id);
-          routesLayer.refreshRoutes([route_id], routes);
-        },
-        error: ajaxError
-      });
+    $(document).on('focus', '.route-departure-field', function() {
+      $(this).data('initial-value', $(this).val());
+    });
+
+    $(document).on('blur', '.route-departure-field', function(e) {
+      var currentValue = $(this).val();
+      var initialValue = $(this).data('initial-value');
+
+      if (currentValue && !validateTimeFormat(currentValue)) {
+        $(this).val(initialValue);
+        return;
+      }
+
+      if (currentValue !== initialValue) {
+        var route_id = $(this).data('route-id');
+        var planning_id = $(this).data('planning-id');
+        var departure = currentValue;
+        var routes = $(this).data('summary', 'routes');
+        $.ajax({
+          type: 'PUT',
+          url: '/api/0.1/plannings/' + planning_id + '/routes/' + route_id + '.json',
+          data: { departure: departure },
+          beforeSend: function() {
+            panelLoading(route_id);
+            beforeSendWaiting();
+          },
+          success: function() {
+            completeAjaxMap();
+            refreshSidebarRoute(planning_id, route_id);
+            routesLayer.refreshRoutes([route_id], routes);
+          },
+          error: ajaxError
+        });
+      }
     });
   }
   initUpdateRouteDeparture();
