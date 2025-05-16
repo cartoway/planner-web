@@ -278,6 +278,8 @@
       .primary.route-info{class: ('danger' if unit[:out_of_capacity]), title: t('plannings.edit.route_quantity_help')}
         %i.fa.fa-fw{class: unit[:unit_icon]}
         = unit[:quantity_formatted]
+        - if unit[:loading] && unit[:loading] > 0
+          %i.fa.unit.fa-fw.fa-truck-ramp-box{title: t('plannings.edit.route_quantity_loading_help')}
 - if route[:route_error]
   %ul.ui-state-error
     - if route[:route_no_geolocalization]

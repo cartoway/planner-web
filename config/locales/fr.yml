@@ -1976,6 +1976,7 @@ fr:
       route_duration_help: Durée de la tournée / Créneau horaire ou durée de travail véhicule
       route_distance_help: Distance de la tournée
       route_quantity_help: Chargement / Capacité véhicule
+      route_quantity_loading_help: À charger avant le début de la tournée
       route_speed_average_help: Vitesse moyenne du véhicule
       route_driving_time_help: Durée de conduite
       route_visits_duration_help: Durée des visites

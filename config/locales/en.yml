@@ -1886,6 +1886,7 @@ en:
       route_duration_help: Route duration / Vehicle window or work time
       route_distance_help: Route distance
       route_quantity_help: Quantity / Vehicle capacity
+      route_quantity_loading_help: Quantity to load before the start of the route
       route_speed_average_help: Vehicle's speed average
       route_driving_time_help: Driving time
       route_visits_duration_help: Visits duration
