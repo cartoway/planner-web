@@ -1227,7 +1227,7 @@ fr:
           title: Changer plusieurs catégories à la fois
           tags_help: >-
             Pour chaque ligne respective, permet de remplacer une catégorie
-            donné par une autre catégorie existant
+            donnée par une autre catégorie existante
       visit:
         new: Nouvelle visite
         new_help: Nouvelle visite si vous vous rendez plusieurs fois chez ce client.
