@@ -43,6 +43,10 @@ module IndexHelper
         count: @customer.vehicles.count,
         latest: @customer.vehicles.reorder(updated_at: :desc).first(5)
       },
+      vehicle_usages: {
+        count: @customer.vehicle_usage_sets.reorder(updated_at: :desc).first.vehicle_usages.count,
+        latest: @customer.vehicle_usage_sets.reorder(updated_at: :desc).first.vehicle_usages.reorder(updated_at: :desc).first(5)
+      },
       vehicle_usage_sets: {
         count: @customer.vehicle_usage_sets.count,
         latest: @customer.vehicle_usage_sets.reorder(updated_at: :desc).first(5),

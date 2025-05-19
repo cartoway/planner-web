@@ -15,7 +15,9 @@
   - Hide irrelevant logs in `rails_performance` [#331](https://github.com/cartoway/planner-web/pull/331)
   - Plannings: disable refresh button during compute [#378](https://github.com/cartoway/planner-web/pull/378)
   - Reseller: Invalidate reseller cache on change [#371](https://github.com/cartoway/planner-web/pull/371)
-  - Route optimization: service time is now considered in working shift [#335](https://github.com/cartoway/planner-web/pull/335)
+  - Route optimization:
+    - service time is now considered in working shift [#335](https://github.com/cartoway/planner-web/pull/335)
+    - Max delay is now always displayed in the modal [#388](https://github.com/cartoway/planner-web/pull/388)
   - Routes: Improve compute performances [#345](https://github.com/cartoway/planner-web/pull/345)
   - Grape API: Response logging disabled [#381](https://github.com/cartoway/planner-web/pull/381)
 
@@ -28,6 +30,7 @@
   - Route color reset correctly update stop popup "send_to_route" color [#381](https://github.com/cartoway/planner-web/pull/381)
   - Customers: Validates name length [#384](https://github.com/cartoway/planner-web/pull/384)
   - Plannings: Reintroduce Stops visit index [#386](https://github.com/cartoway/planner-web/pull/386)
+  - Fix vehicle url on welcome page [#389](https://github.com/cartoway/planner-web/pull/389)
 
 ## V105.0.0
   ### Added

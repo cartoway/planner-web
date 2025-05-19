@@ -163,14 +163,14 @@
                       %th= t 'activerecord.attributes.vehicles.updated_at'
                       %th
                   %tbody
-                    - @customer_summary[:vehicles][:latest].each do |vehicle|
+                    - @customer_summary[:vehicle_usages][:latest].each do |vehicle_usage|
                       %tr
                         %td
-                          = vehicle.name
+                          = vehicle_usage.vehicle.name
                         %td
-                          = l(vehicle.updated_at, format: :datepicker)
+                          = l(vehicle_usage.updated_at, format: :datepicker)
                         %td.text-right
-                          = link_to edit_vehicle_usage_path(vehicle), :class => "btn btn-primary btn-sm" do
+                          = link_to edit_vehicle_usage_path(vehicle_usage), :class => "btn btn-primary btn-sm" do
                             %i.fa.fa-edit.fa-fw
     - elsif @customer_summary[:vehicle_usage_sets][:limit] > 1
       .col-xs-12.col-md-6.col-lg-4.my-4
