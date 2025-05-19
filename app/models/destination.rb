@@ -143,6 +143,6 @@ class Destination < Location
   end
 
   def update_outdated
-    outdated if will_save_change_to_duration?
+    outdated if duration_changed? || lat_changed? || lng_changed?
   end
 end
