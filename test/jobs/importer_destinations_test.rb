@@ -51,15 +51,15 @@ class ImporterDestinationsTest < ActionController::TestCase
   test 'should replace with new tag' do
     assert_difference('Tag.count') do
       assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_new_tag.csv', 'text.csv')).import
-      assert_equal 1, @customer.destinations.size
-      assert_equal 1, @customer.destinations.collect{ |d| d.visits.size }.reduce(&:+)
+      assert_equal 1, @customer.destinations.count
+      assert_equal 1, @customer.destinations.collect{ |d| d.visits.count }.reduce(&:+)
     end
   end
 
   test 'should import only once tag if twice have the same label' do
     assert_difference('Tag.count', 2) do
       assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_with_duplicated_tag.csv', 'text.csv')).import
-      assert_equal 1, @customer.destinations.size
+      assert_equal 1, @customer.destinations.count
     end
   end
 
@@ -319,7 +319,7 @@ class ImporterDestinationsTest < ActionController::TestCase
           stop_visit_count
       ) do
         assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_with_many_visits.csv', 'text.csv')).import
-        assert_equal dest_import_count, @customer.destinations.size
+        assert_equal dest_import_count, @customer.destinations.count
       end
     end
   end

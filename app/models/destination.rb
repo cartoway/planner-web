@@ -20,7 +20,7 @@ class Destination < Location
 
   attr_accessor :internal_skip
 
-  belongs_to :customer
+  belongs_to :customer, counter_cache: true
   has_many :visits, inverse_of: :destination, dependent: :delete_all
   accepts_nested_attributes_for :visits, allow_destroy: true
   has_many :tag_destinations

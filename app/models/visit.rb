@@ -241,6 +241,9 @@ class Visit < ApplicationRecord
     @tag_ids_changed = true
   end
 
+  after_create :increment_customer_visits_count
+  after_destroy :decrement_customer_visits_count
+
   private
 
   def nilify_priority
@@ -322,5 +325,15 @@ class Visit < ApplicationRecord
     end
   rescue Exceptions::CloseAndOpenErrors
     self.errors.add(:time_window_start_2, :after, s: I18n.t('activerecord.attributes.visit.time_window_end_1').downcase)
+  end
+
+  def increment_customer_visits_count
+    customer = self.destination&.customer
+    customer&.increment!(:visits_count)
+  end
+
+  def decrement_customer_visits_count
+    customer = self.destination&.customer
+    customer&.decrement!(:visits_count)
   end
 end

@@ -286,7 +286,7 @@ class Customer < ApplicationRecord
   end
 
   def is_editable?
-    destinations.count <= Planner::Application.config.max_destinations_editable
+    destinations_count <= Planner::Application.config.max_destinations_editable
   end
 
   def max_vehicles
@@ -322,7 +322,7 @@ class Customer < ApplicationRecord
   end
 
   def too_many_destinations?
-    default_max_destinations && default_max_destinations <= self.destinations.count
+    default_max_destinations && default_max_destinations <= self.destinations_count
   end
 
   def default_max_vehicle_usage_sets
@@ -523,7 +523,7 @@ class Customer < ApplicationRecord
   end
 
   def validate_destinations_count
-    if self.default_max_destinations && self.default_max_destinations < self.destinations.count
+    if self.default_max_destinations && self.default_max_destinations < self.destinations_count
       errors.add(:max_destinations, I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit'))
       false
     end
