@@ -26,7 +26,7 @@ class Vehicle < ApplicationRecord
 
   attr_accessor :migration_skip
 
-  belongs_to :customer
+  belongs_to :customer, counter_cache: true
   belongs_to :router, optional: true
   has_many :vehicle_usages, inverse_of: :vehicle, dependent: :destroy, autosave: true
   has_many :zones, inverse_of: :vehicle, dependent: :nullify, autosave: true

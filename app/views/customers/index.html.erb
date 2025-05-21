@@ -113,7 +113,7 @@
             &infin;
           <% end %>
         </td>
-        <td><%= customer.destinations.count %> (<%= customer.visits.count %>)</td>
+        <td><%= customer.destinations_count %> (<%= customer.visits_count %>)</td>
         <td><%= customer_plannings_count customer %></td>
         <td rowspan="2" class="text-right action-buttons">
           <div class="btn-group" role="group" aria-label="Actions">
@@ -168,6 +168,6 @@ layers = Layer.all.sort_by(&:id).uniq.collect{ |layer|
 }
 controller.js(
   map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)],
-  customers: Hash[@customers.map{ |c| [c.id, {test: c.test, vehicles_count: c.vehicles.count}]}]
+  customers: Hash[@customers.map{ |c| [c.id, {test: c.test, vehicles_count: c.vehicles_count}]}]
 )
 %>

@@ -154,6 +154,10 @@ CREATE TABLE public.customers (
     optimization_cost_fixed integer,
     destination_duration integer,
     sms_intransit_template character varying
+    destinations_count integer DEFAULT 0 NOT NULL,
+    visits_count integer DEFAULT 0 NOT NULL,
+    plannings_count integer DEFAULT 0 NOT NULL,
+    vehicles_count integer DEFAULT 0 NOT NULL
 );
 
 
@@ -3136,4 +3140,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250428094719'),
 ('20250515082225'),
 ('20250527114419'),
-('20250527121446');
+('20250527121446'),
+('20250521075418');

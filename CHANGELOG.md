@@ -21,6 +21,7 @@
   - Routes: Improve compute performances [#345](https://github.com/cartoway/planner-web/pull/345)
   - Grape API: Response logging disabled [#381](https://github.com/cartoway/planner-web/pull/381)
   - Destinations: Set stops as outdated on coordinates change [#390](https://github.com/cartoway/planner-web/pull/390)
+  - Customers: Cache `destinations`, :`plannings`, `vehicles` and `visits` count [#391](https://github.com/cartoway/planner-web/pull/391)
 
   ### Removed
   - The option `enable_multi_visits` is removed, having multi visits is standard. Letting access to both destination and visit references simultaneously [#375](https://github.com/cartoway/planner-web/pull/375)
