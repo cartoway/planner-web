@@ -18,9 +18,9 @@
 module CustomersHelper
   def customer_plannings_count(customer)
     capture do
-      concat '<span style="color: red; font-weight: bold;">'.html_safe if Rails.configuration.max_plannings_default && Rails.configuration.max_plannings_default <= customer.plannings.count
-      concat customer.plannings.count
-      concat '</span>'.html_safe if Rails.configuration.max_plannings_default && Rails.configuration.max_plannings_default <= customer.plannings.count
+      concat '<span style="color: red; font-weight: bold;">'.html_safe if Rails.configuration.max_plannings_default && Rails.configuration.max_plannings_default <= customer.plannings_count
+      concat customer.plannings_count
+      concat '</span>'.html_safe if Rails.configuration.max_plannings_default && Rails.configuration.max_plannings_default <= customer.plannings_count
     end
   end
 

@@ -152,7 +152,11 @@ CREATE TABLE public.customers (
     vehicle_max_upper_bound integer DEFAULT 0,
     planning_date_offset integer DEFAULT 1,
     optimization_cost_fixed integer,
-    destination_duration integer
+    destination_duration integer,
+    destinations_count integer DEFAULT 0 NOT NULL,
+    visits_count integer DEFAULT 0 NOT NULL,
+    plannings_count integer DEFAULT 0 NOT NULL,
+    vehicles_count integer DEFAULT 0 NOT NULL
 );
 
 
@@ -3132,4 +3136,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250403081545'),
 ('20250424060314'),
 ('20250428094719'),
-('20250515082225');
+('20250515082225'),
+('20250521075418');
