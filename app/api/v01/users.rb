@@ -78,12 +78,7 @@ class V01::Users < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::User),
       failure: V01::Status.failures
     params do
-      use :params_from_entity, entity: V01::Entities::User.documentation.except(:id).deep_merge(
-        email: { required: true },
-        password: { required: false },
-        customer_id: { required: true },
-        layer_id: { required: true }
-      )
+      use(:request_user, create: true)
     end
     post do
       if @current_user.admin?
@@ -105,7 +100,7 @@ class V01::Users < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      use :params_from_entity, entity: V01::Entities::User.documentation.except(:id)
+      use :request_user
     end
     put ':id' do
       id = ParseIdsRefs.read(params[:id])

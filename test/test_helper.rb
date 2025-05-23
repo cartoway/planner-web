@@ -40,6 +40,18 @@ class ActiveSupport::TestCase
   # Associate delayed job class to customer
   set_fixture_class delayed_jobs: Delayed::Backend::ActiveRecord::Job
 
+  def before_setup
+    super
+    Customer.find_each do |customer|
+      Customer.where(id: customer.id).update_all(
+        destinations_count: customer.destinations.count,
+        visits_count: Visit.joins(:destination).where(destinations: { customer_id: customer.id }).count,
+        plannings_count: customer.plannings.count,
+        vehicles_count: customer.vehicles.count
+      )
+    end
+  end
+
   def setup
     uri_template = Addressable::Template.new('gpp3-wxs.ign.fr/{api_key}/geoportail/ols')
     @stub_GeocodeRequest = stub_request(:post, uri_template).with { |request|

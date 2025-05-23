@@ -29,4 +29,5 @@ class V01::Entities::User < Grape::Entity
   expose(:url_click2call, documentation: { type: String })
   expose(:prefered_unit, documentation: { type: String })
   expose(:locale, documentation: { type: String, desc: 'Currently used in mailing' })
+  expose(:time_zone, documentation: { type: String })
 end

@@ -21,7 +21,7 @@ module IndexHelper
 
     {
       plannings: {
-        count: @customer.plannings.count,
+        count: @customer.plannings_count,
         latest: @customer.plannings.reorder('date DESC NULLS LAST, updated_at DESC').first(5),
         limit: @customer.default_max_plannings
       },
@@ -31,7 +31,7 @@ module IndexHelper
         limit: @customer.default_max_zonings
       },
       destinations: {
-        count: @customer.destinations.count,
+        count: @customer.destinations_count,
         latest: @customer.destinations.reorder(updated_at: :desc).first(5),
         limit: @customer.default_max_destinations
       },
@@ -40,7 +40,7 @@ module IndexHelper
         latest: @customer.stores.reorder(updated_at: :desc).first(5)
       },
       vehicles: {
-        count: @customer.vehicles.count,
+        count: @customer.vehicles_count,
         latest: @customer.vehicles.reorder(updated_at: :desc).first(5)
       },
       vehicle_usages: {

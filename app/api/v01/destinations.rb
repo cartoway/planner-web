@@ -291,7 +291,7 @@ class V01::Destinations < Grape::API
             params[:ids].any? { |s| ParseIdsRefs.match(s, destination) }
           }
 
-          if current_customer.destinations.count == destinations.count
+          if current_customer.destinations_count == destinations.count
             current_customer.delete_all_destinations
           else
             destinations.each(&:destroy)

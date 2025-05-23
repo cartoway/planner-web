@@ -20,7 +20,7 @@ class Planning < ApplicationRecord
 
   default_scope { includes(:tags).order(:id) }
 
-  belongs_to :customer
+  belongs_to :customer, counter_cache: true
   has_and_belongs_to_many :zonings, autosave: true, after_add: :update_zonings_track, after_remove: :update_zonings_track
   has_many :routes, -> { order("vehicle_usage_id NULLS FIRST") }, inverse_of: :planning, autosave: true, dependent: :delete_all
 

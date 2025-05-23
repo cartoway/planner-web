@@ -179,6 +179,24 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{Planner::Application.config.store_icon_default}." }
     optional :icon_size, type: String, values: ::Store::ICON_SIZE, documentation: { desc: "Icon size. Default: #{Planner::Application.config.store_icon_size_default}." }
   end
+  params :request_user do |options|
+    if options[:create]
+      requires :email, type: String
+      requires :customer_id, type: Integer
+      requires :layer_id, type: Integer
+    else
+      optional :email, type: String
+      optional :customer_id, type: Integer
+      optional :layer_id, type: Integer
+    end
+    optional :password, type: String
+    optional :ref, type: String, documentation: { desc: 'Only available in admin.' }
+    optional :api_key, type: String
+    optional :url_click2call, type: String
+    optional :prefered_unit, type: String
+    optional :locale, type: String
+    optional :time_zone, type: String, values: ActiveSupport::TimeZone.all.map(&:name)
+  end
 
   params :request_vehicle do |options|
     optional :ref, type: String, documentation: { desc: 'unique reference'}
