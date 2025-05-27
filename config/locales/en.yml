@@ -341,6 +341,7 @@ en:
         customer_audience_url: Customer's Audience URL
         customer_behavior_url: Customer's Behavior URL
         customer_dashboard_url: Customer's Dashboard URL
+        planning_dashboard_url: Planning's Dashboard URL
       route:
         distance: Distance
         emission: Emission
@@ -822,6 +823,10 @@ en:
           Web page address that contains the customer Dashboard. It's possible
           to use "{ID}" which will be replaced by the customer ID (ie:
           https://analytics.cartoway.com?id={ID}
+        planning_dashboard_url_help: >-
+          Web page address that contains the planning Dashboard. It's possible
+          to use "{P_ID}" which will be replaced by the planning ID (ie:
+          https://analytics.cartoway.com?p_id={P_ID}
         audience_url_help: >-
           Web page address that contains the audience Dashboard. It's possible
           to use "{ID}" which will be replaced by the customer ID (ie:
@@ -1089,6 +1094,7 @@ en:
       audience_url_help: Go to the customer dashboard Audience page
       behavior_url_help: Go to the customer dashboard Behavior page
       customer_dashboard_url_help: Go to the customer dashboard page
+      planning_dashboard_url_help: Go to the planning dashboard page
       submit: Update customer account settings
       external_callback:
         title: Callback URL

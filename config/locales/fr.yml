@@ -341,6 +341,7 @@ fr:
         customer_audience_url: URL d'audience compte
         customer_behavior_url: URL de comportement compte
         customer_dashboard_url: URL du tableau de bord du compte
+        planning_dashboard_url: URL du tableau de bord de planification
       route:
         distance: Distance
         emission: Émissions
@@ -840,6 +841,10 @@ fr:
           Adresse de la page web contenant le tableau de bord client. Vous
           pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de
           l'espace client (par ex: https://analytics.cartoway.com?id={ID}
+        planning_dashboard_url_help: >-
+          Adresse de la page web contenant votre tableau de bord de planification.
+          Vous pouvez utiliser « {P_ID} » qui sera remplacé par l'identifiant du
+          planning courant (par ex: https://analytics.cartoway.com?p_id={P_ID})
         audience_url_help: >-
           Adresse de la page web contenant votre tableau de bord d'audience.
           Vous pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de
@@ -1118,6 +1123,7 @@ fr:
       audience_url_help: Se rendre sur le tableau de bord d'audience pour ce compte client
       behavior_url_help: Se rendre sur le tableau de bord comportemental pour ce espace client
       customer_dashboard_url_help: Se rendre sur le tableau de bord pour ce compte client
+      planning_dashboard_url_help: Se rendre sur le tableau de bord de planification pour ce plan
       submit: Enregistrer paramétrage de l'espace client
       external_callback:
         title: URL de rappel

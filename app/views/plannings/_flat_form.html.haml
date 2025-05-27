@@ -15,9 +15,9 @@
       = f.text_field :date, { placeholder: t('plannings.form.default_date'), value: @planning.date && l(@planning.date, format: :datepicker), input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'}), label_class: 'hidden'}
     - if @planning.new_record?
       = zoning_select f, @planning, t('plannings.edit.zonings.label')
-    - if @planning.customer.reseller.customer_dashboard_url
+    - if @planning.customer.reseller.planning_dashboard_url
       .col
-        = link_to @planning.customer.reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', @planning.id.to_s), target: '_blank', :class => "btn btn-default", title: t('analytics.index.link') do
+        = link_to @planning.customer.reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', @planning.id.to_s), target: '_blank', :class => "btn btn-default", title: t('analytics.index.link') do
           %i.fa.fa-chart-line.fa-fw
     .col
       = f.submit row_class: '', col_class: ''
