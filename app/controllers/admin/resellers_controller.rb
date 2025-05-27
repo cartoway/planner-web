@@ -74,6 +74,7 @@ class Admin::ResellersController < ApplicationController
       :customer_audience_url,
       :customer_behavior_url,
       :customer_dashboard_url,
+      :planning_dashboard_url,
       messagings: {
         vonage: [:api_key, :api_secret],
         sms_partner: [:api_key]

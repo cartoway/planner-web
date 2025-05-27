@@ -63,8 +63,8 @@
         <% } %>
         </td>
         <td class="text-right">
-          <% if @reseller.customer_dashboard_url && current_user.customer %>
-            <%= link_to @reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', :class => "btn btn-default btn-sm" do %>
+          <% if @reseller.planning_dashboard_url && current_user.customer %>
+            <%= link_to @reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', :class => "btn btn-default btn-sm" do %>
               <i class="fa fa-chart-line fa-fw"></i>
               <%= t 'customers.menu.analytics' %>
             <% end %>
