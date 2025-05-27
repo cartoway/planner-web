@@ -63,6 +63,12 @@
         <% } %>
         </td>
         <td class="text-right">
+          <% if @reseller.customer_dashboard_url && current_user.customer %>
+            <%= link_to @reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', :class => "btn btn-default btn-sm" do %>
+              <i class="fa fa-chart-line fa-fw"></i>
+              <%= t 'customers.menu.analytics' %>
+            <% end %>
+          <% end %>
           <%= link_to planning_duplicate_path(planning), disabled: current_user.customer.too_many_plannings?, :class => "btn btn-default btn-sm", method: :patch do %><i class="fa fa-copy fa-fw"></i> <%= t 'all.verb.duplicate' %><% end %>
           <%= link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
           <%= link_to planning, :class => "btn btn-danger btn-sm", method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
