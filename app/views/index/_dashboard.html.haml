@@ -41,8 +41,12 @@
                             %span
                             = tag.label
                       %td.text-right
-                        = link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do
-                          %i.fa.fa-edit.fa-fw
+                        .btn-group{ role: 'group'}
+                          - if @customer.reseller.customer_dashboard_url
+                            = link_to @customer.reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', title: t('analytics.index.link'), class: "btn btn-default btn-sm" do
+                              %i.fa.fa-chart-line.fa-fw
+                          = link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm", title: t('all.verb.edit') do
+                            %i.fa.fa-edit.fa-fw
         .card-footer.text-center
           = link_to plannings_path do
             = t('plannings.index.show', count: @customer_summary[:plannings][:count])
