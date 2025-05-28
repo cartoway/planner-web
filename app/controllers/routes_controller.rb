@@ -34,7 +34,7 @@ class RoutesController < ApplicationController
   def mobile
     manage_planning
     @params = params
-    @stops = @route.stops.only_active_stop_visits
+    @stops = @route.stops.includes_destinations.only_active_stop_visits
     respond_to do |format|
       format.html {
         render 'routes/mobile',
@@ -43,7 +43,8 @@ class RoutesController < ApplicationController
           enable_driver_move: ValueToBoolean.value_to_boolean(current_vehicle.customer.devices.dig(:deliver, :driver_move)),
           date: @route.planning.date,
           is_expired: @route.is_expired?,
-          custom_attributes: current_vehicle.customer.custom_attributes.for_stop
+          custom_attributes: current_vehicle.customer.custom_attributes.for_stop,
+          customer: current_vehicle.customer
         },
         layout: 'mobile'
       }
@@ -146,11 +147,11 @@ class RoutesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_route
-    @route = Route.for_customer_id(current_user.customer_id).find(params[:id] || params[:route_id])
+    @route = Route.includes_vehicle_usages.for_customer_id(current_user.customer_id).find(params[:id] || params[:route_id])
   end
 
   def set_driver_route
-    @route = Route.find(params[:id])
+    @route = Route.includes_vehicle_usages.find(params[:id])
 
     if @route.vehicle_usage.vehicle.id != current_vehicle.id
       head :not_found

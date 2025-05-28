@@ -47,8 +47,12 @@
         #radiobtn
           .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
             .col-xs-6.d-flex.justify-content-center
-              %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
-                = t('plannings.edit.stop_status.intransit')
+              - if customer.enable_sms && phone_number.present?
+                = link_to "sms:#{phone_number}?body=#{CGI.escape(sms_content)}", class: "btn btn-primary#{' active' if stop.status == 'intransit'}", data: { toggle: 'active_status', title: 'intransit' } do
+                  = t('plannings.edit.stop_status.intransit')
+              - else
+                %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
+                  = t('plannings.edit.stop_status.intransit')
             .col-xs-6.d-flex.justify-content-center
               %a.btn.btn-success{ data: { toggle: 'active_status', title: 'delivered' }, class: ('active' if stop.status == 'delivered') }
                 = t('plannings.edit.stop_status.delivered')

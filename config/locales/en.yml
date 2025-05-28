@@ -194,6 +194,7 @@ en:
         enable_optimization_soft_upper_bound: Enable overtimes
         sms_template: Customer SMS template
         sms_driver_template: Driver SMS template
+        sms_intransit_template: Inroute SMS template
         sms_concat: Long SMS
         enable_external_callback: Enable Callback URL
         history_cron_hour: Hour of historisation
@@ -1083,6 +1084,11 @@ en:
         SMS template sent to the drivers. {URL} will be replaced by the link to access the
         route to be done. Your text should not contain non
         standard characters (GSM 03.38) and not exceed 160 characters.
+      sms_intransit_template_help: >-
+        SMS template sent to the customers when the driver is in route.
+        {CUSTOMER_NAME} will be replaced by the account name. {NAME} will be replaced by the destination name.
+        {DATE} will be replaced by the date of the route. Your text should not contain non
+        standard characters (GSM 03.38) and not exceed 160 characters.
       sms_template_help: >-
         SMS template sent for your visits. {NAME} will be replaced by
         destination name filled in app. Your text should not contain non
@@ -1090,6 +1096,8 @@ en:
         case of special characters).
       sms_driver_keys_help: >-
         Available replacement strings: {ROUTE_NAME} {DATE} {SIZE_ACTIVE} {URL}.
+      sms_intransit_keys_help: >-
+        Available replacement strings: {NAME} {CUSTOMER_NAME} {TIME} {STREET} {CITY}.
       sms_keys_help: >-
         Available replacement strings: {NAME} {REF} {VISIT_REF} {DATE} {TIME}
         {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER}.
@@ -2941,6 +2949,9 @@ en:
         {TIME+60} in {CITY}.
       alert_driver: >-
         Hello, the {ROUTE_NAME} route has been assigned to you for {DATE} with {SIZE_ACTIVE} stops - {URL}
+      alert_intransit: >-
+        Hello {NAME}. Your {CUSTOMER_NAME} driver is on the way.
+        He will arrive between {TIME-5} and {TIME+15}.
   all:
     datepicker: mm-dd-yyyy
     map_attribution:

@@ -1,6 +1,10 @@
 class CountryCodeError < StandardError; end
 
+require 'application_helper'
+
 class MessagingService
+  include ApplicationHelper
+
   def self.definition
     raise NotImplementedError
   end
@@ -22,9 +26,9 @@ class MessagingService
     raise NotImplementedError
   end
 
-  def content(template, replacements: {}, truncate: true)
+  def content(template, replacements: {}, truncate: true, time_format: nil)
     # Display date only if key date is not present in template
-    format_time = template.include?('{DATE}') ? :hour_minute : :short
+    format_time = time_format || (template.include?('{DATE}') ? :hour_minute : :short)
 
     replacements.each{ |k, v|
       if v.is_a?(Time)
@@ -35,15 +39,12 @@ class MessagingService
           if (m = regexp.match(s)) && !m[1].blank?
             shift_time = Integer(m[1]).minutes
           end
-
+          time = v + shift_time
           if shift_time != 0
-            # Round time to quarter
-            seconds = 15.minutes
-            shift_time = (shift_time / shift_time.abs) * seconds if shift_time.abs < seconds
-            shift_time = ((v + shift_time).to_f / seconds).round * seconds - v.to_i
+            time = round_time_to_nearest_quarter(time)
           end
 
-          I18n.l(v + shift_time, format: format_time)
+          I18n.l(time, format: format_time)
         }
       elsif v.is_a?(Date)
         template = template.gsub("{#{k}}".upcase, I18n.l(v, format: :date))
@@ -68,12 +69,6 @@ class MessagingService
     self.class.name.split('::').last.underscore.gsub('_service', '')
   end
 
-  protected
-
-  def service_config
-    @reseller.messagings&.dig(service_name) || {}
-  end
-
   def format_phone_number(phone, country = nil)
     return phone if phone.start_with?('+', '00')
 
@@ -93,6 +88,12 @@ class MessagingService
     else
       raise CountryCodeError.new("Country is mandatory if the number is not in an international format")
     end
+  end
+
+  protected
+
+  def service_config
+    @reseller.messagings&.dig(service_name) || {}
   end
 
   def create_message_log(to, content, response = {})
