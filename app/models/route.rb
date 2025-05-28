@@ -309,6 +309,7 @@ class Route < ApplicationRecord
   def compute!(options = {})
     if self.vehicle_usage?
       self.geojson_tracks = nil
+      previous_position_hash = {}
       stops_sort, stops_drive_time, stops_time_windows = plan(
         # Hack to allow manual set of self.start from the API and keep the value
         # when used in conjunction with self.force_start
@@ -317,6 +318,13 @@ class Route < ApplicationRecord
       )
 
       if stops_sort
+        previous_position = nil
+        stops_sort.each{ |stop|
+          next if !stop.is_a?(StopVisit) || !stop.active?
+
+          previous_position_hash[stop.id] = previous_position
+          previous_position = stop.position if stop.position?
+        }
         compute_out_of_force_position
         compute_out_of_relations
 
@@ -327,14 +335,16 @@ class Route < ApplicationRecord
         stops_sort.reverse_each{ |stop|
           if stop.active && (stop.position? || stop.is_a?(StopRest))
             _open, close = stops_time_windows[stop]
+            stop_total_duration = stop.duration
+            stop_total_duration += stop.destination_duration if stop.is_a?(StopVisit) && (!previous_position_hash.key?(stop.id) || stop.position != previous_position_hash[stop.id])
             if stop.time && (stop.out_of_window || (close && time > close))
-              time = [stop.time, close ? close - stop.duration : 0].max
+              time = [stop.time, close ? close - stop_total_duration  : 0].max
             else
               # Latest departure time
               time = [time, close].min if close
 
               # New arrival stop time
-              time -= stop.duration
+              time -= stop_total_duration
             end
 
             # Previous departure time
