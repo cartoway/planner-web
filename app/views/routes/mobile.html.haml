@@ -33,6 +33,7 @@
       #accordion.panel-group.route-stops{ role: 'tablist', aria_multiselectable: 'true' }
         - previous = nil
         - @stops.each do |stop|
+          - in_route_data = formatted_stop_inroute_sms(stop)
           - next unless stop.active
 
           - next_status = case stop.status
@@ -50,11 +51,21 @@
                 .col-xs-6.p-0
                   = stop.name
                 .col-xs-4.p-0
-                  %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ data: { toggle: 'active_status', title: next_status }, class: ('d-none' unless next_status) }
-                    .d-flex.align-items-center
-                      .fa.fa-regular.fa-square-caret-right.mr-2
-                      #quick-status-text
-                        = t("plannings.edit.stop_status.#{next_status}") if next_status
+                  - if customer.enable_sms && in_route_data[:phone_number].present?
+                    = link_to "sms:#{in_route_data[:phone_number]}?body=#{CGI.escape(in_route_data[:content])}",
+                      id: "quick-status",
+                      class: "col-xs-12 col-sm-6 btn btn-default no-toggle mr-2 pull-right#{' d-none' unless next_status}",
+                      data: { toggle: 'active_status', title: next_status } do
+                      .d-flex.align-items-center
+                        .fa.fa-regular.fa-square-caret-right.mr-2
+                        #quick-status-text
+                          = t("plannings.edit.stop_status.#{next_status}") if next_status
+                  - else
+                    %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
+                      .d-flex.align-items-center
+                        .fa.fa-regular.fa-square-caret-right.mr-2
+                        #quick-status-text
+                          = t("plannings.edit.stop_status.#{next_status}") if next_status
                   - agent_link = case agent
                   - when :ios
                     - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
@@ -77,7 +88,7 @@
                 .fa.fa-caret-down.fa-fw
             .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
               .panel-body
-                = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit, enable_driver_move: enable_driver_move, custom_attributes: custom_attributes }
+                = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit, enable_driver_move: enable_driver_move, custom_attributes: custom_attributes, customer: customer, sms_content: in_route_data[:content], phone_number: in_route_data[:phone_number] }
           - previous = stop
         - if @stops&.empty?
           .alert.alert-warning

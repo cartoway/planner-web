@@ -204,6 +204,11 @@ const customers_edit = function (params) {
     var color = count > 160 ? 'red' : count > 140 ? 'darkorange' : 'black';
     $('#sms_driver_character_count').html('<span style="color: ' + color + '">' + I18n.t('customers.form.sms_character_count', {c: count}) + '</span>');
   };
+  const smsIntransitCharacterCount = function() {
+    var count = ($('#customer_sms_intransit_template').val() || $('#customer_sms_intransit_template').attr('placeholder')).length;
+    var color = count > 160 ? 'red' : count > 140 ? 'darkorange' : 'black';
+    $('#customer_sms_intransit_count').html('<span style="color: ' + color + '">' + I18n.t('customers.form.sms_character_count', {c: count}) + '</span>');
+  };
 
   if ($('#customer_sms_template').length) {
     smsCharacterCount();
@@ -212,6 +217,10 @@ const customers_edit = function (params) {
   if ($('#customer_sms_driver_template').length) {
     smsDriverCharacterCount();
     $('#customer_sms_driver_template').on('keyup', smsDriverCharacterCount);
+  }
+  if ($('#customer_sms_intransit_template').length) {
+    smsIntransitCharacterCount();
+    $('#customer_sms_intransit_template').on('keyup', smsIntransitCharacterCount);
   }
 
   routerOptionsSelect('#customer_router', params);

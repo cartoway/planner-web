@@ -61,4 +61,17 @@ module StopsHelper
     end
     condensed_string
   end
+
+  def formatted_stop_inroute_sms(stop)
+    customer = stop.route.planning.customer
+    repl = {
+        time: Time.now.at_beginning_of_day + stop.time,
+        customer_name: customer.name,
+    }.merge(stop.visit.destination.attributes.slice('name', 'street', 'city'))
+    template = customer.sms_intransit_template || I18n.t('notifications.sms.alert_intransit')
+    service = MessagingService.new(customer.reseller)
+    content = service.content(template, replacements: repl, time_format: :hour_minute)
+    phone_number = stop.visit.destination.phone_number && service.format_phone_number(stop.visit.destination.phone_number, stop.visit.destination.country || customer.default_country)
+    { phone_number: phone_number, content: content }
+  end
 end

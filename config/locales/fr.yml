@@ -194,6 +194,7 @@ fr:
         enable_optimization_soft_upper_bound: Autoriser les dépassements horaires
         sms_template: Modèle SMS clients
         sms_driver_template: Modèle SMS livreurs
+        sms_intransit_template: Modèle SMS en approche
         sms_concat: SMS longs
         enable_external_callback: Activer URL de rappel
         history_cron_hour: Heure de l'historisation
@@ -1110,6 +1111,11 @@ fr:
         Modèle de SMS envoyé aux livreurs. {URL} sera remplacé par le lien permettant d'accéder
         à la tournée à réaliser. Votre texte ne doit pas comporter de caractères non standards
         (GSM 03.38) et ne devrait pas dépasser 160 caractères.
+      sms_intransit_template_help: >-
+        Modèle de SMS envoyé aux clients lorsque le chauffeur est en route.
+        {CUSTOMER_NAME} sera remplacé par le nom du compte. {NAME} sera remplacé par le nom de la destination.
+        {DATE} sera remplacé par la date de la tournée. Votre texte ne doit pas comporter de caractères non standards
+        (GSM 03.38) et ne devrait pas dépasser 160 caractères.
       sms_template_help: >-
         Modèle de SMS envoyé à vos clients. {NAME} sera remplacé par le nom de
         votre client renseigné sur l'application. Votre texte ne doit pas
@@ -1117,6 +1123,8 @@ fr:
         dépasser 160 caractères.
       sms_driver_keys_help: >-
         Chaînes de remplacements disponibles : {ROUTE_NAME} {DATE} {SIZE_ACTIVE} {URL}.
+      sms_intransit_keys_help: >-
+        Chaînes de remplacements disponibles : {NAME} {CUSTOMER_NAME} {TIME} {STREET} {CITY}.
       sms_keys_help: >-
         Chaînes de remplacements disponibles : {NAME} {REF} {VISIT_REF} {DATE}
         {TIME} {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME}
@@ -3072,6 +3080,9 @@ fr:
       alert_driver: >-
         Bonjour, La tournée {ROUTE_NAME} vous a été attribuée pour le {DATE} avec
         {SIZE_ACTIVE} arrêts - {URL}
+      alert_intransit: >-
+        Bonjour {NAME}. Votre chauffeur {CUSTOMER_NAME} est en route.
+        Son arrivée est prévue entre {TIME-5} et {TIME+15}.
   all:
     datepicker: dd-mm-yyyy
     map_attribution:

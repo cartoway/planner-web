@@ -371,6 +371,16 @@
               <p class="help-block"><%= t '.sms_driver_keys_help' %></p>
             </div>
           </div>
+
+          <%= f.text_area :sms_intransit_template, placeholder: t('notifications.sms.alert_intransit'), value: @customer.sms_intransit_template || t('notifications.sms.alert_intransit') %>
+          <div class="row">
+            <div class="col-md-offset-2 col-md-8">
+              <div id="sms_intransit_character_count"></div>
+              <p class="help-block"><%= t '.sms_intransit_template_help' %></p>
+              <p class="help-block"><%= t '.sms_intransit_keys_help' %></p>
+            </div>
+          </div>
+
           <%= render partial: 'shared/check_box', locals: { form: f, field: :sms_concat, label: t('activerecord.attributes.customer.sms_concat'), help: t('.sms_concat_help') } %>
         </div>
       </div>

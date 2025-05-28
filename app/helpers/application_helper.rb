@@ -89,4 +89,10 @@ module ApplicationHelper
   def time_over_day(time_in_seconds)
     '%02i:%02i' % [time_in_seconds / 3600, (time_in_seconds % 3600) / 60]
   end
+
+  def round_time_to_nearest_quarter(time)
+    minutes = (time.min + time.sec / 60.0)
+    rounded = (minutes / 15.0).round * 15
+    time.beginning_of_hour + rounded.minutes
+  end
 end
