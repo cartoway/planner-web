@@ -49,8 +49,8 @@ class Route < ApplicationRecord
 
   before_save :outdated_if_changed
 
-  after_save :invalidate_route_cache
-  after_destroy :invalidate_route_cache
+  after_save :invalidate_route_cache, :invalidate_planning_cache
+  after_destroy :invalidate_route_cache, :invalidate_planning_cache
 
   scope :available, -> { where("vehicle_usage_id IS NULL OR NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
   scope :available_or_outdated, -> { where("vehicle_usage_id IS NULL OR NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
@@ -446,6 +446,7 @@ class Route < ApplicationRecord
     # Indirectly save route to avoid Stops callbacks
     self.update_columns(self.import_attributes)
     invalidate_route_cache
+    invalidate_planning_cache
 
     if Planner::Application.config.delayed_job_use
       Delayed::Job.enqueue(SimplifyGeojsonTracksJob.new(self.planning.customer_id, self.id))
@@ -872,6 +873,10 @@ class Route < ApplicationRecord
 
   def import_attributes
     self.attributes.except('lock_version')
+  end
+
+  def invalidate_planning_cache
+    planning.invalidate_planning_cache
   end
 
   def invalidate_route_cache

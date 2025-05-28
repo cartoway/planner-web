@@ -153,7 +153,7 @@ CREATE TABLE public.customers (
     planning_date_offset integer DEFAULT 1,
     optimization_cost_fixed integer,
     destination_duration integer,
-    sms_intransit_template character varying
+    sms_intransit_template character varying,
     destinations_count integer DEFAULT 0 NOT NULL,
     visits_count integer DEFAULT 0 NOT NULL,
     plannings_count integer DEFAULT 0 NOT NULL,
