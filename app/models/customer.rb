@@ -238,6 +238,15 @@ class Customer < ApplicationRecord
 
       copy.save! validate: Planner::Application.config.validate_during_duplication
       copy.reload
+
+      # Update counters
+      Customer.where(id: copy.id).update_all(
+        destinations_count: Destination.where(customer_id: copy.id).count,
+        plannings_count: Planning.where(customer_id: copy.id).count,
+        vehicles_count: Vehicle.where(customer_id: copy.id).count,
+        visits_count: Visit.joins(:destination).where(destinations: { customer_id: copy.id }).count
+      )
+      copy.reload
     })
   end
 
