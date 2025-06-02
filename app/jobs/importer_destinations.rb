@@ -379,8 +379,10 @@ class ImporterDestinations < ImporterBase
     @customer.reload
 
     # Update destinations_count and visits_count as activerecord callbacks are not called
-    @customer.update(
+    Customer.where(id: @customer.id).update_all(
       destinations_count: @customer.destinations.count,
+      plannings_count: @customer.plannings.count,
+      vehicles_count: @customer.vehicles.count,
       visits_count: Visit.joins(:destination).where(destinations: { customer_id: @customer.id }).count
     )
 
