@@ -118,11 +118,17 @@ class Zone < ApplicationRecord
     else
       begin
         valid_geom = feature.geometry.make_valid
-        raise InvalidGeometryError.new if valid_geom.to_s.match?(/multilinestring/i)
+        if valid_geom.to_s.match?(/multilinestring/i)
+          invalidity = 'MultilineString after validation'
+          raise InvalidGeometryError.new
+        elsif valid_geom.to_s.match(/[^)]\), \([^(]/)
+          invalidity = 'Self intersecting Polygon even after validation'
+          raise InvalidGeometryError.new
+        end
 
         valid_geom
       rescue RGeo::Error, InvalidGeometryError
-        raise Exceptions::PolygonValidityError.new("Failed to make valid a zone with: #{invalidity.class}")
+        raise Exceptions::PolygonValidityError.new("Failed to make valid a zone with: #{invalidity}")
       end
     end
   end
