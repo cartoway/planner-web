@@ -740,7 +740,7 @@ export function continuousListLoading(listRef, linkRef, loadingRef, offset) {
   window.addEventListener('load', loadNextPage);
 };
 
-export function updateSelectionCount(containerRef, selectorRef) {
+export function updateSelectionCount(containerRef, selectorRef, type = 'route') {
   var $select = $(selectorRef);
   var selectedValues = $select.val() || [];
 
@@ -751,12 +751,13 @@ export function updateSelectionCount(containerRef, selectorRef) {
 
   var text = '';
   if (selectedCount === 0) {
-    text = I18n.t('web.select2.route_none');
+    text = I18n.t(`web.select2.${type}_none`);
   } else if (selectedCount === 1) {
-    text = "1 " + I18n.t('web.select2.route_selected');
+    text = "1 " + I18n.t(`web.select2.${type}_selected`);
   } else {
-    text = selectedCount + " "  + I18n.t('web.select2.routes_selected');
+    text = selectedCount + " " + I18n.t(`web.select2.${type}s_selected`);
   }
+
   $('.select2-selection__rendered', containerRef).html(
     '<li class="select2-selection__choice"><span class="select2-selection__choice__display">' + text + '<span></li>'
   );

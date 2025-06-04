@@ -2827,6 +2827,55 @@ var plannings_index = function(params) {
 
 };
 
+var planning_statistics = function(params) {
+  var previousSelection = [];
+
+  $('#planning_tag_ids').select2({
+    dropdownParent: $('#planning_tag_ids').parent(),
+    closeOnSelect: false,
+    allowClear: true,
+    theme: 'bootstrap',
+    placeholder: I18n.t('web.select2.search_placeholder'),
+    templateSelection: selectFormatOption,
+    templateResult: selectFormatOption,
+  })
+  .off('select2:close select2:open select2:select select2:unselect')
+  .on('select2:open', function(e) {
+    previousSelection = $(this).val() || [];
+  })
+  .on('select2:select', function(e) {
+    selectGlobalActions($(this), e);
+  })
+  .on('select2:open', function(e) {
+    setTimeout(function() {
+      $('#route_selector .select2-results__option').each(function() {
+        var optionValue = $(this).attr('id').split('-').pop();
+        if (['clear', 'reverse', 'all'].includes(optionValue)) {
+          $(this).addClass('global');
+        }
+      });
+    }, 0);
+  })
+  .on('select2:select select2:unselect', function() {
+    updateSelectionCount('#tag_selector', '#planning_tag_ids', 'tag');
+  })
+  .on('select2:close', function(e) {
+    var selectedTags = $(this).val();
+
+    if (JSON.stringify(previousSelection)==JSON.stringify(selectedTags)) return;
+
+    $.ajax({
+      url: `/plannings/${params.planning_id}/statistics.js`,
+      data: { tag_ids: selectedTags.join(',') },
+      beforeSend: beforeSendWaiting,
+      error: function(xhr, status, error) {
+        ajaxError(xhr, status, error);
+      },
+      complete: completeAjaxMap
+    });
+  });
+};
+
 Paloma.controller('Plannings', {
   index: function() {
     plannings_index(this.params);
@@ -2845,5 +2894,8 @@ Paloma.controller('Plannings', {
   },
   show: function() {
     plannings_show(this.params);
+  },
+  statistics: function() {
+    planning_statistics(this.params);
   }
 });

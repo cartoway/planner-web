@@ -367,6 +367,17 @@ $sidebar-margins: 10px;
       }
 
       #planning {
+        .tag-info {
+          white-space: nowrap;
+          margin: 2px;
+          padding: 7px 6px 2px 6px;
+          text-overflow: ellipsis;
+          overflow: hidden;
+
+          .fa {
+            margin-right: 4px;
+          }
+        }
         .route-info {
           white-space: nowrap;
           margin: 2px;

@@ -120,33 +120,22 @@ class Route < ApplicationRecord
     vehicle_usage.default_work_time if vehicle_usage? && vehicle_usage.default_work_time
   end
 
-  def init_route_data
-    {
-      stop_distance: 0,
-      stop_no_path: false,
-      stop_out_of_drive_time: nil,
-      stop_out_of_work_time: nil,
-      out_of_max_ride_distance: nil,
-      out_of_max_ride_duration: nil,
-      emission: nil,
-      start: nil,
-      end: nil,
-      distance: 0,
-      drive_time: nil,
-      wait_time: nil,
-      visits_duration: nil,
-      quantities: nil,
-      revenue: nil,
-      cost_distance: nil,
-      cost_fixed: nil,
-      cost_time: nil
-    }
-  end
-
   def is_expired?
     return false if planning.date.nil? || stops.only_active_stop_visits.empty? || stops.only_active_stop_visits.last.time.nil?
 
     planning.date + stops.only_active_stop_visits.last.time.seconds + 12.hour < DateTime.now
+  end
+
+  def duration
+    visits_duration.to_i + wait_time.to_i + drive_time.to_i + (vehicle_usage ? vehicle_usage.default_service_time_start.to_i + vehicle_usage.default_service_time_end.to_i : 0)
+  end
+
+  def balance
+    [revenue || 0, total_cost].compact.reduce(&:-)
+  end
+
+  def total_cost
+    [cost_distance, cost_fixed, cost_time].compact.reduce(&:+)
   end
 
   def store_traces(geojson_tracks_store, trace, options = {})
@@ -906,6 +895,29 @@ class Route < ApplicationRecord
   def assign_defaults
     self.hidden = false
     self.locked = false
+  end
+
+  def init_route_data
+    {
+      stop_distance: 0,
+      stop_no_path: false,
+      stop_out_of_drive_time: nil,
+      stop_out_of_work_time: nil,
+      out_of_max_ride_distance: nil,
+      out_of_max_ride_duration: nil,
+      emission: nil,
+      start: nil,
+      end: nil,
+      distance: 0,
+      drive_time: nil,
+      wait_time: nil,
+      visits_duration: nil,
+      quantities: nil,
+      revenue: nil,
+      cost_distance: nil,
+      cost_fixed: nil,
+      cost_time: nil
+    }
   end
 
   def in_optimization_context?
