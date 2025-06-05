@@ -1,0 +1,31 @@
+{
+  "destinations": [
+    {
+      "ref": "1",
+      "name": "Destination 1",
+      "street": "chemin de la plage",
+      "postalcode": "75000",
+      "city": "Paris",
+      "country": "FR",
+      "visits": [
+        {
+          "ref": "a",
+          "ref_vehicle": "001",
+          "route": "route_one",
+          "duration": "1",
+          "quantities": [
+            {
+              "deliverable_unit_label": "kg",
+              "quantity": 1
+            }
+          ]
+        }
+      ],
+      "tags": ["foo"]
+    }
+  ],
+  "planning": {
+    "name": "MyPlan",
+    "ref": "Test-1"
+  }
+}
