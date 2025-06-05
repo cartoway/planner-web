@@ -24,7 +24,7 @@ class ImporterDestinations < ImporterBase
 
   def initialize(customer, planning_hash = nil)
     super customer
-    @planning_hash = planning_hash || {}
+    @provided_planning_attributes = planning_hash || {}
     @deliverable_units = customer&.deliverable_units || []
     @deliverable_unit_hash = customer&.deliverable_units&.map{ |d_u| [d_u.label, d_u] }.to_h || {}
   end
@@ -733,7 +733,7 @@ class ImporterDestinations < ImporterBase
       # Add visit to route if needed
       if row.key?(:route) && (visit_attributes[:id].nil? || !@visit_ids.include?(visit_attributes[:id]))
         ref_route = row[:route].blank? ? nil : row[:route].downcase # ref has to be nil for out-of-route
-        if row[:ref_vehicle]
+        if ref_route && row[:ref_vehicle]
           ref_vehicle = row[:ref_vehicle].gsub(%r{[\./\\]}, ' ').downcase
           if @plannings_routes[ref_planning][ref_route].key?(:ref_vehicle) &&
              @plannings_routes[ref_planning][ref_route][:ref_vehicle] != ref_vehicle ||
@@ -753,14 +753,14 @@ class ImporterDestinations < ImporterBase
   def prepare_plannings(name, _options)
     # Generate new plannings
     @plannings_routes.each{ |ref, routes_hash|
-      next if @planning_hash.empty? && ref.nil? && routes_hash.keys.compact.empty?
+      next if @provided_planning_attributes.empty? && ref.nil? && routes_hash.keys.compact.empty?
 
-      planning = @plannings_hash[ref] if ref
+      planning = ref ? @plannings_hash[ref] : @plannings_hash[@provided_planning_attributes[:ref]&.to_sym]
       unless planning
         attributes = @plannings_attributes[ref]
         planning = Planning.new(attributes)
       end
-      planning.assign_attributes(@planning_hash)
+      planning.assign_attributes(@provided_planning_attributes)
       unless planning.name
         planning.assign_attributes({
           name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
@@ -780,7 +780,7 @@ class ImporterDestinations < ImporterBase
       if !(planning.id ? planning.update_routes(routes_hash, recompute = true) : planning.set_routes(routes_hash, false, true))
         raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if routes_hash.keys.size > planning.routes.size || routes_hash.keys.compact.size > @customer.max_vehicles
       end
-      planning.split_by_zones(nil) if @planning_hash.key?(:zonings) || @planning_hash.key?(:zoning_ids)
+      planning.split_by_zones(nil) if @provided_planning_attributes.key?(:zonings) || @provided_planning_attributes.key?(:zoning_ids)
       @plannings.push(planning)
     }
 

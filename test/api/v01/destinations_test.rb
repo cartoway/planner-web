@@ -1083,4 +1083,89 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
       assert_equal 409, last_response.status, last_response.body
     end
   end
+
+  test 'should import sequential destinations in same planning' do
+    Planning.all.each(&:destroy)
+    @customer.delete_all_destinations
+    @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}
+    @customer.reload
+
+    # Import and create a new planning with one destination
+    assert_difference('Planning.count', 1) do
+      assert_difference('Destination.count', 1) do
+        put api(), { replace: true }.merge(JSON.parse(File.read('test/fixtures/files/import_destinations_sequential_1.json')))
+        assert_equal 200, last_response.status, last_response.body
+      end
+    end
+
+    @customer.reload
+    planning = @customer.plannings.find_by(ref: 'test-1')
+    route = planning.routes.find{ |r| r.vehicle_usage&.vehicle&.ref == '001' }
+    assert planning
+    assert_equal 2, route.stops.count # 1 + rest
+
+    # Import and add a new destination to the same planning
+    assert_difference('Planning.count', 0) do
+      assert_difference('Destination.count', 1) do
+        put api(), { replace: false }.merge(JSON.parse(File.read('test/fixtures/files/import_destinations_sequential_2.json')))
+        assert_equal 200, last_response.status, last_response.body
+      end
+    end
+
+    @customer.reload
+    planning.reload
+    route.reload
+    assert_equal 3, route.stops.size # 2 + rest
+
+    # The rest is in first position
+    assert_equal 'a', route.stops[1].visit.ref
+    assert_equal 'b', route.stops[2].visit.ref
+  end
+
+  test 'should import sequential destinations in same planning in no route' do
+    Planning.all.each(&:destroy)
+    @customer.delete_all_destinations
+    @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}
+    @customer.reload
+
+    # Import and create a new planning with one destination in the out_route
+    assert_difference('Planning.count', 1) do
+      assert_difference('Destination.count', 1) do
+        plan_hash = JSON.parse(File.read('test/fixtures/files/import_destinations_sequential_1.json'))
+        plan_hash["destinations"].each{ |dest|
+          # remove the route field
+          dest["visits"].first.delete("route")
+        }
+        put api(), { replace: true }.merge(plan_hash)
+        assert_equal 200, last_response.status, last_response.body
+      end
+    end
+
+    @customer.reload
+    planning = @customer.plannings.find_by(ref: 'test-1')
+    out_route = planning.routes.find{ |r| r.vehicle_usage.nil? }
+    assert planning
+    assert_equal 1, out_route.stops.count # 1 + rest
+
+    # Import and add a new destination to the same planning in the out_route
+    assert_difference('Planning.count', 0) do
+      assert_difference('Destination.count', 1) do
+        plan_hash = JSON.parse(File.read('test/fixtures/files/import_destinations_sequential_2.json'))
+        # remove the route field
+        plan_hash["destinations"].each{ |dest|
+          dest["visits"].first.delete("route")
+        }
+        put api(), { replace: false }.merge(plan_hash)
+        assert_equal 200, last_response.status, last_response.body
+      end
+    end
+
+    @customer.reload
+    planning.reload
+    out_route.reload
+    assert_equal 2, out_route.stops.size
+
+    assert_equal 'a', out_route.stops[0].visit.ref
+    assert_equal 'b', out_route.stops[1].visit.ref
+  end
 end
