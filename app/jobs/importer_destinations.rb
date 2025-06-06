@@ -755,7 +755,7 @@ class ImporterDestinations < ImporterBase
     @plannings_routes.each{ |ref, routes_hash|
       next if @provided_planning_attributes.empty? && ref.nil? && routes_hash.keys.compact.empty?
 
-      planning = ref ? @plannings_hash[ref] : @plannings_hash[@provided_planning_attributes[:ref]&.to_sym]
+      planning = ref ? @plannings_hash[ref] : @plannings_hash[@provided_planning_attributes[:ref]&.downcase&.to_sym]
       unless planning
         attributes = @plannings_attributes[ref]
         planning = Planning.new(attributes)

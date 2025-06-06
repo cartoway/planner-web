@@ -1099,7 +1099,7 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
     end
 
     @customer.reload
-    planning = @customer.plannings.find_by(ref: 'test-1')
+    planning = @customer.plannings.find_by(ref: 'Test-1')
     route = planning.routes.find{ |r| r.vehicle_usage&.vehicle&.ref == '001' }
     assert planning
     assert_equal 2, route.stops.count # 1 + rest
@@ -1142,7 +1142,7 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
     end
 
     @customer.reload
-    planning = @customer.plannings.find_by(ref: 'test-1')
+    planning = @customer.plannings.find_by(ref: 'Test-1')
     out_route = planning.routes.find{ |r| r.vehicle_usage.nil? }
     assert planning
     assert_equal 1, out_route.stops.count # 1 + rest
