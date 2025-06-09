@@ -1768,7 +1768,8 @@ en:
       export:
         icalendar: Calendar iCal
         icalendar_email: Calendar iCal by E-Mail
-        spreadsheet: Spreadsheet CSV
+        spreadsheet: Route details CSV
+        summary_spreadsheet: Summary CSV
         none_planning: Please select at least one plan to export
       over_max_limit: >-
         You have reached the plans number limit for your account (Account Limit:
@@ -1850,7 +1851,8 @@ en:
         csv:
           success: CSV file successfully exported
         print: Print
-        spreadsheet: Spreadsheet CSV
+        spreadsheet: Route details CSV
+        summary_spreadsheet: Summary CSV
         gpx_route: GPX Route
         gpx_track: GPX Track
         kmz_track: KMZ Track
@@ -2161,6 +2163,23 @@ en:
       status_updated_at: time status changed
       eta: eta
       custom_attributes_visit: visit attributes
+      stop_size: number of stops
+      stop_active_size: number of active stops
+      time: total time
+      distance: total distance
+      emission: emission
+      start: start
+      end: end
+      visits_duration: visit duration
+      wait_time: waiting time
+      drive_time: drive time
+      out_of_window: out of time window
+      out_of_max_ride_distance: out of maximum ride distance
+      out_of_max_ride_duration: out of maximum ride duration
+      cost_distance: cost per distance
+      cost_fixed: fixed cost
+      cost_time: cost per time
+      revenue: revenue
     form:
       ref_help: A free reference
       begin_end_date: Validity period
@@ -3026,6 +3045,8 @@ en:
         The date of use is exceeded the %{date}. If you want to renew your
         subscription, please contact %{reseller}.
   helpers:
+    export:
+      summary: summary
     submit:
       create: 'Create %{model}'
       update: 'Save %{model}'

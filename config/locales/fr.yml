@@ -1845,7 +1845,8 @@ fr:
       export:
         icalendar: Agenda iCal
         icalendar_email: Agenda iCal par email
-        spreadsheet: Tableur CSV
+        spreadsheet: Détail tournées CSV
+        summary_spreadsheet: Récapitulatif CSV
         none_planning: Veuillez sélectionner au moins un plan à exporter
       over_max_limit: >-
         Vous avez atteint la limite de plans autorisés pour votre compte
@@ -1934,7 +1935,8 @@ fr:
         csv:
           success: CSV exporté avec succès
         print: Imprimer
-        spreadsheet: Tableur CSV
+        spreadsheet: Détail tournées CSV
+        summary_spreadsheet: Récapitulatif CSV
         gpx_route: Route GPX
         gpx_track: Tracé GPX
         kmz_track: Tracé KMZ
@@ -2260,6 +2262,23 @@ fr:
       status_updated_at: horaire statut
       eta: eta
       custom_attributes_visit: attributs visite
+      stop_size: nombre d'arrêts
+      stop_active_size: nombre d'arrêts actifs
+      time: durée total
+      distance: distance totale
+      emission: émission
+      start: début
+      end: fin
+      visits_duration: durée visite
+      wait_time: temps d'attente
+      drive_time: durée conduite
+      out_of_window: hors amplitude horaire
+      out_of_max_ride_distance: hors distance trajet maximale
+      out_of_max_ride_duration: hors durée trajet maximale
+      cost_distance: coût kilométrique
+      cost_fixed: coût fixe
+      cost_time: coût horaire
+      revenue: revenu
     form:
       ref_help: Référence libre
       begin_end_date: Période de validité
@@ -3158,6 +3177,8 @@ fr:
         Votre période d'utilisation a expiré le %{date}. Si vous souhaitez le
         renouveler vous pouvez contacter %{reseller}.
   helpers:
+    export:
+      summary: résumé
     submit:
       create: 'Créer %{model}'
       update: 'Enregistrer %{model}'
