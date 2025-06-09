@@ -113,7 +113,6 @@ class VehicleUsagesController < ApplicationController
         :max_ride_distance,
         :max_ride_duration,
         capacities: current_user.customer.deliverable_units.map { |du| du.id.to_s },
-        capacities_initial_loads: current_user.customer.deliverable_units.map { |du| du.id.to_s },
         router_options: [
           :time,
           :distance,

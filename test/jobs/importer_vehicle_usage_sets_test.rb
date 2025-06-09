@@ -136,11 +136,6 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
         assert_equal 10, imported_data.first[:capacities][gallon_id]
         assert_equal 30, imported_data.last[:capacities][ton_id]
         assert_equal 60, imported_data.last[:capacities][gallon_id]
-
-        assert_equal 0, imported_data.first[:capacities_initial_loads][ton_id]
-        assert_equal 1, imported_data.first[:capacities_initial_loads][gallon_id]
-        assert_equal 2, imported_data.last[:capacities_initial_loads][ton_id]
-        assert_equal 3, imported_data.last[:capacities_initial_loads][gallon_id]
       end
     end
   end

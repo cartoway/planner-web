@@ -238,13 +238,4 @@ class VehicleTest < ActiveSupport::TestCase
     assert_equal customer.vehicles[vehicle_size].color, COLORS_TABLE[vehicle_size]
     assert_equal customer.vehicles[vehicle_size + 1].color, COLORS_TABLE[vehicle_size + 1]
   end
-
-  test 'should serialize capacities_initial_loads' do
-    vehicle = vehicles(:vehicle_one)
-    vehicle.capacities_initial_loads = { 1 => 10.5 }
-    vehicle.save
-    vehicle.reload
-
-    assert_equal({ 2 => nil, 1 => 10.5 }, vehicle.default_capacities_initial_loads)
-  end
 end

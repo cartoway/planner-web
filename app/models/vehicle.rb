@@ -36,7 +36,6 @@ class Vehicle < ApplicationRecord
 
   enum router_dimension: Router::DIMENSION
   serialize :capacities, DeliverableUnitQuantity
-  serialize :capacities_initial_loads, DeliverableUnitInitialLoad
 
   include HashBoolAttr
   store_accessor :router_options, :time, :distance, :avoid_zones, :isochrone, :isodistance, :traffic, :track, :motorway, :toll, :low_emission_zone, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction
@@ -178,35 +177,16 @@ class Vehicle < ApplicationRecord
     @default_capacities
   end
 
-  def default_capacities_initial_loads
-    @default_capacities_initial_loads ||= Hash[customer.deliverable_units.collect{ |du|
-      [du.id, capacities_initial_loads && capacities_initial_loads[du.id] ? capacities_initial_loads[du.id] : du.default_initial_load]
-    }]
-    @default_capacities_initial_loads
-  end
-
   def default_capacities?
     default_capacities && default_capacities.values.any?{ |q| q && q > 0 }
-  end
-
-  def default_capacities_initial_loads?
-    default_capacities_initial_loads && default_capacities_initial_loads.values.any?{ |q| q && q > 0 }
   end
 
   def capacities?
     capacities && capacities.values.any?{ |q| q }
   end
 
-  def capacities_initial_loads?
-    capacities_initial_loads && capacities_initial_loads.values.any?{ |q| q }
-  end
-
   def capacities_changed?
     !capacities.empty? ? capacities.any?{ |i, q| q != capacities_was[i] } : !capacities_was.empty?
-  end
-
-  def capacities_initial_loads_changed?
-    !capacities_initial_loads.empty? ? capacities_initial_loads.any?{ |i, q| q != capacities_initial_loads_was[i] } : !capacities_initial_loads_was.empty?
   end
 
   def update_tags_track(_tag)

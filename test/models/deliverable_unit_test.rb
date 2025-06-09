@@ -51,21 +51,8 @@ class DeliverableUnitTest < ActiveSupport::TestCase
   end
 
   test 'should save with localized attributes' do
-    unit = customers(:customer_one).deliverable_units.build(default_quantity: '1,0', default_capacity: '10,0', optimization_overload_multiplier: '0,1', default_initial_load: '1,0')
+    unit = customers(:customer_one).deliverable_units.build(default_quantity: '1,0', default_capacity: '10,0', optimization_overload_multiplier: '0,1')
     assert unit.save
     assert_equal 1, unit.default_quantity
-    assert_equal 1, unit.default_initial_load
-  end
-
-  test 'should validate default_initial_load is greater than or equal to 0' do
-    deliverable_unit = deliverable_units(:deliverable_unit_one_one)
-    deliverable_unit.default_initial_load = -1
-    assert_not deliverable_unit.valid?
-  end
-
-  test 'should allow nil default_initial_load' do
-    deliverable_unit = deliverable_units(:deliverable_unit_one_one)
-    deliverable_unit.default_initial_load = nil
-    assert deliverable_unit.valid?
   end
 end

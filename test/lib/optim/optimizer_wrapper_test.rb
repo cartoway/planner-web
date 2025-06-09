@@ -339,20 +339,4 @@ class OptimizerWrapperTest < ActionController::TestCase
     vrp = @optim.build_vrp(@planning, @planning.routes, **{ cost_fixed: 10 })
     assert_equal 10, vrp[:vehicles].first[:cost_fixed]
   end
-
-  test 'includes initial load in unit configuration' do
-    routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
-    routes_with_vehicles.first.vehicle_usage.vehicle.capacities_initial_loads = { @deliverable_unit.id => 10.5 }
-
-    vrp = @optim.build_vrp(@planning, @planning.routes)
-    assert_equal 10.5, vrp[:vehicles].first[:capacities][0][:initial]
-  end
-
-  test 'does not include initial load when capacity is ignored' do
-    routes_with_vehicles = @planning.routes.select(&:vehicle_usage)
-    routes_with_vehicles.first.vehicle_usage.vehicle.capacities_initial_loads = { @deliverable_unit.id => 10.5 }
-
-    vrp = @optim.build_vrp(@planning, @planning.routes, **{ ignore: [{ unit_id: @deliverable_unit.id }] })
-    assert_nil vrp[:vehicles].first[:capacities][0][:initial]
-  end
 end
