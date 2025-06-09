@@ -25,8 +25,7 @@
           .col-md-offset-2.col-md-8.field
             - visit.destination.customer.deliverable_units.each do |du|
               .input-group{"data-deliverable_unit_id" => "#{du.id}"}
-                = number_field "destination[visits_attributes][#{i}][quantities]", du.id, value: visit.quantities && visit.quantities[du.id], placeholder: du.default_quantity && t('.quantities.default', n: du.localized_default_quantity), class: 'form-control width_1_3', step: 'any'
-                = select_tag "destination[visits_attributes][#{i}][quantities_operations][#{du.id}]", options_for_select([[t('.quantities.fill'), :fill], [t('.quantities.empty'), :empty]], visit.quantities_operations[du.id]), include_blank: true, class: 'form-control width_1_3 quantities_operations', 'data-toggle' => 'popover', 'data-trigger' => 'focus', title: t('.quantities.quantities_operations_title'), 'data-content' => t('.quantities.quantities_operations_help'), 'data-placement' => 'top'
+                = number_field "destination[visits_attributes][#{i}][quantities]", du.id, value: visit.quantities && visit.quantities[du.id], placeholder: du.default_quantity && t('.quantities.default', n: du.localized_default_quantity), class: 'form-control width_2_3', step: 'any'
                 = text_field "destination[visits_attributes][#{i}][quantities_unit]", du.id, value: du.label, class: 'form-control width_1_3', placeholder: t('deliverable_units.form.label_placeholder'), disabled: true
                 %span.input-group-addon
                   %i{class: "fa #{du.default_icon} fa-fw"}

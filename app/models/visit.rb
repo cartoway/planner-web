@@ -29,7 +29,6 @@ class Visit < ApplicationRecord
 
   delegate :customer, :lat, :lng, :name, :street, :postalcode, :city, :state, :country, :detail, :comment, :phone_number, to: :destination
   serialize :quantities, DeliverableUnitQuantity
-  serialize :quantities_operations, DeliverableUnitOperation
 
   nilify_blanks
   validates :destination, presence: true
@@ -70,7 +69,7 @@ class Visit < ApplicationRecord
   validate_consistency([:tags]) { |visit| visit.destination.try :customer_id }
 
   before_save :update_tags, unless: :internal_skip
-  before_save :create_orders, :update_quantities
+  before_save :create_orders
   before_update :update_outdated, unless: :outdate_skip
   after_save -> { @tag_ids_changed = false }
 
@@ -93,8 +92,6 @@ class Visit < ApplicationRecord
       def copy.create_orders; end
 
       def copy.update_outdated; end
-
-      def copy.update_quantities; end
     })
   end
 
@@ -157,17 +154,15 @@ class Visit < ApplicationRecord
   def api_attributes
     visit_attributes = attributes
 
-    # Deserialize quantities and quantities_operations
+    # Deserialize quantities
     if destination&.customer&.deliverable_units
       visit_attributes['quantities'] = destination.customer.deliverable_units.map { |du|
-        next if !quantities.key?(du.id) && !quantities_operations.key?(du.id)
+        next if !quantities.key?(du.id)
         {
           deliverable_unit_id: du.id,
-          quantity: quantities[du.id],
-          operation: quantities_operations[du.id]
+          quantity: quantities[du.id]
         }.delete_if { |_k, v| v.nil? || v == "" }
       }.compact
-      visit_attributes.delete('quantities_operations')
     end
 
     visit_attributes
@@ -290,15 +285,6 @@ class Visit < ApplicationRecord
     if destination.customer && new_record?
       destination.customer.order_arrays.each{ |order_array|
         order_array.add_visit(self)
-      }
-    end
-  end
-
-  def update_quantities
-    if quantities_changed? || quantities_operations_changed?
-      quantities_operations.each{ |k, v|
-        quantities[k] = -quantities[k] if v == 'empty' && quantities[k] && quantities[k] > 0
-        quantities[k] = 0 if !quantities[k] && (v == 'fill' || v == 'empty')
       }
     end
   end

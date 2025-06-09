@@ -239,8 +239,6 @@ en:
         icon: Icon
         default_quantity: Default quantity
         default_capacity: Default capacity
-        operation_fill: Fill
-        operation_empty: Empty
         optimization_overload_multiplier: Overload coefficient
       destination:
         ref: Reference
@@ -1379,11 +1377,6 @@ en:
       duration_desc: visit duration
       quantity: quantity
       quantity_desc: number of units to deliver.
-      quantity_operation: operation
-      quantity_operation_desc: specify to fill or empty vehicle.
-      quantity_operation_format: '[fill | empty]'
-      quantity_operation_fill: fill
-      quantity_operation_empty: empty
       quantity1_1: quantity 1_1
       quantity1_1_desc: 'deprecated: use "quantities" instead.'
       quantity1_2: quantity 1_2
@@ -2138,7 +2131,6 @@ en:
       duration: visit duration
       destination_duration: destination duration
       quantity: quantity
-      quantity_operation: operation
       orders: orders
       active: active
       time_window_start_1: open 1
@@ -2793,8 +2785,6 @@ en:
         fill: Fill (at least)
         empty: Empty (at least)
         default: '%{n} (default value)'
-        quantities_operations_title: Fill/empty
-        quantities_operations_help: Select only if you need to fill/empty full quantity in vehicle
         help: >-
           Quantities to be delivered. In case of fill / empty, optimization
           engine will decide itself quantities, if you specify a value it will

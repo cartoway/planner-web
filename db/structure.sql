@@ -1356,7 +1356,6 @@ CREATE TABLE public.visits (
     duration integer,
     time_window_start_2 integer,
     time_window_end_2 integer,
-    quantities_operations public.hstore,
     priority integer,
     force_position integer DEFAULT 0,
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
@@ -3140,4 +3139,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250527114419'),
 ('20250527121446'),
 ('20250521075418'),
-('20250609093623');
+('20250609093623'),
+('20250609122139');

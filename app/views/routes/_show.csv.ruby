@@ -55,8 +55,9 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
   row.merge!(Hash[route.planning.customer.enable_orders ?
     [[:orders, nil]] :
     route.planning.customer.deliverable_units.flat_map{ |du|
-      [[('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, nil],
-      [('quantity_operation' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, nil]]
+      [
+        [('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, nil]
+      ]
     }
   ])
 
@@ -132,8 +133,7 @@ route.stops.each { |stop|
     row.merge!(Hash[route.planning.customer.enable_orders ?
       [[:orders, stop.is_a?(StopVisit) && stop.order && stop.order.products.length > 0 ? stop.order.products.collect(&:code).join('/') : nil]] :
       route.planning.customer.deliverable_units.flat_map{ |du|
-        [[('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.quantities[du.id] : nil],
-        [('quantity_operation' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.quantities_operations[du.id] && I18n.t("destinations.import_file.quantity_operation_#{stop.visit.quantities_operations[du.id]}") : nil]]
+        [[('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.quantities[du.id] : nil]]
       }
     ])
     row.merge!(
@@ -203,8 +203,9 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
   row.merge!(Hash[route.planning.customer.enable_orders ?
     [[:orders, nil]] :
     route.planning.customer.deliverable_units.flat_map{ |du|
-      [[('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, nil],
-      [('quantity_operation' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, nil]]
+      [
+        [('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, nil]
+      ]
     }
   ])
 

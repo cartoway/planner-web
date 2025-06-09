@@ -37,7 +37,7 @@ class DestinationsControllerTest < ActionController::TestCase
     get :index, params: { format: :excel }
     assert_response :success
     assert_not_nil assigns(:destinations)
-    assert_equal "b;destination_one;Rue des Lilas;MyString;33200;Bordeau;;49.1857;-0.3735;;;;MyString;MyString;\"\";;\"\";b;00:05:33;10:00;11:00;;;4;;tag1;neutre;2.5;;;\r".encode("iso-8859-1"), response.body.split("\n").find{ |l| l.start_with? 'b;destination_one' }
+    assert_equal "b;destination_one;Rue des Lilas;MyString;33200;Bordeau;;49.1857;-0.3735;;;;MyString;MyString;\"\";;\"\";b;00:05:33;10:00;11:00;;;4;;tag1;neutre;2.5;\r".encode("iso-8859-1"), response.body.split("\n").find{ |l| l.start_with? 'b;destination_one' }
   end
 
   test 'should get index in excel with order array' do

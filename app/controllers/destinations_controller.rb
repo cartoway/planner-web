@@ -227,7 +227,7 @@ class DestinationsController < ApplicationController
     end
     p = ActionController::Parameters.new(p)
 
-    o = p.require(:destination).permit(
+    p.require(:destination).permit(
       :ref,
       :name,
       :street,
@@ -263,16 +263,9 @@ class DestinationsController < ApplicationController
         :_destroy,
         tag_ids: [],
         quantities: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
-        quantities_operations: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
         custom_attributes: current_user.customer.custom_attributes.for_visit.map{ |c_u| c_u.name.to_sym }
       ]
     )
-    o[:visits_attributes].each do |_k, v|
-      v[:quantities_operations].each{ |k, qo|
-        v[:quantities][k] = "#{-v[:quantities][k].to_f}" if v[:quantities][k].to_f > 0 && qo.to_sym == :empty
-      } if v && v[:quantities_operations]
-    end if o[:visits_attributes]
-    o
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.

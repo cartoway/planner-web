@@ -199,8 +199,6 @@ de:
         icon: Symbol
         default_quantity: Standardmenge
         default_capacity: Standardkapazität
-        operation_fill: Ausfüllen
-        operation_empty: Leer
         optimization_overload_multiplier: Überladungskoeffizient
       destination:
         ref: Referenz
@@ -1211,11 +1209,6 @@ de:
       duration_desc: Verweildauer
       quantity: Menge
       quantity_desc: Anzahl der zu liefernden Einheiten.
-      quantity_operation: Vorgang
-      quantity_operation_desc: 'Geben Sie an, ob das Fahrzeug befüllt oder entleert werden soll.'
-      quantity_operation_format: '[ausfüllen | leeren]'
-      quantity_operation_fill: füllen
-      quantity_operation_empty: leer
       quantity1_1: Menge 1_1
       quantity1_1_desc: 'veraltet: Verwenden Sie stattdessen "Mengen".'
       quantity1_2: Menge 1_2
@@ -2494,10 +2487,6 @@ de:
         fill: 'Füllen Sie (mindestens) aus:'
         empty: Leer (mindestens)
         default: '%{n} (Standardwert)'
-        quantities_operations_title: Befüllen/Leeren
-        quantities_operations_help: >-
-          Nur auswählen, wenn Sie die gesamte Menge in das Fahrzeug füllen bzw.
-          aus dem Fahrzeug laden müssen
         help: >-
           Zu liefernde Mengen. Im Falle von Füllen / Entleeren entscheidet die
           Optimierungsfunktion selbst über die Mengen. Wenn Sie einen Wert

@@ -37,9 +37,8 @@ class V01::Entities::Visit < Grape::Entity
     m.destination.customer.deliverable_units.map{ |du|
       {
         deliverable_unit_id: du.id,
-        quantity: m.quantities[du.id],
-        operation: m.quantities_operations[du.id]
-      } if m.quantities[du.id] || m.quantities_operations[du.id]
+        quantity: m.quantities[du.id]
+      } if m.quantities[du.id]
     }.compact
   }
   expose(:time_window_start_1, documentation: { type: DateTime }) { |m| m.time_window_start_1_absolute_time_with_seconds }

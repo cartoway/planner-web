@@ -281,9 +281,7 @@ class OptimizerWrapper
         quantities: stop.visit&.default_quantities&.map{ |k, v|
           v ? {
             unit_id: "u#{k}",
-            value: v,
-            fill: stop.visit.quantities_operations[k] == 'fill' || nil,
-            empty: stop.visit.quantities_operations[k] == 'empty' || nil
+            value: v
           }.compact : nil
         }&.compact || [],
         skills: (options[:use_skills] && tags_label) ? (options[:problem_skills] & tags_label) : nil
@@ -405,7 +403,6 @@ class OptimizerWrapper
     services_with_negative_quantities = []
     stops.each{ |stop|
       next if stop.is_a?(StopRest) ||
-              stop.visit.quantities_operations&.values&.none?{ |q| q == 'empty' } &&
               stop.visit.default_quantities&.values&.none?{ |q| q && q < 0 }
 
       services_with_negative_quantities.push("s#{stop.id}")
