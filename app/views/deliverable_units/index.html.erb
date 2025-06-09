@@ -25,7 +25,6 @@
       <th><%= t 'activerecord.attributes.deliverable_unit.ref' %></th>
       <th><%= t 'activerecord.attributes.deliverable_unit.icon' %></th>
       <th><%= t 'activerecord.attributes.deliverable_unit.default_quantity' %></th>
-      <th><%= t 'activerecord.attributes.deliverable_unit.default_initial_load' %></th>
       <th><%= t 'activerecord.attributes.deliverable_unit.default_capacity' %></th>
       <th><%= t 'activerecord.attributes.deliverable_unit.optimization_overload_multiplier' %></th>
       <th></th>
@@ -40,7 +39,6 @@
         <td><%= deliverable_unit.ref %></td>
         <td><%= "<i class=\"fa fa-fw #{deliverable_unit.default_icon}\"></i>".html_safe %></td>
         <td><%= deliverable_unit.localized_default_quantity %></td>
-        <td><%= deliverable_unit.localized_default_initial_load %></td>
         <td><%= deliverable_unit.localized_default_capacity %></td>
         <td><%= deliverable_unit.default_optimization_overload_multiplier == 0 ? t('deliverable_units.form.optimization_overload_multiplier_no') : deliverable_unit.default_optimization_overload_multiplier == -1 ? t('deliverable_units.form.optimization_overload_multiplier_ignore') : deliverable_unit.localized_optimization_overload_multiplier %></td>
         <td class="text-right">

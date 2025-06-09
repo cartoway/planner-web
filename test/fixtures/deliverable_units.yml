@@ -7,7 +7,6 @@ deliverable_unit_one_one:
   default_quantity: 1
   default_capacity:
   optimization_overload_multiplier:
-  default_initial_load:
   customer: customer_one
 
 deliverable_unit_one_two:
@@ -17,7 +16,6 @@ deliverable_unit_one_two:
   default_quantity:
   default_capacity:
   optimization_overload_multiplier:
-  default_initial_load:
   customer: customer_one
 
 deliverable_unit_one_other_one:
@@ -27,7 +25,6 @@ deliverable_unit_one_other_one:
   default_quantity: 1
   default_capacity:
   optimization_overload_multiplier: 1
-  default_initial_load:
   customer: customer_one_other
 
 deliverable_unit_two_one:
@@ -37,5 +34,4 @@ deliverable_unit_two_one:
   default_quantity: 1
   default_capacity: 10
   optimization_overload_multiplier: 1
-  default_initial_load:
   customer: customer_two

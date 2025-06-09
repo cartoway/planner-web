@@ -329,7 +329,6 @@ class OptimizerWrapper
         ignore_capacity = options[:ignore].find{ |iom| iom[:unit_id] == k } if options[:ignore]
         {
           unit_id: "u#{k}",
-          initial: ignore_capacity ? nil : vehicle.default_capacities_initial_loads[k],
           limit: ignore_capacity ? nil : v,
           overload_multiplier: strict_capacity ? nil : (planning.customer.deliverable_units.find{ |du| du.id == k }.optimization_overload_multiplier || Planner::Application.config.optimize_overload_multiplier)
         }

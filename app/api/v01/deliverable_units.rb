@@ -24,7 +24,7 @@ class V01::DeliverableUnits < Grape::API
     def deliverable_unit_params
       p = ActionController::Parameters.new(params)
       p = p[:deliverable_unit] if p.key?(:deliverable_unit)
-      p.permit(:label, :ref, :default_quantity, :optimization_overload_multiplier, :icon, :default_initial_load)
+      p.permit(:label, :ref, :default_quantity, :optimization_overload_multiplier, :icon)
     end
   end
 
