@@ -278,7 +278,6 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
       if options[:json_import]
         optional :deliverable_unit_label, type: String
       end
-      optional :operation, type: String, values: %w[fill empty]
       requires :quantity, type: Float, coerce_with: CoerceFloatString
       at_least_one_of :deliverable_unit_id, :deliverable_unit_label
     end

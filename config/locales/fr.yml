@@ -239,8 +239,6 @@ fr:
         icon: Icône
         default_quantity: Quantité par défaut
         default_capacity: Capacité par défaut
-        operation_fill: Remplissage
-        operation_empty: Vidage
         optimization_overload_multiplier: Coefficient dépassement chargement
       destination:
         ref: Référence
@@ -1421,11 +1419,6 @@ fr:
       destination_duration_desc: durée commune des visites à une même destination
       quantity: quantité
       quantity_desc: quantité d'unités à livrer.
-      quantity_operation: opération
-      quantity_operation_desc: demander à vider ou remplir le véhicule.
-      quantity_operation_format: '[remplir | vider]'
-      quantity_operation_fill: remplir
-      quantity_operation_empty: vider
       quantity1_1: quantité 1_1
       quantity1_1_desc: 'déprécié : utiliser « quantités » à la place.'
       quantity1_2: quantité 1_2
@@ -2235,7 +2228,6 @@ fr:
       duration: durée visite
       destination_duration: durée destination
       quantity: quantité
-      quantity_operation: opération
       orders: commandes
       active: livré
       time_window_start_1: horaire début 1
@@ -2909,10 +2901,6 @@ fr:
         fill: Remplir véhicule (d'au moins)
         empty: Vider véhicule (à partir de)
         default: '%{n} (valeur par défaut)'
-        quantities_operations_title: Remplissage/vidage
-        quantities_operations_help: >-
-          Ne sélectionner que si vous voulez remplir/vider le véhicule en
-          totalité lors de cette visite
         help: >-
           Quantités à livrer. Dans le cas d'un remplissage ou d'un vidage,
           l'optimisation déterminera elle-même la quantité, si vous précisez une

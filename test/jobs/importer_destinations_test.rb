@@ -148,7 +148,6 @@ class ImporterDestinationsTest < ActionController::TestCase
 
           visit = Visit.last
           assert_equal 1.23, visit.quantities[1]
-          assert_equal 'fill', visit.quantities_operations[1]
           assert_nil visit.priority
 
           stop = Planning.last.routes.collect{ |r| r.stops.find{ |s| s.is_a?(StopVisit) && s.visit.destination.name == 'BF' } }.compact.first

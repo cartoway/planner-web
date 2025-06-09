@@ -1494,15 +1494,10 @@ pt:
       missing_location: '"localidade / código postal" ou "lat / long" em falta.'
       invalid_numeric_value: 'valor numérico «%{value}» invalido.'
       check_custom_columns: Verifique a definição das colunas a importar.
-      quantity_operation_format: '[preencher | esvaziar]'
-      quantity_operation_fill: preencher
-      quantity_operation_empty: esvaziar
       priority: prioridade
       priority_desc: >-
         prioridade de inclusão durante otimização, de -4 (mínimo) até 4
         (màximo).
-      quantity_operation: operação
-      quantity_operation_desc: especifique se é necessàrio preencher ou esvaziar o veículo.
     reverse_geocoding:
       apply: Aplicar novo endereço
   index:

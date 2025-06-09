@@ -187,7 +187,6 @@ class Customer < ApplicationRecord
         destination.visits.each{ |visit|
           visit.tags = visit.tags.collect{ |tag| tags_map[tag] }
           visit.quantities = Hash[visit.quantities.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
-          visit.quantities_operations = Hash[visit.quantities_operations.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
           visit.force_check_consistency = true
           visit.save! validate: Planner::Application.config.validate_during_duplication
         }
@@ -230,7 +229,7 @@ class Customer < ApplicationRecord
       column_def = copy.advanced_options.dig('import', 'destinations', 'spreadsheetColumnsDef')
       if column_def.present?
         column_def.keys.select{ |key| key.start_with?('quantity') }.each do |key|
-          prefix = key.start_with?('quantity_operation') ? 'quantity_operation' : 'quantity'
+          prefix = 'quantity'
           d_id = deliverable_unit_ids_map[key.delete_prefix(prefix).to_i].id
           column_def["#{prefix}#{d_id}"] = column_def.delete(key)
         end
