@@ -1,8 +1,9 @@
 module PlanningExport
   extend ActiveSupport::Concern
 
-  def export_filename(planning, ref)
+  def export_filename(planning, ref, options = {})
     array = []
+    array << I18n.t('helpers.export.summary') if options[:summary]
     array << planning.name
     array << ref
     array << planning.order_array.name if planning.customer.enable_orders && planning.order_array

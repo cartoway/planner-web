@@ -636,12 +636,12 @@ class PlanningsController < ApplicationController
   end
 
   def export_params
-    params.permit(:columns, :skips, :stops)
+    params.permit(:columns, :skips, :stops, :summary)
   end
 
   def filename
     if @planning
-      format_filename(export_filename(@planning, @planning.ref))
+      format_filename(export_filename(@planning, @planning.ref, summary: @is_summary))
     else
       format_filename(I18n.t('plannings.menu.plannings') + '_' + I18n.l(Time.now, format: :datepicker))
     end
@@ -710,6 +710,33 @@ class PlanningsController < ApplicationController
     }
   end
 
+  def export_summary_columns
+    [
+      :ref_planning,
+      :planning,
+      :planning_date,
+      :route,
+      :vehicle,
+      :stop_size,
+      :stop_active_size,
+      :time,
+      :distance,
+      :emission,
+      :start,
+      :end,
+      :visits_duration,
+      :wait_time,
+      :drive_time,
+      :out_of_window,
+      :out_of_max_ride_distance,
+      :out_of_max_ride_duration,
+      :cost_distance,
+      :cost_fixed,
+      :cost_time,
+      :revenue
+    ]
+  end
+
   def capabilities
     @isochrone = [[@planning.vehicle_usage_set, Zoning.new.isochrone?(@planning.vehicle_usage_set, false)]]
     @isodistance = [[@planning.vehicle_usage_set, Zoning.new.isodistance?(@planning.vehicle_usage_set, false)]]
@@ -719,7 +746,8 @@ class PlanningsController < ApplicationController
   def format_csv(format)
     format.excel do
       @customer ||= @planning.customer
-      @columns = export_params[:columns]&.split('|') || export_columns
+      @is_summary = ValueToBoolean.value_to_boolean(export_params[:summary])
+      @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
       current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), 'excel')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
@@ -729,7 +757,8 @@ class PlanningsController < ApplicationController
     end
     format.csv do
       @customer ||= @planning.customer
-      @columns = export_params[:columns]&.split('|') || export_columns
+      @is_summary = ValueToBoolean.value_to_boolean(export_params[:summary])
+      @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
       current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), 'csv')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
