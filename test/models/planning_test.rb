@@ -1,7 +1,7 @@
 require 'test_helper'
 require 'routers/router_wrapper'
 
-class D < Struct.new(:lat, :lng, :id, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :duration, :vehicle_usage, :quantities, :quantities_operations, :tags)
+class D < Struct.new(:lat, :lng, :id, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :duration, :vehicle_usage, :quantities, :tags)
   def visit
     # self
     destination = Struct.new(:tags).new([])

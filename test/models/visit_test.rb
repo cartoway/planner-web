@@ -196,9 +196,6 @@ class VisitTest < ActiveSupport::TestCase
 
     visit.assign_attributes(visit.attributes)
     assert_not visit.changed?, visit.attributes.keys.select{ |k| visit.send("#{k}_changed?") }.map{ |k| "#{k} has changed" }.join(', ')
-
-    visit.assign_attributes(quantities_operations: {})
-    assert_not visit.changed?, visit.attributes.keys.select{ |k| visit.send("#{k}_changed?") }.map{ |k| "#{k} has changed" }.join(', ')
   end
 
   test 'should return error if quantity is invalid' do
@@ -237,16 +234,6 @@ class VisitTest < ActiveSupport::TestCase
     visit.save!
     assert visit.stop_visits[-1].route.reload.outdated # Reload route because it not updated in main scope
     assert_equal -12.3, Visit.find(visit.id).quantities[customers(:customer_one).deliverable_units[0].id]
-  end
-
-  test 'should set quantity to 0 if fill/empty' do
-    visit = visits :visit_one
-    assert_not visit.stop_visits[-1].route.outdated
-    visit.quantities = {customers(:customer_one).deliverable_units[0].id => nil}
-    visit.quantities_operations = {customers(:customer_one).deliverable_units[0].id => 'empty'}
-    visit.save!
-    assert visit.stop_visits[-1].route.reload.outdated # Reload route because it not updated in main scope
-    assert_equal 0, Visit.find(visit.id).quantities[customers(:customer_one).deliverable_units[0].id]
   end
 
   test 'should outdate route after tag changed' do
@@ -293,7 +280,6 @@ class VisitTest < ActiveSupport::TestCase
     du2 = customer.deliverable_units.create!(label: 'Unit 2')
 
     visit.quantities = { du1.id => 10, du2.id => 20 }
-    visit.quantities_operations = { du1.id => 'fill', du2.id => 'empty' }
     visit.save!
 
     attributes = visit.api_attributes
@@ -303,11 +289,9 @@ class VisitTest < ActiveSupport::TestCase
 
     assert_equal du1.id, quantities[0][:deliverable_unit_id]
     assert_equal 10, quantities[0][:quantity]
-    assert_equal 'fill', quantities[0][:operation]
 
     assert_equal du2.id, quantities[1][:deliverable_unit_id]
-    assert_equal(-20, quantities[1][:quantity])
-    assert_equal 'empty', quantities[1][:operation]
+    assert_equal 20, quantities[1][:quantity]
   end
 
   test 'should validate revenue as float' do

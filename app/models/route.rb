@@ -1025,15 +1025,9 @@ class Route < ApplicationRecord
     unmanageable_capacity = nil
 
     @deliverable_units.each do |du|
-      if vehicle_usage && (stop.visit.quantities_operations[du.id].blank?)
+      if vehicle_usage
         current_quantities[du.id] = (current_quantities[du.id] || 0) + (default_quantities[du.id] || 0)
         min_loads[du.id] = [min_loads[du.id], default_quantities[du.id]].compact.min
-      elsif vehicle_usage && stop.visit.quantities_operations[du.id] == 'fill'
-        current_quantities[du.id] = @default_capacities[du.id] if @default_capacities[du.id]
-        min_loads[du.id] = [min_loads[du.id], @default_capacities[du.id]].compact.min
-      elsif vehicle_usage && stop.visit.quantities_operations[du.id] == 'empty'
-        current_quantities[du.id] = 0
-        min_loads[du.id] = [min_loads[du.id], 0].compact.min
       end
 
       if vehicle_usage
