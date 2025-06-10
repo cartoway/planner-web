@@ -1,6 +1,6 @@
 x-web: &web
   build: .
-  image: ghcr.io/cartoway/planner-web:${CARTOWAY_VERSION:-dev}
+  image: ghcr.io/cartoway/planner-web-web:${CARTOWAY_VERSION:-dev}
   environment:
     RAILS_ENV: ${RAILS_ENV:-production}
     NODE_ENV: ${NODE_ENV:-production}
