@@ -210,17 +210,17 @@ class Praxedo < DeviceBase
 
     orders.compact.map { |intervention|
       if intervention[:completion_data] && intervention[:completion_data][:fields]
-        quantities = []
+        deliveries = []
         intervention[:completion_data][:fields].map do |field|
-          quantities << {
+          deliveries << {
             label: field[:id],
-            quantity: field[:value]
+            delivery: field[:value]
           }
         end
 
         {
           order_id: decode_uid(intervention[:id]),
-          quantities: quantities,
+          deliveries: deliveries,
           update_quantities: true
           # Status are not sync (using TomTom's statuses)
         }

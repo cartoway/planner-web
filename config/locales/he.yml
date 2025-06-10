@@ -193,7 +193,6 @@ he:
         label: תווית
         ref: הפניה
         icon: סמל
-        default_quantity: כמות ברירת מחדל
         default_capacity: קיבולת ברירת מחדל
         optimization_overload_multiplier: מקדם לעומס יתר
       destination:
@@ -748,7 +747,6 @@ he:
       label_placeholder: יחידה
       label_help: 'For instance "מנות" or a unit like "ליברות", קג".'
       ref_help: הפניה חופשית
-      default_quantity_help: כמות למשלוח בכל ביקור (השאר ריק אם אין מגבלה).
       default_capacity_help: הגבלה לכל הרכבים (השאר ריק אם אין מגבלה).
       optimization_overload_multiplier_no: לא
       optimization_overload_multiplier_no_help: >-

@@ -68,7 +68,7 @@ class PraxedoTest < ActionController::TestCase
         if route.ref == 'route_one'
           # Status are not sync (using TomTom's statuses)
           # assert route.stops.select(&:active).all? { |stop| stop.status == 'Finished' }
-          assert_equal [5, 10, 30], route.stops.select{ |s| s.active && s.is_a?(StopVisit) }.map{ |s| s.visit.quantities[2] }
+          assert_equal [5, 10, 30], route.stops.select{ |s| s.active && s.is_a?(StopVisit) }.map{ |s| s.visit.deliveries[2] }
         end
       }
     end

@@ -18,16 +18,34 @@
 class VisitQuantities
   def self.normalize(visit, vehicle, options = {})
     options[:with_default] = true unless options.key? :with_default
-    quantities = visit.send(options[:with_default] ? :default_quantities : :quantities)
+    pickups = visit.send(options[:with_default] ? :default_pickups : :pickups)
+    deliveries = visit.send(options[:with_default] ? :default_deliveries : :deliveries)
     visit.destination.customer.deliverable_units.map{ |du|
-      next unless options[:with_nil] || quantities && (quantities[du.id] && quantities[du.id] != 0)
+      next if !options[:with_nil] && (pickups[du.id] && pickups[du.id] == 0 && deliveries[du.id] && deliveries[du.id] == 0)
 
-      q = number_with_precision(quantities[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
-      q += '/' + number_with_precision(vehicle.default_capacities[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[du.id]
+      delivery = deliveries[du.id] || 0
+      pickup = pickups[du.id] || 0
+      quantity = delivery - pickup
+      q = ''
+      if pickup > 0
+        q += ' +'
+        q += number_with_precision(pickups[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
+        q += '/' + number_with_precision(vehicle.default_capacities[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[du.id]
+        q += ' - ' if deliveries[du.id] > 0
+      end
+
+      if delivery > 0
+        q += ' -'
+        q += number_with_precision(deliveries[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
+        q += '/' + number_with_precision(vehicle.default_capacities[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[du.id]
+      end
+
       q += "\u202F" + du.label if du.label
       {
         deliverable_unit_id: du.id,
-        quantity: quantities[du.id], # FLOAT
+        quantity: quantity, # FLOAT
+        pickup: pickups[du.id],
+        delivery: deliveries[du.id],
         label: du.label,
         unit_icon: du.default_icon,
         quantity_formatted: q # STRING

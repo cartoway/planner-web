@@ -18,6 +18,7 @@
 require 'coerce'
 
 class V01::Visits < Grape::API
+  helpers ConvertDeprecatedHelper
   helpers SharedParams
   helpers do
     # Never trust parameters from the scary internet, only allow the white list through.
@@ -27,33 +28,30 @@ class V01::Visits < Grape::API
 
       # Deals with deprecated quantity
       unless p[:quantities]
-        p[:quantities] = {current_customer.deliverable_units[0].id.to_s => p.delete(:quantity)} if p[:quantity] && current_customer.deliverable_units.size > 0
-        if p[:quantity1_1] || p[:quantity1_2]
-          p[:quantities] = {}
-          p[:quantities].merge!({current_customer.deliverable_units[0].id.to_s => p.delete(:quantity1_1)}) if p[:quantity1_1] && current_customer.deliverable_units.size > 0
-          p[:quantities].merge!({current_customer.deliverable_units[1].id.to_s => p.delete(:quantity1_2)}) if p[:quantity1_2] && current_customer.deliverable_units.size > 1
-        end
+        convert_deprecated_quantities(p, current_customer.deliverable_units)
       end
       # Serialize quantities
       if p[:quantities]
         p[:quantities] = p[:quantities].reject { |q| q.blank? }
-        if p[:quantities].empty?
-          p.delete(:quantities)
-        else
-          p[:quantities] = Hash[p[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }]
+        if p[:quantities].any?
+          p[:pickups] = {}
+          p[:deliveries] = {}
+          p[:quantities].each{ |q|
+            p[:pickups][q[:deliverable_unit_id].to_s] = q[:pickup] if q[:pickup]
+            p[:pickups][q[:deliverable_unit_id].to_s] = q[:quantity].abs if q[:quantity] && q[:quantity] < 0
+            p[:deliveries][q[:deliverable_unit_id].to_s] = q[:quantity] if q[:quantity] && q[:quantity] > 0
+            p[:deliveries][q[:deliverable_unit_id].to_s] = q[:delivery] if q[:delivery]
+          }
         end
+        p.delete(:quantities)
       end
 
-      #Deals with deprecated schedule params
-      p[:time_window_start_1] ||= p.delete(:open1) if p[:open1]
-      p[:time_window_end_1] ||= p.delete(:close1) if p[:close1]
-      p[:time_window_start_2] ||= p.delete(:open2) if p[:open2]
-      p[:time_window_end_2] ||= p.delete(:close2) if p[:close2]
+      convert_timewindows(p)
 
       deliverable_unit_ids = current_customer.deliverable_units.map{ |du| du.id.to_s }
       nested_visit_custom_attributes = current_customer.custom_attributes.for_visit.map(&:name)
 
-      p.permit(:ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :revenue, :force_position, tag_ids: [], quantities: deliverable_unit_ids, custom_attributes: nested_visit_custom_attributes)
+      p.permit(:ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :revenue, :force_position, tag_ids: [], pickups: deliverable_unit_ids, deliveries: deliverable_unit_ids, custom_attributes: nested_visit_custom_attributes)
     end
   end
 

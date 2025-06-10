@@ -94,8 +94,12 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :ref, type: String, documentation: { example: 'RP' }
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{::DeliverableUnit::ICON_DEFAULT}.", example: ::DeliverableUnit::ICON_DEFAULT}
     optional :default_quantity, type: Float, documentation: { example: '1.0' }
+    optional :default_pickup, type: Float, documentation: { example: '1.0' }
+    optional :default_delivery, type: Float, documentation: { example: '2.0' }
     optional :default_capacity, type: Float, documentation: { example: '48.5' }
     optional :optimization_overload_multiplier, type: Integer
+    mutually_exclusive :default_quantity, :default_pickup
+    mutually_exclusive :default_quantity, :default_delivery
   end
 
   params :request_destination do |options|
@@ -278,7 +282,12 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
       if options[:json_import]
         optional :deliverable_unit_label, type: String
       end
-      requires :quantity, type: Float, coerce_with: CoerceFloatString
+      optional :pickup, type: Float, coerce_with: CoerceFloatString
+      optional :delivery, type: Float, coerce_with: CoerceFloatString
+      optional :quantity, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Deprecated, use pickup and delivery instead.' }
+      mutually_exclusive :quantity, :delivery
+      mutually_exclusive :quantity, :pickup
+      at_least_one_of :pickup, :delivery, :quantity
       at_least_one_of :deliverable_unit_id, :deliverable_unit_label
     end
     optional :quantity, type: Integer, documentation: { desc: 'Deprecated, use quantities instead.', hidden: true }

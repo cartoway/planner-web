@@ -237,7 +237,8 @@ fr:
         label: Unité
         ref: Référence
         icon: Icône
-        default_quantity: Quantité par défaut
+        default_pickup: Collecte par défaut
+        default_delivery: Livraison par défaut
         default_capacity: Capacité par défaut
         optimization_overload_multiplier: Coefficient dépassement chargement
       destination:
@@ -562,7 +563,8 @@ fr:
         multi_visit: Multi
         tags: Catégories
         tag_ids: Catégories
-        quantities: Quantités
+        pickups: Collectes
+        deliveries: Livraisons
         force_position: Position forcée
       visits:
         ref: Référence
@@ -655,7 +657,10 @@ fr:
             time_window_end_2:
               after: 'doit être après le %{s}'
             priority: doit être comprise entre -4 et 4
-            quantities:
+            pickups:
+              not_float: doit être un nombre
+              negative_value: 'doit être une valeur positive (%{value})'
+            deliveries:
               not_float: doit être un nombre
               negative_value: 'doit être une valeur positive (%{value})'
         zone:
@@ -1171,7 +1176,10 @@ fr:
       label_placeholder: unité
       label_help: Par exemple « colis » ou une unité comme « kg ».
       ref_help: Référence libre
-      default_quantity_help: >-
+      default_pickup_help: >-
+        Quantité à collecter par défaut à toutes vos visites (laisser vide si pas
+        de quantité).
+      default_delivery_help: >-
         Quantité à livrer par défaut à toutes vos visites (laisser vide si pas
         de quantité).
       default_capacity_help: Capacité par défaut de tous vos véhicules (laisser vide si illimité).
@@ -1417,6 +1425,10 @@ fr:
       destination_duration: durée destination
       duration_desc: durée anticipée de la visite
       destination_duration_desc: durée commune des visites à une même destination
+      delivery: livraison
+      delivery_desc: quantité à livrer
+      pickup: collecte
+      pickup_desc: quantité à collecter
       quantity: quantité
       quantity_desc: quantité d'unités à livrer.
       quantity1_1: quantité 1_1
@@ -1963,6 +1975,8 @@ fr:
       wait_time_help: Somme des temps d'attentes
       speed_help: Vitesse moyenne pour l'ensemble des tournées
       vehicles_used_help: Nombre de véhicules utilisés / total
+      delivery_help: Livraison
+      pickup_help: Collecte
       quantity_help: Quantités totales / Capacités totales
       out_of_route: Non assignés
       out_of_route_quantity_help: Quantité
@@ -2228,6 +2242,8 @@ fr:
       duration: durée visite
       destination_duration: durée destination
       quantity: quantité
+      pickup: collecte
+      delivery: livraison
       orders: commandes
       active: livré
       time_window_start_1: horaire début 1
@@ -2897,14 +2913,9 @@ fr:
       ref_help: >-
         Référence libre. IMPORTANTE si vous souhaitez ne pas écraser vos visites
         avec l'import/export notamment
-      quantities:
-        fill: Remplir véhicule (d'au moins)
-        empty: Vider véhicule (à partir de)
-        default: '%{n} (valeur par défaut)'
+      pickups_deliveries:
         help: >-
-          Quantités à livrer. Dans le cas d'un remplissage ou d'un vidage,
-          l'optimisation déterminera elle-même la quantité, si vous précisez une
-          valeur elle sera un minimum à remplir / vider.
+          Quantités à collecter et livrer
       duration_default: défaut
       duration_help: 'Si vide utilise la valeur par défaut, format hh:mm:ss'
       time_window_start_end_1: Plage horaire 1

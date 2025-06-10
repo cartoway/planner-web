@@ -19,6 +19,7 @@ require 'coerce'
 
 class V01::Destinations < Grape::API
   helpers SharedParams
+  helpers ConvertDeprecatedHelper
   helpers do
     # Never trust parameters from the scary internet, only allow the white list through.
     def destination_params
@@ -38,24 +39,30 @@ class V01::Destinations < Grape::API
       if p[:visits_attributes]
         p[:visits_attributes].each do |hash|
           convert_timewindows(hash)
-          convert_deprecated_quantities(hash)
+          convert_deprecated_quantities(hash, current_customer.deliverable_units)
           hash[:id] = visit_ref_ids[hash[:ref]] if existing_destination && !hash.key?(:id) && hash[:ref].present? && visit_ref_ids[hash[:ref]]
 
           # Serialize quantities
           if hash[:quantities]
             hash[:quantities] = hash[:quantities].reject { |q| q.blank? }
-            if hash[:quantities].empty?
-              hash.delete(:quantities)
-            else
-              hash[:quantities] = Hash[hash[:quantities].map{ |q| [q[:deliverable_unit_id].to_s, q[:quantity]] }]
+            if hash[:quantities].any?
+              hash[:pickups] = {}
+              hash[:deliveries] = {}
+              hash[:quantities].each{ |q|
+                hash[:pickups][q[:deliverable_unit_id].to_s] = q[:pickup] if q[:pickup]
+                hash[:pickups][q[:deliverable_unit_id].to_s] = q[:quantity].abs if q[:quantity] && q[:quantity] < 0
+                hash[:deliveries][q[:deliverable_unit_id].to_s] = q[:quantity] if q[:quantity] && q[:quantity] > 0
+                hash[:deliveries][q[:deliverable_unit_id].to_s] = q[:delivery] if q[:delivery]
+              }
             end
+            hash.delete(:quantities)
           end
         end
       end
 
       deliverable_unit_ids = current_customer.deliverable_units.map{ |du| du.id.to_s }
       nested_visit_custom_attributes = current_customer.custom_attributes.for_visit.map(&:name)
-      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :revenue, :force_position, tag_ids: [], quantities: deliverable_unit_ids, custom_attributes: nested_visit_custom_attributes])
+      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :revenue, :force_position, tag_ids: [], pickups: deliverable_unit_ids, deliveries: deliverable_unit_ids, custom_attributes: nested_visit_custom_attributes])
     end
 
     def present_geojson_destinations(params)
@@ -90,35 +97,29 @@ class V01::Destinations < Grape::API
     end
 
     def with_quantities(visit)
-      quantities = visit.default_quantities.map { |k, value|
-        if value
-          {
-            deliverable_unit_id: k,
-            quantity: value
-          }
-        end
-      }.compact
-    end
+      units = visit.destination.customer.deliverable_units
+      quantities = []
 
-    def convert_deprecated_quantities(hash)
-      # Deals with deprecated quantity
-      if hash[:quantities].blank?
-        hash[:quantities] = []
-        # hash[:quantities] keys must be string here because of permit below
-        hash[:quantities] << { deliverable_unit_id: current_customer.deliverable_units[0].id, quantity: hash.delete(:quantity) } if hash[:quantity] && current_customer.deliverable_units.size > 0
-        if hash[:quantity1_1] || hash[:quantity1_2]
-          hash[:quantities] << { deliverable_unit_id: current_customer.deliverable_units[0].id, quantity: hash.delete(:quantity1_1) } if hash[:quantity1_1] && current_customer.deliverable_units.size > 0
-          hash[:quantities] << { deliverable_unit_id: current_customer.deliverable_units[1].id, quantity: hash.delete(:quantity1_2) } if hash[:quantity1_2] && current_customer.deliverable_units.size > 1
-        end
-      end
-    end
+      units.each { |unit|
 
-    def convert_timewindows(hash)
-      #Deals with deprecated schedule params
-      hash[:time_window_start_1] ||= hash.delete(:open1) if hash[:open1]
-      hash[:time_window_end_1] ||= hash.delete(:close1) if hash[:close1]
-      hash[:time_window_start_2] ||= hash.delete(:open2) if hash[:open2]
-      hash[:time_window_end_2] ||= hash.delete(:close2) if hash[:close2]
+        quantity = { deliverable_unit_id: unit.id }
+
+        if visit.default_deliveries[unit.id]
+          quantity[:delivery] = visit.default_deliveries[unit.id]
+        end
+
+        if visit.default_pickups[unit.id]
+          quantity[:pickup] = visit.default_pickups[unit.id]
+        end
+
+        next if quantity[:delivery].nil? && quantity[:pickup].nil?
+
+        quantity[:quantity] = quantity[:delivery] - quantity[:pickup]
+
+        quantities << quantity
+      }
+
+      quantities
     end
   end
 
@@ -207,7 +208,7 @@ class V01::Destinations < Grape::API
         d_params = declared(params) # Filter undeclared parameters
         import_destination_params = d_params[:destinations].each{ |dest_params| dest_params[:visits]&.each{ |hash|
           convert_timewindows(hash)
-          convert_deprecated_quantities(hash);
+          convert_deprecated_quantities(hash, current_customer.deliverable_units);
         } }
       end
       if params[:planning]

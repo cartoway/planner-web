@@ -16,6 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class V01::Entities::Visit < Grape::Entity
+  include QuantitiesEntityHelper
+
   def self.entity_name
     'V01_Visit'
   end
@@ -23,23 +25,21 @@ class V01::Entities::Visit < Grape::Entity
   expose(:id, documentation: { type: Integer })
   expose(:destination_id, documentation: { type: Integer })
   expose(:quantity, documentation: { type: Integer, desc: 'Deprecated, use quantities instead.' }) { |m|
-    if m.quantities && m.destination.customer.deliverable_units.size == 1
-      quantities = m.quantities.values
+    quantities = convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
+    if quantities && m.destination.customer.deliverable_units.size == 1
+      quantities = quantities.values
       quantities[0] if quantities.size == 1
     end
   }
   expose(:quantity_default, documentation: { type: Integer, desc: 'Deprecated, use quantities instead.' }) { |m|
-    if m.quantities && m.destination.customer.deliverable_units.size == 1
-      m.destination.customer.deliverable_units[0].default_quantity
+    quantities = convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
+    if quantities && m.destination.customer.deliverable_units.size == 1
+      quantities = quantities.values
+      quantities[0] if quantities.size == 1
     end
   }
   expose(:quantities, using: V01::Entities::DeliverableUnitQuantity, documentation: { type: V01::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
-    m.destination.customer.deliverable_units.map{ |du|
-      {
-        deliverable_unit_id: du.id,
-        quantity: m.quantities[du.id]
-      } if m.quantities[du.id]
-    }.compact
+    convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
   }
   expose(:time_window_start_1, documentation: { type: DateTime }) { |m| m.time_window_start_1_absolute_time_with_seconds }
   expose(:time_window_end_1, documentation: { type: DateTime }) { |m| m.time_window_end_1_absolute_time_with_seconds }

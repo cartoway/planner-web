@@ -53,10 +53,18 @@ class V01::DeliverableUnitsTest < ActiveSupport::TestCase
   test 'should create a deliverable unit with negative quantity' do
     assert_difference('DeliverableUnit.count', 1) do
       @deliverable_unit.label = 'new label'
-      @deliverable_unit.default_quantity = -1.2
-      post api(), @deliverable_unit.attributes.merge({ref: 'other_ref'})
+      post api(), @deliverable_unit.attributes.except('default_pickup', 'default_delivery').merge({ref: 'other_ref', default_quantity: -1.2})
       assert last_response.created?, last_response.body
-      assert -1.2, JSON.parse(last_response.body)['default_quantity']
+      assert 1.2, JSON.parse(last_response.body)['default_pickup']
+    end
+  end
+
+  test 'should create a deliverable unit with pickup' do
+    assert_difference('DeliverableUnit.count', 1) do
+      @deliverable_unit.label = 'new label'
+      post api(), @deliverable_unit.attributes.merge({ref: 'other_ref', default_pickup: 1.2})
+      assert last_response.created?, last_response.body
+      assert 1.2, JSON.parse(last_response.body)['default_pickup']
     end
   end
 

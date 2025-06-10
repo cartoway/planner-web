@@ -1,4 +1,6 @@
 class V01::Entities::RouteStatus < Grape::Entity
+  include QuantitiesEntityHelper
+
   def self.entity_name
     'V01_RouteStatus'
   end
@@ -8,7 +10,7 @@ class V01::Entities::RouteStatus < Grape::Entity
   expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
   expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
   expose(:quantities, using: V01::Entities::DeliverableUnitQuantity, documentation: { type: V01::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
-    m.quantities ? m.quantities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
+    convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
   }
 
   expose(:departure_status, documentation: { type: String, desc: 'Departure status of start store.' }) { |route| route.departure_status && I18n.t('plannings.edit.stop_status.' + route.departure_status.downcase, default: route.departure_status) }

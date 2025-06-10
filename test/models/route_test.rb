@@ -302,12 +302,14 @@ class RouteTest < ActiveSupport::TestCase
     visits = route.stops.collect { |s| s.visit if s.is_a?(StopVisit) }.compact
 
     capacities[kg.id] = 6
-    visits.second.quantities = capacities
-    visits.last.quantities = {}
+    visits.second.deliveries = capacities
+    visits.last.deliveries = {}
 
     route.compute_saved({no_geojson: true})
     stops_capacities = route.stops.map(&:out_of_capacity)
 
+    # First stop is out_of_capacity due to init load which is the sum of all the requested deliveries
+    assert_equal true, stops_capacities[0]
     # Second stop is out_of_capacity due to previous set up
     assert_equal true, stops_capacities[1]
     # Last stop must be false, it doesnt deliver "kg" so it's not affected
@@ -317,10 +319,10 @@ class RouteTest < ActiveSupport::TestCase
   test 'should set stops as unmanageable capacity' do
     route = routes(:route_one_one)
     route.vehicle_usage.vehicle.capacities[1] = 0.0
-    route.compute_quantities
+    route.compute_loads
 
     route.stops.each { |s|
-      if s.is_a?(StopVisit) && s.visit.quantities.key?(1)
+      if s.is_a?(StopVisit) && s.visit.deliveries.key?(1)
         assert !!s.unmanageable_capacity
       end
     }
@@ -329,10 +331,10 @@ class RouteTest < ActiveSupport::TestCase
   test 'should not set stops as unmanageable capacity' do
     route = routes(:route_one_one)
     route.vehicle_usage.vehicle.capacities[1] = nil
-    route.compute_quantities
+    route.compute_loads
 
     route.stops.each { |s|
-      if s.is_a?(StopVisit) && s.visit.quantities.key?(1)
+      if s.is_a?(StopVisit) && s.visit.deliveries.key?(1)
         assert_not !!s.unmanageable_capacity
       end
     }

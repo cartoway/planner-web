@@ -20,10 +20,19 @@ if @planning
       json.ref visit.ref if @zoning.customer.enable_references
       json.active route.vehicle_usage_id && stop.active
       unless @planning.customer.enable_orders
-        json.quantities visit.default_quantities.map { |k, v|
-          {deliverable_unit_id: k, quantity: v, unit_icon: @deliverable_unit_icons[k]} unless v.nil?
-        }.compact do |quantity|
-          json.extract! quantity, :deliverable_unit_id, :quantity, :unit_icon
+        pickups = visit.default_pickups
+        deliveries = visit.default_deliveries
+        json.quantities @planning.customer.deliverable_units.map do |unit|
+          quantity = deliveries[unit.id] - pickups[unit.id]
+          next if deliveries[unit.id].zero? && pickups[unit.id].zero?
+
+          {
+            deliverable_unit_id: unit.id,
+            quantity: quantity,
+            unit_icon: unit.default_icon,
+            pickup: pickups[unit.id],
+            delivery: deliveries[unit.id]
+          }
         end
       end
       (json.duration visit.default_duration_time_with_seconds) if visit.default_duration_time_with_seconds

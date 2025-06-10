@@ -197,7 +197,6 @@ de:
         label: Label
         ref: Referenz
         icon: Symbol
-        default_quantity: Standardmenge
         default_capacity: Standardkapazität
         optimization_overload_multiplier: Überladungskoeffizient
       destination:
@@ -967,7 +966,6 @@ de:
       label_placeholder: Einheit
       label_help: 'Zum Beispiel "Paket" oder eine Einheit wie "lb", kg" usw.'
       ref_help: Eine freie Referenz
-      default_quantity_help: 'Liefermenge für alle Ihre Besuche (leerlassen, falls keine Menge).'
       default_capacity_help: 'Kapazität für alle Ihre Fahrzeuge (leerlassen, falls keine Begrenzung).'
       optimization_overload_multiplier_no: Nein
       optimization_overload_multiplier_no_help: >-

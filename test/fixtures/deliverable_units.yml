@@ -4,7 +4,8 @@ deliverable_unit_one_one:
   id: 1
   label: L
   ref: ref_1_1
-  default_quantity: 1
+  default_delivery: 1
+  default_pickup:
   default_capacity:
   optimization_overload_multiplier:
   customer: customer_one
@@ -13,7 +14,8 @@ deliverable_unit_one_two:
   id: 2
   label: kg
   ref: ref_1_2
-  default_quantity:
+  default_delivery:
+  default_pickup:
   default_capacity:
   optimization_overload_multiplier:
   customer: customer_one
@@ -22,7 +24,8 @@ deliverable_unit_one_other_one:
   id: 3
   label: unit
   ref: ref_1_other_1
-  default_quantity: 1
+  default_delivery: 1
+  default_pickup:
   default_capacity:
   optimization_overload_multiplier: 1
   customer: customer_one_other
@@ -31,7 +34,8 @@ deliverable_unit_two_one:
   id: 4
   label: m³
   ref: ref_2_1
-  default_quantity: 1
+  default_delivery: 1
+  default_pickup:
   default_capacity: 10
   optimization_overload_multiplier: 1
   customer: customer_two

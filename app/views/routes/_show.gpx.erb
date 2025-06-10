@@ -45,13 +45,12 @@ route.stops.each{ |stop|
           ' ',
           stop.name,
           ' ',
-          stop.is_a?(StopVisit) ? (route.planning.customer.enable_orders ? (stop.order ? stop.order.products.collect(&:code).join(',') : '') : stop.visit.default_quantities ? visit_quantities(stop.visit, route.vehicle_usage.try(&:vehicle)).map{ |d| d[:quantity] }.join(' ') : '') : '',
+          stop.is_a?(StopVisit) ? (route.planning.customer.enable_orders ? (stop.order ? stop.order.products.collect(&:code).join(',') : '') : (stop.visit.default_pickups.keys & stop.visit.default_deliveries.keys).compact.size > 1 ? visit_quantities(stop.visit, route.vehicle_usage.try(&:vehicle)).map{ |d| d[:quantity] }.join(' ') : '') : '',
           ' ',
           stop.is_a?(StopVisit) ?
             (stop.visit.duration ? '(' + stop.visit.duration_time_with_seconds + ')' : '') :
             (route.vehicle_usage.default_rest_duration ? '(' + route.vehicle_usage.default_rest_duration_time_with_seconds + ')' : '')
-        ].join.gsub(/\s+/, ' ').strip
-        %>
+        ].join.gsub(/\s+/, ' ').strip %>
       </name>
       <desc><%= stop.time_time + (number_of_days(stop.time) ? " (+#{number_of_days(stop.time)})" : '') if stop.time %>
       <% if stop.time_window_start_1 || stop.time_window_end_1 %>

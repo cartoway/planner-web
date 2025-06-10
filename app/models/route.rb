@@ -26,8 +26,8 @@ class Route < ApplicationRecord
   belongs_to :planning, touch: true
   belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
-  serialize :quantities, DeliverableUnitQuantity
-  serialize :loadings, DeliverableUnitQuantity
+  serialize :pickups, DeliverableUnitQuantity
+  serialize :deliveries, DeliverableUnitQuantity
 
   nilify_blanks
   validates :planning, presence: true
@@ -135,7 +135,8 @@ class Route < ApplicationRecord
       drive_time: nil,
       wait_time: nil,
       visits_duration: nil,
-      quantities: nil,
+      pickups: nil,
+      deliveries: nil,
       revenue: nil,
       cost_distance: nil,
       cost_fixed: nil,
@@ -263,7 +264,7 @@ class Route < ApplicationRecord
       }
 
       unless options[:no_quantities]
-        route_attributes[:loadings], stop_load_hash, route_attributes[:quantities] = compute_quantities(stops_sort)
+        stop_load_hash, route_attributes[:pickups], route_attributes[:deliveries] = compute_loads(stops_sort)
         # loads assignment is only necessary for routes with vehicle_usage
         stops_sort.each do |stop|
           next unless stop_load_hash.key?(stop.id)
@@ -361,7 +362,7 @@ class Route < ApplicationRecord
         end
       end
     else
-      self.loadings, _load_stop_hash, self.quantities = compute_quantities unless options[:no_quantities]
+      _load_stop_hash, self.pickups, self.deliveries = compute_loads unless options[:no_quantities]
     end
 
     self.geojson_points = stops_to_geojson_points unless options[:no_geojson]
@@ -626,23 +627,31 @@ class Route < ApplicationRecord
 
   include LocalizedAttr
 
-  attr_localized :quantities
+  attr_localized :pickups
+  attr_localized :deliveries
 
-  def compute_quantities(stops_sort = nil)
-    current_loads = Hash.new(0)
-    min_loads = Hash.new(0)
+  def compute_loads(stops_sort = nil)
+    pickups = Hash.new(0)
+    deliveries = Hash.new(0)
+
+    (stops_sort || stops).each{ |stop|
+      next if !stop.is_a?(StopVisit) || !stop.active
+
+      stop.visit.default_deliveries.each{ |k, v|
+        deliveries[k] += (v || 0)
+      }
+      stop.visit.default_pickups.each{ |k, v|
+        pickups[k] += (v || 0)
+      }
+    }
+
+    current_loads = deliveries.dup
+
     stop_load_hash = (stops_sort || stops).map { |stop|
-      process_stop_quantities(stop, current_loads, min_loads)
+      process_stop_loads(stop, current_loads)
       [stop.id, current_loads.dup]
     }.to_h
-    loadings = min_loads.transform_values{ |v| v.abs }
-    stop_load_hash.each{ |id, loads|
-      next unless loads
-
-      loads = loads.map{ |k, v| [k, v.abs + min_loads[k]] }.to_h
-    }
-    unloadings = current_loads.map{ |k, v| [k, v.abs + min_loads[k]] }.to_h
-    [loadings, stop_load_hash, unloadings]
+    [stop_load_hash, pickups, deliveries]
   end
 
   def reverse_order
@@ -757,6 +766,8 @@ class Route < ApplicationRecord
   def stops_to_geojson_points(options = {})
     return if stops.empty?
 
+    units = planning.customer.deliverable_units
+
     inactive_stops = 0
     stops.map do |stop|
       inactive_stops += 1 unless stop.active
@@ -779,12 +790,18 @@ class Route < ApplicationRecord
           icon_size: stop.icon_size
         }
       }
-      feat[:properties][:quantities] = stop.visit.default_quantities.map { |k, v|
-        {
-          deliverable_unit_id: k,
-          quantity: v
+
+      if options[:with_quantities] && stop.is_a?(StopVisit)
+        feat[:properties][:quantities] = []
+        units.each{ |unit|
+          feat[:properties][:quantities] << {
+            deliverable_unit_id: unit.id,
+            quantity: (stop.visit.default_deliveries[unit.id] || 0) - (stop.visit.default_pickups[unit.id] || 0),
+            pickup: stop.visit.default_pickups[unit.id] || 0,
+            delivery: stop.visit.default_deliveries[unit.id] || 0
+          }
         }
-      } if options[:with_quantities] && stop.is_a?(StopVisit)
+      end
       feat.to_json
     end.compact
   end
@@ -1015,32 +1032,36 @@ class Route < ApplicationRecord
     final_features
   end
 
-  def process_stop_quantities(stop, current_quantities, min_loads)
+  def process_stop_loads(stop, current_loads)
     @deliverable_units ||= planning.customer.deliverable_units
-    return unless stop.active && stop.position? && stop.is_a?(StopVisit) && stop.visit.default_quantities?
+    return if !stop.active || !stop.position? || !stop.is_a?(StopVisit) || !stop.visit.default_quantities?
 
     @default_capacities ||= vehicle_usage&.vehicle&.default_capacities
-    default_quantities = stop.visit.default_quantities
+    default_pickups = stop.visit.default_pickups
+    default_deliveries = stop.visit.default_deliveries
     out_of_capacity = nil
     unmanageable_capacity = nil
 
     @deliverable_units.each do |du|
       if vehicle_usage
-        current_quantities[du.id] = (current_quantities[du.id] || 0) + (default_quantities[du.id] || 0)
-        min_loads[du.id] = [min_loads[du.id], default_quantities[du.id]].compact.min
-      end
+        # Is the vehicle in overload/underload arriving at the stop ?
+        out_of_capacity ||= (@default_capacities[du.id] && current_loads[du.id] > @default_capacities[du.id]) || current_loads[du.id] < 0
+        pickup = default_pickups[du.id]
+        delivery = default_deliveries[du.id]
+        current_loads[du.id] =
+          (current_loads[du.id] || 0) + (pickup || 0) - (delivery || 0)
 
-      if vehicle_usage
-        quantity = default_quantities[du.id]
-        skip_quantity = quantity.nil? || quantity == 0
-        out_of_capacity ||= !skip_quantity & ((@default_capacities[du.id] && current_quantities[du.id] > @default_capacities[du.id]) || current_quantities[du.id] < 0)
-        unmanageable_capacity ||= !quantity.nil? && (quantity != 0 && @default_capacities[du.id] == 0)
+        skip_pickup = pickup.nil? || pickup == 0
+        skip_delivery = delivery.nil? || delivery == 0
+        # Is the vehicle in overload/underload leaving the stop ?
+        out_of_capacity ||= (@default_capacities[du.id] && current_loads[du.id] > @default_capacities[du.id]) || current_loads[du.id] < 0
+        unmanageable_capacity ||= (!skip_pickup || !skip_delivery) && @default_capacities[du.id] == 0
       end
     end
 
     stop.unmanageable_capacity = unmanageable_capacity
     stop.out_of_capacity = out_of_capacity
 
-    current_quantities
+    current_loads
   end
 end

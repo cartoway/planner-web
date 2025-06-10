@@ -145,31 +145,31 @@ class VisitTest < ActiveSupport::TestCase
       I18n.locale = :en
       assert I18n.locale == :en
       assert_not_nil Visit.localize_numeric_value(nil)
-      visit.update! quantities: {1 => nil}
-      assert visit.localized_quantities[1].nil? # Don't crash with nil values
-      visit.update! quantities: {1 => '10.5'} # Assign with localized separator
-      assert_equal 10.5, visit.quantities[1]
-      assert_equal '10.5', visit.localized_quantities[1] # Localized value
-      visit.update! quantities: {1 => 10}
-      assert_equal 10, visit.quantities[1]
-      assert_equal '10', visit.localized_quantities[1] # Remove trailing zeros
-      visit.update! quantities: {1 => 10.1} # Assign without localized separator
-      assert_equal 10.1, visit.quantities[1]
+      visit.update! deliveries: {1 => nil}
+      assert visit.localized_deliveries[1].nil? # Don't crash with nil values
+      visit.update! deliveries: {1 => '10.5'} # Assign with localized separator
+      assert_equal 10.5, visit.deliveries[1]
+      assert_equal '10.5', visit.localized_deliveries[1] # Localized value
+      visit.update! deliveries: {1 => 10}
+      assert_equal 10, visit.deliveries[1]
+      assert_equal '10', visit.localized_deliveries[1] # Remove trailing zeros
+      visit.update! deliveries: {1 => 10.1} # Assign without localized separator
+      assert_equal 10.1, visit.deliveries[1]
       assert_not_nil Visit.localize_numeric_value(nil)
 
       I18n.locale = :fr
       assert I18n.locale == :fr
       assert_not_nil Visit.localize_numeric_value(nil)
-      visit.update! quantities: {1 => nil}
-      assert visit.localized_quantities[1].nil? # Don't crash with nil values
-      visit.update! quantities: {1 => '10,5'} # Assign with localized separator
-      assert_equal 10.5, visit.quantities[1]
-      assert_equal '10,5', visit.localized_quantities[1] # Localized value
-      visit.update! quantities: {1 => 10}
-      assert_equal 10, visit.quantities[1]
-      assert_equal '10', visit.localized_quantities[1] # Remove trailing zeros
-      visit.update! quantities: {1 => 10.1} # Assign without localized separator
-      assert_equal 10.1, visit.quantities[1]
+      visit.update! deliveries: {1 => nil}
+      assert visit.localized_deliveries[1].nil? # Don't crash with nil values
+      visit.update! deliveries: {1 => '10,5'} # Assign with localized separator
+      assert_equal 10.5, visit.deliveries[1]
+      assert_equal '10,5', visit.localized_deliveries[1] # Localized value
+      visit.update! deliveries: {1 => 10}
+      assert_equal 10, visit.deliveries[1]
+      assert_equal '10', visit.localized_deliveries[1] # Remove trailing zeros
+      visit.update! deliveries: {1 => 10.1} # Assign without localized separator
+      assert_equal 10.1, visit.deliveries[1]
     ensure
       I18n.locale = orig_locale
     end
@@ -201,39 +201,38 @@ class VisitTest < ActiveSupport::TestCase
   test 'should return error if quantity is invalid' do
     visit = visits(:visit_one)
 
-    visit.quantities = {customers(:customer_one).deliverable_units[0].id => '12,3'}
+    visit.deliveries = {customers(:customer_one).deliverable_units[0].id => '12,3'}
     assert visit.save
 
-    visit.quantities = {customers(:customer_one).deliverable_units[0].id => 'not a float'}
+    visit.deliveries = {customers(:customer_one).deliverable_units[0].id => 'not a float'}
     assert_not visit.save
-    assert_equal visit.errors.first.message, I18n.t('activerecord.errors.models.visit.attributes.quantities.not_float')
+    assert_equal visit.errors.first.message, I18n.t('activerecord.errors.models.visit.attributes.deliveries.not_float')
   end
 
   test 'should update outdated for quantity' do
     visit = visits :visit_one
     assert_not visit.stop_visits[-1].route.outdated
-    visit.quantities = {customers(:customer_one).deliverable_units[0].id => '12,3'}
+    visit.deliveries = {customers(:customer_one).deliverable_units[0].id => '12,3'}
     visit.save!
     assert visit.stop_visits[-1].route.reload.outdated # Reload route because it not updated in main scope
-    assert_equal 12.3, Visit.find(visit.id).quantities[customers(:customer_one).deliverable_units[0].id]
+    assert_equal 12.3, Visit.find(visit.id).deliveries[customers(:customer_one).deliverable_units[0].id]
   end
 
   test 'should update outdated for empty quantity' do
     visit = visits :visit_two
     assert_not visit.stop_visits[-1].route.outdated
-    visit.quantities = {}
+    visit.deliveries = {}
     visit.save!
     assert visit.stop_visits[-1].route.reload.outdated # Reload route because it not updated in main scope
-    assert_nil Visit.find(visit.id).quantities[customers(:customer_one).deliverable_units[0].id]
+    assert_nil Visit.find(visit.id).deliveries[customers(:customer_one).deliverable_units[0].id]
   end
 
-  test 'should accept negative quantity' do
+  test 'should not accept negative delivery' do
     visit = visits :visit_three
     assert_not visit.stop_visits[-1].route.outdated
-    visit.quantities = {customers(:customer_one).deliverable_units[0].id => '-12,3'}
-    visit.save!
-    assert visit.stop_visits[-1].route.reload.outdated # Reload route because it not updated in main scope
-    assert_equal -12.3, Visit.find(visit.id).quantities[customers(:customer_one).deliverable_units[0].id]
+    visit.deliveries = {customers(:customer_one).deliverable_units[0].id => '-12,3'}
+    assert_not visit.save
+    assert_equal visit.errors.first.message, I18n.t('activerecord.errors.models.visit.attributes.deliveries.negative_value', value: '-12.3')
   end
 
   test 'should outdate route after tag changed' do
@@ -272,14 +271,14 @@ class VisitTest < ActiveSupport::TestCase
     end
   end
 
-  test 'should format quantities in attributes' do
+  test 'should format deliveries in attributes' do
     visit = visits(:visit_one)
     customer = visit.destination.customer
 
     du1 = customer.deliverable_units.create!(label: 'Unit 1')
     du2 = customer.deliverable_units.create!(label: 'Unit 2')
 
-    visit.quantities = { du1.id => 10, du2.id => 20 }
+    visit.deliveries = { du1.id => 10, du2.id => 20 }
     visit.save!
 
     attributes = visit.api_attributes
@@ -288,10 +287,32 @@ class VisitTest < ActiveSupport::TestCase
     assert_equal 2, quantities.size
 
     assert_equal du1.id, quantities[0][:deliverable_unit_id]
-    assert_equal 10, quantities[0][:quantity]
+    assert_equal 10, quantities[0][:delivery]
 
     assert_equal du2.id, quantities[1][:deliverable_unit_id]
-    assert_equal 20, quantities[1][:quantity]
+    assert_equal 20, quantities[1][:delivery]
+  end
+
+  test 'should format pickups in attributes' do
+    visit = visits(:visit_one)
+    customer = visit.destination.customer
+
+    du1 = customer.deliverable_units.create!(label: 'Unit 1')
+    du2 = customer.deliverable_units.create!(label: 'Unit 2')
+
+    visit.pickups = { du1.id => 10, du2.id => 20 }
+    visit.save!
+
+    attributes = visit.api_attributes
+    quantities = attributes['quantities']
+
+    assert_equal 2, quantities.size
+
+    assert_equal du1.id, quantities[0][:deliverable_unit_id]
+    assert_equal 10, quantities[0][:pickup]
+
+    assert_equal du2.id, quantities[1][:deliverable_unit_id]
+    assert_equal 20, quantities[1][:pickup]
   end
 
   test 'should validate revenue as float' do

@@ -45,7 +45,7 @@ module DestinationsHelper
     visit_columns += %i[priority revenue tags_visit force_position]
     unless @customer.enable_orders
       customer.deliverable_units.each{ |du|
-        visit_columns += ["quantity#{du.id}".to_sym]
+        visit_columns += ["pickup#{du.id}".to_sym, "delivery#{du.id}".to_sym]
       }
     end
     visit_columns += @customer.custom_attributes.for_visit.map{ |ca| "custom_attributes_visit[#{ca.name}]" }
@@ -106,7 +106,10 @@ module DestinationsHelper
         ] + (customer.enable_orders ?
           [] :
           customer.deliverable_units.flat_map{ |du|
-            [visit.quantities[du.id]]
+            [
+              visit.pickups[du.id],
+              visit.deliveries[du.id]
+            ]
           }) +
           customer.custom_attributes.for_visit.map{ |ca|
             visit.custom_attributes_typed_hash[ca.name]
