@@ -28,7 +28,8 @@ if !tags.empty?
 end
 unless @visit.destination.customer.enable_orders
   json.quantities visit_quantities(@visit, nil) do |units|
-    json.quantity units[:quantity] if units[:quantity]
+    json.pickup units[:pickup] if units[:pickup]
+    json.delivery units[:delivery] if units[:delivery]
     json.unit_icon units[:unit_icon]
   end
 end

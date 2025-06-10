@@ -1,4 +1,6 @@
 class V100::Entities::Route < V100::Entities::RouteProperties
+  include QuantitiesEntityHelper
+
   def self.entity_name
     'V100_Route'
   end
@@ -37,7 +39,7 @@ class V100::Entities::Route < V100::Entities::RouteProperties
   expose(:out_of_max_ride_distance, documentation: { type: 'Boolean' })
   expose(:out_of_max_ride_duration, documentation: { type: 'Boolean' })
   expose(:quantities, using: V100::Entities::DeliverableUnitQuantity, documentation: { type: V100::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
-    m.quantities ? m.quantities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
+    convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
   }
   expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
     if options[:geojson] && options[:geojson] != :false
@@ -71,7 +73,7 @@ class V100::Entities::RouteStatus < Grape::Entity
   expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
   expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
   expose(:quantities, using: V100::Entities::DeliverableUnitQuantity, documentation: { type: V100::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
-    m.quantities ? m.quantities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
+    convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
   }
   expose(:stops, using: V100::Entities::StopStatus, documentation: { type: V100::Entities::StopStatus, is_array: true })
 end

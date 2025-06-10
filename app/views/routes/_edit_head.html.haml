@@ -277,9 +277,18 @@
     .col-xs-4.route-data-advanced
       .primary.route-info{class: ('danger' if unit[:out_of_capacity]), title: t('plannings.edit.route_quantity_help')}
         %i.fa.fa-fw{class: unit[:unit_icon]}
-        = unit[:quantity_formatted]
-        - if unit[:loading] && unit[:loading] > 0
-          %i.fa.unit.fa-fw.fa-truck-ramp-box{title: t('plannings.edit.route_quantity_loading_help')}
+        - if unit[:pickup] != '0'
+          %i.fa.fa-fw.fa-up-long{title: t("plannings.edit.pickup_help")}
+          = unit[:pickup]
+        - if unit[:delivery] != '0'
+          - if unit[:pickup] != '0'
+            %i.fa.fa-fw.fa-down-long{title: t("plannings.edit.delivery_help")}
+          = unit[:delivery]
+        - if unit[:capacity]
+          = " / #{unit[:capacity]}"
+        /
+        - if unit[:label]
+          = " #{unit[:label]}"
 - if route[:route_error]
   %ul.ui-state-error
     - if route[:route_no_geolocalization]

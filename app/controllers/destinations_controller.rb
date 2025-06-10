@@ -216,8 +216,8 @@ class DestinationsController < ApplicationController
     p = params.to_unsafe_h
     # Deals with deprecated quantity
     p[:visits_attributes]&.each{ |p|
-      if !p[:quantities] && p[:quantity] && !current_user.customer.deliverable_units.empty?
-        p[:quantities] = { current_user.customer.deliverable_units[0].id => p.delete(:quantity) }
+      if !p[:deliveries] && p[:quantity] && !current_user.customer.deliverable_units.empty?
+        p[:deliveries] = { current_user.customer.deliverable_units[0].id => p.delete(:quantity) }
       end
     }
     if p.dig(:destination, :geocoding_result).to_s.empty?
@@ -262,7 +262,8 @@ class DestinationsController < ApplicationController
         :force_position,
         :_destroy,
         tag_ids: [],
-        quantities: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
+        pickups: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
+        deliveries: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
         custom_attributes: current_user.customer.custom_attributes.for_visit.map{ |c_u| c_u.name.to_sym }
       ]
     )

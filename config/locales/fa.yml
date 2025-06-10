@@ -187,7 +187,6 @@ fa:
         label: ''
         ref: ''
         icon: ''
-        default_quantity: ''
         default_capacity: ''
         optimization_overload_multiplier: ''
       destination:
@@ -729,7 +728,6 @@ fa:
       label_placeholder: ''
       label_help: ''
       ref_help: ''
-      default_quantity_help: ''
       default_capacity_help: ''
       optimization_overload_multiplier_no: ''
       optimization_overload_multiplier_no_help: ''

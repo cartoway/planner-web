@@ -130,11 +130,6 @@
               <input class="form-control input-sm" type="text" name="destination[visits_attributes][][ref]" value="{{ref_visit}}"/>
             </span>
           {{/enable_references}}
-          {{^enable_orders}}
-          <span style="width:3em">
-            <input class="form-control input-sm" type="number" name="destination[visits_attributes][][quantity]" value="{{^multiple_quantities}}{{quantity}}{{/multiple_quantities}}" placeholder="{{#multiple_quantities}}#{{/multiple_quantities}}{{^multiple_quantities}}{{quantity_default}}{{/multiple_quantities}}"{{#disable_quantity}} disabled{{/disable_quantity}}/>
-          </span>
-          {{/enable_orders}}
           <span>
             <div class="input-group select2-bootstrap-append input-group-tags">
               <input type="hidden" value="" name="destination[visits_attributes][][tag_ids][]">

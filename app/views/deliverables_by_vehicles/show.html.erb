@@ -27,10 +27,14 @@
             <% @routes_quantities.each do |q| %>
             <tr>
               <th class="th-label" scope="col"><i class="fa fa-fw <%= q[:icon] %>"></i> <%= q[:label] %></th>
-              <% q[:quantities].each do |value| %>
+              <% q[:pickups].each do |value| %>
               <td scope="col"><%= format('%.2f', value) if !value.nil? %></td>
-              <%end%>
-              <td class="average" scope="col"><%= format('%.2f', q[:average]) %></td>
+              <% end %>
+              <td class="average" scope="col"><%= format('%.2f', q[:pickup_average]) %></td>
+              <% q[:deliveries].each do |value| %>
+              <td scope="col"><%= format('%.2f', value) if !value.nil? %></td>
+              <% end %>
+              <td class="average" scope="col"><%= format('%.2f', q[:delivery_average]) %></td>
             </tr>
             <% end %>
             <tr>
@@ -38,7 +42,8 @@
                 <% @routes_total_infos[:total_per_route].each do |r| %>
               <td scope="col"><%= r[:total_quantity] if r[:active] %></td>
               <% end %>
-              <td class="average" scope="col"><%=  @routes_total_infos[:quantity_average]%></td>
+              <td class="average" scope="col"><%=  @routes_total_infos[:pickup_average]%></td>
+              <td class="average" scope="col"><%=  @routes_total_infos[:delivery_average]%></td>
             </tr>
             <tr>
               <% (@plannings.length + 2).times do %>

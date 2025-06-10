@@ -237,7 +237,8 @@ en:
         label: Label
         ref: Reference
         icon: Icon
-        default_quantity: Default quantity
+        default_pickup: Default pickup
+        default_delivery: Default delivery
         default_capacity: Default capacity
         optimization_overload_multiplier: Overload coefficient
       destination:
@@ -562,7 +563,8 @@ en:
         multi_visit: Multi
         tags: Categories
         tag_ids: Categories
-        quantities: Quantities
+        pickups: Pickups
+        deliveries: Deliveries
         force_position: Forced position
       visits:
         ref: Reference
@@ -651,7 +653,10 @@ en:
             time_window_end_2:
               after: 'must be after %{s}'
             priority: must be between -4 and 4
-            quantities:
+            pickups:
+              not_float: must be a number
+              negative_value: 'must be positive value (%{value})'
+            deliveries:
               not_float: must be a number
               negative_value: 'must be positive value (%{value})'
         zone:
@@ -1141,7 +1146,8 @@ en:
       label_placeholder: unit
       label_help: 'For instance "packet" or a unit like "lb", kg".'
       ref_help: A free reference
-      default_quantity_help: Quantity to deliver for all your visits (keep empty if no quantity).
+      default_pickup_help: Quantity to collect for all your visits (keep empty if no quantity).
+      default_delivery_help: Quantity to deliver for all your visits (keep empty if no quantity).
       default_capacity_help: Capacity for all your vehicles (keep empty if no limit).
       optimization_overload_multiplier_no: 'No'
       optimization_overload_multiplier_no_help: >-
@@ -1373,6 +1379,10 @@ en:
         levels.
       destination_duration: destination duration
       destination_duration_desc: destination duration
+      pickup: pickup
+      pickup_desc: quantity to collect
+      delivery: delivery
+      delivery_desc: quantity to deliver
       duration: visit duration
       duration_desc: visit duration
       quantity: quantity
@@ -1879,7 +1889,9 @@ en:
       wait_time_help: Total waiting time
       speed_help: Speed average for the whole planning
       vehicles_used_help: Vehicles used / Total
-      quantity_help: Loadings / Vehicles capacities
+      pickup_help: Pickup
+      delivery_help: Delivery
+      quantity_help: Quantities / Vehicles capacities
       out_of_route: Unaffected
       out_of_route_quantity_help: Quantity
       toggle_help: Toggle stops on map
@@ -2131,6 +2143,8 @@ en:
       duration: visit duration
       destination_duration: destination duration
       quantity: quantity
+      pickup: pickup
+      delivery: delivery
       orders: orders
       active: active
       time_window_start_1: open 1
@@ -2781,14 +2795,9 @@ en:
         If checked, visit will be destroyed by submitting this page. Unchek to
         cancel.
       ref_help: A free reference. Important to avoid overwriting visits on import/export
-      quantities:
-        fill: Fill (at least)
-        empty: Empty (at least)
-        default: '%{n} (default value)'
+      pickups_deliveries:
         help: >-
-          Quantities to be delivered. In case of fill / empty, optimization
-          engine will decide itself quantities, if you specify a value it will
-          be used as a minimum to fill / empty.
+          Quantities to be collected and delivered.
       duration_default: default
       duration_help: 'If empty, use the default value, format hh:mm:ss'
       time_window_start_end_1: Time window 1

@@ -786,19 +786,19 @@ class Planning < ApplicationRecord
         }.each { |s|
           if stops_map.key?(s[:order_id])
             # Specific to Praxedo
-            if s[:update_quantities] && s[:quantities].is_a?(Array)
-              quantities = {}
+            if s[:update_quantities] && s[:deliveries].is_a?(Array)
+              deliveries = {}
               du_by_label = {}
               customer.deliverable_units.map { |du| du_by_label[du.label] = du.id }
-              s[:quantities].map do |quantity|
-                if du_by_label.keys.include?(quantity[:label])
-                  value = Float(quantity[:quantity]) rescue nil
-                  quantities[du_by_label[quantity[:label]]] = value if value
+              s[:deliveries].map do |delivery|
+                if du_by_label.keys.include?(delivery[:label])
+                  value = Float(delivery[:delivery]) rescue nil
+                  deliveries[du_by_label[delivery[:label]]] = value if value
                 end
               end
 
               # Do not flag route as outdated just for quantities change, route quantities are computed after loop
-              stops_map[s[:order_id]].visit.update(quantities: quantities, outdate_skip: true)
+              stops_map[s[:order_id]].visit.update(deliveries: deliveries, outdate_skip: true)
               routes_quantities_changed << stops_map[s[:order_id]].route
             end
 
@@ -807,7 +807,7 @@ class Planning < ApplicationRecord
         }
 
         routes_quantities_changed.each{ |route|
-          route.compute_quantities
+          route.compute_loads
           route.save
         }
 
@@ -927,37 +927,43 @@ class Planning < ApplicationRecord
 
   def quantities
     Route.includes_deliverable_units.scoping do
-      hashy_map = {}
-      self.routes.each do |route|
+      quantity_hash = {}
+      units = self.customer.deliverable_units
+      self.routes.each{ |route|
         vehicle = route.vehicle_usage.try(:vehicle)
 
-        route.quantities.select{ |_k, v| v > 0 }.each do |id, v|
-          unit = route.planning.customer.deliverable_units.find{ |du| du.id == id }
-          next unless unit && vehicle
+        units.each{ |unit|
+          pickup = route.pickups[unit.id].to_f
+          delivery = route.deliveries[unit.id].to_f
+          next if pickup == 0 && delivery == 0
 
-          capacity = vehicle && vehicle.default_capacities[id]
-          if hashy_map.key?(unit.id)
-            hashy_map[unit.id][:quantity] += v
-            hashy_map[unit.id][:capacity] += capacity || 0
-            hashy_map[unit.id][:out_of_capacity] = capacity && (hashy_map[unit.id][:quantity] > hashy_map[unit.id][:capacity])
+          capacity = vehicle && vehicle.default_capacities[unit.id]
+          if quantity_hash.key?(unit.id)
+            quantity_hash[unit.id][:pickup] += pickup
+            quantity_hash[unit.id][:delivery] += delivery
           else
-            hashy_map[unit.id] = {
+            quantity_hash[unit.id] = {
               id: unit.id,
               label: unit.label,
               unit_icon: unit.default_icon,
-              quantity: v,
+              pickup: pickup,
+              delivery: delivery,
               capacity: capacity || 0,
-              out_of_capacity: capacity && (v > capacity)
+              out_of_capacity:
+                capacity && (pickup > capacity || delivery > capacity)
             }
           end
-        end
-      end
 
-      hashy_map.to_a.map { |unit|
-        unit[1][:quantity] = LocalizedValues.localize_numeric_value(unit[1][:quantity].round(2))
+          quantity_hash[unit.id][:out_of_capacity] = capacity && (pickup > capacity || delivery > capacity)
+        }
+      }
+
+      quantity_hash.values.map { |quantity|
+        quantity[:pickup] = LocalizedValues.localize_numeric_value(quantity[:pickup].round(2))
+        quantity[:delivery] = LocalizedValues.localize_numeric_value(quantity[:delivery].round(2))
         # Nil if no capacity
-        unit[1][:capacity] = unit[1][:capacity] > 0 ? LocalizedValues.localize_numeric_value(unit[1][:capacity].round(2)) : nil
-        unit[1]
+        quantity[:capacity] = quantity[:capacity] > 0 ? LocalizedValues.localize_numeric_value(quantity[:capacity].round(2)) : nil
+        quantity
       }
     end
   end

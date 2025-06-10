@@ -28,7 +28,8 @@ class Visit < ApplicationRecord
   has_many :tags, through: :tag_visits, after_add: :update_tags_track, after_remove: :update_tags_track
 
   delegate :customer, :lat, :lng, :name, :street, :postalcode, :city, :state, :country, :detail, :comment, :phone_number, to: :destination
-  serialize :quantities, DeliverableUnitQuantity
+  serialize :pickups, DeliverableUnitQuantity
+  serialize :deliveries, DeliverableUnitQuantity
 
   nilify_blanks
   validates :destination, presence: true
@@ -63,7 +64,8 @@ class Visit < ApplicationRecord
   validates :priority, numericality: { greater_than_or_equal_to: -4, less_than_or_equal_to: 4, message: I18n.t('activerecord.errors.models.visit.attributes.priority') }, allow_nil: true
   validates :revenue, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
 
-  validate :quantities_validator
+  validate :pickups_validator
+  validate :deliveries_validator
 
   include Consistency
   validate_consistency([:tags]) { |visit| visit.destination.try :customer_id }
@@ -77,7 +79,7 @@ class Visit < ApplicationRecord
 
   include LocalizedAttr
 
-  attr_localized :quantities, :revenue
+  attr_localized :pickups, :deliveries, :revenue
 
   include TypedAttribute
   typed_attr :custom_attributes
@@ -95,13 +97,23 @@ class Visit < ApplicationRecord
     })
   end
 
-  # Custom validator for quantities. Mostly used by the destination model (:update, :create)
-  def quantities_validator
-    !quantities || quantities.values.each do |q|
-      Float(q);
+  # Custom validators for pickups and deliveries. Mostly used by the destination model (:update, :create)
+  def pickups_validator
+    !pickups || pickups.values.each do |q|
+      value = Float(q)
+      self.errors.add :pickups, :negative_value, **{value: q} if value < 0
     end
   rescue StandardError => e
-    self.errors.add :quantities, :not_float if e.is_a?(ArgumentError) || e.is_a?(TypeError)
+    self.errors.add :pickups, :not_float if e.is_a?(ArgumentError) || e.is_a?(TypeError)
+  end
+
+  def deliveries_validator
+    !deliveries || deliveries.values.each do |q|
+      value = Float(q)
+      self.errors.add :deliveries, :negative_value, **{value: q} if value < 0
+    end
+  rescue StandardError => e
+    self.errors.add :deliveries, :not_float if e.is_a?(ArgumentError) || e.is_a?(TypeError)
   end
 
   def destroy
@@ -154,15 +166,20 @@ class Visit < ApplicationRecord
   def api_attributes
     visit_attributes = attributes
 
-    # Deserialize quantities
+    # Deserialize pickups and deliveries
     if destination&.customer&.deliverable_units
       visit_attributes['quantities'] = destination.customer.deliverable_units.map { |du|
-        next if !quantities.key?(du.id)
+        next if !pickups.key?(du.id) && !deliveries.key?(du.id)
+
         {
           deliverable_unit_id: du.id,
-          quantity: quantities[du.id]
+          delivery: deliveries[du.id],
+          pickup: pickups[du.id]
         }.delete_if { |_k, v| v.nil? || v == "" }
       }.compact
+
+      visit_attributes.delete('pickups')
+      visit_attributes.delete('deliveries')
     end
 
     visit_attributes
@@ -176,26 +193,37 @@ class Visit < ApplicationRecord
     duration_time_with_seconds || destination.customer.visit_duration_time_with_seconds
   end
 
-  def default_quantities
-    @default_quantities ||= begin
+  def default_deliveries
+    @default_deliveries ||= begin
       @deliverable_units ||= destination.customer.deliverable_units
 
       @deliverable_units.each_with_object({}) do |du, hash|
-        hash[du.id] = quantities && quantities[du.id] || du.default_quantity
+        hash[du.id] = deliveries && deliveries[du.id] || du.default_delivery
+      end
+    end
+  end
+
+  def default_pickups
+    @default_pickups ||= begin
+      @deliverable_units ||= destination.customer.deliverable_units
+
+      @deliverable_units.each_with_object({}) do |du, hash|
+        hash[du.id] = pickups && pickups[du.id] || du.default_pickup
       end
     end
   end
 
   def default_quantities?
-    default_quantities&.values&.any?{ |q| q.present? }
+    default_deliveries&.values&.any?{ |q| q.present? } || default_pickups&.values&.any?{ |q| q.present? }
   end
 
   def quantities?
-    quantities&.values&.any?{ |q| q.present? }
+    pickups&.values&.any?{ |q| q.present? } || deliveries&.values&.any?{ |q| q.present? }
   end
 
   def quantities_changed?
-    !quantities.empty? ? quantities.any?{ |i, q| q != quantities_was[i] } : !quantities_was.empty?
+    (!deliveries.empty? ? deliveries.any?{ |i, q| q != deliveries_was[i] } : !deliveries_was.empty?) ||
+      (!pickups.empty? ? pickups.any?{ |i, q| q != pickups_was[i] } : !pickups_was.empty?)
   end
 
   def color
@@ -247,8 +275,8 @@ class Visit < ApplicationRecord
 
   def update_outdated
     if @tag_ids_changed || time_window_start_1_changed? || time_window_end_1_changed? ||
-       time_window_start_2_changed? || time_window_end_2_changed? || quantities_changed? ||
-       duration_changed? || force_position_changed? || revenue_changed?
+       time_window_start_2_changed? || time_window_end_2_changed? || pickups_changed? ||
+       deliveries_changed? || duration_changed? || force_position_changed? || revenue_changed?
       outdated
     end
   end

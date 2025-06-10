@@ -186,7 +186,8 @@ class Customer < ApplicationRecord
 
         destination.visits.each{ |visit|
           visit.tags = visit.tags.collect{ |tag| tags_map[tag] }
-          visit.quantities = Hash[visit.quantities.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
+          visit.pickups = Hash[visit.pickups.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
+          visit.deliveries = Hash[visit.deliveries.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
           visit.force_check_consistency = true
           visit.save! validate: Planner::Application.config.validate_during_duplication
         }
@@ -209,7 +210,8 @@ class Customer < ApplicationRecord
         # All routes must be caught in memory, don't use scopes
         planning.routes.each{ |route|
           route.vehicle_usage = vehicle_usages_map[route.vehicle_usage]
-          route.quantities = Hash[route.quantities.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
+          route.pickups = Hash[route.pickups.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
+          route.deliveries = Hash[route.deliveries.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
 
           route.stops.each{ |stop|
             stop.visit = visits_map[stop.visit]
@@ -228,10 +230,11 @@ class Customer < ApplicationRecord
       }
       column_def = copy.advanced_options.dig('import', 'destinations', 'spreadsheetColumnsDef')
       if column_def.present?
-        column_def.keys.select{ |key| key.start_with?('quantity') }.each do |key|
-          prefix = 'quantity'
-          d_id = deliverable_unit_ids_map[key.delete_prefix(prefix).to_i].id
-          column_def["#{prefix}#{d_id}"] = column_def.delete(key)
+        %w(pickup delivery).each do |prefix|
+          column_def.keys.select{ |key| key.start_with?(prefix) }.each do |key|
+            d_id = deliverable_unit_ids_map[key.delete_prefix(prefix).to_i].id
+            column_def["#{prefix}#{d_id}"] = column_def.delete(key)
+          end
         end
       end
 
@@ -455,7 +458,7 @@ class Customer < ApplicationRecord
 
   def create_default_deliverable_unit
     deliverable_units.create(
-      default_quantity: 1
+      default_delivery: 1
     )
   end
 

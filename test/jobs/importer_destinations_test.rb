@@ -147,7 +147,7 @@ class ImporterDestinationsTest < ActionController::TestCase
           assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_one.csv', 'text.csv')).import
 
           visit = Visit.last
-          assert_equal 1.23, visit.quantities[1]
+          assert_equal 1.23, visit.deliveries[1]
           assert_nil visit.priority
 
           stop = Planning.last.routes.collect{ |r| r.stops.find{ |s| s.is_a?(StopVisit) && s.visit.destination.name == 'BF' } }.compact.first
@@ -335,7 +335,7 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_equal 1.5, destination.lat
     assert_nil destination.geocoding_accuracy
     assert_equal 'point', destination.geocoding_level
-    assert_equal [[1]], destination.visits.map{ |v| v.quantities.values }
+    assert_equal [[1]], destination.visits.map{ |v| v.deliveries.values }
     assert_equal 'unaffected_two_update', Destination.find_by(ref:'unknown').visits.first.name
 
     assert_no_difference('Destination.count') do
@@ -354,13 +354,13 @@ class ImporterDestinationsTest < ActionController::TestCase
       end
     end
     destination = Destination.find_by(ref:'a')
-    assert_equal [[2]], destination.visits.map{ |v| v.quantities.values }
+    assert_equal [[2]], destination.visits.map{ |v| v.deliveries.values }
     destination = Destination.find_by(ref:'b')
-    assert_equal [[3]], destination.visits.map{ |v| v.quantities.values }
+    assert_equal [[3]], destination.visits.map{ |v| v.deliveries.values }
     destination = Destination.find_by(ref:'c')
-    assert_equal [[5]], destination.visits.map{ |v| v.quantities.values }
+    assert_equal [[5]], destination.visits.map{ |v| v.deliveries.values }
     destination = Destination.find_by(ref:'d')
-    assert_equal [[2], [4]], destination.visits.map{ |v| v.quantities.values }
+    assert_equal [[2], [4]], destination.visits.map{ |v| v.deliveries.values }
   end
 
   test 'should import with route error in new planning' do
@@ -482,9 +482,10 @@ class ImporterDestinationsTest < ActionController::TestCase
         assert_difference('Destination.count', 1) do
           ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile("test/fixtures/files/import_destinations_#{locale.to_s.upcase}.csv", "text.csv")).import
         end
-        assert 49.173419, Destination.last.lat
-        assert -0.326613, Destination.last.lng
-        assert_equal 39.482, Visit.last.quantities[2]
+        assert_equal 49.173419, Destination.last.lat
+        assert_equal(-0.326613, Destination.last.lng)
+        assert_equal 39.482, Visit.last.deliveries[2]
+        assert_equal nil, Visit.last.pickups[2]
       end
     ensure
       I18n.locale = orig_locale
@@ -526,7 +527,7 @@ class ImporterDestinationsTest < ActionController::TestCase
         assert_not_nil decoded_point['properties']['route_id']
       end if route.geojson_tracks
 
-      assert_not route.quantities.to_s.blank?
+      assert_not route.deliveries.to_s.blank?
     end
   end
 

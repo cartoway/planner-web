@@ -109,14 +109,14 @@ class V01::Devices::PraxedoTest < ActiveSupport::TestCase
       updated_quantities = [5, 10, 30]
       @route.stops.each_with_index do |stop, i|
         if stop.is_a?(StopVisit)
-          assert_equal stop.visit.quantities[2], updated_quantities[i]
+          assert_equal stop.visit.deliveries[2], updated_quantities[i]
         end
       end
 
       # Check for out of capacity
-      assert_not @route.stops[0].out_of_capacity
+      assert @route.stops[0].out_of_capacity
       assert @route.stops[1].out_of_capacity
-      assert @route.stops[2].out_of_capacity
+      assert_not @route.stops[2].out_of_capacity
     end
   end
 

@@ -1,4 +1,6 @@
 class V100::Entities::Visit < Grape::Entity
+  include QuantitiesEntityHelper
+
   def self.entity_name
     'V100_Visit'
   end
@@ -6,12 +8,7 @@ class V100::Entities::Visit < Grape::Entity
   expose(:id, documentation: { type: Integer })
   expose(:destination_id, documentation: { type: Integer })
   expose(:quantities, using: V100::Entities::DeliverableUnitQuantity, documentation: { type: V100::Entities::DeliverableUnitQuantity, is_array: true }) { |m|
-    m.destination.customer.deliverable_units.map{ |du|
-      {
-        deliverable_unit_id: du.id,
-        quantity: m.quantities[du.id]
-      } if m.quantities[du.id]
-    }.compact
+    convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
   }
   expose(:time_window_start_1, documentation: { type: DateTime }) { |m| m.time_window_start_1_absolute_time_with_seconds }
   expose(:time_window_end_1, documentation: { type: DateTime }) { |m| m.time_window_end_1_absolute_time_with_seconds }
