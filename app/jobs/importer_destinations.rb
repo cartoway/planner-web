@@ -20,6 +20,7 @@ require 'geocoder_destinations_job'
 require 'value_to_boolean'
 
 class ImporterDestinations < ImporterBase
+  include ConvertDeprecatedHelper
   attr_accessor :plannings
 
   def initialize(customer, planning_hash = nil)
@@ -91,6 +92,8 @@ class ImporterDestinations < ImporterBase
     }.merge(Hash[@deliverable_units.flat_map{ |du|
       [
         ["quantity#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.quantity_desc'), format: I18n.t('destinations.import_file.format.float')}],
+        ["pickup#{du.id}".to_sym, {title: I18n.t('destinations.import_file.pickup') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.pickup_desc'), format: I18n.t('destinations.import_file.format.float')}],
+        ["delivery#{du.id}".to_sym, {title: I18n.t('destinations.import_file.delivery') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.delivery_desc'), format: I18n.t('destinations.import_file.format.float')}],
       ]
     }]).merge(Hash[@customer.custom_attributes.for_visit.map { |ca|
     ["custom_attributes_visit[#{ca.name}]", { title: "#{I18n.t('destinations.import_file.custom_attributes_visit')}[#{ca.name}]", format: I18n.t("destinations.import_file.format.#{ca.object_type}")}]
@@ -104,6 +107,7 @@ class ImporterDestinations < ImporterBase
   def import_columns
     columns_planning.merge(columns_route).merge(columns_destination).merge(columns_visit).merge(
       without_visit: {title: I18n.t('destinations.import_file.without_visit'), desc: I18n.t('destinations.import_file.without_visit_desc'), format: I18n.t('destinations.import_file.format.yes_no')},
+      # Deals with deprecated quantities replaced by pickups and deliveries
       quantities: {}, # only for json import
       # Deals with deprecated open and close
       open: {title: I18n.t('destinations.import_file.open'), desc: I18n.t('destinations.import_file.open_desc'), format: I18n.t('destinations.import_file.format.hour'), required: I18n.t('destinations.import_file.format.deprecated')},
@@ -127,16 +131,19 @@ class ImporterDestinations < ImporterBase
           v.delete(:tags)
           v[:tag_visits].uniq!
           if v[:quantities] && v[:quantities].is_a?(Array)
-            quantity_hash = {}
+            pickup_hash = {}
+            delivery_hash = {}
             v[:quantities].map{ |q|
               if q[:deliverable_unit_label] && !q[:deliverable_unit_id]
                 du = @deliverable_unit_hash[q[:deliverable_unit_label]] || @customer.deliverable_units.create(label: q[:deliverable_unit_label])
                 @deliverable_unit_hash[q[:deliverable_unit_label]] = du
                 q[:deliverable_unit_id] = du.id
               end
-              quantity_hash[q[:deliverable_unit_id]] = q[:quantity]
+              pickup_hash[q[:deliverable_unit_id]] = q[:pickup]
+              delivery_hash[q[:deliverable_unit_id]] = q[:delivery]
             }
-            v[:quantities] = quantity_hash
+            v[:pickups] = pickup_hash
+            v[:deliveries] = delivery_hash
           end
           dest.except(:visits).merge(v)
         }
@@ -178,17 +185,20 @@ class ImporterDestinations < ImporterBase
     @plannings_hash = Hash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref.downcase.to_sym, plan] }]
 
     if options[:line_shift] == 1
+      labels = %w[delivery pickup quantity]
       # Create missing deliverable units if needed
       column_titles = data[0].is_a?(Hash) ? data[0].keys : data.size > 0 ? data[0].map{ |a| a[0] } : []
       unit_labels = @deliverable_units.map(&:label)
       column_titles.each{ |name|
-        m = Regexp.new("^" + I18n.t('destinations.import_file.quantity') + "\\[(.*)\\]$").match(name)
-        if m && unit_labels.exclude?(m[1])
-          unit_labels.delete_at(unit_labels.index(m[1])) if unit_labels.index(m[1])
-          @deliverable_units << @customer.deliverable_units.create(label: m[1])
-          @deliverable_unit_hash[m[1]] = @deliverable_units.last
-          @columns = nil # Reset columns "cache"
-        end
+        labels.each{ |label|
+          m = Regexp.new("^" + I18n.t("destinations.import_file.#{label}") + "\\[(.*)\\]$").match(name)
+          if m && unit_labels.exclude?(m[1])
+            unit_labels.delete_at(unit_labels.index(m[1])) if unit_labels.index(m[1])
+            @deliverable_units << @customer.deliverable_units.create(label: m[1])
+            @deliverable_unit_hash[m[1]] = @deliverable_units.last
+            @columns = nil # Reset columns "cache"
+          end
+        }
       }
       @customer.save!
     end
@@ -215,7 +225,7 @@ class ImporterDestinations < ImporterBase
     # @plannings_by_ref set in import_row in order to have internal row title
     @plannings_by_ref = {}
     @@col_dest_keys ||= columns_destination.keys + [:tag_ids]
-    @col_visit_keys = columns_visit.keys + [:tag_visit_ids, :quantities, :custom_attributes_visit]
+    @col_visit_keys = columns_visit.keys + [:tag_visit_ids, :pickups, :deliveries, :custom_attributes_visit]
     @@slice_attr ||= (@@col_dest_keys - [:customer_id, :lat, :lng]).collect(&:to_s)
 
     # Used tp link rows to objects created through bulk imports
@@ -240,36 +250,70 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_quantities(row)
+    # Handle quantity[x] columns
     q = {}
-    qo = {}
     row.each{ |key, value|
       /^quantity([0-9]+)$/.match(key.to_s) { |m|
-        q.merge! Integer(m[1]) => row.delete(m[0].to_sym)
+        q.merge! Integer(m[1]) => CoerceFloatString.parse(row.delete(m[0].to_sym))
       }
     }
     row[:quantities] = q unless q.empty?
 
-    # Deals with deprecated quantity
-    if !row.key?(:quantities)
-      if row.key?(:quantity) && @deliverable_units.size > 0
-        row[:quantities] = {@deliverable_units[0].id => row.delete(:quantity)}
-      elsif (row.key?(:quantity1_1) || row.key?(:quantity1_2)) && @deliverable_units.size > 0
-        row[:quantities] = {}
-        row[:quantities].merge!({@deliverable_units[0].id => row.delete(:quantity1_1)}) if row.key?(:quantity1_1)
-        row[:quantities].merge!({@deliverable_units[1].id => row.delete(:quantity1_2)}) if row.key?(:quantity1_2) && @deliverable_units.size > 1
-      end
-    end
-    row[:quantities]&.each{ |k, v|
-      v = v.gsub(/,/, '.') if v.is_a?(String)
-      row[:quantities][k] = v&.to_f
+    # Handle pickup[x] columns
+    p = {}
+    row.each{ |key, value|
+      /^pickup([0-9]+)$/.match(key.to_s) { |m|
+        p.merge! Integer(m[1]) => CoerceFloatString.parse(row.delete(m[0].to_sym))
+      }
     }
+    row[:pickups] = p unless p.empty?
+
+    # Handle delivery[x] columns
+    d = {}
+    row.each{ |key, value|
+      /^delivery([0-9]+)$/.match(key.to_s) { |m|
+        d.merge! Integer(m[1]) => CoerceFloatString.parse(row.delete(m[0].to_sym))
+      }
+    }
+    row[:deliveries] = d unless d.empty?
+
+    # Deals with deprecated quantity columns
+    convert_deprecated_quantities(row, @deliverable_units)
+
+    # handle grape format
+    if row[:quantities]
+      row[:deliveries] ||= {}
+      row[:pickups] ||= {}
+      if row[:quantities].is_a?(Array)
+        row[:quantities].each{ |quantity|
+          row[:deliveries][quantity[:deliverable_unit_id]] = quantity[:delivery] if quantity[:delivery]
+          row[:pickups][quantity[:deliverable_unit_id]] = quantity[:pickup] if quantity[:pickup]
+        }
+      else
+        row[:quantities].each{ |unit_id, quantity|
+          row[:pickups][unit_id] = Float(quantity).abs if quantity && Float(quantity) < 0
+          row[:deliveries][unit_id] = Float(quantity) if quantity && Float(quantity) > 0
+        }
+      end
+      row.delete(:quantities)
+    end
   end
 
   def merge_visit_quantities(existing_visit, visit_attributes)
-    ((existing_visit&.dig(:quantities)&.keys || []) + (visit_attributes&.dig(:quantities)&.keys || [])).uniq.each{ |key|
-      next unless visit_attributes&.dig(:quantities, key) || existing_visit&.dig(:quantities, key)
+    # Merge pickups
+    ((existing_visit&.dig(:pickups)&.keys || []) + (visit_attributes&.dig(:pickups)&.keys || [])).uniq.each{ |key|
+      next unless visit_attributes&.dig(:pickups, key) || existing_visit&.dig(:pickups, key)
 
-      visit_attributes[:quantities][key] = (visit_attributes&.dig(:quantities, key) || 0) + (existing_visit&.dig(:quantities, key) || 0)
+      visit_attributes[:pickups] ||= {}
+      visit_attributes[:pickups][key] = (visit_attributes&.dig(:pickups, key) || 0) + (existing_visit&.dig(:pickups, key) || 0)
+    }
+
+    # Merge deliveries
+    ((existing_visit&.dig(:deliveries)&.keys || []) + (visit_attributes&.dig(:deliveries)&.keys || [])).uniq.each{ |key|
+      next unless visit_attributes&.dig(:deliveries, key) || existing_visit&.dig(:deliveries, key)
+
+      visit_attributes[:deliveries] ||= {}
+      visit_attributes[:deliveries][key] = (visit_attributes&.dig(:deliveries, key) || 0) + (existing_visit&.dig(:deliveries, key) || 0)
     }
   end
 

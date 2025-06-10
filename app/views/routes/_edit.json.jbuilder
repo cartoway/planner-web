@@ -176,7 +176,7 @@ if @with_stops
           json.orders order.products.collect(&:code).join(', ')
         end
       else
-        # Hash { id, quantity, icon, label } for deliverable units
+        # Hash { id, quantity, pickup, delivery, icon, label } for deliverable units
         json.quantities visit_quantities(visit, route.vehicle_usage_id && route.vehicle_usage.vehicle)
       end
       if stop.status && planning.customer.enable_stop_status

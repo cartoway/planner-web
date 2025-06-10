@@ -60,12 +60,18 @@ class V01::VisitsGet < Grape::API
                 icon_size: visit.icon_size
               }
             }
-            feat[:properties][:quantities] = visit.default_quantities.map { |k, v|
-              {
-                deliverable_unit_id: k,
-                quantity: v
-              }
-            } if params[:quantities]
+            feat[:properties][:quantities] = []
+            deliveries = visit.default_deliveries
+            pickups = visit.default_pickups
+            current_customer.deliverable_units.each { |du|
+              next if pickups[du.id].blank? && deliveries[du.id].blank?
+
+              feat[:properties][:quantities] << {
+                deliverable_unit_id: du.id,
+                pickup: pickups[du.id],
+                delivery: deliveries[du.id]
+              }.compact
+            }
             feat.to_json
           end
         }.compact.join(',') + ']}'

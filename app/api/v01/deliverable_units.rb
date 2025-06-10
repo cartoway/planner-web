@@ -24,12 +24,16 @@ class V01::DeliverableUnits < Grape::API
     def deliverable_unit_params
       p = ActionController::Parameters.new(params)
       p = p[:deliverable_unit] if p.key?(:deliverable_unit)
-      p.permit(:label, :ref, :default_quantity, :optimization_overload_multiplier, :icon)
+      p[:default_delivery] = p[:default_quantity] if p.key?(:default_quantity) && p[:default_quantity] > 0
+      p[:default_pickup] = p[:default_quantity].abs if p.key?(:default_quantity) && p[:default_quantity] < 0
+      p.delete(:default_quantity) if p.key?(:default_quantity)
+
+      p.permit(:label, :ref, :default_pickup, :default_delivery, :optimization_overload_multiplier, :icon)
     end
   end
 
   resource :deliverable_units do
-    desc 'Fetch customer\'s deliverable units. At least one deliverable unit exists per customer. The deliverable unit purposes is to link quantities associated to visits to vehicle capacities.',
+    desc 'Fetch customer\'s deliverable units. At least one deliverable unit exists per customer. The deliverable unit purposes is to link pickup and delivery quantities associated to visits to vehicle capacities.',
       nickname: 'getDeliverableUnits',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::DeliverableUnit),
@@ -58,7 +62,7 @@ class V01::DeliverableUnits < Grape::API
     end
 
     desc 'Create deliverable unit.',
-      detail: '(Note a default deliverable unit is already automatically created with a customer.) By creating a new deliverable unit, it will be possible to specify quantities and capacities for this another unit.',
+      detail: '(Note a default deliverable unit is already automatically created with a customer.) By creating a new deliverable unit, it will be possible to specify pickup and delivery quantities and capacities for this another unit.',
       nickname: 'createDeliverableUnit',
       success: V01::Status.success(:code_201, V01::Entities::DeliverableUnit),
       failure: V01::Status.failures

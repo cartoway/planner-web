@@ -265,17 +265,22 @@ class VehicleUsage < ApplicationRecord
   end
 
   def quantities(planning)
+    units = planning.customer.deliverable_units
     hash = []
-    planning.routes.find{ |route|
-      route.vehicle_usage == self
-    }.quantities.select{ |_k, value| value > 0 }.each do |id, value|
-      unit = planning.customer.deliverable_units.find{ |du| du.id == id }
-      next unless unit
+    route =
+      planning.routes.find{ |route|
+        route.vehicle_usage == self
+      }
+    units.each do |unit|
+      next if route.deliveries[id].nil? && route.pickups[id].nil?
+
       hash << {
         deliverable_unit_id: unit.id,
         label: unit.label,
         unit_icon: unit.default_icon,
-        quantity: value
+        quantity: (route.deliveries[id] || 0) - (route.pickups[id] || 0),
+        pickup: route.pickups[id] || 0,
+        delivery: route.deliveries[id] || 0,
       }
     end
     hash

@@ -13,7 +13,7 @@
   {{#averages}}
     {{#total_quantities}}
       <div class="col-xs-4 route-data-advanced" title="{{#i18n}}plannings.edit.quantity_help{{/i18n}}"><!--
-        --><div class="{{#out_of_capacity}}danger{{/out_of_capacity}} primary route-info"><i class="fa {{unit_icon}} fa-fw"></i>{{quantity}}{{#capacity}}&nbsp;/&nbsp;{{capacity}}{{/capacity}}<!--
+        --><div class="{{#out_of_capacity}}danger{{/out_of_capacity}} primary route-info"><i class="fa {{unit_icon}} fa-fw"></i><i class="fa fa-down-long fa-fw"></i>{{delivery}}{{#capacity}}&nbsp;/&nbsp;{{capacity}}{{/capacity}}<i class="fa fa-up-long fa-fw"></i>{{pickup}}{{#capacity}}&nbsp;/&nbsp;{{capacity}}{{/capacity}}<!--
         -->{{#label}}&nbsp;{{label}}{{/label}}
       </div></div>
     {{/total_quantities}}

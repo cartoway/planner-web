@@ -20,16 +20,21 @@
         = f.text_field :ref do
           %p.help-block= t '.ref_help'
       - unless visit.destination.customer.enable_orders
-        #visit_quantity_input{class: "#{nested_has_error?(:quantities, visit.id)}"}
-          %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.visit.quantities'
+        #visit_quantity_input{class: "#{nested_has_error?(:pickups, visit.id)} #{nested_has_error?(:deliveries, visit.id)}"}
+          %label.col-md-offset-2.col-md-8.field
+            .col-md-4.p-0
+              = t 'activerecord.attributes.visit.pickups'
+            .col-md-4.p-0{ style: 'margin-left: -15px;' }
+              = t 'activerecord.attributes.visit.deliveries'
           .col-md-offset-2.col-md-8.field
             - visit.destination.customer.deliverable_units.each do |du|
               .input-group{"data-deliverable_unit_id" => "#{du.id}"}
-                = number_field "destination[visits_attributes][#{i}][quantities]", du.id, value: visit.quantities && visit.quantities[du.id], placeholder: du.default_quantity && t('.quantities.default', n: du.localized_default_quantity), class: 'form-control width_2_3', step: 'any'
+                = number_field "destination[visits_attributes][#{i}][pickups]", du.id, value: visit.pickups && visit.pickups[du.id], placeholder: du.default_pickup && t('web.form.default', n: du.localized_default_pickup), class: 'form-control width_1_3', step: 'any'
+                = number_field "destination[visits_attributes][#{i}][deliveries]", du.id, value: visit.deliveries && visit.deliveries[du.id], placeholder: du.default_delivery && t('web.form.default', n: du.localized_default_delivery), class: 'form-control width_1_3', step: 'any'
                 = text_field "destination[visits_attributes][#{i}][quantities_unit]", du.id, value: du.label, class: 'form-control width_1_3', placeholder: t('deliverable_units.form.label_placeholder'), disabled: true
                 %span.input-group-addon
                   %i{class: "fa #{du.default_icon} fa-fw"}
-            %p.help-block= t '.quantities.help'
+            %p.help-block= t '.pickups_deliveries.help'
       = f.text_field :duration,
         value: visit.duration_time_with_seconds,
         placeholder: visit.destination.customer.visit_duration ? "#{visit.destination.customer.visit_duration_time_with_seconds} (#{t('.duration_default')})" : t('all.unit.hour_minute_second'),

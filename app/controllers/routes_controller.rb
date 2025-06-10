@@ -223,8 +223,11 @@ class RoutesController < ApplicationController
       :tags_visit
     ] + (@route.planning.customer.enable_orders ?
       [:orders] :
-      @route.planning.customer.deliverable_units.map{ |du|
-        ('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym
+      @route.planning.customer.deliverable_units.flat_map{ |du|
+        [
+          ('pickup' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym,
+          ('delivery' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym
+        ]
       })
   end
 end

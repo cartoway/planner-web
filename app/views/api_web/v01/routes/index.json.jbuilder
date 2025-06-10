@@ -10,7 +10,8 @@ json.routes @routes do |route|
   json.size_destinations route.size_destinations if route.size_destinations != route.size_active
   json.ref route.ref if @planning.customer.enable_references
   unless @planning.customer.enable_orders
-    json.quantities route.quantities
+    json.pickups route.pickups
+    json.deliveries route.deliveries
   end
   if route.vehicle_usage_id
     json.vehicle_id route.vehicle_usage.vehicle.id
@@ -66,7 +67,7 @@ json.routes @routes do |route|
           json.orders order.products.collect(&:code).join(', ')
         end
       else
-        # Hash { id, quantity, icon, label } for deliverable units
+        # Hash { id, quantity, pickup, delivery, icon, label } for deliverable units
         json.quantities visit_quantities(visit, route.vehicle_usage_id && route.vehicle_usage.vehicle)
       end
     elsif stop.is_a?(StopRest)

@@ -27,34 +27,39 @@ module RoutesHelper
   end
 
   def route_quantities(planning, route)
-    deliverable_unit_hash = planning.customer.deliverable_units.index_by(&:id)
     vehicle = route.vehicle_usage.try(:vehicle)
-    route.quantities.collect{ |id, v|
-      unit = deliverable_unit_hash[id]
-      next unless unit
+    quantities = []
+    units = planning.customer.deliverable_units
 
-      loading = vehicle && route.loadings[id]
-      capacity = vehicle && vehicle.default_capacities[id]
-      next if v.zero? && !loading
+    units.each do |unit|
+      pickup = route.pickups[unit.id].to_f
+      delivery = route.deliveries[unit.id].to_f
+      next if pickup == 0 && delivery == 0
+
+      quantity = delivery - pickup
+      capacity = vehicle && vehicle.default_capacities[unit.id]
 
       q =
-        if loading && loading > 0
-          number_with_precision(loading, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true)
+        if route.deliveries[unit.id] && delivery > 0
+          number_with_precision(delivery, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true)
         else
-          number_with_precision(v, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
+          number_with_precision(quantity, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
         end
-      q += ' / ' + number_with_precision(vehicle.default_capacities[id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[id]
+      q += ' / ' + number_with_precision(vehicle.default_capacities[unit.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[unit.id]
       q += "\u202F" + unit.label if unit.label
-      {
-        id: id,
-        quantity: v,
-        loading: loading,
+      quantities << {
+        id: unit.id,
+        quantity: quantity,
+        pickup: number_with_precision(pickup, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
+        delivery: number_with_precision(delivery, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
         label: unit.label,
         unit_icon: unit.default_icon,
         quantity_formatted: q,
-        out_of_capacity: capacity && v > capacity
+        out_of_capacity: capacity && (pickup > capacity || delivery > capacity)
       }
-    }.compact
+    end
+
+    quantities
   end
 
   def export_column_titles(customer, columns, custom_columns)

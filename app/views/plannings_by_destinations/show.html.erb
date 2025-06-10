@@ -26,7 +26,10 @@
       </thead>
 
       <tbody>
+        <% units = @customer.deliverable_units.index_by(&:id) %>
         <% @stop_visits.each do |stop_visit| %>
+          <% default_deliveries = stop_visit.visit.default_deliveries %>
+          <% default_pickups = stop_visit.visit.default_pickups %>
           <tr>
             <td>
               <input type="checkbox" class="stop-id"
@@ -54,11 +57,32 @@
               </a>
             </td>
             <td>
-              <% stop_visit.visit.default_quantities.select{ |_k, value| value }.each do |id, value|
-                  unit = @customer.deliverable_units.find{ |du| du.id == id }
-                  next unless unit
-              %>
-              <div >
+              <% @customer.deliverable_units.each do |unit| %>
+                <% pickup = default_pickups[unit.id] %>
+                <% delivery = default_deliveries[unit.id] %>
+                <% next if pickup.nil? && delivery.nil? %>
+
+                <div>
+                  <span class="primary route-info" data-toggle="tooltip">
+                    <i class="fa <%= unit.default_icon %> fa-fw"></i>
+                    <span class="quantity-<%= stop_visit.id %>"
+                      data-deliverable-unit-id="<%= unit.id %>"
+                      data-quantity="<%= (delivery || 0) - (pickup || 0) %>"
+                      data-pickup="<%= pickup %>"
+                      data-delivery="<%= delivery %>"
+                      data-unit-icon="<%= unit.default_icon %>">
+                    </span><%= unit.label %>
+                    <i class="fa fa-up-long fa-fw"></i>
+                    <%= number_with_precision(pickup, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s %>
+                    <i class="fa fa-down-long fa-fw"></i>
+                    <%= number_with_precision(delivery, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s %>
+                  </span>
+                </div>
+              <% end %>
+              <% stop_visit.visit.default_pickups.select{ |_k, value| value }.each do |id, value|
+                  unit = units[id]
+                  next unless unit %>
+              <div>
                 <span class="primary route-info" data-toggle="tooltip">
                   <i class="fa <%= unit.default_icon %> fa-fw"></i>
                   <span class="quantity-<%= stop_visit.id %>"

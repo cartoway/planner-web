@@ -701,7 +701,10 @@ class PlanningsController < ApplicationController
       (@customer || @planning.customer).enable_orders ?
         [:orders] :
         (@customer || @planning.customer).deliverable_units.flat_map{ |du|
-          [('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym]
+          [
+            ('pickup' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym,
+            ('delivery' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym
+          ]
         }
     ) +
     (@customer || @planning.customer).custom_attributes.for_visit.map{ |ca|

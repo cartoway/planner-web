@@ -21,13 +21,10 @@ if @customer.is_editable?
       json.duration visit.duration_time_with_seconds
       json.duration visit.default_duration_time_with_seconds
       unless @customer.enable_orders
-        if @customer.deliverable_units.size == 1
-          json.quantity visit.quantities && visit.quantities[@customer.deliverable_units[0].id]
-          json.quantity_default @customer.deliverable_units[0].default_quantity
-        elsif visit.default_quantities.values.compact.size > 1
+        if (visit.default_pickups.keys & visit.default_deliveries.keys).compact.size > 1
           json.multiple_quantities true
         end
-        # Hash { id, quantity, icon, label } for deliverable units
+        # Hash { id, quantity, pickup, delivery, icon, label } for deliverable units
         json.quantities visit_quantities(visit, nil)
       end
       json.time_window_start_1 visit.time_window_start_1_absolute_time

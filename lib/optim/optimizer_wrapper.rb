@@ -240,6 +240,7 @@ class OptimizerWrapper
   end
 
   def build_services(planning, routes, stops, **options)
+    units = planning.customer.deliverable_units
     point_hash = {}
     route_ids = routes.map(&:id)
     enable_upper_bound = options.key?(:enable_optimization_soft_upper_bound) ? options[:enable_optimization_soft_upper_bound] : planning.customer.enable_optimization_soft_upper_bound
@@ -278,12 +279,15 @@ class OptimizerWrapper
           setup_duration: stop.destination_duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
         priority: stop.priority && (stop.priority.to_i - 4).abs,
-        quantities: stop.visit&.default_quantities&.map{ |k, v|
-          v ? {
-            unit_id: "u#{k}",
-            value: v
-          }.compact : nil
-        }&.compact || [],
+        quantities: units.map{ |unit|
+          next if stop.visit.nil? || stop.visit.default_pickups.key?(unit.id) && stop.visit.default_deliveries.key?(unit.id)
+
+          quantity = (stop.visit.default_deliveries[unit.id] || 0) - (stop.visit.default_pickups[unit.id] || 0)
+          {
+            unit_id: "u#{unit.id}",
+            value: quantity
+          }
+        }.compact,
         skills: (options[:use_skills] && tags_label) ? (options[:problem_skills] & tags_label) : nil
       }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? }
     }.compact
@@ -373,7 +377,6 @@ class OptimizerWrapper
 
     relations = []
     relations += filter_planning_stops_relations(planning, stops)
-    relations += negative_quantities_relations(stops)
     relations
   end
 
@@ -397,23 +400,6 @@ class OptimizerWrapper
       relation[:linked_ids].map!{ |id| "s#{id}"}
     }
     relations
-  end
-
-  def negative_quantities_relations(stops)
-    services_with_negative_quantities = []
-    stops.each{ |stop|
-      next if stop.is_a?(StopRest) ||
-              stop.visit.default_quantities&.values&.none?{ |q| q && q < 0 }
-
-      services_with_negative_quantities.push("s#{stop.id}")
-    }
-    return [] if services_with_negative_quantities.empty?
-
-    [{
-      id: :never_first,
-      type: :never_first,
-      linked_ids: services_with_negative_quantities
-    }]
   end
 
   def route_orders(routes, **options)

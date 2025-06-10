@@ -228,13 +228,14 @@ CREATE TABLE public.deliverable_units (
     id integer NOT NULL,
     customer_id integer,
     label character varying,
-    default_quantity double precision,
     default_capacity double precision,
     optimization_overload_multiplier double precision,
     ref character varying,
     icon character varying,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    default_pickup double precision,
+    default_delivery double precision
 );
 
 
@@ -744,7 +745,6 @@ CREATE TABLE public.routes (
     geojson_tracks text[],
     geojson_points text[],
     stop_no_path boolean,
-    quantities public.hstore,
     lock_version integer DEFAULT 0 NOT NULL,
     visits_duration integer,
     wait_time integer,
@@ -763,7 +763,8 @@ CREATE TABLE public.routes (
     cost_time double precision,
     revenue double precision,
     departure integer,
-    loadings public.hstore
+    pickups public.hstore,
+    deliveries public.hstore
 );
 
 
@@ -1350,7 +1351,6 @@ CREATE TABLE public.visits (
     destination_id integer NOT NULL,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    quantities public.hstore,
     time_window_start_1 integer,
     time_window_end_1 integer,
     duration integer,
@@ -1359,7 +1359,9 @@ CREATE TABLE public.visits (
     priority integer,
     force_position integer DEFAULT 0,
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
-    revenue double precision
+    revenue double precision,
+    pickups public.hstore,
+    deliveries public.hstore
 );
 
 
@@ -3140,4 +3142,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250527121446'),
 ('20250521075418'),
 ('20250609093623'),
-('20250609122139');
+('20250609122139'),
+('20250609124605');

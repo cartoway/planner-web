@@ -199,7 +199,6 @@ pt:
         label: Categoria
         ref: Referência
         icon: Icone
-        default_quantity: Quantidade por defeito
         default_capacity: Capacidade por defeito
         optimization_overload_multiplier: Coeficiente de sobrecarga
         operation_fill: Preenchimento
@@ -1214,9 +1213,6 @@ pt:
       label_placeholder: unidade
       label_help: Por exemplo "embalagem" ou uma unidade como "kg".
       ref_help: Referência livre
-      default_quantity_help: >-
-        Quantidade a entregar por defeito em todas as visitas (deixar vazio se
-        não existir quantidade).
       default_capacity_help: >-
         Capacidade por defeito de todos os seus veículos (deixar vazio se
         ilimitada).
