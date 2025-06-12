@@ -184,7 +184,6 @@ es:
         speed_multiplier: Ajuste de velocidad
         ref: Referencia
       deliverable_unit:
-        default_quantity: Cantidad por defecto
         default_capacity: Capacidad predeterminada
         optimization_overload_multiplier: Coeficiente sobrepaso
         label: Categoría
@@ -776,9 +775,6 @@ es:
     form:
       label_placeholder: unidad
       label_help: Por ejemplo «paquete» o una unidad como «kg».
-      default_quantity_help: >-
-        Cantidad predeterminada que debe entregarse a todas vuestras visitas
-        (dejar vacío si no hay cantidad).
       default_capacity_help: >-
         Capacidad predeterminada de todos sus vehículos (dejar vacío si
         ilimitado).

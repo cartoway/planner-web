@@ -140,26 +140,53 @@ class V01::VisitsTest < ActiveSupport::TestCase
     end
   end
 
-  test 'should update a visit with quantities or return parse error' do
+  test 'should update a visit with deprecated quantities or return parse error' do
 
     put api_destination(@destination.id, @visit.id), { quantities: [{ deliverable_unit_id: 1, quantity: 10 }] }.to_json, 'CONTENT_TYPE' => 'application/json'
     assert last_response.ok?, last_response.body
 
     visit = JSON.parse(last_response.body)
-    assert visit['quantities'][0]['deliverable_unit_id'], 1
-    assert visit['quantities'][0]['quantity'], 10
+    assert_equal 1, visit['quantities'][0]['deliverable_unit_id']
+    assert_equal 10, visit['quantities'][0]['quantity']
+    assert_equal 10, visit['quantities'][0]['delivery']
 
     put api_destination(@destination.id, @visit.id), { quantities: [{ deliverable_unit_id: 1, quantity: -10 }] }.to_json, 'CONTENT_TYPE' => 'application/json'
     assert last_response.ok?, last_response.body
 
     visit = JSON.parse(last_response.body)
-    assert visit['quantities'][0]['deliverable_unit_id'], 1
-    assert visit['quantities'][0]['quantity'], -10
+    assert_equal 1, visit['quantities'][0]['deliverable_unit_id']
+    assert_equal(-10, visit['quantities'][0]['quantity'])
+    assert_equal 10, visit['quantities'][0]['pickup']
 
     put api_destination(@destination.id, @visit.id), { quantities: [{ deliverable_unit: 1, quantity: 'aaa' }] }.to_json, 'CONTENT_TYPE' => 'application/json'
     assert last_response.bad_request?
     response = JSON.parse(last_response.body)
     assert_equal response['message'], 'quantities[0][quantity] is invalid, quantities[0][deliverable_unit_id], quantities[0][deliverable_unit_label] are missing, at least one parameter must be provided'
+  end
+
+  test 'should update a visit with quantities or return parse error' do
+
+    put api_destination(@destination.id, @visit.id), { quantities: [{ deliverable_unit_id: 1, delivery: 10 }] }.to_json, 'CONTENT_TYPE' => 'application/json'
+    assert last_response.ok?, last_response.body
+
+    visit = JSON.parse(last_response.body)
+    assert_equal 1, visit['quantities'][0]['deliverable_unit_id']
+    assert_equal 10, visit['quantities'][0]['quantity']
+    assert_equal 10, visit['quantities'][0]['delivery']
+
+    put api_destination(@destination.id, @visit.id), { quantities: [{ deliverable_unit_id: 1, pickup: 5, delivery: 1 }] }.to_json, 'CONTENT_TYPE' => 'application/json'
+    assert last_response.ok?, last_response.body
+
+    visit = JSON.parse(last_response.body)
+    assert_equal 1, visit['quantities'][0]['deliverable_unit_id']
+    assert_equal 5, visit['quantities'][0]['pickup']
+    assert_equal 1, visit['quantities'][0]['delivery']
+    assert_equal(-4, visit['quantities'][0]['quantity'])
+
+    put api_destination(@destination.id, @visit.id), { quantities: [{ deliverable_unit: 1, pickup: 'aaa' }] }.to_json, 'CONTENT_TYPE' => 'application/json'
+    assert last_response.bad_request?
+    response = JSON.parse(last_response.body)
+    assert_equal response['message'], 'quantities[0][pickup] is invalid, quantities[0][deliverable_unit_id], quantities[0][deliverable_unit_label] are missing, at least one parameter must be provided'
   end
 
   test 'should destroy a visit' do
@@ -220,7 +247,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
       visit_attributes.delete 'time_window_start_1'
       visit_attributes['close1'] = @visit.time_window_end_1_time_with_seconds
       visit_attributes.delete 'time_window_end_1'
-      post api_destination(@destination.id), visit_attributes.merge(ref: 'foo').except('id', 'quantities'), as: :json
+      post api_destination(@destination.id), visit_attributes.merge(ref: 'foo').except('id', 'pickups', 'deliveries'), as: :json
       assert last_response.created?, last_response.body
 
       visit = JSON.parse(last_response.body)
@@ -234,7 +261,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
       visit_attributes = @visit.attributes
       visit_attributes['open1'] = @visit.time_window_start_1_time_with_seconds
       visit_attributes['close1'] = @visit.time_window_end_1_time_with_seconds
-      post api_destination(@destination.id), visit_attributes.except('id', 'quantities'), as: :json
+      post api_destination(@destination.id), visit_attributes.except('id', 'pickups', 'deliveries'), as: :json
       refute last_response.created?, last_response.body
       assert_equal 400, last_response.status, last_response.body
       assert_match "time_window_start_1, open1 are mutually exclusive", JSON.parse(last_response.body)['message']
@@ -246,7 +273,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
     assert_difference('Visit.count', 0) do
       @visit.update(ref: 'foo')
       visit_attributes = @visit.attributes
-      post api_destination(@destination.id), visit_attributes.except('id', 'quantities'), as: :json
+      post api_destination(@destination.id), visit_attributes.except('id', 'pickups', 'deliveries'), as: :json
       refute last_response.created?, last_response.body
       assert_equal 400, last_response.status, last_response.body
       assert_match "Référence est déjà utilisé(e)", JSON.parse(last_response.body)['message']
@@ -257,7 +284,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
     positions = %w[always_first always_final never_first neutral]
     positions.each{ |position|
       assert_difference('Visit.count', 1) do
-        post api_destination(@destination.id), @visit.attributes.merge(force_position: position).except('id', 'quantities', 'ref'), as: :json
+        post api_destination(@destination.id), @visit.attributes.merge(force_position: position).except('id', 'pickups', 'deliveries', 'ref'), as: :json
         assert last_response.created?, last_response.body
         visit = JSON.parse(last_response.body)
         assert_equal position, visit['force_position']
@@ -266,7 +293,7 @@ class V01::VisitsTest < ActiveSupport::TestCase
   end
 
   test 'should not create a visit with invalid position' do
-    post api_destination(@destination.id), @visit.attributes.merge(force_position: 'invalid_position').except('id', 'quantities'), as: :json
+    post api_destination(@destination.id), @visit.attributes.merge(force_position: 'invalid_position').except('id', 'pickups', 'deliveries'), as: :json
     assert_equal 400, last_response.status, last_response.body
   end
 end

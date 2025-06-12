@@ -51,7 +51,13 @@
       .col-xs-4.route-data-advanced{title: t("plannings.edit.quantity_help")}
         .primary.route-info{class: ("danger" if unit[:out_of_capacity])}
           %i.fa.fa-fw{class: unit[:unit_icon]}
-          = unit[:quantity]
+          - if unit[:pickup] != '0'
+            %i.fa.fa-fw.fa-up-long{title: t("plannings.edit.pickup_help")}
+            = unit[:pickup]
+          - if unit[:delivery] != '0'
+            - if unit[:pickup] != '0'
+              %i.fa.fa-fw.fa-down-long{title: t("plannings.edit.delivery_help")}
+            = unit[:delivery]
           - if unit[:capacity]
             = " / #{unit[:capacity]}"
           /

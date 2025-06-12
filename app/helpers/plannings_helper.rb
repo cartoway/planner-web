@@ -85,17 +85,20 @@ module PlanningsHelper
 
   def self.vehicle_usage_quantities(planning, vehicle_usage)
     quantities = []
-    planning.routes.find{ |route|
+    units = planning.customer.deliverable_units
+    route = planning.routes.find{ |route|
       route.vehicle_usage == vehicle_usage
-    }.quantities.select{ |_k, value| value > 0 }.each do |id, value|
-      unit = planning.customer.deliverable_units.find{ |du| du.id == id }
-      next unless unit
+    }
+    units.each do |unit|
+      next if route.deliveries[unit.id].nil? && route.pickups[unit.id].nil?
 
       quantities << {
         deliverable_unit_id: unit.id,
         label: unit.label,
         unit_icon: unit.default_icon,
-        quantity: value
+        pickup: route.pickups[unit.id] || 0,
+        delivery: route.deliveries[unit.id] || 0,
+        quantity: (route.deliveries[unit.id] || 0) - (route.pickups[unit.id] || 0)
       }
     end
     quantities

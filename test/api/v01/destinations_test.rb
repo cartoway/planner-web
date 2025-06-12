@@ -174,7 +174,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               foo: 'bar',
               visits: [{
                 ref: 'v1',
-                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, quantity: 1}],
+                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, delivery: 1}],
                 time_window_start_1: '08:00',
                 time_window_end_1: '12:00',
                 time_window_start_2: '14:00',
@@ -207,7 +207,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
           planning = Planning.last
           visits = planning.routes.find{ |r| !r.vehicle_usage }.stops.map(&:visit)
           assert_equal ['v1', 'v2'], visits.map(&:ref)
-          assert_equal [1, 2], visits.flat_map{ |v| v.quantities.values }
+          assert_equal [1, 2], visits.flat_map{ |v| v.deliveries.values }
           assert_nil visits.first.priority
           assert_nil visits.second.priority
 
@@ -249,7 +249,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               foo: 'bar',
               visits: [{
                 ref: 'v1',
-                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, quantity: 1}],
+                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, delivery: 1}],
                 time_window_start_1: '08:00',
                 time_window_end_1: '12:00',
                 time_window_start_2: '14:00',
@@ -288,7 +288,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
               foo: 'bar',
               visits: [{
                 ref: 'v1',
-                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, quantity: 1}],
+                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, pickup: 1}],
                 time_window_start_1: '08:00',
                 time_window_end_1: '12:00',
                 time_window_start_2: '14:00',
@@ -328,7 +328,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             foo: 'bar',
             visits: [{
               ref: 'v1',
-              quantities: [{deliverable_unit_label: deliverable.label, quantity: 1}],
+              quantities: [{deliverable_unit_label: deliverable.label, delivery: 1}],
               time_window_start_1: '08:00',
               time_window_end_1: '12:00',
               time_window_start_2: '14:00',
@@ -342,7 +342,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
         get api()
         assert_equal deliverable.id, JSON.parse(last_response.body).find{ |destination| destination['name'] == 'Nouveau client' }['visits'][0]['quantities'][0]['deliverable_unit_id']
-        assert_equal 1, JSON.parse(last_response.body).find{ |destination| destination['name'] == 'Nouveau client' }['visits'][0]['quantities'][0]['quantity']
+        assert_equal 1, JSON.parse(last_response.body).find{ |destination| destination['name'] == 'Nouveau client' }['visits'][0]['quantities'][0]['delivery']
       end
     end
   end
@@ -375,7 +375,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             foo: 'bar',
             visits: [{
               ref: 'v1',
-              quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, quantity: 1}],
+              quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, delivery: 1}],
               time_window_start_1: '20:00',
               time_window_end_1: '32:00',
               time_window_start_2: '38:00',
@@ -890,7 +890,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     end
   end
 
-  test 'should update a destination' do
+  test 'should update a destination with deprecated quantity field' do
     [
       tags(:tag_one).id.to_s + ',' + tags(:tag_two).id.to_s,
       [tags(:tag_one).id, tags(:tag_two).id],
@@ -903,7 +903,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
       assert last_response.ok?, last_response.body
       destination = JSON.parse(last_response.body)
       assert_equal @destination.name, destination['name']
-      assert_equal 5, destination['visits'].find{ |v| v['ref'] == 'api' }['quantities'][0]['quantity']
+      assert_equal 5, destination['visits'].find{ |v| v['ref'] == 'api' }['quantities'][0]['delivery']
 
       get api(@destination.id)
       assert last_response.ok?, last_response.body
@@ -914,7 +914,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   test 'should catch excpetions when updating destination with wrong arguments' do
     put api, {
       destinations: [
-        @destination.attributes.merge(visits: [{quantities: [{label: 'kg', quantity: 10}]}])
+        @destination.attributes.merge(visits: [{quantities: [{label: 'kg', delivery: 10}]}])
       ]
     }.to_json, 'CONTENT_TYPE' => 'application/json'
     body = JSON.parse(last_response.body)

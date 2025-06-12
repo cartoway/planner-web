@@ -299,8 +299,8 @@ class CustomerTest < ActiveSupport::TestCase
                     assert_equal @customer.vehicles.map { |v| v.capacities.delete_if { |k, v| unit_ids.exclude? k }.values }, duplicate.vehicles.map { |v| v.capacities.values }
                     assert_equal [], @customer.vehicles.map { |v| v.capacities.delete_if { |k, v| unit_ids.exclude? k }.keys } & duplicate.vehicles.map { |v| v.capacities.keys }
 
-                    assert_equal @customer.destinations.flat_map { |dest| dest.visits.map { |v| v.quantities.delete_if { |k, v| unit_ids.exclude? k }.values } }, duplicate.destinations.flat_map { |dest| dest.visits.map { |v| v.quantities.values } }
-                    assert_equal [], @customer.destinations.flat_map { |dest| dest.visits.flat_map { |v| v.quantities.delete_if { |k, v| unit_ids.exclude? k }.keys } } & duplicate.destinations.flat_map { |dest| dest.visits.flat_map { |v| v.quantities.keys } }
+                    assert_equal @customer.destinations.flat_map { |dest| dest.visits.map { |v| v.deliveries.delete_if { |k, v| unit_ids.exclude? k }.values } }, duplicate.destinations.flat_map { |dest| dest.visits.map { |v| v.deliveries.values } }
+                    assert_equal [], @customer.destinations.flat_map { |dest| dest.visits.flat_map { |v| v.deliveries.delete_if { |k, v| unit_ids.exclude? k }.keys } } & duplicate.destinations.flat_map { |dest| dest.visits.flat_map { |v| v.deliveries.keys } }
 
                     assert duplicate.test, Planner::Application.config.customer_test_default
                     # end

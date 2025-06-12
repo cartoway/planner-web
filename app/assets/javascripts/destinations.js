@@ -428,15 +428,6 @@ const destinations_form = function(params, api) {
       selectTag(e);
     });
 
-    $('[name*=\\[quantities_operations\\]]').change(function() {
-      var $this = $(this);
-      var quantity = $this.closest('[data-deliverable_unit_id]').find('[name*=\\[quantities\\]]');
-      if (($this.val() == 'fill' || $this.val() == 'empty') && !quantity.val())
-        quantity.val('0');
-    });
-
-    $('.quantities_operations').popover();
-
     $('[name$=\\[priority\\]]', parent).slider({
       ticks: [-4, 0, 4],
       ticks_labels: [

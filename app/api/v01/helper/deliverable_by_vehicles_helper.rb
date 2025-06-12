@@ -31,21 +31,31 @@ module DeliverableByVehiclesHelper
   end
 
   def routes_quantities_by_deliverables(routes, deliverable_units)
-    quantities = routes.collect { |r| r.nil? ? nil : r[:quantities] }
+    pickups = routes.collect { |r| r.nil? ? nil : r.pickups }
+    deliveries = routes.collect { |r| r.nil? ? nil : r.deliveries }
+
     deliverable_units.map.with_index { |du|
-      quantities_map = map_quantities(quantities, du)
-      average = quantities_map.reduce(0) { |sum, du_quantity|
+      pickup_map = map_quantities(pickups, du)
+      delivery_map = map_quantities(deliveries, du)
+      pickup_average = pickup_map.reduce(0) { |sum, du_quantity|
+        sum += du_quantity if !du_quantity.nil?
+        sum
+      }
+      delivery_average = delivery_map.reduce(0) { |sum, du_quantity|
         sum += du_quantity if !du_quantity.nil?
         sum
       }
 
-      average = !quantities_map.empty? ? average / quantities_map.length : 0
+      pickup_average = !pickup_map.empty? ? pickup_average / pickup_map.length : 0
+      delivery_average = !delivery_map.empty? ? delivery_average / delivery_map.length : 0
 
       {
         label: du.label,
         icon: du.icon ? du.icon : 'fa-dumpster',
-        average: average,
-        quantities: quantities_map
+        pickup_average: pickup_average,
+        delivery_average: delivery_average,
+        pickups: pickup_map,
+        deliveries: delivery_map
       }
     }
   end
@@ -57,10 +67,12 @@ module DeliverableByVehiclesHelper
           active: false
         }
       else
-        quantity = routes_quantities.reduce(0) { |sum, du_quantity| sum + du_quantity[:quantities][i] }
+        pickup = routes_quantities.reduce(0) { |sum, du_quantity| sum + du_quantity[:pickups][i] }
+        delivery = routes_quantities.reduce(0) { |sum, du_quantity| sum + du_quantity[:deliveries][i] }
         {
           active: true,
-          total_quantity: number_with_precision(quantity, precision: 2, strip_insignificant_zeros: true),
+          total_pickup: number_with_precision(pickup, precision: 2, strip_insignificant_zeros: true),
+          total_delivery: number_with_precision(delivery, precision: 2, strip_insignificant_zeros: true),
           total_destinations: r.size_destinations,
           total_stops: r.size_active,
           total_drive_time: r.drive_time.to_i,
@@ -73,7 +85,8 @@ module DeliverableByVehiclesHelper
     averages = calc_averages(totals_per_route)
 
     {
-      quantity_average: number_with_precision(!routes.empty? ? averages[:quantity_average] / routes.length : 0, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
+      pickup_average: number_with_precision(!routes.empty? ? averages[:pickup_average] / routes.length : 0, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
+      delivery_average: number_with_precision(!routes.empty? ? averages[:delivery_average] / routes.length : 0, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
       destinations_average: number_with_precision(!routes.empty? ? averages[:destinations_average] / routes.length : 0, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
       stops_average: number_with_precision(!routes.empty? ? averages[:stops_average] / routes.length : 0, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
       visits_duration_average: !routes.empty? ? averages[:visits_time_average] / routes.length : 0,
@@ -87,7 +100,8 @@ module DeliverableByVehiclesHelper
     totals_per_route.reduce({
       destinations_average: 0,
       stops_average: 0,
-      quantity_average: 0,
+      pickup_average: 0,
+      delivery_average: 0,
       drive_time_average: 0,
       visits_time_average: 0,
       route_duration_average: 0
@@ -95,7 +109,8 @@ module DeliverableByVehiclesHelper
       if r[:active]
         sum[:destinations_average] += r[:total_destinations].to_f
         sum[:stops_average] += r[:total_stops].to_f
-        sum[:quantity_average] += r[:total_quantity].to_f
+        sum[:pickup_average] += r[:total_pickup].to_f
+        sum[:delivery_average] += r[:total_delivery].to_f
         sum[:visits_time_average] += r[:total_visits_time]
         sum[:drive_time_average] += r[:total_drive_time]
         sum[:route_duration_average] += r[:total_route_duration]

@@ -3,7 +3,8 @@
   <%= render 'shared/error_messages', model: @deliverable_unit %>
   <%= f.text_field :ref, help: t('.ref_help') %>
   <%= f.text_field :label, { placeholder: t('.label_placeholder'), help: t('.label_help') } %>
-  <%= f.number_field :default_quantity, { step: 'any', help: t('.default_quantity_help') } %>
+  <%= f.number_field :default_pickup, { step: 'any', help: t('.default_pickup_help') } %>
+  <%= f.number_field :default_delivery, { step: 'any', help: t('.default_delivery_help') } %>
   <%= f.number_field :default_capacity, { step: 'any', min: '0', help: t('.default_capacity_help') } %>
   <div class="row form-group" id="deliverable_unit_optimization_overload_multiplier_input">
     <label class="col-md-offset-2 col-md-8 field" for="deliverable_unit_optimization_overload_multiplier"><%= t 'activerecord.attributes.deliverable_unit.optimization_overload_multiplier' %></label>
