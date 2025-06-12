@@ -971,16 +971,16 @@ class Planning < ApplicationRecord
     tmp_routes = {}
 
     by_distance = available_routes.flat_map { |route|
-      if stop_dup.route_id == route.id
-        route.move_stop_out(stop_dup)
-      end
       route.compute # Update the eventual outdated route
-      stops = route.stops.select { |stop|
-        stop.is_a?(StopVisit) &&
-          stop.visit.destination.position? &&
-          (!options[:active_only] || stop.active)
-      }
-      stops = stops.map { |s| [s.visit.destination, route, s.index] }
+      index = 0
+      stops = route.stops.map { |s|
+        next if s.id == stop.id || !stop.active && !options[:active_only]
+
+        index += 1
+        next if !(s.is_a?(StopVisit) && s.visit.destination.position?)
+
+        [s.visit.destination, route, index]
+      }.compact
       stops ||= []
       stops << [route.vehicle_usage.default_store_start, route, 1] if stops.empty? && route.vehicle_usage.default_store_start&.position?
       stops << [route.vehicle_usage.default_store_stop, route, route.stops_size + 1] if route.vehicle_usage&.default_store_stop&.position?
@@ -1005,6 +1005,9 @@ class Planning < ApplicationRecord
       tmp_routes[ri[0].id] = ri[0].amoeba_dup if !tmp_routes[ri[0].id]
       r = tmp_routes[ri[0].id]
       if stop_dup.is_a?(StopVisit)
+        if stop_dup.route_id == r.id
+          r.move_stop_out(stop_dup)
+        end
         r.add(stop_dup.visit, ri[1], true)
       else
         r.add_or_update_rest(true)
