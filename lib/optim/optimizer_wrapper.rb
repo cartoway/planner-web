@@ -332,7 +332,7 @@ class OptimizerWrapper
         {
           unit_id: "u#{k}",
           limit: ignore_capacity ? nil : v,
-          overload_multiplier: strict_capacity ? nil : (planning.customer.deliverable_units.find{ |du| du.id == k }.optimization_overload_multiplier || Planner::Application.config.optimize_overload_multiplier)
+          overload_multiplier: strict_capacity ? nil : (planning.customer.deliverable_units.find{ |du| du.id == k.to_i }.optimization_overload_multiplier || Planner::Application.config.optimize_overload_multiplier)
         }
       }&.compact
       vrp_vehicles << {

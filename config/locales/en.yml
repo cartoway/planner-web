@@ -619,6 +619,7 @@ en:
           attributes:
             capacities:
               not_float: must be a number
+              not_integer: must be an integer value
               negative_value: 'must be positive value (%{value})'
         vehicles:
           at_least_one: At least one vehicle needed

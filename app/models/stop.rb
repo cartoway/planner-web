@@ -25,7 +25,9 @@ class Stop < ApplicationRecord
 
   include LocalizedAttr
   attr_localized :loads
-  serialize :loads, DeliverableUnitQuantity
+
+  include QuantityAttr
+  quantity_attr :loads
 
   include TimeAttr
   attribute :time, ScheduleType.new

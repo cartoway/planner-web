@@ -35,7 +35,9 @@ class Vehicle < ApplicationRecord
   has_many :tags, through: :tag_vehicles, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
   enum router_dimension: Router::DIMENSION
-  serialize :capacities, DeliverableUnitQuantity
+
+  include QuantityAttr
+  quantity_attr :capacities
 
   include HashBoolAttr
   store_accessor :router_options, :time, :distance, :avoid_zones, :isochrone, :isodistance, :traffic, :track, :motorway, :toll, :low_emission_zone, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction
@@ -55,7 +57,6 @@ class Vehicle < ApplicationRecord
   validates_format_of :color, with: /\A(\#[A-Fa-f0-9]{6})\Z/
   validates :speed_multiplier, numericality: { greater_than_or_equal_to: 0.5, less_than_or_equal_to: 1.5 }, if: :speed_multiplier
   validates :contact_email, format: { with: /\A(([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})(\s*,\s*|\s*;\s*|\s+)?)+\z/i }, allow_blank: true
-  validate :capacities_validator
   validates :max_distance, numericality: true, allow_nil: true
   validates :max_ride_distance, numericality: true, allow_nil: true
 
@@ -85,15 +86,6 @@ class Vehicle < ApplicationRecord
 
   include TypedAttribute
   typed_attr :custom_attributes
-
-  def capacities_validator
-    !capacities || capacities.values.each do |q|
-      raise Exceptions::NegativeErrors.new(q, id) if Float(q) < 0 # Raise both Float && NegativeErrors type
-    end
-  rescue StandardError => e
-    errors.add :capacities, :not_float if e.is_a?(ArgumentError) || e.is_a?(TypeError)
-    errors.add :capacities, :negative_value, **{value: e.object[:value]} if e.is_a? Exceptions::NegativeErrors
-  end
 
   def self.emissions_hash
     {
@@ -171,7 +163,7 @@ class Vehicle < ApplicationRecord
   end
 
   def default_capacities
-    @default_capacities ||= Hash[customer.deliverable_units.collect{ |du|
+    @default_capacities ||= QuantityAttr::QuantityHash[customer.deliverable_units.collect{ |du|
       [du.id, capacities && capacities[du.id] ? capacities[du.id] : du.default_capacity]
     }]
     @default_capacities

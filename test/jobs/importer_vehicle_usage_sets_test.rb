@@ -132,10 +132,10 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
         ton_id = @customer.deliverable_units.find_by(label: 'ton').id
         gallon_id = @customer.deliverable_units.find_by(label: 'gallon').id
 
-        assert_equal 20, imported_data.first[:capacities][ton_id]
-        assert_equal 10, imported_data.first[:capacities][gallon_id]
-        assert_equal 30, imported_data.last[:capacities][ton_id]
-        assert_equal 60, imported_data.last[:capacities][gallon_id]
+        assert_equal 20, imported_data.first.capacities[ton_id]
+        assert_equal 10, imported_data.first.capacities[gallon_id]
+        assert_equal 30, imported_data.last.capacities[ton_id]
+        assert_equal 60, imported_data.last.capacities[gallon_id]
       end
     end
   end

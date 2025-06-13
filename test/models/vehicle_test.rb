@@ -238,4 +238,18 @@ class VehicleTest < ActiveSupport::TestCase
     assert_equal customer.vehicles[vehicle_size].color, COLORS_TABLE[vehicle_size]
     assert_equal customer.vehicles[vehicle_size + 1].color, COLORS_TABLE[vehicle_size + 1]
   end
+
+  test 'should validate capacities format' do
+    vehicle = vehicles(:vehicle_one)
+
+    vehicle.capacities = { "1" => "3" }
+    assert vehicle.valid?
+
+    vehicle.capacities = { 1 => 3.0 }
+    assert vehicle.valid?
+
+    vehicle.capacities = { "abc" => 3.0 }
+    assert_not vehicle.valid?
+    assert_includes vehicle.errors[:capacities], I18n.t('activerecord.errors.models.vehicle.attributes.capacities.not_integer', key: "abc")
+  end
 end

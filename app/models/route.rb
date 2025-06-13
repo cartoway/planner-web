@@ -26,8 +26,9 @@ class Route < ApplicationRecord
   belongs_to :planning, touch: true
   belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
-  serialize :pickups, DeliverableUnitQuantity
-  serialize :deliveries, DeliverableUnitQuantity
+
+  include QuantityAttr
+  quantity_attr :pickups, :deliveries
 
   nilify_blanks
   validates :planning, presence: true
@@ -265,12 +266,6 @@ class Route < ApplicationRecord
 
       unless options[:no_quantities]
         stop_load_hash, route_attributes[:pickups], route_attributes[:deliveries] = compute_loads(stops_sort)
-        # loads assignment is only necessary for routes with vehicle_usage
-        stops_sort.each do |stop|
-          next unless stop_load_hash.key?(stop.id)
-
-          stop.attributes = stop.attributes.merge(loads: stop_load_hash[stop.id])
-        end
       end
       # Last stop to store
       distance, drive_time, trace = traces.shift
@@ -631,21 +626,23 @@ class Route < ApplicationRecord
   attr_localized :deliveries
 
   def compute_loads(stops_sort = nil)
-    pickups = Hash.new(0)
-    deliveries = Hash.new(0)
+    r_pickups = QuantityAttr::QuantityHash.new(0)
+    r_deliveries = QuantityAttr::QuantityHash.new(0)
 
     (stops_sort || stops).each{ |stop|
       next if !stop.is_a?(StopVisit) || !stop.active
 
       stop.visit.default_deliveries.each{ |k, v|
-        deliveries[k] += (v || 0)
+        r_deliveries[k] += (v || 0)
       }
       stop.visit.default_pickups.each{ |k, v|
-        pickups[k] += (v || 0)
+        r_pickups[k] += (v || 0)
       }
     }
+    self.pickups = r_pickups
+    self.deliveries = r_deliveries
 
-    current_loads = deliveries.dup
+    current_loads = r_deliveries.dup
 
     stop_load_hash = (stops_sort || stops).map { |stop|
       process_stop_loads(stop, current_loads)
@@ -1050,15 +1047,14 @@ class Route < ApplicationRecord
         delivery = default_deliveries[du.id]
         current_loads[du.id] =
           (current_loads[du.id] || 0) + (pickup || 0) - (delivery || 0)
-
-        skip_pickup = pickup.nil? || pickup == 0
-        skip_delivery = delivery.nil? || delivery == 0
+        has_pickup = pickup && pickup > 0
+        has_delivery = delivery && delivery > 0
         # Is the vehicle in overload/underload leaving the stop ?
         out_of_capacity ||= (@default_capacities[du.id] && current_loads[du.id] > @default_capacities[du.id]) || current_loads[du.id] < 0
-        unmanageable_capacity ||= (!skip_pickup || !skip_delivery) && @default_capacities[du.id] == 0
+        unmanageable_capacity ||= (has_pickup || has_delivery) && (!@default_capacities.key?(du.id) || @default_capacities[du.id] == 0)
       end
     end
-
+    stop.loads = current_loads
     stop.unmanageable_capacity = unmanageable_capacity
     stop.out_of_capacity = out_of_capacity
 
