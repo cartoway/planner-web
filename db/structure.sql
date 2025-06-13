@@ -763,8 +763,8 @@ CREATE TABLE public.routes (
     cost_time double precision,
     revenue double precision,
     departure integer,
-    pickups public.hstore,
-    deliveries public.hstore
+    pickups jsonb DEFAULT '{}'::jsonb NOT NULL,
+    deliveries jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -829,7 +829,7 @@ CREATE TABLE public.stops (
     out_of_max_ride_duration boolean,
     status_updated_at timestamp without time zone,
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
-    loads public.hstore,
+    loads jsonb DEFAULT '{}'::jsonb NOT NULL,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -1310,7 +1310,6 @@ CREATE TABLE public.vehicles (
     contact_email character varying,
     fuel_type character varying,
     router_dimension integer,
-    capacities public.hstore,
     router_options jsonb DEFAULT '{}'::jsonb NOT NULL,
     devices jsonb DEFAULT '{}'::jsonb NOT NULL,
     max_distance integer,
@@ -1318,7 +1317,8 @@ CREATE TABLE public.vehicles (
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     max_ride_duration integer,
     max_ride_distance integer,
-    driver_token character varying
+    driver_token character varying,
+    capacities jsonb DEFAULT '{}'::jsonb
 );
 
 
@@ -1360,8 +1360,8 @@ CREATE TABLE public.visits (
     force_position integer DEFAULT 0,
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     revenue double precision,
-    pickups public.hstore,
-    deliveries public.hstore
+    pickups jsonb DEFAULT '{}'::jsonb NOT NULL,
+    deliveries jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 

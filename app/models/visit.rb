@@ -28,8 +28,9 @@ class Visit < ApplicationRecord
   has_many :tags, through: :tag_visits, after_add: :update_tags_track, after_remove: :update_tags_track
 
   delegate :customer, :lat, :lng, :name, :street, :postalcode, :city, :state, :country, :detail, :comment, :phone_number, to: :destination
-  serialize :pickups, DeliverableUnitQuantity
-  serialize :deliveries, DeliverableUnitQuantity
+
+  include QuantityAttr
+  quantity_attr :pickups, :deliveries
 
   nilify_blanks
   validates :destination, presence: true
@@ -64,9 +65,6 @@ class Visit < ApplicationRecord
   validates :priority, numericality: { greater_than_or_equal_to: -4, less_than_or_equal_to: 4, message: I18n.t('activerecord.errors.models.visit.attributes.priority') }, allow_nil: true
   validates :revenue, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
 
-  validate :pickups_validator
-  validate :deliveries_validator
-
   include Consistency
   validate_consistency([:tags]) { |visit| visit.destination.try :customer_id }
 
@@ -95,25 +93,6 @@ class Visit < ApplicationRecord
 
       def copy.update_outdated; end
     })
-  end
-
-  # Custom validators for pickups and deliveries. Mostly used by the destination model (:update, :create)
-  def pickups_validator
-    !pickups || pickups.values.each do |q|
-      value = Float(q)
-      self.errors.add :pickups, :negative_value, **{value: q} if value < 0
-    end
-  rescue StandardError => e
-    self.errors.add :pickups, :not_float if e.is_a?(ArgumentError) || e.is_a?(TypeError)
-  end
-
-  def deliveries_validator
-    !deliveries || deliveries.values.each do |q|
-      value = Float(q)
-      self.errors.add :deliveries, :negative_value, **{value: q} if value < 0
-    end
-  rescue StandardError => e
-    self.errors.add :deliveries, :not_float if e.is_a?(ArgumentError) || e.is_a?(TypeError)
   end
 
   def destroy
@@ -197,7 +176,7 @@ class Visit < ApplicationRecord
     @default_deliveries ||= begin
       @deliverable_units ||= destination.customer.deliverable_units
 
-      @deliverable_units.each_with_object({}) do |du, hash|
+      @deliverable_units.each_with_object(QuantityAttr::QuantityHash.new) do |du, hash|
         hash[du.id] = deliveries && deliveries[du.id] || du.default_delivery
       end
     end
@@ -207,7 +186,7 @@ class Visit < ApplicationRecord
     @default_pickups ||= begin
       @deliverable_units ||= destination.customer.deliverable_units
 
-      @deliverable_units.each_with_object({}) do |du, hash|
+      @deliverable_units.each_with_object(QuantityAttr::QuantityHash.new) do |du, hash|
         hash[du.id] = pickups && pickups[du.id] || du.default_pickup
       end
     end

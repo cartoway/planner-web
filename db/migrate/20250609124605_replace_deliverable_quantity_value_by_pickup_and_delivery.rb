@@ -3,39 +3,73 @@ class ReplaceDeliverableQuantityValueByPickupAndDelivery < ActiveRecord::Migrati
     add_column :deliverable_units, :default_pickup, :float
     add_column :deliverable_units, :default_delivery, :float
 
-    add_column :visits, :pickups, :hstore
-    add_column :visits, :deliveries, :hstore
+    add_column :visits, :pickups, :jsonb, null: false, default: {}
+    add_column :visits, :deliveries, :jsonb, null: false, default: {}
 
-    add_column :routes, :pickups, :hstore
-    add_column :routes, :deliveries, :hstore
+    add_column :routes, :pickups, :jsonb, null: false, default: {}
+    add_column :routes, :deliveries, :jsonb, null: false, default: {}
+
+    add_column :stops, :loads_jsonb, :jsonb, null: false, default: {}
+    Stop.all.find_each do |stop|
+      next unless stop.loads.present?
+      stop.update_column(:loads_jsonb, stop.loads)
+    end
+    remove_column :stops, :loads
+    rename_column :stops, :loads_jsonb, :loads
+
+    add_column :vehicles, :capacities_jsonb, :jsonb, default: {}
+    Vehicle.all.find_each do |vehicle|
+      next unless vehicle.capacities.present?
+
+      fixed_capacities = vehicle.capacities.transform_keys(&:to_i).transform_values do |value|
+        case value
+        when String
+          value.to_f
+        when Numeric
+          value
+        end
+      end.compact
+
+      vehicle.update_column(:capacities_jsonb, fixed_capacities)
+    end
+    remove_column :vehicles, :capacities
+    rename_column :vehicles, :capacities_jsonb, :capacities
 
     # transfer default_quantity to default_pickup and default_delivery
     # we assume positive values are deliveries and negative values are pickups
-    DeliverableUnit.all.find_each do |deliverable_unit|
-      next if deliverable_unit.default_quantity.nil?
-
-      if deliverable_unit.default_quantity < 0
-        deliverable_unit.update(default_pickup: -deliverable_unit.default_quantity)
-      else
-        deliverable_unit.update(default_delivery: deliverable_unit.default_quantity)
-      end
-    end
-
+    DeliverableUnit.where.not(default_quantity: nil)
+                   .update_all("
+                     default_pickup = CASE
+                       WHEN default_quantity < 0 THEN -default_quantity
+                       ELSE NULL
+                     END,
+                     default_delivery = CASE
+                       WHEN default_quantity >= 0 THEN default_quantity
+                       ELSE NULL
+                     END
+                   ")
     # transfer quantities to pickups and deliveries
-    Visit.all.find_each do |visit|
-      visit_pickups = {}
-      visit_deliveries = {}
-      visit.quantities&.each do |deliverable_unit_id, quantity|
-        next if quantity.nil?
-
-        if quantity.to_f < 0
-          visit_pickups[deliverable_unit_id] = quantity.to_f.abs
-        else
-          visit_deliveries[deliverable_unit_id] = quantity.to_f
-        end
-      end
-      visit.update(pickups: visit_pickups, deliveries: visit_deliveries)
-    end
+    execute <<-SQL
+      UPDATE visits
+      SET
+        pickups = COALESCE((
+          SELECT jsonb_object_agg(
+            key,
+            ABS(value::float)
+          )
+          FROM each(quantities)
+          WHERE value::float < 0
+        ), '{}'::jsonb),
+        deliveries = COALESCE((
+          SELECT jsonb_object_agg(
+            key,
+            value::float
+          )
+          FROM each(quantities)
+          WHERE value::float >= 0
+        ), '{}'::jsonb)
+      WHERE quantities IS NOT NULL;
+    SQL
 
     remove_column :deliverable_units, :default_quantity
     remove_column :visits, :quantities
@@ -49,6 +83,22 @@ class ReplaceDeliverableQuantityValueByPickupAndDelivery < ActiveRecord::Migrati
     add_column :routes, :loadings, :hstore
     add_column :routes, :quantities, :hstore
 
+    add_column :stops, :loads_hstore, :hstore
+    Stop.all.find_each do |stop|
+      next unless stop.loads.present?
+      stop.update_column(:loads_hstore, stop.loads)
+    end
+    remove_column :stops, :loads
+    rename_column :stops, :loads_hstore, :loads
+
+    add_column :vehicles, :capacities_hstore, :hstore
+    Vehicle.all.find_each do |vehicle|
+      next unless vehicle.capacities.present?
+      vehicle.update_column(:capacities_hstore, vehicle.capacities)
+    end
+    remove_column :vehicles, :capacities
+    rename_column :vehicles, :capacities_hstore, :capacities
+
     # transfer pickups and deliveries to quantities
     DeliverableUnit.all.find_each do |deliverable_unit|
       next if deliverable_unit.default_delivery.nil? && deliverable_unit.default_pickup.nil?
@@ -57,28 +107,36 @@ class ReplaceDeliverableQuantityValueByPickupAndDelivery < ActiveRecord::Migrati
     end
 
     # transfer pickups and deliveries to quantities
-    Visit.all.find_each do |visit|
-      visit.pickups&.each do |deliverable_unit_id, quantity|
-        next if quantity.nil?
-
-        visit.quantities[deliverable_unit_id] = -quantity
-      end
-      visit.deliveries&.each do |deliverable_unit_id, quantity|
-        next if quantity.nil?
-
-        visit.quantities[deliverable_unit_id] = quantity
-      end
-    end
+    execute <<-SQL
+      UPDATE visits
+      SET quantities = (
+        SELECT hstore(
+          array_agg(key),
+          array_agg(value::text)
+        )
+        FROM (
+          SELECT key, -value::float as value
+          FROM jsonb_each_text(pickups)
+          WHERE pickups IS NOT NULL AND jsonb_typeof(pickups) = 'object'
+          UNION ALL
+          SELECT key, value::float as value
+          FROM jsonb_each_text(deliveries)
+          WHERE deliveries IS NOT NULL AND jsonb_typeof(deliveries) = 'object'
+        ) combined
+      )
+      WHERE (pickups IS NOT NULL AND jsonb_typeof(pickups) = 'object')
+        OR (deliveries IS NOT NULL AND jsonb_typeof(deliveries) = 'object');
+    SQL
 
     Route.all.find_each do |route|
       quantities = {}
-      route.pickups.each do |deliverable_unit_id, quantity|
+      route.pickups&.each do |deliverable_unit_id, quantity|
         next if quantity.nil?
 
         quantities[deliverable_unit_id] = 0 if quantities[deliverable_unit_id].nil?
         quantities[deliverable_unit_id] -= quantity
       end
-      route.deliveries.each do |deliverable_unit_id, quantity|
+      route.deliveries&.each do |deliverable_unit_id, quantity|
         next if quantity.nil?
 
         quantities[deliverable_unit_id] = 0 if quantities[deliverable_unit_id].nil?

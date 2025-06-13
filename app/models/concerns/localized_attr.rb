@@ -20,10 +20,10 @@ module LocalizedAttr
         end
         define_method("localized_#{name}") do
           r = send(name)
-          if r.is_a? DeliverableUnitQuantity # FIXME: like a Hash
-            rr = {}
+          if r.is_a? QuantityAttr::QuantityHash
+            rr = QuantityAttr::QuantityHash.new
             r.each{ |k, v|
-              rr[k] = v.is_a?(Float) ? self.class.localize_numeric_value(v) : value
+              rr[k] = v.is_a?(Float) ? self.class.localize_numeric_value(v) : v
             }
             rr
           elsif r.is_a? Float
