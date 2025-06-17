@@ -47,6 +47,8 @@ module QuantityAttr
         define_method("#{field}") do
           quantities = super()
 
+          return QuantityHash.new if quantities.blank?
+
           if @validating
             quantities.instance_variable_set(:@validating, @validating)
           elsif errors.none?
