@@ -34,7 +34,7 @@ class V100::PlanningsDestinationsTest < ActiveSupport::TestCase
     get api(@planning.id, "#{@destination.id}/candidate_insert")
     assert_equal 201, last_response.status, last_response.body
     data = JSON.parse(last_response.body)
-    assert_kind_of Float, data['distance']
+    assert_kind_of Integer, data['distance']
     assert_kind_of Integer, data['time']
     assert_kind_of Integer, data['index']
     assert_kind_of Hash, data['route']
