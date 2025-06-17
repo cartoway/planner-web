@@ -187,7 +187,7 @@ class V01::Plannings < Grape::API
     end
     patch ':id/automatic_insert' do
       Route.includes_destinations.scoping do
-        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).preload_route_details.first!
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
         stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
