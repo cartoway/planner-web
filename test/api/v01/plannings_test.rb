@@ -290,11 +290,12 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     customers(:customer_one).update(job_optimizer_id: nil)
     unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
 
-    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_time: 50_000 }.to_json, CONTENT_TYPE: 'application/json'
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_time: 60 }.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 400, last_response.status
     assert_not @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id)}
 
-    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_time: 100_000 }.to_json, CONTENT_TYPE: 'application/json'
+    # Regarding the stub the insertion detour is 60
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_time: 61 }.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 204, last_response.status
     assert @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id) }
   end
@@ -309,8 +310,8 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     assert_equal 400, last_response.status
     assert_not @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id)}
 
-    # Regarding the stub the insertion is 1000 back and 1000 forth
-    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 2_001}.to_json, CONTENT_TYPE: 'application/json'
+    # Regarding the stub the insertion detour is 1000
+    patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], max_distance: 1_001}.to_json, CONTENT_TYPE: 'application/json'
     assert_equal 204, last_response.status
     assert @planning.routes.reload.select(&:vehicle_usage).any?{ |route| route.stop_ids.include?(unassigned_stop.id) }
   end
