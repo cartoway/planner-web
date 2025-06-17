@@ -6,9 +6,9 @@
   - Visits
     - Custom attributes are available in forms and displayed in plan stop pop-over [#338](https://github.com/cartoway/planner-web/pull/338)
   - Customers: Admin have access to the `cost_fixed` transmitted during route optimization [#374](https://github.com/cartoway/planner-web/pull/374)
-  - Vehicles: Introduce a maximum initial load associated to deliverable units [#373](https://github.com/cartoway/planner-web/pull/373)
   - Planning:
     - Routes: Allows to force the start time [#370](https://github.com/cartoway/planner-web/pull/370)
+    - Stops: Display the current load at each route step [#387](https://github.com/cartoway/planner-web/pull/387)
 
   ### Changed
   - Bump `babel` to 7.23.2 [#330](https://github.com/cartoway/planner-web/pull/330)
@@ -21,7 +21,8 @@
   - Routes: Improve compute performances [#345](https://github.com/cartoway/planner-web/pull/345)
   - Grape API: Response logging disabled [#381](https://github.com/cartoway/planner-web/pull/381)
   - Destinations: Set stops as outdated on coordinates change [#390](https://github.com/cartoway/planner-web/pull/390)
-  - Customers: Cache `destinations`, :`plannings`, `vehicles` and `visits` count [#391](https://github.com/cartoway/planner-web/pull/391)
+  - Customers: Cache `destinations`, `plannings`, `vehicles` and `visits` count [#391](https://github.com/cartoway/planner-web/pull/391)
+  - Change quantity representation from a single value into two value the quantity collected (pickups) and the quantity delivered (deliveries) [#408](https://github.com/cartoway/planner-web/pull/408)
 
   ### Removed
   - The option `enable_multi_visits` is removed, having multi visits is standard. Letting access to both destination and visit references simultaneously [#375](https://github.com/cartoway/planner-web/pull/375)
