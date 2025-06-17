@@ -644,10 +644,13 @@ class Route < ApplicationRecord
 
     current_loads = r_deliveries.dup
 
-    stop_load_hash = (stops_sort || stops).map { |stop|
+    stop_load_hash = {}
+    (stops_sort || stops).each { |stop|
       process_stop_loads(stop, current_loads)
-      [stop.id, current_loads.dup]
-    }.to_h
+
+      stop_load_hash[stop.id] = current_loads
+      current_loads = current_loads.dup
+    }
     [stop_load_hash, pickups, deliveries]
   end
 
