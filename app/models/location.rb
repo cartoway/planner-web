@@ -113,7 +113,7 @@ class Location < ApplicationRecord
   end
 
   def distance(position)
-    lat && lng && position.lat && position.lng && Math.hypot(position.lat - lat, position.lng - lng)
+    lat && lng && position.lat && position.lng && Math.hypot(position.lat - lat, position.lng - lng) || 2147483647
   end
 
   def warnings
