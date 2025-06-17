@@ -326,8 +326,8 @@ class PlanningsController < ApplicationController
             end
           end
 
-          if @planning.compute_saved
-            @routes = @planning.routes.select{ |r| route_ids.include? r.id }
+          if @planning.compute_saved && @planning.reload
+            @routes = @planning.routes.where(id: route_ids).includes_vehicle_usages.includes_destinations
             format.json { render action: :show }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
