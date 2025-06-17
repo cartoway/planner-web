@@ -26,16 +26,16 @@ class VisitQuantities
       delivery = deliveries[du.id] || 0
       pickup = pickups[du.id] || 0
       quantity = delivery - pickup
-      q = ''
+      q = ' '
       if pickup > 0
-        q += ' +'
+        q += '+'
         q += number_with_precision(pickups[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
         q += '/' + number_with_precision(vehicle.default_capacities[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[du.id]
-        q += ' - ' if deliveries[du.id] > 0
+        q += ' & ' if delivery > 0
       end
 
       if delivery > 0
-        q += ' -'
+        q += '-' if pickup > 0
         q += number_with_precision(deliveries[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
         q += '/' + number_with_precision(vehicle.default_capacities[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[du.id]
       end
