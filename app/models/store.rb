@@ -74,6 +74,10 @@ class Store < Location
     icon_size || Planner::Application.config.store_icon_size_default
   end
 
+  def position
+    self
+  end
+
   def outdated
     Route.transaction do
       routes_usage_set = vehicle_usage_set_starts.collect{ |vehicle_usage_set_start|
