@@ -640,15 +640,14 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should automatic insert with skills' do
     skill = Tag.first
-    route_with_skill = @planning.routes.select(&:vehicle_usage).last
-    route_with_skill.vehicle_usage.update!(tags: [skill])
+    route_with_skill = @planning.routes.find{ |route| route.vehicle_usage && route.vehicle_usage.vehicle.tags.include?(skill) }
     unaffected_stop = stops(:stop_unaffected)
     unaffected_stop.visit.update!(tags: [skill])
     assert_nil unaffected_stop.route.vehicle_usage?
 
     patch :automatic_insert, params: { id: @planning.id, format: :json, stop_ids: [unaffected_stop.id] }
     assert_response :success
-    assert_equal unaffected_stop.reload.route, route_with_skill
+    assert_equal unaffected_stop.reload.route.id, route_with_skill.id
   end
 
   test 'should not automatic insert without correct skills' do

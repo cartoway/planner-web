@@ -8,6 +8,7 @@
 
   ### Changed
     - Export: Rework visually the columns selector [#422](https://github.com/cartoway/planner-web/pull/422)
+    - Rework of the automatic insert method [#423](https://github.com/cartoway/planner-web/pull/423)
 
   ### Removed
 
