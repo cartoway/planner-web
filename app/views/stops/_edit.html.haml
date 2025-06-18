@@ -47,7 +47,7 @@
         #radiobtn
           .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
             .col-xs-6.d-flex.justify-content-center
-              - if customer.enable_sms && phone_number.present?
+              - if customer.enable_sms && customer.enable_sms_intransit && phone_number.present?
                 = link_to "sms:#{phone_number}?body=#{CGI.escape(sms_content)}", class: "btn btn-primary#{' active' if stop.status == 'intransit'}", data: { toggle: 'active_status', title: 'intransit' } do
                   = t('plannings.edit.stop_status.intransit')
               - else

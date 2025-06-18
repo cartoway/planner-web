@@ -191,6 +191,7 @@ en:
         enable_vehicle_position: Enable vehicle's position
         enable_stop_status: Enable visits status
         enable_sms: Enable SMS
+        enable_sms_intransit: Enable SMS in transit
         enable_optimization_soft_upper_bound: Enable overtimes
         sms_template: Customer SMS template
         sms_driver_template: Driver SMS template
@@ -1070,6 +1071,7 @@ en:
       optimization_force_start_help: Force vehicle start to the beginning of its schedule.
       enable_optimization_soft_upper_bound_help: Enable overtimes in optimization
       enable_global_optimization_test: Enabled if Test
+      enable_sms_intransit_help: Enable SMS in transit when the driver is on the way
       stop_max_upper_bound: Visit overtime
       stop_max_upper_bound_help: Allow to visit a stop within an overtime
       vehicle_max_upper_bound: Driver shift overtime
