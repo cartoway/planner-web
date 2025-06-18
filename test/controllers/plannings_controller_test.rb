@@ -57,14 +57,14 @@ class PlanningsControllerTest < ActionController::TestCase
     get :index, params: { format: :csv, summary: true }
     assert_response :success
     assert_equal 'r2,planning2,,,,1,0,,,,16:00,,,,,"","","",,,,', response.body.split("\n")[1]
-    assert_equal 'r1,planning1,10/10/2015,route_one,001,4,4,,1500,1.5,32:00,,,,,"","","",,,,', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
+    assert_equal 'r1,planning1,10/10/2015,route_one,001,4,4,,0.0,1.5,32:00,,,,,"","","",,,,', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
   end
 
   test 'should get index as excel csv' do
     get :index, params: { format: :excel, summary: true }
     assert_response :success
     assert_match 'r2;planning2;;;;1;0;;;;16:00;;;;;"";"";"";;;;', response.body.split("\n")[1]
-    assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;1500;1.5;32:00;;;;;"";"";"";;;;', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
+    assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;0.0;1.5;32:00;;;;;"";"";"";;;;', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
   end
 
   test 'should get new' do
@@ -261,14 +261,14 @@ class PlanningsControllerTest < ActionController::TestCase
     get :show, params: { id: @planning, format: :csv, summary: true }
     assert_response :success
     assert_equal 'r1,planning1,10/10/2015,,,1,0,,,,,,,,,"","","",,,,', response.body.split("\n")[1]
-    assert_equal 'r1,planning1,10/10/2015,route_one,001,4,4,,1500,1.5,32:00,,,,,"","","",,,,', response.body.split("\n").find{ |l| l.include?('001') }
+    assert_equal 'r1,planning1,10/10/2015,route_one,001,4,4,,0.0,1.5,32:00,,,,,"","","",,,,', response.body.split("\n").find{ |l| l.include?('001') }
   end
 
   test 'should show planning summary as excel csv' do
     get :show, params: { id: @planning, format: :excel, summary: true }
     assert_response :success
     assert_match 'r1;planning1;10/10/2015;;;1;0;;;;;;;;;"";"";"";;;;', response.body.split("\n")[1]
-    assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;1500;1.5;32:00;;;;;"";"";"";;;;', response.body.split("\n").find{ |l| l.include?('001') }
+    assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;0.0;1.5;32:00;;;;;"";"";"";;;;', response.body.split("\n").find{ |l| l.include?('001') }
   end
 
   test 'should show planning as csv with order array' do
