@@ -64,7 +64,10 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :print_header, type: String
     optional :print_barcode, type: String, values: ::Customer::PRINT_BARCODE, documentation: { desc: 'Print the Reference as Barcode'}
     optional :sms_template, type: String
+    optional :sms_driver_template, type: String
+    optional :sms_intransit_template, type: String
     optional :sms_concat, type: Boolean
+    optional :enable_sms_intransit, type: Boolean
 
     optional :enable_external_callback, type: Boolean, documentation: { desc: 'Enable external callback' }
     optional :external_callback_url, type: String, documentation: { desc: 'External callback URL' }

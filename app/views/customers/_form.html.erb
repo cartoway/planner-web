@@ -372,6 +372,7 @@
             </div>
           </div>
 
+          <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_sms_intransit, label: t('activerecord.attributes.customer.enable_sms_intransit'), help: t('.enable_sms_intransit_help') } %>
           <%= f.text_area :sms_intransit_template, placeholder: t('notifications.sms.alert_intransit'), value: @customer.sms_intransit_template || t('notifications.sms.alert_intransit') %>
           <div class="row">
             <div class="col-md-offset-2 col-md-8">

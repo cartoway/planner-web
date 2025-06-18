@@ -191,10 +191,11 @@ fr:
         enable_vehicle_position: Activer la position des véhicules
         enable_stop_status: Activer les statuts des visites
         enable_sms: Activer l'envoi de SMS
+        enable_sms_intransit: Activer l'envoi de SMS d'approche
         enable_optimization_soft_upper_bound: Autoriser les dépassements horaires
         sms_template: Modèle SMS clients
         sms_driver_template: Modèle SMS livreurs
-        sms_intransit_template: Modèle SMS en approche
+        sms_intransit_template: Modèle SMS d'approche
         sms_concat: SMS longs
         enable_external_callback: Activer URL de rappel
         history_cron_hour: Heure de l'historisation
@@ -1097,6 +1098,7 @@ fr:
       optimization_force_start_help: Forcer le départ du véhicule à son horaire de début.
       enable_optimization_soft_upper_bound_help: Autoriser les dépassements horaires durant l'optimisation
       enable_global_optimization_test: Actif si Test
+      enable_sms_intransit_help: Activer l'envoi de SMS d'approche lorsque le chauffeur est en route
       stop_max_upper_bound: Dépassement max créneaux horaires visites
       stop_max_upper_bound_help: Autoriser les dépassements horaires sur les arrêts
       vehicle_max_upper_bound: Dépassement max amplitude chauffeur
