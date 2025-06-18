@@ -49,6 +49,7 @@ module RoutesHelper
       q += "\u202F" + unit.label if unit.label
       quantities << {
         id: unit.id,
+        capacity: number_with_precision(vehicle.default_capacities[unit.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
         quantity: quantity,
         pickup: number_with_precision(pickup, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
         delivery: number_with_precision(delivery, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
