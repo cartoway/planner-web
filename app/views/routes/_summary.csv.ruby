@@ -20,6 +20,18 @@ row = {
   cost_distance: route.cost_distance,
   cost_fixed: route.cost_fixed,
   cost_time: route.cost_time,
-  revenue: route.revenue
+  revenue: route.revenue,
+  tags: route.vehicle_usage && (route.vehicle_usage.tags | route.vehicle_usage.vehicle.tags).collect(&:label).join(',')
 }
+
+row.merge!(Hash[route.planning.customer.enable_orders ?
+    [[:orders, nil]] :
+    route.planning.customer.deliverable_units.flat_map{ |du|
+      [
+        [('max_load' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, route.max_loads[du.id]],
+        [('pickup' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, route.pickups[du.id]],
+        [('delivery' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, route.deliveries[du.id]]
+      ]
+    }
+  ])
 csv << @columns.map{ |c| row[c.to_sym] }
