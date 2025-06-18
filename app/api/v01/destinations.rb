@@ -114,7 +114,7 @@ class V01::Destinations < Grape::API
 
         next if quantity[:delivery].nil? && quantity[:pickup].nil?
 
-        quantity[:quantity] = quantity[:delivery] - quantity[:pickup]
+        quantity[:quantity] = (quantity[:delivery] || 0) - (quantity[:pickup] || 0)
 
         quantities << quantity
       }
