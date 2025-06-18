@@ -53,7 +53,7 @@ module QuantityAttr
             quantities.instance_variable_set(:@validating, @validating)
           elsif errors.none?
             quantities.transform_keys!(&:to_i)
-            quantities.transform_values! { |v| v && Float(v) }
+            quantities.transform_values! { |v| v.present? ? Float(v) : nil }
           end
 
           hash = QuantityHash[quantities]
@@ -82,7 +82,7 @@ module QuantityAttr
 
       if quantities.is_a?(Hash) || quantities.is_a?(QuantityHash)
         quantities.each { |key, value|
-          next if value.nil?
+          next if value.blank?
 
           new_value =
             begin
