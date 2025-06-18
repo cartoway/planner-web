@@ -735,8 +735,19 @@ class PlanningsController < ApplicationController
       :cost_distance,
       :cost_fixed,
       :cost_time,
-      :revenue
-    ]
+      :revenue,
+      :tags,
+    ] + (
+      (@customer || @planning.customer).enable_orders ?
+        [:orders] :
+        (@customer || @planning.customer).deliverable_units.flat_map{ |du|
+          [
+            ('max_load' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym,
+            ('pickup' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym,
+            ('delivery' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym
+          ]
+        }
+    )
   end
 
   def capabilities

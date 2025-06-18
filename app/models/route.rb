@@ -654,6 +654,21 @@ class Route < ApplicationRecord
     [stop_load_hash, pickups, deliveries]
   end
 
+  def max_loads
+    units = planning.customer.deliverable_units
+
+    max_loads = {}
+    units.each { |unit|
+      max_loads[unit.id] = deliveries[unit.id] || 0
+      stops.each { |stop|
+        if stop.is_a?(StopVisit)
+          max_loads[unit.id] = [max_loads[unit.id], stop.loads[unit.id] || 0].max
+        end
+      }
+    }
+    max_loads
+  end
+
   def reverse_order
     stops.sort_by{ |stop| -stop.index }.each_with_index{ |stop, index|
       stop.index = index + 1

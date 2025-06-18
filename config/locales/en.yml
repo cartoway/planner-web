@@ -1386,6 +1386,8 @@ en:
       pickup_desc: quantity to collect
       delivery: delivery
       delivery_desc: quantity to deliver
+      max_load: max load
+      max_load_desc: max load along the route
       duration: visit duration
       duration_desc: visit duration
       quantity: quantity
@@ -2148,6 +2150,7 @@ en:
       quantity: quantity
       pickup: pickup
       delivery: delivery
+      max_load: max load
       orders: orders
       active: active
       time_window_start_1: open 1

@@ -1432,6 +1432,8 @@ fr:
       delivery_desc: quantité à livrer
       pickup: collecte
       pickup_desc: quantité à collecter
+      max_load: charge max
+      max_load_desc: charge max durant la tournée
       quantity: quantité
       quantity_desc: quantité d'unités à livrer.
       quantity1_1: quantité 1_1
@@ -2247,6 +2249,7 @@ fr:
       quantity: quantité
       pickup: collecte
       delivery: livraison
+      max_load: charge max
       orders: commandes
       active: livré
       time_window_start_1: horaire début 1
