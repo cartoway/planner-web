@@ -71,6 +71,8 @@ class ReplaceDeliverableQuantityValueByPickupAndDelivery < ActiveRecord::Migrati
       WHERE quantities IS NOT NULL;
     SQL
 
+    Route.joins(planning: { customer: :deliverable_units }).update_all(outdated: true)
+
     remove_column :deliverable_units, :default_quantity
     remove_column :visits, :quantities
     remove_column :routes, :quantities
