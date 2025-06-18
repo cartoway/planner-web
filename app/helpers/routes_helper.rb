@@ -45,11 +45,12 @@ module RoutesHelper
         else
           number_with_precision(quantity, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
         end
-      q += ' / ' + number_with_precision(vehicle.default_capacities[unit.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[unit.id]
+      precise_capacity = number_with_precision(capacity, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true) if capacity
+      q += ' / ' + capacity.to_s if vehicle && vehicle.default_capacities[unit.id]
       q += "\u202F" + unit.label if unit.label
       quantities << {
         id: unit.id,
-        capacity: number_with_precision(vehicle.default_capacities[unit.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
+        capacity: precise_capacity,
         quantity: quantity,
         pickup: number_with_precision(pickup, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
         delivery: number_with_precision(delivery, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),

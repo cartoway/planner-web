@@ -275,7 +275,7 @@
         = t('plannings.edit.stops')
   - route[:quantities]&.each do |unit|
     .col-xs-4.route-data-advanced
-      .primary.route-info{class: ('danger' if unit[:out_of_capacity]), title: t('plannings.edit.route_quantity_help')}
+      .route-info{class: "#{route[:vehicle_id] ? 'primary' : 'inactive'} #{unit[:out_of_capacity] && 'danger'}", title: t('plannings.edit.route_quantity_help')}
         %i.fa.fa-fw{class: unit[:unit_icon]}
         - if unit[:pickup] != '0'
           %i.fa.fa-fw.fa-up-long{title: t("plannings.edit.pickup_help")}
