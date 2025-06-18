@@ -41,3 +41,9 @@ pidfile ENV.fetch("PIDFILE") { "tmp/pids/server.pid" }
 
 # Allow puma to be restarted by `rails restart` command.
 plugin :tmp_restart
+
+# Reset customer counters on server startup
+on_booted do
+  puts "Resetting customer counters..."
+  system("bundle exec rake counters:reset")
+end
