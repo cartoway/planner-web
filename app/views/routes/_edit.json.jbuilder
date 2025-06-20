@@ -151,7 +151,8 @@ if @with_stops
     end
     (json.link_phone_number current_user.link_phone_number) if current_user.url_click2call
     json.distance (stop.distance || 0) / 1000
-    if stop.is_a?(StopVisit)
+    case stop
+    when StopVisit
       json.visits true
       visit = stop.visit
       json.visit_id visit.id
@@ -186,14 +187,14 @@ if @with_stops
       if stop.route.last_sent_to && stop.status && stop.eta
         (json.eta_formated l(stop.eta, format: :hour_minute)) if stop.eta
       end
-    elsif stop.is_a?(StopRest)
+    when StopRest
       json.rest do
         json.rest true
         (json.store_id route.vehicle_usage.default_store_rest.id) if route.vehicle_usage.default_store_rest
         (json.geocoded true) if route.vehicle_usage.default_store_rest && route.vehicle_usage.default_store_rest.position?
         (json.error true) if route.vehicle_usage.default_store_rest && !route.vehicle_usage.default_store_rest.position?
       end
-    elsif stop.is_a?(StopStore)
+    when StopStore
       json.store do
         json.store true
         json.store_id stop.store_id
