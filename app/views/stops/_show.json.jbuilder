@@ -33,7 +33,8 @@ json.time_window_start_end_2 !!stop.time_window_start_2 || !!stop.time_window_en
 (json.link_phone_number current_user.link_phone_number) if current_user.url_click2call
 json.distance (stop.distance || 0) / 1000
 duration = nil
-if stop.is_a?(StopVisit)
+case stop
+when StopVisit
   json.visits true
   visit = stop.visit
   json.visit_id visit.id
@@ -75,14 +76,14 @@ if stop.is_a?(StopVisit)
     end
   end
   json.custom_attributes current_user.customer.custom_attributes.for_visit.map{ |c_a| custom_attribute_template(c_a, visit) }
-elsif stop.is_a?(StopRest)
+when StopRest
   json.rest do
     json.rest true
     duration = stop.route.vehicle_usage.default_rest_duration_time_with_seconds
     (json.store_id stop.route.vehicle_usage.default_store_rest.id) if stop.route.vehicle_usage.default_store_rest
     (json.error true) if stop.route.vehicle_usage.default_store_rest && !stop.route.vehicle_usage.default_store_rest.position?
   end
-elsif stop.is_a?(StopStore)
+when StopStore
   json.store do
     json.store true
     json.store_id stop.store.id
