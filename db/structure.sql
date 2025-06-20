@@ -2715,6 +2715,14 @@ ALTER TABLE ONLY public.customers
 
 
 --
+-- Name: stops fk_rails_e5d314011f; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stops
+    ADD CONSTRAINT fk_rails_e5d314011f FOREIGN KEY (store_id) REFERENCES public.stores(id) ON DELETE CASCADE;
+
+
+--
 -- Name: plannings fk_rails_f0e748b80c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
