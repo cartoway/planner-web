@@ -832,6 +832,7 @@ CREATE TABLE public.stops (
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     loads jsonb DEFAULT '{}'::jsonb NOT NULL,
     out_of_skill boolean,
+    store_id integer,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -3147,4 +3148,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250609122139'),
 ('20250609124605'),
 ('20250618061806'),
+('20250619092217'),
 ('20250626123719');

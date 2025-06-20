@@ -1575,7 +1575,7 @@ fr:
     index:
       title: Rapports
       head: >-
-        Téléchargement du rapport des tournées réalisées avec l’application
+        Téléchargement du rapport des tournées réalisées avec l'application
         mobile Cartoway Field
       submit: Télécharger
       downloading: Téléchargement en cours...
@@ -1690,7 +1690,7 @@ fr:
           quels sont les navigateurs supportés par %{name} ? Les types de
           véhicules pris en compte au sein de la solution ? Découvrez-le
           fonctionnement de la cartographie Libre OpenStreetMap, du géocodage et
-          des algorithmes d’optimisation.
+          des algorithmes d'optimisation.
         time: ⏱3min.
         doc_link: Doc - Avant de commencer
         doc_href: /manual/00-before_start.html
@@ -1698,8 +1698,8 @@ fr:
         title: 'Démarrage avec %{name}'
         content: >-
           comment se connecter au logiciel %{name} ? La présentation du principe
-          d’utilisation de %{name} : l’import de données, l’optimisation de
-          tournées et l’export de données.
+          d'utilisation de %{name} : l'import de données, l'optimisation de
+          tournées et l'export de données.
         time: ⏱2min.
         doc_link: 'Doc - Démarrage avec %{name}'
         doc_href: /manual/01-start.html
@@ -1708,8 +1708,8 @@ fr:
         content: >-
           les paramétrages au niveau de votre compte avec votre mot de passe et
           votre identifiant. Au niveau de votre activité avec le type de
-          véhicules, l’ajustement de la vitesse, la durée moyenne des visites.
-          Enfin, au niveau de l’export vers des GPS ou sous forme de feuilles de
+          véhicules, l'ajustement de la vitesse, la durée moyenne des visites.
+          Enfin, au niveau de l'export vers des GPS ou sous forme de feuilles de
           route.
         time: ⏱6min.
         doc_link: Doc - Paramétrage de l'espace client et utilisateur
@@ -1731,7 +1731,7 @@ fr:
         title: Gestion des véhicules
         content: >-
           configurer les véhicules, leur consommation, leur capacité. Définir le
-          calculateur d’itinéraire selon le type de véhicule, configurer-les
+          calculateur d'itinéraire selon le type de véhicule, configurer-les
           sites.
         time: ⏱15min.
         doc_link: Doc - Gestion des véhicules
@@ -1788,8 +1788,8 @@ fr:
         title: TomTom WEBFLEET (optionnel)
         content: >-
           vous utilisez TomTom WEBFLEET ? Apprenez comment interfacer %{name} et
-          TomTom WEBFLEET. Comment le planificateur peut réaliser l’interfaçage
-          et comment les agents de terrain pourront l’utiliser au quotidien.
+          TomTom WEBFLEET. Comment le planificateur peut réaliser l'interfaçage
+          et comment les agents de terrain pourront l'utiliser au quotidien.
         time: ⏱9min.
         doc_link: Doc - TomTom WEBFLEET
         doc_href: /manual/07-tomtom_webfleet.html
@@ -1822,17 +1822,17 @@ fr:
     subscribe:
       title: Et si nous poursuivions l'aventure ensemble ?
       try_period_over: >-
-        Vous arrivez au terme de votre période d’essai. <b>Nous vous remercions
-        de l’intérêt que vous portez à %{name} et nous espérons que l'expérience
+        Vous arrivez au terme de votre période d'essai. <b>Nous vous remercions
+        de l'intérêt que vous portez à %{name} et nous espérons que l'expérience
         a répondu à vos attentes.</b>
       content: >-
-        Si vous souhaitez poursuivre l’aventure à nos côtés <b>vous pouvez dès à
+        Si vous souhaitez poursuivre l'aventure à nos côtés <b>vous pouvez dès à
         présent contacter notre service commercial par le biais de ce formulaire
         ou par téléphone</b> :
       link: 'Je demande à m''abonner à %{name}'
       preheader: >-
-        Vous arrivez au terme de votre période d’essai. Nous vous remercions de
-        l’intérêt que vous portez à la solution et nous espérons que
+        Vous arrivez au terme de votre période d'essai. Nous vous remercions de
+        l'intérêt que vous portez à la solution et nous espérons que
         l'expérience a répondu à vos attentes.
       footer: 'Vous recevez ce message en tant qu''utilisateur de %{name}'
   plannings:
@@ -2010,6 +2010,9 @@ fr:
       edit_store_help: Modifier les informations du site
       edit_visit_help: Modifier les informations du client
       marker_help: Visualiser sur la carte
+      create_store_help: Ajouter un site intermédiaire
+      destroy_store_help: Supprimer le site de la tournée
+      confirm_destroy_store: Êtes-vous sûr de vouloir supprimer ce site de la tournée ?
       automatic_insert_help: >-
         Propose un endroit pour insérer ce client dans une tournée (le résultat
         peut ne plus être optimisé)
@@ -2050,6 +2053,7 @@ fr:
         time_window_end_2: fin 2
         time: 'Planifié : '
         quantity: 'Charge : '
+        loadings: 'Chargement : '
         orders: 'Commandes : '
         destination_duration: 'Durée destination : '
         duration: 'Durée visite : '
@@ -2059,6 +2063,7 @@ fr:
         stop_drive_time: 'Durée :'
         stop_distance: 'Distance :'
         visit: Visite
+        store: Site
         status: 'Statut :'
         status_updated_at: Horaire statut
         eta: 'ETA :'
@@ -2300,7 +2305,7 @@ fr:
       tags_help: >-
         Permet de filtrer les visites qui seront présentes sur le plan selon
         leur catégorie. Si « tous » est sélectionné, les visites/adresses
-        doivent avoir l’ensemble des catégories. Si « ou » est sélectionné une
+        doivent avoir l'ensemble des catégories. Si « ou » est sélectionné une
         catégorie de la liste suffit.
       order_array: Comm.
       zonings_help: >-
@@ -2443,7 +2448,7 @@ fr:
       icon: icône
       icon_desc: >-
         nom de l'icône représentant le site sur la carte, issue de la liste
-        officielle de font-awesome http://fontawesome.io/icons préfixé de “fa-”.
+        officielle de font-awesome http://fontawesome.io/icons préfixé de "fa-".
         Ex. fa-building.
       icon_size: taille icône
       icon_size_desc: 'taille de l''icône localisant le site sur la carte. Défaut : large.'
@@ -2602,8 +2607,8 @@ fr:
       color_desc: couleur associée au véhicule
       tags: compétences du véhicule
       tags_desc: >-
-        compétences associées au véhicule. (Attention : lorsqu’un véhicule est
-        associé à une compétence, lors de l’optimisation les visites ayant ce
+        compétences associées au véhicule. (Attention : lorsqu'un véhicule est
+        associé à une compétence, lors de l'optimisation les visites ayant ce
         besoin de compétence seront automatiquement attribuées à ce véhicule.)
       tags_format: 'compétence 1,compétence 2'
       devices: appareils
@@ -2934,7 +2939,7 @@ fr:
       revenue_help: Revenu obtenu en effectuant la visite
       priority: Priorité
       priority_help: >-
-        Priorité d’insertion lors de l’optimisation (utile lorsque vous savez
+        Priorité d'insertion lors de l'optimisation (utile lorsque vous savez
         que votre flotte de véhicules ne pourra pas visiter toutes les
         destinations)
       close_help: Sans tenir compte de la durée de visite
@@ -3167,14 +3172,14 @@ fr:
       _no: non
     subscribe:
       planning_unavailable: >-
-        Le plan de tournées n’est pas modifiable pour le moment, la date de
+        Le plan de tournées n'est pas modifiable pour le moment, la date de
         votre abonnement a expiré. Veuillez contacter votre revendeur afin de
         renouveler votre abonnement.
       expiration_date: >-
         Votre période d'utilisation expire bientôt. Date de fin le %{date}. Si
         vous souhaitez le renouveler vous pouvez contacter %{reseller}.
       expiration_date_test: >-
-        Votre compte de test expire  le %{date}. Pour continuer d’utiliser notre
+        Votre compte de test expire  le %{date}. Pour continuer d'utiliser notre
         solution, vous pouvez contacter notre équipe.
       expiration_date_over: >-
         Votre période d'utilisation a expiré le %{date}. Si vous souhaitez le

@@ -277,6 +277,7 @@ class Planning < ApplicationRecord
   def compute_saved!(options = {})
     stop_rests = []
     stop_visits = []
+    stop_stores = []
 
     # Collect all segments from all routes that need routing
     all_segments = []
@@ -299,11 +300,13 @@ class Planning < ApplicationRecord
       stops_by_type = r.stops.group_by(&:type)
       stop_visits += stops_by_type['StopVisit'].to_a.map(&:import_attributes)
       stop_rests += stops_by_type['StopRest'].to_a.map(&:import_attributes)
+      stop_stores += stops_by_type['StopStore'].to_a.map(&:import_attributes)
 
     }
     Route.import(routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopRest.import(stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopStore.import(stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
 
     routes.each{ |r|
       r.invalidate_route_cache && r.reload

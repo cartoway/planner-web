@@ -316,7 +316,7 @@ class Route < ApplicationRecord
       if stops_sort
         previous_position = nil
         stops_sort.each{ |stop|
-          next if !stop.is_a?(StopVisit) || !stop.active?
+          next if stop.is_a?(StopRest) || !stop.active?
 
           previous_position_hash[stop.id] = previous_position
           previous_position = stop.position if stop.position?
@@ -446,9 +446,11 @@ class Route < ApplicationRecord
 
     group_stop_visits = stops.select{ |s| s.is_a?(StopVisit) }.map(&:import_attributes)
     group_stop_rests = stops.select{ |s| s.is_a?(StopRest) }.map(&:import_attributes)
+    group_stop_stores = stops.select{ |s| s.is_a?(StopStore) }.map(&:import_attributes)
 
     StopVisit.import(group_stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopRest.import(group_stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopStore.import(group_stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     complete_geojson
     # Indirectly save route to avoid Stops callbacks
     self.update_columns(self.import_attributes)
@@ -480,6 +482,14 @@ class Route < ApplicationRecord
 
       compute(ignore_errors: ignore_errors) if recompute
     end
+  end
+
+  def add_store(store, index = nil, active = true, stop_id = nil)
+    index = stops.size + 1 if !index || index < 0
+    shift_index(index)
+    stop = stops.build(type: StopStore.name, store: store, index: index, active: active, id: stop_id)
+    self.outdated = true
+    stop
   end
 
   def add(visit, index = nil, active = false, stop_id = nil)
@@ -516,6 +526,12 @@ class Route < ApplicationRecord
     }
   end
 
+  def remove_store(stop)
+    return if !stop.is_a?(StopStore)
+
+    move_stop_out(stop)
+  end
+
   def move_stop(stop, index)
     index = stops_size if index < 0
     if stop.index
@@ -530,11 +546,11 @@ class Route < ApplicationRecord
   end
 
   def move_stop_out(stop, force = false)
-    if force || stop.is_a?(StopVisit)
-      shift_index(stop.index + 1, -1)
-      self.stops.destroy(stop)
-      self.outdated = true
-    end
+    return if !force && stop.is_a?(StopRest)
+
+    shift_index(stop.index + 1, -1)
+    self.stops.destroy(stop)
+    self.outdated = true
   end
 
   def force_reindex
@@ -627,27 +643,51 @@ class Route < ApplicationRecord
   attr_localized :deliveries
 
   def compute_loads(stops_sort = nil)
-    r_pickups = QuantityAttr::QuantityHash.new(0)
-    r_deliveries = QuantityAttr::QuantityHash.new(0)
-
-    (stops_sort || stops).each{ |stop|
-      next if !stop.is_a?(StopVisit) || !stop.active
-
-      stop.visit.default_deliveries.each{ |k, v|
-        r_deliveries[k] += (v || 0)
-      }
-      stop.visit.default_pickups.each{ |k, v|
-        r_pickups[k] += (v || 0)
-      }
-    }
-    self.pickups = r_pickups
-    self.deliveries = r_deliveries
-
-    current_loads = r_deliveries.dup
-
     stop_load_hash = {}
+    r_pickups = QuantityAttr::QuantityHash.new(0) # Load at end store
+    r_deliveries = QuantityAttr::QuantityHash.new(0) # Intermediate loads at stores
+    r_start_deliveries = nil # Load at start store
+    previous_store_stop = nil
+
+    # First: Compute the store loads
+    (stops_sort || stops).each{ |stop|
+      next if !stop.active
+
+      case stop.class.name
+      when StopVisit.name
+        stop.visit.default_pickups.each{ |k, v|
+          r_pickups[k] += (v || 0)
+        }
+        stop.visit.default_deliveries.each{ |k, v|
+          r_deliveries[k] += (v || 0)
+        }
+      when StopStore.name
+        if previous_store_stop
+          # The load of intermediate stores is the sum of the subsequent stop deliveries (r_deliveries)
+          previous_store_stop.loads = r_deliveries.dup
+        else
+          # The load at start is the sum of deliveries at the first encountered store
+          r_start_deliveries = r_deliveries.dup
+        end
+        r_deliveries = QuantityAttr::QuantityHash.new(0)
+        r_pickups = QuantityAttr::QuantityHash.new(0)
+        previous_store_stop = stop
+      end
+    }
+    previous_store_stop.loads = r_deliveries.dup if previous_store_stop
+    self.pickups = r_pickups
+    self.deliveries = r_start_deliveries || r_deliveries
+
+    current_loads = (r_start_deliveries || r_deliveries).dup
+
+    # Second: Compute the StopVisit loads
     (stops_sort || stops).each { |stop|
-      process_stop_loads(stop, current_loads)
+      case stop.class.name
+      when StopVisit.name
+        process_stop_loads(stop, current_loads)
+      when StopStore.name
+        current_loads = stop.loads.dup
+      end
 
       stop_load_hash[stop.id] = current_loads
       current_loads = current_loads.dup
@@ -662,7 +702,7 @@ class Route < ApplicationRecord
     units.each { |unit|
       max_loads[unit.id] = deliveries[unit.id] || 0
       stops.each { |stop|
-        if stop.is_a?(StopVisit)
+        if !stop.is_a?(StopRest)
           max_loads[unit.id] = [max_loads[unit.id], stop.loads[unit.id] || 0].max
         end
       }
@@ -843,7 +883,7 @@ class Route < ApplicationRecord
     position_status = :first
     previous_stop = nil
     stops_sort.each{ |stop|
-      next if stop.is_a?(StopRest) || !stop.active
+      next if !stop.is_a?(StopVisit) || !stop.active
 
       if position_status == :first
         if !stop.visit.always_first?
@@ -863,7 +903,7 @@ class Route < ApplicationRecord
 
     position_status = :final
     stops_sort.reverse.each{ |stop|
-      next if stop.is_a?(StopRest) || !stop.active
+      next if !stop.is_a?(StopVisit) || !stop.active
 
       if position_status == :final
         if !stop.visit.always_final?

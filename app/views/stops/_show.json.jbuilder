@@ -50,14 +50,6 @@ if stop.is_a?(StopVisit)
       end
     end
   end
-  if stop.route.planning.customer.enable_orders
-    order = stop.order
-    if order
-      json.orders order.products.collect(&:code).join(', ')
-    end
-  else
-    json.loads stop_quantities(stop, stop.route.vehicle_usage_id && stop.route.vehicle_usage.vehicle)
-  end
   if stop.status
     json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
     json.status_code stop.status.downcase
@@ -89,6 +81,23 @@ elsif stop.is_a?(StopRest)
     duration = stop.route.vehicle_usage.default_rest_duration_time_with_seconds
     (json.store_id stop.route.vehicle_usage.default_store_rest.id) if stop.route.vehicle_usage.default_store_rest
     (json.error true) if stop.route.vehicle_usage.default_store_rest && !stop.route.vehicle_usage.default_store_rest.position?
+  end
+elsif stop.is_a?(StopStore)
+  json.store do
+    json.store true
+    json.store_id stop.store.id
+    json.color stop.default_color
+    (json.error true) if !stop.store.position?
+  end
+end
+if !stop.is_a?(StopRest)
+  if stop.route.planning.customer.enable_orders
+    order = stop.order
+    if order
+      json.orders order.products.collect(&:code).join(', ')
+    end
+  else
+    json.loads stop_quantities(stop, stop.route.vehicle_usage_id && stop.route.vehicle_usage.vehicle)
   end
 end
 json.duration duration if duration

@@ -1479,6 +1479,20 @@ export const plannings_edit = function(params) {
           $(this).blur();
           return false;
         })
+        .off("click", ".marker_create_store")
+        .on("click", ".marker_create_store", function() {
+          var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
+          var storeId = $(this).closest("[data-store-id]").attr("data-store-id");
+          createStore(planning_id, routeId, storeId);
+        })
+        .off("click", ".marker_destroy_store")
+        .on("click", ".marker_destroy_store", function() {
+          if (confirm(I18n.t('plannings.edit.confirm_destroy_store'))) {
+            var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
+            var stopId = $(this).closest("[data-stop-id]").attr("data-stop-id");
+            destroyStore(planning_id, routeId, stopId);
+          }
+        })
         .off("click", ".center_view")
         .on("click", ".center_view", function() {
           var route_id = $(this).closest("[data-route-id]").attr("data-route-id");
@@ -2000,6 +2014,40 @@ export const plannings_edit = function(params) {
       url: '/plannings/' + planning_id + '/data_header.js',
       beforeSend: beforeSendWaiting,
       error: ajaxError,
+      complete: completeAjaxMap
+    });
+  }
+
+  var createStore = function(planning_id, route_id, store_id) {
+    $.ajax({
+      url: '/plannings/' + planning_id + '/' + route_id + '/' + store_id + '/create_store.js',
+      method: 'POST',
+      beforeSend: function() {
+        beforeSendWaiting();
+        panelLoading(route_id);
+      },
+      error: ajaxError,
+      success: function() {
+        refreshSidebarRoute(planning_id, route_id);
+        routesLayer.refreshRoutes([route_id], routes);
+      },
+      complete: completeAjaxMap
+    });
+  };
+
+  var destroyStore = function(planning_id, route_id, stop_id) {
+    $.ajax({
+      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '/destroy.js',
+      method: 'DELETE',
+      beforeSend: function() {
+        beforeSendWaiting();
+        panelLoading(route_id);
+      },
+      error: ajaxError,
+      success: function() {
+        refreshSidebarRoute(planning_id, route_id);
+        routesLayer.refreshRoutes([route_id], routes);
+      },
       complete: completeAjaxMap
     });
   }

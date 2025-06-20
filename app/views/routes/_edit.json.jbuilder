@@ -193,6 +193,15 @@ if @with_stops
         (json.geocoded true) if route.vehicle_usage.default_store_rest && route.vehicle_usage.default_store_rest.position?
         (json.error true) if route.vehicle_usage.default_store_rest && !route.vehicle_usage.default_store_rest.position?
       end
+    elsif stop.is_a?(StopStore)
+      json.store do
+        json.store true
+        json.store_id stop.store_id
+        (json.geocoded true) if stop.position?
+        (json.error true) if !stop.position?
+        (json.departure time_over_day(stop.time.to_i + route.vehicle_usage.default_service_time_start.to_i))
+        json.departure_day number_of_days(stop.time.to_i + route.vehicle_usage.default_service_time_start.to_i)
+      end
     end
     json.duration l(Time.at(stop.duration).utc, format: :hour_minute_second) if stop.duration > 0
   end
