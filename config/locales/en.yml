@@ -1920,6 +1920,9 @@ en:
       edit_store_help: Edit facility information
       edit_visit_help: Edit visit/customer information
       marker_help: Show on map
+      create_store_help: Add an intermediate store
+      destroy_store_help: Remove store from route
+      confirm_destroy_store: Are you sure you want to remove this store from the route?
       automatic_insert_help: >-
         Find best place in a route to insert this stop (results could not be
         optimized anymore)
@@ -1958,6 +1961,7 @@ en:
         time_window_end_2: close 2
         time: 'Planned:'
         quantity: 'Quantity:'
+        loadings: 'Loading:'
         orders: 'Orders:'
         destination_duration: 'Destination duration:'
         duration: 'Visit duration:'
@@ -1967,6 +1971,7 @@ en:
         stop_drive_time: 'Duration:'
         stop_distance: 'Distance:'
         visit: Visit
+        store: Store
         status: 'Status:'
         status_updated_at: 'Time Status:'
         eta: 'ETA:'
@@ -3034,7 +3039,7 @@ en:
       _no: 'no'
     subscribe:
       planning_unavailable: >-
-        Plan can’t be changed. Your subscription period is expired | Contact
+        Plan can't be changed. Your subscription period is expired | Contact
         your reseller to get a contract extension.
       expiration_date: >-
         Only few days to renew your subscription. The end date is %{date}. If

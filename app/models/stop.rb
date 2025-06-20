@@ -20,6 +20,7 @@ class Stop < ApplicationRecord
 
   belongs_to :route, touch: true
   belongs_to :visit, optional: true # TODO: Remove optional
+  belongs_to :store, optional: true
 
   nilify_blanks
 

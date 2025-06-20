@@ -36,6 +36,10 @@ module QuantityAttr
     def delete_if(&block)
       super { |key, value| block.call(key, value) }
     end
+
+    def dup
+      QuantityHash[self]
+    end
   end
 
   class_methods do
