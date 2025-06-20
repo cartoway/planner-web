@@ -167,4 +167,23 @@
 {{/visits}}
 </div>
 {{/store}}
+{{#store}}
+<div class="store">
+<hr>
+{{#i18n}}plannings.edit.popup.store{{/i18n}}
+<ul>
+  {{#time}}<li><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.time{{/i18n}} {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}</li>{{/time}}
+  {{#loads}}
+    <li><i class="fa {{unit_icon}} fa-fw"></i> {{#i18n}}plannings.edit.popup.loadings{{/i18n}} {{quantity_formatted}}</li>
+  {{/loads}}
+  </ul>
+{{#error}}
+  <ul class="ui-state-error">
+    {{#no_path}}
+      <li><i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.no_path{{/i18n}}</li>
+    {{/no_path}}
+  </ul>
+{{/error}}
+</div>
+{{/store}}
 </div>

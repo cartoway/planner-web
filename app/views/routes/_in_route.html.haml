@@ -112,7 +112,7 @@
                         %i.fa.fa-pencil
                     %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                       %i.fa.fa-map-marker
-      = render partial: 'stops/list', locals: { route: route }
+      = render partial: 'stops/list', locals: { route: route, summary: summary }
       %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
         %li.d-fake-flex.align-items-center.list-group-item{class: ('ui-state-error' if route[:store_stop]&.[](:error)), data: { store_id: route[:store_stop]&.[](:id)}.compact}
           .row.store-row
@@ -152,3 +152,5 @@
                       %i.fa.fa-pencil
                   %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                     %i.fa.fa-map-marker
+                  %a.marker_create_store.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.create_store_help")}
+                    %i.fa.fa-plus
