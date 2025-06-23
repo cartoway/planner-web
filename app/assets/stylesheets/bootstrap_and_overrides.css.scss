@@ -113,6 +113,13 @@ a.btn-default {
   color: $text-black;
 }
 
+.route-select {
+  .dropdown-menu {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+}
+
 .menu-left .dropdown .menu_label {
   max-width: 180px;
   overflow: hidden;
