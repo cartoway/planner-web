@@ -265,7 +265,7 @@ class Route < ApplicationRecord
       }
 
       unless options[:no_quantities]
-        stop_load_hash, route_attributes[:pickups], route_attributes[:deliveries] = compute_loads(stops_sort)
+        _stop_load_hash, route_attributes[:pickups], route_attributes[:deliveries] = compute_loads(stops_sort)
       end
       # Last stop to store
       distance, drive_time, trace = traces.shift
@@ -1060,7 +1060,7 @@ class Route < ApplicationRecord
     @deliverable_units.each do |du|
       if vehicle_usage
         # Is the vehicle in overload/underload arriving at the stop ?
-        out_of_capacity ||= (@default_capacities[du.id] && current_loads[du.id] > @default_capacities[du.id]) || current_loads[du.id] < 0
+        out_of_capacity ||= (@default_capacities[du.id] && current_loads[du.id].round(2) > @default_capacities[du.id].round(2)) || current_loads[du.id].round(2) < 0
         pickup = default_pickups[du.id]
         delivery = default_deliveries[du.id]
         current_loads[du.id] =
@@ -1068,7 +1068,7 @@ class Route < ApplicationRecord
         has_pickup = pickup && pickup > 0
         has_delivery = delivery && delivery > 0
         # Is the vehicle in overload/underload leaving the stop ?
-        out_of_capacity ||= (@default_capacities[du.id] && current_loads[du.id] > @default_capacities[du.id]) || current_loads[du.id] < 0
+        out_of_capacity ||= (@default_capacities[du.id] && current_loads[du.id].round(2) > @default_capacities[du.id].round(2)) || current_loads[du.id].round(2) < 0
         unmanageable_capacity ||= (has_pickup || has_delivery) && (!@default_capacities.key?(du.id) || @default_capacities[du.id] == 0)
       end
     end
