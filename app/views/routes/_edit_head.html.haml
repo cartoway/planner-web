@@ -273,22 +273,25 @@
         %i.fa.fa-check-square.fa-fw
         = route[:size]
         = t('plannings.edit.stops')
+
   - route[:quantities]&.each do |unit|
-    .col-xs-4.route-data-advanced
-      .route-info{class: "#{route[:vehicle_id] ? 'primary' : 'inactive'} #{unit[:out_of_capacity] && 'danger'}", title: t('plannings.edit.route_quantity_help')}
-        %i.fa.fa-fw{class: unit[:unit_icon]}
-        - if unit[:pickup] != '0'
-          %i.fa.fa-fw.fa-up-long{title: t("plannings.edit.pickup_help")}
-          = unit[:pickup]
-        - if unit[:delivery] != '0'
-          - if unit[:pickup] != '0'
-            %i.fa.fa-fw.fa-down-long{title: t("plannings.edit.delivery_help")}
-          = unit[:delivery]
-        - if unit[:capacity]
-          = " / #{unit[:capacity]}"
-        /
-        - if unit[:label]
-          = " #{unit[:label]}"
+    - [:pickup, :delivery].each do |sym|
+      - if unit.fetch("has_#{sym}".to_sym)
+        .col-xs-4.route-data-advanced
+          .route-info{class: "#{route[:vehicle_id] ? 'primary' : 'inactive'} #{unit[:out_of_capacity] && 'danger'}", title: [unit[:label], t('plannings.edit.route_quantity_help')].compact.join(' - ')}
+            %i.fa.fa-fw{class: unit[:unit_icon]}
+            - if sym == :pickup
+              %i.fa.fa-fw.fa-up-long{title: t("plannings.edit.pickup_help")}
+              = unit[:pickup]
+            - if sym == :delivery
+              - if unit[:has_pickup]
+                %i.fa.fa-fw.fa-down-long{title: t("plannings.edit.delivery_help")}
+              = unit[:delivery]
+            - if unit[:capacity]
+              = "/ #{unit[:capacity]}"
+            /
+            - if unit[:label]
+              = "#{unit[:label]}"
 - if route[:route_error]
   %ul.ui-state-error
     - if route[:route_no_geolocalization]

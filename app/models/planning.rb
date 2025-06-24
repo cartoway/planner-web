@@ -941,6 +941,7 @@ class Planning < ApplicationRecord
           if quantity_hash.key?(unit.id)
             quantity_hash[unit.id][:pickup] += pickup
             quantity_hash[unit.id][:delivery] += delivery
+            quantity_hash[unit.id][:capacity] += capacity if capacity
           else
             quantity_hash[unit.id] = {
               id: unit.id,
@@ -950,7 +951,9 @@ class Planning < ApplicationRecord
               delivery: delivery,
               capacity: capacity || 0,
               out_of_capacity:
-                capacity && (pickup > capacity || delivery > capacity)
+                capacity && (pickup > capacity || delivery > capacity),
+              has_pickup: pickup > 0,
+              has_delivery: delivery > 0
             }
           end
 
