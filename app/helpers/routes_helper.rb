@@ -57,7 +57,9 @@ module RoutesHelper
         label: unit.label,
         unit_icon: unit.default_icon,
         quantity_formatted: q,
-        out_of_capacity: capacity && (pickup > capacity || delivery > capacity)
+        out_of_capacity: capacity && (pickup > capacity || delivery > capacity),
+        has_pickup: pickup > 0,
+        has_delivery: delivery > 0
       }
     end
 
@@ -96,7 +98,7 @@ module RoutesHelper
   end
 
   # Devices hashes from PlanningHelper, collect all devices binded with the current route.
-  # Otherwise, takes the Device's id from the vehicle model
+  # Otherwise, takes the Device's id from the vehicle model
   def route_devices(devices, route)
     route_devices_hash = {}
     devices_route = route.vehicle_usage.vehicle.devices
