@@ -40,6 +40,7 @@ class Stop < ApplicationRecord
   validates :route, presence: true
 
   scope :only_stop_visits, -> { where(type: StopVisit.name) }
+  scope :only_stop_stores, -> { where(type: StopStore.name) }
   scope :only_active_stop_visits, -> { only_stop_visits.where(active: true) }
   scope :includes_destinations, -> { includes(visit: [:tags, destination: [:visits, :tags, {customer: :deliverable_units}]]) }
   scope :includes_relations, -> { includes(visit: [:relation_currents, :relation_successors])}

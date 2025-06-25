@@ -74,6 +74,15 @@ end
 index = 0
 route.stops.each { |stop|
   if !@params.key?(:stops) || ((stop.active || !stop.route.vehicle_usage_id || @params[:stops].split('|').include?('inactive')) && (stop.route.vehicle_usage || @params[:stops].split('|').include?('out-of-route')) && (stop.is_a?(StopVisit) || @params[:stops].split('|').include?('rest')))
+    type =
+      case stop.type
+      when StopVisit.name
+        I18n.t('plannings.export_file.stop_type_visit')
+      when StopStore.name
+        I18n.t('plannings.export_file.stop_type_store')
+      when StopRest.name
+        I18n.t('plannings.export_file.stop_type_rest')
+      end
     row = {
       ref_planning: route.planning.ref,
       planning: route.planning.name,
@@ -81,7 +90,7 @@ route.stops.each { |stop|
       route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
       vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
       order: (index+=1 if route.vehicle_usage_id),
-      stop_type: stop.is_a?(StopVisit) ? I18n.t('plannings.export_file.stop_type_visit') : I18n.t('plannings.export_file.stop_type_rest'),
+      stop_type: type,
       active: ((stop.active ? '1' : '0') if route.vehicle_usage_id),
       wait_time: ("%i:%02i" % [stop.wait_time/60/60, stop.wait_time/60%60] if route.vehicle_usage_id && stop.wait_time),
       time: (stop.time_absolute_time if route.vehicle_usage_id && stop.time),

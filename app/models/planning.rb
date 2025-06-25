@@ -150,9 +150,7 @@ class Planning < ApplicationRecord
       routes_visits.each{ |ref, r|
         i = routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref == r[:ref_vehicle] } || index_routes.shift
         routes[i].ref = ref
-        routes[i].set_visits(r[:visits].select{ |visit|
-          tags_compatible?(visit[0].tags.to_a | visit[0].destination.tags.to_a)
-        }, recompute, ignore_errors)
+        routes[i].set_objects(r[:visits], recompute, ignore_errors)
       }
       true
     else
@@ -164,6 +162,7 @@ class Planning < ApplicationRecord
     if routes_visits.size <= routes.size - 1
       existing_visits = routes.select{ |route| route.vehicle_usage? && routes_visits.key?(route.vehicle_usage.vehicle.ref&.downcase) }.flat_map{ |route| route.stops.map(&:visit) }
       stop_visit_ids = visits.each_with_object({}) { |visit, hash| hash[visit.id] = true }
+      stop_store_ids = stores.each_with_object({}) { |store, hash| hash[store.id] = true }
       import_visits = routes_visits.flat_map{ |_ref, r| r[:visits] }
 
       routes.find{ |route| !route.vehicle_usage? }.add_visits(existing_visits - import_visits)
@@ -183,11 +182,19 @@ class Planning < ApplicationRecord
             routes.index{ |route| !route.vehicle_usage? }
           end
         routes[i].ref = ref
-        r[:visits].each{ |visit, active|
-          if visit.id && stop_visit_ids[visit.id]
-            move_visit(routes[i], visit, -1)
-          else
-            routes[i].add(visit, nil, active)
+        r[:visits].each{ |obj, active|
+          if obj.is_a?(Visit)
+            if obj.id && stop_visit_ids[obj.id]
+              move_visit(routes[i], obj, -1)
+            else
+              routes[i].add(obj, nil, active)
+            end
+          elsif obj.is_a?(Store)
+            if obj.id && stop_store_ids[obj.id]
+              move_store(routes[i], obj, -1)
+            else
+              routes[i].add_store(obj)
+            end
           end
         }
       }
@@ -394,6 +401,17 @@ class Planning < ApplicationRecord
     end
   end
 
+  def move_store(route, store, index)
+    stop = nil
+    routes.find do |route|
+      stop = route.stops.find{ |s| s.store_id == store.id && s.type == 'StopStore' }
+    end
+
+    if stop
+      move_stop(route, stop, index)
+    end
+  end
+
   def move_stop(route, stop, index, force = false)
     route, index = prefered_route_and_index([route], stop) unless index || !route.vehicle_usage?
 
@@ -540,6 +558,12 @@ class Planning < ApplicationRecord
     else
       (tags_.to_a & tags.to_a).size == tags.size
     end
+  end
+
+  def stores
+    routes.flat_map{ |route|
+      route.stops.only_stop_stores.map(&:store)
+    }
   end
 
   def visits_compatibles
