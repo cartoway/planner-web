@@ -26,16 +26,14 @@ class V01::Entities::Visit < Grape::Entity
   expose(:destination_id, documentation: { type: Integer })
   expose(:quantity, documentation: { type: Integer, desc: 'Deprecated, use quantities instead.' }) { |m|
     quantities = convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
-    if quantities && m.destination.customer.deliverable_units.size == 1
-      quantities = quantities.values
-      quantities[0] if quantities.size == 1
+    if quantities.size == 1 && m.destination.customer.deliverable_units.size == 1
+      quantities[0]
     end
   }
   expose(:quantity_default, documentation: { type: Integer, desc: 'Deprecated, use quantities instead.' }) { |m|
     quantities = convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
-    if quantities && m.destination.customer.deliverable_units.size == 1
-      quantities = quantities.values
-      quantities[0] if quantities.size == 1
+    if quantities.size == 1 && m.destination.customer.deliverable_units.size == 1
+      quantities[0]
     end
   }
   expose(:quantities, using: V01::Entities::DeliverableUnitQuantity, documentation: { type: V01::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
