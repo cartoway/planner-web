@@ -470,6 +470,35 @@ class Route < ApplicationRecord
     end
   end
 
+  def set_objects(objects, recompute = true, ignore_errors = false)
+    Stop.transaction do
+      init_stops false
+      add_objects objects, recompute, ignore_errors
+    end
+  end
+
+  def add_objects(objects, recompute = true, ignore_errors = false)
+    Stop.transaction do
+      i = stops.size
+      collected_stops = objects.map.with_index{ |stop, index|
+        object, active = stop
+
+        if object.is_a?(Visit) && planning.tags_compatible?(object.tags.to_a | object.destination.tags.to_a)
+          stops.new(type: StopVisit.name, visit: object, active: active, index: i += 1)
+        elsif object.is_a?(Store)
+          # Do not consider store start and store stop
+          next if index == 0 && object == vehicle_usage.default_store_start || index == objects.size - 1 && object == vehicle_usage.default_store_stop
+
+          stops.new(type: StopStore.name, store: object, index: i += 1)
+        end
+      }.compact
+      Stop.import(collected_stops)
+      self.outdated = true
+
+      compute(ignore_errors: ignore_errors) if recompute
+    end
+  end
+
   def add_visits(visits, recompute = true, ignore_errors = false)
     Stop.transaction do
       i = stops.size
@@ -1124,7 +1153,7 @@ class Route < ApplicationRecord
     @deliverable_units.each do |du|
       if vehicle_usage
         # Is the vehicle in overload/underload arriving at the stop ?
-        out_of_capacity ||= (@default_capacities[du.id] && current_loads[du.id].round(2) > @default_capacities[du.id].round(2)) || current_loads[du.id].round(2) < 0
+        out_of_capacity ||= current_loads[du.id] && (@default_capacities[du.id] && current_loads[du.id].round(2) > @default_capacities[du.id].round(2) || current_loads[du.id].round(2) < 0)
         pickup = default_pickups[du.id]
         delivery = default_deliveries[du.id]
         current_loads[du.id] =
@@ -1132,7 +1161,7 @@ class Route < ApplicationRecord
         has_pickup = pickup && pickup > 0
         has_delivery = delivery && delivery > 0
         # Is the vehicle in overload/underload leaving the stop ?
-        out_of_capacity ||= (@default_capacities[du.id] && current_loads[du.id].round(2) > @default_capacities[du.id].round(2)) || current_loads[du.id].round(2) < 0
+        out_of_capacity ||= current_loads[du.id] && (@default_capacities[du.id] && current_loads[du.id].round(2) > @default_capacities[du.id].round(2) || current_loads[du.id].round(2) < 0)
         unmanageable_capacity ||= (has_pickup || has_delivery) && (!@default_capacities.key?(du.id) || @default_capacities[du.id] == 0)
       end
     end
