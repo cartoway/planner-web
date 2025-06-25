@@ -416,14 +416,6 @@ class ImporterDestinations < ImporterBase
 
     @customer.reload
 
-    # Update destinations_count and visits_count as activerecord callbacks are not called
-    Customer.where(id: @customer.id).update_all(
-      destinations_count: @customer.destinations.count,
-      plannings_count: @customer.plannings.count,
-      vehicles_count: @customer.vehicles.count,
-      visits_count: Visit.joins(:destination).where(destinations: { customer_id: @customer.id }).count
-    )
-
     @destinations_to_geocode_count = @customer.destinations.not_positioned.count
 
     if @destinations_to_geocode_count > 0 && (@synchronous || !Planner::Application.config.delayed_job_use)
@@ -442,6 +434,14 @@ class ImporterDestinations < ImporterBase
       }
     end
     prepare_plannings(name, _options)
+
+    # Update destinations_count and visits_count as activerecord callbacks are not called
+    Customer.where(id: @customer.id).update_all(
+      destinations_count: @customer.destinations.count,
+      plannings_count: @customer.plannings.count,
+      vehicles_count: @customer.vehicles.count,
+      visits_count: Visit.joins(:destination).where(destinations: { customer_id: @customer.id }).count
+    )
   end
 
   def save_plannings
