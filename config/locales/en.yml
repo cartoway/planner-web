@@ -1333,6 +1333,8 @@ en:
       stop_type_desc: 'stop type in the plan. The default value is [visit]'
       stop_type_visit: visit
       stop_type_visit_desc: ''
+      stop_type_store: store
+      stop_type_store_desc: ''
       stop_format: '[visit | facility | rest]'
       name: name
       name_desc: account or visited destination name

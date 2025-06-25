@@ -153,7 +153,8 @@ class ImporterDestinationsTest < ActionController::TestCase
           stop = Planning.last.routes.collect{ |r| r.stops.find{ |s| s.is_a?(StopVisit) && s.visit.destination.name == 'BF' } }.compact.first
           assert_equal true, stop.active
           if stop.route.vehicle_usage.default_store_start.position?
-            assert_equal 1, stop.distance
+            route = stop.route
+            assert_equal 1, route.stops.first.distance
           else
             assert_equal 0, stop.distance
           end
@@ -685,6 +686,72 @@ class ImporterDestinationsTest < ActionController::TestCase
       destination = Destination.last
       assert_equal 2700, destination.duration
       assert_equal '00:45:00', destination.duration_time_with_seconds
+    end
+  end
+
+  test 'should import one plan and update same plan with stores' do
+    Planning.all.each(&:destroy)
+    @customer.delete_all_destinations
+    @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}
+    @customer.reload
+    assert_difference('Planning.count', 1) do
+      assert_difference('Route.count', 3) do
+        assert_difference('StopVisit.count', 4) do
+          assert_difference('StopStore.count', 1) do
+            assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes_with_store.csv', 'text.csv')).import
+            @customer.reload
+            planning = @customer.plannings.last
+            route_1 = planning.routes.find{ |r| r.ref == 't1' }
+            route_2 = planning.routes.find{ |r| r.ref == 't2' }
+            assert_equal 'p1', planning.ref
+            assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+            assert_equal 2, route_1.stops.index{ |stop| stop.is_a?(StopStore) }
+            assert_equal 3, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
+            assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
+            assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
+          end
+        end
+      end
+    end
+
+    assert_difference('Planning.count', 0) do
+      assert_difference('Route.count', 0) do
+        assert_difference('Stop.count', 0) do
+          # Permute visits v1 and v2
+          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_v2v1_with_store.csv', 'text.csv')).import
+          @customer.reload
+          planning = @customer.plannings.last
+          route_1 = planning.routes.find{ |r| r.ref == 't1' }
+          route_2 = planning.routes.find{ |r| r.ref == 't2' }
+          assert_equal 'p1', planning.ref
+          assert_equal 3, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+          assert_equal 2, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
+          assert_equal 1, route_1.stops.index{ |stop| stop.is_a?(StopStore) }
+          assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
+          assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
+        end
+      end
+    end
+
+    assert_difference('Planning.count', 0) do
+      assert_difference('Route.count', 0) do
+        assert_difference('Stop.count', 1) do
+          # Put visit v1 in out_route and introduce new visit v10
+          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_v1_out_route_v2.csv', 'text.csv')).import
+          @customer.reload
+          planning = @customer.plannings.last
+          route_1 = planning.routes.find{ |r| r.ref == 't1' }
+          route_2 = planning.routes.find{ |r| r.ref == 't2' }
+          out_route = planning.routes.find{ |r| !r.vehicle_usage? }
+          assert_equal 'p1', planning.ref
+          assert_equal 1, route_1.stops.index{ |stop| stop.is_a?(StopStore) }
+          assert_equal 2, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+          assert_equal 3, route_1.stops.index{ |stop| stop.visit&.ref == 'v10' }
+          assert out_route.stops.one?{ |stop| stop.visit&.ref == 'v2' }
+          assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
+          assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
+        end
+      end
     end
   end
 end
