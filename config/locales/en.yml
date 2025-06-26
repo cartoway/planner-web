@@ -687,6 +687,8 @@ en:
           attributes:
             stops:
               bad_index: 'Bad index %{index} on the route %{route}'
+              store:
+                must_be_associated_to_vehicle_usage: must be associated to a route with a vehicle
         planning:
           attributes:
             date:

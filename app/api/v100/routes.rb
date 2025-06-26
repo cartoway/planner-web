@@ -88,6 +88,34 @@ class V100::Routes < Grape::API
             present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
           end
         end
+
+        desc 'Add intermediate store to route. Append in order at the end of the route',
+          detail: 'Set a new StopStore to the route. index parameter allows to insert the stop at the provided index in the route.',
+          nickname: 'addStopStore',
+          success: V01::Status.success(:code_204),
+          failure: V01::Status.failures
+        params do
+          requires :id, type: String, desc: SharedParams::ID_DESC
+          requires :index, type: Integer
+        end
+        post ':route_id/stores/:id' do
+          Route.includes_destinations.scoping do
+            planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
+            raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
+
+            route = planning.routes.includes_destinations.where(ParseIdsRefs.read(params[:route_id])).first!
+            store = current_customer.stores.where(ParseIdsRefs.read(params[:id])).first!
+
+            Planning.transaction do
+              route.add_store(store, params[:index])
+              route.compute_saved
+              current_customer.save!
+            end
+          rescue Exceptions::JobInProgressError
+            status 409
+            present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+          end
+        end
       end
     end
   end

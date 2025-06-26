@@ -691,6 +691,8 @@ fr:
           attributes:
             stops:
               bad_index: 'Mauvais index %{index} sur la tournée %{route}'
+              store:
+                must_be_associated_to_vehicle_usage: doit être associé à une tournée avec un véhicule
         planning:
           attributes:
             date:
