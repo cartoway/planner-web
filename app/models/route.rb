@@ -514,6 +514,8 @@ class Route < ApplicationRecord
   end
 
   def add_store(store, index = nil, active = true, stop_id = nil)
+    raise I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage') if self.vehicle_usage.nil?
+
     index = stops.size + 1 if !index || index < 0
     shift_index(index)
     stop = stops.build(type: StopStore.name, store: store, index: index, active: active, id: stop_id)
