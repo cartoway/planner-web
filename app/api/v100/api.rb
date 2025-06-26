@@ -109,4 +109,5 @@ class V100::Api < Grape::API
   mount V100::Destinations
   mount V100::Relations
   mount V100::Routes
+  mount V100::Stops
 end

@@ -72,4 +72,38 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test 'should add store to route' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      route = @planning.routes.find{ |r| r.vehicle_usage }
+      store = stores(:store_one)
+      post api(@planning.id, "/#{route.id}/stores/#{store.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
+      if mode
+        assert_equal 409, last_response.status, last_response.body
+      else
+        assert_equal 201, last_response.status, last_response.body
+        route.reload
+        assert_equal store, route.stops.first.store
+      end
+    end
+  end
+
+  test 'should not add store to out_route' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      route = @planning.routes.find{ |r| !r.vehicle_usage }
+      store = stores(:store_one)
+      post api(@planning.id, "/#{route.id}/stores/#{store.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
+      if mode
+        assert_equal 409, last_response.status, last_response.body
+      else
+        assert_equal 500, last_response.status, last_response.body
+        assert_equal(
+          I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage'),
+          JSON.parse(last_response.body)['message']
+        )
+      end
+    end
+  end
 end
