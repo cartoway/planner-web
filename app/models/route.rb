@@ -323,6 +323,7 @@ class Route < ApplicationRecord
         }
         compute_out_of_force_position
         compute_out_of_relations
+        compute_out_of_skill
 
         # Try to minimize waiting time by a later begin
         time = self.end
@@ -605,7 +606,7 @@ class Route < ApplicationRecord
     end
   end
 
-  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation].each do |s|
+  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation, :out_of_skill].each do |s|
     define_method "#{s}" do
       Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/out_of_#{s}_cache") do
         vehicle_usage_id && (respond_to?("stop_#{s}") && send("stop_#{s}") ||
@@ -876,6 +877,29 @@ class Route < ApplicationRecord
     }
   end
 
+  def route_skills
+    return [] if !vehicle_usage?
+
+    vehicle_usage.tags | vehicle_usage.vehicle.tags
+  end
+
+  def compute_out_of_skill
+    planning_skills = planning.all_skills.map(&:id)
+
+    return if planning_skills.empty?
+
+    r_skills = route_skills.map(&:id)
+
+    stops.each{ |stop|
+      next if !stop.is_a?(StopVisit) || !stop.active
+
+      stop_tags = stop.visit.tags | stop.visit.destination.tags
+      stop_skills = stop_tags.map(&:id) & planning_skills
+
+      stop.out_of_skill = stop_skills.any? && (stop_skills & r_skills).size < stop_skills.size
+    }
+  end
+
   def compute_out_of_relations
     stops.each{ |s| s.out_of_relation = false }
 
@@ -928,7 +952,7 @@ class Route < ApplicationRecord
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/destination_stops")
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_location_stops")
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_path_stops")
-    [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation].each do |s|
+    [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation, :out_of_skill].each do |s|
       Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/out_of_#{s}_cache")
     end
   end

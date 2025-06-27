@@ -194,6 +194,7 @@ class RoutesController < ApplicationController
       :out_of_max_ride_distance,
       :out_of_max_ride_duration,
       :out_of_relation,
+      :out_of_skill,
       :status,
       :status_updated_at,
       :eta,

@@ -342,3 +342,7 @@
       %li{title: t('plannings.edit.error.no_path_help')}
         %i.fa.fa-road.fa-fw
         = t('plannings.edit.error.no_path')
+    - if route[:route_out_of_skill]
+      %li{title: t('plannings.edit.error.out_of_skill_help')}
+        %i.fa.fa-tags.fa-fw
+        = t('plannings.edit.error.out_of_skill')

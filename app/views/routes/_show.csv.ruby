@@ -21,6 +21,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     out_of_max_ride_distance: nil,
     out_of_max_ride_duration: nil,
     out_of_relation: nil,
+    out_of_skill: nil,
 
     ref: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.ref,
     name: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.name,
@@ -95,6 +96,7 @@ route.stops.each { |stop|
       out_of_max_ride_distance: stop.out_of_max_ride_distance ? 'x' : '',
       out_of_max_ride_duration: stop.out_of_max_ride_duration ? 'x' : '',
       out_of_relation: stop.out_of_relation ? 'x' : '',
+      out_of_skill: stop.out_of_skill ? 'x' : '',
       status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),
       status_updated_at: stop.status_updated_at && I18n.l(stop.status_updated_at, format: :hour_minute),
       eta: stop.eta && I18n.l(stop.eta, format: :hour_minute),
@@ -172,6 +174,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     out_of_max_ride_distance: '',
     out_of_max_ride_duration: '',
     out_of_relation: '',
+    out_of_skill: '',
 
     ref: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.ref,
     name: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.name,

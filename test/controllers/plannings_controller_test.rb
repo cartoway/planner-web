@@ -278,8 +278,8 @@ class PlanningsControllerTest < ActionController::TestCase
 
     get :show, params: { id: @planning, format: :csv }
     assert_response :success
-    assert_equal 'r1,planning1,10/10/2014,,,,visite,,,,,,"","","","","","","","",,,,a,unaffected_one,MyString,MyString,MyString,MyString,,1.5,1.5,MyString,MyString,tag1,a,00:01:00,10:00,11:00,,,,,neutre,tag1,', response.body.split("\n")[1]
-    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,00:00,1.1,,"","","","","","","","",,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,"",b,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2', response.body.split("\n").select{ |l| l.include?('001') }[1]
+    assert_equal 'r1,planning1,10/10/2014,,,,visite,,,,,,"","","","","","","","","","",,,,a,unaffected_one,MyString,MyString,MyString,MyString,,1.5,1.5,MyString,MyString,tag1,a,00:01:00,10:00,11:00,,,,,neutre,tag1,', response.body.split("\n")[1]
+    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,00:00,1.1,,"","","","","","","","","","",,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,"",b,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2', response.body.split("\n").select{ |l| l.include?('001') }[1]
   end
 
   test "it shouldn't have special char in ref routes when using vehicle name" do
@@ -662,6 +662,22 @@ class PlanningsControllerTest < ActionController::TestCase
 
     patch :automatic_insert, params: { id: @planning.id, format: :json, stop_ids: [unaffected_stop.id] }
     assert_response 422
+  end
+
+  test 'should flag out_of_skill' do
+    new_tag = Tag.create!(label: 'new tag', customer: @planning.customer)
+    route = @planning.routes.find{ |r| r.vehicle_usage }
+    another_route = @planning.routes.find{ |r| r.vehicle_usage && r.vehicle_usage_id != route.vehicle_usage_id }
+    another_route.vehicle_usage.tags << new_tag
+    another_route.vehicle_usage.save!
+    first_route_stop = route.stops.find{ |s| s.is_a?(StopVisit) }
+    first_route_stop.visit.tags << new_tag
+    first_route_stop.visit.save!
+    @planning.reload
+
+    @planning.compute_saved
+    first_route_stop.reload
+    assert_equal true, first_route_stop.out_of_skill
   end
 
   test 'should not automatic insert with none available routes' do

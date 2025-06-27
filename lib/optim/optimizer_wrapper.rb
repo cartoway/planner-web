@@ -61,7 +61,7 @@ class OptimizerWrapper
     }
 
     vrp = {
-      configuration: build_configuration(**options.merge(service_count: vrp_services.size, vehicle_count: vrp_vehicles.size)),
+      configuration: build_configuration(**options.merge(service_count: vrp_services.size, vehicle_count: vrp_vehicles.size, strict_skills: routes.size > 1 && !options[:insertion_only])),
       name: options[:name],
       points: (v_points + s_points).uniq,
       relations: relations,
@@ -184,6 +184,7 @@ class OptimizerWrapper
       resolution: {
         duration: optim_duration_max,
         initial_time_out: optim_duration_min,
+        strict_skills: options[:strict_skills],
         time_out_multiplier: 2
       },
       restitution: {

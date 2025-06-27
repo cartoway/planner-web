@@ -1994,6 +1994,8 @@ en:
         out_of_max_ride_duration_help: Maximum ride duration between route stops exceeded
         out_of_relation: Relation violated
         out_of_relation_help: Relation between visits violated
+        out_of_skill: Skill violated
+        out_of_skill_help: Stop incompatible with vehicle skill
         no_path: Unreachable destination
         no_path_help: >-
           Unreachable destination: missing or no path to or from the destination
@@ -2169,6 +2171,7 @@ en:
       out_of_max_ride_distance: maximum ride distance
       out_of_max_ride_duration: maximum ride duration
       out_of_relation: relation violated
+      out_of_skill: skill not fulfilled
       status: status
       status_updated_at: time status changed
       eta: eta
