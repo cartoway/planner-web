@@ -35,18 +35,18 @@
                           = "(+#{stop[:store][:departure_day] || stop[:time_day]})"
           .col-xs-4.col-md-6
             .title
-              - if !route[:store_start][:geocoded]
+              - if !stop[:geocoded]
                 %i.fa.fa-map-marker.fa-fw{title: t("plannings.edit.error.no_geolocalization")}
-              - if route[:store_start][:no_path]
+              - if stop[:no_path]
                 %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path")}
-              %span.name{title: route[:store_start][:name]}
-                = route[:store_start][:name]
+              %span.name{title: stop[:name]}
+                = stop[:name]
           .col-xs-2.col-md-2.d-flex.justify-content-center.align-items-center
-            - eta_statement = " - #{t('plannings.edit.popup.eta')} #{route[:store_start][:eta_formated]}" if route[:store_start][:eta_formated]
-            %span.store-status{class: "stop-status-#{route[:store_start][:status_code]}", title: "#{route[:store_start][:status]}#{eta_statement}", style: ("display: none;" if !route[:store_start][:status])}
+            - eta_statement = " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" if stop[:eta_formated]
+            %span.store-status{class: "stop-status-#{stop[:status_code]}", title: "#{stop[:status]}#{eta_statement}", style: ("display: none;" if !stop[:status])}
             .btn-group.pull-right.stop-tools
               - if @manage_planning[:manage_store]
-                %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_start][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
+                %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{stop[:store][:store_id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
                   %i.fa.fa-pencil
               %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                 %i.fa.fa-map-marker

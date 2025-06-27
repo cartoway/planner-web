@@ -41,11 +41,11 @@ class StopStore < Stop
   end
 
   def duration
-    route.vehicle_usage.default_service_time_start || 0
+    route.vehicle_usage.default_store_duration || 0
   end
 
   def duration_time_with_seconds
-    route.vehicle_usage.default_service_time_start_time_with_seconds
+    route.vehicle_usage.default_store_duration_time_with_seconds
   end
 
   def destination_duration

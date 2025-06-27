@@ -32,13 +32,10 @@ class StopsController < ApplicationController
       @route.add_store(@store)
       respond_to do |format|
         if @planning.compute_saved
-          planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
-          summary = planning_summary(@planning)
-          format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: summary } }
+          format.json { render json: { status: :ok } }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
-          flash[:error] = errors
-          format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
+          format.json { render json: { status: :unprocessable_entity, error: errors }, status: :unprocessable_entity }
         end
       end
     end
@@ -132,6 +129,7 @@ class StopsController < ApplicationController
       else
         PlanningsController.manage
       end
+    @available_stores = current_user.customer.stores.map { |store| { id: store.id, name: store.name, ref: store.ref, icon: store.icon, color: store.color } }
     @callback_button = true
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)

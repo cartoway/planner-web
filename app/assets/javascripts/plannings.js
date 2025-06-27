@@ -345,6 +345,7 @@ export const plannings_edit = function(params) {
   }
   initUpdateRouteDeparture();
   initRouteDepartureTimeEntry();
+  initStoreDropdown(params.planning_id);
 
   var apply_zoning_modal = bootstrap_dialog({
     title: I18n.t('plannings.edit.dialog.zoning.title'),
@@ -1094,6 +1095,46 @@ export const plannings_edit = function(params) {
     });
   }
 
+  function initStoreDropdown(planning_id) {
+    $(document).on('click', '.store-option', function(e) {
+      e.preventDefault();
+
+      var store_id = $(this).data('store-id');
+      var store_name = $(this).data('store-name');
+      var route_id = $(this).data('route-id');
+
+     if (!route_id || !planning_id) {
+        stickyError(I18n.t('plannings.edit.create_store.error.missing_context'));
+        return;
+      }
+
+      $.ajax({
+        url: '/plannings/' + planning_id + '/' + route_id + '/' + store_id + '/create_store.json',
+        type: 'POST',
+        beforeSend: function() {
+          beforeSendWaiting();
+          panelLoading(route_id);
+        },
+        success: function() {
+          refreshSidebarRoute(planning_id, route_id);
+          routesLayer.refreshRoutes([route_id], routes);
+          notice(I18n.t('plannings.edit.create_store.success', { store: store_name }));
+        },
+        error: function(xhr) {
+          if (xhr.responseJSON && xhr.responseJSON.error) {
+            stickyError(xhr.responseJSON.error);
+          } else {
+            stickyError(I18n.t('plannings.edit.create_store.error.general'));
+          }
+        },
+        complete: function() {
+          completeWaiting();
+        }
+      });
+      $(this).closest(".dropdown-menu").prev().dropdown("toggle");
+    });
+  };
+
   $('input[name="enable_optimization_soft_upper_bound"]').change(function() {
     $("#optimization-vehicle-max-upper-bound, #optimization-stop-max-upper-bound").toggleClass('d-none');
   });
@@ -1478,12 +1519,6 @@ export const plannings_edit = function(params) {
           }
           $(this).blur();
           return false;
-        })
-        .off("click", ".marker_create_store")
-        .on("click", ".marker_create_store", function() {
-          var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
-          var storeId = $(this).closest("[data-store-id]").attr("data-store-id");
-          createStore(planning_id, routeId, storeId);
         })
         .off("click", ".marker_destroy_store")
         .on("click", ".marker_destroy_store", function() {
@@ -2017,23 +2052,6 @@ export const plannings_edit = function(params) {
       complete: completeAjaxMap
     });
   }
-
-  var createStore = function(planning_id, route_id, store_id) {
-    $.ajax({
-      url: '/plannings/' + planning_id + '/' + route_id + '/' + store_id + '/create_store.js',
-      method: 'POST',
-      beforeSend: function() {
-        beforeSendWaiting();
-        panelLoading(route_id);
-      },
-      error: ajaxError,
-      success: function() {
-        refreshSidebarRoute(planning_id, route_id);
-        routesLayer.refreshRoutes([route_id], routes);
-      },
-      complete: completeAjaxMap
-    });
-  };
 
   var destroyStore = function(planning_id, route_id, stop_id) {
     $.ajax({

@@ -1224,7 +1224,8 @@ CREATE TABLE public.vehicle_usage_sets (
     max_ride_distance integer,
     cost_distance double precision,
     cost_fixed double precision,
-    cost_time double precision
+    cost_time double precision,
+    store_duration integer
 );
 
 
@@ -1271,7 +1272,8 @@ CREATE TABLE public.vehicle_usages (
     work_time integer,
     cost_distance double precision,
     cost_fixed double precision,
-    cost_time double precision
+    cost_time double precision,
+    store_duration integer
 );
 
 
@@ -3157,4 +3159,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250609124605'),
 ('20250618061806'),
 ('20250619092217'),
-('20250626123719');
+('20250626123719'),
+('20250627085724');

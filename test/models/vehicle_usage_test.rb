@@ -281,4 +281,53 @@ class VehicleUsageTest < ActiveSupport::TestCase
     @vehicle_usage.cost_time = -20.25
     assert_not @vehicle_usage.valid?
   end
+
+  test 'should update outdated if store duration changed' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    route = vehicle_usage.routes.take
+    assert !route.outdated
+
+    vehicle_usage.update! store_duration: 10.minutes.to_i
+    assert route.reload.outdated
+  end
+
+  test 'should use vehicle usage store duration when set' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.update! store_duration: 15.minutes.to_i
+    vehicle_usage.vehicle_usage_set.update! store_duration: 30.minutes.to_i
+
+    assert_equal 15.minutes.to_i, vehicle_usage.default_store_duration
+  end
+
+  test 'should fallback to vehicle usage set store duration when vehicle usage not set' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.update! store_duration: nil
+    vehicle_usage.vehicle_usage_set.update! store_duration: 30.minutes.to_i
+
+    assert_equal 30.minutes.to_i, vehicle_usage.default_store_duration
+  end
+
+  test 'should return 0 when no store duration is set' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.update! store_duration: nil
+    vehicle_usage.vehicle_usage_set.update! store_duration: nil
+
+    assert_equal 0, vehicle_usage.default_store_duration
+  end
+
+  test 'should return correct store duration time' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.update! store_duration: 15.minutes.to_i
+
+    expected_time = Time.parse('00:15')
+    assert_equal expected_time, vehicle_usage.default_store_duration_time
+  end
+
+  test 'should return correct store duration time with seconds' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.update! store_duration: 15.minutes.to_i
+
+    expected_time_with_seconds = Time.parse('00:15:00')
+    assert_equal expected_time_with_seconds, vehicle_usage.default_store_duration_time_with_seconds
+  end
 end
