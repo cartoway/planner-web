@@ -2090,6 +2090,9 @@ fr:
         out_of_max_ride_duration_help: Durée trajet maximale dépassée entre arrêts de la tournée
         out_of_relation: Relation non respectée
         out_of_relation_help: Relation entre visites non respectée
+        out_of_skill: Hors compétence
+        out_of_skill_help: >-
+          Arrêt incompatible avec la compétence du véhicule
         no_path: Adresse inaccessible
         no_path_help: >-
           Adresse inaccessible : pas de voie d'accès ou itinéraire pour aller ou
@@ -2268,6 +2271,7 @@ fr:
       out_of_max_ride_distance: distance trajet maximale
       out_of_max_ride_duration: durée trajet maximale
       out_of_relation: relation non respectée
+      out_of_skill: compétence non respectée
       status: statut
       status_updated_at: horaire statut
       eta: eta

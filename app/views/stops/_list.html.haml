@@ -107,6 +107,8 @@
                 %i.fa.fa-times.fa-fw{title: t("plannings.edit.error.unmanageable_capacity_help")}
               - if stop[:no_path]
                 %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path_help")}
+              - if stop[:out_of_skill]
+                %i.fa.fa-tags.fa-fw{title: t("plannings.edit.error.out_of_skill_help")}
 
               - title = stop[:name]
               - if stop[:index_visit]
