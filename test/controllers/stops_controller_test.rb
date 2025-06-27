@@ -34,7 +34,7 @@ class StopsControllerTest < ActionController::TestCase
         planning_id: @planning.id,
         route_id: @route.id,
         store_id: @store.id,
-        format: :js
+        format: :json
       }
     end
     assert_response :success
@@ -46,7 +46,7 @@ class StopsControllerTest < ActionController::TestCase
         planning_id: 99999,
         route_id: @route.id,
         store_id: @store.id,
-        format: :js
+        format: :json
       }
     end
     assert_response :not_found
@@ -58,7 +58,7 @@ class StopsControllerTest < ActionController::TestCase
         planning_id: @planning.id,
         route_id: 99999,
         store_id: @store.id,
-        format: :js
+        format: :json
       }
     end
     assert_response :not_found
@@ -70,7 +70,7 @@ class StopsControllerTest < ActionController::TestCase
         planning_id: @planning.id,
         route_id: @route.id,
         store_id: 99999,
-        format: :js
+        format: :json
       }
     end
     assert_response :not_found

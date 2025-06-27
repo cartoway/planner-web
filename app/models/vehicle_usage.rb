@@ -42,8 +42,9 @@ class VehicleUsage < ApplicationRecord
   attribute :rest_duration, ScheduleType.new
   attribute :service_time_start, ScheduleType.new
   attribute :service_time_end, ScheduleType.new
+  attribute :store_duration, ScheduleType.new
   attribute :work_time, ScheduleType.new
-  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
+  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :store_duration, :work_time
   attr_localized :cost_distance, :cost_fixed, :cost_time
 
   validates :cost_distance, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
@@ -206,6 +207,18 @@ class VehicleUsage < ApplicationRecord
     service_time_end_time || vehicle_usage_set.service_time_end_time
   end
 
+  def default_store_duration
+    store_duration || vehicle_usage_set.store_duration || 0
+  end
+
+  def default_store_duration_time
+    store_duration_time || vehicle_usage_set.store_duration_time
+  end
+
+  def default_store_duration_time_with_seconds
+    store_duration_time_with_seconds || vehicle_usage_set.store_duration_time_with_seconds
+  end
+
   def default_work_time(with_service = false)
     default = work_time || vehicle_usage_set.work_time
 
@@ -311,7 +324,7 @@ class VehicleUsage < ApplicationRecord
     if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? ||
        store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? ||
        store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed? ||
-       cost_distance_changed? || cost_fixed_changed? || cost_time_changed?
+       store_duration_changed? || cost_distance_changed? || cost_fixed_changed? || cost_time_changed?
       routes.each{ |route|
         route.outdated = true
       }

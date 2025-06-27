@@ -1925,6 +1925,12 @@ en:
       edit_visit_help: Edit visit/customer information
       marker_help: Show on map
       create_store_help: Add an intermediate store
+      select_store: Select a store
+      create_store:
+        success: "Store %{store} added successfully"
+        error:
+          missing_context: Missing context to add store
+          general: Error adding store
       destroy_store_help: Remove store from route
       confirm_destroy_store: Are you sure you want to remove this store from the route?
       automatic_insert_help: >-
