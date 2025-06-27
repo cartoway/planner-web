@@ -2015,6 +2015,12 @@ fr:
       edit_visit_help: Modifier les informations du client
       marker_help: Visualiser sur la carte
       create_store_help: Ajouter un site intermédiaire
+      select_store: Sélectionner un site
+      create_store:
+        success: "Site %{store} ajouté avec succès"
+        error:
+          missing_context: Contexte manquant pour ajouter le site
+          general: Erreur lors de l'ajout du site
       destroy_store_help: Supprimer le site de la tournée
       confirm_destroy_store: Êtes-vous sûr de vouloir supprimer ce site de la tournée ?
       automatic_insert_help: >-
