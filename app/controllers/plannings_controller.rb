@@ -25,7 +25,7 @@ class PlanningsController < ApplicationController
   before_action :authenticate_user!, except: [:driver_move]
   before_action :authenticate_driver!, only: [:driver_move]
 
-  before_action :set_available_stores, only: [:active, :edit, :optimize, :optimize_route, :reverse_order, :sidebar]
+  before_action :set_available_stores, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar]
   UPDATE_ACTIONS = [:update, :move, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route]
