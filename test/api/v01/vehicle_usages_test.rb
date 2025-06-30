@@ -92,4 +92,51 @@ class V01::VehicleUsagesTest < ActiveSupport::TestCase
     assert_equal @vehicle_usage.rest_stop_absolute_time_with_seconds, JSON.parse(last_response.body)['rest_stop']
     assert_equal @vehicle_usage.time_window_end_absolute_time_with_seconds, JSON.parse(last_response.body)['time_window_end']
   end
+
+  test 'should update a vehicle_usage with store_duration' do
+    put api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id), nil, input: {store_duration: '00:15'}.to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+
+    get api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id)
+    assert last_response.ok?, last_response.body
+    assert_equal '00:15:00', JSON.parse(last_response.body)['store_duration']
+  end
+
+  test 'should update a vehicle_usage with store_duration exceeding one day' do
+    put api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id), nil, input: {store_duration: '25:30'}.to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+
+    get api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id)
+    assert last_response.ok?, last_response.body
+    assert_equal '25:30:00', JSON.parse(last_response.body)['store_duration']
+  end
+
+  test 'should clear store_duration when set to null' do
+    @vehicle_usage.update!(store_duration: 15 * 60)
+
+    put api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id), nil, input: {store_duration: nil}.to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+
+    get api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id)
+    assert last_response.ok?, last_response.body
+    assert_nil JSON.parse(last_response.body)['store_duration']
+  end
+
+  test 'should expose store_duration in vehicle_usage entity' do
+    @vehicle_usage.update!(store_duration: 20 * 60)
+
+    get api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id)
+    assert last_response.ok?, last_response.body
+    result = JSON.parse(last_response.body)
+    assert_equal '00:20:00', result['store_duration']
+  end
+
+  test 'should expose nil store_duration when not set in vehicle_usage entity' do
+    @vehicle_usage.update!(store_duration: nil)
+
+    get api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id)
+    assert last_response.ok?, last_response.body
+    result = JSON.parse(last_response.body)
+    assert_nil result['store_duration']
+  end
 end
