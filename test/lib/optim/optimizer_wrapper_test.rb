@@ -339,4 +339,97 @@ class OptimizerWrapperTest < ActionController::TestCase
     vrp = @optim.build_vrp(@planning, @planning.routes, **{ cost_fixed: 10 })
     assert_equal 10, vrp[:vehicles].first[:cost_fixed]
   end
+
+  test 'should include solver information in progress data' do
+    uri_template_post = Addressable::Template.new('http://localhost:1791/0.1/vrp/submit.json')
+    uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
+
+    # Test with solver information
+    progress_count = 0
+    progress = lambda{ |job_id, solution_data|
+      case progress_count
+      when 1
+        assert_equal 'queued', solution_data[:status]
+      when 2
+        assert_equal 'completed', solution_data[:status]
+      end
+      if solution_data && solution_data[:status] == 'queued'
+        assert_equal ['ortools'], solution_data[:solvers]
+        assert_equal 1, solution_data[:skipped_services].size
+        assert_equal 'vroom', solution_data[:skipped_services][0]['solver']
+        assert_equal ['assert_no_relations_except_simple_shipments', 'assert_vehicles_no_duration_limit', 'assert_no_complex_setup_durations', 'assert_no_first_solution_strategy'], solution_data[:skipped_services][0]['reasons']
+      end
+      progress_count += 1
+    }
+
+    vrp_with_solvers_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-with-solvers-info.json')).read
+    vrp_complete_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-completed.json')).read
+
+    # Multiple responses for repeated requests
+    @stub_VrpSubmit = stub_request(:post, uri_template_post).to_return({
+      status: 200, body: vrp_with_solvers_file, headers: {content_type: 'json'}
+    })
+    stub_vrp_job = stub_request(:get, uri_template).to_return({
+      status: 200, body: vrp_complete_file, headers: {content_type: 'json'}
+    })
+
+    @optim.optimize(@planning, @planning.routes, **{ optimize_time: 15000 }, &progress)
+  ensure
+    remove_request_stub(stub_vrp_job) if stub_vrp_job
+  end
+
+  test 'should include solver information while working' do
+    uri_template_post = Addressable::Template.new('http://localhost:1791/0.1/vrp/submit.json')
+    uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
+
+    # Test with solver information but no progression
+    progress_count = 0
+    progress = lambda{ |job_id, solution_data|
+      case progress_count
+      when 0
+        assert_equal 'queued', solution_data[:status]
+      when 1
+        assert_equal 'working', solution_data[:status]
+      when 2
+        assert_equal 'completed', solution_data[:status]
+      end
+
+      if solution_data && solution_data[:status] == 'queued'
+        assert_equal ['ortools'], solution_data[:solvers]
+        assert_equal 1, solution_data[:skipped_services].size
+        assert_equal 'vroom', solution_data[:skipped_services][0]['solver']
+        assert_equal ['assert_no_relations_except_simple_shipments', 'assert_vehicles_no_duration_limit', 'assert_no_complex_setup_durations', 'assert_no_first_solution_strategy'], solution_data[:skipped_services][0]['reasons']
+        assert_equal 0, solution_data[:first_progression]
+        assert_equal 0, solution_data[:second_progression]
+      end
+
+      if solution_data && solution_data[:status] == 'working'
+        assert_equal ['ortools'], solution_data[:solvers]
+        assert_equal 1, solution_data[:skipped_services].size
+        assert_equal 'vroom', solution_data[:skipped_services][0]['solver']
+        assert_equal ['assert_no_relations_except_simple_shipments', 'assert_vehicles_no_duration_limit', 'assert_no_complex_setup_durations', 'assert_no_first_solution_strategy'], solution_data[:skipped_services][0]['reasons']
+        assert_equal 100, solution_data[:first_progression]
+        assert_equal 17.0, solution_data[:second_progression]
+      end
+      progress_count += 1
+    }
+
+    vrp_with_solvers_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-with-solvers-info.json')).read
+    vrp_simple_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-simple-progression.json')).read
+    vrp_complete_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-completed.json')).read
+
+    # Multiple responses for repeated requests
+    @stub_VrpSubmit = stub_request(:post, uri_template_post).to_return({
+      status: 200, body: vrp_with_solvers_file, headers: {content_type: 'json'}
+    })
+    stub_vrp_job = stub_request(:get, uri_template).to_return({
+      status: 200, body: vrp_simple_progression_file, headers: {content_type: 'json'}
+    }, {
+      status: 200, body: vrp_complete_file, headers: {content_type: 'json'}
+    })
+
+    @optim.optimize(@planning, @planning.routes, **{ optimize_time: 15000 }, &progress)
+  ensure
+    remove_request_stub(stub_vrp_job) if stub_vrp_job
+  end
 end
