@@ -45,7 +45,7 @@ class OptimizerJob < OptimizerJobStruct
           options = job_options(planning).merge(options)
           optimum = Planner::Application.config.optimizer.optimize(planning, routes, **options) { |job_id, solution_data|
             if @job
-              job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
+              job_progress_save solution_data.merge(job_id: job_id, completed: false)
               Delayed::Worker.logger.info("OptimizerJob", customer_id: customer_id, planning_id: planning_id, progress: @job.progress)
             end
           }
