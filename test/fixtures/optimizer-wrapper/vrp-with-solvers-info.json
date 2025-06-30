@@ -1,0 +1,24 @@
+{
+  "solutions": null,
+  "geojsons": null,
+  "job": {
+    "id": "477952a5d1c4a7cc2bff3188232659b9",
+    "status": "queued",
+    "avancement": null,
+    "graph": null,
+    "solvers": [
+      "ortools"
+    ],
+    "skipped_services": [
+      {
+        "solver": "vroom",
+        "reasons": [
+          "assert_no_relations_except_simple_shipments",
+          "assert_vehicles_no_duration_limit",
+          "assert_no_complex_setup_durations",
+          "assert_no_first_solution_strategy"
+        ]
+      }
+    ]
+  }
+}
