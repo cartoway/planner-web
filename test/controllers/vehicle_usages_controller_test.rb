@@ -124,4 +124,17 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     patch :update, params: { id: @vehicle_usage, vehicle_usage: { vehicle: { phone_number: phone_number }}}
     assert @vehicle_usage.vehicle.reload.phone_number == phone_number
   end
+
+  test 'should update vehicle_usage with store_duration' do
+    patch :update, params: { id: @vehicle_usage, vehicle_usage: { store_duration: '00:15' }}
+    assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
+    assert_equal 15 * 60, @vehicle_usage.reload.store_duration
+  end
+
+  test 'should clear store_duration when set to empty' do
+    @vehicle_usage.update!(store_duration: 15 * 60)
+    patch :update, params: { id: @vehicle_usage, vehicle_usage: { store_duration: '' }}
+    assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
+    assert_nil @vehicle_usage.reload.store_duration
+  end
 end

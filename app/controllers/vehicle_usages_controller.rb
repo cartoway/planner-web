@@ -90,6 +90,7 @@ class VehicleUsagesController < ApplicationController
       :time_window_end,
       :store_start_id,
       :store_stop_id,
+      :store_duration,
       :rest_start,
       :rest_stop,
       :rest_duration,

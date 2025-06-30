@@ -65,6 +65,16 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should create a vehicle_usage_set with store_duration' do
+    assert_difference('VehicleUsageSet.count', 1) do
+      @vehicle_usage_set.name = 'new name'
+      post api(), @vehicle_usage_set.attributes.merge(store_duration: '00:15')
+      assert last_response.created?, last_response.body
+      result = JSON.parse(last_response.body)
+      assert_equal '00:15:00', result['store_duration']
+    end
+  end
+
   test 'should update a vehicle_usage_set' do
     @vehicle_usage_set.name = 'new name'
     put api(@vehicle_usage_set.id), name: 'riri', max_distance: 60, max_ride_distance: 7, max_ride_duration: '00:08'
@@ -88,6 +98,46 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
     assert_nil JSON.parse(last_response.body)['store_start_id']
     assert_nil JSON.parse(last_response.body)['store_stop_id']
     assert_nil JSON.parse(last_response.body)['store_rest_id']
+  end
+
+  test 'should update a vehicle_usage_set with store_duration' do
+    put api(@vehicle_usage_set.id), store_duration: '00:30'
+    assert last_response.ok?, last_response.body
+
+    get api(@vehicle_usage_set.id)
+    result = JSON.parse(last_response.body)
+    assert last_response.ok?, last_response.body
+    assert_equal '00:30:00', result['store_duration']
+  end
+
+  test 'should clear store_duration when set to null' do
+    @vehicle_usage_set.update!(store_duration: 20 * 60)
+
+    put api(@vehicle_usage_set.id), store_duration: nil
+    assert last_response.ok?, last_response.body
+
+    get api(@vehicle_usage_set.id)
+    assert last_response.ok?, last_response.body
+    result = JSON.parse(last_response.body)
+    assert_nil result['store_duration']
+  end
+
+  test 'should expose store_duration in vehicle_usage_set entity' do
+    @vehicle_usage_set.update!(store_duration: 20 * 60)
+
+    get api(@vehicle_usage_set.id)
+    assert last_response.ok?, last_response.body
+    result = JSON.parse(last_response.body)
+    assert_equal '00:20:00', result['store_duration']
+  end
+
+  test 'should expose nil store_duration when not set in vehicle_usage_set entity' do
+    @vehicle_usage_set.update!(store_duration: nil)
+
+    get api(@vehicle_usage_set.id)
+    assert last_response.ok?, last_response.body
+    result = JSON.parse(last_response.body)
+    assert_nil result['store_duration']
   end
 
   test 'should destroy a vehicle_usage_set' do

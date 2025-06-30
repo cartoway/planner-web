@@ -483,6 +483,7 @@ en:
         store_start_id: Facility Start
         store_stop: Facility Stop
         store_stop_id: Facility Stop
+        store_duration: Intermediate store duration
         rest_start: Rest window start
         rest_stop: Rest window stop
         rest_duration: Rest duration
@@ -504,6 +505,7 @@ en:
         store_start_id: Facility Start
         store_stop: Facility Stop
         store_stop_id: Facility Stop
+        store_duration: Intermediate store duration
         rest_start: Rest window start
         rest_stop: Rest window stop
         rest_duration: Rest duration
@@ -526,6 +528,7 @@ en:
         store_start_id: Facility Start
         store_stop: Facility Stop
         store_stop_id: Facility Stop
+        store_duration: Intermediate store duration
         rest_start: Rest window start
         rest_stop: Rest window stop
         rest_duration: Rest duration
@@ -2640,6 +2643,7 @@ en:
         default: Default
         none: None
       stores_help: Start and end facilities
+      store_duration_help: Duration added to the route when passing through the intermediate store
       rest_duration_store: Rest duration / place
       rest_start:
         default: '%{n} (default)'
@@ -2799,6 +2803,7 @@ en:
       store:
         none: None
       stores_help: Start and end facilities
+      store_duration_help: Duration added to the route when passing through the intermediate store
       service_times: Service times
       service_time_start_addon: before
       service_time_end_addon: after

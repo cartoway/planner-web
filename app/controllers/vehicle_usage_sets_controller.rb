@@ -56,7 +56,7 @@ class VehicleUsageSetsController < ApplicationController
   def create
     respond_to do |format|
       p = vehicle_usage_set_params
-      time_with_day_params(params, p, [:time_window_start, :time_window_end, :rest_start, :rest_stop, :work_time, :max_ride_duration])
+      time_with_day_params(params, p, [:time_window_start, :time_window_end, :rest_start, :rest_stop, :work_time, :max_ride_duration, :store_duration])
       @vehicle_usage_set = current_user.customer.vehicle_usage_sets.build(p)
 
       if @vehicle_usage_set.save
@@ -70,7 +70,7 @@ class VehicleUsageSetsController < ApplicationController
   def update
     respond_to do |format|
       p = vehicle_usage_set_params
-      time_with_day_params(params, p, [:time_window_start, :time_window_end, :rest_start, :rest_stop, :work_time, :max_ride_duration])
+      time_with_day_params(params, p, [:time_window_start, :time_window_end, :rest_start, :rest_stop, :work_time, :max_ride_duration, :store_duration])
       @vehicle_usage_set.assign_attributes(p)
 
       if @vehicle_usage_set.save
@@ -184,6 +184,7 @@ class VehicleUsageSetsController < ApplicationController
                                               :time_window_end,
                                               :store_start_id,
                                               :store_stop_id,
+                                              :store_duration,
                                               :rest_start,
                                               :rest_stop,
                                               :rest_duration,

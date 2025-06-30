@@ -61,6 +61,12 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert VehicleUsageSet.last.time_window_end, 18 * 3_600
   end
 
+  test 'should create vehicle_usage_set with store_duration' do
+    post :create, params: { vehicle_usage_set: { name: 'Test Store Duration', store_duration: '00:20' }}
+    assert_redirected_to vehicle_usage_sets_path
+    assert_equal 20 * 60, VehicleUsageSet.last.store_duration
+  end
+
   test 'should not create vehicle_usage_set' do
     assert_difference('VehicleUsageSet.count', 0) do
       post :create, params: { vehicle_usage_set: { name: '' } }
@@ -95,6 +101,19 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_equal @vehicle_usage_set.time_window_end, 36 * 3_600
     assert_equal @vehicle_usage_set.rest_start, 34 * 3_600
     assert_equal @vehicle_usage_set.rest_stop, 35 * 3_600
+  end
+
+  test 'should update vehicle_usage_set with store_duration' do
+    patch :update, params: { id: @vehicle_usage_set, vehicle_usage_set: { store_duration: '00:30' }}
+    assert_redirected_to vehicle_usage_sets_path
+    assert_equal 30 * 60, @vehicle_usage_set.reload.store_duration
+  end
+
+  test 'should clear store_duration when set to empty' do
+    @vehicle_usage_set.update!(store_duration: 25 * 60)
+    patch :update, params: { id: @vehicle_usage_set, vehicle_usage_set: { store_duration: '' }}
+    assert_redirected_to vehicle_usage_sets_path
+    assert_nil @vehicle_usage_set.reload.store_duration
   end
 
   test 'should not update vehicle_usage_set' do
