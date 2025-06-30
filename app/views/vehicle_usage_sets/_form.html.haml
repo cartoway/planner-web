@@ -72,6 +72,18 @@
         %span.input-group-addon
           %i.fa.fa-stopwatch.fa-fw
       %p.help-block= t '.service_times_help'
+  #vehicle_usage_set_store_duration_input.row.form-group
+    %label.sr-only{for: "vehicle_usage_set_store_duration"}= t 'activerecord.attributes.vehicle_usage_set.store_duration'
+    %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.vehicle_usage_set.store_duration'
+    .col-md-offset-2.col-md-8.field
+      .input-group
+        = text_field :vehicle_usage_set, :store_duration,
+          class: 'form-control',
+          placeholder: t('all.unit.hour_minute'),
+          value: @vehicle_usage_set.store_duration_time
+        %span.input-group-addon
+          %i.fa.fa-clock-rotate-left.fa-fw.fa-flip-vertical
+      %p.help-block= t '.store_duration_help'
   #vehicle_usage_set_work_time_input.row.form-group
     %label.sr-only{for: "vehicle_usage_set_work_time"}= t 'activerecord.attributes.vehicle_usage_set.work_time'
     %label.col-md-offset-2.col-md-8.field= t '.work_time'

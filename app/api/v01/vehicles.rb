@@ -76,7 +76,7 @@ class V01::Vehicles < Grape::API
       p = p[:vehicle] if p.key?(:vehicle)
       p[:time_window_start] = p.delete(:open) if p[:open]
       p[:time_window_end] = p.delete(:close) if p[:close]
-      p.permit(:cost_distance, :cost_fixed, :cost_time, :time_window_start, :time_window_end, :store_start_id, :store_stop_id, :store_rest_id, :rest_start, :rest_stop, :rest_duration, tag_ids: [])
+      p.permit(:cost_distance, :cost_fixed, :cost_time, :time_window_start, :time_window_end, :store_start_id, :store_stop_id, :store_duration, :store_rest_id, :rest_start, :rest_stop, :rest_duration, tag_ids: [])
     end
 
     def deliverables_by_vehicle_params

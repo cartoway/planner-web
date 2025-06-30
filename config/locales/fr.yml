@@ -483,6 +483,7 @@ fr:
         store_start_id: Site départ
         store_stop: Site arrivé
         store_stop_id: Site arrivé
+        store_duration: Durée aux dépôts intermédiaires
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
@@ -504,6 +505,7 @@ fr:
         store_start_id: Site départ
         store_stop: Site arrivé
         store_stop_id: Site arrivé
+        store_duration: Durée aux dépôts intermédiaires
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
@@ -526,6 +528,7 @@ fr:
         store_start_id: Site départ
         store_stop: Site arrivée
         store_stop_id: Site arrivée
+        store_duration: Durée aux dépôts intermédiaires
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
@@ -2747,6 +2750,7 @@ fr:
         default: Défaut
         none: Aucun
       stores_help: Sites de départ et d'arrivée
+      store_duration_help: Durée de préparation aux dépôts intermédiaires
       rest_duration_store: Durée de repos / lieu
       rest_start:
         default: '%{n} (défaut)'
@@ -2916,6 +2920,7 @@ fr:
       store:
         none: Aucun
       stores_help: Sites de départ et d'arrivée
+      store_duration_help: Durée de préparation aux dépôts intermédiaires
       service_times: Durées de service
       service_time_start_addon: avant
       service_time_end_addon: après

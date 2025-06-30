@@ -403,17 +403,29 @@
           %span.input-group-addon= t '.service_time_start_addon'
           = text_field :vehicle_usage, :service_time_start,
             class: 'form-control',
-            placeholder: f.object.vehicle_usage_set.service_time_start ? t("vehicle_usages.form.service_time.default", n: f.object.vehicle_usage_set.service_time_start_time) : t('all.unit.hour_minute'),
+            placeholder: f.object.vehicle_usage_set.service_time_start ? t("web.form.default", n: f.object.vehicle_usage_set.service_time_start_time) : t('all.unit.hour_minute'),
             value: @vehicle_usage.service_time_start_time
           %span.input-group-addon
             = t '.service_time_end_addon'
           = text_field :vehicle_usage, :service_time_end,
             class: 'form-control',
-            placeholder: f.object.vehicle_usage_set.service_time_end ? t("vehicle_usages.form.service_time.default", n: f.object.vehicle_usage_set.service_time_end_time) : t('all.unit.hour_minute'),
+            placeholder: f.object.vehicle_usage_set.service_time_end ? t("web.form.default", n: f.object.vehicle_usage_set.service_time_end_time) : t('all.unit.hour_minute'),
             value: @vehicle_usage.service_time_end_time
           %span.input-group-addon
             %i.fa.fa-stopwatch.fa-fw
         %p.help-block= t '.service_times_help'
+    #vehicle_usage_store_duration_input.row
+      %label.sr-only{for: "vehicle_usage_store_duration"}= t 'activerecord.attributes.vehicle_usage.store_duration'
+      %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.vehicle_usage.store_duration'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          = text_field :vehicle_usage, :store_duration,
+            class: 'form-control',
+            placeholder: @vehicle_usage.vehicle_usage_set.store_duration ? t('web.form.default', n: @vehicle_usage.vehicle_usage_set.store_duration_time) : t('all.unit.hour_minute'),
+            value: @vehicle_usage.store_duration_time
+          %span.input-group-addon
+            %i.fa.fa-clock-rotate-left.fa-fw.fa-flip-vertical
+        %p.help-block= t '.store_duration_help'
     #vehicle_usage_set_work_time_input.row
       %label.sr-only{for: "vehicle_usage_work_time"}
         = t 'activerecord.attributes.vehicle_usage.work_time'

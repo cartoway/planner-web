@@ -221,4 +221,14 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     assert_equal 15.75, vehicle_usage.default_cost_fixed
     assert_equal 20.25, vehicle_usage.default_cost_time
   end
+
+  test 'should return store_duration_absolute_time_with_seconds' do
+    @vehicle_usage_set.update! store_duration: 20.minutes.to_i
+    assert_equal '00:20:00', @vehicle_usage_set.store_duration_absolute_time_with_seconds
+  end
+
+  test 'should return nil store_duration_absolute_time_with_seconds when store_duration is nil' do
+    @vehicle_usage_set.update! store_duration: nil
+    assert_nil @vehicle_usage_set.store_duration_absolute_time_with_seconds
+  end
 end
