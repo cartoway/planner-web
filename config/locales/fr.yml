@@ -1103,6 +1103,13 @@ fr:
         Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus court :
         non pris en compte
       optimization_force_start_help: Forcer le départ du véhicule à son horaire de début.
+      solver_priority: Ordre de priorité des solveurs d'optimisation
+      solver_priority_help: >-
+        Définissez l'ordre de priorité des solveurs d'optimisation. Si le problème est éligible au premier solveur, il sera utilisé,
+        sinon le deuxième solveur sera utilisé, et ainsi de suite.
+      solver_priority_active: Solveurs actifs
+      solver_priority_inactive: Solveurs inactifs
+      solver_priority_not_empty: Au moins un solveur doit être actif
       enable_optimization_soft_upper_bound_help: Autoriser les dépassements horaires durant l'optimisation
       enable_global_optimization_test: Actif si Test
       enable_sms_intransit_help: Activer l'envoi de SMS d'approche lorsque le chauffeur est en route
