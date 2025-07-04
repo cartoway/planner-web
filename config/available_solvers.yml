@@ -1,0 +1,16 @@
+production:
+  solvers:
+    - pyvrp
+    - vroom
+    - ortools
+
+development:
+  solvers:
+    - pyvrp
+    - vroom
+    - ortools
+
+test:
+  solvers:
+    - foo
+    - bar
