@@ -296,6 +296,47 @@
     <legend class="scheduler-border col-md-8">
       <%= t '.optimization_parameters' %>
     </legend>
+    <div class="row">
+      <label class="col-md-offset-2 col-md-8"><%= t '.solver_priority' %></label>
+      <div class="col-md-offset-2 col-md-8 field">
+        <% available_solvers = Planner::Application.config.available_solvers %>
+        <% current_priority = (@customer.solver_priority || available_solvers).select { |s| available_solvers.include?(s) } %>
+        <% inactive_solvers = available_solvers - current_priority %>
+        <!--
+          Generic Active/Inactive Drag & Drop Component Usage:
+          - data-drag-drop: type identifier for translations and callbacks
+          - data-drag-drop-options: JSON configuration for the component
+          - .draggable-item: class for draggable elements
+          - .item-list: class for drop zones
+          - .item-order: class for order display
+          - .item-text: class for text display
+        -->
+        <div class="priority-zones active-inactive-zones" id="priority-container" data-drag-drop="solver" data-drag-drop-options='{"minActiveItems": 1, "hiddenInputSelector": "input[name*=\"solver_priority\"]", "activeContainerSelector": ".priority-active .priority-labels", "inactiveContainerSelector": ".priority-inactive .priority-labels", "itemSelector": ".label", "orderDisplaySelector": ".order", "textDisplaySelector": ".name"}'>
+          <div class="priority-active active-zone">
+            <div class="priority-labels item-list" id="priority-active">
+              <% current_priority.each_with_index do |solver, index| %>
+                <div class="label draggable-item" data-solver="<%= solver %>" data-value="<%= solver %>" data-index="<%= index %>">
+                  <span class="name item-text"><%= solver.upcase %></span>
+                  <input type="hidden" name="customer[advanced_options][solver_priority][]" value="<%= solver %>" />
+                </div>
+              <% end %>
+            </div>
+            <div class="zone-title zone-title"><%= t('.solver_priority_active') %></div>
+          </div>
+          <div class="priority-inactive inactive-zone">
+            <div class="priority-labels item-list" id="priority-inactive">
+              <% inactive_solvers.each_with_index do |solver, index| %>
+                <div class="label inactive draggable-item inactive" data-solver="<%= solver %>" data-value="<%= solver %>" data-index="<%= index %>">
+                  <span class="name item-text"><%= solver.upcase %></span>
+                </div>
+              <% end %>
+            </div>
+            <div class="zone-title zone-title"><%= t('.solver_priority_inactive') %></div>
+          </div>
+        </div>
+        <small class="help-block"><%= t '.solver_priority_help' %></small>
+      </div>
+    </div>
     <%= f.number_field :optimization_max_split_size, { help: t('.optimization_max_split_size_help'), placeholder: t('.optimization_max_split_size_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_max_split_size)), min: 0, append: content_tag('i', '', class: 'fa fa-gears fa-fw')} %>
     <%= f.number_field :optimization_cluster_size, { help: t('.optimization_cluster_size_help'), placeholder: t('.optimization_cluster_size_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_cluster_size)), min: 0, append: t('all.unit.second')} %>
 
