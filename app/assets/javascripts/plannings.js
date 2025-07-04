@@ -106,9 +106,7 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
       $(cb).prop('checked', export_settings['stops'].indexOf($(cb).val()) >= 0);
     });
   }
-  $('.columns-export-list').sortable({
-    connectWith: '#spreadsheet-columns .ui-sortable'
-  });
+
   var columnsExport = (export_settings && export_settings['export']) || [];
   var columnsSkip = (export_settings && export_settings['skips']) || [];
   if (columnsExport != []) {
@@ -117,51 +115,59 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
         columnsExport.push(c);
     });
   }
-  var appendElement = function(parentSel, columnKey) {
-    var displayName;
-    var match = columnKey.match(new RegExp('^(.+)\\[(.*)\\]$'));
-    var rematch = columnKey.match(/^([a-z]+(?:_[a-z]+)*)(\d+)$/);
-    if (match) {
-      var export_translation = 'plannings.export_file.' + match[1];
-      displayName = I18n.t(export_translation) + '[' + match[2] + ']';
+
+  // Nouvelle fonction pour injecter les colonnes dans la structure drag & drop
+  function renderSpreadsheetColumns(columnsExport, columnsSkip) {
+    const $export = $('#columns-export').empty();
+    const $skip = $('#columns-skip').empty();
+
+    // Fonction pour obtenir le nom d'affichage traduit d'une colonne
+    function getDisplayName(columnKey) {
+      var displayName;
+      var match = columnKey.match(new RegExp('^(.+)\\[(.*)\\]$'));
+      var rematch = columnKey.match(/^([a-z]+(?:_[a-z]+)*)(\d+)$/);
+      if (match) {
+        var export_translation = 'plannings.export_file.' + match[1];
+        displayName = I18n.t(export_translation) + '[' + match[2] + ']';
+      }
+      else if (rematch) {
+        var export_translation = 'plannings.export_file.' + rematch[1];
+        displayName = I18n.t(export_translation) + rematch[2];
+      }
+      else {
+        var export_translation = 'plannings.export_file.' + columnKey;
+        displayName = I18n.t(export_translation);
+      }
+      return displayName;
     }
-    else if (rematch) {
-      var export_translation = 'plannings.export_file.' + rematch[1];
-      displayName = I18n.t(export_translation) + rematch[2];
-    }
-    else {
-      var export_translation = 'plannings.export_file.' + columnKey;
-      displayName = I18n.t(export_translation);
-    }
-    $(parentSel).append('<li data-value="' + columnKey + '">' + displayName + ' <a class="remove"><i class="fa fa-close fa-fw"></i></a></li>');
-  };
-  $.each(columnsExport, function(i, c) {
-    if (columns.indexOf(c) >= 0)
-      appendElement('#columns-export', c);
-  });
-  $.each(columnsSkip, function(i, c) {
-    if (columns.indexOf(c) >= 0)
-      appendElement('#columns-skip', c);
-  });
-  $('#columns-export').find('a.remove').click(function(evt) {
-    var $elem = $(evt.currentTarget).closest('li');
-    if ($elem.parent()[0].id === 'columns-export') {
-      var nextFocus = $elem.next();
-      $('a.remove', $elem).hide();
-      $('#columns-skip').append($elem);
-      if (nextFocus.length) $('a.remove', nextFocus).show();
-    }
-  });
-  $('#columns-export').find('li').mouseenter(function(evt) {
-    if ($(evt.currentTarget).closest('#columns-export').length > 0)
-      $('a.remove', evt.currentTarget).show();
-  }).mouseleave(function(evt) {
-    $('a.remove', evt.currentTarget).hide();
-  });
+
+    columnsExport.forEach(function(col) {
+      if (columns.indexOf(col) >= 0) {
+        $export.append(
+          `<div class="draggable-item" data-value="${col}">
+            <span class="item-order"></span>
+            <span class="item-text">${getDisplayName(col)}</span>
+          </div>`
+        );
+      }
+    });
+    columnsSkip.forEach(function(col) {
+      if (columns.indexOf(col) >= 0) {
+        $skip.append(
+          `<div class="draggable-item inactive" data-value="${col}">
+            <span class="item-order"></span>
+            <span class="item-text">${getDisplayName(col)}</span>
+          </div>`
+        );
+      }
+    });
+  }
+  renderSpreadsheetColumns(columnsExport, columnsSkip);
+
   if (export_settings && export_settings['format']) {
     $('[name=spreadsheet-format][value=' + export_settings['format'] + ']').prop('checked', true);
   }
-  $('#btn-spreadsheet').click(function() {
+  $('#btn-spreadsheet').off('click').on('click', function() {
     var planningsId = getPlanningsId();
     if (!planningId && planningsId.length == 0) {
       warning(I18n.t('plannings.index.export.none_planning'));
@@ -171,10 +177,11 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
     var spreadsheetStops = $('.spreadsheet-stops:checked').map(function(i, e) {
       return $(e).val();
     }).get().join('|');
-    var spreadsheetColumnsExport = $('#columns-export').find('li').map(function(i, e) {
+    // Récupération via la nouvelle structure
+    var spreadsheetColumnsExport = $('#spreadsheet-columns-container .active-zone .item-list .draggable-item').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
-    var spreadsheetColumnsSkip = $('#columns-skip').find('li').map(function(i, e) {
+    var spreadsheetColumnsSkip = $('#spreadsheet-columns-container .inactive-zone .item-list .draggable-item').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
     var spreadsheetFormat = $('[name=spreadsheet-format]:checked').val();
@@ -184,7 +191,7 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
 
     $('#planning-spreadsheet-modal').modal('toggle');
   });
-  $('.export_spreadsheet').click(function() {
+  $('.export_spreadsheet').off('click').on('click', function() {
     $('#planning-spreadsheet-modal').modal({
       keyboard: true,
       show: true
