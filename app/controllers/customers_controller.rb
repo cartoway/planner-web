@@ -249,7 +249,8 @@ class CustomersController < ApplicationController
           :strict_restriction,
           :low_emission_zone
         ],
-        devices: RecursiveParamsHelper.permit_recursive(devices_params)
+        devices: RecursiveParamsHelper.permit_recursive(devices_params),
+        advanced_options: { solver_priority: [] }
       )
       return parameters
     else
