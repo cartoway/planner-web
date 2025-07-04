@@ -31,19 +31,21 @@
         .row.row.form-group
           %label.col-md-3.control-label= t 'plannings.edit.dialog.spreadsheet.columns'
           .col-md-9
-            #spreadsheet-columns.row
-              .col-md-6
-                %label
-                  %span
-                    %i.fa.fa-check.fa-fw{style: "color: green;"}
-                    = t 'plannings.edit.dialog.spreadsheet.columns_export'
-                %ol#columns-export.columns-export-list
-              .col-md-6
-                %label
-                  %span
-                    %i.fa.fa-close.fa-fw{style: "color: red;"}
-                    = t 'plannings.edit.dialog.spreadsheet.columns_skip'
-                %ul#columns-skip.columns-export-list
+            .active-inactive-zones#spreadsheet-columns-container{"data-drag-drop" => "spreadsheet", "data-drag-drop-options" => '{"minActiveItems":1,"activeContainerSelector":".active-zone .item-list","inactiveContainerSelector":".inactive-zone .item-list","itemSelector":".draggable-item","orderDisplaySelector":".item-order","textDisplaySelector":".item-text"}'}
+              .active-zone.col-md-6
+                .zone-title
+                  %label
+                    %span
+                      %i.fa.fa-check.fa-fw{style: "color: green;"}
+                      = t 'plannings.edit.dialog.spreadsheet.columns_export'
+                .item-list#columns-export
+              .inactive-zone.col-md-6
+                .zone-title
+                  %label
+                    %span
+                      %i.fa.fa-close.fa-fw{style: "color: red;"}
+                      = t 'plannings.edit.dialog.spreadsheet.columns_skip'
+                .item-list#columns-skip
             .row
               %p.help-block= t 'plannings.edit.dialog.spreadsheet.columns_DnD_help'
         .row.row.form-group.invisible
