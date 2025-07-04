@@ -1076,6 +1076,13 @@ en:
         more the delay before time slot opening is important (0 to disallow the
         waiting time).
       optimization_force_start_help: Force vehicle start to the beginning of its schedule.
+      solver_priority: Optimization solver priority order
+      solver_priority_help: >-
+        Define the priority order of optimization solvers. If the problem is electible to the first solver, it will be used,
+        otherwise the second solver will be used, and so on.
+      solver_priority_active: Active solvers
+      solver_priority_inactive: Inactive solvers
+      solver_priority_not_empty: At least one solver must be active
       enable_optimization_soft_upper_bound_help: Enable overtimes in optimization
       enable_global_optimization_test: Enabled if Test
       enable_sms_intransit_help: Enable SMS in transit when the driver is on the way
