@@ -114,7 +114,8 @@ class OptimizerJob < OptimizerJobStruct
       optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
       enable_optimization_soft_upper_bound: planning.customer.enable_optimization_soft_upper_bound,
       vehicle_max_upper_bound: planning.customer.vehicle_max_upper_bound,
-      stop_max_upper_bound: planning.customer.stop_max_upper_bound
+      stop_max_upper_bound: planning.customer.stop_max_upper_bound,
+      solver_priority: planning.customer.solver_priority
     }
   end
 end

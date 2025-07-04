@@ -184,6 +184,7 @@ class OptimizerWrapper
       resolution: {
         duration: optim_duration_max,
         initial_time_out: optim_duration_min,
+        solver_priority: options[:solver_priority],
         strict_skills: options[:strict_skills],
         time_out_multiplier: 2
       },
