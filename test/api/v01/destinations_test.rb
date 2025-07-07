@@ -227,6 +227,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   end
 
   test 'should create bulk from json with store destination' do
+    @customer.update(enable_store_stops: true)
     orig_locale = I18n.locale
     I18n.locale = :en
 
@@ -1080,6 +1081,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   end
 
   test 'should import existing store with ref' do
+    @customer.update(enable_store_stops: true)
     orig_locale = I18n.locale
     I18n.locale = :en
     # Get existing store from fixtures
@@ -1162,6 +1164,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   end
 
   test 'should create bulk from json with stop custom attributes for store' do
+    @customer.update(enable_store_stops: true)
     orig_locale = I18n.locale
     I18n.locale = :en
 
