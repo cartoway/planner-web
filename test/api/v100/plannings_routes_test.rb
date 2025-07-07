@@ -9,6 +9,7 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
 
   setup do
     @planning = plannings(:planning_one)
+    customers(:customer_one).update(enable_store_stops: true)
   end
 
   def around
@@ -105,5 +106,22 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
         )
       end
     end
+  end
+
+  test 'should not add store to route when enable_store_stops is false' do
+    customers(:customer_one).update(enable_store_stops: false)
+    route = @planning.routes.find{ |r| !r.vehicle_usage }
+    store = stores(:store_one)
+
+    assert_no_difference('StopStore.count') do
+      post api(@planning.id, "/#{route.id}/stores/#{store.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
+      assert_equal 401, last_response.status, last_response.body
+
+      content = JSON.parse(last_response.body, symbolize_names: true)
+      assert_match I18n.t('errors.routes.enable_store_stops'), content[:message]
+    end
+
+    route.reload
+    assert route.stops.none?{ |s| s.is_a?(StopStore) && s.store_id == @store.id }
   end
 end
