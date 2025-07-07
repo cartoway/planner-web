@@ -190,6 +190,7 @@ en:
         enable_global_optimization: Enable global optimization
         enable_vehicle_position: Enable vehicle's position
         enable_stop_status: Enable visits status
+        enable_store_stops: Enable intermediate stores
         enable_sms: Enable SMS
         enable_sms_intransit: Enable SMS in transit
         enable_optimization_soft_upper_bound: Enable overtimes
@@ -768,6 +769,7 @@ en:
     routes:
       bad_barcode_char: Barcode data content unsupported character
       expired: The tour has expired
+      enable_store_stops: Intermediate stops must be enabled
   import:
     csv:
       line: 'Line %{s}'

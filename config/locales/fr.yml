@@ -190,6 +190,7 @@ fr:
         enable_global_optimization: Activer l'optimisation globale
         enable_vehicle_position: Activer la position des véhicules
         enable_stop_status: Activer les statuts des visites
+        enable_store_stops: Activer les sites intermédiaires
         enable_sms: Activer l'envoi de SMS
         enable_sms_intransit: Activer l'envoi de SMS d'approche
         enable_optimization_soft_upper_bound: Autoriser les dépassements horaires
@@ -780,6 +781,7 @@ fr:
     routes:
       bad_barcode_char: Les données du code barre contiennent un caractère non pris en charge
       expired: La tournée a expiré
+      enable_store_stops: Les arrêts intermédiaires doivent être activés
   import:
     csv:
       line: 'Ligne %{s}'
