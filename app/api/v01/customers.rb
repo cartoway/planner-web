@@ -52,6 +52,7 @@ class V01::Customers < Grape::API
           :enable_global_optimization,
           :enable_vehicle_position,
           :enable_stop_status,
+          :enable_store_stops,
           :enable_sms,
           :enable_sms_intransit,
           :sms_template,
