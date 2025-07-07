@@ -3,6 +3,7 @@ require 'test_helper'
 class ImporterDestinationsTest < ActionController::TestCase
   setup do
     @customer = customers(:customer_one)
+    @customer.update!(enable_store_stops: true)
     # Remove invalid stop
     stops(:stop_three_one).destroy
     @visit_tag1_count = @customer.visits.select{ |v| v.tags.include? tags(:tag_one) }.size
@@ -751,6 +752,16 @@ class ImporterDestinationsTest < ActionController::TestCase
           assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
           assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
         end
+      end
+    end
+  end
+
+  test 'should skip store stops when enable_store_stops is disabled' do
+    @customer.update!(enable_store_stops: false)
+
+    assert_no_difference('StopVisit.count') do
+      assert_no_difference('StopStore.count') do
+        assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes_with_store.csv', 'text.csv')).import
       end
     end
   end
