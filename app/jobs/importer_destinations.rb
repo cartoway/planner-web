@@ -427,6 +427,8 @@ class ImporterDestinations < ImporterBase
       prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
       destination_attributes
     elsif is_store?(row[:stop_type])
+      return nil unless @customer.enable_store_stops
+
       store_attributes = build_store_attributes(row)
       prepare_store(row, line, store_attributes)
       prepare_store_in_planning(row, line, store_attributes)
@@ -897,6 +899,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_store_in_planning(row, line, store_attributes)
+    return if !@customer.enable_store_stops
     if store_attributes
       ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
       if row.key?(:route) && store_attributes[:id].nil?
