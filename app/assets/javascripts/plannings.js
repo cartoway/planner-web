@@ -675,7 +675,8 @@ export const plannings_edit = function(params) {
     colorsByRoute: params.colors_by_route,
     appBaseUrl: params.apiWeb ? '/api-web/0.1/' : '/',
     popupOptions: popupOptions,
-    disableClusters: params.disable_clusters
+    disableClusters: params.disable_clusters,
+    planningId: planning_id
   }).on('clickStop', function(stop) {
     enlightenStop({index: stop.index, routeId: stop.routeId});
   }).addTo(map);
@@ -2827,6 +2828,9 @@ export const plannings_edit = function(params) {
 
   // Init device global tools
   devicesObservePlanning.init($('#edit-planning'));
+
+  // Initialize lasso functionality after all functions are defined
+  routesLayer.initLasso(panelLoading, refreshSidebarRoute);
 };
 
 var plannings_show = function(params) {
