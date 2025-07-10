@@ -38,6 +38,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'sidebar-v2/css/leaflet-sidebar.css';
 import 'leaflet-responsive-popup/leaflet.responsive.popup.css';
+import 'leaflet-lasso/src/lasso-handler.css';
+import 'leaflet-lasso/src/lasso-control.css';
 import 'pnotify/dist/pnotify.css';
 import 'pnotify/dist/pnotify.buttons.css';
 import 'pnotify/dist/pnotify.history.css';
