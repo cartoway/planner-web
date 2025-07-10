@@ -1,0 +1,58 @@
+#lasso-info-modal.modal.fade{role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"data-dismiss" => "modal", type: "button"} ×
+        %h4.modal-title
+          %i.fa.fa-mouse-pointer.fa-fw
+          = t('plannings.edit.lasso.selection_info')
+      .modal-body
+        .container-fluid
+          .row
+            .col-md-12
+              %h5
+                %i.fa.fa-map-marker.fa-fw
+                = t('plannings.edit.lasso.selection_summary')
+              .row
+                .col-xs-4
+                  .primary.route-info
+                    %i.fa.fa-check-square.fa-fw
+                    = @selection_info[:stops_count]
+                    = t('plannings.edit.stops')
+                - @quantities.each do |unit_id, quantity|
+                  - [:pickup, :delivery].each do |sym|
+                    - if quantity[sym] > 0
+                      .col-xs-4.route-data-advanced
+                        .route-info.primary{ title: [quantity[:label], t('plannings.edit.route_quantity_help')].compact.join(' - ')}
+                          %i.fa.fa-fw{class: quantity[:icon]}
+                          - if sym == :pickup
+                            %i.fa.fa-fw.fa-up-long{title: t("plannings.edit.pickup_help")}
+                            = quantity[:pickup]
+                          - if sym == :delivery
+                            - if quantity[:has_pickup]
+                              %i.fa.fa-fw.fa-down-long{title: t("plannings.edit.delivery_help")}
+                            = quantity[:delivery]
+                          - if quantity[:label]
+                            = "#{quantity[:label]}"
+
+            - if @selection_info[:stops_count] > 0 && @available_routes.any?
+              .col-md-12
+                #lasso-route-selection
+                  %h5
+                    %i.fa.fa-route.fa-fw
+                    = t('plannings.edit.lasso.select_target_route')
+                  .form-group
+                    %select#route-select.form-control{style: "width: 100%;"}
+                      %option{value: "", selected: true}= t('plannings.edit.lasso.select_route_placeholder')
+                      - @available_routes.each do |route|
+                        %option{value: route[:route_id], "data-route-name": route[:name], "data-route-color": route[:color] || ""}
+                          = route[:name].blank? ? t('plannings.edit.out_of_route') : route[:name]
+
+      .modal-footer
+        .container-fluid
+          .lasso-actions
+            %button#clear-lasso-selection.btn.btn-default{"data-dismiss" => "modal", type: "button"}
+              = t('all.verb.cancel')
+            %button#move-stops-btn.btn.btn-primary{disabled: true, type: "button"}
+              %i.fa.fa-arrow-right.fa-fw
+              = t('plannings.edit.lasso.move_stops')

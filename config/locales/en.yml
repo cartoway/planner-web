@@ -1973,6 +1973,16 @@ en:
       send_sms_success: 'Succeed to send %{c} SMS'
       historize: Historize
       historize_success: Historize Succeed
+      lasso:
+        toggle: Enable/disable lasso selection
+        selection_info: Selection information
+        move_stops: Move stops
+        stops_moved_success: Stops moved successfully
+        stops_moved_error: Error moving stops
+        select_target_route: Transfer stops
+        select_route_placeholder: Choose a route...
+        please_select_route: Please select a destination route
+        selection_summary: Selection summary
       popup:
         outdated: Route trace outdated. Refresh your plan (Refresh button).
         time_window_start_end_1: 'Time window 1:'
