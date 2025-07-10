@@ -9,6 +9,7 @@ class PlanningsControllerTest < ActionController::TestCase
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
     @planning = plannings(:planning_one)
+    @stop = stops(:stop_one_one)
     @export_settings_params = { columns: 'ref_planning|planning|planning_date|route|vehicle|order|stop_type|active|wait_time|time|distance|drive_time|out_of_window|out_of_capacity|out_of_drive_time|out_of_force_position|out_of_work_time|out_of_max_distance|out_of_max_ride_distance|out_of_max_ride_duration|status|status_updated_at|eta|ref|name|street|detail|postalcode|city|country|lat|lng|comment|phone_number|tags|ref_visit|duration|time_window_start_1|time_window_end_1|time_window_start_2|time_window_end_2|priority|revenue|force_position|tags_visit|quantity1',
                                 skips: '',
                                 stops: 'out-of-route|store|rest|inactive'}
@@ -914,5 +915,122 @@ class PlanningsControllerTest < ActionController::TestCase
         end
       end
     end
+  end
+
+  test "should get selection details modal with planning data" do
+    get :selection_details, params: {
+      planning_id: @planning.id,
+      stop_ids: @stop.id.to_s
+    }
+
+    assert_response :success
+    assert_template partial: 'shared/_selection_details'
+
+    assert_equal 1, assigns(:selection_info)[:stops_count]
+    assert assigns(:quantities).any?
+    assert assigns(:available_routes).any?
+  end
+
+  test "should get selection details modal with HTML format" do
+    get :selection_details, params: {
+      planning_id: @planning.id,
+      stop_ids: @stop.id.to_s
+    }
+
+    assert_response :success
+    assert_template partial: 'shared/_selection_details'
+    assert assigns(:quantities).any?
+    assert assigns(:available_routes).any?
+  end
+
+  test "should handle multiple stop IDs" do
+    stop2 = stops(:stop_one_two)
+    stop2.visit.update(deliveries: { 1 => 30, 2 => 15 }) if stop2.visit
+
+    get :selection_details, params: {
+      planning_id: @planning.id,
+      stop_ids: "#{@stop.id},#{stop2.id}"
+    }
+
+    assert_response :success
+    assert_equal 2, assigns(:selection_info)[:stops_count]
+
+    quantities = assigns(:quantities)
+    assert quantities.any?
+  end
+
+  test "should handle empty selection" do
+    get :selection_details, params: {
+      planning_id: @planning.id,
+      stop_ids: ''
+    }
+
+    assert_response :success
+    assert_equal 0, assigns(:selection_info)[:stops_count]
+    assert assigns(:quantities).empty?
+  end
+
+  test "should handle invalid planning ID" do
+    get :selection_details, params: {
+      planning_id: 99999,
+      stop_ids: @stop.id.to_s
+    }
+    assert_response :not_found
+  end
+
+  test "should include route information" do
+    get :selection_details, params: {
+      planning_id: @planning.id,
+      stop_ids: @stop.id.to_s
+    }
+
+    assert_response :success
+    routes = assigns(:available_routes)
+    assert routes.any?
+
+    route = routes[1]
+    assert route[:route_id]
+    assert route[:name]
+    assert route[:vehicle_usage_id]
+  end
+
+  test "should include out_of_route in available routes" do
+    get :selection_details, params: {
+      planning_id: @planning.id,
+      stop_ids: @stop.id.to_s
+    }
+
+    assert_response :success
+    routes = assigns(:available_routes)
+
+    out_of_route_option = routes.find{ |r| r[:vehicle_usage_id].nil? }
+    assert_not_nil out_of_route_option, "Out of route should be included in available routes"
+    assert_equal '', out_of_route_option[:name]
+    assert_nil out_of_route_option[:color]
+  end
+
+  test "should use helper methods for data processing" do
+    deliverable_unit = deliverable_units(:deliverable_unit_one_one)
+    @stop.visit.update(deliveries: { deliverable_unit.id => 50 }) if @stop.visit
+
+    get :selection_details, params: {
+      planning_id: @planning.id,
+      stop_ids: @stop.id.to_s
+    }
+
+    assert_response :success
+
+    quantities = assigns(:quantities)
+    assert quantities.any?
+
+    selection_info = assigns(:selection_info)
+    assert_equal 1, selection_info[:stops_count]
+
+    routes = assigns(:available_routes)
+    assert routes.any?
+    route = routes[1]
+    assert_includes route.keys, :route_id
+    assert_includes route.keys, :name
+    assert_includes route.keys, :color
   end
 end
