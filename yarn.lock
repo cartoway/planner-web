@@ -942,6 +942,18 @@
     webpack "^3.10.0"
     webpack-manifest-plugin "^1.3.2"
 
+"@terraformer/common@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@terraformer/common/-/common-2.1.2.tgz#7bf83f81f1c3a99069c714c044004f9707f00c97"
+  integrity sha512-cwPdTFzIpekZhZRrgDEkqLKNPoqbyCBQHiemaovnGIeUx0Pl336MY/eCxzJ5zXkrQLVo9zPalq/vYW5HnyKevQ==
+
+"@terraformer/spatial@^2.1.2":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@terraformer/spatial/-/spatial-2.2.1.tgz#81165d19570dc35454c620cf55e7bbc9ec44bf69"
+  integrity sha512-Zq2WbKJgZspurToBJ7KjmmHC7HbvNt/fH8Bh/kj+RgcGoM9OzurAXlEfIMrVQQIh3ypSbJn+hHQ33n/d805uBQ==
+  dependencies:
+    "@terraformer/common" "^2.1.2"
+
 "@types/json-schema@^7.0.5":
   version "7.0.15"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.15.tgz#596a1747233694d50f6ad8a7869fcb6f56cf5841"
@@ -4837,6 +4849,13 @@ leaflet-hash@0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/leaflet-hash/-/leaflet-hash-0.2.1.tgz#c36c718347c5243033b57cb4baea26119d82c701"
   integrity sha512-1aOP7j1hGDcOo5qAl9QjOcdu33FKQsQiCdepJfAVd7+qwBAZrObLzEGNL0BOUxjXWeJMn/Bv37FmWF2/oj6rLg==
+
+leaflet-lasso@^2.2.13:
+  version "2.2.13"
+  resolved "https://registry.yarnpkg.com/leaflet-lasso/-/leaflet-lasso-2.2.13.tgz#015134715d6cb1fa4c7829e10718e13a77e927e1"
+  integrity sha512-XVGP2zoaEB4psLZttTK6K9i+wJckvxTD65um2vgDgTGutpEwxKpEBwCClnrSEK+zIMrJ9juhV5sd72XYKKgmlA==
+  dependencies:
+    "@terraformer/spatial" "^2.1.2"
 
 leaflet-pip@1.1.0:
   version "1.1.0"

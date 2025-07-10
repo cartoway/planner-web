@@ -880,7 +880,8 @@ class Route < ApplicationRecord
           number: vehicle_usage? ? stop.number(inactive_stops) : nil,
           color: stop.default_color,
           icon: stop.icon,
-          icon_size: stop.icon_size
+          icon_size: stop.icon_size,
+          stop_id: stop.id
         }
       }
 
