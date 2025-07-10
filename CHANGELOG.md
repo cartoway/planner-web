@@ -3,6 +3,7 @@
 ## Dev
   ### Added
     - Customer: Allow to order and filter the solvers to use [#422](https://github.com/cartoway/planner-web/pull/422)
+    - Planning: Introduce a lasso to select multiple stops on the fly [#424](https://github.com/cartoway/planner-web/pull/424)
     - Admin: Store the solver used and the ones skipped (with reasons) on the job info [#422](https://github.com/cartoway/planner-web/pull/422)
 
   ### Changed
