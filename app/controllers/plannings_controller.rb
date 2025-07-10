@@ -38,6 +38,7 @@ class PlanningsController < ApplicationController
   include Pagy::Backend
   include PlanningExport
   include PlanningsHelper
+  include SharedHelper
 
   def index
     @plannings = current_user.customer.plannings.select{ |planning|
@@ -251,6 +252,33 @@ class PlanningsController < ApplicationController
       respond_to do |format|
         format.js { render partial: 'send_sms_drivers', locals: { planning: @planning, routes: @planning.routes } }
       end
+    end
+  end
+
+  def selection_details
+    selected_stop_ids = params[:stop_ids]&.split(',') || []
+
+    @quantities = {}
+    @available_routes = []
+    @selection_info = { stops_count: 0 }
+
+    planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
+    @available_routes = planning_summary(planning)[:routes]
+
+    if selected_stop_ids.any?
+      stops = Stop.joins(:route)
+                  .where(routes: { planning_id: planning.id })
+                  .where(id: selected_stop_ids)
+                  .includes_destinations
+                  .only_stop_visits
+
+      @selection_info[:stops_count] = stops.size
+      @quantities = aggregate_visit_quantities(planning.customer, stops.map(&:visit))
+    end
+
+    respond_to do |format|
+      format.html { render partial: 'shared/selection_details', layout: false }
+      format.json { render json: { quantities: @quantities, available_routes: @available_routes, selection_info: @selection_info } }
     end
   end
 

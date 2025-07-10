@@ -2063,6 +2063,16 @@ fr:
       send_sms_success: 'Envoi de %{c} SMS avec succès'
       historize: Historiser
       historize_success: Historisé avec succès
+      lasso:
+        toggle: Activer/désactiver la sélection par lasso
+        selection_info: Informations de sélection
+        move_stops: Déplacer les arrêts
+        stops_moved_success: Arrêts déplacés avec succès
+        stops_moved_error: Erreur lors du déplacement des arrêts
+        select_target_route: Transférer les arrêts
+        select_route_placeholder: Choisissez une tournée...
+        please_select_route: Veuillez sélectionner une route de destination
+        selection_summary: Résumé de la sélection
       popup:
         outdated: >-
           Tracé de la tournée obsolète. Veuillez recalculer votre plan de
