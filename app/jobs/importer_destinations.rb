@@ -177,6 +177,7 @@ class ImporterDestinations < ImporterBase
     }
     @deliverable_units ||= @customer&.deliverable_units || []
     @destinations_to_geocode_count = 0
+    @stores_to_geocode_count = 0
     @visit_ids = []
 
     if options[:delete_plannings]
