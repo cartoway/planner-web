@@ -113,12 +113,12 @@ en:
         one: stop
         other: stops
         type:
-          store: facility
+          store: store
           visit: visit
           rest: rest
-      store: Facility
+      store: Store
       stores:
-        one: Facility
+        one: Store
         other: Facilities
       tag: Category
       tags:
@@ -399,8 +399,8 @@ en:
         open: Open
         close: Close
         ref: Reference
-        store_start: Start facility
-        store_end: End facility
+        store_start: Start store
+        store_end: End store
         color: Color
         icon: Icon
         icon_size: Icon size
@@ -479,10 +479,10 @@ en:
         vehicle_id: Vehicle
         time_window_start: Open
         time_window_end: Close
-        store_start: Facility Start
-        store_start_id: Facility Start
-        store_stop: Facility Stop
-        store_stop_id: Facility Stop
+        store_start: Store Start
+        store_start_id: Store Start
+        store_stop: Store Stop
+        store_stop_id: Store Stop
         store_duration: Intermediate store duration
         rest_start: Rest window start
         rest_stop: Rest window stop
@@ -501,10 +501,10 @@ en:
         vehicle_id: Vehicle
         time_window_start: Open
         time_window_end: Close
-        store_start: Facility Start
-        store_start_id: Facility Start
-        store_stop: Facility Stop
-        store_stop_id: Facility Stop
+        store_start: Store Start
+        store_start_id: Store Start
+        store_stop: Store Stop
+        store_stop_id: Store Stop
         store_duration: Intermediate store duration
         rest_start: Rest window start
         rest_stop: Rest window stop
@@ -524,10 +524,10 @@ en:
         name: Name
         time_window_start: Open
         time_window_end: Close
-        store_start: Facility Start
-        store_start_id: Facility Start
-        store_stop: Facility Stop
-        store_stop_id: Facility Stop
+        store_start: Store Start
+        store_start_id: Store Start
+        store_stop: Store Stop
+        store_stop_id: Store Stop
         store_duration: Intermediate store duration
         rest_start: Rest window start
         rest_stop: Rest window stop
@@ -683,7 +683,7 @@ en:
             vehicle_usage_sets:
               over_max_limit: Maximum number of vehicle base settings reached
         store:
-          at_least_one: At least one facility needed
+          at_least_one: At least one store needed
           icon_unknown: is not in font-awesome icons list
           icon_size_invalid: is not a valid size
         route:
@@ -1340,7 +1340,7 @@ en:
       stop_type_visit_desc: ''
       stop_type_store: store
       stop_type_store_desc: ''
-      stop_format: '[visit | facility | rest]'
+      stop_format: '[visit | store | rest]'
       name: name
       name_desc: account or visited destination name
       street: street
@@ -1924,7 +1924,7 @@ en:
       route_wait_time_help: Duration of waiting times
       drag_help: Drag & drop stops on routes
       active_help: Take or not stops into route
-      edit_store_help: Edit facility information
+      edit_store_help: Edit store information
       edit_visit_help: Edit visit/customer information
       marker_help: Show on map
       create_store_help: Add an intermediate store
@@ -2140,7 +2140,7 @@ en:
       route: route
       order: order
       stop_type: stop type
-      stop_type_store: facility
+      stop_type_store: store
       stop_type_visit: visit
       stop_type_rest: rest
       force_position: forced position
@@ -2306,7 +2306,7 @@ en:
       prefered_icons: Preferred
       other_icons: Others
     edit:
-      title: Editing facility
+      title: Editing store
     import:
       title: Import facilities
       stores: Facilities
@@ -2338,20 +2338,20 @@ en:
           title: Import facilities
           in_progress: 'Please wait, import in progress'
       title: Listing facilities
-      new: New facility
-      none: No facility
+      new: New store
+      none: No store
       show: See the full list (%{count})
     menu:
       stores: Facilities
     new:
-      title: New facility
+      title: New store
     import_file:
       ref: reference
       ref_desc: >-
         a stable, unique, constant reference id, allowing non-destructive update
         of this item when the next import happens
       name: name
-      name_desc: facility name
+      name_desc: store name
       color: color
       color_desc: >-
         color of your icon, value being a color code. See web-color at
@@ -2363,11 +2363,11 @@ en:
         http://fontawesome.io/icons . Please include the "fa-" prefix. E.g.
         fa-building.
       icon_size: icon size
-      icon_size_desc: 'size of the icon representing your facility on the map. Default: large.'
+      icon_size_desc: 'size of the icon representing your store on the map. Default: large.'
       open: open
-      open_desc: Facility opening time
+      open_desc: Store opening time
       close: close
-      close_desc: Facility closing time
+      close_desc: Store closing time
       street: street
       street_desc: >-
         street address with building number, road type and road name (spelling
@@ -2592,9 +2592,9 @@ en:
       select_unselect_all: Select/Unselect all vehicles
       stores: Start - End
       store:
-        no_start: No start facility
-        no_stop: 'No stop facility: end of route is free'
-        same_start_stop: Vehicle returns to start facility
+        no_start: No start store
+        no_stop: 'No stop store: end of route is free'
+        same_start_stop: Vehicle returns to start store
       time: Open - Close
       devices: Devices
       disable: Disable
@@ -2752,18 +2752,18 @@ en:
       time_window_start_desc: start time for delivery man
       time_window_end: close
       time_window_end_desc: end time for delivery man
-      store_start_ref: facility start reference
-      store_start_desc: facility start reference for delivery man
-      store_stop_ref: facility stop reference
-      store_stop_desc: facility end reference for delivery man
+      store_start_ref: store start reference
+      store_start_desc: store start reference for delivery man
+      store_stop_ref: store stop reference
+      store_stop_desc: store end reference for delivery man
       rest_start: rest time start
       rest_start_desc: begin of the rest start window
       rest_stop: rest time end
       rest_stop_desc: end of the rest start window
       rest_duration: rest duration
       rest_duration_desc: rest duration time for delivery man
-      store_rest_ref: rest facility reference
-      store_rest_desc: facility rest reference for delivery man
+      store_rest_ref: rest store reference
+      store_rest_desc: store rest reference for delivery man
       service_time_start: service time before
       service_time_start_desc: durations added before the first stop
       service_time_end: service time after
@@ -2902,7 +2902,7 @@ en:
       dialog:
         isoline:
           vehicle_usage_set: Vehicles configuration
-          vehicle_usage_set_help: 'Vehicles configuration to consider, especially the start facility.'
+          vehicle_usage_set_help: 'Vehicles configuration to consider, especially the start store.'
           date: Date
           default_date: Current date by default
           vehicles_open: Vehicles opens
