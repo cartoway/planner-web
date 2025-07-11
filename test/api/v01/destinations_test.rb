@@ -226,6 +226,50 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should create bulk from json with store destination' do
+    orig_locale = I18n.locale
+    I18n.locale = :en
+
+    assert_difference('Store.count', 1) do
+      assert_difference('Destination.count', 0) do
+        assert_difference('Planning.count', 0) do
+          assert_difference('Stop.count', 1) do
+            put api(), nil, input: {
+              planning: {
+                ref: 'r1',
+              },
+              destinations: [{
+                vehicle: '001',
+                route: 'route_one',
+                name: 'New store',
+                ref: 'store_ref',
+                street: '123 Store Street',
+                postalcode: '12345',
+                city: 'Store City',
+                state: 'Store State',
+                lat: 43.5710885456786,
+                lng: 3.89636993408203,
+                stop_type: 'store'
+              }]
+            }.to_json, CONTENT_TYPE: 'application/json'
+            assert last_response.ok?, last_response.body
+
+            get api()
+
+            # zoning sets stops out_of_route
+            planning = plannings(:planning_one)
+            stops = planning.routes.find{ |r| r.ref == 'route_one' }.stops
+            stop = stops.last
+            assert_equal 'StopStore', stop.type
+            assert_equal 'store_ref', stop.store.ref
+          end
+        end
+      end
+    end
+  ensure
+    I18n.locale = orig_locale
+  end
+
   test 'should create bulk from json with empty strings for coords' do
     assert_difference('Destination.count', 1) do
       assert_difference('Visit.count', 1) do
