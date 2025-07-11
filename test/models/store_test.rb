@@ -134,4 +134,25 @@ class StoreTest < ActiveSupport::TestCase
     assert store.geocoded_at
     assert_not_equal nil, store.geocoded_at
   end
+
+  test 'should destroy associated stop_stores when store is destroyed' do
+    store = stores(:store_one)
+    planning = plannings(:planning_one)
+    route = planning.routes.first
+
+    stop_store = StopStore.create!(
+      store: store,
+      route: route,
+      index: route.stops.size
+    )
+
+    assert route.stops.include?(stop_store)
+    assert_equal store.id, stop_store.store_id
+
+    assert_difference('Stop.count', -1) do
+      store.destroy
+    end
+
+    assert_nil Stop.find_by(id: stop_store.id)
+  end
 end
