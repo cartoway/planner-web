@@ -2,6 +2,8 @@ module QuantitiesEntityHelper
   def convert_pickups_deliveries_to_quantities(pickups, deliveries)
     quantities = {}
     pickups&.each { |du_id, value|
+      next if value.nil?
+
       if quantities.key?(du_id)
         quantities[du_id][:quantity] += -value
         quantities[du_id][:pickup] += value
@@ -10,6 +12,8 @@ module QuantitiesEntityHelper
       end
     }
     deliveries&.each { |du_id, value|
+      next if value.nil?
+
       if quantities.key?(du_id)
         quantities[du_id][:quantity] += value
         quantities[du_id][:delivery] += value
