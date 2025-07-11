@@ -210,7 +210,7 @@ class V01::Destinations < Grape::API
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
       if params[:destinations]
-        d_params = declared(params) # Filter undeclared parameters
+        d_params = declared(params, include_missing: false) # Filter undeclared parameters
         import_destination_params = d_params[:destinations].each{ |dest_params| dest_params[:visits]&.each{ |hash|
           convert_timewindows(hash)
           convert_deprecated_quantities(hash, current_customer.deliverable_units);

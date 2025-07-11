@@ -547,7 +547,6 @@ class ImporterDestinations < ImporterBase
     row[:planning_ref] = row[:planning_ref]&.strip&.to_sym
     ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
     row[:ref] = row[:ref]&.strip&.to_sym
-    row[:ref_visit] = row[:ref_visit]&.strip&.to_sym
     row.delete(:planning_date) if row[:planning_date] == ""
 
     @plannings_attributes[ref_planning] ||=
@@ -616,11 +615,11 @@ class ImporterDestinations < ImporterBase
 
   def reset_geocoding(destination_attributes)
     # As import has no create or update callback apply `delay_geocode` manually
-    if destination_attributes.key?(:lat) || destination_attributes.key?(:lat)
+    if destination_attributes.key?(:lat) || destination_attributes.key?(:lng)
       destination_attributes[:geocoding_result] = {}
       destination_attributes[:geocoding_accuracy] = nil
       destination_attributes[:geocoding_level] =
-        destination_attributes.key?(:lat) && destination_attributes.key?(:lat) ? 1 : nil
+        destination_attributes.key?(:lat) && destination_attributes.key?(:lng) ? 1 : nil
     end
   end
 
