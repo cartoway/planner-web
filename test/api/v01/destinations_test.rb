@@ -1078,6 +1078,39 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert last_response.body['success']
     refute_empty last_response.body['result']
   end
+
+  test 'should import existing store with ref' do
+    orig_locale = I18n.locale
+    I18n.locale = :en
+    # Get existing store from fixtures
+    existing_store = stores(:store_one)
+
+    assert_difference('Store.count', 0) do
+      assert_difference('Stop.count', 1) do
+        put api(), nil, input: {
+          planning: {
+            ref: 'r1',
+          },
+          destinations: [{
+            route: 'route_one',
+            vehicle: '001',
+            ref: existing_store.ref,
+            stop_type: 'store'
+          }]
+        }.to_json, CONTENT_TYPE: 'application/json'
+
+        assert last_response.ok?, last_response.body
+
+        planning = plannings(:planning_one)
+        stops = planning.routes.find{ |r| r.ref == 'route_one' }.stops
+        stop = stops.last
+        assert_equal 'StopStore', stop.type
+        assert_equal existing_store.ref, stop.store.ref
+      end
+    end
+  ensure
+    I18n.locale = orig_locale
+  end
 end
 
 class V01::DestinationsWithJobTest < ActiveSupport::TestCase
