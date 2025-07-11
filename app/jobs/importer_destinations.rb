@@ -151,8 +151,10 @@ class ImporterDestinations < ImporterBase
           end
           dest.except(:visits).merge(v)
         }
-      else
+      elsif dest.key?(:visits) && dest[:visits].empty?
         [dest.merge(without_visit: 'x')]
+      else
+        [dest.merge(without_visit: 'y')] # Import without visit but without a destroy neither
       end
     }.flatten
   end
@@ -400,11 +402,11 @@ class ImporterDestinations < ImporterBase
   end
 
   def is_visit?(type)
-    type == I18n.t('destinations.import_file.stop_type_visit')
+    type == I18n.t('destinations.import_file.stop_type_visit') || type == 'visit' || type.blank?
   end
 
   def is_store?(type)
-    type == I18n.t('destinations.import_file.stop_type_store')
+    type == I18n.t('destinations.import_file.stop_type_store') || type == 'store'
   end
 
   def import_row(_name, row, line, _options)
@@ -568,7 +570,7 @@ class ImporterDestinations < ImporterBase
     row[:planning_ref] = row[:planning_ref]&.strip&.to_sym
     ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
     row[:ref] = row[:ref]&.strip&.to_sym
-    row[:ref_visit] = row[:ref_visit]&.strip&.to_sym
+    row[:ref_visit] = row[:ref_visit]&.strip&.to_sym if row.key?(:ref_visit)
     row.delete(:planning_date) if row[:planning_date] == ""
 
     @plannings_attributes[ref_planning] ||=
@@ -883,7 +885,7 @@ class ImporterDestinations < ImporterBase
           @visits_attributes_without_destination_without_ref_visit[row[:ref]] << [[line], visit_attributes]
         end
       end
-    else
+    elsif row[:without_visit] == 'x'
       destination&.visits&.destroy_all
     end
   end

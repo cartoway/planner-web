@@ -199,7 +199,7 @@ class V01::Destinations < Grape::API
         use(:request_destination, skip_visit_id: true, json_import: true)
         use(:request_store)
         optional(:stop_type, type: String, default: nil, values: ['visit', 'store'], desc: 'Type of the stop if the entry is associated to a planning')
-        optional(:route, type: String, desc: 'Route name to add the destination to if associated to a planning')
+        optional(:route, type: String, default: nil, desc: 'Route name to add the destination to if associated to a planning')
         optional(:ref_vehicle, type: String, desc: 'Vehicle reference to add the destination to if associated to a planning')
         optional(:active, type: Boolean, desc: 'If the destination is active if associated to a planning')
       end
@@ -211,10 +211,12 @@ class V01::Destinations < Grape::API
 
       if params[:destinations]
         d_params = declared(params, include_missing: false) # Filter undeclared parameters
-        import_destination_params = d_params[:destinations].each{ |dest_params| dest_params[:visits]&.each{ |hash|
-          convert_timewindows(hash)
-          convert_deprecated_quantities(hash, current_customer.deliverable_units);
-        } }
+        import_destination_params = d_params[:destinations].each{ |dest_params|
+          dest_params[:visits]&.each{ |hash|
+            convert_timewindows(hash)
+            convert_deprecated_quantities(hash, current_customer.deliverable_units);
+          }
+        }
       end
       if params[:planning]
         if params[:planning][:vehicle_usage_set_id]
