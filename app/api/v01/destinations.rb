@@ -198,7 +198,7 @@ class V01::Destinations < Grape::API
       optional(:destinations, type: Array, documentation: { param_type: 'body' }, desc: 'In mutual exclusion with CSV file upload and remote. the destinations might be Destinations with Visits or Stores') do
         use(:request_destination, skip_visit_id: true, json_import: true)
         use(:request_store)
-        optional(:stop_type, type: String, values: ['visit', 'store'], desc: 'Type of the stop if the entry is associated to a planning')
+        optional(:stop_type, type: String, default: nil, values: ['visit', 'store'], desc: 'Type of the stop if the entry is associated to a planning')
         optional(:route, type: String, desc: 'Route name to add the destination to if associated to a planning')
         optional(:ref_vehicle, type: String, desc: 'Vehicle reference to add the destination to if associated to a planning')
         optional(:active, type: Boolean, desc: 'If the destination is active if associated to a planning')
