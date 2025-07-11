@@ -198,8 +198,8 @@ class ImporterDestinations < ImporterBase
         labels.each{ |label|
           m = Regexp.new("^" + I18n.t("destinations.import_file.#{label}") + "\\[(.*)\\]$").match(name)
           if m && unit_labels.exclude?(m[1])
-            unit_labels.delete_at(unit_labels.index(m[1])) if unit_labels.index(m[1])
             @deliverable_units << @customer.deliverable_units.create(label: m[1])
+            unit_labels << m[1]
             @deliverable_unit_hash[m[1]] = @deliverable_units.last
             @columns = nil # Reset columns "cache"
           end
