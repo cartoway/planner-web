@@ -24,7 +24,7 @@ if @planning
         deliveries = visit.default_deliveries
         json.quantities @planning.customer.deliverable_units.map do |unit|
           quantity = (deliveries[unit.id] || 0) - (pickups[unit.id] || 0)
-          next if deliveries[unit.id].zero? && pickups[unit.id].zero?
+          next if (deliveries[unit.id] || 0).zero? && (pickups[unit.id] || 0).zero?
 
           {
             deliverable_unit_id: unit.id,
