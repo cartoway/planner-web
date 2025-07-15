@@ -861,6 +861,7 @@ class Planning < ApplicationRecord
 
   def save_import
     if valid? && !customer.too_many_plannings? && Planning.import([self], recursive: true, validate: false)
+      Customer.reset_counters(customer.id, :plannings)
       # Import does not save has_and_belongs_to_many
       # So save it manually
       # https://github.com/zdennis/activerecord-import/pull/380
@@ -877,6 +878,7 @@ class Planning < ApplicationRecord
     validate!
     raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if customer.too_many_plannings?
     Planning.import([self], recursive: true, validate: false)
+    Customer.reset_counters(customer.id, :plannings)
 
     # Import does not save has_and_belongs_to_many
     # So save it manually
