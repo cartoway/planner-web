@@ -133,6 +133,10 @@ a.btn-default {
 }
 
 .leaflet-editing-icon {
+  margin-left: -10px !important;
+  margin-top: -10px !important;
+  width: 20px !important;
+  height: 20px !important;
   border-radius: 10px;
   border: 3px dimgrey solid;
   opacity: unset;
