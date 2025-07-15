@@ -26,14 +26,19 @@ class V01::Entities::Stop < V01::Entities::StopStatus
     StopRest: 'rest'
   }.freeze
 
-  expose(:visit_ref, documentation: { type: String }) { |stop|
-    if stop.is_a?(StopVisit) && stop.visit
-      stop.visit.ref
-    end
-  }
   expose(:destination_ref, documentation: { type: String }) { |stop|
     if stop.is_a?(StopVisit) && stop.visit && stop.visit.destination
       stop.visit.destination.ref
+    end
+  }
+  expose(:store_ref, documentation: { type: String }) { |stop|
+    if stop.is_a?(StopStore) && stop.store
+      stop.store.ref
+    end
+  }
+  expose(:visit_ref, documentation: { type: String }) { |stop|
+    if stop.is_a?(StopVisit) && stop.visit
+      stop.visit.ref
     end
   }
   expose(:stop_type, documentation: { type: String }) { |stop|
