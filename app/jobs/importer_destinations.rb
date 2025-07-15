@@ -798,7 +798,7 @@ class ImporterDestinations < ImporterBase
       store = @existing_stores_by_ref[row[:ref]]
       if store
         store_attr = store.attributes.symbolize_keys
-        store_attributes = store_attr.extract!(:id, :name, :postalcode, :city).merge(store_attributes)
+        store_attributes = store_attr.extract!(:id, :name, :postalcode, :city, :lat, :lng).merge(store_attributes)
       end
       index, lines, store_attr = @stores_attributes_by_ref[row[:ref]]
       if store_attr
@@ -822,7 +822,7 @@ class ImporterDestinations < ImporterBase
       destination =  @existing_destinations_by_ref[row[:ref]]
       if destination
         dest_attributes = destination.attributes.symbolize_keys
-        destination_attributes = dest_attributes.extract!(:id, :name, :postalcode, :city).merge(destination_attributes)
+        destination_attributes = dest_attributes.extract!(:id, :name, :postalcode, :city, :lat, :lng).merge(destination_attributes)
       end
       index, lines, dest_attributes = @destinations_attributes_by_ref[row[:ref]]
       if dest_attributes
