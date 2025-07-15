@@ -321,7 +321,7 @@ class Planning < ApplicationRecord
 
       Delayed::Job.enqueue(SimplifyGeojsonTracksJob.new(self.customer_id, r.id))
     }
-    self.update_columns(updated_at: Time.current) && self.invalidate_planning_cache
+    self.save!(touch: false) && self.invalidate_planning_cache
     true
   end
 
