@@ -10,7 +10,8 @@
     - Routes: Allows to force the start time [#370](https://github.com/cartoway/planner-web/pull/370)
     - Stops:
       - Display the current load at each route step [#387](https://github.com/cartoway/planner-web/pull/387)
-      - Add an alert for unfulfilled tag skills [#418](https://github.com/cartoway/planner-web/pull/418)
+      - Add an alert for unfulfilled tag skills [#419](https://github.com/cartoway/planner-web/pull/419)
+  - Introduce StopStore : it materializes a stop performed at a store during a route [#418](https://github.com/cartoway/planner-web/pull/418)
 
   ### Changed
   - Bump `babel` to 7.23.2 [#330](https://github.com/cartoway/planner-web/pull/330)
