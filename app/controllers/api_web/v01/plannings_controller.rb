@@ -51,7 +51,7 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
   def includes_sub_models
     if action_name.to_sym == :print
       VehicleUsage.with_stores.scoping do
-        Route.includes_destinations.scoping do
+        Route.includes_destinations_and_stores.scoping do
           yield
         end
       end

@@ -18,7 +18,7 @@
 module PlanningsHelper
   def planning_vehicles_array(planning)
     customer = planning.customer
-    planning.vehicle_usage_set.vehicle_usages.active.map{ |vehicle_usage|
+    planning.vehicle_usage_set.vehicle_usages.select{ |vehicle_usage| vehicle_usage.active? }.map{ |vehicle_usage|
       {
         id: vehicle_usage.vehicle.id,
         text: vehicle_usage.vehicle.name,
@@ -31,7 +31,7 @@ module PlanningsHelper
 
   def planning_vehicles_usages_map(planning)
     PlanningConcern.vehicles_usages_map(planning)
-    planning.vehicle_usage_set.vehicle_usages.active.each_with_object({}) do |vehicle_usage, hash|
+    planning.vehicle_usage_set.vehicle_usages.select{ |vehicle_usage| vehicle_usage.active? }.each_with_object({}) do |vehicle_usage, hash|
       router_name =
         vehicle_usage.vehicle.default_router.name_locale[I18n.locale.to_s] ||
         vehicle_usage.vehicle.default_router.name_locale[I18n.default_locale.to_s] ||
