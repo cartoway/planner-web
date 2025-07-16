@@ -37,7 +37,7 @@ class Visit < ApplicationRecord
   validates :ref, uniqueness: { scope: :destination_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
   scope :positioned, -> { joins(:destination).merge(Destination.positioned) }
-  scope :includes_destinations, -> { includes([:tags, destination: :tags]) }
+  scope :includes_destinations_and_stores, -> { includes([:tags, destination: :tags]) }
 
   enum force_position: {
     neutral: 0,
