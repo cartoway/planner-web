@@ -10,18 +10,21 @@ module LinkBack
   private
 
   def save_link_back
-    # session[:previous_url] is a Rails built-in variable to save last url.
+    return unless request.get? && request.format.html?
+    return unless request.headers['Turbolinks-Referrer']
+
+    # URI fragments #123 are not part of the referer URI
+    # TODO: It might be interesting to link back to it
     if request.format == Mime[:html]
-      referer_uri = request.referer ? URI.parse(request.referer) : nil
+      referer_uri = URI.parse(request.headers['Turbolinks-Referrer'])
       referer_params = referer_uri && referer_uri.query ? CGI.parse(referer_uri.query) : nil
-      referer_fragment = referer_uri && referer_uri.fragment
       if referer_uri && params['back']
-        # FIXME: The controller is fired twice and cannot link_back to its referer
-        unless session[:link_back]&.include?("#")
-          session[:link_back] = referer_uri.path
-          session[:link_back] += '#' + referer_fragment if referer_fragment
-        end
+        session[:link_back] = referer_uri.path
+      elsif referer_uri && referer_params && referer_params['back']
+        # Clear link_back if we're coming from a page with back=true to prevent infinite loops
+        session.delete(:link_back)
       elsif !(referer_uri && referer_params && referer_params['back'])
+        # Clear link_back if we're not coming from a page with back=true
         session.delete(:link_back)
       end
     end

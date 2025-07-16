@@ -17,7 +17,7 @@
 //
 'use strict';
 
-$(document).on('ready page:load', function() {
+$(document).on('turbolinks:load', function() {
   $('[data-toggle="selection"]').toggleSelect();
   $('input[data-change="filter"]').filterTable();
   $('[type="checkbox"][data-toggle="disable-multiple-actions"]').toggleMultipleActions();
