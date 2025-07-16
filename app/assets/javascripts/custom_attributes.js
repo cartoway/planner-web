@@ -2,10 +2,9 @@
 
 import '../../assets/javascripts/scaffolds'
 
-const custom_attributes_form = function() {
-  //for turbolinks, when clicking on link_to
+$(document).on('turbolinks:load', function() {
   $('.selectpicker').selectpicker();
-};
+});
 
 // Expose custom_attributes_array
 window.CustomAttributes = {
