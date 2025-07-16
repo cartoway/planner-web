@@ -19,7 +19,7 @@ class ApiWeb::V01::ZoningsController < ApiWeb::V01::ApiWebController
   skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
   load_and_authorize_resource
   before_action :manage_zoning
-  around_action :includes_destinations
+  around_action :includes_destinations_and_stores
 
   def edit
     capabilities
@@ -55,8 +55,8 @@ class ApiWeb::V01::ZoningsController < ApiWeb::V01::ApiWebController
     @manage_zoning = ApiWeb::V01::ZoningsController.manage
   end
 
-  def includes_destinations
-    Route.includes_destinations.scoping do
+  def includes_destinations_and_stores
+    Route.includes_destinations_and_stores.scoping do
       yield
     end
   end
