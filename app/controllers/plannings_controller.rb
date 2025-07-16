@@ -30,6 +30,7 @@ class PlanningsController < ApplicationController
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route]
   before_action :set_driver_planning, only: [:driver_move]
+  before_action :set_device_definitions, only: [:edit, :update]
   before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
 
@@ -55,16 +56,16 @@ class PlanningsController < ApplicationController
 
   def show
     @params = params
-    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).includes(:routes).first!
+    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
     @routes = if params[:route_ids]
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
       @with_stops = true
-      @planning.routes.where(id: route_ids).includes_destinations.includes_vehicle_usages
+      @planning.routes.where(id: route_ids).includes_destinations_and_stores.includes_vehicle_usages
     else
       stops_count = 0
       if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
         @with_stops = true
-        @planning.routes.available.includes_destinations.includes_vehicle_usages
+        @planning.routes.available.includes_destinations_and_stores.includes_vehicle_usages
       else
         @with_stops = false
         @planning.routes.available.includes_vehicle_usages
@@ -116,6 +117,19 @@ class PlanningsController < ApplicationController
     @spreadsheet_columns = export_columns
     @with_devices = true
     capabilities
+
+    # Prepare device definitions and related routes for the view to avoid business logic in the template
+    @device_definitions = @planning.customer.device.configured_definitions.each_with_object({}) do |(key, definition), hash|
+      # Only keep :deliver if SMS is enabled
+      next if key == :deliver && !@planning.customer.enable_sms
+      routes_with_configured_devices = @planning.routes.select do |route|
+        route.vehicle_usage_id && route.vehicle_usage.vehicle.devices.key?(definition[:device])
+      end
+      hash[key] = {
+        definition: definition,
+        routes_with_configured_devices: routes_with_configured_devices
+      }
+    end
   end
 
   def create
@@ -175,7 +189,8 @@ class PlanningsController < ApplicationController
   def refresh
     respond_to do |format|
       if @planning.compute_saved
-        @routes = @planning.routes.includes_vehicle_usages.includes_destinations
+        @planning = Planning.where(id: @planning.id).preload_routes_without_stops.first!
+        @routes = @planning.routes.includes_vehicle_usages.includes_destinations_and_stores
         @with_devices = true
         format.json { render action: 'show', location: @planning }
       else
@@ -185,14 +200,14 @@ class PlanningsController < ApplicationController
   end
 
   def refresh_route
-    @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.includes_destinations.first!
+    @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.includes_destinations_and_stores.first!
     stops_count = @route.stops.count
     page = params[:out_page] || 1
     if @route.vehicle_usage_id
       current_route = @route
-      current_route.stops.includes_destinations.load
+      current_route.stops.includes_destinations_and_stores.load
     else
-      @out_pagy, @out_stops = pagy_countless(@route.stops.includes_destinations, page: page, page_param: :out_page)
+      @out_pagy, @out_stops = pagy_countless(@route.stops.includes_destinations_and_stores, page: page, page_param: :out_page)
       current_route = @route.dup
       current_route.stops = @out_stops
     end
@@ -223,7 +238,7 @@ class PlanningsController < ApplicationController
     @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
     @routes =
       if @with_stops
-        @planning.routes.includes_vehicle_usages.includes_destinations.available
+        @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available
       else
         @planning.routes.includes_vehicle_usages.available
       end
@@ -557,7 +572,23 @@ class PlanningsController < ApplicationController
   end
 
   def set_available_stores
-    @available_stores = current_user.customer.stores.map { |store| { id: store.id, name: store.name, ref: store.ref, icon: store.icon, color: store.color } }
+    @available_stores = current_user.customer.stores.pluck(:id, :name, :ref, :icon, :color).map do |id, name, ref, icon, color|
+      { id: id, name: name, ref: ref, icon: icon, color: color }
+    end
+  end
+
+  def set_device_definitions
+    @device_definitions = @planning.customer.device.configured_definitions.each_with_object({}) do |(key, definition), hash|
+      # Only keep :deliver if SMS is enabled
+      next if key == :deliver && !@planning.customer.enable_sms
+      routes_with_configured_devices = @planning.routes.select do |route|
+        route.vehicle_usage_id && route.vehicle_usage.vehicle.devices.key?(definition[:device])
+      end
+      hash[key] = {
+        definition: definition,
+        routes_with_configured_devices: routes_with_configured_devices
+      }
+    end
   end
 
   def set_planning_without_stops
@@ -602,22 +633,6 @@ class PlanningsController < ApplicationController
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_route_details.first!
-  end
-
-  def includes_destinations
-    if @with_stops && (params[:route_id] || params[:route_ids] || [:automatic_insert, :optimize].include?(action_name.to_sym))
-      # Preload only stops from necessary routes
-      Stop.includes_destinations.scoping do
-        yield
-      end
-    elsif @with_stops && ([:show, :edit].exclude?(action_name.to_sym) || !request.format.html?)
-      # Preload all stops from all routes
-      Route.includes_destinations.scoping do
-        yield
-      end
-    else
-      yield
-    end
   end
 
   def check_no_existing_job
