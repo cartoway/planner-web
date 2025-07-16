@@ -2,14 +2,17 @@
 
 ## Dev
   ### Added
-    - Customer: Allow to order and filter the solvers to use [#422](https://github.com/cartoway/planner-web/pull/422)
-    - Planning: Introduce a lasso to select multiple stops on the fly [#424](https://github.com/cartoway/planner-web/pull/424)
-    - Admin: Store the solver used and the ones skipped (with reasons) on the job info [#422](https://github.com/cartoway/planner-web/pull/422)
+  - Customer: Allow to order and filter the solvers to use [#422](https://github.com/cartoway/planner-web/pull/422)
+  - Planning: Introduce a lasso to select multiple stops on the fly [#424](https://github.com/cartoway/planner-web/pull/424)
+  - Admin: Store the solver used and the ones skipped (with reasons) on the job info [#422](https://github.com/cartoway/planner-web/pull/422)
 
   ### Changed
-    - Export: Rework visually the columns selector [#422](https://github.com/cartoway/planner-web/pull/422)
-    - Rework of the automatic insert method [#423](https://github.com/cartoway/planner-web/pull/423)
-    - Bump turbolinks [#431](https://github.com/cartoway/planner-web/pull/431)
+  - Export: Rework visually the columns selector [#422](https://github.com/cartoway/planner-web/pull/422)
+  - Rework of the automatic insert method [#423](https://github.com/cartoway/planner-web/pull/423)
+  - Bump turbolinks [#431](https://github.com/cartoway/planner-web/pull/431)
+  - Routes:
+    - Add stores to scopes [#435](https://github.com/cartoway/planner-web/pull/435)
+    - Ensure compute_saved! is in a transaction [#435](https://github.com/cartoway/planner-web/pull/435)
 
   ### Removed
 
