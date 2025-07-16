@@ -34,7 +34,7 @@ class RoutesController < ApplicationController
   def mobile
     manage_planning
     @params = params
-    @stops = @route.stops.includes_destinations.only_active_stop_visits
+    @stops = @route.stops.includes_destinations_and_stores.only_active_stop_visits
     respond_to do |format|
       format.html {
         render 'routes/mobile',

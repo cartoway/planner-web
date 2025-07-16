@@ -99,7 +99,7 @@ class V01::Stops < Grape::API
               begin
                 planning.move_stop(route, stop, Integer(params[:index]))
                 planning.compute_saved
-                  status 204
+                status 204
               rescue Exceptions::StopIndexError => e
                 if e.route == route && e.bad_index == Integer(params[:index])
                   error! V01::Status.code_response(:code_400), 400

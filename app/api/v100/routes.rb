@@ -20,12 +20,12 @@ class V100::Routes < Grape::API
           requires :stop_ids, type: Array[Integer], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', documentation: {param_type: 'form'}, coerce_with: CoerceArrayString
         end
         patch ':id/stops/moves' do
-          Route.includes_destinations.scoping do
+          Route.includes_destinations_and_stores.scoping do
             planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
             raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
-            route = planning.routes.includes_destinations.where(ParseIdsRefs.read(params[:id])).first!
-            moving_stops = planning.routes.includes_destinations.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
+            route = planning.routes.includes_destinations_and_stores.where(ParseIdsRefs.read(params[:id])).first!
+            moving_stops = planning.routes.includes_destinations_and_stores.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
             unless moving_stops.empty?
               begin
                 Planning.transaction do
@@ -57,16 +57,16 @@ class V100::Routes < Grape::API
           requires :visit_ids, types: [Array[String], Array[Integer]], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', documentation: {param_type: 'form'}, coerce_with: CoerceArrayString
         end
         patch ':id/visits/moves' do
-          Route.includes_destinations.scoping do
+          Route.includes_destinations_and_stores.scoping do
             planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
             raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
-            route = planning.routes.includes_destinations.where(ParseIdsRefs.read(params[:id])).first!
+            route = planning.routes.includes_destinations_and_stores.where(ParseIdsRefs.read(params[:id])).first!
             visit_ids = params[:visit_ids].map{ |raw_id|
               id_hash = ParseIdsRefs.read(raw_id)
               id_hash[:ref] || id_hash[:id]
             }.compact
-            moving_stops = planning.routes.includes_destinations.flat_map{ |r| r.stops }.select{ |stop| stop.is_a?(StopVisit) && visit_ids.include?(stop.visit.id) }
+            moving_stops = planning.routes.includes_destinations_and_stores.flat_map{ |r| r.stops }.select{ |stop| stop.is_a?(StopVisit) && visit_ids.include?(stop.visit.id) }
 
             unless moving_stops.empty?
               begin
@@ -99,11 +99,11 @@ class V100::Routes < Grape::API
           requires :index, type: Integer
         end
         post ':route_id/stores/:id' do
-          Route.includes_destinations.scoping do
+          Route.includes_destinations_and_stores.scoping do
             planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
             raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
-            route = planning.routes.includes_destinations.where(ParseIdsRefs.read(params[:route_id])).first!
+            route = planning.routes.includes_destinations_and_stores.where(ParseIdsRefs.read(params[:route_id])).first!
             store = current_customer.stores.where(ParseIdsRefs.read(params[:id])).first!
 
             Planning.transaction do

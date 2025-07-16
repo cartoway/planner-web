@@ -41,7 +41,7 @@ module PlanningIcalendar
   def planning_calendar(planning)
     calendar = Icalendar::Calendar.new
     create_timezone calendar
-    Route.includes_destinations.scoping do
+    Route.includes_destinations_and_stores.scoping do
       planning.routes.select(&:vehicle_usage_id).each do |route|
         add_route_to_calendar calendar, route
       end
@@ -51,7 +51,7 @@ module PlanningIcalendar
 
   def plannings_calendar(plannings)
     calendar = Icalendar::Calendar.new
-    Route.includes_destinations.scoping do
+    Route.includes_destinations_and_stores.scoping do
       plannings.each do |planning|
         create_timezone calendar
         planning.routes.select(&:vehicle_usage_id).each do |route|
