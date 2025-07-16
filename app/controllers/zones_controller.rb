@@ -2,7 +2,7 @@
 class ZonesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_zone, only: [:show]
-  around_action :includes_destinations, only: [:show]
+  around_action :includes_destinations_and_stores, only: [:show]
 
   load_and_authorize_resource
 
@@ -43,8 +43,8 @@ class ZonesController < ApplicationController
     @zone = @zoning.zones.find(params[:id] || params[:zone_id])
   end
 
-  def includes_destinations
-    Route.includes_destinations.scoping do
+  def includes_destinations_and_stores
+    Route.includes_destinations_and_stores.scoping do
       yield
     end
   end

@@ -33,7 +33,7 @@ class OrderArraysController < ApplicationController
 
     if planning
       i = -1
-      visit_index = Hash[planning.routes.includes_destinations.flat_map{ |route|
+      visit_index = Hash[planning.routes.includes_destinations_and_stores.flat_map{ |route|
         route.stops.select{ |stop| stop.is_a?(StopVisit) }.collect{ |stop|
           [stop.visit.id, route.vehicle_usage]
         }
