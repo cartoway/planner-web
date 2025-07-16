@@ -267,12 +267,12 @@ class OptimizerWrapper
           timewindows: [
             (stop.time_window_start_1 || stop.time_window_end_1) && {
               # For the optimization setup duration starts before the time window start
-              start: stop.time_window_start_1 + stop.destination_duration,
+              start: stop.time_window_start_1 && (stop.time_window_start_1 + stop.destination_duration),
               end: stop.time_window_end_1 && (stop.time_window_end_1 + extra_time)
             },
             (stop.time_window_start_2 || stop.time_window_end_2) && {
               # For the optimization setup duration starts before the time window start
-              start: stop.time_window_start_2 + stop.destination_duration,
+              start: stop.time_window_start_2 && (stop.time_window_start_2 + stop.destination_duration),
               end: stop.time_window_end_2 && (stop.time_window_end_2 + extra_time)
             },
           ].compact,
