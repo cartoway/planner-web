@@ -979,7 +979,7 @@ class ImporterDestinations < ImporterBase
 
           attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
         }
-        visits = Visit.includes_destinations.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
+        visits = Visit.includes_destinations_and_stores.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
 
         store_ids = v[:visits].map{ |type, attribute, _stop_attributes|
           next unless type == :store

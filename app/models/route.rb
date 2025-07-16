@@ -65,7 +65,29 @@ class Route < ApplicationRecord
   }
   scope :includes_stops, -> { includes(:stops) }
   # The second visit is for counting the visit index from all the visits of the destination
-  scope :includes_destinations, -> { includes(stops: {visit: [:relation_currents, :relation_successors, :tags, destination: [:tags, :visits, { customer: :deliverable_units }]]}) }
+  scope :includes_destinations_and_stores, -> {
+    includes(
+      stops: [
+        {
+          visit: [
+            :relation_currents,
+            :relation_successors,
+            :tags,
+            destination: [
+              :tags,
+              :visits,
+              { customer: :deliverable_units }
+            ]
+          ]
+        },
+        {
+          store: [
+            :customer
+          ]
+        }
+      ]
+    )
+  }
   scope :includes_deliverable_units, -> { includes(vehicle_usage: [:vehicle_usage_set, vehicle: [customer: :deliverable_units]]) }
   scope :stop_visits, -> { includes(:stops).where(type: StopVisit.name) }
 
@@ -1010,7 +1032,7 @@ class Route < ApplicationRecord
   end
 
   def preload_compute_scopes
-    Route.where(id: self.id).includes_vehicle_usages.includes_destinations.first
+    Route.where(id: self.id).includes_vehicle_usages.includes_destinations_and_stores.first
   end
 
   def import_attributes
