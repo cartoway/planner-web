@@ -17,7 +17,7 @@ gem 'uglifier', '< 4.0' # TODO: fixme with use strict functions should be declar
 gem 'coffee-rails'
 
 # Turbolinks makes following links in your web application faster. Read more: https://github.com/rails/turbolinks
-gem 'turbolinks', '< 5' # FIXME: turbolinks not working with anchors in url
+gem 'turbolinks', '~> 5.2'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder'
 # bundle exec rake doc:rails generates the API under doc/api.

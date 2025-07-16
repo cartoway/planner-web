@@ -7,6 +7,7 @@
 
   ### Changed
     - Export: Rework visually the columns selector [#422](https://github.com/cartoway/planner-web/pull/422)
+    - Bump turbolinks [#431](https://github.com/cartoway/planner-web/pull/431)
 
   ### Removed
 

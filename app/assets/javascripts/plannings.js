@@ -666,6 +666,9 @@ export const plannings_edit = function(params) {
   params.geocoder = true;
 
   var map = mapInitialize(params);
+  setTimeout(function() {
+    map.invalidateSize();
+  }, 200);
   var popupOptions = params.manage_planning;
   var routesLayer = new RoutesLayer(planning_id, {
     url_click2call: url_click2call,
@@ -2919,4 +2922,8 @@ Paloma.controller('Plannings', {
   show: function() {
     plannings_show(this.params);
   }
+});
+
+$(document).on('turbolinks:load', function() {
+  $('.select2').select2({ theme: 'bootstrap' });
 });
