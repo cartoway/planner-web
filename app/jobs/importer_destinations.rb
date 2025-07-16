@@ -442,10 +442,9 @@ class ImporterDestinations < ImporterBase
     @store_ids = bulk_import_stores
     @customer.reload
 
-    if @synchronous || !Planner::Application.config.delayed_job_use
-      geocode_destinations
-      geocode_stores
-    end
+    geocode_or_count_destinations
+    geocode_or_count_stores
+
     prepare_plannings(name, _options)
 
     # Update destinations_count and visits_count as activerecord callbacks are not called
@@ -457,9 +456,8 @@ class ImporterDestinations < ImporterBase
     )
   end
 
-  def geocode_destinations
+  def geocode_or_count_destinations
     @destinations_to_geocode_count = @customer.destinations.not_positioned.count
-
     if @destinations_to_geocode_count > 0 && (@synchronous || !Planner::Application.config.delayed_job_use)
       @customer.destinations.includes_visits.not_positioned.find_in_batches(batch_size: 50){ |destinations|
         geocode_args = destinations.collect(&:geocode_args)
@@ -477,7 +475,7 @@ class ImporterDestinations < ImporterBase
     end
   end
 
-  def geocode_stores
+  def geocode_or_count_stores
     @stores_to_geocode_count = @customer.stores.not_positioned.count
     if @stores_to_geocode_count > 0 && (@synchronous || !Planner::Application.config.delayed_job_use)
       @customer.stores.not_positioned.find_in_batches(batch_size: 50){ |stores|
@@ -510,7 +508,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def finalize_import(_name, _options)
-    if @destinations_to_geocode_count > 0 || @stores_to_geocode_count > 0 && (!@synchronous && Planner::Application.config.delayed_job_use)
+    if (@destinations_to_geocode_count > 0 || @stores_to_geocode_count > 0) && (!@synchronous && Planner::Application.config.delayed_job_use)
       save_plannings
       @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
     elsif !@plannings.empty?
