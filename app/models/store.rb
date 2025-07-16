@@ -74,8 +74,6 @@ class Store < Location
     icon_size || Planner::Application.config.store_icon_size_default
   end
 
-  private
-
   def outdated
     Route.transaction do
       routes_usage_set = vehicle_usage_set_starts.collect{ |vehicle_usage_set_start|
@@ -86,6 +84,20 @@ class Store < Location
         vehicle_usage_set_rest.vehicle_usages.select{ |vehicle_usage| !vehicle_usage.store_rest }.collect(&:routes)
       }
 
+      # Temporary disable lock version because several object_ids from the same route are loaded in main customer graph (in case of import)
+      # See Visit#outdated for more details
+      begin
+        ActiveRecord::Base.lock_optimistically = false
+        stop_stores.each { |stop|
+          if !stop.route.outdated
+            stop.route.outdated = true
+            stop.route.save!
+          end
+        }
+      ensure
+        ActiveRecord::Base.lock_optimistically = true
+      end
+
       routes_usage = (vehicle_usage_starts + vehicle_usage_stops + vehicle_usage_rests).collect(&:routes)
 
       (routes_usage_set + routes_usage).flatten.uniq.each{ |route|
@@ -94,6 +106,8 @@ class Store < Location
       }
     end
   end
+
+  private
 
   def destroy_vehicle_store
     default = customer.stores.find{ |store| store != self && !store.destroyed? }
