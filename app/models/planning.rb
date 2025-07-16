@@ -234,7 +234,7 @@ class Planning < ApplicationRecord
 
   def visit_filling
     visit_ids = routes.includes_stops.flat_map{ |route| route.stops.map{ |stop| stop.visit_id }}
-    Visit.includes_destinations.where(id: (customer.visit_ids - visit_ids)).select{ |visit|
+    Visit.includes_destinations_and_stores.where(id: (customer.visit_ids - visit_ids)).select{ |visit|
       tags_compatible?(visit.tags.to_a | visit.destination.tags.to_a)
     }.each{ |visit| visit_add(visit) }
     self.save!
@@ -278,49 +278,20 @@ class Planning < ApplicationRecord
   end
 
   def compute_saved!(options = {})
-    stop_rests = []
-    stop_visits = []
-    stop_stores = []
+    jobs_to_enqueue = []
 
-    # Collect all segments from all routes that need routing
-    all_segments = []
-    computed_routes = []
-
-    routes.each{ |r|
-      if options[:bang]!= false || r.outdated && r.vehicle_usage?
-        computed_routes << r
-        segments = r.collect_segments_for_routing(r.stops)
-        all_segments << { route: r, segments: segments } if segments.any?
+    if ActiveRecord::Base.connection.transaction_open?
+      compute_within_existing_transaction(options, jobs_to_enqueue)
+    else
+      Planning.transaction do
+        compute_within_existing_transaction(options, jobs_to_enqueue)
       end
-    }
+    end
 
-    # Batch process all segments in parallel
-    precompute_traces(all_segments, options)
+    jobs_to_enqueue.each do |job|
+      Delayed::Job.enqueue(job)
+    end
 
-    computed_routes.each{ |r|
-      if options[:bang] == false
-        r.compute(options.merge(skip_preload: true))
-      else
-        r.compute!(options.merge(skip_preload: true))
-      end
-      stops_by_type = r.stops.group_by(&:type)
-      stop_visits += stops_by_type['StopVisit'].to_a.map(&:import_attributes)
-      stop_rests += stops_by_type['StopRest'].to_a.map(&:import_attributes)
-      stop_stores += stops_by_type['StopStore'].to_a.map(&:import_attributes)
-
-    }
-    Route.import(computed_routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    StopRest.import(stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    StopStore.import(stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-
-    computed_routes.each{ |r|
-      r.invalidate_route_cache && r.reload
-      next unless Planner::Application.config.delayed_job_use
-
-      SimplifyGeojsonTracksJob.new(self.customer_id, r.id).perform
-    }
-    self.save!(touch: false) && self.invalidate_planning_cache
     true
   end
 
@@ -330,9 +301,9 @@ class Planning < ApplicationRecord
       all_segments.each_slice(5) do |batch|
         batch.each do |route_data|
           threads << Thread.new do
+            route = route_data[:route]
             begin
               ActiveRecord::Base.connection_pool.with_connection do
-                route = route_data[:route]
                 segments = route_data[:segments]
                 router = route.vehicle_usage.vehicle.default_router
                 router_options = route.vehicle_usage.vehicle.default_router_options.symbolize_keys
@@ -581,13 +552,13 @@ class Planning < ApplicationRecord
 
   def visits
     routes.flat_map{ |route|
-      route.stops.only_stop_visits.includes_destinations.map(&:visit)
+      route.stops.only_stop_visits.includes_destinations_and_stores.map(&:visit)
     }
   end
 
   def visits_to_stop_hash
     routes.flat_map{ |route|
-      route.stops.only_stop_visits.includes_destinations.map{ |stop| [stop.visit.id, stop] }
+      route.stops.only_stop_visits.includes_destinations_and_stores.map{ |stop| [stop.visit.id, stop] }
     }.to_h
   end
 
@@ -776,7 +747,7 @@ class Planning < ApplicationRecord
   def fetch_stops_status
     Visit.transaction do
       if customer.enable_stop_status
-        stops_map = Hash[routes.includes_destinations.available.where.not(vehicle_usage_id: nil).flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
+        stops_map = Hash[routes.includes_destinations_and_stores.available.where.not(vehicle_usage_id: nil).flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
         routes.each(&:clear_eta_data)
         routes_quantities_changed = []
 
@@ -1000,6 +971,51 @@ class Planning < ApplicationRecord
 
   private
 
+  def compute_within_existing_transaction(options = {}, jobs_to_enqueue = [])
+    stop_rests = []
+    stop_visits = []
+    stop_stores = []
+
+    # Collect all segments from all routes that need routing
+    all_segments = []
+    computed_routes = []
+    routes.each{ |r|
+      if options[:bang]!= false || r.outdated && r.vehicle_usage?
+        computed_routes << r
+        segments = r.collect_segments_for_routing(r.stops)
+        all_segments << { route: r, segments: segments } if segments.any?
+      end
+    }
+
+    # Batch process all segments in parallel
+    precompute_traces(all_segments, options)
+
+    computed_routes.each{ |r|
+      if options[:bang] == false
+        r.compute(options.merge(skip_preload: true))
+      else
+        r.compute!(options.merge(skip_preload: true))
+      end
+      stops_by_type = r.stops.group_by(&:type)
+      stop_visits += stops_by_type['StopVisit'].to_a.map(&:import_attributes)
+      stop_rests += stops_by_type['StopRest'].to_a.map(&:import_attributes)
+      stop_stores += stops_by_type['StopStore'].to_a.map(&:import_attributes)
+    }
+    Route.import(computed_routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopRest.import(stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopStore.import(stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+
+    computed_routes.each{ |r|
+      r.invalidate_route_cache && r.reload
+      next unless Planner::Application.config.delayed_job_use
+
+      jobs_to_enqueue << SimplifyGeojsonTracksJob.new(self.customer_id, r.id)
+    }
+
+    self.save!(touch: false) && self.invalidate_planning_cache
+  end
+
   def select_insertion_data(insertion_data)
     insertion_by_route = insertion_data.group_by { |data| data[0] }
     selected_insertions = []
@@ -1036,7 +1052,6 @@ class Planning < ApplicationRecord
           previous_position.distance(stop.position) + stop.position.distance(s.position) - previous_position.distance(s.position)
         ]
       previous_position = s.position
-
     }
     next_position = route.vehicle_usage.default_store_stop&.position || stop.position
     insertion_data <<
