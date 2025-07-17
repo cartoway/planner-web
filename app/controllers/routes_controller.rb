@@ -94,7 +94,7 @@ class RoutesController < ApplicationController
         @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
         @columns = permitted_export_params[:columns]&.split('|') || export_columns
         current_user.save_export_settings(@columns, permitted_export_params[:skips]&.split('|'), permitted_export_params[:stops]&.split('|'), 'excel')
-        send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
+        send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
           type: 'text/csv',
           filename: filename + '.csv'
       end
