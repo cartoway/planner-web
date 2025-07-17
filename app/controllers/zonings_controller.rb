@@ -21,7 +21,7 @@ class ZoningsController < ApplicationController
   before_action :set_planning, only: [:show, :edit, :new, :automatic, :from_planning]
   before_action :manage_zoning
   before_action :set_deliverable_unit_icons, only: [:edit, :automatic, :from_planning]
-  around_action :includes_destinations, only: [:show, :edit, :update, :automatic, :from_planning]
+  around_action :includes_destinations_and_stores, only: [:show, :edit, :update, :automatic, :from_planning]
   around_action :over_max_limit, only: [:create, :duplicate]
 
   load_and_authorize_resource
@@ -198,8 +198,8 @@ class ZoningsController < ApplicationController
     @planning = params.key?(:planning_id) && !params[:planning_id].empty? ? current_user.customer.plannings.preload_route_details.find(params[:planning_id]) : nil
   end
 
-  def includes_destinations
-    Route.includes_destinations.scoping do
+  def includes_destinations_and_stores
+    Route.includes_destinations_and_stores.scoping do
       yield
     end
   end

@@ -36,7 +36,7 @@ class V100::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     patch ':id/automatic_insert' do
-      Route.includes_destinations.scoping do
+      Route.includes_destinations_and_stores.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
         stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
@@ -77,7 +77,7 @@ class V100::Plannings < Grape::API
       optional :active_only, type: Boolean, desc: 'Use only active stops.', default: true
     end
     patch ':id/optimized_insertion' do
-      Route.includes_destinations.scoping do
+      Route.includes_destinations_and_stores.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
