@@ -50,7 +50,7 @@ class ZoningsController < ApplicationController
           }.map{ |zone| zone.name || zone.id }
           [destination, destination_zones]
         }
-        send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
+        send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
             type: 'text/csv',
             filename: format_filename(t('activerecord.models.destinations.other')) + '.csv',
             disposition: params.key?(:disposition) ? params[:disposition] : 'attachment'
