@@ -57,6 +57,9 @@
 //= require mustache
 //= require_tree ../../templates
 
+// Custom components
+//= require active_inactive_drag_drop
+
 // jQuery Turbolinks documentation informs to load all scripts before turbolinks
 //= require jquery.turbolinks
 //= require turbolinks

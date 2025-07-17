@@ -374,7 +374,7 @@ class PlanningTest < ActiveSupport::TestCase
         assert_kind_of Route, data[:route]
         assert_kind_of Integer, data[:index]
         assert_kind_of Integer, data[:time]
-        assert_kind_of Float, data[:distance]
+        assert_kind_of Integer, data[:distance]
       end
     end
   end
