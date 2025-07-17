@@ -158,4 +158,20 @@ class Admin::CustomersControllerTest < ActionController::TestCase
 
     assert_redirected_to customers_path
   end
+
+  test "should update customer with solver priority" do
+    patch :update, params: {
+      id: @customer,
+      customer: {
+        name: "Updated Customer",
+        advanced_options: {
+          solver_priority: ["pyvrp", "vroom"]
+        }
+      }
+    }
+
+    assert_redirected_to edit_customer_path(assigns(:customer))
+    @customer.reload
+    assert_equal ["pyvrp", "vroom"], @customer.solver_priority
+  end
 end
