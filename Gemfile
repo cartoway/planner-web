@@ -124,7 +124,6 @@ gem 'activerecord-import'
 gem 'activerecord-postgis-adapter'
 
 gem 'sanitize'
-gem 'iconv'
 
 gem 'pg'
 

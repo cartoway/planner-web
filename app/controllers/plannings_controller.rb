@@ -817,7 +817,7 @@ class PlanningsController < ApplicationController
       @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
       current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), 'excel')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
-      send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
+      send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
       type: 'text/csv',
       filename: filename + '.csv',
       disposition: @params.key?(:disposition) ? @params[:disposition] : 'attachment'
