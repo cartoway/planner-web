@@ -55,7 +55,7 @@ class OrderArraysController < ApplicationController
       format.json do
       end
       format.excel do
-        send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
+        send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
             type: 'text/csv',
             filename: format_filename(@order_array.name.delete('"')) + '.csv'
       end
