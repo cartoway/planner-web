@@ -491,4 +491,28 @@ class CustomerTest < ActiveSupport::TestCase
     assert @customer.update advanced_options: options
     assert_equal options, @customer.advanced_options
   end
+
+  test 'should handle solver_priority in advanced_options' do
+    customer = customers(:customer_one)
+
+    # Test setting solver priority
+    customer.solver_priority = ['pyvrp', 'vroom', 'ortools']
+    customer.save!
+
+    # Test reading solver priority
+    customer.reload
+    assert_equal ['pyvrp', 'vroom', 'ortools'], customer.solver_priority
+
+    # Test empty solver priority
+    customer.solver_priority = []
+    customer.save!
+    customer.reload
+    assert_equal [], customer.solver_priority
+
+    # Test nil solver priority
+    customer.solver_priority = nil
+    customer.save!
+    customer.reload
+    assert_nil customer.solver_priority
+  end
 end

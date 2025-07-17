@@ -29,6 +29,7 @@ import {
   completeAjaxMap,
   ajaxError
 } from '../../assets/javascripts/ajax';
+import { LassoModule } from './lasso';
 
 /******************
  * PopupModule
@@ -946,5 +947,36 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
     this.layersByRoute = {};
     this.clustersByRoute = {};
+  },
+
+  // Lasso initialization
+  initLasso: function(panelLoadingFunc, refreshSidebarRouteFunc) {
+    if (typeof LassoModule !== 'undefined' && !document.querySelector('.leaflet-lasso')) {
+      LassoModule.initLasso(this.map, this.options.planningId, this, panelLoadingFunc, refreshSidebarRouteFunc);
+
+      $(document).on('lasso:stopsMoved', function(event, data) {
+        if (data && data.routeIds && this.refreshRoutes) {
+          this.refreshRoutes(data.routeIds);
+        }
+      }.bind(this));
+    }
+
+    return this;
+  },
+
+  getSelectableLayers: function() {
+    var layers = [];
+
+    Object.keys(this.clustersByRoute).forEach(function(routeId) {
+      this.clustersByRoute[routeId].getLayers().forEach(function(marker) {
+        layers.push(marker);
+      });
+    }.bind(this));
+
+    Object.keys(this.markerStores).forEach(function(storeId) {
+      layers.push(this.markerStores[storeId]);
+    }.bind(this));
+
+    return layers;
   }
 });
