@@ -204,6 +204,11 @@ docker compose run --rm web bundle exec rake db:structure:dump
 
 ## Dev in Docker through VSCode
 
+Copy and update settings.
+```
+cp .env.template .devcontainer/.env
+```
+
 * Install [Visual Studio Code](https://code.visualstudio.com/download)
 * Install the following extensions : Docker & Dev Containers
 * Press F1 > Select command "Dev Containers: Open Folder in Container..."
