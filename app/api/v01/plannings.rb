@@ -222,18 +222,27 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     get ':id/apply_zonings' do
-      Route.includes_destinations.scoping do
-        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
+      returned_planning = nil
 
-        planning.zoning_outdated = true
-        planning.split_by_zones(nil)
-        planning.compute_saved
-        if params[:details] || params[:with_details]
-          present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
-        else
-          status 204
-        end
+      Planning.transaction do
+        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).lock(true).first!
+
+        routes = Route.where(planning_id: planning.id).lock(true).to_a
+
+        Stop.where(route_id: routes.map(&:id)).lock(true).to_a
+
+        planning_with_associations = Planning.where(id: planning.id).preload_route_details.first!
+
+        raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
+        planning_with_associations.zoning_outdated = true
+        planning_with_associations.split_by_zones(nil)
+        planning_with_associations.compute_saved
+      end
+
+      if params[:details] || params[:with_details]
+        present returned_planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
+      else
+        status 204
       end
     end
 
