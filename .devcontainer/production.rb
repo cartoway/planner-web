@@ -1,8 +1,6 @@
 Rails.application.configure do
-   config.webpacker.check_yarn_integrity = false  # Settings specified here will take precedence over those in config/application.rb.
-
   # Code is not reloaded between requests.
-  config.cache_classes = false
+  config.cache_classes = true
 
   # Eager load code on boot. This eager loads most of Rails and
   # your application in memory, allowing both threaded web servers
@@ -106,6 +104,8 @@ Rails.application.configure do
     ActiveSupport::Cache::RedisStore.new(host: ENV['REDIS_HOST'] || 'localhost', namespace: namespace, expires_in: expires_in, raise_errors: true)
   end
 
+  config.planner_cache = cache_factory('planner', 60*60*12*1)
+
   config.optimizer = OptimizerWrapper.new(
     cache_factory('optimizer_wrapper', 60*60*24*10),
     ENV['OPTIMIZER_URL'] || 'http://localhost:1791/0.1',
@@ -116,11 +116,12 @@ Rails.application.configure do
   config.optimize_minimal_time = 10
   config.optimize_max_split_size = 500
   config.optimize_cluster_size = 0
-  config.optimize_stop_soft_upper_bound = 0.0
-  config.optimize_vehicle_soft_upper_bound = 0.0
+  config.optimize_stop_soft_upper_bound = 0.3
+  config.optimize_vehicle_soft_upper_bound = 0.3
   config.optimize_overload_multiplier = 0
   config.optimize_cost_waiting_time = 1
   config.optimize_force_start = false
+  config.optimize_cost_fixed = 3.hours.to_i
 
   config.geocode_complete = false # Build time setting
 
@@ -184,5 +185,8 @@ Rails.application.configure do
 
   config.validate_during_duplication = false
 
-  config.logger_sms = nil
+  config.logger_sms = Logger.new(STDOUT)
+
+  # config.action_dispatch.cookies_same_site_protection = :none
+  # config.session_store :cookie_store, key: '_cartoway_session', same_site: :none, secure: true
 end
