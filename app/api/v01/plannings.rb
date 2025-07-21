@@ -236,7 +236,7 @@ class V01::Plannings < Grape::API
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
         planning_with_associations.zoning_outdated = true
         planning_with_associations.split_by_zones(nil)
-        planning_with_associations.compute_saved
+        planning_with_associations.compute_saved!
       end
 
       if params[:details] || params[:with_details]
