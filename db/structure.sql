@@ -146,6 +146,7 @@ CREATE TABLE public.customers (
     sms_from_customer_name boolean DEFAULT false NOT NULL,
     optimization_minimal_time double precision,
     history_cron_hour integer,
+    enable_store_stops boolean DEFAULT false,
     sms_driver_template character varying,
     enable_optimization_soft_upper_bound boolean,
     stop_max_upper_bound integer DEFAULT 0,
@@ -153,11 +154,11 @@ CREATE TABLE public.customers (
     planning_date_offset integer DEFAULT 1,
     optimization_cost_fixed integer,
     destination_duration integer,
-    sms_intransit_template character varying,
     destinations_count integer DEFAULT 0 NOT NULL,
     visits_count integer DEFAULT 0 NOT NULL,
     plannings_count integer DEFAULT 0 NOT NULL,
     vehicles_count integer DEFAULT 0 NOT NULL,
+    sms_intransit_template character varying,
     enable_sms_intransit boolean DEFAULT false
 );
 
@@ -831,8 +832,8 @@ CREATE TABLE public.stops (
     status_updated_at timestamp without time zone,
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     loads jsonb DEFAULT '{}'::jsonb NOT NULL,
-    out_of_skill boolean,
     store_id integer,
+    out_of_skill boolean,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -3144,16 +3145,16 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250314130549'),
 ('20250321085637'),
 ('20250325123806'),
+('20250403081545'),
+('20250408114821'),
 ('20250417055812'),
 ('20250417075753'),
-('20250408114821'),
-('20250403081545'),
 ('20250424060314'),
 ('20250428094719'),
 ('20250515082225'),
+('20250521075418'),
 ('20250527114419'),
 ('20250527121446'),
-('20250521075418'),
 ('20250609093623'),
 ('20250609122139'),
 ('20250609124605'),

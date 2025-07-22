@@ -108,7 +108,7 @@ class StoresController < ApplicationController
   def import_template
     respond_to do |format|
       format.excel do
-        send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
+        send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
             type: 'text/csv',
             filename: format_filename('import_template.csv')
       end

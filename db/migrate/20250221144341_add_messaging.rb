@@ -27,12 +27,12 @@ class AddMessaging < ActiveRecord::Migration[6.1]
   end
 
   def down
-    add_column :resellers, :sms_api_key
-    add_column :resellers, :sms_api_secret
+    add_column :resellers, :sms_api_key, :string
+    add_column :resellers, :sms_api_secret, :string
 
     Reseller.all.each { |reseller|
-      reseller.sms_api_key = reseller.messagings['vonage']['api_key']
-      reseller.sms_api_secret = reseller.messagings['vonage']['api_secret']
+      reseller.sms_api_key = reseller.messagings.dig('vonage', 'api_key')
+      reseller.sms_api_secret = reseller.messagings.dig('vonage', 'api_secret')
       reseller.save!
     }
 
