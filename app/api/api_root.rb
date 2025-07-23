@@ -25,7 +25,7 @@ class ApiRootDef < Grape::API
     logger.formatter = ENV['LOG_FORMAT'] == 'json' ? GrapeLogging::Formatters::Json.new : GrapeLogging::Formatters::Default.new
     insert_before Grape::Middleware::Error, GrapeLogging::Middleware::RequestLogger, logger: logger, include: [
       GrapeLogging::Loggers::FilterParameters.new,
-      GrapeLogging::Loggers::ClientEnv.new,
+      GrapeLogging::Loggers::ClientEnv.new
     ]
   end
 

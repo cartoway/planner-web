@@ -15,22 +15,13 @@ Metrics/MethodLength:
 Metrics/AbcSize:
   Enabled: false
 
-Style/AsciiComments:
-  Enabled: false
-
 Metrics/PerceivedComplexity:
   Enabled: false
 
 Metrics/CyclomaticComplexity:
   Enabled: false
 
-Layout/ParameterAlignment:
-  Enabled: false
-
 Style/DoubleNegation:
-  Enabled: false
-
-Style/TrailingCommaInArrayLiteral:
   Enabled: false
 
 Style/TrailingCommaInHashLiteral:
