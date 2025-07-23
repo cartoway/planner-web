@@ -848,9 +848,9 @@ class ImporterDestinations < ImporterBase
       if destination
         ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
         visit = if row[:ref_visit] || @nil_visit_available[ref_planning][row[:ref]]
-          # If nil_visit available retrieve the first visit of the destination with a nil ref_visit
-          @nil_visit_available[ref_planning][row[:ref]] = false
-          @existing_visits_by_ref[row[:ref]][row[:ref_visit]]
+                  # If nil_visit available retrieve the first visit of the destination with a nil ref_visit
+                  @nil_visit_available[ref_planning][row[:ref]] = false
+                  @existing_visits_by_ref[row[:ref]][row[:ref_visit]]
         end
         @destinations_visits_attributes_by_ref[destination.ref] ||= Hash.new
         visit_attributes.merge!(destination_id: destination.id)

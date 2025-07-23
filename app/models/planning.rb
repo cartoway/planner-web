@@ -767,10 +767,10 @@ class Planning < ApplicationRecord
           else
             if DeviceBase.is_fleet_hash?(s)
               attr = if DeviceBase.is_arrival?(s)
-                {
-                  arrival_eta: s[:eta],
-                  arrival_status: s[:status]
-                }
+                       {
+                         arrival_eta: s[:eta],
+                         arrival_status: s[:status]
+                       }
               else
                 {
                   departure_eta: s[:eta],

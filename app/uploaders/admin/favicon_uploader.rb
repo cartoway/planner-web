@@ -23,6 +23,6 @@ class Admin::FaviconUploader < CarrierWave::Uploader::Base
   end
 
   def extension_white_list
-     %w(ico png)
+    %w(ico png)
   end
 end

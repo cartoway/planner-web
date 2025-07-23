@@ -25,8 +25,8 @@ class ApiWeb::V01::ZonesController < ApiWeb::V01::ApiWebController
   def index
     @customer = current_user.customer
     @zones = if params.key?(:ids)
-      ids = params[:ids].split(',')
-      @zoning.zones.select{ |zone| ids.include?(zone.id.to_s) }
+               ids = params[:ids].split(',')
+               @zoning.zones.select{ |zone| ids.include?(zone.id.to_s) }
     else
       @zoning.zones
     end
@@ -41,7 +41,7 @@ class ApiWeb::V01::ZonesController < ApiWeb::V01::ApiWebController
       @stores = current_user.customer.stores.where(ParseIdsRefs.where(Store, params[:store_ids].split(',')))
     end
     @vehicle_usage_set = if params[:vehicle_usage_set_id]
-       current_user.customer.vehicle_usage_sets.find(params[:vehicle_usage_set_id])
+                           current_user.customer.vehicle_usage_sets.find(params[:vehicle_usage_set_id])
     elsif params[:planning_id]
       current_user.customer.plannings.find(params[:planning_id]).vehicle_usage_set
     elsif current_user.customer.vehicle_usage_sets.size == 1

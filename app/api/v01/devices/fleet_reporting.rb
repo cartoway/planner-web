@@ -49,9 +49,9 @@ class V01::Devices::FleetReporting < Grape::API
         end
         get do
           if params[:end_date] < params[:begin_date]
-              error!(I18n.t('reporting.download.end_date_inferior'), 400)
+            error!(I18n.t('reporting.download.end_date_inferior'), 400)
           elsif (params[:end_date] - params[:begin_date]).to_i > SharedParams::MAX_DAYS
-              error!(I18n.t('reporting.download.max_interval_reached'), 400)
+            error!(I18n.t('reporting.download.max_interval_reached'), 400)
           else
             service.reporting(params) || status(204)
           end

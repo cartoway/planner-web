@@ -176,7 +176,7 @@ class ImporterVehicleUsageSets < ImporterBase
 
     # For each vehicle, create vehicle and vehicle usage
     vehicle = if !row[:ref_vehicle].nil? && !row[:ref_vehicle].strip.empty? && @vehicles_by_ref[row[:ref_vehicle].strip]
-      @vehicles_by_ref[row[:ref_vehicle].strip]
+                @vehicles_by_ref[row[:ref_vehicle].strip]
     else
       @vehicles_without_ref.shift
     end

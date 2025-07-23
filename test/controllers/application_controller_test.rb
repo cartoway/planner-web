@@ -55,9 +55,9 @@ class ApplicationControllerTest < ActionController::TestCase
   end
 
   test 'should rescue server error' do
-      ApplicationController.stub_any_instance(:api_key?, lambda { |*a| raise ActionController::InvalidAuthenticityToken.new }) do
-        get :index, params: { format: :json }
-        assert_response :internal_server_error
-      end
+    ApplicationController.stub_any_instance(:api_key?, lambda { |*a| raise ActionController::InvalidAuthenticityToken.new }) do
+      get :index, params: { format: :json }
+      assert_response :internal_server_error
+    end
   end
 end

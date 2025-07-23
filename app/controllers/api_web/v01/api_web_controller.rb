@@ -25,7 +25,7 @@ class ApiWeb::V01::ApiWebController < ApplicationController
   private
 
   def skip_trackable
-   request.env['devise.skip_trackable'] = true
+    request.env['devise.skip_trackable'] = true
   end
 
   def allow_iframe

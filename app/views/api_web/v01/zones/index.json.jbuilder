@@ -3,7 +3,7 @@ if @vehicle_usage_set
   vehicle_usages = @zones.select(&:vehicle).collect{ |zone| vehicle_vehicle_usages[zone.vehicle] }
 end
 stores = if @stores
-  @stores
+           @stores
 elsif vehicle_usages
   (vehicle_usages.collect(&:default_store_start) + vehicle_usages.collect(&:default_store_stop) + vehicle_usages.collect(&:default_store_rest)).compact.uniq
 else

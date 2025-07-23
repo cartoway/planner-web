@@ -32,7 +32,7 @@ class DestinationsController < ApplicationController
   def index
     @customer = current_user.customer
     @destinations = if request.format.html? || !@customer.is_editable?
-      current_user.customer.destinations.reorder(Arel.sql("CASE WHEN lat IS NULL THEN 0 ELSE 1 END, geocoding_accuracy ASC NULLS LAST")).includes([:tags])
+                      current_user.customer.destinations.reorder(Arel.sql("CASE WHEN lat IS NULL THEN 0 ELSE 1 END, geocoding_accuracy ASC NULLS LAST")).includes([:tags])
     else
       current_user.customer.destinations.reorder(Arel.sql("CASE WHEN lat IS NULL THEN 0 ELSE 1 END, geocoding_accuracy ASC NULLS LAST")).includes_visits
     end
