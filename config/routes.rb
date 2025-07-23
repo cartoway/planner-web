@@ -72,7 +72,7 @@ Rails.application.routes.draw do
   end
 
   # get 'zonings/:zoning_id/edit' => 'zonings_api_web#edit', :as => 'edit_zoning'
-      # patch 'zonings/:zoning_id/edit' => 'zonings_api_web#update'
+  # patch 'zonings/:zoning_id/edit' => 'zonings_api_web#update'
 
   resources :tags
   delete 'tags' => 'tags#destroy_multiple'

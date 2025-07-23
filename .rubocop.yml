@@ -1,9 +1,12 @@
 inherit_from: .rubocop_todo.yml
 
-Metrics/LineLength:
+AllCops:
+  NewCops: enable
+
+Layout/LineLength:
   Enabled: false
 
-Style/SpaceBeforeBlockBraces:
+Layout/SpaceBeforeBlockBraces:
   Enabled: false
 
 Metrics/MethodLength:
@@ -39,7 +42,7 @@ Style/TrailingCommaInArguments:
 Style/MultilineBlockChain:
   Enabled: false
 
-Style/SpaceInsideHashLiteralBraces:
+Layout/SpaceInsideHashLiteralBraces:
   Enabled: false
 
 Style/NegatedIf:
@@ -51,16 +54,13 @@ Layout/FirstHashElementIndentation:
 Style/NumericLiterals:
   Enabled: false
 
-Style/LeadingCommentSpace:
+Layout/LeadingCommentSpace:
   Enabled: false
 
 Style/SignalException:
   Enabled: false
 
 Style/IfUnlessModifier:
-  Enabled: false
-
-Style/CommentIndentation:
   Enabled: false
 
 Layout/FirstArrayElementIndentation:
@@ -72,13 +72,13 @@ Style/ClassAndModuleChildren:
 Metrics/ClassLength:
   Enabled: false
 
-Style/IndentationWidth:
+Layout/IndentationWidth:
   Enabled: false
 
-Lint/EndAlignment:
+Layout/EndAlignment:
   Enabled: false
 
-Style/ElseAlignment:
+Layout/ElseAlignment:
   Enabled: false
 
 Style/BlockDelimiters:

@@ -32,7 +32,7 @@ class Route < ApplicationRecord
 
   nilify_blanks
   validates :planning, presence: true
-#  validates :vehicle_usage, presence: true # nil on unplanned route
+  #  validates :vehicle_usage, presence: true # nil on unplanned route
   validate :stop_index_validation
   attr_accessor :no_stop_index_validation, :vehicle_color_changed
 
