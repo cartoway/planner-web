@@ -20,7 +20,7 @@ require 'html_validation'
 
 require "minitest/reporters"
 Minitest::Reporters.use! [
-  Minitest::Reporters::ProgressReporter.new,
+  Minitest::Reporters::ProgressReporter.new
   #Minitest::Reporters::HtmlReporter.new # create html reporte with many more informations
 ]
 
