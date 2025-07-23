@@ -168,12 +168,14 @@ class OptimizerWrapper
   def build_configuration(**options)
     service_ratio = options[:moving_stop_ids]&.any? && options[:service_count].to_i > 0 ? options[:moving_stop_ids].size.to_f / options[:service_count] : 1
     service_ratio = [service_ratio, 0.2].max
-    optim_duration_min = if options[:optimize_minimal_time]
-                           (service_ratio * options[:optimize_minimal_time] * options[:vehicle_count] * 1000).to_i
-    end
-    optim_duration_max = if options[:optimize_time]
-                           (service_ratio * options[:optimize_time] * options[:vehicle_count]).to_i
-    end
+    optim_duration_min =
+      if options[:optimize_minimal_time]
+        (service_ratio * options[:optimize_minimal_time] * options[:vehicle_count] * 1000).to_i
+      end
+    optim_duration_max =
+      if options[:optimize_time]
+        (service_ratio * options[:optimize_time] * options[:vehicle_count]).to_i
+      end
     {
       preprocessing: {
         max_split_size: options[:max_split_size],

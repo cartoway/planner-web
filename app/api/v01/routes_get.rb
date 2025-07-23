@@ -57,13 +57,14 @@ class V01::RoutesGet < Grape::API
       optional :quantities, type: Boolean, default: false, desc: 'Include the quantities when using geojson output.'
     end
     get do
-      routes = if params.key?(:ids)
-                 current_customer.plannings.flat_map(&:routes).select{ |route|
-                   params[:ids].any?{ |s| ParseIdsRefs.match(s, route) }
-                 }
-      else
-        current_customer.plannings.flat_map{ |p| p.routes.includes_vehicle_usages.load }
-      end
+      routes =
+        if params.key?(:ids)
+          current_customer.plannings.flat_map(&:routes).select{ |route|
+            params[:ids].any?{ |s| ParseIdsRefs.match(s, route) }
+          }
+        else
+          current_customer.plannings.flat_map{ |p| p.routes.includes_vehicle_usages.load }
+        end
       present_routes routes, params
     end
   end
@@ -87,13 +88,14 @@ class V01::RoutesGet < Grape::API
         end
         get do
           planning_id = ParseIdsRefs.read(params[:planning_id])
-          routes = if params.key?(:ids)
-                     current_customer.plannings.where(planning_id).first!.routes.select{ |route|
-                       params[:ids].any?{ |s| ParseIdsRefs.match(s, route) }
-                     }
-          else
-            current_customer.plannings.where(planning_id).first!.routes.includes_vehicle_usages.load
-          end
+          routes =
+            if params.key?(:ids)
+              current_customer.plannings.where(planning_id).first!.routes.select{ |route|
+                params[:ids].any?{ |s| ParseIdsRefs.match(s, route) }
+              }
+            else
+              current_customer.plannings.where(planning_id).first!.routes.includes_vehicle_usages.load
+            end
           present_routes routes, params
         end
 

@@ -766,17 +766,18 @@ class Planning < ApplicationRecord
             true
           else
             if DeviceBase.is_fleet_hash?(s)
-              attr = if DeviceBase.is_arrival?(s)
-                       {
-                         arrival_eta: s[:eta],
-                         arrival_status: s[:status]
-                       }
-              else
-                {
-                  departure_eta: s[:eta],
-                  departure_status: s[:status]
-                }
-              end
+              attr =
+                if DeviceBase.is_arrival?(s)
+                  {
+                    arrival_eta: s[:eta],
+                    arrival_status: s[:status]
+                  }
+                else
+                  {
+                    departure_eta: s[:eta],
+                    departure_status: s[:status]
+                  }
+                end
               route = routes.select { |r| r.id == s[:route_id].to_i }.first
               route && route.update(attr)
             end

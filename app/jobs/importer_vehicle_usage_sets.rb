@@ -175,11 +175,12 @@ class ImporterVehicleUsageSets < ImporterBase
     [:tags, :tags_vehicle].each{ |key| prepare_tags(row, key) }
 
     # For each vehicle, create vehicle and vehicle usage
-    vehicle = if !row[:ref_vehicle].nil? && !row[:ref_vehicle].strip.empty? && @vehicles_by_ref[row[:ref_vehicle].strip]
-                @vehicles_by_ref[row[:ref_vehicle].strip]
-    else
-      @vehicles_without_ref.shift
-    end
+    vehicle =
+      if !row[:ref_vehicle].nil? && !row[:ref_vehicle].strip.empty? && @vehicles_by_ref[row[:ref_vehicle].strip]
+        @vehicles_by_ref[row[:ref_vehicle].strip]
+      else
+        @vehicles_without_ref.shift
+      end
 
     if options[:replace_vehicles]
       vehicle_attributes = row.slice(*columns_vehicle.keys, :capacities, :custom_attributes)

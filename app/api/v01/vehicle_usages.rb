@@ -46,11 +46,12 @@ class V01::VehicleUsages < Grape::API
         end
         get do
           vehicle_usage_set = current_customer.vehicle_usage_sets.where(id: params[:vehicle_usage_set_id]).first
-          vehicle_usages = if vehicle_usage_set && params.key?(:ids)
-                             vehicle_usage_set.vehicle_usages.select{ |vehicle_usage| params[:ids].include?(vehicle_usage.id) }
-          else
-            vehicle_usage_set.vehicle_usages.load
-          end
+          vehicle_usages =
+            if vehicle_usage_set && params.key?(:ids)
+              vehicle_usage_set.vehicle_usages.select{ |vehicle_usage| params[:ids].include?(vehicle_usage.id) }
+            else
+              vehicle_usage_set.vehicle_usages.load
+            end
           if vehicle_usage_set && vehicle_usages
             present vehicle_usages, with: V01::Entities::VehicleUsageWithVehicle
           else

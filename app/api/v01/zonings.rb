@@ -46,11 +46,12 @@ class V01::Zonings < Grape::API
       optional :ids, type: Array[Integer], desc: 'Select returned zonings by id.', coerce_with: CoerceArrayInteger
     end
     get do
-      zonings = if params.key?(:ids)
-                  current_customer.zonings.select{ |zoning| params[:ids].include?(zoning.id) }
-      else
-        current_customer.zonings.load
-      end
+      zonings =
+        if params.key?(:ids)
+          current_customer.zonings.select{ |zoning| params[:ids].include?(zoning.id) }
+        else
+          current_customer.zonings.load
+        end
       present zonings, with: V01::Entities::Zoning
     end
 
@@ -183,12 +184,13 @@ class V01::Zonings < Grape::API
     patch ':id/isochrone' do
       Zoning.transaction do
         zoning = current_customer.zonings.where(id: params[:id]).first!
-        vehicle_usage_set = if params.key?(:vehicle_usage_set_id)
-                              vehicle_usage_set_id = Integer(params[:vehicle_usage_set_id])
-                              current_customer.vehicle_usage_sets.to_a.find{ |vehicle_usage_set| vehicle_usage_set.id == vehicle_usage_set_id }
-        else
-          current_customer.vehicle_usage_sets[0]
-        end
+        vehicle_usage_set =
+          if params.key?(:vehicle_usage_set_id)
+            vehicle_usage_set_id = Integer(params[:vehicle_usage_set_id])
+            current_customer.vehicle_usage_sets.to_a.find{ |vehicle_usage_set| vehicle_usage_set.id == vehicle_usage_set_id }
+          else
+            current_customer.vehicle_usage_sets[0]
+          end
         size = Integer(params[:size])
         if vehicle_usage_set
           zoning.isochrones(size, vehicle_usage_set, params[:departure_date])
@@ -246,12 +248,13 @@ class V01::Zonings < Grape::API
     patch ':id/isodistance' do
       Zoning.transaction do
         zoning = current_customer.zonings.where(id: params[:id]).first!
-        vehicle_usage_set = if params.key?(:vehicle_usage_set_id)
-                              vehicle_usage_set_id = Integer(params[:vehicle_usage_set_id])
-                              current_customer.vehicle_usage_sets.to_a.find{ |vehicle_usage_set| vehicle_usage_set.id == vehicle_usage_set_id }
-        else
-          current_customer.vehicle_usage_sets[0]
-        end
+        vehicle_usage_set =
+          if params.key?(:vehicle_usage_set_id)
+            vehicle_usage_set_id = Integer(params[:vehicle_usage_set_id])
+            current_customer.vehicle_usage_sets.to_a.find{ |vehicle_usage_set| vehicle_usage_set.id == vehicle_usage_set_id }
+          else
+            current_customer.vehicle_usage_sets[0]
+          end
         size = Integer(params[:size])
         if vehicle_usage_set
           zoning.prefered_unit = @current_user.prefered_unit

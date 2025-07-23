@@ -66,14 +66,14 @@ class V01::Destinations < Grape::API
     end
 
     def present_geojson_destinations(params)
-      destinations = if params.key?(:ids)
-                       ids = params[:ids].split(',')
-        current_customer.destinations.includes_visits.select{ |destination|
-          params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
-        }
-      else
-        current_customer.destinations.includes_visits
-      end
+      destinations =
+        if params.key?(:ids)
+          current_customer.destinations.includes_visits.select{ |destination|
+            params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
+          }
+        else
+          current_customer.destinations.includes_visits
+        end
       '{"type":"FeatureCollection","features":[' + destinations.select(&:position?).map { |d|
         feat = {
           type: 'Feature',
@@ -137,13 +137,14 @@ class V01::Destinations < Grape::API
       if env['api.format'] == :geojson
         present_geojson_destinations params
       else
-        destinations = if params.key?(:ids)
-                         current_customer.destinations.includes_visits.select{ |destination|
-                           params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
-                         }
-        else
-          current_customer.destinations.includes_visits.load
-        end
+        destinations =
+          if params.key?(:ids)
+            current_customer.destinations.includes_visits.select{ |destination|
+              params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
+            }
+          else
+            current_customer.destinations.includes_visits.load
+          end
         present destinations, with: V01::Entities::Destination
       end
     end
@@ -228,16 +229,17 @@ class V01::Destinations < Grape::API
         end
         params[:planning].delete(:zoning_ids)
       end
-      import = if params[:destinations]
-                 # FIXME ImportJSON has its own conversion methods. It should be done at the API level
-                 ImportJson.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], json: import_destination_params)
-      elsif params[:remote]
-        case params[:remote]
-        when :tomtom then ImportTomtom.new(importer: ImporterDestinations.new(current_customer, params[:planning]), customer: current_customer, replace: params[:replace])
+      import =
+        if params[:destinations]
+          # FIXME ImportJSON has its own conversion methods. It should be done at the API level
+          ImportJson.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], json: import_destination_params)
+        elsif params[:remote]
+          case params[:remote]
+          when :tomtom then ImportTomtom.new(importer: ImporterDestinations.new(current_customer, params[:planning]), customer: current_customer, replace: params[:replace])
+          end
+        else
+          ImportCsv.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], file: params[:file])
         end
-      else
-        ImportCsv.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], file: params[:file])
-      end
 
       if import && import.valid? && (destinations = import.import(true))
         case params[:remote]

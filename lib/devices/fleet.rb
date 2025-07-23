@@ -453,12 +453,13 @@ class Fleet < DeviceBase
   end
 
   def generate_mission_id(stop, date)
-    order_id = if stop.is_a?(StopVisit)
-                 ref = [stop.visit.ref, stop.ref].compact.join('-')
-                 (ref.blank? ? '' : ref + '-') + "v#{stop.visit_id}"
-    else
-      "r#{stop.id}"
-    end
+    order_id =
+      if stop.is_a?(StopVisit)
+        ref = [stop.visit.ref, stop.ref].compact.join('-')
+        (ref.blank? ? '' : ref + '-') + "v#{stop.visit_id}"
+      else
+        "r#{stop.id}"
+      end
     "mission-#{order_id}-#{date.strftime('%Y_%m_%d')}-#{stop.route.id}"
   end
 

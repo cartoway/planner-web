@@ -864,7 +864,7 @@ Lint/Void:
 # Configuration parameters: CountComments, CountAsOne, AllowedMethods, AllowedPatterns.
 # AllowedMethods: refine
 Metrics/BlockLength:
-  Max: 336
+  Max: 350
 
 # Offense count: 32
 # Configuration parameters: CountBlocks, CountModifierForms.

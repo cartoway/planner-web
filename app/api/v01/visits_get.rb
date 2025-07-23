@@ -37,13 +37,14 @@ class V01::VisitsGet < Grape::API
       optional :quantities, type: Boolean, default: false, desc: 'Include the quantities when using geojson output.'
     end
     get do
-      visits = if params.key?(:ids)
-                 current_customer.visits.select{ |visit|
-                   params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
-                 }
-      else
-        current_customer.visits
-      end
+      visits =
+        if params.key?(:ids)
+          current_customer.visits.select{ |visit|
+            params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
+          }
+        else
+          current_customer.visits
+        end
       if env['api.format'] == :geojson
         '{"type":"FeatureCollection","features":[' + visits.map { |visit|
           if visit.destination.position?
