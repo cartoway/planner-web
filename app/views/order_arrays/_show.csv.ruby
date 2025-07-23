@@ -4,7 +4,7 @@ if params[:planning_id]
 end
 header += [
     I18n.t('order_arrays.export_file.name'),
-    I18n.t('order_arrays.export_file.comment'),
+    I18n.t('order_arrays.export_file.comment')
 ] + @order_array.days.times.collect { |i|
   l @order_array.base_date + i
 } + @order_array.customer.products.collect(&:code) + [
@@ -22,7 +22,7 @@ sum_column = Hash.new { |h,k| h[k] = {} }
   end
   line += [
     visit_orders[0].visit.destination.name,
-    visit_orders[0].visit.destination.comment,
+    visit_orders[0].visit.destination.comment
   ] + visit_orders.collect { |order|
     order.products.each { |product|
       sum_column[order.shift][product] = (sum_column[order.shift][product] || 0) + 1
@@ -44,7 +44,7 @@ shift = 0
 @order_array.customer.products.each { |product|
   csv << [
     product.code,
-    product.name,
+    product.name
   ] + @order_array.days.times.collect { |i|
     total_column[i] = sum_column[i][product] ? (total_column[i] || 0) + sum_column[i][product] : total_column[i]
     grand_total[product] += sum_column[i][product] || 0
@@ -55,7 +55,7 @@ shift = 0
 
 csv << [
   I18n.t('order_arrays.export_file.total'),
-  nil,
+  nil
 ] + @order_array.days.times.collect { |i|
   total_column[i]
 } + [nil] * @order_array.customer.products.size + [grand_total.values.sum]

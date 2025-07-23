@@ -728,7 +728,7 @@ class PlanningsController < ApplicationController
       :street,
       :detail,
       :postalcode,
-      :city,
+      :city
     ] + ((@customer || @planning.customer).with_state? ? [:state] : []) + [
       :country,
       :lat,
@@ -786,7 +786,7 @@ class PlanningsController < ApplicationController
       :cost_fixed,
       :cost_time,
       :revenue,
-      :tags,
+      :tags
     ] + (
       (@customer || @planning.customer).enable_orders ?
         [:orders] :

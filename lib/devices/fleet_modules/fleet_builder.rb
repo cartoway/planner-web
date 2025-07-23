@@ -68,7 +68,7 @@ module FleetBuilder
           lon: stop.lng
         },
         comment: is_visit ? [
-          stop.comment,
+          stop.comment
           # stop.priority ? I18n.t('activerecord.attributes.visit.priority') + I18n.t('text.separator') + stop.priority_text : nil,
           # labels.present? ? I18n.t('activerecord.attributes.visit.tags') + I18n.t('text.separator') + labels : nil,
         ].compact.join("\r\n\r\n").strip : nil,
