@@ -81,7 +81,7 @@ class V01::PlanningsGet < Grape::API
 
       plannings = plannings.select{ |plan| params[:ids].any?{ |s| ParseIdsRefs.match(s, plan) } } if params.key?(:ids)
       if env['api.format'] == :ics
-        if params.key?(:email) && YAML.load(params[:email])
+        if params.key?(:email) && YAML.safe_load(params[:email])
           planning_ids = plannings.map(&:id)
           emails_routes = get_format_routes_email(planning_ids)
           route_calendar_email(emails_routes)
