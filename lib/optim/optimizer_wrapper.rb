@@ -275,7 +275,7 @@ class OptimizerWrapper
               # For the optimization setup duration starts before the time window start
               start: stop.time_window_start_2 && (stop.time_window_start_2 + stop.destination_duration),
               end: stop.time_window_end_2 && (stop.time_window_end_2 + extra_time)
-            },
+            }
           ].compact,
           duration: stop.duration,
           setup_duration: stop.destination_duration
