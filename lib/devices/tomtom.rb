@@ -196,7 +196,7 @@ class Tomtom < DeviceBase
             stop.time_window_start_2 || stop.time_window_end_2 ? (stop.time_window_start_2 ? stop.time_window_start_2_time + number_of_days(stop.time_window_start_2) : '') + (stop.time_window_start_2 && stop.time_window_end_2 ? '-' : '') + (stop.time_window_end_2 ? (stop.time_window_end_2_time + number_of_days(stop.time_window_end_2) || '') : '') : nil,
             stop.detail,
             stop.comment,
-            stop.phone_number,
+            stop.phone_number
           ].compact.join(' ').strip
           send_destination_order customer, route, position, (stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), description, stop.time
         end
