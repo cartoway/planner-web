@@ -722,6 +722,8 @@ en:
       deadlock: >-
         Failed to update data. Another update was realized simultaneously, you
         may have performed several operations too fast or multiple times.
+      locked:
+        resource_locked_with_id: An object %{klass} with id %{id} is being modified, please try again later.
     management:
       title: An error occurred
       description: The page you want to access raised an error

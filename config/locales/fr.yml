@@ -730,6 +730,8 @@ fr:
       deadlock: >-
         Une autre mise à jour a été effectuée en simultané, vous avez peut-être
         réalisé plusieurs opérations trop rapidement ou plusieurs fois.
+      locked:
+        resource_locked_with_id: Un objet %{klass} avec l'identifiant %{id} est en cours de modification, réessayez plus tard.
     management:
       title: Impossible d'accèder à la page
       description: La page que vous essayez d'atteindre a provoqué une erreur
