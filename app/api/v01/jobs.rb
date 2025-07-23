@@ -45,7 +45,7 @@ class V01::Jobs < Grape::API
       jobs = [
         current_customer.job_optimizer,
         current_customer.job_destination_geocoding,
-        current_customer.job_store_geocoding,
+        current_customer.job_store_geocoding
       ].compact # .select{ |job| job.failed_at.nil? }
       present jobs, with: V01::Entities::Job
     end
