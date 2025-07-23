@@ -41,11 +41,12 @@ class V01::VehicleUsageSets < Grape::API
       optional :ids, type: Array[Integer], desc: 'Select returned vehicle_usage_sets by id.', coerce_with: CoerceArrayInteger
     end
     get do
-      vehicle_usage_sets = if params.key?(:ids)
-                             current_customer.vehicle_usage_sets.select{ |vehicle_usage_set| params[:ids].include?(vehicle_usage_set.id) }
-      else
-        current_customer.vehicle_usage_sets.load
-      end
+      vehicle_usage_sets =
+        if params.key?(:ids)
+          current_customer.vehicle_usage_sets.select{ |vehicle_usage_set| params[:ids].include?(vehicle_usage_set.id) }
+        else
+          current_customer.vehicle_usage_sets.load
+        end
       present vehicle_usage_sets, with: V01::Entities::VehicleUsageSet
     end
 

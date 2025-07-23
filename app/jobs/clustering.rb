@@ -94,13 +94,14 @@ class Clustering
       points = borders.collect{ |i|
         factory.point(i[0], i[1])
       }
-      concave_hull = if points.size == 1
-                       points[0]
-      elsif points.size == 2
-        factory.line_string(points)
-      else
-        factory.polygon(factory.linear_ring(points))
-      end
+      concave_hull =
+        if points.size == 1
+          points[0]
+        elsif points.size == 2
+          factory.line_string(points)
+        else
+          factory.polygon(factory.linear_ring(points))
+        end
 
       convex_hull = own_multi_point.convex_hull
 

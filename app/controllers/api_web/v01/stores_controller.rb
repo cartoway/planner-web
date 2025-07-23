@@ -22,19 +22,20 @@ class ApiWeb::V01::StoresController < ApiWeb::V01::ApiWebController
 
   def index
     @customer = current_user.customer
-    @stores = if params.key?(:ids)
-                ids = params[:ids].split(',')
-                current_user.customer.stores.where(ParseIdsRefs.where(Store, ids))
-    else
-      respond_to do |format|
-        format.html do
-          nil
-        end
-        format.json do
-          current_user.customer.stores.load
+    @stores =
+      if params.key?(:ids)
+        ids = params[:ids].split(',')
+        current_user.customer.stores.where(ParseIdsRefs.where(Store, ids))
+      else
+        respond_to do |format|
+          format.html do
+            nil
+          end
+          format.json do
+            current_user.customer.stores.load
+          end
         end
       end
-    end
     @tags = current_user.customer.tags
     @method = request.method_symbol
   end
