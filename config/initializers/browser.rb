@@ -5,7 +5,7 @@ def modern_browser?(browser)
     browser.firefox?(">= 52"),
     browser.edge?(">= 16"),
     browser.opera?(">= 50"),
-    browser.facebook? && browser.safari_webapp_mode? && browser.webkit_full_version.to_i >= 602,
+    browser.facebook? && browser.safari_webapp_mode? && browser.webkit_full_version.to_i >= 602
   ].any?
 end
 
