@@ -47,7 +47,7 @@ class V01::Zonings < Grape::API
     end
     get do
       zonings = if params.key?(:ids)
-        current_customer.zonings.select{ |zoning| params[:ids].include?(zoning.id) }
+                  current_customer.zonings.select{ |zoning| params[:ids].include?(zoning.id) }
       else
         current_customer.zonings.load
       end
@@ -184,8 +184,8 @@ class V01::Zonings < Grape::API
       Zoning.transaction do
         zoning = current_customer.zonings.where(id: params[:id]).first!
         vehicle_usage_set = if params.key?(:vehicle_usage_set_id)
-          vehicle_usage_set_id = Integer(params[:vehicle_usage_set_id])
-          current_customer.vehicle_usage_sets.to_a.find{ |vehicle_usage_set| vehicle_usage_set.id == vehicle_usage_set_id }
+                              vehicle_usage_set_id = Integer(params[:vehicle_usage_set_id])
+                              current_customer.vehicle_usage_sets.to_a.find{ |vehicle_usage_set| vehicle_usage_set.id == vehicle_usage_set_id }
         else
           current_customer.vehicle_usage_sets[0]
         end
@@ -247,8 +247,8 @@ class V01::Zonings < Grape::API
       Zoning.transaction do
         zoning = current_customer.zonings.where(id: params[:id]).first!
         vehicle_usage_set = if params.key?(:vehicle_usage_set_id)
-          vehicle_usage_set_id = Integer(params[:vehicle_usage_set_id])
-          current_customer.vehicle_usage_sets.to_a.find{ |vehicle_usage_set| vehicle_usage_set.id == vehicle_usage_set_id }
+                              vehicle_usage_set_id = Integer(params[:vehicle_usage_set_id])
+                              current_customer.vehicle_usage_sets.to_a.find{ |vehicle_usage_set| vehicle_usage_set.id == vehicle_usage_set_id }
         else
           current_customer.vehicle_usage_sets[0]
         end

@@ -70,10 +70,10 @@ class V100::Routes < Grape::API
 
             unless moving_stops.empty?
               begin
-              Planning.transaction do
-                Optimizer.optimize(planning, route, { insertion_only: true, moving_stop_ids: moving_stops.map(&:id) })
-                current_customer.save!
-              end
+                Planning.transaction do
+                  Optimizer.optimize(planning, route, { insertion_only: true, moving_stop_ids: moving_stops.map(&:id) })
+                  current_customer.save!
+                end
               rescue VRPNoSolutionError
                 error! V100::Status.code_response(:code_304), 304
               end

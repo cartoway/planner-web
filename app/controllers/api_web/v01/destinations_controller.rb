@@ -25,8 +25,8 @@ class ApiWeb::V01::DestinationsController < ApiWeb::V01::ApiWebController
   def index
     @customer = current_user.customer
     @destinations = if params.key?(:ids)
-      ids = params[:ids].split(',')
-      current_user.customer.destinations.where(ParseIdsRefs.where(Destination, ids)).includes_visits
+                      ids = params[:ids].split(',')
+                      current_user.customer.destinations.where(ParseIdsRefs.where(Destination, ids)).includes_visits
     else
       respond_to do |format|
         format.html do

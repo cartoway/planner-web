@@ -38,9 +38,9 @@ class V01::VisitsGet < Grape::API
     end
     get do
       visits = if params.key?(:ids)
-        current_customer.visits.select{ |visit|
-          params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
-        }
+                 current_customer.visits.select{ |visit|
+                   params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
+                 }
       else
         current_customer.visits
       end

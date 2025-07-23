@@ -73,9 +73,9 @@ class V01::Visits < Grape::API
         get do
           destination_id = ParseIdsRefs.read(params[:destination_id])
           visits = if params.key?(:ids)
-            current_customer.destinations.includes_visits.where(destination_id).first!.visits.select{ |visit|
-              params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
-            }
+                     current_customer.destinations.includes_visits.where(destination_id).first!.visits.select{ |visit|
+                       params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
+                     }
           else
             current_customer.destinations.includes_visits.where(destination_id).first!.visits.load
           end

@@ -96,9 +96,9 @@ class V01::Vehicles < Grape::API
     end
     get do
       vehicles = if params.key?(:ids)
-        current_customer.vehicles.select{ |vehicle|
-          params[:ids].any?{ |s| ParseIdsRefs.match(s, vehicle) }
-        }
+                   current_customer.vehicles.select{ |vehicle|
+                     params[:ids].any?{ |s| ParseIdsRefs.match(s, vehicle) }
+                   }
       else
         current_customer.vehicles.load
       end

@@ -23,8 +23,8 @@ class ApiWeb::V01::StoresController < ApiWeb::V01::ApiWebController
   def index
     @customer = current_user.customer
     @stores = if params.key?(:ids)
-      ids = params[:ids].split(',')
-      current_user.customer.stores.where(ParseIdsRefs.where(Store, ids))
+                ids = params[:ids].split(',')
+                current_user.customer.stores.where(ParseIdsRefs.where(Store, ids))
     else
       respond_to do |format|
         format.html do

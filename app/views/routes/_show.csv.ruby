@@ -144,10 +144,10 @@ route.stops.each { |stop|
     row.merge!(Hash[route.planning.customer.enable_orders ?
       [[:orders, stop.is_a?(StopVisit) && stop.order && stop.order.products.length > 0 ? stop.order.products.collect(&:code).join('/') : nil]] :
       route.planning.customer.deliverable_units.flat_map{ |du|
-          [
-            [('pickup' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.pickups[du.id] : nil],
-            [('delivery' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.deliveries[du.id] : nil]
-          ]
+        [
+          [('pickup' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.pickups[du.id] : nil],
+          [('delivery' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.deliveries[du.id] : nil]
+        ]
       }
     ])
     row.merge!(

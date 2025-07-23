@@ -362,15 +362,15 @@ class CustomerTest < ActiveSupport::TestCase
   end
 
   test 'should clear all destinations and outdate routes' do
-      # TODO: activate code when without_loading can be called inside another without_loading with options
-      # without_loading Stop, if: -> (stop) { o = !stop.is_a?(StopRest); } do
-      without_loading Visit do
-        assert_difference('Stop.count', -6) do
-          assert_difference('Visit.count', -4) do
-            @customer.delete_all_destinations
-          end
+    # TODO: activate code when without_loading can be called inside another without_loading with options
+    # without_loading Stop, if: -> (stop) { o = !stop.is_a?(StopRest); } do
+    without_loading Visit do
+      assert_difference('Stop.count', -6) do
+        assert_difference('Visit.count', -4) do
+          @customer.delete_all_destinations
         end
       end
+    end
     # end
     assert plannings(:planning_one).routes.all? { |r| r.outdated }
   end

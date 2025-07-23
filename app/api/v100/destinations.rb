@@ -69,15 +69,15 @@ class V100::Destinations < Grape::API
         present_geojson_destinations params
       else
         destinations =  if params[:visits]
-          current_customer.destinations.includes_visits
+                          current_customer.destinations.includes_visits
         else
           current_customer.destinations
         end
 
         destinations = if params.key?(:ids)
-          destinations.select{ |destination|
-            params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
-          }
+                         destinations.select{ |destination|
+                           params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
+                         }
         else
           destinations.load
         end

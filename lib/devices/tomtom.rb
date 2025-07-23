@@ -221,22 +221,22 @@ class Tomtom < DeviceBase
           route.vehicle_usage.default_store_stop.name
         ]] : []
       waypoints = route.stops.select(&:active).collect{ |stop|
-          position = stop if stop.position?
-          if position.nil? || position.lat.nil? || position.lng.nil?
-            next
-          end
-          [
-            position.lat,
-            position.lng,
-            stop.is_a?(StopVisit) ? (customer.enable_orders ? (stop.order ? stop.order.products.collect(&:code).join(',') : '') : customer.deliverable_units.map{ |du| stop.visit.default_quantities[du.id] && "x#{stop.visit.default_quantities[du.id]}#{du.label}" }.compact.join(' ')) : nil,
-            stop.name,
-            stop.comment,
-            stop.phone_number
-          ]
+        position = stop if stop.position?
+        if position.nil? || position.lat.nil? || position.lng.nil?
+          next
+        end
+        [
+          position.lat,
+          position.lng,
+          stop.is_a?(StopVisit) ? (customer.enable_orders ? (stop.order ? stop.order.products.collect(&:code).join(',') : '') : customer.deliverable_units.map{ |du| stop.visit.default_quantities[du.id] && "x#{stop.visit.default_quantities[du.id]}#{du.label}" }.compact.join(' ')) : nil,
+          stop.name,
+          stop.comment,
+          stop.phone_number
+        ]
       }
       waypoints = (waypoint_start + waypoints.compact + waypoint_stop).map{ |l|
-          description = l[2..-1].compact.join(' ').strip
-          {lat: l[0], lng: l[1], description: description}
+        description = l[2..-1].compact.join(' ').strip
+        {lat: l[0], lng: l[1], description: description}
       }
       position = route.vehicle_usage.default_store_stop if route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.position?
       description = route.ref || (waypoints[-1] && waypoints[-1][:description]) || "#{waypoints[-1][:lat]} #{waypoints[-1][:lng]}"

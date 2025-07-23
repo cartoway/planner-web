@@ -78,36 +78,36 @@ class Trimble < DeviceBase
         route.vehicle_usage.default_store_stop.name
       ]] : []
     tasks = route.stops.select(&:active).collect{ |stop|
-        position = stop if stop.position?
-        if position.nil? || position.lat.nil? || position.lng.nil?
-          next
-        end
-        [
-          position.lat,
-          position.lng,
-          stop.is_a?(StopVisit) ? (route.planning.customer.enable_orders ? (stop.order ? stop.order.products.collect(&:code).join(',') : '') : route.planning.customer.deliverable_units.map{ |du| stop.visit.default_quantities[du.id] && "x#{stop.visit.default_quantities[du.id]}#{du.label}" }.compact.join(' ')) : nil,
-          stop.name,
-          stop.comment,
-          stop.phone_number
-        ]
+      position = stop if stop.position?
+      if position.nil? || position.lat.nil? || position.lng.nil?
+        next
+      end
+      [
+        position.lat,
+        position.lng,
+        stop.is_a?(StopVisit) ? (route.planning.customer.enable_orders ? (stop.order ? stop.order.products.collect(&:code).join(',') : '') : route.planning.customer.deliverable_units.map{ |du| stop.visit.default_quantities[du.id] && "x#{stop.visit.default_quantities[du.id]}#{du.label}" }.compact.join(' ')) : nil,
+        stop.name,
+        stop.comment,
+        stop.phone_number
+      ]
     }
     tasks = (task_start + tasks.compact + task_stop).each_with_index.map{ |v, k|
-        description = v[2..-1].compact.join(' ').strip
-        {
-          id: "r#{route.id}_#{k}",
-          name: v[3],
-          description: description,
-          contact: {
-            phone: v[5],
-            coordinate: {latitude: v[0], longitude: v[1]}
-          }.compact,
-          activity: {
-            id: "r#{route.id}_#{k}_0",
-            # MAPO_1 = Collecte / Chargement
-            # MAPO_2 = Déchargement
-            type: 'MAPO_2'
-          }
+      description = v[2..-1].compact.join(' ').strip
+      {
+        id: "r#{route.id}_#{k}",
+        name: v[3],
+        description: description,
+        contact: {
+          phone: v[5],
+          coordinate: {latitude: v[0], longitude: v[1]}
+        }.compact,
+        activity: {
+          id: "r#{route.id}_#{k}_0",
+          # MAPO_1 = Collecte / Chargement
+          # MAPO_2 = Déchargement
+          type: 'MAPO_2'
         }
+      }
     }
 
     params = {

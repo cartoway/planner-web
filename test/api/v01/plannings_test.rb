@@ -32,7 +32,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
             routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i| [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map(&:id)] }
           ).to_h
         }) do
-         yield
+          yield
         end
       end
     end

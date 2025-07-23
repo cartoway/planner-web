@@ -44,12 +44,12 @@ CSV.generate(**{col_sep: ';', row_sep: "\r\n"}) { |csv|
 
   device_keys = {}
   Planner::Application.config.devices.to_h.each { |device_name, device_object|
-      if device_object.respond_to?('definition')
-        device_definition = device_object.definition
-        if device_definition.key?(:forms) && device_definition[:forms].key?(:vehicle)
-          device_keys[device_name] = device_definition[:forms][:vehicle].keys
-        end
+    if device_object.respond_to?('definition')
+      device_definition = device_object.definition
+      if device_definition.key?(:forms) && device_definition[:forms].key?(:vehicle)
+        device_keys[device_name] = device_definition[:forms][:vehicle].keys
       end
+    end
   }
 
   @vehicle_usage_set.vehicle_usages.each { |vehicle_usage|

@@ -805,24 +805,24 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should not optimize one route on unprocessable entity' do
-      # without_loading Stop, if: -> (obj) { obj.route_id != routes(:route_one_one).id } do
-      Customer.stub_any_instance(:save!, lambda { |*a| false } ) do
-        get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
-        assert_valid response
-        assert_response :unprocessable_entity
-      end
+    # without_loading Stop, if: -> (obj) { obj.route_id != routes(:route_one_one).id } do
+    Customer.stub_any_instance(:save!, lambda { |*a| false } ) do
+      get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
+      assert_valid response
+      assert_response :unprocessable_entity
+    end
 
-      Planning.stub_any_instance(:optimize, lambda { |*a| raise VRPNoSolutionError } ) do
-        get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
-        assert_valid response
-        assert_response :unprocessable_entity
-      end
+    Planning.stub_any_instance(:optimize, lambda { |*a| raise VRPNoSolutionError } ) do
+      get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
+      assert_valid response
+      assert_response :unprocessable_entity
+    end
 
-      Planning.stub_any_instance(:optimize, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) } ) do
-        get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
-        assert_valid response
-        assert_response :unprocessable_entity
-      end
+    Planning.stub_any_instance(:optimize, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) } ) do
+      get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
+      assert_valid response
+      assert_response :unprocessable_entity
+    end
     # end
   end
 

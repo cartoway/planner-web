@@ -231,7 +231,7 @@ class V01::Stores < Grape::API
   put :import_vehicle_stores do
 
     import = if params[:stores]
-      ImportJson.new(importer: ImporterVehicleStores.new(current_customer), replace: params[:replace], json: params[:stores])
+               ImportJson.new(importer: ImporterVehicleStores.new(current_customer), replace: params[:replace], json: params[:stores])
     else
       ImportCsv.new(importer: ImporterVehicleStores.new(current_customer), replace: params[:replace], file: params[:file])
     end

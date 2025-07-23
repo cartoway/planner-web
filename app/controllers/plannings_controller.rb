@@ -58,20 +58,21 @@ class PlanningsController < ApplicationController
   def show
     @params = params
     @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
-    @routes = if params[:route_ids]
-      route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
-      @with_stops = true
-      @planning.routes.where(id: route_ids).includes_destinations_and_stores.includes_vehicle_usages
-    else
-      stops_count = 0
-      if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
+    @routes =
+      if params[:route_ids]
+        route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
         @with_stops = true
-        @planning.routes.available.includes_destinations_and_stores.includes_vehicle_usages
+        @planning.routes.where(id: route_ids).includes_destinations_and_stores.includes_vehicle_usages
       else
-        @with_stops = false
-        @planning.routes.available.includes_vehicle_usages
+        stops_count = 0
+        if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
+          @with_stops = true
+          @planning.routes.available.includes_destinations_and_stores.includes_vehicle_usages
+        else
+          @with_stops = false
+          @planning.routes.available.includes_vehicle_usages
+        end
       end
-    end
     respond_to do |format|
       format.html
       format.json do
