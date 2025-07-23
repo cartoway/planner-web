@@ -22,12 +22,12 @@ class ApiV100 < Grape::API
     array_use_braces: true,
     consumes: [
       'application/json; charset=UTF-8',
-      'application/xml',
+      'application/xml'
     ],
     produces: [
       'application/json; charset=UTF-8',
       'application/vnd.geo+json; charset=UTF-8',
-      'application/xml',
+      'application/xml'
     ],
     doc_version: '100.0.0',
     security_definitions: {
