@@ -33,7 +33,7 @@ class ConcaveHullTest < ActionController::TestCase
   <path d='#{svg_hull}' style='stroke-width:1px;stroke:red;fill:none' />
   <path d='#{points}' style='stroke-width:1px;stroke:#000;fill:none' />
 </svg>"
-#    puts svg
+    #    puts svg
   end
 
   test 'should compute specific hull with two points having same x' do
