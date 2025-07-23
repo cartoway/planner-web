@@ -186,15 +186,15 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
   end
 
-#  test 'should set stop status' do
-#    patch api("#{@planning.id}/update_stop")
-#    assert last_response.ok?, last_response.body
-#  end
+  #  test 'should set stop status' do
+  #    patch api("#{@planning.id}/update_stop")
+  #    assert last_response.ok?, last_response.body
+  #  end
 
-#  test 'should starts asynchronous route optimization' do
-#    get api("#{@planning.id}/optimize_route")
-#    assert last_response.ok?, last_response.body
-#  end
+  #  test 'should starts asynchronous route optimization' do
+  #    get api("#{@planning.id}/optimize_route")
+  #    assert last_response.ok?, last_response.body
+  #  end
 
   test 'should change stops activation' do
     [:during_optimization, nil].each do |mode|
