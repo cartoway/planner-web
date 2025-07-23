@@ -53,7 +53,7 @@ class ImagesController < ApplicationController
   private
 
   def range(x)
-    x < 0 ? 0 : x > 1 ? 1 : x
+    x.clamp(0, 1)
   end
 
   def pal(hex)
