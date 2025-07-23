@@ -90,9 +90,9 @@ class ActiveSupport::TestCase
   end
 
   def assert_valid(response)
-#    html_validation = PageValidations::HTMLValidation.new
-#    validation = html_validation.validation(response.body, response.to_s)
-#    assert validation.valid?, validation.exceptions
+    #    html_validation = PageValidations::HTMLValidation.new
+    #    validation = html_validation.validation(response.body, response.to_s)
+    #    assert validation.valid?, validation.exceptions
   end
 
   def without_loading(klass, options = {})
@@ -163,7 +163,7 @@ if ENV['BENCHMARK'] == 'true'
   require 'webdrivers/chromedriver'
   BENCHMARK_CPU_RATE = cpu_rate 17000
 
-# Browser testing configuration
+  # Browser testing configuration
   class ActionDispatch::IntegrationTest
 
     self.use_transactional_fixtures = false
