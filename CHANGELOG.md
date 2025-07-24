@@ -13,6 +13,7 @@
   - Routes:
     - Add stores to scopes [#435](https://github.com/cartoway/planner-web/pull/435)
     - Ensure compute_saved! is in a transaction [#435](https://github.com/cartoway/planner-web/pull/435)
+  - Update rubocop rules [#440](https://github.com/cartoway/planner-web/pull/440)
 
   ### Removed
 
