@@ -21,10 +21,7 @@ module LinkBack
       if referer_uri && params['back']
         session[:link_back] = referer_uri.path
       elsif referer_uri && referer_params && referer_params['back']
-        # Clear link_back if we're coming from a page with back=true to prevent infinite loops
-        session.delete(:link_back)
-      elsif !(referer_uri && referer_params && referer_params['back'])
-        # Clear link_back if we're not coming from a page with back=true
+        # Clear link_back
         session.delete(:link_back)
       end
     end
