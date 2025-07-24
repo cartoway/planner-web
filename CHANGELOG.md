@@ -2,8 +2,11 @@
 
 ## Dev
   ### Added
+    - Customer: Allow to order and filter the solvers to use [#422](https://github.com/cartoway/planner-web/pull/422)
+    - Admin: Store the solver used and the ones skipped (with reasons) on the job info [#422](https://github.com/cartoway/planner-web/pull/422)
 
   ### Changed
+    - Export: Rework visually the columns selector [#422](https://github.com/cartoway/planner-web/pull/422)
 
   ### Removed
 
