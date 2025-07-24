@@ -5,6 +5,7 @@
   - Customer: Allow to order and filter the solvers to use [#422](https://github.com/cartoway/planner-web/pull/422)
   - Planning: Introduce a lasso to select multiple stops on the fly [#424](https://github.com/cartoway/planner-web/pull/424)
   - Admin: Store the solver used and the ones skipped (with reasons) on the job info [#422](https://github.com/cartoway/planner-web/pull/422)
+  - Implement `with_locks_on` to prevent concurrent modifications of records being processed by another process [#439](https://github.com/cartoway/planner-web/pull/439)
 
   ### Changed
   - Export: Rework visually the columns selector [#422](https://github.com/cartoway/planner-web/pull/422)

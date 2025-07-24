@@ -16,8 +16,11 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 require 'exceptions'
+require 'locking_utils'
 
 class V01::Api < Grape::API
+  helpers LockingUtils
+
   helpers do
     def session
       env[Rack::RACK_SESSION]

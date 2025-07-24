@@ -73,17 +73,20 @@ class V01::Plannings < Grape::API
     end
     put ':id' do
       planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-      planning.update! planning_params
+      routes = planning.routes
+      with_locks_on(planning, *routes) do
+        planning.update! planning_params
 
-      if params[:routes] && !params[:routes].empty?
-        param_routes = params[:routes].collect { |route| [route[:id], route.to_h.except(:id)] }.to_h
-        routes = planning.routes.select{ |r| param_routes.include? r.id }
-        routes.each do |route|
-          route.update!(param_routes[route.id])
+        if params[:routes] && !params[:routes].empty?
+          param_routes = params[:routes].collect { |route| [route[:id], route.to_h.except(:id)] }.to_h
+          routes = planning.routes.select{ |r| param_routes.include? r.id }
+          routes.each do |route|
+            route.update!(param_routes[route.id])
+          end
         end
-      end
 
-      present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
+        present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
+      end
     end
 
     desc 'Delete planning.',
@@ -128,8 +131,10 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     patch ':id/refresh' do
-      Route.includes_destinations_and_stores.scoping do
-        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+      planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).preload_route_details.first!
+      routes = planning.routes
+      stops = routes.flat_map(&:stops)
+      with_locks_on(planning, *routes, *stops) do
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
         planning.compute_saved
@@ -158,7 +163,9 @@ class V01::Plannings < Grape::API
 
         route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
         vehicle_usage = planning.vehicle_usage_set.vehicle_usages.find(params[:vehicle_usage_id])
-        Planning.transaction do
+        vehicle_usage_route = planning.routes.find{ |route| route.vehicle_usage_id == vehicle_usage.id }
+
+        with_locks_on(planning, route, vehicle_usage_route) do
           if route && vehicle_usage && planning.switch(route, vehicle_usage) && planning.save! && planning.compute && planning.save!
             if params[:details] || params[:with_details]
               present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
@@ -191,8 +198,8 @@ class V01::Plannings < Grape::API
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
         stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
-        begin
-          Planning.transaction do
+        with_locks_on(planning, *stops) do
+          begin
             stops.each do |stop|
               planning.automatic_insert(stop,
                 max_time: params[:max_time],
@@ -202,9 +209,9 @@ class V01::Plannings < Grape::API
             end
             planning.compute_saved
             status 204
+          rescue Exceptions::LoopError => e
+            error! V01::Status.code_response(:code_400), 400
           end
-        rescue Exceptions::LoopError => e
-          error! V01::Status.code_response(:code_400), 400
         end
       end
     end
@@ -222,25 +229,20 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     get ':id/apply_zonings' do
-      returned_planning = nil
+      planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+      routes = Route.where(planning_id: planning.id).to_a
+      stops = Stop.where(route_id: routes.map(&:id)).to_a
 
-      Planning.transaction do
-        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).lock(true).first!
-
-        routes = Route.where(planning_id: planning.id).lock(true).to_a
-
-        Stop.where(route_id: routes.map(&:id)).lock(true).to_a
-
-        planning_with_associations = Planning.where(id: planning.id).preload_route_details.first!
-
+      with_locks_on(planning, *routes, *stops) do
         raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
-        planning_with_associations.zoning_outdated = true
-        planning_with_associations.split_by_zones(nil)
-        planning_with_associations.compute_saved!
+
+        planning.zoning_outdated = true
+        planning.split_by_zones(nil)
+        planning.compute_saved!
       end
 
       if params[:details] || params[:with_details]
-        present returned_planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
+        present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
       else
         status 204
       end
@@ -268,18 +270,22 @@ class V01::Plannings < Grape::API
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         raise Exceptions::JobInProgressError if planning.customer.job_optimizer
 
-        begin
-          Optimizer.optimize(planning, nil, { global: params[:global], synchronous: params[:synchronous], active_only: params[:all_stops].nil? ? params[:active_only] : !params[:all_stops], ignore_overload_multipliers: params[:ignore_overload_multipliers] })
-          current_customer.save!
-        rescue VRPNoSolutionError
-          error! V01::Status.code_response(:code_304), 304
-        end
-        if params[:synchronous] && (params[:details] || params[:with_details])
-          present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
-        elsif planning.customer.job_optimizer
-          present planning.customer.job_optimizer, with: V01::Entities::Job
-        else
-          status 204
+        routes = planning.routes
+        stops = routes.flat_map(&:stops)
+        with_locks_on(planning, *routes, *stops) do
+          begin
+            Optimizer.optimize(planning, nil, { global: params[:global], synchronous: params[:synchronous], active_only: params[:all_stops].nil? ? params[:active_only] : !params[:all_stops], ignore_overload_multipliers: params[:ignore_overload_multipliers] })
+            current_customer.save!
+          rescue VRPNoSolutionError
+            error! V01::Status.code_response(:code_304), 304
+          end
+          if params[:synchronous] && (params[:details] || params[:with_details])
+            present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
+          elsif planning.customer.job_optimizer
+            present planning.customer.job_optimizer, with: V01::Entities::Job
+          else
+            status 204
+          end
         end
       rescue Exceptions::JobInProgressError
         status 409
