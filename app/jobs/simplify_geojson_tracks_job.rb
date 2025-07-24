@@ -1,33 +1,49 @@
 SimplifyGeojsonTracksJobStruct ||= Job.new(:customer_id, :route_id)
 class SimplifyGeojsonTracksJob < SimplifyGeojsonTracksJobStruct
   def perform
-    route = Route.find(route_id)
-    return if route.geojson_tracks.blank?
+    begin
+      Route.where(id: route_id).lock('FOR UPDATE NOWAIT').pluck(:id)
 
-    simplified_tracks = route.geojson_tracks.map do |geojson_track|
-      feature = JSON.parse(geojson_track)
-      encoded_polyline = feature['geometry']['polylines']
-
-      sql = "SELECT ST_AsEncodedPolyline(
-        ST_SimplifyPreserveTopology(
-          CASE
-            WHEN ST_NPoints(ST_LineFromEncodedPolyline('#{encoded_polyline}')) = 1
-            THEN ST_MakeLine(
-              ST_StartPoint(ST_LineFromEncodedPolyline('#{encoded_polyline}')),
-              ST_StartPoint(ST_LineFromEncodedPolyline('#{encoded_polyline}'))
+      sql = <<~SQL
+        UPDATE routes
+        SET geojson_tracks = (
+          SELECT array_agg(
+            (
+              to_jsonb(
+                jsonb_set(
+                  track::jsonb,
+                  '{geometry,polylines}',
+                  to_jsonb(
+                    (
+                      SELECT ST_AsEncodedPolyline(
+                        ST_SimplifyPreserveTopology(
+                          CASE
+                            WHEN ST_NPoints(ST_LineFromEncodedPolyline((track::jsonb->'geometry'->>'polylines')::text)) = 1
+                            THEN ST_MakeLine(
+                              ST_StartPoint(ST_LineFromEncodedPolyline((track::jsonb->'geometry'->>'polylines')::text)),
+                              ST_StartPoint(ST_LineFromEncodedPolyline((track::jsonb->'geometry'->>'polylines')::text))
+                            )
+                            ELSE ST_LineFromEncodedPolyline((track::jsonb->'geometry'->>'polylines')::text)
+                          END,
+                          0.000001
+                        )
+                      )
+                    )
+                  )
+                )
+              )::text
             )
-            ELSE ST_LineFromEncodedPolyline('#{encoded_polyline}')
-          END,
-          0.000001
+          )
+          FROM unnest(routes.geojson_tracks) AS track
         )
-      )"
+        WHERE id = #{route_id}
+          AND geojson_tracks IS NOT NULL
+          AND array_length(geojson_tracks, 1) > 0
+      SQL
 
-      result = ActiveRecord::Base.connection.execute(sql).first
-
-      feature['geometry']['polylines'] = result['st_asencodedpolyline']
-      feature.to_json
+      ActiveRecord::Base.connection.exec_update(sql, "Simplify #{route_id}")
+    rescue ActiveRecord::LockWaitTimeout, ActiveRecord::StatementInvalid
+      # Simplifying is unnecessary if the route is locked as it is about to change
     end
-
-    route.update_column(:geojson_tracks, simplified_tracks)
   end
 end
