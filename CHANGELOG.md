@@ -1,5 +1,14 @@
 # Changelog
 
+## Dev
+  ### Added
+
+  ### Changed
+
+  ### Removed
+
+  ### Fixed
+
 ## V106.0.0
   ### Added
   - Destinations: Add a duration by destination [#361](https://github.com/cartoway/planner-web/pull/361)
