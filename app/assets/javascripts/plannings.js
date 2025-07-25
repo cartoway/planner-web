@@ -177,7 +177,6 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
     var spreadsheetStops = $('.spreadsheet-stops:checked').map(function(i, e) {
       return $(e).val();
     }).get().join('|');
-    // Récupération via la nouvelle structure
     var spreadsheetColumnsExport = $('#spreadsheet-columns-container .active-zone .item-list .draggable-item').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
