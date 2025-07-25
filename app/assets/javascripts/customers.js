@@ -270,12 +270,6 @@ const customers_edit = function (params) {
   $("#customer_enable_optimization_soft_upper_bound").click(function() {
     $("#optimization_soft_upper_bound").toggleClass('d-none');
   });
-
-  // Initialize solver priority drag & drop when DOM is ready
-  $(document).ready(function() {
-    // The solver priority drag & drop is now handled by the generic ActiveInactiveDragDrop component
-    // See app/assets/javascripts/active_inactive_drag_drop.js
-  });
 };
 
 var routersAllowedForProfile = function(params) {
