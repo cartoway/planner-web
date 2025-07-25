@@ -368,15 +368,16 @@ function initializeDragDrop(containerId, type = 'generic', options = {}) {
   return new ActiveInactiveDragDrop(containerId, { ...defaultOptions, ...options });
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize when Turbolinks loads
+document.addEventListener('turbolinks:load', function() {
   // Auto-initialize common patterns
   const containers = document.querySelectorAll('[data-drag-drop]');
   containers.forEach(container => {
+    if (container._dragDropInstance) return;
     const type = container.dataset.dragDrop;
     const options = container.dataset.dragDropOptions ?
       JSON.parse(container.dataset.dragDropOptions) : {};
 
-    initializeDragDrop(container.id, type, options);
+    container._dragDropInstance = initializeDragDrop(container.id, type, options);
   });
 });
