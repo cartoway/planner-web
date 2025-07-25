@@ -561,8 +561,8 @@ class PlanningsController < ApplicationController
               }
             end
           end
-          # save! is used to rollback all the transaction with associations
-          if @planning.compute && @planning.save!
+
+          if @planning.compute_saved!
             format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
