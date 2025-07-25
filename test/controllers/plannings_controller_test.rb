@@ -852,7 +852,7 @@ class PlanningsControllerTest < ActionController::TestCase
       assert_response :unprocessable_entity
     end
 
-    Planning.stub_any_instance(:save!, lambda { |*a| false }) do
+    Planning.stub_any_instance(:compute_saved!, lambda { |*a| false }) do
       patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
       assert_response :unprocessable_entity
     end
