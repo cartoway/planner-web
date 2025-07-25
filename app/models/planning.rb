@@ -284,19 +284,20 @@ class Planning < ApplicationRecord
   def compute_saved!(options = {})
     jobs_to_enqueue = []
 
-    if ActiveRecord::Base.connection.transaction_open?
-      compute_within_existing_transaction(options, jobs_to_enqueue)
-    else
-      Planning.transaction do
+    result =
+      if ActiveRecord::Base.connection.transaction_open?
         compute_within_existing_transaction(options, jobs_to_enqueue)
+      else
+        Planning.transaction do
+          compute_within_existing_transaction(options, jobs_to_enqueue)
+        end
       end
-    end
 
     jobs_to_enqueue.each do |job|
       Delayed::Job.enqueue(job)
     end
 
-    true
+    !!result
   end
 
   def precompute_traces(all_segments, options = {})
