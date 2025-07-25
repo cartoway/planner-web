@@ -364,13 +364,13 @@ class CustomerTest < ActiveSupport::TestCase
   test 'should clear all destinations and outdate routes' do
     # TODO: activate code when without_loading can be called inside another without_loading with options
     # without_loading Stop, if: -> (stop) { o = !stop.is_a?(StopRest); } do
-      without_loading Visit do
-        assert_difference('Stop.count', -6) do
-          assert_difference('Visit.count', -4) do
-            @customer.delete_all_destinations
-          end
+    without_loading Visit do
+      assert_difference('Stop.count', -6) do
+        assert_difference('Visit.count', -4) do
+          @customer.delete_all_destinations
         end
       end
+    end
     # end
     assert plannings(:planning_one).routes.all? { |r| r.outdated }
   end
@@ -490,5 +490,29 @@ class CustomerTest < ActiveSupport::TestCase
     }
     assert @customer.update advanced_options: options
     assert_equal options, @customer.advanced_options
+  end
+
+  test 'should handle solver_priority in advanced_options' do
+    customer = customers(:customer_one)
+
+    # Test setting solver priority
+    customer.solver_priority = ['pyvrp', 'vroom', 'ortools']
+    customer.save!
+
+    # Test reading solver priority
+    customer.reload
+    assert_equal ['pyvrp', 'vroom', 'ortools'], customer.solver_priority
+
+    # Test empty solver priority
+    customer.solver_priority = []
+    customer.save!
+    customer.reload
+    assert_equal [], customer.solver_priority
+
+    # Test nil solver priority
+    customer.solver_priority = nil
+    customer.save!
+    customer.reload
+    assert_nil customer.solver_priority
   end
 end

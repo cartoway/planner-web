@@ -63,7 +63,7 @@ class V01::VehicleUsagesTest < ActiveSupport::TestCase
 
     tags_str = tags(:tag_one).id.to_s + ',' + tags(:tag_two).id.to_s
 
-      #tag_ids can be string coma separated or array of integer
+    #tag_ids can be string coma separated or array of integer
     [
       [tags(:tag_one).id, tags(:tag_two).id],
       tags_str

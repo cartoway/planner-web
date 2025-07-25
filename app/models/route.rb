@@ -32,7 +32,7 @@ class Route < ApplicationRecord
 
   nilify_blanks
   validates :planning, presence: true
-#  validates :vehicle_usage, presence: true # nil on unplanned route
+  #  validates :vehicle_usage, presence: true # nil on unplanned route
   validate :stop_index_validation
   attr_accessor :no_stop_index_validation, :vehicle_color_changed
 
@@ -65,7 +65,29 @@ class Route < ApplicationRecord
   }
   scope :includes_stops, -> { includes(:stops) }
   # The second visit is for counting the visit index from all the visits of the destination
-  scope :includes_destinations, -> { includes(stops: {visit: [:relation_currents, :relation_successors, :tags, destination: [:tags, :visits, { customer: :deliverable_units }]]}) }
+  scope :includes_destinations_and_stores, -> {
+    includes(
+      stops: [
+        {
+          visit: [
+            :relation_currents,
+            :relation_successors,
+            :tags,
+            destination: [
+              :tags,
+              :visits,
+              { customer: :deliverable_units }
+            ]
+          ]
+        },
+        {
+          store: [
+            :customer
+          ]
+        }
+      ]
+    )
+  }
   scope :includes_deliverable_units, -> { includes(vehicle_usage: [:vehicle_usage_set, vehicle: [customer: :deliverable_units]]) }
   scope :stop_visits, -> { includes(:stops).where(type: StopVisit.name) }
 
@@ -874,7 +896,8 @@ class Route < ApplicationRecord
           number: vehicle_usage? ? stop.number(inactive_stops) : nil,
           color: stop.default_color,
           icon: stop.icon,
-          icon_size: stop.icon_size
+          icon_size: stop.icon_size,
+          stop_id: stop.id
         }
       }
 
@@ -1005,7 +1028,7 @@ class Route < ApplicationRecord
   end
 
   def preload_compute_scopes
-    Route.where(id: self.id).includes_vehicle_usages.includes_destinations.first
+    Route.where(id: self.id).includes_vehicle_usages.includes_destinations_and_stores.first
   end
 
   def import_attributes

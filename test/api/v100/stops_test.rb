@@ -18,14 +18,14 @@ class V100::StopsTest < ActiveSupport::TestCase
   def around
     Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 60, '_ibE_seK_seK_seK'] } } ) do
       OptimizerWrapper.stub_any_instance(:optimize, lambda { |planning, routes, options|
-          # Put all the stops on the first available route with a vehicle
-          returned_stops = routes.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
-          first_route = routes.find{ |r| r.vehicle_usage? }
-          first_route_rests = first_route.stops.select{ |stop| stop.is_a?(StopRest) }.compact
-          (
-            routes.select{ |r| !r.vehicle_usage? }.map{ |r| [r.id, []] } +
-            routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i| [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map(&:id) + options[:moving_stop_ids]] }.uniq
-          ).to_h
+        # Put all the stops on the first available route with a vehicle
+        returned_stops = routes.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
+        first_route = routes.find{ |r| r.vehicle_usage? }
+        first_route_rests = first_route.stops.select{ |stop| stop.is_a?(StopRest) }.compact
+        (
+          routes.select{ |r| !r.vehicle_usage? }.map{ |r| [r.id, []] } +
+          routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i| [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map(&:id) + options[:moving_stop_ids]] }.uniq
+        ).to_h
       }) do
         yield
       end

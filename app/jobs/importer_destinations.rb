@@ -93,7 +93,7 @@ class ImporterDestinations < ImporterBase
       [
         ["quantity#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.quantity_desc'), format: I18n.t('destinations.import_file.format.float')}],
         ["pickup#{du.id}".to_sym, {title: I18n.t('destinations.import_file.pickup') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.pickup_desc'), format: I18n.t('destinations.import_file.format.float')}],
-        ["delivery#{du.id}".to_sym, {title: I18n.t('destinations.import_file.delivery') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.delivery_desc'), format: I18n.t('destinations.import_file.format.float')}],
+        ["delivery#{du.id}".to_sym, {title: I18n.t('destinations.import_file.delivery') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.delivery_desc'), format: I18n.t('destinations.import_file.format.float')}]
       ]
     }]).merge(Hash[@customer.custom_attributes.for_visit.map { |ca|
     ["custom_attributes_visit[#{ca.name}]", { title: "#{I18n.t('destinations.import_file.custom_attributes_visit')}[#{ca.name}]", format: I18n.t("destinations.import_file.format.#{ca.object_type}")}]
@@ -423,6 +423,8 @@ class ImporterDestinations < ImporterBase
       prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
       destination_attributes
     elsif is_store?(row[:stop_type])
+      return nil unless @customer.enable_store_stops
+
       store_attributes = build_store_attributes(row)
       prepare_store(row, line, store_attributes)
       prepare_store_in_planning(row, line, store_attributes)
@@ -845,11 +847,12 @@ class ImporterDestinations < ImporterBase
     if row[:without_visit].nil? || row[:without_visit].strip.empty?
       if destination
         ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
-        visit = if row[:ref_visit] || @nil_visit_available[ref_planning][row[:ref]]
-          # If nil_visit available retrieve the first visit of the destination with a nil ref_visit
-          @nil_visit_available[ref_planning][row[:ref]] = false
-          @existing_visits_by_ref[row[:ref]][row[:ref_visit]]
-        end
+        visit =
+          if row[:ref_visit] || @nil_visit_available[ref_planning][row[:ref]]
+            # If nil_visit available retrieve the first visit of the destination with a nil ref_visit
+            @nil_visit_available[ref_planning][row[:ref]] = false
+            @existing_visits_by_ref[row[:ref]][row[:ref_visit]]
+          end
         @destinations_visits_attributes_by_ref[destination.ref] ||= Hash.new
         visit_attributes.merge!(destination_id: destination.id)
         if visit
@@ -893,6 +896,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_store_in_planning(row, line, store_attributes)
+    return if !@customer.enable_store_stops
     if store_attributes
       ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
       if row.key?(:route) && store_attributes[:id].nil?
@@ -972,7 +976,7 @@ class ImporterDestinations < ImporterBase
 
           attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
         }
-        visits = Visit.includes_destinations.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
+        visits = Visit.includes_destinations_and_stores.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
 
         store_ids = v[:visits].map{ |type, attribute, _active|
           next unless type == :store

@@ -45,7 +45,7 @@ class V01::Jobs < Grape::API
       jobs = [
         current_customer.job_optimizer,
         current_customer.job_destination_geocoding,
-        current_customer.job_store_geocoding,
+        current_customer.job_store_geocoding
       ].compact # .select{ |job| job.failed_at.nil? }
       present jobs, with: V01::Entities::Job
     end
@@ -60,7 +60,7 @@ class V01::Jobs < Grape::API
     get ':id' do
       customer = current_customer
       job = if customer.job_optimizer && customer.job_optimizer_id == params[:id]
-        customer.job_optimizer
+              customer.job_optimizer
       elsif customer.job_destination_geocoding && customer.job_destination_geocoding_id == params[:id]
         customer.job_destination_geocoding
       elsif customer.job_store_geocoding && customer.job_store_geocoding_id == params[:id]

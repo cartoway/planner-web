@@ -31,10 +31,10 @@ class ApiWeb::V01::DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should get index in html' do
-      get :index, params: { format: :html }
-      assert_response :success
-      assert_nil assigns(:destinations)
-      assert_valid response
+    get :index, params: { format: :html }
+    assert_response :success
+    assert_nil assigns(:destinations)
+    assert_valid response
   end
 
   test 'should get index in json' do

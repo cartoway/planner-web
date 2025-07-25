@@ -20,7 +20,7 @@ feature :planning do
 
     assert_equal 'P', find_field('planning[name]').value
     within(:css, '.select2-choices') do
-        assert_text('tag1')
+      assert_text('tag1')
     end
 
     first('.route')

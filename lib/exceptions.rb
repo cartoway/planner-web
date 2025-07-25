@@ -108,10 +108,10 @@ module Exceptions
     def push_uniq_record(new_record, key)
       valid = true
       @nested_hash_error[key].each_with_index do |element, index|
-          next unless element[:id] == new_record[:id]
-          valid = false
-          @nested_hash_error[key][index][:nested_attr] = new_record[:nested_attr] # Update value if needed
-          break
+        next unless element[:id] == new_record[:id]
+        valid = false
+        @nested_hash_error[key][index][:nested_attr] = new_record[:nested_attr] # Update value if needed
+        break
       end
       @nested_hash_error[key].push(new_record) if valid
     end

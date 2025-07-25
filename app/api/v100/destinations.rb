@@ -29,7 +29,7 @@ class V100::Destinations < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         get ':id/candidate_insert' do
-          planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
+          planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).preload_route_details.first!
           raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
           destination = current_customer.destinations.where(ParseIdsRefs.read(params[:id])).first!
@@ -68,19 +68,21 @@ class V100::Destinations < Grape::API
       if env['api.format'] == :geojson
         present_geojson_destinations params
       else
-        destinations =  if params[:visits]
-          current_customer.destinations.includes_visits
-        else
-          current_customer.destinations
-        end
+        destinations =
+          if params[:visits]
+            current_customer.destinations.includes_visits
+          else
+            current_customer.destinations
+          end
 
-        destinations = if params.key?(:ids)
-          destinations.select{ |destination|
-            params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
-          }
-        else
-          destinations.load
-        end
+        destinations =
+          if params.key?(:ids)
+            destinations.select{ |destination|
+              params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
+            }
+          else
+            destinations.load
+          end
         if params[:visits]
           present destinations, with: V100::Entities::DestinationWithVisit
         else
