@@ -920,10 +920,6 @@ class Planning < ApplicationRecord
     end.flatten.compact
   end
 
-  def skills?
-    all_skills.any?
-  end
-
   def quantities
     Route.includes_deliverable_units.scoping do
       quantity_hash = {}
