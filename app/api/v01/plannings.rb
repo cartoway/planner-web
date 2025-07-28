@@ -52,13 +52,15 @@ class V01::Plannings < Grape::API
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     post do
-      planning = current_customer.plannings.build(planning_params)
-      planning.default_routes
-      raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if current_customer.too_many_plannings?
+      Planning.transaction do
+        raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if current_customer.too_many_plannings?
 
-      planning.save_import!
-      planning.compute_saved
-      present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
+        planning = current_customer.plannings.create!(planning_params)
+        planning.default_routes
+
+        planning.compute_saved
+        present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
+      end
     end
 
     desc 'Update planning.',
