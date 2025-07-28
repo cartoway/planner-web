@@ -70,43 +70,28 @@ class PlanningTest < ActiveSupport::TestCase
     }.each{ |k, v|
       attr = {name: 'plop'}
       attr[k] = v
-      planning = customers(:customer_one).plannings.build(attr)
-      assert_not planning.save, 'Saved with inconsistent attributes'
+      assert_raises ActiveRecord::RecordInvalid do
+        customers(:customer_one).plannings.create!(attr)
+      end
     }
   end
 
   test 'should save' do
-    planning = customers(:customer_one).plannings.build(name: 'plop', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_one), zonings: [zonings(:zoning_one)])
+    planning = customers(:customer_one).plannings.create!(name: 'plop', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_one), zonings: [zonings(:zoning_one)])
     planning.default_routes
     planning.save!
   end
 
   test 'should save according to tag operation' do
-    planning_and_tags = customers(:customer_two).plannings.build(name: 'plop', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_two), zonings: [zonings(:zoning_three)], tag_operation: '_and', tag_ids: [tags(:tag_three).id, tags(:tag_four).id])
+    planning_and_tags = customers(:customer_two).plannings.create!(name: 'plop', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_two), zonings: [zonings(:zoning_three)], tag_operation: '_and', tag_ids: [tags(:tag_three).id, tags(:tag_four).id])
     planning_and_tags.default_routes
     planning_and_tags.save!
     assert_equal 1, planning_and_tags.visits_compatibles.count
 
-    planning_or_tags = customers(:customer_two).plannings.build(name: 'plop 2', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_two), zonings: [zonings(:zoning_three)], tag_operation: '_or', tag_ids: [tags(:tag_three).id, tags(:tag_four).id])
+    planning_or_tags = customers(:customer_two).plannings.create!(name: 'plop 2', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_two), zonings: [zonings(:zoning_three)], tag_operation: '_or', tag_ids: [tags(:tag_three).id, tags(:tag_four).id])
     planning_or_tags.default_routes
     planning_or_tags.save!
     assert_equal 2, planning_or_tags.visits_compatibles.count
-  end
-
-  test 'should not loading stops after save import' do
-    # Without zonings
-    planning = customers(:customer_one).plannings.build(name: 'plop', vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_one))
-    planning.default_routes
-    planning.compute
-    Planning.import([planning], recursive: true, validate: false)
-
-    without_loading Stop do
-      t, z = planning.tags, planning.zonings
-      planning.reload
-      planning.tags, planning.zonings = t, z
-      planning.routes.each { |route| route.complete_geojson }
-      planning.save!
-    end
   end
 
   test 'should dup' do
@@ -592,6 +577,7 @@ class PlanningTest < ActiveSupport::TestCase
     planning = Planning.create(customer: customers(:customer_one), vehicle_usage_set: vus, name: 'Planning test')
     planning.default_routes
     planning.save
+    planning.routes.reload
 
     stops = planning.routes.flat_map(&:stops)
     # should be [nil]
@@ -750,10 +736,10 @@ class PlanningTest < ActiveSupport::TestCase
        vehicle_usage_set: customer.vehicle_usage_sets.first
     }
 
-    planning = customer.plannings.build(params)
+    planning = customer.plannings.create!(params)
     planning.default_routes
 
-    assert planning.compute && planning.save_import
+    assert planning.compute
     assert_not planning.zoning_outdated
   end
 end

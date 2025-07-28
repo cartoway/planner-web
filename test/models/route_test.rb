@@ -34,7 +34,7 @@ class RouteTest < ActiveSupport::TestCase
     route.planning.tags.clear
     route.stops.clear
     route.save!
-    assert_difference('Stop.count', Visit.joins(:destination).where(destinations: {customer_id: route.planning.customer_id}).count) do
+    assert_difference('Stop.count', Visit.joins(:destination).where(destinations: {customer_id: route.planning.customer_id}).count + (route.rest? ? 1 : 0)) do
       route.default_stops
       route.save!
     end

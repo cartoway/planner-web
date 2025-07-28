@@ -69,7 +69,7 @@ class VehicleUsage < ApplicationRecord
   scope :active, ->{ where(active: true) }
   scope :for_customer_id, ->(customer_id) { joins(:vehicle_usage_set).where(vehicle_usage_sets: { customer_id: customer_id }) }
   scope :with_stores, -> { includes(:store_start, :store_stop, :store_rest) }
-  scope :with_vehicle, -> { includes(vehicle: %i[customer router]) }
+  scope :with_vehicle, -> { includes(vehicle: %i[customer router tags], tags: []) }
 
   amoeba do
     exclude_association :routes
@@ -252,6 +252,10 @@ class VehicleUsage < ApplicationRecord
   def work_or_window_time
     hour_value = ChronicDuration.output(default_work_time || (default_time_window_end - default_time_window_start), limit_to_hours: true, format: :chrono, units: 5)
     hour_value.length < 5 ? '00:00'[0..4 - hour_value.length] + hour_value : hour_value
+  end
+
+  def rest?
+    default_rest_duration.present? && default_rest_duration > 0
   end
 
   def update_rest
