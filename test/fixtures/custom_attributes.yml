@@ -39,3 +39,28 @@ custom_attribute_four:
   description: 'description four'
   customer: customer_two
   default_value: 3.2
+
+# Custom attributes for stops
+custom_attribute_stop_one:
+  name: 'stop_custom_field'
+  object_type: 1 # string
+  object_class: 2 # stop
+  description: 'Custom field for stops'
+  customer: customer_one
+  default_value: 'default_stop_value'
+
+custom_attribute_stop_two:
+  name: 'stop_priority'
+  object_type: 2 # integer
+  object_class: 2 # stop
+  description: 'Priority level for stops'
+  customer: customer_one
+  default_value: 1
+
+custom_attribute_stop_three:
+  name: 'stop_urgent'
+  object_type: 0 # boolean
+  object_class: 2 # stop
+  description: 'Whether the stop is urgent'
+  customer: customer_one
+  default_value: false
