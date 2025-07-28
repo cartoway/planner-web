@@ -135,11 +135,15 @@ class PlanningsController < ApplicationController
 
   def create
     respond_to do |format|
-      @planning = current_user.customer.plannings.build(planning_params)
-      @planning.default_routes
       raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if current_user.customer.too_many_plannings?
 
-      if @planning.save_import && @planning.compute_saved!
+      @planning = current_user.customer.plannings.create(planning_params)
+      format.html { render action: 'new' } unless @planning.valid?
+
+      @planning.default_routes
+      # Reload with all sub models
+      @planning = Planning.where(id: @planning.id).preload_route_details.first!
+      if @planning.compute_saved!
         format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.created', model: @planning.class.model_name.human) }
       else
         format.html { render action: 'new' }
