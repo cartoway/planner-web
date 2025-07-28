@@ -23,7 +23,7 @@ class Route < ApplicationRecord
 
   attr_accessor :migration_skip
 
-  belongs_to :planning, touch: true
+  belongs_to :planning, touch: true #, inverse_of: :routes
   belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
 
@@ -115,9 +115,13 @@ class Route < ApplicationRecord
   end
 
   def init_stops(compute = true, ignore_errors = false)
-    stops.clear
+    stops.clear if stops.any?
     if vehicle_usage? && vehicle_usage.default_rest_duration
-      stops.build(type: StopRest.name, active: true, index: 1)
+      if self.id
+        stops.create!(type: StopRest.name, active: true, index: 1, route_id: self.id)
+      else
+        stops.build(type: StopRest.name, active: true, index: 1)
+      end
     end
 
     compute!(ignore_errors: ignore_errors) if compute
@@ -125,9 +129,14 @@ class Route < ApplicationRecord
 
   def default_stops
     i = stops_size
-    planning.visits_compatibles.each { |visit|
-      stops.build(type: StopVisit.name, visit: visit, active: true, index: i += 1)
-    }
+    stops =
+      planning.visits_compatibles.map { |visit|
+        { type: StopVisit.name, visit_id: visit.id, active: true, index: i += 1, route_id: self.id }
+      }
+    if rest?
+      stops << { type: StopRest.name, visit_id: nil, active: true, index: i += 1, route_id: self.id }
+    end
+    Stop.import(stops, validate: false)
     self.outdated = true
   end
 
@@ -171,6 +180,10 @@ class Route < ApplicationRecord
     return false if planning.date.nil? || stops.only_active_stop_visits.empty? || stops.only_active_stop_visits.last.time.nil?
 
     planning.date + stops.only_active_stop_visits.last.time.seconds + 12.hour < DateTime.now
+  end
+
+  def rest?
+    vehicle_usage? && vehicle_usage.rest?
   end
 
   def store_traces(geojson_tracks_store, trace, options = {})
@@ -347,7 +360,7 @@ class Route < ApplicationRecord
         }
         compute_out_of_force_position
         compute_out_of_relations
-        compute_out_of_skill
+        compute_out_of_skill(options[:planning])
 
         # Try to minimize waiting time by a later begin
         time = self.end
@@ -983,8 +996,8 @@ class Route < ApplicationRecord
     vehicle_usage.tags | vehicle_usage.vehicle.tags
   end
 
-  def compute_out_of_skill
-    planning_skills = planning.all_skills.map(&:id)
+  def compute_out_of_skill(source_planning = nil)
+    planning_skills = (source_planning || planning).all_skills.map(&:id)
 
     return if planning_skills.empty?
 
