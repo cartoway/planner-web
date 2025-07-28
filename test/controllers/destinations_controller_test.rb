@@ -274,6 +274,7 @@ class DestinationsControllerTest < ActionController::TestCase
       assert_difference('Stop.count', (destinations_count + import_rest_count) + import_count * (plannings_count + 1)) do
         assert_difference('Planning.count', 1) do
           post :upload_csv, params: { import_csv: { replace: false, file: file } }
+          assert_valid response
         end
       end
     end
