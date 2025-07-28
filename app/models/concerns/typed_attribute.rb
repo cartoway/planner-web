@@ -8,7 +8,7 @@ module TypedAttribute
           if self.respond_to?(:customer)
             self.customer
           elsif self.is_a?(Stop)
-            self.visit.destination.customer
+            self.route.planning.customer
           end
 
         current_type =

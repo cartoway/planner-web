@@ -36,6 +36,186 @@ class V100::StopsTest < ActiveSupport::TestCase
     "/api/100/plannings/#{planning_id}/routes/#{route_id}/stops/#{stop_id}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
+  test 'should update stop active status' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      stop_visit = stops(:stop_one_one)
+
+      put api(@planning.id, stop_visit.route_id, stop_visit.id), { active: false }
+
+      if mode
+        assert_equal 409, last_response.status, last_response.body
+      else
+        assert_equal 204, last_response.status, last_response.body
+        stop_visit.reload
+        assert_not stop_visit.active
+        @route.reload
+        assert_not @route.outdated
+      end
+    end
+  end
+
+  test 'should update stop with custom attributes' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      stop_visit = stops(:stop_one_one)
+
+      put api(@planning.id, stop_visit.route_id, stop_visit.id), {
+        custom_attributes: {
+          'stop_custom_field' => 'updated_value',
+          'stop_priority' => 5,
+          'stop_unknown_field' => 'unknown_value'
+        }
+      }
+
+      if mode
+        assert_equal 409, last_response.status, last_response.body
+      else
+        assert_equal 204, last_response.status, last_response.body
+        stop_visit.reload
+        assert_equal 'updated_value', stop_visit.custom_attributes_typed_hash['stop_custom_field']
+        assert_equal 5, stop_visit.custom_attributes_typed_hash['stop_priority']
+        refute stop_visit.custom_attributes_typed_hash['stop_unknown_field']
+        @route.reload
+        assert_not @route.outdated
+      end
+    end
+  end
+
+  test 'should update stop with boolean custom attribute' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      stop_visit = stops(:stop_one_one)
+
+      put api(@planning.id, stop_visit.route_id, stop_visit.id), {
+        custom_attributes: {
+          'stop_urgent' => true
+        }
+      }
+
+      if mode
+        assert_equal 409, last_response.status, last_response.body
+      else
+        assert_equal 204, last_response.status, last_response.body
+        stop_visit.reload
+        assert stop_visit.custom_attributes_typed_hash['stop_urgent']
+        @route.reload
+        assert_not @route.outdated
+      end
+    end
+  end
+
+  test 'should update stop store' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+
+      put api(@planning.id, @route.id, @stop_store.id), { active: false }
+
+      if mode
+        assert_equal 409, last_response.status, last_response.body
+      else
+        assert_equal 204, last_response.status, last_response.body
+        @stop_store.reload
+        assert_not @stop_store.active
+        @route.reload
+        assert_not @route.outdated
+      end
+    end
+  end
+
+  test 'should return 404 for non-existent planning on update' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      stop_visit = stops(:stop_one_one)
+
+      put api(99999, stop_visit.route_id, stop_visit.id), { active: false }
+
+      assert_equal 404, last_response.status, last_response.body
+    end
+  end
+
+  test 'should return 404 for non-existent route on update' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      stop_visit = stops(:stop_one_one)
+
+      put api(@planning.id, 99999, stop_visit.id), { active: false }
+
+      if mode
+        assert_equal 409, last_response.status, last_response.body
+      else
+        assert_equal 404, last_response.status, last_response.body
+      end
+    end
+  end
+
+  test 'should return 404 for non-existent stop on update' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+
+      put api(@planning.id, @route_id, 99999), { active: false }
+
+      assert_equal 404, last_response.status, last_response.body
+    end
+  end
+
+  test 'should update stop with empty custom attributes' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      stop_visit = stops(:stop_one_one)
+
+      put api(@planning.id, stop_visit.route_id, stop_visit.id), {
+        custom_attributes: {}
+      }
+
+      if mode
+        assert_equal 409, last_response.status, last_response.body
+      else
+        assert_equal 204, last_response.status, last_response.body
+        stop_visit.reload
+        assert_equal({}, stop_visit.custom_attributes)
+        @route.reload
+        assert_not @route.outdated
+      end
+    end
+  end
+
+  test 'should update stop with custom attributes using typed values' do
+    [:during_optimization, nil].each do |mode|
+      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      stop_visit = stops(:stop_one_one)
+
+      put api(@planning.id, stop_visit.route_id, stop_visit.id), {
+        custom_attributes: {
+          'stop_custom_field' => 'new_string_value',
+          'stop_priority' => 10,
+          'stop_urgent' => true
+        }
+      }
+
+      if mode
+        assert_equal 409, last_response.status, last_response.body
+      else
+        assert_equal 204, last_response.status, last_response.body
+        stop_visit.reload
+
+        # Check that values are stored correctly in JSONB
+        assert_equal 'new_string_value', stop_visit.custom_attributes['stop_custom_field']
+        assert_equal '10', stop_visit.custom_attributes['stop_priority']
+        assert_equal 'true', stop_visit.custom_attributes['stop_urgent']
+
+        # Check typed values through the helper method
+        typed_hash = stop_visit.custom_attributes_typed_hash
+        assert_equal 'new_string_value', typed_hash['stop_custom_field']
+        assert_equal 10, typed_hash['stop_priority']
+        assert typed_hash['stop_urgent']
+
+        @route.reload
+        assert_not @route.outdated
+      end
+    end
+  end
+
   test 'should delete stop store' do
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
