@@ -253,10 +253,16 @@ class Planning < ApplicationRecord
 
   def default_empty_routes(ignore_errors = false)
     routes.clear
-    routes.build
-    vehicle_usage_set.vehicle_usages.with_vehicle.select(&:active).each { |vehicle_usage|
-      vehicle_usage_add(vehicle_usage, ignore_errors)
-    }
+    new_routes =
+      # load only necessary fields to avoid loading all vehicle_usages and dependancies
+      vehicle_usage_set.vehicle_usages.with_vehicle.where(active: true).pluck(:id).map { |vehicle_usage_id|
+        Route.new(planning_id: self.id, vehicle_usage_id: vehicle_usage_id, outdated: false)
+      }
+    new_routes << Route.new(planning_id: self.id, outdated: false, vehicle_usage_id: nil)
+    Route.import(new_routes, validate: false)
+    self.routes = Route.where(planning_id: self.id).includes_vehicle_usages
+    self.routes.each{ |r| r.init_stops(false) }
+    self
   end
 
   def default_routes
@@ -264,7 +270,7 @@ class Planning < ApplicationRecord
       default_empty_routes
 
       if !split_by_zones(visits_compatibles)
-        routes.find{ |r| !r.vehicle_usage? }.default_stops
+        self.routes.find{ |r| !r.vehicle_usage? }.default_stops
       end
     end
   end
@@ -493,15 +499,15 @@ class Planning < ApplicationRecord
     end
   end
 
-  def get_routes_from_skills(tags, options = {})
+  def get_routes_from_skills(r_tags, options = {})
     if options[:out_of_zone]
-      skill_tags = all_skills & tags
+      skill_tags = all_skills & r_tags
       get_routes_without_exclusion(options[:exclusion]).select{ |route|
         next unless route.vehicle_usage?
 
         next true if skill_tags.empty?
 
-        common_tags = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten & tags
+        common_tags = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten & r_tags
         !common_tags.empty?
       }
     end
