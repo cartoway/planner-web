@@ -481,15 +481,16 @@ class Route < ApplicationRecord
     Stop.transaction do
       i = stops.size
       collected_stops = objects.map.with_index{ |stop, index|
-        object, active = stop
+        object, stop_attributes = stop
+        stop_attributes = { active: true, custom_attributes: {} }.merge((stop_attributes || {}).compact)
 
         if object.is_a?(Visit) && planning.tags_compatible?(object.tags.to_a | object.destination.tags.to_a)
-          stops.new(type: StopVisit.name, visit: object, active: active, index: i += 1)
+          stops.new(type: StopVisit.name, store: nil, visit: object, active: stop_attributes[:active], index: i += 1, custom_attributes: stop_attributes[:custom_attributes])
         elsif object.is_a?(Store)
           # Do not consider store start and store stop
           next if index == 0 && object == vehicle_usage.default_store_start || index == objects.size - 1 && object == vehicle_usage.default_store_stop
 
-          stops.new(type: StopStore.name, store: object, index: i += 1)
+          stops.new(type: StopStore.name, store: object, visit: nil, active: true, index: i += 1, custom_attributes: stop_attributes[:custom_attributes])
         end
       }.compact
       Stop.import(collected_stops)
@@ -513,32 +514,35 @@ class Route < ApplicationRecord
     end
   end
 
-  def add_store(store, index = nil, active = true, stop_id = nil)
+  def add_store(store, index = nil, stop_attributes = {}, stop_id = nil)
+    stop_attributes = { active: true, custom_attributes: {} }.merge(stop_attributes.compact)
     raise I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage') if self.vehicle_usage.nil?
 
     index = stops.size + 1 if !index || index < 0
     shift_index(index)
-    stop = stops.build(type: StopStore.name, store: store, index: index, active: active, id: stop_id)
+    stop = stops.build(type: StopStore.name, store: store, index: index, active: stop_attributes[:active], id: stop_id, custom_attributes: stop_attributes[:custom_attributes])
     self.outdated = true
     stop
   end
 
-  def add(visit, index = nil, active = false, stop_id = nil)
+  def add(visit, index = nil, stop_attributes = {}, stop_id = nil)
+    stop_attributes = { active: false, custom_attributes: {} }.merge(stop_attributes.compact)
     index = stops.size + 1 if !index || index < 0
     shift_index(index)
-    stops.build(type: StopVisit.name, visit: visit, index: index, active: active, id: stop_id)
+    stops.build(type: StopVisit.name, visit: visit, index: index, active: stop_attributes[:active], id: stop_id, custom_attributes: stop_attributes[:custom_attributes])
     self.outdated = true
   end
 
-  def add_rest(active = true, stop_id = nil)
+  def add_rest(stop_attributes = {}, stop_id = nil)
+    stop_attributes = { active: true, custom_attributes: {} }.merge(stop_attributes.compact)
     index = stops.size + 1
-    stops.build(type: StopRest.name, index: index, active: active, id: stop_id)
+    stops.build(type: StopRest.name, index: index, active: stop_attributes[:active], id: stop_id, custom_attributes: stop_attributes[:custom_attributes])
     self.outdated = true
   end
 
-  def add_or_update_rest(active = true, stop_id = nil)
+  def add_or_update_rest(stop_attributes = {}, stop_id = nil)
     if !stops.find{ |stop| stop.is_a?(StopRest) }
-      add_rest(active, stop_id)
+      add_rest(stop_attributes, stop_id)
     end
     self.outdated = true
   end

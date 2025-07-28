@@ -182,18 +182,18 @@ class Planning < ApplicationRecord
             routes.index{ |route| !route.vehicle_usage? }
           end
         routes[i].ref = ref
-        r[:visits].each{ |obj, active|
+        r[:visits].each{ |obj, stop_attributes|
           if obj.is_a?(Visit)
             if obj.id && stop_visit_ids[obj.id]
               move_visit(routes[i], obj, -1)
             else
-              routes[i].add(obj, nil, active)
+              routes[i].add(obj, nil, stop_attributes)
             end
           elsif obj.is_a?(Store)
             if obj.id && stop_store_ids[obj.id]
               move_store(routes[i], obj, -1)
             else
-              routes[i].add_store(obj)
+              routes[i].add_store(obj, nil, stop_attributes)
             end
           end
         }
@@ -420,12 +420,12 @@ class Planning < ApplicationRecord
         visit, active = stop.visit, stop.active
         stop_id = stop.id
         routes.find(stop.route_id).move_stop_out(stop)
-        route.add(visit, index || 1, active || stop.route.vehicle_usage.nil?, stop_id)
+        route.add(visit, index || 1, { active: active || stop.route.vehicle_usage.nil? }, stop_id)
       elsif force && stop.is_a?(StopRest)
         active = stop.active
         stop_id = stop.id
         routes.find(stop.route_id).move_stop_out(stop, force)
-        route.add_rest(active, stop_id)
+        route.add_rest({ active: active }, stop_id)
       end
     else
       route.move_stop(stop, index || 1)
@@ -1046,9 +1046,9 @@ class Planning < ApplicationRecord
         if stop_dup.route_id == r.id
           r.move_stop_out(stop_dup)
         end
-        r.add(stop_dup.visit, ri[1], true)
+        r.add(stop_dup.visit, ri[1], { active: true })
       else
-        r.add_or_update_rest(true)
+        r.add_or_update_rest({ active: true })
       end
       r.compute(no_geojson: true, no_quantities: true)
 
@@ -1120,7 +1120,7 @@ class Planning < ApplicationRecord
         stop.visit = original_stop.visit
         stop.visit.destination = original_stop.visit.destination
       end
-      r.add(tmp_visit, ri[1], true)
+      r.add(tmp_visit, ri[1], { active: true })
       r.compute(no_geojson: true, no_quantities: true)
 
       # Difference of total time + difference of sum of out_of_window time

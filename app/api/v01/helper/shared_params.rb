@@ -324,6 +324,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
       optional :ref_vehicle, type: String
       optional :route, type: String
       optional :active, type: Boolean
+      optional :stop_custom_attributes, type: Hash
     end
   end
 

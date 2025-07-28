@@ -202,6 +202,7 @@ class V01::Destinations < Grape::API
         optional(:route, type: String, default: nil, desc: 'Route name to add the destination to if associated to a planning')
         optional(:ref_vehicle, type: String, desc: 'Vehicle reference to add the destination to if associated to a planning')
         optional(:active, type: Boolean, desc: 'If the destination is active if associated to a planning')
+        optional(:stop_custom_attributes, type: Hash, desc: 'Custom attributes to add to the destination')
       end
 
       exactly_one_of :file, :destinations, :remote

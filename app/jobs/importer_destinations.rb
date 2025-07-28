@@ -111,6 +111,9 @@ class ImporterDestinations < ImporterBase
   def import_columns
     columns_planning.merge(columns_route).merge(columns_destination).merge(columns_visit).merge(
       without_visit: {title: I18n.t('destinations.import_file.without_visit'), desc: I18n.t('destinations.import_file.without_visit_desc'), format: I18n.t('destinations.import_file.format.yes_no')},
+      stop_custom_attributes: {},
+      stop_custom_attribute_visits: {},
+
       # Deals with deprecated quantities replaced by pickups and deliveries
       quantities: {}, # only for json import
       # Deals with deprecated open and close
@@ -130,6 +133,7 @@ class ImporterDestinations < ImporterBase
       if dest.key?(:visits) && !dest[:visits].empty?
         dest[:visits].collect{ |v|
           v[:ref_visit] = v.delete(:ref)
+          v[:stop_custom_attribute_visits] = v[:stop_custom_attributes] || {}
           v[:tag_visits] = v[:tag_ids]&.map(&:to_i) || []
           v[:tag_visits] += v[:tags] if v[:tags]&.any?
           v.delete(:tags)
@@ -908,7 +912,7 @@ class ImporterDestinations < ImporterBase
           @plannings_routes[ref_planning][ref_route][:ref_vehicle] = ref_vehicle
           @plannings_vehicles[ref_planning][ref_vehicle] = ref_route
         end
-        @plannings_routes[ref_planning][ref_route][:visits] << [:store, store_attributes, true]
+        @plannings_routes[ref_planning][ref_route][:visits] << [:store, store_attributes, { active: true, custom_attributes: row[:stop_custom_attributes] }]
       end
     end
   end
@@ -937,7 +941,7 @@ class ImporterDestinations < ImporterBase
           @plannings_routes[ref_planning][ref_route][:ref_vehicle] = ref_vehicle
           @plannings_vehicles[ref_planning][ref_vehicle] = ref_route
         end
-        @plannings_routes[ref_planning][ref_route][:visits] << [:visit, visit_attributes, ValueToBoolean.value_to_boolean(row[:active], true)]
+        @plannings_routes[ref_planning][ref_route][:visits] << [:visit, visit_attributes, { active: ValueToBoolean.value_to_boolean(row[:active], true), custom_attributes: row[:stop_custom_attribute_visits] }]
         @visit_ids << visit_attributes[:id] if visit_attributes[:id]
       end
     end
@@ -962,26 +966,26 @@ class ImporterDestinations < ImporterBase
       planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
       routes_hash.each{ |k, v|
         # Duplicated visit lines are only represented by a single visit
-        v[:visits].select!{ |_type, attribute, _active|
+        v[:visits].select!{ |_type, attribute, _stop_attributes|
           attribute[:id] ||
             @visit_index_to_id_hash[attribute[:visit_index]] ||
             @store_index_to_id_hash[attribute[:store_index]]
         }
-        visit_ids = v[:visits].map{ |type, attribute, _active|
+        visit_ids = v[:visits].map{ |type, attribute, _stop_attributes|
           next unless type == :visit
 
           attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
         }
         visits = Visit.includes_destinations.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
 
-        store_ids = v[:visits].map{ |type, attribute, _active|
+        store_ids = v[:visits].map{ |type, attribute, _stop_attributes|
           next unless type == :store
 
           attribute[:id] || @store_index_to_id_hash[attribute[:store_index]]
         }
         stores = Store.where(id: store_ids).index_by(&:id).values_at(*store_ids)
 
-        v[:visits].map!.with_index{ |(_type, _attribute, active), index| [visits[index] || stores[index], active] }
+        v[:visits].map!.with_index{ |(_type, _attribute, stop_attributes), index| [visits[index] || stores[index], stop_attributes] }
       }
       if !(planning.id ? planning.update_routes(routes_hash, recompute = true) : planning.set_routes(routes_hash, false, true))
         raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if routes_hash.keys.size > planning.routes.size || routes_hash.keys.compact.size > @customer.max_vehicles
