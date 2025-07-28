@@ -1022,8 +1022,8 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
   test 'Update Destination' do
     visit = visits :visit_one
-    destination_params = @destination.attributes.slice *@destination.attributes.keys - ['id']
-    visit_attributes = visit.api_attributes.slice *visit.api_attributes.keys - ['created_at', 'updated_at']
+    destination_params = @destination.attributes.slice(*(@destination.attributes.keys - ['id']))
+    visit_attributes = visit.api_attributes.slice(*(visit.api_attributes.keys - ['created_at', 'updated_at']))
     destination_params.merge! 'visits_attributes' => [visit_attributes]
     put api(@destination.id), destination_params
     assert last_response.ok?, last_response.body
@@ -1110,6 +1110,233 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     end
   ensure
     I18n.locale = orig_locale
+  end
+
+  test 'should create bulk from json with stop custom attributes for visit' do
+    assert_difference('Destination.count', 1) do
+      assert_difference('Visit.count', 1) do
+        assert_difference('Stop.count',
+          @customer.plannings.select{ |p| p.tags_compatible?([tags(:tag_one), tags(:tag_two)]) }.size * 1 + 2) do
+          put api(), nil, input: {
+            destinations: [{
+              name: 'New client with custom attributes',
+              street: nil,
+              postalcode: nil,
+              city: 'Tule',
+              state: 'Limousin',
+              lat: 43.5710885456786,
+              lng: 3.89636993408203,
+              detail: nil,
+              comment: nil,
+              phone_number: nil,
+              ref: 'z_custom',
+              tags: ['tag1', 'tag2'],
+              geocoding_accuracy: nil,
+              visits: [{
+                ref: 'custom_custom',
+                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, delivery: 1}],
+                time_window_start_1: '08:00',
+                time_window_end_1: '12:00',
+                duration: nil,
+                route: 'route_one',
+                stop_custom_attributes: {
+                  'stop_custom_field' => 'custom_value',
+                  'stop_priority' => 5,
+                  'stop_urgent' => true
+                }
+              }]
+            }]
+          }.to_json, CONTENT_TYPE: 'application/json'
+          assert last_response.ok?, last_response.body
+
+          stop = Stop.joins(:visit).where(visits: { ref: 'custom_custom' }).order(created_at: :desc).first
+          assert_equal 'custom_value', stop.custom_attributes['stop_custom_field']
+          assert_equal 5, stop.custom_attributes['stop_priority']
+          assert_equal true, stop.custom_attributes['stop_urgent']
+
+          stop = Stop.joins(:visit).where(visits: { ref: 'custom_custom' }).order(created_at: :desc).last
+          assert_empty stop.custom_attributes
+        end
+      end
+    end
+  end
+
+  test 'should create bulk from json with stop custom attributes for store' do
+    orig_locale = I18n.locale
+    I18n.locale = :en
+
+    assert_difference('Store.count', 1) do
+      assert_difference('Destination.count', 0) do
+        assert_difference('Planning.count', 0) do
+          assert_difference('Stop.count', 1) do
+            put api(), nil, input: {
+              planning: {
+                ref: 'r1',
+              },
+              destinations: [{
+                vehicle: '001',
+                route: 'route_one',
+                name: 'New store with custom attributes',
+                ref: 'store_ref_custom',
+                street: '123 Store Street',
+                postalcode: '12345',
+                city: 'Store City',
+                state: 'Store State',
+                lat: 43.5710885456786,
+                lng: 3.89636993408203,
+                stop_type: 'store',
+                stop_custom_attributes: {
+                  'stop_custom_field' => 'store_custom_value',
+                  'stop_priority' => 10,
+                  'stop_urgent' => false
+                }
+              }]
+            }.to_json, CONTENT_TYPE: 'application/json'
+            assert last_response.ok?, last_response.body
+
+            stop = Stop.joins(:store).where(stores: { ref: 'store_ref_custom' }).order(created_at: :desc).first
+            assert_not_nil stop, 'Stop should be created'
+            assert_equal 'store_custom_value', stop.custom_attributes['stop_custom_field']
+            assert_equal 10, stop.custom_attributes['stop_priority']
+            assert_equal false, stop.custom_attributes['stop_urgent']
+          end
+        end
+      end
+    end
+  ensure
+    I18n.locale = orig_locale
+  end
+
+  test 'should create bulk from json with stop custom attributes and active status' do
+    assert_difference('Destination.count', 1) do
+      assert_difference('Visit.count', 1) do
+        assert_difference('Stop.count',
+          @customer.plannings.select{ |p| p.tags_compatible?([tags(:tag_one), tags(:tag_two)]) }.size * 1 + 2) do
+          put api(), nil, input: {
+            destinations: [{
+              name: 'New client with custom attributes and active',
+              street: nil,
+              postalcode: nil,
+              city: 'Tule',
+              state: 'Limousin',
+              lat: 43.5710885456786,
+              lng: 3.89636993408203,
+              detail: nil,
+              comment: nil,
+              phone_number: nil,
+              ref: 'z_custom_active',
+              tags: ['tag1', 'tag2'],
+              geocoding_accuracy: nil,
+              visits: [{
+                ref: 'v1_custom_active',
+                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, delivery: 1}],
+                time_window_start_1: '08:00',
+                time_window_end_1: '12:00',
+                duration: nil,
+                route: 'route_one',
+                active: false,
+                stop_custom_attributes: {
+                  'stop_custom_field' => 'inactive_value',
+                  'stop_priority' => 1
+                }
+              }]
+            }]
+          }.to_json, CONTENT_TYPE: 'application/json'
+          assert last_response.ok?, last_response.body
+          assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
+
+          stop = Stop.joins(:visit).where(visits: { ref: 'v1_custom_active' }).order(created_at: :desc).first
+          assert stop, 'Stop should be created'
+          assert_not stop.active, 'Stop should be inactive'
+          assert_equal 'inactive_value', stop.custom_attributes['stop_custom_field']
+          assert_equal 1, stop.custom_attributes['stop_priority']
+        end
+      end
+    end
+  end
+
+  test 'should create bulk from json with empty stop custom attributes' do
+    assert_difference('Destination.count', 1) do
+      assert_difference('Visit.count', 1) do
+        assert_difference('Stop.count',
+          @customer.plannings.select{ |p| p.tags_compatible?([tags(:tag_one), tags(:tag_two)]) }.size * 1 + 2) do
+          put api(), nil, input: {
+            destinations: [{
+              name: 'New client with empty custom attributes',
+              street: nil,
+              postalcode: nil,
+              city: 'Tule',
+              state: 'Limousin',
+              lat: 43.5710885456786,
+              lng: 3.89636993408203,
+              detail: nil,
+              comment: nil,
+              phone_number: nil,
+              ref: 'z_custom_empty',
+              tags: ['tag1', 'tag2'],
+              geocoding_accuracy: nil,
+              visits: [{
+                ref: 'v1_custom_empty',
+                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, delivery: 1}],
+                time_window_start_1: '08:00',
+                time_window_end_1: '12:00',
+                duration: nil,
+                route: 'route_one',
+                stop_custom_attributes: {}
+              }]
+            }]
+          }.to_json, CONTENT_TYPE: 'application/json'
+          assert last_response.ok?, last_response.body
+          assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
+
+          stop = Stop.joins(:visit).where(visits: { ref: 'v1_custom_empty' }).order(created_at: :desc).first
+          assert_not_nil stop, 'Stop should be created'
+          assert stop.custom_attributes.empty?, 'Custom attributes should be empty'
+        end
+      end
+    end
+  end
+
+  test 'should create bulk from json with stop custom attributes without route' do
+    assert_difference('Destination.count', 1) do
+      assert_difference('Visit.count', 1) do
+        assert_difference('Stop.count', 2) do # No stop created because no route
+          put api(), nil, input: {
+            destinations: [{
+              name: 'New client without route',
+              street: nil,
+              postalcode: nil,
+              city: 'Tule',
+              state: 'Limousin',
+              lat: 43.5710885456786,
+              lng: 3.89636993408203,
+              detail: nil,
+              comment: nil,
+              phone_number: nil,
+              ref: 'z_without_route',
+              tags: ['tag1', 'tag2'],
+              geocoding_accuracy: nil,
+              visits: [{
+                ref: 'v1_without_route',
+                quantities: [{deliverable_unit_id: deliverable_units(:deliverable_unit_one_one).id, delivery: 1}],
+                time_window_start_1: '08:00',
+                time_window_end_1: '12:00',
+                duration: nil
+              }],
+              stop_custom_attributes: {
+                'stop_custom_field' => 'value_without_route'
+              }
+            }]
+          }.to_json, CONTENT_TYPE: 'application/json'
+          assert last_response.ok?, last_response.body
+          assert_equal 1, JSON.parse(last_response.body).size, 'Bad response size: ' + last_response.body.inspect
+
+          stop = Stop.joins(:visit).where(visits: { ref: 'v1_without_route' }).order(created_at: :desc).first
+          assert stop
+          refute stop.route.vehicle_usage?
+        end
+      end
+    end
   end
 end
 
