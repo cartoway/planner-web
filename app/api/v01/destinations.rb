@@ -66,28 +66,28 @@ class V01::Destinations < Grape::API
     end
 
     def present_geojson_destinations(params)
-      destinations = if params.key?(:ids)
-        ids = params[:ids].split(',')
-        current_customer.destinations.includes_visits.select{ |destination|
-          params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
-        }
-      else
-        current_customer.destinations.includes_visits
-      end
-      '{"type":"FeatureCollection","features":[' + destinations.select(&:position?).map { |d|
-          feat = {
-            type: 'Feature',
-            geometry: {
-              type: 'Point',
-              coordinates: [d.lng.round(6), d.lat.round(6)]
-            },
-            properties: {
-              destination_id: d.id,
-              color: d.visits_color,
-              icon: d.visits_icon,
-              icon_size: d.visits_icon_size
-            }
+      destinations =
+        if params.key?(:ids)
+          current_customer.destinations.includes_visits.select{ |destination|
+            params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
           }
+        else
+          current_customer.destinations.includes_visits
+        end
+      '{"type":"FeatureCollection","features":[' + destinations.select(&:position?).map { |d|
+        feat = {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [d.lng.round(6), d.lat.round(6)]
+          },
+          properties: {
+            destination_id: d.id,
+            color: d.visits_color,
+            icon: d.visits_icon,
+            icon_size: d.visits_icon_size
+          }
+        }
           feat[:properties][:quantities] = d.visits.map { |v|
             with_quantities(v)
           }.flatten if params[:quantities]
@@ -137,13 +137,14 @@ class V01::Destinations < Grape::API
       if env['api.format'] == :geojson
         present_geojson_destinations params
       else
-        destinations = if params.key?(:ids)
-          current_customer.destinations.includes_visits.select{ |destination|
-            params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
-          }
-        else
-          current_customer.destinations.includes_visits.load
-        end
+        destinations =
+          if params.key?(:ids)
+            current_customer.destinations.includes_visits.select{ |destination|
+              params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
+            }
+          else
+            current_customer.destinations.includes_visits.load
+          end
         present destinations, with: V01::Entities::Destination
       end
     end
@@ -229,16 +230,17 @@ class V01::Destinations < Grape::API
         end
         params[:planning].delete(:zoning_ids)
       end
-      import = if params[:destinations]
-        # FIXME ImportJSON has its own conversion methods. It should be done at the API level
-        ImportJson.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], json: import_destination_params)
-      elsif params[:remote]
-        case params[:remote]
-        when :tomtom then ImportTomtom.new(importer: ImporterDestinations.new(current_customer, params[:planning]), customer: current_customer, replace: params[:replace])
+      import =
+        if params[:destinations]
+          # FIXME ImportJSON has its own conversion methods. It should be done at the API level
+          ImportJson.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], json: import_destination_params)
+        elsif params[:remote]
+          case params[:remote]
+          when :tomtom then ImportTomtom.new(importer: ImporterDestinations.new(current_customer, params[:planning]), customer: current_customer, replace: params[:replace])
+          end
+        else
+          ImportCsv.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], file: params[:file])
         end
-      else
-        ImportCsv.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], file: params[:file])
-      end
 
       if import && import.valid? && (destinations = import.import(true))
         case params[:remote]
@@ -295,14 +297,34 @@ class V01::Destinations < Grape::API
     delete do
       Destination.transaction do
         if params[:ids] && !params[:ids].empty?
-          destinations = current_customer.destinations.select { |destination|
-            params[:ids].any? { |s| ParseIdsRefs.match(s, destination) }
-          }
+          parsed_ids = []
+          parsed_refs = []
 
-          if current_customer.destinations_count == destinations.count
+          ids = params[:ids].split(',').flatten
+          ids.each do |id_or_ref|
+            id_or_ref = ParseIdsRefs.read(id_or_ref)
+            if id_or_ref.key?(:id)
+              parsed_ids << id_or_ref[:id]
+            else
+              parsed_refs << id_or_ref[:ref]
+            end
+          end
+
+          destinations_query = current_customer.destinations
+          if parsed_ids.any? && parsed_refs.any?
+            destinations_query = destinations_query.where('destinations.id IN (?) OR destinations.ref IN (?)', parsed_ids, parsed_refs)
+          elsif parsed_ids.any?
+            destinations_query = destinations_query.where(id: parsed_ids)
+          elsif parsed_refs.any?
+            destinations_query = destinations_query.where(ref: parsed_refs)
+          end
+
+          matching_count = destinations_query.count
+
+          if current_customer.destinations_count == matching_count
             current_customer.delete_all_destinations
           else
-            destinations.each(&:destroy)
+            current_customer.delete_destinations(destinations_query.pluck(:id))
           end
         else
           current_customer.delete_all_destinations
