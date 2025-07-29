@@ -283,6 +283,12 @@ class Customer < ApplicationRecord
     {lat: store ? store.lat : I18n.t('stores.default.lat'), lng: store ? store.lng : I18n.t('stores.default.lng')}
   end
 
+  def delete_destinations(ids)
+    destinations.where(id: ids).delete_all
+    self.reload
+    reindex_routes
+  end
+
   def delete_all_destinations
     stops_relations.delete_all
     destinations.delete_all
