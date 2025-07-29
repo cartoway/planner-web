@@ -329,6 +329,11 @@ class V01::Destinations < Grape::API
         else
           current_customer.delete_all_destinations
         end
+
+        Customer.where(id: current_customer.id).update_all(
+          destinations_count: Destination.where(customer_id: current_customer.id).count,
+          visits_count: Visit.joins(:destination).where(destinations: { customer_id: current_customer.id }).count
+        )
         status 204
       end
     end
