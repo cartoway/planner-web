@@ -495,7 +495,7 @@ class Route < ApplicationRecord
     invalidate_planning_cache
 
     if Planner::Application.config.delayed_job_use
-      Delayed::Job.enqueue(SimplifyGeojsonTracksJob.new(self.planning.customer_id, self.id))
+      DelayedJobManager.enqueue_simplify_geojson_tracks_job(self.planning.customer_id, self.id)
     end
     true
   end
