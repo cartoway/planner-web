@@ -361,4 +361,25 @@ class RouteTest < ActiveSupport::TestCase
     route.compute_saved
     assert route.stops.none?(&:out_of_force_position)
   end
+
+  test "should avoid duplicate SimplifyGeojsonTracksJob" do
+    original_delayed_job_use = Planner::Application.config.delayed_job_use
+    Planner::Application.config.delayed_job_use = true
+
+    route = routes(:route_one_one)
+
+    DelayedJobManager.enqueue_simplify_geojson_tracks_job(route.planning.customer_id, route.id)
+
+    initial_job_count = Delayed::Job.count
+    initial_job = Delayed::Job.last
+
+    DelayedJobManager.enqueue_simplify_geojson_tracks_job(route.planning.customer_id, route.id)
+
+    assert_equal initial_job_count, Delayed::Job.count
+
+    initial_job.reload
+    assert initial_job.run_at > 29.seconds.from_now, "The job should be rescheduled with a delay of 30 seconds"
+  ensure
+    Planner::Application.config.delayed_job_use = original_delayed_job_use
+  end
 end
