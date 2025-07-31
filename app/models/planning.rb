@@ -147,11 +147,19 @@ class Planning < ApplicationRecord
       routes_visits.each{ |_ref, r|
         index_routes.delete(routes.index{ |rr| rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref == r[:ref_vehicle] }) if r[:ref_vehicle]
       }
+      # Collect ref updates for batch processing
+      ref_updates = []
       routes_visits.each{ |ref, r|
         i = routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref == r[:ref_vehicle] } || index_routes.shift
         routes[i].ref = ref
-        routes[i].set_objects(r[:visits], recompute, ignore_errors)
+        ref_updates << { id: routes[i].id, ref: ref }
+        routes[i].add_objects(r[:visits], recompute, ignore_errors)
       }
+
+      if ref_updates.any?
+        case_statement = ref_updates.map { |update| "WHEN #{update[:id]} THEN '#{update[:ref]}'" }.join(' ')
+        Route.where(id: ref_updates.map { |u| u[:id] }).update_all("ref = CASE id #{case_statement} END, outdated = true")
+      end
       true
     else
       false
@@ -253,12 +261,14 @@ class Planning < ApplicationRecord
 
   def default_empty_routes(ignore_errors = false)
     routes.clear
-    new_routes =
+    new_routes = [
+      Route.new(planning_id: self.id, outdated: false, vehicle_usage_id: nil)
+    ]
+    new_routes +=
       # load only necessary fields to avoid loading all vehicle_usages and dependancies
       vehicle_usage_set.vehicle_usages.with_vehicle.where(active: true).pluck(:id).map { |vehicle_usage_id|
         Route.new(planning_id: self.id, vehicle_usage_id: vehicle_usage_id, outdated: false)
       }
-    new_routes << Route.new(planning_id: self.id, outdated: false, vehicle_usage_id: nil)
     Route.import(new_routes, validate: false)
     self.routes = Route.where(planning_id: self.id).includes_vehicle_usages
     self.routes.each{ |r| r.init_stops(false) }

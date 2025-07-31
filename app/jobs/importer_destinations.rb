@@ -503,12 +503,7 @@ class ImporterDestinations < ImporterBase
   def save_plannings
     Route.no_touching do
       @plannings.each { |planning|
-        if !planning.id
-          planning.save_import!
-        else
-          planning.save!
-        end
-        planning.reload
+        planning.save! && planning.reload
       }
     end
   end
