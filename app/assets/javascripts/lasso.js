@@ -37,8 +37,12 @@ export const LassoModule = (function() {
   var refreshRoute = null;
 
   const initLasso = function(mapInstance, planningIdParam, routesLayerInstance, routeWaitingFunc, refreshRouteFunc) {
-    if (lassoHandler) {
-      return; // Already initialized
+    if (lassoHandler && planningId !== planningIdParam) {
+      destroy();
+    }
+
+    if (lassoHandler && planningId === planningIdParam) {
+      return lassoControl;
     }
 
     map = mapInstance;
@@ -74,23 +78,22 @@ export const LassoModule = (function() {
         onLassoFinished(event);
       }
     });
-    addLassoControl();
 
-    return this;
+    return addLassoControl();
   }
 
   const addLassoControl = function() {
     if (lassoControl) {
-      return; // Already added
+      return lassoControl;
     }
 
     // Check if the existing selection system already has a lasso control
-    var existingLassoControl = document.querySelector('.leaflet-lasso');
+    var existingLassoControl = document.querySelector('.leaflet-control-lasso');
     if (existingLassoControl) {
-      return; // Don't create a duplicate control
+      return null;
     }
 
-    lassoControl = L.Control.extend({
+    var LassoControlClass = L.Control.extend({
       options: {
         position: 'topleft'
       },
@@ -115,12 +118,14 @@ export const LassoModule = (function() {
       }
     });
 
-    map.addControl(new lassoControl());
+    lassoControl = new LassoControlClass();
+    map.addControl(lassoControl);
+    return lassoControl;
   }
 
   const toggleLasso = function() {
     // Check if the existing selection system is active
-    var existingLassoControl = document.querySelector('.leaflet-lasso');
+    var existingLassoControl = document.querySelector('.leaflet-control-lasso');
     if (existingLassoControl && existingLassoControl.classList.contains('active')) {
       // Use the existing system's toggle
       existingLassoControl.click();
@@ -140,7 +145,7 @@ export const LassoModule = (function() {
     lassoHandler.enable();
 
     // Update existing lasso control if it exists
-    var existingLassoControl = document.querySelector('.leaflet-lasso');
+    var existingLassoControl = document.querySelector('.leaflet-control-lasso');
     if (existingLassoControl) {
       existingLassoControl.querySelector('i').classList.add('fa-crosshairs');
       existingLassoControl.querySelector('i').classList.remove('fa-mouse-pointer');
@@ -156,7 +161,7 @@ export const LassoModule = (function() {
     lassoHandler.disable();
 
     // Update existing lasso control if it exists
-    var existingLassoControl = document.querySelector('.leaflet-lasso');
+    var existingLassoControl = document.querySelector('.leaflet-control-lasso');
     if (existingLassoControl) {
       existingLassoControl.querySelector('i').classList.remove('fa-crosshairs');
       existingLassoControl.querySelector('i').classList.add('fa-mouse-pointer');
@@ -238,8 +243,6 @@ export const LassoModule = (function() {
       complete: completeAjaxMap
     });
   }
-
-
 
   const setupModalEventHandlers = function(modal) {
     modal.on('click', '#clear-lasso-selection', function(e) {
@@ -407,7 +410,9 @@ export const LassoModule = (function() {
     }
 
     if (lassoControl) {
-      map.removeControl(lassoControl);
+      if (map && map.removeControl) {
+        map.removeControl(lassoControl);
+      }
       lassoControl = null;
     }
 
@@ -415,6 +420,12 @@ export const LassoModule = (function() {
 
     map = null;
     planningId = null;
+    routesLayer = null;
+    dataExtractor = null;
+    waitingRoute = null;
+    refreshRoute = null;
+    selectedLayers = [];
+    isLassoActive = false;
   }
 
   // Return public API
@@ -424,7 +435,8 @@ export const LassoModule = (function() {
     refreshRoute: refreshRoute,
     clearLassoSelection: clearLassoSelection,
     moveSelectedStopsToRoute: moveSelectedStopsToRoute,
-    destroy: destroy
+    destroy: destroy,
+    getControl: function() { return lassoControl; } // Add getter for control reference
   };
 })();
 
