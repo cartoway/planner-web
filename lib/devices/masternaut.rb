@@ -154,7 +154,7 @@ class Masternaut < DeviceBase
           stop.time_window_start_2 || stop.time_window_end_2 ? (stop.time_window_start_2 ? stop.time_window_start_2_time + number_of_days(stop.time_window_start_2) : '') + (stop.time_window_start_2 && stop.time_window_end_2 ? '-' : '') + (stop.time_window_end_2 ? (stop.time_window_end_2_time + number_of_days(stop.time_window_end_2) || '') : '') : nil,
           stop.detail,
           stop.comment,
-          stop.phone_number,
+          stop.phone_number
         ].compact.join(' ').strip,
         time: stop.time,
         updated_at: stop.base_updated_at,

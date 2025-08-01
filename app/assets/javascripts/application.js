@@ -57,30 +57,26 @@
 //= require mustache
 //= require_tree ../../templates
 
+// Custom components
+//= require active_inactive_drag_drop
+
 // jQuery Turbolinks documentation informs to load all scripts before turbolinks
 //= require jquery.turbolinks
 //= require turbolinks
 
 'use strict';
 
-Turbolinks.enableProgressBar();
-// bug in Firefox 40 when printing multi pages with progress bar
-window.onbeforeprint = function() {
-  Turbolinks.enableProgressBar(false);
-};
-window.onafterprint = function() {
-  Turbolinks.enableProgressBar();
-};
+Turbolinks.setProgressBarDelay(100);
 
-$(document).ready(function() {
+$(document).on('turbolinks:load', function() {
   var startSpinner = function() {
     $('body').addClass('turbolinks_waiting');
   };
   var stopSpinner = function() {
     $('body').removeClass('turbolinks_waiting');
   };
-  $(document).on("page:fetch", startSpinner);
-  $(document).on("page:receive", stopSpinner);
+  document.addEventListener("turbolinks:request-start", startSpinner);
+  document.addEventListener("turbolinks:request-end", stopSpinner);
 
   var menuLeft = $('.menu-left');
   var mainContent = $('.main');
@@ -96,7 +92,7 @@ $(document).ready(function() {
   mainContent.on("click", () => {
     menuLeft.removeClass("open")
     $('.menu-content.in').removeClass('in');
-  })
+  });
 
   Paloma.start();
 });

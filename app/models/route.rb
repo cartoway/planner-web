@@ -23,7 +23,7 @@ class Route < ApplicationRecord
 
   attr_accessor :migration_skip
 
-  belongs_to :planning, touch: true
+  belongs_to :planning, touch: true #, inverse_of: :routes
   belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
 
@@ -32,7 +32,7 @@ class Route < ApplicationRecord
 
   nilify_blanks
   validates :planning, presence: true
-#  validates :vehicle_usage, presence: true # nil on unplanned route
+  #  validates :vehicle_usage, presence: true # nil on unplanned route
   validate :stop_index_validation
   attr_accessor :no_stop_index_validation, :vehicle_color_changed
 
@@ -65,7 +65,29 @@ class Route < ApplicationRecord
   }
   scope :includes_stops, -> { includes(:stops) }
   # The second visit is for counting the visit index from all the visits of the destination
-  scope :includes_destinations, -> { includes(stops: {visit: [:relation_currents, :relation_successors, :tags, destination: [:tags, :visits, { customer: :deliverable_units }]]}) }
+  scope :includes_destinations_and_stores, -> {
+    includes(
+      stops: [
+        {
+          visit: [
+            :relation_currents,
+            :relation_successors,
+            :tags,
+            destination: [
+              :tags,
+              :visits,
+              { customer: :deliverable_units }
+            ]
+          ]
+        },
+        {
+          store: [
+            :customer
+          ]
+        }
+      ]
+    )
+  }
   scope :includes_deliverable_units, -> { includes(vehicle_usage: [:vehicle_usage_set, vehicle: [customer: :deliverable_units]]) }
   scope :stop_visits, -> { includes(:stops).where(type: StopVisit.name) }
 
@@ -93,9 +115,13 @@ class Route < ApplicationRecord
   end
 
   def init_stops(compute = true, ignore_errors = false)
-    stops.clear
+    stops.clear if stops.any?
     if vehicle_usage? && vehicle_usage.default_rest_duration
-      stops.build(type: StopRest.name, active: true, index: 1)
+      if self.id
+        stops.create!(type: StopRest.name, active: true, index: 1, route_id: self.id)
+      else
+        stops.build(type: StopRest.name, active: true, index: 1)
+      end
     end
 
     compute!(ignore_errors: ignore_errors) if compute
@@ -103,9 +129,14 @@ class Route < ApplicationRecord
 
   def default_stops
     i = stops_size
-    planning.visits_compatibles.each { |visit|
-      stops.build(type: StopVisit.name, visit: visit, active: true, index: i += 1)
-    }
+    stops =
+      planning.visits_compatibles.map { |visit|
+        { type: StopVisit.name, visit_id: visit.id, active: true, index: i += 1, route_id: self.id }
+      }
+    if rest?
+      stops << { type: StopRest.name, visit_id: nil, active: true, index: i += 1, route_id: self.id }
+    end
+    Stop.import(stops, validate: false)
     self.outdated = true
   end
 
@@ -149,6 +180,10 @@ class Route < ApplicationRecord
     return false if planning.date.nil? || stops.only_active_stop_visits.empty? || stops.only_active_stop_visits.last.time.nil?
 
     planning.date + stops.only_active_stop_visits.last.time.seconds + 12.hour < DateTime.now
+  end
+
+  def rest?
+    vehicle_usage? && vehicle_usage.rest?
   end
 
   def store_traces(geojson_tracks_store, trace, options = {})
@@ -323,7 +358,7 @@ class Route < ApplicationRecord
         }
         compute_out_of_force_position
         compute_out_of_relations
-        compute_out_of_skill
+        compute_out_of_skill(options[:planning])
 
         # Try to minimize waiting time by a later begin
         time = self.end
@@ -458,7 +493,7 @@ class Route < ApplicationRecord
     invalidate_planning_cache
 
     if Planner::Application.config.delayed_job_use
-      Delayed::Job.enqueue(SimplifyGeojsonTracksJob.new(self.planning.customer_id, self.id))
+      DelayedJobManager.enqueue_simplify_geojson_tracks_job(self.planning.customer_id, self.id)
     end
     true
   end
@@ -878,7 +913,8 @@ class Route < ApplicationRecord
           number: vehicle_usage? ? stop.number(inactive_stops) : nil,
           color: stop.default_color,
           icon: stop.icon,
-          icon_size: stop.icon_size
+          icon_size: stop.icon_size,
+          stop_id: stop.id
         }
       }
 
@@ -958,8 +994,8 @@ class Route < ApplicationRecord
     vehicle_usage.tags | vehicle_usage.vehicle.tags
   end
 
-  def compute_out_of_skill
-    planning_skills = planning.all_skills.map(&:id)
+  def compute_out_of_skill(source_planning = nil)
+    planning_skills = (source_planning || planning).all_skills.map(&:id)
 
     return if planning_skills.empty?
 
@@ -1009,7 +1045,7 @@ class Route < ApplicationRecord
   end
 
   def preload_compute_scopes
-    Route.where(id: self.id).includes_vehicle_usages.includes_destinations.first
+    Route.where(id: self.id).includes_vehicle_usages.includes_destinations_and_stores.first
   end
 
   def import_attributes

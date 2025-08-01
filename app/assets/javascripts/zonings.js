@@ -153,7 +153,9 @@ export const zonings_edit = function(params) {
     });
   }
 
-  $(document).on('page:before-change', checkZoningChanges);
+  $(document).on('turbolinks:load', function() {
+    $(document).on('page:before-change', checkZoningChanges);
+  });
 
   map.on(L.Draw.Event.DRAWSTART, function() {
     creating_drawing = true;

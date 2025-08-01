@@ -75,7 +75,7 @@ class V01::Routes < Grape::API
         patch ':id/active/:active' do
           raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
 
-          Stop.includes_destinations.scoping do
+          Stop.includes_destinations_and_stores.scoping do
             get_route.active(params[:active].to_s.to_sym) && get_route.compute_saved
             present get_route, with: V01::Entities::Route, geojson: params[:with_geojson]
           end
@@ -98,7 +98,7 @@ class V01::Routes < Grape::API
             id_hash[:ref] || id_hash[:id]
           }.compact
           planning_route_ids = Route.where(planning_id: get_route.planning.id).map(&:id)
-          Route.includes_destinations.where(id: get_route.id).scoping do
+          Route.includes_destinations_and_stores.where(id: get_route.id).scoping do
             visits_ordered = StopVisit
                                 .includes(:visit)
                                 .where(visits: { id: visit_ids }, route_id: planning_route_ids)
@@ -136,7 +136,7 @@ class V01::Routes < Grape::API
           begin
             raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
-            Stop.includes_destinations.scoping do
+            Stop.includes_destinations_and_stores.scoping do
               if !Optimizer.optimize(get_route.planning, get_route, { global: false, synchronous: params[:synchronous], active_only: params[:all_stops].nil? ? params[:active_only] : !params[:all_stops], ignore_overload_multipliers: params[:ignore_overload_multipliers] })
                 status 304
               else
@@ -167,7 +167,7 @@ class V01::Routes < Grape::API
           requires :id, type: String, desc: SharedParams::ID_DESC
         end
         patch ':id/reverse_order' do
-          Stop.includes_destinations.scoping do
+          Stop.includes_destinations_and_stores.scoping do
             raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
 
             get_route && get_route.reverse_order && get_route.compute_saved!
@@ -185,7 +185,7 @@ class V01::Routes < Grape::API
         end
         get ':id/send_sms' do
           if current_customer.enable_sms && current_customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
-            Stop.includes_destinations.scoping do
+            Stop.includes_destinations_and_stores.scoping do
               send_sms_route get_route
             end
           else

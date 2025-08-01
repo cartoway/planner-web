@@ -72,7 +72,7 @@ Rails.application.routes.draw do
   end
 
   # get 'zonings/:zoning_id/edit' => 'zonings_api_web#edit', :as => 'edit_zoning'
-      # patch 'zonings/:zoning_id/edit' => 'zonings_api_web#update'
+  # patch 'zonings/:zoning_id/edit' => 'zonings_api_web#update'
 
   resources :tags
   delete 'tags' => 'tags#destroy_multiple'
@@ -122,6 +122,7 @@ Rails.application.routes.draw do
   delete 'stores' => 'stores#destroy_multiple'
 
   resources :plannings do
+    get 'selection_details' => 'plannings#selection_details'
     patch ':route_id/:stop_id/move' => 'plannings#move'
     patch ':route_id/:stop_id/driver_move' => 'plannings#driver_move'
     patch ':route_id/:stop_id/move/:index' => 'plannings#move'

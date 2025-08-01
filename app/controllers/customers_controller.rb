@@ -194,6 +194,7 @@ class CustomersController < ApplicationController
         :enable_global_optimization,
         :enable_vehicle_position,
         :enable_stop_status,
+        :enable_store_stops,
         :enable_sms,
         :enable_sms_intransit,
         :enable_optimization_soft_upper_bound,
@@ -249,7 +250,8 @@ class CustomersController < ApplicationController
           :strict_restriction,
           :low_emission_zone
         ],
-        devices: RecursiveParamsHelper.permit_recursive(devices_params)
+        devices: RecursiveParamsHelper.permit_recursive(devices_params),
+        advanced_options: { solver_priority: [] }
       )
       return parameters
     else

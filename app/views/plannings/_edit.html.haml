@@ -139,13 +139,15 @@
                       %i.fa.fa-desktop.fa-fw
                       = current_user.customer.external_callback_name || t('plannings.edit.customer_external_callback_url.action')
                     %li.divider{role: "separator"}
-                - @planning.customer.device.configured_definitions.each do |key, definition|
+                - @device_definitions.each do |key, data|
+                  - definition = data[:definition]
+                  - routes_with_configured_devices = data[:routes_with_configured_devices]
                   - if key == :deliver && @planning.customer.enable_sms
                     %li
                       = link_to planning_modal_path(@planning, modal: 'sms_drivers'), remote: true, format: 'js', 'data-toggle': "modal", 'data-target': "#planning-send-sms-drivers-modal", 'data-keyboard': "true", id: 'send-sms-drivers' do
                         %i.fa.fa-fw.fa-comment-sms
                         = t('plannings.edit.deliver_send.plural.send_sms')
-                  - if @planning.routes.any?{ |route| route.vehicle_usage_id && !route.vehicle_usage.vehicle.devices.key?(definition[:device]) }
+                  - if routes_with_configured_devices.any?
                     - definition[:route_operations].each do |route_operation|
                       - options = { planning_id: "#{@planning.id}" }
                       - options.merge!({ toggle: 'tooltip', title: "#{t(plannings.edit.tomtom_send_waypoints.title).html_safe}" }) if route_operation.is_a?(Hash) && route_operation[:send].to_s == 'waypoints'
@@ -274,8 +276,8 @@
     },
     zoning_ids: @planning.zonings.collect(&:id),
     map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)],
-    map_lat: @planning.vehicle_usage_set.vehicle_usages.active.collect(&:default_store_start).compact.find{ |s| s.lat }.try(:lat) || @planning.customer.default_position[:lat],
-    map_lng: @planning.vehicle_usage_set.vehicle_usages.active.collect(&:default_store_start).compact.find{ |s| s.lng }.try(:lng) || @planning.customer.default_position[:lng],
+    map_lat: @planning.vehicle_usage_set.vehicle_usages.select{ |vehicle_usage| vehicle_usage.active? }.collect(&:default_store_start).compact.find{ |s| s.lat }.try(:lat) || @planning.customer.default_position[:lat],
+    map_lng: @planning.vehicle_usage_set.vehicle_usages.select{ |vehicle_usage| vehicle_usage.active? }.collect(&:default_store_start).compact.find{ |s| s.lng }.try(:lng) || @planning.customer.default_position[:lng],
     vehicles_array: planning_vehicles_array(@planning),
     vehicles_usages_map: planning_vehicles_usages_map(@planning),
     quantities: planning_quantities(@planning),

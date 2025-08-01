@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "@rails/webpacker": "3.2.1",
     "@babel/core": "^7.23.2",
     "@babel/preset-env": "^7.23.2",
     "@babel/preset-react": "^7.23.2",
+    "@rails/webpacker": "3.2.1",
     "babel-loader": "^8.3.0",
     "bootstrap": "3.4.1",
     "bootstrap-datepicker": "1.7.1",
@@ -19,6 +19,7 @@
     "leaflet-control-geocoder": "1.5.8",
     "leaflet-draw": "0.4.9",
     "leaflet-hash": "0.2.1",
+    "leaflet-lasso": "^2.2.13",
     "leaflet-pip": "1.1.0",
     "leaflet-polylineoffset": "1.1.1",
     "leaflet-responsive-popup": "0.2.0",

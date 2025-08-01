@@ -204,16 +204,19 @@ class V01::DestinationsTest < ActiveSupport::TestCase
           assert_equal 2, JSON.parse(last_response.body).find{ |destination| destination['name'] == 'Nouveau client' }['tag_ids'].size
 
           # zoning sets stops out_of_route
-          planning = Planning.last
+          planning = Planning.where(ref: 'Hop').last!
           visits = planning.routes.find{ |r| !r.vehicle_usage }.stops.map(&:visit)
           assert_equal ['v1', 'v2'], visits.map(&:ref)
           assert_equal [1, 2], visits.flat_map{ |v| v.deliveries.values }
           assert_nil visits.first.priority
           assert_nil visits.second.priority
 
-          route = Route.last
-          assert_equal [route.id], JSON.parse('[' + route.geojson_tracks.join(',') + ']').map{ |t| t['properties']['route_id'] }.uniq
-          assert_equal [route.id], JSON.parse('[' + route.geojson_points.join(',') + ']').map{ |t| t['properties']['route_id'] }.uniq
+          route = Route.where(ref: 'useless_because_of_zoning_ids').last!
+          assert_empty route.geojson_points
+
+          out_route = Route.last
+          assert_equal [out_route.id], JSON.parse('[' + out_route.geojson_tracks.join(',') + ']').map{ |t| t['properties']['route_id'] }.uniq
+          assert_equal [out_route.id], JSON.parse('[' + out_route.geojson_points.join(',') + ']').map{ |t| t['properties']['route_id'] }.uniq
 
           get '/api/0.1/plannings/ref:Hop.json?api_key=testkey1'
           planning = JSON.parse(last_response.body)
@@ -227,6 +230,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   end
 
   test 'should create bulk from json with store destination' do
+    @customer.update(enable_store_stops: true)
     orig_locale = I18n.locale
     I18n.locale = :en
 
@@ -1080,6 +1084,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   end
 
   test 'should import existing store with ref' do
+    @customer.update(enable_store_stops: true)
     orig_locale = I18n.locale
     I18n.locale = :en
     # Get existing store from fixtures
@@ -1162,6 +1167,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   end
 
   test 'should create bulk from json with stop custom attributes for store' do
+    @customer.update(enable_store_stops: true)
     orig_locale = I18n.locale
     I18n.locale = :en
 

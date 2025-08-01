@@ -93,7 +93,7 @@ class ImporterDestinations < ImporterBase
       [
         ["quantity#{du.id}".to_sym, {title: I18n.t('destinations.import_file.quantity') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.quantity_desc'), format: I18n.t('destinations.import_file.format.float')}],
         ["pickup#{du.id}".to_sym, {title: I18n.t('destinations.import_file.pickup') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.pickup_desc'), format: I18n.t('destinations.import_file.format.float')}],
-        ["delivery#{du.id}".to_sym, {title: I18n.t('destinations.import_file.delivery') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.delivery_desc'), format: I18n.t('destinations.import_file.format.float')}],
+        ["delivery#{du.id}".to_sym, {title: I18n.t('destinations.import_file.delivery') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.delivery_desc'), format: I18n.t('destinations.import_file.format.float')}]
       ]
     }]).merge(Hash[@customer.custom_attributes.for_visit.map { |ca|
     ["custom_attributes_visit[#{ca.name}]", { title: "#{I18n.t('destinations.import_file.custom_attributes_visit')}[#{ca.name}]", format: I18n.t("destinations.import_file.format.#{ca.object_type}")}]
@@ -427,6 +427,8 @@ class ImporterDestinations < ImporterBase
       prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
       destination_attributes
     elsif is_store?(row[:stop_type])
+      return nil unless @customer.enable_store_stops
+
       store_attributes = build_store_attributes(row)
       prepare_store(row, line, store_attributes)
       prepare_store_in_planning(row, line, store_attributes)
@@ -501,12 +503,7 @@ class ImporterDestinations < ImporterBase
   def save_plannings
     Route.no_touching do
       @plannings.each { |planning|
-        if !planning.id
-          planning.save_import!
-        else
-          planning.save!
-        end
-        planning.reload
+        planning.save! && planning.reload
       }
     end
   end
@@ -897,6 +894,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_store_in_planning(row, line, store_attributes)
+    return if !@customer.enable_store_stops
     if store_attributes
       ref_planning = row[:planning_ref].blank? ? nil : row[:planning_ref].downcase
       if row.key?(:route) && store_attributes[:id].nil?
@@ -950,48 +948,52 @@ class ImporterDestinations < ImporterBase
   def prepare_plannings(name, _options)
     # Generate new plannings
     @plannings_routes.each{ |ref, routes_hash|
-      next if @provided_planning_attributes.empty? && ref.nil? && routes_hash.keys.compact.empty?
+      Planning.transaction do
+        next if @provided_planning_attributes.empty? && ref.nil? && routes_hash.keys.compact.empty?
 
-      planning = ref ? @plannings_hash[ref] : @plannings_hash[@provided_planning_attributes[:ref]&.downcase&.to_sym]
-      unless planning
-        attributes = @plannings_attributes[ref]
-        planning = Planning.new(attributes)
-      end
-      planning.assign_attributes(@provided_planning_attributes)
-      unless planning.name
-        planning.assign_attributes({
-          name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
-        })
-      end
-      planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
-      routes_hash.each{ |k, v|
-        # Duplicated visit lines are only represented by a single visit
-        v[:visits].select!{ |_type, attribute, _stop_attributes|
-          attribute[:id] ||
-            @visit_index_to_id_hash[attribute[:visit_index]] ||
-            @store_index_to_id_hash[attribute[:store_index]]
+        planning = ref ? @plannings_hash[ref] : @plannings_hash[@provided_planning_attributes[:ref]&.downcase&.to_sym]
+        planning_id = planning&.id
+        unless planning
+          attributes = @plannings_attributes[ref]
+          planning = Planning.new(attributes)
+        end
+        planning.assign_attributes(@provided_planning_attributes)
+        unless planning.name
+          planning.assign_attributes({
+            name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
+          })
+        end
+        planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
+        planning.save!
+        routes_hash.each{ |k, v|
+          # Duplicated visit lines are only represented by a single visit
+          v[:visits].select!{ |_type, attribute, _active|
+            attribute[:id] ||
+              @visit_index_to_id_hash[attribute[:visit_index]] ||
+              @store_index_to_id_hash[attribute[:store_index]]
+          }
+          visit_ids = v[:visits].map{ |type, attribute, _active|
+            next unless type == :visit
+
+            attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
+          }
+          visits = Visit.includes_destinations_and_stores.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
+
+          store_ids = v[:visits].map{ |type, attribute, _active|
+            next unless type == :store
+
+            attribute[:id] || @store_index_to_id_hash[attribute[:store_index]]
+          }
+          stores = Store.where(id: store_ids).index_by(&:id).values_at(*store_ids)
+
+          v[:visits].map!.with_index{ |(_type, _attribute, active), index| [visits[index] || stores[index], active] }
         }
-        visit_ids = v[:visits].map{ |type, attribute, _stop_attributes|
-          next unless type == :visit
-
-          attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
-        }
-        visits = Visit.includes_destinations.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
-
-        store_ids = v[:visits].map{ |type, attribute, _stop_attributes|
-          next unless type == :store
-
-          attribute[:id] || @store_index_to_id_hash[attribute[:store_index]]
-        }
-        stores = Store.where(id: store_ids).index_by(&:id).values_at(*store_ids)
-
-        v[:visits].map!.with_index{ |(_type, _attribute, stop_attributes), index| [visits[index] || stores[index], stop_attributes] }
-      }
-      if !(planning.id ? planning.update_routes(routes_hash, recompute = true) : planning.set_routes(routes_hash, false, true))
-        raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if routes_hash.keys.size > planning.routes.size || routes_hash.keys.compact.size > @customer.max_vehicles
+        if !(planning_id ? planning.update_routes(routes_hash, recompute = true) : planning.set_routes(routes_hash, false, true))
+          raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if routes_hash.keys.size > planning.routes.size || routes_hash.keys.compact.size > @customer.max_vehicles
+        end
+        planning.split_by_zones(nil) if @provided_planning_attributes.key?(:zonings) || @provided_planning_attributes.key?(:zoning_ids)
+        @plannings.push(planning)
       end
-      planning.split_by_zones(nil) if @provided_planning_attributes.key?(:zonings) || @provided_planning_attributes.key?(:zoning_ids)
-      @plannings.push(planning)
     }
 
     # Add new visits to pre existing plannings

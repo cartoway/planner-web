@@ -29,6 +29,7 @@ import {
   completeAjaxMap,
   ajaxError
 } from '../../assets/javascripts/ajax';
+import { LassoModule } from './lasso';
 
 /******************
  * PopupModule
@@ -385,9 +386,6 @@ export const RoutesLayer = L.FeatureGroup.extend({
     if (!planningId && options.showStore) {
       this._loadAllStores(); // if no planning id: load all stores for zoning view
     }
-
-    // Clear layers if page is reloaded with turbolinks
-    // this.hideAllRoutes();
   },
 
   onAdd: function(map) {
@@ -946,5 +944,41 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
     this.layersByRoute = {};
     this.clustersByRoute = {};
+  },
+
+  // Lasso initialization
+  initLasso: function(panelLoadingFunc, refreshSidebarRouteFunc) {
+    if (typeof LassoModule !== 'undefined' && !document.querySelector('.leaflet-control-lasso')) {
+      var lassoControl = LassoModule.initLasso(this.map, this.options.planningId, this, panelLoadingFunc, refreshSidebarRouteFunc);
+
+      // Add lasso control to map._controls for cleanup
+      if (lassoControl && this.map._controls) {
+        this.map._controls.push(lassoControl);
+      }
+
+      $(document).on('lasso:stopsMoved', function(event, data) {
+        if (data && data.routeIds && this.refreshRoutes) {
+          this.refreshRoutes(data.routeIds);
+        }
+      }.bind(this));
+    }
+
+    return this;
+  },
+
+  getSelectableLayers: function() {
+    var layers = [];
+
+    Object.keys(this.clustersByRoute).forEach(function(routeId) {
+      this.clustersByRoute[routeId].getLayers().forEach(function(marker) {
+        layers.push(marker);
+      });
+    }.bind(this));
+
+    Object.keys(this.markerStores).forEach(function(storeId) {
+      layers.push(this.markerStores[storeId]);
+    }.bind(this));
+
+    return layers;
   }
 });
