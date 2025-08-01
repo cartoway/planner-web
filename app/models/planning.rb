@@ -298,19 +298,19 @@ class Planning < ApplicationRecord
   end
 
   def compute_saved!(options = {})
-    jobs_to_enqueue = []
+    routes_to_enqueue = []
 
     result =
       if ActiveRecord::Base.connection.transaction_open?
-        compute_within_existing_transaction(options, jobs_to_enqueue)
+        compute_within_existing_transaction(options, routes_to_enqueue)
       else
         Planning.transaction do
-          compute_within_existing_transaction(options, jobs_to_enqueue)
+          compute_within_existing_transaction(options, routes_to_enqueue)
         end
       end
 
-    jobs_to_enqueue.each do |job|
-      Delayed::Job.enqueue(job)
+    routes_to_enqueue.each do |r|
+      DelayedJobManager.enqueue_simplify_geojson_tracks_job(self.customer_id, r.id)
     end
 
     !!result
@@ -988,7 +988,7 @@ class Planning < ApplicationRecord
 
   private
 
-  def compute_within_existing_transaction(options = {}, jobs_to_enqueue = [])
+  def compute_within_existing_transaction(options = {}, routes_to_enqueue = [])
     stop_rests = []
     stop_visits = []
     stop_stores = []
@@ -1027,7 +1027,7 @@ class Planning < ApplicationRecord
       r.invalidate_route_cache && r.reload
       next unless Planner::Application.config.delayed_job_use
 
-      jobs_to_enqueue << DelayedJobManager.enqueue_simplify_geojson_tracks_job(self.customer_id, r.id)
+      routes_to_enqueue << r
     }
 
     self.save!(touch: false) && self.invalidate_planning_cache
