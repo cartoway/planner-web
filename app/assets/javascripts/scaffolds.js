@@ -289,19 +289,23 @@ export const mapInitialize = function(params) {
   }).setView([params.map_lat || 0, params.map_lng || 0], params.map_zoom || defaultMapZoom);
   map.defaultMapZoom = defaultMapZoom;
 
-  L.control.zoom({
+  // Store control references for cleanup
+  map._controls = [];
+
+  var zoomControl = L.control.zoom({
     position: 'topleft',
     zoomInText: '+',
     zoomOutText: '-',
     zoomInTitle: I18n.t('plannings.edit.map.zoom_in'),
     zoomOutTitle: I18n.t('plannings.edit.map.zoom_out')
   }).addTo(map);
+  map._controls.push(zoomControl);
 
   if (params.geocoder) {
     var geocoderLayer = L.featureGroup();
     map.addLayer(geocoderLayer);
 
-    L.Control.geocoder({
+    var geocoderControl = L.Control.geocoder({
       geocoder: L.Control.Geocoder.nominatim({
         serviceUrl: "/api/0.1/geocoder/"
       }),
@@ -325,6 +329,7 @@ export const mapInitialize = function(params) {
         geocoderLayer.removeLayer(focusGeocode);
       }, 2000);
     }).addTo(map);
+    map._controls.push(geocoderControl);
 
     $('.leaflet-control-geocoder-icon').prop('title', I18n.t('web.geocoder.tooltip'));
   }
@@ -334,9 +339,10 @@ export const mapInitialize = function(params) {
   }
 
   if (nbLayers > 1) {
-    L.control.layers(mapBaseLayers, mapOverlays, {
+    var layersControl = L.control.layers(mapBaseLayers, mapOverlays, {
       position: 'topleft'
     }).addTo(map);
+    map._controls.push(layersControl);
   } else {
     map.tileLayer = L.tileLayer(mapLayer.url, {
       maxZoom: 19,
@@ -374,11 +380,28 @@ export const initializeMapHash = function(map, initOnly) {
   else if (navigator.userAgent.indexOf('Edge') === -1) {
     map.addHash();
     var removeHash = function() {
-      map.removeHash();
-      $(document).off('page:before-change', removeHash);
+      if (map.removeHash) {
+        map.removeHash();
+      }
+      $(document).off('turbolinks:before-cache', removeHash);
     };
-    $(document).on('page:before-change', removeHash);
+    $(document).on('turbolinks:before-cache', removeHash);
   }
+
+  // Clean up map controls when leaving page
+  var removeMapControls = function() {
+    if (map && map._controls) {
+      map._controls.forEach(function(control) {
+        if (control && map.removeControl) {
+          map.removeControl(control);
+        }
+      });
+      map._controls = [];
+    }
+
+    $(document).off('turbolinks:before-cache', removeMapControls);
+  };
+  $(document).on('turbolinks:before-cache', removeMapControls);
 
   return !window.location.hash;
 };
