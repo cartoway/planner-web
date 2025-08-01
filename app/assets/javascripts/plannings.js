@@ -665,9 +665,6 @@ export const plannings_edit = function(params) {
   params.geocoder = true;
 
   var map = mapInitialize(params);
-  setTimeout(function() {
-    map.invalidateSize();
-  }, 200);
   var popupOptions = params.manage_planning;
   var routesLayer = new RoutesLayer(planning_id, {
     url_click2call: url_click2call,
@@ -696,9 +693,11 @@ export const plannings_edit = function(params) {
   L.disableClustersControl(map, routesLayer);
   L.disableRoutePolylinesControl(map, routesLayer);
 
-  var fitBounds = initializeMapHash(map);
+  routesLayer.initLasso(panelLoading, refreshSidebarRoute);
 
   sidebar.addTo(map);
+
+  var fitBounds = initializeMapHash(map);
 
   $('#data_routes_dropdown').find('li a').click(function() {
     if (routes.length == 0) return;
@@ -2830,9 +2829,6 @@ export const plannings_edit = function(params) {
 
   // Init device global tools
   devicesObservePlanning.init($('#edit-planning'));
-
-  // Initialize lasso functionality after all functions are defined
-  routesLayer.initLasso(panelLoading, refreshSidebarRoute);
 };
 
 var plannings_show = function(params) {
