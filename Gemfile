@@ -140,7 +140,6 @@ gem 'bootstrap-datepicker-rails'
 
 gem 'leaflet-rails', '> 1.0.2'
 gem 'leaflet-markercluster-rails', git: 'https://github.com/Mapotempo/leaflet-markercluster-rails.git' # FIXME wait for https://github.com/scpike/leaflet-markercluster-rails/pull/8
-gem 'leaflet-draw-rails', git: 'https://github.com/frodrigo/leaflet-draw-rails.git' # FIXME wait for https://github.com/zentrification/leaflet-draw-rails/pull/1
 gem 'leaflet_numbered_markers-rails', git: 'https://github.com/frodrigo/leaflet_numbered_markers-rails.git'
 gem 'leaflet-control-geocoder-rails', git: 'https://github.com/Mapotempo/leaflet-control-geocoder-rails.git'
 gem 'leaflet-controlledbounds-rails', git: 'https://github.com/Mapotempo/leaflet-controlledbounds-rails.git'
