@@ -20,33 +20,11 @@
 import { RoutesLayer } from '../../assets/javascripts/routes_layers';
 import { mapInitialize, initializeMapHash, templateSelectionColor, templateResultColor } from '../../assets/javascripts/scaffolds';
 import { mustache_i18n, beforeSendWaiting, completeAjaxMap, ajaxError, completeWaiting, fake_select2 } from '../../assets/javascripts/ajax';
-
-import 'leaflet-draw';
-import './i18n/leaflet.draw.i18n';
+import { getGeomanTranslations } from './i18n/geoman_translations';
 
 import leafletPip from 'leaflet-pip';
 
 export const zonings_edit = function(params) {
-  /**********************************************
-   Override by prototype _onTouch() leaflet Draw
-  ************************************************/
-
-  L.Draw.Polyline.prototype._onTouch = function(e) {
-    var originalEvent = e.originalEvent;
-    var clientX;
-    var clientY;
-    if (originalEvent.touches && originalEvent.touches[0] && !this._clickHandled && !this._touchHandled && !this._disableMarkers && L.Browser.touch) {
-      // Add L.Browser.touch condition do not block dblclick event anymore, as we are checking if browser is truly a touch screen.
-      clientX = originalEvent.touches[0].clientX;
-      clientY = originalEvent.touches[0].clientY;
-      this._disableNewMarkers();
-      this._touchHandled = true;
-      this._startPoint.call(this, clientX, clientY);
-      this._endPoint.call(this, clientX, clientY, e);
-      this._touchHandled = null;
-    }
-    this._clickHandled = null;
-  };
 
   var prefered_unit = params.prefered_unit,
     zoning_id = params.zoning_id,
@@ -102,34 +80,29 @@ export const zonings_edit = function(params) {
 
   var zonesMap = {};
 
-  // Must be init before L.Hash
-  new L.Control.Draw({
-    draw: {
-      polyline: false,
-      polygon: {
-        allowIntersection: false, // Restricts shapes to simple polygons
-        shapeOptions: {
-          color: '#707070',
-          weight: 5
-        }
-      },
-      rectangle: false,
-      circle: false,
-      marker: false
-    },
-    edit: {
-      featureGroup: featureGroup,
-      poly: {
-        allowIntersection: false
-      },
-      edit: {
-        selectedPathOptions: {
-          maintainColor: true,
-          dashArray: '10, 10'
-        }
-      }
-    }
-  }).addTo(map);
+  map.pm.setLang(I18n.locale, getGeomanTranslations(), 'en');
+
+  map.pm.setGlobalOptions({
+    allowSelfIntersection: false,
+    markerEditable: false,
+    removeLayerBelowMinVertexCount: false
+  });
+
+  map.pm.addControls({
+    drawPolygon: true,
+    drawPolyline: false,
+    drawRectangle: false,
+    drawCircle: false,
+    drawCircleMarker: false,
+    drawMarker: false,
+    editMode: true,
+    dragMode: false,
+    cutPolygon: false,
+    oneBlock: true,
+    removalMode: true,
+    rotateMode: false,
+    position: 'topleft'
+  });
 
   L.disableClustersControl(map, markersGroup);
   if ($('#from_planning').length) {
@@ -157,53 +130,23 @@ export const zonings_edit = function(params) {
     $(document).on('page:before-change', checkZoningChanges);
   });
 
-  map.on(L.Draw.Event.DRAWSTART, function() {
+  map.on('pm:drawstart', function(e) {
     creating_drawing = true;
     markersGroup.togglePopupOnHover();
   });
 
-  map.on(L.Draw.Event.DRAWSTOP, function() {
-    creating_drawing = true;
+  map.on('pm:drawend', function(e) {
     markersGroup.togglePopupOnHover();
   });
 
-  map.on(L.Draw.Event.EDITSTART, function() {
-    editing_drawing = true;
-    markersGroup.togglePopupOnHover();
-  });
-
-  map.on(L.Draw.Event.EDITSTOP, function() {
-    editing_drawing = true;
-    markersGroup.togglePopupOnHover();
-  });
-
-  map.on(L.Draw.Event.EDITVERTEX, function(e) {
-    editing_drawing = e.target._layers;
-  });
-
-  map.on(L.Draw.Event.CREATED, function(e) {
+  map.on('pm:create', function(e) {
     drawing_changed = true;
+    var geom_zone = new zoneGeometry(e.layer.toGeoJSON());
     addZone({
       'vehicles': vehicles,
       'polygon': JSON.stringify(e.layer.toGeoJSON())
-    }, e.layer);
-  });
-
-  map.on(L.Draw.Event.EDITED, function(e) {
-    creating_drawing = false;
-    editing_drawing = false;
-    drawing_changed = true;
-    e.layers.eachLayer(function(layer) {
-      updateZone(layer);
-    });
-  });
-
-  map.on(L.Draw.Event.DELETED, function(e) {
-    drawing_changed = true;
-    e.layers.eachLayer(function(layer) {
-      deleteZone(layer);
-      labelLayer.clearLayers();
-    });
+    }, geom_zone);
+    e.layer.remove();
   });
 
   var countPointInPolygon = function(layer, ele) {
@@ -216,8 +159,21 @@ export const zonings_edit = function(params) {
     if (markers.length) {
       var n = 0,
         quantities = {};
+
+      // Convert layer to GeoJSON if it's a L.Polygon
+      var geoJsonLayer;
+      if (layer instanceof L.Polygon) {
+        geoJsonLayer = L.geoJSON({
+          type: 'Feature',
+          geometry: layer.toGeoJSON().geometry,
+          properties: {}
+        });
+      } else {
+        geoJsonLayer = layer;
+      }
+
       markers.forEach(function(marker) {
-        if (leafletPip.pointInLayer(marker.getLatLng(), layer, true).length > 0) {
+        if (leafletPip.pointInLayer(marker.getLatLng(), geoJsonLayer, true).length > 0) {
           if (marker.properties) {
             const nb_visits = marker.properties.nb_visit;
             n += nb_visits ? nb_visits : 1;
@@ -278,10 +234,56 @@ export const zonings_edit = function(params) {
 
   var labelLayer = (new L.layerGroup()).addTo(map);
   var zoneGeometry = L.GeoJSON.extend({
+    initialize: function(geojson, options) {
+      L.GeoJSON.prototype.initialize.call(this, geojson, options);
+
+      // Attach Geoman events to the individual layer
+      var zoneLayer = this.getLayers()[0];
+      if (zoneLayer) {
+        zoneLayer.on('pm:enable', function(e) {
+          creating_drawing = false;
+          editing_drawing = false;
+        });
+
+        zoneLayer.on('pm:update', function(e) {
+          drawing_changed = true;
+          // e.target is the individual layer, we need the parent GeoJSON layer
+          var leafletId = Object.keys(this._eventParents)[Object.keys(this._eventParents).length - 1];
+          updateZone(zonesMap[leafletId]);
+        });
+
+        zoneLayer.on('pm:remove', function(e) {
+          drawing_changed = true;
+          // e.target is the individual layer, we need the parent GeoJSON layer
+          var leafletId = Object.keys(this._eventParents)[Object.keys(this._eventParents).length - 1];;
+          deleteZone(zonesMap[leafletId]);
+          labelLayer.clearLayers();
+        });
+
+        zoneLayer.on('pm:editstart', function(e) {
+          editing_drawing = true;
+          markersGroup.togglePopupOnHover();
+        });
+
+        zoneLayer.on('pm:editend', function(e) {
+          markersGroup.togglePopupOnHover();
+        });
+
+        zoneLayer.on('pm:vertexadded', function(e) {
+          editing_drawing = e.target._layers;
+        });
+
+        zoneLayer.on('pm:vertexremoved', function(e) {
+          editing_drawing = e.target._layers;
+        });
+      }
+    },
+
     addOverlay: function(zone) {
       var that = this;
       var labelMarker;
-      this.on('mouseover', function() {
+      var zoneLayer = this.getLayers()[0];
+      zoneLayer.on('mouseover', function() {
         that.setStyle({
           opacity: 0.9,
           weight: (zone.speed_multiplier === 0) ? 5 : 5
@@ -296,7 +298,7 @@ export const zonings_edit = function(params) {
           }).addTo(labelLayer);
         }
       });
-      this.on('mouseout', function() {
+      zoneLayer.on('mouseout', function() {
         that.setStyle({
           opacity: 0.5,
           weight: (zone.speed_multiplier === 0) ? 5 : 3
@@ -306,7 +308,7 @@ export const zonings_edit = function(params) {
         }
         labelMarker = null;
       });
-      this.on('click', function() {
+      zoneLayer.on('click', function() {
         if (!zone.id) {
           return;
         }
@@ -364,17 +366,18 @@ export const zonings_edit = function(params) {
       });
     }
 
-    var geoJsonLayer;
-    if (geom instanceof L.GeoJSON) {
-      geoJsonLayer = geom;
-      geom = geom.getLayers()[0];
-    } else {
-      geom = (new zoneGeometry(JSON.parse(zone.polygon))).addOverlay(zone);
-      geoJsonLayer = geom;
-      geom = geom.getLayers()[0];
+    // Ensure geom is a zoneGeometry instance
+    var leafletId = geom._leaflet_id;
+    var geoJsonLayer = geom;
+    if (!(geoJsonLayer instanceof zoneGeometry)) {
+      throw new Error(I18n.t('errors.zonings.geometry_error'));
     }
 
-    featureGroup.addLayer(geom);
+    geoJsonLayer.addOverlay(zone);
+
+    if (zone.polygon) {
+      featureGroup.addLayer(geom);
+    }
 
     zone.i18n = mustache_i18n;
     $.extend(zone, params.manage_zoning);
@@ -418,12 +421,18 @@ export const zonings_edit = function(params) {
     observeChanges(ele);
 
     ele.data('feature', zone);
-    zonesMap[geom._leaflet_id] = {
+    zonesMap[leafletId] = {
       layer: geoJsonLayer,
       ele: ele
     };
 
-    countPointInPolygon(geoJsonLayer, ele);
+    // Update the hidden polygon field with current polygon data
+    var $polygonField = ele.find('input[name="zoning[zones_attributes][][polygon]"]');
+    if ($polygonField.length > 0) {
+      $polygonField.val(JSON.stringify(geom.toGeoJSON()));
+    }
+
+    countPointInPolygon(geom, ele);
 
     var formatNoMatches = I18n.t('web.select2.empty_result');
     $('select.vehicle_select', ele).select2({
@@ -492,7 +501,7 @@ export const zonings_edit = function(params) {
 
     $('.delete', ele).click(function() {
       if (confirm(I18n.t('all.verb.destroy_confirm'))) {
-        deleteZone(geom);
+        deleteZone(geoJsonLayer);
       }
     });
 
@@ -501,30 +510,17 @@ export const zonings_edit = function(params) {
     });
   };
 
-  var deleteZone = function(geom) {
+  var deleteZone = function(zoneData) {
     drawing_changed = true;
-    featureGroup.removeLayer(geom);
-    var ele = zonesMap[geom._leaflet_id].ele;
+    var ele = zoneData.ele;
+    featureGroup.removeLayer(zoneData.layer);
     ele.hide();
     ele.append('<input type="hidden" name="zoning[zones_attributes][][_destroy]" value="1"/>');
   };
 
-  var updateZone = function(geom) {
-    if (geom.intersects()) {
-      stickyError(L.drawLocal.draw.handlers.polyline.error);
-      var z = zonesMap[geom._leaflet_id].ele;
-      z.css('box-shadow', '#FF0000 0px 0px 5px');
-      setTimeout(function() {
-        z.css('box-shadow', '');
-      }, 5000);
-      $('.sidebar-content').animate({
-        scrollTop: z.offset().top + $('.sidebar-content').scrollTop() - 100
-      });
-      return;
-    }
-
-    $('input[name=zoning\\[zones_attributes\\]\\[\\]\\[polygon\\]]', zonesMap[geom._leaflet_id].ele).attr('value', JSON.stringify(geom.toGeoJSON()));
-    countPointInPolygon(zonesMap[geom._leaflet_id].layer, zonesMap[geom._leaflet_id].ele);
+  var updateZone = function(zoneData) {
+    $('input[name=zoning\\[zones_attributes\\]\\[\\]\\[polygon\\]]', zoneData.ele).attr('value', JSON.stringify(zoneData.layer.toGeoJSON()));
+    countPointInPolygon(zoneData.layer, zoneData.ele);
   };
 
   var displayZoning = function(data) {
@@ -532,10 +528,10 @@ export const zonings_edit = function(params) {
     $('#zones').empty();
     featureGroup.clearLayers();
     $.each(data.zoning, function(index, zone) {
-      var geom = (new zoneGeometry(JSON.parse(zone.polygon))).addOverlay(zone);
+      var geom = new zoneGeometry(JSON.parse(zone.polygon));
       if (geom) {
-        setColor(geom, vehiclesMap[zone.vehicle_id], zone.speed_multiplier);
         addZone(zone, geom);
+        setColor(geom, vehiclesMap[zone.vehicle_id], zone.speed_multiplier);
       }
     });
 

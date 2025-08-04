@@ -782,6 +782,8 @@ fr:
       bad_barcode_char: Les données du code barre contiennent un caractère non pris en charge
       expired: La tournée a expiré
       enable_store_stops: Les arrêts intermédiaires doivent être activés
+    zonings:
+      geometry_error: La géométrie est invalide
   import:
     csv:
       line: 'Ligne %{s}'
