@@ -33,7 +33,7 @@ import 'jquery-simplecolorpicker/jquery.simplecolorpicker.css';
 import 'jquery-simplecolorpicker/jquery.simplecolorpicker-fontawesome.css';
 import 'bootstrap-datepicker/dist/css/bootstrap-datepicker3.css';
 import 'bootstrap-slider/dist/css/bootstrap-slider.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
+import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'sidebar-v2/css/leaflet-sidebar.css';
