@@ -816,14 +816,6 @@ leaflet-control-geocoder plugin packaged for the rails 3 asset pipeline
 
 Leaflet-ControlledBounds plugin packaged for the rails 3 asset pipeline
 
-<a name="leaflet-draw-rails"></a>
-### <a href="https://github.com/Leaflet/Leaflet.draw">leaflet-draw-rails</a> v0.2.4.1 (default)
-#### Leaflet.draw plugin for rails 3
-
-<a href="http://opensource.org/licenses/mit-license">MIT</a> whitelisted
-
-Leaflet.draw plugin packaged for the rails 3 asset pipeline
-
 <a name="leaflet-encoded-rails"></a>
 ### <a href="https://github.com/ngonzalez">leaflet-encoded-rails</a> v0.1.0 (default)
 #### Leaflet: Support Google's Polyline encoding

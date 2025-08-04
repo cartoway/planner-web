@@ -213,6 +213,6 @@ class ZoningsController < ApplicationController
     params[:zoning][:zones_attributes].each{ |zone|
       zone[:speed_multiplier] = zone[:avoid_zone] ? 0 : 1
     } if params[:zoning][:zones_attributes]
-    params.require(:zoning).permit(:name, zones_attributes: [:id, :name, :polygon, :_destroy, :vehicle_id, :speed_multiplier])
+    params.require(:zoning).permit(:name, zones_attributes: [:id, :name, :polygon, :_destroy, :vehicle_id, :speed_multiplier, :avoid_zone])
   end
 end
