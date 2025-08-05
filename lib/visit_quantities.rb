@@ -21,7 +21,7 @@ class VisitQuantities
     pickups = visit.send(options[:with_default] ? :default_pickups : :pickups)
     deliveries = visit.send(options[:with_default] ? :default_deliveries : :deliveries)
     visit.destination.customer.deliverable_units.map{ |du|
-      next if !options[:with_nil] && (pickups[du.id] && pickups[du.id] == 0 && deliveries[du.id] && deliveries[du.id] == 0)
+      next if !options[:with_nil] && !(pickups[du.id] && pickups[du.id] > 0) && !(deliveries[du.id] && deliveries[du.id] > 0)
 
       delivery = deliveries[du.id] || 0
       pickup = pickups[du.id] || 0
