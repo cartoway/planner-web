@@ -2922,7 +2922,3 @@ Paloma.controller('Plannings', {
     plannings_show(this.params);
   }
 });
-
-$(document).on('turbolinks:load', function() {
-  $('.select2').select2({ theme: 'bootstrap' });
-});
