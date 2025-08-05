@@ -443,6 +443,32 @@ export const plannings_edit = function(params) {
     });
   };
 
+  var panelLoading = function(route_id) {
+    var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
+    route_panel.sortable('disable')
+               .closest('.panel')
+               .addClass('spinner-container')
+               .append('<div class="spinner-border"></div>');
+  };
+
+  var refreshSidebarRoute = function(planning_id, route_id, options) {
+    $.ajax({
+      type: 'GET',
+      url: '/plannings/' + planning_id + '/' + route_id + '/refresh.js?with_stops=' + true,
+      beforeSend: beforeSendWaiting,
+      error: ajaxError,
+      success: function() {
+        updateSuccess(locals.summary, map, [locals.route], options);
+        initRouteSelector();
+        updateSelectionCount('#route_selector', '#planning_route_ids');
+        if (!locals.route.vehicle_usage_id) {
+          continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
+        }
+      },
+      complete: completeAjaxMap
+    });
+  }
+
   var requestVehiclePositionPending = false;
   var requestVehiclePosition = function() {
     if (!requestVehiclePositionPending) {
@@ -1147,14 +1173,6 @@ export const plannings_edit = function(params) {
   $('input[name="enable_optimization_soft_upper_bound"]').change(function() {
     $("#optimization-vehicle-max-upper-bound, #optimization-stop-max-upper-bound").toggleClass('d-none');
   });
-
-  var panelLoading = function(route_id) {
-    var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
-    route_panel.sortable('disable')
-               .closest('.panel')
-               .addClass('spinner-container')
-               .append('<div class="spinner-border"></div>');
-  }
 
   var sortLoading = function(route, origin_route_id) {
     var route_id = route.attr('data-route-id');
@@ -2033,24 +2051,6 @@ export const plannings_edit = function(params) {
       });
     }
   };
-
-  var refreshSidebarRoute = function(planning_id, route_id, options) {
-    $.ajax({
-      type: 'GET',
-      url: '/plannings/' + planning_id + '/' + route_id + '/refresh.js?with_stops=' + true,
-      beforeSend: beforeSendWaiting,
-      error: ajaxError,
-      success: function() {
-        updateSuccess(locals.summary, map, [locals.route], options);
-        initRouteSelector();
-        updateSelectionCount('#route_selector', '#planning_route_ids');
-        if (!locals.route.vehicle_usage_id) {
-          continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
-        }
-      },
-      complete: completeAjaxMap
-    });
-  }
 
   var updateDataHeader = function(planning_id) {
     $.ajax({
