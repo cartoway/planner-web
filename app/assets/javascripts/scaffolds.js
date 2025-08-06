@@ -114,11 +114,10 @@ $(document).on('turbolinks:load', function() {
    */
   $.fn.fillQuantities = function(params) {
     var $this = this;
-    $this.css({'margin': '.8em 0', 'text-align': 'left', 'width': '100%'});
     if (params.withDuration) $this.showOrCreateDuration();
     if (params.vehicleCapacities) {
-      for (var index = 0; index < $("div[id^='quantity-']").length; index++) {
-        $($("div[id^='quantity-']")[index]).hide();
+      for (var index = 0; index < $("[class*='quantity-']").length; index++) {
+        $($("[class*='quantity-']")[index]).hide();
       }
       params.vehicleCapacities.forEach(function(obj) {
         $this.showOrCreateQuantity(obj, params.withCapacity);
@@ -130,16 +129,14 @@ $(document).on('turbolinks:load', function() {
 
   $.fn.showOrCreateDuration = function() {
     var $this = this;
-    if ($this.find('[class="duration"]').length == 0) {
-      var input = '<div class="duration" style="display: block !important">' +
-        '<span class="primary route-info" title="' + I18n.t('plannings.edit.route_visits_duration_help') + '" data-toggle="tooltip">' +
+    if ($this.find('.duration').length == 0) {
+      var input = '<div class="duration primary route-info" title="' + I18n.t('plannings.edit.route_visits_duration_help') + '" data-toggle="tooltip">' +
         '<i class="fa fa-stopwatch fa-fw"></i>' +
         '<span class="duration"></span>' +
-        '</span>' +
         '</div>';
       $this.append(input);
     } else {
-      $this.find('div[class="duration"]').show();
+      $this.find('.duration').show();
     }
     return $this;
   };
@@ -150,9 +147,8 @@ $(document).on('turbolinks:load', function() {
    */
   $.fn.showOrCreateQuantity = function(obj, withCapacity) {
     var $this = this;
-    if ($this.find('div[class="quantity-' + obj.id + '"]').length == 0) {
-      var input = '<div class="quantity-' + obj.id + '">' +
-        '<span class="primary route-info" title="' + I18n.t('plannings.edit.route_quantity_help') + '" data-toggle="tooltip">' +
+    if ($this.find('.quantity-' + obj.id).length == 0) {
+      var input = '<div class="quantity-' + obj.id + ' primary route-info" title="' + I18n.t('plannings.edit.route_quantity_help') + '" data-toggle="tooltip">' +
         '<i class="icon-' + obj.id + ' fa ' + obj.unitIcon + ' fa-fw"></i>' +
         '&nbsp;<span class="quantity-' + obj.id + '"></span>';
       if (withCapacity) {
@@ -163,18 +159,19 @@ $(document).on('turbolinks:load', function() {
         }
       }
       input += '&nbsp;<span class="capacity-label-' + obj.id + '">' + obj.label + '</span>' +
-        '</span>' +
         '</div>';
       $this.append(input);
     } else {
-      if (obj.capacity && withCapacity) $this.find('div[class="default-capacity-' + obj.id + ']').html('/' + obj.capacity);
-      $this.find('div[class="quantity-' + obj.id + '"]').show();
+      if (obj.capacity && withCapacity) {
+        $this.find('div[class="default-capacity-' + obj.id + '"]').html('/' + obj.capacity);
+      }
+      $this.find('.quantity-' + obj.id).show();
     }
   };
 
   $.fn.calculateQuantities = function(stops, controllerParamsQuantities) {
     var $this = this;
-    var durationElement = $this.find('span[class="duration"]');
+    var durationElement = $this.find('span.duration');
     var index = 0;
     var result = {duration: 0, quantities: []};
 
@@ -185,11 +182,6 @@ $(document).on('turbolinks:load', function() {
       }
     } else {
       stops.forEach(function(stop) {
-        durationElement.empty();
-        stop.quantities.forEach(function(obj) {
-          $this.find('span[class="quantity-' + obj.deliverable_unit_id + '"]').empty();
-        });
-
         stop.quantities.forEach(function(quantity) {
           var oldValue = result.quantities[quantity.deliverable_unit_id] ? result.quantities[quantity.deliverable_unit_id].value : 0;
           var value = quantity.quantity + oldValue;
@@ -202,7 +194,9 @@ $(document).on('turbolinks:load', function() {
             value: value
           };
         });
-        result.duration = result.duration + stop.duration;
+        result.duration = result.duration +
+          parseTimeToSeconds(stop.duration) +
+          parseTimeToSeconds(stop.destination_duration);
       });
 
       result.quantities.forEach(function(quantity) {
@@ -213,12 +207,12 @@ $(document).on('turbolinks:load', function() {
           var capacity = parseInt($defaultCapacityElement.html().replace('/', ''));
           if (quantity.value > capacity) color = 'red';
         }
-        var $element = $this.find('span[class="quantity-' + quantity.id + '"]');
+
+        var $element = $this.find('span.quantity-' + quantity.id);
         $element.html(quantity.value % 1 === 0 ? quantity.value : quantity.value.toFixed(2)).css('color', color);
-        $this.find('[class^="icon-' + quantity.id + '"]').css('color', color);
+        $this.find('.icon-' + quantity.id).css('color', color);
       });
     }
-
     durationElement.html(Number(result.duration).toHHMM());
     return $this;
   };
@@ -825,4 +819,17 @@ export function camelToSnake(str) {
 export function validateTimeFormat(input) {
   var timeRegex = /^[0-9]+:[0-5][0-9]$/;
   return timeRegex.test(input);
+}
+
+export function parseTimeToSeconds(timeString) {
+  if (!timeString) return 0;
+
+  var parts = timeString.split(':');
+  if (parts.length === 3) {
+    return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+  } else if (parts.length === 2) {
+    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+  } else {
+    return parseInt(timeString) || 0;
+  }
 }
