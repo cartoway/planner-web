@@ -997,7 +997,7 @@ class Planning < ApplicationRecord
     all_segments = []
     computed_routes = []
     routes.each{ |r|
-      if options[:bang]!= false || r.outdated && r.vehicle_usage?
+      if options[:bang]!= false || r.outdated
         computed_routes << r
         segments = r.collect_segments_for_routing(r.stops)
         all_segments << { route: r, segments: segments } if segments.any?
