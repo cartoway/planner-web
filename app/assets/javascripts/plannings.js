@@ -43,6 +43,7 @@ import {
   camelToSnake,
   validateTimeFormat
 } from '../../assets/javascripts/scaffolds';
+import { moveStopsModal } from './utils/modals/move_stops_modal.js';
 
 $(function() {
   $('[data-toggle="tooltip"]').tooltip();
@@ -1640,171 +1641,15 @@ export const plannings_edit = function(params) {
         }
       };
 
-      /** move_stops */
-      $('#planning-move-stops-modal').off().on('show.bs.modal', function(ev) {
-        $('#planning-move-stops-modal .modal-body').html(
-          '<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>'
-        ).unbind();
-        var routeId = ev.relatedTarget.attributes['data-route-id'].value;
-
-        var _routes = routes.filter(function(obj) {
-          return obj.route_id != routeId;
-        }).map(function(obj) {
-          if (obj.name === "undefined") {
-            obj.name = I18n.t('plannings.edit.out_of_route');
-            obj.color = '#fff';
-          }
-          return obj;
-        });
-
-        var templateRoute = function(route) {
-          if (route.id) {
-            var obj = $.grep(_routes, function(obj){return obj.route_id === parseInt(route.id);})[0]
-            return $("<span><span class='color_small' style='background: " + obj.color + "'></span>&nbsp;</span>")
-              .append($("<span/>").text(route.text));
-          }
-        };
-
-        $.ajax({
-          type: 'GET',
-          contentType: 'application/json',
-          url: '/plannings/' + params.planning_id + '.json',
-          data: { "route_ids": routeId },
-          error: ajaxError,
-          success: function(data) {
-            var stops = data.routes[0].stops;
-            var obj = {
-              color: data.routes[0].color,
-              count: data.routes[0].size,
-              i18n: mustache_i18n,
-              quantities: data.routes[0].quantities,
-              routes: _routes,
-              stops: stops,
-              vehicle: data.routes[0].vehicle_id ? true : false
-            };
-
-            $('#planning-move-stops-modal .modal-body').html(SMT['stops/move'](obj));
-            $('#move-stops-toggle').toggleSelect();
-            $('[type="checkbox"][data-toggle="disable-multiple-actions"]').toggleMultipleActions();
-
-            $('#move-route-id').select2({ templateSelection: templateRoute, templateResult: templateRoute, minimumResultsForSearch: -1 });
-            $('#planning-move-stops-modal input[data-change="filter"]').filterTable()
-              .on('table.filtered', function() { calculateQuantities(stops); });
-            $('#planning-move-stops-modal .move-stops-stop-id').change(function() { calculateQuantities(stops); });
-            $('#move-route-id').change(function(obj) {
-              var vehicleUsageId = obj.target.selectedOptions[0].attributes['data-vehicle-usage-id'].value;
-              fillQuantities(stops, vehicleUsageId);
-            });
-            fillQuantities(stops);
-            $('.overflow-500').css('max-height', ($(document).height() - 440) + 'px');
-          }
-        });
-      });
-
-      var calculateQuantities = function(stops, vehicleUsageId) {
-        vehicleUsageId = vehicleUsageId ? vehicleUsageId : $('#move-route-id').find(":selected").attr('data-vehicle-usage-id');
-        var $moveStopQuantities = $('#move-stop-quantities');
-        var $moveStopGlobalQuantities = $('#move-stop-global-quantities');
-        var vehicleQuantities = getVehicleQuantities(vehicleUsageId);
-        var stopsToMove = getAvailableStopsToMoveFrom(stops);
-        var globalStops = vehicleQuantities ? stopsToMove.concat(vehicleQuantities) : stopsToMove;
-
-        $moveStopQuantities.calculateQuantities(stopsToMove, params.quantities);
-        $moveStopGlobalQuantities.calculateQuantities(globalStops, params.quantities);
-      };
-
-      var fillQuantities = function(stops, vehicleUsageId) {
-        vehicleUsageId = vehicleUsageId ? vehicleUsageId : $('#move-route-id').find(":selected").attr('data-vehicle-usage-id');
-        var $moveStopQuantities = $('#move-stop-quantities');
-        var $moveStopGlobalQuantities = $('#move-stop-global-quantities');
-        var vehicleCapacities = getVehicleCapacities(vehicleUsageId);
-        var vehicleQuantities = getVehicleQuantities(vehicleUsageId);
-        var stopsToMove = getAvailableStopsToMoveFrom(stops);
-        var globalStops = vehicleQuantities ? stopsToMove.concat(vehicleQuantities) : stopsToMove;
-
-        $moveStopGlobalQuantities.empty().fillQuantities({
-          vehicleCapacities: vehicleCapacities,
-          stops: globalStops,
-          controllerParamsQuantities: params.quantities,
-          withDuration: true,
-          withCapacity: true,
-        });
-        $moveStopQuantities.empty().fillQuantities({
-          vehicleCapacities: vehicleCapacities,
-          stops: stopsToMove,
-          controllerParamsQuantities: params.quantities,
-          withDuration: true,
-          withCapacity: true,
-        });
-      };
-
-      var getAvailableStopsToMoveFrom = function(stops) {
-        var availableStopsToMove = $('#planning-move-stops-modal .move-stops-stop-id:checked:visible');
-        var selectedStops = [];
-        for (var index = 0; index < availableStopsToMove.length; index++) {
-          var element = availableStopsToMove[index];
-          selectedStops.push(stops.filter(function(stop) { return stop.stop_id === parseInt(element.value); })[0]);
-        }
-        return selectedStops;
-      };
-
-      var getVehicleQuantities = function(vehicleUsageId) {
-        var quantities;
-        try {
-          $.each(Object.keys(vehicles_usages_map), function(i, index) {
-            if (vehicles_usages_map[index].vehicle_usage_id === parseInt(vehicleUsageId)) {
-              quantities = vehicles_usages_map[index].vehicle_quantities;
-              throw {};
-            }
-          });
-        } catch (exc) {
-          return {quantities: quantities};
-        }
-      };
-
-      var getVehicleCapacities = function(vehicleUsageId) {
-        return Object.keys(vehicles_usages_map).map(function(index) {
-          if (vehicles_usages_map[index].vehicle_usage_id === parseInt(vehicleUsageId)) {
-            var capacities = vehicles_usages_map[index].default_capacities;
-            return Object.keys(capacities).map(function(id) {
-              var quantity = $.grep(quantities, function(obj){return obj.id === parseInt(id);})[0]
-              if (quantity) return {id: id, capacity: capacities[id], label: quantity.label, unitIcon: quantity.unit_icon};
-            }).filter(function(element) { return element; });
-          }
-        }).filter(function(element) { return element; })[0];
-      };
-
-      $('#planning-move-stops-modal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
-        $('#planning-move-stops-modal').attr('data-route-id', null);
-      });
-
-      $("#move-stops-modal").off('click').on('click', function() {
-        var stopIds = $("#planning-move-stops-modal")
-          .find('form input[name="stop_ids"]:checked:visible')
-          .map(function() { return $(this).val(); })
-          .toArray();
-        $.ajax({
-          type: 'PATCH',
-          url: '/plannings/' + params.planning_id + '/' + $("#move-route-id").val() + '/move.json',
-          data: {
-            'stop_ids': stopIds,
-            'index': $('#move-index').val()
-          },
-          beforeSend: function() {
-            beforeSendWaiting();
-            $('#planning-move-stops-modal').modal('hide');
-          },
-          error: ajaxError,
-          success: function(data, _status, xhr) {
-            if (xhr.status === 204) return;
-
-            data.route_ids.forEach(function(route_id) {
-              refreshSidebarRoute(params.planning_id, route_id);
-            });
-            routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
-          },
-          complete: completeAjaxMap
-        });
+      /** move_stops - Using ES6 MoveStopsModal module */
+      moveStopsModal.initialize({
+        planningId: params.planning_id,
+        routes: routes,
+        vehiclesUsagesMap: vehicles_usages_map,
+        quantities: params.quantities,
+        routesLayer: routesLayer,
+        refreshSidebarRoute: refreshSidebarRoute,
+        mustacheI18n: mustache_i18n
       });
       /** End move_stops */
 
