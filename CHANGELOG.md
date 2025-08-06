@@ -6,6 +6,7 @@
   - Planning: Introduce a lasso to select multiple stops on the fly [#424](https://github.com/cartoway/planner-web/pull/424)
   - Admin: Store the solver used and the ones skipped (with reasons) on the job info [#422](https://github.com/cartoway/planner-web/pull/422)
   - Introduce a short delay before SimplifyGeojsonTracksJob [#447](https://github.com/cartoway/planner-web/pull/447)
+  - Connect pickup and deliveries quantities to equivalent feature in Optimizer-API [#453](https://github.com/cartoway/planner-web/pull/453)
 
   ### Changed
   - Export: Rework visually the columns selector [#422](https://github.com/cartoway/planner-web/pull/422)
