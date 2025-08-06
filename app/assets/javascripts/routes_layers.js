@@ -29,7 +29,7 @@ import {
   completeAjaxMap,
   ajaxError
 } from '../../assets/javascripts/ajax';
-import { LassoModule } from './lasso';
+import { lassoModule } from './utils/lasso.js';
 
 /******************
  * PopupModule
@@ -948,8 +948,8 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
   // Lasso initialization
   initLasso: function(panelLoadingFunc, refreshSidebarRouteFunc) {
-    if (typeof LassoModule !== 'undefined' && !document.querySelector('.leaflet-control-lasso')) {
-      var lassoControl = LassoModule.initLasso(this.map, this.options.planningId, this, panelLoadingFunc, refreshSidebarRouteFunc);
+    if (lassoModule && !document.querySelector('.leaflet-control-lasso')) {
+      var lassoControl = lassoModule.initLasso(this.map, this.options.planningId, this, panelLoadingFunc, refreshSidebarRouteFunc);
 
       // Add lasso control to map._controls for cleanup
       if (lassoControl && this.map._controls) {
