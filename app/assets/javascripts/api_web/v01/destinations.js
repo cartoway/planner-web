@@ -37,8 +37,7 @@ const api_web_v01_destinations_index = function(params, api) {
 
   L.disableClustersControl(map, markersGroup);
 
-  var progressBar = Turbolinks.enableProgressBar();
-  progressBar && progressBar.advanceTo(25);
+  Turbolinks.setProgressBarDelay(25);
 
   var ids = params.ids;
 
@@ -59,7 +58,7 @@ const api_web_v01_destinations_index = function(params, api) {
 
   var fitBounds = initializeMapHash(map, true);
 
-  progressBar && progressBar.advanceTo(50);
+  Turbolinks.setProgressBarDelay(50);
   var ajaxParams = {};
   if (ids) ajaxParams.ids = ids.join(',');
   if (params.store_ids) ajaxParams.store_ids = params.store_ids.join(',');
