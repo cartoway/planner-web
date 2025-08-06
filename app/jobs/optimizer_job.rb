@@ -115,7 +115,7 @@ class OptimizerJob < OptimizerJobStruct
       enable_optimization_soft_upper_bound: planning.customer.enable_optimization_soft_upper_bound,
       vehicle_max_upper_bound: planning.customer.vehicle_max_upper_bound,
       stop_max_upper_bound: planning.customer.stop_max_upper_bound,
-      solver_priority: planning.customer.solver_priority
+      solver_priority: planning.customer.solver_priority || Planner::Application.config.available_solvers
     }
   end
 end
