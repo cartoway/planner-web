@@ -1726,13 +1726,15 @@ export const plannings_edit = function(params) {
           vehicleCapacities: vehicleCapacities,
           stops: globalStops,
           controllerParamsQuantities: params.quantities,
+          withDuration: true,
           withCapacity: true,
         });
         $moveStopQuantities.empty().fillQuantities({
           vehicleCapacities: vehicleCapacities,
           stops: stopsToMove,
           controllerParamsQuantities: params.quantities,
-          withDuration: true
+          withDuration: true,
+          withCapacity: true,
         });
       };
 
