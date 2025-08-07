@@ -19,6 +19,7 @@
 'use strict';
 
 import { ajaxError, beforeSendWaiting, completeAjaxMap } from '../ajax.js';
+import { moveStopsModal } from '../modals/move_stops_modal.js';
 
 /**
  * LassoModule - Provides lasso selection capabilities for map layers
@@ -226,201 +227,93 @@ export class LassoModule {
         }
       });
 
-      // Show selection info
-      this.showLassoInfoModal();
+      // Use MoveStops modal instead of custom modal
+      this.showMoveStopsModalForLassoSelection();
     } else {
       // Reset lasso tool when selection is empty
       this.disableLasso();
     }
   }
 
-  /**
-   * Show lasso information modal
+    /**
+   * Show MoveStops modal for lasso selection
+   * This method uses the existing MoveStops modal and simulates stop selection
    */
-  showLassoInfoModal() {
-    // Remove existing modal
-    $('#lasso-info-modal').remove();
-
-    // Extract stop IDs from selected layers
-    const stopIds = [];
+  showMoveStopsModalForLassoSelection() {
+    // Extract stops from selected layers
+    const selectedStops = [];
 
     if (this.selectedLayers && this.selectedLayers.length > 0) {
       this.selectedLayers.forEach((layer) => {
-        if (layer.properties && layer.properties.stop_id) {
-          stopIds.push(layer.properties.stop_id);
+        if (layer.properties && layer.properties.stop_id && layer.properties.route_id) {
+          selectedStops.push({
+            stop_id: layer.properties.stop_id,
+            route_id: layer.properties.route_id
+          });
         }
       });
     }
 
-    // Prepare AJAX parameters
-    const ajaxParams = {
-      planning_id: this.planningId,
-      stop_ids: stopIds.join(',')
-    };
+    if (selectedStops.length === 0) {
+      return;
+    }
 
-    // Load modal template via AJAX
-    $.ajax({
-      url: `/plannings/${this.planningId}/selection_details.html`,
-      type: 'GET',
-      data: ajaxParams,
-      dataType: 'html',
-      beforeSend: beforeSendWaiting,
-      success: (modalHtml) => {
-        $('body').append(modalHtml);
+    // Get the primary route ID (most common route in selection)
+    const routeCounts = {};
+    selectedStops.forEach(stop => {
+      routeCounts[stop.route_id] = (routeCounts[stop.route_id] || 0) + 1;
+    });
+    const primaryRouteId = Object.keys(routeCounts).reduce((a, b) =>
+      routeCounts[a] > routeCounts[b] ? a : b
+    );
 
-        const modal = $('#lasso-info-modal');
-        this.setupModalEventHandlers(modal);
-        modal.modal('show');
-      },
-      error: ajaxError,
-      complete: completeAjaxMap
+    // Show the MoveStops modal for the primary route
+    moveStopsModal.showModal(primaryRouteId);
+
+    // Setup automatic selection of lasso-selected stops when modal loads
+    this.setupLassoStopSelection(selectedStops);
+
+    // Setup cleanup when modal is hidden
+    this.setupLassoCleanup();
+  }
+
+  /**
+   * Setup automatic selection of lasso-selected stops in the modal
+   * @param {Array} selectedStops - Array of selected stops from lasso
+   */
+  setupLassoStopSelection(selectedStops) {
+    const selectedStopIds = selectedStops.map(stop => stop.stop_id);
+
+    // Wait for modal to be fully loaded, then select the stops
+    $(moveStopsModal.modalSelector).off('shown.bs.modal.lasso').on('shown.bs.modal.lasso', () => {
+      // Select all checkboxes for lasso-selected stops
+      selectedStopIds.forEach(stopId => {
+        const checkbox = $(`${moveStopsModal.modalSelector} input[name="stop_ids"][value="${stopId}"]`);
+        if (checkbox.length > 0) {
+          checkbox.prop('checked', true).trigger('change');
+        }
+      });
     });
   }
 
   /**
-   * Setup modal event handlers
-   * @param {Object} modal - Modal jQuery element
+   * Setup cleanup for lasso selection when modal is hidden
    */
-  setupModalEventHandlers(modal) {
-    modal.on('click', '#clear-lasso-selection', (e) => {
-      e.preventDefault();
+  setupLassoCleanup() {
+    $(moveStopsModal.modalSelector).off('hidden.bs.modal.lasso').on('hidden.bs.modal.lasso', () => {
+      // Clear lasso selection
       this.clearLassoSelection();
-    });
 
-    modal.on('click', '#move-stops-btn', (e) => {
-      e.preventDefault();
-      this.moveSelectedStopsToRoute();
-    });
-
-    const routeSelect = modal.find('#route-select');
-    if (routeSelect.length > 0) {
-      routeSelect.select2({
-        placeholder: I18n.t('plannings.edit.lasso.select_route_placeholder'),
-        allowClear: true,
-        minimumResultsForSearch: -1,
-        templateResult: (route) => {
-          const routeColor = $(route.element).data('route-color');
-          const routeName = route.text;
-
-          if (routeColor) {
-            return $(`<span><div class="color_small" style="background:${routeColor};"></div>${routeName}</span>`);
-          }
-          return routeName;
-        },
-        templateSelection: (route) => {
-          const routeColor = $(route.element).data('route-color');
-          const routeName = route.text;
-
-          if (routeColor) {
-            return $(`<span><div class="color_small" style="background:${routeColor};"></div>${routeName}</span>`);
-          }
-          return routeName;
-        }
-      });
-
-      routeSelect.on('change', function() {
-        const routeId = $(this).val();
-        modal.find('#move-stops-btn').prop('disabled', !routeId);
-      });
-    }
-
-    modal.on('hidden.bs.modal', () => {
+      // Disable lasso
       this.disableLasso();
+
+      // Remove custom event handlers
+      $(moveStopsModal.modalSelector).off('hidden.bs.modal.lasso');
+      $(moveStopsModal.modalSelector).off('shown.bs.modal.lasso');
     });
   }
 
-  /**
-   * Move selected stops to a target route
-   */
-  moveSelectedStopsToRoute() {
-    if (!this.selectedLayers || this.selectedLayers.length === 0) {
-      return;
-    }
 
-    const targetRouteId = $('#route-select').val();
-    if (!targetRouteId) {
-      alert(I18n.t('plannings.edit.lasso.please_select_route'));
-      return;
-    }
-
-    let stopIds = [];
-    const sourceRouteIds = [];
-
-    // Use MapDataExtractor to get stop IDs if available
-    if (this.dataExtractor) {
-      const selectedIds = this.selectedLayers
-        .map((layer) => layer.properties.stop_id)
-        .filter((id) => id);
-
-      const allMarkers = this.dataExtractor.extractMarkersData();
-      const selectedMarkers = allMarkers.filter((marker) => {
-        return selectedIds.includes(marker.id) && marker.type === 'stop';
-      });
-
-      stopIds = selectedMarkers.map((marker) => marker.id);
-
-      // Get source route IDs from selected markers
-      selectedMarkers.forEach((marker) => {
-        if (marker.route_id) {
-          sourceRouteIds.push(marker.route_id);
-        }
-      });
-    } else {
-      // Fallback to original method
-      const selectedStops = this.selectedLayers.filter((layer) => {
-        return layer.properties && layer.properties.stop_id;
-      });
-
-      stopIds = selectedStops.map((layer) => layer.properties.stop_id);
-
-      // Get source route IDs from selected layers
-      selectedStops.forEach((layer) => {
-        if (layer.properties && layer.properties.route_id) {
-          sourceRouteIds.push(layer.properties.route_id);
-        }
-      });
-    }
-
-    if (stopIds.length === 0) {
-      return;
-    }
-
-    // Create array of unique route IDs (source routes + target route)
-    const allRouteIds = sourceRouteIds.concat([targetRouteId]);
-    const uniqueRouteIds = allRouteIds.filter((item, pos) => {
-      return allRouteIds.indexOf(item) === pos;
-    });
-
-    // Send AJAX request to move stops
-    $.ajax({
-      url: `/plannings/${this.planningId}/${targetRouteId}/move.json`,
-      type: 'PATCH',
-      data: {
-        stop_ids: stopIds
-      },
-      beforeSend: () => {
-        beforeSendWaiting();
-        uniqueRouteIds.forEach((routeId) => {
-          this.waitingRoute(routeId);
-        });
-      },
-      success: (data, _status, xhr) => {
-        if (xhr.status === 204) return;
-
-        const routesToRefresh = data.route_ids || uniqueRouteIds;
-
-        routesToRefresh.forEach((route_id) => {
-          this.refreshRoute(this.planningId, route_id);
-        });
-
-        this.routesLayer.refreshRoutes(routesToRefresh, data.summary.routes);
-        this.clearLassoSelection();
-        notice(I18n.t('plannings.edit.lasso.stops_moved_success'));
-      },
-      error: ajaxError,
-      complete: completeAjaxMap
-    });
-  }
 
   /**
    * Clear lasso selection
@@ -437,9 +330,6 @@ export class LassoModule {
       });
       this.selectedLayers = [];
     }
-
-    // Close info modal
-    $('#lasso-info-modal').modal('hide');
   }
 
   /**
@@ -459,6 +349,10 @@ export class LassoModule {
     }
 
     this.clearLassoSelection();
+
+    // Clean up lasso-specific modal behavior
+    $(moveStopsModal.modalSelector).off('hidden.bs.modal.lasso');
+    $(moveStopsModal.modalSelector).off('shown.bs.modal.lasso');
 
     this.map = null;
     this.planningId = null;
