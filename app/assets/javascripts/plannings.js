@@ -43,7 +43,7 @@ import {
   camelToSnake,
   validateTimeFormat
 } from '../../assets/javascripts/scaffolds';
-import { moveStopsModal } from './utils/modals/move_stops_modal.js';
+import { moveStopsModal } from './modals/move_stops_modal.js';
 
 $(function() {
   $('[data-toggle="tooltip"]').tooltip();
