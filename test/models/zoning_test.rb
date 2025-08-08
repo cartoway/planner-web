@@ -74,8 +74,8 @@ class ZoningTest < ActiveSupport::TestCase
 
   test 'should generate isochrones' do
     begin
-        # TODO: An undefined test changes time zone...
-        # .with(:body => hash_including(size: '5', mode: 'car', traffic: 'true', weight: '10', departure: Date.today.strftime('%Y-%m-%d') + ' 10:00:00 UTC'))
+      # TODO: An undefined test changes time zone...
+      # .with(:body => hash_including(size: '5', mode: 'car', traffic: 'true', weight: '10', departure: Date.today.strftime('%Y-%m-%d') + ' 10:00:00 UTC'))
       stub_isochrone = stub_request(:post, 'http://localhost:5000/0.1/isoline.json')
         .with(:body => hash_including(size: '5', mode: 'car', traffic: 'true', weight: '10', departure: Date.today.strftime('%Y-%m-%d') + ' 10:00:00 ' + (Time.zone.now.strftime('%z') == '+0000' ? 'UTC' : (Time.zone.now.strftime('%z')))))
         .to_return(status: 200, body: File.new(File.expand_path('../../web_mocks/', __FILE__) + '/isochrone/isochrone-1.json').read)

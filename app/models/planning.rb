@@ -147,11 +147,19 @@ class Planning < ApplicationRecord
       routes_visits.each{ |_ref, r|
         index_routes.delete(routes.index{ |rr| rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref == r[:ref_vehicle] }) if r[:ref_vehicle]
       }
+      # Collect ref updates for batch processing
+      ref_updates = []
       routes_visits.each{ |ref, r|
         i = routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref == r[:ref_vehicle] } || index_routes.shift
         routes[i].ref = ref
-        routes[i].set_objects(r[:visits], recompute, ignore_errors)
+        ref_updates << { id: routes[i].id, ref: ref }
+        routes[i].add_objects(r[:visits], recompute, ignore_errors)
       }
+
+      if ref_updates.any?
+        case_statement = ref_updates.map { |update| "WHEN #{update[:id]} THEN '#{update[:ref]}'" }.join(' ')
+        Route.where(id: ref_updates.map { |u| u[:id] }).update_all("ref = CASE id #{case_statement} END, outdated = true")
+      end
       true
     else
       false
@@ -238,7 +246,7 @@ class Planning < ApplicationRecord
 
   def visit_filling
     visit_ids = routes.includes_stops.flat_map{ |route| route.stops.map{ |stop| stop.visit_id }}
-    Visit.includes_destinations.where(id: (customer.visit_ids - visit_ids)).select{ |visit|
+    Visit.includes_destinations_and_stores.where(id: (customer.visit_ids - visit_ids)).select{ |visit|
       tags_compatible?(visit.tags.to_a | visit.destination.tags.to_a)
     }.each{ |visit| visit_add(visit) }
     self.save!
@@ -253,10 +261,18 @@ class Planning < ApplicationRecord
 
   def default_empty_routes(ignore_errors = false)
     routes.clear
-    routes.build
-    vehicle_usage_set.vehicle_usages.with_vehicle.select(&:active).each { |vehicle_usage|
-      vehicle_usage_add(vehicle_usage, ignore_errors)
-    }
+    new_routes = [
+      Route.new(planning_id: self.id, outdated: false, vehicle_usage_id: nil)
+    ]
+    new_routes +=
+      # load only necessary fields to avoid loading all vehicle_usages and dependancies
+      vehicle_usage_set.vehicle_usages.with_vehicle.where(active: true).pluck(:id).map { |vehicle_usage_id|
+        Route.new(planning_id: self.id, vehicle_usage_id: vehicle_usage_id, outdated: false)
+      }
+    Route.import(new_routes, validate: false)
+    self.routes = Route.where(planning_id: self.id).includes_vehicle_usages
+    self.routes.each{ |r| r.init_stops(false) }
+    self
   end
 
   def default_routes
@@ -264,7 +280,7 @@ class Planning < ApplicationRecord
       default_empty_routes
 
       if !split_by_zones(visits_compatibles)
-        routes.find{ |r| !r.vehicle_usage? }.default_stops
+        self.routes.find{ |r| !r.vehicle_usage? }.default_stops
       end
     end
   end
@@ -282,47 +298,22 @@ class Planning < ApplicationRecord
   end
 
   def compute_saved!(options = {})
-    stop_rests = []
-    stop_visits = []
-    stop_stores = []
+    routes_to_enqueue = []
 
-    # Collect all segments from all routes that need routing
-    all_segments = []
-    routes.each{ |r|
-      if options[:bang]!= false || r.outdated && r.vehicle_usage?
-        segments = r.collect_segments_for_routing(r.stops)
-        all_segments << { route: r, segments: segments } if segments.any?
-      end
-    }
-
-    # Batch process all segments in parallel
-    precompute_traces(all_segments, options)
-
-    routes.each{ |r|
-      if options[:bang] == false
-        r.compute(options.merge(skip_preload: true))
+    result =
+      if ActiveRecord::Base.connection.transaction_open?
+        compute_within_existing_transaction(options, routes_to_enqueue)
       else
-        r.compute!(options.merge(skip_preload: true))
+        Planning.transaction do
+          compute_within_existing_transaction(options, routes_to_enqueue)
+        end
       end
-      stops_by_type = r.stops.group_by(&:type)
-      stop_visits += stops_by_type['StopVisit'].to_a.map(&:import_attributes)
-      stop_rests += stops_by_type['StopRest'].to_a.map(&:import_attributes)
-      stop_stores += stops_by_type['StopStore'].to_a.map(&:import_attributes)
 
-    }
-    Route.import(routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    StopRest.import(stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    StopStore.import(stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    routes_to_enqueue.each do |r|
+      DelayedJobManager.enqueue_simplify_geojson_tracks_job(self.customer_id, r.id)
+    end
 
-    routes.each{ |r|
-      r.invalidate_route_cache && r.reload
-      next unless Planner::Application.config.delayed_job_use
-
-      Delayed::Job.enqueue(SimplifyGeojsonTracksJob.new(self.customer_id, r.id))
-    }
-    self.save!(touch: false) && self.invalidate_planning_cache
-    true
+    !!result
   end
 
   def precompute_traces(all_segments, options = {})
@@ -331,9 +322,9 @@ class Planning < ApplicationRecord
       all_segments.each_slice(5) do |batch|
         batch.each do |route_data|
           threads << Thread.new do
+            route = route_data[:route]
             begin
               ActiveRecord::Base.connection_pool.with_connection do
-                route = route_data[:route]
                 segments = route_data[:segments]
                 router = route.vehicle_usage.vehicle.default_router
                 router_options = route.vehicle_usage.vehicle.default_router_options.symbolize_keys
@@ -467,7 +458,6 @@ class Planning < ApplicationRecord
 
     # Take the closest routes visit and eval insert
     route, index = prefered_route_and_index(available_routes, stop, options)
-
     if route
       stop.active = true
       move_stop(route, stop, index || 1)
@@ -519,15 +509,15 @@ class Planning < ApplicationRecord
     end
   end
 
-  def get_routes_from_skills(tags, options = {})
+  def get_routes_from_skills(r_tags, options = {})
     if options[:out_of_zone]
-      skill_tags = all_skills & tags
+      skill_tags = all_skills & r_tags
       get_routes_without_exclusion(options[:exclusion]).select{ |route|
         next unless route.vehicle_usage?
 
         next true if skill_tags.empty?
 
-        common_tags = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten & tags
+        common_tags = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten & r_tags
         !common_tags.empty?
       }
     end
@@ -583,13 +573,13 @@ class Planning < ApplicationRecord
 
   def visits
     routes.flat_map{ |route|
-      route.stops.only_stop_visits.includes_destinations.map(&:visit)
+      route.stops.only_stop_visits.includes_destinations_and_stores.map(&:visit)
     }
   end
 
   def visits_to_stop_hash
     routes.flat_map{ |route|
-      route.stops.only_stop_visits.includes_destinations.map{ |stop| [stop.visit.id, stop] }
+      route.stops.only_stop_visits.includes_destinations_and_stores.map{ |stop| [stop.visit.id, stop] }
     }.to_h
   end
 
@@ -778,7 +768,7 @@ class Planning < ApplicationRecord
   def fetch_stops_status
     Visit.transaction do
       if customer.enable_stop_status
-        stops_map = Hash[routes.includes_destinations.available.where.not(vehicle_usage_id: nil).flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
+        stops_map = Hash[routes.includes_destinations_and_stores.available.where.not(vehicle_usage_id: nil).flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
         routes.each(&:clear_eta_data)
         routes_quantities_changed = []
 
@@ -950,10 +940,6 @@ class Planning < ApplicationRecord
     end.flatten.compact
   end
 
-  def skills?
-    all_skills.any?
-  end
-
   def quantities
     Route.includes_deliverable_units.scoping do
       quantity_hash = {}
@@ -1002,146 +988,169 @@ class Planning < ApplicationRecord
 
   private
 
-  def prefered_route_and_index(available_routes, stop, options = {})
-    stop_dup = stop.dup
-    options[:active_only] = true if options[:active_only].nil?
-    cache_sum_out_of_window = Hash.new{ |h, k| h[k] = k.sum_out_of_window }
-    tmp_routes = {}
+  def compute_within_existing_transaction(options = {}, routes_to_enqueue = [])
+    stop_rests = []
+    stop_visits = []
+    stop_stores = []
 
-    by_distance = available_routes.flat_map { |route|
-      route.compute # Update the eventual outdated route
-      index = 0
-      stops = route.stops.map { |s|
-        next if s.id == stop.id || !stop.active && !options[:active_only]
-
-        index += 1
-        next if !(s.is_a?(StopVisit) && s.visit.destination.position?)
-
-        [s.visit.destination, route, index]
-      }.compact
-      stops ||= []
-      stops << [route.vehicle_usage.default_store_start, route, 1] if stops.empty? && route.vehicle_usage.default_store_start&.position?
-      stops << [route.vehicle_usage.default_store_stop, route, route.stops_size + 1] if route.vehicle_usage&.default_store_stop&.position?
-      stops
-    }.compact.sort_by{ |a|
-      a[0] && a[0].position? ? a[0].distance(stop_dup.position) : Float::INFINITY
-    }
-    return available_routes.first if by_distance.empty?
-
-    # If more than one available_routes take at least one stop from second route
-    pos_second_route = by_distance.index{ |s| s[1].id != by_distance[0][1].id } if available_routes.size > 1
-    # Take 5% from nearest stops (min: 3, max: 10) and a stop in second route if it exists
-    (by_distance[0..[9, [2, by_distance.size / 20].max].min] +
-      (pos_second_route ? [by_distance[pos_second_route]] : [])).flat_map{ |dest_route_idx|
-      [[dest_route_idx[1], dest_route_idx[2]], [dest_route_idx[1], dest_route_idx[2] + 1]]
-    }.uniq.map { |ri|
-      ri[0].class.amoeba do
-        clone :stops # Only duplicate stops just for compute evaluation
-        nullify :planning_id
+    # Collect all segments from all routes that need routing
+    all_segments = []
+    computed_routes = []
+    routes.each{ |r|
+      if options[:bang]!= false || r.outdated
+        computed_routes << r
+        segments = r.collect_segments_for_routing(r.stops)
+        all_segments << { route: r, segments: segments } if segments.any?
       end
+    }
 
-      tmp_routes[ri[0].id] = ri[0].amoeba_dup if !tmp_routes[ri[0].id]
-      r = tmp_routes[ri[0].id]
-      if stop_dup.is_a?(StopVisit)
-        if stop_dup.route_id == r.id
-          r.move_stop_out(stop_dup)
-        end
-        r.add(stop_dup.visit, ri[1], { active: true })
+    # Batch process all segments in parallel
+    precompute_traces(all_segments, options)
+
+    computed_routes.each{ |r|
+      if options[:bang] == false
+        r.compute(options.merge(skip_preload: true))
       else
-        r.add_or_update_rest({ active: true })
+        r.compute!(options.merge(skip_preload: true))
       end
-      r.compute(no_geojson: true, no_quantities: true)
-
-      # Difference of total time + difference of sum of out_of_window time
-      ri[2] = ((r.end - r.start) - (ri[0].end && ri[0].start ? ri[0].end - ri[0].start : 0)) + (r.sum_out_of_window - cache_sum_out_of_window[ri[0]])
-      # Delta distance
-      ri[3] = r.distance - ri[0].distance.to_f
-
-      r.remove_visit(stop_dup.visit) if stop_dup.is_a?(StopVisit)
-
-      # Return ri with time and distance added
-      ri
-    }.select { |ri|
-      # Check for max time or distance if any
-      route_available = true
-      route_available = ri[2].abs < options[:max_time] if options[:max_time] && route_available
-      route_available = ri[3].abs < options[:max_distance] if options[:max_distance] && route_available
-      route_available
-    }.min_by { |ri|
-      # Return route with the minimum time
-      ri[2]
+      stops_by_type = r.stops.group_by(&:type)
+      stop_visits += stops_by_type['StopVisit'].to_a.map(&:import_attributes)
+      stop_rests += stops_by_type['StopRest'].to_a.map(&:import_attributes)
+      stop_stores += stops_by_type['StopStore'].to_a.map(&:import_attributes)
     }
+    Route.import(computed_routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopRest.import(stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopStore.import(stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+
+    computed_routes.each{ |r|
+      r.invalidate_route_cache && r.reload
+      next unless Planner::Application.config.delayed_job_use
+
+      routes_to_enqueue << r
+    }
+
+    self.save!(touch: false) && self.invalidate_planning_cache
+  end
+
+  def select_insertion_data(insertion_data)
+    insertion_by_route = insertion_data.group_by { |data| data[0] }
+    selected_insertions = []
+
+    # Select at least one insertion from each route
+    insertion_by_route.each{ |route, insertions|
+      best_insertion = insertions.min_by { |data| data[4] } # Sort by distance (data[2])
+      selected_insertions << insertion_data.delete(best_insertion)
+    }
+
+    # Add the 20 first insertion_data
+    selected_insertions += insertion_data.sort_by{ |data| data[4] }.first(20) if insertion_data.any?
+
+    selected_insertions
+  end
+
+  def collect_insertion_data(route, stop, options = {})
+    options[:active_only] = true if options[:active_only].nil?
+    previous_position = route.vehicle_usage.default_store_start&.position || stop.position
+    insertion_data = []
+    route.stops.map{ |s|
+      next if s.id == stop.id || !s.active && !options[:active_only] || !s.position?
+
+      insertion_data <<
+        [
+          route,
+          s.index - (stop.route == route && s.index > stop.index ? 1 : 0),
+          segment = [
+            [previous_position.lat, previous_position.lng, stop.position.lat, stop.position.lng],
+            [stop.position.lat, stop.position.lng, s.position.lat, s.position.lng],
+            [previous_position.lat, previous_position.lng, s.position.lat, s.position.lng]
+          ],
+          nil,
+          previous_position.distance(stop.position) + stop.position.distance(s.position) - previous_position.distance(s.position)
+        ]
+      previous_position = s.position
+    }
+    next_position = route.vehicle_usage.default_store_stop&.position || stop.position
+    insertion_data <<
+      [
+        route,
+        route.stops.size + (stop.route == route ? 0 : 1),
+        segment = [
+          [previous_position.lat, previous_position.lng, stop.position.lat, stop.position.lng],
+          [stop.position.lat, stop.position.lng, next_position.position.lat, next_position.position.lng],
+          [previous_position.lat, previous_position.lng, next_position.position.lat, next_position.position.lng]
+        ],
+        nil,
+        previous_position.distance(stop.position) + stop.position.distance(next_position) - previous_position.distance(next_position)
+      ]
+
+    insertion_data
+  end
+
+  def compute_detours(route, insertion_data)
+    segments = insertion_data.flat_map{ |a|
+      a[2]
+    }
+    vehicle = route.vehicle_usage.vehicle
+
+    router_options = vehicle.default_router_options.symbolize_keys
+    router_options[:geometry] = false
+    router_options[:speed_multiplier] = vehicle.default_speed_multiplier
+
+    traces =
+      vehicle.default_router.trace_batch(segments, vehicle.default_router_dimension, router_options)
+
+    # update the segments with the detour distance provided by the router
+    insertion_data.each_index{ |index|
+      insertion_data[index][2] = traces[3 * index][0] + traces[3 * index + 1][0] - traces[3 * index + 2][0]
+      insertion_data[index][3] = traces[3 * index][1] + traces[3 * index + 1][1] - traces[3 * index + 2][1]
+    }
+
+    insertion_data
+  end
+
+  def prefered_route_and_index(available_routes, stop, options = {})
+    min_detour = available_routes.flat_map { |route|
+      route.compute # Update the eventual outdated route
+      insertion_data = collect_insertion_data(route, stop, options)
+      insertion_data = select_insertion_data(insertion_data)
+      compute_detours(route, insertion_data)
+    }.compact.select{ |a|
+      insertion_available = true
+      insertion_available = a[2] < options[:max_distance] if insertion_available && options[:max_distance]
+      insertion_available = a[3] < options[:max_time] if insertion_available && options[:max_time]
+      insertion_available
+    }.min_by{ |a|
+      a[3] #route time
+    }
+    return unless min_detour
+
+    [min_detour[0], min_detour[1]]
   end
 
   def prefered_route_from_destination(available_routes, destination, options = {})
     options[:active_only] = true if options[:active_only].nil?
-    cache_sum_out_of_window = Hash.new{ |h, k| h[k] = k.sum_out_of_window }
-    tmp_routes = {}
 
-    by_distance = available_routes.flat_map { |route|
-      route.compute # Update the eventual outdated route
-      stops = route.stops.select { |stop|
-        stop.is_a?(StopVisit) &&
-          stop.visit.destination.position? &&
-          (!options[:active_only] || stop.active)
-      }
-      stops = stops.map { |s| [s.visit.destination, route, s.index] }
-      stops ||= []
-      stops << [route.vehicle_usage.default_store_start, route, 1] if stops.empty? && route.vehicle_usage.default_store_start&.position?
-      stops << [route.vehicle_usage.default_store_stop, route, route.stops.size + 1] if route.vehicle_usage&.default_store_stop&.position?
-      stops
-    }.compact.sort_by{ |a|
-      a[0] && a[0].position? ? a[0].distance(destination) : Float::INFINITY
-    }
-    return available_routes.first if by_distance.empty?
-
+    # Create a temporary visit for the destination
     tmp_visit = Visit.new(destination_id: destination.id)
-    # If more than one available_routes take at least one stop from second route
-    pos_second_route = by_distance.index{ |s| s[1].id != by_distance[0][1].id } if available_routes.size > 1
-    # Take 5% from nearest stops (min: 3, max: 10) and a stop in second route if it exists
-    (by_distance[0..[9, [2, by_distance.size / 20].max].min] +
-      (pos_second_route ? [by_distance[pos_second_route]] : [])).flat_map{ |dest_route_idx|
-      [[dest_route_idx[1], dest_route_idx[2]], [dest_route_idx[1], dest_route_idx[2] + 1]]
-    }.uniq.map { |ri|
-      ri[0] = ri[0].preload_compute_scopes
-      ri[0].class.amoeba do
-        clone :stops # Only duplicate stops just for compute evaluation
-        nullify :planning_id
-      end
+    tmp_stop = StopVisit.new(visit: tmp_visit)
 
-      tmp_routes[ri[0].id] = ri[0].amoeba_dup if !tmp_routes[ri[0].id]
-      r = tmp_routes[ri[0].id]
-      # Rebranch old references
-      r.vehicle_usage = ri[0].vehicle_usage
-      r.stops.each.with_index do |stop, index|
-        original_stop = ri[0].stops[index]
-        next unless stop.is_a?(StopVisit)
-
-        stop.visit = original_stop.visit
-        stop.visit.destination = original_stop.visit.destination
-      end
-      r.add(tmp_visit, ri[1], { active: true })
-      r.compute(no_geojson: true, no_quantities: true)
-
-      # Difference of total time + difference of sum of out_of_window time
-      ri[2] = ((r.end - r.start) - (ri[0].end && ri[0].start ? ri[0].end - ri[0].start : 0)) + (r.sum_out_of_window - cache_sum_out_of_window[ri[0]])
-      # Delta distance
-      ri[3] = r.distance - ri[0].distance.to_f
-
-      r.remove_visit(tmp_visit)
-
-      # Return ri with time and distance added
-      ri
-    }.select { |ri|
-      # Check for max time or distance if any
-      route_available = true
-      route_available = ri[2].abs < options[:max_time] if options[:max_time] && route_available
-      route_available = ri[3].abs < options[:max_distance] if options[:max_distance] && route_available
-      route_available
-    }.min_by { |ri|
-      # Return route with the minimum time
-      ri[2]
+    # Collect insertion data for all routes
+    min_detour = available_routes.flat_map { |route|
+      route.compute # Update the eventual outdated route
+      insertion_data = collect_insertion_data(route, tmp_stop, options)
+      compute_detours(route, insertion_data)
+    }.compact.select{ |a|
+      insertion_available = true
+      insertion_available = a[2] < options[:max_distance] if insertion_available && options[:max_distance]
+      insertion_available = a[3] < options[:max_time] if insertion_available && options[:max_time]
+      insertion_available
+    }.min_by{ |a|
+      a[2]
     }
+    return unless min_detour
+
+    min_detour
   end
 
   def prefered_route_data(available_routes, destination, options = {})

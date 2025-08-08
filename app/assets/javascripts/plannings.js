@@ -43,6 +43,7 @@ import {
   camelToSnake,
   validateTimeFormat
 } from '../../assets/javascripts/scaffolds';
+import { moveStopsModal } from './modals/move_stops_modal.js';
 
 $(function() {
   $('[data-toggle="tooltip"]').tooltip();
@@ -106,9 +107,7 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
       $(cb).prop('checked', export_settings['stops'].indexOf($(cb).val()) >= 0);
     });
   }
-  $('.columns-export-list').sortable({
-    connectWith: '#spreadsheet-columns .ui-sortable'
-  });
+
   var columnsExport = (export_settings && export_settings['export']) || [];
   var columnsSkip = (export_settings && export_settings['skips']) || [];
   if (columnsExport != []) {
@@ -117,51 +116,59 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
         columnsExport.push(c);
     });
   }
-  var appendElement = function(parentSel, columnKey) {
-    var displayName;
-    var match = columnKey.match(new RegExp('^(.+)\\[(.*)\\]$'));
-    var rematch = columnKey.match(/^([a-z]+(?:_[a-z]+)*)(\d+)$/);
-    if (match) {
-      var export_translation = 'plannings.export_file.' + match[1];
-      displayName = I18n.t(export_translation) + '[' + match[2] + ']';
+
+  // Nouvelle fonction pour injecter les colonnes dans la structure drag & drop
+  function renderSpreadsheetColumns(columnsExport, columnsSkip) {
+    const $export = $('#columns-export').empty();
+    const $skip = $('#columns-skip').empty();
+
+    // Fonction pour obtenir le nom d'affichage traduit d'une colonne
+    function getDisplayName(columnKey) {
+      var displayName;
+      var match = columnKey.match(new RegExp('^(.+)\\[(.*)\\]$'));
+      var rematch = columnKey.match(/^([a-z]+(?:_[a-z]+)*)(\d+)$/);
+      if (match) {
+        var export_translation = 'plannings.export_file.' + match[1];
+        displayName = I18n.t(export_translation) + '[' + match[2] + ']';
+      }
+      else if (rematch) {
+        var export_translation = 'plannings.export_file.' + rematch[1];
+        displayName = I18n.t(export_translation) + rematch[2];
+      }
+      else {
+        var export_translation = 'plannings.export_file.' + columnKey;
+        displayName = I18n.t(export_translation);
+      }
+      return displayName;
     }
-    else if (rematch) {
-      var export_translation = 'plannings.export_file.' + rematch[1];
-      displayName = I18n.t(export_translation) + rematch[2];
-    }
-    else {
-      var export_translation = 'plannings.export_file.' + columnKey;
-      displayName = I18n.t(export_translation);
-    }
-    $(parentSel).append('<li data-value="' + columnKey + '">' + displayName + ' <a class="remove"><i class="fa fa-close fa-fw"></i></a></li>');
-  };
-  $.each(columnsExport, function(i, c) {
-    if (columns.indexOf(c) >= 0)
-      appendElement('#columns-export', c);
-  });
-  $.each(columnsSkip, function(i, c) {
-    if (columns.indexOf(c) >= 0)
-      appendElement('#columns-skip', c);
-  });
-  $('#columns-export').find('a.remove').click(function(evt) {
-    var $elem = $(evt.currentTarget).closest('li');
-    if ($elem.parent()[0].id === 'columns-export') {
-      var nextFocus = $elem.next();
-      $('a.remove', $elem).hide();
-      $('#columns-skip').append($elem);
-      if (nextFocus.length) $('a.remove', nextFocus).show();
-    }
-  });
-  $('#columns-export').find('li').mouseenter(function(evt) {
-    if ($(evt.currentTarget).closest('#columns-export').length > 0)
-      $('a.remove', evt.currentTarget).show();
-  }).mouseleave(function(evt) {
-    $('a.remove', evt.currentTarget).hide();
-  });
+
+    columnsExport.forEach(function(col) {
+      if (columns.indexOf(col) >= 0) {
+        $export.append(
+          `<div class="draggable-item" data-value="${col}">
+            <span class="item-order"></span>
+            <span class="item-text">${getDisplayName(col)}</span>
+          </div>`
+        );
+      }
+    });
+    columnsSkip.forEach(function(col) {
+      if (columns.indexOf(col) >= 0) {
+        $skip.append(
+          `<div class="draggable-item inactive" data-value="${col}">
+            <span class="item-order"></span>
+            <span class="item-text">${getDisplayName(col)}</span>
+          </div>`
+        );
+      }
+    });
+  }
+  renderSpreadsheetColumns(columnsExport, columnsSkip);
+
   if (export_settings && export_settings['format']) {
     $('[name=spreadsheet-format][value=' + export_settings['format'] + ']').prop('checked', true);
   }
-  $('#btn-spreadsheet').click(function() {
+  $('#btn-spreadsheet').off('click').on('click', function() {
     var planningsId = getPlanningsId();
     if (!planningId && planningsId.length == 0) {
       warning(I18n.t('plannings.index.export.none_planning'));
@@ -171,10 +178,10 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
     var spreadsheetStops = $('.spreadsheet-stops:checked').map(function(i, e) {
       return $(e).val();
     }).get().join('|');
-    var spreadsheetColumnsExport = $('#columns-export').find('li').map(function(i, e) {
+    var spreadsheetColumnsExport = $('#spreadsheet-columns-container .active-zone .item-list .draggable-item').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
-    var spreadsheetColumnsSkip = $('#columns-skip').find('li').map(function(i, e) {
+    var spreadsheetColumnsSkip = $('#spreadsheet-columns-container .inactive-zone .item-list .draggable-item').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
     var spreadsheetFormat = $('[name=spreadsheet-format]:checked').val();
@@ -184,7 +191,7 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
 
     $('#planning-spreadsheet-modal').modal('toggle');
   });
-  $('.export_spreadsheet').click(function() {
+  $('.export_spreadsheet').off('click').on('click', function() {
     $('#planning-spreadsheet-modal').modal({
       keyboard: true,
       show: true
@@ -437,6 +444,32 @@ export const plannings_edit = function(params) {
     });
   };
 
+  var panelLoading = function(route_id) {
+    var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
+    route_panel.sortable('disable')
+               .closest('.panel')
+               .addClass('spinner-container')
+               .append('<div class="spinner-border"></div>');
+  };
+
+  var refreshSidebarRoute = function(planning_id, route_id, options) {
+    $.ajax({
+      type: 'GET',
+      url: '/plannings/' + planning_id + '/' + route_id + '/refresh.js?with_stops=' + true,
+      beforeSend: beforeSendWaiting,
+      error: ajaxError,
+      success: function() {
+        updateSuccess(locals.summary, map, [locals.route], options);
+        initRouteSelector();
+        updateSelectionCount('#route_selector', '#planning_route_ids');
+        if (!locals.route.vehicle_usage_id) {
+          continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
+        }
+      },
+      complete: completeAjaxMap
+    });
+  }
+
   var requestVehiclePositionPending = false;
   var requestVehiclePosition = function() {
     if (!requestVehiclePositionPending) {
@@ -668,7 +701,8 @@ export const plannings_edit = function(params) {
     colorsByRoute: params.colors_by_route,
     appBaseUrl: params.apiWeb ? '/api-web/0.1/' : '/',
     popupOptions: popupOptions,
-    disableClusters: params.disable_clusters
+    disableClusters: params.disable_clusters,
+    planningId: planning_id
   }).on('clickStop', function(stop) {
     enlightenStop({index: stop.index, routeId: stop.routeId});
   }).addTo(map);
@@ -686,9 +720,11 @@ export const plannings_edit = function(params) {
   L.disableClustersControl(map, routesLayer);
   L.disableRoutePolylinesControl(map, routesLayer);
 
-  var fitBounds = initializeMapHash(map);
+  routesLayer.initLasso(panelLoading, refreshSidebarRoute);
 
   sidebar.addTo(map);
+
+  var fitBounds = initializeMapHash(map);
 
   $('#data_routes_dropdown').find('li a').click(function() {
     if (routes.length == 0) return;
@@ -1138,14 +1174,6 @@ export const plannings_edit = function(params) {
   $('input[name="enable_optimization_soft_upper_bound"]').change(function() {
     $("#optimization-vehicle-max-upper-bound, #optimization-stop-max-upper-bound").toggleClass('d-none');
   });
-
-  var panelLoading = function(route_id) {
-    var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
-    route_panel.sortable('disable')
-               .closest('.panel')
-               .addClass('spinner-container')
-               .append('<div class="spinner-border"></div>');
-  }
 
   var sortLoading = function(route, origin_route_id) {
     var route_id = route.attr('data-route-id');
@@ -1613,169 +1641,15 @@ export const plannings_edit = function(params) {
         }
       };
 
-      /** move_stops */
-      $('#planning-move-stops-modal').off().on('show.bs.modal', function(ev) {
-        $('#planning-move-stops-modal .modal-body').html(
-          '<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>'
-        ).unbind();
-        var routeId = ev.relatedTarget.attributes['data-route-id'].value;
-
-        var _routes = routes.filter(function(obj) {
-          return obj.route_id != routeId;
-        }).map(function(obj) {
-          if (obj.name === "undefined") {
-            obj.name = I18n.t('plannings.edit.out_of_route');
-            obj.color = '#fff';
-          }
-          return obj;
-        });
-
-        var templateRoute = function(route) {
-          if (route.id) {
-            var obj = $.grep(_routes, function(obj){return obj.route_id === parseInt(route.id);})[0]
-            return $("<span><span class='color_small' style='background: " + obj.color + "'></span>&nbsp;</span>")
-              .append($("<span/>").text(route.text));
-          }
-        };
-
-        $.ajax({
-          type: 'GET',
-          contentType: 'application/json',
-          url: '/plannings/' + params.planning_id + '.json',
-          data: { "route_ids": routeId },
-          error: ajaxError,
-          success: function(data) {
-            var stops = data.routes[0].stops;
-            var obj = {
-              color: data.routes[0].color,
-              count: data.routes[0].size,
-              i18n: mustache_i18n,
-              quantities: data.routes[0].quantities,
-              routes: _routes,
-              stops: stops,
-              vehicle: data.routes[0].vehicle_id ? true : false
-            };
-
-            $('#planning-move-stops-modal .modal-body').html(SMT['stops/move'](obj));
-            $('#move-stops-toggle').toggleSelect();
-            $('[type="checkbox"][data-toggle="disable-multiple-actions"]').toggleMultipleActions();
-
-            $('#move-route-id').select2({ templateSelection: templateRoute, templateResult: templateRoute, minimumResultsForSearch: -1 });
-            $('#planning-move-stops-modal input[data-change="filter"]').filterTable()
-              .on('table.filtered', function() { calculateQuantities(stops); });
-            $('#planning-move-stops-modal .move-stops-stop-id').change(function() { calculateQuantities(stops); });
-            $('#move-route-id').change(function(obj) {
-              var vehicleUsageId = obj.target.selectedOptions[0].attributes['data-vehicle-usage-id'].value;
-              fillQuantities(stops, vehicleUsageId);
-            });
-            fillQuantities(stops);
-            $('.overflow-500').css('max-height', ($(document).height() - 440) + 'px');
-          }
-        });
-      });
-
-      var calculateQuantities = function(stops, vehicleUsageId) {
-        vehicleUsageId = vehicleUsageId ? vehicleUsageId : $('#move-route-id').find(":selected").attr('data-vehicle-usage-id');
-        var $moveStopQuantities = $('#move-stop-quantities');
-        var $moveStopGlobalQuantities = $('#move-stop-global-quantities');
-        var vehicleQuantities = getVehicleQuantities(vehicleUsageId);
-        var stopsToMove = getAvailableStopsToMoveFrom(stops);
-        var globalStops = vehicleQuantities ? stopsToMove.concat(vehicleQuantities) : stopsToMove;
-
-        $moveStopQuantities.calculateQuantities(stopsToMove, params.quantities);
-        $moveStopGlobalQuantities.calculateQuantities(globalStops, params.quantities);
-      };
-
-      var fillQuantities = function(stops, vehicleUsageId) {
-        vehicleUsageId = vehicleUsageId ? vehicleUsageId : $('#move-route-id').find(":selected").attr('data-vehicle-usage-id');
-        var $moveStopQuantities = $('#move-stop-quantities');
-        var $moveStopGlobalQuantities = $('#move-stop-global-quantities');
-        var vehicleCapacities = getVehicleCapacities(vehicleUsageId);
-        var vehicleQuantities = getVehicleQuantities(vehicleUsageId);
-        var stopsToMove = getAvailableStopsToMoveFrom(stops);
-        var globalStops = vehicleQuantities ? stopsToMove.concat(vehicleQuantities) : stopsToMove;
-
-        $moveStopGlobalQuantities.empty().fillQuantities({
-          vehicleCapacities: vehicleCapacities,
-          stops: globalStops,
-          controllerParamsQuantities: params.quantities,
-          withCapacity: true,
-        });
-        $moveStopQuantities.empty().fillQuantities({
-          vehicleCapacities: vehicleCapacities,
-          stops: stopsToMove,
-          controllerParamsQuantities: params.quantities,
-          withDuration: true
-        });
-      };
-
-      var getAvailableStopsToMoveFrom = function(stops) {
-        var availableStopsToMove = $('#planning-move-stops-modal .move-stops-stop-id:checked:visible');
-        var selectedStops = [];
-        for (var index = 0; index < availableStopsToMove.length; index++) {
-          var element = availableStopsToMove[index];
-          selectedStops.push(stops.filter(function(stop) { return stop.stop_id === parseInt(element.value); })[0]);
-        }
-        return selectedStops;
-      };
-
-      var getVehicleQuantities = function(vehicleUsageId) {
-        var quantities;
-        try {
-          $.each(Object.keys(vehicles_usages_map), function(i, index) {
-            if (vehicles_usages_map[index].vehicle_usage_id === parseInt(vehicleUsageId)) {
-              quantities = vehicles_usages_map[index].vehicle_quantities;
-              throw {};
-            }
-          });
-        } catch (exc) {
-          return {quantities: quantities};
-        }
-      };
-
-      var getVehicleCapacities = function(vehicleUsageId) {
-        return Object.keys(vehicles_usages_map).map(function(index) {
-          if (vehicles_usages_map[index].vehicle_usage_id === parseInt(vehicleUsageId)) {
-            var capacities = vehicles_usages_map[index].default_capacities;
-            return Object.keys(capacities).map(function(id) {
-              var quantity = $.grep(quantities, function(obj){return obj.id === parseInt(id);})[0]
-              if (quantity) return {id: id, capacity: capacities[id], label: quantity.label, unitIcon: quantity.unit_icon};
-            }).filter(function(element) { return element; });
-          }
-        }).filter(function(element) { return element; })[0];
-      };
-
-      $('#planning-move-stops-modal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
-        $('#planning-move-stops-modal').attr('data-route-id', null);
-      });
-
-      $("#move-stops-modal").off('click').on('click', function() {
-        var stopIds = $("#planning-move-stops-modal")
-          .find('form input[name="stop_ids"]:checked:visible')
-          .map(function() { return $(this).val(); })
-          .toArray();
-        $.ajax({
-          type: 'PATCH',
-          url: '/plannings/' + params.planning_id + '/' + $("#move-route-id").val() + '/move.json',
-          data: {
-            'stop_ids': stopIds,
-            'index': $('#move-index').val()
-          },
-          beforeSend: function() {
-            beforeSendWaiting();
-            $('#planning-move-stops-modal').modal('hide');
-          },
-          error: ajaxError,
-          success: function(data, _status, xhr) {
-            if (xhr.status === 204) return;
-
-            data.route_ids.forEach(function(route_id) {
-              refreshSidebarRoute(params.planning_id, route_id);
-            });
-            routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
-          },
-          complete: completeAjaxMap
-        });
+      /** move_stops - Using ES6 MoveStopsModal module */
+      moveStopsModal.initialize({
+        planningId: params.planning_id,
+        routes: routes,
+        vehiclesUsagesMap: vehicles_usages_map,
+        quantities: params.quantities,
+        routesLayer: routesLayer,
+        refreshSidebarRoute: refreshSidebarRoute,
+        mustacheI18n: mustache_i18n
       });
       /** End move_stops */
 
@@ -2024,24 +1898,6 @@ export const plannings_edit = function(params) {
       });
     }
   };
-
-  var refreshSidebarRoute = function(planning_id, route_id, options) {
-    $.ajax({
-      type: 'GET',
-      url: '/plannings/' + planning_id + '/' + route_id + '/refresh.js?with_stops=' + true,
-      beforeSend: beforeSendWaiting,
-      error: ajaxError,
-      success: function() {
-        updateSuccess(locals.summary, map, [locals.route], options);
-        initRouteSelector();
-        updateSelectionCount('#route_selector', '#planning_route_ids');
-        if (!locals.route.vehicle_usage_id) {
-          continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
-        }
-      },
-      complete: completeAjaxMap
-    });
-  }
 
   var updateDataHeader = function(planning_id) {
     $.ajax({

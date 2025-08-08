@@ -2,10 +2,10 @@ require 'test_helper'
 
 class VehicleUsageTest < ActiveSupport::TestCase
 
-#  test 'should not save' do
-#    o = vehicle_usage_sets(:vehicle_usage_set_one).vehicle_usages.build()
-#    assert_not o.save, 'Saved without required fields'
-#  end
+  #  test 'should not save' do
+  #    o = vehicle_usage_sets(:vehicle_usage_set_one).vehicle_usages.build()
+  #    assert_not o.save, 'Saved without required fields'
+  #  end
 
   test 'should save' do
     vehicle_usage = vehicle_usage_sets(:vehicle_usage_set_one).vehicle_usages.build(vehicle: vehicles(:vehicle_one))

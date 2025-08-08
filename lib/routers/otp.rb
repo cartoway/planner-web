@@ -109,7 +109,8 @@ module Routers
       if request
         data = JSON.parse(request)
         if data['features']
-          # MultiPolygon not supported by Leaflet.Draw
+          # MultiPolygon was not supported by Leaflet.Draw
+          # TODO: As geoman is now used, see if we can support it and extend the features
           data['features'].collect! { |feat|
             if feat['geometry']['type'] == 'LineString'
               feat['geometry']['type'] = 'Polygon'

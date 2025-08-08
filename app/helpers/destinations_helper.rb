@@ -67,7 +67,7 @@ module DestinationsHelper
       destination.street,
       destination.detail,
       destination.postalcode,
-      destination.city,
+      destination.city
     ] + (customer.with_state? ? [destination.state] : []) + [
       destination.country,
       destination.lat&.round(6),

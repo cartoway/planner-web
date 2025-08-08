@@ -30,6 +30,7 @@ class PlanningsController < ApplicationController
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route]
   before_action :set_driver_planning, only: [:driver_move]
+  before_action :set_device_definitions, only: [:edit, :update]
   before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
 
@@ -38,6 +39,7 @@ class PlanningsController < ApplicationController
   include Pagy::Backend
   include PlanningExport
   include PlanningsHelper
+  include SharedHelper
 
   def index
     @plannings = current_user.customer.plannings.select{ |planning|
@@ -55,16 +57,16 @@ class PlanningsController < ApplicationController
 
   def show
     @params = params
-    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).includes(:routes).first!
+    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
     @routes = if params[:route_ids]
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
       @with_stops = true
-      @planning.routes.where(id: route_ids).includes_destinations.includes_vehicle_usages
+      @planning.routes.where(id: route_ids).includes_destinations_and_stores.includes_vehicle_usages
     else
       stops_count = 0
       if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
         @with_stops = true
-        @planning.routes.available.includes_destinations.includes_vehicle_usages
+        @planning.routes.available.includes_destinations_and_stores.includes_vehicle_usages
       else
         @with_stops = false
         @planning.routes.available.includes_vehicle_usages
@@ -116,15 +118,32 @@ class PlanningsController < ApplicationController
     @spreadsheet_columns = export_columns
     @with_devices = true
     capabilities
+
+    # Prepare device definitions and related routes for the view to avoid business logic in the template
+    @device_definitions = @planning.customer.device.configured_definitions.each_with_object({}) do |(key, definition), hash|
+      # Only keep :deliver if SMS is enabled
+      next if key == :deliver && !@planning.customer.enable_sms
+      routes_with_configured_devices = @planning.routes.select do |route|
+        route.vehicle_usage_id && route.vehicle_usage.vehicle.devices.key?(definition[:device])
+      end
+      hash[key] = {
+        definition: definition,
+        routes_with_configured_devices: routes_with_configured_devices
+      }
+    end
   end
 
   def create
     respond_to do |format|
-      @planning = current_user.customer.plannings.build(planning_params)
-      @planning.default_routes
       raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if current_user.customer.too_many_plannings?
 
-      if @planning.save_import && @planning.compute_saved!
+      @planning = current_user.customer.plannings.create(planning_params)
+      if @planning.valid?
+        @planning.default_routes
+        # Reload with all sub models
+        @planning = Planning.where(id: @planning.id).preload_route_details.first!
+      end
+      if @planning.valid? && @planning.compute_saved!
         format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.created', model: @planning.class.model_name.human) }
       else
         format.html { render action: 'new' }
@@ -175,7 +194,8 @@ class PlanningsController < ApplicationController
   def refresh
     respond_to do |format|
       if @planning.compute_saved
-        @routes = @planning.routes.includes_vehicle_usages.includes_destinations
+        @planning = Planning.where(id: @planning.id).preload_routes_without_stops.first!
+        @routes = @planning.routes.includes_vehicle_usages.includes_destinations_and_stores
         @with_devices = true
         format.json { render action: 'show', location: @planning }
       else
@@ -185,14 +205,14 @@ class PlanningsController < ApplicationController
   end
 
   def refresh_route
-    @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.includes_destinations.first!
+    @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.includes_destinations_and_stores.first!
     stops_count = @route.stops.count
     page = params[:out_page] || 1
     if @route.vehicle_usage_id
       current_route = @route
-      current_route.stops.includes_destinations.load
+      current_route.stops.includes_destinations_and_stores.load
     else
-      @out_pagy, @out_stops = pagy_countless(@route.stops.includes_destinations, page: page, page_param: :out_page)
+      @out_pagy, @out_stops = pagy_countless(@route.stops.includes_destinations_and_stores, page: page, page_param: :out_page)
       current_route = @route.dup
       current_route.stops = @out_stops
     end
@@ -223,7 +243,7 @@ class PlanningsController < ApplicationController
     @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
     @routes =
       if @with_stops
-        @planning.routes.includes_vehicle_usages.includes_destinations.available
+        @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available
       else
         @planning.routes.includes_vehicle_usages.available
       end
@@ -251,6 +271,33 @@ class PlanningsController < ApplicationController
       respond_to do |format|
         format.js { render partial: 'send_sms_drivers', locals: { planning: @planning, routes: @planning.routes } }
       end
+    end
+  end
+
+  def selection_details
+    selected_stop_ids = params[:stop_ids]&.split(',') || []
+
+    @quantities = {}
+    @available_routes = []
+    @selection_info = { stops_count: 0 }
+
+    planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
+    @available_routes = planning_summary(planning)[:routes]
+
+    if selected_stop_ids.any?
+      stops = Stop.joins(:route)
+                  .where(routes: { planning_id: planning.id })
+                  .where(id: selected_stop_ids)
+                  .includes_destinations_and_stores
+                  .only_stop_visits
+
+      @selection_info[:stops_count] = stops.size
+      @quantities = aggregate_visit_quantities(planning.customer, stops.map(&:visit))
+    end
+
+    respond_to do |format|
+      format.html { render partial: 'shared/selection_details', layout: false }
+      format.json { render json: { quantities: @quantities, available_routes: @available_routes, selection_info: @selection_info } }
     end
   end
 
@@ -298,8 +345,8 @@ class PlanningsController < ApplicationController
             end
           end
 
-          if @planning.compute_saved
-            @routes = @planning.routes.select{ |r| route_ids.include? r.id }
+          if @planning.compute_saved && @planning.reload
+            @routes = @planning.routes.where(id: route_ids).includes_vehicle_usages.includes_destinations_and_stores
             format.json { render action: :show }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
@@ -518,8 +565,8 @@ class PlanningsController < ApplicationController
               }
             end
           end
-          # save! is used to rollback all the transaction with associations
-          if @planning.compute && @planning.save!
+
+          if @planning.compute_saved!
             format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
@@ -557,7 +604,23 @@ class PlanningsController < ApplicationController
   end
 
   def set_available_stores
-    @available_stores = current_user.customer.stores.map { |store| { id: store.id, name: store.name, ref: store.ref, icon: store.icon, color: store.color } }
+    @available_stores = current_user.customer.stores.pluck(:id, :name, :ref, :icon, :color).map do |id, name, ref, icon, color|
+      { id: id, name: name, ref: ref, icon: icon, color: color }
+    end
+  end
+
+  def set_device_definitions
+    @device_definitions = @planning.customer.device.configured_definitions.each_with_object({}) do |(key, definition), hash|
+      # Only keep :deliver if SMS is enabled
+      next if key == :deliver && !@planning.customer.enable_sms
+      routes_with_configured_devices = @planning.routes.select do |route|
+        route.vehicle_usage_id && route.vehicle_usage.vehicle.devices.key?(definition[:device])
+      end
+      hash[key] = {
+        definition: definition,
+        routes_with_configured_devices: routes_with_configured_devices
+      }
+    end
   end
 
   def set_planning_without_stops
@@ -602,22 +665,6 @@ class PlanningsController < ApplicationController
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_route_details.first!
-  end
-
-  def includes_destinations
-    if @with_stops && (params[:route_id] || params[:route_ids] || [:automatic_insert, :optimize].include?(action_name.to_sym))
-      # Preload only stops from necessary routes
-      Stop.includes_destinations.scoping do
-        yield
-      end
-    elsif @with_stops && ([:show, :edit].exclude?(action_name.to_sym) || !request.format.html?)
-      # Preload all stops from all routes
-      Route.includes_destinations.scoping do
-        yield
-      end
-    else
-      yield
-    end
   end
 
   def check_no_existing_job
@@ -685,7 +732,7 @@ class PlanningsController < ApplicationController
       :street,
       :detail,
       :postalcode,
-      :city,
+      :city
     ] + ((@customer || @planning.customer).with_state? ? [:state] : []) + [
       :country,
       :lat,
@@ -743,7 +790,7 @@ class PlanningsController < ApplicationController
       :cost_fixed,
       :cost_time,
       :revenue,
-      :tags,
+      :tags
     ] + (
       (@customer || @planning.customer).enable_orders ?
         [:orders] :

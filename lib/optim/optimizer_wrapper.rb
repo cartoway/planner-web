@@ -125,7 +125,7 @@ class OptimizerWrapper
       end
       response
     }
-
+    solution_data = {}
     result = nil
     while json
       retry_counter = 0
@@ -138,7 +138,7 @@ class OptimizerWrapper
       elsif ['queued', 'working'].include?(result.dig('job', 'status'))
         begin
           if progress && job_details
-            solution_data = compute_progression(vrp, result, job_details)
+            solution_data.merge!(compute_progression(vrp, result, job_details))
             progress.call(job_id, solution_data)
           end
           sleep(0.2)
@@ -184,9 +184,10 @@ class OptimizerWrapper
       resolution: {
         duration: optim_duration_max,
         initial_time_out: optim_duration_min,
+        solver_priority: options[:solver_priority],
         strict_skills: options[:strict_skills],
         time_out_multiplier: 2
-      },
+      }.delete_if{ |_k, v| v.nil? },
       restitution: {
         intermediate_solutions: false
       }
@@ -274,19 +275,26 @@ class OptimizerWrapper
               # For the optimization setup duration starts before the time window start
               start: stop.time_window_start_2 && (stop.time_window_start_2 + stop.destination_duration),
               end: stop.time_window_end_2 && (stop.time_window_end_2 + extra_time)
-            },
+            }
           ].compact,
           duration: stop.duration,
           setup_duration: stop.destination_duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
         priority: stop.priority && (stop.priority.to_i - 4).abs,
-        quantities: units.map{ |unit|
-          next if stop.visit.nil? || (!stop.visit.default_pickups.key?(unit.id) && !stop.visit.default_deliveries.key?(unit.id))
+        pickups: units.map{ |unit|
+          next if stop.visit.nil? || !stop.visit.default_pickups.key?(unit.id) || stop.visit.default_pickups[unit.id] == 0
 
-          quantity = (stop.visit.default_deliveries[unit.id] || 0) - (stop.visit.default_pickups[unit.id] || 0)
           {
             unit_id: "u#{unit.id}",
-            value: quantity
+            value: stop.visit.default_pickups[unit.id]
+          }
+        }.compact,
+        deliveries: units.map{ |unit|
+          next if stop.visit.nil? || !stop.visit.default_deliveries.key?(unit.id) || stop.visit.default_deliveries[unit.id] == 0
+
+          {
+            unit_id: "u#{unit.id}",
+            value: stop.visit.default_deliveries[unit.id]
           }
         }.compact,
         skills: (options[:use_skills] && tags_label) ? (options[:problem_skills] & tags_label) : nil
@@ -468,9 +476,10 @@ class OptimizerWrapper
   # If the problem is simple, the progression is directly related to the time elapsed as there is only one matrix to compute
   def compute_progression(vrp, result, job_details)
     progression = job_details.dig('avancement')
-    return {'first_progression': 0, 'second_progression': 0, 'status': 'queued'} unless progression
+    solution_data = {first_progression: 0, second_progression: 0, status: 'queued'}
+    solution_data.merge!(compute_solution_data(result.dig('job'), result.dig('solutions')&.last))
 
-    solution_data = compute_solution_data(result.dig('job'), result.dig('solutions')&.last)
+    return solution_data unless progression
 
     multipart, matrix_bar, resolution_bar =
       if PROGRESSION_KEYS.any?{ |key| progression.include?(key) }
@@ -480,7 +489,7 @@ class OptimizerWrapper
       else
         [nil, 0, 0]
       end
-    solution_data.merge!('multipart': multipart, 'first_progression': matrix_bar, 'second_progression': resolution_bar)
+    solution_data.merge!(multipart: multipart, first_progression: matrix_bar, second_progression: resolution_bar)
     solution_data
   end
 
@@ -529,8 +538,13 @@ class OptimizerWrapper
   def compute_solution_data(job, solution)
     solution_data = solution&.slice('cost', 'total_distance', 'total_time', 'elapsed') || {}
     solution_data.merge!(job.slice('status'))
-    solution_data.merge('status': 'queued') unless solution_data.key?('status')
-    solution_data.merge!('unassigned_size': solution.dig('unassigned')&.size) if solution
-    solution_data
+    solution_data.merge!('unassigned_size' => solution.dig('unassigned')&.size) if solution
+
+    # Add solver information
+    solution_data.merge!('solvers' => job.dig('solvers')) if job.dig('solvers')
+    solution_data.merge!('skipped_services' => job.dig('skipped_services')) if job.dig('skipped_services')
+
+    # Symbolize all keys for consistency
+    solution_data.symbolize_keys
   end
 end

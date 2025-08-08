@@ -67,32 +67,30 @@
     </tbody>
   </table>
   </div>
-
-  <div class="col-md-12">
-    <div id="move-stop-quantities"></div>
-    <hr class="col-md-10 col-md-offset-1"/>
-    <div class="move-stops-options">
-      <div>
-        <label >{{#i18n}}plannings.edit.dialog.move_stops.move_to{{/i18n}}</label>
-      </div>
-      <div class="move-route-selector">
-        <select id="move-route-id" name="route_id" >
-          {{#routes}}
-          <option value="{{route_id}}" data-vehicle-usage-id="{{vehicle_usage_id}}"><span>{{name}}</span></option>
-          {{/routes}}
+  <hr class="col-md-10 col-md-offset-1"/>
+  <div id="move-stop-quantities" class="col-md-12"></div>
+  <hr class="col-md-10 col-md-offset-1"/>
+  <div class="col-md-12 move-stops-options">
+    <div>
+      <label >{{#i18n}}plannings.edit.dialog.move_stops.move_to{{/i18n}}</label>
+    </div>
+    <div class="move-route-selector">
+      <select id="move-route-id" name="route_id" >
+        {{#routes}}
+        <option value="{{route_id}}" data-vehicle-usage-id="{{vehicle_usage_id}}"><span>{{name}}</span></option>
+        {{/routes}}
+      </select>
+    </div>
+  </div>
+  <div id="move-stop-global-quantities" class="col-md-12"></div>
+  <div class="col-md-12 index-option">
+      <label for="move-index">{{#i18n}}plannings.edit.dialog.move_stops.index.label{{/i18n}}</label>
+      <div class="move-stops-index form-group">
+        <select id="move-index" class="form-control">
+          <option value="-1" selected>{{#i18n}}plannings.edit.dialog.move_stops.index.end{{/i18n}}</option>
+          <option value="1">{{#i18n}}plannings.edit.dialog.move_stops.index.start{{/i18n}}</option>
+          <option value="">{{#i18n}}plannings.edit.dialog.move_stops.index.best_place{{/i18n}}</option>
         </select>
       </div>
     </div>
-    <div id="move-stop-global-quantities"></div>
-    <div class="index-option">
-        <label for="move-index">{{#i18n}}plannings.edit.dialog.move_stops.index.label{{/i18n}}</label>
-        <div class="move-stops-index form-group">
-          <select id="move-index" class="form-control">
-            <option value="-1" selected>{{#i18n}}plannings.edit.dialog.move_stops.index.end{{/i18n}}</option>
-            <option value="1">{{#i18n}}plannings.edit.dialog.move_stops.index.start{{/i18n}}</option>
-            <option value="">{{#i18n}}plannings.edit.dialog.move_stops.index.best_place{{/i18n}}</option>
-          </select>
-        </div>
-      </div>
-  </div>
 </div>

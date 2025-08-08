@@ -45,7 +45,7 @@ class OptimizerJob < OptimizerJobStruct
           options = job_options(planning).merge(options)
           optimum = Planner::Application.config.optimizer.optimize(planning, routes, **options) { |job_id, solution_data|
             if @job
-              job_progress_save solution_data.merge('job_id': job_id, 'completed': false)
+              job_progress_save solution_data.merge(job_id: job_id, completed: false)
               Delayed::Worker.logger.info("OptimizerJob", customer_id: customer_id, planning_id: planning_id, progress: @job.progress)
             end
           }
@@ -114,7 +114,8 @@ class OptimizerJob < OptimizerJobStruct
       optimize_minimal_time: planning.customer.optimization_minimal_time || @@optimize_minimal_time,
       enable_optimization_soft_upper_bound: planning.customer.enable_optimization_soft_upper_bound,
       vehicle_max_upper_bound: planning.customer.vehicle_max_upper_bound,
-      stop_max_upper_bound: planning.customer.stop_max_upper_bound
+      stop_max_upper_bound: planning.customer.stop_max_upper_bound,
+      solver_priority: planning.customer.solver_priority || Planner::Application.config.available_solvers
     }
   end
 end

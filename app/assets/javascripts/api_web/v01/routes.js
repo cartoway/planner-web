@@ -21,8 +21,7 @@ import { mapInitialize, initializeMapHash } from '../../scaffolds';
 import { RoutesLayer } from '../../../../assets/javascripts/routes_layers';
 
 const api_web_v01_routes_index = function(params) {
-  var progressBar = Turbolinks.enableProgressBar();
-  progressBar && progressBar.advanceTo(25);
+  Turbolinks.setProgressBarDelay(25);
 
   var prefered_unit = (!params.prefered_unit ? 'km' : params.prefered_unit),
     planning_id = params.planning_id,
@@ -70,7 +69,7 @@ const api_web_v01_routes_index = function(params) {
 
   routesLayer.showRoutesWithStore(route_ids, null, function() {
     if (fitBounds) {
-      progressBar && progressBar.done();
+      Turbolinks.setProgressBarDelay(100);
       var bounds = routesLayer.getBounds();
       if (bounds && bounds.isValid()) {
         map.invalidateSize();
@@ -83,7 +82,7 @@ const api_web_v01_routes_index = function(params) {
     }
   });
 
-  progressBar && progressBar.advanceTo(50);
+  Turbolinks.setProgressBarDelay(100);
 };
 
 const api_web_v01_routes_print = function(params) {
