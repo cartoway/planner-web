@@ -258,17 +258,8 @@ export class LassoModule {
       return;
     }
 
-    // Get the primary route ID (most common route in selection)
-    const routeCounts = {};
-    selectedStops.forEach(stop => {
-      routeCounts[stop.route_id] = (routeCounts[stop.route_id] || 0) + 1;
-    });
-    const primaryRouteId = Object.keys(routeCounts).reduce((a, b) =>
-      routeCounts[a] > routeCounts[b] ? a : b
-    );
-
-    // Show the MoveStops modal for the primary route
-    moveStopsModal.showModal(primaryRouteId);
+    // Open modal by providing selected stop IDs (server will infer primary route)
+    moveStopsModal.showModalForStops(selectedStops.map(s => s.stop_id));
 
     // Setup automatic selection of lasso-selected stops when modal loads
     this.setupLassoStopSelection(selectedStops);

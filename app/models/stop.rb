@@ -58,6 +58,13 @@ class Stop < ApplicationRecord
     )
   }
   scope :includes_relations, -> { includes(visit: [:relation_currents, :relation_successors])}
+  scope :includes_route_details, -> {
+    includes(route: [
+      :planning,
+      { vehicle_usage: :vehicle }
+    ])
+  }
+  scope :by_route_then_index, -> { reorder(:route_id, :index) }
 
   before_save :outdate_route
 
