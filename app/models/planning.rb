@@ -262,7 +262,7 @@ class Planning < ApplicationRecord
     ]
     new_routes +=
       # load only necessary fields to avoid loading all vehicle_usages and dependancies
-      vehicle_usage_set.vehicle_usages.with_vehicle.where(active: true).pluck(:id).map { |vehicle_usage_id|
+      vehicle_usage_set.vehicle_usages.includes(:vehicle).where(active: true).pluck(:id).map { |vehicle_usage_id|
         Route.new(planning_id: self.id, vehicle_usage_id: vehicle_usage_id, outdated: false)
       }
     Route.import(new_routes, validate: false)
