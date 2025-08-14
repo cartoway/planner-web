@@ -66,9 +66,26 @@ export class MoveStopsModal {
    * Setup event handlers for the modal
    */
   setupEventHandlers() {
-    // Modal show event
-    $(this.modalSelector).off().on('show.bs.modal', (ev) => {
-      this.handleModalShow(ev);
+    // Load modal content when opened via data-toggle="modal"
+    $(this.modalSelector).off('show.bs.modal.moveStops').on('show.bs.modal.moveStops', (ev) => {
+      try {
+        const trigger = ev.relatedTarget;
+        const routeId = trigger && trigger.getAttribute && trigger.getAttribute('data-route-id');
+        if (!routeId) return;
+
+        // Show loading spinner
+        $(`${this.modalSelector} .modal-body`).html('<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>').unbind();
+
+        // Ask Rails to render the modal via .js.erb
+        $.ajax({
+          url: `/plannings/${this.planningId}/move_stops_modal.js`,
+          data: { route_id: routeId },
+          dataType: 'script',
+          error: ajaxError
+        });
+      } catch (e) {
+        // no-op
+      }
     });
 
     // Modal hidden event
@@ -80,77 +97,34 @@ export class MoveStopsModal {
     $("#move-stops-modal").off('click').on('click', () => {
       this.handleMoveStops();
     });
-  }
 
-  /**
-   * Handle modal show event
-   * @param {Event} ev - Bootstrap modal event
-   */
-  handleModalShow(ev) {
-    const routeId = ev.relatedTarget.attributes['data-route-id'].value;
+    // Listen when server injected content is ready, then initialize behaviors
+    $(document).off('move-stops:content-updated').on('move-stops:content-updated', () => {
+      try {
+        // Initialize UI widgets
+        $('#move-stops-toggle').toggleSelect();
+        $('[type="checkbox"][data-toggle="disable-multiple-actions"]').toggleMultipleActions();
 
-    // Show loading spinner
-    $(`${this.modalSelector} .modal-body`).html(
-      '<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>'
-    ).unbind();
+        // Initialize select2 with route colors
+        const routesList = window.moveStopsData && window.moveStopsData.availableRoutes || [];
+        const templateRoute = (route) => {
+          if (route.id) {
+            const routeData = routesList.find(r => r.route_id === parseInt(route.id));
+            if (routeData) {
+              return $("<span><span class='color_small' style='background: " + routeData.color + "'></span>&nbsp;</span>")
+                .append($("<span/>").text(route.text));
+            }
+          }
+          return route.text;
+        };
+        $('#move-route-id').select2({ templateSelection: templateRoute, templateResult: templateRoute, minimumResultsForSearch: -1 });
 
-    // Filter routes (exclude current route)
-    const availableRoutes = this.routes
-      .filter(route => route.route_id != routeId)
-      .map(route => {
-        if (route.name === "undefined") {
-          route.name = I18n.t('plannings.edit.out_of_route');
-          route.color = '#fff';
+        // Initialize quantities and computed fields
+        if (window.moveStopsData && window.moveStopsData.stops) {
+          this.setupModalComponents(window.moveStopsData.stops, routesList);
         }
-        return route;
-      });
-
-    // Load route data via AJAX
-    this.loadRouteData(routeId, availableRoutes);
-  }
-
-  /**
-   * Load route data for the modal
-   * @param {string} routeId - Source route ID
-   * @param {Array} availableRoutes - Available target routes
-   */
-  loadRouteData(routeId, availableRoutes) {
-    $.ajax({
-      type: 'GET',
-      contentType: 'application/json',
-      url: `/plannings/${this.planningId}.json`,
-      data: { "route_ids": routeId },
-      error: ajaxError,
-      success: (data) => {
-        this.renderModalContent(data, availableRoutes);
-      }
+      } catch (e) {}
     });
-  }
-
-  /**
-   * Render modal content
-   * @param {Object} data - Route data
-   * @param {Array} availableRoutes - Available target routes
-   */
-  renderModalContent(data, availableRoutes) {
-    const routeData = data.routes[0];
-    const stops = routeData.stops;
-
-    const templateData = {
-      color: routeData.color,
-      count: routeData.size,
-      i18n: this.mustacheI18n,
-      quantities: routeData.quantities,
-      routes: availableRoutes,
-      stops: stops,
-      vehicle: routeData.vehicle_id ? true : false
-    };
-
-    // Render modal content
-    $(`${this.modalSelector} .modal-body`).html(SMT['stops/move'](templateData));
-
-    // Setup modal components
-    this.setupModalComponents(stops, availableRoutes);
   }
 
   /**
@@ -382,15 +356,35 @@ export class MoveStopsModal {
    * @param {string} routeId - Route ID to show modal for
    */
   showModal(routeId) {
-    const trigger = document.createElement('button');
-    trigger.setAttribute('data-route-id', routeId);
-    trigger.setAttribute('data-toggle', 'modal');
-    trigger.setAttribute('data-target', this.modalSelector);
-    trigger.style.display = 'none';
+    // Show loading spinner immediately
+    $(`${this.modalSelector} .modal-body`).html('<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>').unbind();
+    $(this.modalSelector).modal('show');
 
-    document.body.appendChild(trigger);
-    $(trigger).click();
-    document.body.removeChild(trigger);
+    // Ask Rails to render the modal via .js.erb
+    $.ajax({
+      url: `/plannings/${this.planningId}/move_stops_modal.js`,
+      data: { route_id: routeId },
+      dataType: 'script',
+      error: ajaxError
+    });
+  }
+
+  /**
+   * Show the modal providing a list of stop IDs (no route id needed)
+   * @param {Array<number>} stopIds
+   */
+  showModalForStops(stopIds) {
+    // Show loading spinner immediately
+    $(`${this.modalSelector} .modal-body`).html('<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>').unbind();
+    $(this.modalSelector).modal('show');
+
+    // Ask Rails to render the modal using stop_ids to infer the primary route
+    $.ajax({
+      url: `/plannings/${this.planningId}/move_stops_modal.js`,
+      data: { stop_ids: (stopIds || []).join(',') },
+      dataType: 'script',
+      error: ajaxError
+    });
   }
 
   /**
@@ -412,3 +406,7 @@ export class MoveStopsModal {
 
 // Create and export a singleton instance for backward compatibility
 export const moveStopsModal = new MoveStopsModal();
+// Expose singleton to window so Rails .js.erb can invoke setup hooks
+if (typeof window !== 'undefined') {
+  window.moveStopsModal = moveStopsModal;
+}
