@@ -144,7 +144,7 @@ export const zonings_edit = function(params) {
     var geom_zone = new zoneGeometry(e.layer.toGeoJSON());
     addZone({
       'vehicles': vehicles,
-      'polygon': JSON.stringify(e.layer.toGeoJSON())
+      'polygon': JSON.stringify(collectionToFeature(e.layer.toGeoJSON()))
     }, geom_zone);
     e.layer.remove();
   });
@@ -325,6 +325,19 @@ export const zonings_edit = function(params) {
     }
   });
 
+  // As we are not expecting mutliple features in a FeatureCollection,
+  // ensure we store a single Feature (not a FeatureCollection) for polygon
+  function collectionToFeature(geojson) {
+    if (geojson.type === 'FeatureCollection') {
+      if (geojson.features && geojson.features.length > 0) {
+        return geojson.features[0];
+      } else {
+        return { type: 'Feature', geometry: null, properties: {} };
+      }
+    }
+    return geojson;
+  }
+
   var addZone = function(zone, geom) {
 
     function observeChanges(element) {
@@ -429,7 +442,7 @@ export const zonings_edit = function(params) {
     // Update the hidden polygon field with current polygon data
     var $polygonField = ele.find('input[name="zoning[zones_attributes][][polygon]"]');
     if ($polygonField.length > 0) {
-      $polygonField.val(JSON.stringify(geom.toGeoJSON()));
+      $polygonField.val(JSON.stringify(collectionToFeature(geom.toGeoJSON())));
     }
 
     countPointInPolygon(geom, ele);
@@ -519,7 +532,7 @@ export const zonings_edit = function(params) {
   };
 
   var updateZone = function(zoneData) {
-    $('input[name=zoning\\[zones_attributes\\]\\[\\]\\[polygon\\]]', zoneData.ele).attr('value', JSON.stringify(zoneData.layer.toGeoJSON()));
+    $('input[name=zoning\\[zones_attributes\\]\\[\\]\\[polygon\\]]', zoneData.ele).attr('value', JSON.stringify(collectionToFeature(zoneData.layer.toGeoJSON())));
     countPointInPolygon(zoneData.layer, zoneData.ele);
   };
 
