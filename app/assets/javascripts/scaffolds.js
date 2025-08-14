@@ -134,7 +134,8 @@ $(document).on('turbolinks:load', function() {
         '<i class="fa fa-stopwatch fa-fw"></i>' +
         '<span class="duration"></span>' +
         '</div>';
-      $this.append(input);
+      var wrapped = '<div class="col-xs-3">' + input + '</div>';
+      $this.append(wrapped);
     } else {
       $this.find('.duration').show();
     }
@@ -160,7 +161,8 @@ $(document).on('turbolinks:load', function() {
       }
       input += '&nbsp;<span class="capacity-label-' + obj.id + '">' + obj.label + '</span>' +
         '</div>';
-      $this.append(input);
+      var wrapped = '<div class="col-xs-3">' + input + '</div>';
+      $this.append(wrapped);
     } else {
       if (obj.capacity && withCapacity) {
         $this.find('div[class="default-capacity-' + obj.id + '"]').html('/' + obj.capacity);

@@ -1,0 +1,11 @@
+(function() {
+  var modalSelector = '#planning-move-stops-modal';
+  var stops = <%= raw stops.to_json %>;
+  var routeInfo = <%= raw route.to_json %>;
+  var availableRoutes = <%= raw available_routes.to_json %>;
+
+  $(modalSelector + ' .modal-body').html('<%= j render(partial: "stops/move", formats: [:html], locals: { stops: stops, route: route, available_routes: available_routes }) %>');
+
+  window.moveStopsData = { stops: stops, availableRoutes: availableRoutes, routeInfo: routeInfo };
+  $(document).trigger('move-stops:content-updated');
+})();

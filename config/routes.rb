@@ -134,6 +134,7 @@ Rails.application.routes.draw do
     get 'refresh'
     get 'sidebar'
     get 'modal'
+    get 'move_stops_modal'
     patch 'switch'
     patch 'duplicate'
     patch ':route_id/active/:active' => 'plannings#active'

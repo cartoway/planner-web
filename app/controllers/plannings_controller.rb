@@ -28,7 +28,7 @@ class PlanningsController < ApplicationController
   before_action :set_available_stores, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar, :update_stop]
   UPDATE_ACTIONS = [:update, :move, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
-  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route]
+  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_device_definitions, only: [:edit, :update]
   before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
@@ -271,6 +271,41 @@ class PlanningsController < ApplicationController
       respond_to do |format|
         format.js { render partial: 'send_sms_drivers', locals: { planning: @planning, routes: @planning.routes } }
       end
+    end
+  end
+
+  # Render move stops modal content via Rails (.js.erb)
+  def move_stops_modal
+    route =
+      if params[:route_id]
+        route_id = Integer(params[:route_id])
+        route = @planning.routes.where(id: route_id).includes_vehicle_usages.includes_destinations_and_stores.first!
+      end
+
+    stops =
+      if route
+        route.stops.includes(:route).includes_destinations_and_stores
+      elsif params[:stop_ids]
+        Stop.joins(:route)
+            .where(routes: { planning_id: @planning.id })
+            .where(id: params[:stop_ids].split(','))
+            .includes_destinations_and_stores
+            .by_route_then_index
+      end
+    # Build available target routes excluding current
+    available_routes = planning_summary(@planning)[:routes]
+    available_routes.reject!{ |r| r[:route_id] == route.id } if route
+
+    # Build route_info via existing route json (without stops)
+    @with_stops = false
+    route_json =
+      route && JSON.parse(render_to_string(template: 'routes/_edit.json.jbuilder', formats: [:json], locals: { route: route, stops_count: nil, planning: @planning }), symbolize_names: true)
+    # Build stops via dedicated jbuilder
+    stops_json = JSON.parse(render_to_string(partial: 'stops/move_list.json.jbuilder', formats: [:json], locals: { stops: stops }), symbolize_names: true)
+    stops = stops_json[:stops] || []
+
+    respond_to do |format|
+      format.js { render partial: 'stops/move.js.erb', locals: { stops: stops, route: route_json, available_routes: available_routes } }
     end
   end
 
