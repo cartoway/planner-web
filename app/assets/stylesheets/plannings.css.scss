@@ -39,6 +39,13 @@ $sidebar-margins: 10px;
         margin: 15px;
       }
     }
+
+    .row {
+      [class^="col-"] {
+        padding-left: unset;
+        padding-right: unset;
+      }
+    }
   }
   #planning-move-stops-modal {
     .modal-body {
@@ -60,10 +67,6 @@ $sidebar-margins: 10px;
       }
       .move-route-selector {
         vertical-align: middle;
-      }
-      div {
-        display: inline-block;
-        margin: 0 2px;
       }
       .index-option{
         margin: 20px 0;

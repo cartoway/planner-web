@@ -1,0 +1,88 @@
+#move-stops.route.col-md-12
+  .form-inline.pull-left.move-stops-toggle
+    %button#move-stops-toggle.btn.btn-default.btn-xs{ type: 'button', 'data-toggle': 'selection', 'data-target': '#move-stops', title: t('all.verb.toggle_selection') }
+      %i.fa.fa-check.fa-fw
+
+  .form-inline.pull-right.move-stops-filter
+    %input#move-stops-filter.form-control{ placeholder: t('web.placeholder_filter'), 'data-change': 'filter', 'data-target': '#move-stops', type: 'text' }
+    %span#move-stops_count
+      = stops.size
+    = " #{t('plannings.edit.stops')}"
+
+  .overflow-500.col-md-12.col-xs-12.col-sm-12
+    %ul.stops.list-group
+      - stops.each do |stop|
+        %li.d-fake-flex.align-items-center.list-group-item{class: (stop[:error] ? 'ui-state-error' : nil)}
+          .row.stop-row.d-flex.flex-wrap.align-items-center{class: (stop[:status] ? "stop-row-#{stop[:status_code]}" : nil)}
+            .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
+              .col-xs-2.d-flex.justify-content-center.align-items-center
+                %input.move-stops-stop-id{ type: 'checkbox', name: 'stop_ids', value: stop[:stop_id], checked: 'checked', multiple: true, 'data-toggle': 'disable-multiple-actions', 'data-target': '.modal-footer' }
+              .col-xs-10.d-flex.align-items-center
+                .col-xs-5.d-flex.justify-content-center
+                  %span.number.stop-label.label{class: (stop[:color_force] ? 'color_force' : '' ) + (stop[:active] ? '' : ' inactive' ), style: "background-color: #{ stop[:active] ? stop[:color] : 'transparent' };"}
+                    %span{ class: ['stop-status', (stop[:status] ? "stop-status-#{stop[:status_code]}" : nil)].compact.join(' '), title: [stop[:status], (stop[:eta_formated] ? " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" : nil)].compact.join, style: (stop[:status] ? nil : 'display: none;') }
+                    = stop[:number] || stop[:stop_index]
+                .col-xs-7
+                  .stop-info{class: "#{stop[:active] ? 'primary' : 'info'} #{('danger' if stop[:error])}"}
+                    - if stop[:active]
+                      = stop[:time]
+                      - if stop[:time_day]
+                        = "(+#{stop[:time_day]})"
+            .col-xs-4.col-md-4.d-flex
+              .title
+                - unless stop[:geocoded]
+                  %i.fa.fa-map-marker.fa-fw{ title: t('plannings.edit.error.no_geolocalization') }
+                - if stop[:out_of_window]
+                  %i.fa.fa-stopwatch.fa-fw{ title: t('plannings.edit.error.out_of_window_help') }
+                - if stop[:out_of_capacity]
+                  %i.fa.fa-dumpster.fa-fw{ title: t('plannings.edit.error.out_of_capacity_help') }
+                - if stop[:out_of_drive_time]
+                  %i.fa.fa-power-off.fa-fw{ title: t('plannings.edit.error.out_of_drive_time_help') }
+                - if stop[:out_of_force_position]
+                  %i.fa.fa-angle-right.fa-fw{ title: t('plannings.edit.error.out_of_force_position_help') }
+                - if stop[:out_of_relation]
+                  %i.fa.fa-link-slash.fa-fw{ title: t('plannings.edit.error.out_of_relation_help') }
+                - if stop[:no_path]
+                  %i.fa.fa-road.fa-fw{ title: t('plannings.edit.error.no_path_help') }
+                - title = stop[:name]
+                - if stop[:index_visit]
+                  - title += " # #{stop[:index_visit]}"
+                - if stop[:status]
+                  - title += " - #{stop[:status]}"
+                - if stop[:eta_formated]
+                  - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
+                %span.name{ title: title }
+                  = stop[:name]
+                  - if stop[:index_visit]
+                    \#
+                    = stop[:index_visit]
+            .col-xs-2.col-md-4.hover-tools{style: "display: none;"}
+              .col-xs-0.col-md-6
+              .col-xs-12.col-md-6.d-flex.align-items-center
+                %i.fa.fa-reorder.fa-fw{title: t('plannings.edit.drag_help')}
+
+  %hr.col-md-10.col-md-offset-1/
+  .col-md-12
+    #move-stop-quantities.row
+
+  %hr.col-md-10.col-md-offset-1/
+
+  .col-md-12.move-stops-options
+    %div
+      %label= t('plannings.edit.dialog.move_stops.move_to')
+    .move-route-selector
+      %select#move-route-id{ name: 'route_id' }
+        - available_routes.each do |r|
+          %option{ value: r[:route_id], 'data-vehicle-usage-id': r[:vehicle_usage_id] }= r[:name]
+
+  .col-md-12
+    #move-stop-global-quantities.row
+  .col-md-12.index-option
+    %label{ for: 'move-index' }= t('plannings.edit.dialog.move_stops.index.label')
+    .move-stops-index.form-group
+      %select#move-index.form-control
+        %option{ value: '-1', selected: true }= t('plannings.edit.dialog.move_stops.index.end')
+        %option{ value: '1' }= t('plannings.edit.dialog.move_stops.index.start')
+        %option{ value: '' }= t('plannings.edit.dialog.move_stops.index.best_place')
+
+
