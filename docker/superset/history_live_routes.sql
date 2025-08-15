@@ -81,8 +81,12 @@ c as (
 routes_a as (
     select
         plannings.customer_id,
+        plannings.name AS planning_name,
+        plannings.ref AS planning_ref,
+        plannings.date AS planning_date,
         routes.*,
         vehicles.id as vehicle_id,
+        vehicles.name as vehicle_name,
         vehicles.capacities as vehicle_capacities
     from
         plannings
@@ -96,9 +100,14 @@ routes_a as (
 select
     routes.customer_id,
     routes.planning_id,
+    routes.planning_name,
+    routes.planning_ref,
+    routes.planning_date,
     routes.id as route_id,
+    routes.ref as route_ref,
     routes.vehicle_usage_id,
     routes.vehicle_id,
+    routes.vehicle_name,
 
     routes.distance / 1000 as distance,
     routes.emission as emission,
