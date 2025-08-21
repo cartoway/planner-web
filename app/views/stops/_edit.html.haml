@@ -75,7 +75,7 @@
           %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
             = custom_attribute.name
           .field.mb-0{class: custom_attribute.object_type == 'boolean' ? 'col-xs-4' : 'col-xs-12' }
-            = custom_attribute_form_field(f, stop, custom_attribute, 'stop[custom_attributes]')
+            = custom_attribute_form_field(f, stop, custom_attribute, 'stop')
           .col-xs-12
             %p.help-block
               = custom_attribute.description
