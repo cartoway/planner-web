@@ -193,9 +193,8 @@ docker compose run --rm web bundle exec rake db:migrate
 To reset the instance
 ```
 docker compose down -v
-docker compose up -d
 docker compose run --rm web bundle exec rake db:setup
-docker compose restart
+docker compose up -d
 ```
 
 Update the `db/structure.sql` file
