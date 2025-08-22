@@ -75,7 +75,10 @@ when StopVisit
       json.isodistance stop.route.planning.customer.router.isodistance
     end
   end
-  json.custom_attributes current_user.customer.custom_attributes.for_visit.map{ |c_a| custom_attribute_template(c_a, visit) }
+  json.custom_attributes (
+    current_user.customer.custom_attributes.for_visit.map{ |c_a| custom_attribute_template(c_a, visit) } +
+    current_user.customer.custom_attributes.for_stop.map{ |c_a| custom_attribute_template(c_a, stop) }
+  )
 when StopRest
   json.rest do
     json.rest true
