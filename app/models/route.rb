@@ -240,7 +240,7 @@ class Route < ApplicationRecord
             route_attributes[:distance] += stop_attributes[:distance] if stop_attributes[:distance]
             route_attributes[:end] = stop_attributes[:time] + stop.duration
             route_attributes[:visits_duration] = (route_attributes[:visits_duration] || 0) + stop.duration if !stop.is_a?(StopRest)
-            if !stop.is_a?(StopRest) && previous_with_pos.is_a?(Stop) && stop.position != previous_with_pos.position
+            if !stop.is_a?(StopRest) && (previous_with_pos == true || (previous_with_pos.is_a?(Stop) && stop.position != previous_with_pos.position))
               route_attributes[:end] += stop.destination_duration
               route_attributes[:visits_duration] += stop.destination_duration
             end
