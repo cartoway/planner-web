@@ -281,20 +281,15 @@ class OptimizerWrapper
           setup_duration: stop.destination_duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
         priority: stop.priority && (stop.priority.to_i - 4).abs,
-        pickups: units.map{ |unit|
-          next if stop.visit.nil? || !stop.visit.default_pickups.key?(unit.id) || stop.visit.default_pickups[unit.id] == 0
+        quantities: units.map{ |unit|
+          next if stop.visit.nil? ||
+                  !stop.visit.default_pickups.key?(unit.id) && !stop.visit.default_deliveries.key?(unit.id) ||
+                  stop.visit.default_pickups[unit.id] == 0 && stop.visit.default_deliveries[unit.id] == 0
 
           {
             unit_id: "u#{unit.id}",
-            value: stop.visit.default_pickups[unit.id]
-          }
-        }.compact,
-        deliveries: units.map{ |unit|
-          next if stop.visit.nil? || !stop.visit.default_deliveries.key?(unit.id) || stop.visit.default_deliveries[unit.id] == 0
-
-          {
-            unit_id: "u#{unit.id}",
-            value: stop.visit.default_deliveries[unit.id]
+            pickup: stop.visit.default_pickups[unit.id],
+            delivery: stop.visit.default_deliveries[unit.id]
           }
         }.compact,
         skills: (options[:use_skills] && tags_label) ? (options[:problem_skills] & tags_label) : nil
