@@ -16,7 +16,7 @@
           .row.stop-row.d-flex.flex-wrap.align-items-center{class: (stop[:status] ? "stop-row-#{stop[:status_code]}" : nil)}
             .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
               .col-xs-2.d-flex.justify-content-center.align-items-center
-                %input.move-stops-stop-id{ type: 'checkbox', name: 'stop_ids', value: stop[:stop_id], checked: 'checked', multiple: true, 'data-toggle': 'disable-multiple-actions', 'data-target': '.modal-footer' }
+                %input.move-stops-stop-id{ type: 'checkbox', name: 'stop_ids', value: stop[:stop_id], checked: 'checked', multiple: true, 'data-toggle': 'disable-multiple-actions', 'data-target': '.modal-footer', 'data-route-id': stop[:route_id] }
               .col-xs-10.d-flex.align-items-center
                 .col-xs-5.d-flex.justify-content-center
                   %span.number.stop-label.label{class: (stop[:color_force] ? 'color_force' : '' ) + (stop[:active] ? '' : ' inactive' ), style: "background-color: #{ stop[:active] ? stop[:color] : 'transparent' };"}
