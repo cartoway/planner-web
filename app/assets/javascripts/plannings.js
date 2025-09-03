@@ -49,6 +49,14 @@ $(function() {
   $('[data-toggle="tooltip"]').tooltip();
 });
 
+export const panelLoading = function(route_id) {
+  var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
+  route_panel.sortable('disable')
+             .closest('.panel')
+             .addClass('spinner-container')
+             .append('<div class="spinner-border"></div>');
+};
+
 const getPlanningsId = function() {
   return $.makeArray($('#plannings').find('input[type=checkbox]:checked').map(function(index, id) { return $(id).val(); }));
 };
@@ -442,14 +450,6 @@ export const plannings_edit = function(params) {
         }
       }
     });
-  };
-
-  var panelLoading = function(route_id) {
-    var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
-    route_panel.sortable('disable')
-               .closest('.panel')
-               .addClass('spinner-container')
-               .append('<div class="spinner-border"></div>');
   };
 
   var refreshSidebarRoute = function(planning_id, route_id, options) {

@@ -19,6 +19,7 @@
 'use strict';
 
 import { ajaxError, beforeSendWaiting, completeAjaxMap } from '../ajax.js';
+import { panelLoading } from '../plannings.js';
 
 /**
  * MoveStopsModal - Manages the modal for moving stops between routes
@@ -334,6 +335,21 @@ export class MoveStopsModal {
       beforeSend: () => {
         beforeSendWaiting();
         $(this.modalSelector).modal('hide');
+
+        const impactedRouteIds = new Set();
+        impactedRouteIds.add(targetRouteId);
+        $(this.modalSelector)
+          .find('form input[name="stop_ids"]:checked:visible')
+          .each(function() {
+            const routeId = $(this).data('route-id');
+            if (routeId) {
+              impactedRouteIds.add(routeId);
+            }
+          });
+
+        impactedRouteIds.forEach(routeId => {
+          panelLoading(routeId);
+        });
       },
       error: ajaxError,
       success: (data, _status, xhr) => {
