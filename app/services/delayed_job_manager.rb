@@ -17,7 +17,8 @@ class DelayedJobManager
         existing_job.update!(run_at: delay_seconds.seconds.from_now)
         existing_job
       else
-        Delayed::Job.enqueue(job, run_at: delay_seconds.seconds.from_now)
+        job.perform # temporary run job synchronously
+        #Delayed::Job.enqueue(job, run_at: delay_seconds.seconds.from_now)
       end
     end
 
