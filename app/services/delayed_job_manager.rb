@@ -14,11 +14,10 @@ class DelayedJobManager
       ).first
 
       if existing_job
-        existing_job.update!(run_at: delay_seconds.seconds.from_now)
+        existing_job.update_column(:run_at, delay_seconds.seconds.from_now)
         existing_job
       else
-        job.perform # temporary run job synchronously
-        #Delayed::Job.enqueue(job, run_at: delay_seconds.seconds.from_now)
+        Delayed::Job.enqueue(job, run_at: delay_seconds.seconds.from_now)
       end
     end
 
