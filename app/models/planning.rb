@@ -319,7 +319,7 @@ class Planning < ApplicationRecord
       r.invalidate_route_cache && r.reload
       next unless Planner::Application.config.delayed_job_use
 
-      Delayed::Job.enqueue(SimplifyGeojsonTracksJob.new(self.customer_id, r.id))
+      SimplifyGeojsonTracksJob.new(self.customer_id, r.id).perform
     }
     self.save!(touch: false) && self.invalidate_planning_cache
     true
