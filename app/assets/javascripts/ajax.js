@@ -126,6 +126,8 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     dialog.modal(modal_options());
     freezeProgressDialog(dialog);
     var progress = delayedJob.progress;
+
+    updateOptimizationDetails(dialog, progress);
     $(".progress-bar", dialog).each(function(i, e) {
       // hide or show dialog-progress class
       if (!progress || !progress['completed'] && (!progress['status'] || progress['status'] == 'queued')) {
@@ -301,4 +303,97 @@ export const fake_select2 = function(selector, callback) {
 export const phoneNumberCall = function(object, userCall) {
   object.numberHref   = userCall.replace("{TEL}", object.phone_number);
   object.numberTarget = (document.location.protocol === "http:") ? '_blank' : '_self';
+};
+
+let optimizationDetailsInitialized = false;
+export const updateOptimizationDetails = function(dialog, progress) {
+  const detailsContainer = $('#optimization-details', dialog);
+  const collapseElement = $('#collapseSolverDetails', dialog);
+  const toggleElement = $('.accordion-toggle', dialog);
+
+  if (!progress || !detailsContainer.length) {
+    return;
+  }
+
+  const hasSolvers = progress.solvers && Array.isArray(progress.solvers) && progress.solvers.length > 0;
+  const hasSkippedServices = progress.skipped_services && Array.isArray(progress.skipped_services) && progress.skipped_services.length > 0;
+
+  if (hasSolvers || hasSkippedServices) {
+    if (!detailsContainer.is(':visible')) {
+      detailsContainer.show();
+    }
+
+    if (!optimizationDetailsInitialized) {
+      if (hasSolvers) {
+        const solversList = $('#solvers-list', dialog);
+
+        const solverCounts = {};
+        progress.solvers.forEach(solver => {
+          solverCounts[solver] = (solverCounts[solver] || 0) + 1;
+        });
+
+        const solversHtml = '<h5>' + mustache_i18n()('plannings.edit.dialog.optimizer.solvers') + '</h5><ul>' +
+          Object.entries(solverCounts).map(([solver, count]) =>
+            `<li><strong>${solver}</strong> (x${count})</li>`
+          ).join('') + '</ul>';
+
+        solversList.html(solversHtml);
+      }
+
+      if (hasSkippedServices) {
+        const skippedList = $('#skipped-services-list', dialog);
+
+        const solverGroups = {};
+        progress.skipped_services.forEach(item => {
+          if (item.solver && item.reasons && Array.isArray(item.reasons)) {
+            if (!solverGroups[item.solver]) {
+              solverGroups[item.solver] = [];
+            }
+            solverGroups[item.solver].push(...item.reasons);
+          }
+        });
+
+        const skippedHtml = '<h5>' + mustache_i18n()('plannings.edit.dialog.optimizer.skipped_services') + '</h5><ul class="list-unstyled">' +
+          Object.entries(solverGroups).map(([solver, allReasons]) => {
+            const reasonCounts = {};
+            allReasons.forEach(reason => {
+              reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+            });
+
+            return `<li><strong>${solver}:</strong><ul class="ms-3">` +
+              Object.entries(reasonCounts).map(([reason, count]) => {
+                const translatedReason = getTranslatedReason(reason);
+                return `<li>${translatedReason}${count > 1 ? ` (x${count})` : ''}</li>`;
+              }).join('') + '</ul></li>';
+          }).join('') + '</ul>';
+
+        skippedList.html(skippedHtml);
+      }
+
+      toggleElement.off('click.collapse');
+      toggleElement.on('click.collapse', function(e) {
+        e.preventDefault();
+
+        if (collapseElement.hasClass('in')) {
+          collapseElement.removeClass('in').addClass('collapse');
+          $(this).removeClass('collapsed');
+          $(this).find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        } else {
+          collapseElement.removeClass('collapse').addClass('in');
+          $(this).addClass('collapsed');
+          $(this).find('i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        }
+      });
+
+      optimizationDetailsInitialized = true;
+    }
+  } else {
+    detailsContainer.hide();
+    optimizationDetailsInitialized = false;
+  }
+};
+
+const getTranslatedReason = function(reason) {
+  const translationKey = `plannings.edit.dialog.optimizer.skipped_reasons.${reason}`;
+  return mustache_i18n()(translationKey);
 };
