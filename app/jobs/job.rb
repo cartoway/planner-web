@@ -27,7 +27,9 @@ class Job < Struct
     # New thread will use a new connection outside this transaction to update job progress
     if @job
       Thread.new do
-        @job.progress = progress.to_json
+        @job.progress ||= {}
+        @job.progress = JSON.parse(@job.progress) if @job.progress.is_a?(String)
+        @job.progress = @job.progress.merge!(progress).to_json
         @job.save
       end.join
     end
