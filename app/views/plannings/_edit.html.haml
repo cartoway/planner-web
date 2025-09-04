@@ -76,15 +76,15 @@
             -# https://github.com/twbs/bootstrap/issues/1411
             %ul#toggle_routes_dropdown.dropdown-menu{role: "menu"}
               %li{"data-selection": "none"}
-                %a.active_none{href: "#"}
+                %a.active_none
                   %i.fa.fa-eye-slash.fa-fw
                   = t 'plannings.edit.active_none'
               %li{"data-selection": "reverse"}
-                %a.active_reverse{href: "#"}
+                %a.active_reverse
                   %i.fa.fa-random.fa-fw
                   = t 'plannings.edit.active_reverse'
               %li{"data-selection": "all"}
-                %a.active_all{href: "#"}
+                %a.active_all
                   %i.fa.fa-eye.fa-fw
                   = t 'plannings.edit.active_all'
           .dropdown.btn-group
@@ -94,16 +94,16 @@
             -# https://github.com/twbs/bootstrap/issues/1411
             %ul#data_routes_dropdown.dropdown-menu{role: "menu"}
               %li{"data-selection": "none"}
-                %a.active_none{href: "#"}
+                %a.active_none
                   %i.fa.fa-angle-left.fa-fw{style: "transform: rotate(-45deg);"}
                   = t 'plannings.edit.active_none'
               - if planning_quantities(@planning).any?
                 %li{"data-selection": "simple"}
-                  %a.active_simple{href: "#"}
+                  %a.active_simple
                     %i.fa.fa-chart-column.fa-fw
                     = t 'plannings.edit.active_simple'
               %li{"data-selection": "all"}
-                %a.active_all{href: "#"}
+                %a.active_all
                   %i.fa.fa-square-poll-vertical.fa-fw
                   = t 'plannings.edit.active_all'
           .dropdown.btn-group
@@ -113,15 +113,15 @@
             -# https://github.com/twbs/bootstrap/issues/1411
             %ul#lock_routes_dropdown.dropdown-menu{role: "menu"}
               %li{"data-selection": "none"}
-                %a.active_none{href: "#"}
+                %a.active_none
                   %i.fa.fa-unlock.fa-fw
                   = t 'plannings.edit.active_none'
               %li{"data-selection": "reverse"}
-                %a.active_reverse{href: "#"}
+                %a.active_reverse
                   %i.fa.fa-random.fa-fw
                   = t 'plannings.edit.active_reverse'
               %li{"data-selection": "all"}
-                %a.active_all{href: "#"}
+                %a.active_all
                   %i.fa.fa-lock.fa-fw
                   = t 'plannings.edit.active_all'
           - if @manage_planning[:manage_export]
