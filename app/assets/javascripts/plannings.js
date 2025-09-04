@@ -2358,6 +2358,7 @@ export const plannings_edit = function(params) {
       message: SMT['modals/optimize']({
         i18n: mustache_i18n
       }),
+      replaceOnlyModalIcon: true,
       footer: '<div class="optim-duration col-xs-6">'
           + '<h5>' + I18n.t('plannings.edit.dialog.optimization.optimization_time') + '</h5>'
           + '<div id="min-optim-duration"></div>'
