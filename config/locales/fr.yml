@@ -2206,6 +2206,16 @@ fr:
           no_solution: Pas de solution trouvée pour votre problème
           error: Impossible d'effectuer le calcul.
           retry_canceling: 'Transmission en cours, réessayez ultérieurement'
+          solvers: Solveurs utilisés
+          skipped_services: Solveurs ignorés
+          skipped_reasons_title: Contraintes non supportées
+          skipped_reasons:
+            assert_no_first_solution_strategy: Stratégie de première solution
+            assert_no_free_approach_or_return: Approche et retour libre
+            assert_no_relations_except_simple_shipments: Relations complexes
+            assert_vehicles_start_or_end: Distance ou durée maximale de trajet
+            assert_vehicles_no_duration_limit: Durée de travail
+            assert_vehicles_start_or_end: Dépôt de départ ou d'arrivée manquants
         zoning:
           title: Sectorisation
           in_progress: >-
