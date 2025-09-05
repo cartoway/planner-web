@@ -1,8 +1,8 @@
 SimplifyGeojsonTracksJobStruct ||= Job.new(:customer_id, :route_id)
 class SimplifyGeojsonTracksJob < SimplifyGeojsonTracksJobStruct
   def perform
-    route = Route.find(route_id)
-    return if route.geojson_tracks.blank?
+    route = Route.unscoped.joins(:planning).where(plannings: { customer_id: customer_id }).find_by(id: route_id)
+    return if route.nil? || route.geojson_tracks.blank?
 
     simplified_tracks = route.geojson_tracks.map do |geojson_track|
       feature = JSON.parse(geojson_track)
