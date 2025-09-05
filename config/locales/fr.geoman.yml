@@ -16,15 +16,15 @@ fr:
       removeLastVertex: "Retirer le dernier sommet"
     buttonTitles:
       drawMarkerButton: "Placer des marqueurs"
-      drawPolyButton: "Dessiner des polygones"
+      drawPolyButton: "Dessiner des secteurs"
       drawLineButton: "Dessiner des polylignes"
       drawCircleButton: "Dessiner un cercle"
       drawRectButton: "Dessiner un rectangle"
-      editButton: "Éditer des calques"
-      dragButton: "Déplacer des calques"
-      cutButton: "Couper des calques"
-      deleteButton: "Supprimer des calques"
+      editButton: "Éditer des secteurs"
+      dragButton: "Déplacer des secteurs"
+      cutButton: "Couper des secteurs"
+      deleteButton: "Supprimer des secteurs"
       drawCircleMarkerButton: "Placer un marqueur de cercle"
     draw:
       polygon:
-        error: "Le polygone ne peut pas se croiser lui-même"
+        error: "Le secteur ne peut pas se croiser lui-même"
