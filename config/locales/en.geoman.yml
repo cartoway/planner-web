@@ -16,12 +16,15 @@ en:
       removeLastVertex: "Remove Last Vertex"
     buttonTitles:
       drawMarkerButton: "Draw Marker"
-      drawPolyButton: "Draw Polygons"
+      drawPolyButton: "Draw Sectors"
       drawLineButton: "Draw Polylines"
       drawCircleButton: "Draw Circle"
       drawRectButton: "Draw Rectangle"
-      editButton: "Edit Layers"
-      dragButton: "Drag Layers"
-      cutButton: "Cut Layers"
-      deleteButton: "Remove Layers"
+      editButton: "Edit Sectors"
+      dragButton: "Drag Sectors"
+      cutButton: "Cut Sectors"
+      deleteButton: "Remove Sectors"
       drawCircleMarkerButton: "Draw Circle Marker"
+    draw:
+      polygon:
+        error: "The sector cannot cross itself"
