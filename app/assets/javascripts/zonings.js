@@ -84,8 +84,10 @@ export const zonings_edit = function(params) {
 
   map.pm.setGlobalOptions({
     allowSelfIntersection: false,
-    markerEditable: false,
-    removeLayerBelowMinVertexCount: false
+    draggable: false,
+    allowRemoval: true,
+    removeLayerBelowMinVertexCount: false,
+    allowEditing: true
   });
 
   map.pm.addControls({
@@ -240,6 +242,11 @@ export const zonings_edit = function(params) {
       // Attach Geoman events to the individual layer
       var zoneLayer = this.getLayers()[0];
       if (zoneLayer) {
+        zoneLayer.pm.setOptions({
+          allowEditing: true,
+          allowRemoval: true
+        });
+
         zoneLayer.on('pm:enable', function(e) {
           creating_drawing = false;
           editing_drawing = false;
