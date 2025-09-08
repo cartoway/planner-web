@@ -1004,8 +1004,8 @@ class PlanningsControllerTest < ActionController::TestCase
 
     out_of_route_option = routes.find{ |r| r[:vehicle_usage_id].nil? }
     assert_not_nil out_of_route_option, "Out of route should be included in available routes"
-    assert_equal '', out_of_route_option[:name]
-    assert_nil out_of_route_option[:color]
+    assert_equal 'Non assignés', out_of_route_option[:name]
+    assert_equal '#707070', out_of_route_option[:color]
   end
 
   test "should use helper methods for data processing" do
