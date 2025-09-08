@@ -575,30 +575,19 @@ class PlanningsController < ApplicationController
             stops = @planning.routes.flat_map{ |ro|
               ro.stops.select{ |stop| params[:stop_ids].include? stop.id }
             }
-            if params[:index]&.empty? && route.vehicle_usage?
-              if Optimizer.optimize(@planning, route, { insertion_only: true, moving_stop_ids: stops.map(&:id) })
-                current_user.customer.save!
-                route_ids += stops.map{ |stop| stop.route_id }
-                route_ids.uniq!
-              else
-                errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
-                format.json { render json: errors, status: :unprocessable_entity }
-                return
-              end
-            else
-              ids = stops.collect{ |stop| {stop_id: stop.id, route_id: stop.route_id} }
-              ids.reverse! if params[:index].to_i > 0
-              ids.each{ |id| move_stop(id[:stop_id], route, id[:route_id]) }
-              ids.uniq{ |id|
-                id[:route_id]
-              }.each{ |id|
-                next if id[:route_id] == route.id
 
-                @planning.routes.each{ |r|
-                  route_ids << r.id if r.id == id[:route_id]
-                }
+            ids = stops.collect{ |stop| {stop_id: stop.id, route_id: stop.route_id} }
+            ids.reverse! if params[:index].to_i > 0
+            ids.each{ |id| move_stop(id[:stop_id], route, id[:route_id]) }
+            ids.uniq{ |id|
+              id[:route_id]
+            }.each{ |id|
+              next if id[:route_id] == route.id
+
+              @planning.routes.each{ |r|
+                route_ids << r.id if r.id == id[:route_id]
               }
-            end
+            }
           end
 
           if @planning.compute_saved
