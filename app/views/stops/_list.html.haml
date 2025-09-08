@@ -50,7 +50,7 @@
                   %i.fa.fa-pencil
               %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                 %i.fa.fa-map-marker
-              %a.marker_destroy_store.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.destroy_store_help")}
+              %a.marker_destroy_store.btn.btn-default.btn-xs{title: t("plannings.edit.destroy_store_help")}
                 %i.fa.fa-trash
     - if stop[:rest]
       %li.d-fake-flex.align-items-center.list-group-item{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store-id": stop[:store_id], "data-origin-route-id": route[:route_id] }

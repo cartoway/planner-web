@@ -20,7 +20,7 @@ class StopsController < ApplicationController
   include PlanningsHelper
 
   before_action :authenticate_user!, except: [:edit, :update]
-  before_action :set_planning_and_route_context, only: [:create_store, :destroy]
+  before_action :set_route_context, only: [:create_store, :destroy]
   before_action :authenticate_driver!, only: [:edit, :update]
   before_action :set_stop, only: [:show, :edit, :update] # Before load_and_authorize_resource
 
@@ -29,9 +29,9 @@ class StopsController < ApplicationController
   def create_store
     if @route && params[:store_id]
       @store = current_user.customer.stores.find(params[:store_id])
-      @route.add_store(@store)
+      @route.add_store(@store) && @route.save!
       respond_to do |format|
-        if @planning.compute_saved
+        if load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
           format.json { render json: { status: :ok } }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
@@ -47,13 +47,14 @@ class StopsController < ApplicationController
 
       respond_to do |format|
         if stop.is_a?(StopStore)
-          @route.remove_store(stop)
+          @route.remove_store(stop) && @route.save!
         else
           format.js {
             head :no_content
           }
         end
-        if @planning.compute_saved
+        if load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
+          puts Customer.all.first.id
           planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
           format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
         else
@@ -121,7 +122,7 @@ class StopsController < ApplicationController
     )
   end
 
-  def set_planning_and_route_context
+  def set_route_context
     @manage_planning =
       if request.referer&.match('api-web')
         @callback_button = true
@@ -133,7 +134,12 @@ class StopsController < ApplicationController
     @callback_button = true
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
-    @planning = current_user.customer.plannings.where(id: params[:planning_id]).preload_routes_without_stops.first!
-    @route = @planning.routes.find(params[:route_id])
+
+    @route = current_user.customer.plannings.find(params[:planning_id])
+                         .routes.includes_destinations_and_stores.find(params[:route_id])
+  end
+
+  def load_planning_with_scope
+    @planning = current_user.customer.plannings.where(id: params[:planning_id]).preload_route_details.first!
   end
 end
