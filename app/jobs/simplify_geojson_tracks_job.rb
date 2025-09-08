@@ -1,6 +1,9 @@
 SimplifyGeojsonTracksJobStruct ||= Job.new(:customer_id, :route_id)
 class SimplifyGeojsonTracksJob < SimplifyGeojsonTracksJobStruct
   def perform
+    # Accessing Route directly through a Route.find seems to use an obsolete context
+    # which prevents to find routes, finding them through the customer plannings makes
+    # us able to find them
     route = Route.unscoped.joins(:planning).where(plannings: { customer_id: customer_id }).find_by(id: route_id)
     return if route.nil? || route.geojson_tracks.blank?
 
