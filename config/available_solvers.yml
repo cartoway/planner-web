@@ -1,8 +1,8 @@
 production:
   solvers:
-    - pyvrp
     - vroom
     - ortools
+    - pyvrp
 
 development:
   solvers:
