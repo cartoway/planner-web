@@ -521,7 +521,7 @@ export const zonings_edit = function(params) {
 
     $('.delete', ele).click(function() {
       if (confirm(I18n.t('all.verb.destroy_confirm'))) {
-        deleteZone(geoJsonLayer);
+        deleteZone(zonesMap[leafletId]);
       }
     });
 
