@@ -2109,13 +2109,13 @@ en:
           error: Compute fail.
           retry_canceling: 'Transmission in progress, try again later'
           solvers: Used solvers
-          skipped_services: Skipped solvers
-          skipped_reasons_title: Unsupported constraints
+          skipped_services: Skipped solvers and unsupported constraints
           skipped_reasons:
             assert_no_first_solution_strategy: First solution strategy
             assert_no_free_approach_or_return: Free approach or return
             assert_no_relations_except_simple_shipments: Complex relations
             assert_no_rest: Rest
+            assert_no_quantity_pickup_and_delivery: Simultaneous pickup and delivery quantities
             assert_services_no_setup_duration: Destination duration
             assert_vehicles_start_or_end: Maximum distance or duration
             assert_vehicles_no_duration_limit: Work duration
