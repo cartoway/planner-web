@@ -113,7 +113,7 @@ class OptimizerWrapper
   def solve(vrp, progress, key)
     resource_vrp = RestClient::Resource.new(@url + '/vrp/submit.json', timeout: nil)
     json = resource_vrp.post({api_key: @api_key, vrp: vrp}.to_json, content_type: :json, accept: :json) { |response, request, result, &block|
-      if response.code != 200 && response.code != 201
+      if [200, 201, 202].exclude?(response.code)
         json = (response && /json/.match(response.headers[:content_type]) && response.size > 1) ? JSON.parse(response) : nil
         msg = if json && json['message']
                 json['message']
@@ -153,7 +153,12 @@ class OptimizerWrapper
           raise JobTimeout.new("Optimizer Job #{job_id} has reached max_run_time: #{ScheduleType.new.cast(Delayed::Worker.max_run_time)}")
         end
       else
-        if /No solution provided/.match result.dig('job', 'avancement')
+        if /No solution provided/.match(result.dig('job', 'avancement')) ||
+          result.dig('job', 'status') == 'failed' && result.dig('job', 'solvers')&.empty?
+          if progress && job_details
+            solution_data.merge!(compute_progression(vrp, result, job_details))
+            progress.call(job_id, solution_data)
+          end
           raise VRPNoSolutionError.new
         else
           raise RuntimeError.new(result.dig('job', 'avancement') || 'Optimizer return unknown error')
