@@ -2213,6 +2213,8 @@ fr:
             assert_no_first_solution_strategy: Stratégie de première solution
             assert_no_free_approach_or_return: Approche et retour libre
             assert_no_relations_except_simple_shipments: Relations complexes
+            assert_no_rest: Pause
+            assert_services_no_setup_duration: Durée de destination
             assert_vehicles_start_or_end: Distance ou durée maximale de trajet
             assert_vehicles_no_duration_limit: Durée de travail
             assert_vehicles_start_or_end: Dépôt de départ ou d'arrivée manquants
