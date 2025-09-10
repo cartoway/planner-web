@@ -113,7 +113,7 @@ class OptimizerWrapper
   def solve(vrp, progress, key)
     resource_vrp = RestClient::Resource.new(@url + '/vrp/submit.json', timeout: nil)
     json = resource_vrp.post({api_key: @api_key, vrp: vrp}.to_json, content_type: :json, accept: :json) { |response, request, result, &block|
-      if [200, 201, 202].exclude?(response.code)
+      if [200, 201, 417].exclude?(response.code)
         json = (response && /json/.match(response.headers[:content_type]) && response.size > 1) ? JSON.parse(response) : nil
         msg = if json && json['message']
                 json['message']
