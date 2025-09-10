@@ -110,6 +110,18 @@ class OptimizerWrapper
     optimum
   end
 
+  def generate_vrp_summary(vrp)
+    {
+      vehicles: generate_vehicles_summary(vrp[:vehicles] || []),
+      services: generate_services_summary(vrp[:services] || []),
+      configuration: vrp[:configuration],
+      points_count: (vrp[:points] || []).size,
+      relations_count: (vrp[:relations] || []).size,
+      rests_count: (vrp[:rests] || []).size,
+      units_count: (vrp[:units] || []).size
+    }
+  end
+
   def solve(vrp, progress, key)
     resource_vrp = RestClient::Resource.new(@url + '/vrp/submit.json', timeout: nil)
     json = resource_vrp.post({api_key: @api_key, vrp: vrp}.to_json, content_type: :json, accept: :json) { |response, request, result, &block|
@@ -125,7 +137,7 @@ class OptimizerWrapper
       end
       response
     }
-    solution_data = {}
+    solution_data = generate_vrp_summary(vrp)
     result = nil
     while json
       retry_counter = 0
@@ -546,5 +558,99 @@ class OptimizerWrapper
 
     # Symbolize all keys for consistency
     solution_data.symbolize_keys
+  end
+
+  def analyze_data_structure(data, prefix = '')
+    return {} if data.nil? || data.empty?
+
+    result = {}
+
+    if data.is_a?(Array)
+      data.each do |item|
+        item_result = analyze_data_structure(item, prefix)
+        # Merge results, aggregating values for the same keys
+        item_result.each do |key, value|
+          if result[key]
+            if result[key].is_a?(Array) && value.is_a?(Array)
+              result[key] = (result[key] + value).uniq
+            elsif result[key].is_a?(Array)
+              result[key] << value unless result[key].include?(value)
+            elsif value.is_a?(Array)
+              result[key] = [result[key]] + value
+            else
+              result[key] = [result[key], value].uniq
+            end
+          else
+            result[key] = value
+          end
+        end
+      end
+    elsif data.is_a?(Hash)
+      data.each do |key, value|
+        next if key == :id || key.end_with?('_id')
+
+        if !value.is_a?(Array) && !value.is_a?(Hash)
+          result_key = "#{prefix}_#{key}".gsub(/^_/, '')
+          result[result_key] ||= []
+          result[result_key] << value unless result[result_key].include?(value)
+        elsif value.is_a?(Array) && value.first.is_a?(Hash) && value.first.key?(:id)
+          grouped_data = value.group_by { |item| item[:id] }
+          grouped_data.each do |id, items|
+            id_result = analyze_data_structure(items, "#{prefix}_#{key}_#{id}")
+            result.merge!(id_result)
+          end
+        elsif value.is_a?(Array) && value.first.is_a?(Hash)
+          id_field = find_id_field(value.first)
+          if id_field
+            grouped_data = value.group_by { |item| item[id_field] }
+            grouped_data.each do |id, items|
+              id_result = analyze_data_structure(items, "#{prefix}_#{key}_#{id}")
+              result.merge!(id_result)
+            end
+          else
+            array_result = analyze_data_structure(value, "#{prefix}_#{key}")
+            result.merge!(array_result)
+          end
+        elsif value.is_a?(Hash)
+          hash_result = analyze_data_structure(value, "#{prefix}_#{key}")
+          result.merge!(hash_result)
+        elsif value.is_a?(Array)
+          result_key = "#{prefix}_#{key}".gsub(/^_/, '')
+          result[result_key] = value.compact.uniq
+        end
+      end
+    end
+
+    result.transform_values! { |v| v.is_a?(Array) ? v.uniq : v }
+    result.reject! { |k, v| v.nil? || (v.is_a?(Array) && v.empty?) }
+
+    result.reject! { |k, v| k.end_with?('_id') && v.is_a?(Array) && v.all? { |item| item.is_a?(String) && item.match?(/^[vspr]\d+$/) } }
+
+    result
+  end
+
+  def find_id_field(hash)
+    return nil unless hash.is_a?(Hash)
+
+    id_fields = [:id, :unit_id, :vehicle_id, :service_id, :point_id, :rest_id]
+    id_fields.find { |field| hash.key?(field) }
+  end
+
+  def generate_vehicles_summary(vehicles)
+    return { count: 0, summary: {} } if vehicles.empty?
+
+    {
+      count: vehicles.size,
+      summary: analyze_data_structure(vehicles)
+    }
+  end
+
+  def generate_services_summary(services)
+    return { count: 0, summary: {} } if services.empty?
+
+    {
+      count: services.size,
+      summary: analyze_data_structure(services)
+    }
   end
 end
