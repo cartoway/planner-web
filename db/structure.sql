@@ -159,7 +159,8 @@ CREATE TABLE public.customers (
     plannings_count integer DEFAULT 0 NOT NULL,
     vehicles_count integer DEFAULT 0 NOT NULL,
     enable_sms_intransit boolean DEFAULT false,
-    enable_store_stops boolean DEFAULT false
+    enable_store_stops boolean DEFAULT false,
+    enable_vehicle_costs boolean DEFAULT false NOT NULL
 );
 
 
@@ -3162,4 +3163,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250619092217'),
 ('20250626123719'),
 ('20250627085724'),
-('20250707061924');
+('20250707061924'),
+('20250910070315');

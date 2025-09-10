@@ -185,6 +185,7 @@ en:
         optimization_cost_fixed: Fixed cost
         optimization_cost_waiting_time: Waiting time coefficient
         optimization_force_start: Force schedule start vehicle
+        enable_vehicle_costs: Use vehicle costs
         enable_orders: Enable orders
         enable_references: View references
         enable_global_optimization: Enable global optimization
@@ -1078,6 +1079,7 @@ en:
         more the delay before time slot opening is important (0 to disallow the
         waiting time).
       optimization_force_start_help: Force vehicle start to the beginning of its schedule.
+      enable_vehicle_costs_help: Use vehicle costs (fixed cost, distance cost, time cost) during optimization.
       solver_priority: Optimization solver priority order
       solver_priority_help: >-
         Define the priority order of optimization solvers. If the problem is electible to the first solver, it will be used,

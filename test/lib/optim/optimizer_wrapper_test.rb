@@ -340,6 +340,51 @@ class OptimizerWrapperTest < ActionController::TestCase
     assert_equal 10, vrp[:vehicles].first[:cost_fixed]
   end
 
+  test 'should use vehicle costs when enable_vehicle_costs is true' do
+    begin
+      planning = plannings(:planning_one)
+      planning.customer.update!(enable_vehicle_costs: true)
+      route = planning.routes.find(&:vehicle_usage?)
+      route.vehicle_usage.update!(
+        cost_fixed: 50.0,
+        cost_distance: 0.5,
+        cost_time: 25.0
+      )
+
+      vrp = @optim.build_vrp(planning, planning.routes)
+      vehicle = vrp[:vehicles].first
+
+      assert_equal 50.0, vehicle[:cost_fixed]
+      assert_equal 0.5, vehicle[:cost_distance_multiplier]
+      assert_equal 25.0, vehicle[:cost_time_multiplier]
+    ensure
+      remove_request_stub(@stub_VrpJob)
+      remove_request_stub(@stub_VrpSubmit)
+    end
+  end
+
+  test 'should not use vehicle costs when enable_vehicle_costs is false' do
+    begin
+      planning = plannings(:planning_one)
+      route = planning.routes.find(&:vehicle_usage?)
+      route.vehicle_usage.update!(
+        cost_fixed: 50.0,
+        cost_distance: 0.5,
+        cost_time: 25.0
+      )
+
+      vrp = @optim.build_vrp(planning, planning.routes)
+      vehicle = vrp[:vehicles].first
+
+      assert_equal 0, vehicle[:cost_fixed]
+      assert_equal 0, vehicle[:cost_distance_multiplier]
+      assert_equal 1, vehicle[:cost_time_multiplier]
+    ensure
+      remove_request_stub(@stub_VrpJob)
+      remove_request_stub(@stub_VrpSubmit)
+    end
+  end
+
   test 'should include solver information in progress data' do
     uri_template_post = Addressable::Template.new('http://localhost:1791/0.1/vrp/submit.json')
     uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
