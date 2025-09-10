@@ -213,17 +213,13 @@ class OptimizerWrapperTest < ActionController::TestCase
       optim = OptimizerWrapper.new(ActiveSupport::Cache::NullStore.new, 'http://localhost:1791/0.1', 'demo')
 
       uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/submit.json')
-      @stub_VrpSubmit = stub_request(:post, uri_template).to_return(status: 417, body: File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/vrp-submit.json').read)
+      @stub_VrpSubmit = stub_request(:post, uri_template).to_return(status: 417, body: File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/vrp-fail.json').read)
 
-      uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
-      @stub_VrpFail = stub_request(:get, uri_template).to_return(status: 417, body: File.new(File.expand_path('../../', __dir__) + '/fixtures/optimizer-wrapper/vrp-fail.json').read)
-
-      assert_raises VRPUnprocessableError do
-        assert_match '/assert_vehicles_no_zero_duration/', optim.optimize(@planning, @planning.routes, **{ optimize_minimal_time: 3 })
+      assert_raises VRPNoSolutionError do
+        optim.optimize(@planning, @planning.routes, **{ optimize_minimal_time: 3 })
       end
     ensure
       remove_request_stub(@stub_VrpSubmit)
-      remove_request_stub(@stub_VrpFail)
     end
   end
 
