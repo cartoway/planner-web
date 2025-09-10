@@ -198,6 +198,7 @@ class CustomersController < ApplicationController
         :enable_sms,
         :enable_sms_intransit,
         :enable_optimization_soft_upper_bound,
+        :enable_vehicle_costs,
         :stop_max_upper_bound,
         :vehicle_max_upper_bound,
         :sms_template,

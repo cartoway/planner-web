@@ -185,6 +185,7 @@ fr:
         optimization_cost_fixed: Coût fixe
         optimization_cost_waiting_time: Coefficient de temps d'attente
         optimization_force_start: Forcer l'heure de départ du véhicule
+        enable_vehicle_costs: Utiliser les coûts des véhicules
         enable_orders: Activer les commandes
         enable_references: Montrer les références
         enable_global_optimization: Activer l'optimisation globale
@@ -1105,6 +1106,7 @@ fr:
         Valeurs conseillées :<br> - Au plus rapide : 0 à 1<br> - Au plus court :
         non pris en compte
       optimization_force_start_help: Forcer le départ du véhicule à son horaire de début.
+      enable_vehicle_costs_help: Utiliser les coûts des véhicules (coût fixe, coût distance, coût temps) lors de l'optimisation.
       solver_priority: Ordre de priorité des solveurs d'optimisation
       solver_priority_help: >-
         Définissez l'ordre de priorité des solveurs d'optimisation. Si le problème est éligible au premier solveur, il sera utilisé,
