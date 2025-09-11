@@ -260,7 +260,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             # zoning sets stops out_of_route
             planning = plannings(:planning_one)
             stops = planning.routes.find{ |r| r.ref == 'route_one' }.stops
-            stop = stops.last
+            stop = stops.first
             assert_equal 'StopStore', stop.type
             assert_equal 'store_ref', stop.store.ref
           end
@@ -1105,7 +1105,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
         planning = plannings(:planning_one)
         stops = planning.routes.find{ |r| r.ref == 'route_one' }.stops
-        stop = stops.last
+        stop = stops.first
         assert_equal 'StopStore', stop.type
         assert_equal existing_store.ref, stop.store.ref
       end
@@ -1425,8 +1425,8 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
     assert_equal 3, route.stops.size # 2 + rest
 
     # The rest is in first position
-    assert_equal 'a', route.stops[1].visit.ref
-    assert_equal 'b', route.stops[2].visit.ref
+    assert_equal 'a', route.stops[0].visit.ref
+    assert_equal 'b', route.stops[1].visit.ref
   end
 
   test 'should import sequential destinations in same planning in no route' do
