@@ -2117,6 +2117,7 @@ en:
             assert_no_free_approach_or_return: Free approach or return
             assert_no_relations_except_simple_shipments: Complex relations
             assert_no_rest: Rest
+            assert_no_ride_constraint: Maximum ride distance or duration
             assert_no_quantity_pickup_and_delivery: Simultaneous pickup and delivery quantities
             assert_services_no_setup_duration: Destination duration
             assert_vehicles_start_or_end: Maximum distance or duration
