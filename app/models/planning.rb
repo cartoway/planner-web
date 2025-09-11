@@ -1067,14 +1067,16 @@ class Planning < ApplicationRecord
       previous_position = s.position
     }
     next_position = route.vehicle_usage.default_store_stop&.position || stop.position
+    return insertion_data if next_position.nil?
+
     insertion_data <<
       [
         route,
         route.stops.size + (stop.route == route ? 0 : 1),
         segment = [
           [previous_position.lat, previous_position.lng, stop.position.lat, stop.position.lng],
-          [stop.position.lat, stop.position.lng, next_position.position.lat, next_position.position.lng],
-          [previous_position.lat, previous_position.lng, next_position.position.lat, next_position.position.lng]
+          [stop.position.lat, stop.position.lng, next_position.lat, next_position.lng],
+          [previous_position.lat, previous_position.lng, next_position.lat, next_position.lng]
         ],
         nil,
         previous_position.distance(stop.position) + stop.position.distance(next_position) - previous_position.distance(next_position)
