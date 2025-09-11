@@ -564,7 +564,13 @@ class Route < ApplicationRecord
   def remove_store(stop)
     return if !stop.is_a?(StopStore)
 
-    move_stop_out(stop)
+    remove_stop(stop)
+  end
+
+  def remove_stores
+    stops.each{ |stop|
+      remove_stop(stop) if stop.is_a?(StopStore)
+    }
   end
 
   def move_stop(stop, index)

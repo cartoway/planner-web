@@ -627,8 +627,8 @@ class ImporterDestinationsTest < ActionController::TestCase
           route_1 = planning.routes.find{ |r| r.ref == 't1' }
           route_2 = planning.routes.find{ |r| r.ref == 't2' }
           assert_equal 'p1', planning.ref
-          assert_equal 2, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
-          assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
+          assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+          assert_equal 0, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
           assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
           assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
         end
@@ -646,8 +646,8 @@ class ImporterDestinationsTest < ActionController::TestCase
           route_2 = planning.routes.find{ |r| r.ref == 't2' }
           out_route = planning.routes.find{ |r| !r.vehicle_usage? }
           assert_equal 'p1', planning.ref
-          assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
-          assert_equal 2, route_1.stops.index{ |stop| stop.visit&.ref == 'v10' }
+          assert_equal 0, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+          assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v10' }
           assert out_route.stops.one?{ |stop| stop.visit&.ref == 'v2' }
           assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
           assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
@@ -725,9 +725,9 @@ class ImporterDestinationsTest < ActionController::TestCase
           route_1 = planning.routes.find{ |r| r.ref == 't1' }
           route_2 = planning.routes.find{ |r| r.ref == 't2' }
           assert_equal 'p1', planning.ref
-          assert_equal 3, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
-          assert_equal 2, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
-          assert_equal 1, route_1.stops.index{ |stop| stop.is_a?(StopStore) }
+          assert_equal 2, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+          assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
+          assert_equal 0, route_1.stops.index{ |stop| stop.is_a?(StopStore) }
           assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
           assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
         end
@@ -736,7 +736,7 @@ class ImporterDestinationsTest < ActionController::TestCase
 
     assert_difference('Planning.count', 0) do
       assert_difference('Route.count', 0) do
-        assert_difference('Stop.count', 1) do
+        assert_difference('Stop.count', 0) do # +1 visit -1 store
           # Put visit v1 in out_route and introduce new visit v10
           assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_v1_out_route_v2.csv', 'text.csv')).import
           @customer.reload
@@ -745,9 +745,9 @@ class ImporterDestinationsTest < ActionController::TestCase
           route_2 = planning.routes.find{ |r| r.ref == 't2' }
           out_route = planning.routes.find{ |r| !r.vehicle_usage? }
           assert_equal 'p1', planning.ref
-          assert_equal 1, route_1.stops.index{ |stop| stop.is_a?(StopStore) }
-          assert_equal 2, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
-          assert_equal 3, route_1.stops.index{ |stop| stop.visit&.ref == 'v10' }
+          assert_equal nil, route_1.stops.index{ |stop| stop.is_a?(StopStore) } # Store are removed on update if not provided
+          assert_equal 0, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+          assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v10' }
           assert out_route.stops.one?{ |stop| stop.visit&.ref == 'v2' }
           assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
           assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
