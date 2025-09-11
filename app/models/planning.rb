@@ -170,7 +170,6 @@ class Planning < ApplicationRecord
     if routes_visits.size <= routes.size - 1
       existing_visits = routes.select{ |route| route.vehicle_usage? && routes_visits.key?(route.vehicle_usage.vehicle.ref&.downcase) }.flat_map{ |route| route.stops.map(&:visit) }
       stop_visit_ids = visits.each_with_object({}) { |visit, hash| hash[visit.id] = true }
-      stop_store_ids = stores.each_with_object({}) { |store, hash| hash[store.id] = true }
       import_visits = routes_visits.flat_map{ |_ref, r| r[:visits] }
 
       routes.find{ |route| !route.vehicle_usage? }.add_visits(existing_visits - import_visits)
@@ -190,19 +189,16 @@ class Planning < ApplicationRecord
             routes.index{ |route| !route.vehicle_usage? }
           end
         routes[i].ref = ref
-        r[:visits].each{ |obj, stop_attributes|
+        routes[i].remove_stores
+        r[:visits].each.with_index{ |(obj, stop_attributes), index|
           if obj.is_a?(Visit)
             if obj.id && stop_visit_ids[obj.id]
-              move_visit(routes[i], obj, -1)
+              move_visit(routes[i], obj, index + 1)
             else
-              routes[i].add(obj, nil, stop_attributes)
+              routes[i].add(obj, index + 1, stop_attributes)
             end
           elsif obj.is_a?(Store)
-            if obj.id && stop_store_ids[obj.id]
-              move_store(routes[i], obj, -1)
-            else
-              routes[i].add_store(obj, nil, stop_attributes)
-            end
+            routes[i].add_store(obj, index + 1, stop_attributes)
           end
         }
       }
