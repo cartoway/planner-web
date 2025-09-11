@@ -134,10 +134,6 @@ export class MoveStopsModal {
    * @param {Array} availableRoutes - Available target routes
    */
   setupModalComponents(stops, availableRoutes) {
-    // Setup toggle select
-    $('#move-stops-toggle').toggleSelect();
-    $('[type="checkbox"][data-toggle="disable-multiple-actions"]').toggleMultipleActions();
-
     // Setup route selection dropdown
     this.setupRouteDropdown(availableRoutes);
 
@@ -145,11 +141,13 @@ export class MoveStopsModal {
     $(`${this.modalSelector} input[data-change="filter"]`).filterTable()
       .on('table.filtered', () => {
         this.calculateQuantities(stops);
+        this.updateStopsCount();
       });
 
     // Setup stop selection change handler
     $(`${this.modalSelector} .move-stops-stop-id`).change(() => {
       this.calculateQuantities(stops);
+      this.updateStopsCount();
     });
 
     // Setup route change handler
@@ -256,6 +254,14 @@ export class MoveStopsModal {
     }
 
     return selectedStops;
+  }
+
+  /**
+   * Update the active stops count display
+   */
+  updateStopsCount() {
+    const checkedStops = $(`${this.modalSelector} .move-stops-stop-id:checked:visible`).length;
+    $('#move-stops_count').text(checkedStops);
   }
 
   /**

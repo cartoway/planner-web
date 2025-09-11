@@ -7,7 +7,6 @@ class ZonesController < ApplicationController
   load_and_authorize_resource
 
   def show
-
     if params.key?(:destination_ids)
       destination_ids = params[:destination_ids].split(',')
       @destinations = current_user.customer.destinations.where(ParseIdsRefs.where(Destination, destination_ids))

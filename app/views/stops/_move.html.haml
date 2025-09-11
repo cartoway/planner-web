@@ -3,8 +3,7 @@
     %button#move-stops-toggle.btn.btn-default.btn-xs{ type: 'button', 'data-toggle': 'selection', 'data-target': '#move-stops', title: t('all.verb.toggle_selection') }
       %i.fa.fa-check.fa-fw
 
-  .form-inline.pull-right.move-stops-filter
-    %input#move-stops-filter.form-control{ placeholder: t('web.placeholder_filter'), 'data-change': 'filter', 'data-target': '#move-stops', type: 'text' }
+  .form-inline.pull-right
     %span#move-stops_count
       = stops.size
     = " #{t('plannings.edit.stops')}"
