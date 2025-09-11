@@ -559,9 +559,7 @@ class ImporterDestinations < ImporterBase
         vehicle_usage_set: @customer.vehicle_usage_sets[0]
       }
 
-    store_attributes = row.slice(*(@@col_store_keys)).merge(customer_id: @customer.id)
-    store_attributes[:store_index] = @store_index
-    store_attributes
+    row.slice(*(@@col_store_keys)).merge(customer_id: @customer.id)
   end
 
   def build_attributes(row)
@@ -795,23 +793,30 @@ class ImporterDestinations < ImporterBase
   def prepare_store(row, line, store_attributes)
     if row[:ref].present? && !row[:ref].empty?
       store = @existing_stores_by_ref[row[:ref]]
+      filtered_store_attributes =
       if store
         store_attr = store.attributes.symbolize_keys
-        store_attributes = store_attr.extract!(:id, :name, :postalcode, :city, :lat, :lng).merge(store_attributes)
+        route_attributes = store_attr.extract!(:ref_vehicle, :ref_planning, :route)
+        store_attr.extract!(:id, :name, :postalcode, :city, :lat, :lng).merge(store_attributes)
+      else
+        store_attributes
       end
       index, lines, store_attr = @stores_attributes_by_ref[row[:ref]]
       if store_attr
-        reset_geocoding(store_attributes)
+        reset_geocoding(filtered_store_attributes)
         lines << line
-        store_attributes = store_attr.merge(store_attributes.compact)
+        filtered_store_attributes = store_attr.merge(filtered_store_attributes.compact).merge(route_attributes.compact)
+        store_attributes.merge!(store_index: index)
       else
         index = @store_index
-        reset_geocoding(store_attributes)
-        @stores_attributes_by_ref[row[:ref]] = [index, [line], store_attributes]
+        reset_geocoding(filtered_store_attributes)
+        @stores_attributes_by_ref[row[:ref]] = [index, [line], filtered_store_attributes]
+        store_attributes.merge!(store_index: index)
         @store_index += 1
       end
     else
-      @stores_attributes_without_ref << [@store_index, [line], store_attributes]
+      @stores_attributes_without_ref << [@store_index, [line], filtered_store_attributes]
+      store_attributes.merge!(store_index: index)
       @store_index += 1
     end
   end
