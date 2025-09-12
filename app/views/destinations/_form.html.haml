@@ -81,9 +81,8 @@
           = number_field :destination, :lng, step: 'any', class: 'form-control width_1_2'
           %span.input-group-addon
             %i.fa.fa-globe.fa-fw
-    - if @destination.customer.tags.any?
-      .destination_visits_attributes_tag_ids_input
-        = f.select :tag_ids, options_for_select(@destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @destination.tags.collect(&:id)), {label: t('activerecord.attributes.destination.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
+    .destination_visits_attributes_tag_ids_input
+      = f.select :tag_ids, options_for_select(@destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @destination.tags.collect(&:id)), {label: t('activerecord.attributes.destination.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
     = f.text_field :phone_number, {input_group: content_tag('i', '', class: 'fa fa-phone fa-fw')}
     = f.text_area :comment, help: t('.comment_help')
     = f.text_field :duration,
