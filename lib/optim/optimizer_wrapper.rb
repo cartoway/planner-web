@@ -45,7 +45,7 @@ class OptimizerWrapper
 
   def build_vrp(planning, routes, **options)
     vrp_vehicles, v_points = build_vehicles(planning, routes, **options)
-    all_skills = planning.all_skills
+    all_skills = planning.all_skills.map(&:label)
 
     stops = routes.flat_map(&:stops)
     stops += Stop.where(id: options[:moving_stop_ids])
