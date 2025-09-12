@@ -41,7 +41,7 @@ when StopVisit
   json.destination_id visit.destination.id
   json.color stop.default_color
   json.index_visit (visit.destination.visits.index(visit) + 1) if visit.destination.visits.size > 1
-  json.revenue visit.revenue if visit.revenue
+  json.revenue visit.revenue.round(2) if visit.revenue
   json.prefered_currency t("all.unit.currency_symbol.#{current_user.prefered_currency}")
   tags = visit.destination.tags | visit.tags
   if !tags.empty?

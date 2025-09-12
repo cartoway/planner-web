@@ -99,7 +99,7 @@
             = number_field "destination[visits_attributes][#{i}]", :revenue,
               class: 'form-control',
               min: 0,
-              step: 'any',
+              step: 0.01,
               value: visit.revenue
             %span.input-group-addon
               = t("all.unit.currency_symbol.#{current_user.prefered_currency}")
