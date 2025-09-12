@@ -45,7 +45,7 @@ class OptimizerWrapper
 
   def build_vrp(planning, routes, **options)
     vrp_vehicles, v_points = build_vehicles(planning, routes, **options)
-    all_skills = vrp_vehicles.map { |v| v[:skills] }.flatten.compact
+    all_skills = planning.all_skills
 
     stops = routes.flat_map(&:stops)
     stops += Stop.where(id: options[:moving_stop_ids])
@@ -61,7 +61,7 @@ class OptimizerWrapper
     }
 
     vrp = {
-      configuration: build_configuration(**options.merge(service_count: vrp_services.size, vehicle_count: vrp_vehicles.size, strict_skills: routes.size > 1 && !options[:insertion_only])),
+      configuration: build_configuration(**options.merge(service_count: vrp_services.size, vehicle_count: vrp_vehicles.size, strict_skills: routes.size > 1 && options[:global])),
       name: options[:name],
       points: (v_points + s_points).uniq,
       relations: relations,
@@ -203,7 +203,7 @@ class OptimizerWrapper
         initial_time_out: optim_duration_min,
         solver_priority: options[:solver_priority],
         strict_skills: options[:strict_skills],
-        time_out_multiplier: 2
+        time_out_multiplier: 2,
       }.delete_if{ |_k, v| v.nil? },
       restitution: {
         intermediate_solutions: false
