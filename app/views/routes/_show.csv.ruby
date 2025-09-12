@@ -116,7 +116,7 @@ route.stops.each { |stop|
       detail: stop.detail,
       postalcode: stop.postalcode,
       city: stop.city,
-      destination_duration: stop.is_a?(StopVisit) && stop.destination_duration
+      destination_duration: stop.is_a?(StopVisit) && stop.visit.destination.duration_absolute_time_with_seconds
     }
 
     row.merge!(state: stop.state) if route.planning.customer.with_state?
