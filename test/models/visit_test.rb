@@ -343,4 +343,41 @@ class VisitTest < ActiveSupport::TestCase
     @visit.revenue = -100.50
     assert_not @visit.valid?
   end
+
+  test 'should format revenue to 2 decimal places on save' do
+    # Test various decimal cases
+    test_cases = [
+      { input: 1.234, expected: 1.23 },
+      { input: 1.999, expected: 2.0 },
+      { input: 1.1, expected: 1.1 },
+      { input: 1.0, expected: 1.0 },
+      { input: 0.001, expected: 0.0 },
+      { input: 10.555, expected: 10.56 },
+      { input: 100.999, expected: 101.0 }
+    ]
+
+    test_cases.each do |test_case|
+      visit = Visit.new(destination: @visit.destination)
+      visit.revenue = test_case[:input]
+      visit.save!
+
+      assert_equal test_case[:expected], visit.revenue,
+        "Revenue #{test_case[:input]} should be formatted to #{test_case[:expected]}"
+    end
+  end
+
+  test 'should not format revenue when nil' do
+    visit = Visit.new(destination: @visit.destination)
+    visit.revenue = nil
+    visit.save!
+
+    assert_nil visit.revenue
+  end
+
+  test 'should format revenue when updating existing visit' do
+    @visit.revenue = 1.234
+    @visit.save!
+
+    assert_equal 1.23, @visit.revenue
+  end
 end

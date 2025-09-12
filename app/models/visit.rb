@@ -76,8 +76,10 @@ class Visit < ApplicationRecord
   include RefSanitizer
 
   include LocalizedAttr
-
   attr_localized :pickups, :deliveries, :revenue
+
+  include DecimalAttr
+  decimal_attr :revenue, decimals: 2
 
   include TypedAttribute
   typed_attr :custom_attributes
