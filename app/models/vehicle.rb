@@ -224,7 +224,7 @@ class Vehicle < ApplicationRecord
   end
 
   def update_outdated
-    if emission_changed? || consumption_changed? || capacities_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || max_distance_changed? || max_ride_distance_changed? || max_ride_duration_changed?
+    if emission_changed? || consumption_changed? || capacities_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || max_distance_changed? || max_ride_distance_changed? || max_ride_duration_changed? || tag_ids_changed?
       vehicle_usages.each{ |vehicle_usage|
         vehicle_usage.routes.each{ |route|
           route.outdated = true
