@@ -161,7 +161,7 @@
                 .btn-group.pull-right.stop-tools
                   - if @manage_planning[:manage_store]
                     .btn-group
-                      %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_start][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
+                      %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_stop][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
                         %i.fa.fa-pencil
                   .btn-group
                     %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
