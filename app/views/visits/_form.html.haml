@@ -111,9 +111,8 @@
           .input-group
             = text_field "destination[visits_attributes][#{i}]", :priority, class: 'form-control', value: visit.priority, data: {'slider-value' => visit.priority || 0}
           %p.help-block= t '.priority_help'
-      - if visit.destination.customer.tags.any?
-        .destination_visits_attributes_tag_ids_input
-          = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
+      .destination_visits_attributes_tag_ids_input
+        = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
 
       = f.select :force_position, options_for_select(visit_force_position_options_for_select, selected: visit_force_position_options_for_select_selected(visit)), {label: t('activerecord.attributes.visit.force_position'), help: t('.force_position_help')}, { control_class: 'form-control' }
 
