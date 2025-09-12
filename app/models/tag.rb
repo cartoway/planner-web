@@ -56,7 +56,7 @@ class Tag < ApplicationRecord
 
   before_update :update_outdated, unless: :migration_skip
   before_destroy :set_routes
-  after_destroy :reset_routes_geojson_point
+  after_destroy :reset_routes_geojson_point, :outdated
 
   amoeba do
     enable
