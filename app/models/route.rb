@@ -1005,7 +1005,12 @@ class Route < ApplicationRecord
   def compute_out_of_skill(source_planning = nil)
     planning_skills = (source_planning || planning).all_skills.map(&:id)
 
-    return if planning_skills.empty?
+    if planning_skills.empty?
+      stops.each{ |stop|
+        stop.out_of_skill = nil
+      }
+      return
+    end
 
     r_skills = route_skills.map(&:id)
 
@@ -1192,6 +1197,8 @@ class Route < ApplicationRecord
 
   def process_stop_loads(stop, current_loads)
     @deliverable_units ||= planning.customer.deliverable_units
+    stop.out_of_capacity = nil if @deliverable_units.empty?
+
     return if !stop.active || !stop.position? || !stop.is_a?(StopVisit) || !stop.visit.default_quantities?
 
     @default_capacities ||= vehicle_usage&.vehicle&.default_capacities
