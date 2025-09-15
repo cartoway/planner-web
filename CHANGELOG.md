@@ -4,7 +4,9 @@
   ### Added
   - Customer: Allow to order and filter the solvers to use [#422](https://github.com/cartoway/planner-web/pull/422)
   - Planning: Introduce a lasso to select multiple stops on the fly [#424](https://github.com/cartoway/planner-web/pull/424)
-  - Admin: Store the solver used and the ones skipped (with reasons) on the job info [#422](https://github.com/cartoway/planner-web/pull/422)
+  - OptimizerJob
+    - Stores the solver used and the ones skipped (with reasons) on the job info [#422](https://github.com/cartoway/planner-web/pull/422)
+    - Stores problem details [#470](https://github.com/cartoway/planner-web/pull/470)
   - Introduce a short delay before SimplifyGeojsonTracksJob [#447](https://github.com/cartoway/planner-web/pull/447)
   - Connect pickup and deliveries quantities to equivalent feature in Optimizer-API [#453](https://github.com/cartoway/planner-web/pull/453)
 
@@ -12,15 +14,32 @@
   - Export: Rework visually the columns selector [#422](https://github.com/cartoway/planner-web/pull/422)
   - Rework of the automatic insert method [#423](https://github.com/cartoway/planner-web/pull/423)
   - Bump turbolinks [#431](https://github.com/cartoway/planner-web/pull/431)
+  - Bump rails_performance from 1.4.1 to 1.5.1 to fix a memory leak [#460](https://github.com/cartoway/planner-web/pull/460)
+  - Bump leaflet from 1.0.3 et 1.9.1 and bump dependencies [#450](https://github.com/cartoway/planner-web/pull/450)
   - Routes:
     - Add stores to scopes [#435](https://github.com/cartoway/planner-web/pull/435)
     - Ensure compute_saved! is in a transaction [#435](https://github.com/cartoway/planner-web/pull/435)
   - Update rubocop rules [#440](https://github.com/cartoway/planner-web/pull/440)
   - Use activerecord-import for Planning#create [#444](https://github.com/cartoway/planner-web/pull/444)
+  - Move stop and lasso now use a common modal feature [#455](https://github.com/cartoway/planner-web/pull/455) & [#461](https://github.com/cartoway/planner-web/pull/461)
+  - Update the default favicon [#467](https://github.com/cartoway/planner-web/pull/467)
+  - Introduce `DecimalAttr` on revenue to limit the number of decimals [#475](https://github.com/cartoway/planner-web/pull/475)
+  - Introduce Geoman to handle zoning & introduce snapping [#450](https://github.com/cartoway/planner-web/pull/450)
 
   ### Removed
+  - Remove Iconv from dependencies [#457](https://github.com/cartoway/planner-web/pull/457)
+  - Remove Leaflet.Draw from dependencies [#450](https://github.com/cartoway/planner-web/pull/450)
 
   ### Fixed
+  - StopStore
+    - create and destroy [#464](https://github.com/cartoway/planner-web/pull/464)
+    - Planning import was ignoring multiple references to a single Store [#473](https://github.com/cartoway/planner-web/pull/473)
+  - Zone destroy [#467](https://github.com/cartoway/planner-web/pull/467)
+  - Display tag field on destination and visit forms even if none is existing [#476](https://github.com/cartoway/planner-web/pull/476)
+  - Export `destination.duration` in routes csv [#477](https://github.com/cartoway/planner-web/pull/477)
+  - alerts on `tags` and `deliverable_units` [#478](https://github.com/cartoway/planner-web/pull/478) & [#479](https://github.com/cartoway/planner-web/pull/479) & [#481](https://github.com/cartoway/planner-web/pull/481)
+  - Optimizer skills collect [#480](https://github.com/cartoway/planner-web/pull/480)
+  - Avoid context reload during `move_stop` [#482](https://github.com/cartoway/planner-web/pull/482)
 
 ## V106.0.0
   ### Added
