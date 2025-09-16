@@ -1,12 +1,15 @@
 #move-stops.route.col-md-12
-  .form-inline.pull-left.move-stops-toggle
-    %button#move-stops-toggle.btn.btn-default.btn-xs{ type: 'button', 'data-toggle': 'selection', 'data-target': '#move-stops', title: t('all.verb.toggle_selection') }
-      %i.fa.fa-check.fa-fw
+  .row
+    .col-xs-4.move-stops-toggle
+      %button#move-stops-toggle.btn.btn-default.btn-xs{ type: 'button', 'data-toggle': 'selection', 'data-target': '#move-stops', title: t('all.verb.toggle_selection') }
+        %i.fa.fa-check.fa-fw
 
-  .form-inline.pull-right
-    %span#move-stops_count
-      = stops.size
-    = " #{t('plannings.edit.stops')}"
+    .pull-right
+      .route-info.inactive
+        %i.fa.fa-check-square.fa-fw
+        %span#move-stops_count
+          = stops.size
+        = " #{t('plannings.edit.stops')}"
 
   .overflow-500.col-md-12.col-xs-12.col-sm-12
     %ul.stops.list-group
