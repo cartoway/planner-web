@@ -995,7 +995,7 @@ class Planning < ApplicationRecord
     routes.each{ |r|
       if options[:bang]!= false || r.outdated
         computed_routes << r
-        segments = r.collect_segments_for_routing(r.stops)
+        segments = r.collect_segments_for_routing(r.stops.sort_by(&:index))
         all_segments << { route: r, segments: segments } if segments.any?
       end
     }
