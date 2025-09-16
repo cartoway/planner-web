@@ -815,6 +815,8 @@ class ImporterDestinations < ImporterBase
         @store_index += 1
       end
     else
+      return unless filtered_store_attributes
+
       @stores_attributes_without_ref << [@store_index, [line], filtered_store_attributes]
       store_attributes.merge!(store_index: index)
       @store_index += 1
