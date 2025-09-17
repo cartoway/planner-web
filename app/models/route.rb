@@ -395,6 +395,7 @@ class Route < ApplicationRecord
         end
       end
     else
+      compute_out_of_skill
       _load_stop_hash, self.pickups, self.deliveries = compute_loads unless options[:no_quantities]
     end
 
@@ -1005,7 +1006,7 @@ class Route < ApplicationRecord
   def compute_out_of_skill(source_planning = nil)
     planning_skills = (source_planning || planning).all_skills.map(&:id)
 
-    if planning_skills.empty?
+    if planning_skills.empty? || !vehicle_usage?
       stops.each{ |stop|
         stop.out_of_skill = nil
       }
