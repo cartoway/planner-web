@@ -10,9 +10,9 @@ x-web: &web
     ROUTER_API_KEY: ${ROUTER_API_KEY:-demo}
     OPTIMIZER_URL: ${OPTIMIZER_URL:-http://localhost:8083/0.1}
     OPTIMIZER_API_KEY: ${OPTIMIZER_API_KEY:-demo}
-    SENTRY_DSN: ${SENTRY_DSN}
-    HERE_MAP_APIKEY: ${HERE_MAP_APIKEY}
-    LOG_FORMAT: ${LOG_FORMAT}
+    SENTRY_DSN: ${SENTRY_DSN:-}
+    HERE_MAP_APIKEY: ${HERE_MAP_APIKEY:-}
+    LOG_FORMAT: ${LOG_FORMAT:-}
     URL_SHORTENER: ${URL_SHORTENER:-http://url_shortener:8635}
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
