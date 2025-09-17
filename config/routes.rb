@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  Healthcheck.routes(self)
+
   get '/api/0.1/swagger_doc.json/:all(*format)' => redirect('/api/0.1/swagger_doc/%{all}%{format}') # Workaround for silly swagger-codegen
   get '/api/100/swagger_doc.json/:all(*format)' => redirect('/api/100/swagger_doc/%{all}%{format}') # Workaround for silly swagger-codegen
   mount ApiRoot => '/api'

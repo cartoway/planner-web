@@ -10,5 +10,10 @@ def modern_browser?(browser)
 end
 
 Rails.configuration.middleware.use Browser::Middleware do
-  redirect_to unsupported_browser_path(browser: :modern) if !modern_browser?(browser) && !request.env['PATH_INFO'].start_with?('/api/') && (!request.env['QUERY_STRING'] || !request.env['QUERY_STRING'].include?('disposition=inline'))
+  if !modern_browser?(browser) &&
+     !request.env['PATH_INFO'].start_with?('/api/') &&
+     request.env['PATH_INFO'] != '/up' &&
+     (!request.env['QUERY_STRING'] || !request.env['QUERY_STRING'].include?('disposition=inline'))
+    redirect_to unsupported_browser_path(browser: :modern)
+  end
 end

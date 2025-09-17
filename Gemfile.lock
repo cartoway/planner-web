@@ -580,6 +580,9 @@ GEM
       activesupport (>= 5.0.0)
       minitest
       nokogiri (>= 1.6)
+    rails-healthcheck (1.4.0)
+      actionpack
+      railties
     rails-html-sanitizer (1.6.0)
       loofah (~> 2.21)
       nokogiri (~> 1.14)
@@ -937,6 +940,7 @@ DEPENDENCIES
   rack-cors
   rails (~> 6.1, >= 6.1.7.8)
   rails-controller-testing
+  rails-healthcheck
   rails-i18n (>= 7)
   rails_performance
   railties (~> 6.1, >= 6.1.7.8)
