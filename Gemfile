@@ -175,6 +175,7 @@ gem 'simplify_rb', git: 'https://github.com/cartoway/simplify_rb', branch: 'dev'
 
 gem 'ai4r'
 gem 'sim_annealing'
+gem 'csv' # missing dependency of ai4r
 
 gem 'nilify_blanks'
 gem 'auto_strip_attributes'
