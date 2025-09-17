@@ -72,3 +72,11 @@ VOLUME /srv/app/public/uploads
 CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
 
 EXPOSE 8080
+
+HEALTHCHECK \
+    --start-interval=1s \
+    --start-period=30s \
+    --interval=30s \
+    --timeout=20s \
+    --retries=5 \
+    CMD wget http://127.0.0.1:8080/up || exit 1

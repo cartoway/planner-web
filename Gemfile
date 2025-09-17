@@ -98,6 +98,7 @@ end
 
 gem 'bullet'  # Used in production for api-web doc generation
 gem 'rails_performance'
+gem 'rails-healthcheck'
 
 gem 'sys-filesystem'
 gem 'sys-cpu'
