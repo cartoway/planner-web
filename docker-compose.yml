@@ -31,12 +31,26 @@ services:
       - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready
+      start_interval: 1s
+      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 5
     restart: unless-stopped
 
   redis-cache:
     image: redis:${REDIS_VERSION:-7-alpine}
     restart: unless-stopped
     command: redis-server --save ""
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      start_interval: 1s
+      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   web:
     <<: *web
