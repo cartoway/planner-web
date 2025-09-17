@@ -395,7 +395,7 @@ class Route < ApplicationRecord
         end
       end
     else
-      compute_out_of_skill
+      compute_out_of_skill(options[:planning])
       _load_stop_hash, self.pickups, self.deliveries = compute_loads unless options[:no_quantities]
     end
 

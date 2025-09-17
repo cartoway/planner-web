@@ -749,6 +749,8 @@ class Planning < ApplicationRecord
 
         # Save route to update now stop.route_id
         self.routes.each{ |route|
+          next unless optimum.key?(route.id)
+
           route.outdated = true
           (route.no_stop_index_validation = true) && route.save!
           route.stops.reload # Refresh route.stops collection if stops have been moved
