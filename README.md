@@ -169,23 +169,23 @@ For dev setup, enable the `docker-compose-dev.yml` by enabling it in .env file.
 COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml
 ```
 
-## Run
-
-```
-docker compose up -d
-```
-
 ## Initializing database
 
 ```
-docker compose up -d
-docker compose run --rm web bundle exec rake db:setup
-docker compose restart
+docker compose up -d db
+docker compose run --rm web bundle exec rake db:schema:load
+docker compose run --rm web bundle exec rake db:seed
 ```
 
 Update the database schema after version update with
 ```
 docker compose run --rm web bundle exec rake db:migrate
+```
+
+## Run
+
+```
+docker compose up -d
 ```
 
 ## Dev in Docker

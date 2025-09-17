@@ -1,42 +1,74 @@
-FROM ruby:3.1
-ENTRYPOINT []
-CMD ["/bin/bash"]
+ARG RUBY_IMAGE=3.1.7-alpine
 
-ARG RAILS_ENV
-ARG NODE_ENV
-ENV REDIS_HOST redis-cache
-
+# Step 1: Build (assets, gems, node_modules)
+FROM ruby:${RUBY_IMAGE} AS builder
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
-RUN apt update && \
-    apt install -y \
-        git build-essential lsb-release \
-        zlib1g-dev libicu-dev g++ libgeos-dev libgeos++-dev libpq-dev \
-        zlib1g libicu72 libgeos3.11.1 libpq5 libjemalloc2 \
-        nodejs yarnpkg && \
-    ln -s /usr/bin/yarnpkg /usr/bin/yarn
-
-RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-apt update && \
-apt install -y postgresql-client-15
+# Install build dependencies
+RUN apk add --no-cache \
+    build-base \
+    geos-dev \
+    git \
+    icu-dev \
+    jemalloc-dev \
+    libffi-dev \
+    libxml2-dev \
+    libxslt-dev \
+    nodejs \
+    postgresql-dev \
+    tzdata \
+    yarn \
+    zlib-dev
 
 WORKDIR /srv/app
 
-ADD ./package.json /srv/app/
-RUN yarn install
+COPY Gemfile Gemfile.lock ./
+RUN bundle config set --local no-doc 'true' && \
+    bundle install --jobs=4 --retry=3
 
-ADD ./Gemfile /srv/app/
-ADD ./Gemfile.lock /srv/app/
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile && \
+    yarn cache clean
 
-RUN bundle config git.allow_insecure true && \
-    bundle install --full-index
-
-ADD . /srv/app/
+COPY . .
 
 RUN bundle exec rake i18n:js:export && \
     bundle exec rake assets:precompile API_DOC_MODE=true
-# Prepare configuration files
-ADD ./config/database.yml.docker config/database.yml
+
+# Step 2: Final image, minimal
+FROM ruby:${RUBY_IMAGE}
+
+ENV RAILS_ENV=production
+ENV NODE_ENV=production
+ENV REDIS_HOST=redis-cache
+
+RUN apk add --no-cache \
+    bash \
+    geos \
+    icu \
+    jemalloc \
+    nodejs \
+    postgresql-client \
+    su-exec \
+    tzdata \
+    xz-libs \
+    yarn \
+    zlib
+
+WORKDIR /srv/app
+
+RUN addgroup -S app && adduser -S app -G app
+
+COPY --from=builder /usr/local/bundle /usr/local/bundle
+COPY --from=builder /srv/app/ /srv/app/
+
+RUN rm -rf /srv/app/tmp /srv/app/spec /srv/app/test /srv/app/node_modules /srv/app/log /srv/app/coverage
+
 
 VOLUME /srv/app/public/uploads
+
+# USER app
+
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+
+EXPOSE 8080

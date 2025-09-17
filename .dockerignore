@@ -1,6 +1,9 @@
 docker
 Dockerfile
+docker-compose.yml
+docker-compose-*.yml
 .git
+.dockerignore
 .github
 .env
 node_modules
