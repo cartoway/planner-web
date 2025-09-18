@@ -1,0 +1,75 @@
+x-web: &web
+  build:
+    context: ..
+    dockerfile: .devcontainer/Dockerfile
+  image: ghcr.io/cartoway/planner-web:${CARTOWAY_VERSION:-dev}
+  environment:
+    RAILS_ENV: ${RAILS_ENV:-production}
+    NODE_ENV: ${NODE_ENV:-production}
+    GEOCODER_URL: ${GEOCODER_URL:-http://localhost:8081/0.1}
+    GEOCODER_API_KEY: ${GEOCODER_API_KEY:-demo}
+    ROUTER_URL: ${ROUTER_URL:-http://localhost:8082/0.1}
+    ROUTER_API_KEY: ${ROUTER_API_KEY:-demo}
+    OPTIMIZER_URL: ${OPTIMIZER_URL:-http://localhost:8083/0.1}
+    OPTIMIZER_API_KEY: ${OPTIMIZER_API_KEY:-demo}
+    SENTRY_DSN: ${SENTRY_DSN}
+    HERE_MAP_APIKEY: ${HERE_MAP_APIKEY}
+    LOG_FORMAT: ${LOG_FORMAT}
+    URL_SHORTENER: ${URL_SHORTENER:-http://url_shortener:8635}
+    AVAILABLE_SOLVERS: ${AVAILABLE_SOLVERS:-}
+  volumes:
+    - ../config/database.yml.docker:/srv/app/config/database.yml
+    - ../.devcontainer/production.rb:/srv/app/config/environments/production.rb
+    - ../docker/uploads:/srv/app/public/uploads
+  depends_on:
+    - db
+    - redis-cache
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgis/postgis:15-3.5
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - planner-network
+      - public-network
+
+  redis-cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save ""
+    networks:
+      - planner-network
+      - public-network
+
+  web:
+    <<: *web
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec rake db:prepare && bundle exec puma -v -p 8080 --pidfile 'server.pid' -t ${PUMA_WORKERS:-0:1}"
+    networks:
+      - planner-network
+      - public-network
+  delayed-job:
+    <<: *web
+    command: bash -c "bundle exec rails runner 'Delayed::Job.delete_all' && LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec './bin/delayed_job run'"
+    depends_on:
+      - db
+      - redis-cache
+    deploy:
+      replicas: ${DELAYED_JOB_REPLICAS:-1}
+    networks:
+      - planner-network
+      - public-network
+
+volumes:
+  pg_data:
+
+networks:
+  planner-network:
+    external: false
+
+  public-network:
+    name: public-network
