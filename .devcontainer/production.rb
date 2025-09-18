@@ -1,8 +1,6 @@
 Rails.application.configure do
-   config.webpacker.check_yarn_integrity = false  # Settings specified here will take precedence over those in config/application.rb.
-
   # Code is not reloaded between requests.
-  config.cache_classes = false
+  config.cache_classes = true
 
   # Eager load code on boot. This eager loads most of Rails and
   # your application in memory, allowing both threaded web servers
@@ -74,7 +72,7 @@ Rails.application.configure do
   config.active_support.deprecation = :notify
 
   # Use default logging formatter so that PID and timestamp are not suppressed.
-  config.log_formatter = ::Logger::Formatter.new
+  config.log_formatter = Logger::Formatter.new
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
@@ -106,21 +104,24 @@ Rails.application.configure do
     ActiveSupport::Cache::RedisStore.new(host: ENV['REDIS_HOST'] || 'localhost', namespace: namespace, expires_in: expires_in, raise_errors: true)
   end
 
+  config.planner_cache = cache_factory('planner', 60*60*12*1)
+
   config.optimizer = OptimizerWrapper.new(
     cache_factory('optimizer_wrapper', 60*60*24*10),
     ENV['OPTIMIZER_URL'] || 'http://localhost:1791/0.1',
-    ENV['OPTIMIZER_API_KEY']
+    ENV.fetch('OPTIMIZER_API_KEY', nil)
   )
   config.optimize_time = 15
   config.optimize_time_force = nil
   config.optimize_minimal_time = 10
   config.optimize_max_split_size = 500
   config.optimize_cluster_size = 0
-  config.optimize_stop_soft_upper_bound = 0.0
-  config.optimize_vehicle_soft_upper_bound = 0.0
+  config.optimize_stop_soft_upper_bound = 0.3
+  config.optimize_vehicle_soft_upper_bound = 0.3
   config.optimize_overload_multiplier = 0
   config.optimize_cost_waiting_time = 1
   config.optimize_force_start = false
+  config.optimize_cost_fixed = 3.hours.to_i
 
   config.geocode_complete = false # Build time setting
 
@@ -151,13 +152,12 @@ Rails.application.configure do
   config.router = Routers::RouterWrapper.new(
     cache_factory('router_wrapper_request', 60*60*24*1),
     cache_factory('router_wrapper_result', 60*60*24*1),
-    ENV['ROUTER_API_KEY']
+    ENV.fetch('ROUTER_API_KEY', nil)
   )
   config.router.url = ENV['ROUTER_URL'] || 'http://localhost:4899/0.1'
 
   config.devices.alyacom.api_url = 'http://app.alyacom.fr/ws'
   config.devices.fleet.api_url = 'https://fleet.cartoway.com'
-  config.devices.fleet.admin_api_key = ENV['DEVICE_FLEET_ADMIN_API_KEY']
   config.devices.masternaut.api_url = 'http://gc.api.geonaut.masternaut.com/MasterWS/services'
   config.devices.orange.api_url = 'https://m2m-services.ft-dm.com'
   config.devices.praxedo.api_url = 'https://ww2.praxedo.com/eTech/services/'
@@ -165,7 +165,6 @@ Rails.application.configure do
   config.devices.stg_telematics.api_url = 'https://api.stgfleet.com'
   config.devices.suivi_de_flotte.api_url = 'https://webservice.suivideflotte.net/service/'
   config.devices.tomtom.api_url = 'https://soap.business.tomtom.com/v1.30'
-  config.devices.tomtom.api_key = ENV['DEVICE_TOMTOM_API_KEY']
   config.devices.trimble.api_url = 'https://soap.box.trimbletl.com/fleet-service/'
 
   config.devices.cache_object = cache_factory('devices', 30)
@@ -184,5 +183,8 @@ Rails.application.configure do
 
   config.validate_during_duplication = false
 
-  config.logger_sms = nil
+  config.logger_sms = Logger.new($stdout)
+
+  # config.action_dispatch.cookies_same_site_protection = :none
+  # config.session_store :cookie_store, key: '_cartoway_session', same_site: :none, secure: true
 end
