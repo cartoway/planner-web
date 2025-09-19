@@ -46,7 +46,7 @@ services:
     restart: unless-stopped
     command: redis-server --save ""
     healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      test: redis-cli --raw incr ping
       start_interval: 1s
       start_period: 30s
       interval: 30s
