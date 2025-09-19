@@ -209,7 +209,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :contact_email, type: String, documentation: { desc: 'Driver\'s device E-Mail. Several emails might be transmitted separated by spaces, commas or semicolons.' }
     optional :phone_number, type: String
     optional :emission, type: Float, coerce_with: CoerceFloatString
-    optional :consumption, type: Integer
+    optional :consumption, type: Float, coerce_with: CoerceFloatString
     optional :capacity, type: Integer, documentation: { desc: 'Deprecated, use capacities instead.'}
     optional :capacity_unit, type: String, documentation: { desc: 'Deprecated, use capacities and deliverable_unit entity instead.'}
     optional :capacities, type: Array, documentation: { param_type: 'body' } do
