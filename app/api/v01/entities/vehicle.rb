@@ -26,7 +26,7 @@ class V01::Entities::VehicleWithoutVehicleUsage < Grape::Entity
   expose(:contact_email, documentation: { type: String })
   expose(:phone_number, documentation: { type: String })
   expose(:emission, documentation: { type: Float })
-  expose(:consumption, documentation: { type: Integer })
+  expose(:consumption, documentation: { type: Float })
   expose(:capacity, documentation: { type: Integer, desc: 'Deprecated, use capacities instead.' }) { |m|
     if m.capacities && m.customer.deliverable_units.size == 1
       capacities = m.capacities.values
