@@ -79,4 +79,4 @@ HEALTHCHECK \
     --interval=30s \
     --timeout=20s \
     --retries=5 \
-    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/up || exit 1
+    CMD wget --no-verbose --tries=1 -O /dev/null http://127.0.0.1:8080/up || exit 1
