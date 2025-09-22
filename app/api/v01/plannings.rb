@@ -188,26 +188,24 @@ class V01::Plannings < Grape::API
       optional :out_of_zone, type: Boolean, desc: 'Take into account points out of zones.', default: true
     end
     patch ':id/automatic_insert' do
-      Route.includes_destinations_and_stores.scoping do
-        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).preload_route_details.first!
-        raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
+      planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).preload_route_details.first!
+      raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
-        stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
-        begin
-          Planning.transaction do
-            stops.each do |stop|
-              planning.automatic_insert(stop,
-                max_time: params[:max_time],
-                max_distance: params[:max_distance],
-                out_of_zone: params[:out_of_zone],
-                active_only: params[:active_only]) || raise(Exceptions::LoopError.new)
-            end
-            planning.compute_saved
-            status 204
+      stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
+      begin
+        Planning.transaction do
+          stops.each do |stop|
+            planning.automatic_insert(stop,
+              max_time: params[:max_time],
+              max_distance: params[:max_distance],
+              out_of_zone: params[:out_of_zone],
+              active_only: params[:active_only]) || raise(Exceptions::LoopError.new)
           end
-        rescue Exceptions::LoopError => e
-          error! V01::Status.code_response(:code_400), 400
+          planning.compute_saved
+          status 204
         end
+      rescue Exceptions::LoopError => e
+        error! V01::Status.code_response(:code_400), 400
       end
     end
 
