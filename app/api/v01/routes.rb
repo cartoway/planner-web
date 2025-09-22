@@ -97,21 +97,21 @@ class V01::Routes < Grape::API
             id_hash = ParseIdsRefs.read(raw_id)
             id_hash[:ref] || id_hash[:id]
           }.compact
-          planning_route_ids = Route.where(planning_id: get_route.planning.id).map(&:id)
-          Route.includes_destinations_and_stores.where(id: get_route.id).scoping do
-            visits_ordered = StopVisit
-                                .includes(:visit)
-                                .where(visits: { id: visit_ids }, route_id: planning_route_ids)
-                                .references(:visit)
-                                .unscope(:order)
-                                .map(&:visit)
-                                .sort_by{ |v| visit_ids.index(v.id) }
-            unless visits_ordered.empty?
-              Planning.transaction do
-                visits_ordered.each{ |visit| get_route.planning.move_visit(get_route, visit, params[:automatic_insert] ? nil : -1) }
-                get_route.planning.compute_saved
-                status 204
-              end
+
+          @planning = current_customer.plannings.where(id: params[:planning_id]).preload_route_details.first!
+          route = @planning.routes.find{ |route| route.id == Integer(params[:id]) }
+          stops = @planning.routes.flat_map{ |ro|
+            ro.stops.select{ |stop|
+              next if !stop.is_a?(StopVisit)
+
+              visit_ids.include?(stop.visit&.id)
+            }
+          }.compact.sort_by{ |stop| visit_ids.index(stop.visit&.id) }
+          unless stops.empty?
+            Planning.transaction do
+              stops.each{ |stop| @planning.move_stop(route, stop, params[:automatic_insert] ? nil : -1) }
+              @planning.compute_saved
+              status 204
             end
           end
         end
