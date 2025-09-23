@@ -22,7 +22,6 @@
     "leaflet-lasso": "^2.2.13",
     "leaflet-pip": "1.1.0",
     "leaflet-polylineoffset": "1.1.1",
-    "leaflet-responsive-popup": "1.0.0",
     "leaflet.markercluster": "^1.5.3",
     "pnotify": "3.2.1",
     "polyline-encoded": "0.0.8",

@@ -29,6 +29,7 @@
   ### Removed
   - Remove Iconv from dependencies [#457](https://github.com/cartoway/planner-web/pull/457)
   - Remove Leaflet.Draw from dependencies [#450](https://github.com/cartoway/planner-web/pull/450)
+  - Remove Leaflet-responsive-popup from dependencies
 
   ### Fixed
   - StopStore
