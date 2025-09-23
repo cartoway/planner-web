@@ -492,7 +492,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
              + '<div>' + I18n.t('plannings.edit.popup.stop_distance') + ' ' + distance + '</div>';
           }
 
-          L.responsivePopup({
+          L.popup({
             minWidth: 200,
             autoPan: false,
             closeOnClick: true
