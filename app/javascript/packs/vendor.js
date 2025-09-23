@@ -58,7 +58,6 @@ import 'leaflet.markercluster';
 import 'leaflet-control-geocoder';
 import 'leaflet-hash';
 import 'sidebar-v2/js/leaflet-sidebar';
-import 'leaflet-responsive-popup';
 import 'polyline-encoded';
 import 'leaflet-lasso';
 import '@geoman-io/leaflet-geoman-free';

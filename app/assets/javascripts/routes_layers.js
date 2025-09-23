@@ -58,9 +58,7 @@ const popupModule = (function() {
       return route.route_id == marker.properties.route_id;
     })[0];
     if (route && route.outdated) {
-      marker.bindPopup(L.responsivePopup({
-        offset: marker.options.icon.options.iconSize.divideBy(2)
-      }).setContent(I18n.t('plannings.edit.popup.outdated')), {
+      marker.bindPopup(L.popup().setContent(I18n.t('plannings.edit.popup.outdated')), {
         minWidth: 200,
         autoPan: false,
         closeOnClick: false
@@ -105,9 +103,7 @@ const popupModule = (function() {
       url: url,
       beforeSend: beforeSendWaiting,
       success: function(data) {
-        var popup = marker.bindPopup(L.responsivePopup({
-          offset: marker.options.icon.options.iconSize.divideBy(2)
-        }), {
+        var popup = marker.bindPopup(L.popup(), {
           minWidth: 200,
           autoPan: false,
           closeOnClick: false
@@ -340,6 +336,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
           html: '<span class="fa-stack"><i class="fa fa-location-pin cluster-point-border" style="color: ' + color + ';"></i><i class="fa fa-location-pin cluster-point-icon" style="color: \' + color + \';"></i><span class="fa-stack-1x point-icon-text cluster-point-text">' + n.join(',') + '</span></span>',
           iconSize: new L.Point(24, 24),
           iconAnchor: new L.Point(12, 12),
+          popupAnchor: new L.Point(0, -24),
           className: 'cluster-icon-container'
         });
       } else {
@@ -365,7 +362,8 @@ export const RoutesLayer = L.FeatureGroup.extend({
           return new L.DivIcon({
             html: '<div class="marker-cluster-icon" style="background-color: ' + routeColor + ';"><span>' + childCount + '</span></div>',
             className: 'marker-cluster marker-cluster-small',
-            iconSize: new L.Point(40, 40)
+            iconSize: new L.Point(40, 40),
+            popupAnchor: new L.Point(0, -40)
           });
         }
       }
@@ -809,6 +807,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
             html: '<i class="fa ' + storeIcon + ' ' + this.map.iconSize[storeIconSize].name + ' store-icon" style="color: ' + storeColor + ';"></i>',
             iconSize: new L.Point(this.map.iconSize[storeIconSize].size, this.map.iconSize[storeIconSize].size),
             iconAnchor: new L.Point(this.map.iconSize[storeIconSize].size / 2, this.map.iconSize[storeIconSize].size),
+            popupAnchor: new L.Point(0, -this.map.iconSize[storeIconSize].size),
             className: 'store-icon-container'
           });
         } else {
@@ -855,7 +854,8 @@ export const RoutesLayer = L.FeatureGroup.extend({
               // Reset values if same routes same posXY
               this.clustersByRoute[routeId].getLayers().forEach(function(marker) {
                 var size = this.map.iconSize[pointIconSize].size;
-                marker.options.icon.options.iconAnchor = marker.options.icon.options.popupAnchor = L.Point(size / 2, size);
+                marker.options.icon.options.iconAnchor = new L.Point(size / 2, size);
+                marker.options.icon.options.popupAnchor = new L.Point(0, -size);
               }.bind(this));
             }
           } else {
@@ -864,7 +864,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
             overlappingMarkers.routeIds = [];
           }
 
-          var popupAnchor = [-pointAnchor.x + this.map.iconSize[pointIconSize].size / 2, -pointAnchor.y];
+          var popupAnchor = new L.Point(0, -this.map.iconSize[pointIconSize].size);
 
           icon = L.divIcon({
             html: '<span class="fa-stack" style="line-height: ' + this.map.iconSize[pointIconSize].size + 'px"><i class="fa ' + pointIcon + ' point-icon" style="color: ' + pointColor + ' !important; font-size: ' + this.map.iconSize[pointIconSize].size + 'px"></i><span class="fa-stack-1x point-icon-text">' + (geoJsonPoint.properties.number || '') + '</span></span>',
