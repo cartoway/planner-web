@@ -118,19 +118,6 @@ class PlanningsController < ApplicationController
     @spreadsheet_columns = export_columns
     @with_devices = true
     capabilities
-
-    # Prepare device definitions and related routes for the view to avoid business logic in the template
-    @device_definitions = @planning.customer.device.configured_definitions.each_with_object({}) do |(key, definition), hash|
-      # Only keep :deliver if SMS is enabled
-      next if key == :deliver && !@planning.customer.enable_sms
-      routes_with_configured_devices = @planning.routes.select do |route|
-        route.vehicle_usage_id && route.vehicle_usage.vehicle.devices.key?(definition[:device])
-      end
-      hash[key] = {
-        definition: definition,
-        routes_with_configured_devices: routes_with_configured_devices
-      }
-    end
   end
 
   def create
@@ -635,11 +622,16 @@ class PlanningsController < ApplicationController
 
   def set_device_definitions
     @device_definitions = @planning.customer.device.configured_definitions.each_with_object({}) do |(key, definition), hash|
-      # Only keep :deliver if SMS is enabled
-      next if key == :deliver && !@planning.customer.enable_sms
-      routes_with_configured_devices = @planning.routes.select do |route|
-        route.vehicle_usage_id && route.vehicle_usage.vehicle.devices.key?(definition[:device])
-      end
+      routes_with_configured_devices =
+        if key == :deliver
+          @planning.routes.select do |route|
+            route.vehicle_usage_id && route.vehicle_usage.vehicle.contact_email.any?
+          end
+        else
+          @planning.routes.select do |route|
+            route.vehicle_usage_id && route.vehicle_usage.vehicle.devices.key?(definition[:device])
+          end
+        end
       hash[key] = {
         definition: definition,
         routes_with_configured_devices: routes_with_configured_devices
