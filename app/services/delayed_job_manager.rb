@@ -13,8 +13,14 @@ class DelayedJobManager
         "%#{job_signature}%"
       ).first
 
-      if existing_job
-        existing_job.update_column(:run_at, delay_seconds.seconds.from_now)
+      if existing_job && existing_job.locked_at.nil?
+        # Only update if the job is not currently running or locked
+        begin
+          existing_job.update_column(:run_at, delay_seconds.seconds.from_now)
+        rescue PG::TRSerializationFailure, PG::TRDeadlockDetected, ActiveRecord::StatementInvalid
+          # Job is being modified by another process, skip update
+          Rails.logger.debug "Skipping job update due to concurrency: #{job_class.name}"
+        end
         existing_job
       else
         Delayed::Job.enqueue(job, run_at: delay_seconds.seconds.from_now)
