@@ -4,7 +4,7 @@ RailsPerformance.setup do |config|
   config.enabled = !Rails.env.test?
 
   config.ignored_endpoints = ['Devise::SessionsController#new']
-  config.ignored_paths = ['/rails/performance']
+  config.ignored_paths = ['/rails/performance', '/up']
 end
 
 # Monkey patch, to log in JSON format
