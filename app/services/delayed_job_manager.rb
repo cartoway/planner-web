@@ -59,7 +59,8 @@ class DelayedJobManager
     end
 
     def enqueue_simplify_geojson_tracks_job(customer_id, route_id, delay_seconds: 30)
-      enqueue_with_delay_safe(SimplifyGeojsonTracksJob, customer_id, route_id, delay_seconds: delay_seconds)
+      SimplifyGeojsonTracksJob.new(customer_id, route_id).perform
+      # enqueue_with_delay(SimplifyGeojsonTracksJob, customer_id, route_id, delay_seconds: delay_seconds)
     end
 
     private
