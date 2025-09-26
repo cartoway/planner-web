@@ -10,6 +10,7 @@ require_relative '../lib/routers/router_wrapper'
 require_relative '../lib/optim/optimizer_wrapper'
 require_relative '../lib/exceptions'
 require_relative '../lib/json_logs_formatter'
+require_relative '../lib/after_commit_wrapper'
 
 require_relative '../lib/devices/device_base'
 [
