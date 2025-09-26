@@ -1,4 +1,24 @@
+# Copyright © Cartoway, 2025
+#
+# This file is part of Cartoway Planner.
+#
+# Cartoway Planner is free software. You can redistribute it and/or
+# modify since you respect the terms of the GNU Affero General
+# Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# Cartoway Planner is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the Licenses for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with Cartoway Planner. If not, see:
+# <http://www.gnu.org/licenses/agpl.html>
+#
+
 class DelayedJobManager
+  using AfterCommitHelper
+
   class << self
     def enqueue_with_delay(job_class, *args, delay_seconds: 30)
       return unless Planner::Application.config.delayed_job_use
@@ -27,9 +47,17 @@ class DelayedJobManager
       end
     end
 
+    def enqueue_with_delay_safe(job_class, *args, delay_seconds: 30)
+      return unless Planner::Application.config.delayed_job_use
+
+      # Use after_commit to ensure job is only enqueued after transaction commit
+      after_commit do
+        enqueue_with_delay(job_class, *args, delay_seconds: delay_seconds)
+      end
+    end
+
     def enqueue_simplify_geojson_tracks_job(customer_id, route_id, delay_seconds: 30)
-      SimplifyGeojsonTracksJob.new(customer_id, route_id).perform
-      # enqueue_with_delay(SimplifyGeojsonTracksJob, customer_id, route_id, delay_seconds: delay_seconds)
+      enqueue_with_delay_safe(SimplifyGeojsonTracksJob, customer_id, route_id, delay_seconds: delay_seconds)
     end
 
     private
