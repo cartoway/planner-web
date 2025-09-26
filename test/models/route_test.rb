@@ -363,7 +363,6 @@ class RouteTest < ActiveSupport::TestCase
   end
 
   test "should avoid duplicate SimplifyGeojsonTracksJob" do
-    skip 'SimplifyGeojsonTracksJob is currently performed synchronously'
     original_delayed_job_use = Planner::Application.config.delayed_job_use
     Planner::Application.config.delayed_job_use = true
 

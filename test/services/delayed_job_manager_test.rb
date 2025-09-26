@@ -2,7 +2,6 @@ require 'test_helper'
 
 class DelayedJobManagerTest < ActiveSupport::TestCase
   test "should prevent duplicate jobs" do
-    skip 'SimplifyGeojsonTracksJob is currently performed synchronously'
     original_delayed_job_use = Planner::Application.config.delayed_job_use
     Planner::Application.config.delayed_job_use = true
 
@@ -22,7 +21,6 @@ class DelayedJobManagerTest < ActiveSupport::TestCase
   end
 
   test "should handle custom delay" do
-    skip 'SimplifyGeojsonTracksJob is currently performed synchronously'
     original_delayed_job_use = Planner::Application.config.delayed_job_use
     Planner::Application.config.delayed_job_use = true
 
@@ -39,7 +37,6 @@ class DelayedJobManagerTest < ActiveSupport::TestCase
   end
 
   test "should handle generic job enqueue" do
-    skip 'SimplifyGeojsonTracksJob is currently performed synchronously'
     original_delayed_job_use = Planner::Application.config.delayed_job_use
     Planner::Application.config.delayed_job_use = true
 
