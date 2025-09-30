@@ -97,7 +97,8 @@ group :test do
 end
 
 gem 'bullet'  # Used in production for api-web doc generation
-gem 'rails_performance'
+# FIXME: Remove this when the gem is released - https://github.com/igorkasyanchuk/rails_performance/pull/158
+gem 'rails_performance', git: 'https://github.com/braktar/rails_performance.git', branch: 'grape-logging'
 gem 'rails-healthcheck'
 
 gem 'sys-filesystem'
