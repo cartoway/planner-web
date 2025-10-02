@@ -27,7 +27,6 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   MAX_RETRIES = 3
-  RETRY_DELAY = 2
 
   def self.import_transaction(obj, **options)
     retries = 0
@@ -38,7 +37,6 @@ class ApplicationRecord < ActiveRecord::Base
     rescue ActiveRecord::SerializationFailure => e
       retries += 1
       if retries <= MAX_RETRIES
-        sleep(RETRY_DELAY ** retries)
         retry
       else
         raise e

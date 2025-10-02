@@ -42,6 +42,8 @@ class ActiveSupport::TestCase
 
   def before_setup
     super
+    ActiveRecord::Base.stubs(:transaction).yields
+
     Customer.find_each do |customer|
       Customer.where(id: customer.id).update_all(
         destinations_count: customer.destinations.count,
