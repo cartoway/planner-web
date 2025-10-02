@@ -31,7 +31,7 @@ class ApplicationRecord < ActiveRecord::Base
   def self.import_transaction(obj, **options)
     retries = 0
     begin
-      ActiveRecord::Base.transaction do
+      ActiveRecord::Base.transaction(requires_new: true) do
         self.import(obj, **options)
       end
     rescue ActiveRecord::SerializationFailure => e
