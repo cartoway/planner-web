@@ -1102,6 +1102,15 @@ class Planning < ApplicationRecord
     traces =
       vehicle.default_router.trace_batch(segments, vehicle.default_router_dimension, router_options)
 
+    # Replace empty traces with a large value to signify an impossible route
+    traces.map! do |trace|
+      if trace.nil? || trace.empty?
+        [2147483647, 2147483647, nil]
+      else
+        trace
+      end
+    end
+
     # update the segments with the detour distance provided by the router
     insertion_data.each_index{ |index|
       insertion_data[index][2] = traces[3 * index][0] + traces[3 * index + 1][0] - traces[3 * index + 2][0]
