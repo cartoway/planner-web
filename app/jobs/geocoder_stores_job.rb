@@ -17,7 +17,7 @@
 #
 GeocoderStoresJobStruct ||= Job.new(:customer_id)
 class GeocoderStoresJob < GeocoderStoresJobStruct
-  def perform
+  def job_perform
     customer = Customer.find(customer_id)
     Delayed::Worker.logger.info("GeocoderStoresJob perform", customer_id: customer_id)
     count = customer.stores.where(lat: nil).count

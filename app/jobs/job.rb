@@ -48,4 +48,10 @@ class Job < Struct
       !match || match[1].to_i == planning_id
     end
   end
+
+  def perform
+    Customer.transaction isolation: :read_committed do
+      job_perform
+    end
+  end
 end

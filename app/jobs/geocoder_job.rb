@@ -1,6 +1,6 @@
 GeocoderJobStruct ||= Job.new(:customer_id, :planning_ids)
 class GeocoderJob < GeocoderJobStruct
-  def perform
+  def job_perform
     customer = Customer.find(customer_id)
     Delayed::Worker.logger.info("GeocoderJob perform", customer_id: customer_id)
     destination_count = customer.destinations.not_positioned.count

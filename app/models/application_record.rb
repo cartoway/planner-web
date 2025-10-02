@@ -25,4 +25,24 @@ class ApplicationRecord < ActiveRecord::Base
     self.updated_at ||= DateTime.now.iso8601(6)
     self.created_at ||= self.updated_at
   end
+
+  MAX_RETRIES = 3
+  RETRY_DELAY = 2
+
+  def self.import_transaction(obj, **options)
+    retries = 0
+    begin
+      ActiveRecord::Base.transaction do
+        self.import(obj, **options)
+      end
+    rescue ActiveRecord::SerializationFailure => e
+      retries += 1
+      if retries <= MAX_RETRIES
+        sleep(RETRY_DELAY ** retries)
+        retry
+      else
+        raise e
+      end
+    end
+  end
 end

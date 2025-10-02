@@ -1,6 +1,13 @@
 SimplifyGeojsonTracksJobStruct ||= Job.new(:customer_id, :route_id)
 class SimplifyGeojsonTracksJob < SimplifyGeojsonTracksJobStruct
+
   def perform
+    Route.transaction isolation: :serializable do
+      job_perform
+    end
+  end
+
+  def job_perform
     # Accessing Route directly through a Route.find seems to use an obsolete context
     # which prevents to find routes, finding them through the customer plannings makes
     # us able to find them
