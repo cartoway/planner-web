@@ -214,8 +214,8 @@ class V01::DestinationsTest < ActiveSupport::TestCase
           route = Route.where(ref: 'useless_because_of_zoning_ids').last!
           assert_empty route.geojson_points
 
-          out_route = Route.last
-          assert_equal [out_route.id], JSON.parse('[' + out_route.geojson_tracks.join(',') + ']').map{ |t| t['properties']['route_id'] }.uniq
+          out_route = Route.where(planning_id: planning.id, vehicle_usage_id: nil).last!
+          assert_empty out_route.geojson_tracks
           assert_equal [out_route.id], JSON.parse('[' + out_route.geojson_points.join(',') + ']').map{ |t| t['properties']['route_id'] }.uniq
 
           get '/api/0.1/plannings/ref:Hop.json?api_key=testkey1'

@@ -34,6 +34,6 @@ class SimplifyGeojsonTracksJob < SimplifyGeojsonTracksJobStruct
     # Use update_column to avoid triggering callbacks and version updates
     # This ensures concurrent modifications to the route don't conflict
     # and doesn't touch the associated planning
-    route.update_column(:geojson_tracks, simplified_tracks)
+    route.route_geojson.update_column(:tracks, simplified_tracks)
   end
 end

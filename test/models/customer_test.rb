@@ -362,20 +362,23 @@ class CustomerTest < ActiveSupport::TestCase
   end
 
   test 'should clear all destinations and outdate routes' do
-      # TODO: activate code when without_loading can be called inside another without_loading with options
-      # without_loading Stop, if: -> (stop) { o = !stop.is_a?(StopRest); } do
-      without_loading Visit do
-        assert_difference('Stop.count', -6) do
-          assert_difference('Visit.count', -4) do
-            @customer.delete_all_destinations
-          end
+    routes_with_geojson = plannings(:planning_one).routes.select{ |r| r.route_geojson.points.any? }
+    # TODO: activate code when without_loading can be called inside another without_loading with options
+    # without_loading Stop, if: -> (stop) { o = !stop.is_a?(StopRest); } do
+    without_loading Visit do
+      assert_difference('Stop.count', -6) do
+        assert_difference('Visit.count', -4) do
+          @customer.delete_all_destinations
         end
       end
+    end
     # end
-    assert plannings(:planning_one).routes.all? { |r| r.outdated }
+    assert routes_with_geojson.each(&:reload).all? { |r| r.outdated }
   end
 
   test 'should clear all visits and outdate routes' do
+    routes_with_geojson = plannings(:planning_one).routes.select{ |r| r.route_geojson.points.any? }
+
     without_loading Stop, if: -> (stop) { !stop.is_a?(StopRest) } do
       assert_difference('Stop.count', -6) do
         assert_difference('Visit.count', -4) do
@@ -383,13 +386,14 @@ class CustomerTest < ActiveSupport::TestCase
         end
       end
     end
-    assert plannings(:planning_one).routes.all? { |r| r.outdated }
+    assert routes_with_geojson.each(&:reload).all? { |r| r.outdated }
   end
 
   test 'should use limitation' do
     @customer.delete_all_destinations
-    @customer.plannings.delete_all
+    @customer.delete_all_plannings
     @customer.zonings.delete_all
+    @customer.reload
     @customer.vehicle_usage_sets[1..-1].each{ |c| @customer.vehicle_usage_sets.destroy(c) }
 
     @customer.max_plannings = 1
@@ -514,5 +518,32 @@ class CustomerTest < ActiveSupport::TestCase
     customer.save!
     customer.reload
     assert_nil customer.solver_priority
+  end
+
+  test "should delete route_geojsons when customer plannings are deleted with custom method" do
+    route = routes(:route_one_one)
+    assert_equal 1, RouteGeojson.where(route_id: route.id).count
+
+    @customer.delete_all_plannings
+    assert_equal 0, RouteGeojson.where(route_id: route.id).count
+    assert_equal 0, @customer.plannings.count
+  end
+
+  test "should delete route_geojsons when planning routes are deleted with custom method" do
+    planning2 = Planning.create!(
+      customer: @customer,
+      name: "Test Planning 2",
+      vehicle_usage_set: @customer.vehicle_usage_sets.first
+    )
+
+    route2 = Route.create!(
+      planning: planning2,
+      vehicle_usage: @customer.vehicle_usage_sets.first.vehicle_usages.first
+    )
+    assert_equal 1, RouteGeojson.where(route_id: route2.id).count
+
+    planning2.delete_all_routes
+    assert_equal 0, RouteGeojson.where(route_id: route2.id).count
+    assert_equal 0, planning2.routes.count
   end
 end
