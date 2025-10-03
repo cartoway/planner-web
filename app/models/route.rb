@@ -19,13 +19,18 @@
 require 'simplify_geojson_tracks_job'
 
 class Route < ApplicationRecord
+  delegate :tracks, :tracks=, :points, :points=, to: :route_geojson, allow_nil: true, prefix: :geojson
+
   RELATION_ORDER_KEYS = %i[pickup_delivery order sequence]
 
   attr_accessor :migration_skip
+  attr_reader :geojson_tracks_store,
+              :geojson_points_store
 
   belongs_to :planning, touch: true #, inverse_of: :routes
   belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
+  has_one :route_geojson, dependent: :destroy, autosave: true
 
   include QuantityAttr
   quantity_attr :pickups, :deliveries
@@ -186,9 +191,9 @@ class Route < ApplicationRecord
     vehicle_usage? && vehicle_usage.rest?
   end
 
-  def store_traces(geojson_tracks_store, trace, options = {})
+  def store_traces(trace, options = {})
     if trace && !options[:no_geojson]
-      geojson_tracks_store << {
+      @geojson_tracks_store << {
         type: 'Feature',
         geometry: {
           type: 'LineString',
@@ -207,7 +212,7 @@ class Route < ApplicationRecord
   def plan(departure = nil, options = {})
     options[:ignore_errors] = false if options[:ignore_errors].nil?
 
-    geojson_tracks_store = []
+    @geojson_tracks_store = []
 
     route_attributes = init_route_data
 
@@ -248,7 +253,7 @@ class Route < ApplicationRecord
           stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
           stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
 
-          store_traces(geojson_tracks_store, trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance]))
+          store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance]))
 
           if stop_attributes[:drive_time]
             stops_drive_time[stop] = stop_attributes[:drive_time]
@@ -321,8 +326,7 @@ class Route < ApplicationRecord
       # Add service time to end point
       route_attributes[:end] += service_time_end unless service_time_end.nil?
 
-      store_traces(geojson_tracks_store, trace, options.merge(drive_time: drive_time, distance: stop_distance))
-      route_attributes[:geojson_tracks] = geojson_tracks_store unless options[:no_geojson]
+      store_traces(trace, options.merge(drive_time: drive_time, distance: stop_distance))
 
       route_attributes[:stop_out_of_drive_time] = route_attributes[:end] > vehicle_usage.default_time_window_end
       route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], route_attributes[:end])
@@ -340,8 +344,8 @@ class Route < ApplicationRecord
   # no_geojson
   # no_quantities
   def compute!(options = {})
+    @geojson_points_store = []
     if self.vehicle_usage?
-      self.geojson_tracks = nil
       previous_position_hash = {}
       stops_sort, stops_drive_time, stops_time_windows = plan(
         # Hack to allow manual set of self.start from the API and keep the value
@@ -398,8 +402,7 @@ class Route < ApplicationRecord
       compute_out_of_skill(options[:planning])
       _load_stop_hash, self.pickups, self.deliveries = compute_loads unless options[:no_quantities]
     end
-
-    self.geojson_points = stops_to_geojson_points unless options[:no_geojson]
+    @geojson_points_store = stops_to_geojson_points unless options[:no_geojson]
 
     self.outdated = false
     @computed = true
@@ -489,6 +492,11 @@ class Route < ApplicationRecord
     StopVisit.import(group_stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopRest.import(group_stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopStore.import(group_stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+
+    self.route_geojson.update_columns(
+      tracks: @geojson_tracks_store || [],
+      points: @geojson_points_store || []
+    )
     complete_geojson
     # Indirectly save route to avoid Stops callbacks
     self.update_columns(self.import_attributes)
@@ -883,23 +891,33 @@ class Route < ApplicationRecord
     self.class.routes_to_geojson([self], include_stores, respect_hidden, include_linestrings, with_quantities)
   end
 
+  def ensure_route_geojson
+    return if route_geojson.present?
+
+    build_route_geojson(tracks: [], points: [])
+    route_geojson.save! if persisted?
+  end
+
   # Add route_id to geojson after create
   def complete_geojson
+    ensure_route_geojson
     self.geojson_tracks = self.geojson_tracks && self.geojson_tracks.map{ |s|
       linestring = JSON.parse(s)
+      linestring['properties'] ||= {}
       linestring['properties']['route_id'] = self.id
       linestring.to_json
     }
     self.geojson_points = self.geojson_points && self.geojson_points.map{ |s|
       point = JSON.parse(s)
+      point['properties'] ||= {}
       point['properties']['route_id'] = self.id
       point.to_json
     }
-    self.update_columns(attributes.slice('geojson_tracks', 'geojson_points'))
+    self.route_geojson.update_columns(self.route_geojson.attributes.slice('tracks', 'points'))
   end
 
   def stops_to_geojson_points(options = {})
-    return if stops.empty?
+    return if stops.empty? || options[:no_geojson]
 
     units = planning.customer.deliverable_units
 
@@ -1072,6 +1090,7 @@ class Route < ApplicationRecord
 
   def invalidate_route_cache
     @traces = nil
+    @geojson_tracks_store = nil
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/active_stops")
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/stops_size")
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/destination_stops")
@@ -1148,13 +1167,14 @@ class Route < ApplicationRecord
 
   # Update geojson without need of computing route
   def update_geojson
+    ensure_route_geojson
     if color_changed? || @vehicle_color_changed
-      self.geojson_tracks = self.geojson_tracks && self.geojson_tracks.map{ |s|
+      self.route_geojson.tracks = self.route_geojson.tracks && self.route_geojson.tracks.map{ |s|
         linestring = JSON.parse(s)
         linestring['properties']['color'] = self.default_color
         linestring.to_json
       }
-      self.geojson_points = stops_to_geojson_points
+      self.route_geojson.points = stops_to_geojson_points
     end
   end
 

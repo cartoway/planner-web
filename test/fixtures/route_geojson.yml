@@ -1,0 +1,43 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+route_geojson_zero_one:
+  route: route_zero_one
+
+route_geojson_one_one:
+  route: route_one_one
+  tracks: ['{"type":"Feature","geometry":{"type":"LineString","polylines":"_ibE_seK_seK_seK"},"properties":{}}']
+  points: ['{"type":"Feature","geometry":{"type":"Point","coordinates": [0,0]},"properties":{}}']
+
+route_geojson_three_one:
+  route: route_three_one
+  tracks: ['{"type":"Feature","geometry":{"type":"LineString","polylines":"_ibE_seK_seK_seK"},"properties":{}}']
+  points: ['{"type":"Feature","geometry":{"type":"Point","coordinates": [0,0]},"properties":{}}']
+
+route_geojson_zero_two:
+  route: route_zero_two
+  tracks: []
+  points: []
+
+route_geojson_one_two:
+  route: route_one_two
+  tracks: ['{"type":"Feature","geometry":{"type":"LineString","polylines":"_ibE_seK_seK_seK"},"properties":{}}']
+  points: ['{"type":"Feature","geometry":{"type":"Point","coordinates": [0,0]},"properties":{}}']
+
+route_geojson_three_two:
+  route: route_three_two
+  tracks: ['{"type":"Feature","geometry":{"type":"LineString","polylines":"_ibE_seK_seK_seK"},"properties":{}}']
+  points: ['{"type":"Feature","geometry":{"type":"Point","coordinates": [0,0]},"properties":{}}']
+
+route_geojson_zero_three:
+  route: route_zero_three
+
+route_geojson_one_three:
+  route: route_one_three
+
+route_geojson_zero_four:
+  route: route_zero_four
+
+route_geojson_one_four:
+  route: route_one_four
+  tracks: ['{"type":"Feature","geometry":{"type":"LineString","polylines":"_ibE_seK_seK_seK"},"properties":{}}']
+  points: ['{"type":"Feature","geometry":{"type":"Point","coordinates": [0,0]},"properties":{}}']

@@ -22,7 +22,8 @@ class Planning < ApplicationRecord
 
   belongs_to :customer, counter_cache: true
   has_and_belongs_to_many :zonings, autosave: true, after_add: :update_zonings_track, after_remove: :update_zonings_track
-  has_many :routes, -> { order("vehicle_usage_id NULLS FIRST") }, inverse_of: :planning, autosave: true, dependent: :delete_all
+  before_destroy :delete_all_routes
+  has_many :routes, -> { order("vehicle_usage_id NULLS FIRST") }, inverse_of: :planning, autosave: true
 
   has_many :tag_plannings
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
@@ -210,6 +211,7 @@ class Planning < ApplicationRecord
 
   def vehicle_usage_add(vehicle_usage, ignore_errors = false)
     route = routes.build(vehicle_usage: vehicle_usage, outdated: false)
+    route.ensure_route_geojson
     vehicle_usage.routes << route unless vehicle_usage.id
     route.init_stops(true, ignore_errors)
   end
@@ -256,7 +258,7 @@ class Planning < ApplicationRecord
   end
 
   def default_empty_routes(ignore_errors = false)
-    routes.clear
+    delete_all_routes
     new_routes = [
       Route.new(planning_id: self.id, outdated: false, vehicle_usage_id: nil)
     ]
@@ -267,6 +269,7 @@ class Planning < ApplicationRecord
       }
     Route.import(new_routes, validate: false)
     self.routes = Route.where(planning_id: self.id).includes_vehicle_usages
+    self.routes.each { |route| route.ensure_route_geojson }
     self.routes.each{ |r| r.init_stops(false) }
     self
   end
@@ -654,7 +657,7 @@ class Planning < ApplicationRecord
           vehicles_map[zone.vehicle].add_visits(visits.collect{ |d| [d, true] })
         else
           # Add to unplanned route even if the route is locked
-          routes.find{ |r| !r.vehicle_usage? }.add_visits(visits.collect{ |d| [d, true] })
+          routes.find{ |r| !r.vehicle_usage? }.add_visits(visits.collect{ |d| [d, true] }, false)
         end
       }
 
@@ -987,9 +990,18 @@ class Planning < ApplicationRecord
     end
   end
 
+  def delete_all_routes
+    route_ids = routes.pluck(:id)
+
+    RouteGeojson.where(route_id: route_ids).delete_all if route_ids.any?
+    Stop.where(route_id: route_ids).delete_all if route_ids.any?
+    Route.where(planning_id: id).delete_all
+  end
+
   private
 
   def compute_within_existing_transaction(options = {}, routes_to_enqueue = [])
+    geojson_data = []
     stop_rests = []
     stop_visits = []
     stop_stores = []
@@ -1018,8 +1030,15 @@ class Planning < ApplicationRecord
       stop_visits += stops_by_type['StopVisit'].to_a.map(&:import_attributes)
       stop_rests += stops_by_type['StopRest'].to_a.map(&:import_attributes)
       stop_stores += stops_by_type['StopStore'].to_a.map(&:import_attributes)
+
+      geojson_data << {
+        route_id: r.id,
+        tracks: r.geojson_tracks_store || [],
+        points: r.geojson_points_store || []
+      }
     }
     Route.import(computed_routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    RouteGeojson.import(geojson_data, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:route_id], columns: :all})
     StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopRest.import(stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopStore.import(stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})

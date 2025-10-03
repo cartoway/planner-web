@@ -30,7 +30,8 @@ class Customer < ApplicationRecord
   belongs_to :job_store_geocoding, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
   belongs_to :job_optimizer, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
   has_many :products, inverse_of: :customer, autosave: true, dependent: :delete_all
-  has_many :plannings, inverse_of: :customer, autosave: true, dependent: :delete_all
+  before_destroy :delete_all_plannings # Declare and run before has_many :plannings
+  has_many :plannings, inverse_of: :customer, autosave: true
   has_many :order_arrays, inverse_of: :customer, autosave: true, dependent: :delete_all
   has_many :zonings, inverse_of: :customer, dependent: :delete_all
   before_destroy :destroy_disable_vehicle_usage_sets_validation # Declare and run before has_many :vehicle_usage_sets
@@ -300,6 +301,15 @@ class Customer < ApplicationRecord
     Visit.where(id: visits.map(&:id)).delete_all
     self.reload
     reindex_routes
+  end
+
+  def delete_all_plannings
+    planning_ids = plannings.pluck(:id)
+    route_ids = Route.where(planning_id: planning_ids).pluck(:id)
+
+    RouteGeojson.where(route_id: route_ids).delete_all if route_ids.any?
+    Stop.where(route_id: route_ids).delete_all if route_ids.any?
+    Planning.where(customer_id: id).destroy_all
   end
 
   def is_editable?

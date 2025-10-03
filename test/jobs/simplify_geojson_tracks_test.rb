@@ -28,7 +28,7 @@ class SimplifyGeojsonTracksJobTest < ActiveSupport::TestCase
       }.to_json
     ]
 
-    @route.update_column(:geojson_tracks, @geojson_tracks)
+    @route.route_geojson.update_column(:tracks, @geojson_tracks)
   end
 
   test "should simplify polylines while preserving feature structure" do
@@ -48,7 +48,7 @@ class SimplifyGeojsonTracksJobTest < ActiveSupport::TestCase
   end
 
   test "should handle empty geojson_tracks" do
-    @route.update_column(:geojson_tracks, [])
+    @route.route_geojson.update_column(:tracks, [])
     assert_nothing_raised do
       SimplifyGeojsonTracksJob.new(@route.planning.customer_id, @route.id).perform
     end
@@ -67,7 +67,7 @@ class SimplifyGeojsonTracksJobTest < ActiveSupport::TestCase
       }
     }.to_json]
 
-    @route.update_column(:geojson_tracks, single_point_track)
+    @route.route_geojson.update_column(:tracks, single_point_track)
     SimplifyGeojsonTracksJob.new(@route.planning.customer_id, @route.id).perform
     @route.reload
     feature = JSON.parse(@route.geojson_tracks.first)

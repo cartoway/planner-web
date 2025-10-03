@@ -685,6 +685,39 @@ ALTER SEQUENCE public.resellers_id_seq OWNED BY public.resellers.id;
 
 
 --
+-- Name: route_geojsons; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.route_geojsons (
+    id bigint NOT NULL,
+    route_id bigint NOT NULL,
+    tracks jsonb DEFAULT '[]'::jsonb,
+    points jsonb DEFAULT '[]'::jsonb,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: route_geojsons_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.route_geojsons_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: route_geojsons_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.route_geojsons_id_seq OWNED BY public.route_geojsons.id;
+
+
+--
 -- Name: routers; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -745,8 +778,6 @@ CREATE TABLE public.routes (
     last_sent_to character varying,
     start integer,
     "end" integer,
-    geojson_tracks text[],
-    geojson_points text[],
     stop_no_path boolean,
     lock_version integer DEFAULT 0 NOT NULL,
     visits_duration integer,
@@ -1550,6 +1581,13 @@ ALTER TABLE ONLY public.resellers ALTER COLUMN id SET DEFAULT nextval('public.re
 
 
 --
+-- Name: route_geojsons id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.route_geojsons ALTER COLUMN id SET DEFAULT nextval('public.route_geojsons_id_seq'::regclass);
+
+
+--
 -- Name: routers id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1785,6 +1823,14 @@ ALTER TABLE ONLY public.profiles
 
 ALTER TABLE ONLY public.resellers
     ADD CONSTRAINT resellers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: route_geojsons route_geojsons_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.route_geojsons
+    ADD CONSTRAINT route_geojsons_pkey PRIMARY KEY (id);
 
 
 --
@@ -2205,6 +2251,13 @@ CREATE INDEX index_relations_customer_current_successord_id ON public.stops_rela
 
 
 --
+-- Name: index_route_geojsons_on_route_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_route_geojsons_on_route_id ON public.route_geojsons USING btree (route_id);
+
+
+--
 -- Name: index_routes_on_vehicle_usage_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2565,6 +2618,14 @@ ALTER TABLE ONLY public.profiles_routers
 
 ALTER TABLE ONLY public.deliverable_units
     ADD CONSTRAINT fk_rails_39e8ec541b FOREIGN KEY (customer_id) REFERENCES public.customers(id);
+
+
+--
+-- Name: route_geojsons fk_rails_4b40197dfc; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.route_geojsons
+    ADD CONSTRAINT fk_rails_4b40197dfc FOREIGN KEY (route_id) REFERENCES public.routes(id);
 
 
 --
@@ -3164,4 +3225,5 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250626123719'),
 ('20250627085724'),
 ('20250707061924'),
-('20250910070315');
+('20250910070315'),
+('20251002141623');
