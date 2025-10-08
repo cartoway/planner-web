@@ -307,14 +307,6 @@ class Planning < ApplicationRecord
           compute_within_existing_transaction(options, routes_to_enqueue)
         end
       end
-
-    # The current transaction is not committed yet, and might be in an invalid status
-    if result
-      routes_to_enqueue.each do |r|
-        DelayedJobManager.enqueue_simplify_geojson_tracks_job(self.customer_id, r.id)
-      end
-    end
-
     !!result
   end
 

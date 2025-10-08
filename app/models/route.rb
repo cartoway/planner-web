@@ -502,10 +502,6 @@ class Route < ApplicationRecord
     self.update_columns(self.import_attributes)
     invalidate_route_cache
     invalidate_planning_cache
-
-    if Planner::Application.config.delayed_job_use
-      DelayedJobManager.enqueue_simplify_geojson_tracks_job(self.planning.customer_id, self.id)
-    end
     true
   end
 

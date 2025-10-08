@@ -742,29 +742,6 @@ class PlanningTest < ActiveSupport::TestCase
     assert planning.compute
     assert_not planning.zoning_outdated
   end
-
-  test "should avoid duplicate SimplifyGeojsonTracksJob in planning" do
-    skip 'SimplifyGeojsonTracksJob is currently performed synchronously'
-    original_delayed_job_use = Planner::Application.config.delayed_job_use
-    Planner::Application.config.delayed_job_use = true
-
-    planning = plannings(:planning_one)
-    route = planning.routes.first
-
-    DelayedJobManager.enqueue_simplify_geojson_tracks_job(planning.customer_id, route.id)
-
-    initial_job_count = Delayed::Job.count
-    initial_job = Delayed::Job.last
-
-    DelayedJobManager.enqueue_simplify_geojson_tracks_job(planning.customer_id, route.id)
-
-    assert_equal initial_job_count, Delayed::Job.count
-
-    initial_job.reload
-    assert initial_job.run_at > 29.seconds.from_now, "The job should be rescheduled with a delay of 30 seconds"
-  ensure
-    Planner::Application.config.delayed_job_use = original_delayed_job_use
-  end
 end
 
 class PlanningTestError < ActiveSupport::TestCase
