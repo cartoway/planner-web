@@ -174,9 +174,14 @@ class ImporterVehicleUsageSets < ImporterBase
     prepare_custom_attributes(row)
     [:tags, :tags_vehicle].each{ |key| prepare_tags(row, key) }
 
+    row[:ref_vehicle] = row[:ref_vehicle]&.strip&.downcase
+    row[:store_start_ref] = row[:store_start_ref]&.strip&.downcase
+    row[:store_stop_ref] = row[:store_stop_ref]&.strip&.downcase
+    row[:store_rest_ref] = row[:store_rest_ref]&.strip&.downcase
+
     # For each vehicle, create vehicle and vehicle usage
-    vehicle = if !row[:ref_vehicle].nil? && !row[:ref_vehicle].strip.empty? && @vehicles_by_ref[row[:ref_vehicle].strip]
-      @vehicles_by_ref[row[:ref_vehicle].strip]
+    vehicle = if !row[:ref_vehicle].nil? && !row[:ref_vehicle].empty? && @vehicles_by_ref[row[:ref_vehicle]]
+      @vehicles_by_ref[row[:ref_vehicle]]
     else
       @vehicles_without_ref.shift
     end
@@ -195,9 +200,9 @@ class ImporterVehicleUsageSets < ImporterBase
     end
 
     vehicle_usage_attributes = row.slice(*columns_vehicle_usage_set.keys)
-    vehicle_usage_attributes[:store_start] = @stores_by_ref[vehicle_usage_attributes.delete(:store_start_ref).to_s.strip]
-    vehicle_usage_attributes[:store_stop] = @stores_by_ref[vehicle_usage_attributes.delete(:store_stop_ref).to_s.strip]
-    vehicle_usage_attributes[:store_rest] = @stores_by_ref[vehicle_usage_attributes.delete(:store_rest_ref).to_s.strip]
+    vehicle_usage_attributes[:store_start] = @stores_by_ref[vehicle_usage_attributes.delete(:store_start_ref)]
+    vehicle_usage_attributes[:store_stop] = @stores_by_ref[vehicle_usage_attributes.delete(:store_stop_ref)]
+    vehicle_usage_attributes[:store_rest] = @stores_by_ref[vehicle_usage_attributes.delete(:store_rest_ref)]
     vehicle_usage = @vehicle_usage_set.vehicle_usages.find{ |vu| vu.vehicle == vehicle }
     vehicle_usage.assign_attributes(vehicle_usage_attributes.except(:name_vehicle_usage_set))
 

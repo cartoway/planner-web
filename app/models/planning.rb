@@ -146,14 +146,14 @@ class Planning < ApplicationRecord
 
       index_routes = (1..routes.size).to_a
       routes_visits.each{ |_ref, r|
-        index_routes.delete(routes.index{ |rr| rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref == r[:ref_vehicle] }) if r[:ref_vehicle]
+        index_routes.delete(routes.index{ |rr| rr.vehicle_usage? && ParseIdsRefs.match_ref?(r[:ref_vehicle], rr.vehicle_usage.vehicle) }) if r[:ref_vehicle]
       }
       # Collect ref updates for batch processing
       ref_updates = []
       routes_visits.each{ |ref, r|
-        i = routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref == r[:ref_vehicle] } || index_routes.shift
-        routes[i].ref = ref
-        ref_updates << { id: routes[i].id, ref: ref }
+        i = routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && ParseIdsRefs.match_ref?(r[:ref_vehicle], rr.vehicle_usage.vehicle) } || index_routes.shift
+        routes[i].ref = ref&.to_s
+        ref_updates << { id: routes[i].id, ref: ref&.to_s }
         routes[i].add_objects(r[:visits], recompute, ignore_errors)
       }
 
@@ -177,7 +177,7 @@ class Planning < ApplicationRecord
 
       index_routes = (1..routes.size).to_a
       routes_visits.each{ |_ref, r|
-        index_routes.delete(routes.index{ |rr| rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref&.downcase == r[:ref_vehicle] }) if r[:ref_vehicle]
+        index_routes.delete(routes.index{ |rr| rr.vehicle_usage? && ParseIdsRefs.match_ref?(r[:ref_vehicle], rr.vehicle_usage.vehicle) }) if r[:ref_vehicle]
       }
 
       routes_visits.each{ |ref, r|
@@ -185,11 +185,11 @@ class Planning < ApplicationRecord
 
         i =
           if ref
-            routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && rr.vehicle_usage.vehicle.ref&.downcase == r[:ref_vehicle] } || index_routes.shift
+            routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && ParseIdsRefs.match_ref?(r[:ref_vehicle], rr.vehicle_usage.vehicle) } || index_routes.shift
           else
             routes.index{ |route| !route.vehicle_usage? }
           end
-        routes[i].ref = ref
+        routes[i].ref = ref&.to_s
         routes[i].remove_stores
         r[:visits].each.with_index{ |(obj, stop_attributes), index|
           if obj.is_a?(Visit)
