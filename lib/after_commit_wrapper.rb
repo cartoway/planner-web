@@ -48,11 +48,5 @@ module AfterCommitHelper
         yield
       end
     end
-
-    def after_commit_job(job_class, *args, **options)
-      after_commit do
-        DelayedJobManager.enqueue_with_delay(job_class, *args, **options)
-      end
-    end
   end
 end
