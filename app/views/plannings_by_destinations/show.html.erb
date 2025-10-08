@@ -28,8 +28,8 @@
       <tbody>
         <% units = @customer.deliverable_units.index_by(&:id) %>
         <% @stop_visits.each do |stop_visit| %>
-          <% default_deliveries = stop_visit.visit.default_deliveries %>
-          <% default_pickups = stop_visit.visit.default_pickups %>
+          <% default_deliveries = stop_visit.visit.default_deliveries(@customer.deliverable_units) %>
+          <% default_pickups = stop_visit.visit.default_pickups(@customer.deliverable_units) %>
           <tr>
             <td>
               <input type="checkbox" class="stop-id"

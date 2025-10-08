@@ -30,7 +30,7 @@ class Route < ApplicationRecord
   belongs_to :planning, touch: true #, inverse_of: :routes
   belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
-  has_one :route_geojson, dependent: :destroy, autosave: true
+  has_one :route_geojson, dependent: :destroy
 
   include QuantityAttr
   quantity_attr :pickups, :deliveries
@@ -742,10 +742,10 @@ class Route < ApplicationRecord
 
       case stop.class.name
       when StopVisit.name
-        stop.visit.default_pickups.each{ |k, v|
+        stop.visit.default_pickups(planning.customer.deliverable_units).each{ |k, v|
           r_pickups[k] += (v || 0)
         }
-        stop.visit.default_deliveries.each{ |k, v|
+        stop.visit.default_deliveries(planning.customer.deliverable_units).each{ |k, v|
           r_deliveries[k] += (v || 0)
         }
       when StopStore.name
@@ -1175,6 +1175,7 @@ class Route < ApplicationRecord
         linestring.to_json
       }
       self.route_geojson.points = stops_to_geojson_points
+      self.route_geojson.save!
     end
   end
 
@@ -1223,8 +1224,8 @@ class Route < ApplicationRecord
     return if !stop.active || !stop.position? || !stop.is_a?(StopVisit) || !stop.visit.default_quantities?
 
     @default_capacities ||= vehicle_usage&.vehicle&.default_capacities
-    default_pickups = stop.visit.default_pickups
-    default_deliveries = stop.visit.default_deliveries
+    default_pickups = stop.visit.default_pickups(@deliverable_units)
+    default_deliveries = stop.visit.default_deliveries(@deliverable_units)
     out_of_capacity = nil
     unmanageable_capacity = nil
 

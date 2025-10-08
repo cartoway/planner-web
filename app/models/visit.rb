@@ -174,23 +174,27 @@ class Visit < ApplicationRecord
     duration_time_with_seconds || destination.customer.visit_duration_time_with_seconds
   end
 
-  def default_deliveries
-    @default_deliveries ||= begin
-      @deliverable_units ||= destination.customer.deliverable_units
+  def default_deliveries(deliverable_units = nil)
+    return @default_deliveries if defined?(@default_deliveries)
 
-      @deliverable_units.each_with_object(QuantityAttr::QuantityHash.new) do |du, hash|
-        hash[du.id] = deliveries && deliveries[du.id] || du.default_delivery
-      end
+    units = deliverable_units || @deliverable_units || destination.customer.deliverable_units
+    @deliverable_units ||= units
+
+    current_deliveries = deliveries || {}
+    @default_deliveries = units.each_with_object(QuantityAttr::QuantityHash.new) do |du, hash|
+      hash[du.id] = current_deliveries.key?(du.id) ? current_deliveries[du.id] : du.default_delivery
     end
   end
 
-  def default_pickups
-    @default_pickups ||= begin
-      @deliverable_units ||= destination.customer.deliverable_units
+  def default_pickups(deliverable_units = nil)
+    return @default_pickups if defined?(@default_pickups)
 
-      @deliverable_units.each_with_object(QuantityAttr::QuantityHash.new) do |du, hash|
-        hash[du.id] = pickups && pickups[du.id] || du.default_pickup
-      end
+    units = deliverable_units || @deliverable_units || destination.customer.deliverable_units
+    @deliverable_units ||= units
+
+    current_pickups = pickups || {}
+    @default_pickups = units.each_with_object(QuantityAttr::QuantityHash.new) do |du, hash|
+      hash[du.id] = current_pickups.key?(du.id) ? current_pickups[du.id] : du.default_pickup
     end
   end
 
