@@ -89,7 +89,8 @@ class ImporterStores < ImporterBase
       raise ImportInvalidRow.new(I18n.t('stores.import_file.missing_location'))
     end
 
-    if !row[:ref].nil? && !row[:ref].strip.empty?
+    row[:ref] = row[:ref]&.strip&.downcase
+    if !row[:ref].nil? && !row[:ref].empty?
       store = @stores_by_ref[row[:ref]]
       store.assign_attributes((row.key?(:lat) || row.key?(:lng) ? {lat: nil, lng: nil} : {}).merge(row)) if store
     end
