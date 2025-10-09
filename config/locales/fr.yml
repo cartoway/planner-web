@@ -779,6 +779,7 @@ fr:
         Opération impossible pour le moment, une tâche de fond (optimisation)
         est en cours d'execution
       transmission_in_progress: L'optimisation est en cours de transmission
+      router: 'Erreur de calcul des routes : %{error}'
     routes:
       bad_barcode_char: Les données du code barre contiennent un caractère non pris en charge
       expired: La tournée a expiré
