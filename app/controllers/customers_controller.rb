@@ -170,7 +170,13 @@ class CustomersController < ApplicationController
     devices_params = unsafe_params.dig('customer', 'devices')
     devices_params = @customer[:devices].deep_stringify_keys.deep_merge(devices_params || {}) if @customer&.devices&.any?
     devices_params ||= {}
+
+    advanced_options_params = unsafe_params.dig('customer', 'advanced_options')
+    advanced_options_params = @customer[:advanced_options].deep_stringify_keys.deep_merge(advanced_options_params || {}) if @customer&.advanced_options&.any?
+    advanced_options_params ||= {}
+
     unsafe_params['customer']['devices'] = devices_params
+    unsafe_params['customer']['advanced_options'] = advanced_options_params
 
     p = ActionController::Parameters.new(unsafe_params)
     if current_user.admin?
@@ -252,7 +258,7 @@ class CustomersController < ApplicationController
           :low_emission_zone
         ],
         devices: RecursiveParamsHelper.permit_recursive(devices_params),
-        advanced_options: { solver_priority: [] }
+        advanced_options: RecursiveParamsHelper.permit_recursive(advanced_options_params)
       )
       return parameters
     else
@@ -304,7 +310,8 @@ class CustomersController < ApplicationController
           :strict_restriction,
           :low_emission_zone
         ],
-        devices: RecursiveParamsHelper.permit_recursive(devices_params)
+        devices: RecursiveParamsHelper.permit_recursive(devices_params),
+        advanced_options: RecursiveParamsHelper.permit_recursive(advanced_options_params)
       ]
       allowed_params << :max_vehicles unless Planner::Application.config.manage_vehicles_only_admin
 
