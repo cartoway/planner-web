@@ -124,14 +124,27 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if current_user.customer.too_many_plannings?
 
+      @router_error = nil
       @planning = current_user.customer.plannings.create(planning_params)
       if @planning.valid?
         @planning.default_routes
-        # Reload with all sub models
         @planning = Planning.where(id: @planning.id).preload_route_details.first!
+        begin
+          @planning.compute_saved!
+        rescue RouterError => e
+          @router_error = e.message
+          @planning.routes.each{ |route|
+            route.route_geojson.update_columns(points: route.stops_to_geojson_points)
+          }
+        end
       end
-      if @planning.valid? && @planning.compute_saved!
-        format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.created', model: @planning.class.model_name.human) }
+
+      if @planning.valid?
+        if @router_error
+          format.html { redirect_to edit_planning_path(@planning), alert: I18n.t('errors.planning.router', error: @router_error) }
+        else
+          format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.created', model: @planning.class.model_name.human) }
+        end
       else
         format.html { render action: 'new' }
       end
