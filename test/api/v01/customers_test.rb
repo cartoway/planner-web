@@ -255,14 +255,28 @@ class V01::CustomerTest < ActiveSupport::TestCase
     params = { import: { destinations: { spreadsheetColumnsDef: {}}}, enable_test: true }
     put api_admin(@customer.id), advanced_options: params
     assert last_response.ok?, last_response.body
-    assert_equal({'enable_test' => 'true'}, @customer.reload.advanced_options)
+    assert_equal('true', @customer.reload.advanced_options['enable_test'])
     put api_admin(@customer.id), advanced_options: { enable_test: nil }
     assert last_response.ok?, last_response.body
-    assert_equal({'enable_test' => nil}, @customer.reload.advanced_options)
+    refute @customer.reload.advanced_options['enable_test']
 
     params = { import: { destinations: { spreadsheetColumnsDef: { ref_vehicle: 'myDriver' }}}}
     put api(@customer.id), advanced_options: params
     assert last_response.ok?, last_response.body
-    assert_equal(params.with_indifferent_access, @customer.reload.advanced_options)
+    assert_equal(params.with_indifferent_access.merge(enable_test: nil), @customer.reload.advanced_options)
+  end
+
+  test 'should not override existing advanced options' do
+    solver_options = { solver_priority: ['pyvrp', 'vroom'] }
+    @customer.update advanced_options: solver_options
+    params = { import: { destinations: { spreadsheetColumnsDef: { ref_vehicle: 'myDriver' }}}}
+    put api_admin(@customer.id), advanced_options: params
+    assert last_response.ok?, last_response.body
+    assert_equal(params.with_indifferent_access.merge(solver_options), @customer.reload.advanced_options)
+
+    solver_params = { solver_priority: ['pyvrp'] }
+    put api(@customer.id), advanced_options: solver_params
+    assert last_response.ok?, last_response.body
+    assert_equal(params.with_indifferent_access.merge(solver_params), @customer.reload.advanced_options)
   end
 end

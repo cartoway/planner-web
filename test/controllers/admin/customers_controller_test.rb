@@ -174,4 +174,38 @@ class Admin::CustomersControllerTest < ActionController::TestCase
     @customer.reload
     assert_equal ["pyvrp", "vroom"], @customer.solver_priority
   end
+
+  test 'should not override existing advanced options' do
+    import_options = {
+      'import' => {
+        'destinations' => {
+          'spreadsheetColumnsDef' => {
+            'ref' => "Test/string&is#testing'~\"{([|^@])} œéèêùà\\!@#S%^*+_-?/<>:';",
+            'name' => '<>my _ name0123456789',
+            'ref_visit' => 'ref visit  '
+          }
+        }
+      }
+    }
+    @customer = customers(:customer_one)
+    @customer.advanced_options = { solver_priority: ['pyvrp', 'vroom'] }.merge(import_options)
+    @customer.save!
+    @customer.reload
+
+    patch :update, params: {
+      id: @customer,
+      customer: {
+        name: "Updated Customer",
+        advanced_options: {
+          solver_priority: ["pyvrp"]
+        }
+      }
+    }
+
+    assert_redirected_to edit_customer_path(assigns(:customer))
+    @customer.reload
+    assert_equal ['pyvrp'], @customer.solver_priority
+    assert_equal import_options['import'], @customer.advanced_options['import']
+  end
+
 end
