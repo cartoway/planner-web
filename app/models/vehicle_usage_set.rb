@@ -140,12 +140,12 @@ class VehicleUsageSet < ApplicationRecord
           (service_time_end_changed? && vehicle_usage.default_service_time_end == service_time_end) ||
           (store_duration_changed? && vehicle_usage.default_store_duration == store_duration) ||
 
-          (max_distance_changed? && vehicle_usage.vehicle.max_distance == max_distance) ||
-          (max_ride_distance_changed? && vehicle_usage.vehicle.max_ride_distance == max_ride_distance) ||
-          (max_ride_duration_changed? && vehicle_usage.vehicle.max_ride_duration == max_ride_duration) ||
-          (cost_distance_changed? && vehicle_usage.cost_distance == cost_distance) ||
-          (cost_fixed_changed? && vehicle_usage.cost_fixed == cost_fixed) ||
-          (cost_time_changed? && vehicle_usage.cost_time == cost_time)
+          (max_distance_changed? && vehicle_usage.vehicle.max_distance != max_distance) ||
+          (max_ride_distance_changed? && vehicle_usage.vehicle.max_ride_distance != max_ride_distance) ||
+          (max_ride_duration_changed? && vehicle_usage.vehicle.max_ride_duration != max_ride_duration) ||
+          (cost_distance_changed? && vehicle_usage.default_cost_distance == cost_distance) ||
+          (cost_fixed_changed? && vehicle_usage.default_cost_fixed == cost_fixed) ||
+          (cost_time_changed? && vehicle_usage.default_cost_time == cost_time)
 
           vehicle_usage.routes.each{ |route|
             route.outdated = true
