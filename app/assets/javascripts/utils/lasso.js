@@ -200,7 +200,9 @@ export class LassoModule {
 
     // Clear selection without calling clearLassoSelection to avoid recursion
     if (this.selectedLayers) {
-      this.selectedLayers.forEach((layer) => {
+      const processedLayers = this.processSelectedLayers(this.selectedLayers);
+
+      processedLayers.forEach((layer) => {
         if (layer.getElement && layer.getElement()) {
           const element = layer.getElement();
           if (element && element.classList) {
@@ -220,10 +222,16 @@ export class LassoModule {
     this.selectedLayers = event.layers;
 
     if (this.selectedLayers.length > 0) {
+      // Process selected layers (including clusters)
+      const processedLayers = this.processSelectedLayers(this.selectedLayers);
+
       // Highlight selected layers
-      this.selectedLayers.forEach((layer) => {
+      processedLayers.forEach((layer) => {
         if (layer.getElement) {
-          layer.getElement().classList.add('leaflet-lasso-selected');
+          const element = layer.getElement();
+          if (element && element.classList) {
+            element.classList.add('leaflet-lasso-selected');
+          }
         }
       });
 
@@ -235,17 +243,54 @@ export class LassoModule {
     }
   }
 
-    /**
+  /**
+   * Process selected layers to handle MarkerCluster groups
+   * @param {Array} layers - Array of selected layers
+   * @returns {Array} Processed layers with individual markers from clusters
+   */
+  processSelectedLayers(layers) {
+    const processedLayers = [];
+
+    layers.forEach((layer) => {
+      // Skip null or undefined layers
+      if (!layer) {
+        return;
+      }
+
+      // Check if this is a MarkerClusterGroup
+      if (layer.getAllChildMarkers && typeof layer.getAllChildMarkers === 'function') {
+        // This is a cluster, get all individual markers
+        const childMarkers = layer.getAllChildMarkers();
+        if (childMarkers && Array.isArray(childMarkers)) {
+          processedLayers.push(...childMarkers.filter(marker => marker != null));
+        }
+      } else if (layer.getLayers && typeof layer.getLayers === 'function') {
+        // This might be another type of group layer
+        const childLayers = layer.getLayers();
+        if (childLayers && Array.isArray(childLayers)) {
+          processedLayers.push(...childLayers.filter(childLayer => childLayer != null));
+        }
+      } else {
+        // This is an individual marker/layer
+        processedLayers.push(layer);
+      }
+    });
+
+    return processedLayers;
+  }
+
+  /**
    * Show MoveStops modal for lasso selection
    * This method uses the existing MoveStops modal and simulates stop selection
    */
   showMoveStopsModalForLassoSelection() {
-    // Extract stops from selected layers
+    // Extract stops from selected layers (including processed clusters)
     const selectedStops = [];
+    const processedLayers = this.processSelectedLayers(this.selectedLayers);
 
-    if (this.selectedLayers && this.selectedLayers.length > 0) {
-      this.selectedLayers.forEach((layer) => {
-        if (layer.properties && layer.properties.stop_id && layer.properties.route_id) {
+    if (processedLayers && processedLayers.length > 0) {
+      processedLayers.forEach((layer) => {
+        if (layer && layer.properties && layer.properties.stop_id && layer.properties.route_id) {
           selectedStops.push({
             stop_id: layer.properties.stop_id,
             route_id: layer.properties.route_id
@@ -311,7 +356,9 @@ export class LassoModule {
    */
   clearLassoSelection() {
     if (this.selectedLayers) {
-      this.selectedLayers.forEach((layer) => {
+      const processedLayers = this.processSelectedLayers(this.selectedLayers);
+
+      processedLayers.forEach((layer) => {
         if (layer.getElement && layer.getElement()) {
           const element = layer.getElement();
           if (element && element.classList) {
