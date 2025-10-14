@@ -1478,4 +1478,31 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
     assert_equal 'a', out_route.stops[0].visit.ref
     assert_equal 'b', out_route.stops[1].visit.ref
   end
+
+  test 'coerce tag_ids with ids only' do
+    clear_jobs
+    t1 = tags(:tag_one)
+    t2 = tags(:tag_two)
+
+    put api(@destination.id), nil, input: @destination.attributes.merge(tag_ids: "#{t1.id},#{t2.id}").to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+    destination = JSON.parse(last_response.body)
+    assert_equal [t1.id, t2.id], destination['tag_ids']
+  end
+
+  test 'coerce tag_ids with mixed ids and refs' do
+    clear_jobs
+    t1 = tags(:tag_one)
+    t2 = tags(:tag_two)
+
+    put api(@destination.id), nil, input: @destination.attributes.merge(tag_ids: "#{t1.id},ref:#{t2.ref}").to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+    destination = JSON.parse(last_response.body)
+    assert_equal [t1.id, t2.id], destination['tag_ids']
+
+    put api(@destination.id), nil, input: @destination.attributes.merge(tag_ids: "ref:#{t2.ref}").to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+    destination = JSON.parse(last_response.body)
+    assert_equal [t2.id], destination['tag_ids']
+  end
 end
