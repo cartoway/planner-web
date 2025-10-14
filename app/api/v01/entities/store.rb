@@ -38,4 +38,5 @@ class V01::Entities::Store < Grape::Entity
   expose(:geocoding_result, documentation: { type: JSON })
   expose(:geocoded_at, documentation: { type: DateTime})
   expose(:geocoder_version, documentation: {type: String})
+  expose(:store_reloads, using: V01::Entities::StoreReload, documentation: { type: V01::Entities::StoreReload, is_array: true }, if: ->(store, _options) { store.customer.enable_store_stops })
 end

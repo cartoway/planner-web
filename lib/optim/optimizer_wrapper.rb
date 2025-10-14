@@ -47,11 +47,12 @@ class OptimizerWrapper
     vrp_vehicles, v_points = build_vehicles(planning, routes, **options)
     all_skills = planning.all_skills.map(&:label)
 
-    stops = routes.flat_map(&:stops)
+    stops = routes.flat_map(&:stops).reject{ |s| s.is_a?(StopStore) }
     stops += Stop.where(id: options[:moving_stop_ids])
     stops.uniq!
 
     vrp_services, s_points = build_services(planning, routes, stops, **options.merge(use_skills: all_skills.any?, problem_skills: all_skills))
+    vrp_reload_depots = build_reload_depots(planning.customer.store_reloads)
     vrp_rests = build_rests(stops, **options)
     relations = collect_relations(planning, routes, stops, **options)
 
@@ -65,6 +66,7 @@ class OptimizerWrapper
       name: options[:name],
       points: (v_points + s_points).uniq,
       relations: relations,
+      reload_depots: vrp_reload_depots,
       rests: vrp_rests,
       routes: vrp_routes,
       services: vrp_services,
@@ -93,19 +95,33 @@ class OptimizerWrapper
         result['solutions'][0]['unassigned']
         .select{ |activity| activity['service_id'] }
         .map{ |activity|
-          activity['service_id'][1..-1].to_i
+          {
+            type: 'service',
+            id: activity['service_id'][1..-1].to_i
+          }
         }
     end
 
     result['solutions'][0]['routes'].each{ |s_route|
       optimum[s_route['vehicle_id'][1..-1].to_i] = s_route['activities'].map{ |activity|
-        if activity.key?('service_id')
-          activity['service_id'][1..-1].to_i
-        elsif activity.key?('rest_id')
-          activity['rest_id'][1..-1].to_i
+        case activity['type']
+        when 'service'
+          {
+            type: 'service',
+            id: activity['service_id'][1..-1].to_i
+          }
+        when 'reload_depot'
+          {
+            type: 'reload_depot',
+            id: activity['reload_depot_id'][2..-1].to_i
+          }
+        when 'rest'
+          {
+            type: 'rest',
+            id: activity['rest_id'][1..-1].to_i
+          }
         end
       }.compact
-
     }
     optimum
   end
@@ -220,6 +236,22 @@ class OptimizerWrapper
         lon: stop.position.lng
       }
     }
+  end
+
+  def build_reload_depots(store_reloads)
+    store_reloads.map{ |store_reload|
+      next if !store_reload.position?
+
+      {
+        id: "sr#{store_reload.id}",
+        duration: store_reload.default_duration,
+        timewindow: {
+          start: store_reload.time_window_start.try(:to_f),
+          end: store_reload.time_window_end.try(:to_f)
+        },
+        point_id: "d#{store_reload.position.id}"
+      }
+    }.compact
   end
 
   # A StopRest with a position is send as a service
@@ -369,10 +401,12 @@ class OptimizerWrapper
         }.delete_if{ |_k, v| v.nil? },
         duration: route.vehicle_usage.default_work_time(true),
         distance: route.vehicle_usage.default_max_distance,
+        maximum_reloads: route.vehicle_usage.default_max_reload,
         maximum_ride_distance: route.vehicle_usage.default_max_ride_distance,
         maximum_ride_time: route.vehicle_usage.default_max_ride_duration,
         start_point_id: route.vehicle_usage.default_store_start&.id && "d#{route.vehicle_usage.default_store_start.id}",
         end_point_id: route.vehicle_usage.default_store_stop&.id && "d#{route.vehicle_usage.default_store_stop.id}",
+        reload_depot_ids: route.vehicle_usage.default_store_reload_ids.map{ |id| "sr#{id}" },
         cost_fixed: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_fixed || options[:cost_fixed] || 0,
         cost_distance_multiplier: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_distance || 0,
         cost_time_multiplier: planning.customer.enable_vehicle_costs  && route.vehicle_usage.default_cost_time || 1,

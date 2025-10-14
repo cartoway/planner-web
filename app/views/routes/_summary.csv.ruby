@@ -17,6 +17,7 @@ row = {
   out_of_window: route.out_of_window ? 'x' : '',
   out_of_max_ride_distance: route.out_of_max_ride_distance ? 'x' : '',
   out_of_max_ride_duration: route.out_of_max_ride_duration ? 'x' : '',
+  out_of_max_reload: route.out_of_max_reload ? 'x' : '',
   cost_distance: route.cost_distance,
   cost_fixed: route.cost_fixed,
   cost_time: route.cost_time,

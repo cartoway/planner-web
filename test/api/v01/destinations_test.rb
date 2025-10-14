@@ -253,7 +253,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                 state: 'Store State',
                 lat: 43.5710885456786,
                 lng: 3.89636993408203,
-                stop_type: 'store'
+                stop_type: 'store',
+                visits: [{
+                  duration: '00:10:00'
+                }]
               }]
             }.to_json, CONTENT_TYPE: 'application/json'
             assert last_response.ok?, last_response.body
@@ -265,7 +268,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             stops = planning.routes.find{ |r| r.ref == 'route_one' }.stops
             stop = stops.first
             assert_equal 'StopStore', stop.type
-            assert_equal 'store_ref', stop.store.ref
+            assert_equal 'store_ref', stop.store_reload.store.ref
           end
         end
       end
@@ -1088,7 +1091,9 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     orig_locale = I18n.locale
     I18n.locale = :en
     # Get existing store from fixtures
-    existing_store = stores(:store_one)
+    existing_store_reload = store_reloads(:store_reload_one)
+    existing_store_reload.update(ref: 'store_reload_ref')
+    existing_store = existing_store_reload.store
 
     assert_difference('Store.count', 0) do
       assert_difference('Stop.count', 1) do
@@ -1100,7 +1105,10 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             route: 'route_one',
             vehicle: '001',
             ref: existing_store.ref,
-            stop_type: 'store'
+            stop_type: 'store',
+            visits: [{
+              ref: existing_store_reload.ref
+            }]
           }]
         }.to_json, CONTENT_TYPE: 'application/json'
 
@@ -1110,7 +1118,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
         stops = planning.routes.find{ |r| r.ref == 'route_one' }.stops
         stop = stops.first
         assert_equal 'StopStore', stop.type
-        assert_equal existing_store.ref, stop.store.ref
+        assert_equal existing_store_reload.ref, stop.store_reload.ref
       end
     end
   ensure
@@ -1195,12 +1203,15 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                   'stop_custom_field' => 'store_custom_value',
                   'stop_priority' => 10,
                   'stop_urgent' => false
-                }
+                },
+                visits: [{
+                  duration: '00:10:00'
+                }]
               }]
             }.to_json, CONTENT_TYPE: 'application/json'
             assert last_response.ok?, last_response.body
 
-            stop = Stop.joins(:store).where(stores: { ref: 'store_ref_custom' }).order(created_at: :desc).first
+            stop = Stop.joins(store_reload: :store).where(stores: { ref: 'store_ref_custom' }).order(created_at: :desc).first
             assert_not_nil stop, 'Stop should be created'
             assert_equal 'store_custom_value', stop.custom_attributes['stop_custom_field']
             assert_equal 10, stop.custom_attributes['stop_priority']

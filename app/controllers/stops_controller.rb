@@ -20,21 +20,20 @@ class StopsController < ApplicationController
   include PlanningsHelper
 
   before_action :authenticate_user!, except: [:edit, :update]
-  before_action :set_route_context, only: [:create_store, :destroy]
+  before_action :set_route_context, only: [:create_store_reload, :destroy]
   before_action :authenticate_driver!, only: [:edit, :update]
   before_action :set_stop, only: [:show, :edit, :update] # Before load_and_authorize_resource
 
   load_and_authorize_resource # Load resource except for show action
 
-  def create_store
-    if @route && params[:store_id]
-      @store = current_user.customer.stores.find(params[:store_id])
-      @route.add_store(@store) && @route.save!
+  def create_store_reload
+    if @route && params[:store_reload_id]
+      @store_reload = current_user.customer.store_reloads.find(params[:store_reload_id])
       respond_to do |format|
-        if load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
+        if @route.add_store_reload(@store_reload) && @route.save && load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
           format.json { render json: { status: :ok } }
         else
-          errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
+          errors = @route.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @route.errors.full_messages
           format.json { render json: { status: :unprocessable_entity, error: errors }, status: :unprocessable_entity }
         end
       end
@@ -43,20 +42,22 @@ class StopsController < ApplicationController
 
   def destroy
     if @route && params[:stop_id]
-      stop = @route.stops.find(params[:stop_id])
+      raise Exceptions::JobInProgressError if Job.on_planning(current_user.customer.job_optimizer, @route.planning_id)
 
+      stop = @route.stops.find(params[:stop_id])
       respond_to do |format|
         if stop.is_a?(StopStore)
-          @route.remove_store(stop) && @route.save!
+          @route.remove_store_reload(stop) && @route.save!
         else
           format.js {
             head :no_content
           }
+          return
         end
         if load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
-          puts Customer.all.first.id
           planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
-          format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
+          route_data = planning_data[:routes].select{ |route| route[:route_id] == @route.id }
+          format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: route_data, summary: planning_summary(@planning) } }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
           flash[:error] = errors
@@ -64,6 +65,9 @@ class StopsController < ApplicationController
         end
       end
     end
+  rescue Exceptions::JobInProgressError
+    status 409
+    present @planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
   end
 
   def show
@@ -130,13 +134,17 @@ class StopsController < ApplicationController
       else
         PlanningsController.manage
       end
-    @available_stores = current_user.customer.stores.map { |store| { id: store.id, name: store.name, ref: store.ref, icon: store.icon, color: store.color } }
+    @route = current_user.customer.plannings.find(params[:planning_id])
+                         .routes.includes_destinations_and_stores.where(id: params[:route_id]).first!
+    @available_store_reloads =
+      if @route.vehicle_usage?
+        { @route.id => @route.vehicle_usage.default_store_reloads.map { |store_reload| { id: store_reload.id, name: store_reload.name, ref: store_reload.ref, icon: store_reload.icon, color: store_reload.color } } }
+      else
+        {}
+      end
     @callback_button = true
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
-
-    @route = current_user.customer.plannings.find(params[:planning_id])
-                         .routes.includes_destinations_and_stores.find(params[:route_id])
   end
 
   def load_planning_with_scope

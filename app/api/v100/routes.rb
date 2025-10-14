@@ -91,14 +91,14 @@ class V100::Routes < Grape::API
 
         desc 'Add intermediate store to route. Append in order at the end of the route',
           detail: 'Set a new StopStore to the route. index parameter allows to insert the stop at the provided index in the route.',
-          nickname: 'addStopStore',
+          nickname: 'addStopStoreReload',
           success: V100::Status.success(:code_204),
           failure: V100::Status.failures
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
           requires :index, type: Integer
         end
-        post ':route_id/stores/:id' do
+        post ':route_id/store_reloads/:id' do
           error!(V100::Status.code_response(:code_401, after: I18n.t('errors.routes.enable_store_stops')), 401) if !current_customer.enable_store_stops
 
           Route.includes_destinations_and_stores.scoping do
@@ -106,12 +106,15 @@ class V100::Routes < Grape::API
             raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
             route = planning.routes.includes_destinations_and_stores.where(ParseIdsRefs.read(params[:route_id])).first!
-            store = current_customer.stores.where(ParseIdsRefs.read(params[:id])).first!
+            store_reload = current_customer.store_reloads.where(ParseIdsRefs.read(params[:id])).first!
 
             Planning.transaction do
-              route.add_store(store, params[:index])
-              route.compute_saved
-              current_customer.save!
+              if route.add_store_reload(store_reload, params[:index])
+                route.compute_saved
+                current_customer.save!
+              else
+                error! V100::Status.code_response(:code_400, after: route.errors.full_messages.join(', ')), 400
+              end
             end
           rescue Exceptions::JobInProgressError
             status 409

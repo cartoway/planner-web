@@ -28,13 +28,15 @@ class Store < Location
   has_many :vehicle_usage_starts, class_name: 'VehicleUsage', inverse_of: :store_start, foreign_key: 'store_start_id', dependent: :nullify
   has_many :vehicle_usage_stops, class_name: 'VehicleUsage', inverse_of: :store_stop, foreign_key: 'store_stop_id', dependent: :nullify
   has_many :vehicle_usage_rests, class_name: 'VehicleUsage', inverse_of: :store_rest, foreign_key: 'store_rest_id', dependent: :nullify
-  has_many :stop_stores, inverse_of: :store, dependent: :destroy
+  has_many :store_reloads, inverse_of: :store, dependent: :delete_all
+  accepts_nested_attributes_for :store_reloads, allow_destroy: true
 
   auto_strip_attributes :name, :street, :postalcode, :city
   validates_inclusion_of :icon, in: FontAwesome::ICONS_TABLE, allow_nil: true, message: ->(*_) { I18n.t('activerecord.errors.models.store.icon_unknown') }
   validates :icon_size, inclusion: { in: Store::ICON_SIZE, allow_nil: true, message: ->(*_) { I18n.t('activerecord.errors.models.store.icon_size_invalid') } }
 
   before_destroy :destroy_vehicle_store
+  before_save :save_store_reloads
 
   include RefSanitizer
 
@@ -87,31 +89,23 @@ class Store < Location
       } + vehicle_usage_set_rests.collect{ |vehicle_usage_set_rest|
         vehicle_usage_set_rest.vehicle_usages.select{ |vehicle_usage| !vehicle_usage.store_rest }.collect(&:routes)
       }
-
-      # Temporary disable lock version because several object_ids from the same route are loaded in main customer graph (in case of import)
-      # See Visit#outdated for more details
-      begin
-        ActiveRecord::Base.lock_optimistically = false
-        stop_stores.each { |stop|
-          if !stop.route.outdated
-            stop.route.outdated = true
-            stop.route.save!
-          end
-        }
-      ensure
-        ActiveRecord::Base.lock_optimistically = true
-      end
-
       routes_usage = (vehicle_usage_starts + vehicle_usage_stops + vehicle_usage_rests).collect(&:routes)
-
       (routes_usage_set + routes_usage).flatten.uniq.each{ |route|
         route.outdated = true
         route.save!
       }
+
+      store_reloads.each(&:outdated)
     end
   end
 
   private
+
+  def save_store_reloads
+    return if self.new_record?
+
+    store_reloads.each(&:save!)
+  end
 
   def destroy_vehicle_store
     default = customer.stores.find{ |store| store != self && !store.destroyed? }

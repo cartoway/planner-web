@@ -177,4 +177,8 @@ class StopRest < Stop
   def to_s
     "#{active ? 'x' : '_'} [Rest]"
   end
+
+  def optim_type
+    'rest'
+  end
 end

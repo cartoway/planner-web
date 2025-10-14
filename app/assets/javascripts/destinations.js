@@ -368,21 +368,29 @@ const destinations_form = function(params, api) {
     initVisits($('#visits').find('fieldset:last-child'));
   });
 
+  $('#store_reload-new').click(function() {
+    var $fieldsets = $('#store_reloads').find('fieldset');
+    var fieldsetStoreReload = $('#store_reload-fieldset-template');
+    $('#store_reloads').append(fieldsetStoreReload.html()
+
+      .replace('#0', '#' + ($fieldsets.length + 1))
+      .replace(/store_reload0/g, 'store_reload' + ($fieldsets.length + 1))
+      .replace(/store([\[_])store_reloads([^0]+)0([\]_])/g, "store$1store_reloads$2" + ($fieldsets.length + 1) + "$3")
+    );
+    initVisits($('#store_reloads').find('fieldset:last-child'));
+  });
+
   $("label[for$='destroy']").hide();
 
   const initVisits = function(parent) {
-    $("input:checkbox[id$='_destroy']", parent).change(function() {
-      var fieldset = $(this).closest('fieldset');
-      $("label[for$='destroy']", fieldset).toggle(200);
-      $("div.row.form-group", fieldset).toggle(200);
-    });
     $('.flag-destroy', parent).click(function() {
       var fieldset = $(this).closest('fieldset');
       $("input:checkbox", fieldset).prop("checked", function(i, val) {
         return !val;
       });
-      $("label[for$='destroy']", fieldset).toggle(200);
-      $("div.row.form-group", fieldset).toggle(200);
+      $('.checkbox-destroy', fieldset).toggleClass('d-none', 200);
+      // $("label[for$='destroy']", fieldset).toggle(200);
+      // $("div.row.form-group", fieldset).toggle(200);
     });
 
     $('[name$=\\[duration\\]]', parent).timeEntry({
@@ -393,7 +401,15 @@ const destinations_form = function(params, api) {
       spinnerImage: ''
     });
 
+    // Visits
     $('[name$=\\[time_window_start_1\\]], [name$=\\[time_window_end_1\\]], [name$=\\[time_window_start_2\\]], [name$=\\[time_window_end_2\\]]', parent).timeEntry({
+      show24Hours: true,
+      spinnerImage: '',
+      defaultTime: '00:00'
+    });
+
+    // Store reloads
+    $('[name$=\\[time_window_start\\]], [name$=\\[time_window_end\\]]', parent).timeEntry({
       show24Hours: true,
       spinnerImage: '',
       defaultTime: '00:00'
@@ -442,18 +458,18 @@ const destinations_form = function(params, api) {
   initVisits($('form[data-destination_id]'));
 
   if (window.location.hash) {
-    $('#visits').find('.collapse.in').each(function() {
+    $('#visits, #store_reloads').find('.collapse.in').each(function() {
       var $this = $(this);
       if (window.location.hash != '#' + $this.attr('id'))
         $this.removeClass('in');
     });
-    $("#visits").find(".accordion-toggle[href!='" + window.location.hash + "']").addClass('collapsed');
+    $("#visits, #store_reloads").find(".accordion-toggle[href!='" + window.location.hash + "']").addClass('collapsed');
   }
 
   var op = 'show';
-  $('#visits-expand').click(function() {
+  $('#visits-expand, #store_reloads-expand').click(function() {
     op = (op == 'show') ? 'hide' : 'show';
-    $('#visits .collapse').collapse(op);
+    $('#visits .collapse, #store_reloads .collapse').collapse(op);
   });
 
   $('#from_visit_tags, #to_visit_tags').select2({

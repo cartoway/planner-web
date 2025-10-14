@@ -132,7 +132,7 @@ Rails.application.routes.draw do
     patch ':route_id/:stop_id/move/:index' => 'plannings#move'
     patch ':route_id/move/' => 'plannings#move'
     delete ':route_id/:stop_id/destroy' => 'stops#destroy'
-    post ':route_id/:store_id/create_store' => 'stops#create_store'
+    post ':route_id/:store_reload_id/create_store_reload' => 'stops#create_store_reload'
     get 'data_header'
     patch 'filter_routes'
     get 'refresh'
@@ -176,7 +176,11 @@ Rails.application.routes.draw do
 
   get 'routes/:route_id/stops/by_index/:index' => 'stops#show'
 
-  resources :stops, only: [:show, :edit, :update, :destroy, :create_store]
+  resources :stops, only: [:show, :edit, :update, :destroy] do
+    member do
+      post :create_store_reload
+    end
+  end
 
   get 'routes_by_vehicles/:vehicle_id' => 'routes_by_vehicles#show'
   get 'plannings_by_destinations/:destination_id' => 'plannings_by_destinations#show'

@@ -61,8 +61,8 @@ class Planning < ApplicationRecord
     preload(
       routes: [
         vehicle_usage: [
-          :store_start, :store_stop, :store_rest,
-          {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
+          :store_start, :store_stop, :store_rest, :store_reloads,
+          {vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads]},
           {vehicle: [:router, {customer: :router}]}
         ]
       ],
@@ -193,7 +193,7 @@ class Planning < ApplicationRecord
             routes.index{ |route| !route.vehicle_usage? }
           end
         routes[i].ref = ref&.to_s
-        routes[i].remove_stores
+        routes[i].remove_store_reloads
         r[:visits].each.with_index{ |(obj, stop_attributes), index|
           if obj.is_a?(Visit)
             if obj.id && stop_visit_ids[obj.id]
@@ -201,8 +201,8 @@ class Planning < ApplicationRecord
             else
               routes[i].add(obj, index + 1, stop_attributes)
             end
-          elsif obj.is_a?(Store)
-            routes[i].add_store(obj, index + 1, stop_attributes)
+          elsif obj.is_a?(StoreReload)
+            routes[i].add_store_reload(obj, index + 1, stop_attributes)
           end
         }
       }
@@ -689,8 +689,20 @@ class Planning < ApplicationRecord
     Route.no_touching do
       Route.transaction do
         updated_route_ids = []
-        stops_count = self.routes.collect{ |r| r.stops.size }.reduce(&:+)
-        flat_stop_ids = optimum.values.flatten.compact
+        # Count and collect stops except store reloads
+        stops_count = self.routes.collect{ |r| r.stops.reject{ |s| s.is_a?(StopStore) }.size }.reduce(&:+)
+        existing_stops_hash = self.routes.flat_map{ |r| r.stops.reject{ |s| s.is_a?(StopStore) }.map{ |stop| [stop.id, stop] } }.to_h
+        flat_stop_ids = optimum.values.flatten.reject{ |activity| activity[:type] == 'reload_depot' }.map{ |activity| activity[:id] }.flatten.compact
+
+        store_reloads_by_routes = Hash[self.routes.map{ |route| [route.id, Hash.new{ |k, v| k[v] = []}]}]
+        self.routes.each{ |route|
+          route.stops.select{ |s| s.is_a?(StopStore) }.each{ |stop|
+            store_reloads_by_routes[route.id][stop.store_reload_id] << stop
+          }
+        }
+
+        store_reloads = self.customer.store_reloads
+        store_reloads_hash = Hash[store_reloads.map{ |sr| [sr.id, sr] }]
         out_stop_ids = optimum[nil] || optimum[self.routes.find{ |route| !route.vehicle_usage? }&.id] || []
 
         self.routes.each{ |route|
@@ -699,7 +711,22 @@ class Planning < ApplicationRecord
           stops_ = route.stops_segregate(**options) # Split stops according to stop active statement
 
           # Collect the stops assigned to the route
-          ordered_stops = self.routes.flat_map{ |r| r.stops.select{ |s| optimum[route.id].include? s.id }}.sort_by { |s| optimum[route.id].index s.id }
+          optimum_route = optimum[route.id]
+          new_route_stops =
+            optimum_route.map{ |activity|
+              case activity[:type]
+              when 'service', 'rest'
+                existing_stops_hash[activity[:id]]
+              when 'reload_depot'
+                store_reloads_by_routes[route.id][activity[:id]].pop || StopStore.new(store_reload: store_reloads_hash[activity[:id]])
+              end
+            }
+          store_reloads_by_routes[route.id].each_value.each{ |stops|
+            stops.each{ |stop|
+              route.remove_store_reload(stop) if stop.is_a?(StopStore)
+            }
+          }
+
           # Retrieve inactive stops provided by optimization
           deactivated_stops =
             if !options[:global] && route.vehicle_usage?
@@ -710,7 +737,7 @@ class Planning < ApplicationRecord
 
           # Set route, active, index and reset route data
           i = 0
-          ordered_stops.each{ |stop|
+          new_route_stops.compact.each{ |stop|
             if stop.is_a?(StopRest) && !route.vehicle_usage?
               flat_stop_ids.delete stop.id
             else
@@ -759,7 +786,7 @@ class Planning < ApplicationRecord
         updated_route_ids.uniq!
         outdate_drained_routes(updated_route_ids - self.routes.map(&:id)) if updated_route_ids.any?
         self.reload # Refresh route.stops collection if stops have been moved
-        raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.size }.reduce(&:+) == stops_count
+        raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.reject{ |s| s.is_a?(StopStore) }.size }.reduce(&:+) == stops_count
       end
     end
   end

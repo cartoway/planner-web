@@ -200,7 +200,19 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Planner::Application.config.store_color_default}." }
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{Planner::Application.config.store_icon_default}." }
     optional :icon_size, type: String, values: ::Store::ICON_SIZE, documentation: { desc: "Icon size. Default: #{Planner::Application.config.store_icon_size_default}." }
+    optional :store_reloads, type: Array, documentation: { param_type: 'body' } do
+      use :request_store_reload
+    end
   end
+
+  params :request_store_reload do |options|
+    optional :id, type: Integer
+    optional :ref, type: String, documentation: { desc: 'unique reference'}
+    optional :duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :time_window_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+  end
+
   params :request_user do |options|
     if options[:create]
       requires :email, type: String
@@ -254,13 +266,17 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :service_time_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
-    optional :store_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :work_time, type: Integer, documentation: { type: 'string', desc: 'Work time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :max_distance, type: Integer, documentation: { type: 'integer', desc: 'Maximum achievable distance in meters' }
+    optional :max_reload, type: Integer, documentation: { type: 'integer', desc: 'Maximum number of reloads per route' }
     optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', param_type: 'form', example: '1,2,ref:vip' }
+
+    optional :store_start_id, type: Integer, documentation: { type: Integer }
+    optional :store_stop_id, type: Integer, documentation: { type: Integer }
+    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
 
     # Deprecated fields
     optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -275,7 +291,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :store_start_id, type: Integer, documentation: { type: Integer }
     optional :store_stop_id, type: Integer, documentation: { type: Integer }
-    optional :store_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
     optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :service_time_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :work_time, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -284,6 +300,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :store_rest_id, type: Integer, documentation: { type: Integer }
     optional :max_distance, type: Integer, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' }
+    optional :max_reload, type: Integer, documentation: { type: Integer, desc: 'Maximum number of reloads per route' }
     optional :max_ride_distance, type: Integer, documentation: { type: Integer, desc: 'Maximum riding distance between two stops within a route in meters' }
     optional :max_ride_duration, type: Integer, documentation: { type: 'string', desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     # Deprecated fields

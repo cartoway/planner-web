@@ -26,7 +26,7 @@ class V01::VehicleUsageSets < Grape::API
       p = p[:vehicle_usage_set] if p.key?(:vehicle_usage_set)
       p[:time_window_start] = p.delete(:open) if p[:open]
       p[:time_window_end] = p.delete(:close) if p[:close]
-      p = p.permit(:name, :cost_distance, :cost_fixed, :cost_time, :time_window_start, :time_window_end, :store_start_id, :store_stop_id, :store_duration, :service_time_start, :service_time_end, :work_time, :rest_start, :rest_stop, :rest_duration, :store_rest_id, :max_distance, :max_ride_distance, :max_ride_duration)
+      p = p.permit(:name, :cost_distance, :cost_fixed, :cost_time, :max_reload, :time_window_start, :time_window_end, :store_start_id, :store_stop_id, :service_time_start, :service_time_end, :work_time, :rest_start, :rest_stop, :rest_duration, :store_rest_id, :max_distance, :max_ride_distance, :max_ride_duration, store_reload_ids: [])
       p
     end
   end

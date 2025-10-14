@@ -44,14 +44,15 @@ class PlanningTest < ActiveSupport::TestCase
           r.id,
           (
             if options[:global] && i == 0
-              unassigned_stop_visits.map(&:id) + all_stop_visits.map(&:id)
+              unassigned_stop_visits.map{ |s| { id: s.id, type: s.optim_type }} +
+                all_stop_visits.map{ |s| { id: s.id, type: s.optim_type }}
             elsif !options[:global]
-              (i == 0 ? unassigned_stop_visits.select{ |s| s.is_a?(StopVisit) }.map(&:id) : []) +
-                r.stops.select{ |s| s.is_a?(StopVisit) }.map(&:id)
+              (i == 0 ? unassigned_stop_visits.select{ |s| s.is_a?(StopVisit) }.map{ |s| { id: s.id, type: s.optim_type }} : []) +
+                r.stops.select{ |s| s.is_a?(StopVisit) }.map{ |s| { id: s.id, type: s.optim_type }}
             else
               []
             end +
-            r.stops.select{ |s| s.is_a?(StopRest) }.map(&:id)
+            r.stops.select{ |s| s.is_a?(StopRest) }.map{ |s| { id: s.id, type: s.optim_type }}
           ).reverse
         ]
       }
@@ -654,13 +655,19 @@ class PlanningTest < ActiveSupport::TestCase
   test 'should set stops for one route' do
     route = routes(:route_one_one)
     route_three = routes(:route_three_one)
-    original_order_one = route.stops.map(&:id)
-    original_order_three = route_three.stops.map(&:id)
+    original_order_one = route.stops.map{ |s| { id: s.id, type: s.optim_type }}
+    original_order_three = route_three.stops.map{ |s| { id: s.id, type: s.optim_type }}
     route.planning.set_stops([[route.id, original_order_one + original_order_three.reverse]].to_h)
-    assert_equal original_order_one + original_order_three.reverse, route.planning.routes.find{ |r| r.id == route.id }.stops.map(&:id)
+    assert_equal(
+      original_order_one + original_order_three.reverse,
+      route.planning.routes.find{ |r| r.id == route.id }.stops.map{ |s| { id: s.id, type: s.optim_type }}
+    )
     route.planning.save!
     route.reload
-    assert_equal original_order_one + original_order_three.reverse, route.stops.map(&:id)
+    assert_equal(
+      original_order_one + original_order_three.reverse,
+      route.stops.map{ |s| { id: s.id, type: s.optim_type }}
+    )
   end
 
   test 'should set stops for planning' do
@@ -669,10 +676,10 @@ class PlanningTest < ActiveSupport::TestCase
       optimizer_global(*a)
     }
     planning.set_stops(optim)
-    assert_equal optim, planning.routes.map{ |r| [r.id, r.stops.map(&:id)] }.to_h
+    assert_equal optim, planning.routes.map{ |r| [r.id, r.stops.map{ |s| { id: s.id, type: s.optim_type }}] }.to_h
     planning.save!
     planning.reload
-    assert_equal optim, planning.routes.map{ |r| [r.id, r.stops.map(&:id)] }.to_h
+    assert_equal optim, planning.routes.map{ |r| [r.id, r.stops.map{ |s| { id: s.id, type: s.optim_type }}] }.to_h
   end
 
   test 'should destroy optimizer_job on planning destroy' do
@@ -690,7 +697,7 @@ class PlanningTest < ActiveSupport::TestCase
 
   test 'should set stops with a geoloc rest in unassigned' do
     planning = plannings(:planning_one)
-    unassigned = planning.routes.flat_map{ |r| r.stops.map(&:id) }
+    unassigned = planning.routes.flat_map{ |r| r.stops.map{ |s| { id: s.id, type: s.optim_type }} }
     planning.set_stops((planning.routes.map{ |r| [r.id, r.vehicle_usage? ? [] : unassigned] }).to_h)
     assert planning.routes.flat_map{ |r| r.stops.select{ |s| s.is_a? StopRest }.map{ |s| s.route.vehicle_usage.id } }.size == planning.vehicle_usage_set.vehicle_usages.map(&:default_rest_duration?).size
     planning.save!

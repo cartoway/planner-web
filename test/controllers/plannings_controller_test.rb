@@ -28,7 +28,9 @@ class PlanningsControllerTest < ActionController::TestCase
           first_route_rests = first_route.stops.select{ |stop| stop.is_a?(StopRest) }.compact
           (
             routes.select{ |r| !r.vehicle_usage? }.map{ |r| [r.id, []] } +
-            routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i| [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map(&:id)] }.uniq
+            routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i|
+              [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map{ |s| { id: s.id, type: s.optim_type }}]
+            }.uniq
           ).to_h
         }) do
           yield
@@ -279,8 +281,8 @@ class PlanningsControllerTest < ActionController::TestCase
 
     get :show, params: { id: @planning, format: :csv }
     assert_response :success
-    assert_equal 'r1,planning1,10/10/2014,,,,visite,,,,,,"","","","","","","","","","",,,,a,unaffected_one,MyString,MyString,MyString,MyString,,1.5,1.5,MyString,MyString,tag1,a,,00:01:00,10:00,11:00,,,,,neutre,tag1,', response.body.split("\n")[1]
-    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,00:00,1.1,,"","","","","","","","","","",,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,"",b,,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2', response.body.split("\n").select{ |l| l.include?('001') }[1]
+    assert_equal 'r1,planning1,10/10/2014,,,,visite,,,,,,"","","","","","","","","","","",,,,a,unaffected_one,MyString,MyString,MyString,MyString,,1.5,1.5,MyString,MyString,tag1,a,,00:01:00,10:00,11:00,,,,,neutre,tag1,', response.body.split("\n")[1]
+    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,00:00,1.1,,"","","","","","","","","","","",,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,"",b,,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2', response.body.split("\n").select{ |l| l.include?('001') }[1]
   end
 
   test "it shouldn't have special char in ref routes when using vehicle name" do
