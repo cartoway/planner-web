@@ -20,6 +20,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     out_of_max_distance: nil,
     out_of_max_ride_distance: nil,
     out_of_max_ride_duration: nil,
+    out_of_max_reload: nil,
     out_of_relation: nil,
     out_of_skill: nil,
 
@@ -104,6 +105,7 @@ route.stops.each { |stop|
       out_of_max_distance: stop.out_of_max_distance ? 'x' : '',
       out_of_max_ride_distance: stop.out_of_max_ride_distance ? 'x' : '',
       out_of_max_ride_duration: stop.out_of_max_ride_duration ? 'x' : '',
+      out_of_max_reload: stop.out_of_max_reload ? 'x' : '',
       out_of_relation: stop.out_of_relation ? 'x' : '',
       out_of_skill: stop.out_of_skill ? 'x' : '',
       status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),
@@ -182,6 +184,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     out_of_max_distance: route.stop_out_of_max_distance ? 'x' : '',
     out_of_max_ride_distance: '',
     out_of_max_ride_duration: '',
+    out_of_max_reload: '',
     out_of_relation: '',
     out_of_skill: '',
 

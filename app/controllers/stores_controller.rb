@@ -54,7 +54,10 @@ class StoresController < ApplicationController
   end
 
   def create
-    @store = current_user.customer.stores.build(store_params)
+    p = store_params
+    time_with_day_params(params, p, [:time_window_start, :time_window_end])
+
+    @store = current_user.customer.stores.build(p)
 
     respond_to do |format|
       if current_user.customer.save
@@ -69,7 +72,11 @@ class StoresController < ApplicationController
   def update
     respond_to do |format|
       Store.transaction do
-        if @store.update(store_params) && @store.customer.save
+        p = store_params
+        time_with_day_params(params, p, [:time_window_start, :time_window_end])
+        @store.assign_attributes(p)
+
+        if @store.save && @store.customer.save
           format.html { redirect_to link_back || edit_store_path(@store), notice: t('activerecord.successful.messages.updated', model: @store.class.model_name.human) }
         else
           flash.now[:error] = @store.customer.errors.full_messages unless @store.customer.errors.empty?
@@ -133,6 +140,31 @@ class StoresController < ApplicationController
 
   private
 
+  def time_with_day_params(params, local_params, times)
+    return unless local_params[:store_reloads_attributes]
+
+    if local_params[:store_reloads_attributes].is_a?(Array)
+      local_params[:store_reloads_attributes].each_with_index do |_, i|
+        times.each do |time|
+          local_params[:store_reloads_attributes][i][time] = ChronicDuration.parse("#{params[:store][:store_reloads_attributes][i]["#{time}_day".to_sym]} days and #{local_params[:store_reloads_attributes][i][time].tr(':', 'h')}min", keep_zero: true) unless params[:store][:store_reloads_attributes][i]["#{time}_day".to_sym].to_s.empty? || local_params[:store_reloads_attributes][i][time].to_s.empty?
+        end
+      end
+    else
+      local_params[:store_reloads_attributes].each_pair do |k, valu|
+        times.each do |time|
+          next if params[:store][:store_reloads_attributes][k]["#{time}_day".to_sym].to_s.empty? ||
+                  local_params[:store_reloads_attributes][k][time].to_s.empty?
+
+          local_params[:store_reloads_attributes][k][time] =
+            ChronicDuration.parse(
+              "#{params[:store][:store_reloads_attributes][k]["#{time}_day".to_sym]} days and #{local_params[:store_reloads_attributes][k][time].tr(':', 'h')}min",
+              keep_zero: true
+            )
+        end
+      end
+    end
+  end
+
   # Use callbacks to share common setup or constraints between actions.
   def set_store
     @store = current_user.customer.stores.find params[:id] || params[:store_id]
@@ -148,21 +180,32 @@ class StoresController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def store_params
-    params.require(:store).permit(:name,
-                                  :street,
-                                  :postalcode,
-                                  :city,
-                                  :state,
-                                  :country,
-                                  :lat,
-                                  :lng,
-                                  :ref,
-                                  :geocoder_version,
-                                  :geocoded_at,
-                                  :geocoding_accuracy,
-                                  :geocoding_level,
-                                  :color, :icon,
-                                  :icon_size)
+    params.require(:store).permit(
+      :name,
+      :street,
+      :postalcode,
+      :city,
+      :state,
+      :country,
+      :lat,
+      :lng,
+      :ref,
+      :geocoder_version,
+      :geocoded_at,
+      :geocoding_accuracy,
+      :geocoding_level,
+      :color, :icon,
+      :icon_size,
+      store_reloads_attributes: [
+        :id,
+        :ref,
+        :duration,
+        :max_reload,
+        :time_window_start,
+        :time_window_end,
+        :_destroy
+      ]
+    )
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.

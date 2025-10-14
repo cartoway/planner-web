@@ -25,11 +25,11 @@ class PlanningsController < ApplicationController
   before_action :authenticate_user!, except: [:driver_move]
   before_action :authenticate_driver!, only: [:driver_move]
 
-  before_action :set_available_stores, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar, :update_stop]
   UPDATE_ACTIONS = [:update, :move, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal]
   before_action :set_driver_planning, only: [:driver_move]
+  before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar, :update_stop]
   before_action :set_device_definitions, only: [:edit, :update]
   before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
@@ -627,10 +627,13 @@ class PlanningsController < ApplicationController
     end
   end
 
-  def set_available_stores
-    @available_stores = current_user.customer.stores.pluck(:id, :name, :ref, :icon, :color).map do |id, name, ref, icon, color|
-      { id: id, name: name, ref: ref, icon: icon, color: color }
-    end
+  def set_available_store_reloads
+    planning = current_user.customer.plannings.where(id: @planning.id).preload_routes_without_stops.first!
+    @available_store_reloads = Hash[planning.routes.map { |route|
+      next unless route.vehicle_usage?
+
+      [route.id, route.vehicle_usage.default_store_reloads.map { |store_reload| { id: store_reload.id, name: store_reload.name, ref: store_reload.ref, icon: store_reload.icon, color: store_reload.color } }]
+    }.compact]
   end
 
   def set_device_definitions
@@ -750,6 +753,7 @@ class PlanningsController < ApplicationController
       :out_of_max_distance,
       :out_of_max_ride_distance,
       :out_of_max_ride_duration,
+      :out_of_max_reload,
       :out_of_relation,
       :out_of_skill,
       :status,

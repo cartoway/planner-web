@@ -2,13 +2,13 @@ json.stops stops do |stop|
   next unless stop.is_a?(StopVisit)
 
   json.visits true
-  (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_relation || stop.no_path || stop.unmanageable_capacity
+  (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_max_reload || stop.out_of_relation || stop.no_path || stop.unmanageable_capacity
   json.stop_id stop.id
   json.route_id stop.route.id
   json.color_fake stop.route.color
   json.color stop.route.color || stop.route.vehicle_usage&.vehicle&.color
   json.stop_index stop.index
-  json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_relation, :no_path, :unmanageable_capacity
+  json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_max_reload, :out_of_relation, :no_path, :unmanageable_capacity
   json.ref stop.ref if stop.route.planning.customer.enable_references
   json.time_window_start_end_1 !!stop.time_window_start_1 || !!stop.time_window_end_1
   (json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1

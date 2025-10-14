@@ -59,6 +59,12 @@ fr:
       import_tomtom:
         replace: Remplacer
   activerecord:
+    errors:
+      models:
+        store_reload:
+          attributes:
+            time_window_end:
+              after: "doit être après l'heure d'ouverture"
     models:
       custom_attribute: Propriété additionnelle
       custom_attributes:
@@ -398,16 +404,18 @@ fr:
         customised_color: Couleur personnalisée
         lat: Latitude
         lng: Longitude
-        open: Horaire début
-        close: Horaire fin
-        ref: Référence
-        store_start: Site début
+        store_start: Site départ
         store_end: Site fin
         color: Couleur
         icon: Icône
         icon_size: Taille d'icône
         created_at: Création
         updated_at: Mise à jour
+      store_reload:
+        ref: Référence
+        time_window_start: Début créneau
+        time_window_end: Fin créneau
+        max_reload: Rechargement maximum
       stores:
         name: Nom
         address: Adresse
@@ -485,7 +493,8 @@ fr:
         store_start_id: Site départ
         store_stop: Site arrivé
         store_stop_id: Site arrivé
-        store_duration: Durée aux dépôts intermédiaires
+        store_reload_ids: Rechargements intermédiaires
+        max_reload: Rechargement maximum
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
@@ -507,7 +516,8 @@ fr:
         store_start_id: Site départ
         store_stop: Site arrivé
         store_stop_id: Site arrivé
-        store_duration: Durée aux dépôts intermédiaires
+        store_reload_ids: Rechargements intermédiaires
+        max_reload: Rechargement maximum
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
@@ -530,7 +540,8 @@ fr:
         store_start_id: Site départ
         store_stop: Site arrivée
         store_stop_id: Site arrivée
-        store_duration: Durée aux dépôts intermédiaires
+        store_reload_ids: Rechargements intermédiaires
+        max_reload: Rechargement maximum
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
@@ -692,12 +703,18 @@ fr:
           at_least_one: Au moins un site est requis
           icon_unknown: n'est pas une icône font-awesome autorisée
           icon_size_invalid: n'est pas une taille valide
+        store_reload:
+          attributes:
+            time_window_end:
+              after: doit être après le début du créneau
         route:
           attributes:
             stops:
               bad_index: 'Mauvais index %{index} sur la tournée %{route}'
               store:
                 must_be_associated_to_vehicle_usage: doit être associé à une tournée avec un véhicule
+              store_reload:
+                max_reached: Le nombre de rechargements dépasse le nombre maximal autorisé pour cette tournée
         planning:
           attributes:
             date:
@@ -724,6 +741,8 @@ fr:
           pickup_delivery_uniqueness: >-
             Une visite ne peut appartenir qu'à une seule relation de type
             pickup/delivery
+        stop_store:
+          max_reload_exceeded: Le nombre de rechargements dépasse le nombre maximal autorisé pour cette tournée
   errors:
     database:
       default: Erreur avec la base de données.
@@ -2030,6 +2049,7 @@ fr:
       active_help: Prendre en compte ou non un client dans la tournée
       edit_store_help: Modifier les informations du site
       edit_visit_help: Modifier les informations du client
+      edit_store_reload_help: Modifier les informations du rechargement
       marker_help: Visualiser sur la carte
       create_store_help: Ajouter un site intermédiaire
       select_store: Sélectionner un site
@@ -2038,6 +2058,8 @@ fr:
         error:
           missing_context: Contexte manquant pour ajouter le site
           general: Erreur lors de l'ajout du site
+          max_reload_reached: "Limite de rechargement maximale atteinte (%{max_reload} rechargements)"
+        max_reload_reached: "Max rechargement : %{max_reload}"
       destroy_store_help: Supprimer le site de la tournée
       confirm_destroy_store: Êtes-vous sûr de vouloir supprimer ce site de la tournée ?
       automatic_insert_help: >-
@@ -2130,6 +2152,8 @@ fr:
         out_of_max_ride_distance_help: Distance trajet maximale dépassée entre arrêts de la tournée
         out_of_max_ride_duration: Durée trajet maximale dépassée
         out_of_max_ride_duration_help: Durée trajet maximale dépassée entre arrêts de la tournée
+        out_of_max_reload: Limite de rechargement maximale atteinte
+        out_of_max_reload_help: Limite de rechargement maximale atteinte pour le site
         out_of_relation: Relation non respectée
         out_of_relation_help: Relation entre visites non respectée
         out_of_skill: Hors compétence
@@ -2217,6 +2241,7 @@ fr:
             assert_no_relations_except_simple_shipments: Relations complexes
             assert_no_rest: Pause
             assert_no_ride_constraint: Durée et distance de trajet maximales
+            assert_no_store_reloads: Rechargements intermédiaires
             assert_no_quantity_pickup_and_delivery: Quantité de collecte et de livraison en simultanée
             assert_services_no_setup_duration: Durée de destination
             assert_vehicles_start_or_end: Distance ou durée maximale de trajet
@@ -2322,9 +2347,7 @@ fr:
       out_of_drive_time: hors amplitude horaire du véhicule
       out_of_force_position: position forcée non respectée
       out_of_work_time: hors horaire de travail
-      out_of_max_distance: distance maximale réalisable
-      out_of_max_ride_distance: distance trajet maximale
-      out_of_max_ride_duration: durée trajet maximale
+      out_of_max_distance: hors distance maximale
       out_of_relation: relation non respectée
       out_of_skill: compétence non respectée
       status: statut
@@ -2344,6 +2367,7 @@ fr:
       out_of_window: hors amplitude horaire
       out_of_max_ride_distance: hors distance trajet maximale
       out_of_max_ride_duration: hors durée trajet maximale
+      out_of_max_reload: hors limite de rechargement maximale
       cost_distance: coût kilométrique
       cost_fixed: coût fixe
       cost_time: coût horaire
@@ -2443,6 +2467,11 @@ fr:
         large: grande
       prefered_icons: Conseillés
       other_icons: Autres
+      store_reload:
+        new: Nouveau rechargement
+        new_help: Ajouter un nouveau rechargement
+        collapse_all: Tout compacter/développer
+        collapse_all_help: Tout compacter/développer
     edit:
       title: Modifier site
     import:
@@ -2556,6 +2585,26 @@ fr:
         required: obligatoire
         advisable: recommandé
         optional: optionnel
+  store_reloads:
+    new:
+      title: Nouveau rechargement
+    edit:
+      title: Modifier rechargement
+    index:
+      title: Liste rechargements
+      new: Nouveau rechargement
+    new:
+      title: Nouveau rechargement
+    form:
+      legend: 'Rechargement #%{n}'
+      delete: Marquer à supprimer
+      delete_help: Supprimer ce rechargement (le site sera conservé)
+      duration_default: défaut
+      duration_help: 'Durée appliquée par rechargement. Si vide utilise la durée de visite par défaut, format hh:mm:ss'
+      time_window_start_end: Amplitude horaire
+      time_window_start_end_help: 'Plage horaire possible pour les rechargements. Si vide utilise la plage horaire du véhicule associé à la tournée.'
+      ref: Référence
+      ref_help: Référence libre
   products:
     menu:
       products: Produits
@@ -2787,7 +2836,8 @@ fr:
         default: Défaut
         none: Aucun
       stores_help: Sites de départ et d'arrivée
-      store_duration_help: Durée de préparation aux dépôts intermédiaires
+      store_reloads_help: Rechargements intermédiaires possibles
+      max_reload_help: Nombre maximum de rechargements par tournée.
       rest_duration_store: Durée de repos / lieu
       rest_start:
         default: '%{n} (défaut)'
@@ -2850,9 +2900,13 @@ fr:
       cost_fixed_desc: coût appliqué lorsque le véhicule est utilisé
       cost_time: coût horaire
       cost_time_desc: coût horaire de la tournée du véhicule
-      max_distance: Distance maximale du véhicule
-      max_ride_distance: Distance trajet maximale entre arrêts de la tournée du véhicule
-      max_ride_duration: Durée trajet maximale entre arrêts de la tournée du véhicule
+      max_reload: rechargement maximum
+      max_reload_desc: nombre maximum de rechargements par tournée.
+      max_distance: distance maximale
+      max_ride_distance: distance trajet maximale
+      max_ride_distance_desc: distance trajet maximale entre arrêts de la tournée du véhicule
+      max_ride_duration: durée trajet maximale
+      max_ride_duration_desc: durée trajet maximale entre arrêts de la tournée du véhicule
       title: Importer une nouvelle configuration de véhicules
       vehicle_usage_set: Configuration de véhicules
       default_configuration_replaced: >-
@@ -2957,7 +3011,8 @@ fr:
       store:
         none: Aucun
       stores_help: Sites de départ et d'arrivée
-      store_duration_help: Durée de préparation aux dépôts intermédiaires
+      store_reloads_help: Rechargements intermédiaires
+      max_reload_help: Nombre maximum de rechargements par tournée.
       service_times: Durées de service
       service_time_start_addon: avant
       service_time_end_addon: après

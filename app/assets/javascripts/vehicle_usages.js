@@ -21,6 +21,14 @@ import { customColorInitialize, routerOptionsSelect , templateTag } from '../../
 import { selectTag } from './tags';
 
 const vehicle_usages_form = function(params) {
+  $("select#vehicle_usage_store_reload_ids").select2({
+    theme: 'bootstrap',
+    minimumResultsForSearch: 5,
+    width: '100%',
+    tags: true,
+    closeOnSelect: false,
+  });
+
   /* Speed Multiplier */
   $('form.number-to-percentage').submit(function(e) {
     $.each($(e.target).find('input[type=\'number\'].number-to-percentage'), function(i, element) {

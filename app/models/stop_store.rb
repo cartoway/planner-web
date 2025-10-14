@@ -1,3 +1,21 @@
+# Copyright © Cartoway, 2025
+#
+# This file is part of Cartoway Planner.
+#
+# Cartoway Planner is free software. You can redistribute it and/or
+# modify since you respect the terms of the GNU Affero General
+# Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# Cartoway Planner is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the Licenses for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with Cartoway Planner. If not, see:
+# <http://www.gnu.org/licenses/agpl.html>
+#
+
 class StopStore < Stop
   delegate :lat,
            :lng,
@@ -12,20 +30,25 @@ class StopStore < Stop
            :icon_size,
            :default_icon,
            :default_icon_size,
-           to: :store
+           :time_window_start, :time_window_start_time, :time_window_start_absolute_time,
+           :time_window_end, :time_window_end_time, :time_window_end_absolute_time,
+           :max_reload,
+           to: :store_reload
 
-  validates :store, presence: true
+  validates :store_reload, presence: true
+
+  before_create :validate_max_reload_per_route
 
   def ref
-    store.ref
+    store_reload.ref || store_reload.store.ref
   end
 
   def position?
-    store.lat.present? && store.lng.present?
+    store_reload.store.lat.present? && store_reload.store.lng.present?
   end
 
   def position
-    store
+    store_reload.store
   end
 
   def detail
@@ -41,11 +64,11 @@ class StopStore < Stop
   end
 
   def duration
-    route.vehicle_usage.default_store_duration || 0
+    store_reload.default_duration || 0
   end
 
   def duration_time_with_seconds
-    route.vehicle_usage.default_store_duration_time_with_seconds
+    store_reload.default_duration_time_with_seconds
   end
 
   def destination_duration
@@ -57,11 +80,11 @@ class StopStore < Stop
   end
 
   def base_id
-    "d#{store.id}"
+    "sr#{store_reload.id}"
   end
 
   def base_updated_at
-    store.updated_at
+    [store_reload.updated_at, store_reload.store.updated_at].max
   end
 
   def priority
@@ -73,31 +96,31 @@ class StopStore < Stop
   end
 
   def to_s
-    "#{active ? 'x' : '_'} #{store.name}"
+    "#{active ? 'x' : '_'} #{[store_reload.store.name, store_reload.ref].compact.join(' ')}"
   end
 
   def time_window_start_1
-    route.vehicle_usage.default_time_window_start
+    store_reload.time_window_start
   end
 
   def time_window_start_1_time
-    route.vehicle_usage.default_time_window_start_time
+    store_reload.time_window_start_time
   end
 
   def time_window_start_1_absolute_time
-    route.vehicle_usage.default_time_window_start_absolute_time
+    store_reload.time_window_start_absolute_time
   end
 
   def time_window_end_1
-    route.vehicle_usage.default_time_window_end
+    store_reload.time_window_end
   end
 
   def time_window_end_1_time
-    route.vehicle_usage.default_time_window_end_time
+    store_reload.time_window_end_time
   end
 
   def time_window_end_1_absolute_time
-    route.vehicle_usage.default_time_window_end_absolute_time
+    store_reload.time_window_end_absolute_time
   end
 
   def time_window_start_2
@@ -114,5 +137,19 @@ class StopStore < Stop
 
   def time_window_end_2_time
     nil
+  end
+
+  def optim_type
+    'reload_depot'
+  end
+
+  private
+
+  def validate_max_reload_per_route
+    current_count = route.stops.where(type: self.class.name).where.not(id: id).count
+    if (current_count + 1) > route.vehicle_usage.default_max_reload.to_i
+      errors.add(:base, I18n.t('activerecord.errors.models.stop_store.max_reload_exceeded'))
+      throw :abort
+    end
   end
 end

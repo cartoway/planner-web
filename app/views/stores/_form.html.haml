@@ -103,7 +103,25 @@
 
   = hidden_field :store, :geocoder_version, :value => @store.geocoder_version
   = hidden_field :store, :geocoded_at, :value => @store.geocoded_at
+
+  #store_reloads
+    - if @store.store_reloads.size > 1
+      #store_reloads-header.row
+        .col-md-2
+        #store_reloads-tools.col-xs-12.col-md-8
+          .pull-right
+            %button#store_reloads-expand.btn.btn-default.btn-sm{title: "#{t('stores.form.store_reload.collapse_all_help')}", type: "button"}
+              %i.fa.fa-angle-double-down.fa-fw
+              = t('stores.form.store_reload.collapse_all')
+        .col-md-2
+    - ((!@store.store_reloads.empty? && @store.store_reloads) || [@store.store_reloads.build]).each_with_index do |store_reload, i|
+      = render 'store_reloads/form', store_reload: store_reload, i: i+1, customer: @store.customer
+  %button#store_reload-new.btn.btn-default.btn-sm{title: "#{t('stores.form.store_reload.new_help')}", type: "button"}
+    %i.fa.fa-plus.fa-fw
+    = t('stores.form.store_reload.new')
   = f.submit
+#store_reload-fieldset-template
+  = render 'store_reloads/form', store_reload: @store.store_reloads.build, i: 0, customer: @store.customer
 
 :ruby
   layers = (current_user.customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer|

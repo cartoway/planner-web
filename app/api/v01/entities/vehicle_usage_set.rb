@@ -26,7 +26,7 @@ class V01::Entities::VehicleUsageSet < Grape::Entity
   expose(:time_window_end, documentation: { type: DateTime }) { |m| m.time_window_end_absolute_time_with_seconds }
   expose(:store_start_id, documentation: { type: Integer })
   expose(:store_stop_id, documentation: { type: Integer })
-  expose(:store_duration, documentation: { type: DateTime }) { |m| m.store_duration_absolute_time_with_seconds }
+  expose(:store_reload_ids, documentation: { type: Integer, is_array: true }) { |m| m.store_reloads.map(&:id) }
   expose(:service_time_start, documentation: { type: DateTime }) { |m| m.service_time_start_absolute_time_with_seconds }
   expose(:service_time_end, documentation: { type: DateTime }) { |m| m.service_time_end_absolute_time_with_seconds }
   expose(:work_time, documentation: { type: DateTime }) { |m| m.work_time_absolute_time_with_seconds }
@@ -34,6 +34,7 @@ class V01::Entities::VehicleUsageSet < Grape::Entity
   expose(:rest_stop, documentation: { type: DateTime }) { |m| m.rest_stop_absolute_time_with_seconds }
   expose(:rest_duration, documentation: { type: DateTime }) { |m| m.rest_duration_absolute_time_with_seconds }
   expose(:store_rest_id, documentation: { type: Integer })
+  expose(:max_reload, documentation: { type: Integer, desc: 'Maximum number of reloads per route' })
   expose(:max_distance, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' })
   expose(:max_ride_distance, documentation: { type: Integer, desc: 'Maximum riding distance between two stops within a route in meters' })
   expose(:max_ride_duration, documentation: { type: DateTime, desc: 'Maximum riding time between two stops within a route' }) { |m| m.max_ride_duration_absolute_time_with_seconds }

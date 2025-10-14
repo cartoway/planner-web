@@ -1,0 +1,16 @@
+
+store_reload_one:
+  ref: bb
+  store: store_one
+  time_window_start: 900
+  time_window_end: 1800
+  duration: 1500
+  created_at: 2025-01-01 12:00:00
+  updated_at: 2025-01-01 12:00:00
+
+store_reload_two:
+  ref: cc
+  store: store_one
+  time_window_start: 900
+  time_window_end: 1800
+  duration: 1500

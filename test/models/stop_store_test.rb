@@ -5,51 +5,15 @@ class StopStoreTest < ActiveSupport::TestCase
     @planning = plannings(:planning_one)
     @route = @planning.routes.find{ |route| route.vehicle_usage }
     @store = stores(:store_one)
+    @store_reload = @store.store_reloads.create!(ref: 'SR001')
     @stop_store = StopStore.create!(
       route: @route,
-      store: @store,
+      store_reload: @store_reload,
       index: 1,
       active: true,
       distance: 1.0,
       time: 30.seconds
     )
-  end
-
-  test 'should return vehicle usage store duration' do
-    @route.vehicle_usage.update! store_duration: 15.minutes.to_i
-    @route.vehicle_usage.reload
-
-    assert_equal 15.minutes.to_i, @stop_store.duration
-  end
-
-  test 'should return 0 when no store duration is set' do
-    @route.vehicle_usage.update! store_duration: nil
-    @route.vehicle_usage.reload
-
-    assert_equal 0, @stop_store.duration
-  end
-
-  test 'should return vehicle usage set store duration when vehicle usage not set' do
-    @route.vehicle_usage.update! store_duration: nil
-    @route.vehicle_usage.vehicle_usage_set.update! store_duration: 20.minutes.to_i
-    @route.vehicle_usage.reload
-
-    assert_equal 20.minutes.to_i, @stop_store.duration
-  end
-
-  test 'should return correct duration time with seconds' do
-    @route.vehicle_usage.update! store_duration: 15.minutes.to_i
-    @route.vehicle_usage.reload
-
-    expected_time_with_seconds = Time.parse('00:15:00')
-    assert_equal expected_time_with_seconds, @stop_store.duration_time_with_seconds
-  end
-
-  test 'should return nil duration time with seconds when no duration set' do
-    @route.vehicle_usage.update! store_duration: nil
-    @route.vehicle_usage.reload
-
-    assert_nil @stop_store.duration_time_with_seconds
   end
 
   test 'should return 0 for destination duration' do
@@ -60,7 +24,7 @@ class StopStoreTest < ActiveSupport::TestCase
     assert_equal 0, @stop_store.destination_duration_time_with_seconds
   end
 
-  test 'should delegate store attributes' do
+  test 'should delegate store attributes through store_reload' do
     assert_equal @store.lat, @stop_store.lat
     assert_equal @store.lng, @stop_store.lng
     assert_equal @store.name, @stop_store.name
@@ -69,7 +33,10 @@ class StopStoreTest < ActiveSupport::TestCase
     assert_equal @store.city, @stop_store.city
   end
 
-  test 'should return store ref' do
+  test 'should return store_reload ref or store ref' do
+    assert_equal @store_reload.ref, @stop_store.ref
+
+    @store_reload.update!(ref: nil)
     assert_equal @store.ref, @stop_store.ref
   end
 
@@ -93,12 +60,13 @@ class StopStoreTest < ActiveSupport::TestCase
     assert_nil @stop_store.phone_number
   end
 
-  test 'should return correct base id' do
-    assert_equal "d#{@store.id}", @stop_store.base_id
+  test 'should return correct base id with store_reload' do
+    assert_equal "sr#{@store_reload.id}", @stop_store.base_id
   end
 
-  test 'should return store updated at for base updated at' do
-    assert_equal @store.updated_at, @stop_store.base_updated_at
+  test 'should return max of store_reload and store updated at for base updated at' do
+    expected_time = [@store_reload.updated_at, @store.updated_at].max
+    assert_equal expected_time, @stop_store.base_updated_at
   end
 
   test 'should return nil for priority' do
@@ -109,24 +77,39 @@ class StopStoreTest < ActiveSupport::TestCase
     assert_nil @stop_store.force_position
   end
 
-  test 'should return correct string representation' do
-    assert_equal "x #{@store.name}", @stop_store.to_s
+  test 'should return correct string representation with store_reload ref' do
+    assert_equal "x #{@store.name} #{@store_reload.ref}", @stop_store.to_s
 
     @stop_store.update! active: false
-    assert_equal "_ #{@store.name}", @stop_store.to_s
+    assert_equal "_ #{@store.name} #{@store_reload.ref}", @stop_store.to_s
   end
 
-  test 'should delegate time window methods to vehicle usage' do
-    @route.vehicle_usage.update! time_window_start: 8.hours.to_i, time_window_end: 18.hours.to_i
-
-    assert_equal 8.hours.to_i, @stop_store.time_window_start_1
-    assert_equal 18.hours.to_i, @stop_store.time_window_end_1
+  test 'should return correct string representation without store_reload ref' do
+    @store_reload.update!(ref: nil)
+    assert_equal "x #{@store.name}", @stop_store.to_s
   end
 
-  test 'should return nil for second time window' do
-    assert_nil @stop_store.time_window_start_2
-    assert_nil @stop_store.time_window_end_2
-    assert_nil @stop_store.time_window_start_2_time
-    assert_nil @stop_store.time_window_end_2_time
+  test 'should delegate time window methods to store_reload' do
+    @store_reload.update!(
+      time_window_start: 8.hours.to_i,
+      time_window_end: 18.hours.to_i
+    )
+
+    assert_equal 8.hours.to_i, @stop_store.time_window_start
+    assert_equal 18.hours.to_i, @stop_store.time_window_end
+  end
+
+  test 'should allow creating stop_stores up to max_reload per route' do
+    @route.vehicle_usage.update!(max_reload: 2)
+    @route.reload
+
+    # already one created in setup
+    second = StopStore.new(route: @route, store_reload: @store_reload, index: 2, active: true)
+    assert second.valid?, second.errors.full_messages.join(", ")
+    assert second.save!, 'Second StopStore should be saved when within max_reload'
+
+    third = StopStore.create(route: @route, store_reload: @store_reload, index: 3, active: true)
+    refute third.save
+    assert_includes third.errors[:base], I18n.t('activerecord.errors.models.stop_store.max_reload_exceeded', default: 'Maximum number of reloads exceeded for this route')
   end
 end

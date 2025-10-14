@@ -1,0 +1,50 @@
+= fields_for 'store[store_reloads_attributes]', store_reload, index: i, layout: :horizontal, builder: BootstrapForm::FormBuilder do |f|
+  %fieldset
+    %a{name: "store_reload_id=#{store_reload.id}"}
+    %legend.scheduler-border
+      %a.accordion-toggle{"data-parent" => "", "data-toggle" => "collapse", href: "#collapseVisit#{store_reload.id || 0}"}
+        %span= t('.legend', n: i)
+      - if !current_page?(action: 'new')
+        .mb-3.row.destroy-block
+          .col-md-3
+            %button.btn.btn-default.btn-sm.flag-destroy{title: "#{t('.delete_help')}", type: "button"}
+              %i.fa.fa-trash.fa-fw
+              = t('.delete')
+    .collapse.in{id: "collapseVisit#{store_reload.id || 0}"}
+      = f.hidden_field :id
+      .checkbox-destroy.d-none
+        = render partial: 'shared/check_box', locals: { form: f, field: :_destroy, label: t('all.verb.destroy'), help: t('.delete_help')}
+      - if customer.enable_references
+        = f.text_field :ref do
+          %p.help-block= t '.ref_help'
+      = f.text_field :duration,
+        value: store_reload.default_duration_time_with_seconds,
+        placeholder: store_reload.store.customer.visit_duration ? "#{store_reload.store.customer.visit_duration_time_with_seconds} (#{t('.duration_default')})" : t('all.unit.hour_minute_second'),
+        append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw'),
+        help: t('.duration_help')
+
+      #store_reload_open_close_input{class: "#{nested_has_error?(:time_window_end, store_reload.id)}"}
+        %label.sr-only{for: "store_store_reloads_attributes_\#{i}_time_window_start"}= t 'activerecord.attributes.store_reload.time_window_start'
+        %label.sr-only{for: "store_store_reloads_attributes_\#{i}_time_window_end"}= t 'activerecord.attributes.store_reload.time_window_end'
+        %label.col-md-offset-2.col-md-8.field= t '.time_window_start_end'
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            %span.input-group-addon= t 'web.form.from_time'
+            = text_field "store[store_reloads_attributes][#{i}]", :time_window_start, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: store_reload.time_window_start_time
+            %span.input-group-addon.input-group-borderless= t 'web.form.days'                            |
+            = number_field "store[store_reloads_attributes][#{i}]", :time_window_start_day,
+              class: 'form-control number-of-days',
+              placeholder: '0',
+              min: 0,
+              value: number_of_days(store_reload.time_window_start)
+            %span.input-group-addon= t 'web.form.to_time'
+            = text_field "store[store_reloads_attributes][#{i}]", :time_window_end, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: store_reload.time_window_end_time
+            %span.input-group-addon.input-group-borderless= t 'web.form.days'                             |
+            = number_field "store[store_reloads_attributes][#{i}]", :time_window_end_day,
+              class: 'form-control number-of-days',
+              placeholder: '0',
+              min: 0,
+              value: number_of_days(store_reload.time_window_end)
+            %span.input-group-addon
+              %i.fa.fa-arrows-left-right.fa-fw
+          %p.help-block= t '.time_window_start_end_help'

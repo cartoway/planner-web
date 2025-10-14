@@ -105,6 +105,15 @@ class ImporterDestinations < ImporterBase
     columns_destination.except(:detail, :phone_number, :comment, :tags, :destination_duration)
   end
 
+  def columns_store_reload
+    {
+      ref_visit: {title: I18n.t('destinations.import_file.ref_visit'), desc: I18n.t('destinations.import_file.ref_visit_desc'), format: I18n.t('destinations.import_file.format.string')},
+      time_window_start: {title: I18n.t('destinations.import_file.time_window_start_1'), desc: I18n.t('destinations.import_file.time_window_start_1_desc'), format: I18n.t('destinations.import_file.format.hour')},
+      time_window_end: {title: I18n.t('destinations.import_file.time_window_end_1'), desc: I18n.t('destinations.import_file.time_window_end_1_desc'), format: I18n.t('destinations.import_file.format.hour')},
+      duration: {title: I18n.t('destinations.import_file.duration'), desc: I18n.t('destinations.import_file.duration_desc'), format: I18n.t('destinations.import_file.format.hour')},
+    }
+  end
+
   def columns
     @columns ||= import_columns
   end
@@ -186,6 +195,7 @@ class ImporterDestinations < ImporterBase
     @destinations_to_geocode_count = 0
     @stores_to_geocode_count = 0
     @visit_ids = []
+    @store_reload_ids = []
 
     if options[:delete_plannings]
       @customer.delete_all_plannings
@@ -220,7 +230,9 @@ class ImporterDestinations < ImporterBase
     @existing_destinations_by_ref = CaseInsensitiveHash.new
     @existing_visits_by_ref = CaseInsensitiveHash.new
     @existing_stores_by_ref = CaseInsensitiveHash.new
+    @existing_store_reloads_by_ref = CaseInsensitiveHash.new
     @destinations_visits_attributes_by_ref = CaseInsensitiveHash.new
+    @stores_store_reloads_attributes_by_ref = CaseInsensitiveHash.new
     @customer.destinations.includes_visits.where.not(ref: nil).find_each{ |destination|
       @existing_destinations_by_ref[destination.ref] = destination
       @existing_visits_by_ref[destination.ref] = CaseInsensitiveHash[destination.visits.map{ |visit| [visit.ref, visit]}]
@@ -229,11 +241,13 @@ class ImporterDestinations < ImporterBase
     }
     @customer.stores.where.not(ref: nil).find_each{ |store|
       @existing_stores_by_ref[store.ref] = store
+      @existing_store_reloads_by_ref[store.ref] = CaseInsensitiveHash[store.store_reloads.map{ |store_reload| [store_reload.ref, store_reload]}]
+      @stores_store_reloads_attributes_by_ref[store.ref] = CaseInsensitiveHash.new
+      store.store_reloads.each{ |store_reload| @stores_store_reloads_attributes_by_ref[store.ref][store_reload.ref] = store_reload }
     }
 
     @destinations_visits_attributes_by_ref[nil] = CaseInsensitiveHash.new
     @destinations_attributes_by_ref = CaseInsensitiveHash.new
-    @stores_attributes_by_ref = CaseInsensitiveHash.new
     @visits_attributes_with_destination = {}
     @visits_attributes_without_ref = []
     @visits_attributes_without_destination_with_ref_visit = CaseInsensitiveHash.new
@@ -241,20 +255,33 @@ class ImporterDestinations < ImporterBase
     @visits_attributes_with_destination_with_ref_visit = CaseInsensitiveHash.new
     @visits_attributes_with_destination_without_ref_visit = CaseInsensitiveHash.new
 
+    @stores_store_reloads_attributes_by_ref[nil] = CaseInsensitiveHash.new
+    @stores_attributes_by_ref = CaseInsensitiveHash.new
+    @store_reloads_with_store = {}
+    @store_reloads_attributes_without_ref = []
+    @store_reloads_attributes_with_store_with_ref_visit = CaseInsensitiveHash.new
+    @store_reloads_attributes_with_store_without_ref_visit = CaseInsensitiveHash.new
+    @store_reloads_attributes_without_store_with_ref_visit = CaseInsensitiveHash.new
+    @store_reloads_attributes_without_store_without_ref_visit = CaseInsensitiveHash.new
+    @nil_store_reload_available = CaseInsensitiveHash.new{ |h, k| h[k] = CaseInsensitiveHash.new(true) }
+
     # @plannings_by_ref set in import_row in order to have internal row title
     @plannings_by_ref = {}
     @@col_dest_keys ||= columns_destination.keys + [:tag_ids]
     @col_visit_keys = columns_visit.keys + [:tag_visit_ids, :pickups, :deliveries, :custom_attributes_visit]
     @@col_store_keys = columns_store.keys
+    @col_store_reload_keys = columns_store_reload.keys
     @@slice_attr ||= (@@col_dest_keys - [:customer_id, :lat, :lng]).collect(&:to_s)
 
     # Used tp link rows to objects created through bulk imports
     @destination_index_to_id_hash = {}
     @visit_index_to_id_hash = {}
     @store_index_to_id_hash = {}
+    @store_reload_index_to_id_hash = {}
     @destination_index = 0
     @visit_index = 0
     @store_index = 0
+    @store_reload_index = 0
 
     @nil_visit_available = CaseInsensitiveHash.new{ |h, k| h[k] = CaseInsensitiveHash.new(true) }
 
@@ -410,7 +437,7 @@ class ImporterDestinations < ImporterBase
     type == I18n.t('destinations.import_file.stop_type_visit') || type == 'visit' || type.blank?
   end
 
-  def is_store?(type)
+  def is_store_reload?(type)
     type == I18n.t('destinations.import_file.stop_type_store') || type == 'store'
   end
 
@@ -427,12 +454,12 @@ class ImporterDestinations < ImporterBase
       prepare_destination(row, line, destination_attributes, visit_attributes)
       prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
       destination_attributes
-    elsif is_store?(row[:stop_type])
+    elsif is_store_reload?(row[:stop_type])
       return nil unless @customer.enable_store_stops
 
-      store_attributes = build_store_attributes(row)
-      prepare_store(row, line, store_attributes)
-      prepare_store_in_planning(row, line, store_attributes)
+      store_attributes, store_reload_attributes = build_store_attributes(row)
+      prepare_store_reload(row, line, store_attributes, store_reload_attributes)
+      prepare_store_reload_in_planning(row, line, store_attributes, store_reload_attributes)
       store_attributes
     end
   end
@@ -440,13 +467,16 @@ class ImporterDestinations < ImporterBase
   def after_import(name, _options)
     @destination_ids = bulk_import_destinations(@destinations_attributes_without_ref)
     @destination_ids += bulk_import_destinations(@destinations_attributes_by_ref.values)
+
+    @store_ids = bulk_import_stores(@stores_attributes_without_ref)
+    @store_ids += bulk_import_stores(@stores_attributes_by_ref.values)
     # bulk import do not support before_create or before_save callbacks
     if @customer.destinations.size > max_lines
       raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit')))
     end
     @visit_ids = bulk_import_visits
     bulk_import_tags
-    @store_ids = bulk_import_stores
+    @store_reload_ids = bulk_import_store_reloads
     @customer.reload
 
     geocode_or_count_destinations
@@ -555,7 +585,12 @@ class ImporterDestinations < ImporterBase
         vehicle_usage_set: @customer.vehicle_usage_sets[0]
       }
 
-    row.slice(*(@@col_store_keys)).merge(customer_id: @customer.id)
+    store_attributes = row.slice(*(@@col_store_keys)).merge(customer_id: @customer.id)
+    store_reload_attributes = row.slice(*@col_store_reload_keys)
+    store_reload_attributes[:ref] = store_reload_attributes.delete :ref_visit
+    store_reload_attributes[:store_reload_index] = @store_reload_index
+    @store_reload_index += 1
+    [store_attributes, store_reload_attributes]
   end
 
   def build_attributes(row)
@@ -693,12 +728,11 @@ class ImporterDestinations < ImporterBase
     }
   end
 
-  def bulk_import_stores
+  def bulk_import_stores(stores_attributes_hash)
+    return [] if stores_attributes_hash.empty?
+
     # Every entry should have identical keys to be imported at the same time
-    (
-      @stores_attributes_without_ref +
-      @stores_attributes_by_ref.values
-    ).group_by{ |import_index, lines, attributes|
+    stores_attributes_hash.group_by{ |import_index, lines, attributes|
       attributes.keys
     }.flat_map{ |keys, key_attributes|
 
@@ -711,7 +745,7 @@ class ImporterDestinations < ImporterBase
         stores_attributes = sliced_attributes.map{ |import_index, lines, attributes|
           slice_lines << lines
           store_import_indices << import_index
-          attributes.except(:store_index)
+          attributes
         }
 
         import_result = Store.import(
@@ -725,6 +759,46 @@ class ImporterDestinations < ImporterBase
 
         import_result.ids.each.with_index{ |id, index|
           @store_index_to_id_hash[store_import_indices[index]] = id
+        }
+        ids += import_result.ids
+      }
+      ids
+    }
+  end
+
+  def bulk_import_store_reloads
+    # Every entry should have identical keys to be imported at the same time
+    (
+      @store_reloads_attributes_without_ref +
+      @store_reloads_attributes_without_store_without_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash } +
+      @store_reloads_attributes_without_store_with_ref_visit.flat_map{ |k, dest_visits| dest_visits.values } +
+      @store_reloads_attributes_with_store_without_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash } +
+      @store_reloads_attributes_with_store_with_ref_visit.flat_map{ |k, dest_visits| dest_visits.values }
+    ).group_by{ |lines, attributes|
+      attributes.keys
+    }.flat_map{ |keys, key_attributes|
+      ids = []
+      # Slice to reduce memory spike
+      key_attributes.each_slice(1000).with_index { |sliced_attributes, slice_index|
+        store_reload_import_indices = []
+        slice_lines = []
+        store_reloads_attributes = sliced_attributes.map{ |lines, attributes|
+          slice_lines << lines
+          store_reload_import_indices << attributes[:store_reload_index]
+          attributes[:store_id] = @store_index_to_id_hash[attributes.delete(:store_index)] if attributes.key?(:store_index)
+          attributes.except(:store_reload_index)
+        }
+
+        import_result = StoreReload.import(
+          store_reloads_attributes,
+          on_duplicate_key_update: { conflict_target: (keys.include?(:id) ? [:id] : [:store_id, :ref]), columns: (StoreReload.column_names & keys.collect(&:to_s)) - ['id', 'updated_at'] },
+          validate: true, all_or_none: true, track_validation_failures: true
+        )
+
+        raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
+
+        import_result.ids.each.with_index{ |id, index|
+          @store_reload_index_to_id_hash[store_reload_import_indices[index]] = id
         }
         ids += import_result.ids
       }
@@ -780,7 +854,7 @@ class ImporterDestinations < ImporterBase
     end
   end
 
-  def prepare_store(row, line, store_attributes)
+  def prepare_store_reload(row, line, store_attributes, store_reload_attributes)
     if row[:ref].present?
       store = @existing_stores_by_ref[row[:ref]]
       filtered_store_attributes =
@@ -804,13 +878,55 @@ class ImporterDestinations < ImporterBase
         store_attributes.merge!(store_index: index)
         @store_index += 1
       end
+      prepare_store_reload_with_store_ref(row, line, store, index, store_attributes, store_reload_attributes) if index
     else
-      return unless filtered_store_attributes
-
       @stores_attributes_without_ref << [@store_index, [line], filtered_store_attributes]
-      store_attributes.merge!(store_index: index)
+      prepare_store_reload_without_store_ref(row, line, @store_index, store_attributes, store_reload_attributes)
+      store_attributes.merge!(store_index: @store_index)
       @store_index += 1
     end
+  end
+
+  def prepare_store_reload_with_store_ref(row, line, store, store_index, store_attributes, store_reload_attributes)
+    if row[:without_visit].nil? || row[:without_visit].strip.empty?
+      if store
+        store_reload = if row[:ref_visit] || @nil_store_reload_available[row[:planning_ref]][row[:ref]]
+          # If nil_visit available retrieve the first visit of the destination with a nil ref_visit
+          @nil_store_reload_available[row[:planning_ref]][row[:ref]] = false
+          @existing_store_reloads_by_ref[row[:ref]][row[:ref_visit]]
+        end
+        @stores_store_reloads_attributes_by_ref[row[:ref]] ||= CaseInsensitiveHash.new
+        store_reload_attributes.merge!(store_id: store.id)
+        if store_reload
+          store_reload_attributes.merge!(id: store_reload.id)
+          store_reload.outdated
+          store_reload_attributes.compact!
+        end
+
+        if row[:ref_visit]
+          @store_reloads_attributes_with_store_with_ref_visit[row[:ref]] = {} if !@store_reloads_attributes_with_store_with_ref_visit.key?(row[:ref])
+          lines = (@store_reloads_attributes_with_store_with_ref_visit[row[:ref]][row[:ref_visit]]&.first || []) << line
+          @store_reloads_attributes_with_store_with_ref_visit[row[:ref]][row[:ref_visit]] = [lines, store_reload_attributes]
+        else
+          @store_reloads_attributes_with_store_without_ref_visit[row[:ref]] = [] if !@store_reloads_attributes_with_store_without_ref_visit.key?(row[:ref])
+          @store_reloads_attributes_with_store_without_ref_visit[row[:ref]] << [[line], store_reload_attributes]
+        end
+      else
+        store_reload_attributes.merge!(store_index: store_index)
+        if row[:ref_visit]
+          @store_reloads_attributes_without_store_with_ref_visit[row[:ref]] = {} if !@store_reloads_attributes_without_store_with_ref_visit.key?(row[:ref])
+          lines = (@store_reloads_attributes_without_store_with_ref_visit[row[:ref]][row[:ref_visit]]&.first || []) << line
+          @store_reloads_attributes_without_store_with_ref_visit[row[:ref]][row[:ref_visit]] = [lines, store_reload_attributes]
+        else
+          @store_reloads_attributes_without_store_without_ref_visit[row[:ref]] = [] if !@store_reloads_attributes_without_store_without_ref_visit.key?(row[:ref])
+          @store_reloads_attributes_without_store_without_ref_visit[row[:ref]] << [[line], store_reload_attributes]
+        end
+      end
+    end
+  end
+
+  def prepare_store_reload_without_store_ref(row, line, store_index, store_attributes, store_reload_attributes)
+    @store_reloads_attributes_without_ref << [[line], store_reload_attributes.merge(store_index: store_index)]
   end
 
   def prepare_destination(row, line, destination_attributes, visit_attributes)
@@ -889,10 +1005,10 @@ class ImporterDestinations < ImporterBase
     @visits_attributes_without_ref << [[line], visit_attributes.merge(destination_index: destination_index)]
   end
 
-  def prepare_store_in_planning(row, line, store_attributes)
-    return if !@customer.enable_store_stops
-    if store_attributes
-      if row.key?(:route) && store_attributes[:id].nil?
+  def prepare_store_reload_in_planning(row, _line, _store_attributes, store_reload_attributes)
+    if store_reload_attributes
+      # Add store_reload to route if needed
+      if row.key?(:route) && (store_reload_attributes[:id].nil? || !@store_reload_ids.include?(store_reload_attributes[:id]))
         if row[:route] && row[:ref_vehicle]
           if @plannings_routes[row[:planning_ref]][row[:route]].key?(:ref_vehicle) &&
              @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] != row[:ref_vehicle] ||
@@ -901,10 +1017,10 @@ class ImporterDestinations < ImporterBase
             raise ImportInvalidRow.new(I18n.t('destinations.import_file.refs_route_discordant'))
           end
           @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
-          @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
           @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] = row[:route]
         end
-        @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [:store, store_attributes, { active: true, custom_attributes: row[:stop_custom_attributes] }]
+        @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [:store_reload, store_reload_attributes, { active: ValueToBoolean.value_to_boolean(row[:active], true), custom_attributes: row[:stop_custom_attributes] }]
+        @store_reload_ids << store_reload_attributes[:id] if store_reload_attributes[:id]
       end
     end
   end
@@ -962,7 +1078,7 @@ class ImporterDestinations < ImporterBase
           v[:visits].select!{ |_type, attribute, _active|
             attribute[:id] ||
               @visit_index_to_id_hash[attribute[:visit_index]] ||
-              @store_index_to_id_hash[attribute[:store_index]]
+              @store_reload_index_to_id_hash[attribute[:store_reload_index]]
           }
           visit_ids = v[:visits].map{ |type, attribute, _active|
             next unless type == :visit
@@ -971,14 +1087,14 @@ class ImporterDestinations < ImporterBase
           }
           visits = Visit.includes_destinations_and_stores.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
 
-          store_ids = v[:visits].map{ |type, attribute, _active|
-            next unless type == :store
+          store_reload_ids = v[:visits].map{ |type, attribute, _active|
+            next unless type == :store_reload
 
-            attribute[:id] || @store_index_to_id_hash[attribute[:store_index]]
+            attribute[:id] || @store_reload_index_to_id_hash[attribute[:store_reload_index]]
           }
-          stores = Store.where(id: store_ids).index_by(&:id).values_at(*store_ids)
+          store_reloads = StoreReload.where(id: store_reload_ids).index_by(&:id).values_at(*store_reload_ids)
 
-          v[:visits].map!.with_index{ |(_type, _attribute, active), index| [visits[index] || stores[index], active] }
+          v[:visits].map!.with_index{ |(_type, _attribute, active), index| [visits[index] || store_reloads[index], active] }
         }
         if !(planning_id ? planning.update_routes(routes_hash, recompute = true) : planning.set_routes(routes_hash, false, true))
           raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if routes_hash.keys.size > planning.routes.size || routes_hash.keys.compact.size > @customer.max_vehicles
