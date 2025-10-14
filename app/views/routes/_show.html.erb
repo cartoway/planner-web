@@ -175,7 +175,7 @@
         </div>
       </div>
 
-      <% if stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_work_time || stop.out_of_max_distance %>
+      <% if stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_work_time || stop.out_of_force_position || stop.out_of_max_distance || stop.out_of_max_reload || stop.out_of_relation %>
         <div class="row errors">
           <span class="col-md-offset-1 col-md-11 ui-state-error">
             <% if stop.out_of_window %>
@@ -195,6 +195,9 @@
             <% end %>
             <% if stop.out_of_max_distance %>
               <span><i class="fa fa-truck-field fa-fw"></i> <%= t 'plannings.edit.error.out_of_max_distance' %></span>
+            <% end %>
+            <% if stop.out_of_max_reload %>
+              <span><i class="fa fa-arrows-rotate fa-fw"></i> <%= t 'plannings.edit.error.out_of_max_reload' %></span>
             <% end %>
             <% if stop.out_of_relation %>
               <span><i class="fa fa-link-slash fa-fw"></i> <%= t 'plannings.edit.error.out_of_relation' %></span>

@@ -61,7 +61,7 @@ class V100::Stops < Grape::API
               route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) } || raise(ActiveRecord::RecordNotFound.new)
               stop = route.stops.find{ |stop| stop.id == Integer(params[:id]) } || raise(ActiveRecord::RecordNotFound.new)
               Planning.transaction do
-                route.remove_store(stop)
+                route.remove_store_reload(stop)
                 route.compute_saved
                 current_customer.save!
               end

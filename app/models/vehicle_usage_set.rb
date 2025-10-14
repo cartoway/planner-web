@@ -28,6 +28,9 @@ class VehicleUsageSet < ApplicationRecord
   before_destroy :destroy_vehicle_usage_set # Update planning.vehicle_usage_set before destroy self
   has_many :vehicle_usages, inverse_of: :vehicle_usage_set, dependent: :delete_all, autosave: true
 
+  has_many :store_reload_vehicle_usage_sets, inverse_of: :vehicle_usage_set, dependent: :destroy
+  has_many :store_reloads, through: :store_reload_vehicle_usage_sets
+
   nilify_blanks
 
   auto_strip_attributes :name
@@ -41,10 +44,9 @@ class VehicleUsageSet < ApplicationRecord
   attribute :rest_duration, ScheduleType.new
   attribute :service_time_start, ScheduleType.new
   attribute :service_time_end, ScheduleType.new
-  attribute :store_duration, ScheduleType.new
   attribute :work_time, ScheduleType.new
   attribute :max_ride_duration, ScheduleType.new
-  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :store_duration, :work_time, :max_ride_duration
+  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time, :max_ride_duration
   attr_localized :cost_distance, :cost_fixed, :cost_time
 
   validates :customer, presence: true
@@ -117,7 +119,7 @@ class VehicleUsageSet < ApplicationRecord
 
     if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? ||
        store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? ||
-       store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || store_duration_changed? ||
+       store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? ||
        work_time_changed? || max_distance || max_ride_distance_changed? || max_ride_duration_changed? ||
        cost_distance_changed? || cost_fixed_changed? || cost_time_changed?
       vehicle_usages.each{ |vehicle_usage|
@@ -138,7 +140,6 @@ class VehicleUsageSet < ApplicationRecord
 
           (service_time_start_changed? && vehicle_usage.default_service_time_start == service_time_start) ||
           (service_time_end_changed? && vehicle_usage.default_service_time_end == service_time_end) ||
-          (store_duration_changed? && vehicle_usage.default_store_duration == store_duration) ||
 
           (max_distance_changed? && vehicle_usage.vehicle.max_distance != max_distance) ||
           (max_ride_distance_changed? && vehicle_usage.vehicle.max_ride_distance != max_ride_distance) ||

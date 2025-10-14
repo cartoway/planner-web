@@ -87,7 +87,8 @@ class Route < ApplicationRecord
         },
         {
           store: [
-            :customer
+            :customer,
+            :store_reloads
           ]
         }
       ]
@@ -363,6 +364,7 @@ class Route < ApplicationRecord
           previous_position = stop.position if stop.position?
         }
         compute_out_of_force_position
+        compute_out_of_max_reload
         compute_out_of_relations
         compute_out_of_skill(options[:planning])
 
@@ -527,12 +529,9 @@ class Route < ApplicationRecord
         stop_attributes = { active: true, custom_attributes: {} }.merge((stop_attributes || {}).compact)
 
         if object.is_a?(Visit) && planning.tags_compatible?(object.tags.to_a | object.destination.tags.to_a)
-          stops.new(type: StopVisit.name, store: nil, visit: object, active: stop_attributes[:active], index: i += 1, custom_attributes: stop_attributes[:custom_attributes])
-        elsif object.is_a?(Store)
-          # Do not consider store start and store stop
-          next if index == 0 && object == vehicle_usage.default_store_start || index == objects.size - 1 && object == vehicle_usage.default_store_stop
-
-          stops.new(type: StopStore.name, store: object, visit: nil, active: true, index: i += 1, custom_attributes: stop_attributes[:custom_attributes])
+          stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: i += 1, custom_attributes: stop_attributes[:custom_attributes])
+        elsif object.is_a?(StoreReload)
+          stops.new(type: StopStore.name, store_reload: object, visit: nil, active: true, index: i += 1, custom_attributes: stop_attributes[:custom_attributes])
         end
       }.compact
       Stop.import(collected_stops)
@@ -556,13 +555,21 @@ class Route < ApplicationRecord
     end
   end
 
-  def add_store(store, index = nil, stop_attributes = {}, stop_id = nil)
-    stop_attributes = { active: true, custom_attributes: {} }.merge(stop_attributes.compact)
-    raise I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage') if self.vehicle_usage.nil?
+  def add_store_reload(store_reload, index = nil, stop_reload_attributes = {}, stop_id = nil)
+    if self.vehicle_usage && self.stops.select{ |s| s.is_a?(StopStore) }.count >= self.vehicle_usage.default_max_reload.to_i
+      errors.add(:base, I18n.t('activerecord.errors.models.route.attributes.stops.store_reload.max_reached'))
+      return false
+    end
+
+    stop_reload_attributes = { active: true, custom_attributes: {} }.merge(stop_reload_attributes.compact)
+    if self.vehicle_usage.nil?
+      errors.add(:base, I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage'))
+      return false
+    end
 
     index = stops.size + 1 if !index || index < 0
     shift_index(index)
-    stop = stops.build(type: StopStore.name, store: store, index: index, active: stop_attributes[:active], id: stop_id, custom_attributes: stop_attributes[:custom_attributes])
+    stop = stops.build(type: StopStore.name, store_reload: store_reload, index: index, active: stop_reload_attributes[:active], id: stop_id, custom_attributes: stop_reload_attributes[:custom_attributes])
     self.outdated = true
     stop
   end
@@ -603,13 +610,13 @@ class Route < ApplicationRecord
     }
   end
 
-  def remove_store(stop)
+  def remove_store_reload(stop)
     return if !stop.is_a?(StopStore)
 
     remove_stop(stop)
   end
 
-  def remove_stores
+  def remove_store_reloads
     stops.each{ |stop|
       remove_stop(stop) if stop.is_a?(StopStore)
     }
@@ -680,6 +687,12 @@ class Route < ApplicationRecord
     end
   end
 
+  def size_store_reloads
+    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/store_reloads_size") do
+      stops.where(type: 'StopStore').count
+    end
+  end
+
   def size_destinations
     Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/destination_stops") do
       stops.loaded? ?
@@ -705,7 +718,7 @@ class Route < ApplicationRecord
     end
   end
 
-  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation, :out_of_skill].each do |s|
+  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_reload, :out_of_relation, :out_of_skill].each do |s|
     define_method "#{s}" do
       Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/out_of_#{s}_cache") do
         vehicle_usage_id && (respond_to?("stop_#{s}") && send("stop_#{s}") ||
@@ -802,7 +815,7 @@ class Route < ApplicationRecord
 
   # Split stops by active status, position and rest
   def stops_segregate(**options)
-    stops.group_by{ |stop|
+    stops.reject{ |stop| stop.is_a?(StopStore) }.group_by{ |stop|
       !!(stop.active || options[:moving_stop_ids]&.include?(stop.id)) && (stop.position? || stop.is_a?(StopRest))
     }
   end
@@ -1015,6 +1028,20 @@ class Route < ApplicationRecord
     return [] if !vehicle_usage?
 
     vehicle_usage.tags | vehicle_usage.vehicle.tags
+  end
+
+  def compute_out_of_max_reload
+    store_stores = stops.select{ |stop| stop.is_a?(StopStore) }
+    store_stores.each{ |stop| stop.out_of_max_reload = nil }
+
+    store_reload_counts = 0
+    store_stores.each do |stop|
+      store_reload_counts += 1
+
+      if stop.store_reload && (vehicle_usage.default_max_reload.nil? || (store_reload_counts > vehicle_usage.default_max_reload))
+        stop.out_of_max_reload = true
+      end
+    end
   end
 
   def compute_out_of_skill(source_planning = nil)

@@ -29,7 +29,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
           first_route_rests = first_route.stops.select{ |stop| stop.is_a?(StopRest) }.compact
           (
             routes.select{ |r| !r.vehicle_usage? }.map{ |r| [r.id, []] } +
-            routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i| [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map(&:id)] }
+            routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i| [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map{ |s| { id: s.id, type: s.optim_type }}] }
           ).to_h
         }) do
          yield

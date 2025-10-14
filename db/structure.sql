@@ -866,6 +866,8 @@ CREATE TABLE public.stops (
     loads jsonb DEFAULT '{}'::jsonb NOT NULL,
     out_of_skill boolean,
     store_id integer,
+    store_reload_id integer,
+    out_of_max_reload boolean,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -921,6 +923,105 @@ CREATE SEQUENCE public.stops_relations_id_seq
 --
 
 ALTER SEQUENCE public.stops_relations_id_seq OWNED BY public.stops_relations.id;
+
+
+--
+-- Name: store_reload_vehicle_usage_sets; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.store_reload_vehicle_usage_sets (
+    id bigint NOT NULL,
+    store_reload_id bigint NOT NULL,
+    vehicle_usage_set_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: store_reload_vehicle_usage_sets_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.store_reload_vehicle_usage_sets_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: store_reload_vehicle_usage_sets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.store_reload_vehicle_usage_sets_id_seq OWNED BY public.store_reload_vehicle_usage_sets.id;
+
+
+--
+-- Name: store_reload_vehicle_usages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.store_reload_vehicle_usages (
+    id bigint NOT NULL,
+    store_reload_id bigint NOT NULL,
+    vehicle_usage_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: store_reload_vehicle_usages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.store_reload_vehicle_usages_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: store_reload_vehicle_usages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.store_reload_vehicle_usages_id_seq OWNED BY public.store_reload_vehicle_usages.id;
+
+
+--
+-- Name: store_reloads; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.store_reloads (
+    id bigint NOT NULL,
+    store_id bigint NOT NULL,
+    ref character varying,
+    time_window_start integer,
+    time_window_end integer,
+    duration integer,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: store_reloads_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.store_reloads_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: store_reloads_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.store_reloads_id_seq OWNED BY public.store_reloads.id;
 
 
 --
@@ -1258,7 +1359,7 @@ CREATE TABLE public.vehicle_usage_sets (
     cost_distance double precision,
     cost_fixed double precision,
     cost_time double precision,
-    store_duration integer
+    max_reload integer
 );
 
 
@@ -1306,7 +1407,7 @@ CREATE TABLE public.vehicle_usages (
     cost_distance double precision,
     cost_fixed double precision,
     cost_time double precision,
-    store_duration integer
+    max_reload integer
 );
 
 
@@ -1616,6 +1717,27 @@ ALTER TABLE ONLY public.stops_relations ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
+-- Name: store_reload_vehicle_usage_sets id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reload_vehicle_usage_sets ALTER COLUMN id SET DEFAULT nextval('public.store_reload_vehicle_usage_sets_id_seq'::regclass);
+
+
+--
+-- Name: store_reload_vehicle_usages id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reload_vehicle_usages ALTER COLUMN id SET DEFAULT nextval('public.store_reload_vehicle_usages_id_seq'::regclass);
+
+
+--
+-- Name: store_reloads id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reloads ALTER COLUMN id SET DEFAULT nextval('public.store_reloads_id_seq'::regclass);
+
+
+--
 -- Name: stores id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1863,6 +1985,30 @@ ALTER TABLE ONLY public.stops
 
 ALTER TABLE ONLY public.stops_relations
     ADD CONSTRAINT stops_relations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: store_reload_vehicle_usage_sets store_reload_vehicle_usage_sets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reload_vehicle_usage_sets
+    ADD CONSTRAINT store_reload_vehicle_usage_sets_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: store_reload_vehicle_usages store_reload_vehicle_usages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reload_vehicle_usages
+    ADD CONSTRAINT store_reload_vehicle_usages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: store_reloads store_reloads_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reloads
+    ADD CONSTRAINT store_reloads_pkey PRIMARY KEY (id);
 
 
 --
@@ -2265,10 +2411,73 @@ CREATE INDEX index_routes_on_vehicle_usage_id ON public.routes USING btree (vehi
 
 
 --
+-- Name: index_stops_on_store_reload_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_stops_on_store_reload_id ON public.stops USING btree (store_reload_id);
+
+
+--
 -- Name: index_stops_on_visit_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_stops_on_visit_id ON public.stops USING btree (visit_id);
+
+
+--
+-- Name: index_store_reload_vehicle_usage_sets_on_store_reload_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_store_reload_vehicle_usage_sets_on_store_reload_id ON public.store_reload_vehicle_usage_sets USING btree (store_reload_id);
+
+
+--
+-- Name: index_store_reload_vehicle_usage_sets_on_vehicle_usage_set_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_store_reload_vehicle_usage_sets_on_vehicle_usage_set_id ON public.store_reload_vehicle_usage_sets USING btree (vehicle_usage_set_id);
+
+
+--
+-- Name: index_store_reload_vehicle_usage_sets_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_store_reload_vehicle_usage_sets_unique ON public.store_reload_vehicle_usage_sets USING btree (store_reload_id, vehicle_usage_set_id);
+
+
+--
+-- Name: index_store_reload_vehicle_usages_on_store_reload_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_store_reload_vehicle_usages_on_store_reload_id ON public.store_reload_vehicle_usages USING btree (store_reload_id);
+
+
+--
+-- Name: index_store_reload_vehicle_usages_on_vehicle_usage_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_store_reload_vehicle_usages_on_vehicle_usage_id ON public.store_reload_vehicle_usages USING btree (vehicle_usage_id);
+
+
+--
+-- Name: index_store_reload_vehicle_usages_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_store_reload_vehicle_usages_unique ON public.store_reload_vehicle_usages USING btree (store_reload_id, vehicle_usage_id);
+
+
+--
+-- Name: index_store_reloads_on_store_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_store_reloads_on_store_id ON public.store_reloads USING btree (store_id);
+
+
+--
+-- Name: index_store_reloads_on_store_id_and_ref; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_store_reloads_on_store_id_and_ref ON public.store_reloads USING btree (store_id, ref);
 
 
 --
@@ -2573,11 +2782,27 @@ ALTER TABLE ONLY public.vehicle_usages
 
 
 --
+-- Name: store_reload_vehicle_usages fk_rails_269f5b697e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reload_vehicle_usages
+    ADD CONSTRAINT fk_rails_269f5b697e FOREIGN KEY (store_reload_id) REFERENCES public.store_reloads(id) ON DELETE CASCADE;
+
+
+--
 -- Name: tag_plannings fk_rails_2a380b8abf; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tag_plannings
     ADD CONSTRAINT fk_rails_2a380b8abf FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
+
+
+--
+-- Name: stops fk_rails_2c121799b9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stops
+    ADD CONSTRAINT fk_rails_2c121799b9 FOREIGN KEY (store_reload_id) REFERENCES public.store_reloads(id) ON DELETE CASCADE;
 
 
 --
@@ -2741,6 +2966,14 @@ ALTER TABLE ONLY public.plannings_zonings
 
 
 --
+-- Name: store_reload_vehicle_usage_sets fk_rails_c8f3d80dcc; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reload_vehicle_usage_sets
+    ADD CONSTRAINT fk_rails_c8f3d80dcc FOREIGN KEY (store_reload_id) REFERENCES public.store_reloads(id) ON DELETE CASCADE;
+
+
+--
 -- Name: vehicle_usages fk_rails_cdf3e8f319; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2773,6 +3006,14 @@ ALTER TABLE ONLY public.tag_destinations
 
 
 --
+-- Name: store_reloads fk_rails_e0edcdc317; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reloads
+    ADD CONSTRAINT fk_rails_e0edcdc317 FOREIGN KEY (store_id) REFERENCES public.stores(id) ON DELETE CASCADE;
+
+
+--
 -- Name: customers fk_rails_e3b080944e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2786,6 +3027,14 @@ ALTER TABLE ONLY public.customers
 
 ALTER TABLE ONLY public.stops
     ADD CONSTRAINT fk_rails_e5d314011f FOREIGN KEY (store_id) REFERENCES public.stores(id) ON DELETE CASCADE;
+
+
+--
+-- Name: store_reload_vehicle_usages fk_rails_e9098c0d72; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reload_vehicle_usages
+    ADD CONSTRAINT fk_rails_e9098c0d72 FOREIGN KEY (vehicle_usage_id) REFERENCES public.vehicle_usages(id) ON DELETE CASCADE;
 
 
 --
@@ -2810,6 +3059,14 @@ ALTER TABLE ONLY public.tag_destinations
 
 ALTER TABLE ONLY public.profiles_routers
     ADD CONSTRAINT fk_rails_fe7ed969d2 FOREIGN KEY (profile_id) REFERENCES public.profiles(id);
+
+
+--
+-- Name: store_reload_vehicle_usage_sets fk_rails_ffaaa8673a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.store_reload_vehicle_usage_sets
+    ADD CONSTRAINT fk_rails_ffaaa8673a FOREIGN KEY (vehicle_usage_set_id) REFERENCES public.vehicle_usage_sets(id) ON DELETE CASCADE;
 
 
 --
@@ -3207,16 +3464,16 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250314130549'),
 ('20250321085637'),
 ('20250325123806'),
+('20250403081545'),
+('20250408114821'),
 ('20250417055812'),
 ('20250417075753'),
-('20250408114821'),
-('20250403081545'),
 ('20250424060314'),
 ('20250428094719'),
 ('20250515082225'),
+('20250521075418'),
 ('20250527114419'),
 ('20250527121446'),
-('20250521075418'),
 ('20250609093623'),
 ('20250609122139'),
 ('20250609124605'),
@@ -3226,4 +3483,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250627085724'),
 ('20250707061924'),
 ('20250910070315'),
-('20251002141623');
+('20251002141623'),
+('20251013080039');
+
+

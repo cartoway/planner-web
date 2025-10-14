@@ -71,6 +71,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
           assert_equal @customer.vehicle_usage_sets.last.cost_distance, 1
           assert_equal @customer.vehicle_usage_sets.last.cost_fixed, 2
           assert_equal @customer.vehicle_usage_sets.last.cost_time, 3
+          assert_equal @customer.vehicle_usage_sets.last.max_reload, 1
         end
       end
     end

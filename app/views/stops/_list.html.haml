@@ -13,8 +13,8 @@
           .col-xs-6.col-md-5.d-flex.align-items-center
             .title
               = t("plannings.edit.wait")
-    - if stop[:store]
-      %li.d-fake-flex.align-items-center.list-group-item{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store-id": stop[:store_id], "data-origin-route-id": route[:route_id] }
+    - if stop[:store_reload]
+      %li.d-fake-flex.align-items-center.list-group-item{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store-reload-id": stop[:store_reload_id], "data-origin-route-id": route[:route_id] }
         .row.store-row
           .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
             .col-xs-2.d-flex.align-items-center.justify-content-center
@@ -30,15 +30,17 @@
                         - if stop[:time_day]
                           = "(+#{stop[:time_day]})"
                       .col-xs-7.d-flex.justify-content-center
-                        = stop[:store][:departure] || stop[:time]
-                        - if stop[:store][:departure_day] || stop[:time_day]
-                          = "(+#{stop[:store][:departure_day] || stop[:time_day]})"
+                        = stop[:store_reload][:departure] || stop[:time]
+                        - if stop[:store_reload][:departure_day] || stop[:time_day]
+                          = "(+#{stop[:store_reload][:departure_day] || stop[:time_day]})"
           .col-xs-4.col-md-6
             .title
               - if !stop[:geocoded]
                 %i.fa.fa-map-marker.fa-fw{title: t("plannings.edit.error.no_geolocalization")}
               - if stop[:no_path]
                 %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path")}
+              - if stop[:out_of_max_reload]
+                %i.fa.fa-arrows-rotate.fa-fw{title: t("plannings.edit.error.out_of_max_reload_help")}
               %span.name{title: stop[:name]}
                 = stop[:name]
           .col-xs-2.col-md-2.d-flex.justify-content-center.align-items-center
@@ -46,7 +48,7 @@
             %span.store-status{class: "stop-status-#{stop[:status_code]}", title: "#{stop[:status]}#{eta_statement}", style: ("display: none;" if !stop[:status])}
             .btn-group.pull-right.stop-tools
               - if @manage_planning[:manage_store]
-                %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{stop[:store][:store_id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
+                %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{stop[:store_reload][:store_id]}/edit?back=true#collapseVisit#{stop[:store_reload][:store_reload_id]}", title: t("plannings.edit.edit_store_reload_help")}
                   %i.fa.fa-pencil
               %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                 %i.fa.fa-map-marker

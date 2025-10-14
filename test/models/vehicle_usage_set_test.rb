@@ -222,13 +222,23 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     assert_equal 20.25, vehicle_usage.default_cost_time
   end
 
-  test 'should return store_duration_absolute_time_with_seconds' do
-    @vehicle_usage_set.update! store_duration: 20.minutes.to_i
-    assert_equal '00:20:00', @vehicle_usage_set.store_duration_absolute_time_with_seconds
+  test 'vehicle_usages inherit max_reload from vehicle_usage_set when nil' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    vehicle_usage_set.update!(max_reload: 2)
+
+    vu = vehicle_usage_set.vehicle_usages.first
+    vu.update!(max_reload: nil)
+
+    assert_equal 2, vu.default_max_reload
   end
 
-  test 'should return nil store_duration_absolute_time_with_seconds when store_duration is nil' do
-    @vehicle_usage_set.update! store_duration: nil
-    assert_nil @vehicle_usage_set.store_duration_absolute_time_with_seconds
+  test 'vehicle_usage max_reload overrides vehicle_usage_set max_reload' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    vehicle_usage_set.update!(max_reload: 2)
+
+    vu = vehicle_usage_set.vehicle_usages.first
+    vu.update!(max_reload: 4)
+
+    assert_equal 4, vu.default_max_reload
   end
 end
