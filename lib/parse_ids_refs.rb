@@ -17,6 +17,8 @@
 #
 class ParseIdsRefs
   def self.read(raw_id)
+    return {} if raw_id.blank?
+
     if !raw_id.is_a?(Integer) && raw_id.start_with?('ref:')
       {ref: raw_id[4..-1]}
     else
@@ -29,7 +31,7 @@ class ParseIdsRefs
     o[:id] == obj.id || (o.key?(:ref) && o[:ref] == obj.ref)
   end
 
-  def self.where(clazz, param)
+  def self.where(clazz, param, customer: nil)
     ids = Hash[param.collect{ |id|
       read(id)
     }.group_by{ |e|
@@ -38,6 +40,33 @@ class ParseIdsRefs
       [k, v.collect{ |vv| vv[k] }]
     }]
     table = clazz.arel_table
-    table[:id].in(ids[:id]).or(table[:ref].in(ids[:ref]))
+
+    conditions = []
+    conditions << table[:id].in(ids[:id]) if ids[:id]&.any?
+    conditions << table[:ref].lower.in(ids[:ref]&.map(&:downcase)) if ids[:ref]&.any?
+
+    base_condition = conditions.reduce(:or)
+
+    # Add customer restriction if applicable and customer is provided
+    if customer && clazz.column_names.include?('customer_id')
+      base_condition = base_condition.and(table[:customer_id].eq(customer.id))
+    end
+
+    base_condition
+  end
+
+  def self.where_pluck_ids(clazz, param, customer: nil)
+    where_pluck(clazz, param, customer: customer).pluck(:id)
+  end
+
+  def self.where_pluck_refs(clazz, param, customer: nil)
+    where_pluck(clazz, param, customer: customer).pluck(:ref)
+  end
+
+  private_class_method def self.where_pluck(clazz, param, customer: nil)
+    condition = where(clazz, param, customer: customer)
+    return [] if condition.nil?
+
+    clazz.where(condition)
   end
 end
