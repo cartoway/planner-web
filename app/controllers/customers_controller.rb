@@ -172,7 +172,7 @@ class CustomersController < ApplicationController
     devices_params ||= {}
 
     advanced_options_params = unsafe_params.dig('customer', 'advanced_options')
-    advanced_options_params = @customer[:advanced_options].deep_stringify_keys.deep_merge(advanced_options_params || {}) if @customer&.advanced_options&.any?
+    advanced_options_params = (@customer[:advanced_options]&.deep_stringify_keys || {}).merge(advanced_options_params || {}) if @customer&.advanced_options&.any?
     advanced_options_params ||= {}
 
     unsafe_params['customer']['devices'] = devices_params

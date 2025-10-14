@@ -29,7 +29,7 @@ class V01::Customers < Grape::API
       p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator]
       p[:visit_duration] = p.delete(:take_over) if p[:take_over]
       p[:devices] = customer[:devices].deep_merge(p[:devices] || {}) if customer && customer[:devices].size > 0
-      p[:advanced_options] = customer[:advanced_options].deep_merge(p[:advanced_options] || {}) if customer && customer[:advanced_options].size > 0
+      p[:advanced_options] = (customer[:advanced_options] || {}).merge(p[:advanced_options] || {}) if customer && customer[:advanced_options] && customer[:advanced_options].size > 0
       p = ActionController::Parameters.new(p)
 
       if @current_user.admin?
