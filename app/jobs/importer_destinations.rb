@@ -187,7 +187,7 @@ class ImporterDestinations < ImporterBase
     @visit_ids = []
 
     if options[:delete_plannings]
-      @customer.plannings.delete_all
+      @customer.delete_all_plannings
       @customer.plannings.reload
     end
     if options[:replace]
