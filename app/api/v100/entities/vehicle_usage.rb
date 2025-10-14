@@ -7,9 +7,10 @@ class V100::Entities::VehicleUsage < Grape::Entity
   expose(:vehicle_usage_set_id, documentation: { type: Integer })
   expose(:time_window_start, documentation: { type: DateTime }) { |m| m.time_window_start_absolute_time_with_seconds }
   expose(:time_window_end, documentation: { type: DateTime }) { |m| m.time_window_end_absolute_time_with_seconds }
+  expose(:max_reload, documentation: { type: Integer })
   expose(:store_start_id, documentation: { type: Integer })
   expose(:store_stop_id, documentation: { type: Integer })
-  expose(:store_duration, documentation: { type: DateTime }) { |m| m.store_duration_absolute_time_with_seconds }
+  expose(:store_reload_ids, documentation: { type: Integer, is_array: true }) { |m| m.store_reloads.map(&:id) }
   expose(:service_time_start, documentation: { type: DateTime }) { |m| m.service_time_start_absolute_time_with_seconds }
   expose(:service_time_end, documentation: { type: DateTime }) { |m| m.service_time_end_absolute_time_with_seconds }
   expose(:work_time, documentation: { type: DateTime }) { |m| m.work_time_absolute_time_with_seconds }

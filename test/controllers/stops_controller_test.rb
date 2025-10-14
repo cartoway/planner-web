@@ -9,15 +9,16 @@ class StopsControllerTest < ActionController::TestCase
   end
 
   setup do
+    customers(:customer_one).update(job_optimizer_id: nil)
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
     @stop = stops(:stop_one_one)
     @vehicle = vehicles(:vehicle_one)
     @planning = plannings(:planning_one)
     @route = routes(:route_one_one)
-    @store = stores(:store_one)
-    @stop_store = @route.add_store(@store)
-    @stop_store.save!
+    @store_reload = store_reloads(:store_reload_one)
+    @stop_store_reload = @route.add_store_reload(@store_reload)
+    @stop_store_reload.save!
     sign_in users(:user_one)
   end
 
@@ -27,62 +28,61 @@ class StopsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
-  # Tests for create_store action
-  test 'should create stop store' do
+  test 'should create stop store reload' do
+    @route.vehicle_usage.update(max_reload: 3)
     assert_difference('Stop.count', 1) do
-      post :create_store, params: {
+      post :create_store_reload, params: {
         planning_id: @planning.id,
         route_id: @route.id,
-        store_id: @store.id,
+        store_reload_id: @store_reload.id,
         format: :json
       }
     end
     assert_response :success
   end
 
-  test 'should handle create_store with invalid planning_id' do
+  test 'should handle create_store_reload with invalid planning_id' do
     assert_difference('Stop.count', 0) do
-      post :create_store, params: {
+      post :create_store_reload, params: {
         planning_id: 99999,
         route_id: @route.id,
-        store_id: @store.id,
+        store_reload_id: @store_reload.id,
         format: :json
       }
     end
     assert_response :not_found
   end
 
-  test 'should handle create_store with invalid route_id' do
+  test 'should handle create_store_reload with invalid route_id' do
     assert_difference('Stop.count', 0) do
-      post :create_store, params: {
+      post :create_store_reload, params: {
         planning_id: @planning.id,
         route_id: 99999,
-        store_id: @store.id,
+        store_reload_id: @store_reload.id,
         format: :json
       }
     end
     assert_response :not_found
   end
 
-  test 'should handle create_store with invalid store_id' do
+  test 'should handle create_store_reload with invalid store_id' do
     assert_difference('Stop.count', 0) do
-      post :create_store, params: {
+      post :create_store_reload, params: {
         planning_id: @planning.id,
         route_id: @route.id,
-        store_id: 99999,
+        store_reload_id: 99999,
         format: :json
       }
     end
     assert_response :not_found
   end
 
-  # Tests for destroy action
   test 'should destroy StopStore' do
     assert_difference('Stop.count', -1) do
       delete :destroy, params: {
         planning_id: @planning.id,
         route_id: @route.id,
-        stop_id: @stop_store.id,
+        stop_id: @stop_store_reload.id,
         format: :js
       }
     end
@@ -118,7 +118,7 @@ class StopsControllerTest < ActionController::TestCase
       delete :destroy, params: {
         planning_id: @planning.id,
         route_id: 99999,
-        stop_id: @stop_store.id,
+        stop_id: @stop_store_reload.id,
         format: :js
       }
     end
@@ -130,7 +130,7 @@ class StopsControllerTest < ActionController::TestCase
       delete :destroy, params: {
         planning_id: 99999,
         route_id: @route.id,
-        stop_id: @stop_store.id,
+        stop_id: @stop_store_reload.id,
         format: :js
       }
     end

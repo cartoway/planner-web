@@ -61,6 +61,7 @@ class ImporterVehicleUsageSets < ImporterBase
       cost_distance: { title: I18n.t('vehicle_usage_sets.import.cost_distance'), desc: I18n.t('vehicle_usage_sets.import.cost_distance_desc'), format: I18n.t('vehicle_usage_sets.import.format.float') },
       cost_fixed: { title: I18n.t('vehicle_usage_sets.import.cost_fixed'), desc: I18n.t('vehicle_usage_sets.import.cost_fixed_desc'), format: I18n.t('vehicle_usage_sets.import.format.float') },
       cost_time: { title: I18n.t('vehicle_usage_sets.import.cost_time'), desc: I18n.t('vehicle_usage_sets.import.cost_time_desc'), format: I18n.t('vehicle_usage_sets.import.format.float') },
+      max_reload: { title: I18n.t('vehicle_usage_sets.import.max_reload'), desc: I18n.t('vehicle_usage_sets.import.max_reload_desc'), format: I18n.t('vehicle_usage_sets.import.format.integer') },
       time_window_start: { title: I18n.t('vehicle_usage_sets.import.time_window_start'), desc: I18n.t('vehicle_usage_sets.import.time_window_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
       time_window_end: { title: I18n.t('vehicle_usage_sets.import.time_window_end'), desc: I18n.t('vehicle_usage_sets.import.time_window_end_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
       store_start_ref: { title: I18n.t('vehicle_usage_sets.import.store_start_ref'), desc: I18n.t('vehicle_usage_sets.import.store_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.string') },

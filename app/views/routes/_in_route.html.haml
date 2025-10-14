@@ -114,16 +114,19 @@
                     .btn-group
                       %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                         %i.fa.fa-map-marker
-                    - if current_user.customer.enable_store_stops
+                    - if current_user.customer.enable_store_stops && @available_store_reloads[route[:route_id]].any? && route[:max_reload].to_i > 0
                       .dropdown.btn-group
                         %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
                           %i.fa.fa-plus
                         %ul.dropdown-menu.pull-right.store-dropdown{role: "menu"}
-                          - @available_stores.each do |store|
+                          - @available_store_reloads[route[:route_id]].each do |store_reload|
                             %li
-                              %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-id": store[:id], "data-store-name": store[:name], class: "store-option"}
-                                %i.fa.fa-fw{class: "#{store[:icon] || 'fa-store'}", style: "color: #{store[:color] || 'black'};"}
-                                = store[:name]
+                              %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-reload-id": store_reload[:id], "data-store-reload-name": store_reload[:name], class: "store-reload-option #{('disabled' if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}", disabled: (store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}
+                                %i.fa.fa-fw{class: "#{store_reload[:icon] || 'fa-store'}", style: "color: #{store_reload[:color] || 'black'};"}
+                                = [store_reload[:name], store_reload[:ref]].compact.join(' - ')
+                                - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
+                                  %small.text-muted
+                                    = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"
       = render partial: 'stops/list', locals: { route: route, summary: summary }
       %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
         %li.d-fake-flex.align-items-center.list-group-item{class: ('ui-state-error' if route[:store_stop]&.[](:error)), data: { store_id: route[:store_stop]&.[](:id)}.compact}
@@ -166,13 +169,16 @@
                   .btn-group
                     %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                       %i.fa.fa-map-marker
-                  - if current_user.customer.enable_store_stops
+                  - if current_user.customer.enable_store_stops && @available_store_reloads[route[:route_id]].any? && route[:max_reload].to_i > 0
                     .dropdown.btn-group
                       %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
                         %i.fa.fa-plus
                       %ul.dropdown-menu.pull-right.store-dropdown{role: "menu"}
-                        - @available_stores.each do |store|
+                        - @available_store_reloads[route[:route_id]].each do |store_reload|
                           %li
-                            %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-id": store[:id], "data-store-name": store[:name], class: "store-option"}
-                              %i.fa.fa-fw{class: "#{store[:icon] || 'fa-store'}", style: "color: #{store[:color] || 'black'};"}
-                              = store[:name]
+                            %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-reload-id": store_reload[:id], "data-store-reload-name": store_reload[:name], class: "store-reload-option #{('disabled' if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}", disabled: (store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}
+                              %i.fa.fa-fw{class: "#{store_reload[:icon] || 'fa-store'}", style: "color: #{store_reload[:color] || 'black'};"}
+                              = [store_reload[:name], store_reload[:ref]].compact.join(' - ')
+                              - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
+                                %small.text-muted
+                                  = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"

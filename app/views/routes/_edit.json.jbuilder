@@ -31,6 +31,8 @@ if route.vehicle_usage_id
   json.color route.color || route.vehicle_usage.vehicle.color
   json.contact_email route.vehicle_usage.vehicle.contact_email if route.vehicle_usage.vehicle.contact_email
   json.vehicle_usage_id route.vehicle_usage.id
+  json.max_reload route.vehicle_usage.default_max_reload
+  json.used_reloads route.size_store_reloads
   if @with_devices
     json.devices route_devices(list_devices, route)
   end
@@ -122,10 +124,10 @@ json.with_stops @with_stops
 if @with_stops
   inactive_stops = 0
   json.stops route.vehicle_usage_id ? route.stops : (route.stops.all?{ |s| s.name.to_i != 0 } ? route.stops.sort_by{ |s| s.name.to_i } : route.stops.sort_by{ |s| s.name.to_s.downcase }) do |stop|
-    (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_relation || stop.no_path || stop.unmanageable_capacity || stop.out_of_skill
+    (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_max_reload || stop.out_of_relation || stop.no_path || stop.unmanageable_capacity || stop.out_of_skill
     json.stop_id stop.id
     json.stop_index stop.index
-    json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_relation, :no_path, :unmanageable_capacity, :out_of_skill
+    json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_max_reload, :out_of_relation, :no_path, :unmanageable_capacity, :out_of_skill
     json.ref stop.ref if planning.customer.enable_references
     json.time_window_start_end_1 !!stop.time_window_start_1 || !!stop.time_window_end_1
     (json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1
@@ -195,13 +197,14 @@ if @with_stops
         (json.error true) if route.vehicle_usage.default_store_rest && !route.vehicle_usage.default_store_rest.position?
       end
     when StopStore
-      json.store do
-        json.store true
-        json.store_id stop.store_id
-        (json.geocoded true) if stop.position?
-        (json.error true) if !stop.position?
-        (json.departure time_over_day(stop.time.to_i + route.vehicle_usage.default_service_time_start.to_i))
-        json.departure_day number_of_days(stop.time.to_i + route.vehicle_usage.default_service_time_start.to_i)
+      json.store_reload do
+        json.store_reload true
+        json.store_id stop.store_reload.store.id
+        json.store_reload_id stop.store_reload.id
+        (json.geocoded true) if stop.store_reload.store.position?
+        (json.error true) if !stop.store_reload.store.position?
+        (json.departure time_over_day(stop.time.to_i + stop.store_reload.default_duration.to_i))
+        json.departure_day number_of_days(stop.time.to_i + stop.store_reload.default_duration.to_i)
       end
     end
     json.duration l(Time.at(stop.duration).utc, format: :hour_minute_second) if stop.duration > 0
@@ -231,7 +234,7 @@ end if route.vehicle_usage_id && route.vehicle_usage.default_store_stop
 (json.end_without_service Time.at(display_end_time(route)).utc.strftime('%H:%M')) if display_end_time(route)
 (json.end_without_service_day number_of_days(display_end_time(route))) if display_end_time(route)
 
-if route.no_geolocalization || route.out_of_window || route.out_of_capacity || route.out_of_drive_time || route.out_of_force_position || route.out_of_work_time || route.out_of_max_distance || route.out_of_max_ride_distance || route.out_of_max_ride_duration || route.out_of_relation || route.no_path || route.unmanageable_capacity || route.out_of_skill
+if route.no_geolocalization || route.out_of_window || route.out_of_capacity || route.out_of_drive_time || route.out_of_force_position || route.out_of_work_time || route.out_of_max_distance || route.out_of_max_ride_distance || route.out_of_max_ride_duration || route.out_of_max_reload || route.out_of_relation || route.no_path || route.unmanageable_capacity || route.out_of_skill
   json.route_error true
   json.route_no_geolocalization route.no_geolocalization
   json.route_out_of_window route.out_of_window
@@ -242,6 +245,7 @@ if route.no_geolocalization || route.out_of_window || route.out_of_capacity || r
   json.route_out_of_max_distance route.out_of_max_distance
   json.route_out_of_max_ride_distance route.out_of_max_ride_distance
   json.route_out_of_max_ride_duration route.out_of_max_ride_duration
+  json.route_out_of_max_reload route.out_of_max_reload
   json.route_of_relation route.out_of_relation
   json.route_out_of_skill route.out_of_skill
   json.route_no_path route.no_path

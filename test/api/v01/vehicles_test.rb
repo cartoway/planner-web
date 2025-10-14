@@ -459,24 +459,4 @@ class V01::VehiclesTest < ActiveSupport::TestCase
       assert_equal COLORS_TABLE[vehicle_size + 1], vehicle['color']
     end
   end
-
-  test 'should create a vehicle with store_duration' do
-    begin
-      manage_vehicles_only_admin = Planner::Application.config.manage_vehicles_only_admin
-      Planner::Application.config.manage_vehicles_only_admin = false
-
-      customer = customers(:customer_one)
-
-      assert_difference('Vehicle.count', 1) do
-        assert_difference('VehicleUsage.count', customer.vehicle_usage_sets.length) do
-          post api, { ref: 'new', name: 'Vh1', time_window_start: '10:00', store_start_id: stores(:store_zero).id, store_stop_id: stores(:store_zero).id, customer_id: customers(:customer_one).id, store_duration: '00:15' }, as: :json
-          assert last_response.created?, last_response.body
-          vehicle = JSON.parse last_response.body
-          assert_equal '00:15:00', vehicle['vehicle_usages'].first['store_duration']
-        end
-      end
-    ensure
-      Planner::Application.config.manage_vehicles_only_admin = manage_vehicles_only_admin
-    end
-  end
 end

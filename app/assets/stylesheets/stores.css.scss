@@ -21,6 +21,12 @@
 
 
 [data-controller='stores'] {
+  .accordion-toggle > span:before {
+    content: "▾ ";
+  }
+  .accordion-toggle.collapsed > span:before {
+    content: "▸ ";
+  }
 
   input[name='store\[street\]'] + .input-group-addon {
     cursor: pointer;
@@ -74,6 +80,14 @@
         }
       }
     }
+  }
+
+  #store_reload-new {
+    margin-bottom: 20px;
+  }
+
+  #store_reload-fieldset-template {
+    display: none;
   }
 }
 

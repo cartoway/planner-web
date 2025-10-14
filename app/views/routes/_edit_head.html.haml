@@ -334,6 +334,10 @@
       %li{title: t('plannings.edit.error.out_of_max_ride_duration')}
         %i.fa.fa-stopwatch-20.fa-fw
         = t('plannings.edit.error.out_of_max_ride_duration')
+    - if route[:route_out_of_max_reload]
+      %li{title: t('plannings.edit.error.out_of_max_reload_help')}
+        %i.fa.fa-arrows-rotate.fa-fw
+        = t('plannings.edit.error.out_of_max_reload')
     - if route[:route_out_of_relation]
       %li{title: t('plannings.edit.error.out_of_relation_help')}
         %i.fa.fa-link-slash.fa-fw

@@ -34,6 +34,17 @@ class StoreTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should create store_reload' do
+    customer = customers(:customer_one)
+
+    store = customer.stores.build(name: 'Test Store', city: 'Test City')
+    store.store_reloads.build(ref: 'EXISTING', time_window_start: 9.hours.to_i, time_window_end: 17.hours.to_i)
+    store.save!
+
+    assert_equal 1, store.store_reloads.count
+    assert_equal 'EXISTING', store.store_reloads.first.ref
+  end
+
   test 'should not destroy last store' do
     customer = customers(:customer_one)
     assert_not_equal 0, customer.stores.size
@@ -135,24 +146,20 @@ class StoreTest < ActiveSupport::TestCase
     assert_not_equal nil, store.geocoded_at
   end
 
-  test 'should destroy associated stop_stores when store is destroyed' do
+  test 'should destroy associated store_reloads when store is destroyed' do
     store = stores(:store_one)
-    planning = plannings(:planning_one)
-    route = planning.routes.first
 
-    stop_store = StopStore.create!(
-      store: store,
-      route: route,
-      index: route.stops.size
+    initial_store_reload_count = StoreReload.where(store_id: store.id).count
+    store_reload = StoreReload.create!(
+      store: store
     )
 
-    assert route.stops.include?(stop_store)
-    assert_equal store.id, stop_store.store_id
+    assert_equal store.id, store_reload.store_id
 
-    assert_difference('Stop.count', -1) do
+    assert_difference('StoreReload.count', - (initial_store_reload_count+1)) do
       store.destroy
     end
 
-    assert_nil Stop.find_by(id: stop_store.id)
+    assert_nil StoreReload.find_by(id: store_reload.id)
   end
 end
