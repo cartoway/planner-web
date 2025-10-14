@@ -68,6 +68,7 @@ class V01::Entities::Stop < V01::Entities::StopStatus
   expose(:out_of_max_distance, documentation: { type: 'Boolean' })
   expose(:out_of_max_ride_distance, documentation: { type: 'Boolean' })
   expose(:out_of_max_ride_duration, documentation: { type: 'Boolean' })
+  expose(:out_of_max_reload, documentation: { type: 'Boolean' })
   expose(:out_of_relation, documentation: { type: 'Boolean' })
   expose(:custom_attributes_typed_hash, documentation: {type: Hash, desc: 'Additional properties'}, as: :custom_attributes)
 end

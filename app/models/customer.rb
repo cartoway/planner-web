@@ -38,6 +38,7 @@ class Customer < ApplicationRecord
   has_many :vehicle_usage_sets, inverse_of: :customer, autosave: true, dependent: :destroy
   has_many :vehicles, inverse_of: :customer, autosave: true, dependent: :delete_all
   has_many :stores, inverse_of: :customer, autosave: true, dependent: :delete_all
+  has_many :store_reloads, through: :stores
   has_many :destinations, inverse_of: :customer, autosave: true, dependent: :delete_all
   has_many :visits, through: :destinations
   has_many :tags, inverse_of: :customer, autosave: true, dependent: :delete_all
@@ -153,6 +154,7 @@ class Customer < ApplicationRecord
       vehicle_usage_sets_map = Hash[original.vehicle_usage_sets.zip(copy.vehicle_usage_sets)].merge(nil => nil)
       vehicle_usages_map = Hash[original.vehicle_usage_sets.collect(&:vehicle_usages).flatten.zip(copy.vehicle_usage_sets.collect(&:vehicle_usages).flatten)].merge(nil => nil)
       stores_map = Hash[original.stores.zip(copy.stores)].merge(nil => nil)
+      store_reloads_map = Hash[original.stores.collect(&:store_reloads).flatten.zip(copy.stores.collect(&:store_reloads).flatten)].merge(nil => nil)
       visits_map = Hash[original.destinations.collect(&:visits).flatten.zip(copy.destinations.collect(&:visits).flatten)].merge(nil => nil)
       tags_map = Hash[original.tags.zip(copy.tags)].merge(nil => nil)
       zonings_map = Hash[original.zonings.zip(copy.zonings)].merge(nil => nil)
@@ -196,6 +198,15 @@ class Customer < ApplicationRecord
         destination.save! validate: Planner::Application.config.validate_during_duplication
       }
 
+      copy.stores.each{ |store|
+        store.store_reloads.each{ |store_reload|
+          store_reload.stop_stores.each{ |stop_store|
+            stop_store.store = stores_map[stop_store.store]
+            stop_store.save! validate: Planner::Application.config.validate_during_duplication
+          }
+        }
+      }
+
       copy.zonings.each{ |zoning|
         zoning.zones.each{ |zone|
           zone.vehicle = vehicles_map[zone.vehicle]
@@ -215,7 +226,11 @@ class Customer < ApplicationRecord
           route.deliveries = Hash[route.deliveries.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
 
           route.stops.each{ |stop|
-            stop.visit = visits_map[stop.visit]
+            if stop.is_a?(StopStore)
+              stop.store_reload = store_reloads_map[stop.store_reload]
+            elsif stop.is_a?(StopVisit)
+              stop.visit = visits_map[stop.visit]
+            end
             stop.save! validate: Planner::Application.config.validate_during_duplication
           }
           route.save! validate: Planner::Application.config.validate_during_duplication

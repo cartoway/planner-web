@@ -8,7 +8,7 @@ module ImportExportCustomer
         [destinations: :visits],
         [plannings: [routes: :stops]],
         [zonings: :zones],
-        :stores,
+        [stores: :store_reloads],
         :deliverable_units,
         :vehicle_usage_sets,
         :tags,

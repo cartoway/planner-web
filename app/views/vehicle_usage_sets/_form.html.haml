@@ -72,18 +72,32 @@
         %span.input-group-addon
           %i.fa.fa-stopwatch.fa-fw
       %p.help-block= t '.service_times_help'
-  #vehicle_usage_set_store_duration_input.row.form-group
-    %label.sr-only{for: "vehicle_usage_set_store_duration"}= t 'activerecord.attributes.vehicle_usage_set.store_duration'
-    %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.vehicle_usage_set.store_duration'
-    .col-md-offset-2.col-md-8.field
-      .input-group
-        = text_field :vehicle_usage_set, :store_duration,
-          class: 'form-control',
-          placeholder: t('all.unit.hour_minute'),
-          value: @vehicle_usage_set.store_duration_time
-        %span.input-group-addon
-          %i.fa.fa-clock-rotate-left.fa-fw.fa-flip-vertical
-      %p.help-block= t '.store_duration_help'
+  - if @vehicle_usage_set.customer.enable_store_stops
+    #vehicle_usage_set_max_reload_input.row
+      %label.sr-only{for: "vehicle_usage_set_max_reload"}
+        = t 'activerecord.attributes.vehicle_usage_set.max_reload'
+      %label.col-md-offset-2.col-md-8.field
+        = t 'activerecord.attributes.vehicle_usage_set.max_reload'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          = number_field :vehicle_usage_set,
+            :max_reload,
+            value: @vehicle_usage_set.max_reload,
+            placeholder: (@vehicle_usage_set.max_reload ? t('customers.form.field_default', n: @vehicle_usage_set.max_reload) : ''),
+            class: 'form-control', min: 1
+          %span.input-group-addon
+            .fa.fa-rotate.fa-fw
+        %p.help-block= t('vehicle_usage_sets.form.max_reload_help')
+    #vehicle_usage_set_store_reload_ids_input.row.form-group
+      %label.col-md-offset-2.col-md-8.field
+        = t('activerecord.attributes.vehicle_usage_set.store_reload_ids')
+      .col-md-offset-2.col-md-8.field
+        #vehicle_usage_set_store_reload_ids.input-group
+          = select_tag 'vehicle_usage_set[store_reload_ids][]', options_for_select(@vehicle_usage_set.customer.store_reloads.map{ |sr| [sr.to_s, sr.id] }, @vehicle_usage_set.store_reloads.collect(&:id)),
+            { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control' }
+          %span.input-group-addon
+            %i.fa.fa-rotate.fa-fw
+        %p.help-block= t('vehicle_usage_sets.form.store_reloads_help')
   #vehicle_usage_set_work_time_input.row.form-group
     %label.sr-only{for: "vehicle_usage_set_work_time"}= t 'activerecord.attributes.vehicle_usage_set.work_time'
     %label.col-md-offset-2.col-md-8.field= t '.work_time'

@@ -21,6 +21,7 @@ class Stop < ApplicationRecord
   belongs_to :route, touch: true
   belongs_to :visit, optional: true # TODO: Remove optional
   belongs_to :store, optional: true
+  belongs_to :store_reload, optional: true
 
   nilify_blanks
 
@@ -53,7 +54,8 @@ class Stop < ApplicationRecord
         ]
       ],
       store: [
-        :customer
+        :customer,
+        :store_reloads
       ]
     )
   }
@@ -103,6 +105,10 @@ class Stop < ApplicationRecord
 
   def import_attributes
     self.attributes.except('lock_version')
+  end
+
+  def optim_type
+    'default'
   end
 
   private

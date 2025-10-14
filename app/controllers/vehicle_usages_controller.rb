@@ -90,7 +90,7 @@ class VehicleUsagesController < ApplicationController
       :time_window_end,
       :store_start_id,
       :store_stop_id,
-      :store_duration,
+      :max_reload,
       :rest_start,
       :rest_stop,
       :rest_duration,
@@ -99,6 +99,7 @@ class VehicleUsagesController < ApplicationController
       :service_time_end,
       :work_time,
       tag_ids: [],
+      store_reload_ids: [],
       vehicle: [
         :contact_email,
         :phone_number,

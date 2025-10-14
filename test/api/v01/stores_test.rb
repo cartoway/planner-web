@@ -170,4 +170,27 @@ class V01::StoresTest < ActiveSupport::TestCase
       assert_equal 'TestStore', response['ref'], "Ref not preserved correctly for variant: #{ref_variant}"
     end
   end
+
+  test 'should not expose store_reloads when enable_store_stops is false' do
+    # Ensure enable_store_stops is false
+    @store.customer.update!(enable_store_stops: false)
+
+    get api(@store.id)
+    assert last_response.ok?, last_response.body
+
+    json = JSON.parse(last_response.body)
+    assert_nil json['store_reloads'], 'store_reloads should not be exposed when enable_store_stops is false'
+  end
+
+  test 'should expose store_reloads when enable_store_stops is true' do
+    # Ensure enable_store_stops is true
+    @store.customer.update!(enable_store_stops: true)
+
+    get api(@store.id)
+    assert last_response.ok?, last_response.body
+
+    json = JSON.parse(last_response.body)
+    assert_not_nil json['store_reloads'], 'store_reloads should be exposed when enable_store_stops is true'
+    assert_kind_of Array, json['store_reloads'], 'store_reloads should be an array'
+  end
 end

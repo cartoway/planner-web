@@ -414,18 +414,34 @@
           %span.input-group-addon
             %i.fa.fa-stopwatch.fa-fw
         %p.help-block= t '.service_times_help'
-    #vehicle_usage_store_duration_input.row
-      %label.sr-only{for: "vehicle_usage_store_duration"}= t 'activerecord.attributes.vehicle_usage.store_duration'
-      %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.vehicle_usage.store_duration'
-      .col-md-offset-2.col-md-8.field
-        .input-group
-          = text_field :vehicle_usage, :store_duration,
-            class: 'form-control',
-            placeholder: @vehicle_usage.vehicle_usage_set.store_duration ? t('web.form.default', n: @vehicle_usage.vehicle_usage_set.store_duration_time) : t('all.unit.hour_minute'),
-            value: @vehicle_usage.store_duration_time
-          %span.input-group-addon
-            %i.fa.fa-clock-rotate-left.fa-fw.fa-flip-vertical
-        %p.help-block= t '.store_duration_help'
+    - if @vehicle_usage.vehicle.customer.enable_store_stops
+      #vehicle_usage_max_reload_input.row
+        %label.sr-only{for: "vehicle_usage_max_reload"}
+          = t 'activerecord.attributes.vehicle_usage.max_reload'
+        %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.vehicle_usage.max_reload'
+        .col-md-offset-2.col-md-8.field
+          .input-group
+            = number_field :vehicle_usage, :max_reload, value: @vehicle_usage.max_reload,
+              placeholder: (@vehicle_usage.vehicle_usage_set.max_reload ? t('customers.form.field_default', n: @vehicle_usage.vehicle_usage_set.max_reload) : ''), class: 'form-control'
+            %span.input-group-addon
+              .fa.fa-rotate.fa-fw
+          %p.help-block= t('vehicle_usages.form.max_reload_help')
+      #vehicle_usage_store_reload_ids_input.row
+        %label.col-md-offset-2.col-md-8.field
+          = t('activerecord.attributes.vehicle_usage.store_reload_ids')
+        .col-md-offset-2.col-md-8.field
+          #vehicle_usage_store_reload_ids.input-group
+            - placeholder_text = ''
+            - if @vehicle_usage.vehicle_usage_set.store_reloads.any?
+              - default_reloads = @vehicle_usage.vehicle_usage_set.store_reloads.map(&:to_s).join(', ')
+              - placeholder_text = t('customers.form.field_default', n: default_reloads)
+            - else
+              - placeholder_text = t('web.form.empty_entry')
+            = select_tag 'vehicle_usage[store_reload_ids]', options_for_select(@vehicle_usage.vehicle.customer.store_reloads.map{ |sr| [sr.to_s, sr.id] }, @vehicle_usage.default_store_reload_ids),
+              { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control' }
+            %span.input-group-addon
+              %i.fa.fa-rotate.fa-fw
+          %p.help-block= t('vehicle_usages.form.store_reloads_help')
     #vehicle_usage_set_work_time_input.row
       %label.sr-only{for: "vehicle_usage_work_time"}
         = t 'activerecord.attributes.vehicle_usage.work_time'

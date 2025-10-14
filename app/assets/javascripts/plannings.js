@@ -1132,11 +1132,11 @@ export const plannings_edit = function(params) {
   }
 
   function initStoreDropdown(planning_id) {
-    $(document).on('click', '.store-option', function(e) {
+    $(document).on('click', '.store-reload-option', function(e) {
       e.preventDefault();
 
-      var store_id = $(this).data('store-id');
-      var store_name = $(this).data('store-name');
+      var store_reload_id = $(this).data('store-reload-id');
+      var store_reload_name = $(this).data('store-reload-name');
       var route_id = $(this).data('route-id');
 
      if (!route_id || !planning_id) {
@@ -1145,16 +1145,16 @@ export const plannings_edit = function(params) {
       }
 
       $.ajax({
-        url: '/plannings/' + planning_id + '/' + route_id + '/' + store_id + '/create_store.json',
+        url: '/plannings/' + planning_id + '/' + route_id + '/' + store_reload_id + '/create_store_reload.json',
         type: 'POST',
         beforeSend: function() {
           beforeSendWaiting();
-          panelLoading(route_id);
         },
         success: function() {
+          panelLoading(route_id);
           refreshSidebarRoute(planning_id, route_id);
           routesLayer.refreshRoutes([route_id], routes);
-          notice(I18n.t('plannings.edit.create_store.success', { store: store_name }));
+          notice(I18n.t('plannings.edit.create_store.success', { store: store_reload_name }));
         },
         error: function(xhr) {
           if (xhr.responseJSON && xhr.responseJSON.error) {

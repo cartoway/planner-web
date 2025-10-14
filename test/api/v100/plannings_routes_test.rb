@@ -21,7 +21,7 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
           first_route_rests = first_route.stops.select{ |stop| stop.is_a?(StopRest) }.compact
           (
             routes.select{ |r| !r.vehicle_usage? }.map{ |r| [r.id, []] } +
-            routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i| [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map(&:id) + options[:moving_stop_ids]] }.uniq
+            routes.select{ |r| r.vehicle_usage? }.map.with_index{ |r, i| [r.id, ((i.zero? ? returned_stops.reverse : []) + first_route_rests).map{ |s| { id: s.id, type: s.optim_type }} + options[:moving_stop_ids].map{ |id| { id: id, type: "service" } }] }.uniq
           ).to_h
       }) do
         yield
@@ -78,14 +78,14 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
       route = @planning.routes.find{ |r| r.vehicle_usage }
-      store = stores(:store_one)
-      post api(@planning.id, "/#{route.id}/stores/#{store.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
+      store_reload = store_reloads(:store_reload_one)
+      post api(@planning.id, "/#{route.id}/store_reloads/#{store_reload.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
       if mode
         assert_equal 409, last_response.status, last_response.body
       else
         assert_equal 201, last_response.status, last_response.body
         route.reload
-        assert_equal store, route.stops.first.store
+        assert_equal store_reload, route.stops.first.store_reload
       end
     end
   end
@@ -94,15 +94,15 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
       route = @planning.routes.find{ |r| !r.vehicle_usage }
-      store = stores(:store_one)
-      post api(@planning.id, "/#{route.id}/stores/#{store.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
+      store_reload = store_reloads(:store_reload_one)
+      post api(@planning.id, "/#{route.id}/store_reloads/#{store_reload.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
       if mode
         assert_equal 409, last_response.status, last_response.body
       else
-        assert_equal 500, last_response.status, last_response.body
-        assert_equal(
-          I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage'),
-          JSON.parse(last_response.body)['message']
+        assert_equal 400, last_response.status, last_response.body
+        assert_includes(
+          JSON.parse(last_response.body)['message'],
+          I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage')
         )
       end
     end
@@ -111,10 +111,10 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
   test 'should not add store to route when enable_store_stops is false' do
     customers(:customer_one).update(enable_store_stops: false)
     route = @planning.routes.find{ |r| !r.vehicle_usage }
-    store = stores(:store_one)
+    store_reload = store_reloads(:store_reload_one)
 
     assert_no_difference('StopStore.count') do
-      post api(@planning.id, "/#{route.id}/stores/#{store.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
+      post api(@planning.id, "/#{route.id}/store_reloads/#{store_reload.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
       assert_equal 401, last_response.status, last_response.body
 
       content = JSON.parse(last_response.body, symbolize_names: true)

@@ -13,12 +13,13 @@
               = t('.delete')
     .collapse.in{id: "collapseVisit#{visit.id || 0}"}
       = f.hidden_field :id
-      = f.check_box :_destroy, class: 'd-none'
-      = f.label :_destroy do
-        = t('.destroy')
-      - if visit.destination.customer.enable_references
-        = f.text_field :ref do
-          %p.help-block= t '.ref_help'
+
+      .checkbox-destroy.d-none
+        = render partial: 'shared/check_box', locals: { form: f, field: :_destroy, label: t('all.verb.destroy'), help: t('.destroy'), control_col: 'form-switch col-md-offset-2 col-md-6 d-none' }
+        - if visit.destination.customer.enable_references
+          = f.text_field :ref do
+            %p.help-block= t '.ref_help'
+
       - unless visit.destination.customer.enable_orders
         #visit_quantity_input{class: "#{nested_has_error?(:pickups, visit.id)} #{nested_has_error?(:deliveries, visit.id)}"}
           %label.col-md-offset-2.col-md-8.field

@@ -17,11 +17,13 @@
       "activities": [
         {
           "point_id": "p5",
+          "type": "depot",
           "travel_distance": 0,
           "travel_start_time": 0
         },
         {
           "point_id": "p0",
+          "type": "service",
           "travel_distance": 0,
           "travel_start_time": 0,
           "waiting_duration": 0,
@@ -31,6 +33,7 @@
         },
         {
           "point_id": "p1",
+          "type": "service",
           "travel_distance": 0,
           "travel_start_time": 0,
           "waiting_duration": 0,
@@ -49,6 +52,7 @@
         },
         {
           "point_id": "p3",
+          "type": "service",
           "travel_distance": 0,
           "travel_start_time": 0,
           "waiting_duration": 0,
@@ -57,10 +61,12 @@
           "service_id": "s4"
         },
         {
+          "type": "rest",
           "rest_id": "r5"
         },
         {
           "point_id": "p5",
+          "type": "depot",
           "travel_distance": 0,
           "travel_start_time": 0
         }

@@ -398,9 +398,6 @@ en:
         customised_color: Select a custom color
         lat: Latitude
         lng: Longitude
-        open: Open
-        close: Close
-        ref: Reference
         store_start: Start store
         store_end: End store
         color: Color
@@ -408,6 +405,11 @@ en:
         icon_size: Icon size
         created_at: Created
         updated_at: Updated
+      store_reload:
+        ref: Reference
+        time_window_start: Time window start
+        time_window_end: Time window end
+        max_reload: Maximum reload
       stores:
         name: Name
         address: Address
@@ -485,7 +487,8 @@ en:
         store_start_id: Store Start
         store_stop: Store Stop
         store_stop_id: Store Stop
-        store_duration: Intermediate store duration
+        store_reload_ids: Store Reloads
+        max_reload: Max Reload
         rest_start: Rest window start
         rest_stop: Rest window stop
         rest_duration: Rest duration
@@ -507,7 +510,8 @@ en:
         store_start_id: Store Start
         store_stop: Store Stop
         store_stop_id: Store Stop
-        store_duration: Intermediate store duration
+        store_reload_ids: Store Reloads
+        max_reload: Max Reload
         rest_start: Rest window start
         rest_stop: Rest window stop
         rest_duration: Rest duration
@@ -530,7 +534,8 @@ en:
         store_start_id: Store Start
         store_stop: Store Stop
         store_stop_id: Store Stop
-        store_duration: Intermediate store duration
+        store_reload_ids: Store Reloads
+        max_reload: Max Reload
         rest_start: Rest window start
         rest_stop: Rest window stop
         rest_duration: Rest duration
@@ -688,12 +693,18 @@ en:
           at_least_one: At least one store needed
           icon_unknown: is not in font-awesome icons list
           icon_size_invalid: is not a valid size
+        store_reload:
+          attributes:
+            time_window_end:
+              after: must be after time window start
         route:
           attributes:
             stops:
               bad_index: 'Bad index %{index} on the route %{route}'
               store:
                 must_be_associated_to_vehicle_usage: must be associated to a route with a vehicle
+              store_reload:
+                max_reached: The number of reloads exceeds the maximum allowed for this route
         planning:
           attributes:
             date:
@@ -716,6 +727,8 @@ en:
           unauthorized: unauthorized in this profile
         stops_relation:
           pickup_delivery_uniqueness: A visit can only belong to a single pickup/delivery relationship
+        stop_store:
+          max_reload_exceeded: Maximum number of reloads exceeded for this route
   errors:
     database:
       default: Database error.
@@ -1940,6 +1953,7 @@ en:
       active_help: Take or not stops into route
       edit_store_help: Edit store information
       edit_visit_help: Edit visit/customer information
+      edit_store_reload_help: Edit store reload information
       marker_help: Show on map
       create_store_help: Add an intermediate store
       select_store: Select a store
@@ -1948,6 +1962,8 @@ en:
         error:
           missing_context: Missing context to add store
           general: Error adding store
+          max_reload_reached: "Maximum reload limit reached for (%{max_reload} reloads)"
+        max_reload_reached: "Max reload: %{max_reload}"
       destroy_store_help: Remove store from route
       confirm_destroy_store: Are you sure you want to remove this store from the route?
       automatic_insert_help: >-
@@ -2034,6 +2050,8 @@ en:
         out_of_max_ride_distance_help: Maximum ride distance between route stops exceeded
         out_of_max_ride_duration: Maximum ride duration exceeded
         out_of_max_ride_duration_help: Maximum ride duration between route stops exceeded
+        out_of_max_reload: Maximum reload limit reached
+        out_of_max_reload_help: Maximum reload limit reached for the store
         out_of_relation: Relation violated
         out_of_relation_help: Relation between visits violated
         out_of_skill: Skill violated
@@ -2119,6 +2137,7 @@ en:
             assert_no_relations_except_simple_shipments: Complex relations
             assert_no_rest: Rest
             assert_no_ride_constraint: Maximum ride distance or duration
+            assert_no_store_reloads: Intermediate reloads
             assert_no_quantity_pickup_and_delivery: Simultaneous pickup and delivery quantities
             assert_services_no_setup_duration: Destination duration
             assert_vehicles_start_or_end: Maximum distance or duration
@@ -2244,6 +2263,7 @@ en:
       out_of_window: out of time window
       out_of_max_ride_distance: out of maximum ride distance
       out_of_max_ride_duration: out of maximum ride duration
+      out_of_max_reload: out of maximum reload
       cost_distance: cost per distance
       cost_fixed: fixed cost
       cost_time: cost per time
@@ -2342,6 +2362,11 @@ en:
         large: large
       prefered_icons: Preferred
       other_icons: Others
+      store_reload:
+        collapse_all_help: Collapse/expand all
+        collapse_all: Collapse/expand all
+        new_help: Add a new reload
+        new: New reload
     edit:
       title: Editing store
     import:
@@ -2454,6 +2479,24 @@ en:
         required: required
         advisable: advised
         optional: optional
+  store_reloads:
+    form:
+      legend: Reload #%{n}
+      delete_help: Delete this reload (the store will be kept)
+      delete: Mark for deletion
+      ref_help: Free reference
+      duration_default: default
+      duration_help: Duration applied per reload. If empty uses the default visit duration, format hh:mm:ss
+      time_window_start_end: Time window
+      time_window_start_end_help: Possible time range for reloads. If empty uses the time range of the vehicle associated with the route.
+      ref: Reference
+    new:
+      title: New reload
+    edit:
+      title: Edit reload
+    index:
+      title: Reloads list
+      new: New reload
   products:
     menu:
       products: Products
@@ -2680,7 +2723,8 @@ en:
         default: Default
         none: None
       stores_help: Start and end facilities
-      store_duration_help: Duration added to the route when passing through the intermediate store
+      store_reloads_help: Possible store reloads
+      max_reload_help: Maximum number of reloads per route.
       rest_duration_store: Rest duration / place
       rest_start:
         default: '%{n} (default)'
@@ -2742,9 +2786,13 @@ en:
       cost_fixed_desc: fixed cost applied if the vehicle is used
       cost_time: hourly cost
       cost_time_desc: hourly cost of the vehicle's route
-      max_distance: Maximum achievable vehicle distance (in metres)
-      max_ride_distance: Maximum ride distance between route stops (in metres)
-      max_ride_duration: Maximum ride duration between route stops
+      max_reload: maximum reload
+      max_reload_desc: maximum number of reloads per route
+      max_distance: maximum distance
+      max_ride_distance: Maximum ride distance
+      max_ride_distance_desc: maximum ride distance between route stops
+      max_ride_duration: maximum ride duration
+      max_ride_duration_desc: maximum ride duration between route stops
       title: Import vehicles configuration
       vehicle_usage_set: Vehicles configuration
       default_configuration_replaced: >-
@@ -2840,7 +2888,8 @@ en:
       store:
         none: None
       stores_help: Start and end facilities
-      store_duration_help: Duration added to the route when passing through the intermediate store
+      store_reloads_help: Possible store reloads
+      max_reload_help: Maximum number of reloads per route.
       service_times: Service times
       service_time_start_addon: before
       service_time_end_addon: after

@@ -88,4 +88,8 @@ class StopVisit < Stop
   def to_s
     "#{active ? 'x' : '_'} #{visit.destination.name}"
   end
+
+  def optim_type
+    'service'
+  end
 end
