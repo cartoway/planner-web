@@ -1505,4 +1505,21 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
     destination = JSON.parse(last_response.body)
     assert_equal [t2.id], destination['tag_ids']
   end
+
+  test 'coerce tag_ids with mixed ids and refs and restrict to customer tags' do
+    clear_jobs
+    t1 = tags(:tag_one)
+    t2 = tags(:tag_two)
+    t3 = tags(:tag_three)
+
+    put api(@destination.id), nil, input: @destination.attributes.merge(tag_ids: "#{t1.id},ref:#{t2.ref},#{t3.id}").to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+    destination = JSON.parse(last_response.body)
+    assert_equal [t1.id, t2.id], destination['tag_ids']
+
+    put api(@destination.id), nil, input: @destination.attributes.merge(tag_ids: "ref:#{t2.ref},ref:#{t3.ref}").to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+    destination = JSON.parse(last_response.body)
+    assert_equal [t2.id], destination['tag_ids']
+  end
 end

@@ -20,6 +20,15 @@ require 'coerce'
 module SharedParams # rubocop:disable Metrics/ModuleLength
   extend Grape::API::Helpers
 
+  def filter_tag_ids_belong_to_customer(tag_ids, customer)
+    return [] if tag_ids.blank?
+
+    customer_tag_ids = customer.tags.pluck(:id)
+
+    # Return only tag_ids that belong to the customer
+    tag_ids & customer_tag_ids
+  end
+
   params :request_capacity do |options|
     requires :deliverable_unit_id, type: Integer
     requires :quantity, type: Float, coerce_with: CoerceFloatString
@@ -120,7 +129,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :phone_number, type: String
     optional :geocoding_accuracy, type: Float
     optional :geocoding_level, type: String, values: ['point', 'house', 'street', 'intersection', 'city']
-    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(Tag, CoerceArrayString.parse(value), customer: current_customer) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
+    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(Tag, CoerceArrayString.parse(value)) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
     optional :duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     if options[:json_import]
       optional :tags, type: Array, coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: ['tag1', 'tag2', 'tag3'] }
@@ -227,7 +236,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :max_distance, type: Integer, documentation: { desc: 'Maximum achievable distance in meters' }
     optional :max_ride_distance, type: Integer, documentation: { desc: 'Maximum riding distance between two stops within a route in meters' }
     optional :max_ride_duration, type: Integer, documentation: { desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
-    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(Tag, CoerceArrayString.parse(value), customer: current_customer) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', param_type: 'form', example: '1,2,ref:vip' }
+    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(Tag, CoerceArrayString.parse(value), ) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', param_type: 'form', example: '1,2,ref:vip' }
     optional :devices, type: Hash
     optional :custom_attributes, type: Hash, documentation: { desc: 'Additional properties'}
   end
@@ -243,7 +252,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
-    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(Tag, CoerceArrayString.parse(value), customer: current_customer) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', param_type: 'form', example: '1,2,ref:vip' }
+    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(Tag, CoerceArrayString.parse(value)) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', param_type: 'form', example: '1,2,ref:vip' }
 
     # Deprecated fields
     optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -275,7 +284,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   end
 
   params :request_visit do |options|
-    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(Tag, CoerceArrayString.parse(value), customer: current_customer) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
+    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(Tag, CoerceArrayString.parse(value)) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
     if options[:json_import]
       optional :tags, type: Array, coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: ['tag1', 'tag2', 'tag3'] }
     end

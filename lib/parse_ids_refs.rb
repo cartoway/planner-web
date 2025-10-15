@@ -44,15 +44,7 @@ class ParseIdsRefs
     conditions = []
     conditions << table[:id].in(ids[:id]) if ids[:id]&.any?
     conditions << table[:ref].lower.in(ids[:ref]&.map(&:downcase)) if ids[:ref]&.any?
-
-    base_condition = conditions.reduce(:or)
-
-    # Add customer restriction if applicable and customer is provided
-    if customer && clazz.column_names.include?('customer_id')
-      base_condition = base_condition.and(table[:customer_id].eq(customer.id))
-    end
-
-    base_condition
+    conditions.reduce(:or)
   end
 
   def self.where_pluck_ids(clazz, param, customer: nil)
