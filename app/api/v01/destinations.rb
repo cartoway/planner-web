@@ -171,6 +171,7 @@ class V01::Destinations < Grape::API
     post do
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
+      params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
       destination = current_customer.destinations.build(destination_params)
       destination.save!
       current_customer.save!
@@ -264,6 +265,7 @@ class V01::Destinations < Grape::API
     put ':id' do
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
+      params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
       id = ParseIdsRefs.read(params[:id])
       destination = current_customer.destinations.where(id).first!
       destination.assign_attributes(destination_params)

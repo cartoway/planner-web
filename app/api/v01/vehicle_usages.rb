@@ -86,6 +86,7 @@ class V01::VehicleUsages < Grape::API
           use :request_vehicle_usage
         end
         put ':id' do
+          params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
           vehicle_usage_set = current_customer.vehicle_usage_sets.where(id: params[:vehicle_usage_set_id]).first
           if vehicle_usage_set
             vehicle_usage = vehicle_usage_set.vehicle_usages.find{ |vehicle_usage| vehicle_usage.id == params[:id] }

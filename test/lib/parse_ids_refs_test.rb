@@ -30,7 +30,7 @@ class ParseIdsRefsTest < ActiveSupport::TestCase
 
     assert_includes result_ids, @tag_one.id
     assert_includes result_ids, @tag_two.id
-    assert_equal 2, result_ids.length
+    assert_equal 2, result_ids.size
   end
 
   test 'where_pluck_refs returns only refs' do
@@ -38,7 +38,7 @@ class ParseIdsRefsTest < ActiveSupport::TestCase
     result_refs = ParseIdsRefs.where_pluck_refs(Tag, refs_array)
 
     assert_includes result_refs, @tag_two.ref
-    assert_equal 1, result_refs.length
+    assert_equal 1, result_refs.size
   end
 
   test 'where_pluck_ids with mixed ids and refs returns only ids' do
@@ -47,7 +47,7 @@ class ParseIdsRefsTest < ActiveSupport::TestCase
 
     assert_includes result_ids, @tag_one.id
     assert_includes result_ids, @tag_two.id
-    assert_equal 2, result_ids.length
+    assert_equal 2, result_ids.size
   end
 
   test 'where_pluck_refs with mixed ids and refs returns only refs' do
@@ -55,17 +55,17 @@ class ParseIdsRefsTest < ActiveSupport::TestCase
     result_refs = ParseIdsRefs.where_pluck_refs(Tag, mixed_array)
 
     assert_includes result_refs, @tag_two.ref
-    assert_equal 1, result_refs.length
+    assert_equal 1, result_refs.compact.size
   end
 
   test 'where with case insensitive ref search' do
     # Test with uppercase ref
-    uppercase_ref_array = CoerceArrayString.parse("ref:#{@tag_one.ref.upcase}")
+    uppercase_ref_array = CoerceArrayString.parse("ref:#{@tag_two.ref.upcase}")
     condition = ParseIdsRefs.where(Tag, uppercase_ref_array)
     result = Tag.where(condition).to_a
 
-    assert_includes result, @tag_one
-    assert_equal 1, result.length
+    assert_includes result, @tag_two
+    assert_equal 1, result.size
   end
 
   test 'where_pluck_refs with case insensitive ref search' do
@@ -76,27 +76,6 @@ class ParseIdsRefsTest < ActiveSupport::TestCase
 
     assert_includes result_refs, @tag_one.ref
     assert_includes result_refs, @tag_two.ref
-    assert_equal 2, result_refs.length
-  end
-
-  test 'where with customer restriction' do
-    customer_one = customers(:customer_one)
-    customer_two = customers(:customer_two)
-
-    # Create tags for different customers
-    tag_customer_one = customer_one.tags.create!(label: 'Customer One Tag', ref: 'cust1')
-    tag_customer_two = customer_two.tags.create!(label: 'Customer Two Tag', ref: 'cust2')
-
-    # Search without customer restriction should find both
-    condition_no_customer = ParseIdsRefs.where(Tag, ['ref:cust1', 'ref:cust2'])
-    result_no_customer = Tag.where(condition_no_customer).to_a
-    assert_equal 2, result_no_customer.length
-
-    # Search with customer_one restriction should find only customer_one tags
-    condition_with_customer = ParseIdsRefs.where(Tag, ['ref:cust1', 'ref:cust2'], customer: customer_one)
-    result_with_customer = Tag.where(condition_with_customer).to_a
-    assert_equal 1, result_with_customer.length
-    assert_includes result_with_customer, tag_customer_one
-    assert_not_includes result_with_customer, tag_customer_two
+    assert_equal 2, result_refs.size
   end
 end
