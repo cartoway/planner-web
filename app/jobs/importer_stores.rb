@@ -15,8 +15,9 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-require 'importer_base'
+require 'case_insensitive_hash'
 require 'geocoder_stores_job'
+require 'importer_base'
 
 class ImporterStores < ImporterBase
 
@@ -78,7 +79,7 @@ class ImporterStores < ImporterBase
       }
     end
 
-    @stores_by_ref = Hash[@customer.stores.select(&:ref).collect{ |store| [store.ref, store] }]
+    @stores_by_ref = CaseInsensitiveHash[@customer.stores.select(&:ref).collect{ |store| [store.ref, store] }]
   end
 
   def import_row(_name, row, _line, _options)
@@ -89,7 +90,6 @@ class ImporterStores < ImporterBase
       raise ImportInvalidRow.new(I18n.t('stores.import_file.missing_location'))
     end
 
-    row[:ref] = row[:ref]&.strip&.downcase
     if !row[:ref].nil? && !row[:ref].empty?
       store = @stores_by_ref[row[:ref]]
       store.assign_attributes((row.key?(:lat) || row.key?(:lng) ? {lat: nil, lng: nil} : {}).merge(row)) if store

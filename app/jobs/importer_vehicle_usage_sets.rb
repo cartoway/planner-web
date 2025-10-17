@@ -15,8 +15,9 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-require 'importer_base'
+require 'case_insensitive_hash'
 require 'geocoder_stores_job'
+require 'importer_base'
 
 class ImporterVehicleUsageSets < ImporterBase
 
@@ -88,8 +89,8 @@ class ImporterVehicleUsageSets < ImporterBase
   end
 
   def before_import(name, data, options)
-    @tag_labels = Hash[@customer.tags.collect{ |tag| [tag.label, tag] }]
-    @tag_ids = Hash[@customer.tags.collect{ |tag| [tag.id, tag] }]
+    @tag_labels = CaseInsensitiveHash[@customer.tags.collect{ |tag| [tag.label, tag] }]
+    @tag_ids = CaseInsensitiveHash[@customer.tags.collect{ |tag| [tag.id, tag] }]
 
     if options[:line_shift] == 1
       # Create missing deliverable units if needed
@@ -114,10 +115,10 @@ class ImporterVehicleUsageSets < ImporterBase
 
     @common_configuration = {}
 
-    @stores_by_ref = Hash[@customer.stores.select(&:ref).collect { |store| [store.ref, store] }]
+    @stores_by_ref = CaseInsensitiveHash[@customer.stores.select(&:ref).collect { |store| [store.ref, store] }]
 
     imported_vehicle_refs = data.map { |datum| datum[I18n.t('vehicles.import.ref_vehicle')] }
-    @vehicles_by_ref = Hash[@customer.vehicles.select(&:ref).select { |vehicle| imported_vehicle_refs.include?(vehicle.ref) }.collect { |vehicle| [vehicle.ref, vehicle] }]
+    @vehicles_by_ref = CaseInsensitiveHash[@customer.vehicles.select(&:ref).select { |vehicle| imported_vehicle_refs.include?(vehicle.ref) }.collect { |vehicle| [vehicle.ref, vehicle] }]
     @vehicles_without_ref = @customer.vehicles.to_a.select { |vehicle| vehicle.ref.to_s.empty? || !imported_vehicle_refs.include?(vehicle.ref) }
   end
 

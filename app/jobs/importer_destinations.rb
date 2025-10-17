@@ -15,8 +15,9 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-require 'importer_base'
+require 'case_insensitive_hash'
 require 'geocoder_destinations_job'
+require 'importer_base'
 require 'value_to_boolean'
 
 class ImporterDestinations < ImporterBase
@@ -171,15 +172,15 @@ class ImporterDestinations < ImporterBase
     @common_tags = {}
     @tag_labels = Hash[@customer.tags.collect{ |tag| [tag.label, tag] }]
     @tag_ids = Hash[@customer.tags.collect{ |tag| [tag.id, tag] }]
-    @plannings_routes = Hash.new{ |h, k|
-      h[k] = Hash.new{ |hh, kk|
-        hh[kk] = Hash.new{ |hhh, kkk|
-          hhh[kkk] = kkk == :visits ? [] : nil
+    @plannings_routes = CaseInsensitiveHash.new{ |h, k|
+      h[k] = CaseInsensitiveHash.new{ |hh, kk|
+        hh[kk] = CaseInsensitiveHash.new{ |hhh, kkk|
+          hhh[kkk] = kkk == 'visits' ? [] : nil
         }
       }
     }
-    @plannings_vehicles = Hash.new{ |h, k|
-      h[k] = Hash.new
+    @plannings_vehicles = CaseInsensitiveHash.new{ |h, k|
+      h[k] = CaseInsensitiveHash.new
     }
     @deliverable_units ||= @customer&.deliverable_units || []
     @destinations_to_geocode_count = 0
@@ -193,7 +194,7 @@ class ImporterDestinations < ImporterBase
     if options[:replace]
       @customer.delete_all_destinations
     end
-    @plannings_hash = Hash[@customer.plannings.select(&:ref).map{ |plan| [down_ref(plan.ref), plan] }]
+    @plannings_hash = CaseInsensitiveHash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref, plan] }]
 
     if options[:line_shift] == 1
       labels = %w[delivery pickup quantity]
@@ -216,29 +217,29 @@ class ImporterDestinations < ImporterBase
 
     @destinations_attributes_without_ref = []
     @stores_attributes_without_ref = []
-    @existing_destinations_by_ref = {}
-    @existing_visits_by_ref = {}
-    @existing_stores_by_ref = {}
-    @destinations_visits_attributes_by_ref = {}
+    @existing_destinations_by_ref = CaseInsensitiveHash.new
+    @existing_visits_by_ref = CaseInsensitiveHash.new
+    @existing_stores_by_ref = CaseInsensitiveHash.new
+    @destinations_visits_attributes_by_ref = CaseInsensitiveHash.new
     @customer.destinations.includes_visits.where.not(ref: nil).find_each{ |destination|
-      @existing_destinations_by_ref[down_ref(destination.ref)] = destination
-      @existing_visits_by_ref[down_ref(destination.ref)] = Hash[destination.visits.map{ |visit| [down_ref(visit.ref), visit]}]
-      @destinations_visits_attributes_by_ref[down_ref(destination.ref)] = Hash.new
-      destination.visits.each{ |visit| @destinations_visits_attributes_by_ref[down_ref(visit.destination.ref)][down_ref(visit.ref)] = visit }
+      @existing_destinations_by_ref[destination.ref] = destination
+      @existing_visits_by_ref[destination.ref] = CaseInsensitiveHash[destination.visits.map{ |visit| [visit.ref, visit]}]
+      @destinations_visits_attributes_by_ref[destination.ref] = CaseInsensitiveHash.new
+      destination.visits.each{ |visit| @destinations_visits_attributes_by_ref[visit.destination.ref][visit.ref] = visit }
     }
     @customer.stores.where.not(ref: nil).find_each{ |store|
-      @existing_stores_by_ref[down_ref(store.ref)] = store
+      @existing_stores_by_ref[store.ref] = store
     }
 
-    @destinations_visits_attributes_by_ref[nil] = Hash.new
-    @destinations_attributes_by_ref = {}
-    @stores_attributes_by_ref = {}
+    @destinations_visits_attributes_by_ref[nil] = CaseInsensitiveHash.new
+    @destinations_attributes_by_ref = CaseInsensitiveHash.new
+    @stores_attributes_by_ref = CaseInsensitiveHash.new
     @visits_attributes_with_destination = {}
     @visits_attributes_without_ref = []
-    @visits_attributes_without_destination_with_ref_visit = {}
-    @visits_attributes_without_destination_without_ref_visit = {}
-    @visits_attributes_with_destination_with_ref_visit = {}
-    @visits_attributes_with_destination_without_ref_visit = {}
+    @visits_attributes_without_destination_with_ref_visit = CaseInsensitiveHash.new
+    @visits_attributes_without_destination_without_ref_visit = CaseInsensitiveHash.new
+    @visits_attributes_with_destination_with_ref_visit = CaseInsensitiveHash.new
+    @visits_attributes_with_destination_without_ref_visit = CaseInsensitiveHash.new
 
     # @plannings_by_ref set in import_row in order to have internal row title
     @plannings_by_ref = {}
@@ -255,13 +256,13 @@ class ImporterDestinations < ImporterBase
     @visit_index = 0
     @store_index = 0
 
-    @nil_visit_available = Hash.new(Hash.new(true))
+    @nil_visit_available = CaseInsensitiveHash.new{ |h, k| h[k] = CaseInsensitiveHash.new(true) }
 
     @tag_destinations = []
     @tag_visits = []
 
     @plannings = []
-    @plannings_attributes = {}
+    @plannings_attributes = CaseInsensitiveHash.new
   end
 
   def uniq_ref(row)
@@ -414,7 +415,6 @@ class ImporterDestinations < ImporterBase
   end
 
   def import_row(_name, row, line, _options)
-    ref_sanitizer(row)
     if is_visit?(row[:stop_type])
       convert_deprecated_fields(row)
       convert_localized_fields(row) # Necessary as import do not use validation callbacks
@@ -544,29 +544,9 @@ class ImporterDestinations < ImporterBase
     row[:revenue] = row[:revenue].gsub(/,/, '.')&.to_f if row[:revenue].is_a?(String)
   end
 
-  def down_ref(ref)
-    return nil if ref.blank?
-    ref.to_s.strip.downcase.to_sym
-  end
-
-  def ref_sanitizer(row)
-    row[:down_ref] = row[:ref]&.strip&.downcase if row[:ref]
-    row[:down_ref] = row[:down_ref].present? ? row[:down_ref].to_sym : nil if row[:down_ref]
-    row[:down_ref_visit] = row[:ref_visit]&.strip&.downcase if row[:ref_visit]
-    row[:down_ref_visit] = row[:down_ref_visit].present? ? row[:down_ref_visit].to_sym : nil if row[:down_ref_visit]
-    row[:down_route] = row[:route]&.strip&.downcase if row[:route]
-    row[:down_route] = row[:down_route].present? ? row[:down_route].to_sym : nil if row[:down_route]
-    row[:down_ref_vehicle] = row[:ref_vehicle]&.strip&.downcase if row[:ref_vehicle]
-    row[:down_ref_vehicle] = row[:down_ref_vehicle].present? ? row[:down_ref_vehicle].to_sym : nil if row[:down_ref_vehicle]
-    row[:down_ref_store] = row[:ref_store]&.strip&.downcase
-    row[:down_ref_store] = row[:down_ref_store].present? ? row[:down_ref_store].to_sym : nil if row[:down_ref_store]
-    row[:down_ref_planning] = row[:planning_ref]&.strip&.downcase if row[:planning_ref]
-    row[:down_ref_planning] = row[:down_ref_planning].present? ? row[:down_ref_planning].to_sym : nil if row[:down_ref_planning]
-  end
-
   def build_store_attributes(row)
     row.delete(:planning_date) if row[:planning_date].blank?
-    @plannings_attributes[row[:down_ref_planning]] ||=
+    @plannings_attributes[row[:planning_ref]] ||=
       {
         ref: row[:planning_ref],
         name: row[:planning_name],
@@ -580,7 +560,7 @@ class ImporterDestinations < ImporterBase
 
   def build_attributes(row)
     row.delete(:planning_date) if row[:planning_date].blank?
-    @plannings_attributes[row[:down_ref_planning]] ||=
+    @plannings_attributes[row[:planning_ref]] ||=
       {
         ref: row[:planning_ref],
         name: row[:planning_name],
@@ -648,7 +628,6 @@ class ImporterDestinations < ImporterBase
           attributes.delete(:tag_ids)&.each{ |tag_id|
             @tag_destinations << [import_index, tag_id]
           }
-          attributes.delete(:down_ref)
           slice_lines << lines
           destination_import_indices << import_index
           attributes
@@ -691,7 +670,6 @@ class ImporterDestinations < ImporterBase
           attributes.delete(:tag_ids)&.each{ |tag_id|
             @tag_visits << [attributes[:visit_index], tag_id]
           }
-          attributes.delete(:down_ref)
           slice_lines << lines
           visit_import_indices << attributes[:visit_index]
           attributes[:destination_id] = @destination_index_to_id_hash[attributes.delete(:destination_index)] if attributes.key?(:destination_index)
@@ -731,7 +709,6 @@ class ImporterDestinations < ImporterBase
         store_import_indices = []
         slice_lines = []
         stores_attributes = sliced_attributes.map{ |import_index, lines, attributes|
-          attributes.delete(:down_ref)
           slice_lines << lines
           store_import_indices << import_index
           attributes.except(:store_index)
@@ -805,16 +782,16 @@ class ImporterDestinations < ImporterBase
 
   def prepare_store(row, line, store_attributes)
     if row[:ref].present?
-      store = @existing_stores_by_ref[row[:down_ref]]
+      store = @existing_stores_by_ref[row[:ref]]
       filtered_store_attributes =
       if store
         store_attr = store.attributes.symbolize_keys
-        route_attributes = store_attr.extract!(:ref_vehicle, :ref_planning, :route)
+        route_attributes = store_attr.extract!(:ref_vehicle, :planning_ref, :route)
         store_attr.extract!(:id, :name, :postalcode, :city, :lat, :lng).merge(store_attributes)
       else
         store_attributes
       end
-      index, lines, store_attr = @stores_attributes_by_ref[row[:down_ref]]
+      index, lines, store_attr = @stores_attributes_by_ref[row[:ref]]
       if store_attr
         reset_geocoding(filtered_store_attributes)
         lines << line
@@ -823,7 +800,7 @@ class ImporterDestinations < ImporterBase
       else
         index = @store_index
         reset_geocoding(filtered_store_attributes)
-        @stores_attributes_by_ref[row[:down_ref]] = [index, [line], filtered_store_attributes]
+        @stores_attributes_by_ref[row[:ref]] = [index, [line], filtered_store_attributes]
         store_attributes.merge!(store_index: index)
         @store_index += 1
       end
@@ -838,12 +815,12 @@ class ImporterDestinations < ImporterBase
 
   def prepare_destination(row, line, destination_attributes, visit_attributes)
     if row[:ref].present?
-      destination = @existing_destinations_by_ref[row[:down_ref]]
+      destination = @existing_destinations_by_ref[row[:ref]]
       if destination
         dest_attributes = destination.attributes.symbolize_keys
         destination_attributes = dest_attributes.extract!(:id, :name, :postalcode, :city, :lat, :lng).merge(destination_attributes)
       end
-      index, lines, dest_attributes = @destinations_attributes_by_ref[row[:down_ref]]
+      index, lines, dest_attributes = @destinations_attributes_by_ref[row[:ref]]
       if dest_attributes
         reset_geocoding(destination_attributes)
         lines << line
@@ -851,7 +828,7 @@ class ImporterDestinations < ImporterBase
       else
         index = @destination_index
         reset_geocoding(destination_attributes)
-        @destinations_attributes_by_ref[row[:down_ref]] = [@destination_index, [line], destination_attributes]
+        @destinations_attributes_by_ref[row[:ref]] = [@destination_index, [line], destination_attributes]
         @destination_index += 1
       end
       prepare_visit_with_destination_ref(row, line, destination, index, destination_attributes, visit_attributes) if index
@@ -865,12 +842,12 @@ class ImporterDestinations < ImporterBase
   def prepare_visit_with_destination_ref(row, line, destination, destination_index, destination_attributes, visit_attributes)
     if row[:without_visit].nil? || row[:without_visit].strip.empty?
       if destination
-        visit = if row[:ref_visit] || @nil_visit_available[row[:down_ref_planning]][row[:down_ref]]
+        visit = if row[:ref_visit] || @nil_visit_available[row[:planning_ref]][row[:ref]]
           # If nil_visit available retrieve the first visit of the destination with a nil ref_visit
-          @nil_visit_available[row[:down_ref_planning]][row[:down_ref]] = false
-          @existing_visits_by_ref[row[:down_ref]][row[:down_ref_visit]]
+          @nil_visit_available[row[:planning_ref]][row[:ref]] = false
+          @existing_visits_by_ref[row[:ref]][row[:ref_visit]]
         end
-        @destinations_visits_attributes_by_ref[row[:down_ref]] ||= Hash.new
+        @destinations_visits_attributes_by_ref[row[:ref]] ||= CaseInsensitiveHash.new
         visit_attributes.merge!(destination_id: destination.id)
         if visit
           visit_attributes.merge!(id: visit.id)
@@ -883,24 +860,24 @@ class ImporterDestinations < ImporterBase
         end
 
         if row[:ref_visit]
-          @visits_attributes_with_destination_with_ref_visit[row[:down_ref]] = {} if !@visits_attributes_with_destination_with_ref_visit.key?(row[:down_ref])
-          lines = (@visits_attributes_with_destination_with_ref_visit[row[:down_ref]][row[:down_ref_visit]]&.first || []) << line
-          merge_visit_quantities(@visits_attributes_with_destination_with_ref_visit[row[:down_ref]][row[:down_ref_visit]]&.last, visit_attributes)
-          @visits_attributes_with_destination_with_ref_visit[row[:down_ref]][row[:down_ref_visit]] = [lines, visit_attributes]
+          @visits_attributes_with_destination_with_ref_visit[row[:ref]] = {} if !@visits_attributes_with_destination_with_ref_visit.key?(row[:ref])
+          lines = (@visits_attributes_with_destination_with_ref_visit[row[:ref]][row[:ref_visit]]&.first || []) << line
+          merge_visit_quantities(@visits_attributes_with_destination_with_ref_visit[row[:ref]][row[:ref_visit]]&.last, visit_attributes)
+          @visits_attributes_with_destination_with_ref_visit[row[:ref]][row[:ref_visit]] = [lines, visit_attributes]
         else
-          @visits_attributes_with_destination_without_ref_visit[row[:down_ref]] = [] if !@visits_attributes_with_destination_without_ref_visit.key?(row[:down_ref])
-          @visits_attributes_with_destination_without_ref_visit[row[:down_ref]] << [[line], visit_attributes]
+          @visits_attributes_with_destination_without_ref_visit[row[:ref]] = [] if !@visits_attributes_with_destination_without_ref_visit.key?(row[:ref])
+          @visits_attributes_with_destination_without_ref_visit[row[:ref]] << [[line], visit_attributes]
         end
       else
         visit_attributes.merge!(destination_index: destination_index)
         if row[:ref_visit]
-          @visits_attributes_without_destination_with_ref_visit[row[:down_ref]] = {} if !@visits_attributes_without_destination_with_ref_visit.key?(row[:down_ref])
-          lines = (@visits_attributes_without_destination_with_ref_visit[row[:down_ref]][row[:down_ref_visit]]&.first || []) << line
-          merge_visit_quantities(@visits_attributes_without_destination_with_ref_visit[row[:down_ref]][row[:down_ref_visit]]&.last, visit_attributes)
-          @visits_attributes_without_destination_with_ref_visit[row[:down_ref]][row[:down_ref_visit]] = [lines, visit_attributes]
+          @visits_attributes_without_destination_with_ref_visit[row[:ref]] = {} if !@visits_attributes_without_destination_with_ref_visit.key?(row[:ref])
+          lines = (@visits_attributes_without_destination_with_ref_visit[row[:ref]][row[:ref_visit]]&.first || []) << line
+          merge_visit_quantities(@visits_attributes_without_destination_with_ref_visit[row[:ref]][row[:ref_visit]]&.last, visit_attributes)
+          @visits_attributes_without_destination_with_ref_visit[row[:ref]][row[:ref_visit]] = [lines, visit_attributes]
         else
-          @visits_attributes_without_destination_without_ref_visit[row[:down_ref]] = [] if !@visits_attributes_without_destination_without_ref_visit.key?(row[:down_ref])
-          @visits_attributes_without_destination_without_ref_visit[row[:down_ref]] << [[line], visit_attributes]
+          @visits_attributes_without_destination_without_ref_visit[row[:ref]] = [] if !@visits_attributes_without_destination_without_ref_visit.key?(row[:ref])
+          @visits_attributes_without_destination_without_ref_visit[row[:ref]] << [[line], visit_attributes]
         end
       end
     elsif row[:without_visit] == 'x'
@@ -917,17 +894,17 @@ class ImporterDestinations < ImporterBase
     if store_attributes
       if row.key?(:route) && store_attributes[:id].nil?
         if row[:route] && row[:ref_vehicle]
-          if @plannings_routes[row[:down_ref_planning]][row[:down_route]].key?(:down_ref_vehicle) &&
-             @plannings_routes[row[:down_ref_planning]][row[:down_route]][:down_ref_vehicle] != row[:down_ref_vehicle] ||
-             @plannings_vehicles[row[:down_ref_planning]][row[:down_ref_vehicle]] &&
-             @plannings_vehicles[row[:down_ref_planning]][row[:down_ref_vehicle]] != row[:down_route]
+          if @plannings_routes[row[:planning_ref]][row[:route]].key?(:ref_vehicle) &&
+             @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] != row[:ref_vehicle] ||
+             @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] &&
+             @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] != row[:route]
             raise ImportInvalidRow.new(I18n.t('destinations.import_file.refs_route_discordant'))
           end
-          @plannings_routes[row[:down_ref_planning]][row[:down_route]][:down_ref_vehicle] = row[:down_ref_vehicle]
-          @plannings_routes[row[:down_ref_planning]][row[:down_route]][:ref_vehicle] = row[:ref_vehicle]
-          @plannings_vehicles[row[:down_ref_planning]][row[:down_ref_vehicle]] = row[:down_route]
+          @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
+          @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
+          @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] = row[:route]
         end
-        @plannings_routes[row[:down_ref_planning]][row[:down_route]][:visits] << [:store, store_attributes, { active: true, custom_attributes: row[:stop_custom_attributes] }]
+        @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [:store, store_attributes, { active: true, custom_attributes: row[:stop_custom_attributes] }]
       end
     end
   end
@@ -935,26 +912,26 @@ class ImporterDestinations < ImporterBase
   def prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
     if visit_attributes
       # Instersection of tags of all rows for tags of new planning
-      if !@common_tags[row[:down_ref_planning]]
-        @common_tags[row[:down_ref_planning]] = (visit_attributes[:tag_ids].to_a | destination_attributes[:tag_ids].to_a)
+      if !@common_tags[row[:planning_ref]]
+        @common_tags[row[:planning_ref]] = (visit_attributes[:tag_ids].to_a | destination_attributes[:tag_ids].to_a)
       else
-        @common_tags[row[:down_ref_planning]] &= (visit_attributes[:tag_ids].to_a | destination_attributes[:tag_ids].to_a)
+        @common_tags[row[:planning_ref]] &= (visit_attributes[:tag_ids].to_a | destination_attributes[:tag_ids].to_a)
       end
 
       # Add visit to route if needed
       if row.key?(:route) && (visit_attributes[:id].nil? || !@visit_ids.include?(visit_attributes[:id]))
         if row[:route] && row[:ref_vehicle]
-          if @plannings_routes[row[:down_ref_planning]][row[:down_route]].key?(:down_ref_vehicle) &&
-             @plannings_routes[row[:down_ref_planning]][row[:down_route]][:down_ref_vehicle] != row[:down_ref_vehicle] ||
-             @plannings_vehicles[row[:down_ref_planning]][row[:down_ref_vehicle]] &&
-             @plannings_vehicles[row[:down_ref_planning]][row[:down_ref_vehicle]] != row[:down_route]
+          if @plannings_routes[row[:planning_ref]][row[:route]].key?(:ref_vehicle) &&
+             @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] != row[:ref_vehicle] ||
+             @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] &&
+             @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] != row[:route]
             raise ImportInvalidRow.new(I18n.t('destinations.import_file.refs_route_discordant'))
           end
-          @plannings_routes[row[:down_ref_planning]][row[:down_route]][:down_ref_vehicle] = row[:down_ref_vehicle]
-          @plannings_routes[row[:down_ref_planning]][row[:down_route]][:ref_vehicle] = row[:ref_vehicle]
-          @plannings_vehicles[row[:down_ref_planning]][row[:down_ref_vehicle]] = row[:down_route]
+          @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
+          @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
+          @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] = row[:route]
         end
-        @plannings_routes[row[:down_ref_planning]][row[:down_route]][:visits] << [:visit, visit_attributes, { active: ValueToBoolean.value_to_boolean(row[:active], true), custom_attributes: row[:stop_custom_attribute_visits] }]
+        @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [:visit, visit_attributes, { active: ValueToBoolean.value_to_boolean(row[:active], true), custom_attributes: row[:stop_custom_attribute_visits] }]
         @visit_ids << visit_attributes[:id] if visit_attributes[:id]
       end
     end
@@ -966,7 +943,7 @@ class ImporterDestinations < ImporterBase
       Planning.transaction do
         next if @provided_planning_attributes.empty? && ref.nil? && routes_hash.keys.compact.empty?
 
-        planning = ref ? @plannings_hash[ref] : @plannings_hash[down_ref(@provided_planning_attributes[:ref])]
+        planning = ref ? @plannings_hash[ref] : @plannings_hash[@provided_planning_attributes[:ref]]
         planning_id = planning&.id
         unless planning
           attributes = @plannings_attributes[ref]
