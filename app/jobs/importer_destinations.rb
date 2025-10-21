@@ -175,7 +175,7 @@ class ImporterDestinations < ImporterBase
     @plannings_routes = CaseInsensitiveHash.new{ |h, k|
       h[k] = CaseInsensitiveHash.new{ |hh, kk|
         hh[kk] = CaseInsensitiveHash.new{ |hhh, kkk|
-          hhh[kkk] = kkk == 'visits' ? [] : nil
+          hhh[kkk] = kkk.to_s.downcase == 'visits' ? [] : nil
         }
       }
     }

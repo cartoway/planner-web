@@ -1,18 +1,18 @@
-# Copyright © Mapotempo, 2013-2016
+# Copyright © Cartoway, 2025
 #
-# This file is part of Mapotempo.
+# This file is part of Cartoway Planner.
 #
-# Mapotempo is free software. You can redistribute it and/or
+# Cartoway Planner is free software. You can redistribute it and/or
 # modify since you respect the terms of the GNU Affero General
 # Public License as published by the Free Software Foundation,
 # either version 3 of the License, or (at your option) any later version.
 #
-# Mapotempo is distributed in the hope that it will be useful, but WITHOUT
+# Cartoway Planner is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the Licenses for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with Mapotempo. If not, see:
+# along with Cartoway Planner. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
@@ -123,9 +123,9 @@ class CaseInsensitiveHashTest < ActiveSupport::TestCase
   test "should handle default proc" do
     hash = CaseInsensitiveHash.new{ |h, k| h[k] = "default_#{k}" }
 
-    assert_equal "default_test", hash["TEST"]
-    assert_equal "default_test", hash["test"]
-    assert_equal "default_test", hash["Test"]
+    assert_equal "default_TEST", hash["TEST"]
+    assert_equal "default_TEST", hash["test"]
+    assert_equal "default_TEST", hash["Test"]
   end
 
   test "should handle delete operation" do
@@ -137,5 +137,34 @@ class CaseInsensitiveHashTest < ActiveSupport::TestCase
     assert_equal 1, hash.size
     assert hash.key?("KEY2")
     assert_not hash.key?("Key1")
+  end
+
+  test "should keep original keys in each iterations" do
+    hash = CaseInsensitiveHash.new
+    hash["Key1"] = "value1"
+    hash["KEY2"] = "value2"
+
+    keys_collected = []
+    # rubocop:disable Style/HashEachMethods, Style/MapIntoArray
+    hash.each do |key, value|
+      keys_collected << key
+    end
+    # rubocop:enable Style/HashEachMethods, Style/MapIntoArray
+
+    assert_includes keys_collected, "Key1"
+    assert_includes keys_collected, "KEY2"
+  end
+
+  test "should keep original keys in map iterations" do
+    hash = CaseInsensitiveHash.new
+    hash["Key1"] = "value1"
+    hash["KEY2"] = "value2"
+
+    keys_collected = hash.map do |key, value|
+      key
+    end
+
+    assert_includes keys_collected, "Key1"
+    assert_includes keys_collected, "KEY2"
   end
 end

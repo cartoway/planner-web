@@ -45,7 +45,7 @@ class CaseInsensitiveHash < ActiveSupport::HashWithIndifferentAccess
     if key?(normalized_key) || !default_proc
       super(normalized_key)
     else
-      default_proc.call(self, normalized_key)
+      default_proc.call(self, key)
     end
   end
 
@@ -109,10 +109,22 @@ class CaseInsensitiveHash < ActiveSupport::HashWithIndifferentAccess
     super
   end
 
+  def inspect
+    "#<#{self.class}:0x#{object_id.to_s(16)} #{to_hash.inspect}>"
+  end
+
+  def to_hash
+    result = {}
+    @key_map.each_value do |original_key|
+      result[original_key] = self[original_key]
+    end
+    result
+  end
+
   private
 
   def normalize_key(key)
-    return key if key.nil?
+    return if key.nil?
 
     key.to_s.strip.downcase
   end
