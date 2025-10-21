@@ -156,6 +156,7 @@ class Planning < ApplicationRecord
         ref_updates << { id: routes[i].id, ref: ref&.to_s }
         routes[i].add_objects(r[:visits], recompute, ignore_errors)
       }
+      ref_updates << { id: routes.find{ |r| !r.vehicle_usage? }.id, ref: nil }
 
       if ref_updates.any?
         case_statement = ref_updates.map { |update| "WHEN #{update[:id]} THEN '#{update[:ref]}'" }.join(' ')
