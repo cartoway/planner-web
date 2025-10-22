@@ -922,9 +922,9 @@ class ImporterDestinations < ImporterBase
       if row.key?(:route) && (visit_attributes[:id].nil? || !@visit_ids.include?(visit_attributes[:id]))
         if row[:route] && row[:ref_vehicle]
           if @plannings_routes[row[:planning_ref]][row[:route]].key?(:ref_vehicle) &&
-             @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] != row[:ref_vehicle] ||
+             @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle].downcase != row[:ref_vehicle].downcase ||
              @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] &&
-             @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] != row[:route]
+             @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]].downcase != row[:route].downcase
             raise ImportInvalidRow.new(I18n.t('destinations.import_file.refs_route_discordant'))
           end
           @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
