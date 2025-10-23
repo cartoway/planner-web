@@ -1,5 +1,9 @@
 # Changelog
 
+## V107.1.1
+  ### Fixed
+  - Extend insensitive `ref` fields to more API endpoints [#513](https://github.com/cartoway/planner-web/pull/513)
+
 ## V107.1.0
   ### Added
   - Extract geojsons from `Route` model into the new `RouteGeojson` model [#501](https://github.com/cartoway/planner-web/pull/501)
