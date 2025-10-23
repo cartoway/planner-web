@@ -1,6 +1,30 @@
 # Changelog
 
-## Dev
+## V107.1.0
+  ### Added
+  - Extract geojsons from `Route` model into the new `RouteGeojson` model [#501](https://github.com/cartoway/planner-web/pull/501)
+  - `Tags` might be defined using `ref` as the other refs in API [#508](https://github.com/cartoway/planner-web/pull/508)
+  - `ref` fields are now case insensitive [#510](https://github.com/cartoway/planner-web/pull/510)
+
+
+  ### Changed
+  - Avoid unnecessary scoping in `automatic_insert` API call [#494](https://github.com/cartoway/planner-web/pull/494)
+  - Improve `visits/moves` performances [#494](https://github.com/cartoway/planner-web/pull/494)
+  - Skip healthcheck in rails_performance monitoring [#494](https://github.com/cartoway/planner-web/pull/494)
+  - Use a temporary custom branch of rails_performance to show API calls without response [#498](https://github.com/cartoway/planner-web/pull/498)
+
+  ### Removed
+  - Remove Leaflet-responsive-popup from dependencies [#492](https://github.com/cartoway/planner-web/pull/492)
+  - Remove SimplifyJob and DelayedJobManager as the simplify process is now done on the router side [#501](https://github.com/cartoway/planner-web/pull/501)
+
+  ### Fixed
+  - Single routes are now able again to send email to drivers [#492](https://github.com/cartoway/planner-web/pull/492)
+  - `automatic_insert` with a unreachable destination was failing [#500](https://github.com/cartoway/planner-web/pull/500)
+  - `customer` update was erasing pre-existing `advanced_options` [#503](https://github.com/cartoway/planner-web/pull/503)
+  - Lasso now consider `markerClusters` [#506](https://github.com/cartoway/planner-web/pull/506)
+  - If the router mode is unavailable the `Planning#create` fails no more [#505](https://github.com/cartoway/planner-web/pull/505)
+
+## V107.0.0
   ### Added
   - Customer: Allow to order and filter the solvers to use [#422](https://github.com/cartoway/planner-web/pull/422)
   - Planning: Introduce a lasso to select multiple stops on the fly [#424](https://github.com/cartoway/planner-web/pull/424)
@@ -29,7 +53,6 @@
   ### Removed
   - Remove Iconv from dependencies [#457](https://github.com/cartoway/planner-web/pull/457)
   - Remove Leaflet.Draw from dependencies [#450](https://github.com/cartoway/planner-web/pull/450)
-  - Remove Leaflet-responsive-popup from dependencies
 
   ### Fixed
   - StopStore
