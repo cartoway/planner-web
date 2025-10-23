@@ -300,6 +300,20 @@ class V01::RoutesTest < V01::RoutesBaseTest
       assert_equal '3', last_response.body
     end
   end
+
+  test 'should find route by ref case insensitive' do
+    # Set a specific ref for the route
+    @route.update(ref: 'TestRoute')
+
+    # Test different case variations for GET
+    ['ref:testroute', 'ref:TestRoute', 'ref:TESTROUTE', 'ref:TeStRoUtE'].each do |ref_variant|
+      get api(@route.planning_id, ref_variant)
+      assert last_response.ok?, "Failed for ref variant: #{ref_variant}"
+      response = JSON.parse(last_response.body)
+      assert_equal @route.id, response['id'], "Route not found for ref variant: #{ref_variant}"
+      assert_equal 'TestRoute', response['ref'], "Ref not preserved correctly for variant: #{ref_variant}"
+    end
+  end
 end
 
 class V01::RoutesErrorTest < V01::RoutesBaseTest

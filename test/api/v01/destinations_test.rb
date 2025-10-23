@@ -1522,4 +1522,18 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
     destination = JSON.parse(last_response.body)
     assert_equal [t2.id], destination['tag_ids']
   end
+
+  test 'should find destination by ref case insensitive' do
+    # Set a specific ref for the destination
+    @destination.update(ref: 'TestDestination')
+
+    # Test different case variations for GET
+    ['ref:testdestination', 'ref:TestDestination', 'ref:TESTDESTINATION', 'ref:TeStDeStInAtIoN'].each do |ref_variant|
+      get api(ref_variant)
+      assert last_response.ok?, "Failed for ref variant: #{ref_variant}"
+      response = JSON.parse(last_response.body)
+      assert_equal @destination.id, response['id'], "Destination not found for ref variant: #{ref_variant}"
+      assert_equal 'TestDestination', response['ref'], "Ref not preserved correctly for variant: #{ref_variant}"
+    end
+  end
 end
