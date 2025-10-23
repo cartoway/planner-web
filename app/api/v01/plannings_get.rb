@@ -107,7 +107,7 @@ class V01::PlanningsGet < Grape::API
       optional :stores, type: Boolean, default: false, desc: 'Include the stores in geojson output.'
     end
     get ':id' do
-      planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+      planning = current_customer.plannings.where(ParseIdsRefs.where(Planning, [params[:id]])).first!
       if env['api.format'] == :ics
         if params.key?(:email)
           emails_routes = get_format_routes_email([planning.id])

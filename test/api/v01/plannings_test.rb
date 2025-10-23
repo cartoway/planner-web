@@ -65,6 +65,18 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     assert_equal @planning.ref, JSON.parse(last_response.body)['ref']
   end
 
+  test 'should find planning by ref case insensitive' do
+    @planning.update(ref: 'TestRef')
+
+    ['testref', 'TestRef', 'TESTREF', 'TeStReF'].each do |ref_variant|
+      get api("ref:#{ref_variant}")
+      assert last_response.ok?, "Failed for ref variant: #{ref_variant}"
+      response = JSON.parse(last_response.body)
+      assert_equal @planning.id, response['id'], "Planning not found for ref variant: #{ref_variant}"
+      assert_equal 'TestRef', response['ref'], "Ref not preserved correctly for variant: #{ref_variant}"
+    end
+  end
+
   test 'should create a planning' do
     assert_difference('Planning.count', 1) do
       @planning.name = 'new name'

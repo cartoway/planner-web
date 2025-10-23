@@ -156,4 +156,18 @@ class V01::StoresTest < ActiveSupport::TestCase
     assert last_response.body['success']
     refute_empty last_response.body['result']
   end
+
+  test 'should find store by ref case insensitive' do
+    # Set a specific ref for the store
+    @store.update(ref: 'TestStore')
+
+    # Test different case variations for GET
+    ['ref:teststore', 'ref:TestStore', 'ref:TESTSTORE', 'ref:TeStStOrE'].each do |ref_variant|
+      get api(ref_variant)
+      assert last_response.ok?, "Failed for ref variant: #{ref_variant}"
+      response = JSON.parse(last_response.body)
+      assert_equal @store.id, response['id'], "Store not found for ref variant: #{ref_variant}"
+      assert_equal 'TestStore', response['ref'], "Ref not preserved correctly for variant: #{ref_variant}"
+    end
+  end
 end

@@ -91,4 +91,18 @@ class V01::PlanningsGetTest < ActiveSupport::TestCase
     assert_nil geojson['features'][0]['geometry']['coordinates']
     assert geojson['features'][0]['geometry']['polylines']
   end
+
+  test 'should find planning by ref case insensitive' do
+    # Set a specific ref for the planning
+    @planning.update(ref: 'TestRef')
+
+    # Test different case variations
+    ['ref:testref', 'ref:TestRef', 'ref:TESTREF', 'ref:TeStReF'].each do |ref_variant|
+      get api("/plannings/#{ref_variant}.json", api_key: @user.api_key)
+      assert last_response.ok?, "Failed for ref variant: #{ref_variant}"
+      response = JSON.parse(last_response.body)
+      assert_equal @planning.id, response['id'], "Planning not found for ref variant: #{ref_variant}"
+      assert_equal 'TestRef', response['ref'], "Ref not preserved correctly for variant: #{ref_variant}"
+    end
+  end
 end

@@ -32,7 +32,7 @@ class V01::Routes < Grape::API
 
     def get_route
       unless @route
-        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
+        planning = current_customer.plannings.where(ParseIdsRefs.where(Planning, [params[:planning_id]])).first!
         @route ||= planning.routes.find{ |route| ParseIdsRefs.match(params[:id], route) }
       end
       @route || raise(ActiveRecord::RecordNotFound.new)

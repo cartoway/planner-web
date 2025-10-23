@@ -191,8 +191,7 @@ class V01::Vehicles < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     get ':id' do
-      id = ParseIdsRefs.read(params[:id])
-      present current_customer.vehicles.where(id).first!, with: V01::Entities::Vehicle
+      present current_customer.vehicles.where(ParseIdsRefs.where(Vehicle, [params[:id]])).first!, with: V01::Entities::Vehicle
     end
 
     desc 'Update vehicle.',
@@ -205,8 +204,7 @@ class V01::Vehicles < Grape::API
     end
     put ':id' do
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
-      id = ParseIdsRefs.read(params[:id])
-      vehicle = current_customer.vehicles.where(id).first!
+      vehicle = current_customer.vehicles.where(ParseIdsRefs.where(Vehicle, [params[:id]])).first!
       vehicle.update! vehicle_params
       present vehicle, with: V01::Entities::Vehicle
     end
@@ -261,17 +259,16 @@ class V01::Vehicles < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     delete ':id' do
-      id = ParseIdsRefs.read(params[:id])
       if Planner::Application.config.manage_vehicles_only_admin
         if @current_user.admin?
-          vehicle = Vehicle.for_reseller_id(@current_user.reseller.id).where(id).first!
+          vehicle = Vehicle.for_reseller_id(@current_user.reseller.id).where(ParseIdsRefs.where(Vehicle, [params[:id]])).first!
           vehicle.destroy!
           status 204
         else
           error! V01::Status.code_response(:code_403), 403
         end
       else
-        current_customer.vehicles.where(id).first!.destroy!
+        current_customer.vehicles.where(ParseIdsRefs.where(Vehicle, [params[:id]])).first!.destroy!
         status 204
       end
     end

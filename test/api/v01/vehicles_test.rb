@@ -290,11 +290,33 @@ class V01::VehiclesTest < ActiveSupport::TestCase
           end
         end
 
-        # test assign attributes
+        #Test retrieving vehicle with multiple cases
         get api(nil, {ids: 'ref:new'})
         assert last_response.ok?, last_response.body
         assert_equal new_name, JSON.parse(last_response.body)[0]['name']
-        id = JSON.parse(last_response.body)[0]['id']
+
+        get api(nil, {ids: 'ref:New'})
+        assert last_response.ok?, last_response.body
+        assert_equal new_name, JSON.parse(last_response.body)[0]['name']
+
+        get api(nil, {ids: 'ref:NEW'})
+        assert last_response.ok?, last_response.body
+        assert_equal new_name, JSON.parse(last_response.body)[0]['name']
+
+        get api('ref:new')
+        assert last_response.ok?, last_response.body
+        assert_equal new_name, JSON.parse(last_response.body)['name']
+
+        get api('ref:New')
+        assert last_response.ok?, last_response.body
+        assert_equal new_name, JSON.parse(last_response.body)['name']
+
+        get api('ref:NEW')
+        assert last_response.ok?, last_response.body
+        assert_equal new_name, JSON.parse(last_response.body)['name']
+
+        # test assign attributes
+        id = JSON.parse(last_response.body)['id']
         customer.vehicle_usage_sets.each { |s|
           get "/api/0.1/vehicle_usage_sets/#{s.id.to_s}/vehicle_usages.json?api_key=testkey1"
           hash = JSON.parse(last_response.body)

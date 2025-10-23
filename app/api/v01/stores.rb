@@ -79,8 +79,7 @@ class V01::Stores < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     get ':id' do
-      id = ParseIdsRefs.read(params[:id])
-      present current_customer.stores.where(id).first!, with: V01::Entities::Store
+      present current_customer.stores.where(ParseIdsRefs.where(Store, [params[:id]])).first!, with: V01::Entities::Store
     end
 
     desc 'Create store.',
@@ -135,8 +134,7 @@ class V01::Stores < Grape::API
       use :request_store
     end
     put ':id' do
-      id = ParseIdsRefs.read(params[:id])
-      store = current_customer.stores.where(id).first!
+      store = current_customer.stores.where(ParseIdsRefs.where(Store, [params[:id]])).first!
       store.assign_attributes(store_params)
       store.save!
       store.customer.save! if store.customer
@@ -152,8 +150,7 @@ class V01::Stores < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     delete ':id' do
-      id = ParseIdsRefs.read(params[:id])
-      current_customer.stores.where(id).first!.destroy!
+      current_customer.stores.where(ParseIdsRefs.where(Store, [params[:id]])).first!.destroy!
       status 204
     end
 

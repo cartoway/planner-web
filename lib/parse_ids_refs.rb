@@ -28,7 +28,7 @@ class ParseIdsRefs
 
   def self.match(raw_id, obj)
     o = read(raw_id)
-    o[:id] == obj.id || (o.key?(:ref) && o[:ref] == obj.ref&.downcase)
+    o[:id] == obj.id || (o.key?(:ref) && o[:ref]&.downcase == obj.ref&.downcase)
   end
 
   def self.match_ref?(raw_ref, obj)
