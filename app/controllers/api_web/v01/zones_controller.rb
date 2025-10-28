@@ -32,13 +32,13 @@ class ApiWeb::V01::ZonesController < ApiWeb::V01::ApiWebController
     end
     if params.key?(:destination_ids)
       destination_ids = params[:destination_ids].split(',')
-      @destinations = current_user.customer.destinations.where(ParseIdsRefs.where(Destination, destination_ids))
+      @destinations = current_user.customer.destinations.where(ParseIdsRefs.where_clause(destination_ids))
     elsif params[:destinations] && ValueToBoolean.value_to_boolean(params[:destinations], true)
       @destinations = current_user.customer.destinations
       @destinations_all = true
     end
     if params.key?(:store_ids)
-      @stores = current_user.customer.stores.where(ParseIdsRefs.where(Store, params[:store_ids].split(',')))
+      @stores = current_user.customer.stores.where(ParseIdsRefs.where_clause(params[:store_ids].split(',')))
     end
     @vehicle_usage_set = if params[:vehicle_usage_set_id]
        current_user.customer.vehicle_usage_sets.find(params[:vehicle_usage_set_id])

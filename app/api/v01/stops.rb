@@ -48,7 +48,7 @@ class V01::Stops < Grape::API
               requires :id, type: Integer
             end
             get ':id' do
-              s = current_customer.plannings.where(ParseIdsRefs.where(Planning, [params[:planning_id]])).first!.routes.where(ParseIdsRefs.where(Route, [params[:route_id]])).first!.stops.where(id: params[:id]).first!
+              s = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.where(ParseIdsRefs.where_clause([params[:route_id]])).first!.stops.where(id: params[:id]).first!
               present s, with: V01::Entities::Stop
             end
 
@@ -61,7 +61,7 @@ class V01::Stops < Grape::API
               use :params_from_entity, entity: V01::Entities::Stop.documentation.slice(:active)
             end
             put ':id' do
-              planning = current_customer.plannings.where(ParseIdsRefs.where(Planning, [params[:planning_id]])).first!
+              planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!
               raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, planning.id)
               route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) } || raise(ActiveRecord::RecordNotFound.new)
               stop = route.stops.find{ |stop| stop.id == Integer(params[:id]) } || raise(ActiveRecord::RecordNotFound.new)
@@ -83,7 +83,7 @@ class V01::Stops < Grape::API
               requires :index, type: Integer, desc: 'New position in the route'
             end
             patch ':id/move/:index' do
-              planning = current_customer.plannings.where(ParseIdsRefs.where(Planning, [params[:planning_id]])).first!
+              planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!
               raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, planning.id)
 
               stop = nil

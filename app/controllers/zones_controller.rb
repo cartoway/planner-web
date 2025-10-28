@@ -9,7 +9,7 @@ class ZonesController < ApplicationController
   def show
     if params.key?(:destination_ids)
       destination_ids = params[:destination_ids].split(',')
-      @destinations = current_user.customer.destinations.where(ParseIdsRefs.where(Destination, destination_ids))
+      @destinations = current_user.customer.destinations.where(ParseIdsRefs.where_clause(destination_ids))
     elsif params[:destinations] && ValueToBoolean.value_to_boolean(params[:destinations], true)
       @destinations = current_user.customer.destinations
     elsif @planning = params.key?(:planning_id) ? current_user.customer.plannings.find(params[:planning_id]) : nil

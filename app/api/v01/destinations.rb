@@ -157,7 +157,7 @@ class V01::Destinations < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     get ':id' do
-      present current_customer.destinations.includes_visits.where(ParseIdsRefs.where(Destination, [params[:id]])).first!, with: V01::Entities::Destination
+      present current_customer.destinations.includes_visits.where(ParseIdsRefs.where_clause([params[:id]])).first!, with: V01::Entities::Destination
     end
 
     desc 'Create destination.',
@@ -265,7 +265,7 @@ class V01::Destinations < Grape::API
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
-      destination = current_customer.destinations.where(ParseIdsRefs.where(Destination, [params[:id]])).first!
+      destination = current_customer.destinations.where(ParseIdsRefs.where_clause([params[:id]])).first!
       destination.assign_attributes(destination_params)
       destination.save!
       destination.customer.save! if destination.customer
@@ -282,7 +282,7 @@ class V01::Destinations < Grape::API
     delete ':id' do
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
-      current_customer.destinations.where(ParseIdsRefs.where(Destination, [params[:id]])).first!.destroy
+      current_customer.destinations.where(ParseIdsRefs.where_clause([params[:id]])).first!.destroy
       status 204
     end
 
