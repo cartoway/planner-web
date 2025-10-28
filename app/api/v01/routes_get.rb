@@ -87,11 +87,11 @@ class V01::RoutesGet < Grape::API
         end
         get do
           routes = if params.key?(:ids)
-            current_customer.plannings.where(ParseIdsRefs.where(Planning, [params[:planning_id]])).first!.routes.select{ |route|
+            current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.select{ |route|
               params[:ids].any?{ |s| ParseIdsRefs.match(s, route) }
             }
           else
-            current_customer.plannings.where(ParseIdsRefs.where(Planning, [params[:planning_id]])).first!.routes.includes_vehicle_usages.load
+            current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.includes_vehicle_usages.load
           end
           present_routes routes, params
         end
@@ -107,7 +107,7 @@ class V01::RoutesGet < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry, when using json output. For geojson output, param can be only set to `point` to return only points, `polyline` to return with encoded linestring.'
         end
         get ':id' do
-          r = current_customer.plannings.where(ParseIdsRefs.where(Planning, [params[:planning_id]])).first!.routes.where(ParseIdsRefs.where(Route, [params[:id]])).first!
+          r = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.where(ParseIdsRefs.where_clause([params[:id]])).first!
           if params.key?(:email)
             vehicle = r.vehicle_usage_id && r.vehicle_usage.vehicle
             if vehicle

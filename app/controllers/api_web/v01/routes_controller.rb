@@ -24,7 +24,7 @@ class ApiWeb::V01::RoutesController < ApiWeb::V01::ApiWebController
   def index
     @routes = if params.key?(:ids)
       ids = params[:ids].split(',')
-      @planning.routes.includes_destinations_and_stores.where(ParseIdsRefs.where(Route, ids)).includes_vehicle_usages
+      @planning.routes.includes_destinations_and_stores.where(ParseIdsRefs.where_clause(ids)).includes_vehicle_usages
     else
       @planning.routes.includes_destinations_and_stores.includes_vehicle_usages
     end

@@ -35,7 +35,7 @@ class ParseIdsRefs
     raw_ref.to_s.downcase == obj.ref&.downcase
   end
 
-  def self.where(clazz, param, customer: nil)
+  def self.where_clause(param, table_name: nil)
     ids = Hash[param.collect{ |id|
       read(id)
     }.group_by{ |e|
@@ -43,26 +43,27 @@ class ParseIdsRefs
     }.collect{ |k, v|
       [k, v.collect{ |vv| vv[k] }]
     }]
-    table = clazz.arel_table
 
-    conditions = []
-    conditions << table[:id].in(ids[:id]) if ids[:id]&.any?
-    conditions << table[:ref].lower.in(ids[:ref]&.map(&:downcase)) if ids[:ref]&.any?
-    conditions.reduce(:or)
+    sanitized_ids = ids[:id]&.map{ |id| Integer(id) }&.compact || []
+    sanitized_refs = (ids[:ref]&.reject(&:blank?))&.uniq || []
+
+    return nil if sanitized_ids.empty? && sanitized_refs.empty?
+
+    # Use table name prefix to avoid ambiguous column references in joins
+    id_column = table_name ? "#{table_name}.id" : "id"
+    ref_column = table_name ? "#{table_name}.ref" : "ref"
+
+    if sanitized_ids.any? && sanitized_refs.any?
+      ["(#{id_column} IN (?) OR #{ref_column} ILIKE ANY(ARRAY[?]))", sanitized_ids, sanitized_refs]
+    elsif sanitized_ids.any?
+      ["#{id_column} IN (?)", sanitized_ids]
+    else
+      ["#{ref_column} ILIKE ANY(ARRAY[?])", sanitized_refs]
+    end
   end
 
-  def self.where_pluck_ids(clazz, param, customer: nil)
-    where_pluck(clazz, param, customer: customer).pluck(:id)
-  end
-
-  def self.where_pluck_refs(clazz, param, customer: nil)
-    where_pluck(clazz, param, customer: customer).pluck(:ref)
-  end
-
-  private_class_method def self.where_pluck(clazz, param, customer: nil)
-    condition = where(clazz, param, customer: customer)
-    return [] if condition.nil?
-
-    clazz.where(condition)
+  def self.where(clazz, param, customer: nil)
+    clause = where_clause(param)
+    clause ? clazz.where(clause) : clazz.none
   end
 end
