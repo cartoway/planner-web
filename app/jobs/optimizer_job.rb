@@ -90,8 +90,12 @@ class OptimizerJob < OptimizerJobStruct
       routes = planning.routes.where(id: route_ids) if route_ids.exclude?(nil)
     end
     routes = planning.routes if routes.empty?
+    out_route = planning.routes.find{ |route| !route.vehicle_usage_id }
+    is_global_insertion = !options[:global] && !route_id
     routes = routes.select { |r|
-      (route_id && r.id == route_id) || (!route_id && !options[:global] && r.vehicle_usage_id && r.size_active > 0 && !r.locked) || (!route_id && options[:global] && !r.locked)
+      (route_id && r.id == route_id) ||
+        (r.vehicle_usage_id && !r.locked && is_global_insertion && (!out_route.locked && out_route.size_active > 0 || r.size_active > 0)) ||
+        (!route_id && options[:global] && !r.locked)
     }
     out_of_route = planning.routes.find{ |route| !route.vehicle_usage_id }
     routes.unshift(out_of_route) if !options[:global] && !out_of_route[:locked] && !route_id
