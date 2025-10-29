@@ -726,6 +726,20 @@ class PlanningTest < ActiveSupport::TestCase
     }
   end
 
+  test 'should update refs safely with special characters' do
+    planning = plannings(:planning_one)
+    dangerous_ref = "ref: x'\";--"
+
+    routes_visits = { dangerous_ref => { visits: [[visits(:visit_one)]] } }
+
+    assert_nothing_raised do
+      planning.set_routes(routes_visits)
+      planning.save!
+    end
+
+    assert_includes planning.routes.map(&:ref), dangerous_ref
+  end
+
   test 'should not set zoning_outdated to true on planning creation' do
     customer = customers(:customer_one)
     customer.max_plannings = customer.plannings.count + 1

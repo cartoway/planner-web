@@ -159,8 +159,10 @@ class Planning < ApplicationRecord
       ref_updates << { id: routes.find{ |r| !r.vehicle_usage? }.id, ref: nil }
 
       if ref_updates.any?
-        case_statement = ref_updates.map { |update| "WHEN #{update[:id]} THEN '#{update[:ref]}'" }.join(' ')
-        Route.where(id: ref_updates.map { |u| u[:id] }).update_all("ref = CASE id #{case_statement} END, outdated = true")
+        fragments = ref_updates.map { 'WHEN ? THEN ?' }.join(' ')
+        binds = ref_updates.flat_map { |u| [u[:id], u[:ref]] }
+        Route.where(id: ref_updates.map { |u| u[:id] })
+             .update_all(["ref = CASE id #{fragments} END, outdated = true", *binds])
       end
       true
     else
