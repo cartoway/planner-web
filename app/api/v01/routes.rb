@@ -51,7 +51,7 @@ class V01::Routes < Grape::API
           failure: V01::Status.failures
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
-          use :params_from_entity, entity: V01::Entities::Route.documentation.slice(:force_start, :hidden, :locked, :color, :departure)
+          use :request_route
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         put ':id' do
