@@ -175,6 +175,14 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :strict_restriction, type: Boolean
   end
 
+  params :request_route do |options|
+    optional :force_start, type: Boolean
+    optional :hidden, type: Boolean
+    optional :locked, type: Boolean
+    optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Planner::Application.config.destination_color_default}." }
+    optional :departure, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+  end
+
   params :request_store do |options|
     optional :ref, type: String, documentation: { desc: 'unique reference'}
     if options[:require_store_name]
