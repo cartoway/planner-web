@@ -10,6 +10,7 @@ Rails.application.routes.draw do
     match '/delayed_job' => DelayedJobWeb, :anchor => false, :via => [:get, :post]
     mount DelayedJobWeb, at: "/delayed_job"
     mount RailsPerformance::Engine, at: 'rails/performance'
+    get 'admin/performance', to: 'admin/performance#index', as: :admin_performance
   end
 
   devise_for :users, :controllers => {:registrations => "registrations"}
