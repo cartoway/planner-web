@@ -519,7 +519,7 @@ class PlanningsController < ApplicationController
   def reverse_order
     route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
     respond_to do |format|
-      if route && route.reverse_order && route.compute_saved!
+      if route && route.reverse_order && route.compute_saved! && route.reload
         @routes = [route]
         planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
         format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
