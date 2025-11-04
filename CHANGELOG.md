@@ -11,6 +11,7 @@
 
   ### Fixed
   - Sanitize the ref mathching to avoid injection [#515](https://github.com/cartoway/planner-web/pull/515) & [516](https://github.com/cartoway/planner-web/pull/516)
+   - `active_inactive_drag_drop` now consider the hiddenInputSelector name to create inputs [#524](https://github.com/cartoway/planner-web/pull/515) & [516](https://github.com/cartoway/planner-web/pull/524)
 
 ## V107.1.1
   ### Fixed
