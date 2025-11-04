@@ -1,5 +1,17 @@
 # Changelog
 
+## V107.2.0
+  ### Added
+  - Expose `departure` on route API endpoint [#514](https://github.com/cartoway/planner-web/pull/514) && [#519](https://github.com/cartoway/planner-web/pull/519)
+
+  ### Changed
+  - Optimization with partial pre-affectation now use all the available vehicles [#517](https://github.com/cartoway/planner-web/pull/517) & [#518](https://github.com/cartoway/planner-web/pull/518)
+  - Bump `rails_performance` from custom_branch to 1.6.0 [#521](https://github.com/cartoway/planner-web/pull/521)
+  - Put admin tools `delayed_job_web` and `rails_performance` within iframe to ease the navigation [#522](https://github.com/cartoway/planner-web/pull/522) & [#523](https://github.com/cartoway/planner-web/pull/523)
+
+  ### Fixed
+  - Sanitize the ref mathching to avoid injection [#515](https://github.com/cartoway/planner-web/pull/515) & [516](https://github.com/cartoway/planner-web/pull/516)
+
 ## V107.1.1
   ### Fixed
   - Extend insensitive `ref` fields to more API endpoints [#513](https://github.com/cartoway/planner-web/pull/513)
@@ -9,7 +21,6 @@
   - Extract geojsons from `Route` model into the new `RouteGeojson` model [#501](https://github.com/cartoway/planner-web/pull/501)
   - `Tags` might be defined using `ref` as the other refs in API [#508](https://github.com/cartoway/planner-web/pull/508)
   - `ref` fields are now case insensitive [#510](https://github.com/cartoway/planner-web/pull/510)
-
 
   ### Changed
   - Avoid unnecessary scoping in `automatic_insert` API call [#494](https://github.com/cartoway/planner-web/pull/494)
