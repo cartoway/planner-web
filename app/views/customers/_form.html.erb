@@ -311,7 +311,7 @@
           - .item-order: class for order display
           - .item-text: class for text display
         -->
-        <div class="priority-zones active-inactive-zones" id="priority-container" data-drag-drop="solver" data-drag-drop-options='{"minActiveItems": 1, "hiddenInputSelector": "input[name*=\"solver_priority\"]", "activeContainerSelector": ".priority-active .priority-labels", "inactiveContainerSelector": ".priority-inactive .priority-labels", "itemSelector": ".label", "orderDisplaySelector": ".order", "textDisplaySelector": ".name"}'>
+        <div class="priority-zones active-inactive-zones" id="priority-container" data-drag-drop="solver" data-drag-drop-options='{"minActiveItems": 1, "hiddenInputSelector": "input[name*=\"customer[advanced_options][solver_priority][]\"]", "activeContainerSelector": ".priority-active .priority-labels", "inactiveContainerSelector": ".priority-inactive .priority-labels", "itemSelector": ".label", "orderDisplaySelector": ".order", "textDisplaySelector": ".name"}'>
           <div class="priority-active active-zone">
             <div class="priority-labels item-list" id="priority-active">
               <% current_priority.each_with_index do |solver, index| %>

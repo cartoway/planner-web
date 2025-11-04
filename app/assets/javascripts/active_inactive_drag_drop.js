@@ -132,7 +132,7 @@ class ActiveInactiveDragDrop {
       hiddenInput.type = 'hidden';
       hiddenInput.name = inputName;
       hiddenInput.value = value;
-      this.container.appendChild(hiddenInput);
+      item.appendChild(hiddenInput);
     });
 
     // Call callback if provided
@@ -142,11 +142,35 @@ class ActiveInactiveDragDrop {
   }
 
   getHiddenInputName() {
-    // Try to find existing input to get the name pattern
-    const existingInput = this.container.querySelector(this.options.hiddenInputSelector);
-    if (existingInput) {
-      return existingInput.name;
+    // Try to extract name from selector in container dataset first
+    let selector = this.options.hiddenInputSelector;
+    if (this.container && this.container.dataset.dragDropOptions) {
+      try {
+        const containerOptions = JSON.parse(this.container.dataset.dragDropOptions);
+        if (containerOptions.hiddenInputSelector) {
+          selector = containerOptions.hiddenInputSelector;
+        }
+      } catch (e) {
+        // Fallback to options if parsing fails
+      }
     }
+
+    // Extract name from selector (e.g., input[name*="customer[...]"])
+    // Match name*="..." or name="..." and capture everything between quotes
+    const nameMatch = selector.match(/name\s*\*?\s*=\s*["']([^"']+)["']/);
+    if (nameMatch && nameMatch[1]) {
+      return nameMatch[1];
+    }
+
+    // Try to find existing input in active items
+    const activeItems = this.activeContainer.querySelectorAll(this.options.itemSelector);
+    for (const item of activeItems) {
+      const existingInput = item.querySelector(this.options.hiddenInputSelector);
+      if (existingInput) {
+        return existingInput.name;
+      }
+    }
+
     return 'priority[]';
   }
 
