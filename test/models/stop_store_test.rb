@@ -77,11 +77,11 @@ class StopStoreTest < ActiveSupport::TestCase
     assert_nil @stop_store.force_position
   end
 
-  test 'should return correct string representation with store_reload ref' do
+  test 'store reload cannot be inactive' do
     assert_equal "x #{@store.name} #{@store_reload.ref}", @stop_store.to_s
 
     @stop_store.update! active: false
-    assert_equal "_ #{@store.name} #{@store_reload.ref}", @stop_store.to_s
+    assert_equal "x #{@store.name} #{@store_reload.ref}", @stop_store.to_s
   end
 
   test 'should return correct string representation without store_reload ref' do

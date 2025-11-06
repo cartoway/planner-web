@@ -105,7 +105,7 @@ class V100::StopsTest < ActiveSupport::TestCase
     end
   end
 
-  test 'should update stop store' do
+  test 'should not update stop store active status' do
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
 
@@ -116,7 +116,7 @@ class V100::StopsTest < ActiveSupport::TestCase
       else
         assert_equal 204, last_response.status, last_response.body
         @stop_store_reload.reload
-        assert_not @stop_store_reload.active
+        assert @stop_store_reload.active
         @route.reload
         assert_not @route.outdated
       end
