@@ -42,7 +42,7 @@
               - if stop[:out_of_max_reload]
                 %i.fa.fa-arrows-rotate.fa-fw{title: t("plannings.edit.error.out_of_max_reload_help")}
               %span.name{title: stop[:name]}
-                = [stop[:name], stop[:ref]].join(' - ')
+                = [stop[:name], stop[:ref]].compact_blank.join(' - ')
           .col-xs-2.col-md-2.d-flex.justify-content-center.align-items-center
             - eta_statement = " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" if stop[:eta_formated]
             %span.store-status{class: "stop-status-#{stop[:status_code]}", title: "#{stop[:status]}#{eta_statement}", style: ("display: none;" if !stop[:status])}
