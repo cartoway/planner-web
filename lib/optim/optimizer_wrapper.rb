@@ -128,8 +128,9 @@ class OptimizerWrapper
 
   def generate_vrp_summary(vrp)
     {
-      vehicles: generate_vehicles_summary(vrp[:vehicles] || []),
-      services: generate_services_summary(vrp[:services] || []),
+      vehicles: generate_collection_summary(vrp[:vehicles] || []),
+      reload_depots: generate_collection_summary(vrp[:reload_depots] || []),
+      services: generate_collection_summary(vrp[:services] || []),
       configuration: vrp[:configuration],
       points_count: (vrp[:points] || []).size,
       relations_count: (vrp[:relations] || []).size,
@@ -670,21 +671,12 @@ class OptimizerWrapper
     id_fields.find { |field| hash.key?(field) }
   end
 
-  def generate_vehicles_summary(vehicles)
-    return { count: 0, summary: {} } if vehicles.empty?
+  def generate_collection_summary(collection)
+    return { count: 0, summary: {} } if collection.empty?
 
     {
-      count: vehicles.size,
-      summary: analyze_data_structure(vehicles)
-    }
-  end
-
-  def generate_services_summary(services)
-    return { count: 0, summary: {} } if services.empty?
-
-    {
-      count: services.size,
-      summary: analyze_data_structure(services)
+      count: collection.size,
+      summary: analyze_data_structure(collection)
     }
   end
 end
