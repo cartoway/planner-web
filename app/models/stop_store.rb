@@ -39,6 +39,11 @@ class StopStore < Stop
 
   before_create :validate_max_reload_per_route
 
+  # A StopStore is always active
+  def active=(_value)
+    write_attribute(:active, true)
+  end
+
   def ref
     store_reload.ref || store_reload.store.ref
   end
