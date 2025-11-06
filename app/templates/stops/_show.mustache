@@ -166,6 +166,80 @@
   </ul>
 {{/error}}
 {{/visits}}
+{{#store_reload}}
+<hr>
+{{#index_visit}}
+{{#i18n}}plannings.edit.popup.store_reload{{/i18n}}
+{{/index_visit}}
+{{#ref}}<b>{{ref}}</b>{{/ref}}
+<ul>
+  {{#time_window_start_end_1}}
+    <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.time_window_start_end_1{{/i18n}}
+      {{time_window_start_1}}{{#time_window_start_1_day}}&nbsp;(+{{time_window_start_1_day}}){{/time_window_start_1_day}} {{^time_window_end_1}}({{#i18n}}plannings.edit.popup.time_window_start_1{{/i18n}}){{/time_window_end_1}}
+      {{#time_window_start_1}}{{#time_window_end_1}}-{{/time_window_end_1}}{{/time_window_start_1}}
+      {{time_window_end_1}}{{#time_window_end_1_day}}&nbsp;(+{{time_window_end_1_day}}){{/time_window_end_1_day}} {{^time_window_start_1}}({{#i18n}}plannings.edit.popup.time_window_end_1{{/i18n}}){{/time_window_start_1}}
+    </li>
+  {{/time_window_start_end_1}}
+  {{#time_window_start_end_2}}
+    <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.time_window_start_end_2{{/i18n}}
+      {{time_window_start_2}}{{#time_window_start_2_day}}&nbsp;(+{{time_window_start_2_day}}){{/time_window_start_2_day}} {{^time_window_end_2}}({{#i18n}}plannings.edit.popup.time_window_start_2{{/i18n}}){{/time_window_end_2}}
+      {{#time_window_start_2}}{{#time_window_end_2}}-{{/time_window_end_2}}{{/time_window_start_2}}
+      {{time_window_end_2}}{{#time_window_end_2_day}}&nbsp;(+{{time_window_end_2_day}}){{/time_window_end_2_day}} {{^time_window_start_2}}({{#i18n}}plannings.edit.popup.time_window_end_2{{/i18n}}){{/time_window_start_2}}
+    </li>
+  {{/time_window_start_end_2}}
+  {{#status}}
+    <li class="toggle-status"{{^status}} style="display: none;"{{/status}}><i class="fa fa-check fa-fw"></i> {{#i18n}}plannings.edit.popup.status{{/i18n}} <span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"></span><span class="status">{{status}}</span></li>
+    <li class="toggle-status-eta"{{^eta_formated}} style="display: none;"{{/eta_formated}}><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.eta{{/i18n}} <span class="eta">{{eta_formated}}</span></li>
+    <li class="toggle-status-update-at"{{^status_updated_at}} style="display: none;"{{/status_updated_at}}><i class="fa fa-circle-check fa-fw"></i> {{#i18n}}plannings.edit.popup.status_updated_at{{/i18n}} <span class="status_updated_at">{{status_updated_at}}</span></li>
+  {{/status}}
+  {{#time}}<li><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.time{{/i18n}} {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}</li>{{/time}}
+  {{#wait_time}}<li><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.wait{{/i18n}} {{wait_time}}</li>{{/wait_time}}
+  {{#duration}}<li><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.duration{{/i18n}} {{duration}}</li>{{/duration}}
+    {{#loads}}
+    <li><i class="fa {{unit_icon}} fa-fw"></i> {{#i18n}}plannings.edit.popup.quantity{{/i18n}} {{quantity_formatted}}</li>
+  {{/loads}}
+</ul>
+{{#error}}
+  <ul class="ui-state-error">
+    {{#out_of_window}}
+      <li><i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_window{{/i18n}}</li>
+    {{/out_of_window}}
+    {{#out_of_capacity}}
+      <li><i class="fa fa-dumpster fa-fw" title="{{#i18n}}plannings.edit.error.out_of_capacity_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_capacity{{/i18n}}</li>
+    {{/out_of_capacity}}
+    {{#out_of_drive_time}}
+      <li><i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_drive_time{{/i18n}}</li>
+    {{/out_of_drive_time}}
+    {{#out_of_force_position}}
+      <li><i class="fa fa-angle-right fa-fw" title="{{#i18n}}plannings.edit.error.out_of_force_position_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_force_position{{/i18n}}</li>
+    {{/out_of_force_position}}
+    {{#out_of_work_time}}
+      <li><i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_work_time{{/i18n}}</li>
+    {{/out_of_work_time}}
+    {{#out_of_max_distance}}
+      <li><i class="fa fa-ruler fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_distance_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_max_distance{{/i18n}}</li>
+    {{/out_of_max_distance}}
+    {{#out_of_max_ride_distance}}
+      <li><i class="fa fa-compass-drafting fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_ride_distance_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_max_ride_distance{{/i18n}}</li>
+    {{/out_of_max_ride_distance}}
+    {{#out_of_max_ride_duration}}
+      <li><i class="fa fa-stopwatch-20 fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_ride_duration_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_max_ride_duration{{/i18n}}</li>
+    {{/out_of_max_ride_duration}}
+    {{#out_of_max_reload}}
+      <li><i class="fa fa-arrows-rotate fa-fw" title="{{#i18n}}plannings.edit.error.out_of_max_reload_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_max_reload{{/i18n}}</li>
+    {{/out_of_max_reload}}
+    {{#out_of_relation}}
+      <li><i class="fa fa-link-slash fa-fw" title="{{#i18n}}plannings.edit.error.out_of_relation_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_relation{{/i18n}}</li>
+    {{/out_of_relation}}
+    {{#no_path}}
+      <li><i class="fa fa-road fa-fw" title="{{#i18n}}plannings.edit.error.no_path_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.no_path{{/i18n}}</li>
+    {{/no_path}}
+    {{#out_of_skill}}
+      <li><i class="fa fa-tags fa-fw" title="{{#i18n}}plannings.edit.error.out_of_skill_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_skill{{/i18n}}</li>
+    {{/out_of_skill}}
+  </ul>
+{{/error}}
+{{/store_reload}}
 {{^visits}}
 <ul>
   {{#tags_present}}<li><i class="fa fa-tag fa-fw"></i> {{#i18n}}plannings.edit.popup.tags{{/i18n}} {{#tags}}{{label}} {{/tags}}</li>{{/tags_present}}

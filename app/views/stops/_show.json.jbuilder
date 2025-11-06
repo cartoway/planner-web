@@ -89,6 +89,7 @@ when StopRest
 when StopStore
   json.store_reload do
     json.store_reload true
+    json.duration stop.store_reload.default_duration_time_with_seconds
     json.store_id stop.store_reload.store.id
     json.store_reload_id stop.store_reload.id
     json.color stop.default_color
