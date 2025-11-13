@@ -416,7 +416,7 @@ class ImporterDestinations < ImporterBase
 
   def valid_stop_type(stop_type)
     type = nil
-    %w(store visit rest).each do |t|
+    %w(store visit rest store_reload).each do |t|
       type ||= t if stop_type == I18n.t("activerecord.models.stops.type.#{t}")
     end
     if type
@@ -439,7 +439,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def is_store_reload?(type)
-    type == I18n.t('destinations.import_file.stop_type_store') || type == 'store'
+    type == I18n.t('destinations.import_file.stop_type_store_reload') || type == 'store_reload'
   end
 
   def import_row(_name, row, line, _options)
@@ -884,7 +884,7 @@ class ImporterDestinations < ImporterBase
         store_attributes
       end
       index, lines, store_attr = @stores_attributes_by_ref[row[:ref]]
-      if store_attr
+      if store_attr && route_attributes
         reset_geocoding(filtered_store_attributes)
         lines << line
         filtered_store_attributes = store_attr.merge(filtered_store_attributes.compact).merge(route_attributes.compact)

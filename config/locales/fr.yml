@@ -122,6 +122,7 @@ fr:
           store: site
           visit: visite
           rest: pause
+          store_reload: rechargement
       store: Site
       stores:
         one: site
@@ -1416,7 +1417,9 @@ fr:
       stop_type_visit_desc: ''
       stop_type_store: site
       stop_type_store_desc: ''
-      stop_format: '[visite | site | pause]'
+      stop_type_store_reload: rechargement
+      stop_type_store_reload_desc: ''
+      stop_format: '[visite | site | rechargement | pause]'
       name: nom
       name_desc: 'nom du client, de l''adresse ou du point d''intérêt'
       street: voie
