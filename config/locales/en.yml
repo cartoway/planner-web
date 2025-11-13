@@ -116,6 +116,7 @@ en:
           store: store
           visit: visit
           rest: rest
+          store_reload: reload
       store: Store
       stores:
         one: Store
@@ -1367,7 +1368,9 @@ en:
       stop_type_visit_desc: ''
       stop_type_store: store
       stop_type_store_desc: ''
-      stop_format: '[visit | store | rest]'
+      stop_type_store_reload: reload
+      stop_type_store_reload_desc: ''
+      stop_format: '[visit | store | reload | rest]'
       name: name
       name_desc: account or visited destination name
       street: street
