@@ -253,7 +253,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                 state: 'Store State',
                 lat: 43.5710885456786,
                 lng: 3.89636993408203,
-                stop_type: 'store',
+                stop_type: 'reload',
                 visits: [{
                   duration: '00:10:00'
                 }]
@@ -1105,7 +1105,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             route: 'route_one',
             vehicle: '001',
             ref: existing_store.ref,
-            stop_type: 'store',
+            stop_type: 'reload',
             visits: [{
               ref: existing_store_reload.ref
             }]
@@ -1198,7 +1198,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                 state: 'Store State',
                 lat: 43.5710885456786,
                 lng: 3.89636993408203,
-                stop_type: 'store',
+                stop_type: 'reload',
                 stop_custom_attributes: {
                   'stop_custom_field' => 'store_custom_value',
                   'stop_priority' => 10,
