@@ -52,7 +52,7 @@ class OptimizerWrapper
     stops.uniq!
 
     vrp_services, s_points = build_services(planning, routes, stops, **options.merge(use_skills: all_skills.any?, problem_skills: all_skills))
-    vrp_reload_depots = build_reload_depots(planning.customer.store_reloads)
+    vrp_reload_depots, d_points = build_reload_depots(planning.customer.store_reloads)
     vrp_rests = build_rests(stops, **options)
     relations = collect_relations(planning, routes, stops, **options)
 
@@ -64,7 +64,7 @@ class OptimizerWrapper
     vrp = {
       configuration: build_configuration(**options.merge(service_count: vrp_services.size, vehicle_count: vrp_vehicles.size, strict_skills: routes.size > 1 && options[:global])),
       name: options[:name],
-      points: (v_points + s_points).uniq,
+      points: (v_points + s_points + d_points).uniq,
       relations: relations,
       reload_depots: vrp_reload_depots,
       rests: vrp_rests,
@@ -240,8 +240,17 @@ class OptimizerWrapper
   end
 
   def build_reload_depots(store_reloads)
-    store_reloads.map{ |store_reload|
+    point_hash = {}
+    reload_depots = store_reloads.map{ |store_reload|
       next if !store_reload.position?
+
+      point_hash["d#{store_reload.position.id}"] = {
+        id: "d#{store_reload.position.id}",
+        location: {
+          lat: store_reload.position.lat,
+          lon: store_reload.position.lng
+        }
+      }
 
       {
         id: "sr#{store_reload.id}",
@@ -253,6 +262,7 @@ class OptimizerWrapper
         point_id: "d#{store_reload.position.id}"
       }
     }.compact
+    [reload_depots, point_hash.values]
   end
 
   # A StopRest with a position is send as a service
