@@ -222,8 +222,8 @@ class Customer < ApplicationRecord
         # All routes must be caught in memory, don't use scopes
         planning.routes.each{ |route|
           route.vehicle_usage = vehicle_usages_map[route.vehicle_usage]
-          route.pickups = Hash[route.pickups.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
-          route.deliveries = Hash[route.deliveries.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
+          route.route_data.pickups = Hash[route.route_data.pickups.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
+          route.route_data.deliveries = Hash[route.route_data.deliveries.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
 
           route.stops.each{ |stop|
             if stop.is_a?(StopStore)

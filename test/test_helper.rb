@@ -39,6 +39,10 @@ class ActiveSupport::TestCase
   # Add more helper methods to be used by all tests here...
   # Associate delayed job class to customer
   set_fixture_class delayed_jobs: Delayed::Backend::ActiveRecord::Job
+  # Associate route_data fixture files to RouteData model
+  set_fixture_class route_data: RouteData
+  set_fixture_class route_data_start: RouteData
+  set_fixture_class route_data_stop: RouteData
 
   def before_setup
     super

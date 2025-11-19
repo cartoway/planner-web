@@ -707,6 +707,14 @@ en:
                 must_be_associated_to_vehicle_usage: must be associated to a route with a vehicle
               store_reload:
                 max_reached: The number of reloads exceeds the maximum allowed for this route
+        route_data:
+          attributes:
+            pickups:
+              not_float: must be a number
+              negative_value: 'must be positive value (%{value})'
+            deliveries:
+              not_float: must be a number
+              negative_value: 'must be positive value (%{value})'
         planning:
           attributes:
             date:
@@ -1934,6 +1942,8 @@ en:
       vehicles_used_help: Vehicles used / Total
       pickup_help: Pickup
       delivery_help: Delivery
+      route_data_pickup_help: Quantity to load
+      route_data_delivery_help: Quantity to unload
       quantity_help: Quantities / Vehicles capacities
       out_of_route: Unaffected
       out_of_route_quantity_help: Quantity
@@ -1948,7 +1958,8 @@ en:
       route_duration_help: Route duration / Vehicle window or work time
       route_distance_help: Route distance
       route_quantity_help: Quantity / Vehicle capacity
-      route_quantity_loading_help: Quantity to load before the start of the route
+      route_data_pickup_help: Quantity to load
+      route_data_delivery_help: Quantity to unload
       route_speed_average_help: Vehicle's speed average
       route_driving_time_help: Driving time
       route_visits_duration_help: Visits duration
@@ -2141,11 +2152,11 @@ en:
             assert_no_relations_except_simple_shipments: Complex relations
             assert_no_rest: Rest
             assert_no_ride_constraint: Maximum ride distance or duration
-            assert_no_store_reloads: Intermediate reloads
             assert_no_quantity_pickup_and_delivery: Simultaneous pickup and delivery quantities
             assert_services_no_setup_duration: Destination duration
             assert_vehicles_start_or_end: Maximum distance or duration
             assert_vehicles_no_duration_limit: Work duration
+            assert_vehicles_no_reload_depots: Intermediate reloads
             assert_vehicles_start_or_end: Missing start or end depot
         zoning:
           title: Sectorisation

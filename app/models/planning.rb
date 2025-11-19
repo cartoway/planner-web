@@ -76,10 +76,11 @@ class Planning < ApplicationRecord
     preload(
       routes: [
         stops: [
-          visit: [
+          :route_data,
+          { visit: [
             :relation_currents, :relation_successors, :tags,
             { destination: [:tags, {customer: :deliverable_units}] }
-          ]
+          ]}
         ],
         vehicle_usage: [
           :store_start, :store_stop, :store_rest, :tags,
@@ -282,6 +283,37 @@ class Planning < ApplicationRecord
       vehicle_usage_set.vehicle_usages.includes(:vehicle).where(active: true).pluck(:id).map { |vehicle_usage_id|
         Route.new(planning_id: self.id, vehicle_usage_id: vehicle_usage_id, outdated: false)
       }
+
+    route_data_to_import = []
+    new_routes.each do |route|
+      route.ensure_route_data
+      route_data_to_import << route.route_data
+      route_data_to_import << route.start_route_data
+      route_data_to_import << route.stop_route_data
+    end
+
+    import_result = RouteData.import(
+      route_data_to_import,
+      validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all}
+    )
+    # Map returned IDs to RouteData objects and routes
+    import_result.ids.each_with_index do |id, index|
+      route_data_to_import[index].id = id if route_data_to_import[index].id.nil?
+    end
+
+    # Assign IDs to routes and update route_data objects in memory
+    new_routes.each_with_index do |route, index|
+      route_data_index = index * 3
+      route.route_data = route_data_to_import[route_data_index]
+      route.route_data_id = route.route_data.id
+
+      route.start_route_data = route_data_to_import[route_data_index + 1]
+      route.start_route_data_id = route.start_route_data.id
+
+      route.stop_route_data = route_data_to_import[route_data_index + 2]
+      route.stop_route_data_id = route.stop_route_data.id
+    end
+
     Route.import(new_routes, validate: false)
     self.routes = Route.where(planning_id: self.id).includes_vehicle_usages
     self.routes.each { |route| route.ensure_route_geojson }
@@ -825,13 +857,17 @@ class Planning < ApplicationRecord
             if DeviceBase.is_fleet_hash?(s)
               attr = if DeviceBase.is_arrival?(s)
                 {
-                  arrival_eta: s[:eta],
-                  arrival_status: s[:status]
+                  stop_route_data_attributes: {
+                    eta: s[:eta],
+                    status: s[:status]
+                  }
                 }
               else
                 {
-                  departure_eta: s[:eta],
-                  departure_status: s[:status]
+                  start_route_data_attributes: {
+                    eta: s[:eta],
+                    status: s[:status]
+                  }
                 }
               end
               route = routes.select { |r| r.id == s[:route_id].to_i }.first
@@ -993,6 +1029,8 @@ class Planning < ApplicationRecord
           next if pickup == 0 && delivery == 0
 
           capacity = vehicle && vehicle.default_capacities[unit.id]
+          capacity_multiplier = 1 + (route.vehicle_usage&.default_max_reload || 0)
+          capacity &&= capacity * capacity_multiplier
           if quantity_hash.key?(unit.id)
             quantity_hash[unit.id][:pickup] += pickup
             quantity_hash[unit.id][:delivery] += delivery
@@ -1073,11 +1111,15 @@ class Planning < ApplicationRecord
         points: r.geojson_points_store || []
       }
     }
+    RouteData.import(computed_routes.map(&:route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    RouteData.import(computed_routes.map(&:start_route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    RouteData.import(computed_routes.map(&:stop_route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     Route.import(computed_routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     RouteGeojson.import(geojson_data, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:route_id], columns: :all})
     StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopRest.import(stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopStore.import(stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    RouteData.import(computed_routes.map(&:route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
 
     computed_routes.each{ |r|
       r.invalidate_route_cache && r.reload
