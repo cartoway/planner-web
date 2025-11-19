@@ -42,7 +42,7 @@ class RouteTest < ActiveSupport::TestCase
 
   test 'should compute' do
     route = routes(:route_one_one)
-    route.distance = route.emission = route.start = route.end = nil
+    route.route_data.distance = route.route_data.emission = route.route_data.start = route.route_data.end = nil
     route.outdated = true
     route.compute_saved
     assert_not route.outdated
@@ -269,7 +269,7 @@ class RouteTest < ActiveSupport::TestCase
     route.compute_saved!
     total_drive_time = route.stops.map(&:drive_time).sum(0) # Total stops drive time
     total_drive_time += route.stop_drive_time # The last stop (in case of store)
-    assert_equal total_drive_time, route.drive_time # ensure compute, computed all stops drive time
+    assert_equal total_drive_time, route.route_data.drive_time # ensure compute, computed all stops drive time
   end
 
   test 'should return the waiting time when compute' do

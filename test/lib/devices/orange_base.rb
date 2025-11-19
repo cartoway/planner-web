@@ -2,7 +2,7 @@ module OrangeBase
 
   def set_route
     @route = routes(:route_one_one)
-    @route.update! end: @route.start + 5.hours
+    @route.route_data.update! end: @route.start + 5.hours
     @route.planning.update! date: 10.days.from_now
     @vehicle = @route.vehicle_usage.vehicle
     @vehicle.update! devices: {orange_id: '325000749'}

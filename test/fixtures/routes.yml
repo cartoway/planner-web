@@ -1,76 +1,86 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
 route_zero_one:
-  distance:
-  emission:
   planning: planning_one
   outdated: false
   vehicle_usage:
   ref:
+  route_data: route_data_zero_one
+  start_route_data: route_data_start_zero_one
+  stop_route_data: route_data_stop_zero_one
 
 route_one_one:
-  distance: 1.5
-  emission: 1.5
   planning: planning_one
   outdated: false
   vehicle_usage: vehicle_usage_one_one
   ref: "route_one"
-  start: 32:00
+  route_data: route_data_one_one
+  start_route_data: route_data_start_one_one
+  stop_route_data: route_data_stop_one_one
 
 route_three_one:
-  distance: 1.5
-  emission: 1.5
   planning: planning_one
   outdated: false
   vehicle_usage: vehicle_usage_one_three
   ref: "route_three"
-  start: 07:00
+  route_data: route_data_three_one
+  start_route_data: route_data_start_three_one
+  stop_route_data: route_data_stop_three_one
 
 route_zero_two:
-  distance:
-  emission:
   planning: planning_two
   outdated: false
   vehicle_usage:
   ref:
-  start: 16:00
+  route_data: route_data_zero_two
+  start_route_data: route_data_start_zero_two
+  stop_route_data: route_data_stop_zero_two
 
 route_one_two:
-  distance: 1.5
-  emission: 1.5
   planning: planning_two
   outdated: false
   vehicle_usage: vehicle_usage_three_one
   ref: "route 33"
-  start: 08:00
+  route_data: route_data_one_two
+  start_route_data: route_data_start_one_two
+  stop_route_data: route_data_stop_one_two
 
 route_three_two:
-  distance: 1.5
-  emission: 1.5
   planning: planning_two
   outdated: false
   vehicle_usage: vehicle_usage_three_two
-  start: 07:00
+  route_data: route_data_three_two
+  start_route_data: route_data_start_three_two
+  stop_route_data: route_data_stop_three_two
 
 route_zero_three:
   planning: planning_three
   outdated: false
   vehicle_usage:
+  route_data: route_data_zero_three
+  start_route_data: route_data_start_zero_three
+  stop_route_data: route_data_stop_zero_three
 
 route_one_three:
-  distance: 1.5
-  emission: 1.5
   planning: planning_three
   outdated: false
   vehicle_usage: vehicle_usage_two_one
-  start: 08:00
+  route_data: route_data_one_three
+  start_route_data: route_data_start_one_three
+  stop_route_data: route_data_stop_one_three
 
 route_zero_four:
   planning: planning_four
   outdated: false
   vehicle_usage:
+  route_data: route_data_zero_four
+  start_route_data: route_data_start_zero_four
+  stop_route_data: route_data_stop_zero_four
 
 route_one_four:
   planning: planning_four
   outdated: false
   vehicle_usage: vehicle_usage_two_one
+  route_data: route_data_one_four
+  start_route_data: route_data_start_one_four
+  stop_route_data: route_data_stop_one_four

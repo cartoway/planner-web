@@ -13,14 +13,14 @@ class V01::Entities::RouteStatus < Grape::Entity
     convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
   }
 
-  expose(:departure_status, documentation: { type: String, desc: 'Departure status of start store.' }) { |route| route.departure_status && I18n.t('plannings.edit.stop_status.' + route.departure_status.downcase, default: route.departure_status) }
-  expose(:departure_status_code, documentation: { type: String, desc: 'Status code of start store.' }) { |route| route.departure_status && route.departure_status.downcase }
-  expose(:departure_eta, documentation: { type: DateTime, desc: 'Estimated time of departure from remote device.' })
-  expose(:departure_eta_formated, documentation: { type: DateTime, desc: 'Estimated time of departure from remote device.' }) { |route| route.departure_eta && I18n.l(route.departure_eta, format: :hour_minute) }
+  expose(:departure_status, documentation: { type: String, desc: 'Departure status of start store.' }) { |route| route.start_route_data&.status && I18n.t('plannings.edit.stop_status.' + route.start_route_data.status.downcase, default: route.start_route_data.status) }
+  expose(:departure_status_code, documentation: { type: String, desc: 'Status code of start store.' }) { |route| route.start_route_data&.status&.downcase }
+  expose(:departure_eta, documentation: { type: DateTime, desc: 'Estimated time of departure from remote device.' }) { |route| route.start_route_data&.eta }
+  expose(:departure_eta_formated, documentation: { type: DateTime, desc: 'Estimated time of departure from remote device.' }) { |route| route.start_route_data&.eta && I18n.l(route.start_route_data.eta, format: :hour_minute) }
 
-  expose(:arrival_status, documentation: { type: String, desc: 'Arrival status of stop store.' }) { |route| route.arrival_status && I18n.t('plannings.edit.stop_status.' + route.arrival_status.downcase, default: route.arrival_status) }
-  expose(:arrival_status_code, documentation: { type: String, desc: 'Status code of stop store.' }) { |route| route.arrival_status && route.arrival_status.downcase }
-  expose(:arrival_eta, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device.' })
+  expose(:arrival_status, documentation: { type: String, desc: 'Arrival status of stop store.' }) { |route| route.stop_route_data&.status && I18n.t('plannings.edit.stop_status.' + route.stop_route_data.status.downcase, default: route.stop_route_data.status) }
+  expose(:arrival_status_code, documentation: { type: String, desc: 'Status code of stop store.' }) { |route| route.stop_route_data&.status&.downcase }
+  expose(:arrival_eta, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device.' }) { |route| route.stop_route_data&.eta }
   expose(:arrival_eta_formated, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device.' }) { |route| route.arrival_eta && I18n.l(route.arrival_eta, format: :hour_minute) }
 
   expose(:stops, using: V01::Entities::StopStatus, documentation: { type: V01::Entities::StopStatus, is_array: true })

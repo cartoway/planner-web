@@ -716,6 +716,14 @@ fr:
                 must_be_associated_to_vehicle_usage: doit être associé à une tournée avec un véhicule
               store_reload:
                 max_reached: Le nombre de rechargements dépasse le nombre maximal autorisé pour cette tournée
+        route_data:
+          attributes:
+            pickups:
+              not_float: doit être un nombre
+              negative_value: 'doit être une valeur positive (%{value})'
+            deliveries:
+              not_float: doit être un nombre
+              negative_value: 'doit être une valeur positive (%{value})'
         planning:
           attributes:
             date:
@@ -2025,6 +2033,8 @@ fr:
       vehicles_used_help: Nombre de véhicules utilisés / total
       delivery_help: Livraison
       pickup_help: Collecte
+      route_data_pickup_help: À charger
+      route_data_delivery_help: À décharger
       quantity_help: Quantités totales / Capacités totales
       out_of_route: Non assignés
       out_of_route_quantity_help: Quantité
@@ -2043,7 +2053,8 @@ fr:
       route_duration_help: Durée de la tournée / Créneau horaire ou durée de travail véhicule
       route_distance_help: Distance de la tournée
       route_quantity_help: Chargement / Capacité véhicule
-      route_quantity_loading_help: À charger avant le début de la tournée
+      route_data_pickup_help: Quantité à charger
+      route_data_delivery_help: Quantité à décharger
       route_speed_average_help: Vitesse moyenne du véhicule
       route_driving_time_help: Durée de conduite
       route_visits_duration_help: Durée des visites
@@ -2244,11 +2255,11 @@ fr:
             assert_no_relations_except_simple_shipments: Relations complexes
             assert_no_rest: Pause
             assert_no_ride_constraint: Durée et distance de trajet maximales
-            assert_no_store_reloads: Rechargements intermédiaires
             assert_no_quantity_pickup_and_delivery: Quantité de collecte et de livraison en simultanée
             assert_services_no_setup_duration: Durée de destination
             assert_vehicles_start_or_end: Distance ou durée maximale de trajet
             assert_vehicles_no_duration_limit: Durée de travail
+            assert_vehicles_no_reload_depots: Rechargements intermédiaires
             assert_vehicles_start_or_end: Dépôt de départ ou d'arrivée manquants
         zoning:
           title: Sectorisation
