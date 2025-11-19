@@ -1,0 +1,49 @@
+route_data_stop_zero_one:
+  pickups: {}
+  deliveries: {}
+
+
+route_data_stop_one_one:
+  pickups: {}
+  deliveries: {}
+
+
+route_data_stop_three_one:
+  pickups: {}
+  deliveries: {}
+
+
+route_data_stop_zero_two:
+  pickups: {}
+  deliveries: {}
+
+
+route_data_stop_one_two:
+  pickups: {}
+  deliveries: {}
+
+
+route_data_stop_three_two:
+  pickups: {}
+  deliveries: {}
+
+
+route_data_stop_zero_three:
+  pickups: {}
+  deliveries: {}
+
+
+route_data_stop_one_three:
+  pickups: { 1: 3, 999: 1 }
+  deliveries: { 1: 3 }
+
+
+route_data_stop_zero_four:
+  pickups: { 1: 3, 999: 1 }
+  deliveries: { 1: 3 }
+
+
+route_data_stop_one_four:
+  pickups: { 1: 3, 999: 1 }
+  deliveries: { 1: 3 }
+

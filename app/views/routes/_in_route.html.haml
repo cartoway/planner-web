@@ -72,7 +72,7 @@
         = render partial: 'routes/edit_head', locals: { route: route, summary: summary }
       - if route[:store_start] || route[:start_with_service]
         %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
-          %li.d-fake-flex.align-items-center.list-group-item{class:('ui-state-error' if route[:store_start]&.[](:error)), data: { store_id: route[:store_start]&.[](:id) }.compact}
+          %li.d-fake-flex.align-items-center.list-group-item.pr-3{class:('ui-state-error' if route[:store_start]&.[](:error)), data: { store_id: route[:store_start]&.[](:id) }.compact}
             .row.store-row
               .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
                 .col-xs-2.d-flex.align-items-center.justify-content-center
@@ -103,7 +103,7 @@
                       %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path")}
                     %span.name{title: route[:store_start][:name]}
                       = route[:store_start][:name]
-                .col-xs-2.col-md-2.d-flex.justify-content-center.align-items-center
+                .col-xs-2.col-md-2.d-flex.justify-content-end.align-items-center
                   - eta_statement = " - #{t('plannings.edit.popup.eta')} #{route[:store_start][:eta_formated]}" if route[:store_start][:eta_formated]
                   %span.store-status{class: "stop-status-#{route[:store_start][:status_code]}", title: "#{route[:store_start][:status]}#{eta_statement}", style: ("display: none;" if !route[:store_start][:status])}
                   .btn-group.pull-right.stop-tools
@@ -114,6 +114,10 @@
                     .btn-group
                       %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                         %i.fa.fa-map-marker
+                    - if current_user.customer.enable_store_stops
+                      .btn-group
+                        .btn.btn-default.btn-xs.route-data-toggle{title: t("plannings.edit.toggle_route_data_help")}
+                          %i.fa.fa-chart-simple
                     - if current_user.customer.enable_store_stops && @available_store_reloads[route[:route_id]].any? && route[:max_reload].to_i > 0
                       .dropdown.btn-group
                         %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
@@ -127,9 +131,12 @@
                                 - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
                                   %small.text-muted
                                     = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"
+          - if route[:store_start] && current_user.customer.enable_store_stops
+            %li.d-fake-flex.align-items-center.list-group-item.route-data-container{data: { store_id: route[:store_start]&.[](:id) }.compact}
+              = render partial: 'shared/store_route_data', locals: { route_data: route[:store_start][:route_data] }
       = render partial: 'stops/list', locals: { route: route, summary: summary }
       %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
-        %li.d-fake-flex.align-items-center.list-group-item{class: ('ui-state-error' if route[:store_stop]&.[](:error)), data: { store_id: route[:store_stop]&.[](:id)}.compact}
+        %li.d-fake-flex.align-items-center.list-group-item.pr-3{class: ('ui-state-error' if route[:store_stop]&.[](:error)), data: { store_id: route[:store_stop]&.[](:id)}.compact}
           .row.store-row
             .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
               .col-xs-2.d-flex.align-items-center.justify-content-center
@@ -158,7 +165,7 @@
                     %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path")}
                   %span.name{title: route[:store_stop][:name]}
                     = route[:store_stop][:name]
-              .col-xs-2.col-md-2.d-flex.justify-content-center.align-items-center
+              .col-xs-2.col-md-2.d-flex.justify-content-end.align-items-center
                 - eta_statement = " - #{t('plannings.edit.popup.eta')} #{route[:store_stop][:eta_formated]}" if route[:store_stop][:eta_formated]
                 %span.store-status{class: "stop-status-#{route[:store_stop][:status_code]}", title: "#{route[:store_stop][:status]}#{eta_statement}", style: ("display: none;" if !route[:store_stop][:status])}
                 .btn-group.pull-right.stop-tools
@@ -169,6 +176,10 @@
                   .btn-group
                     %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                       %i.fa.fa-map-marker
+                  - if current_user.customer.enable_store_stops && route[:store_stop][:route_data][:quantities].any?
+                    .btn-group
+                      .btn.btn-default.btn-xs.route-data-toggle{title: t("plannings.edit.toggle_route_data_help")}
+                        %i.fa.fa-chart-simple
                   - if current_user.customer.enable_store_stops && @available_store_reloads[route[:route_id]].any? && route[:max_reload].to_i > 0
                     .dropdown.btn-group
                       %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
@@ -182,3 +193,6 @@
                               - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
                                 %small.text-muted
                                   = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"
+        - if route[:store_stop] && current_user.customer.enable_store_stops && route[:store_stop][:route_data][:quantities].any?
+          %li.d-fake-flex.align-items-center.list-group-item.route-data-container{data: { store_id: route[:store_stop]&.[](:id) }.compact}
+            = render partial: 'shared/store_route_data', locals: { route_data: route[:store_stop][:route_data] }

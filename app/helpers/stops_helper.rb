@@ -22,6 +22,45 @@ module StopsHelper
     StopQuantities.normalize(stop, vehicle, options)
   end
 
+  def route_data_quantities(route_data, vehicle)
+    quantities = []
+    units = vehicle.customer.deliverable_units
+
+    units.each do |unit|
+      pickup = route_data.pickups[unit.id].to_f
+      delivery = route_data.deliveries[unit.id].to_f
+      next if pickup == 0 && delivery == 0
+
+      quantity = delivery - pickup
+      capacity = vehicle && vehicle.default_capacities[unit.id]
+
+      q =
+        if route_data.deliveries[unit.id] && delivery > 0
+          number_with_precision(delivery, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true)
+        else
+          number_with_precision(quantity, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
+        end
+      precise_capacity = number_with_precision(capacity, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true) if capacity
+      q += ' / ' + capacity.to_s if vehicle && vehicle.default_capacities[unit.id]
+      q += "\u202F" + unit.label if unit.label
+      quantities << {
+        id: unit.id,
+        capacity: precise_capacity,
+        quantity: quantity,
+        pickup: number_with_precision(pickup, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
+        delivery: number_with_precision(delivery, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
+        label: unit.label,
+        unit_icon: unit.default_icon,
+        quantity_formatted: q,
+        out_of_capacity: capacity && (pickup > capacity || delivery > capacity),
+        has_pickup: pickup > 0,
+        has_delivery: delivery > 0
+      }
+    end
+
+    quantities
+  end
+
   def stop_order_quantities(stop)
     stop.order.products.map(&:code).each_with_object({}){ |code, hash| hash.key?(code) ? hash[code] += 1 : hash[code] = 1 }
   end

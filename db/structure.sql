@@ -685,6 +685,52 @@ ALTER SEQUENCE public.resellers_id_seq OWNED BY public.resellers.id;
 
 
 --
+-- Name: route_data; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.route_data (
+    id bigint NOT NULL,
+    distance double precision,
+    emission double precision,
+    cost_distance double precision,
+    cost_fixed double precision,
+    cost_time double precision,
+    revenue double precision,
+    start integer,
+    "end" integer,
+    drive_time integer,
+    wait_time integer,
+    visits_duration integer,
+    pickups jsonb DEFAULT '{}'::jsonb,
+    deliveries jsonb DEFAULT '{}'::jsonb,
+    departure integer,
+    status character varying,
+    eta time without time zone,
+    created_at timestamp(6) without time zone,
+    updated_at timestamp(6) without time zone
+);
+
+
+--
+-- Name: route_data_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.route_data_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: route_data_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.route_data_id_seq OWNED BY public.route_data.id;
+
+
+--
 -- Name: route_geojsons; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -759,8 +805,6 @@ ALTER SEQUENCE public.routers_id_seq OWNED BY public.routers.id;
 
 CREATE TABLE public.routes (
     id integer NOT NULL,
-    distance double precision,
-    emission double precision,
     planning_id integer NOT NULL,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
@@ -776,29 +820,19 @@ CREATE TABLE public.routes (
     last_sent_at timestamp without time zone,
     optimized_at timestamp without time zone,
     last_sent_to character varying,
-    start integer,
-    "end" integer,
     stop_no_path boolean,
     lock_version integer DEFAULT 0 NOT NULL,
-    visits_duration integer,
-    wait_time integer,
-    drive_time integer,
     stop_out_of_work_time boolean,
     stop_out_of_max_distance boolean,
     departure_eta time without time zone,
-    departure_status character varying,
     arrival_eta time without time zone,
     arrival_status character varying,
     force_start boolean,
     out_of_max_ride_distance boolean,
     out_of_max_ride_duration boolean,
-    cost_distance double precision,
-    cost_fixed double precision,
-    cost_time double precision,
-    revenue double precision,
-    departure integer,
-    pickups jsonb DEFAULT '{}'::jsonb NOT NULL,
-    deliveries jsonb DEFAULT '{}'::jsonb NOT NULL
+    route_data_id integer,
+    start_route_data_id integer,
+    stop_route_data_id integer
 );
 
 
@@ -868,6 +902,7 @@ CREATE TABLE public.stops (
     store_id integer,
     store_reload_id integer,
     out_of_max_reload boolean,
+    route_data_id integer,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -1682,6 +1717,13 @@ ALTER TABLE ONLY public.resellers ALTER COLUMN id SET DEFAULT nextval('public.re
 
 
 --
+-- Name: route_data id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.route_data ALTER COLUMN id SET DEFAULT nextval('public.route_data_id_seq'::regclass);
+
+
+--
 -- Name: route_geojsons id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1945,6 +1987,14 @@ ALTER TABLE ONLY public.profiles
 
 ALTER TABLE ONLY public.resellers
     ADD CONSTRAINT resellers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: route_data route_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.route_data
+    ADD CONSTRAINT route_data_pkey PRIMARY KEY (id);
 
 
 --
@@ -2742,6 +2792,14 @@ ALTER TABLE ONLY public.tag_plannings
 
 
 --
+-- Name: stops fk_rails_0ba5c99b8c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stops
+    ADD CONSTRAINT fk_rails_0ba5c99b8c FOREIGN KEY (route_data_id) REFERENCES public.route_data(id) ON DELETE CASCADE;
+
+
+--
 -- Name: messaging_logs fk_rails_0ba90c3e53; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2755,6 +2813,14 @@ ALTER TABLE ONLY public.messaging_logs
 
 ALTER TABLE ONLY public.vehicle_usage_sets
     ADD CONSTRAINT fk_rails_16cc08e76b FOREIGN KEY (customer_id) REFERENCES public.customers(id);
+
+
+--
+-- Name: routes fk_rails_16cf5110b3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.routes
+    ADD CONSTRAINT fk_rails_16cf5110b3 FOREIGN KEY (stop_route_data_id) REFERENCES public.route_data(id) ON DELETE CASCADE;
 
 
 --
@@ -2795,6 +2861,14 @@ ALTER TABLE ONLY public.store_reload_vehicle_usages
 
 ALTER TABLE ONLY public.tag_plannings
     ADD CONSTRAINT fk_rails_2a380b8abf FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
+
+
+--
+-- Name: routes fk_rails_2bf8dfa083; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.routes
+    ADD CONSTRAINT fk_rails_2bf8dfa083 FOREIGN KEY (start_route_data_id) REFERENCES public.route_data(id) ON DELETE CASCADE;
 
 
 --
@@ -2891,6 +2965,14 @@ ALTER TABLE ONLY public.orders
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT fk_rails_598cb67a2e FOREIGN KEY (reseller_id) REFERENCES public.resellers(id);
+
+
+--
+-- Name: routes fk_rails_5b1e2ffbfe; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.routes
+    ADD CONSTRAINT fk_rails_5b1e2ffbfe FOREIGN KEY (route_data_id) REFERENCES public.route_data(id) ON DELETE CASCADE;
 
 
 --
@@ -3484,6 +3566,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250707061924'),
 ('20250910070315'),
 ('20251002141623'),
-('20251013080039');
+('20251013080039'),
+('20251114122111');
 
 

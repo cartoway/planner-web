@@ -14,9 +14,9 @@ json.extract! route, :ref, :hidden, :locked, :outdated, :size_active
 json.distance locale_distance(route.distance || 0, current_user.prefered_unit)
 json.size stops_count || route.stops_size
 json.size_destinations route.size_destinations if route.size_destinations != route.size_active
-(json.start_time route.start_time) if route.start
+(json.start_time route.route_data.start_time) if route.route_data.start
 (json.start_day number_of_days(route.start)) if route.start
-(json.end_time route.end_time) if route.end
+(json.end_time route.route_data.end_time) if route.route_data.end
 (json.end_day number_of_days(route.end)) if route.end
 
 json.color_fake route.color
@@ -46,7 +46,7 @@ if route.vehicle_usage_id
   end
   if route.drive_time != 0 && !route.drive_time.nil?
     json.route_averages do
-      json.drive_time time_over_day(route.drive_time)
+      json.drive_time time_over_day(route.drive_time) if route.drive_time
       json.prefered_unit current_user.prefered_unit
       json.prefered_currency current_user.prefered_currency
       json.speed route.speed_average(current_user.prefered_unit)
@@ -105,20 +105,37 @@ else
 end
 json.store_start do
   json.extract! route.vehicle_usage.default_store_start, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
-  if route.departure_status && planning.customer.enable_stop_status
-    json.status_code route.departure_status.downcase
-    json.status t("plannings.edit.stop_status.#{route.departure_status.downcase}", default: route.departure_status.downcase)
-    json.eta_formated l(route.departure_eta, format: :hour_minute) if route.departure_eta
-    json.eta route.departure_eta
+  if route.start_route_data&.status && planning.customer.enable_stop_status
+    json.status_code route.start_route_data.status.downcase
+    json.status t("plannings.edit.stop_status.#{route.start_route_data.status.downcase}", default: route.start_route_data.status.downcase)
+    json.eta_formated l(route.start_route_data.eta, format: :hour_minute) if route.start_route_data.eta
+    json.eta route.start_route_data.eta
   end
-  (json.time route.start_time) if route.start
-  (json.time_day number_of_days(route.start)) if route.start
+  (json.time route.route_data.start_time) if route.start
+  (json.time_day number_of_days(route.route_data.start)) if route.start
   (json.geocoded true) if route.vehicle_usage.default_store_start.position?
   (json.error true) unless route.vehicle_usage.default_store_start.position?
+  json.route_data do
+    json.route_id route.id
+    json.vehicle_id route.vehicle_usage.vehicle_id
+    json.route_averages do
+      json.drive_time time_over_day(route.start_route_data.drive_time) if route.start_route_data.drive_time
+      json.prefered_unit current_user.prefered_unit
+      json.prefered_currency current_user.prefered_currency
+      json.speed speed_average(route.start_route_data, current_user.prefered_unit)
+
+      json.visits_duration time_over_day(route.start_route_data.visits_duration) if route.start_route_data.visits_duration && route.start_route_data.visits_duration > 0
+      json.wait_time time_over_day(route.start_route_data.wait_time) if route.start_route_data.wait_time
+    end
+    json.duration time_over_day(route.start_route_data.duration) if route.start_route_data.duration
+    json.distance locale_distance(route.start_route_data.distance || 0, current_user.prefered_unit)
+    json.extract! route.start_route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, :status, :eta
+    json.quantities route_data_quantities(route.start_route_data, route.vehicle_usage_id && route.vehicle_usage.vehicle)
+  end
 end if route.vehicle_usage && route.vehicle_usage.default_store_start
 (json.start_with_service Time.at(display_start_time(route)).utc.strftime('%H:%M')) if display_start_time(route)
 (json.start_with_service_day number_of_days(display_start_time(route))) if display_start_time(route)
-(json.departure route.departure_time if route.start_time)
+(json.departure route.route_data.departure_time if route.route_data.start_time)
 
 json.with_stops @with_stops
 if @with_stops
@@ -206,6 +223,23 @@ if @with_stops
         (json.departure time_over_day(stop.time.to_i + stop.store_reload.default_duration.to_i))
         json.departure_day number_of_days(stop.time.to_i + stop.store_reload.default_duration.to_i)
       end
+      json.route_data do
+        json.route_id stop.route.id
+        json.vehicle_id stop.route.vehicle_usage.vehicle_id
+        json.route_averages do
+          json.drive_time time_over_day(stop.route_data.drive_time) if stop.route_data.drive_time
+          json.prefered_unit current_user.prefered_unit
+          json.prefered_currency current_user.prefered_currency
+          json.speed speed_average(stop.route_data, current_user.prefered_unit)
+
+          json.visits_duration time_over_day(stop.route_data.visits_duration) if stop.route_data.visits_duration && stop.route_data.visits_duration > 0
+          json.wait_time time_over_day(stop.route_data.wait_time) if stop.route_data.wait_time
+        end
+        json.duration time_over_day(stop.route_data.duration) if stop.route_data.duration
+        json.distance locale_distance(stop.route_data.distance || 0, current_user.prefered_unit)
+        json.extract! stop.route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, :status
+        json.quantities route_data_quantities(stop.route_data, stop.route.vehicle_usage_id && stop.route.vehicle_usage.vehicle)
+      end
     end
     json.duration l(Time.at(stop.duration).utc, format: :hour_minute_second) if stop.duration > 0
   end
@@ -213,13 +247,13 @@ end
 
 json.store_stop do
   json.extract! route.vehicle_usage.default_store_stop, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
-  if route.arrival_status && planning.customer.enable_stop_status
-    json.status_code route.arrival_status.downcase
-    json.status t("plannings.edit.stop_status.#{route.arrival_status.downcase}", default: route.arrival_status.downcase)
-    json.eta_formated l(route.arrival_eta, format: :hour_minute) if route.arrival_eta
-    json.eta route.arrival_eta
+  if route.stop_route_data&.status && planning.customer.enable_stop_status
+    json.status_code route.stop_route_data.status.downcase
+    json.status t("plannings.edit.stop_status.#{route.stop_route_data.status.downcase}", default: route.stop_route_data.status.downcase)
+    json.eta_formated l(route.stop_route_data.eta, format: :hour_minute) if route.stop_route_data.eta
+    json.eta route.stop_route_data.eta
   end
-  (json.time route.end_time) if route.end
+  (json.time route.route_data.end_time) if route.route_data.end
   (json.time_day number_of_days(route.end)) if route.end
   (json.geocoded true) if route.vehicle_usage.default_store_stop.position?
   (json.no_path true) if route.stop_no_path
@@ -230,6 +264,12 @@ json.store_stop do
   out_of_drive_time |= route.stop_out_of_drive_time
   json.stop_distance (route.stop_distance || 0) / 1000
   json.stop_drive_time route.stop_drive_time
+  json.route_data do
+    json.route_id route.id
+    json.vehicle_id route.vehicle_usage.vehicle_id
+    json.quantities route_data_quantities(route.stop_route_data, route.vehicle_usage_id && route.vehicle_usage.vehicle)
+    json.extract! route.stop_route_data, :status, :eta
+  end
 end if route.vehicle_usage_id && route.vehicle_usage.default_store_stop
 (json.end_without_service Time.at(display_end_time(route)).utc.strftime('%H:%M')) if display_end_time(route)
 (json.end_without_service_day number_of_days(display_end_time(route))) if display_end_time(route)

@@ -95,6 +95,23 @@ when StopStore
     json.color stop.default_color
     (json.error true) if !stop.store_reload.store.position?
   end
+  json.route_data do
+    json.route_id stop.route.id
+    json.vehicle_id stop.route.vehicle_usage.vehicle_id
+    json.route_averages do
+      json.drive_time time_over_day(stop.route_data.drive_time) if stop.route_data.drive_time
+      json.prefered_unit current_user.prefered_unit
+      json.prefered_currency current_user.prefered_currency
+      json.speed speed_average(stop.route_data, current_user.prefered_unit)
+
+      json.visits_duration time_over_day(stop.route_data.visits_duration) if stop.route_data.visits_duration && stop.route_data.visits_duration > 0
+      json.wait_time time_over_day(stop.route_data.wait_time) if stop.route_data.wait_time
+    end
+    json.duration time_over_day(stop.route_data.duration) if stop.route_data.duration
+    json.distance locale_distance(stop.route_data.distance || 0, current_user.prefered_unit)
+    json.extract! stop.route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure
+    json.quantities route_data_quantities(stop.route_data, stop.route.vehicle_usage_id && stop.route.vehicle_usage.vehicle)
+  end
 end
 if !stop.is_a?(StopRest)
   if stop.route.planning.customer.enable_orders

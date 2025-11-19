@@ -51,8 +51,8 @@
 
           <div class="title col-md-2 col-sm-2 col-xs-3">
             <span class="time">
-              <% if route.start_time %>
-                <%= route.start_time + (number_of_days(route.start) ? " (+#{number_of_days(route.start)})" : '') %>
+              <% if route.route_data.start_time %>
+                <%= route.route_data.start_time + (number_of_days(route.route_data.start) ? " (+#{number_of_days(route.route_data.start)})" : '') %>
               <% end %>
               <% if display_start_time(route) %>
                 - <%= Time.at(display_start_time(route)).utc.strftime('%H:%M') + (number_of_days(display_start_time(route)) ? "(+#{number_of_days(display_start_time(route))})" : '') %>
@@ -230,8 +230,8 @@
                 <% if display_end_time(route) %>
                   <%= Time.at(display_end_time(route)).utc.strftime('%H:%M') + (number_of_days(display_end_time(route)) ? "(+#{number_of_days(display_end_time(route))})" : '') %> -
                 <% end %>
-                <% if route.end_time %>
-                  <%= route.end_time + (number_of_days(route.end) ? " (+#{number_of_days(route.end)})" : '') %>
+                <% if route.route_data.end_time %>
+                  <%= route.route_data.end_time + (number_of_days(route.route_data.end) ? " (+#{number_of_days(route.route_data.end)})" : '') %>
                 <% end %>
               </span>
             <% end %>

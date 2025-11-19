@@ -18,5 +18,4 @@ class MasternautTest < ActionController::TestCase
       end
     end
   end
-
 end

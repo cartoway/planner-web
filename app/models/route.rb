@@ -20,6 +20,7 @@ require 'simplify_geojson_tracks_job'
 
 class Route < ApplicationRecord
   delegate :tracks, :tracks=, :points, :points=, to: :route_geojson, allow_nil: true, prefix: :geojson
+  delegate :distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, to: :route_data
 
   RELATION_ORDER_KEYS = %i[pickup_delivery order sequence]
 
@@ -31,21 +32,18 @@ class Route < ApplicationRecord
   belongs_to :vehicle_usage, optional: true
   has_many :stops, inverse_of: :route, autosave: true, dependent: :delete_all, after_add: :update_stops_track, after_remove: :update_stops_track
   has_one :route_geojson, dependent: :destroy
-
-  include QuantityAttr
-  quantity_attr :pickups, :deliveries
+  belongs_to :route_data, class_name: 'RouteData', optional: true
+  accepts_nested_attributes_for :route_data
+  belongs_to :start_route_data, class_name: 'RouteData', optional: true
+  accepts_nested_attributes_for :start_route_data
+  belongs_to :stop_route_data, class_name: 'RouteData', optional: true
+  accepts_nested_attributes_for :stop_route_data
 
   nilify_blanks
   validates :planning, presence: true
   #  validates :vehicle_usage, presence: true # nil on unplanned route
   validate :stop_index_validation
   attr_accessor :no_stop_index_validation, :vehicle_color_changed
-
-  include TimeAttr
-  attribute :start, ScheduleType.new
-  attribute :end, ScheduleType.new
-  attribute :departure, ScheduleType.new
-  time_attr :start, :end, :departure
 
   before_update :update_vehicle_usage, :update_geojson, unless: :migration_skip
 
@@ -57,6 +55,8 @@ class Route < ApplicationRecord
 
   after_save :invalidate_route_cache, :invalidate_planning_cache
   after_destroy :invalidate_route_cache, :invalidate_planning_cache
+
+  default_scope { includes(:route_data, :start_route_data, :stop_route_data) }
 
   scope :available, -> { where("vehicle_usage_id IS NULL OR NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
   scope :available_or_outdated, -> { where("vehicle_usage_id IS NULL OR NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
@@ -73,6 +73,7 @@ class Route < ApplicationRecord
   scope :includes_destinations_and_stores, -> {
     includes(
       stops: [
+        :route_data,
         {
           visit: [
             :relation_currents,
@@ -115,7 +116,7 @@ class Route < ApplicationRecord
   end
 
   def outdated_if_changed
-    return if !(will_save_change_to_departure? ||
+    return if !(route_data.will_save_change_to_departure? ||
                 will_save_change_to_force_start?)
     self.outdated = true
   end
@@ -182,6 +183,21 @@ class Route < ApplicationRecord
     }
   end
 
+  def init_store_route_data_attributes
+    {
+      distance: 0,
+      emission: nil,
+      start: nil,
+      end: nil,
+      drive_time: nil,
+      wait_time: nil,
+      visits_duration: nil,
+      revenue: nil,
+      cost_distance: nil,
+      cost_time: nil
+    }
+  end
+
   def is_expired?
     return false if planning.date.nil? || stops.only_active_stop_visits.empty? || stops.only_active_stop_visits.last.time.nil?
 
@@ -216,11 +232,12 @@ class Route < ApplicationRecord
     @geojson_tracks_store = []
 
     route_attributes = init_route_data
-
+    previous_route_data = self.start_route_data
     if vehicle_usage?
+      previous_route_data_attributes = init_store_route_data_attributes
       service_time_start = service_time_start_value
       service_time_end = service_time_end_value
-      route_attributes[:end] = route_attributes[:start] = departure || vehicle_usage.default_time_window_start
+      previous_route_data_attributes[:start] = route_attributes[:end] = route_attributes[:start] = departure || vehicle_usage.default_time_window_start
       speed_multiplier = vehicle_usage.vehicle.default_speed_multiplier
       router = vehicle_usage.vehicle.default_router
       router_dimension = vehicle_usage.vehicle.default_router_dimension
@@ -260,6 +277,7 @@ class Route < ApplicationRecord
             stops_drive_time[stop] = stop_attributes[:drive_time]
             stop_attributes[:time] = route_attributes[:end] + stop_attributes[:drive_time]
             route_attributes[:drive_time] = (route_attributes[:drive_time] || 0) + stop_attributes[:drive_time]
+            previous_route_data_attributes[:drive_time] = (previous_route_data_attributes[:drive_time] || 0) + stop_attributes[:drive_time]
           elsif !stop_attributes[:no_path]
             stop_attributes[:time] = route_attributes[:end]
           else
@@ -273,17 +291,22 @@ class Route < ApplicationRecord
               stop_attributes[:wait_time] = open - stop_attributes[:time]
               stop_attributes[:time] = open
               route_attributes[:wait_time] = (route_attributes[:wait_time] || 0) + stop_attributes[:wait_time]
+              previous_route_data_attributes[:wait_time] = (previous_route_data_attributes[:wait_time] || 0) + stop_attributes[:wait_time]
             else
               stop_attributes[:wait_time] = nil
             end
             stop_attributes[:out_of_window] = !!(late_wait && late_wait > 0)
             route_attributes[:revenue] = route_attributes[:revenue].nil? ? stop.visit&.revenue : route_attributes[:revenue] + (stop.visit&.revenue || 0)
+            previous_route_data_attributes[:revenue] = (previous_route_data_attributes[:revenue] || 0) + (stop.visit&.revenue || 0)
             route_attributes[:distance] += stop_attributes[:distance] if stop_attributes[:distance]
+            previous_route_data_attributes[:distance] += stop_attributes[:distance] if stop_attributes[:distance]
             route_attributes[:end] = stop_attributes[:time] + stop.duration
             route_attributes[:visits_duration] = (route_attributes[:visits_duration] || 0) + stop.duration if !stop.is_a?(StopRest)
+            previous_route_data_attributes[:visits_duration] = (previous_route_data_attributes[:visits_duration] || 0) + stop.duration if !stop.is_a?(StopRest)
             if !stop.is_a?(StopRest) && (previous_with_pos == true || (previous_with_pos.is_a?(Stop) && stop.position != previous_with_pos.position))
               route_attributes[:end] += stop.destination_duration
               route_attributes[:visits_duration] += stop.destination_duration
+              previous_route_data_attributes[:visits_duration] += stop.destination_duration
             end
             stop_attributes[:out_of_drive_time] = stop_attributes[:time] > vehicle_usage.default_time_window_end
             stop_attributes[:out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], stop_attributes[:time])
@@ -305,8 +328,21 @@ class Route < ApplicationRecord
           stop_attributes[:distance] = stop_attributes[:time] = stop_attributes[:wait_time] = nil
         end
         stop.attributes = stop_attributes
-      }
 
+        if stop.is_a?(StopStore)
+          previous_route_data_attributes[:drive_time] = route_attributes[:drive_time]
+          previous_route_data_attributes[:end] = stop_attributes[:time]
+          previous_route_data_attributes[:cost_distance] = previous_route_data_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
+          previous_route_data_attributes[:cost_time] = (route_attributes[:end] - previous_route_data_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
+          previous_route_data.assign_attributes(previous_route_data_attributes)
+
+          # reset route data attributes
+          previous_route_data_attributes = init_store_route_data_attributes
+          previous_route_data_attributes[:start] = route_attributes[:end]
+
+          previous_route_data = stop.route_data
+        end
+      }
       unless options[:no_quantities]
         _stop_load_hash, route_attributes[:pickups], route_attributes[:deliveries] = compute_loads(stops_sort)
       end
@@ -314,13 +350,19 @@ class Route < ApplicationRecord
       distance, drive_time, trace = traces.shift
       if drive_time
         route_attributes[:distance] += distance
+        previous_route_data_attributes[:distance] += distance
         stops_drive_time[:stop] = drive_time
         route_attributes[:end] += drive_time
+        previous_route_data_attributes[:end] = route_attributes[:end]
         route_attributes[:stop_distance], route_attributes[:stop_drive_time] = distance, drive_time
         route_attributes[:drive_time] += drive_time if route_attributes[:drive_time]
+        previous_route_data_attributes[:drive_time] += drive_time if previous_route_data_attributes[:drive_time]
         route_attributes[:cost_distance] = route_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
+        previous_route_data_attributes[:cost_distance] = previous_route_data_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
         route_attributes[:cost_fixed] = vehicle_usage.default_cost_fixed if vehicle_usage.default_cost_fixed
         route_attributes[:cost_time] = (route_attributes[:end] - route_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
+        previous_route_data_attributes[:cost_time] = (route_attributes[:end] - previous_route_data_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
+        previous_route_data.assign_attributes(previous_route_data_attributes)
       end
       route_attributes[:stop_no_path] = vehicle_usage.default_store_stop&.position? && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?
 
@@ -335,7 +377,14 @@ class Route < ApplicationRecord
       route_attributes[:stop_out_of_max_distance] = max_distance ? route_attributes[:distance] > max_distance : false
       route_attributes[:emission] = (vehicle_usage.vehicle.emission.nil? || vehicle_usage.vehicle.consumption.nil?) ? nil : (route_attributes[:distance] / 1000 * vehicle_usage.vehicle.emission * vehicle_usage.vehicle.consumption / 100)
 
-      self.assign_attributes(route_attributes)
+      # Separate attributes for Route vs RouteData
+      route_only_attributes = route_attributes.slice(:stop_distance, :stop_drive_time, :stop_no_path, :stop_out_of_drive_time, :stop_out_of_work_time, :stop_out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration)
+      route_data_attributes = route_attributes.slice(:distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure)
+
+      # Assign route-only attributes to self
+      self.assign_attributes(route_only_attributes)
+
+      self.route_data.assign_attributes(route_data_attributes)
       [stops_sort, stops_drive_time, stops_time_windows]
     end
   end
@@ -402,7 +451,7 @@ class Route < ApplicationRecord
       end
     else
       compute_out_of_skill(options[:planning])
-      _load_stop_hash, self.pickups, self.deliveries = compute_loads unless options[:no_quantities]
+      _load_stop_hash, self.route_data.pickups, self.route_data.deliveries = compute_loads unless options[:no_quantities]
     end
     @geojson_points_store = stops_to_geojson_points unless options[:no_geojson]
 
@@ -490,7 +539,14 @@ class Route < ApplicationRecord
     group_stop_visits = stops.select{ |s| s.is_a?(StopVisit) }.map(&:import_attributes)
     group_stop_rests = stops.select{ |s| s.is_a?(StopRest) }.map(&:import_attributes)
     group_stop_stores = stops.select{ |s| s.is_a?(StopStore) }.map(&:import_attributes)
-
+    group_route_data =
+      [
+        self.route_data,
+        self.start_route_data,
+        self.stop_route_data,
+        self.stops.map(&:route_data).compact
+      ].flatten.compact.map(&:import_attributes)
+    RouteData.import(group_route_data, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopVisit.import(group_stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopRest.import(group_stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopStore.import(group_stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
@@ -569,7 +625,7 @@ class Route < ApplicationRecord
 
     index = stops.size + 1 if !index || index < 0
     shift_index(index)
-    stop = stops.build(type: StopStore.name, store_reload: store_reload, index: index, active: stop_reload_attributes[:active], id: stop_id, custom_attributes: stop_reload_attributes[:custom_attributes])
+    stop = stops.build(type: StopStore.name, route_data: RouteData.create!, store_reload: store_reload, index: index, active: stop_reload_attributes[:active], id: stop_id, custom_attributes: stop_reload_attributes[:custom_attributes])
     self.outdated = true
     stop
   end
@@ -733,56 +789,59 @@ class Route < ApplicationRecord
     end
   end
 
-  include LocalizedAttr
-
-  attr_localized :pickups
-  attr_localized :deliveries
-
   def compute_loads(stops_sort = nil)
     stop_load_hash = {}
-    r_pickups = QuantityAttr::QuantityHash.new(0) # Load at end store
-    r_deliveries = QuantityAttr::QuantityHash.new(0) # Intermediate loads at stores
-    r_start_deliveries = nil # Load at start store
-    previous_store_stop = nil
+    route_pickups = QuantityAttr::QuantityHash.new(0) # total route pickups
+    route_deliveries = QuantityAttr::QuantityHash.new(0) # total route deliveries
+    store_pickups = QuantityAttr::QuantityHash.new(0) # pickups at "previous" store
+    store_deliveries = QuantityAttr::QuantityHash.new(0) # deliveries at "next" store
 
-    # First: Compute the store loads
+    previous_route_data = self.start_route_data
+
     (stops_sort || stops).each{ |stop|
       next if !stop.active
 
       case stop.class.name
       when StopVisit.name
         stop.visit.default_pickups(planning.customer.deliverable_units).each{ |k, v|
-          r_pickups[k] += (v || 0)
+          # visit pickups are delivered at next store
+          store_deliveries[k] += (v || 0)
         }
         stop.visit.default_deliveries(planning.customer.deliverable_units).each{ |k, v|
-          r_deliveries[k] += (v || 0)
+          # visit deliveries are picked up at previous store
+          store_pickups[k] += (v || 0)
         }
       when StopStore.name
-        if previous_store_stop
-          # The load of intermediate stores is the sum of the subsequent stop deliveries (r_deliveries)
-          previous_store_stop.loads = r_deliveries.dup
-        else
-          # The load at start is the sum of deliveries at the first encountered store
-          r_start_deliveries = r_deliveries.dup
-        end
-        r_deliveries = QuantityAttr::QuantityHash.new(0)
-        r_pickups = QuantityAttr::QuantityHash.new(0)
-        previous_store_stop = stop
+        previous_route_data.assign_attributes(pickups: store_pickups.dup)
+        previous_route_data = stop.route_data
+        previous_route_data.assign_attributes(deliveries: store_deliveries.dup)
+
+        # the pickups are the deliveries of the route
+        store_pickups.each{ |k, v| route_deliveries[k] += (v || 0) }
+        # the deliveries are the pickups of the route
+        store_deliveries.each{ |k, v| route_pickups[k] += (v || 0) }
+
+        store_deliveries = QuantityAttr::QuantityHash.new(0)
+        store_pickups = QuantityAttr::QuantityHash.new(0)
       end
     }
-    previous_store_stop.loads = r_deliveries.dup if previous_store_stop
-    self.pickups = r_pickups
-    self.deliveries = r_start_deliveries || r_deliveries
+    # the pickups are the deliveries of the route
+    store_pickups.each{ |k, v| route_deliveries[k] += (v || 0) }
+    # the deliveries are the pickups of the route
+    store_deliveries.each{ |k, v| route_pickups[k] += (v || 0) }
+    previous_route_data.assign_attributes(pickups: store_pickups.dup)
 
-    current_loads = (r_start_deliveries || r_deliveries).dup
+    self.stop_route_data.assign_attributes(deliveries: store_deliveries.dup)
+    self.route_data.assign_attributes(pickups: route_pickups, deliveries: route_deliveries)
 
-    # Second: Compute the StopVisit loads
+    current_loads = self.start_route_data.pickups.dup
     (stops_sort || stops).each { |stop|
       case stop.class.name
       when StopVisit.name
         process_stop_loads(stop, current_loads)
       when StopStore.name
-        current_loads = stop.loads.dup
+        current_loads = stop.route_data.pickups.dup
+        stop.out_of_capacity = out_of_capacity?(current_loads)
       end
 
       stop_load_hash[stop.id] = current_loads
@@ -907,6 +966,18 @@ class Route < ApplicationRecord
     route_geojson.save! if persisted?
   end
 
+  def ensure_route_data
+    if route_data.nil?
+      self.route_data = RouteData.new
+    end
+    if start_route_data.nil?
+      self.start_route_data = RouteData.new
+    end
+    if stop_route_data.nil?
+      self.stop_route_data = RouteData.new
+    end
+  end
+
   # Add route_id to geojson after create
   def complete_geojson
     ensure_route_geojson
@@ -975,10 +1046,10 @@ class Route < ApplicationRecord
   end
 
   def clear_eta_data
-    self.departure_eta = nil
-    self.departure_status = nil
-    self.arrival_eta = nil
-    self.arrival_status = nil
+    self.start_route_data.eta = nil
+    self.start_route_data.status = nil
+    self.stop_route_data.eta = nil
+    self.stop_route_data.status = nil
   end
 
   def compute_out_of_force_position
@@ -1104,7 +1175,7 @@ class Route < ApplicationRecord
   end
 
   def import_attributes
-    self.attributes.except('lock_version')
+    self.attributes.slice(*self.class.column_names).except('lock_version')
   end
 
   def invalidate_planning_cache
@@ -1129,6 +1200,7 @@ class Route < ApplicationRecord
   def assign_defaults
     self.hidden = false
     self.locked = false
+    ensure_route_data
   end
 
   def in_optimization_context?
@@ -1249,28 +1321,41 @@ class Route < ApplicationRecord
     @default_capacities ||= vehicle_usage&.vehicle&.default_capacities
     default_pickups = stop.visit.default_pickups(@deliverable_units)
     default_deliveries = stop.visit.default_deliveries(@deliverable_units)
-    out_of_capacity = nil
+    # Is the vehicle in overload/underload arriving at the stop ?
+    out_of_capacity = out_of_capacity?(current_loads)
     unmanageable_capacity = nil
 
     @deliverable_units.each do |du|
       if vehicle_usage
-        # Is the vehicle in overload/underload arriving at the stop ?
-        out_of_capacity ||= current_loads[du.id] && (@default_capacities[du.id] && current_loads[du.id].round(2) > @default_capacities[du.id].round(2) || current_loads[du.id].round(2) < 0)
         pickup = default_pickups[du.id]
         delivery = default_deliveries[du.id]
         current_loads[du.id] =
           (current_loads[du.id] || 0) + (pickup || 0) - (delivery || 0)
         has_pickup = pickup && pickup > 0
         has_delivery = delivery && delivery > 0
-        # Is the vehicle in overload/underload leaving the stop ?
-        out_of_capacity ||= current_loads[du.id] && (@default_capacities[du.id] && current_loads[du.id].round(2) > @default_capacities[du.id].round(2) || current_loads[du.id].round(2) < 0)
         unmanageable_capacity ||= (has_pickup || has_delivery) && (!@default_capacities.key?(du.id) || @default_capacities[du.id] == 0)
       end
     end
+    # Is the vehicle in overload/underload leaving the stop ?
+    out_of_capacity ||= out_of_capacity?(current_loads)
+
     stop.loads = current_loads
     stop.unmanageable_capacity = unmanageable_capacity
     stop.out_of_capacity = out_of_capacity
 
     current_loads
+  end
+
+  def out_of_capacity?(loads)
+    @deliveryable_units ||= planning.customer.deliverable_units
+    return false if @deliveryable_units.empty?
+
+    @default_capacities ||= vehicle_usage&.vehicle&.default_capacities
+    @deliveryable_units.each do |du|
+      next unless vehicle_usage && loads[du.id]
+
+      return true if @default_capacities[du.id] && (loads[du.id].round(2) > @default_capacities[du.id].round(2) || loads[du.id].round(2) < 0)
+    end
+    false
   end
 end

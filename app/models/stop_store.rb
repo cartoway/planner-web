@@ -35,9 +35,14 @@ class StopStore < Stop
            :max_reload,
            to: :store_reload
 
+  after_initialize :assign_defaults, if: -> { new_record? }
+
   validates :store_reload, presence: true
+  validates :route_data, presence: true
 
   before_create :validate_max_reload_per_route
+
+  default_scope { includes(:route_data) }
 
   # A StopStore is always active
   def active=(_value)
@@ -149,6 +154,16 @@ class StopStore < Stop
   end
 
   private
+
+  def assign_defaults
+    self.route_data = RouteData.create! if self.route_data.nil?
+  end
+
+  def ensure_route_data
+    if route_data.nil? && route.present?
+      self.route_data = RouteData.create!
+    end
+  end
 
   def validate_max_reload_per_route
     current_count = route.stops.where(type: self.class.name).where.not(id: id).count

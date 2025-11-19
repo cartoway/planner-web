@@ -20,8 +20,8 @@ json.routes @routes do |route|
   number = 0
   json.store_start do
     json.extract! route.vehicle_usage.default_store_start, :id, :name, :street, :postalcode, :city, :country, :lat, :lng
-    (json.time route.start_time) if route.start
-    (json.time_day number_of_days(route.start)) if route.start
+    (json.time route.route_data.start_time) if route.route_data.start
+    (json.time_day number_of_days(route.route_data.start)) if route.route_data.start
   end if route.vehicle_usage_id && route.vehicle_usage.default_store_start
   json.stops route.stops do |stop|
     (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_max_reload || stop.out_of_relation || stop.no_path
@@ -79,7 +79,7 @@ json.routes @routes do |route|
   end
   json.store_stop do
     json.extract! route.vehicle_usage.default_store_stop, :id, :name, :street, :postalcode, :city, :country, :lat, :lng
-    (json.time route.end_time) if route.end
+    (json.time route.route_data.end_time) if route.route_data.end
     (json.time_day number_of_days(route.end)) if route.end
     json.stop_distance (route.stop_distance || 0) / 1000
     json.stop_drive_time route.stop_drive_time
