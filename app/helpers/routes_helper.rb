@@ -28,6 +28,7 @@ module RoutesHelper
 
   def route_quantities(planning, route)
     vehicle = route.vehicle_usage.try(:vehicle)
+    capacity_multiplier = 1 + (route.vehicle_usage&.default_max_reload || 0)
     quantities = []
     units = planning.customer.deliverable_units
 
@@ -37,7 +38,7 @@ module RoutesHelper
       next if pickup == 0 && delivery == 0
 
       quantity = delivery - pickup
-      capacity = vehicle && vehicle.default_capacities[unit.id]
+      capacity = vehicle && (vehicle.default_capacities[unit.id])
 
       q =
         if route.deliveries[unit.id] && delivery > 0
@@ -45,7 +46,7 @@ module RoutesHelper
         else
           number_with_precision(quantity, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
         end
-      precise_capacity = number_with_precision(capacity, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true) if capacity
+      precise_capacity = number_with_precision(capacity * capacity_multiplier, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true) if capacity
       q += ' / ' + capacity.to_s if vehicle && vehicle.default_capacities[unit.id]
       q += "\u202F" + unit.label if unit.label
       quantities << {
@@ -57,7 +58,7 @@ module RoutesHelper
         label: unit.label,
         unit_icon: unit.default_icon,
         quantity_formatted: q,
-        out_of_capacity: capacity && (pickup > capacity || delivery > capacity),
+        out_of_capacity: capacity && (pickup > (capacity * capacity_multiplier) || delivery > (capacity * capacity_multiplier)),
         has_pickup: pickup > 0,
         has_delivery: delivery > 0
       }

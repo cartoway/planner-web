@@ -19,6 +19,7 @@ class Stop < ApplicationRecord
   default_scope { order(:index) }
 
   belongs_to :route, touch: true
+  belongs_to :route_data, optional: true
   belongs_to :visit, optional: true # TODO: Remove optional
   belongs_to :store, optional: true
   belongs_to :store_reload, optional: true

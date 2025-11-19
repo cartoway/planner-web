@@ -793,6 +793,13 @@ $sidebar-margins: 10px;
           padding-top: 0px;
           padding-bottom: 0px;
         }
+        >li.route-data-container {
+          height: unset !important;
+
+          .row.route-data {
+            padding: 2px 4px 2px 4px;
+          }
+        }
 
         >li {
           @media screen and (min-width: 992px) {

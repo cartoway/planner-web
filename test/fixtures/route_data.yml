@@ -1,0 +1,65 @@
+route_data_zero_one:
+  distance:
+  emission:
+  pickups: {}
+  deliveries: {}
+
+route_data_one_one:
+  distance: 1.5
+  emission: 1.5
+  start: 32:00
+  pickups: {}
+  deliveries: {}
+
+route_data_three_one:
+  distance: 1.5
+  emission: 1.5
+  start: 07:00
+  pickups: {}
+  deliveries: {}
+
+route_data_zero_two:
+  distance:
+  emission:
+  start: 16:00
+  pickups: {}
+  deliveries: {}
+
+route_data_one_two:
+  distance: 1.5
+  emission: 1.5
+  start: 08:00
+  pickups: {}
+  deliveries: {}
+
+route_data_three_two:
+  distance: 1.5
+  emission: 1.5
+  start: 07:00
+  pickups: {}
+  deliveries: {}
+
+route_data_zero_three:
+  distance:
+  emission:
+  pickups: {}
+  deliveries: {}
+
+route_data_one_three:
+  distance: 1.5
+  emission: 1.5
+  start: 08:00
+  pickups: {}
+  deliveries: {}
+
+route_data_zero_four:
+  distance:
+  emission:
+  pickups: { 1: 3, 999: 1 }
+  deliveries: { 1: 3 }
+
+route_data_one_four:
+  distance:
+  emission:
+  pickups: { 1: 3, 999: 1 }
+  deliveries: { 1: 3 }

@@ -182,7 +182,7 @@ class Visit < ApplicationRecord
 
     current_deliveries = deliveries || {}
     @default_deliveries = units.each_with_object(QuantityAttr::QuantityHash.new) do |du, hash|
-      hash[du.id] = current_deliveries.key?(du.id) ? current_deliveries[du.id] : du.default_delivery
+      hash[du.id] = current_deliveries[du.id] || du.default_delivery
     end
   end
 
@@ -194,7 +194,7 @@ class Visit < ApplicationRecord
 
     current_pickups = pickups || {}
     @default_pickups = units.each_with_object(QuantityAttr::QuantityHash.new) do |du, hash|
-      hash[du.id] = current_pickups.key?(du.id) ? current_pickups[du.id] : du.default_pickup
+      hash[du.id] = current_pickups[du.id] || du.default_pickup
     end
   end
 

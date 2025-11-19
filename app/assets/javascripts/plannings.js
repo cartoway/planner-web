@@ -726,6 +726,17 @@ export const plannings_edit = function(params) {
 
   var fitBounds = initializeMapHash(map);
 
+  var updateRouteDataContainers = function(selection) {
+    $('.route-data-container .in-route.route-data').each(function(index, element) {
+      var $routeData = $(element);
+      if (selection == 'all') {
+        $routeData.removeClass('d-none');
+      } else if (selection == 'none' || selection == 'simple') {
+        $routeData.addClass('d-none');
+      }
+    });
+  };
+
   $('#data_routes_dropdown').find('li a').click(function() {
     if (routes.length == 0) return;
 
@@ -750,6 +761,13 @@ export const plannings_edit = function(params) {
         $(element).hide();
       }
     });
+
+    updateRouteDataContainers(selection);
+  });
+
+  $(document).on('click', '.route-data-toggle', function(e) {
+    var $routeData = $(this).closest('li').next('.route-data-container').find('.route-data');
+    $routeData.toggleClass('d-none');
   });
 
   $('#lock_routes_dropdown, #toggle_routes_dropdown').find('li a').click(function() {

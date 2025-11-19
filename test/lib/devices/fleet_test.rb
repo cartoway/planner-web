@@ -99,8 +99,8 @@ class FleetTest < ActionController::TestCase
       planning.save
       planning.reload
 
-      assert_equal '2000-01-01 00:00:00 UTC', planning.routes.second.arrival_eta.utc.to_s
-      assert_equal 'Finished', planning.routes.second.arrival_status
+      assert_equal '2000-01-01 00:00:00 UTC', planning.routes.second.stop_route_data.eta.utc.to_s
+      assert_equal 'Finished', planning.routes.second.stop_route_data.status
     end
   end
 
@@ -111,8 +111,8 @@ class FleetTest < ActionController::TestCase
       planning.save
       planning.reload
 
-      assert_nil planning.routes.second.arrival_eta
-      assert_nil planning.routes.second.departure_eta
+      assert_nil planning.routes.second.stop_route_data.eta
+      assert_nil planning.routes.second.start_route_data.eta
     end
   end
 
