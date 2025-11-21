@@ -214,9 +214,11 @@ class V01::Destinations < Grape::API
       if params[:destinations]
         d_params = declared(params, include_missing: false) # Filter undeclared parameters
         import_destination_params = d_params[:destinations].each{ |dest_params|
+          dest_params[:tag_ids] = filter_tag_ids_belong_to_customer(dest_params[:tag_ids], current_customer) if dest_params[:tag_ids]
           dest_params[:visits]&.each{ |hash|
             convert_timewindows(hash)
-            convert_deprecated_quantities(hash, current_customer.deliverable_units);
+            convert_deprecated_quantities(hash, current_customer.deliverable_units)
+            hash[:tag_ids] = filter_tag_ids_belong_to_customer(hash[:tag_ids], current_customer) if hash[:tag_ids]
           }
         }
       end
