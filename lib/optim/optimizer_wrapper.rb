@@ -307,7 +307,7 @@ class OptimizerWrapper
     route_ids = routes.map(&:id)
     enable_upper_bound = options.key?(:enable_optimization_soft_upper_bound) ? options[:enable_optimization_soft_upper_bound] : planning.customer.enable_optimization_soft_upper_bound
     extra_time = enable_upper_bound && (options[:stop_max_upper_bound] || planning.customer.stop_max_upper_bound) || 0
-    override_default_priorities = !options[:global] && stops.all?{ |stop| stop.priority.to_i == 0 }
+    override_default_priorities = !options[:global] && stops.all?{ |stop| stop.priority.nil? || stop.priority == 4 }
 
     vrp_services = stops.map{ |stop|
       # A stop without position should not be part of an optimization
