@@ -439,7 +439,7 @@ class OptimizerWrapper
 
   def service_priority(stop, sticky_vehicle_ids, override_default_priorities)
     if override_default_priorities
-      return 0 if sticky_vehicle_ids.any?
+      return 0 if sticky_vehicle_ids.present?
       return 8
     end
     (stop.priority.to_i - 4).abs
