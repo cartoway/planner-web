@@ -715,8 +715,10 @@ class Planning < ApplicationRecord
 
         store_reloads = self.customer.store_reloads
         store_reloads_hash = Hash[store_reloads.map{ |sr| [sr.id, sr] }]
-        out_stop_ids = optimum[nil] || optimum[self.routes.find{ |route| !route.vehicle_usage? }&.id] || []
-
+        out_stop_ids =
+          (optimum[nil] || optimum[self.routes.find{ |route| !route.vehicle_usage? }&.id] || [])
+          .select{ |service| service[:type] == 'service' }
+          .map{ |service| service[:id] }
         self.routes.each{ |route|
           next unless optimum.key?(route.id)
 
