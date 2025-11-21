@@ -139,7 +139,8 @@ class ImporterDestinations < ImporterBase
   # convert json with multi visits in several rows like in csv
   def json_to_rows(json)
     json.collect{ |dest|
-      dest[:tags] = dest[:tag_ids].collect(&:to_i) if dest[:tags].blank? && dest.key?(:tag_ids)
+      dest[:tags] ||= []
+      dest[:tags] |= dest[:tag_ids].collect(&:to_i) if dest.key?(:tag_ids)
       if dest.key?(:visits) && !dest[:visits].empty?
         dest[:visits].collect{ |v|
           v[:ref_visit] = v.delete(:ref)
