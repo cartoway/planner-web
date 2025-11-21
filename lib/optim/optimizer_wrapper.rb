@@ -315,13 +315,13 @@ class OptimizerWrapper
       point_hash[service_point[:id]] = service_point
 
       tags_label = stop.is_a?(StopVisit) ? (stop.visit.destination.tags | stop.visit.tags).map(&:label) & planning.all_skills.map(&:label) : nil
+      sticky_vehicle_ids = stop.route.vehicle_usage_id &&
+          (!options[:global] || stop.is_a?(StopRest)) &&
+          (options[:moving_stop_ids].nil? || route_ids.include?(stop.route_id) || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route_id}"] : nil
       {
         id: "s#{stop.id}",
         type: 'service',
-        sticky_vehicle_ids:
-          stop.route.vehicle_usage_id &&
-          (!options[:global] || stop.is_a?(StopRest)) &&
-          (options[:moving_stop_ids].nil? || route_ids.include?(stop.route_id) || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
+        sticky_vehicle_ids: sticky_vehicle_ids, # to force an activity on a vehicle (for instance geoloc rests)
         activity: {
           point_id: service_point[:id],
           position: POSITION_KEYS[stop.visit&.force_position&.to_sym || :neutral],
@@ -340,7 +340,7 @@ class OptimizerWrapper
           duration: stop.duration,
           setup_duration: stop.destination_duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
-        priority: stop.priority && (stop.priority.to_i - 4).abs,
+        priority: service_priority(stop, sticky_vehicle_ids),
         quantities: units.map{ |unit|
           next if stop.visit.nil? ||
                   !stop.visit.default_pickups.key?(unit.id) && !stop.visit.default_deliveries.key?(unit.id) ||
@@ -433,6 +433,14 @@ class OptimizerWrapper
       ).delete_if{ |_k, v| v.nil? || (v.respond_to?(:empty?) && v.empty?) }
     }
     [vrp_vehicles, point_hash.values]
+  end
+
+  def service_priority(stop, sticky_vehicle_ids)
+    priority = (stop.priority.to_i - 4).abs
+
+    priority -= 2 if sticky_vehicle_ids
+
+    [priority, 0].max
   end
 
   def collect_relations(planning, routes, stops, **options)
