@@ -264,6 +264,8 @@ class OptimizerWrapper
     route_ids = routes.map(&:id)
     enable_upper_bound = options.key?(:enable_optimization_soft_upper_bound) ? options[:enable_optimization_soft_upper_bound] : planning.customer.enable_optimization_soft_upper_bound
     extra_time = enable_upper_bound && (options[:stop_max_upper_bound] || planning.customer.stop_max_upper_bound) || 0
+    override_default_priorities = !options[:global] && stops.all?{ |stop| stop.priority.to_i == 0 }
+
     vrp_services = stops.map{ |stop|
       # A stop without position should not be part of an optimization
       next if options[:active_only] && stop.route.vehicle_usage? && !stop.active && !options[:moving_stop_ids]&.include?(stop.id) || !stop.position?
@@ -272,13 +274,13 @@ class OptimizerWrapper
       point_hash[service_point[:id]] = service_point
 
       tags_label = stop.is_a?(StopVisit) ? (stop.visit.destination.tags | stop.visit.tags).map(&:label) & planning.all_skills.map(&:label) : nil
+      sticky_vehicle_ids = stop.route.vehicle_usage_id &&
+          (!options[:global] || stop.is_a?(StopRest)) &&
+          (options[:moving_stop_ids].nil? || route_ids.include?(stop.route_id) || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route_id}"] : nil
       {
         id: "s#{stop.id}",
         type: 'service',
-        sticky_vehicle_ids:
-          stop.route.vehicle_usage_id &&
-          (!options[:global] || stop.is_a?(StopRest)) &&
-          (options[:moving_stop_ids].nil? || route_ids.include?(stop.route_id) || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route_id}"] : nil, # to force an activity on a vehicle (for instance geoloc rests)
+        sticky_vehicle_ids: sticky_vehicle_ids, # to force an activity on a vehicle (for instance geoloc rests)
         activity: {
           point_id: service_point[:id],
           position: POSITION_KEYS[stop.visit&.force_position&.to_sym || :neutral],
@@ -297,7 +299,7 @@ class OptimizerWrapper
           duration: stop.duration,
           setup_duration: stop.destination_duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
-        priority: stop.priority && (stop.priority.to_i - 4).abs,
+        priority: service_priority(stop, sticky_vehicle_ids, override_default_priorities),
         quantities: units.map{ |unit|
           next if stop.visit.nil? ||
                   !stop.visit.default_pickups.key?(unit.id) && !stop.visit.default_deliveries.key?(unit.id) ||
@@ -388,6 +390,14 @@ class OptimizerWrapper
       ).delete_if{ |_k, v| v.nil? || (v.respond_to?(:empty?) && v.empty?) }
     }
     [vrp_vehicles, point_hash.values]
+  end
+
+  def service_priority(stop, sticky_vehicle_ids, override_default_priorities)
+    if override_default_priorities
+      return 0 if sticky_vehicle_ids.present?
+      return 8
+    end
+    (stop.priority.to_i - 4).abs
   end
 
   def collect_relations(planning, routes, stops, **options)
