@@ -307,6 +307,8 @@ class OptimizerWrapper
     route_ids = routes.map(&:id)
     enable_upper_bound = options.key?(:enable_optimization_soft_upper_bound) ? options[:enable_optimization_soft_upper_bound] : planning.customer.enable_optimization_soft_upper_bound
     extra_time = enable_upper_bound && (options[:stop_max_upper_bound] || planning.customer.stop_max_upper_bound) || 0
+    override_default_priorities = !options[:global] && stops.all?{ |stop| stop.priority.to_i == 0 }
+
     vrp_services = stops.map{ |stop|
       # A stop without position should not be part of an optimization
       next if options[:active_only] && stop.route.vehicle_usage? && !stop.active && !options[:moving_stop_ids]&.include?(stop.id) || !stop.position?
@@ -340,7 +342,7 @@ class OptimizerWrapper
           duration: stop.duration,
           setup_duration: stop.destination_duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
-        priority: service_priority(stop, sticky_vehicle_ids),
+        priority: service_priority(stop, sticky_vehicle_ids, override_default_priorities),
         quantities: units.map{ |unit|
           next if stop.visit.nil? ||
                   !stop.visit.default_pickups.key?(unit.id) && !stop.visit.default_deliveries.key?(unit.id) ||
@@ -435,12 +437,12 @@ class OptimizerWrapper
     [vrp_vehicles, point_hash.values]
   end
 
-  def service_priority(stop, sticky_vehicle_ids)
-    priority = (stop.priority.to_i - 4).abs
-
-    priority -= 2 if sticky_vehicle_ids
-
-    [priority, 0].max
+  def service_priority(stop, sticky_vehicle_ids, override_default_priorities)
+    if override_default_priorities
+      return 0 if sticky_vehicle_ids.any?
+      return 8
+    end
+    (stop.priority.to_i - 4).abs
   end
 
   def collect_relations(planning, routes, stops, **options)
