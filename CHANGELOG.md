@@ -1,5 +1,14 @@
 # Changelog
 
+## V107.2.1
+  ### Changed
+  - Favor already assigned stops in route optimization with insertion [#535](https://github.com/cartoway/planner-web/pull/535)
+
+  ### Fixed
+  - Filter customer tags on PUT destinations [#535](https://github.com/cartoway/planner-web/pull/535)
+  - Fields `tags` and `tag_ids` are cumulative on destinations for PUT destinations [#535](https://github.com/cartoway/planner-web/pull/535)
+  - Replace invalid characters in CSV files [#527](https://github.com/cartoway/planner-web/pull/527)
+
 ## V107.2.0
   ### Added
   - Expose `departure` on route API endpoint [#514](https://github.com/cartoway/planner-web/pull/514) && [#519](https://github.com/cartoway/planner-web/pull/519)
