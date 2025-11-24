@@ -157,7 +157,24 @@ class ImportCsv
         errors[:file] << I18n.t('destinations.import_file.not_csv')
         return false
       end
-      contents = CharlockHolmes::Converter.convert(contents, detection[:encoding], 'UTF-8')
+
+      # Skip conversion if already UTF-8, just clean invalid characters
+      if detection[:encoding].upcase == 'UTF-8'
+        contents = contents.scrub('?')
+      else
+        begin
+          contents = CharlockHolmes::Converter.convert(contents, detection[:encoding], 'UTF-8')
+        rescue ArgumentError => e
+          # Try to clean invalid characters using encode with replacement options
+          begin
+            # Force the detected encoding and convert to UTF-8, replacing invalid characters
+            contents = contents.force_encoding(detection[:encoding]).encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+          rescue Encoding::InvalidByteSequenceError, Encoding::UndefinedConversionError, ArgumentError => e
+            errors[:file] << I18n.t('destinations.import_file.not_csv')
+            return false
+          end
+        end
+      end
     end
 
     if contents.blank?
