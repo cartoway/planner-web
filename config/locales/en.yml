@@ -1949,6 +1949,9 @@ en:
       out_of_route_quantity_help: Quantity
       toggle_help: Toggle stops on map
       toggle_route_data_help: Toggle route stats
+      sub_tour:
+        toggle: Toggle sub-tour visibility
+        change_color_help: Change sub-tour color
       locked_unplanned_help: Lock the out of route on global plan operations
       locked_help: Lock the route on global plan operations
       center_view_help: Center the map on the route

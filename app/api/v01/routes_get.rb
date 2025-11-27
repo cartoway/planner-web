@@ -28,18 +28,24 @@ class V01::RoutesGet < Grape::API
 
   helpers do
     def present_routes(routes, params)
+      requested_sub_tours = params[:sub_tour_indices]
       if env['api.format'] == :geojson
-        Route.routes_to_geojson(routes, params[:stores] || params[:with_stores], true,
-          if params[:with_geojson] == :polyline
+        Route.routes_to_geojson(routes, {
+          include_stores: params[:stores] || params[:with_stores],
+          respect_hidden: true,
+          include_linestrings: if params[:with_geojson] == :polyline
             :polyline
           elsif params[:with_geojson] == :point
             false
           else
             true
           end,
-          params[:quantities] || params[:with_quantities])
+          with_quantities: params[:quantities] || params[:with_quantities],
+          large: false,
+          sub_tour_indices: requested_sub_tours
+        })
       else
-        present routes, with: V01::Entities::Route, geojson: params[:with_geojson]
+        present routes, with: V01::Entities::Route, geojson: params[:with_geojson], sub_tour_indices: requested_sub_tours
       end
     end
   end
@@ -105,6 +111,7 @@ class V01::RoutesGet < Grape::API
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry, when using json output. For geojson output, param can be only set to `point` to return only points, `polyline` to return with encoded linestring.'
+          optional :sub_tour_indices, type: Array[Integer], desc: 'Restrict returned polylines to the provided sub-tour indices (requires with_geojson=:polyline).'
         end
         get ':id' do
           r = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.where(ParseIdsRefs.where_clause([params[:id]])).first!
@@ -132,11 +139,13 @@ class V01::RoutesGet < Grape::API
                 false
               else
                 true
-              end)
+              end,
+              false,
+              params[:sub_tour_indices])
           elsif env['api.format'] == :ics
             route_calendar(r).to_ical
           else
-            present r, with: V01::Entities::Route, geojson: params[:with_geojson]
+            present r, with: V01::Entities::Route, geojson: params[:with_geojson], sub_tour_indices: params[:sub_tour_indices]
           end
         end
       end

@@ -361,4 +361,66 @@ class RouteTest < ActiveSupport::TestCase
     route.compute_saved
     assert route.stops.none?(&:out_of_force_position)
   end
+
+  test 'should add sub_tour_index to polylines when route has StopStore' do
+    route = routes(:route_one_one)
+    customer = route.planning.customer
+    customer.update(enable_store_stops: true)
+
+    # Add a StopStore to create a sub-tour
+    store = stores(:store_one)
+    route.vehicle_usage.update(max_reload: 1)
+    store_reload = store.store_reloads.create!(ref: 'SR001')
+    route.add_store_reload(store_reload)
+
+    # Compute the route to generate polylines
+    route.outdated = true
+    route.compute_saved!
+
+    # Check that polylines have sub_tour_index property
+    if route.geojson_tracks && route.geojson_tracks.any?
+
+      stop_store_index = route.stops.index{ |stop| stop.type == "StopStore" }
+      route.geojson_tracks.each.with_index do |track_json, index|
+        break if index >= stop_store_index
+
+        track = JSON.parse(track_json)
+        if track['geometry'] && track['geometry']['polylines']
+          assert track['properties'].key?('sub_tour_index'), 'Polyline should have sub_tour_index property'
+          assert_equal 0, track['properties']['sub_tour_index'], 'First sub-tour should have index 0'
+        end
+      end
+    end
+  end
+
+  test 'should increment sub_tour_index after each StopStore' do
+    route = routes(:route_one_one)
+    customer = route.planning.customer
+    customer.update(enable_store_stops: true)
+
+    store = stores(:store_one)
+    route.vehicle_usage.update(max_reload: 2)
+    store_reload1 = store.store_reloads.create!(ref: 'SR001')
+    store_reload2 = store.store_reloads.create!(ref: 'SR002')
+
+    route.add_store_reload(store_reload1)
+    route.add_store_reload(store_reload2)
+
+    route.outdated = true
+    route.compute_saved!
+
+    if route.geojson_tracks && route.geojson_tracks.any?
+      sub_tour_indices = []
+      route.geojson_tracks.each do |track_json|
+        track = JSON.parse(track_json)
+        if track['geometry'] && track['geometry']['polylines'] && track['properties'] && track['properties']['sub_tour_index']
+          sub_tour_indices << track['properties']['sub_tour_index']
+        end
+      end
+
+      assert sub_tour_indices.include?(0), 'Should have polyline with sub_tour_index 0'
+      assert sub_tour_indices.include?(1), 'Should have polyline with sub_tour_index 1'
+      assert sub_tour_indices.include?(2), 'Should have polyline with sub_tour_index 2'
+    end
+  end
 end
