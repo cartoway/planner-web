@@ -770,6 +770,151 @@ export const plannings_edit = function(params) {
     $routeData.toggleClass('d-none');
   });
 
+  $(document).on('click', '.sub-tour-toggle', function(e) {
+    e.preventDefault();
+    var $button = $(this);
+    var routeId = $button.data('routeId');
+    var subTourIndex = $button.data('subTourIndex');
+
+    if (typeof routeId === 'undefined' || typeof subTourIndex === 'undefined') {
+      return;
+    }
+
+    var wasVisible = $button.hasClass('sub-tour-visible');
+
+    if (wasVisible) {
+      $button.removeClass('sub-tour-visible');
+      $button.attr('aria-pressed', 'false');
+      $button.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+    } else {
+      $button.addClass('sub-tour-visible');
+      $button.attr('aria-pressed', 'true');
+      $button.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+    }
+
+    var $buttonsForRoute = $(".sub-tour-toggle[data-route-id='" + routeId + "']");
+    var activeIndices = $buttonsForRoute.filter('.sub-tour-visible').map(function() {
+      return $(this).data('subTourIndex');
+    }).get();
+
+    if (!routesLayer) return;
+
+    if (activeIndices.length === 0) {
+      routesLayer.setSubTourFilter(routeId, []);
+      routesLayer.hideRoutes([routeId]);
+      return;
+    }
+
+    if (activeIndices.length === $buttonsForRoute.length) {
+      routesLayer.setSubTourFilter(routeId, null);
+      routesLayer.hideRoutes([routeId]);
+      routesLayer.showRoutes([routeId]);
+      return;
+    }
+
+    routesLayer.setSubTourFilter(routeId, activeIndices);
+    routesLayer.hideRoutes([routeId]);
+    routesLayer.showRoutes([routeId]);
+  });
+
+  var getRouteColor = function(routeId) {
+    var $route = $('li.route[data-route-id="' + routeId + '"]');
+    var routeColor = $route.attr('data-color') || null;
+    if (!routeColor) {
+      var $colorSelect = $route.find('[name="route[color]"]');
+      routeColor = $colorSelect.val() || null;
+    }
+    return routeColor || '#bdc3c4';
+  };
+
+  // Update a single sub-tour color button based on route color and custom color
+  var updateSubTourColorButton = function(routeId, subTourIndex, customColor) {
+    var normalizedRouteColor = getRouteColor(routeId);
+    var $buttonIcon = $('.sub-tour-color-btn[data-route-id="' + routeId + '"][data-sub-tour-index="' + subTourIndex + '"] i.fa-paint-brush');
+
+    if (customColor) {
+      var normalizedCustomColor = customColor || '#bdc3c4';
+      if (normalizedCustomColor === normalizedRouteColor) {
+        // Reset to default: remove color property
+        $buttonIcon.css('color', '');
+      } else {
+        $buttonIcon.css('color', customColor);
+      }
+    } else {
+      // No custom color, reset to default: remove color property
+      $buttonIcon.css('color', '');
+    }
+  };
+
+  // Update sub-tour color buttons for a route based on route color
+  var updateSubTourColorButtons = function(routeId) {
+    if (!routesLayer) return;
+
+    // Update all sub-tour color buttons for this route
+    $('.sub-tour-color-btn[data-route-id="' + routeId + '"]').each(function() {
+      var $button = $(this);
+      var subTourIndex = $button.data('sub-tour-index');
+
+      // Get custom color from routesLayer
+      var normalizedRouteId = routeId.toString();
+      var customColor = routesLayer.subTourColors[normalizedRouteId] && routesLayer.subTourColors[normalizedRouteId][subTourIndex];
+
+      updateSubTourColorButton(routeId, subTourIndex, customColor);
+    });
+  };
+
+  $(document).on('click', '.sub-tour-color-option', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var $option = $(this);
+    var routeId = $option.data('route-id');
+    var subTourIndex = $option.data('sub-tour-index');
+    var color = $option.data('color');
+
+    if (typeof routeId === 'undefined' || typeof subTourIndex === 'undefined') {
+      return;
+    }
+
+    if (!routesLayer) return;
+
+    // Check if this is a reset option (no data-color or color is null/undefined)
+    var isReset = (typeof color === 'undefined' || color === null || color === '');
+
+    if (isReset) {
+      // Reset to default: remove custom color
+      routesLayer.setSubTourColor(routeId, subTourIndex, null);
+      updateSubTourColorButton(routeId, subTourIndex, null);
+    } else {
+      // Get route color and compare with selected color
+      var normalizedRouteColor = getRouteColor(routeId);
+      var normalizedSelectedColor = color || '#bdc3c4';
+
+      // If selected color matches route color, reset to default (pass null)
+      var colorToSet = (normalizedSelectedColor === normalizedRouteColor) ? null : color;
+      routesLayer.setSubTourColor(routeId, subTourIndex, colorToSet);
+      updateSubTourColorButton(routeId, subTourIndex, colorToSet);
+    }
+
+    $option.closest('.sub-tour-color-dropdown').find('.fa-check').remove();
+    $option.find('.color_small').append('<i class="fa fa-check"></i>');
+
+    var $dropdown = $option.closest('.dropdown');
+    var $dropdownMenu = $option.closest('.dropdown-menu');
+    var $button = $dropdown.find('.sub-tour-color-btn');
+    $dropdown.removeClass('open');
+    $dropdownMenu.hide();
+    $button.attr('aria-expanded', 'false');
+
+    routesLayer.hideRoutes([routeId]);
+    routesLayer.showRoutes([routeId]);
+  });
+
+  $(document).on('click', function(e) {
+    if (!$(e.target).closest('.sub-tour-color-btn, .sub-tour-color-dropdown').length) {
+      $('.sub-tour-color-dropdown').closest('.dropdown').removeClass('open');
+    }
+  });
+
   $('#lock_routes_dropdown, #toggle_routes_dropdown').find('li a').click(function() {
     if (routes.length == 0) return;
 
@@ -1439,6 +1584,8 @@ export const plannings_edit = function(params) {
         success: function() {
           routesLayer.options.colorsByRoute[id] = color;
           routesLayer.refreshRoutes([id], routes);
+          // Update sub-tour color buttons when route color changes
+          updateSubTourColorButtons(id);
         },
         error: ajaxError
       });
@@ -1974,6 +2121,8 @@ export const plannings_edit = function(params) {
 
       const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
       initRoutes($routePanel, data, options);
+      // Update sub-tour color buttons after route initialization
+      updateSubTourColorButtons(route.route_id);
 
       var sortableUpdate = false;
       var $sortable_route = $(".route[data-route-id='" + route.route_id + "'] .stops.sortable");

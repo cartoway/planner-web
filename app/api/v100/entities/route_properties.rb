@@ -23,7 +23,9 @@ class V100::Entities::RouteProperties < Grape::Entity
           false
         else
           true
-        end)
+        end,
+        false,
+        options[:sub_tour_indices])
     end
   }
 end

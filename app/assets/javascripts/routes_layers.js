@@ -276,6 +276,7 @@ var removeInactiveStops = function(data) {
 
 var nbRoutes = 0;
 var nbMarkers = 0;
+
 export const RoutesLayer = L.FeatureGroup.extend({
   defaultOptions: {
     outOfRouteId: undefined,
@@ -299,6 +300,12 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
   // Markers for each store
   markerStores: {},
+
+  // Store selected sub-tour indices per route
+  subTourFilters: {},
+
+  // Store custom colors for sub-tours per route: { routeId: { subTourIndex: color } }
+  subTourColors: {},
 
   // Marker options
   markerOptions: {
@@ -375,6 +382,8 @@ export const RoutesLayer = L.FeatureGroup.extend({
     L.FeatureGroup.prototype.initialize.call(this);
     this.planningId = planningId;
     this.clickPopupId = undefined;
+    this.subTourFilters = {};
+    this.subTourColors = {};
     this.options = $.extend({}, this.defaultOptions, options); // Don't modify defaultOptions which can be reinitialized by turbolinks
 
     if (this.options.disableClusters) {
@@ -640,6 +649,32 @@ export const RoutesLayer = L.FeatureGroup.extend({
     this.options.showPopupOnHover = !this.options.showPopupOnHover;
   },
 
+  setSubTourFilter: function(routeId, indices) {
+    if (typeof routeId === 'undefined' || routeId === null) return;
+    var normalizedRouteId = routeId.toString();
+
+    if (Array.isArray(indices)) {
+      this.subTourFilters[normalizedRouteId] = indices.slice();
+    } else {
+      delete this.subTourFilters[normalizedRouteId];
+    }
+  },
+
+  setSubTourColor: function(routeId, subTourIndex, color) {
+    if (typeof routeId === 'undefined' || routeId === null) return;
+    var normalizedRouteId = routeId.toString();
+
+    if (!this.subTourColors[normalizedRouteId]) {
+      this.subTourColors[normalizedRouteId] = {};
+    }
+
+    if (color) {
+      this.subTourColors[normalizedRouteId][subTourIndex] = color;
+    } else {
+      delete this.subTourColors[normalizedRouteId][subTourIndex];
+    }
+  },
+
   _setViewForMarker: function(routeId, marker) {
     this.map.closePopup();
 
@@ -677,13 +712,32 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
   _load: function(routeIds, includeStores, geojson, callback) {
     if (!geojson) {
-      $.ajax({
-        url: '/api/0.1' + (this.planningId ? '/plannings/' + this.planningId : '') + '/routes.geojson',
-        data: {
+      var requestData = (function() {
+        var dataParams = {
           with_geojson: this.options.withPolylines ? 'polyline' : 'point',
           ids: routeIds.join(','),
-          stores: includeStores//,
-        },
+          stores: includeStores
+        };
+        if (routeIds.length === 1) {
+          var normalizedRouteId = routeIds[0].toString();
+          if (Object.prototype.hasOwnProperty.call(this.subTourFilters, normalizedRouteId)) {
+            var filter = this.subTourFilters[normalizedRouteId];
+            if (Array.isArray(filter)) {
+              if (filter.length === 0) {
+                return null;
+              }
+              dataParams.sub_tour_indices = filter;
+            }
+          }
+        }
+        return dataParams;
+      }.bind(this))();
+
+      if (!requestData) { return; }
+
+      $.ajax({
+        url: '/api/0.1' + (this.planningId ? '/plannings/' + this.planningId : '') + '/routes.geojson',
+        data: requestData,
         beforeSend: beforeSendWaiting,
         success: function(data) {
           if (this.options.withInactiveStops === false) removeInactiveStops(data);
@@ -785,8 +839,13 @@ export const RoutesLayer = L.FeatureGroup.extend({
         layer.properties = feature.properties;
       }.bind(this),
       style: function(feature) {
+        var baseColor = feature.properties.color;
+        var routeId = feature.properties.route_id;
+        var subTourIndex = feature.properties.sub_tour_index;
+        var customColor = this.subTourColors[routeId] && this.subTourColors[routeId][subTourIndex];
+        var color = customColor || baseColor;
         return {
-          color: feature.properties.color,
+          color: color,
           opacity: 0.5,
           weight: 5
         };
@@ -815,7 +874,11 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
           var pointIcon = geoJsonPoint.properties.icon || GlobalConfiguration.destinationIconDefault;
           var pointIconSize = geoJsonPoint.properties.icon_size || GlobalConfiguration.destinationIconSizeDefault;
-          var pointColor = geoJsonPoint.properties.color || GlobalConfiguration.destinationColorDefault;
+          var baseColor = geoJsonPoint.properties.color || GlobalConfiguration.destinationColorDefault;
+          var routeId = geoJsonPoint.properties.route_id;
+          var subTourIndex = geoJsonPoint.properties.sub_tour_index;
+          var customColor = this.subTourColors[routeId] && this.subTourColors[routeId][subTourIndex];
+          var pointColor = customColor || baseColor;
           if (!geoJsonPoint.properties.number) {
             pointColor = 'rgba(' + parseInt(pointColor.substring(1, 3), 16) + ',' + parseInt(pointColor.substring(3, 5), 16) + ',' + parseInt(pointColor.substring(5, 7), 16) + ',0.8)';
           }
