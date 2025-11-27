@@ -50,7 +50,9 @@ class V100::Entities::Route < V100::Entities::RouteProperties
           false
         else
           true
-        end)
+        end,
+        false,
+        options[:sub_tour_indices])
     end
   }
 end
