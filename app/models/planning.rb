@@ -910,7 +910,7 @@ class Planning < ApplicationRecord
   end
 
   def to_geojson(include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false, large = large?)
-    Route.routes_to_geojson(routes.includes_vehicle_usages, include_stores, respect_hidden, include_linestrings, with_quantities, large)
+    Route.routes_to_geojson(routes.includes_vehicle_usages, include_stores: include_stores, respect_hidden: respect_hidden, include_linestrings: include_linestrings, with_quantities: with_quantities, large: large)
   end
 
   def save_import

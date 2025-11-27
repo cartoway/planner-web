@@ -140,6 +140,7 @@ end if route.vehicle_usage && route.vehicle_usage.default_store_start
 json.with_stops @with_stops
 if @with_stops
   inactive_stops = 0
+  sub_tour_index_counter = 0
   json.stops route.vehicle_usage_id ? route.stops : (route.stops.all?{ |s| s.name.to_i != 0 } ? route.stops.sort_by{ |s| s.name.to_i } : route.stops.sort_by{ |s| s.name.to_s.downcase }) do |stop|
     (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_max_reload || stop.out_of_relation || stop.no_path || stop.unmanageable_capacity || stop.out_of_skill
     json.stop_id stop.id
@@ -214,6 +215,8 @@ if @with_stops
         (json.error true) if route.vehicle_usage.default_store_rest && !route.vehicle_usage.default_store_rest.position?
       end
     when StopStore
+      sub_tour_index_counter += 1
+      json.sub_tour_index sub_tour_index_counter
       json.store_reload do
         json.store_reload true
         json.store_id stop.store_reload.store.id

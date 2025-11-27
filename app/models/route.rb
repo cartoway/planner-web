@@ -220,7 +220,8 @@ class Route < ApplicationRecord
           route_id: self.id,
           color: self.default_color,
           drive_time: options[:drive_time],
-          distance: options[:distance]
+          distance: options[:distance],
+          sub_tour_index: options[:sub_tour_index]
         }.compact
       }.to_json
     end
@@ -265,13 +266,14 @@ class Route < ApplicationRecord
       # Recompute Stops
       stops_time_windows = {}
       previous_with_pos = vehicle_usage.default_store_start&.position?
+      sub_tour_index = 0  # First sub-tour starts at index 0
       stops_sort.each{ |stop|
         stop_attributes = {}
         if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
           stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
           stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
 
-          store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance]))
+          store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index))
 
           if stop_attributes[:drive_time]
             stops_drive_time[stop] = stop_attributes[:drive_time]
@@ -330,6 +332,7 @@ class Route < ApplicationRecord
         stop.attributes = stop_attributes
 
         if stop.is_a?(StopStore)
+          sub_tour_index += 1
           previous_route_data_attributes[:drive_time] = route_attributes[:drive_time]
           previous_route_data_attributes[:end] = stop_attributes[:time]
           previous_route_data_attributes[:cost_distance] = previous_route_data_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
@@ -369,7 +372,7 @@ class Route < ApplicationRecord
       # Add service time to end point
       route_attributes[:end] += service_time_end unless service_time_end.nil?
 
-      store_traces(trace, options.merge(drive_time: drive_time, distance: stop_distance))
+      store_traces(trace, options.merge(drive_time: drive_time, distance: distance, sub_tour_index: sub_tour_index))
 
       route_attributes[:stop_out_of_drive_time] = route_attributes[:end] > vehicle_usage.default_time_window_end
       route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], route_attributes[:end])
@@ -912,7 +915,14 @@ class Route < ApplicationRecord
     "#{ref}:#{vehicle_usage? && vehicle_usage.vehicle.name}=>[" + stops.collect(&:to_s).join(', ') + ']'
   end
 
-  def self.routes_to_geojson(routes, include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false, large = false)
+  def self.routes_to_geojson(routes, options = {})
+    include_stores = options.fetch(:include_stores, true)
+    respect_hidden = options.fetch(:respect_hidden, true)
+    include_linestrings = options.fetch(:include_linestrings, :polyline)
+    with_quantities = options.fetch(:with_quantities, false)
+    large = options.fetch(:large, false)
+    sub_tour_indices = options[:sub_tour_indices]
+
     stores_geojson = []
     final_features = []
 
@@ -945,8 +955,14 @@ class Route < ApplicationRecord
     end
 
     features = routes.select { |r| !respect_hidden || !r.hidden }.flat_map { |r|
-      (include_linestrings && r.geojson_tracks || []) +
-        ((with_quantities ? r.stops_to_geojson_points(with_quantities: true) : r.geojson_points) || []).compact
+      tracks = include_linestrings ? r.filtered_geojson_tracks(sub_tour_indices) : []
+      points = if with_quantities
+        generated_points = r.stops_to_geojson_points(with_quantities: true)
+        sub_tour_indices.present? ? r.filter_points_by_sub_tour(generated_points, sub_tour_indices) : generated_points
+      else
+        sub_tour_indices.present? ? r.filtered_geojson_points(sub_tour_indices) : r.geojson_points
+      end
+      (tracks || []) + (points || []).compact
     }.compact
     final_features += stores_geojson unless stores_geojson.empty?
 
@@ -955,8 +971,28 @@ class Route < ApplicationRecord
     '{"type":"FeatureCollection","features":[' + final_features.join(',') + ']}'
   end
 
-  def to_geojson(include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false)
-    self.class.routes_to_geojson([self], include_stores, respect_hidden, include_linestrings, with_quantities)
+  def to_geojson(include_stores = true, respect_hidden = true, include_linestrings = :polyline, with_quantities = false, sub_tour_indices = nil)
+    self.class.routes_to_geojson([self], include_stores: include_stores, respect_hidden: respect_hidden, include_linestrings: include_linestrings, with_quantities: with_quantities, large: false, sub_tour_indices: sub_tour_indices)
+  end
+
+  def filtered_geojson_tracks(sub_tour_indices)
+    return geojson_tracks unless sub_tour_indices.present?
+
+    allowed_indices = sub_tour_indices.map(&:to_i)
+    geojson_tracks&.select do |feature_json|
+      begin
+        feature = JSON.parse(feature_json)
+      rescue JSON::ParserError
+        next false
+      end
+      allowed_indices.include?(feature.dig('properties', 'sub_tour_index'))
+    end
+  end
+
+  def filtered_geojson_points(sub_tour_indices)
+    return geojson_points unless sub_tour_indices.present?
+
+    filter_points_by_sub_tour(geojson_points, sub_tour_indices)
   end
 
   def ensure_route_geojson
@@ -1002,8 +1038,10 @@ class Route < ApplicationRecord
     units = planning.customer.deliverable_units
 
     inactive_stops = 0
+    sub_tour_index = 0
     stops.map do |stop|
       inactive_stops += 1 unless stop.active
+      sub_tour_index += 1 if stop.is_a?(StopStore)
 
       next unless stop.position?
 
@@ -1021,7 +1059,9 @@ class Route < ApplicationRecord
           color: stop.default_color,
           icon: stop.icon,
           icon_size: stop.icon_size,
-          stop_id: stop.id
+          stop_id: stop.id,
+          sub_tour_index: sub_tour_index,
+          type: stop.type
         }
       }
 
@@ -1196,6 +1236,32 @@ class Route < ApplicationRecord
   end
 
   private
+
+  def filter_points_by_sub_tour(points_array, sub_tour_indices)
+    return points_array unless sub_tour_indices.present?
+
+    allowed_indices = sub_tour_indices.map(&:to_i)
+    points_array&.select do |feature_json|
+      begin
+        feature = JSON.parse(feature_json)
+      rescue JSON::ParserError
+        next false
+      end
+      point_sub_tour_index = feature.dig('properties', 'sub_tour_index')
+      is_stop_store = feature.dig('properties', 'type') == 'StopStore'
+
+      return true if point_sub_tour_index.nil?
+
+      # For StopStore: show if at least one of the two adjacent sub-tours is visible
+      # Hide only if both previous (sub_tour_index - 1) and current (sub_tour_index) sub-tours are hidden
+      if is_stop_store && point_sub_tour_index > 0
+        previous_sub_tour_index = point_sub_tour_index - 1
+        allowed_indices.include?(previous_sub_tour_index) || allowed_indices.include?(point_sub_tour_index)
+      else
+        allowed_indices.include?(point_sub_tour_index)
+      end
+    end
+  end
 
   def assign_defaults
     self.hidden = false
