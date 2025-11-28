@@ -628,12 +628,12 @@ class PlanningsController < ApplicationController
   end
 
   def set_available_store_reloads
-    planning = current_user.customer.plannings.where(id: @planning.id).preload_routes_without_stops.first!
-    @available_store_reloads = Hash[planning.routes.map { |route|
-      next unless route.vehicle_usage?
-
-      [route.id, route.vehicle_usage.default_store_reloads.map { |store_reload| { id: store_reload.id, name: store_reload.name, ref: store_reload.ref, icon: store_reload.icon, color: store_reload.color } }]
-    }.compact]
+    @available_store_reloads =
+      current_user.customer.stores.flat_map { |store|
+        store.store_reloads.map { |store_reload|
+          { id: store_reload.id, name: store_reload.name, ref: store_reload.ref, icon: store_reload.icon, color: store_reload.color }
+        }
+      }.compact
   end
 
   def set_device_definitions
