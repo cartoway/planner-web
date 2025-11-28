@@ -84,7 +84,7 @@
             :max_reload,
             value: @vehicle_usage_set.max_reload,
             placeholder: (@vehicle_usage_set.max_reload ? t('customers.form.field_default', n: @vehicle_usage_set.max_reload) : ''),
-            class: 'form-control', min: 1
+            class: 'form-control', min: 0
           %span.input-group-addon
             .fa.fa-rotate.fa-fw
         %p.help-block= t('vehicle_usage_sets.form.max_reload_help')
