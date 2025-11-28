@@ -655,6 +655,10 @@ $sidebar-margins: 10px;
         background-color: rgba(223, 240, 216, 0.5);
       }
 
+      .route-data-container.list-group-item {
+        border-top: unset !important;
+      }
+
       #out_of_route {
         color: #707070;
 
@@ -797,7 +801,7 @@ $sidebar-margins: 10px;
           height: unset !important;
 
           .row.route-data {
-            padding: 2px 4px 2px 4px;
+            padding: 0px 6px 4px 28px;
           }
         }
 
