@@ -132,12 +132,12 @@
                       .btn-group
                         .btn.btn-default.btn-xs.route-data-toggle{title: t("plannings.edit.toggle_route_data_help")}
                           %i.fa.fa-chart-simple
-                    - if current_user.customer.enable_store_stops && @available_store_reloads[route[:route_id]].any? && route[:max_reload].to_i > 0
+                    - if current_user.customer.enable_store_stops && @available_store_reloads.any? && route[:max_reload].to_i > 0
                       .dropdown.btn-group
                         %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
                           %i.fa.fa-plus
                         %ul.dropdown-menu.pull-right.store-dropdown{role: "menu"}
-                          - @available_store_reloads[route[:route_id]].each do |store_reload|
+                          - @available_store_reloads.each do |store_reload|
                             %li
                               %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-reload-id": store_reload[:id], "data-store-reload-name": store_reload[:name], class: "store-reload-option #{('disabled' if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}", disabled: (store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}
                                 %i.fa.fa-fw{class: "#{store_reload[:icon] || 'fa-store'}", style: "color: #{store_reload[:color] || 'black'};"}
@@ -194,12 +194,12 @@
                     .btn-group
                       .btn.btn-default.btn-xs.route-data-toggle{title: t("plannings.edit.toggle_route_data_help")}
                         %i.fa.fa-chart-simple
-                  - if current_user.customer.enable_store_stops && @available_store_reloads[route[:route_id]].any? && route[:max_reload].to_i > 0
+                  - if current_user.customer.enable_store_stops && @available_store_reloads.any? && route[:max_reload].to_i > 0
                     .dropdown.btn-group
                       %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
                         %i.fa.fa-plus
                       %ul.dropdown-menu.pull-right.store-dropdown{role: "menu"}
-                        - @available_store_reloads[route[:route_id]].each do |store_reload|
+                        - @available_store_reloads.each do |store_reload|
                           %li
                             %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-reload-id": store_reload[:id], "data-store-reload-name": store_reload[:name], class: "store-reload-option #{('disabled' if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}", disabled: (store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}
                               %i.fa.fa-fw{class: "#{store_reload[:icon] || 'fa-store'}", style: "color: #{store_reload[:color] || 'black'};"}
