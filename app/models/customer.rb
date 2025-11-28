@@ -171,12 +171,14 @@ class Customer < ApplicationRecord
         vehicle_usage_set.store_start = stores_map[vehicle_usage_set.store_start]
         vehicle_usage_set.store_stop = stores_map[vehicle_usage_set.store_stop]
         vehicle_usage_set.store_rest = stores_map[vehicle_usage_set.store_rest]
+        vehicle_usage_set.store_reloads = vehicle_usage_set.store_reloads.map{ |store_reload| store_reloads_map[store_reload] }
 
         vehicle_usage_set.vehicle_usages.each{ |vehicle_usage|
           vehicle_usage.vehicle = vehicles_map[vehicle_usage.vehicle]
           vehicle_usage.store_start = stores_map[vehicle_usage.store_start]
           vehicle_usage.store_stop = stores_map[vehicle_usage.store_stop]
           vehicle_usage.store_rest = stores_map[vehicle_usage.store_rest]
+          vehicle_usage.store_reloads = vehicle_usage.store_reloads.map{ |store_reload| store_reloads_map[store_reload] }
           vehicle_usage.tags = vehicle_usage.tags.map{ |tag| tags_map[tag] }
           vehicle_usage.force_check_consistency = true
           vehicle_usage.save! validate: Planner::Application.config.validate_during_duplication
