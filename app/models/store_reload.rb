@@ -97,7 +97,13 @@ class StoreReload < ApplicationRecord
   end
 
   def to_s
-    [store.name, ref].compact.join(' ')
+    store_name = if store.store_reloads.size > 1
+      index = store.store_reloads.sort_by(&:id).index(self)
+      "#{store.name}##{index + 1}"
+    else
+      store.name
+    end
+    [store_name, ref].compact.join(' ')
   end
 
   private
