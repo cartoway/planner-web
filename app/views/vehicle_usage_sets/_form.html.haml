@@ -93,7 +93,7 @@
         = t('activerecord.attributes.vehicle_usage_set.store_reload_ids')
       .col-md-offset-2.col-md-8.field
         #vehicle_usage_set_store_reload_ids.input-group
-          = select_tag 'vehicle_usage_set[store_reload_ids][]', options_for_select(@vehicle_usage_set.customer.store_reloads.map{ |sr| [sr.to_s, sr.id] }, @vehicle_usage_set.store_reloads.collect(&:id)),
+          = select_tag 'vehicle_usage_set[store_reload_ids]', options_for_select(@vehicle_usage_set.customer.store_reloads.map{ |sr| [sr.to_s, sr.id] }, @vehicle_usage_set.store_reloads.collect(&:id)),
             { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control' }
           %span.input-group-addon
             %i.fa.fa-rotate.fa-fw
