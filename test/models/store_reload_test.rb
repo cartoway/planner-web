@@ -74,14 +74,14 @@ class StoreReloadTest < ActiveSupport::TestCase
 
   test 'should format to_s with ref' do
     @store_reload.save!
-    expected = "#{@store.name} #{@store_reload.ref}"
+    expected = "#{@store.name}#3 #{@store_reload.ref}"
     assert_equal expected, @store_reload.to_s
   end
 
   test 'should format to_s without ref' do
     @store_reload.ref = nil
     @store_reload.save!
-    assert_equal @store.name, @store_reload.to_s
+    assert_equal "#{@store.name}#3", @store_reload.to_s
   end
 
   test 'should destroy associated stop_stores when destroyed' do
