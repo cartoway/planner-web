@@ -132,7 +132,7 @@
                       .btn-group
                         .btn.btn-default.btn-xs.route-data-toggle{title: t("plannings.edit.toggle_route_data_help")}
                           %i.fa.fa-chart-simple
-                    - if current_user.customer.enable_store_stops && @available_store_reloads.any? && route[:max_reload].to_i > 0
+                    - if current_user.customer.enable_store_stops && @available_store_reloads.any?
                       .dropdown.btn-group
                         %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
                           %i.fa.fa-plus
@@ -194,7 +194,7 @@
                     .btn-group
                       .btn.btn-default.btn-xs.route-data-toggle{title: t("plannings.edit.toggle_route_data_help")}
                         %i.fa.fa-chart-simple
-                  - if current_user.customer.enable_store_stops && @available_store_reloads.any? && route[:max_reload].to_i > 0
+                  - if current_user.customer.enable_store_stops && @available_store_reloads.any?
                     .dropdown.btn-group
                       %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
                         %i.fa.fa-plus
