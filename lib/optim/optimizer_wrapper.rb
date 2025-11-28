@@ -385,6 +385,12 @@ class OptimizerWrapper
         end
       }
 
+      vehicle_store_reload_ids = route.vehicle_usage.default_store_reload_ids.map{ |id| "sr#{id}" }
+      route.stops.select{ |stop| stop.is_a?(StopStore) }.each{ |stop|
+        vehicle_store_reload_ids << "sr#{stop.store_reload.id}"
+      }
+      vehicle_store_reload_ids.uniq!
+
       vehicle = route.vehicle_usage.vehicle
       vehicle_skills = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten.compact.uniq.map(&:label)
 
@@ -419,7 +425,7 @@ class OptimizerWrapper
         maximum_ride_time: route.vehicle_usage.default_max_ride_duration,
         start_point_id: route.vehicle_usage.default_store_start&.id && "d#{route.vehicle_usage.default_store_start.id}",
         end_point_id: route.vehicle_usage.default_store_stop&.id && "d#{route.vehicle_usage.default_store_stop.id}",
-        reload_depot_ids: route.vehicle_usage.default_store_reload_ids.map{ |id| "sr#{id}" },
+        reload_depot_ids: vehicle_store_reload_ids,
         cost_fixed: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_fixed || options[:cost_fixed] || 0,
         cost_distance_multiplier: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_distance || 0,
         cost_time_multiplier: planning.customer.enable_vehicle_costs  && route.vehicle_usage.default_cost_time || 1,
