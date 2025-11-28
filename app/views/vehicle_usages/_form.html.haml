@@ -422,7 +422,8 @@
         .col-md-offset-2.col-md-8.field
           .input-group
             = number_field :vehicle_usage, :max_reload, value: @vehicle_usage.max_reload,
-              placeholder: (@vehicle_usage.vehicle_usage_set.max_reload ? t('customers.form.field_default', n: @vehicle_usage.vehicle_usage_set.max_reload) : ''), class: 'form-control'
+              placeholder: (@vehicle_usage.vehicle_usage_set.max_reload ? t('customers.form.field_default', n: @vehicle_usage.vehicle_usage_set.max_reload) : ''),
+              class: 'form-control', min: 0
             %span.input-group-addon
               .fa.fa-rotate.fa-fw
           %p.help-block= t('vehicle_usages.form.max_reload_help')
