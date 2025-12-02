@@ -810,7 +810,68 @@ export function selectFormatOption(option) {
     case 'all':
       return $('<span class="global"><i class="fa fa-check-square fa-fw"></i> ' + I18n.t('web.select2.route_all') + '</span>');
     default:
-      return option.text;
+      if (!option.element) {
+        return option.text;
+      }
+
+      var $el = $(option.element);
+      var size = $el.data('size');
+      var sizeActive = $el.data('size-active');
+
+      // Base label: route name
+      var label = option.text || '';
+
+      // Append active/total stops if available
+      if (typeof size !== 'undefined' && size > 0) {
+        var active = (typeof sizeActive !== 'undefined') ? sizeActive : size;
+        label += ' - ' + active + '/' + size;
+      }
+
+      var icons = [];
+      if ($el.data('out-of-window')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_window_help') + '"><i class="fa fa-stopwatch fa-fw"></i></span>');
+      }
+      if ($el.data('out-of-capacity')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_capacity_help') + '"><i class="fa fa-dumpster fa-fw"></i></span>');
+      }
+      if ($el.data('out-of-drive-time')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_drive_time_help') + '"><i class="fa fa-power-off fa-fw"></i></span>');
+      }
+      if ($el.data('out-of-work-time')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_work_time_help') + '"><i class="fa fa-repeat fa-fw"></i></span>');
+      }
+      if ($el.data('out-of-max-distance')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_max_distance_help') + '"><i class="fa fa-ruler fa-fw"></i></span>');
+      }
+      if ($el.data('out-of-max-ride-distance')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_max_ride_distance_help') + '"><i class="fa fa-compass-drafting fa-fw"></i></span>');
+      }
+      if ($el.data('out-of-max-ride-duration')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_max_ride_duration_help') + '"><i class="fa fa-stopwatch-20 fa-fw"></i></span>');
+      }
+      if ($el.data('out-of-max-reload')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_max_reload_help') + '"><i class="fa fa-arrows-rotate fa-fw"></i></span>');
+      }
+      if ($el.data('out-of-relation')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_relation_help') + '"><i class="fa fa-link fa-fw"></i></span>');
+      }
+      if ($el.data('out-of-skill')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.out_of_skill_help') + '"><i class="fa fa-user-check fa-fw"></i></span>');
+      }
+      if ($el.data('no-path')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.no_path_help') + '"><i class="fa fa-road fa-fw"></i></span>');
+      }
+      if ($el.data('unmanageable_capacity')) {
+        icons.push('<span class="badge badge-danger" title="' + I18n.t('plannings.edit.error.unmanageable_capacity_help') + '"><i class="fa fa-times fa-fw"></i></span>');
+      }
+
+      var $span = $('<span></span>');
+      $span.text(label);
+      if (icons.length) {
+        $span.append(' ');
+        $span.append(icons.join(''));
+      }
+      return $span;
   }
 }
 
