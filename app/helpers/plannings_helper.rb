@@ -77,7 +77,15 @@ module PlanningsHelper
           name: [route.ref, route.vehicle_usage&.vehicle&.name || t('plannings.edit.out_of_route')].compact_blank.join(' '),
           color: route.color || route.vehicle_usage&.vehicle&.color || '#707070',
           hidden: route.hidden,
-          locked: route.locked
+          locked: route.locked,
+          data: route.slice(
+            :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_work_time,
+            :out_of_max_distance, :out_of_max_reload, :out_of_relation, :out_of_skill,
+            :no_path, :unmanageable_capacity
+          ).merge(
+            size: route.stops_size,
+            size_active: route.size_active
+          ),
         }.delete_if{ |_k, v| v.nil? }
       }
     }
@@ -106,35 +114,6 @@ module PlanningsHelper
 
   def planning_quantities(planning)
     planning.quantities
-  end
-
-  # It collect the enabled devices, instantiate the service then list them
-  def planning_devices(customer)
-    devices = {}
-    device_confs = customer.device.configured_definitions || []
-
-    device_confs.each { |_key, definition|
-      service_class = "#{definition[:device].camelize}Service".constantize
-      device = service_class.new(customer: customer)
-
-      next unless device.respond_to?(:list_devices)
-
-      begin
-        list = device.list_devices
-        devices[device.service_name_id] = list unless list.empty?
-      rescue StandardError => e
-        Rails.logger.info(e)
-        raise e if ENV['RAILS_ENV'] == 'test'
-      end
-    }
-    devices
-  end
-
-  def available_temperature?
-    device_list = current_user.customer.vehicles.reject { |e|
-      e.devices[:sopac_ids].nil?
-    }
-    !device_list.empty?
   end
 
   def optimization_duration(customer)
