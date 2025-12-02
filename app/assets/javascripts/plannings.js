@@ -1406,7 +1406,7 @@ export const plannings_edit = function(params) {
       index = 0,
       stop = item.closest("[data-stop-id]"),
       route = item.closest('[data-route-id]'),
-      stops = $('.sortable li[data-stop-id]', route),
+      stops = $('.sortable li[data-stop-id]:not(.route-data-container)', route),
       route_id = route.attr('data-route-id'),
       stop_id = stop.attr("data-stop-id"),
       origin_route_id = stop.attr('data-origin-route-id');
@@ -2188,14 +2188,14 @@ export const plannings_edit = function(params) {
         containment: "#edit-planning",
         tolerance: "pointer",
         appendTo: '#planning',
-        items: "> li",
+        items: "> li:not(.route-data-container)",
         cancel: '.wait',
         helper: function(event, ui) {
           var $clone = $(ui).clone();
           $clone.wrap('<ol class="routes"><li class="route"><ul class="stops"></ol></li></ol>');
           return $clone.parent().parent().parent();
         },
-        start: function() {
+        start: function(event, ui) {
           sortableUpdate = false;
         },
         update: function() {
