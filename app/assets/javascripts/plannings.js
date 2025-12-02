@@ -827,6 +827,42 @@ export const plannings_edit = function(params) {
     return routeColor || '#bdc3c4';
   };
 
+  // Update all stop labels for a route based on sub-tour colors
+  var updateStopLabelsForRoute = function(routeId) {
+    if (!routesLayer) return;
+
+    var normalizedRouteColor = getRouteColor(routeId);
+    var normalizedRouteId = routeId.toString();
+    var $route = $('li.route[data-route-id="' + routeId + '"]');
+    var $stops = $route.find('li[data-origin-route-id="' + routeId + '"]');
+
+    var currentSubTourIndex = 0;
+
+    $stops.each(function() {
+      var $stop = $(this);
+      var $stopLabel = $stop.find('.stop-label');
+
+      if (!$stopLabel.length) {
+        // Check if this is a StopStore (has sub-tour-toggle button with data-sub-tour-index)
+        var $storeToggle = $stop.find('.sub-tour-toggle[data-route-id="' + routeId + '"]');
+        if ($storeToggle.length) {
+          var storeSubTourIndex = $storeToggle.data('subTourIndex');
+          if (typeof storeSubTourIndex !== 'undefined') {
+            currentSubTourIndex = storeSubTourIndex;
+          }
+        }
+        return; // Skip stops without label (StopStore)
+      }
+
+      // Get custom color for current sub-tour
+      var customColor = routesLayer.subTourColors[normalizedRouteId] && routesLayer.subTourColors[normalizedRouteId][currentSubTourIndex];
+      var colorToApply = customColor && customColor !== normalizedRouteColor ? customColor : normalizedRouteColor;
+
+      // Update stop label color
+      $stopLabel.css('background-color', colorToApply);
+    });
+  };
+
   // Update a single sub-tour color picker button
   var updateSubTourColorButton = function(routeId, subTourIndex, customColor) {
     var normalizedRouteColor = getRouteColor(routeId);
@@ -845,6 +881,9 @@ export const plannings_edit = function(params) {
       $colorPicker.val(normalizedRouteColor);
       $resetButton.hide();
     }
+
+    // Update all stop labels for the route (they may belong to different sub-tours)
+    updateStopLabelsForRoute(routeId);
   };
 
   // Update sub-tour color buttons for a route based on route color
