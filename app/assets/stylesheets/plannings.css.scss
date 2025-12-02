@@ -801,7 +801,12 @@ $sidebar-margins: 10px;
           height: unset !important;
 
           .row.route-data {
-            padding: 0px 6px 4px 28px;
+            @media screen and (min-width: 992px) {
+              padding: 0px 6px 4px 28px;
+            }
+            @media screen and (max-width: 991px) {
+              padding: 0px 6px 4px 43px;
+            }
           }
         }
 
@@ -810,7 +815,6 @@ $sidebar-margins: 10px;
             height: 34px;
           }
           @media screen and (max-width: 991px) {
-            max-height: 68px;
             min-height: 34px
           }
           padding: 2px 2px 2px 6px;
