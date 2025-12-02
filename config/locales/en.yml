@@ -1952,6 +1952,7 @@ en:
       sub_tour:
         toggle: Toggle sub-tour visibility
         change_color_help: Change sub-tour color
+        reset_color: Reset sub-tour color
       locked_unplanned_help: Lock the out of route on global plan operations
       locked_help: Lock the route on global plan operations
       center_view_help: Center the map on the route

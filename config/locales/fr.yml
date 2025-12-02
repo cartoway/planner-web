@@ -2044,6 +2044,7 @@ fr:
       sub_tour:
         toggle: Afficher/masquer le sous-tour
         change_color_help: Changer la couleur du sous-tour
+        reset_color: Réinitialiser la couleur du sous-tour
       locked_unplanned_help: >-
         Verrouille les non-planifiés pour les opérations globales sur le plan de
         tournées

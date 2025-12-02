@@ -49,16 +49,12 @@
             .btn-group.pull-right.stop-tools
               %button.btn.btn-default.btn-xs.sub-tour-toggle.sub-tour-visible{type: "button", "aria-pressed": "true", title: t('plannings.edit.sub_tour.toggle'), data: { route_id: route[:route_id], sub_tour_index: stop[:sub_tour_index] }}
                 %i.fa.fa-eye
-              .dropdown.btn-group
-                %button.btn.btn-default.btn-xs.dropdown-toggle.sub-tour-color-btn{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.sub_tour.change_color_help"), "data-route-id": route[:route_id], "data-sub-tour-index": stop[:sub_tour_index]}
-                  %i.fa.fa-paint-brush{style: "color: #{route[:color_fake] || route[:color] || '#000000'};"}
-                %ul.dropdown-menu.pull-right.sub-tour-color-dropdown{role: "menu"}
-                  - @colors.each do |color|
-                    %li
-                      %a.sub-tour-color-option{href: "#", "data-color": color, "data-route-id": route[:route_id], "data-sub-tour-index": stop[:sub_tour_index]}
-                        %span.color_small{style: "background: #{color};"}
-                          - if color == (route[:color_fake] || route[:color] || '#000000')
-                            %i.fa.fa-check
+              .btn-group
+                %input.sub-tour-color-picker{type: "color", value: (route[:color_fake] || route[:color] || '#bdc3c4'), style: "display: none;", "data-route-id": route[:route_id], "data-sub-tour-index": stop[:sub_tour_index]}
+                %button.btn.btn-default.btn-xs.sub-tour-color-btn{type: "button", title: t("plannings.edit.sub_tour.change_color_help"), "data-route-id": route[:route_id], "data-sub-tour-index": stop[:sub_tour_index]}
+                  %i.fa.fa-paint-brush
+                %button.btn.btn-default.btn-xs.sub-tour-color-reset{type: "button", title: t("plannings.edit.sub_tour.reset_color"), "data-route-id": route[:route_id], "data-sub-tour-index": stop[:sub_tour_index], style: "display: none;"}
+                  %i.fa.fa-undo
               - if @manage_planning[:manage_store]
                 %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{stop[:store_reload][:store_id]}/edit?back=true#collapseVisit#{stop[:store_reload][:store_reload_id]}", title: t("plannings.edit.edit_store_reload_help")}
                   %i.fa.fa-pencil
