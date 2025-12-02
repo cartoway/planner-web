@@ -827,22 +827,23 @@ export const plannings_edit = function(params) {
     return routeColor || '#bdc3c4';
   };
 
-  // Update a single sub-tour color button based on route color and custom color
+  // Update a single sub-tour color picker button
   var updateSubTourColorButton = function(routeId, subTourIndex, customColor) {
     var normalizedRouteColor = getRouteColor(routeId);
     var $buttonIcon = $('.sub-tour-color-btn[data-route-id="' + routeId + '"][data-sub-tour-index="' + subTourIndex + '"] i.fa-paint-brush');
+    var $colorPicker = $('.sub-tour-color-picker[data-route-id="' + routeId + '"][data-sub-tour-index="' + subTourIndex + '"]');
+    var $resetButton = $('.sub-tour-color-reset[data-route-id="' + routeId + '"][data-sub-tour-index="' + subTourIndex + '"]');
 
-    if (customColor) {
-      var normalizedCustomColor = customColor || '#bdc3c4';
-      if (normalizedCustomColor === normalizedRouteColor) {
-        // Reset to default: remove color property
-        $buttonIcon.css('color', '');
-      } else {
-        $buttonIcon.css('color', customColor);
-      }
+    if (customColor && customColor !== normalizedRouteColor) {
+      // Set custom color
+      $buttonIcon.css('color', customColor);
+      $colorPicker.val(customColor);
+      $resetButton.show();
     } else {
       // No custom color, reset to default: remove color property
       $buttonIcon.css('color', '');
+      $colorPicker.val(normalizedRouteColor);
+      $resetButton.hide();
     }
   };
 
@@ -863,13 +864,29 @@ export const plannings_edit = function(params) {
     });
   };
 
-  $(document).on('click', '.sub-tour-color-option', function(e) {
+  $(document).on('click', '.sub-tour-color-btn', function(e) {
     e.preventDefault();
     e.stopPropagation();
-    var $option = $(this);
-    var routeId = $option.data('route-id');
-    var subTourIndex = $option.data('sub-tour-index');
-    var color = $option.data('color');
+    var $button = $(this);
+    var routeId = $button.data('route-id');
+    var subTourIndex = $button.data('sub-tour-index');
+
+    if (typeof routeId === 'undefined' || typeof subTourIndex === 'undefined') {
+      return;
+    }
+
+    var $colorPicker = $('.sub-tour-color-picker[data-route-id="' + routeId + '"][data-sub-tour-index="' + subTourIndex + '"]');
+    if ($colorPicker.length) {
+      $colorPicker[0].click();
+    }
+  });
+
+  // Handle color picker change
+  $(document).on('change', '.sub-tour-color-picker', function(e) {
+    var $picker = $(this);
+    var routeId = $picker.data('route-id');
+    var subTourIndex = $picker.data('sub-tour-index');
+    var color = $picker.val();
 
     if (typeof routeId === 'undefined' || typeof subTourIndex === 'undefined') {
       return;
@@ -877,42 +894,39 @@ export const plannings_edit = function(params) {
 
     if (!routesLayer) return;
 
-    // Check if this is a reset option (no data-color or color is null/undefined)
-    var isReset = (typeof color === 'undefined' || color === null || color === '');
+    // Get route color and compare with selected color
+    var normalizedRouteColor = getRouteColor(routeId);
+    var normalizedSelectedColor = color || '#bdc3c4';
 
-    if (isReset) {
-      // Reset to default: remove custom color
-      routesLayer.setSubTourColor(routeId, subTourIndex, null);
-      updateSubTourColorButton(routeId, subTourIndex, null);
-    } else {
-      // Get route color and compare with selected color
-      var normalizedRouteColor = getRouteColor(routeId);
-      var normalizedSelectedColor = color || '#bdc3c4';
-
-      // If selected color matches route color, reset to default (pass null)
-      var colorToSet = (normalizedSelectedColor === normalizedRouteColor) ? null : color;
-      routesLayer.setSubTourColor(routeId, subTourIndex, colorToSet);
-      updateSubTourColorButton(routeId, subTourIndex, colorToSet);
-    }
-
-    $option.closest('.sub-tour-color-dropdown').find('.fa-check').remove();
-    $option.find('.color_small').append('<i class="fa fa-check"></i>');
-
-    var $dropdown = $option.closest('.dropdown');
-    var $dropdownMenu = $option.closest('.dropdown-menu');
-    var $button = $dropdown.find('.sub-tour-color-btn');
-    $dropdown.removeClass('open');
-    $dropdownMenu.hide();
-    $button.attr('aria-expanded', 'false');
+    // If selected color matches route color, reset to default (pass null)
+    var colorToSet = (normalizedSelectedColor === normalizedRouteColor) ? null : color;
+    routesLayer.setSubTourColor(routeId, subTourIndex, colorToSet);
+    updateSubTourColorButton(routeId, subTourIndex, colorToSet);
 
     routesLayer.hideRoutes([routeId]);
     routesLayer.showRoutes([routeId]);
   });
 
-  $(document).on('click', function(e) {
-    if (!$(e.target).closest('.sub-tour-color-btn, .sub-tour-color-dropdown').length) {
-      $('.sub-tour-color-dropdown').closest('.dropdown').removeClass('open');
+  // Handle reset button click
+  $(document).on('click', '.sub-tour-color-reset', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var $button = $(this);
+    var routeId = $button.data('route-id');
+    var subTourIndex = $button.data('sub-tour-index');
+
+    if (typeof routeId === 'undefined' || typeof subTourIndex === 'undefined') {
+      return;
     }
+
+    if (!routesLayer) return;
+
+    // Reset to default: remove custom color
+    routesLayer.setSubTourColor(routeId, subTourIndex, null);
+    updateSubTourColorButton(routeId, subTourIndex, null);
+
+    routesLayer.hideRoutes([routeId]);
+    routesLayer.showRoutes([routeId]);
   });
 
   $('#lock_routes_dropdown, #toggle_routes_dropdown').find('li a').click(function() {
