@@ -111,16 +111,12 @@
                       .btn-group
                         %button.btn.btn-default.btn-xs.sub-tour-toggle.sub-tour-visible{type: "button", "aria-pressed": "true", title: t('plannings.edit.sub_tour.toggle'), data: { route_id: route[:route_id], sub_tour_index: 0 }}
                           %i.fa.fa-eye
-                      .dropdown.btn-group
-                        %button.btn.btn-default.btn-xs.dropdown-toggle.sub-tour-color-btn{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.sub_tour.change_color_help"), "data-route-id": route[:route_id], "data-sub-tour-index": 0}
-                          %i.fa.fa-paint-brush{style: "color: #{route[:color] || '#000000'};"}
-                        %ul.dropdown-menu.pull-right.sub-tour-color-dropdown{role: "menu"}
-                          - @colors.each do |color|
-                            %li
-                              %a.sub-tour-color-option{href: "#", "data-color": color, "data-route-id": route[:route_id], "data-sub-tour-index": 0}
-                                %span.color_small{style: "background: #{color};"}
-                                  - if color == (route[:color] || '#000000')
-                                    %i.fa.fa-check
+                      .btn-group
+                        %input.sub-tour-color-picker{type: "color", value: (route[:color] || '#bdc3c4'), style: "display: none;", "data-route-id": route[:route_id], "data-sub-tour-index": 0}
+                        %button.btn.btn-default.btn-xs.sub-tour-color-btn{type: "button", title: t("plannings.edit.sub_tour.change_color_help"), "data-route-id": route[:route_id], "data-sub-tour-index": 0}
+                          %i.fa.fa-paint-brush
+                        %button.btn.btn-default.btn-xs.sub-tour-color-reset{type: "button", title: t("plannings.edit.sub_tour.reset_color"), "data-route-id": route[:route_id], "data-sub-tour-index": 0, style: "display: none;"}
+                          %i.fa.fa-undo
                     - if @manage_planning[:manage_store]
                       .btn-group
                         %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_start][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
