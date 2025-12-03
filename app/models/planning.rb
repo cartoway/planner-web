@@ -1067,6 +1067,7 @@ class Planning < ApplicationRecord
     stop_rests = []
     stop_visits = []
     stop_stores = []
+    stop_route_data = []
 
     # Collect all segments from all routes that need routing
     all_segments = []
@@ -1092,6 +1093,7 @@ class Planning < ApplicationRecord
       stop_visits += stops_by_type['StopVisit'].to_a.map(&:import_attributes)
       stop_rests += stops_by_type['StopRest'].to_a.map(&:import_attributes)
       stop_stores += stops_by_type['StopStore'].to_a.map(&:import_attributes)
+      stop_route_data += r.stops.map(&:route_data).compact
 
       geojson_data << {
         route_id: r.id,
@@ -1102,6 +1104,7 @@ class Planning < ApplicationRecord
     RouteData.import(computed_routes.map(&:route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     RouteData.import(computed_routes.map(&:start_route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     RouteData.import(computed_routes.map(&:stop_route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    RouteData.import(stop_route_data.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     Route.import(computed_routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     RouteGeojson.import(geojson_data, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:route_id], columns: :all})
     StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
