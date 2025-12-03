@@ -1065,6 +1065,7 @@ class ImporterDestinations < ImporterBase
         unless planning
           attributes = @plannings_attributes[ref]
           planning = Planning.new(attributes)
+          planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
         end
         planning.assign_attributes(@provided_planning_attributes)
         unless planning.name
@@ -1072,7 +1073,6 @@ class ImporterDestinations < ImporterBase
             name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
           })
         end
-        planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
         planning.save!
         routes_hash.each{ |k, v|
           # Duplicated visit lines are only represented by a single visit
