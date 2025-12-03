@@ -172,8 +172,12 @@ class Planning < ApplicationRecord
 
   def update_routes(routes_visits, recompute = true)
     if routes_visits.size <= routes.size - 1
-      existing_visits = routes.select{ |route| route.vehicle_usage? && routes_visits.any?{ |k, _v| ParseIdsRefs.match_ref?(k, route.vehicle_usage.vehicle) } }.flat_map{ |route| route.stops.map(&:visit) }
-      stop_visit_ids = visits.each_with_object({}) { |visit, hash| hash[visit.id] = true }
+      visit_ids_from_routes = routes.flat_map{ |route| route.stops.only_stop_visits.pluck(:visit_id) }.compact.uniq
+      reloaded_visits = visit_ids_from_routes.any? ? Visit.includes_destinations_and_stores.where(id: visit_ids_from_routes).index_by(&:id) : {}
+      stop_visit_ids = reloaded_visits.values.each_with_object({}) { |visit, hash| hash[visit.id] = true }
+
+      existing_visit_ids = routes.select{ |route| route.vehicle_usage? && routes_visits.any?{ |k, _v| ParseIdsRefs.match_ref?(k, route.vehicle_usage.vehicle) } }.flat_map{ |route| route.stops.only_stop_visits.pluck(:visit_id) }.compact.uniq
+      existing_visits = existing_visit_ids.map{ |id| reloaded_visits[id] }.compact
       import_visits = routes_visits.flat_map{ |_ref, r| r[:visits] }
 
       routes.find{ |route| !route.vehicle_usage? }.add_visits(existing_visits - import_visits)
@@ -192,7 +196,10 @@ class Planning < ApplicationRecord
           else
             routes.index{ |route| !route.vehicle_usage? }
           end
-        routes[i].ref = ref&.to_s
+        if ref && routes[i].ref != ref&.to_s
+          routes[i].reload
+          routes[i].assign_attributes(ref: ref&.to_s)
+        end
         routes[i].remove_stores
         r[:visits].each.with_index{ |(obj, stop_attributes), index|
           if obj.is_a?(Visit)

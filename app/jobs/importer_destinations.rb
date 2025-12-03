@@ -446,9 +446,22 @@ class ImporterDestinations < ImporterBase
       raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit')))
     end
     @visit_ids = bulk_import_visits
-    bulk_import_tags
+    tags_imported = bulk_import_tags
     @store_ids = bulk_import_stores
     @customer.reload
+
+    # Reload plannings with routes after bulk_import_tags to avoid stale route objects
+    # visit.save! in bulk_import_tags triggers visit.outdated which calls stop.route.save!
+    # This updates route.lock_version in database, making routes in memory stale
+    # Only reload if tags were imported (when tags_imported is true)
+    if tags_imported && @plannings_hash.any?
+      reloaded_plannings = @customer.plannings.preload_route_details.where(ref: @plannings_hash.keys).index_by(&:ref)
+      @plannings_hash.each{ |ref, planning|
+        if reloaded_plannings[ref]
+          @plannings_hash[ref] = reloaded_plannings[ref]
+        end
+      }
+    end
 
     geocode_or_count_destinations
     geocode_or_count_stores
@@ -734,6 +747,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def bulk_import_tags
+    tags_imported = false
     if @tag_destinations.any?
       destination_ids_and_tag_ids = @tag_destinations.map{ |visit_index, tag_id|
         { destination_id: @destination_index_to_id_hash[visit_index], tag_id: tag_id }
@@ -753,6 +767,7 @@ class ImporterDestinations < ImporterBase
           destination.save!
         }
         @customer.save!
+        tags_imported = true
       end
     end
     if @tag_visits.any?
@@ -777,8 +792,10 @@ class ImporterDestinations < ImporterBase
           }
         end
         @customer.save!
+        tags_imported = true
       end
     end
+    tags_imported
   end
 
   def prepare_store(row, line, store_attributes)
@@ -957,7 +974,11 @@ class ImporterDestinations < ImporterBase
             name: name || I18n.t('activerecord.models.planning') + ' ' + I18n.l(Time.zone.now, format: :long)
           })
         end
-        planning.save!
+        # Use Route.no_touching to prevent stale updates on routes/stops/visits
+        # Routes may have stops pointing to visits that were updated in bulk_import_tags
+        Route.no_touching do
+          planning.save!
+        end
         routes_hash.each{ |k, v|
           # Duplicated visit lines are only represented by a single visit
           v[:visits].select!{ |_type, attribute, _active|
