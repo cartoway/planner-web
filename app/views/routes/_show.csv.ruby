@@ -80,7 +80,7 @@ route.stops.each { |stop|
       when StopVisit.name
         I18n.t('plannings.export_file.stop_type_visit')
       when StopStore.name
-        I18n.t('plannings.export_file.stop_type_store')
+        I18n.t('plannings.export_file.stop_type_store_reload')
       when StopRest.name
         I18n.t('plannings.export_file.stop_type_rest')
       end
