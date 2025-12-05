@@ -181,7 +181,12 @@ class Planning < ApplicationRecord
       existing_visits = existing_visit_ids.map{ |id| reloaded_visits[id] }.compact
       import_visits = routes_visits.flat_map{ |_ref, r| r[:visits] }
 
-      routes.find{ |route| !route.vehicle_usage? }.add_visits(existing_visits - import_visits)
+      import_visit_objects = import_visits.select{ |v| v[0].is_a?(Visit) }.map{ |v| v[0] }
+      compatible_existing_visits = (existing_visits - import_visit_objects).select{ |visit|
+        tags_compatible?(visit.tags.to_a | visit.destination.tags.to_a)
+      }
+
+      routes.find{ |route| !route.vehicle_usage? }.add_visits(compatible_existing_visits.map{ |v| [v, true] })
 
       index_routes = (1..routes.size).to_a
       routes_visits.each{ |_ref, r|
@@ -206,7 +211,7 @@ class Planning < ApplicationRecord
           if obj.is_a?(Visit)
             if obj.id && stop_visit_ids[obj.id]
               move_visit(routes[i], obj, index + 1)
-            else
+            elsif tags_compatible?(obj.tags.to_a | obj.destination.tags.to_a)
               routes[i].add(obj, index + 1, stop_attributes)
             end
           elsif obj.is_a?(StoreReload)
