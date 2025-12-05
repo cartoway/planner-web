@@ -46,7 +46,6 @@ class V01::Plannings < Grape::API
     params do
       use :params_from_entity, entity: V01::Entities::Planning.documentation.except(:id, :route_ids, :outdated, :tag_ids).deep_merge(
         name: { required: true },
-        vehicle_usage_set_id: { required: true }
       )
       optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
@@ -55,6 +54,7 @@ class V01::Plannings < Grape::API
       Planning.transaction do
         raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if current_customer.too_many_plannings?
 
+        params[:vehicle_usage_set_id] ||= current_customer.vehicle_usage_sets.first.id
         planning = current_customer.plannings.create!(planning_params)
         planning.default_routes
 
