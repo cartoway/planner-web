@@ -439,7 +439,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def is_store_reload?(type)
-    type == I18n.t('destinations.import_file.stop_type_store_reload') || type == 'store_reload'
+    type == I18n.t('destinations.import_file.stop_type_store_reload') || type == 'reload'
   end
 
   def import_row(_name, row, line, _options)
@@ -759,7 +759,7 @@ class ImporterDestinations < ImporterBase
         stores_attributes = sliced_attributes.map{ |import_index, lines, attributes|
           slice_lines << lines
           store_import_indices << import_index
-          attributes
+          attributes.except(:store_index)
         }
 
         import_result = Store.import(
@@ -876,13 +876,13 @@ class ImporterDestinations < ImporterBase
     if row[:ref].present?
       store = @existing_stores_by_ref[row[:ref]]
       filtered_store_attributes =
-      if store
-        store_attr = store.attributes.symbolize_keys
-        route_attributes = store_attr.extract!(:ref_vehicle, :planning_ref, :route)
-        store_attr.extract!(:id, :name, :postalcode, :city, :lat, :lng).merge(store_attributes)
-      else
-        store_attributes
-      end
+        if store
+          store_attr = store.attributes.symbolize_keys
+          route_attributes = store_attr.extract!(:ref_vehicle, :planning_ref, :route)
+          store_attr.extract!(:id, :name, :postalcode, :city, :lat, :lng).merge(store_attributes)
+        else
+          store_attributes
+        end
       index, lines, store_attr = @stores_attributes_by_ref[row[:ref]]
       if store_attr && route_attributes
         reset_geocoding(filtered_store_attributes)
@@ -898,7 +898,7 @@ class ImporterDestinations < ImporterBase
       end
       prepare_store_reload_with_store_ref(row, line, store, index, store_attributes, store_reload_attributes) if index
     else
-      @stores_attributes_without_ref << [@store_index, [line], filtered_store_attributes]
+      @stores_attributes_without_ref << [@store_index, [line], store_attributes]
       prepare_store_reload_without_store_ref(row, line, @store_index, store_attributes, store_reload_attributes)
       store_attributes.merge!(store_index: @store_index)
       @store_index += 1
