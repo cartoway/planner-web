@@ -853,4 +853,82 @@ class ImporterDestinationsTest < ActionController::TestCase
     new_destinations = @customer.destinations.where(ref: ['new_dest_1', 'new_dest_2'])
     assert_equal 2, new_destinations.size, 'Both new destinations should be created'
   end
+
+  test 'should import new visits without tag but should not add them toplanning with tags' do
+    # Use existing planning with ref
+    existing_planning = plannings(:planning_one)
+    existing_planning_ref = existing_planning.ref
+    assert_not_nil existing_planning_ref, 'Planning should have a ref'
+
+    # Use existing tag
+    destination_tag = tags(:tag_two)
+    visit_tag = tags(:tag_one)
+    planning = plannings(:planning_one)
+    planning.update(tag_ids: [destination_tag.id, visit_tag.id])
+    route = routes(:route_one_one)
+
+    # Count initial visits in planning
+    initial_visit_count = existing_planning.visits.count
+
+    # Prepare JSON import data with new visits using existing tag
+    json_destinations = [
+      {
+        ref: 'new_dest_1',
+        route: route.ref,
+        name: 'Nouvelle destination',
+        street: 'Rue de la Paix',
+        postalcode: '75001',
+        city: 'Paris',
+        country: 'FR',
+        lat: 48.8566,
+        lng: 2.3522,
+        visits: [
+          {
+            ref: 'new_visit_1',
+            duration: '00:15',
+            time_window_start_1: '09:00',
+            time_window_end_1: '12:00'
+          }
+        ]
+      },
+      {
+        ref: 'new_dest_2',
+        route: route.ref,
+        name: 'Autre destination',
+        street: 'Avenue des Champs',
+        postalcode: '75008',
+        city: 'Paris',
+        country: 'FR',
+        lat: 48.8698,
+        lng: 2.3070,
+        visits: [
+          {
+            ref: 'new_visit_2',
+            duration: '00:20',
+            time_window_start_1: '14:00',
+            time_window_end_1: '18:00'
+          }
+        ]
+      }
+    ]
+
+    planning_hash = { ref: existing_planning_ref }
+    importer = ImporterDestinations.new(@customer, planning_hash)
+    import_json = ImportJson.new(importer: importer, replace: false, json: json_destinations)
+    assert import_json.import, "Import should succeed. Errors: #{import_json.errors.full_messages.join(', ')}"
+
+    existing_planning.reload
+
+    # Verify new visits were added with the existing tag
+    final_visit_count = existing_planning.visits.count
+    assert_equal initial_visit_count, final_visit_count, 'New visits should be added to planning'
+
+    # Verify visits without the required tags were not added to planning
+    new_visits = existing_planning.visits.select{ |v| ['new_visit_1', 'new_visit_2'].include?(v.ref) }
+    assert_equal 0, new_visits.size, 'Both new visits should not be in planning'
+
+    # Verify destinations were created
+    new_destinations = @customer.destinations.where(ref: ['new_dest_1', 'new_dest_2'])
+    assert_equal 2, new_destinations.size, 'Both new destinations should be created'
+  end
 end
