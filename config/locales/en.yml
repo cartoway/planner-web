@@ -2217,6 +2217,7 @@ en:
       stop_type_store: store
       stop_type_visit: visit
       stop_type_rest: rest
+      stop_type_store_reload: reload
       force_position: forced position
       force_position_always_first: always first
       force_position_always_final: always last

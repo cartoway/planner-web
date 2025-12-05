@@ -2323,6 +2323,7 @@ fr:
       stop_type_store: site
       stop_type_visit: visite
       stop_type_rest: pause
+      stop_type_store_reload: rechargement
       force_position: position forcée
       force_position_always_first: début
       force_position_always_final: fin
