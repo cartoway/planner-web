@@ -50,6 +50,9 @@ class CreateStoreReloads < ActiveRecord::Migration[6.1]
   end
 
   def down
+    drop_table :store_reload_vehicle_usages
+    drop_table :store_reload_vehicle_usage_sets
+
     Stop.only_stop_stores.find_each do |stop|
       stop.update_columns(store_id: stop.store_reload.store_id)
     end
@@ -65,8 +68,5 @@ class CreateStoreReloads < ActiveRecord::Migration[6.1]
 
     remove_column :vehicle_usage_sets, :max_reload
     remove_column :vehicle_usages, :max_reload
-
-    drop_table :store_reload_vehicle_usages
-    drop_table :store_reload_vehicle_usage_sets
   end
 end
