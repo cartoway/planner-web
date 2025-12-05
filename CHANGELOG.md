@@ -1,5 +1,12 @@
 # Changelog
 
+## V107.2.2
+  ### Changed
+  - Create a `planning` through API no longer require a `vehicle_usage_id` [#547](https://github.com/cartoway/planner-web/pull/547)
+  ### Fixed
+  - No longer raise a Stale Update while updating a planning with tags [#546](https://github.com/cartoway/planner-web/pull/546)
+  - Add few visits on a planning should not update the `planning.tag_ids` associated only due to this subset [#545](https://github.com/cartoway/planner-web/pull/545)
+
 ## V107.2.1
   ### Changed
   - Favor already assigned stops in route optimization with insertion [#535](https://github.com/cartoway/planner-web/pull/535)
