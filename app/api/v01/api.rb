@@ -138,6 +138,7 @@ class V01::Api < Grape::API
   mount V01::Routers
   mount V01::Routes
   mount V01::RoutesGet
+  mount V01::RouteData
   mount V01::Stops
   mount V01::Stores
   mount V01::Tags

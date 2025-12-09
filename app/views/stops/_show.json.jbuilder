@@ -96,6 +96,8 @@ when StopStore
     (json.error true) if !stop.store_reload.store.position?
   end
   json.route_data do
+    json.id stop.route_data.id
+    json.hidden stop.route_data.hidden
     json.route_id stop.route.id
     json.vehicle_id stop.route.vehicle_usage.vehicle_id
     json.route_averages do

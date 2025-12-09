@@ -99,7 +99,7 @@ class StopStoreTest < ActiveSupport::TestCase
     assert_equal 18.hours.to_i, @stop_store.time_window_end
   end
 
-  test 'should allow creating stop_stores up to max_reload per route' do
+  test 'should allow creating stop_stores even above max_reload per route' do
     @route.vehicle_usage.update!(max_reload: 2)
     @route.reload
 
@@ -108,8 +108,8 @@ class StopStoreTest < ActiveSupport::TestCase
     assert second.valid?, second.errors.full_messages.join(", ")
     assert second.save!, 'Second StopStore should be saved when within max_reload'
 
-    third = StopStore.create(route: @route, store_reload: @store_reload, index: 3, active: true)
-    refute third.save
-    assert_includes third.errors[:base], I18n.t('activerecord.errors.models.stop_store.max_reload_exceeded', default: 'Maximum number of reloads exceeded for this route')
+    third = StopStore.new(route: @route, store_reload: @store_reload, index: 3, active: true)
+    assert third.valid?, third.errors.full_messages.join(", ")
+    assert third.save!, 'Third StopStore should be saved when above max_reload'
   end
 end
