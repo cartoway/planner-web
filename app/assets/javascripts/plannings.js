@@ -775,12 +775,20 @@ export const plannings_edit = function(params) {
     var $button = $(this);
     var routeId = $button.data('routeId');
     var subTourIndex = $button.data('subTourIndex');
+    var routeDataId = $button.data('routeDataId');
+    if (!routeDataId) {
+      var $container = $button.closest('li').next('.route-data-container');
+      if ($container.length) {
+        routeDataId = $container.data('routeDataId');
+      }
+    }
 
     if (typeof routeId === 'undefined' || typeof subTourIndex === 'undefined') {
       return;
     }
 
     var wasVisible = $button.hasClass('sub-tour-visible');
+    var nowVisible = !wasVisible;
 
     if (wasVisible) {
       $button.removeClass('sub-tour-visible');
@@ -796,6 +804,16 @@ export const plannings_edit = function(params) {
     var activeIndices = $buttonsForRoute.filter('.sub-tour-visible').map(function() {
       return $(this).data('subTourIndex');
     }).get();
+
+    if (routeDataId) {
+      $.ajax({
+        url: '/api/0.1/route_data/' + routeDataId,
+        type: 'PATCH',
+        data: {
+          hidden: !nowVisible
+        }
+      });
+    }
 
     if (!routesLayer) return;
 
@@ -827,42 +845,6 @@ export const plannings_edit = function(params) {
     return routeColor || '#bdc3c4';
   };
 
-  // Update all stop labels for a route based on sub-tour colors
-  var updateStopLabelsForRoute = function(routeId) {
-    if (!routesLayer) return;
-
-    var normalizedRouteColor = getRouteColor(routeId);
-    var normalizedRouteId = routeId.toString();
-    var $route = $('li.route[data-route-id="' + routeId + '"]');
-    var $stops = $route.find('li[data-origin-route-id="' + routeId + '"]');
-
-    var currentSubTourIndex = 0;
-
-    $stops.each(function() {
-      var $stop = $(this);
-      var $stopLabel = $stop.find('.stop-label');
-
-      if (!$stopLabel.length) {
-        // Check if this is a StopStore (has sub-tour-toggle button with data-sub-tour-index)
-        var $storeToggle = $stop.find('.sub-tour-toggle[data-route-id="' + routeId + '"]');
-        if ($storeToggle.length) {
-          var storeSubTourIndex = $storeToggle.data('subTourIndex');
-          if (typeof storeSubTourIndex !== 'undefined') {
-            currentSubTourIndex = storeSubTourIndex;
-          }
-        }
-        return; // Skip stops without label (StopStore)
-      }
-
-      // Get custom color for current sub-tour
-      var customColor = routesLayer.subTourColors[normalizedRouteId] && routesLayer.subTourColors[normalizedRouteId][currentSubTourIndex];
-      var colorToApply = customColor && customColor !== normalizedRouteColor ? customColor : normalizedRouteColor;
-
-      // Update stop label color
-      $stopLabel.css('background-color', colorToApply);
-    });
-  };
-
   // Update a single sub-tour color picker button
   var updateSubTourColorButton = function(routeId, subTourIndex, customColor) {
     var normalizedRouteColor = getRouteColor(routeId);
@@ -876,14 +858,28 @@ export const plannings_edit = function(params) {
       $colorPicker.val(customColor);
       $resetButton.show();
     } else {
-      // No custom color, reset to default: remove color property
-      $buttonIcon.css('color', '');
-      $colorPicker.val(normalizedRouteColor);
+      $buttonIcon.removeAttr('style');
+      $colorPicker.removeAttr('value');
       $resetButton.hide();
     }
+    // Update only the stop labels for this sub-tour
+    updateStopLabelsForSubTour(routeId, subTourIndex, customColor);
+  };
 
-    // Update all stop labels for the route (they may belong to different sub-tours)
-    updateStopLabelsForRoute(routeId);
+  // Update labels for a single sub-tour
+  var updateStopLabelsForSubTour = function(routeId, subTourIndex, colorOverride) {
+    var normalizedRouteColor = getRouteColor(routeId);
+    var colorToApply = colorOverride || normalizedRouteColor;
+    var $routeStops = $('li[data-origin-route-id="' + routeId + '"]');
+    $routeStops.each(function() {
+      var $stop = $(this);
+      var stopSubTourIndex = $stop.data('subTourIndex');
+      if (stopSubTourIndex !== subTourIndex) return;
+      var $stopLabel = $stop.find('.stop-label');
+      if ($stopLabel.length) {
+        $stopLabel.css('background-color', colorToApply);
+      }
+    });
   };
 
   // Update sub-tour color buttons for a route based on route color
@@ -926,6 +922,7 @@ export const plannings_edit = function(params) {
     var routeId = $picker.data('route-id');
     var subTourIndex = $picker.data('sub-tour-index');
     var color = $picker.val();
+    var routeDataId = $picker.data('route-data-id');
 
     if (typeof routeId === 'undefined' || typeof subTourIndex === 'undefined') {
       return;
@@ -941,6 +938,17 @@ export const plannings_edit = function(params) {
     var colorToSet = (normalizedSelectedColor === normalizedRouteColor) ? null : color;
     routesLayer.setSubTourColor(routeId, subTourIndex, colorToSet);
     updateSubTourColorButton(routeId, subTourIndex, colorToSet);
+    updateStopLabelsForSubTour(routeId, subTourIndex, colorToSet || normalizedSelectedColor);
+
+    if (routeDataId) {
+      $.ajax({
+        url: '/api/0.1/route_data/' + routeDataId,
+        type: 'PATCH',
+        data: {
+          color: colorToSet || ''
+        }
+      });
+    }
 
     routesLayer.hideRoutes([routeId]);
     routesLayer.showRoutes([routeId]);
@@ -953,6 +961,7 @@ export const plannings_edit = function(params) {
     var $button = $(this);
     var routeId = $button.data('route-id');
     var subTourIndex = $button.data('sub-tour-index');
+    var routeDataId = $button.data('route-data-id');
 
     if (typeof routeId === 'undefined' || typeof subTourIndex === 'undefined') {
       return;
@@ -963,6 +972,17 @@ export const plannings_edit = function(params) {
     // Reset to default: remove custom color
     routesLayer.setSubTourColor(routeId, subTourIndex, null);
     updateSubTourColorButton(routeId, subTourIndex, null);
+    updateStopLabelsForSubTour(routeId, subTourIndex, null);
+
+    if (routeDataId) {
+      $.ajax({
+        url: '/api/0.1/route_data/' + routeDataId,
+        type: 'PATCH',
+        data: {
+          color: ''
+        }
+      });
+    }
 
     routesLayer.hideRoutes([routeId]);
     routesLayer.showRoutes([routeId]);
@@ -2174,8 +2194,6 @@ export const plannings_edit = function(params) {
 
       const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
       initRoutes($routePanel, data, options);
-      // Update sub-tour color buttons after route initialization
-      updateSubTourColorButtons(route.route_id);
 
       var sortableUpdate = false;
       var $sortable_route = $(".route[data-route-id='" + route.route_id + "'] .stops.sortable");

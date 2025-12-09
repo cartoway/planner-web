@@ -218,7 +218,7 @@ class Route < ApplicationRecord
         },
         properties: {
           route_id: self.id,
-          color: self.default_color,
+          color: options[:color] || self.default_color,
           drive_time: options[:drive_time],
           distance: options[:distance],
           sub_tour_index: options[:sub_tour_index]
@@ -267,13 +267,18 @@ class Route < ApplicationRecord
       stops_time_windows = {}
       previous_with_pos = vehicle_usage.default_store_start&.position?
       sub_tour_index = 0  # First sub-tour starts at index 0
+      sub_tour_color = self.start_route_data.color
       stops_sort.each{ |stop|
         stop_attributes = {}
+        if stop.is_a?(StopStore)
+          sub_tour_color = stop.route_data.color
+          sub_tour_index += 1
+        end
         if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
           stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
           stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
 
-          store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index))
+          store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index, color: sub_tour_color))
 
           if stop_attributes[:drive_time]
             stops_drive_time[stop] = stop_attributes[:drive_time]
@@ -332,7 +337,6 @@ class Route < ApplicationRecord
         stop.attributes = stop_attributes
 
         if stop.is_a?(StopStore)
-          sub_tour_index += 1
           previous_route_data_attributes[:drive_time] = route_attributes[:drive_time]
           previous_route_data_attributes[:end] = stop_attributes[:time]
           previous_route_data_attributes[:cost_distance] = previous_route_data_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
@@ -372,7 +376,7 @@ class Route < ApplicationRecord
       # Add service time to end point
       route_attributes[:end] += service_time_end unless service_time_end.nil?
 
-      store_traces(trace, options.merge(drive_time: drive_time, distance: distance, sub_tour_index: sub_tour_index))
+      store_traces(trace, options.merge(drive_time: drive_time, distance: distance, sub_tour_index: sub_tour_index, color: sub_tour_color))
 
       route_attributes[:stop_out_of_drive_time] = route_attributes[:end] > vehicle_usage.default_time_window_end
       route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], route_attributes[:end])
@@ -582,15 +586,16 @@ class Route < ApplicationRecord
 
   def add_objects(objects, recompute = true, ignore_errors = false)
     Stop.transaction do
-      i = stops.size
+      stop_index = stops.size
       collected_stops = objects.map.with_index{ |stop, index|
         object, stop_attributes = stop
         stop_attributes = { active: true, custom_attributes: {} }.merge((stop_attributes || {}).compact)
-
+        stop_index += 1
         if object.is_a?(Visit) && planning.tags_compatible?(object.tags.to_a | object.destination.tags.to_a)
-          stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: i += 1, custom_attributes: stop_attributes[:custom_attributes])
+          reveal_sub_tour_route_data(stop_index)
+          stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: stop_index, custom_attributes: stop_attributes[:custom_attributes])
         elsif object.is_a?(StoreReload)
-          stops.new(type: StopStore.name, store_reload: object, visit: nil, active: true, index: i += 1, custom_attributes: stop_attributes[:custom_attributes])
+          stops.new(type: StopStore.name, store_reload: object, visit: nil, active: true, index: stop_index, custom_attributes: stop_attributes[:custom_attributes])
         end
       }.compact
       Stop.import(collected_stops)
@@ -605,7 +610,9 @@ class Route < ApplicationRecord
       i = stops.size
       collected_stops = visits.map{ |stop|
         visit, active = stop
-        stops.new(type: StopVisit.name, visit: visit, active: active, index: i += 1)
+        index = i += 1
+        reveal_sub_tour_route_data(index)
+        stops.new(type: StopVisit.name, visit: visit, active: active, index: index)
       }
       Stop.import(collected_stops)
       self.outdated = true
@@ -615,11 +622,6 @@ class Route < ApplicationRecord
   end
 
   def add_store_reload(store_reload, index = nil, stop_reload_attributes = {}, stop_id = nil)
-    if self.vehicle_usage && self.stops.select{ |s| s.is_a?(StopStore) }.count >= self.vehicle_usage.default_max_reload.to_i
-      errors.add(:base, I18n.t('activerecord.errors.models.route.attributes.stops.store_reload.max_reached'))
-      return false
-    end
-
     stop_reload_attributes = { active: true, custom_attributes: {} }.merge(stop_reload_attributes.compact)
     if self.vehicle_usage.nil?
       errors.add(:base, I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage'))
@@ -637,8 +639,10 @@ class Route < ApplicationRecord
     stop_attributes = { active: false, custom_attributes: {} }.merge(stop_attributes.compact)
     index = stops.size + 1 if !index || index < 0
     shift_index(index)
-    stops.build(type: StopVisit.name, visit: visit, index: index, active: stop_attributes[:active], id: stop_id, custom_attributes: stop_attributes[:custom_attributes])
+    stop = stops.build(type: StopVisit.name, visit: visit, index: index, active: stop_attributes[:active], id: stop_id, custom_attributes: stop_attributes[:custom_attributes])
+    reveal_sub_tour_route_data(index)
     self.outdated = true
+    stop
   end
 
   def add_rest(stop_attributes = {}, stop_id = nil)
@@ -690,6 +694,7 @@ class Route < ApplicationRecord
         shift_index(stop.index + 1, -1, index)
       end
       stop.index = index
+      reveal_sub_tour_route_data(index)
     end
     self.outdated = true
   end
@@ -1039,9 +1044,13 @@ class Route < ApplicationRecord
 
     inactive_stops = 0
     sub_tour_index = 0
-    stops.map do |stop|
+    sub_tour_color = self.start_route_data.color
+    stops.sort_by(&:index).map do |stop|
       inactive_stops += 1 unless stop.active
-      sub_tour_index += 1 if stop.is_a?(StopStore)
+      if stop.is_a?(StopStore)
+        sub_tour_index += 1
+        sub_tour_color = stop.route_data.color
+      end
 
       next unless stop.position?
 
@@ -1056,7 +1065,7 @@ class Route < ApplicationRecord
           index: stop.index,
           active: stop.active,
           number: vehicle_usage? ? stop.number(inactive_stops) : nil,
-          color: stop.default_color,
+          color: sub_tour_color || stop.default_color,
           icon: stop.icon,
           icon_size: stop.icon_size,
           stop_id: stop.id,
@@ -1090,6 +1099,72 @@ class Route < ApplicationRecord
     self.start_route_data.status = nil
     self.stop_route_data.eta = nil
     self.stop_route_data.status = nil
+  end
+
+  # Update geojson colors for a given sub-tour route_data without recomputing the route
+  def refresh_geojson_colors_for_route_data(route_data)
+    return unless route_data
+
+    sub_tour_index = sub_tour_index_for_route_data(route_data)
+    return if sub_tour_index.nil?
+
+    ensure_route_geojson
+
+    apply_color = route_data.color.presence || default_color
+
+    updated_tracks = geojson_tracks&.map do |feature_json|
+      begin
+        feature = JSON.parse(feature_json)
+      rescue JSON::ParserError
+        next feature_json
+      end
+
+      if feature.dig('properties', 'sub_tour_index') == sub_tour_index
+        feature['properties'] ||= {}
+        feature['properties']['color'] = apply_color
+      end
+
+      feature.to_json
+    end
+
+    updated_points = geojson_points&.map do |feature_json|
+      begin
+        feature = JSON.parse(feature_json)
+      rescue JSON::ParserError
+        next feature_json
+      end
+
+      if feature.dig('properties', 'sub_tour_index') == sub_tour_index
+        feature['properties'] ||= {}
+        feature['properties']['color'] = apply_color
+      end
+
+      feature.to_json
+    end
+
+    if route_geojson
+      route_geojson.update_columns(
+        tracks: updated_tracks || [],
+        points: updated_points || []
+      )
+    end
+
+    self.geojson_tracks = updated_tracks if updated_tracks
+    self.geojson_points = updated_points if updated_points
+  end
+
+  def sub_tour_index_for_route_data(route_data)
+    return 0 if start_route_data.id == route_data.id
+
+    index = 0
+    stops.sort_by(&:index).each do |stop|
+      if stop.is_a?(StopStore)
+        index += 1
+        return index if stop.route_data_id == route_data.id
+      end
+    end
+
+    nil
   end
 
   def compute_out_of_force_position
@@ -1236,6 +1311,27 @@ class Route < ApplicationRecord
   end
 
   private
+
+  # Find the route_data associated with a sub-tour at the given index
+  # and set it to hidden: false
+  def reveal_sub_tour_route_data(index)
+    return unless vehicle_usage_id
+
+    # Find the last StopStore before this index
+    previous_stop_store = stops.select{ |s| s.is_a?(StopStore) && s.index && s.index < index }.max_by(&:index)
+
+    route_data = if previous_stop_store&.route_data
+      # Use the route_data of the previous StopStore (represents the sub-tour after it)
+      previous_stop_store.route_data
+    elsif start_route_data
+      # No StopStore before, use start_route_data (first sub-tour)
+      start_route_data
+    end
+
+    if route_data && route_data.hidden?
+      route_data.assign_attributes(hidden: false)
+    end
+  end
 
   def filter_points_by_sub_tour(points_array, sub_tour_indices)
     return points_array unless sub_tour_indices.present?

@@ -116,6 +116,7 @@ json.store_start do
   (json.geocoded true) if route.vehicle_usage.default_store_start.position?
   (json.error true) unless route.vehicle_usage.default_store_start.position?
   json.route_data do
+    json.id route.start_route_data.id
     json.route_id route.id
     json.vehicle_id route.vehicle_usage.vehicle_id
     json.route_averages do
@@ -129,7 +130,7 @@ json.store_start do
     end
     json.duration time_over_day(route.start_route_data.duration) if route.start_route_data.duration
     json.distance locale_distance(route.start_route_data.distance || 0, current_user.prefered_unit)
-    json.extract! route.start_route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, :status, :eta
+    json.extract! route.start_route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, :status, :eta, :hidden, :color
     json.quantities route_data_quantities(route.start_route_data, route.vehicle_usage_id && route.vehicle_usage.vehicle)
   end
 end if route.vehicle_usage && route.vehicle_usage.default_store_start
@@ -240,7 +241,7 @@ if @with_stops
         end
         json.duration time_over_day(stop.route_data.duration) if stop.route_data.duration
         json.distance locale_distance(stop.route_data.distance || 0, current_user.prefered_unit)
-        json.extract! stop.route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, :status
+        json.extract! stop.route_data, :id, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, :status, :hidden, :color
         json.quantities route_data_quantities(stop.route_data, stop.route.vehicle_usage_id && stop.route.vehicle_usage.vehicle)
       end
     end

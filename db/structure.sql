@@ -707,7 +707,9 @@ CREATE TABLE public.route_data (
     status character varying,
     eta time without time zone,
     created_at timestamp(6) without time zone,
-    updated_at timestamp(6) without time zone
+    updated_at timestamp(6) without time zone,
+    hidden boolean DEFAULT false NOT NULL,
+    color character varying
 );
 
 
@@ -3567,6 +3569,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250910070315'),
 ('20251002141623'),
 ('20251013080039'),
-('20251114122111');
+('20251114122111'),
+('20251208090000');
 
 
