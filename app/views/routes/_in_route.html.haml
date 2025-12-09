@@ -108,14 +108,15 @@
                   %span.store-status{class: "stop-status-#{route[:store_start][:status_code]}", title: "#{route[:store_start][:status]}#{eta_statement}", style: ("display: none;" if !route[:store_start][:status])}
                   .btn-group.pull-right.stop-tools
                     - if current_user.customer.enable_store_stops
+                      - current_color = route[:store_start][:route_data]&.[](:color)
                       .btn-group
-                        %button.btn.btn-default.btn-xs.sub-tour-toggle.sub-tour-visible{type: "button", "aria-pressed": "true", title: t('plannings.edit.sub_tour.toggle'), data: { route_id: route[:route_id], sub_tour_index: 0 }}
-                          %i.fa.fa-eye
+                        %button.btn.btn-default.btn-xs.sub-tour-toggle.sub-tour-visible{type: "button", "aria-pressed": "true", title: t('plannings.edit.sub_tour.toggle'), data: { route_id: route[:route_id], sub_tour_index: 0, route_data_id: route[:store_start][:route_data]&.[](:id) }}
+                          %i.fa{ class: route[:store_start][:route_data]&.[](:hidden) ? 'fa-eye-slash' : 'fa-eye' }
                       .btn-group
-                        %input.sub-tour-color-picker{type: "color", value: (route[:color] || '#bdc3c4'), style: "display: none;", "data-route-id": route[:route_id], "data-sub-tour-index": 0}
-                        %button.btn.btn-default.btn-xs.sub-tour-color-btn{type: "button", title: t("plannings.edit.sub_tour.change_color_help"), "data-route-id": route[:route_id], "data-sub-tour-index": 0}
-                          %i.fa.fa-paint-brush
-                        %button.btn.btn-default.btn-xs.sub-tour-color-reset{type: "button", title: t("plannings.edit.sub_tour.reset_color"), "data-route-id": route[:route_id], "data-sub-tour-index": 0, style: "display: none;"}
+                        %input.sub-tour-color-picker{type: "color", value: (current_color || '#bdc3c4'), style: "display: none;", "data-route-id": route[:route_id], "data-sub-tour-index": 0, "data-route-data-id": route[:store_start][:route_data]&.[](:id)}
+                        %button.btn.btn-default.btn-xs.sub-tour-color-btn{type: "button", title: t("plannings.edit.sub_tour.change_color_help"), "data-route-id": route[:route_id], "data-sub-tour-index": 0, "data-route-data-id": route[:store_start][:route_data]&.[](:id)}
+                          %i.fa.fa-paint-brush{style: "color: #{current_color};"}
+                        %button.btn.btn-default.btn-xs.sub-tour-color-reset{type: "button", title: t("plannings.edit.sub_tour.reset_color"), "data-route-id": route[:route_id], "data-sub-tour-index": 0, "data-route-data-id": route[:store_start][:route_data]&.[](:id), style: "display: #{current_color ? 'block' : 'none'};"}
                           %i.fa.fa-undo
                     - if @manage_planning[:manage_store]
                       .btn-group
@@ -142,7 +143,7 @@
                                   %small.text-muted
                                     = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"
           - if route[:store_start] && current_user.customer.enable_store_stops
-            %li.d-fake-flex.align-items-center.list-group-item.route-data-container{data: { store_id: route[:store_start]&.[](:id) }.compact}
+            %li.d-fake-flex.align-items-center.list-group-item.route-data-container{data: { store_id: route[:store_start]&.[](:id), route_data_id: route[:store_start][:route_data]&.[](:id) }.compact}
               = render partial: 'shared/store_route_data', locals: { route_data: route[:store_start][:route_data] }
       = render partial: 'stops/list', locals: { route: route, summary: summary }
       %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
