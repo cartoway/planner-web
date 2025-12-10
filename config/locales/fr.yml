@@ -115,6 +115,8 @@ fr:
         one: tournée
         other: tournées
       stop: Arrêt
+      stop_visit: Arrêt client
+      stop_store: Rechargement intérmédiaire
       stops:
         one: arrêt
         other: arrêts

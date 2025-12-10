@@ -12,11 +12,7 @@ module TypedAttribute
           end
 
         current_type =
-          if self.is_a?(Stop)
-            CustomAttribute.object_classes['stop']
-          else
-            CustomAttribute.object_classes[self.class.to_s.downcase]
-          end
+          CustomAttribute.object_classes[self.class.to_s.snakecase]
 
         reference_attributes = customer.send(current_attribute).where(object_class: current_type)
         current_attributes = send(current_attribute)

@@ -17,12 +17,14 @@ class CustomAttribute < ApplicationRecord
   enum object_class: {
     vehicle: 0,
     visit: 1,
-    stop: 2
+    stop_visit: 2,
+    stop_store: 3
   }
 
   scope :for_vehicle, -> { where(object_class: :vehicle) }
   scope :for_visit, -> { where(object_class: :visit) }
-  scope :for_stop, -> { where(object_class: :stop) }
+  scope :for_stop_visit, -> { where(object_class: :stop_visit) }
+  scope :for_stop_store, -> { where(object_class: :stop_store) }
 
   auto_strip_attributes :name
   validates :name, presence: true
