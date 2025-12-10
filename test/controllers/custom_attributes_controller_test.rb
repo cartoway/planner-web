@@ -17,12 +17,12 @@ class CustomAttributesControllerTest < ActionController::TestCase
 
   test 'should update custom_attributes' do
     sign_in users(:user_one)
-    patch :update, params: { id: @custom_attribute, custom_attribute: { name: 'foo', object_type: 'boolean', object_class: 'stop', default_value: false }}
+    patch :update, params: { id: @custom_attribute, custom_attribute: { name: 'foo', object_type: 'boolean', object_class: 'stop_visit', default_value: false }}
     assert_redirected_to custom_attributes_path
     assert_equal 'description one', @custom_attribute.reload['description']
     assert_equal 'foo', @custom_attribute.reload['name']
     assert_equal 'boolean', @custom_attribute.reload['object_type']
-    assert_equal 'stop', @custom_attribute.reload['object_class']
+    assert_equal 'stop_visit', @custom_attribute.reload['object_class']
     assert_equal '0', @custom_attribute.reload['default_value']
   end
 
