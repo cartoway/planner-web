@@ -1305,7 +1305,7 @@ class Route < ApplicationRecord
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/destination_stops")
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_location_stops")
     Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_path_stops")
-    [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_relation, :out_of_skill].each do |s|
+    [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_reload, :out_of_relation, :out_of_skill].each do |s|
       Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/out_of_#{s}_cache")
     end
   end
