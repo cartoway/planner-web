@@ -33,7 +33,7 @@ class StopsController < ApplicationController
         if @route.add_store_reload(@store_reload) && @route.save && load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
           format.json { render json: { status: :ok } }
         else
-          errors = @route.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @route.errors.full_messages
+          errors = (@route.errors&.full_messages || []) + (@planning&.errors&.full_messages || [])
           format.json { render json: { status: :unprocessable_entity, error: errors }, status: :unprocessable_entity }
         end
       end
