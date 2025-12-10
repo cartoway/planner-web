@@ -109,6 +109,8 @@ en:
         one: route
         other: routes
       stop: Stop
+      stop_visit: Client visit
+      stop_store: Intermediate reload
       stops:
         one: stop
         other: stops
