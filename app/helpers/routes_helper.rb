@@ -28,7 +28,7 @@ module RoutesHelper
 
   def route_quantities(planning, route)
     vehicle = route.vehicle_usage.try(:vehicle)
-    capacity_multiplier = 1 + (route.vehicle_usage&.default_max_reload || 0)
+    capacity_multiplier = 1 + route.stops.select{ |stop| stop.is_a?(StopStore) }.count
     quantities = []
     units = planning.customer.deliverable_units
 
