@@ -420,7 +420,7 @@ class OptimizerWrapper
         }.delete_if{ |_k, v| v.nil? },
         duration: route.vehicle_usage.default_work_time(true),
         distance: route.vehicle_usage.default_max_distance,
-        maximum_reloads: route.vehicle_usage.default_max_reload,
+        maximum_reloads: [route.stops.select{ |stop| stop.is_a?(StopStore) }.count, route.vehicle_usage.default_max_reload].compact.max,
         maximum_ride_distance: route.vehicle_usage.default_max_ride_distance,
         maximum_ride_time: route.vehicle_usage.default_max_ride_duration,
         start_point_id: route.vehicle_usage.default_store_start&.id && "d#{route.vehicle_usage.default_store_start.id}",
