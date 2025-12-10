@@ -8,9 +8,9 @@
         <div class="map-caption-item">
           <span class="color_small" style="background: <%= route.default_color %>"></span>
           <%= route.vehicle_usage.vehicle.name %>
-          <% if !route.start.nil? && !route.end.nil? %>
+          <% if !route.route_data.start.nil? && !route.route_data.end.nil? %>
           <br/>
-          <%= t '.departure' %> <%= route.start_time %> <%= '(+' + number_of_days(route.start).to_s + ')' if number_of_days(route.start) %> / <%= t '.arrival' %> <%= route.end_time %> <%= '(+' + number_of_days(route.end).to_s + ')' if number_of_days(route.end) %>
+          <%= t '.departure' %> <%= route.route_data.start_time %> <%= '(+' + number_of_days(route.route_data.start).to_s + ')' if number_of_days(route.route_data.start) %> / <%= t '.arrival' %> <%= route.route_data.end_time %> <%= '(+' + number_of_days(route.route_data.end).to_s + ')' if number_of_days(route.route_data.end) %>
           <% end %>
         </div>
       <% end %>
