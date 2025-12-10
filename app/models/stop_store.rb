@@ -40,6 +40,8 @@ class StopStore < Stop
   validates :store_reload, presence: true
   validates :route_data, presence: true
 
+  before_validation :ensure_route_data, if: -> { route_data.nil? }
+
   default_scope { includes(:route_data) }
 
   # A StopStore is always active
