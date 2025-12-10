@@ -40,8 +40,6 @@ class StopStore < Stop
   validates :store_reload, presence: true
   validates :route_data, presence: true
 
-  before_create :validate_max_reload_per_route
-
   default_scope { includes(:route_data) }
 
   # A StopStore is always active
@@ -162,14 +160,6 @@ class StopStore < Stop
   def ensure_route_data
     if route_data.nil? && route.present?
       self.route_data = RouteData.create!
-    end
-  end
-
-  def validate_max_reload_per_route
-    current_count = route.stops.where(type: self.class.name).where.not(id: id).count
-    if (current_count + 1) > route.vehicle_usage.default_max_reload.to_i
-      errors.add(:base, I18n.t('activerecord.errors.models.stop_store.max_reload_exceeded'))
-      throw :abort
     end
   end
 end
