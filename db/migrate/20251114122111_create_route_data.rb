@@ -31,7 +31,9 @@ class CreateRouteData < ActiveRecord::Migration[6.1]
 
     StopStore.all.find_each do |stop_store|
       stop_store.route_data = RouteData.create!
-      stop_store.save!
+      stop_store.update_columns(
+        route_data_id: stop_store.route_data.id
+      )
     end
 
     Route.find_in_batches(batch_size: 100) do |routes_batch|
