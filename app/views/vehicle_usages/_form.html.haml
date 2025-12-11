@@ -439,7 +439,7 @@
             - else
               - placeholder_text = t('web.form.empty_entry')
             = select_tag 'vehicle_usage[store_reload_ids]', options_for_select(@vehicle_usage.vehicle.customer.store_reloads.map{ |sr| [sr.to_s, sr.id] }, @vehicle_usage.default_store_reload_ids),
-              { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control' }
+              { multiple: true, class: 'form-control' }
             %span.input-group-addon
               %i.fa.fa-rotate.fa-fw
           %p.help-block= t('vehicle_usages.form.store_reloads_help')
