@@ -28,6 +28,7 @@ class VehicleUsagesController < ApplicationController
 
   def update
     respond_to do |format|
+      params[:vehicle_usage][:store_reload_ids] ||= []
       p = vehicle_usage_params
       time_with_day_params(params, p, [:time_window_start, :time_window_end, :max_ride_duration], [:rest_start, :rest_stop, :work_time])
       @vehicle_usage.assign_attributes(p)
