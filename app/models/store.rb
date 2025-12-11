@@ -52,6 +52,12 @@ class Store < Location
 
     customize(lambda { |_original, copy|
       def copy.destroy_vehicle_store; end
+
+      # Ensure duplicated store_reloads belong to the duplicated store
+      copy.store_reloads = copy.store_reloads.map { |reload|
+        reload.store = copy
+        reload
+      }
     })
   end
 
