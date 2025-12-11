@@ -29,6 +29,23 @@ class RouteTest < ActiveSupport::TestCase
     route_dup.save!
   end
 
+  test 'dup should not reuse route_data' do
+    route = routes(:route_one_one)
+    original_route_data_ids = [
+      route.route_data_id,
+      route.start_route_data_id,
+      route.stop_route_data_id
+    ]
+
+    route_dup = route.amoeba_dup
+    route_dup.save!
+    route.reload
+
+    assert_not_equal original_route_data_ids[0], route_dup.route_data_id
+    assert_not_equal original_route_data_ids[1], route_dup.start_route_data_id
+    assert_not_equal original_route_data_ids[2], route_dup.stop_route_data_id
+  end
+
   test 'should default_stops' do
     route = routes(:route_one_one)
     route.planning.tags.clear
