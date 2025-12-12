@@ -180,6 +180,7 @@ en:
         max_vehicle_usage_sets: Max vehicles base settings
         visit_duration: Visit duration
         destination_duration: Destination duration
+        store_reload_duration: Store reload duration
         default_country: Default country
         with_state: Add State field in addresses
         optimization_max_split_size: Optimization split size
@@ -1065,6 +1066,7 @@ en:
         <strong>%{profile}</strong>
       visit_duration_help: Average time per account
       destination_duration_help: Average time per destination
+      store_reload_duration_help: Average time per store reload
       value_default: '%{n} (default value)'
       max_plannings_help: Maximum number of allowed plans into the account.
       max_zonings_help: Maximum number of allowed sectorisations into the account.
@@ -1939,6 +1941,7 @@ en:
       total_cost_help: Total cost
       driving_time_help: Total driving time
       visit_duration_help: Total visits duration
+      store_reload_duration_help: Total store reload duration
       wait_time_help: Total waiting time
       speed_help: Speed average for the whole planning
       vehicles_used_help: Vehicles used / Total

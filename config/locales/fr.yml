@@ -186,6 +186,7 @@ fr:
         max_vehicle_usage_sets: Max configurations des véhicules
         visit_duration: Durée de visite
         destination_duration: Durée de visite par destination
+        store_reload_duration: Durée de rechargement moyenne par site
         default_country: Pays par défaut
         with_state: Ajouter champ État dans les adresses
         optimization_max_split_size: Découper le problème
@@ -1092,6 +1093,7 @@ fr:
       value_default: '%{n} (valeur par défaut)'
       visit_duration_help: Durée de visite moyenne par client
       destination_duration_help: Durée de visite par destination
+      store_reload_duration_help: Durée de rechargement moyenne par site
       max_plannings_help: Nombre maximal de plans autorisés dans le compte.
       max_zonings_help: Nombre maximal de sectorisations autorisés dans le compte.
       max_destinations_help: Nombre maximal d'adresses autorisés dans le compte.
@@ -2031,6 +2033,7 @@ fr:
       total_cost_help: Somme des coûts
       driving_time_help: Somme des durées de conduite
       visit_duration_help: Somme des durées des visites
+      store_reload_duration_help: Somme des durées des rechargements
       wait_time_help: Somme des temps d'attentes
       speed_help: Vitesse moyenne pour l'ensemble des tournées
       vehicles_used_help: Nombre de véhicules utilisés / total
