@@ -19,7 +19,7 @@
           %p.help-block= t '.ref_help'
       = f.text_field :duration,
         value: store_reload.default_duration_time_with_seconds,
-        placeholder: store_reload.store.customer.visit_duration ? "#{store_reload.store.customer.visit_duration_time_with_seconds} (#{t('.duration_default')})" : t('all.unit.hour_minute_second'),
+        placeholder: store_reload.store.customer.store_reload_duration ? "#{store_reload.store.customer.store_reload_duration_time_with_seconds} (#{t('.duration_default')})" : t('all.unit.hour_minute_second'),
         append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw'),
         help: t('.duration_help')
 
