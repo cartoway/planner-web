@@ -84,7 +84,8 @@ module PlanningsHelper
             :no_path, :unmanageable_capacity
           ).merge(
             size: route.stops_size,
-            size_active: route.size_active
+            size_active: route.size_active,
+            size_store_reloads: route.size_store_reloads
           ),
         }.delete_if{ |_k, v| v.nil? }
       }
