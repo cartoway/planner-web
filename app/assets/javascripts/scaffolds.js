@@ -817,6 +817,7 @@ export function selectFormatOption(option) {
       var $el = $(option.element);
       var size = $el.data('size');
       var sizeActive = $el.data('size-active');
+      var sizeStoreReloads = $el.data('size-store-reloads');
 
       // Base label: route name
       var label = option.text || '';
@@ -867,6 +868,11 @@ export function selectFormatOption(option) {
 
       var $span = $('<span></span>');
       $span.text(label);
+
+      if (typeof sizeStoreReloads !== 'undefined' && sizeStoreReloads > 0) {
+        $span.append('&nbsp;<i class="fa fa-arrows-rotate fa-fw fa-route-selector" title="' + I18n.t('plannings.edit.sub_tour.reloads') + '"></i>&nbsp;' + sizeStoreReloads);
+      }
+
       if (icons.length) {
         $span.append(' ');
         $span.append(icons.join(''));

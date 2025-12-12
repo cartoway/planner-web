@@ -2043,6 +2043,7 @@ fr:
       toggle_help: Affiche ou cache les arrêts sur la carte
       toggle_route_data_help: Affiche ou cache les infos liées à la tournée
       sub_tour:
+        reloads: Rechargements
         toggle: Afficher/masquer le sous-tour
         change_color_help: Changer la couleur du sous-tour
         reset_color: Réinitialiser la couleur du sous-tour

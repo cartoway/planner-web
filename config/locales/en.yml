@@ -1951,6 +1951,7 @@ en:
       toggle_help: Toggle stops on map
       toggle_route_data_help: Toggle route stats
       sub_tour:
+        reloads: Reloads
         toggle: Toggle sub-tour visibility
         change_color_help: Change sub-tour color
         reset_color: Reset sub-tour color
