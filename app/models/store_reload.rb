@@ -81,11 +81,11 @@ class StoreReload < ApplicationRecord
   end
 
   def default_duration
-    duration || store.customer.visit_duration
+    duration || store.customer.store_reload_duration
   end
 
   def default_duration_time_with_seconds
-    duration_time_with_seconds || store.customer.visit_duration_time_with_seconds
+    duration_time_with_seconds || store.customer.store_reload_duration_time_with_seconds
   end
 
   def base_id
