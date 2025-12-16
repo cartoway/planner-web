@@ -807,6 +807,15 @@ $sidebar-margins: 10px;
             @media screen and (max-width: 991px) {
               padding: 0px 6px 4px 43px;
             }
+
+            .route-info {
+              border: 1px solid rgba($grey-color, 0.7);
+              background-color: rgba($lightgrey-color, 0.7);
+
+              .fa {
+                opacity: 0.7;
+              }
+            }
           }
         }
 
