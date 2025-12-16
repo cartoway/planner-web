@@ -224,7 +224,7 @@
       - elsif @manage_planning[:manage_print]
         %a.btn.btn-default.btn-xs{href: "/api-web/0.1/plannings/#{summary[:planning_id]}/routes/#{route[:route_id]}/print", target: "_blank", title: t('plannings.edit.export.print')}
           %i.fa.fa-print.fa-fw
-.row.route-data{"data-route-id": route[:route_id]}
+.row.route-data.route-header{"data-route-id": route[:route_id]}
   - if route[:vehicle_id]
     - if route[:route_averages]
       - if route[:total_revenue]
