@@ -742,7 +742,7 @@ export const plannings_edit = function(params) {
 
     var selection = $(this).parent('li').data('selection');
 
-    $('.route-data').each(function(index, element) {
+    $('.route-data.route-header').each(function(index, element) {
       if (selection == 'all') {
         $(element).show();
       } else if (selection == 'none') {
