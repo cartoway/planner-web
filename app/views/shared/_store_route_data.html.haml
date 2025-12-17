@@ -1,4 +1,5 @@
-.row.in-route.route-data{"data-route-id": route_data[:route_id]}
+- used_reloads ||= nil
+.row.in-route.route-data{"data-route-id": route_data[:route_id], class: ("d-none" if used_reloads && used_reloads == 0 )}
   - route_data[:quantities]&.each do |unit|
     - [:delivery].each do |sym|
       - if unit.fetch("has_#{sym}".to_sym)
