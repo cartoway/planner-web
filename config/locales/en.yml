@@ -1944,6 +1944,8 @@ en:
       wait_time_help: Total waiting time
       speed_help: Speed average for the whole planning
       vehicles_used_help: Vehicles used / Total
+      used_reloads: Rechargements
+      used_reloads_help: Nombre de rechargements utilisés
       pickup_help: Pickup
       delivery_help: Delivery
       route_data_pickup_help: Quantity to collect
