@@ -271,7 +271,6 @@ json.store_stop do
   json.route_data do
     json.route_id route.id
     json.vehicle_id route.vehicle_usage.vehicle_id
-    json.quantities route_data_quantities(route.stop_route_data, route.vehicle_usage_id && route.vehicle_usage.vehicle)
     json.extract! route.stop_route_data, :status, :eta
   end
 end if route.vehicle_usage_id && route.vehicle_usage.default_store_stop

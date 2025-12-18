@@ -187,10 +187,6 @@
                   .btn-group
                     %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                       %i.fa.fa-map-marker
-                  - if current_user.customer.enable_store_stops && route[:store_stop][:route_data][:quantities].any?
-                    .btn-group
-                      .btn.btn-default.btn-xs.route-data-toggle{title: t("plannings.edit.toggle_route_data_help")}
-                        %i.fa.fa-chart-simple
                   - if current_user.customer.enable_store_stops && @available_store_reloads.any?
                     .dropdown.btn-group
                       %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
@@ -204,6 +200,3 @@
                               - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
                                 %small.text-muted
                                   = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"
-        - if route[:store_stop] && current_user.customer.enable_store_stops && route[:store_stop][:route_data][:quantities].any?
-          %li.d-fake-flex.align-items-center.list-group-item.route-data-container{data: { store_id: route[:store_stop]&.[](:id) }.compact}
-            = render partial: 'shared/store_route_data', locals: { route_data: route[:store_stop][:route_data], used_reloads: route[:used_reloads] }

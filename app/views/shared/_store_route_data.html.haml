@@ -1,18 +1,5 @@
 - used_reloads ||= nil
 .row.in-route.route-data{"data-route-id": route_data[:route_id], class: ("d-none" if used_reloads && used_reloads == 0 )}
-  - route_data[:quantities]&.each do |unit|
-    - [:delivery].each do |sym|
-      - if unit.fetch("has_#{sym}".to_sym)
-        .col-xs-4.route-data-advanced
-          .route-info{class: "#{route_data[:vehicle_id] ? 'info' : 'inactive'} #{unit[:out_of_capacity] && 'danger'}", title: [unit[:label], sym == :pickup ? t('plannings.edit.route_data_pickup_help') : t('plannings.edit.route_data_delivery_help')].compact.join(' - ')}
-            %i.fa.fa-fw{class: unit[:unit_icon]}
-            %i.fa.fa-fw.fa-down-long{title: t("plannings.edit.route_data_delivery_help")}
-            = unit[:delivery]
-            - if unit[:capacity]
-              = "/ #{unit[:capacity]}"
-            /
-            - if unit[:label]
-              = "#{unit[:label]}"
   - if route_data[:vehicle_id]
     - if route_data[:duration]
       .col-xs-4
@@ -28,7 +15,7 @@
           %i.fa.fa-road.fa-fw>
           = route_data[:distance]
   - route_data[:quantities]&.each do |unit|
-    - [:pickup].each do |sym|
+    - [:delivery, :pickup].each do |sym|
       - if unit.fetch("has_#{sym}".to_sym)
         .col-xs-4.route-data-advanced
           .route-info{class: "#{route_data[:vehicle_id] ? 'info' : 'inactive'} #{unit[:out_of_capacity] && 'danger'}", title: [unit[:label], sym == :pickup ? t('plannings.edit.route_data_pickup_help') : t('plannings.edit.route_data_delivery_help')].compact.join(' - ')}
@@ -36,6 +23,9 @@
             - if sym == :pickup
               %i.fa.fa-fw.fa-up-long{title: t("plannings.edit.route_data_pickup_help")}
               = unit[:pickup]
+            - if sym == :delivery
+              %i.fa.fa-fw.fa-down-long{title: t("plannings.edit.route_data_delivery_help")}
+              = unit[:delivery]
             - if unit[:capacity]
               = "/ #{unit[:capacity]}"
             /

@@ -2036,6 +2036,8 @@ fr:
       wait_time_help: Somme des temps d'attentes
       speed_help: Vitesse moyenne pour l'ensemble des tournées
       vehicles_used_help: Nombre de véhicules utilisés / total
+      used_reloads: Rechargements
+      used_reloads_help: Nombre de rechargements utilisés
       delivery_help: Livraison
       pickup_help: Collecte
       route_data_pickup_help: À charger
@@ -2063,8 +2065,8 @@ fr:
       route_duration_help: Durée de la tournée / Créneau horaire ou durée de travail véhicule
       route_distance_help: Distance de la tournée
       route_quantity_help: Chargement / Capacité véhicule
-      route_data_pickup_help: Quantité à charger
-      route_data_delivery_help: Quantité à décharger
+      route_data_pickup_help: Quantité à collecter
+      route_data_delivery_help: Quantité à livrer
       route_speed_average_help: Vitesse moyenne du véhicule
       route_driving_time_help: Durée de conduite
       route_visits_duration_help: Durée des visites

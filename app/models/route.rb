@@ -805,8 +805,8 @@ class Route < ApplicationRecord
     stop_load_hash = {}
     route_pickups = QuantityAttr::QuantityHash.new(0) # total route pickups
     route_deliveries = QuantityAttr::QuantityHash.new(0) # total route deliveries
-    stops_deliveries = QuantityAttr::QuantityHash.new(0) # pickups at "previous" store
-    stops_pickups = QuantityAttr::QuantityHash.new(0) # deliveries at "next" store
+    stops_deliveries = QuantityAttr::QuantityHash.new(0) # deliveries in the current sub-tour
+    stops_pickups = QuantityAttr::QuantityHash.new(0) # pickups in the next sub-tour
 
     previous_route_data = self.start_route_data
 
@@ -816,19 +816,17 @@ class Route < ApplicationRecord
       case stop.class.name
       when StopVisit.name
         stop.visit.default_pickups(planning.customer.deliverable_units).each{ |k, v|
-          # visit pickups are delivered at next store
           stops_pickups[k] += (v || 0)
         }
         stop.visit.default_deliveries(planning.customer.deliverable_units).each{ |k, v|
-          # visit deliveries are picked up at previous store
           stops_deliveries[k] += (v || 0)
         }
       when StopStore.name
-        # the stops deliveries are picked up at the previous store
-        previous_route_data.assign_attributes(pickups: stops_deliveries.dup)
+        previous_route_data.assign_attributes(
+          pickups: stops_pickups.dup,
+          deliveries: stops_deliveries.dup
+        )
         previous_route_data = stop.route_data
-        # the stops pickups are delivered at the current store
-        previous_route_data.assign_attributes(deliveries: stops_pickups.dup)
 
         stops_deliveries.each{ |k, v| route_deliveries[k] += (v || 0) }
         stops_pickups.each{ |k, v| route_pickups[k] += (v || 0) }
@@ -839,21 +837,21 @@ class Route < ApplicationRecord
     }
     stops_deliveries.each{ |k, v| route_deliveries[k] += (v || 0) }
     stops_pickups.each{ |k, v| route_pickups[k] += (v || 0) }
-    # the stops deliveries are the pickups of the previous store
-    previous_route_data.assign_attributes(pickups: stops_deliveries.dup)
-    # the stops pickups are the deliveries of the current store
-    self.stop_route_data.assign_attributes(deliveries: stops_pickups.dup)
+    previous_route_data.assign_attributes(
+      pickups: stops_pickups.dup,
+      deliveries: stops_deliveries.dup
+    )
 
     # The route data cumulates the stops pickups and deliveries
     self.route_data.assign_attributes(pickups: route_pickups, deliveries: route_deliveries)
 
-    current_loads = self.start_route_data.pickups.dup
+    current_loads = self.start_route_data.deliveries.dup
     (stops_sort || stops).each { |stop|
       case stop.class.name
       when StopVisit.name
         process_stop_loads(stop, current_loads)
       when StopStore.name
-        current_loads = stop.route_data.pickups.dup
+        current_loads = stop.route_data.deliveries.dup
         stop.out_of_capacity = out_of_capacity?(current_loads)
       end
 
