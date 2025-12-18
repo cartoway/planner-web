@@ -1946,8 +1946,8 @@ en:
       vehicles_used_help: Vehicles used / Total
       pickup_help: Pickup
       delivery_help: Delivery
-      route_data_pickup_help: Quantity to load
-      route_data_delivery_help: Quantity to unload
+      route_data_pickup_help: Quantity to collect
+      route_data_delivery_help: Quantity to deliver
       quantity_help: Quantities / Vehicles capacities
       out_of_route: Unaffected
       out_of_route_quantity_help: Quantity
@@ -1967,8 +1967,6 @@ en:
       route_duration_help: Route duration / Vehicle window or work time
       route_distance_help: Route distance
       route_quantity_help: Quantity / Vehicle capacity
-      route_data_pickup_help: Quantity to load
-      route_data_delivery_help: Quantity to unload
       route_speed_average_help: Vehicle's speed average
       route_driving_time_help: Driving time
       route_visits_duration_help: Visits duration
