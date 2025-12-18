@@ -281,7 +281,7 @@
         = route[:used_reloads]
         = t('plannings.edit.used_reloads')
   - route[:quantities]&.each do |unit|
-    - [:pickup, :delivery].each do |sym|
+    - [:delivery, :pickup].each do |sym|
       - if unit.fetch("has_#{sym}".to_sym)
         .col-xs-4.route-data-advanced
           .route-info{class: "#{route[:vehicle_id] ? 'primary' : 'inactive'} #{unit[:out_of_capacity] && 'danger'}", title: [unit[:label], t('plannings.edit.route_quantity_help')].compact.join(' - ')}
