@@ -275,16 +275,15 @@ class Route < ApplicationRecord
       sub_tour_color = self.start_route_data.color
       stops_sort.each{ |stop|
         stop_attributes = {}
-        if stop.is_a?(StopStore)
-          sub_tour_color = stop.route_data.color
-          sub_tour_index += 1
-        end
         if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
           stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
           stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
 
           store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index, color: sub_tour_color))
-
+          if stop.is_a?(StopStore)
+            sub_tour_color = stop.route_data.color
+            sub_tour_index += 1
+          end
           if stop_attributes[:drive_time]
             stops_drive_time[stop] = stop_attributes[:drive_time]
             stop_attributes[:time] = route_attributes[:end] + stop_attributes[:drive_time]
@@ -1050,48 +1049,84 @@ class Route < ApplicationRecord
 
     inactive_stops = 0
     sub_tour_index = 0
-    sub_tour_color = self.start_route_data.color
-    stops.sort_by(&:index).map do |stop|
+    current_sub_tour_color = self.start_route_data.color
+    sub_tour_color = current_sub_tour_color
+    stops.sort_by(&:index).flat_map do |stop|
       inactive_stops += 1 unless stop.active
+
       if stop.is_a?(StopStore)
+        current_sub_tour_index = sub_tour_index
         sub_tour_index += 1
         sub_tour_color = stop.route_data.color
       end
 
       next unless stop.position?
 
-      feat = {
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [stop.lng, stop.lat]
-        },
-        properties: {
-          route_id: self.id,
-          index: stop.index,
-          active: stop.active,
-          number: vehicle_usage? ? stop.number(inactive_stops) : nil,
-          color: sub_tour_color || stop.default_color,
-          icon: stop.icon,
-          icon_size: stop.icon_size,
-          stop_id: stop.id,
-          sub_tour_index: sub_tour_index,
-          type: stop.type
-        }
-      }
+      features = []
 
-      if options[:with_quantities] && stop.is_a?(StopVisit)
-        feat[:properties][:quantities] = []
-        units.each{ |unit|
-          feat[:properties][:quantities] << {
-            deliverable_unit_id: unit.id,
-            quantity: (stop.visit.default_deliveries[unit.id] || 0) - (stop.visit.default_pickups[unit.id] || 0),
-            pickup: stop.visit.default_pickups[unit.id] || 0,
-            delivery: stop.visit.default_deliveries[unit.id] || 0
+      if stop.is_a?(StopStore)
+        [current_sub_tour_index, sub_tour_index].each do |sub_index|
+          color = (sub_index == current_sub_tour_index) ? current_sub_tour_color : sub_tour_color
+          feat = {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [stop.lng, stop.lat]
+            },
+            properties: {
+              route_id: self.id,
+              index: stop.index,
+              active: stop.active,
+              number: vehicle_usage? ? stop.number(inactive_stops) : nil,
+              color: color || stop.default_color,
+              icon: stop.icon,
+              icon_size: stop.icon_size,
+              stop_id: stop.id,
+              sub_tour_index: sub_index,
+              type: stop.type
+            }
+          }
+          features << feat.to_json
+        end
+      else
+        # Pour les autres stops, créer un seul Feature
+        feat = {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [stop.lng, stop.lat]
+          },
+          properties: {
+            route_id: self.id,
+            index: stop.index,
+            active: stop.active,
+            number: vehicle_usage? ? stop.number(inactive_stops) : nil,
+            color: sub_tour_color || stop.default_color,
+            icon: stop.icon,
+            icon_size: stop.icon_size,
+            stop_id: stop.id,
+            sub_tour_index: sub_tour_index,
+            type: stop.type
           }
         }
+
+        if options[:with_quantities] && stop.is_a?(StopVisit)
+          feat[:properties][:quantities] = []
+          units.each{ |unit|
+            feat[:properties][:quantities] << {
+              deliverable_unit_id: unit.id,
+              quantity: (stop.visit.default_deliveries[unit.id] || 0) - (stop.visit.default_pickups[unit.id] || 0),
+              pickup: stop.visit.default_pickups[unit.id] || 0,
+              delivery: stop.visit.default_deliveries[unit.id] || 0
+            }
+          }
+        end
+        features << feat.to_json
       end
-      feat.to_json
+
+      current_sub_tour_color = sub_tour_color if stop.is_a?(StopStore)
+
+      features
     end.compact
   end
 
@@ -1350,18 +1385,9 @@ class Route < ApplicationRecord
         next false
       end
       point_sub_tour_index = feature.dig('properties', 'sub_tour_index')
-      is_stop_store = feature.dig('properties', 'type') == 'StopStore'
-
       return true if point_sub_tour_index.nil?
 
-      # For StopStore: show if at least one of the two adjacent sub-tours is visible
-      # Hide only if both previous (sub_tour_index - 1) and current (sub_tour_index) sub-tours are hidden
-      if is_stop_store && point_sub_tour_index > 0
-        previous_sub_tour_index = point_sub_tour_index - 1
-        allowed_indices.include?(previous_sub_tour_index) || allowed_indices.include?(point_sub_tour_index)
-      else
-        allowed_indices.include?(point_sub_tour_index)
-      end
+      allowed_indices.include?(point_sub_tour_index)
     end
   end
 
