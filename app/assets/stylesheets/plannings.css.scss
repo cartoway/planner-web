@@ -623,6 +623,12 @@ $sidebar-margins: 10px;
       list-style-type: none;
       margin-bottom: 1em;
 
+      .stops {
+        .li-store {
+          filter: brightness(0.97);
+        }
+      }
+
       .panel-default {
         .select2-container--default {
           .select2-selection--single {

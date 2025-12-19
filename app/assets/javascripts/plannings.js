@@ -837,33 +837,71 @@ export const plannings_edit = function(params) {
 
   var getRouteColor = function(routeId) {
     var $route = $('li.route[data-route-id="' + routeId + '"]');
-    var routeColor = $route.attr('data-color') || null;
+    var routeColor = null;
+
+    // Get color from color_select input
+    var $colorSelect = $route.find('.color-select-container .select2-selection .color_small');
+    if ($colorSelect.length) {
+      var inlineStyle = $colorSelect.attr('style');
+      if (!inlineStyle || !inlineStyle.match(/display\s*:\s*none/i)) {
+        var bgColor = $colorSelect.css('background-color');
+        // Assign null if background-color is transparent (rgba(0, 0, 0, 0))
+        if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)') {
+          routeColor = bgColor;
+        } else {
+          routeColor = null;
+        }
+      }
+    }
+
+    // Fallback to data-default-color attribute
     if (!routeColor) {
-      var $colorSelect = $route.find('[name="route[color]"]');
-      routeColor = $colorSelect.val() || null;
+      routeColor = $route.attr('data-default-color') || null;
     }
     return routeColor || '#bdc3c4';
   };
 
-  // Update a single sub-tour color picker button
+  // Update all route colors
+  var updateRouteColors = function(routeId, color) {
+    // Update store icons
+    $('li[data-route-id=' + routeId + '] li[data-store-id] > i.fa').css('color', color);
+    // Update stop numbers
+    $('li[data-route-id=' + routeId + '] li[data-stop-id] .number:not(.color_force):not(.inactive)').css('background', color);
+    // Update vehicle icons
+    $('span[data-route-id=' + routeId + '] i.vehicle-icon').css('color', color);
+    // Update sub-tour color buttons
+    updateSubTourColorButtons(routeId);
+  };
+
+  // Update a single sub-tour color
   var updateSubTourColorButton = function(routeId, subTourIndex, customColor) {
     var normalizedRouteColor = getRouteColor(routeId);
     var $buttonIcon = $('.sub-tour-color-btn[data-route-id="' + routeId + '"][data-sub-tour-index="' + subTourIndex + '"] i.fa-paint-brush');
     var $colorPicker = $('.sub-tour-color-picker[data-route-id="' + routeId + '"][data-sub-tour-index="' + subTourIndex + '"]');
     var $resetButton = $('.sub-tour-color-reset[data-route-id="' + routeId + '"][data-sub-tour-index="' + subTourIndex + '"]');
-
     if (customColor && customColor !== normalizedRouteColor) {
       // Set custom color
       $buttonIcon.css('color', customColor);
       $colorPicker.val(customColor);
+      updateStopStoreColor(routeId, subTourIndex, customColor);
       $resetButton.show();
     } else {
       $buttonIcon.removeAttr('style');
       $colorPicker.removeAttr('value');
+      updateStopStoreColor(routeId, subTourIndex, normalizedRouteColor);
       $resetButton.hide();
     }
     // Update only the stop labels for this sub-tour
     updateStopLabelsForSubTour(routeId, subTourIndex, customColor);
+  };
+
+  var updateStopStoreColor = function(routeId, subTourIndex, customColor) {
+    var $liStore = $('li.li-store[data-origin-route-id="' + routeId + '"][data-sub-tour-index="' + subTourIndex + '"]');
+    $liStore.find('.fa-store').css('color', customColor);
+    $liStore.each(function() {
+      $(this).find('.store').css('color', customColor);
+      $(this)[0].style.setProperty('--box-shadow-color', customColor);
+    });
   };
 
   // Update labels for a single sub-tour
@@ -1657,14 +1695,10 @@ export const plannings_edit = function(params) {
         success: function() {
           routesLayer.options.colorsByRoute[id] = color;
           routesLayer.refreshRoutes([id], routes);
-          // Update sub-tour color buttons when route color changes
-          updateSubTourColorButtons(id);
+          updateRouteColors(id, getRouteColor(id));
         },
         error: ajaxError
       });
-      $('li[data-route-id=' + id + '] li[data-store-id] > i.fa').css('color', color);
-      $('li[data-route-id=' + id + '] li[data-stop-id] .number:not(.color_force):not(.inactive)').css('background', color);
-      $('span[data-route-id=' + id + '] i.vehicle-icon').css('color', color);
     });
 
     $('.vehicle_select', context).off('change').change(function() {
