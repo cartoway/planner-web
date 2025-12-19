@@ -840,11 +840,15 @@ export const plannings_edit = function(params) {
     var routeColor = null;
 
     // Get color from color_select input
-    var $colorSelect = $route.find('.color-select-container .select2-selection .color_small');
-    if ($colorSelect.length) {
-      var inlineStyle = $colorSelect.attr('style');
+    var $colorSelect = $route.find('.color-select-container .select2-selection');
+    var $colorSmall = $colorSelect.find('.color_small');
+
+    // 1 Parent means not color is selected
+    var $colorSmallParents = $colorSmall.closest('.select2-container');
+    if ($colorSmall.length && $colorSmallParents.length > 1) {
+      var inlineStyle = $colorSmall.attr('style');
       if (!inlineStyle || !inlineStyle.match(/display\s*:\s*none/i)) {
-        var bgColor = $colorSelect.css('background-color');
+        var bgColor = $colorSmall.css('background-color');
         // Assign null if background-color is transparent (rgba(0, 0, 0, 0))
         if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)') {
           routeColor = bgColor;
