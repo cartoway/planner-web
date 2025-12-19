@@ -28,6 +28,7 @@ unless planning.customer.enable_orders
 end
 if route.vehicle_usage_id
   json.name [route.ref, route.vehicle_usage.vehicle.name].compact.join(' ') unless @with_planning
+  json.default_color route.vehicle_usage.vehicle.color
   json.color route.color || route.vehicle_usage.vehicle.color
   json.contact_email route.vehicle_usage.vehicle.contact_email if route.vehicle_usage.vehicle.contact_email
   json.vehicle_usage_id route.vehicle_usage.id
