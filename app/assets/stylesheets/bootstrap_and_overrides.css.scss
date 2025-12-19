@@ -733,6 +733,8 @@ div.grid-container {
 
 .panel {
   border-radius: 0;
+  border: unset;
+  border-top: 1px solid var(--border-color);
 }
 
 .panel-body {
