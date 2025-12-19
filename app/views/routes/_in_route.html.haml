@@ -148,7 +148,7 @@
       = render partial: 'stops/list', locals: { route: route, summary: summary }
       %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
         - color = route[:color_fake] || route[:color] || 'black'
-        %li.li-store.d-fake-flex.align-items-center.list-group-item.pr-3{class: ('ui-state-error' if route[:store_stop]&.[](:error)), data: { store_id: route[:store_stop]&.[](:id)}.compact, style: "box-shadow: inset 4px 0px 0px 0px var(--box-shadow-color); --box-shadow-color: #{color};"}
+        %li.li-store.d-fake-flex.align-items-center.list-group-item.pr-3{class: ('ui-state-error' if route[:store_stop]&.[](:error)), data: { store_id: route[:store_stop]&.[](:id), origin_route_id: route[:route_id], sub_tour_index: 0 }.compact, style: "box-shadow: inset 4px 0px 0px 0px var(--box-shadow-color); --box-shadow-color: #{color};"}
           .row.store-row
             .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
               .col-xs-2.d-flex.align-items-center.justify-content-center
