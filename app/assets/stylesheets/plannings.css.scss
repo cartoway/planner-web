@@ -626,7 +626,10 @@ $sidebar-margins: 10px;
       .stops {
         .li-store {
           background: rgba(0, 0, 0, 0.03);
-          margin-bottom: 0 !important;
+
+          &.ui-state-error {
+            border-bottom: 0px;
+          }
         }
       }
 
@@ -692,7 +695,7 @@ $sidebar-margins: 10px;
         margin: 2px;
         padding-top: 5px;
         padding-bottom: 5px;
-        border-color: #F5ADAD;
+        border-color: $danger-border-color;
       }
 
       .sortable {
@@ -777,6 +780,7 @@ $sidebar-margins: 10px;
                 border: 0;
                 height: 34px;
                 padding-top: 7px;
+                z-index: 1;
               }
 
               input, .store {
@@ -940,6 +944,7 @@ $sidebar-margins: 10px;
   }
 
   .list-group-item {
+    margin-bottom: 0 !important;
     &:first-child {
       border-bottom: unset !important;
     }
@@ -1080,7 +1085,7 @@ $sidebar-margins: 10px;
   display: inline-flex;
   padding-top: 5px;
   padding-bottom: 5px;
-  border-color: #F5ADAD;
+  border-color: $danger-border-color;
   border-radius: 5px;
   margin: 5px 0px;
 
