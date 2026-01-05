@@ -30,7 +30,7 @@
       </span>
     </span>
   </td><td class="geocoding">
-    <div class="block destination-geocoding">
+    <div class="block">
       <input type="hidden" name="destination[lat]" value="{{lat}}" />
       <input type="hidden" name="destination[lng]" value="{{lng}}" />
       <span class="geocoding_level" title="{{geocoding_level_title}}">
@@ -58,19 +58,22 @@
           {{/geocoding_level}}
         {{/has_no_position}}
       </span>
-      <span>
-        {{#geocoding_accuracy}}
+      {{#geocoding_accuracy}}
+        <span>
           <input name="destination[geocoding_accuracy]" class="form-control input-sm" type="hidden" value="{{geocoding_accuracy}}"/>
             <div class="progress" style="width:5em">
               <div class="progress-bar progress-bar-{{geocoding_status}}" style="width: {{geocoding_accuracy_percent}}%;">
                 <span>{{geocoding_accuracy_percent}}%</span>
               </div>
             </div>
-        {{/geocoding_accuracy}}
-        {{^geocoding_accuracy}}
+        </span>
+        <span class="form-control input-sm">{{geocoding_result_free}}</span>
+      {{/geocoding_accuracy}}
+      {{^geocoding_accuracy}}
+        <span>
           <input class="form-control input-sm" type="hidden" value="101"/>
-        {{/geocoding_accuracy}}
-      <span>
+        </span>
+      {{/geocoding_accuracy}}
     </div>
   </td>
   <td class="comment">
