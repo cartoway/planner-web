@@ -625,11 +625,14 @@ $sidebar-margins: 10px;
 
       .stops {
         .li-store {
-          filter: brightness(0.97);
+          background: rgba(0, 0, 0, 0.03);
+          margin-bottom: 0 !important;
         }
       }
 
       .panel-default {
+        border-bottom: 1px solid #ddd !important;
+
         .select2-container--default {
           .select2-selection--single {
             height: 34px;
@@ -933,6 +936,12 @@ $sidebar-margins: 10px;
     #min-optim-duration, #max-optim-duration {
       font-size: 12px;
       margin-left: 5px;
+    }
+  }
+
+  .list-group-item {
+    &:first-child {
+      border-bottom: unset !important;
     }
   }
 
