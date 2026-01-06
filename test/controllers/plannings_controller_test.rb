@@ -1,6 +1,7 @@
 require 'test_helper'
 
 require 'rexml/document'
+require 'csv'
 include REXML
 
 class PlanningsControllerTest < ActionController::TestCase
@@ -10,7 +11,7 @@ class PlanningsControllerTest < ActionController::TestCase
     request.host = @reseller.host
     @planning = plannings(:planning_one)
     @stop = stops(:stop_one_one)
-    @export_settings_params = { columns: 'ref_planning|planning|planning_date|route|vehicle|order|stop_type|active|wait_time|time|distance|drive_time|out_of_window|out_of_capacity|out_of_drive_time|out_of_force_position|out_of_work_time|out_of_max_distance|out_of_max_ride_distance|out_of_max_ride_duration|status|status_updated_at|eta|ref|name|street|detail|postalcode|city|country|lat|lng|comment|phone_number|tags|ref_visit|duration|time_window_start_1|time_window_end_1|time_window_start_2|time_window_end_2|priority|revenue|force_position|tags_visit|quantity1',
+    @export_settings_params = { columns: 'ref_planning|planning|planning_date|route|vehicle|order|stop_type|active|wait_time|time|distance|drive_time|out_of_window|out_of_capacity|out_of_drive_time|out_of_force_position|out_of_work_time|out_of_max_distance|out_of_max_ride_distance|out_of_max_ride_duration|status|status_updated_at|eta|ref|name|street|detail|postalcode|city|country|lat|lng|comment|phone_number|tags|ref_visit|destination_duration|duration|time_window_start_1|time_window_end_1|time_window_start_2|time_window_end_2|priority|revenue|force_position|tags_visit|quantity1',
                                 skips: '',
                                 stops: 'out-of-route|store|rest|inactive'}
     sign_in users(:user_one)
@@ -300,13 +301,59 @@ class PlanningsControllerTest < ActionController::TestCase
 
     get :show, params: { id: @planning, format: :csv, **@export_settings_params }
     assert_response :success
-    assert_equal 'r1,planning1,10/10/2015,vehicle      ,003,0,site,,,07:00,0,0,,,,,,,,,,,,,store nogeo,MyString,,MyString,MyString,,,,,,,,,,,,,,,,,', response.body.split("\n")[2]
+    assert_equal 'r1,planning1,10/10/2015,vehicle      ,003,0,site,,,07:00,0,0,,,,,,,,,,,,,store nogeo,MyString,,MyString,MyString,,,,,,,,,,,,,,,,,,', response.body.split("\n")[2]
   end
 
   test 'should show planning as csv with ordered columns' do
     get :show, params: { id: @planning, format: :csv, stops: 'visit', columns: 'route|name|street|postalcode|city' }
     assert_response :success
     assert_equal 'route_three,destination_one,Rue des Lilas,33200,Bordeau', response.body.split("\n")[1]
+  end
+
+  test 'should export StopStore duration and destination_duration correctly in csv' do
+    # Create a StopStore with a store_reload that has a duration
+    store = stores(:store_one)
+    store_reload = store.store_reloads.create!(
+      ref: 'TEST_RELOAD',
+      duration: 25.minutes.to_i # 1500 seconds = 00:25:00
+    )
+
+    # Find a route with vehicle_usage in the planning
+    route = @planning.routes.find{ |r| r.vehicle_usage }
+    assert_not_nil route, 'Planning should have at least one route with vehicle_usage'
+
+    stop_store = route.add_store_reload(store_reload, 1)
+    stop_store.save!
+    route.reload
+    @planning.reload
+
+    # Export planning as CSV with store stops included
+    get :show, params: { id: @planning, format: :csv, stops: 'store', **@export_settings_params }
+    assert_response :success
+
+    # Parse CSV response
+    csv_lines = CSV.parse(response.body)
+    headers = csv_lines.first
+
+    # Find the duration and destination_duration column indices
+    duration_index = headers.index('durée visite')
+    destination_duration_index = headers.index('durée destination')
+
+    assert_not_nil duration_index, 'duration column should exist'
+    assert_not_nil destination_duration_index, 'destination_duration column should exist'
+
+    # Find the row for our StopStore (should have the store_reload ref)
+    stop_store_row = csv_lines.find { |row| row[headers.index('référence')] == 'TEST_RELOAD' }
+    assert_not_nil stop_store_row, 'StopStore row should exist in CSV export'
+
+    # Verify duration is exported correctly (should be 00:25:00)
+    expected_duration = store_reload.duration_time_with_seconds
+    assert_equal expected_duration, stop_store_row[duration_index],
+                 "duration should be #{expected_duration} but got #{stop_store_row[duration_index]}"
+
+    # Verify destination_duration is nil for StopStore
+    assert_nil stop_store_row[destination_duration_index],
+               "destination_duration should be nil for StopStore but got #{stop_store_row[destination_duration_index]}"
   end
 
   test 'should show planning as gpx' do
