@@ -186,7 +186,7 @@ fr:
         max_vehicle_usage_sets: Max configurations des véhicules
         visit_duration: Durée de visite
         destination_duration: Durée de visite par destination
-        store_reload_duration: Durée de rechargement moyenne par site
+        store_reload_duration: Durée de rechargement
         default_country: Pays par défaut
         with_state: Ajouter champ État dans les adresses
         optimization_max_split_size: Découper le problème
