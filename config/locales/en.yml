@@ -2075,7 +2075,7 @@ en:
         out_of_max_ride_duration: Maximum ride duration exceeded
         out_of_max_ride_duration_help: Maximum ride duration between route stops exceeded
         out_of_max_reload: Maximum reload limit reached
-        out_of_max_reload_help: Maximum reload limit reached for the store
+        out_of_max_reload_help: Maximum reload limit reached within the route
         out_of_relation: Relation violated
         out_of_relation_help: Relation between visits violated
         out_of_skill: Skill violated
