@@ -2179,7 +2179,7 @@ fr:
         out_of_max_ride_duration: Durée trajet maximale dépassée
         out_of_max_ride_duration_help: Durée trajet maximale dépassée entre arrêts de la tournée
         out_of_max_reload: Limite de rechargement maximale atteinte
-        out_of_max_reload_help: Limite de rechargement maximale atteinte pour le site
+        out_of_max_reload_help: Limite de rechargement maximale atteinte pour la tournée
         out_of_relation: Relation non respectée
         out_of_relation_help: Relation entre visites non respectée
         out_of_skill: Hors compétence
