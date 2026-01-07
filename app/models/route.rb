@@ -759,9 +759,14 @@ class Route < ApplicationRecord
 
   def size_destinations
     Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/destination_stops") do
-      stops.loaded? ?
-        stops.select(&:active).map{ |s| s.is_a?(StopVisit) ? s.visit.destination_id : nil }.compact.uniq.size :
-        nil # TODO: should count with ActiveRecord::Base.connection.execute("SELECT COUNT(DISTINCT id) FROM destinations")
+      if stops.loaded?
+        stops.select(&:active).map{ |s| s.is_a?(StopVisit) ? s.visit.destination_id : nil }.compact.uniq.size
+      else
+        stops.joins(visit: :destination)
+             .where(type: StopVisit.name, active: true)
+             .distinct
+             .count('destinations.id')
+      end
     end
   end
 
