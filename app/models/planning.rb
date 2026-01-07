@@ -60,11 +60,12 @@ class Planning < ApplicationRecord
   scope :preload_routes_without_stops, -> {
     preload(
       routes: [
-        vehicle_usage: [
+        :route_data, :start_route_data, :stop_route_data,
+        { vehicle_usage: [
           :store_start, :store_stop, :store_rest, :store_reloads,
           {vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads]},
           {vehicle: [:router, {customer: :router}]}
-        ]
+        ]}
       ],
       vehicle_usage_set: [
         { vehicle_usages: {vehicle: [:router, {customer: :router}]} }
@@ -75,22 +76,28 @@ class Planning < ApplicationRecord
   scope :preload_route_details, -> {
     preload(
       routes: [
-        stops: [
-          :route_data,
-          { visit: [
-            :relation_currents, :relation_successors, :tags,
-            { destination: [:tags, {customer: :deliverable_units}] }
-          ]}
-        ],
-        vehicle_usage: [
-          :store_start, :store_stop, :store_rest, :tags,
-          {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
-          {vehicle: [:router, :tags, {customer: :router}]}
-        ]
+        :route_data, :start_route_data, :stop_route_data,
+        {
+          stops: [
+            :route_data, :store,
+            {
+              visit: [
+                :relation_currents, :relation_successors, :tags,
+                { destination: [:tags, {customer: :deliverable_units}] }
+              ],
+              store_reload: [:store]
+            }
+          ],
+          vehicle_usage: [
+            :store_start, :store_stop, :store_rest, :tags,
+            {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
+            {vehicle: [:router, :tags, {customer: :router}]}
+          ]
+        }
       ],
-      vehicle_usage_set: [
-        { vehicle_usages: {vehicle: [:router, {customer: :router}]} }
-      ]
+      vehicle_usage_set: [{
+        vehicle_usages: {vehicle: [:router, {customer: :router}]}
+      }]
     )
   }
 
@@ -1113,22 +1120,31 @@ class Planning < ApplicationRecord
         points: r.geojson_points_store || []
       }
     }
+    stop_route_data_attributes = stop_route_data.map(&:import_attributes)
     RouteData.import(computed_routes.map(&:route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     RouteData.import(computed_routes.map(&:start_route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     RouteData.import(computed_routes.map(&:stop_route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    RouteData.import(stop_route_data.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    RouteData.import(stop_route_data_attributes, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     Route.import(computed_routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     RouteGeojson.import(geojson_data, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:route_id], columns: :all})
     StopVisit.import(stop_visits, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     StopRest.import(stop_rests, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    StopStore.import(stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    StopStore.import(stop_stores, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all}, validate: false)
 
-    computed_routes.each{ |r|
-      r.invalidate_route_cache && r.reload
-      next unless Planner::Application.config.delayed_job_use
+    computed_routes.each{ |r| r.invalidate_route_cache }
 
-      routes_to_enqueue << r
-    }
+    if computed_routes.any?
+      route_ids = computed_routes.map(&:id)
+      reloaded_routes_hash = Route.where(id: route_ids).includes_vehicle_usages.includes_destinations_and_stores.index_by(&:id)
+
+      computed_routes.each do |r|
+        reloaded_route = reloaded_routes_hash[r.id]
+        r.reload_like_attributes(reloaded_route) if reloaded_route
+
+        next unless Planner::Application.config.delayed_job_use
+        routes_to_enqueue << r
+      end
+    end
 
     self.save!(touch: false) && self.invalidate_planning_cache
   end
