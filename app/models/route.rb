@@ -86,12 +86,8 @@ class Route < ApplicationRecord
             ]
           ]
         },
-        {
-          store: [
-            :customer,
-            :store_reloads
-          ]
-        }
+        { store_reload: [:store] },
+        { store: [:customer] }
       ]
     )
   }
@@ -1011,13 +1007,13 @@ class Route < ApplicationRecord
   end
 
   def ensure_route_data
-    if route_data.nil?
+    if route_data_id.nil?
       self.route_data = RouteData.new
     end
-    if start_route_data.nil?
+    if start_route_data_id.nil?
       self.start_route_data = RouteData.new
     end
-    if stop_route_data.nil?
+    if stop_route_data_id.nil?
       self.stop_route_data = RouteData.new
     end
   end
@@ -1330,6 +1326,21 @@ class Route < ApplicationRecord
 
   def import_attributes
     self.attributes.slice(*self.class.column_names).except('lock_version')
+  end
+
+  # Mimic the reload method to avoid StaleObjectError in the context of partial route reload of a planning
+  def reload_like_attributes(reloaded_route)
+    return unless reloaded_route
+
+    assign_attributes(reloaded_route.attributes)
+    association(:route_data).target = reloaded_route.route_data
+    association(:start_route_data).target = reloaded_route.start_route_data
+    association(:stop_route_data).target = reloaded_route.stop_route_data
+    association(:stops).target = reloaded_route.stops.to_a
+    association(:stops).loaded!
+    association(:route_geojson).target = reloaded_route.route_geojson
+    clear_changes_information
+    instance_variable_set(:@new_record, false)
   end
 
   def invalidate_planning_cache

@@ -46,6 +46,7 @@ class Stop < ApplicationRecord
   scope :only_active_stop_visits, -> { only_stop_visits.where(active: true) }
   scope :includes_destinations_and_stores, -> {
     includes(
+      :route_data,
       visit: [
         :tags,
         destination: [
@@ -54,16 +55,14 @@ class Stop < ApplicationRecord
           { customer: :deliverable_units }
         ]
       ],
-      store: [
-        :customer,
-        :store_reloads
-      ]
+      store_reload: [:store],
+      store: [:customer]
     )
   }
   scope :includes_relations, -> { includes(visit: [:relation_currents, :relation_successors])}
   scope :includes_route_details, -> {
     includes(route: [
-      :planning,
+      :route_data, :start_route_data, :stop_route_data, :planning,
       { vehicle_usage: :vehicle }
     ])
   }
@@ -105,7 +104,7 @@ class Stop < ApplicationRecord
   end
 
   def import_attributes
-    self.attributes.except('lock_version')
+    self.attributes.slice(*self.class.column_names).except('lock_version')
   end
 
   def optim_type
