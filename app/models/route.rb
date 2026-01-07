@@ -1343,7 +1343,6 @@ class Route < ApplicationRecord
     association(:stop_route_data).target = reloaded_route.stop_route_data
     association(:stops).target = reloaded_route.stops.to_a
     association(:stops).loaded!
-    association(:route_geojson).target = reloaded_route.route_geojson
     clear_changes_information
     instance_variable_set(:@new_record, false)
   end
