@@ -36,13 +36,10 @@ class StopStore < Stop
            to: :store_reload
 
   after_initialize :assign_defaults, if: -> { new_record? }
+  after_initialize :ensure_route_data, if: -> { route_data_id.nil? }
 
   validates :store_reload, presence: true
-  validates :route_data, presence: true
-
-  before_validation :ensure_route_data, if: -> { route_data.nil? }
-
-  default_scope { includes(:route_data) }
+  validates :route_data_id, presence: true
 
   # A StopStore is always active
   def active=(_value)
@@ -156,11 +153,11 @@ class StopStore < Stop
   private
 
   def assign_defaults
-    self.route_data = RouteData.create! if self.route_data.nil?
+    self.route_data = RouteData.create! if self.route_data_id.nil?
   end
 
   def ensure_route_data
-    if route_data.nil? && route.present?
+    if route_data_id.nil? && route_id.present?
       self.route_data = RouteData.create!
     end
   end
