@@ -73,7 +73,8 @@ class ImporterVehicleUsageSets < ImporterBase
       service_time_start: { title: I18n.t('vehicle_usage_sets.import.service_time_start'), desc: I18n.t('vehicle_usage_sets.import.service_time_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
       service_time_end: { title: I18n.t('vehicle_usage_sets.import.service_time_end'), desc: I18n.t('vehicle_usage_sets.import.service_time_end_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
       work_time: { title: I18n.t('vehicle_usage_sets.import.work_time'), desc: I18n.t('vehicle_usage_sets.import.work_time_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      tags: { title: I18n.t('vehicle_usage_sets.import.tags'), desc: I18n.t('vehicle_usage_sets.import.tags_desc'), format: I18n.t('vehicle_usage_sets.import.tags_format') }
+      tags: { title: I18n.t('vehicle_usage_sets.import.tags'), desc: I18n.t('vehicle_usage_sets.import.tags_desc'), format: I18n.t('vehicle_usage_sets.import.tags_format') },
+      store_reloads: { title: I18n.t('vehicle_usage_sets.import.store_reloads'), desc: I18n.t('vehicle_usage_sets.import.store_reloads_desc'), format: I18n.t('vehicle_usage_sets.import.store_reloads_format') }
     }
   end
 
@@ -117,6 +118,7 @@ class ImporterVehicleUsageSets < ImporterBase
     @common_configuration = {}
 
     @stores_by_ref = CaseInsensitiveHash[@customer.stores.select(&:ref).collect { |store| [store.ref, store] }]
+    @store_reloads_by_ref = CaseInsensitiveHash[@customer.store_reloads.select(&:ref).collect { |store_reload| [store_reload.ref, store_reload] }]
 
     imported_vehicle_refs = data.map { |datum| datum[I18n.t('vehicles.import.ref_vehicle')] }
     @vehicles_by_ref = CaseInsensitiveHash[@customer.vehicles.select(&:ref).select { |vehicle| imported_vehicle_refs.include?(vehicle.ref) }.collect { |vehicle| [vehicle.ref, vehicle] }]
@@ -176,6 +178,7 @@ class ImporterVehicleUsageSets < ImporterBase
     prepare_custom_attributes(row)
     [:tags, :tags_vehicle].each{ |key| prepare_tags(row, key) }
 
+    row[:store_reloads] = row[:store_reloads].split(',').uniq.select{ |ref| !ref.empty? }.map{ |ref| @store_reloads_by_ref[ref] }.compact if row[:store_reloads]
     row[:ref_vehicle] = row[:ref_vehicle]&.strip
     row[:store_start_ref] = row[:store_start_ref]&.strip
     row[:store_stop_ref] = row[:store_stop_ref]&.strip
@@ -205,6 +208,7 @@ class ImporterVehicleUsageSets < ImporterBase
     vehicle_usage_attributes[:store_start] = @stores_by_ref[vehicle_usage_attributes.delete(:store_start_ref)]
     vehicle_usage_attributes[:store_stop] = @stores_by_ref[vehicle_usage_attributes.delete(:store_stop_ref)]
     vehicle_usage_attributes[:store_rest] = @stores_by_ref[vehicle_usage_attributes.delete(:store_rest_ref)]
+    vehicle_usage_attributes[:store_reloads] = row[:store_reloads]&.map{ |store_reload| store_reload } || []
     vehicle_usage = @vehicle_usage_set.vehicle_usages.find{ |vu| vu.vehicle == vehicle }
     vehicle_usage.assign_attributes(vehicle_usage_attributes.except(:name_vehicle_usage_set))
 
@@ -219,9 +223,19 @@ class ImporterVehicleUsageSets < ImporterBase
         key = :store_rest
       end
 
-      if !@common_configuration.key?(key)
-        @common_configuration[key] = vehicle_usage_attributes[key]
-      elsif @common_configuration[key] != vehicle_usage_attributes[key]
+      current_value = vehicle_usage_attributes[key]
+
+      # Special handling for store_reloads array: compare by IDs
+      if key == :store_reloads
+        current_ids = current_value ? current_value.map(&:id).sort : []
+        if !@common_configuration.key?(key)
+          @common_configuration[key] = current_ids
+        elsif @common_configuration[key] != current_ids
+          @common_configuration[key] = nil
+        end
+      elsif !@common_configuration.key?(key)
+        @common_configuration[key] = current_value
+      elsif @common_configuration[key] != current_value
         @common_configuration[key] = nil
       end
     end
@@ -249,9 +263,22 @@ class ImporterVehicleUsageSets < ImporterBase
     @common_configuration.compact!
     unless @common_configuration.keys.empty?
       excluded_keys = %i[max_distance max_ride_distance max_ride_duration]
+
+      # Convert store_reloads IDs to StoreReload objects if present
+      if @common_configuration.key?(:store_reloads)
+        @common_configuration[:store_reloads] = @common_configuration[:store_reloads].map{ |id| @customer.store_reloads.find_by(id: id) }.compact
+      end
       @vehicle_usage_set.assign_attributes @common_configuration
       @vehicle_usage_set.vehicle_usages.each{ |vu|
-        vu.assign_attributes Hash[@common_configuration.keys.select{ |k| excluded_keys.exclude? k }.map{ |k| [k, nil] }]
+        vu.assign_attributes Hash[
+          @common_configuration.keys.select{ |k| excluded_keys.exclude? k }.map{ |k|
+            if k == :store_reloads
+              [k, []]
+            else
+              [k, nil]
+            end
+          }
+        ]
       }
       @vehicle_usage_set.import_skip = true
       @vehicle_usage_set.save!
