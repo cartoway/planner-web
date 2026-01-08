@@ -201,15 +201,6 @@ class Customer < ApplicationRecord
         destination.save! validate: Planner::Application.config.validate_during_duplication
       }
 
-      copy.stores.each{ |store|
-        store.store_reloads.each{ |store_reload|
-          store_reload.stop_stores.each{ |stop_store|
-            stop_store.store = stores_map[stop_store.store]
-            stop_store.save! validate: Planner::Application.config.validate_during_duplication
-          }
-        }
-      }
-
       copy.zonings.each{ |zoning|
         zoning.zones.each{ |zone|
           zone.vehicle = vehicles_map[zone.vehicle]
@@ -229,10 +220,13 @@ class Customer < ApplicationRecord
           route.route_data.deliveries = Hash[route.route_data.deliveries.to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
 
           route.stops.each{ |stop|
-            if stop.is_a?(StopStore)
+            case stop
+            when StopStore
               stop.store_reload = store_reloads_map[stop.store_reload]
-            elsif stop.is_a?(StopVisit)
+            when StopVisit
               stop.visit = visits_map[stop.visit]
+            when StopRest
+              stop.store = stores_map[stop.store]
             end
             stop.save! validate: Planner::Application.config.validate_during_duplication
           }
