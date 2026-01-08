@@ -98,15 +98,22 @@ class V01::Routes < Grape::API
             id_hash[:ref] || id_hash[:id]
           }.compact
 
-          @planning = current_customer.plannings.where(id: params[:planning_id]).preload_route_details.first!
-          route = @planning.routes.find{ |route| route.id == Integer(params[:id]) }
-          stops = @planning.routes.flat_map{ |ro|
-            ro.stops.select{ |stop|
-              next if !stop.is_a?(StopVisit)
+          @planning = current_customer.plannings.where(id: params[:planning_id]).preload_routes_without_stops.first!
+          route_id = Integer(params[:id])
+          stops = Stop.joins(:route)
+                     .where(routes: { planning_id: @planning.id })
+                     .where(type: StopVisit.name)
+                     .joins(:visit)
+                     .where(visit_id: visit_ids)
+          previous_route_ids = [route_id] + stops.map(&:route_id)
 
-              visit_ids.include?(stop.visit&.id)
-            }
-          }.compact.sort_by{ |stop| visit_ids.index(stop.visit&.id) }
+          @planning.replace_routes_with_loaded(previous_route_ids.uniq)
+          route = @planning.routes.find{ |r| r.id == route_id }
+          stops = @planning.routes.select{ |r| previous_route_ids.include?(r.id) }
+                                  .flat_map{ |r| r.stops }
+                                  .select{ |stop| stop.is_a?(StopVisit) && visit_ids.include?(stop.visit&.id) }
+                                  .sort_by{ |stop| visit_ids.index(stop.visit&.id) || Float::INFINITY }
+
           unless stops.empty?
             Planning.transaction do
               stops.each{ |stop| @planning.move_stop(route, stop, params[:automatic_insert] ? nil : -1) }
