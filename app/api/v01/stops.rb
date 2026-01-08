@@ -83,12 +83,23 @@ class V01::Stops < Grape::API
               requires :index, type: Integer, desc: 'New position in the route'
             end
             patch ':id/move/:index' do
-              planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!
+              planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).preload_routes_without_stops.first!
               raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, planning.id)
 
-              stop = nil
-              planning.routes.find{ |route| stop = route.stops.find{ |stop| stop.id == Integer(params[:id]) } }
-              route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
+              route_id = Integer(params[:route_id])
+              stop_id = Integer(params[:id])
+
+              # Get route_id from stop first, then load routes
+              stop_route_id = Stop.where(id: stop_id).joins(:route).where(routes: { planning_id: planning.id }).pluck('routes.id').first
+              raise(ActiveRecord::RecordNotFound.new) if stop_route_id.nil?
+
+              route_ids = [route_id] + [stop_route_id]
+
+              planning.replace_routes_with_loaded(route_ids.uniq)
+              route = planning.routes.find{ |r| r.id == route_id }
+              previous_route = planning.routes.find{ |r| r.id == stop_route_id }
+              stop = previous_route.stops.find { |s| s.id == stop_id }
+
               raise(ActiveRecord::RecordNotFound.new) if stop.nil? || route.nil?
 
               # -1 Means latest position in the route

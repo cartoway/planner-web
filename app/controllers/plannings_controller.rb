@@ -25,9 +25,9 @@ class PlanningsController < ApplicationController
   before_action :authenticate_user!, except: [:driver_move]
   before_action :authenticate_driver!, only: [:driver_move]
 
-  UPDATE_ACTIONS = [:update, :move, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
+  UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
-  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal]
+  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal, :move]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar, :update_stop]
   before_action :set_device_definitions, only: [:edit, :update]
@@ -559,8 +559,29 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       begin
         Planning.transaction do
-          route = @planning.routes.find(Integer(params[:route_id]))
-          route_ids = [route.id]
+          route_id = Integer(params[:route_id])
+          route_ids = [route_id]
+
+          if params[:stop_ids].nil?
+            previous_route_id = Stop.find(params[:stop_id]).route_id
+            route_ids << previous_route_id if previous_route_id != route_id
+          else
+            params[:stop_ids].map!(&:to_i)
+            stops = Stop.joins(:route)
+                        .where(routes: { planning_id: @planning.id })
+                        .where(id: params[:stop_ids])
+                        .pluck(:id, :route_id)
+
+            ids = stops.collect{ |stop_id, route_id| {stop_id: stop_id, route_id: route_id} }
+            ids.reverse! if params[:index].to_i > 0
+
+            previous_route_ids = ids.map{ |id| id[:route_id] }.uniq.reject{ |id| id == route_id }
+            route_ids.concat(previous_route_ids)
+          end
+
+          @planning.replace_routes_with_loaded(route_ids)
+
+          route = @planning.routes.find { |r| r.id == route_id }
 
           if params[:stop_ids].nil?
             previous_route_id = Stop.find(params[:stop_id]).route_id
@@ -568,25 +589,12 @@ class PlanningsController < ApplicationController
               format.json { head :ok }
               return
             end
-            route_ids << previous_route_id if previous_route_id != route.id
-            move_stop(params[:stop_id], route, previous_route_id)
+            previous_route = @planning.routes.find { |r| r.id == previous_route_id }
+            move_stop(params[:stop_id], route, previous_route_id, previous_route)
           else
-            params[:stop_ids].map!(&:to_i)
-            stops = @planning.routes.flat_map{ |ro|
-              ro.stops.select{ |stop| params[:stop_ids].include? stop.id }
-            }
-
-            ids = stops.collect{ |stop| {stop_id: stop.id, route_id: stop.route_id} }
-            ids.reverse! if params[:index].to_i > 0
-            ids.each{ |id| move_stop(id[:stop_id], route, id[:route_id]) }
-            ids.uniq{ |id|
-              id[:route_id]
-            }.each{ |id|
-              next if id[:route_id] == route.id
-
-              @planning.routes.each{ |r|
-                route_ids << r.id if r.id == id[:route_id]
-              }
+            ids.each{ |id|
+              previous_route = @planning.routes.find { |r| r.id == id[:route_id] } || route
+              move_stop(id[:stop_id], route, id[:route_id], previous_route)
             }
           end
 
@@ -602,7 +610,7 @@ class PlanningsController < ApplicationController
     end
   end
 
-  def move_stop(stop_id, route, previous_route_id)
+  def move_stop(stop_id, route, previous_route_id, previous_route = nil)
     # -1 Means latest position in the route
     index = Integer(params[:index]) if params[:index] && !params[:index].empty?
     if index && (index < -1 || index == 0 || index > route.stops.length + 1)
@@ -610,7 +618,9 @@ class PlanningsController < ApplicationController
     end
 
     stop_id = Integer(stop_id) unless stop_id.is_a? Integer
-    stop = @planning.routes.find{ |r| r.id == previous_route_id }.stops.find { |s| s.id == stop_id }
+
+    previous_route ||= @planning.routes.find { |r| r.id == previous_route_id }
+    stop = previous_route.stops.find { |s| s.id == stop_id }
     @planning.move_stop(route, stop, params[:index].blank? ? nil : Integer(params[:index]))
   end
 

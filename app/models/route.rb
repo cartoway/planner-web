@@ -63,8 +63,8 @@ class Route < ApplicationRecord
   scope :for_customer_id, ->(customer_id) { joins(:planning).where(plannings: {customer_id: customer_id}) }
   scope :includes_vehicle_usages, -> {
     includes(vehicle_usage: [
-      :store_start, :store_stop, :store_rest, :tags,
-      vehicle_usage_set: [:store_start, :store_stop, :store_rest],
+      :store_start, :store_stop, :store_rest, :store_reloads, :tags,
+      vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads],
       vehicle: [:router, :tags, {customer: :router}]
     ])
   }
