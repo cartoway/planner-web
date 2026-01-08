@@ -62,9 +62,9 @@ class Planning < ApplicationRecord
       routes: [
         :route_data, :start_route_data, :stop_route_data,
         { vehicle_usage: [
-          :store_start, :store_stop, :store_rest, :store_reloads,
+          :store_start, :store_stop, :store_rest, :store_reloads, :tags,
           {vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads]},
-          {vehicle: [:router, {customer: :router}]}
+          {vehicle: [:router, :tags, {customer: :router}]}
         ]}
       ],
       vehicle_usage_set: [
@@ -89,8 +89,8 @@ class Planning < ApplicationRecord
             }
           ],
           vehicle_usage: [
-            :store_start, :store_stop, :store_rest, :tags,
-            {vehicle_usage_set: [:store_start, :store_stop, :store_rest]},
+            :store_start, :store_stop, :store_rest, :store_reloads, :tags,
+            {vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads]},
             {vehicle: [:router, :tags, {customer: :router}]}
           ]
         }
@@ -248,6 +248,28 @@ class Planning < ApplicationRecord
         out_of_route.stops.build(type: StopVisit.name, visit: stop.visit, index: out_of_route.stops.length + 1)
       }
       routes.destroy(route)
+    end
+  end
+
+  # Replace existing routes in planning.routes association with freshly loaded routes
+  def replace_routes_with_loaded(route_ids, routes = nil)
+    return if route_ids.empty? && routes.nil?
+
+    loaded_routes = if routes
+      routes.to_a
+    else
+      self.routes.where(id: route_ids).includes_destinations_and_stores.includes_vehicle_usages.to_a
+    end
+
+    return if loaded_routes.empty?
+
+    loaded_routes_hash = loaded_routes.index_by(&:id)
+    self.routes.each do |existing_route|
+      if loaded_routes_hash.key?(existing_route.id)
+        # Replace the planning route with the freshly loaded one
+        index = association(:routes).target.index(existing_route)
+        association(:routes).target[index] = loaded_routes_hash[existing_route.id] if index
+      end
     end
   end
 
