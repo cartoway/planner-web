@@ -40,7 +40,8 @@ CSV.generate { |csv|
     I18n.t('vehicle_usage_sets.import.service_time_start'),
     I18n.t('vehicle_usage_sets.import.service_time_end'),
     I18n.t('vehicle_usage_sets.import.work_time'),
-    I18n.t('vehicle_usage_sets.import.tags')
+    I18n.t('vehicle_usage_sets.import.tags'),
+    I18n.t('vehicle_usage_sets.import.store_reloads')
   ]
 
   device_keys = {}
@@ -102,7 +103,8 @@ CSV.generate { |csv|
       vehicle_usage.default_service_time_start,
       vehicle_usage.default_service_time_end,
       vehicle_usage.default_work_time,
-      vehicle_usage.tags.collect(&:label).join(',')
+      vehicle_usage.tags.collect(&:label).join(','),
+      vehicle_usage.store_reloads.map(&:ref).join(',')
     ]
 
     csv << vehicle_columns + vehicle_usage_columns
