@@ -72,6 +72,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
           assert_equal @customer.vehicle_usage_sets.last.cost_fixed, 2
           assert_equal @customer.vehicle_usage_sets.last.cost_time, 3
           assert_equal @customer.vehicle_usage_sets.last.max_reload, 1
+          assert_equal @customer.vehicle_usage_sets.last.store_reloads.first.ref, 'cc'
         end
       end
     end
@@ -160,6 +161,16 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
       assert imported_data.first.tags.size, 1
       assert imported_data.second.vehicle_usages.first.tags.size, 1
+    end
+  end
+
+  test 'should import vehicle usage set with store reloads' do
+    assert_difference('VehicleUsageSet.count', 0) do
+      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_store_reloads.csv', 'text.csv')).import
+
+      assert_equal imported_data.first.vehicle_usages.first.store_reloads.first.ref, 'cc'
+      assert_equal imported_data.first.vehicle_usages.first.store_reloads.size, 1
+      assert_equal imported_data.second.vehicle_usages.first.store_reloads.size, 0
     end
   end
 

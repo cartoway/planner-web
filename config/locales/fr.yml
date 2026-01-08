@@ -3005,6 +3005,9 @@ fr:
       service_time_end_desc: durée de service après et sans tenir compte de la durée de pause
       work_time: durée de travail
       work_time_desc: 'durée de travail, inférieure ou égal à la plage de travail'
+      store_reloads: références sites de rechargement
+      store_reloads_desc: références des sites de rechargement
+      store_reloads_format: 'référence 1,référence 2'
       tags: compétences
       tags_desc: >-
         compétences associées à la configuration du véhicule. (Attention : si un

@@ -2880,6 +2880,9 @@ en:
       service_time_end_desc: durations added before the last stop
       work_time: work time
       work_time_desc: 'work time, less or equal than working window time'
+      store_reloads: store reloads
+      store_reloads_desc: store reloads references
+      store_reloads_format: 'store reload 1,store reload 2'
       tags: skills
       tags_desc: >-
         skills associated to the vehicle configuration. (Warning: if only one
