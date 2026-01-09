@@ -138,8 +138,15 @@ class StopsController < ApplicationController
                          .routes.includes_destinations_and_stores.where(id: params[:route_id]).first!
     @available_store_reloads =
       current_user.customer.stores.flat_map { |store|
-        store.store_reloads.map { |store_reload|
-          { id: store_reload.id, name: store_reload.name, ref: store_reload.ref, icon: store_reload.icon, color: store_reload.color }
+        store.store_reloads.map.with_index { |store_reload, index|
+          {
+            id: store_reload.id,
+            name: store_reload.name,
+            ref: store_reload.ref,
+            icon: store_reload.icon,
+            color: store_reload.color,
+            index: index + 1
+          }
         }
       }.compact
     @callback_button = true

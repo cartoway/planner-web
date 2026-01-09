@@ -138,7 +138,7 @@
                             %li
                               %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-reload-id": store_reload[:id], "data-store-reload-name": store_reload[:name], class: "store-reload-option #{('disabled' if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}", disabled: (store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}
                                 %i.fa.fa-fw{class: "#{store_reload[:icon] || 'fa-store'}", style: "color: #{store_reload[:color] || 'black'};"}
-                                = [store_reload[:name], store_reload[:ref]].compact.join(' - ')
+                                = [[store_reload[:name], store_reload[:index]].compact.join(' #'), store_reload[:ref]].compact.join(' - ')
                                 - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
                                   %small.text-muted
                                     = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"
@@ -196,7 +196,7 @@
                           %li
                             %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-reload-id": store_reload[:id], "data-store-reload-name": store_reload[:name], class: "store-reload-option #{('disabled' if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}", disabled: (store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}
                               %i.fa.fa-fw{class: "#{store_reload[:icon] || 'fa-store'}", style: "color: #{store_reload[:color] || 'black'};"}
-                              = [store_reload[:name], store_reload[:ref]].compact.join(' - ')
+                              = [[store_reload[:name], store_reload[:index]].compact.join(' #'), store_reload[:ref]].compact.join(' - ')
                               - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
                                 %small.text-muted
                                   = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"

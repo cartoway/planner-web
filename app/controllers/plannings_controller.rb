@@ -640,8 +640,15 @@ class PlanningsController < ApplicationController
   def set_available_store_reloads
     @available_store_reloads =
       current_user.customer.stores.flat_map { |store|
-        store.store_reloads.map { |store_reload|
-          { id: store_reload.id, name: store_reload.name, ref: store_reload.ref, icon: store_reload.icon, color: store_reload.color }
+        store.store_reloads.map.with_index { |store_reload, index|
+          {
+            id: store_reload.id,
+            name: store_reload.name,
+            ref: store_reload.ref,
+            icon: store_reload.icon,
+            color: store_reload.color,
+            index: index + 1
+          }
         }
       }.compact
   end
