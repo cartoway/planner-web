@@ -166,10 +166,12 @@ class ImporterDestinations < ImporterBase
           end
           dest.except(:visits).merge(v)
         }
-      elsif dest.key?(:visits) && dest[:visits].empty?
+      elsif dest.key?(:visits) && dest[:visits].empty? && is_visit?(dest[:stop_type])
         [dest.merge(without_visit: 'x')]
-      else
+      elsif is_visit?(dest[:stop_type])
         [dest.merge(without_visit: 'y')] # Import without visit but without a destroy neither
+      else
+        [dest]
       end
     }.flatten
   end
@@ -784,10 +786,10 @@ class ImporterDestinations < ImporterBase
     # Every entry should have identical keys to be imported at the same time
     (
       @store_reloads_attributes_without_ref +
-      @store_reloads_attributes_without_store_without_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash } +
-      @store_reloads_attributes_without_store_with_ref_visit.flat_map{ |k, dest_visits| dest_visits.values } +
-      @store_reloads_attributes_with_store_without_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash } +
-      @store_reloads_attributes_with_store_with_ref_visit.flat_map{ |k, dest_visits| dest_visits.values }
+      @store_reloads_attributes_without_store_without_ref_visit.flat_map{ |k, store_store_reload_hash| store_store_reload_hash } +
+      @store_reloads_attributes_without_store_with_ref_visit.flat_map{ |k, store_reloads| store_reloads.values } +
+      @store_reloads_attributes_with_store_without_ref_visit.flat_map{ |k, store_store_reload_hash| store_store_reload_hash } +
+      @store_reloads_attributes_with_store_with_ref_visit.flat_map{ |k, store_reloads| store_reloads.values }
     ).group_by{ |lines, attributes|
       attributes.keys
     }.flat_map{ |keys, key_attributes|
