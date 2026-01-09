@@ -141,7 +141,7 @@ class ImporterDestinations < ImporterBase
     json.collect{ |dest|
       dest[:tags] ||= []
       dest[:tags] |= dest[:tag_ids].collect(&:to_i) if dest.key?(:tag_ids)
-      if dest.key?(:visits) && !dest[:visits].empty?
+      if dest.key?(:visits) && !dest[:visits].empty? || !is_visit?(dest[:stop_type])
         dest[:visits].collect{ |v|
           v[:ref_visit] = v.delete(:ref)
           v[:stop_custom_attribute_visits] = v[:stop_custom_attributes] || {}
@@ -784,10 +784,10 @@ class ImporterDestinations < ImporterBase
     # Every entry should have identical keys to be imported at the same time
     (
       @store_reloads_attributes_without_ref +
-      @store_reloads_attributes_without_store_without_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash } +
-      @store_reloads_attributes_without_store_with_ref_visit.flat_map{ |k, dest_visits| dest_visits.values } +
-      @store_reloads_attributes_with_store_without_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash } +
-      @store_reloads_attributes_with_store_with_ref_visit.flat_map{ |k, dest_visits| dest_visits.values }
+      @store_reloads_attributes_without_store_without_ref_visit.flat_map{ |k, store_store_reload_hash| store_store_reload_hash } +
+      @store_reloads_attributes_without_store_with_ref_visit.flat_map{ |k, store_reloads| store_reloads.values } +
+      @store_reloads_attributes_with_store_without_ref_visit.flat_map{ |k, store_store_reload_hash| store_store_reload_hash } +
+      @store_reloads_attributes_with_store_with_ref_visit.flat_map{ |k, store_reloads| store_reloads.values }
     ).group_by{ |lines, attributes|
       attributes.keys
     }.flat_map{ |keys, key_attributes|
