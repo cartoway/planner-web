@@ -5,6 +5,8 @@ routes_c as (
     select
         routes.*,
         count(stops.id) as stop_count,
+        count(stops.id) filter (where stops.type = 'StopVisit') as stop_visit_count,
+        count(stops.id) filter (where stops.type = 'StopStore') as stop_store_count,
         count(stops.id) filter (where stops.out_of_window) as out_of_window_count,
         array_agg(stops.loads) as agg_loads
     from
@@ -37,7 +39,9 @@ a as (
         plannings
         JOIN routes on
             routes.planning_id = plannings.id
-        join lateral jsonb_each_text(pickups::jsonb || deliveries::jsonb) as r(key, value) on true
+        JOIN route_data on
+            route_data.id = routes.route_data_id
+        join lateral jsonb_each_text(route_data.pickups::jsonb || route_data.deliveries::jsonb) as r(key, value) on true
         join deliverable_units on
             deliverable_units.id = r.key::integer
     where
@@ -85,6 +89,19 @@ routes_a as (
         plannings.ref AS planning_ref,
         plannings.date AS planning_date,
         routes.*,
+        route_data.distance AS distance,
+        route_data.emission AS emission,
+        route_data.cost_distance AS cost_distance,
+        route_data.cost_fixed AS cost_fixed,
+        route_data.cost_time AS cost_time,
+        route_data.revenue AS revenue,
+        route_data.start AS start,
+        route_data.end AS end,
+        route_data.drive_time AS drive_time,
+        route_data.wait_time AS wait_time,
+        route_data.visits_duration AS visits_duration,
+        route_data.pickups AS pickups,
+        route_data.deliveries AS deliveries,
         vehicles.id as vehicle_id,
         vehicles.name as vehicle_name,
         vehicles.capacities as vehicle_capacities
@@ -92,6 +109,8 @@ routes_a as (
         plannings
         join routes_d as routes on
             routes.planning_id = plannings.id
+        join route_data on
+            route_data.id = routes.route_data_id
         join vehicle_usages ON
             vehicle_usages.id = routes.vehicle_usage_id
         join vehicles ON
@@ -141,6 +160,8 @@ select
 
     routes.stop_out_of_work_time,
     stop_count,
+    stop_visit_count,
+    stop_store_count,
     out_of_window_count
 from
     routes_a as routes
