@@ -331,7 +331,10 @@ CREATE TABLE public.history_stops (
     route jsonb,
     stops jsonb,
     stops_count integer,
-    stops_active_count integer
+    stops_active_count integer,
+    route_data jsonb,
+    start_route_data jsonb,
+    stop_route_data jsonb
 );
 
 
@@ -3572,6 +3575,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20251013080039'),
 ('20251114122111'),
 ('20251208090000'),
-('20251212122356');
+('20251212122356'),
+('20260113123734');
 
 

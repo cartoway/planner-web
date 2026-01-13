@@ -38,7 +38,7 @@ SELECT
   jsonb_strip_nulls(row_to_json(vehicle_usages)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'vehicle_usage_id' AS vehicle_usage,
   jsonb_strip_nulls(row_to_json(vehicles)::jsonb) - 'created_at' - 'updated_at' - 'id' AS vehicle,
   jsonb_strip_nulls(row_to_json(plannings)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'customer_id' AS planning,
-  jsonb_strip_nulls(row_to_json(routes)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'geojson_tracks' - 'geojson_points' - 'planning_id' - 'vehicle_usage_id' AS route,
+  jsonb_strip_nulls(row_to_json(routes)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'planning_id' - 'vehicle_usage_id' - 'route_data_id' - 'start_route_data_id' - 'stop_route_data_id' - 'route_geojson_id' AS route,
   CASE WHEN count(stops) > 0 THEN
       jsonb_agg(jsonb_build_object(
           'stop', jsonb_strip_nulls(row_to_json(stops)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'visit_id' - 'route_id',
@@ -47,7 +47,10 @@ SELECT
       ) ORDER BY stops.index)
   END AS stops,
   count(stops) AS stops_count,
-  sum(CASE WHEN vehicles.id IS NOT NULL AND stops.active THEN 1 ELSE 0 END) AS stops_active_count
+  sum(CASE WHEN vehicles.id IS NOT NULL AND stops.active THEN 1 ELSE 0 END) AS stops_active_count,
+  jsonb_strip_nulls(row_to_json(route_data)::jsonb) - 'created_at' - 'updated_at' - 'id' AS route_data,
+  jsonb_strip_nulls(row_to_json(start_route_data)::jsonb) - 'created_at' - 'updated_at' - 'id' AS start_route_data,
+  jsonb_strip_nulls(row_to_json(stop_route_data)::jsonb) - 'created_at' - 'updated_at' - 'id' AS stop_route_data
 FROM
   customers
   JOIN plannings ON
@@ -66,6 +69,12 @@ FROM
       vehicles.id = vehicle_usages.vehicle_id
   LEFT JOIN routers ON
       routers.id = coalesce(vehicles.router_id, customers.router_id)
+  LEFT JOIN route_data ON
+      route_data.id = routes.route_data_id
+  LEFT JOIN route_data AS start_route_data ON
+      start_route_data.id = routes.start_route_data_id
+  LEFT JOIN route_data AS stop_route_data ON
+      stop_route_data.id = routes.stop_route_data_id
 WHERE
   (#{planning_id || 'NULL'} IS NULL OR plannings.id = #{planning_id || 'NULL'}) AND
   (#{hourly ? 'FALSE' : 'TRUE'} OR
@@ -93,7 +102,10 @@ GROUP BY
   routes.id,
   vehicle_usages.id,
   vehicles.id,
-  routers.id
+  routers.id,
+  route_data.id,
+  start_route_data.id,
+  stop_route_data.id
     ")
   end
 end
