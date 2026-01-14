@@ -9,12 +9,16 @@ services:
     environment:
       SUPERSET_SECRET_KEY: lkfzoiezhfoizehfoizhoihfopizajfoizafjpoizaufepoaz
       DATABASE_DIALECT: postgresql+psycopg2
-      DATABASE_HOST: db
-      DATABASE_PORT: 5432
-      DATABASE_USER: postgres
-      DATABASE_PASSWORD: postgres
-      DATABASE_DB: superset
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       REDIS_HOST: superset_redis
+      SUPERSET_DB: superset
+      SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME:-admin}
+      SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL:-admin@superset.com}
+      SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD:-admin}
       MAPBOX_API_KEY: ${SUPERSET_MAPBOX_API_KEY}
     volumes:
       - ./docker/superset:/app/pythonpath
