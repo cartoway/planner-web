@@ -2390,6 +2390,7 @@ fr:
       end: fin
       visits_duration: durée visite
       wait_time: temps d'attente
+      departure: horaire de départ
       drive_time: durée conduite
       out_of_window: hors amplitude horaire
       out_of_max_ride_distance: hors distance trajet maximale

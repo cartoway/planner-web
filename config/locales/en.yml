@@ -2284,6 +2284,7 @@ en:
       end: end
       visits_duration: visit duration
       wait_time: waiting time
+      departure: departure time
       drive_time: drive time
       out_of_window: out of time window
       out_of_max_ride_distance: out of maximum ride distance
