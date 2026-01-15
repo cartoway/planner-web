@@ -214,6 +214,7 @@ class RoutesController < ApplicationController
       :tags,
 
       :ref_visit,
+      :destination_duration,
       :duration,
       :time_window_start_1,
       :time_window_end_1,
