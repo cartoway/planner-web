@@ -155,7 +155,13 @@ class Customer < ApplicationRecord
       vehicle_usage_sets_map = Hash[original.vehicle_usage_sets.zip(copy.vehicle_usage_sets)].merge(nil => nil)
       vehicle_usages_map = Hash[original.vehicle_usage_sets.collect(&:vehicle_usages).flatten.zip(copy.vehicle_usage_sets.collect(&:vehicle_usages).flatten)].merge(nil => nil)
       stores_map = Hash[original.stores.zip(copy.stores)].merge(nil => nil)
-      store_reloads_map = Hash[original.stores.collect(&:store_reloads).flatten.zip(copy.stores.collect(&:store_reloads).flatten)].merge(nil => nil)
+      # Build store_reloads_map by iterating through stores in order to preserve mapping
+      store_reloads_map = {}
+      original.stores.zip(copy.stores).each do |original_store, copy_store|
+        original_store.store_reloads.zip(copy_store.store_reloads).each do |original_reload, copy_reload|
+          store_reloads_map[original_reload] = copy_reload if original_reload && copy_reload
+        end
+      end
       visits_map = Hash[original.destinations.collect(&:visits).flatten.zip(copy.destinations.collect(&:visits).flatten)].merge(nil => nil)
       tags_map = Hash[original.tags.zip(copy.tags)].merge(nil => nil)
       zonings_map = Hash[original.zonings.zip(copy.zonings)].merge(nil => nil)
