@@ -28,7 +28,6 @@ CSV.generate { |csv|
     I18n.t('vehicle_usage_sets.import.cost_distance'),
     I18n.t('vehicle_usage_sets.import.cost_fixed'),
     I18n.t('vehicle_usage_sets.import.cost_time'),
-    I18n.t('vehicle_usage_sets.import.max_reload'),
     I18n.t('vehicle_usage_sets.import.time_window_start'),
     I18n.t('vehicle_usage_sets.import.time_window_end'),
     I18n.t('vehicle_usage_sets.import.store_start_ref'),
@@ -41,6 +40,7 @@ CSV.generate { |csv|
     I18n.t('vehicle_usage_sets.import.service_time_end'),
     I18n.t('vehicle_usage_sets.import.work_time'),
     I18n.t('vehicle_usage_sets.import.tags'),
+    I18n.t('vehicle_usage_sets.import.max_reload'),
     I18n.t('vehicle_usage_sets.import.store_reloads')
   ]
 
@@ -91,7 +91,6 @@ CSV.generate { |csv|
       vehicle_usage.default_cost_distance,
       vehicle_usage.default_cost_fixed,
       vehicle_usage.default_cost_time,
-      vehicle_usage.default_max_reload,
       vehicle_usage.default_time_window_start_absolute_time,
       vehicle_usage.default_time_window_end_absolute_time,
       vehicle_usage.default_store_start.try(:ref),
@@ -104,6 +103,7 @@ CSV.generate { |csv|
       vehicle_usage.default_service_time_end,
       vehicle_usage.default_work_time,
       vehicle_usage.tags.collect(&:label).join(','),
+      vehicle_usage.default_max_reload,
       vehicle_usage.store_reloads.map(&:ref).join(',')
     ]
 
