@@ -112,6 +112,8 @@ class StopsController < ApplicationController
     else
       @stop = Stop.find_by route_id: params[:route_id], index: params[:index]
     end
+    raise ActiveRecord::RecordNotFound if @stop.nil?
+
     @route = @stop.route
     @visit = @stop.visit
     @destination = @stop.visit&.destination
