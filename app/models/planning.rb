@@ -1241,7 +1241,7 @@ class Planning < ApplicationRecord
 
     # Replace empty traces with a large value to signify an impossible route
     traces.map! do |trace|
-      if trace.nil? || trace.empty?
+      if trace.nil? || trace.compact.empty?
         [2147483647, 2147483647, nil]
       else
         trace
