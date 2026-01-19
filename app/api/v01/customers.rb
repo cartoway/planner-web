@@ -303,7 +303,7 @@ class V01::Customers < Grape::API
     end
     patch ':id/duplicate' do
       if @current_user.admin?
-        customer = @current_user.reseller.customers.where(ParseIdsRefs.read(params[:id])).first!
+        customer = @current_user.reseller.customers.where(ParseIdsRefs.read(params[:id])).for_duplication.first!
         customer.exclude_users = params[:exclude_users]
         customer = customer.duplicate
         customer.save! validate: Planner::Application.config.validate_during_duplication

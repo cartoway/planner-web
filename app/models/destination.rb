@@ -23,7 +23,7 @@ class Destination < Location
   belongs_to :customer, counter_cache: true
   has_many :visits, inverse_of: :destination, dependent: :delete_all
   accepts_nested_attributes_for :visits, allow_destroy: true
-  has_many :tag_destinations
+  has_many :tag_destinations, dependent: :destroy
   has_many :tags, through: :tag_destinations, after_add: :update_tags_track, after_remove: :update_tags_track
 
   auto_strip_attributes :name, :street, :postalcode, :city, :country, :detail, :comment, :phone_number

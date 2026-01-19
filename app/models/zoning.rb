@@ -58,9 +58,21 @@ class Zoning < ApplicationRecord
   end
 
   def duplicate
-    copy = self.amoeba_dup
-    copy.name += " (#{I18n.l(Time.zone.now, format: :long)})"
-    copy
+    zoning_id = self.custom_duplicate
+    Zoning.find(zoning_id)
+  end
+
+  def custom_duplicate
+    Zoning.transaction do
+      attributes = self.import_attributes.except('id')
+      attributes['name'] += " (#{I18n.l(Time.zone.now, format: :long)})"
+      zoning_id = Zoning.import([attributes], validate: false).ids.first
+      new_zone_attributes = self.zones.map{ |zone| zone.import_attributes.except('id').merge('zoning_id'=> zoning_id) }
+      Zone.import(new_zone_attributes, validate: false)
+      zoning_id
+      # Planning/Zoning assocation should not be duplicated on a single zoning duplicate
+      # it should only occur on the customer duplication
+    end
   end
 
   def apply(visits)

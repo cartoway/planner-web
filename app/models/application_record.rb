@@ -25,4 +25,8 @@ class ApplicationRecord < ActiveRecord::Base
     self.updated_at ||= DateTime.now.iso8601(6)
     self.created_at ||= self.updated_at
   end
+
+  def import_attributes
+    self.attributes.slice(*self.class.column_names).except('lock_version', 'created_at', 'updated_at')
+  end
 end

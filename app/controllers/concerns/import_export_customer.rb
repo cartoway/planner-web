@@ -6,8 +6,8 @@ module ImportExportCustomer
     Marshal.dump(customer_data)
   end
 
-  def self.import(string_customer, options)
-    customer = Marshal.load(string_customer)
+  def self.import(customer_data_file, options)
+    customer = Marshal.load(customer_data_file.read)
     customer = customer.duplicate
     self.assign_miscellaneous_attributes(customer, options)
     customer.save! validate: Planner::Application.config.validate_during_duplication

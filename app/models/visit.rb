@@ -24,7 +24,7 @@ class Visit < ApplicationRecord
   has_many :stop_visits, inverse_of: :visit
   has_many :orders, inverse_of: :visit, dependent: :delete_all
 
-  has_many :tag_visits
+  has_many :tag_visits, dependent: :destroy
   has_many :tags, through: :tag_visits, after_add: :update_tags_track, after_remove: :update_tags_track
 
   delegate :customer, :lat, :lng, :name, :street, :postalcode, :city, :state, :country, :detail, :comment, :phone_number, to: :destination
