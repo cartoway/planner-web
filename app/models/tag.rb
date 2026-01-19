@@ -24,19 +24,19 @@ class Tag < ApplicationRecord
 
   belongs_to :customer
 
-  has_many :tag_destinations
+  has_many :tag_destinations, dependent: :destroy
   has_many :destinations, through: :tag_destinations
 
-  has_many :tag_plannings
+  has_many :tag_plannings, dependent: :destroy
   has_many :plannings, through: :tag_plannings
 
-  has_many :tag_visits
+  has_many :tag_visits, dependent: :destroy
   has_many :visits, through: :tag_visits
 
-  has_many :tag_vehicles
+  has_many :tag_vehicles, dependent: :destroy
   has_many :vehicles, through: :tag_vehicles
 
-  has_many :tag_vehicle_usages
+  has_many :tag_vehicle_usages, dependent: :destroy
   has_many :vehicle_usages, through: :tag_vehicle_usages
 
   nilify_blanks before: :validation

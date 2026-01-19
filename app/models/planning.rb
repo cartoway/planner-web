@@ -25,7 +25,7 @@ class Planning < ApplicationRecord
   before_destroy :delete_all_routes
   has_many :routes, -> { order("vehicle_usage_id NULLS FIRST") }, inverse_of: :planning, autosave: true
 
-  has_many :tag_plannings
+  has_many :tag_plannings, dependent: :destroy
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
   belongs_to :order_array, optional: true
@@ -116,11 +116,57 @@ class Planning < ApplicationRecord
   end
 
   def duplicate
-    copy = self.amoeba_dup
-    now = " (#{I18n.l(Time.zone.now, format: :long)})"
-    copy.name += now
-    copy.ref += now if self.ref
-    copy
+    planning_id = self.custom_duplicate
+    Planning.find(planning_id)
+  end
+
+  def custom_duplicate
+    Planning.transaction do
+      attributes = self.import_attributes.except('id')
+      now = " (#{I18n.l(Time.zone.now, format: :long)})"
+      attributes['name'] += now
+      attributes['ref'] += now if attributes['ref']
+      result = Planning.import([attributes], validate: false)
+      new_planning_id = result.ids.first
+
+      route_data_map = self.routes.flat_map{ |route|
+      route.stops.map{ |stop| stop.route_data }.compact +
+        [route.route_data, route.start_route_data, route.stop_route_data]
+     }
+      new_route_data_attributes = self.routes.flat_map{ |route|
+      route.stops.map{ |stop| stop.route_data }.compact +
+        [route.route_data, route.start_route_data, route.stop_route_data]
+     }.map{ |route_data| route_data.import_attributes.except('id') }
+      result = RouteData.import(new_route_data_attributes, validate: false)
+      route_data_ids_map = Hash[route_data_map.map(&:id).zip(result.ids)]
+
+      new_route_attributes = self.routes.map{ |route| route.import_attributes.except('id') }
+      new_route_attributes.each { |route|
+        route['planning_id'] = new_planning_id
+        route['route_data_id'] = route_data_ids_map[route['route_data_id']]
+        route['start_route_data_id'] = route_data_ids_map[route['start_route_data_id']]
+        route['stop_route_data_id'] = route_data_ids_map[route['stop_route_data_id']]
+      }
+      result = Route.import(new_route_attributes, validate: false)
+      route_ids_map = Hash[self.routes.map(&:id).zip(result.ids)]
+
+      stop_map = self.routes.flat_map{ |route| route.stops }
+      new_stop_attributes = stop_map.map{ |stop| stop.import_attributes.except('id') }
+      new_stop_attributes.each { |stop|
+        stop['route_data_id'] = route_data_ids_map[stop['route_data_id']]
+        stop['route_id'] = route_ids_map[stop['route_id']]
+      }
+      Stop.import(new_stop_attributes, validate: false)
+
+      new_tag_planning_attributes = self.tags.map{ |tag| { tag_id: tag.id, planning_id: new_planning_id } }
+      TagPlanning.import(new_tag_planning_attributes, validate: false)
+
+      new_plannings_zoning_attributes = self.zonings.map{ |zoning|
+       { zoning_id: zoning.id, planning_id: new_planning_id }
+      }
+      PlanningsZoning.import(new_plannings_zoning_attributes, validate: false)
+      new_planning_id
+    end
   end
 
   def invalidate_planning_cache
@@ -936,10 +982,6 @@ class Planning < ApplicationRecord
         stops_status
       end
     end
-  end
-
-  def import_attributes
-    self.attributes.except('lock_version')
   end
 
   def to_s

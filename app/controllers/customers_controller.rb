@@ -82,6 +82,7 @@ class CustomersController < ApplicationController
   end
 
   def duplicate
+    @customer = Customer.for_duplication.find(@customer.id)
     @customer.duplicate.save! validate: Planner::Application.config.validate_during_duplication
     redirect_to [:customers], notice: t('.success')
   end

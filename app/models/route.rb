@@ -1334,10 +1334,6 @@ class Route < ApplicationRecord
     Route.where(id: self.id).includes_vehicle_usages.includes_destinations_and_stores.first
   end
 
-  def import_attributes
-    self.attributes.slice(*self.class.column_names).except('lock_version')
-  end
-
   # Mimic the reload method to avoid StaleObjectError in the context of partial route reload of a planning
   def reload_like_attributes(reloaded_route)
     return unless reloaded_route

@@ -32,7 +32,11 @@ class ImportExportCustomerTest < ActionController::TestCase
 
   test 'should import customer from file with all its relations' do
     customer = customers(:customer_one)
-    string_customer = ImportExportCustomer.export(customer)
+    customer_data = ImportExportCustomer.export(customer)
+    customer_data_file = Tempfile.new(['customer_dump', '.bin'])
+    customer_data_file.binmode
+    customer_data_file.write(customer_data)
+    customer_data_file.rewind
     profile_id = profiles(:profile_two).id
     router_id = routers(:router_two).id
     layer_id = layers(:layer_two).id
@@ -52,7 +56,7 @@ class ImportExportCustomerTest < ActionController::TestCase
                             assert_difference "Route.count", 6 do
                               assert_difference "Stop.count", 8 do
                                 assert_difference "User.count", 3 do
-                                  c = ImportExportCustomer.import(string_customer, { profile_id: profile_id, router_id: router_id, layer_id: layer_id})
+                                  c = ImportExportCustomer.import(customer_data_file, { profile_id: profile_id, router_id: router_id, layer_id: layer_id})
                                   assert_kind_of Customer, c
                                   assert_equal profile_id, c.profile_id
                                   assert_equal router_id, c.router_id
@@ -72,5 +76,7 @@ class ImportExportCustomerTest < ActionController::TestCase
         end
       end
     end
+  ensure
+    customer_data_file.close! if customer_data_file
   end
 end

@@ -103,10 +103,6 @@ class Stop < ApplicationRecord
     end
   end
 
-  def import_attributes
-    self.attributes.slice(*self.class.column_names).except('lock_version')
-  end
-
   def optim_type
     'default'
   end

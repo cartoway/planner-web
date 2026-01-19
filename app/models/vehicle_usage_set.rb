@@ -86,9 +86,19 @@ class VehicleUsageSet < ApplicationRecord
   end
 
   def duplicate
-    copy = self.amoeba_dup
-    copy.name += " (#{I18n.l(Time.zone.now, format: :long)})"
-    copy
+    vehicle_usage_set_id = self.custom_duplicate
+    VehicleUsageSet.find(vehicle_usage_set_id)
+  end
+
+  def custom_duplicate
+    VehicleUsageSet.transaction do
+      attributes = self.import_attributes.except('id')
+      attributes['name'] += " (#{I18n.l(Time.zone.now, format: :long)})"
+      vehicle_usage_set_id = VehicleUsageSet.import([attributes], validate: false).ids.first
+      new_vehicle_usage_attributes = self.vehicle_usages.map{ |vehicle_usage| vehicle_usage.import_attributes.except('id').merge('vehicle_usage_set_id'=> vehicle_usage_set_id) }
+      VehicleUsage.import(new_vehicle_usage_attributes, validate: false)
+      vehicle_usage_set_id
+    end
   end
 
   private

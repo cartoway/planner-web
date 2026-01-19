@@ -26,7 +26,7 @@ class VehicleUsage < ApplicationRecord
   belongs_to :store_rest, class_name: 'Store', inverse_of: :vehicle_usage_rests, optional: true
   has_many :routes, inverse_of: :vehicle_usage, autosave: true
 
-  has_many :tag_vehicle_usages
+  has_many :tag_vehicle_usages, dependent: :destroy
   has_many :tags, through: :tag_vehicle_usages, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
   has_many :store_reload_vehicle_usages, inverse_of: :vehicle_usage, dependent: :destroy

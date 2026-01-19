@@ -31,7 +31,7 @@ class Vehicle < ApplicationRecord
   has_many :vehicle_usages, inverse_of: :vehicle, dependent: :destroy, autosave: true
   has_many :zones, inverse_of: :vehicle, dependent: :nullify, autosave: true
 
-  has_many :tag_vehicles
+  has_many :tag_vehicles, dependent: :destroy
   has_many :tags, through: :tag_vehicles, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
   enum router_dimension: Router::DIMENSION
@@ -72,7 +72,7 @@ class Vehicle < ApplicationRecord
 
   after_save -> { @tag_ids_changed = false }
 
-  after_create :generate_driver_token
+  before_create :reset_driver_token
 
   before_destroy :destroy_vehicle
 
@@ -194,6 +194,10 @@ class Vehicle < ApplicationRecord
     tag_ids_changed? || super
   end
 
+  def reset_driver_token
+    self.driver_token = JWT.encode({ vehicle_id: self.id }, Planner::Application.config.secret_key_base, 'HS256')
+  end
+
   private
 
   def assign_defaults
@@ -258,12 +262,5 @@ class Vehicle < ApplicationRecord
         self.router_options[k] = Vehicle.to_delocalized_decimal(v) if v.is_a?(String)
       end
     end
-  end
-
-  def generate_driver_token
-    self.update_attribute(
-      :driver_token,
-      JWT.encode({ vehicle_id: self.id }, Planner::Application.config.secret_key_base, 'HS256')
-    )
   end
 end

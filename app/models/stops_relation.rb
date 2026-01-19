@@ -1,4 +1,4 @@
-class StopsRelation < ActiveRecord::Base
+class StopsRelation < ApplicationRecord
   belongs_to :customer
 
   belongs_to :current, class_name: 'Visit'
