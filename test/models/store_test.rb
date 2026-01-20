@@ -162,22 +162,4 @@ class StoreTest < ActiveSupport::TestCase
 
     assert_nil StoreReload.find_by(id: store_reload.id)
   end
-
-  test 'duplicated store has its own store_reloads' do
-    store = stores(:store_one)
-    assert store.store_reloads.any?, 'Fixture must have store_reloads to duplicate'
-
-    dup = store.amoeba_dup
-    dup.save!
-    dup.reload
-    store.reload
-
-    assert_equal store.store_reloads.size, dup.store_reloads.size
-    original_ids = store.store_reloads.map(&:id)
-
-    dup.store_reloads.each do |reload|
-      assert_equal dup.id, reload.store_id
-      assert_not_includes original_ids, reload.id
-    end
-  end
 end

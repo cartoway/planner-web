@@ -50,16 +50,6 @@ class StoreReload < ApplicationRecord
 
   include RefSanitizer
 
-  amoeba do
-    exclude_association :stop_stores
-    exclude_association :store_reload_vehicle_usages
-    exclude_association :store_reload_vehicle_usage_sets
-
-    customize(lambda { |_original, copy|
-      def copy.update_outdated; end
-    })
-  end
-
   def outdated
     begin
       ActiveRecord::Base.lock_optimistically = false

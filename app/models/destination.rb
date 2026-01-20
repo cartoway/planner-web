@@ -48,14 +48,6 @@ class Destination < Location
   scope :positioned, -> { where.not(lat: nil).where.not(lng: nil) }
   scope :not_positioned, -> { where('lat IS NULL OR lng IS NULL') }
 
-  amoeba do
-    enable
-
-    customize(lambda { |_original, copy|
-      def copy.update_tags; end
-    })
-  end
-
   include LocalizedAttr
 
   attr_localized :lat, :lng, :geocoding_accuracy

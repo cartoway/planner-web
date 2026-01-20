@@ -34,7 +34,6 @@
           <td><%= l order_array.base_date %></td>
           <td><%= t("order_arrays.form.#{order_array.length}") %></td>
           <td class="text-right">
-            <%= link_to order_array_duplicate_path(order_array), :class => "btn btn-default btn-sm", method: :patch do %><i class="fa fa-copy fa-fw"></i> <%= t 'all.verb.duplicate' %><% end %>
             <%= link_to edit_order_array_path(order_array), :class => "btn btn-primary btn-sm" do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
             <%= link_to order_array, :class => "btn btn-danger btn-sm", method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
           </td>

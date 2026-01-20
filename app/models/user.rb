@@ -55,35 +55,6 @@ class User < ApplicationRecord
   scope :for_reseller_id, ->(reseller_id) { where(reseller_id: reseller_id) }
   scope :from_customers_for_reseller_id, ->(reseller_id) { joins(:customer).where(customers: {reseller_id: reseller_id}) }
 
-  amoeba do
-    enable
-
-    customize(lambda { |original, copy|
-      def copy.assign_defaults; end
-
-      def copy.assign_defaults_layer; end
-
-      copy.email = I18n.l(Time.zone.now, format: '%Y%m%d%H%M%S') + '_' + copy.email
-      copy.password = Devise.friendly_token
-      copy.layer = original.layer
-      copy.api_key_random
-
-      # --------------------------
-      #  Clean devise operations
-      # --------------------------
-      copy.confirmed_at = nil
-      copy.confirmation_token = nil
-      copy.confirmation_sent_at = nil
-      copy.reset_password_token = nil
-      copy.reset_password_sent_at = nil
-      copy.sign_in_count = 0
-      copy.current_sign_in_at = nil
-      copy.last_sign_in_at = nil
-      copy.current_sign_in_ip = nil
-      copy.last_sign_in_ip = nil
-    })
-  end
-
   def self.unities
     [
       %w(Km km),

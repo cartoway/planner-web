@@ -179,7 +179,6 @@ gem 'csv' # missing dependency of ai4r
 
 gem 'nilify_blanks'
 gem 'auto_strip_attributes'
-gem 'amoeba'
 gem 'carrierwave'
 
 gem 'charlock_holmes', '> 0.7.3'

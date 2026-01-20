@@ -69,22 +69,6 @@ class VehicleUsageSet < ApplicationRecord
   before_create :check_max_vehicle_usage_set, unless: :import_skip
   before_update :update_outdated
 
-  amoeba do
-    exclude_association :plannings
-    exclude_association :store_reloads
-    exclude_association :store_reload_vehicle_usage_sets
-
-    customize(lambda { |_original, copy|
-      def copy.assign_defaults; end
-
-      def copy.update_outdated; end
-
-      copy.vehicle_usages.each{ |vehicle_usage|
-        vehicle_usage.vehicle_usage_set = copy
-      }
-    })
-  end
-
   def duplicate
     vehicle_usage_set_id = self.custom_duplicate
     VehicleUsageSet.find(vehicle_usage_set_id)

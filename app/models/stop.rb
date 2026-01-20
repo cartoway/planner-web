@@ -70,10 +70,6 @@ class Stop < ApplicationRecord
 
   before_save :outdate_route
 
-  amoeba do
-    enable
-  end
-
   # Return best fit time window, and late (positive) time or waiting time (negative).
   def best_open_close(time)
     [[time_window_start_1, time_window_end_1], [time_window_start_2, time_window_end_2]].select{ |open, close|
