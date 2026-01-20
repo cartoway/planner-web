@@ -30,6 +30,18 @@ class ApplicationRecord < ActiveRecord::Base
     self.attributes.slice(*self.class.column_names).except('lock_version', 'created_at', 'updated_at')
   end
 
+  # Import records in batches and return all IDs
+  def self.import_in_batches(attributes_array, batch_size: 1000, **options)
+    return [] if attributes_array.empty?
+
+    all_ids = []
+    attributes_array.each_slice(batch_size) do |batch|
+      import_result = self.import(batch, **options)
+      all_ids.concat(import_result.ids) if import_result.ids
+    end
+    all_ids
+  end
+
   # Execute a transaction while blocking SELECT queries
   # This ensures all data is already loaded in memory before the transaction
   def transaction_without_selects(&block)

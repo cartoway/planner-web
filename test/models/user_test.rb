@@ -23,7 +23,7 @@ class UserTest < ActiveSupport::TestCase
 
   test 'should reset device attributes on duplication' do
     u = users(:user_one)
-    customer_dopple = u.customer.duplicate
+    customer_dopple = Customer.for_duplication.find(u.customer.id).duplicate
     current_user = customer_dopple.users.find { |user| u.ref == user.ref }
 
     # Devise attributes must has been nilified on duplication

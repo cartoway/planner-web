@@ -282,6 +282,7 @@ class CustomerTest < ActiveSupport::TestCase
 
   test 'should duplicate' do
     duplicate = nil
+    @customer = Customer.for_duplication.find(@customer.id)
     unit_ids = @customer.deliverable_units.map(&:id)
 
     assert_difference('Customer.count', 1) do
@@ -338,6 +339,7 @@ class CustomerTest < ActiveSupport::TestCase
 
   test 'should duplicate without outdated routes' do
     duplicated_customer = nil
+    @customer = Customer.for_duplication.find(@customer.id)
 
     assert_difference('Customer.count', 1) do
       duplicated_customer = @customer.duplicate
