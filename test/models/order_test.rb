@@ -10,12 +10,4 @@ class OrderTest < ActiveSupport::TestCase
     o = order_arrays(:order_array_one).orders.build(order_array: order_arrays(:order_array_one) , visit: visits(:visit_one), shift: 0)
     assert o.save
   end
-
-  test 'should duplicate' do
-    o = orders(:order_one)
-    assert 2, o.products.size
-
-    oo = o.amoeba_dup
-    assert 2, oo.products.size
-  end
 end

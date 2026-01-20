@@ -13,10 +13,6 @@ class RouteData < ApplicationRecord
   attribute :departure, ScheduleType.new
   time_attr :start, :end, :departure
 
-  amoeba do
-    enable
-  end
-
   def duration
     self.visits_duration.to_i + self.wait_time.to_i + self.drive_time.to_i
   end

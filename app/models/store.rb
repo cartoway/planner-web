@@ -42,24 +42,6 @@ class Store < Location
 
   scope :not_positioned, -> { where('lat IS NULL OR lng IS NULL') }
 
-  amoeba do
-    exclude_association :vehicle_usage_set_starts
-    exclude_association :vehicle_usage_set_stops
-    exclude_association :vehicle_usage_set_rests
-    exclude_association :vehicle_usage_starts
-    exclude_association :vehicle_usage_stops
-    exclude_association :vehicle_usage_rests
-
-    customize(lambda { |_original, copy|
-      def copy.destroy_vehicle_store; end
-
-      # Ensure duplicated store_reloads belong to the duplicated store
-      copy.store_reloads.each { |reload|
-        reload.store = copy
-      }
-    })
-  end
-
   include LocalizedAttr
 
   attr_localized :lat, :lng, :geocoding_accuracy

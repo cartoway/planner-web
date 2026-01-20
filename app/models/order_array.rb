@@ -32,25 +32,6 @@ class OrderArray < ApplicationRecord
 
   before_save :update_orders
 
-  amoeba do
-    enable
-    exclude_association :planning
-
-    customize(lambda { |_original, copy|
-      copy.orders.each{ |order|
-        order.order_array = copy
-      }
-
-      def copy.update_orders; end
-    })
-  end
-
-  def duplicate
-    copy = self.amoeba_dup
-    copy.name += " (#{I18n.l(Time.zone.now, format: :long)})"
-    copy
-  end
-
   def days
     @days = nil if base_date_changed? || length_changed?
     @days ||= !base_date ? 0 : week? ? 7 : week2? ? 14 : ((base_date >> 1) - base_date).numerator

@@ -33,18 +33,6 @@ class Zoning < ApplicationRecord
 
   attr_accessor :prefered_unit
 
-  amoeba do
-    exclude_association :plannings
-
-    customize(lambda { |_original, copy|
-      def copy.update_outdated; end
-
-      copy.zones.each{ |zone|
-        zone.zoning = copy
-      }
-    })
-  end
-
   def self.speed_multiplier_areas(zonings)
     zonings.collect(&:zones).flatten.select{ |z| z.speed_multiplier != 1 }.collect{ |z|
       feat = RGeo::GeoJSON.decode(z.polygon, json_parser: :json)

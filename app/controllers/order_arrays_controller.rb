@@ -19,7 +19,7 @@ require 'csv'
 
 class OrderArraysController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_order_array, only: [:show, :edit, :update, :destroy, :duplicate]
+  before_action :set_order_array, only: [:show, :edit, :update, :destroy]
 
   load_and_authorize_resource
 
@@ -113,14 +113,6 @@ class OrderArraysController < ApplicationController
       respond_to do |format|
         format.html { redirect_to order_arrays_url }
       end
-    end
-  end
-
-  def duplicate
-    respond_to do |format|
-      @order_array = @order_array.duplicate
-      @order_array.save! validate: Planner::Application.config.validate_during_duplication
-      format.html { redirect_to edit_order_array_path(@order_array), notice: t('activerecord.successful.messages.updated', model: @order_array.class.model_name.human) }
     end
   end
 

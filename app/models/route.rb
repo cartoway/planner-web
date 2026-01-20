@@ -96,26 +96,6 @@ class Route < ApplicationRecord
 
   include RefSanitizer
 
-  amoeba do
-    enable
-
-    customize(lambda { |original, copy|
-      def copy.update_vehicle_usage; end
-
-      def copy.assign_defaults; end
-
-      copy.planning = original.planning
-
-      copy.route_data = RouteData.new(original.route_data.import_attributes.except('id'))
-      copy.start_route_data = RouteData.new(original.start_route_data.import_attributes.except('id'))
-      copy.stop_route_data = RouteData.new(original.stop_route_data.import_attributes.except('id'))
-      copy.stops.each{ |stop|
-        stop.route = copy
-        stop.route_data = RouteData.new(stop.route_data.import_attributes.except('id')) if stop.is_a?(StopStore)
-      }
-    })
-  end
-
   def route_data_attributes=(attributes)
     self.outdated = true if attributes[:departure] != route_data&.departure
     super

@@ -142,8 +142,6 @@ GEM
       base64
       gyoku (>= 0.4.0)
       nokogiri
-    amoeba (3.3.0)
-      activerecord (>= 5.2.0)
     ansi (1.5.0)
     ast (2.4.3)
     auto_strip_attributes (2.6.0)
@@ -842,7 +840,6 @@ DEPENDENCIES
   activerecord-postgis-adapter
   addressable
   ai4r
-  amoeba
   auto_strip_attributes
   awesome_print
   barby

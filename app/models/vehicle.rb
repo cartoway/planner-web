@@ -97,24 +97,6 @@ class Vehicle < ApplicationRecord
     }
   end
 
-  amoeba do
-    exclude_association :tag_vehicles
-    exclude_association :vehicle_usages
-    exclude_association :zones
-
-    customize(lambda { |_original, copy|
-      def copy.assign_defaults; end
-
-      def copy.increment_max_vehicles; end
-
-      def copy.create_vehicle_usage; end
-
-      def copy.update_outdated; end
-
-      def copy.destroy_vehicle; end
-    })
-  end
-
   def devices
     if self[:devices].respond_to?('deep_symbolize_keys!')
       self[:devices].deep_symbolize_keys!

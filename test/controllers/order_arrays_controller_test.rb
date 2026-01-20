@@ -137,12 +137,4 @@ class OrderArraysControllerTest < ActionController::TestCase
 
     assert_redirected_to order_arrays_path
   end
-
-  test 'should duplicate' do
-    assert_difference('OrderArray.count') do
-      patch :duplicate, params: { order_array_id: @order_array }
-    end
-
-    assert_redirected_to edit_order_array_path(assigns(:order_array))
-  end
 end

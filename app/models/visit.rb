@@ -84,19 +84,6 @@ class Visit < ApplicationRecord
   include TypedAttribute
   typed_attr :custom_attributes
 
-  amoeba do
-    exclude_association :stop_visits
-    exclude_association :orders
-
-    customize(lambda { |_original, copy|
-      def copy.update_tags; end
-
-      def copy.create_orders; end
-
-      def copy.update_outdated; end
-    })
-  end
-
   def destroy
     # Do not use local collection stop_visits
     destination.customer.plannings.each do |planning|

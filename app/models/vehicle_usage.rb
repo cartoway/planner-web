@@ -73,20 +73,6 @@ class VehicleUsage < ApplicationRecord
   scope :with_stores, -> { includes(:store_start, :store_stop, :store_rest) }
   scope :with_vehicle, -> { includes(vehicle: %i[customer router tags], tags: []) }
 
-  amoeba do
-    exclude_association :routes
-    exclude_association :tags
-    exclude_association :tag_vehicle_usages
-    exclude_association :store_reloads
-    exclude_association :store_reload_vehicle_usages
-
-    customize(lambda { |_original, copy|
-      def copy.update_outdated; end
-
-      def copy.update_routes; end
-    })
-  end
-
   def default_cost_distance
     cost_distance || vehicle_usage_set.cost_distance
   end

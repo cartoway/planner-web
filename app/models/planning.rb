@@ -101,20 +101,6 @@ class Planning < ApplicationRecord
     )
   }
 
-  amoeba do
-    enable
-
-    customize(lambda { |_original, copy|
-      def copy.update_zonings; end
-
-      def copy.update_vehicle_usage_set; end
-
-      copy.routes.each{ |route|
-        route.planning = copy
-      }
-    })
-  end
-
   def duplicate
     planning_id = self.custom_duplicate
     Planning.find(planning_id)

@@ -203,9 +203,7 @@ Rails.application.routes.draw do
 
   resources :zones
 
-  resources :order_arrays do
-    patch 'duplicate'
-  end
+  resources :order_arrays
   delete 'order_arrays' => 'order_arrays#destroy_multiple'
 
   get '/unsupported_browser' => 'index#unsupported_browser'

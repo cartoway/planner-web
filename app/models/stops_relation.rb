@@ -18,10 +18,6 @@ class StopsRelation < ApplicationRecord
     same_vehicle: 3
   }
 
-  amoeba do
-    enable
-  end
-
   def validate_different_visits
     return unless current == successor
 

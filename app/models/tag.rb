@@ -58,19 +58,6 @@ class Tag < ApplicationRecord
   before_destroy :set_routes
   after_destroy :reset_routes_geojson_point, :outdated
 
-  amoeba do
-    enable
-    exclude_association :tag_destinations
-    exclude_association :tag_plannings
-    exclude_association :tag_vehicles
-    exclude_association :tag_vehicle_usages
-    exclude_association :tag_visits
-
-    customize( lambda { |original, copy|
-      def copy.update_outdated; end
-    })
-  end
-
   def default_color
     color || Planner::Application.config.tag_color_default
   end

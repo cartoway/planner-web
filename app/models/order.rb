@@ -26,8 +26,4 @@ class Order < ApplicationRecord
   validates :order_array, presence: true
   validates :visit, presence: true
   validates :shift, presence: true
-
-  amoeba do
-    enable
-  end
 end

@@ -33,18 +33,6 @@ class Zone < ApplicationRecord
 
   before_save :update_outdated
 
-  amoeba do
-    enable
-
-    customize(lambda { |_original, copy|
-      def copy.polygon_json_format_validation; end
-
-      def copy.vehicle_from_customer_validation; end
-
-      def copy.update_outdated; end
-    })
-  end
-
   def inside_distance(lat, lng)
     if !lat.nil? && !lng.nil?
       if (@geom || decode_geom).class == RGeo::GeoJSON::Feature
