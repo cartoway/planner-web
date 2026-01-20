@@ -171,8 +171,8 @@ class Customer < ApplicationRecord
       customer_id = Customer.import([attributes], validate: false).ids.first
 
       new_deliverable_unit_attributes = self.deliverable_units.map{ |deliverable_unit| deliverable_unit.import_attributes.except('id').merge('customer_id'=> customer_id) }
-      deliverable_unit_import_result = DeliverableUnit.import(new_deliverable_unit_attributes, validate: false)
-      deliverable_unit_ids_map = Hash[self.deliverable_units.map(&:id).zip(deliverable_unit_import_result.ids)]
+      deliverable_unit_ids = DeliverableUnit.import_in_batches(new_deliverable_unit_attributes, validate: false)
+      deliverable_unit_ids_map = Hash[self.deliverable_units.map(&:id).zip(deliverable_unit_ids)]
 
       new_vehicle_attributes = self.vehicles.map{ |vehicle| vehicle.import_attributes.except('id').merge('customer_id'=> customer_id, 'skip_duplication_callbacks'=> true) }
       new_vehicles = new_vehicle_attributes.map{ |vehicle_attrs| Vehicle.new(vehicle_attrs) }
@@ -180,21 +180,21 @@ class Customer < ApplicationRecord
         vehicle.capacities = Hash[vehicle.capacities.to_a.map{ |q| deliverable_unit_ids_map[q[0].to_i] && [deliverable_unit_ids_map[q[0].to_i], q[1]] }.compact]
         vehicle.reset_driver_token
       }
-      vehicle_import_result = Vehicle.import(new_vehicles.map(&:import_attributes), validate: false)
-      vehicle_ids_map = Hash[self.vehicles.map(&:id).zip(vehicle_import_result.ids)]
+      vehicle_ids = Vehicle.import_in_batches(new_vehicles.map(&:import_attributes), validate: false)
+      vehicle_ids_map = Hash[self.vehicles.map(&:id).zip(vehicle_ids)]
 
       new_store_attributes = self.stores.map{ |store| store.import_attributes.except('id').merge('customer_id'=> customer_id) }
-      store_import_result = Store.import(new_store_attributes, validate: false)
-      store_ids_map = Hash[self.stores.map(&:id).zip(store_import_result.ids)]
+      store_ids = Store.import_in_batches(new_store_attributes, validate: false)
+      store_ids_map = Hash[self.stores.map(&:id).zip(store_ids)]
 
       old_store_reloads = self.stores.flat_map{ |store| store.store_reloads }
       new_store_reload_attributes = old_store_reloads.map{ |store_reload| store_reload.import_attributes.except('id').merge('store_id'=> store_ids_map[store_reload.store_id]) }
-      store_reload_import_result = StoreReload.import(new_store_reload_attributes, validate: false)
-      store_reload_ids_map = Hash[old_store_reloads.map(&:id).zip(store_reload_import_result.ids)]
+      store_reload_ids = StoreReload.import_in_batches(new_store_reload_attributes, validate: false)
+      store_reload_ids_map = Hash[old_store_reloads.map(&:id).zip(store_reload_ids)]
 
       new_destination_attributes = self.destinations.map{ |destination| destination.import_attributes.except('id').merge('customer_id'=> customer_id) }
-      destination_import_result = Destination.import(new_destination_attributes, validate: false)
-      destination_ids_map = Hash[self.destinations.map(&:id).zip(destination_import_result.ids)]
+      destination_ids = Destination.import_in_batches(new_destination_attributes, validate: false)
+      destination_ids_map = Hash[self.destinations.map(&:id).zip(destination_ids)]
 
       old_visits = self.destinations.flat_map{ |destination| destination.visits.to_a }
       new_visit_attributes = old_visits.map{ |visit| visit.import_attributes.except('id') }
@@ -203,14 +203,14 @@ class Customer < ApplicationRecord
         visit['pickups'] = Hash[visit['pickups'].to_a.map{ |q| deliverable_unit_ids_map[q[0].to_i] && [deliverable_unit_ids_map[q[0].to_i], q[1]] }.compact]
         visit['deliveries'] = Hash[visit['deliveries'].to_a.map{ |q| deliverable_unit_ids_map[q[0].to_i] && [deliverable_unit_ids_map[q[0].to_i], q[1]] }.compact]
       }
-      visit_import_result = Visit.import(new_visit_attributes, validate: false)
-      visit_ids_map = Hash[old_visits.map(&:id).zip(visit_import_result.ids)]
+      visit_ids = Visit.import_in_batches(new_visit_attributes, validate: false)
+      visit_ids_map = Hash[old_visits.map(&:id).zip(visit_ids)]
 
       new_custom_attribute_attributes = self.custom_attributes.map{ |custom_attribute| custom_attribute.import_attributes.except('id').merge('customer_id'=> customer_id) }
-      CustomAttribute.import(new_custom_attribute_attributes, validate: false)
+      CustomAttribute.import_in_batches(new_custom_attribute_attributes, validate: false)
 
       new_messaging_log_attributes = self.messaging_logs.map{ |messaging_log| messaging_log.import_attributes.except('id').merge('customer_id'=> customer_id) }
-      MessagingLog.import(new_messaging_log_attributes, validate: false)
+      MessagingLog.import_in_batches(new_messaging_log_attributes, validate: false)
 
       new_vehicle_usage_set_attributes = self.vehicle_usage_sets.map{ |vehicle_usage_set| vehicle_usage_set.import_attributes.except('id') }
       new_vehicle_usage_set_attributes.each { |vehicle_usage_set|
@@ -219,62 +219,62 @@ class Customer < ApplicationRecord
         vehicle_usage_set['store_stop_id'] = store_ids_map[vehicle_usage_set['store_stop_id']]
         vehicle_usage_set['store_rest_id'] = store_ids_map[vehicle_usage_set['store_rest_id']]
       }
-      vehicle_usage_set_import_result = VehicleUsageSet.import(new_vehicle_usage_set_attributes, validate: false)
-      vehicle_usage_set_ids_map = Hash[self.vehicle_usage_sets.map(&:id).zip(vehicle_usage_set_import_result.ids)]
+      vehicle_usage_set_ids = VehicleUsageSet.import_in_batches(new_vehicle_usage_set_attributes, validate: false)
+      vehicle_usage_set_ids_map = Hash[self.vehicle_usage_sets.map(&:id).zip(vehicle_usage_set_ids)]
 
       new_planning_attributes = self.plannings.map{ |planning| planning.import_attributes.except('id') }
       new_planning_attributes.each { |planning|
         planning['customer_id'] = customer_id
         planning['vehicle_usage_set_id'] = vehicle_usage_set_ids_map[planning['vehicle_usage_set_id']]
       }
-      planning_import_result = Planning.import(new_planning_attributes, validate: false)
-      planning_ids_map = Hash[self.plannings.map(&:id).zip(planning_import_result.ids)]
+      planning_ids = Planning.import_in_batches(new_planning_attributes, validate: false)
+      planning_ids_map = Hash[self.plannings.map(&:id).zip(planning_ids)]
 
       new_zoning_attributes = self.zonings.map{ |zoning| zoning.import_attributes.except('id').merge('customer_id'=> customer_id) }
-      zoning_import_result = Zoning.import(new_zoning_attributes, validate: false)
-      zoning_ids_map = Hash[self.zonings.map(&:id).zip(zoning_import_result.ids)]
+      zoning_ids = Zoning.import_in_batches(new_zoning_attributes, validate: false)
+      zoning_ids_map = Hash[self.zonings.map(&:id).zip(zoning_ids)]
 
       new_zone_attributes = self.zonings.flat_map{ |zoning| zoning.zones.map{ |zone| zone.import_attributes.except('id') } }
       new_zone_attributes.each { |zone|
         zone['zoning_id'] = zoning_ids_map[zone['zoning_id']]
         zone['vehicle_id'] = vehicle_ids_map[zone['vehicle_id']]
       }
-      Zone.import(new_zone_attributes, validate: false)
+      Zone.import_in_batches(new_zone_attributes, validate: false)
 
       new_stop_relation_attributes = self.stops_relations.map{ |stop_relation| stop_relation.import_attributes.except('id').merge('customer_id'=> customer_id, 'current_id'=> visit_ids_map[stop_relation.current_id], 'successor_id'=> visit_ids_map[stop_relation.successor_id]) }
-      StopsRelation.import(new_stop_relation_attributes, validate: false)
+      StopsRelation.import_in_batches(new_stop_relation_attributes, validate: false)
 
       new_tag_attributes = self.tags.map{ |tag| tag.import_attributes.except('id').merge('customer_id'=> customer_id) }
-      tag_import_result = Tag.import(new_tag_attributes, validate: false)
-      tag_ids_map = Hash[self.tags.map(&:id).zip(tag_import_result.ids)]
+      tag_ids = Tag.import_in_batches(new_tag_attributes, validate: false)
+      tag_ids_map = Hash[self.tags.map(&:id).zip(tag_ids)]
 
       new_tag_destination_attributes = self.destinations.select{ |destination| destination_ids_map[destination.id] }.flat_map{ |destination|
         destination.tags.map{ |tag|
           { 'tag_id'=> tag_ids_map[tag.id], 'destination_id'=> destination_ids_map[destination.id] }
         }
       }
-      TagDestination.import(new_tag_destination_attributes, validate: false) if new_tag_destination_attributes.any?
+      TagDestination.import_in_batches(new_tag_destination_attributes, validate: false) if new_tag_destination_attributes.any?
 
       new_tag_visits_attributes = old_visits.flat_map{ |visit|
         visit.tags.map{ |tag|
           {'tag_id'=> tag_ids_map[tag.id], 'visit_id'=> visit_ids_map[visit.id] }
         }
       }
-      TagVisit.import(new_tag_visits_attributes, validate: false) if new_tag_visits_attributes.any?
+      TagVisit.import_in_batches(new_tag_visits_attributes, validate: false) if new_tag_visits_attributes.any?
 
       new_tag_planning_attributes = self.plannings.select{ |planning| planning_ids_map[planning.id] }.flat_map{ |planning|
         planning.tags.map{ |tag|
           { 'tag_id'=> tag_ids_map[tag.id], 'planning_id'=> planning_ids_map[planning.id] }
         }
       }
-      TagPlanning.import(new_tag_planning_attributes, validate: false) if new_tag_planning_attributes.any?
+      TagPlanning.import_in_batches(new_tag_planning_attributes, validate: false) if new_tag_planning_attributes.any?
 
       new_tag_vehicle_attributes = self.vehicles.select{ |vehicle| vehicle_ids_map[vehicle.id] }.flat_map{ |vehicle|
         vehicle.tags.map{ |tag|
           { 'tag_id'=> tag_ids_map[tag.id], 'vehicle_id'=> vehicle_ids_map[vehicle.id] }
         }
       }
-      TagVehicle.import(new_tag_vehicle_attributes, validate: false) if new_tag_vehicle_attributes.any?
+      TagVehicle.import_in_batches(new_tag_vehicle_attributes, validate: false) if new_tag_vehicle_attributes.any?
 
       unless self.exclude_users
         new_user_attributes = self.users.map{ |user| user.import_attributes.except('encrypted_password', 'id').merge('customer_id'=> customer_id) }
@@ -300,7 +300,7 @@ class Customer < ApplicationRecord
           new_user.generate_confirmation_token
           new_user
         end
-        User.import(new_users, validate: false)
+        User.import_in_batches(new_users, validate: false)
       end
 
       vehicle_usages = self.vehicle_usage_sets.flat_map{ |vehicle_usage_set| vehicle_usage_set.vehicle_usages }
@@ -312,15 +312,15 @@ class Customer < ApplicationRecord
         vehicle_usage['store_stop_id'] = store_ids_map[vehicle_usage['store_stop_id']]
         vehicle_usage['store_rest_id'] = store_ids_map[vehicle_usage['store_rest_id']]
       }
-      vehicle_usage_import_result = VehicleUsage.import(new_vehicle_usage_attributes, validate: false)
-      vehicle_usage_ids_map = Hash[vehicle_usages.map(&:id).zip(vehicle_usage_import_result.ids)]
+      vehicle_usage_ids = VehicleUsage.import_in_batches(new_vehicle_usage_attributes, validate: false)
+      vehicle_usage_ids_map = Hash[vehicle_usages.map(&:id).zip(vehicle_usage_ids)]
 
       new_tag_vehicle_usage_attributes = vehicle_usages.select{ |vehicle_usage| vehicle_usage_ids_map[vehicle_usage.id] }.flat_map{ |vehicle_usage|
         vehicle_usage.tags.map{ |tag|
           { 'tag_id'=> tag_ids_map[tag.id], 'vehicle_usage_id'=> vehicle_usage_ids_map[vehicle_usage.id] }
         }
       }
-      TagVehicleUsage.import(new_tag_vehicle_usage_attributes, validate: false) if new_tag_vehicle_usage_attributes.any?
+      TagVehicleUsage.import_in_batches(new_tag_vehicle_usage_attributes, validate: false) if new_tag_vehicle_usage_attributes.any?
 
       old_route_data = self.plannings.flat_map{ |planning|
         planning.routes.flat_map{ |route|
@@ -333,8 +333,8 @@ class Customer < ApplicationRecord
         route_data['pickups'] = Hash[route_data['pickups'].to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
         route_data['deliveries'] = Hash[route_data['deliveries'].to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
       }
-      route_data_import_result = RouteData.import(new_route_data_attributes, validate: false)
-      route_data_ids_map = Hash[old_route_data.map(&:id).zip(route_data_import_result.ids)]
+      route_data_ids = RouteData.import_in_batches(new_route_data_attributes, validate: false)
+      route_data_ids_map = Hash[old_route_data.map(&:id).zip(route_data_ids)]
 
       old_routes = self.plannings.flat_map{ |planning| planning.routes }
       new_route_attributes = old_routes.map{ |route| route.import_attributes.except('id') }
@@ -345,14 +345,14 @@ class Customer < ApplicationRecord
         route['start_route_data_id'] = route_data_ids_map[route['start_route_data_id']]
         route['stop_route_data_id'] = route_data_ids_map[route['stop_route_data_id']]
       }
-      route_import_result = Route.import(new_route_attributes, validate: false)
-      route_ids_map = Hash[old_routes.map(&:id).zip(route_import_result.ids)]
+      route_ids = Route.import_in_batches(new_route_attributes, validate: false)
+      route_ids_map = Hash[old_routes.map(&:id).zip(route_ids)]
 
       new_route_geojson_attributes = old_routes.map{ |route| route.route_geojson.import_attributes.except('id') }
       new_route_geojson_attributes.each { |route_geojson|
         route_geojson['route_id'] = route_ids_map[route_geojson['route_id']]
       }
-      RouteGeojson.import(new_route_geojson_attributes, validate: false)
+      RouteGeojson.import_in_batches(new_route_geojson_attributes, validate: false)
 
       new_stop_attributes = old_routes.flat_map{ |route| route.stops }.map{ |stop| stop.import_attributes.except('id') }
       new_stop_attributes.each { |stop|
@@ -363,22 +363,22 @@ class Customer < ApplicationRecord
         stop['route_data_id'] = route_data_ids_map[stop['route_data_id']]
         stop['loads'] = Hash[stop['loads'].to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
       }
-      Stop.import(new_stop_attributes, validate: false)
+      Stop.import_in_batches(new_stop_attributes, validate: false)
 
       new_planning_zonings_attributes = self.plannings.flat_map { |planning|
         planning.zonings.map{ |zoning| {'planning_id'=> planning_ids_map[planning.id], 'zoning_id'=> zoning_ids_map[zoning.id]} }
       }
-      PlanningsZoning.import(new_planning_zonings_attributes, validate: false) if new_planning_zonings_attributes.any?
+      PlanningsZoning.import_in_batches(new_planning_zonings_attributes, validate: false) if new_planning_zonings_attributes.any?
 
       new_store_reload_vehicle_usage_set_attributes = old_store_reloads.flat_map { |store_reload|
         store_reload.vehicle_usage_sets.map{ |vehicle_usage_set| {'store_reload_id'=> store_reload_ids_map[store_reload.id], 'vehicle_usage_set_id'=> vehicle_usage_set_ids_map[vehicle_usage_set.id]} }
       }
-      StoreReloadVehicleUsageSet.import(new_store_reload_vehicle_usage_set_attributes, validate: false) if new_store_reload_vehicle_usage_set_attributes.any?
+      StoreReloadVehicleUsageSet.import_in_batches(new_store_reload_vehicle_usage_set_attributes, validate: false) if new_store_reload_vehicle_usage_set_attributes.any?
 
       new_store_reload_vehicle_usage_attributes = old_store_reloads.flat_map { |store_reload|
         store_reload.vehicle_usages.map{ |vehicle_usage| {'store_reload_id'=> store_reload_ids_map[store_reload.id], 'vehicle_usage_id'=> vehicle_usage_ids_map[vehicle_usage.id]} }
       }
-      StoreReloadVehicleUsage.import(new_store_reload_vehicle_usage_attributes, validate: false) if new_store_reload_vehicle_usage_attributes.any?
+      StoreReloadVehicleUsage.import_in_batches(new_store_reload_vehicle_usage_attributes, validate: false) if new_store_reload_vehicle_usage_attributes.any?
 
       customer_id
     end
