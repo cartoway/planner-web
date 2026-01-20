@@ -29,4 +29,40 @@ class ApplicationRecord < ActiveRecord::Base
   def import_attributes
     self.attributes.slice(*self.class.column_names).except('lock_version', 'created_at', 'updated_at')
   end
+
+  # Execute a transaction while blocking SELECT queries
+  # This ensures all data is already loaded in memory before the transaction
+  def transaction_without_selects(&block)
+    connection = ActiveRecord::Base.connection
+
+    # Store original methods
+    original_methods = {}
+    methods_to_override = [:execute, :select_all, :select_one, :select_value, :select_values]
+
+    # Override methods to block SELECT queries
+    methods_to_override.each do |method_name|
+      next unless connection.respond_to?(method_name)
+      original_method = connection.method(method_name)
+      original_methods[method_name] = original_method
+
+      connection.define_singleton_method(method_name) do |sql, *args|
+        sql_string = sql.is_a?(String) ? sql : sql.to_sql
+        if sql_string.strip.match?(/^\s*SELECT/i)
+          raise "SELECT queries are not allowed during transaction_without_selects. Attempted query: #{sql_string[0..200]}"
+        end
+        original_method.call(sql, *args)
+      end
+    end
+
+    begin
+      self.class.transaction do
+        yield
+      end
+    ensure
+      # Restore original methods
+      original_methods.each do |method_name, original_method|
+        connection.define_singleton_method(method_name, original_method)
+      end
+    end
+  end
 end

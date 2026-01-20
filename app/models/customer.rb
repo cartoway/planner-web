@@ -162,7 +162,7 @@ class Customer < ApplicationRecord
   end
 
   def custom_duplicate
-    Customer.transaction do
+    self.transaction_without_selects do
       attributes = self.import_attributes.except('id', 'job_destination_geocoding_id', 'job_store_geocoding_id', 'job_optimizer_id')
       attributes['name'] += " (#{I18n.l(Time.zone.now, format: :long)})"
       attributes['test'] = Planner::Application.config.customer_test_default
@@ -174,8 +174,8 @@ class Customer < ApplicationRecord
       deliverable_unit_import_result = DeliverableUnit.import(new_deliverable_unit_attributes, validate: false)
       deliverable_unit_ids_map = Hash[self.deliverable_units.map(&:id).zip(deliverable_unit_import_result.ids)]
 
-      new_vehicle_attributes = self.vehicles.map{ |vehicle| vehicle.import_attributes.except('id').merge('customer_id'=> customer_id) }
-      new_vehicles = new_vehicle_attributes.map{ |vehicle| Vehicle.new(vehicle) }
+      new_vehicle_attributes = self.vehicles.map{ |vehicle| vehicle.import_attributes.except('id').merge('customer_id'=> customer_id, 'skip_duplication_callbacks'=> true) }
+      new_vehicles = new_vehicle_attributes.map{ |vehicle_attrs| Vehicle.new(vehicle_attrs) }
       new_vehicles.each { |vehicle|
         vehicle.capacities = Hash[vehicle.capacities.to_a.map{ |q| deliverable_unit_ids_map[q[0].to_i] && [deliverable_unit_ids_map[q[0].to_i], q[1]] }.compact]
         vehicle.reset_driver_token
@@ -187,9 +187,10 @@ class Customer < ApplicationRecord
       store_import_result = Store.import(new_store_attributes, validate: false)
       store_ids_map = Hash[self.stores.map(&:id).zip(store_import_result.ids)]
 
-      new_store_reload_attributes = self.store_reloads.map{ |store_reload| store_reload.import_attributes.except('id').merge('store_id'=> store_ids_map[store_reload.store_id]) }
+      old_store_reloads = self.stores.flat_map{ |store| store.store_reloads }
+      new_store_reload_attributes = old_store_reloads.map{ |store_reload| store_reload.import_attributes.except('id').merge('store_id'=> store_ids_map[store_reload.store_id]) }
       store_reload_import_result = StoreReload.import(new_store_reload_attributes, validate: false)
-      store_reload_ids_map = Hash[self.store_reloads.map(&:id).zip(store_reload_import_result.ids)]
+      store_reload_ids_map = Hash[old_store_reloads.map(&:id).zip(store_reload_import_result.ids)]
 
       new_destination_attributes = self.destinations.map{ |destination| destination.import_attributes.except('id').merge('customer_id'=> customer_id) }
       destination_import_result = Destination.import(new_destination_attributes, validate: false)
@@ -247,29 +248,29 @@ class Customer < ApplicationRecord
       tag_import_result = Tag.import(new_tag_attributes, validate: false)
       tag_ids_map = Hash[self.tags.map(&:id).zip(tag_import_result.ids)]
 
-      new_tag_destination_attributes = self.tags.flat_map{ |tag|
-        tag.destinations.select{ |destination| destination_ids_map[destination.id] }.map{ |destination|
+      new_tag_destination_attributes = self.destinations.select{ |destination| destination_ids_map[destination.id] }.flat_map{ |destination|
+        destination.tags.map{ |tag|
           { 'tag_id'=> tag_ids_map[tag.id], 'destination_id'=> destination_ids_map[destination.id] }
         }
       }
       TagDestination.import(new_tag_destination_attributes, validate: false) if new_tag_destination_attributes.any?
 
-      new_tag_visits_attributes = self.tags.flat_map{ |tag|
-        tag.visits.select{ |visit| visit_ids_map[visit.id] }.map{ |visit|
-          { 'tag_id'=> tag_ids_map[tag.id], 'visit_id'=> visit_ids_map[visit.id] }
+      new_tag_visits_attributes = old_visits.flat_map{ |visit|
+        visit.tags.map{ |tag|
+          {'tag_id'=> tag_ids_map[tag.id], 'visit_id'=> visit_ids_map[visit.id] }
         }
       }
       TagVisit.import(new_tag_visits_attributes, validate: false) if new_tag_visits_attributes.any?
 
-      new_tag_planning_attributes = self.tags.flat_map{ |tag|
-        tag.plannings.select{ |planning| planning_ids_map[planning.id] }.map{ |planning|
+      new_tag_planning_attributes = self.plannings.select{ |planning| planning_ids_map[planning.id] }.flat_map{ |planning|
+        planning.tags.map{ |tag|
           { 'tag_id'=> tag_ids_map[tag.id], 'planning_id'=> planning_ids_map[planning.id] }
         }
       }
       TagPlanning.import(new_tag_planning_attributes, validate: false) if new_tag_planning_attributes.any?
 
-      new_tag_vehicle_attributes = self.tags.flat_map{ |tag|
-        tag.vehicles.select{ |vehicle| vehicle_ids_map[vehicle.id] }.map{ |vehicle|
+      new_tag_vehicle_attributes = self.vehicles.select{ |vehicle| vehicle_ids_map[vehicle.id] }.flat_map{ |vehicle|
+        vehicle.tags.map{ |tag|
           { 'tag_id'=> tag_ids_map[tag.id], 'vehicle_id'=> vehicle_ids_map[vehicle.id] }
         }
       }
@@ -314,8 +315,8 @@ class Customer < ApplicationRecord
       vehicle_usage_import_result = VehicleUsage.import(new_vehicle_usage_attributes, validate: false)
       vehicle_usage_ids_map = Hash[vehicle_usages.map(&:id).zip(vehicle_usage_import_result.ids)]
 
-      new_tag_vehicle_usage_attributes = self.tags.flat_map{ |tag|
-        tag.vehicle_usages.select{ |vehicle_usage| vehicle_usage_ids_map[vehicle_usage.id] }.map{ |vehicle_usage|
+      new_tag_vehicle_usage_attributes = vehicle_usages.select{ |vehicle_usage| vehicle_usage_ids_map[vehicle_usage.id] }.flat_map{ |vehicle_usage|
+        vehicle_usage.tags.map{ |tag|
           { 'tag_id'=> tag_ids_map[tag.id], 'vehicle_usage_id'=> vehicle_usage_ids_map[vehicle_usage.id] }
         }
       }
@@ -323,11 +324,11 @@ class Customer < ApplicationRecord
 
       old_route_data = self.plannings.flat_map{ |planning|
         planning.routes.flat_map{ |route|
-          route.stops.map{ |stop| stop.route_data }.compact.map{ |route_data| route_data } +
-            [route.route_data, route.start_route_data, route.stop_route_data].compact.map{ |route_data| route_data }
+          route.stops.select{ |stop| stop.is_a?(StopStore) }.map{ |stop| stop.route_data } +
+            [route.route_data, route.start_route_data, route.stop_route_data].map{ |route_data| route_data }
         }
       }
-      new_route_data_attributes = old_route_data.map{ |route_data| route_data.import_attributes.except('id', 'route_id') }
+      new_route_data_attributes = old_route_data.map{ |route_data| (route_data || RouteData.new).import_attributes.except('id', 'route_id') }
       new_route_data_attributes.each { |route_data|
         route_data['pickups'] = Hash[route_data['pickups'].to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
         route_data['deliveries'] = Hash[route_data['deliveries'].to_a.map{ |q| deliverable_unit_ids_map[q[0]] && [deliverable_unit_ids_map[q[0]].id, q[1]] }.compact]
@@ -369,12 +370,12 @@ class Customer < ApplicationRecord
       }
       PlanningsZoning.import(new_planning_zonings_attributes, validate: false) if new_planning_zonings_attributes.any?
 
-      new_store_reload_vehicle_usage_set_attributes = self.store_reloads.flat_map { |store_reload|
+      new_store_reload_vehicle_usage_set_attributes = old_store_reloads.flat_map { |store_reload|
         store_reload.vehicle_usage_sets.map{ |vehicle_usage_set| {'store_reload_id'=> store_reload_ids_map[store_reload.id], 'vehicle_usage_set_id'=> vehicle_usage_set_ids_map[vehicle_usage_set.id]} }
       }
       StoreReloadVehicleUsageSet.import(new_store_reload_vehicle_usage_set_attributes, validate: false) if new_store_reload_vehicle_usage_set_attributes.any?
 
-      new_store_reload_vehicle_usage_attributes = self.store_reloads.flat_map { |store_reload|
+      new_store_reload_vehicle_usage_attributes = old_store_reloads.flat_map { |store_reload|
         store_reload.vehicle_usages.map{ |vehicle_usage| {'store_reload_id'=> store_reload_ids_map[store_reload.id], 'vehicle_usage_id'=> vehicle_usage_ids_map[vehicle_usage.id]} }
       }
       StoreReloadVehicleUsage.import(new_store_reload_vehicle_usage_attributes, validate: false) if new_store_reload_vehicle_usage_attributes.any?

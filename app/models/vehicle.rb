@@ -24,7 +24,7 @@ class Vehicle < ApplicationRecord
 
   default_scope { order(:id) }
 
-  attr_accessor :migration_skip
+  attr_accessor :migration_skip, :skip_duplication_callbacks
 
   belongs_to :customer, counter_cache: true
   belongs_to :router, optional: true
@@ -183,12 +183,16 @@ class Vehicle < ApplicationRecord
   private
 
   def assign_defaults
+    return if skip_duplication_callbacks
+
     self.color ||= COLORS_TABLE[customer.vehicles.size % COLORS_TABLE.size]
     self.consumption ||= Planner::Application.config.vehicle_consumption_default
     self.fuel_type ||= Planner::Application.config.vehicle_fuel_type_default
   end
 
   def increment_max_vehicles
+    return if skip_duplication_callbacks
+
     customer.max_vehicles += 1
   end
 
