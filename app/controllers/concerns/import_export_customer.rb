@@ -2,19 +2,8 @@ module ImportExportCustomer
   extend ActiveSupport::Concern
 
   def self.export(customer)
-    Marshal.dump(
-      Customer.includes(
-        [vehicles: :vehicle_usages],
-        [destinations: :visits],
-        [plannings: [routes: :stops]],
-        [zonings: :zones],
-        [stores: :store_reloads],
-        :deliverable_units,
-        :vehicle_usage_sets,
-        :tags,
-        :users
-      ).find(customer.id)
-    )
+    customer_data = Customer.for_duplication.find(customer.id)
+    Marshal.dump(customer_data)
   end
 
   def self.import(string_customer, options)
