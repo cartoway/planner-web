@@ -400,7 +400,13 @@ class Customer < ApplicationRecord
       StoreReloadVehicleUsageSet.import_in_batches(new_store_reload_vehicle_usage_set_attributes, validate: false) if new_store_reload_vehicle_usage_set_attributes.any?
 
       new_store_reload_vehicle_usage_attributes = old_store_reloads.flat_map { |store_reload|
-        store_reload.vehicle_usages.map{ |vehicle_usage| {'store_reload_id'=> store_reload_ids_map[store_reload.id], 'vehicle_usage_id'=> vehicle_usage_ids_map[vehicle_usage.id]} }
+        store_reload.vehicle_usages.map{ |vehicle_usage|
+          new_vehicle_usage_id = vehicle_usage_ids_map[vehicle_usage.id]
+          new_store_reload_id = store_reload_ids_map[store_reload.id]
+          next if new_vehicle_usage_id.blank? || new_store_reload_id.blank?
+
+          {'store_reload_id'=> new_store_reload_id, 'vehicle_usage_id'=> new_vehicle_usage_id}
+        }.compact
       }
       StoreReloadVehicleUsage.import_in_batches(new_store_reload_vehicle_usage_attributes, validate: false) if new_store_reload_vehicle_usage_attributes.any?
 
