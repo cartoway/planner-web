@@ -8,8 +8,8 @@ module ImportExportCustomer
 
   def self.import(customer_data_file, options)
     customer = Marshal.load(customer_data_file.read)
-    customer = customer.duplicate
     self.assign_miscellaneous_attributes(customer, options)
+    customer = customer.duplicate
     customer.save! validate: Planner::Application.config.validate_during_duplication
     customer
   end
@@ -20,7 +20,9 @@ module ImportExportCustomer
       router_id: options[:router_id],
       router_options: {}
     })
-    customer.vehicles.where.not(router_id: nil).update_all({router_id: options[:router_id], router_options: {}})
-    customer.users.where.not(layer_id: nil).update_all(layer_id: options[:layer_id])
+    customer.vehicles.select{ |vehicle| vehicle.router_id.present? }
+            .each{ |vehicle| vehicle.assign_attributes(router_id: options[:router_id], router_options: {}) }
+    customer.users.select{ |user| user.layer_id.present? }
+            .each{ |user| user.assign_attributes(layer_id: options[:layer_id]) }
   end
 end

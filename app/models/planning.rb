@@ -133,16 +133,45 @@ class Planning < ApplicationRecord
         route['start_route_data_id'] = route_data_ids_map[route['start_route_data_id']]
         route['stop_route_data_id'] = route_data_ids_map[route['stop_route_data_id']]
       }
-      result = Route.import(new_route_attributes, validate: false)
-      route_ids_map = Hash[self.routes.map(&:id).zip(result.ids)]
+      route_ids = Route.import_in_batches(new_route_attributes, validate: false)
+      route_ids_map = Hash[self.routes.map(&:id).zip(route_ids)]
 
-      stop_map = self.routes.flat_map{ |route| route.stops }
-      new_stop_attributes = stop_map.map{ |stop| stop.import_attributes.except('id') }
+      old_stops = self.routes.flat_map{ |route| route.stops }
+      new_stop_attributes = old_stops.map{ |stop| stop.import_attributes.except('id') }
       new_stop_attributes.each { |stop|
         stop['route_data_id'] = route_data_ids_map[stop['route_data_id']]
         stop['route_id'] = route_ids_map[stop['route_id']]
       }
-      Stop.import(new_stop_attributes, validate: false)
+      stop_ids = Stop.import_in_batches(new_stop_attributes, validate: false)
+      stop_ids_map = Hash[old_stops.map(&:id).zip(stop_ids)]
+
+      new_route_geojson_attributes = self.routes.map{ |route|
+        attrs = route.route_geojson.import_attributes.except('id')
+        new_route_id = route_ids_map[route.id]
+        attrs['route_id'] = new_route_id
+
+        if attrs['tracks'].is_a?(Array)
+          attrs['tracks'] = attrs['tracks'].map{ |track|
+            track_hash = JSON.parse(track)
+            track_hash['properties'] ||= {}
+            track_hash['properties']['route_id'] = new_route_id
+            track_hash.to_json
+          }
+        end
+
+        if attrs['points'].is_a?(Array)
+          attrs['points'] = attrs['points'].map{ |point|
+            point_hash = JSON.parse(point)
+            point_hash['properties'] ||= {}
+            point_hash['properties']['route_id'] = new_route_id
+            point_hash['properties']['stop_id'] = stop_ids_map[point_hash['properties']['stop_id']]
+            point_hash.to_json
+          }
+        end
+
+        attrs
+      }
+      RouteGeojson.import_in_batches(new_route_geojson_attributes, validate: false)
 
       new_tag_planning_attributes = self.tags.map{ |tag| { tag_id: tag.id, planning_id: new_planning_id } }
       TagPlanning.import(new_tag_planning_attributes, validate: false)
