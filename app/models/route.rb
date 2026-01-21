@@ -116,9 +116,14 @@ class Route < ApplicationRecord
     })
   end
 
+  def route_data_attributes=(attributes)
+    self.outdated = true if attributes[:departure] != route_data&.departure
+    super
+  end
+
   def outdated_if_changed
-    return if !(route_data.will_save_change_to_departure? ||
-                will_save_change_to_force_start?)
+    return unless will_save_change_to_force_start?
+
     self.outdated = true
   end
 
@@ -407,7 +412,7 @@ class Route < ApplicationRecord
       stops_sort, stops_drive_time, stops_time_windows = plan(
         # Hack to allow manual set of self.start from the API and keep the value
         # when used in conjunction with self.force_start
-        self.departure || (self.force_start ? self.start : vehicle_usage.default_time_window_start),
+        self.route_data.departure || (self.force_start ? self.start : vehicle_usage.default_time_window_start),
         options
       )
 
@@ -451,7 +456,7 @@ class Route < ApplicationRecord
         time -= vehicle_usage.default_service_time_start if vehicle_usage.default_service_time_start
 
         force_start = !self.force_start.nil? ? self.force_start : planning.customer.optimization_force_start.nil? ? Planner::Application.config.optimize_force_start : planning.customer.optimization_force_start
-        if self.departure.nil? && time > start && !force_start
+        if self.route_data.departure.nil? && time > start && !force_start
           # We can sleep a bit more on morning, shift departure
           plan(time, options)
         end
