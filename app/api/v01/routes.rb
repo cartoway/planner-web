@@ -27,7 +27,8 @@ class V01::Routes < Grape::API
     def route_params
       p = ActionController::Parameters.new(params)
       p = p[:route] if p.key?(:route)
-      p.permit(:force_start, :start, :hidden, :locked, :ref, :color, :departure)
+      p[:route_data_attributes] = { departure: p[:departure] } if p.key?(:departure)
+      p.permit(:force_start, :start, :hidden, :locked, :ref, :color, route_data_attributes: [:departure])
     end
 
     def get_route
