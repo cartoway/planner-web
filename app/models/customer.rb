@@ -117,6 +117,42 @@ class Customer < ApplicationRecord
 
   scope :includes_deps, -> { includes([:profile, :router, :job_optimizer, :job_destination_geocoding, :job_store_geocoding, :users]) }
   scope :includes_stores, -> { includes(:stores) }
+  scope :for_duplication, -> {
+    preload(
+      :custom_attributes,
+      :messaging_logs,
+      :deliverable_units,
+      :tags,
+      :users,
+      { vehicles: [:vehicle_usages, :tags, :tag_vehicles] },
+      {
+        vehicle_usage_sets: [
+          :store_start, :store_stop, :store_rest, :store_reloads,
+          { vehicle_usages: [:store_start, :store_stop, :store_rest, :store_reloads, :tags, :tag_vehicle_usages] }
+        ]
+      },
+      { stores: { store_reloads: [:vehicle_usages, :vehicle_usage_sets] } },
+      {
+        destinations: [
+          :tags,
+          { visits: [:tags, :tag_visits] }
+        ]
+      },
+      { zonings: { zones: :vehicle } },
+      { stops_relations: [:current, :successor] },
+      {
+        plannings: [
+          :vehicle_usage_set, :zonings, :tags, :tag_plannings,
+          {
+            routes: [
+              :vehicle_usage, :route_data, :route_geojson, :start_route_data, :stop_route_data,
+              { stops: [:route_data, :store, :visit, :store_reload] }
+            ]
+          }
+        ]
+      }
+    )
+  }
 
   amoeba do
     nullify :job_destination_geocoding_id
