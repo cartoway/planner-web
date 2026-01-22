@@ -1610,13 +1610,17 @@ export const plannings_edit = function(params) {
     })
     .on('change', function() {
       var selectedIds = $(this).val() || [];
-      var selectedRouteIds = selectedIds.map(function(id) { return parseInt(id); });
+      var selectedRouteIds = selectedIds.map(function(id) {
+        var parsedId = parseInt(id);
+        return isNaN(parsedId) ? null : parsedId;
+      }).filter(function(id) { return id !== null; });
 
       var displayedRouteIds = Object.keys(routesLayer.clustersByRoute).map(function(id) { return parseInt(id); })
         .concat(Object.keys(routesLayer.layersByRoute).map(function(id) { return parseInt(id); }));
 
+      var outOfRouteId = routesLayer.options.outOfRouteId;
       var routesToHide = displayedRouteIds.filter(function(id) {
-        return selectedRouteIds.indexOf(id) === -1;
+        return selectedRouteIds.indexOf(id) === -1 && id !== outOfRouteId;
       });
 
       var routesToShow = selectedRouteIds.filter(function(id) {
