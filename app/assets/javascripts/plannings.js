@@ -1591,7 +1591,7 @@ export const plannings_edit = function(params) {
       templateSelection: selectFormatOption,
       templateResult: selectFormatOption,
     })
-    .off('select2:close select2:open select2:select select2:unselect')
+    .off('select2:close select2:open select2:select select2:unselect change')
     .on('select2:open', function(e) {
       previousSelection = $(this).val() || [];
     }).on('select2:select', function(e) {
@@ -1607,6 +1607,29 @@ export const plannings_edit = function(params) {
       }, 0);
     }).on('select2:select select2:unselect', function() {
       updateSelectionCount('#route_selector', '#planning_route_ids');
+    })
+    .on('change', function() {
+      var selectedIds = $(this).val() || [];
+      var selectedRouteIds = selectedIds.map(function(id) { return parseInt(id); });
+
+      var displayedRouteIds = Object.keys(routesLayer.clustersByRoute).map(function(id) { return parseInt(id); })
+        .concat(Object.keys(routesLayer.layersByRoute).map(function(id) { return parseInt(id); }));
+
+      var routesToHide = displayedRouteIds.filter(function(id) {
+        return selectedRouteIds.indexOf(id) === -1;
+      });
+
+      var routesToShow = selectedRouteIds.filter(function(id) {
+        return displayedRouteIds.indexOf(id) === -1;
+      });
+
+      if (routesToHide.length > 0) {
+        routesLayer.hideRoutes(routesToHide);
+      }
+
+      if (routesToShow.length > 0) {
+        routesLayer.showRoutes(routesToShow);
+      }
     })
       .on('select2:close', function(e) {
       var selectedIds = $(this).val();
