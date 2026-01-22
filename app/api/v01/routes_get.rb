@@ -32,7 +32,7 @@ class V01::RoutesGet < Grape::API
       if env['api.format'] == :geojson
         Route.routes_to_geojson(routes, {
           include_stores: params[:stores] || params[:with_stores],
-          respect_hidden: true,
+          respect_hidden: params.key?(:respect_hidden) ? params[:respect_hidden] : true,
           include_linestrings: if params[:with_geojson] == :polyline
             :polyline
           elsif params[:with_geojson] == :point
@@ -64,6 +64,7 @@ class V01::RoutesGet < Grape::API
     end
     get do
       routes = if params.key?(:ids)
+        params[:respect_hidden] = false
         current_customer.plannings.flat_map(&:routes).select{ |route|
           params[:ids].any?{ |s| ParseIdsRefs.match(s, route) }
         }
@@ -93,6 +94,7 @@ class V01::RoutesGet < Grape::API
         end
         get do
           routes = if params.key?(:ids)
+            params[:respect_hidden] = false
             current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.select{ |route|
               params[:ids].any?{ |s| ParseIdsRefs.match(s, route) }
             }
