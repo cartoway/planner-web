@@ -1,5 +1,30 @@
 # Changelog
 
+## V108.0.0
+  ### Added
+  - Introduce `store_reloads` to represent the reloads at store within routes instead of stores directly [#509](https://github.com/cartoway/planner-web/pull/509)
+  - Extract route information from planning and routes and put it into `route_data`. Moreover, it is as well held by `StopStore` to represent sub routes. The routes have a `start_route_data` and `stop_route_data`. [#530](https://github.com/cartoway/planner-web/pull/530)
+  - Sub routes might be displayed or hidden individually [#538](https://github.com/cartoway/planner-web/pull/538)
+  - `start_route_data` and StopStore `route_data` hold quantities of the associated sub routes [#555](https://github.com/cartoway/planner-web/pull/555)
+  - Introduce `store_reload_duration` to customer as default value for StoreReloads [#561](https://github.com/cartoway/planner-web/pull/561)
+
+  ### Changed
+  - `store_reloads` keyword within destination import is changed from `store` to `reload` [#529](https://github.com/cartoway/planner-web/pull/529)
+  - Use browser colorpicker for sub routes [#541](https://github.com/cartoway/planner-web/pull/541)
+  - Add extra information in route selector: number of stops, alerts or number of sub routes [#543](https://github.com/cartoway/planner-web/pull/543)
+  - Dissociate CustomAttributes from Stops and associate to StopVisit and StopStore [#556](https://github.com/cartoway/planner-web/pull/556)
+  - Emphasize Stores on Plannings [#564](https://github.com/cartoway/planner-web/pull/564)
+  - Speedup planning display [#571](https://github.com/cartoway/planner-web/pull/571)
+  - Speedup move operation [#573](https://github.com/cartoway/planner-web/pull/573)
+  - Dynamically show/hide route traces from route selector [#584](https://github.com/cartoway/planner-web/pull/584)
+
+  ### Fixed
+  - Align Quantity display for planning and sub routes to show quantities to deliver and collect within the route [#563](https://github.com/cartoway/planner-web/pull/563)
+  - Display `geocoding_accuracy` in Destination#index in each case [#566](https://github.com/cartoway/planner-web/pull/566)
+  - Fix "Stop not found" error in StopController [#580](https://github.com/cartoway/planner-web/pull/580)
+  - Fix unreachable stops on automatic insertion [#580](https://github.com/cartoway/planner-web/pull/580)
+  - Some FontAwesome icons were missing from the whitelist [#582](https://github.com/cartoway/planner-web/pull/582)
+
 ## V107.2.2
   ### Changed
   - Create a `planning` through API no longer require a `vehicle_usage_id` [#547](https://github.com/cartoway/planner-web/pull/547)
