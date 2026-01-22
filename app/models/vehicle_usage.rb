@@ -30,7 +30,7 @@ class VehicleUsage < ApplicationRecord
   has_many :tags, through: :tag_vehicle_usages, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
 
   has_many :store_reload_vehicle_usages, inverse_of: :vehicle_usage, dependent: :destroy
-  has_many :store_reloads, through: :store_reload_vehicle_usages
+  has_many :store_reloads, through: :store_reload_vehicle_usages, dependent: :destroy
 
   accepts_nested_attributes_for :vehicle, update_only: true
 
