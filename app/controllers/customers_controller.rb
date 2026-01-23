@@ -215,6 +215,7 @@ class CustomersController < ApplicationController
         :enable_external_callback,
         :external_callback_url,
         :external_callback_name,
+        :optimization_dicho_minimum_service_size,
         :optimization_max_split_size,
         :optimization_cluster_size,
         :optimization_time,

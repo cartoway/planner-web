@@ -338,6 +338,7 @@
         <small class="help-block"><%= t '.solver_priority_help' %></small>
       </div>
     </div>
+    <%= f.number_field :optimization_dicho_minimum_service_size, { help: t('.optimization_dicho_minimum_service_size_help'), placeholder: t('.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_dicho_minimum_service_size)), min: 0, append: content_tag('i', '', class: 'fa fa-gears fa-fw')} %>
     <%= f.number_field :optimization_max_split_size, { help: t('.optimization_max_split_size_help'), placeholder: t('.optimization_max_split_size_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_max_split_size)), min: 0, append: content_tag('i', '', class: 'fa fa-gears fa-fw')} %>
     <%= f.number_field :optimization_cluster_size, { help: t('.optimization_cluster_size_help'), placeholder: t('.optimization_cluster_size_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_cluster_size)), min: 0, append: t('all.unit.second')} %>
 

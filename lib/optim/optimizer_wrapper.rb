@@ -216,6 +216,7 @@ class OptimizerWrapper
         first_solution_strategy: :self_selection,
       },
       resolution: {
+        dicho_algorithm_service_limit: options[:dicho_minimum_service_size],
         duration: optim_duration_max,
         initial_time_out: optim_duration_min,
         solver_priority: options[:solver_priority],
