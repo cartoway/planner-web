@@ -96,6 +96,8 @@ class Customer < ApplicationRecord
   validates :max_destinations, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_destinations }, allow_nil: true
   validates :max_vehicle_usage_sets, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_vehicle_usage_sets }, allow_nil: true
   validates :speed_multiplier, numericality: { greater_than_or_equal_to: 0.5, less_than_or_equal_to: 1.5 }, if: :speed_multiplier
+  validates :optimization_dicho_minimum_service_size, numericality: true, allow_nil: true
+  validate :validate_optimization_dicho_minimum_service_size
   validates :optimization_minimal_time, numericality: true, allow_nil: true
   validates :optimization_time, numericality: true, allow_nil: true
   validate :validate_optimization_times
@@ -614,6 +616,14 @@ class Customer < ApplicationRecord
     if self.default_max_vehicle_usage_sets && self.default_max_vehicle_usage_sets < self.vehicle_usage_sets.count
       errors.add(:max_vehicle_usage_sets, I18n.t('activerecord.errors.models.customer.attributes.vehicle_usage_sets.over_max_limit'))
       false
+    end
+  end
+
+  def validate_optimization_dicho_minimum_service_size
+    return unless optimization_dicho_minimum_service_size.present? && optimization_max_split_size.present?
+
+    if optimization_dicho_minimum_service_size > optimization_max_split_size
+      errors.add(:optimization_dicho_minimum_service_size, I18n.t('activerecord.errors.models.customer.attributes.optimization_dicho_minimum_service_size.must_be_less_than_max_split_size'))
     end
   end
 
