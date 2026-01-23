@@ -115,6 +115,7 @@ Rails.application.configure do
   config.optimize_time_force = nil
   config.optimize_minimal_time = 10
   config.optimize_max_split_size = 500
+  config.optimize_dicho_minimum_service_size = nil
   config.optimize_cluster_size = 0
   config.optimize_stop_soft_upper_bound = 0.0
   config.optimize_vehicle_soft_upper_bound = 0.0

@@ -189,6 +189,7 @@ fr:
         store_reload_duration: Durée de rechargement
         default_country: Pays par défaut
         with_state: Ajouter champ État dans les adresses
+        optimization_dicho_minimum_service_size: Minimum de services pour Dicho
         optimization_max_split_size: Découper le problème
         optimization_cluster_size: Taille des clusters d'optimisation
         optimization_time: Temps d'optimisation maximum par véhicule
@@ -694,6 +695,8 @@ fr:
               invalid_json: n'est pas une chaîne de caractères JSON valide
         customer:
           attributes:
+            optimization_dicho_minimum_service_size:
+              must_be_less_than_max_split_size: doit être inférieur à la taille de découpage maximale
             plannings:
               over_max_limit: dépassement du nombre maximal de plans
             zonings:
@@ -1103,6 +1106,8 @@ fr:
       history_cron_hour_help: >-
         Heure à laquelle sont prises les données pour être historisé. Si non
         renseigné, pas d'historisation.
+      optimization_dicho_minimum_service_size_help: >-
+        Nombre minimum de visites pour l'algorithme dichotomique.
       optimization_max_split_size_default: '%{n} (valeur par défaut)'
       optimization_max_split_size_help: >-
         Nombre de points maximal à regrouper dans le cas d'un problème à

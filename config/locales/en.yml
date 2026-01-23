@@ -183,6 +183,7 @@ en:
         store_reload_duration: Store reload duration
         default_country: Default country
         with_state: Add State field in addresses
+        optimization_dicho_minimum_service_size: Minimum service size for Dicho
         optimization_max_split_size: Optimization split size
         optimization_cluster_size: Optimization cluster size
         optimization_time: Maximum optimization time by vehicle
@@ -684,6 +685,8 @@ en:
               invalid_json: is not a valid stringified json
         customer:
           attributes:
+            optimization_dicho_minimum_service_size:
+              must_be_less_than_max_split_size: must be less than maximum split size
             plannings:
               over_max_limit: Maximum number of plans reached
             zonings:
@@ -1075,6 +1078,8 @@ en:
       history_cron_hour_help: >-
         Hour at which the data is taken to be historised. If not filled in, no
         historization.
+      optimization_dicho_minimum_service_size_help: >-
+        Minimum number of visits for Dicho algorithm.
       optimization_max_split_size_default: '%{n} (default value)'
       optimization_max_split_size_help: >-
         Maximum number of points to group in case problem is too much heavy to

@@ -19,6 +19,7 @@ OptimizerJobStruct ||= Job.new(:customer_id, :planning_id, :route_id, :options)
 class OptimizerJob < OptimizerJobStruct
   @@optimize_time = Planner::Application.config.optimize_time
   @@optimize_time_force = Planner::Application.config.optimize_time_force
+  @@dicho_minimum_service_size = Planner::Application.config.optimize_dicho_minimum_service_size
   @@max_split_size = Planner::Application.config.optimize_max_split_size
   @@stop_soft_upper_bound = Planner::Application.config.optimize_stop_soft_upper_bound
   @@vehicle_soft_upper_bound = Planner::Application.config.optimize_vehicle_soft_upper_bound
@@ -106,6 +107,7 @@ class OptimizerJob < OptimizerJobStruct
       synchronous: false,
       name: "c#{planning.customer_id} " + planning.name,
       optimize_time: @@optimize_time_force || (optimize_time ? optimize_time * 1000 : nil),
+      dicho_minimum_service_size: planning.customer.optimization_dicho_minimum_service_size || @@dicho_minimum_service_size,
       max_split_size: planning.customer.optimization_max_split_size || @@max_split_size,
       stop_soft_upper_bound: planning.customer.optimization_stop_soft_upper_bound || @@stop_soft_upper_bound,
       vehicle_soft_upper_bound: planning.customer.optimization_vehicle_soft_upper_bound || @@vehicle_soft_upper_bound,
