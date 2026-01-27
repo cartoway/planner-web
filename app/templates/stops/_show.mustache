@@ -46,7 +46,7 @@
 <hr>
 {{/route_id}}
 <div class="stop-popup-header">
-  {{^rest}}
+  {{#visit}}
     <div class="btn-group pull-right stop-tools">
       {{#store}}{{#manage_store}}
       <a href="/stores/{{id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
@@ -66,7 +66,25 @@
         </ul>
       {{/isoline}}
     </div>
-  {{/rest}}
+  {{/visit}}
+  {{#store_reload}}
+    <div class="btn-group pull-right stop-tools">
+      {{#manage_destination}}
+      <a href="/stores/{{store_id}}/edit?back=true#collapseVisit{{store_reload_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_store_reload_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+      {{/manage_destination}}
+      {{#isoline}}
+        <button type="button" class="btn btn-xs btn-default dropdown-toggle draw_zone" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-magic"></i> <span class="caret"></span></button>
+        <ul class="dropdown-menu" role="menu">
+          {{#isochrone}}
+          <li><a data-toggle="modal" data-target="#isochrone-modal" data-keyboard="true" href="#"><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}zonings.form.dialog.isochrone.title{{/i18n}}</a></li>
+          {{/isochrone}}
+          {{#isodistance}}
+          <li><a data-toggle="modal" data-target="#isodistance-modal" data-keyboard="true" href="#"><i class="fa fa-road fa-fw"></i> {{#i18n}}zonings.form.dialog.isodistance.title{{/i18n}}</a></li>
+          {{/isodistance}}
+        </ul>
+      {{/isoline}}
+    </div>
+  {{/store_reload}}
   {{^store}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/store}}
   {{^popover}}{{#manage_organize}}{{#vehicle_name}}{{^store}}<input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>{{/store}}{{/vehicle_name}}{{/manage_organize}}{{/popover}}
   <b>{{#ref}}{{^visits}}{{ref}} {{/visits}}{{/ref}}{{name}}</b><br/>
