@@ -5,23 +5,22 @@ class V100::Entities::Stop < V100::Entities::StopStatus
 
   STOP_TYPES = {
     StopVisit: 'visit',
-    StopStore: 'store',
+    StopStore: 'reload',
     StopRest: 'rest'
   }.freeze
 
   expose(:destination_ref, documentation: { type: String }) { |stop|
     if stop.is_a?(StopVisit) && stop.visit && stop.visit.destination
       stop.visit.destination.ref
-    end
-  }
-  expose(:store_ref, documentation: { type: String }) { |stop|
-    if stop.is_a?(StopStore) && stop.store
-      stop.store.ref
+    elsif stop.is_a?(StopStore) && stop.store_reload && stop.store_reload.store
+      stop.store_reload.store.ref
     end
   }
   expose(:visit_ref, documentation: { type: String }) { |stop|
     if stop.is_a?(StopVisit) && stop.visit
       stop.visit.ref
+    elsif stop.is_a?(StopStore) && stop.store_reload
+      stop.store_reload.ref
     end
   }
   expose(:stop_type, documentation: { type: String }) { |stop|
