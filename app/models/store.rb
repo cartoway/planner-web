@@ -54,9 +54,8 @@ class Store < Location
       def copy.destroy_vehicle_store; end
 
       # Ensure duplicated store_reloads belong to the duplicated store
-      copy.store_reloads = copy.store_reloads.map { |reload|
+      copy.store_reloads.each { |reload|
         reload.store = copy
-        reload
       }
     })
   end
