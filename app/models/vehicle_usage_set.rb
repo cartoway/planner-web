@@ -71,6 +71,8 @@ class VehicleUsageSet < ApplicationRecord
 
   amoeba do
     exclude_association :plannings
+    exclude_association :store_reloads
+    exclude_association :store_reload_vehicle_usage_sets
 
     customize(lambda { |_original, copy|
       def copy.assign_defaults; end
