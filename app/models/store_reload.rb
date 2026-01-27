@@ -52,6 +52,8 @@ class StoreReload < ApplicationRecord
 
   amoeba do
     exclude_association :stop_stores
+    exclude_association :store_reload_vehicle_usages
+    exclude_association :store_reload_vehicle_usage_sets
 
     customize(lambda { |_original, copy|
       def copy.update_outdated; end

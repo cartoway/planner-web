@@ -77,6 +77,8 @@ class VehicleUsage < ApplicationRecord
     exclude_association :routes
     exclude_association :tags
     exclude_association :tag_vehicle_usages
+    exclude_association :store_reloads
+    exclude_association :store_reload_vehicle_usages
 
     customize(lambda { |_original, copy|
       def copy.update_outdated; end
