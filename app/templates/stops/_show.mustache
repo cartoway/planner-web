@@ -85,9 +85,10 @@
       {{/isoline}}
     </div>
   {{/store_reload}}
-  {{^store}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/store}}
-  {{^popover}}{{#manage_organize}}{{#vehicle_name}}{{^store}}<input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>{{/store}}{{/vehicle_name}}{{/manage_organize}}{{/popover}}
-  <b>{{#ref}}{{^visits}}{{ref}} {{/visits}}{{/ref}}{{name}}</b><br/>
+  {{#visit}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/visit}}
+  {{#store_reload}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/store_reload}}
+  {{^popover}}{{#manage_organize}}{{#vehicle_name}}{{^store}}{{^store_reload}}<input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>{{/store_reload}}{{/store}}{{/vehicle_name}}{{/manage_organize}}{{/popover}}
+  <b>{{#ref}}{{^visit}}{{^store_reload}}{{ref}} {{/store_reload}}{{/visit}}{{/ref}}{{name}}</b><br/>
   {{#street}}{{street}}<br/>{{/street}}
   {{#detail}}
     {{detail}}<br/>
