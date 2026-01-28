@@ -43,7 +43,11 @@ class StopVisit < Stop
   validates :visit, presence: true
 
   def ref
-    visit.ref || visit.destination.ref
+    visit.destination.ref
+  end
+
+  def ref_visit
+    visit.ref
   end
 
   def order
