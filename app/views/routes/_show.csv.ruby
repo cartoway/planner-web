@@ -84,6 +84,15 @@ route.stops.each { |stop|
       when StopRest.name
         I18n.t('plannings.export_file.stop_type_rest')
       end
+    ref =
+      case stop.type
+      when StopVisit.name
+        stop.visit.destination.ref
+      when StopStore.name
+        stop.store_reload.store.ref
+      when StopRest.name
+        stop.rest.ref
+      end
     row = {
       ref_planning: route.planning.ref,
       planning: route.planning.name,
@@ -111,8 +120,7 @@ route.stops.each { |stop|
       status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),
       status_updated_at: stop.status_updated_at && I18n.l(stop.status_updated_at, format: :hour_minute),
       eta: stop.eta && I18n.l(stop.eta, format: :hour_minute),
-
-      ref: stop.is_a?(StopVisit) ? stop.visit.destination.ref : stop.ref,
+      ref: ref,
       name: stop.name,
       street: stop.street,
       detail: stop.detail,
@@ -123,6 +131,15 @@ route.stops.each { |stop|
 
     row.merge!(state: stop.state) if route.planning.customer.with_state?
 
+    ref_visit =
+      case stop.type
+      when StopVisit.name
+        stop.visit.ref
+      when StopStore.name
+        stop.store_reload.ref
+      when StopRest.name
+        nil
+      end
     row.merge!({
       country: stop.country,
       lat: stop.lat&.round(6),
@@ -131,7 +148,7 @@ route.stops.each { |stop|
       phone_number: stop.phone_number,
       tags: (stop.visit.destination.tags.collect(&:label).join(',') if stop.is_a?(StopVisit)),
 
-      ref_visit: (stop.visit.ref if stop.is_a?(StopVisit)),
+      ref_visit: ref_visit,
       duration: case stop
                 when StopVisit
                   stop.visit.duration ? stop.visit.duration_absolute_time_with_seconds : nil
