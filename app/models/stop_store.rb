@@ -47,7 +47,11 @@ class StopStore < Stop
   end
 
   def ref
-    store_reload.ref || store_reload.store.ref
+    store_reload.store.ref
+  end
+
+  def ref_visit
+    store_reload.ref
   end
 
   def position?
