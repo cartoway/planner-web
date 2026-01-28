@@ -109,6 +109,12 @@ class StopRest < Stop
   end
 
   def ref
+    if position?
+      route.vehicle_usage.default_store_rest.ref
+    end
+  end
+
+  def ref_visit
     nil
   end
 

@@ -13,6 +13,7 @@ end
 
 json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_max_reload, :out_of_relation, :no_path, :out_of_skill, :active
 json.ref stop.ref if stop.route.planning.customer.enable_references
+json.ref_visit stop.ref_visit if stop.route.planning.customer.enable_references
 json.time_window_start_end_1 !!stop.time_window_start_1 || !!stop.time_window_end_1
 (json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1
 (json.time_window_start_1_day number_of_days(stop.time_window_start_1)) if stop.time_window_start_1

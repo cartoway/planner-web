@@ -101,7 +101,7 @@ class RoutesControllerTest < ActionController::TestCase
     assert_not_nil destination_duration_index, 'destination_duration column should exist'
 
     # Find the row for our StopStore (should have the store_reload ref)
-    stop_store_row = csv_lines.find { |row| row[headers.index(I18n.t('destinations.import_file.ref'))] == 'TEST_RELOAD' }
+    stop_store_row = csv_lines.find { |row| row[headers.index(I18n.t('destinations.import_file.ref_visit'))] == 'TEST_RELOAD' }
     assert_not_nil stop_store_row, 'StopStore row should exist in CSV export'
 
     # Verify duration is exported correctly (should be 00:25:00)

@@ -46,11 +46,8 @@
 <hr>
 {{/route_id}}
 <div class="stop-popup-header">
-  {{#visit}}
+  {{#visits}}
     <div class="btn-group pull-right stop-tools">
-      {{#store}}{{#manage_store}}
-      <a href="/stores/{{id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
-      {{/manage_store}}{{/store}}
       {{#destination}}{{#manage_destination}}
       <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
       {{/manage_destination}}{{/destination}}
@@ -66,29 +63,32 @@
         </ul>
       {{/isoline}}
     </div>
-  {{/visit}}
+  {{/visits}}
   {{#store_reload}}
     <div class="btn-group pull-right stop-tools">
       {{#manage_destination}}
       <a href="/stores/{{store_id}}/edit?back=true#collapseVisit{{store_reload_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_store_reload_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
       {{/manage_destination}}
-      {{#isoline}}
-        <button type="button" class="btn btn-xs btn-default dropdown-toggle draw_zone" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-magic"></i> <span class="caret"></span></button>
-        <ul class="dropdown-menu" role="menu">
-          {{#isochrone}}
-          <li><a data-toggle="modal" data-target="#isochrone-modal" data-keyboard="true" href="#"><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}zonings.form.dialog.isochrone.title{{/i18n}}</a></li>
-          {{/isochrone}}
-          {{#isodistance}}
-          <li><a data-toggle="modal" data-target="#isodistance-modal" data-keyboard="true" href="#"><i class="fa fa-road fa-fw"></i> {{#i18n}}zonings.form.dialog.isodistance.title{{/i18n}}</a></li>
-          {{/isodistance}}
-        </ul>
-      {{/isoline}}
     </div>
   {{/store_reload}}
+  {{#rest}}
+    <div class="btn-group pull-right stop-tools">
+      {{#store_id}}{{#manage_store}}
+      <a href="/stores/{{store_id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+      {{/manage_store}}{{/store_id}}
+    </div>
+  {{/rest}}
+  {{#store}}
+    <div class="btn-group pull-right stop-tools">
+      {{#store}}{{#manage_store}}
+      <a href="/stores/{{id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+      {{/manage_store}}{{/store}}
+    </div>
+  {{/store}}
   {{#visit}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/visit}}
   {{#store_reload}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/store_reload}}
   {{^popover}}{{#manage_organize}}{{#vehicle_name}}{{^store}}{{^store_reload}}<input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>{{/store_reload}}{{/store}}{{/vehicle_name}}{{/manage_organize}}{{/popover}}
-  <b>{{#ref}}{{^visit}}{{^store_reload}}{{ref}} {{/store_reload}}{{/visit}}{{/ref}}{{name}}</b><br/>
+  <b>{{#ref}}{{ref}} {{/ref}}{{name}}</b><br/>
   {{#street}}{{street}}<br/>{{/street}}
   {{#detail}}
     {{detail}}<br/>
@@ -108,7 +108,7 @@
 {{#index_visit}}
 {{#i18n}}plannings.edit.popup.visit{{/i18n}} #{{index_visit}}
 {{/index_visit}}
-{{#ref}}<b>{{ref}}</b>{{/ref}}
+{{#ref_visit}}<b>{{ref_visit}}</b>{{/ref_visit}}
 <ul>
   {{#time_window_start_end_1}}
     <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.time_window_start_end_1{{/i18n}}
@@ -187,7 +187,7 @@
 {{#index_visit}}
 {{#i18n}}plannings.edit.popup.store_reload{{/i18n}}
 {{/index_visit}}
-{{#ref}}<b>{{ref}}</b>{{/ref}}
+{{#ref_visit}}<b>{{ref_visit}}</b>{{/ref_visit}}
 <ul>
   {{#time_window_start_end_1}}
     <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.time_window_start_end_1{{/i18n}}
