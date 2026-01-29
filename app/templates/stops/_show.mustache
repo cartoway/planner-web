@@ -46,11 +46,18 @@
 <hr>
 {{/route_id}}
 <div class="stop-popup-header">
-  {{#visits}}
+  {{^rest}}
     <div class="btn-group pull-right stop-tools">
-      {{#destination}}{{#manage_destination}}
-      <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
-      {{/manage_destination}}{{/destination}}
+      {{#visits}}{{#destination}}{{#manage_destination}}
+          <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+          {{/manage_destination}}{{/destination}}
+      {{/visits}}
+      {{#store_reload}}{{#manage_destination}}
+      <a href="/stores/{{store_id}}/edit?back=true#collapseVisit{{store_reload_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_store_reload_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+      {{/manage_destination}}{{/store_reload}}
+      {{#store}}{{#manage_store}}
+      <a href="/stores/{{id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
+      {{/manage_store}}{{/store}}
       {{#isoline}}
         <button type="button" class="btn btn-xs btn-default dropdown-toggle draw_zone" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-magic"></i> <span class="caret"></span></button>
         <ul class="dropdown-menu" role="menu">
@@ -63,14 +70,7 @@
         </ul>
       {{/isoline}}
     </div>
-  {{/visits}}
-  {{#store_reload}}
-    <div class="btn-group pull-right stop-tools">
-      {{#manage_destination}}
-      <a href="/stores/{{store_id}}/edit?back=true#collapseVisit{{store_reload_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_store_reload_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
-      {{/manage_destination}}
-    </div>
-  {{/store_reload}}
+  {{/rest}}
   {{#rest}}
     <div class="btn-group pull-right stop-tools">
       {{#store_id}}{{#manage_store}}
@@ -78,13 +78,6 @@
       {{/manage_store}}{{/store_id}}
     </div>
   {{/rest}}
-  {{#store}}
-    <div class="btn-group pull-right stop-tools">
-      {{#store}}{{#manage_store}}
-      <a href="/stores/{{id}}/edit?back=true" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
-      {{/manage_store}}{{/store}}
-    </div>
-  {{/store}}
   {{#visit}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/visit}}
   {{#store_reload}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/store_reload}}
   {{^popover}}{{#manage_organize}}{{#vehicle_name}}{{^store}}{{^store_reload}}<input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>{{/store_reload}}{{/store}}{{/vehicle_name}}{{/manage_organize}}{{/popover}}
