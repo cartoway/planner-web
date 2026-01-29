@@ -291,7 +291,11 @@ class OptimizerWrapper
                 !stop.active && options[:active_only] ||
                 options[:moving_stop_ids]&.include?(stop.id)
 
-        "s#{stop.id}"
+        if stop.is_a?(StopVisit)
+         "s#{stop.id}"
+        elsif stop.is_a?(StopStore)
+          "sr#{stop.store_reload.id}"
+        end
       }.compact
 
       next if mission_ids.empty?
