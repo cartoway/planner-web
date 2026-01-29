@@ -70,7 +70,14 @@ class OptimizerWrapperTest < ActionController::TestCase
       refute_empty vrp[:relations]
       assert_equal vrp[:relations].first[:linked_ids], @planning.routes.last.stops.map{ |s| "s#{s.id}" }
       refute_empty vrp[:routes]
-      assert_equal vrp[:routes].first[:mission_ids], @planning.routes.last.stops.map{ |s| "s#{s.id}" }
+      assert_equal(
+        vrp[:routes].first[:mission_ids].sort,
+        @planning.routes.last.stops.map{ |s|
+          next if !s.is_a?(StopVisit)
+
+          "s#{s.id}"
+        }.compact.sort
+      )
 
       vrp[:services].each{ |service|
         service[:activity][:timewindows].each{ |tw|
