@@ -7,6 +7,8 @@
   - Sub routes might be displayed or hidden individually [#538](https://github.com/cartoway/planner-web/pull/538)
   - `start_route_data` and StopStore `route_data` hold quantities of the associated sub routes [#555](https://github.com/cartoway/planner-web/pull/555)
   - Introduce `store_reload_duration` to customer as default value for StoreReloads [#561](https://github.com/cartoway/planner-web/pull/561)
+  - Admin: Introduce the parameter `optimization_dicho_minimum_service_size` transmitted to [Optimizer-API](github.com/cartoway/optimizer-api) [#586](https://github.com/cartoway/planner-web/pull/586)
+  - Transmit more context with sentry alerts [#592](https://github.com/cartoway/planner-web/pull/592)
 
   ### Changed
   - `store_reloads` keyword within destination import is changed from `store` to `reload` [#529](https://github.com/cartoway/planner-web/pull/529)
@@ -24,6 +26,8 @@
   - Fix "Stop not found" error in StopController [#580](https://github.com/cartoway/planner-web/pull/580)
   - Fix unreachable stops on automatic insertion [#580](https://github.com/cartoway/planner-web/pull/580)
   - Some FontAwesome icons were missing from the whitelist [#582](https://github.com/cartoway/planner-web/pull/582)
+  - Store ref is now displayed in planning stop popups [#591](https://github.com/cartoway/planner-web/pull/591)
+  - Tags were not recognized using "ref:X" syntax in some endpoints [#593](https://github.com/cartoway/planner-web/pull/593)
 
 ## V107.2.2
   ### Changed
