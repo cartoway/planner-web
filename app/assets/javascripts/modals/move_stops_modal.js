@@ -152,7 +152,9 @@ export class MoveStopsModal {
 
     // Setup route change handler
     $('#move-route-id').change((obj) => {
-      const vehicleUsageId = obj.target.selectedOptions[0].attributes['data-vehicle-usage-id'].value;
+      const vehicleUsageIdAttr = obj.target.selectedOptions[0].attributes['data-vehicle-usage-id'];
+      var vehicleUsageId = null;
+      if (vehicleUsageIdAttr) vehicleUsageId = vehicleUsageIdAttr.value;
       this.fillQuantities(stops, vehicleUsageId);
     });
 
