@@ -16,6 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApplicationController < ActionController::Base
+  around_action :set_sentry_context, if: :current_user
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
@@ -307,5 +308,22 @@ class ApplicationController < ActionController::Base
 
     Rails.logger.send(level, "#{exception.class} : #{exception}")
     Rails.logger.send(level, exception.backtrace.join("\n"))
+  end
+
+  def set_sentry_context
+    begin
+      yield
+    rescue StandardError => e
+      payload ||= {}
+      SentryService.new(
+        current_user,
+        request,
+        params,
+        e,
+        payload
+      ).register
+      Sentry.capture_exception(e)
+      raise e
+    end
   end
 end
