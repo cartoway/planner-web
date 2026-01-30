@@ -119,6 +119,7 @@ class V01::Api < Grape::API
       response[:message] = messages.join(' ')
       error!(response.merge(status: 409), 409, e.backtrace)
     else
+      SentryService.new(@current_user, request, params, e).register
       Sentry.capture_exception(e)
       error!(response.merge(status: 500), 500, e.backtrace)
     end
