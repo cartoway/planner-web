@@ -23,10 +23,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   def filter_tag_ids_belong_to_customer(tag_ids, customer)
     return [] if tag_ids.blank?
 
-    customer_tag_ids = customer.tags.pluck(:id)
-
-    # Return only tag_ids that belong to the customer
-    tag_ids & customer_tag_ids
+    customer.tags.where(ParseIdsRefs.where_clause(tag_ids)).pluck(:id)
   end
 
   params :request_capacity do |options|

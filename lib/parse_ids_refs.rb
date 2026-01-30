@@ -62,7 +62,7 @@ class ParseIdsRefs
     end
   end
 
-  def self.where(clazz, param, customer: nil)
+  def self.where(clazz, param)
     clause = where_clause(param)
     clause ? clazz.where(clause) : clazz.none
   end
