@@ -1,6 +1,6 @@
 %ul.stops.sortable.list-group{style: ('display: none;' if route[:hidden])}
   - sub_tour_index = 0
-  - store_color = route[:store_start][:route_data]&.[](:color)
+  - store_color = route.dig(:store_start, :route_data, :color)
   - route_color = route[:color_fake] || route[:color]
   - route[:stops]&.each do |stop|
     - if stop[:wait_time]
