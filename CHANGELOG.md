@@ -28,6 +28,7 @@
   - Some FontAwesome icons were missing from the whitelist [#582](https://github.com/cartoway/planner-web/pull/582)
   - Store ref is now displayed in planning stop popups [#591](https://github.com/cartoway/planner-web/pull/591)
   - Tags were not recognized using "ref:X" syntax in some endpoints [#593](https://github.com/cartoway/planner-web/pull/593)
+  - Selecting back Unaffected route correctly compute quantities on move stop modal [#595](https://github.com/cartoway/planner-web/pull/595)
 
 ## V107.2.2
   ### Changed
