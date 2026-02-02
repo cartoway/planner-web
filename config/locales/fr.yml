@@ -115,6 +115,7 @@ fr:
         type:
           store: site
           visit: visite
+          reload: rechargement
           rest: pause
       store: Site
       stores:

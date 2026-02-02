@@ -114,6 +114,7 @@ en:
         other: stops
         type:
           store: store
+          reload: reload
           visit: visit
           rest: rest
       store: Store
