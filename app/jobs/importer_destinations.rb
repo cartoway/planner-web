@@ -389,7 +389,7 @@ class ImporterDestinations < ImporterBase
 
   def valid_stop_type(stop_type)
     type = nil
-    %w(store visit rest).each do |t|
+    %w(store visit rest reload).each do |t|
       type ||= t if stop_type == I18n.t("activerecord.models.stops.type.#{t}")
     end
     if type
@@ -412,7 +412,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def is_store?(type)
-    type == I18n.t('destinations.import_file.stop_type_store') || type == 'store'
+    type == I18n.t('destinations.import_file.stop_type_store') || %w[store reload].include?(type)
   end
 
   def import_row(_name, row, line, _options)
