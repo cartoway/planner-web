@@ -4,7 +4,7 @@ class SentryService
   def initialize(current_user, request, params, error, payload = {})
     @current_user = current_user
     @_request = request
-    @_params = params
+    @_params = params || {}
     @error = error
     @payload = payload
   end
