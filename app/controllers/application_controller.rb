@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApplicationController < ActionController::Base
-  around_action :set_sentry_context, if: :current_user
+  around_action :set_sentry_context
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
