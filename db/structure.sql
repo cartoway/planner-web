@@ -66,7 +66,8 @@ CREATE TABLE public.custom_attributes (
     description text,
     customer_id integer,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    related_field character varying
 );
 
 
@@ -872,7 +873,8 @@ CREATE TABLE public.routes (
     out_of_max_ride_duration boolean,
     route_data_id integer,
     start_route_data_id integer,
-    stop_route_data_id integer
+    stop_route_data_id integer,
+    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -2397,6 +2399,20 @@ CREATE INDEX fk__zonings_customer_id ON public.zonings USING btree (customer_id)
 
 
 --
+-- Name: idx_ca_on_customer_obj_class_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_ca_on_customer_obj_class_name ON public.custom_attributes USING btree (customer_id, object_class, name) WHERE (related_field IS NULL);
+
+
+--
+-- Name: idx_ca_on_customer_obj_class_rel_field_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_ca_on_customer_obj_class_rel_field_name ON public.custom_attributes USING btree (customer_id, object_class, related_field, name) WHERE (related_field IS NOT NULL);
+
+
+--
 -- Name: index_custom_attributes_on_customer_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3649,6 +3665,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20251212122356'),
 ('20260113123734'),
 ('20260123141829'),
-('20260209100651');
+('20260209100651'),
+('20260204152038');
 
 

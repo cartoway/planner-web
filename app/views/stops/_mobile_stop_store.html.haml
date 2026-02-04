@@ -1,0 +1,106 @@
+-# Partial for rendering a StopStore in the mobile route view
+-# Expected locals:
+-# - stop: StopStore instance
+-# - previous: previous stop in the list (or nil for the first one)
+-# - agent: detected agent (:ios, :android, ...)
+-# - customer: current customer
+
+- next_status = case stop.status
+- when nil
+  - 'intransit'
+
+.panel.panel-default{ data: { stop_type: 'store' } }
+  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+    .d-flex.align-items-center.justify-content-between.mb-1
+      .col-xs-2.p-0
+        .d-flex.align-items-center.justify-content-between
+          #label-index.label.label-default-negative.p-3{ class: "label-#{stop.status}" }
+            %i.fa.fa-fw{ class: "#{stop.store.default_icon}" }
+      .col-xs-6.p-0
+        = stop.name
+      .col-xs-4.p-0
+        %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
+          .d-flex.align-items-center
+            .fa.fa-regular.fa-square-caret-right.mr-2
+            #quick-status-text
+              = t("plannings.edit.stop_status.#{next_status}") if next_status
+        - agent_link = case agent
+        - when :ios
+          - "http://maps.apple.com/?daddr=#{stop.lat},#{stop.lng}"
+        - else
+          - "geo:#{stop.lat},#{stop.lng}?q=#{stop.lat},#{stop.lng}"
+    .d-flex.align-items-center
+      .col-xs-12.p-0.mt-1
+        .d-flex.align-items-center.justify-content-between
+          .col-xs-8.p-0.mr-2
+            = stop.street
+            = stop.postalcode
+            = stop.city
+          .col-xs-4.p-0
+            %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: agent_link }
+              .d-flex.align-items-center
+                .fa.fa-diamond-turn-right.mr-2
+                = t("stops.mobile.navigate")
+    .d-flex.align-items-center.justify-content-center
+      .fa.fa-caret-down.fa-fw
+  .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
+    .panel-body
+      - current_route_data_quantities = route_data_quantities(stop.route_data, stop.route.vehicle_usage&.vehicle)
+      .container.mt-1
+        .form-group.mb-1
+          = bootstrap_form_for stop, url: stop_path, method: :patch, remote: true do |f|
+            - previous_route_data_quantities ||= nil
+            - previous_route_data_quantities&.each do |unit|
+              - if unit[:pickup].present? && unit[:pickup].to_f > 0
+                .d-flex.align-items-center.justify-items-center.mb-1
+                  .label.label-default.p-3.mr-2
+                    %i.fa.fa-fw{ class: unit[:unit_icon] }
+                  .quantity
+                    %i.fa.fa-fw.fa-up-long
+                    = unit[:pickup]
+                    = unit[:label]
+                    = t('routes.mobile.route_data.to_drop')
+            - current_route_data_quantities.each do |unit|
+              - if unit[:delivery].present? && unit[:delivery].to_f > 0
+                .d-flex.align-items-center.justify-items-center.mb-1
+                  .label.label-default.p-3.mr-2
+                    %i.fa.fa-fw{ class: unit[:unit_icon] }
+                  .quantity
+                    %i.fa.fa-fw.fa-up-long
+                    = unit[:delivery]
+                    = unit[:label]
+                    = t('routes.mobile.route_data.to_load')
+            - if custom_attributes.any?
+              %label
+                = t('routes.mobile.form')
+              - custom_attributes.each do |custom_attribute|
+                .custom_field.d-flex.align-items-center.justify-content-left.mb-1.row
+                  %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
+                    = custom_attribute.name
+                  .field.mb-0{class: custom_attribute.object_type == 'boolean' ? 'col-xs-4' : 'col-xs-12' }
+                    = custom_attribute_form_field(f, stop, custom_attribute, 'stop')
+                  .col-xs-12
+                    %p.help-block
+                      = custom_attribute.description
+            %label{ for: 'active_status' }
+              = t('stops.mobile.status')
+            .input-group.col-xs-12
+              .radiobtn
+                .d-flex.row.align-items-center.justify-content-between{ style: 'width: 100%'}
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
+                      = t('plannings.edit.stop_store_status.intransit')
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-info{ data: { toggle: 'active_status', title: 'atstore' }, class: ('active' if stop.status == 'atstore') }
+                      = t('plannings.edit.stop_store_status.atstore')
+                .d-flex.align-items-center.justify-content-between
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-info{ data: { toggle: 'active_status', title: 'inprocessing' }, class: ('active' if stop.status == 'inprocessing') }
+                      = t('plannings.edit.stop_store_status.inprocessing')
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-success{ data: { toggle: 'active_status', title: 'finished' }, class: ('active' if stop.status == 'finished') }
+                      = t('plannings.edit.stop_store_status.finished')
+              = f.hidden_field :position, { name: 'stop[position]', id: 'active_status_position' }
+              = f.hidden_field :status_updated_at, { name: 'stop[status_updated_at]', id: 'active_status_updated_at' }
+              = f.hidden_field :status, { name: 'stop[status]', id: 'active_status', onchange: "this.form.submit()" }
+              = f.hidden_field :id, { name: 'stop_id' }

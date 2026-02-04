@@ -1,0 +1,66 @@
+-# Partial for rendering a StopVisit in the mobile route view
+-# Expected locals:
+-# - stop: StopVisit instance
+-# - previous: previous stop in the list (or nil for the first one)
+-# - agent: detected agent (:ios, :android, ...)
+-# - customer: current customer
+-# - enable_driver_move: whether driver can move stops
+-# - custom_attributes: custom attributes for StopVisit
+
+- in_route_data = formatted_stop_inroute_sms(stop)
+
+- next_status = case stop.status
+- when 'intransit'
+  - 'delivered'
+- when nil
+  - 'intransit'
+
+.panel.panel-default{ data: { stop_type: 'visit' } }
+  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+    .d-flex.align-items-center.justify-content-between.mb-1
+      .col-xs-2.p-0
+        .d-flex.align-items-center.justify-content-between
+          #label-index.number.label.p-3{ class: ("label-#{stop.status}") }
+            = stop.index
+      .col-xs-6.p-0
+        = stop.name
+      .col-xs-4.p-0
+        - if customer.enable_sms && in_route_data[:phone_number].present?
+          = link_to "sms:#{in_route_data[:phone_number]}?body=#{CGI.escape(in_route_data[:content])}",
+            id: "quick-status",
+            class: "col-xs-12 col-sm-6 btn btn-default no-toggle mr-2 pull-right#{' d-none' unless next_status}",
+            data: { toggle: 'active_status', title: next_status } do
+            .d-flex.align-items-center
+              .fa.fa-regular.fa-square-caret-right.mr-2
+              #quick-status-text
+                = t("plannings.edit.stop_status.#{next_status}") if next_status
+        - else
+          %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
+            .d-flex.align-items-center
+              .fa.fa-regular.fa-square-caret-right.mr-2
+              #quick-status-text
+                = t("plannings.edit.stop_status.#{next_status}") if next_status
+        - agent_link = case agent
+        - when :ios
+          - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+        - else
+          - "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+    .d-flex.align-items-center
+      -# .col-xs-4.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+      .col-xs-12.p-0.mt-1
+        .d-flex.align-items-center.justify-content-between
+          .col-xs-8.p-0.mr-2
+            = stop.visit.destination.street
+            = stop.visit.destination.postalcode
+            = stop.visit.destination.city
+          .col-xs-4.p-0
+            %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: agent_link }
+              .d-flex.align-items-center
+                .fa.fa-diamond-turn-right.mr-2
+                = t("stops.mobile.navigate")
+    .d-flex.align-items-center.justify-content-center
+      .fa.fa-caret-down.fa-fw
+  .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
+    .panel-body
+      = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit, enable_driver_move: enable_driver_move, custom_attributes: custom_attributes, customer: customer, sms_content: in_route_data[:content], phone_number: in_route_data[:phone_number] }
+

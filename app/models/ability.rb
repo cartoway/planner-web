@@ -67,7 +67,7 @@ class Ability
       can [:password, :set_password], User
 
       # Mobile routes
-      can [:mobile, :update_position], Route
+      can [:mobile, :update_position, :driver_update], Route
       can [:edit, :update], Stop
     end
   end

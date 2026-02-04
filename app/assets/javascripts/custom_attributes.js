@@ -56,25 +56,61 @@ const update_default_value = function() {
   });
 }
 
+const update_object_class_fields = function() {
+  // Initialize hidden fields on page load
+  var currentValue = $('#custom_attribute_object_class_with_related_field').val();
+  var objectClassField = $('#custom_attribute_object_class');
+  var relatedFieldField = $('#custom_attribute_related_field');
+
+  if (currentValue) {
+    if (currentValue.includes(':')) {
+      var parts = currentValue.split(':', 2);
+      objectClassField.val(parts[0]);
+      relatedFieldField.val(parts[1] || '');
+    } else {
+      objectClassField.val(currentValue);
+      relatedFieldField.val('');
+    }
+  }
+
+  // Update hidden fields when select changes
+  $('#custom_attribute_object_class_with_related_field').on('change', function() {
+    var combinedValue = $(this).val();
+
+    if (combinedValue && combinedValue.includes(':')) {
+      var parts = combinedValue.split(':', 2);
+      objectClassField.val(parts[0]);
+      relatedFieldField.val(parts[1] || '');
+    } else {
+      objectClassField.val(combinedValue || '');
+      relatedFieldField.val('');
+    }
+  });
+}
+
 Paloma.controller('CustomAttributes', {
   new: function() {
-    custom_attributes_form();
+    // custom_attributes_form();
     CustomAttributes.custom_attributes_array();
     update_default_value();
+    update_object_class_fields();
   },
   create: function() {
-    custom_attributes_form();
+    // custom_attributes_form();
     CustomAttributes.custom_attributes_array();
     update_default_value();
+    update_object_class_fields();
   },
   edit: function() {
-    custom_attributes_form();
+    // custom_attributes_form();
     CustomAttributes.custom_attributes_array();
     update_default_value();
+    update_object_class_fields();
   },
   update: function() {
-    custom_attributes_form();
+    // custom_attributes_form();
     CustomAttributes.custom_attributes_array();
     update_default_value();
+    update_object_class_fields();
   }
 });

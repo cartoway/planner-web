@@ -1,10 +1,16 @@
 class CustomAttribute < ApplicationRecord
   default_scope { order(:id) }
 
-  validates :name, uniqueness: { scope: [:object_class, :customer_id] }
+  validates :name, uniqueness: { scope: [:object_class, :customer_id, :related_field] }
+  validates :related_field, inclusion: { in: ->(ca) { ca.valid_related_fields }, allow_nil: true }
   before_validation :default_value_to_type
 
   belongs_to :customer
+
+  # Virtual attribute for the combined object_class and related_field select
+  attr_accessor :object_class_with_related_field
+
+  before_validation :parse_object_class_with_related_field
 
   enum object_type: {
     boolean: 0,
@@ -18,13 +24,21 @@ class CustomAttribute < ApplicationRecord
     vehicle: 0,
     visit: 1,
     stop_visit: 2,
-    stop_store: 3
+    stop_store: 3,
+    route: 4,
   }
+
+  RELATED_FIELDS = {
+    route: [:start_route_data, :stop_route_data]
+  }.freeze
 
   scope :for_vehicle, -> { where(object_class: :vehicle) }
   scope :for_visit, -> { where(object_class: :visit) }
   scope :for_stop_visit, -> { where(object_class: :stop_visit) }
   scope :for_stop_store, -> { where(object_class: :stop_store) }
+  scope :for_route, -> { where(object_class: :route) }
+  scope :for_related_field, ->(field) { where(related_field: field) }
+  scope :without_related_field, -> { where(related_field: nil) }
 
   auto_strip_attributes :name
   validates :name, presence: true
@@ -63,7 +77,54 @@ class CustomAttribute < ApplicationRecord
     (%w[vehicle visit] | object_classes.keys) # Set Union to be sure no object class is forgotten
   end
 
+  def self.related_fields_for(object_class)
+    RELATED_FIELDS[object_class.to_sym] || []
+  end
+
+  def self.object_class_options_with_related_fields
+    options = []
+    ordered_object_classes.each do |object_class|
+      related_fields = related_fields_for(object_class)
+      if related_fields.empty?
+        options << object_class
+      else
+        related_fields.each do |related_field|
+          options << "#{object_class}:#{related_field}"
+        end
+      end
+    end
+    options
+  end
+
+  def self.parse_object_class_value(value)
+    return [nil, nil] if value.blank?
+
+    if value.include?(':')
+      parts = value.split(':', 2)
+      [parts[0], parts[1].presence]
+    else
+      [value, nil]
+    end
+  end
+
+  def valid_related_fields
+    return [] unless object_class
+    self.class.related_fields_for(object_class).map(&:to_s)
+  end
+
+  def related_fields?
+    valid_related_fields.any?
+  end
+
   private
+
+  def parse_object_class_with_related_field
+    return unless object_class_with_related_field.present?
+
+    object_class, related_field = self.class.parse_object_class_value(object_class_with_related_field)
+    self.object_class = object_class if object_class.present?
+    self.related_field = related_field
+  end
 
   def default_value_to_type
     return if new_record? || !object_type_changed?

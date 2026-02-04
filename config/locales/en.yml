@@ -164,6 +164,12 @@ en:
         object_class: Entity
         default_value: Default value
         description: Description
+        related_field: Related entity
+        route: Route
+        stop_store: Intermediate reload - Cartoway Deliver
+        stop_visit: Visit - Cartoway Deliver
+        visit: Visit - Destination
+        vehicle: Vehicle - Cartoway Deliver
       customer:
         ref: Reference
         ref_help: Reference must be unique
@@ -945,7 +951,10 @@ en:
       name: Name
       name_help: Property name
       object_class: Entity
-      object_class_help: Entity to which property is linked
+      object_class_help_html: >-
+        Entity to which property is linked.
+        <br/>"Destination" - The field will appear in the destination form.
+        <br/>"Cartoway Deliver" - The field will appear in the Cartoway Deliver form.
       object_type: Type
       object_type_help: Property type. Used to adjust display format
       default_value:
@@ -957,6 +966,10 @@ en:
       default_value_help: Default value
       description: Description
       description_help: Indication describing the property
+      related_field: Related entity
+      related_field_help: >-
+        Allows to distinguish properties according to the context.
+        For example for routes, distinguish start and end depot.
     menu:
       custom_attributes: Additional properties
     types:
@@ -965,6 +978,10 @@ en:
       float: Floating number
       integer: Integer number
       string: Text
+    related_fields:
+      route:
+        start_route_data: Start depot - Cartoway Deliver
+        stop_route_data: End depot - Cartoway Deliver
   customers:
     duplicate:
       success: Customer account duplicated successfully
@@ -1892,6 +1909,11 @@ en:
         undelivered: Undelivered
         any: Any status
         none: Without status
+      stop_store_status:
+        atstore: At store
+        intransit: In transit
+        inprocessing: In processing
+        finished: Finished
       update_stops_status: 'Stops status:'
       customer_external_callback_url:
         action: External Application
@@ -2333,10 +2355,23 @@ en:
       annotating:
         hour: 'Passing Time:'
         signature: 'Signature:'
+    error_messages:
+      update:
+        failure: Fails to update
     mobile:
       empty_route: Empty tour
       sync_pending: Sync pending
       sync_failed: Sync failed
+      start_depot: Start depot
+      stop_depot: End depot
+      prepare_time: Preparation time
+      start_time: Start time
+      route_data:
+        to_load: to load
+        to_drop: to drop
+        pickup: to pickup
+        delivery: to delivery
+      form: Form
   deliverables_by_vehicles:
     show:
       title_page: Charge by plans

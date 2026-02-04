@@ -21,11 +21,11 @@ require 'value_to_boolean'
 require 'zip'
 
 class RoutesController < ApplicationController
-  before_action :authenticate_user!, except: [:mobile, :update_position]
+  before_action :authenticate_user!, except: [:mobile, :update_position, :driver_update]
   before_action :set_route, only: [:update, :modal]
 
-  before_action :authenticate_driver!, only: [:mobile, :update_position]
-  before_action :set_driver_route, only: [:mobile]
+  before_action :authenticate_driver!, only: [:mobile, :update_position, :driver_update]
+  before_action :set_driver_route, only: [:mobile, :driver_update]
 
   load_and_authorize_resource
 
@@ -34,7 +34,7 @@ class RoutesController < ApplicationController
   def mobile
     manage_planning
     @params = params
-    @stops = @route.stops.includes_destinations_and_stores.only_active_stop_visits
+    @stops = @route.stops.includes_destinations_and_stores.only_active
     respond_to do |format|
       format.html {
         render 'routes/mobile',
@@ -43,7 +43,10 @@ class RoutesController < ApplicationController
           enable_driver_move: ValueToBoolean.value_to_boolean(current_vehicle.customer.devices.dig(:deliver, :driver_move)),
           date: @route.planning.date,
           is_expired: @route.is_expired?,
-          custom_attributes: current_vehicle.customer.custom_attributes.for_stop_visit,
+          stop_visit_custom_attributes: current_vehicle.customer.custom_attributes.for_stop_visit,
+          stop_store_custom_attributes: current_vehicle.customer.custom_attributes.for_stop_store,
+          start_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('start_route_data'),
+          stop_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('stop_route_data'),
           customer: current_vehicle.customer
         },
         layout: 'mobile'
@@ -119,6 +122,40 @@ class RoutesController < ApplicationController
     end
   end
 
+  def driver_update
+    respond_to do |format|
+      route_params = route_driver_params
+      # Force nested route_data ids to the current route's records (never trust client-supplied id)
+      if route_params[:start_route_data_attributes].present?
+        route_params[:start_route_data_attributes] = route_params[:start_route_data_attributes].to_h.merge(id: @route.start_route_data.id)
+      end
+      if route_params[:stop_route_data_attributes].present?
+        route_params[:stop_route_data_attributes] = route_params[:stop_route_data_attributes].to_h.merge(id: @route.stop_route_data.id)
+      end
+      if @route.update(route_params)
+        format.json do
+          render json: { success: true }
+        end
+        format.html do
+          if request.xhr?
+            head :ok
+          else
+            head :no_content
+          end
+        end
+      else
+        format.json do
+          flash.now[:alert] = I18n.t('routes.error_messages.update.failure')
+          render json: { error: I18n.t('routes.error_messages.update.failure') }.to_json,
+                 status: :unprocessable_entity
+        end
+        format.html do
+          head :unprocessable_entity
+        end
+      end
+    end
+  end
+
   def update_position
     @customer = current_vehicle.customer
     if params['latitude'] && params['longitude'] && params['latitude'].is_a?(Float) && params['longitude'].is_a?(Float)
@@ -163,6 +200,15 @@ class RoutesController < ApplicationController
   # Never trust parameters from the scary internet, only allow the white list through.
   def route_params
     params.require(:route).permit(:hidden, :locked, :ref, :color)
+  end
+
+  def route_driver_params
+    params.require(:route).permit(
+      :status,
+      start_route_data_attributes: [:status],
+      stop_route_data_attributes: [:status],
+      custom_attributes: RecursiveParamsHelper.permit_recursive(params['route']['custom_attributes'])
+    )
   end
 
   def export_params

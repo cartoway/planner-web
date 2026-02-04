@@ -10,9 +10,19 @@ class CustomAttributesController < ApplicationController
 
   def new
     @custom_attribute = current_user.customer.custom_attributes.build(object_class: 2)
+    @custom_attribute.object_class_with_related_field = @custom_attribute.object_class
   end
 
-  def edit; end
+  def edit
+    @custom_attribute.object_class_with_related_field =
+      if @custom_attribute.object_class.present?
+        if @custom_attribute.related_field.present?
+          "#{@custom_attribute.object_class}:#{@custom_attribute.related_field}"
+        else
+          @custom_attribute.object_class
+        end
+      end
+  end
 
   def create
     respond_to do |format|
@@ -82,6 +92,6 @@ class CustomAttributesController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def custom_attribute_params
-    params.require(:custom_attribute).permit(:name, :object_type, :object_class, :default_value, :description, :customer_id, default_value: [])
+    params.require(:custom_attribute).permit(:name, :object_type, :object_class, :object_class_with_related_field, :default_value, :description, :customer_id, :related_field, default_value: [])
   end
 end

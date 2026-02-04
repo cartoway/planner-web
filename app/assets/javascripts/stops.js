@@ -6,7 +6,7 @@ export const stops_edit = function(params) {
       e.stopPropagation();
     });
   })
-  $('#radiobtn a, #quick-status').on('click', function() {
+  $(document).on('click', '.radiobtn a, #quick-status', function() {
     var selected = $(this).data('title');
     changeStatuses($(this), selected);
   });
@@ -25,17 +25,29 @@ export const stops_edit = function(params) {
     panel.find('.input-group').find('#'+toggled).prop('value', selected);
     panel.find('.input-group').find('#'+toggled+'_updated_at').prop('value', new Date().toUTCString());
 
-    panel.find('#radiobtn a[data-toggle="'+toggled+'"]').not('[data-title="'+selected+'"]').removeClass('active');
-    panel.find('#radiobtn a[data-toggle="'+toggled+'"][data-title="'+selected+'"]').addClass('active');
+    panel.find('.radiobtn a[data-toggle="'+toggled+'"]').not('[data-title="'+selected+'"]').removeClass('active');
+    panel.find('.radiobtn a[data-toggle="'+toggled+'"][data-title="'+selected+'"]').addClass('active');
 
-    var match = panel.find('#label-index').attr("class").match(new RegExp('label-([a-z]*)'));
-    panel.find('#label-index').removeClass(match.shift())
-                     .addClass('label-'+selected);
-    var match = panel.find('.panel-heading').attr("class").match(new RegExp('panel-heading-[a-z]*'));
-    panel.find('.panel-heading').removeClass(match.shift())
-                     .addClass('panel-heading-'+selected);
+    var label = panel.find('#label-index');
+    var labelClasses = label.attr("class") || "";
+    var labelMatch = labelClasses.match(/label-[a-z_]*$/);
+    if (labelMatch) {
+      label.removeClass(labelMatch[0]);
+    }
+    label.addClass('label-' + selected);
 
-    if(selected == 'intransit') {
+    var heading = panel.find('.panel-heading');
+    var headingClasses = heading.attr("class") || "";
+    var headingMatch = headingClasses.match(/panel-heading-[a-z_]*$/);
+    if (headingMatch) {
+      heading.removeClass(headingMatch[0]);
+    }
+    heading.addClass('panel-heading-' + selected);
+
+    var stopType = panel.data('stop-type');
+
+    // Quick "delivered" shortcut only makes sense for StopVisits
+    if (stopType === 'visit' &&selected == 'intransit') {
       var next_status = 'delivered';
       panel.find('#quick-status').removeClass('d-none');
       panel.find('#quick-status').data('title', next_status);
@@ -66,14 +78,19 @@ export const stops_edit = function(params) {
   }
 
   function submitForm(current_context) {
-    const formData = new FormData(current_context.find('form')[0]);
-    formData.append('stop[status_updated_at]', new Date().toISOString());
+    const form = current_context.find('form')[0];
+    const formData = new FormData(form);
+    const url = current_context.find('form').attr('action');
+
+    // Only append stop-specific field for stop forms (not for route driver_update forms)
+    if (url.indexOf('/stops/') !== -1) {
+      formData.append('stop[status_updated_at]', new Date().toISOString());
+    }
+
     const formObject = {};
     formData.forEach((value, key) => {
       formObject[key] = value;
     });
-
-    const url = current_context.find('form').attr('action');
 
     if (!navigator.onLine) {
       storeStopUpdate(url, formObject);

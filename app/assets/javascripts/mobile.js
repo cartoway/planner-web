@@ -104,7 +104,8 @@ const tracking = function(params) {
       if (event.data.type === 'GET_PENDING_DATA') {
         const data = {
           positions: [],
-          stops: []
+          stops: [],
+          routes: []
         };
 
         for (let i = 0; i < localStorage.length; i++) {
@@ -117,10 +118,14 @@ const tracking = function(params) {
             const stop = JSON.parse(localStorage.getItem(key));
             data.stops.push(stop);
             localStorage.removeItem(key);
+          } else if (key.startsWith('route_update_')) {
+            const routeUpdate = JSON.parse(localStorage.getItem(key));
+            data.routes.push(routeUpdate);
+            localStorage.removeItem(key);
           }
         }
 
-        if (data.stops.length === 0) {
+        if (data.stops.length === 0 && data.positions.length === 0 && data.routes.length === 0) {
           $('#mobile-sync-pending').addClass('d-none');
         }
 
@@ -277,6 +282,7 @@ const tracking = function(params) {
         navigator.serviceWorker.ready.then(registration => {
           registration.sync.register('sync-positions');
           registration.sync.register('sync-stops');
+          registration.sync.register('sync-routes');
         });
       } else {
         if (hasPendingData('position_')) {
@@ -284,6 +290,9 @@ const tracking = function(params) {
         }
         if (hasPendingData('stop_update_')) {
           syncStopsWithoutServiceWorker();
+        }
+        if (hasPendingData('route_update_')) {
+          syncRoutesWithoutServiceWorker();
         }
       }
     }
@@ -377,6 +386,85 @@ const tracking = function(params) {
       });
     });
   }
+
+  function storeRouteUpdate(url, formDataObject) {
+    const updateData = {
+      id: Date.now(),
+      url: url,
+      formData: formDataObject
+    };
+
+    $('#mobile-sync-pending').removeClass('d-none');
+
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'STORE_ROUTE',
+        payload: updateData
+      });
+      if ('SyncManager' in window) {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.sync.register('sync-routes');
+        });
+      }
+    } else {
+      localStorage.setItem(`route_update_${updateData.id}`, JSON.stringify(updateData));
+    }
+  }
+
+  function syncRoutesWithoutServiceWorker() {
+    const updates = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith('route_update_')) {
+        updates.push(JSON.parse(localStorage.getItem(key)));
+      }
+    }
+
+    updates.forEach(update => {
+      const formData = new FormData();
+      Object.keys(update.formData).forEach(key => {
+        formData.append(key, update.formData[key]);
+      });
+
+      $.ajax({
+        type: 'PATCH',
+        url: update.url + (update.url.includes('?') ? '&' : '?') + 'format=json',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function() {
+          localStorage.removeItem(`route_update_${update.id}`);
+          $('#mobile-sync-pending').addClass('d-none');
+        },
+        error: function(xhr) {
+          if (xhr.status === 409) {
+            localStorage.removeItem(`route_update_${update.id}`);
+            $('#mobile-sync-pending').addClass('d-none');
+          } else if ([404, 408, 502, 503, 504].includes(xhr.status)) {
+            return;
+          } else {
+            localStorage.removeItem(`route_update_${update.id}`);
+            $('#mobile-sync-failed').removeClass('d-none');
+          }
+        }
+      });
+    });
+  }
+
+  // Intercept route status form submissions when offline to store them for later sync
+  $('.route-status-form').on('submit', function(event) {
+    if (!navigator.onLine) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      const formObject = {};
+      formData.forEach((value, key) => {
+        formObject[key] = value;
+      });
+      const url = form.action;
+      storeRouteUpdate(url, formObject);
+    }
+  });
 
   initServiceWorker();
 };
