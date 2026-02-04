@@ -15,70 +15,64 @@
       %h4.d-flex.align-items-center.justify-items-center
         .label.label-default.p-3.mr-2
           %i.fa.fa-calendar.fa-fw
-        = date
-    - route_quantities(@route.planning, @route).each do |unit|
-      - next if unit[:quantity]&.zero?
-
+        = date + (number_of_days(@route.route_data.start) || 0)
+    - if @route.route_data.start && @route.vehicle_usage.default_service_time_start.present?
       %h4.d-flex.align-items-center.justify-items-center
         .label.label-default.p-3.mr-2
-          %i.fa.fa-fw{ class: unit[:unit_icon] }
-        .quantity
-          = unit[:quantity]
-          = unit[:label]
+          %i.fa.fa-clock.fa-fw
+        - if @route.service_time_start_value
+          = t('routes.mobile.prepare_time')
+        - else
+          = t('routes.mobile.start_time')
+        = @route.route_data.start_time
+
+    - if @route.service_time_start_value
+      %h4.d-flex.align-items-center.justify-items-center
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-clock.fa-fw
+        = t('routes.mobile.start_time')
+        = time_over_day(@route.route_data.start + @route.service_time_start_value)
+    - route_quantities(@route.planning, @route).each do |unit|
+      - next if unit[:pickup].blank? && unit[:delivery].blank?
+      - [:pickup, :delivery].each do |sym|
+        %h4.d-flex.align-items-center.justify-items-center
+          .label.label-default.p-3.mr-2
+            %i.fa.fa-fw{ class: unit[:unit_icon] }
+          .quantity
+            = unit[sym]
+            = unit[:label]
+            = t("routes.mobile.route_data.#{sym}")
   .panel-body
+    - previous_route_data_quantities = nil
+    - current_route_data_quantities = route_data_quantities(@route.start_route_data, @route.vehicle_usage&.vehicle)
     - if is_expired
       .alert.alert-warning
         = t("errors.routes.expired")
     - else
       #accordion.panel-group.route-stops{ role: 'tablist', aria_multiselectable: 'true' }
         - previous = nil
-        - @stops.each do |stop|
-          - in_route_data = formatted_stop_inroute_sms(stop)
-          - next unless stop.active
-
-          - next_status = case stop.status
-          - when 'intransit'
-            - 'delivered'
-          - when nil
-            - 'intransit'
-          .panel.panel-default
-            .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+        - if @route.vehicle_usage&.default_store_start.present?
+          - agent_link = case agent
+            - when :ios
+              - "http://maps.apple.com/?daddr=#{@route.vehicle_usage.default_store_start.lat},#{@route.vehicle_usage.default_store_start.lng}"
+            - else
+              - "geo:#{@route.vehicle_usage.default_store_start.lat},#{@route.vehicle_usage.default_store_start.lng}?q=#{@route.vehicle_usage.default_store_start.lat},#{@route.vehicle_usage.default_store_start.lng}"
+          .panel.panel-default{ data: { stop_type: 'start_store' } }
+            .panel-heading{ id: "heading-start-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.start_route_data.status}", href: "#collapse-start-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
               .d-flex.align-items-center.justify-content-between.mb-1
                 .col-xs-2.p-0
                   .d-flex.align-items-center.justify-content-between
-                    #label-index.number.label.p-3{ class: ("label-#{stop.status}") }
-                      = stop.index
-                .col-xs-6.p-0
-                  = stop.name
-                .col-xs-4.p-0
-                  - if customer.enable_sms && in_route_data[:phone_number].present?
-                    = link_to "sms:#{in_route_data[:phone_number]}?body=#{CGI.escape(in_route_data[:content])}",
-                      id: "quick-status",
-                      class: "col-xs-12 col-sm-6 btn btn-default no-toggle mr-2 pull-right#{' d-none' unless next_status}",
-                      data: { toggle: 'active_status', title: next_status } do
-                      .d-flex.align-items-center
-                        .fa.fa-regular.fa-square-caret-right.mr-2
-                        #quick-status-text
-                          = t("plannings.edit.stop_status.#{next_status}") if next_status
-                  - else
-                    %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
-                      .d-flex.align-items-center
-                        .fa.fa-regular.fa-square-caret-right.mr-2
-                        #quick-status-text
-                          = t("plannings.edit.stop_status.#{next_status}") if next_status
-                  - agent_link = case agent
-                  - when :ios
-                    - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
-                  - else
-                    - "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+                    #label-index.label.label-default-negative.p-3{ class: "label-#{@route.start_route_data.status}" }
+                      %i.fa.fa-fw{ class: "#{@route.vehicle_usage.default_store_start.default_icon}" }
+                .col-xs-10.p-0
+                  = t('routes.mobile.start_depot')
               .d-flex.align-items-center
-                -# .col-xs-4.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
                 .col-xs-12.p-0.mt-1
                   .d-flex.align-items-center.justify-content-between
                     .col-xs-8.p-0.mr-2
-                      = stop.visit.destination.street
-                      = stop.visit.destination.postalcode
-                      = stop.visit.destination.city
+                      = @route.vehicle_usage.default_store_start.street
+                      = @route.vehicle_usage.default_store_start.postalcode
+                      = @route.vehicle_usage.default_store_start.city
                     .col-xs-4.p-0
                       %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: agent_link }
                         .d-flex.align-items-center
@@ -86,10 +80,35 @@
                           = t("stops.mobile.navigate")
               .d-flex.align-items-center.justify-content-center
                 .fa.fa-caret-down.fa-fw
-            .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
+            .panel-collapse.collapse.in{ id: "collapse-start-route-data", role: 'tabpanel' }
               .panel-body
-                = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit, enable_driver_move: enable_driver_move, custom_attributes: custom_attributes, customer: customer, sms_content: in_route_data[:content], phone_number: in_route_data[:phone_number] }
+                = render partial: 'routes/mobile_route_data', locals: { route: @route, route_data: @route.start_route_data, custom_attributes: start_route_data_custom_attributes, related_field: 'start_route_data', customer: customer, previous_route_data_quantities: previous_route_data_quantities, current_route_data_quantities: current_route_data_quantities, show_status_controls: true, status_context: 'start_route_data' }
+          - previous = @route.vehicle_usage&.default_store_start
+        - previous_route_data_quantities = current_route_data_quantities
+        - @stops.each do |stop|
+          - next if !stop.active || stop.is_a?(StopRest)
+
+          - if stop.is_a?(StopVisit)
+            = render partial: 'stops/mobile_stop_visit', locals: { stop: stop, previous: previous, agent: agent, customer: customer, enable_driver_move: enable_driver_move, custom_attributes: stop_visit_custom_attributes }
+          - elsif stop.is_a?(StopStore)
+            = render partial: 'stops/mobile_stop_store', locals: { stop: stop, previous: previous, agent: agent, customer: customer, custom_attributes: stop_store_custom_attributes }
           - previous = stop
+        - if @route.vehicle_usage&.default_store_stop.present?
+          .panel.panel-default{ data: { stop_type: 'stop_store' } }
+            .panel-heading{ id: "heading-stop-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.stop_route_data.status}", href: "#collapse-stop-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
+              .d-flex.align-items-center.justify-content-between.mb-1
+                .col-xs-2.p-0
+                  .d-flex.align-items-center.justify-content-between
+                    #label-index.label.label-default-negative.p-3{ class: "label-#{@route.stop_route_data.status}" }
+                      %i.fa.fa-fw{ class: "#{@route.vehicle_usage.default_store_stop.default_icon}" }
+                .col-xs-10.p-0
+                  = t('routes.mobile.stop_depot')
+              .d-flex.align-items-center.justify-content-center
+                .fa.fa-caret-down.fa-fw
+            - current_route_data_quantities = route_data_quantities(@route.stop_route_data, @route.vehicle_usage&.vehicle)
+            .panel-collapse.collapse{ id: "collapse-stop-route-data", role: 'tabpanel' }
+              .panel-body
+                = render partial: 'routes/mobile_route_data', locals: { route: @route, route_data: @route.stop_route_data, custom_attributes: stop_route_data_custom_attributes, related_field: 'stop_route_data', customer: customer, previous_route_data_quantities: previous_route_data_quantities, current_route_data_quantities: current_route_data_quantities, show_status_controls: true, status_context: 'stop_route_data'  }
         - if @stops&.empty?
           .alert.alert-warning
             = t("routes.mobile.empty_route")

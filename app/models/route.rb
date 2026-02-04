@@ -96,6 +96,9 @@ class Route < ApplicationRecord
 
   include RefSanitizer
 
+  include TypedAttribute
+  typed_attr :custom_attributes
+
   def route_data_attributes=(attributes)
     self.outdated = true if attributes[:departure] != route_data&.departure
     super

@@ -1,10 +1,18 @@
 - require "#{Rails.application.root}/lib/localized_values"
+- options = CustomAttribute.object_class_options_with_related_fields.map do |key|
+  - label = if key.to_s.include?(':')
+    - parts = key.to_s.split(':', 2)
+    - "#{t("activerecord.attributes.custom_attribute.#{parts[0]}")} - #{t("custom_attributes.related_fields.#{parts[0]}.#{parts[1]}", default: parts[1].humanize)}"
+  - else
+    - t("activerecord.attributes.custom_attribute.#{key}")
+  - [label, key.to_s]
 = bootstrap_form_for @custom_attribute, layout: :horizontal do |f|
   = render 'shared/error_messages', model: @custom_attribute
   = f.text_field :name, help: t('.name_help')
   = f.select :object_type, CustomAttribute.object_types.keys.map{ |key| [t("custom_attributes.types.#{key}"), key] }, { help: t('.object_type_help') }, class: 'form-control'
-  = f.select :object_class, CustomAttribute.ordered_object_classes.map{ |key| [t("activerecord.models.#{key}"), key] }, { help: t('.object_class_help') }, class: 'form-control'
-
+  = f.hidden_field :object_class, id: 'custom_attribute_object_class'
+  = f.hidden_field :related_field, id: 'custom_attribute_related_field'
+  = f.select :object_class_with_related_field, options_for_select(options, @custom_attribute.object_class_with_related_field), { help: t('.object_class_help_html'), label: t('activerecord.attributes.custom_attribute.object_class') }, class: 'form-control', id: 'custom_attribute_object_class_with_related_field'
   #default_value_container
     = render partial: 'default_value', locals: { object_type: @custom_attribute.object_type, typed_default_value: @typed_default_value || object_type_cast(@custom_attribute.object_type, @custom_attribute.default_value) }
   = f.text_field :description, { help: t('.description_help') }

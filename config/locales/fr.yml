@@ -170,6 +170,12 @@ fr:
         object_class: Entité
         default_value: Valeur par défaut
         description: Description
+        related_field: Entité liée
+        route: Tournée
+        stop_store: Rechargement - Cartoway Deliver
+        stop_visit: Visite - Cartoway Deliver
+        visit: Visite - Fiche Client
+        vehicle: Véhicule - Cartoway Deliver
       customer:
         ref: Référence
         ref_help: La référence doit être unique
@@ -969,7 +975,10 @@ fr:
       name: Nom
       name_help: Nom de la propriété
       object_class: Entité
-      object_class_help: Entité à laquelle lier la propriété
+      object_class_help_html: >-
+        Entité à laquelle lier la propriété.
+        <br/>"Fiche Client" - Le champs apparaîtra dans le formulaire de la fiche client.
+        <br/>"Cartoway Deliver" - Le champs apparaîtra dans le formulaire de l'appli mobile Cartoway Deliver.
       object_type: Type
       object_type_help: Type de la propriété. Permet d'ajuster le format d'affichage
       default_value:
@@ -981,6 +990,10 @@ fr:
       default_value_help: Valeur par défault
       description: Description
       description_help: Indication décrivant la propriété
+      related_field: Entité liée
+      related_field_help: >-
+        Permet de distinguer les propriétés selon le contexte.
+        Par exemple pour les tournées, distinguer dépôt de départ et d'arrivée
     menu:
       custom_attributes: Propriétés additionnelles
     types:
@@ -989,7 +1002,10 @@ fr:
       float: Nombre à virgule
       integer: Nombre entier
       string: Texte
-
+    related_fields:
+      route:
+        start_route_data: Dépôt de départ - Cartoway Deliver
+        stop_route_data: Dépôt d'arrivée - Cartoway Deliver
   customers:
     duplicate:
       success: Espace client dupliqué avec succès
@@ -1980,6 +1996,11 @@ fr:
         undelivered: Non livré
         any: Tous statuts
         none: Sans statut
+      stop_store_status:
+        atstore: Sur site
+        intransit: En route
+        inprocessing: En cours
+        finished: Terminé
       update_stops_status: 'Statuts arrêts :'
       customer_external_callback_url:
         action: Application externe
@@ -2440,10 +2461,23 @@ fr:
       annotating:
         hour: 'Heure de passage :'
         signature: 'Signature :'
+    error_messages:
+      update:
+        failure: Échec de la mise à jour
     mobile:
       empty_route: Tournée vide
       sync_pending: Hors connexion, Synchro en attente
       sync_failed: Synchro échouée
+      start_depot: Dépôt de départ
+      stop_depot: Dépôt d'arrivée
+      prepare_time: Préparation
+      start_time: Départ
+      route_data:
+        to_load: à charger
+        to_drop: à décharger
+        pickup: à collecter
+        delivery: à livrer
+      form: Formulaire
   deliverables_by_vehicles:
     show:
       title_page: État de charge par tournée

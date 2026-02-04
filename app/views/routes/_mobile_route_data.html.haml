@@ -1,0 +1,61 @@
+- previous_route_data_quantities ||= nil
+.container.mt-1
+  - previous_route_data_quantities&.each do |unit|
+    - if unit[:pickup].present? && unit[:pickup].to_f > 0
+      .d-flex.align-items-center.justify-items-center.mb-1
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-fw{ class: unit[:unit_icon] }
+        .quantity
+          %i.fa.fa-fw.fa-up-long
+          = unit[:pickup]
+          = unit[:label]
+          = t('routes.mobile.route_data.to_drop')
+  - current_route_data_quantities.each do |unit|
+    - if unit[:delivery].present? && unit[:delivery].to_f > 0
+      .d-flex.align-items-center.justify-items-center.mb-1
+        .label.label-default.p-3.mr-2
+          %i.fa.fa-fw{ class: unit[:unit_icon] }
+        .quantity
+          %i.fa.fa-fw.fa-up-long
+          = unit[:delivery]
+          = unit[:label]
+          = t('routes.mobile.route_data.to_load')
+  = bootstrap_form_for route, url: driver_update_route_path(route), method: :patch, remote: true, html: { class: 'route-status-form' } do |f|
+    - if custom_attributes.any?
+      .form-group.mb-1
+        %label
+          = t('routes.mobile.form')
+        - custom_attributes.each do |custom_attribute|
+          .custom_field.d-flex.align-items-center.justify-content-left.mb-1.row
+            %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
+              = custom_attribute.name
+            .field.mb-0{class: custom_attribute.object_type == 'boolean' ? 'col-xs-4' : 'col-xs-12' }
+              = custom_attribute_form_field(f, route, custom_attribute, 'route', related_field: related_field)
+            .col-xs-12
+              %p.help-block
+                = custom_attribute.description
+
+    - if local_assigns[:show_status_controls]
+      - current_status = route_data.status
+      .form-group.mb-1
+        %label{ for: "route_#{status_context}_status" }
+          = t('stops.mobile.status')
+        .input-group.col-xs-12
+          .radiobtn
+            .d-flex.row.align-items-center.justify-content-between{ style: 'width: 100%'}
+              - if status_context == 'stop_route_data'
+                .col-xs-6.d-flex.justify-content-center
+                  %a.btn.btn-primary{ data: { toggle: "route_#{status_context}_status", title: 'intransit' }, class: ('active' if current_status == 'intransit') }
+                    = t('plannings.edit.stop_store_status.intransit')
+              .col-xs-6.d-flex.justify-content-center
+                %a.btn.btn-info{ data: { toggle: "route_#{status_context}_status", title: 'atstore' }, class: ('active' if current_status == 'atstore') }
+                  = t('plannings.edit.stop_store_status.atstore')
+              .col-xs-6.d-flex.justify-content-center
+                %a.btn.btn-info{ data: { toggle: "route_#{status_context}_status", title: 'inprocessing' }, class: ('active' if current_status == 'inprocessing') }
+                  = t('plannings.edit.stop_store_status.inprocessing')
+              .col-xs-6.d-flex.justify-content-center
+                %a.btn.btn-success{ data: { toggle: "route_#{status_context}_status", title: 'finished' }, class: ('active' if current_status == 'finished') }
+                  = t('plannings.edit.stop_store_status.finished')
+          -# Hidden status field inside .input-group so changeStatuses (stops.js) finds it
+          = f.fields_for status_context.to_sym, route.send(status_context), include_id: false do |ff|
+            = ff.hidden_field :status, id: "route_#{status_context}_status"

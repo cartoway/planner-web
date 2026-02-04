@@ -44,7 +44,7 @@
       %label{ for: 'active_status' }
         = t('stops.mobile.status')
       .input-group.col-xs-12
-        #radiobtn
+        .radiobtn
           .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
             .col-xs-6.d-flex.justify-content-center
               - if customer.enable_sms && customer.enable_sms_intransit && phone_number.present?

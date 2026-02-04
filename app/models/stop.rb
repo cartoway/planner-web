@@ -43,6 +43,7 @@ class Stop < ApplicationRecord
 
   scope :only_stop_visits, -> { where(type: StopVisit.name) }
   scope :only_stop_stores, -> { where(type: StopStore.name) }
+  scope :only_active, -> { where(active: true) }
   scope :only_active_stop_visits, -> { only_stop_visits.where(active: true) }
   scope :includes_destinations_and_stores, -> {
     includes(

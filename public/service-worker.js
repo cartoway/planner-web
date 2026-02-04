@@ -14,13 +14,22 @@ self.addEventListener('sync', event => {
               case 'sync-stops':
                 resolve(syncStops());
                 break;
+              case 'sync-routes':
+                resolve(syncRoutes());
+                break;
             }
           } else if (attempts >= 5) {
             clearInterval(checkToken);
-            if (event.tag === 'sync-positions') {
-              notifyClients('STORE_POSITIONS', Array.from(pendingRequests.positions));
-            } else {
-              notifyClients('STORE_STOPS', Array.from(pendingRequests.stops));
+            switch (event.tag) {
+              case 'sync-positions':
+                notifyClients('STORE_POSITIONS', Array.from(pendingRequests.positions));
+                break;
+              case 'sync-stops':
+                notifyClients('STORE_STOPS', Array.from(pendingRequests.stops));
+                break;
+              case 'sync-routes':
+                notifyClients('STORE_ROUTES', Array.from(pendingRequests.routes));
+                break;
             }
             resolve();
           }
@@ -37,12 +46,16 @@ self.addEventListener('sync', event => {
     case 'sync-stops':
       event.waitUntil(syncStops());
       break;
+    case 'sync-routes':
+      event.waitUntil(syncRoutes());
+      break;
   }
 });
 
 const pendingRequests = {
   positions: new Set(),
-  stops: new Set()
+  stops: new Set(),
+  routes: new Set()
 };
 
 let csrfToken;
@@ -51,7 +64,7 @@ function getAllPendingData() {
   return new Promise((resolve) => {
     self.clients.matchAll().then(clients => {
       if (!clients.length) {
-        resolve({ positions: [], stops: [] });
+        resolve({ positions: [], stops: [], routes: [] });
         return;
       }
 
@@ -66,6 +79,11 @@ function getAllPendingData() {
           event.data.data.stops.forEach(stop => {
             pendingRequests.stops.add(stop);
           });
+          if (event.data.data.routes) {
+            event.data.data.routes.forEach(routeUpdate => {
+              pendingRequests.routes.add(routeUpdate);
+            });
+          }
           resolve(event.data.data);
         }
       };
@@ -108,6 +126,9 @@ self.addEventListener('message', event => {
     case 'STORE_STOP':
       pendingRequests.stops.add(event.data.payload);
       break;
+    case 'STORE_ROUTE':
+      pendingRequests.routes.add(event.data.payload);
+      break;
     case 'SET_CSRF_TOKEN':
       csrfToken = event.data.token;
       break;
@@ -117,7 +138,8 @@ self.addEventListener('message', event => {
 function syncPendingData() {
   return Promise.all([
     syncPositions(),
-    syncStops()
+    syncStops(),
+    syncRoutes()
   ]);
 }
 
@@ -146,6 +168,85 @@ self.addEventListener('activate', event => {
     ])
   );
 });
+
+// Generic helper to sync collections sent as FormData (stops, routes)
+function syncFormDataCollection(options) {
+  const { collectionKey, successEvent, storeEvent, syncErrorType } = options;
+
+  if (!csrfToken) {
+    // No CSRF token available, keep items and ask client to persist them
+    notifyClients(storeEvent, Array.from(pendingRequests[collectionKey]));
+    return Promise.reject(new Error('No CSRF token available'));
+  }
+
+  return Promise.all(Array.from(pendingRequests[collectionKey]).map(item => {
+    // Handle retry-after logic for transient errors (e.g. deadlocks)
+    if (item.retryAfter && item.retryAfter > Date.now()) {
+      pendingRequests[collectionKey].delete(item);
+      notifyClients(storeEvent, Array.from([item]));
+      return Promise.resolve();
+    }
+
+    const formData = new FormData();
+    Object.keys(item.formData).forEach(key => {
+      formData.append(key, item.formData[key]);
+    });
+    // Ensure authenticity token is present
+    if (!formData.has('authenticity_token')) {
+      formData.append('authenticity_token', csrfToken);
+    }
+    formData.append('_method', 'PATCH');
+
+    const jsonUrl = item.url + (item.url.includes('?') ? '&' : '?') + 'format=json';
+
+    return fetch(jsonUrl, {
+      method: 'PATCH',
+      body: formData,
+      headers: {
+        'X-CSRF-Token': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => {
+      pendingRequests[collectionKey].delete(item);
+      if (response.ok) {
+        notifyClients(successEvent, item);
+        return;
+      }
+
+      return response.json().then(data => {
+        const errorType = (data && data.type) || '';
+
+        switch (response.status) {
+          case 404:
+          case 408:
+          case 502:
+          case 503:
+          case 504:
+            notifyClients(storeEvent, Array.from([item]));
+            break;
+          case 409:
+            break;
+          case 422:
+            if (errorType.includes('deadlock')) {
+              item.retryAfter = Date.now() + 500;
+              notifyClients(storeEvent, Array.from([item]));
+            }
+            break;
+          default:
+            throw new Error(`Failed to sync ${syncErrorType}: ${response.status}`);
+        }
+      });
+    })
+    .catch(error => {
+      notifyClients('SYNC_ERROR', {
+        type: syncErrorType,
+        url: item.url,
+        error: error.message
+      });
+    });
+  }));
+}
 
 function syncPositions() {
   if (!csrfToken) {
@@ -209,72 +310,19 @@ function syncPositions() {
 }
 
 function syncStops() {
-  if (!csrfToken) {
-    notifyClients('STORE_STOPS', Array.from(pendingRequests.stops));
-    return Promise.reject(new Error('No CSRF token available'));
-  }
+  return syncFormDataCollection({
+    collectionKey: 'stops',
+    successEvent: 'STOP_SYNCED',
+    storeEvent: 'STORE_STOPS',
+    syncErrorType: 'stop'
+  });
+}
 
-  return Promise.all(Array.from(pendingRequests.stops).map(stop => {
-    if (stop.retryAfter && stop.retryAfter > Date.now()) {
-      pendingRequests.stops.delete(stop);
-      notifyClients('STORE_STOPS', Array.from([stop]));
-      return Promise.resolve();
-    }
-
-    const formData = new FormData();
-    Object.keys(stop.formData).forEach(key => {
-      formData.append(key, stop.formData[key]);
-    });
-    formData.append('authenticity_token', csrfToken);
-    formData.append('_method', 'PATCH');
-
-    const jsonUrl = stop.url + (stop.url.includes('?') ? '&' : '?') + 'format=json';
-
-    return fetch(jsonUrl, {
-      method: 'PATCH',
-      body: formData,
-      headers: {
-        'X-CSRF-Token': csrfToken,
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
-    .then(response => {
-      pendingRequests.stops.delete(stop);
-      if (response.ok) {
-        notifyClients('STOP_SYNCED', stop);
-      } else {
-        return response.json().then(data => {
-          const errorType = data.type;
-
-          switch(response.status) {
-            case 404:
-            case 408:
-            case 502:
-            case 503:
-            case 504:
-              notifyClients('STORE_STOPS', Array.from([stop]));
-              break;
-            case 409:
-              break;
-            case 422:
-              if (errorType.includes('deadlock')) {
-                stop.retryAfter = Date.now() + 500;
-                notifyClients('STORE_STOPS', Array.from([{
-                  stop
-                }]));
-              }
-            default:
-              throw new Error(`Failed to sync stop: ${response.status}`);
-          }
-        });
-      }
-    })
-    .catch(error => {
-      notifyClients('SYNC_ERROR', {
-        type: 'stop',
-        url: stop.url,
-        error: error.message
-      });
-    });
-  }));
+function syncRoutes() {
+  return syncFormDataCollection({
+    collectionKey: 'routes',
+    successEvent: 'ROUTE_SYNCED',
+    storeEvent: 'STORE_ROUTES',
+    syncErrorType: 'route'
+  });
 }

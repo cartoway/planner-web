@@ -174,7 +174,10 @@ Rails.application.routes.draw do
   delete 'products' => 'products#destroy_multiple'
 
   resources :routes do
-    get 'modal'
+    member do
+      get 'modal'
+      patch 'driver_update'
+    end
   end
   get 'routes/:id/mobile' => 'routes#mobile'
   patch 'routes/:id/update_position' => 'routes#update_position'

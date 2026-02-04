@@ -21,6 +21,7 @@
         %th= t 'activerecord.attributes.custom_attribute.name'
         %th= t 'activerecord.attributes.custom_attribute.object_type'
         %th= t 'activerecord.attributes.custom_attribute.object_class'
+        %th= t 'activerecord.attributes.custom_attribute.related_field'
         %th= t "activerecord.attributes.custom_attribute.default_value"
         %th= t 'activerecord.attributes.custom_attribute.description'
         %th
@@ -31,6 +32,7 @@
           %td= custom_attribute.name
           %td= t "custom_attributes.types.#{custom_attribute.object_type}"
           %td= t "activerecord.models.#{custom_attribute.object_class}"
+          %td= custom_attribute.related_field ? t("custom_attributes.related_fields.#{custom_attribute.object_class}.#{custom_attribute.related_field}", default: custom_attribute.related_field.humanize) : '-'
           %td= custom_attribute.display_default_value
           %td= custom_attribute.description
           %td.text-right

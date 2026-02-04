@@ -113,4 +113,247 @@ class RoutesControllerTest < ActionController::TestCase
     assert_nil stop_store_row[destination_duration_index],
                "destination_duration should be nil for StopStore but got #{stop_store_row[destination_duration_index]}"
   end
+
+  # Tests for driver_update action
+  test 'should update route status via driver_update' do
+    vehicle = vehicles(:vehicle_one)
+    route = routes(:route_one_one)
+    original_start_status = route.start_route_data.status
+    original_stop_status = route.stop_route_data.status
+
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        start_route_data_attributes: {
+          status: 'completed',
+        },
+        stop_route_data_attributes: {
+          status: 'completed'
+        }
+      },
+      format: :json
+    }
+
+    assert_response :success
+    assert_equal({ 'success' => true }, JSON.parse(response.body))
+    route.reload
+    assert_equal 'completed', route.start_route_data.status
+    assert_not_equal original_start_status, route.start_route_data.status
+    assert_equal 'completed', route.stop_route_data.status
+    assert_not_equal original_stop_status, route.stop_route_data.status
+  end
+
+  test 'should update route custom_attributes via driver_update' do
+    vehicle = vehicles(:vehicle_one)
+    route = routes(:route_one_one)
+
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        custom_attributes: { 'test_field' => 'test_value' }
+      },
+      format: :json
+    }
+
+    assert_response :success
+    assert_equal({ 'success' => true }, JSON.parse(response.body))
+    route.reload
+    assert_equal 'test_value', route.custom_attributes['test_field']
+  end
+
+  test 'should update route status and custom_attributes together via driver_update' do
+    vehicle = vehicles(:vehicle_one)
+    route = routes(:route_one_one)
+
+    CustomAttribute.create!(
+      customer: vehicle.customer,
+      name: 'driver_note',
+      object_class: 'route',
+      related_field: 'start_route_data'
+    )
+
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        start_route_data_attributes: {
+          status: 'in_progress'
+        },
+        custom_attributes: { 'driver_note' => 'On route' }
+      },
+      format: :json
+    }
+
+    assert_response :success
+    assert_equal({ 'success' => true }, JSON.parse(response.body))
+    route.reload
+    assert_equal 'in_progress', route.start_route_data.status
+    assert_equal 'On route', route.custom_attributes['driver_note']
+  end
+
+  test 'should not update route hidden via driver_update' do
+    vehicle = vehicles(:vehicle_one)
+    route = routes(:route_one_one)
+    original_hidden = route.hidden
+
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        stop_route_data_attributes: {
+          status: 'completed'
+        },
+        hidden: !original_hidden
+      },
+      format: :json
+    }
+
+    assert_response :success
+    route.reload
+    assert_equal original_hidden, route.hidden, 'hidden should not be updated via driver_update'
+  end
+
+  test 'should not update route locked via driver_update' do
+    vehicle = vehicles(:vehicle_one)
+    route = routes(:route_one_one)
+    original_locked = route.locked
+
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        stop_route_data_attributes: {
+          status: 'completed'
+        },
+        locked: !original_locked
+      },
+      format: :json
+    }
+
+    assert_response :success
+    route.reload
+    assert_equal original_locked, route.locked, 'locked should not be updated via driver_update'
+  end
+
+  test 'should not update route ref via driver_update' do
+    vehicle = vehicles(:vehicle_one)
+    route = routes(:route_one_one)
+    original_ref = route.ref
+
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        stop_route_data_attributes: {
+          status: 'completed'
+        },
+        ref: 'new_ref'
+      },
+      format: :json
+    }
+
+    assert_response :success
+    route.reload
+    assert_equal original_ref, route.ref, 'ref should not be updated via driver_update'
+  end
+
+  test 'should not update route color via driver_update' do
+    vehicle = vehicles(:vehicle_one)
+    route = routes(:route_one_one)
+    original_color = route.color
+
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        start_route_data_attributes: {
+          status: 'completed'
+        },
+        color: '#FF0000'
+      },
+      format: :json
+    }
+
+    assert_response :success
+    route.reload
+    assert_equal original_color, route.color, 'color should not be updated via driver_update'
+  end
+
+  test 'should not update route status via update' do
+    route = routes(:route_one_one)
+    original_status = route.start_route_data.status
+
+    patch :update, params: {
+      id: route,
+      route: {
+        hidden: route.hidden,
+        locked: route.locked,
+        ref: route.ref,
+        start_route_data: {
+          status: 'completed'
+        }
+      }
+    }
+
+    assert_redirected_to route_path(assigns(:route))
+    route.reload
+    assert_equal original_status, route.start_route_data.status, 'status should not be updated via update'
+  end
+
+  test 'should handle driver_update failure gracefully' do
+    vehicle = vehicles(:vehicle_one)
+    route = routes(:route_one_one)
+    Route.any_instance.stubs(:update).returns(false)
+    Route.any_instance.stubs(:errors).returns(['Some error'])
+
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        start_route_data_attributes: {
+          status: 'completed'
+        }
+      },
+      format: :json
+    }
+
+    assert_response :unprocessable_entity
+    assert_equal({ 'error' => I18n.t('routes.error_messages.update.failure') }, JSON.parse(response.body))
+  end
+
+  test 'should not allow driver_update without driver authentication' do
+    route = routes(:route_one_one)
+
+    patch :driver_update, params: {
+      id: route,
+      route: {
+        start_route_data_attributes: {
+          status: 'completed'
+        }
+      },
+      format: :json
+    }
+
+    assert_response :forbidden
+  end
+
+  test 'should not allow driver_update with invalid driver token' do
+    route = routes(:route_one_one)
+
+    patch :driver_update, params: {
+      id: route,
+      driver_token: 'invalid_token',
+      route: {
+        start_route_data_attributes: {
+          status: 'completed'
+        }
+      },
+      format: :json
+    }
+
+    # Should redirect to login or return forbidden
+    assert_response :redirect
+  end
 end

@@ -46,6 +46,15 @@
     color: $gray-700;
   }
 
+  .label-default-negative {
+    background-color: $gray-700;
+    color: $gray-200;
+  }
+
+  .label-atstore, .label-inprocessing {
+    background-color: var(--info);
+  }
+
   .label-planned, .label-intransit {
     background-color: $primary-color;
   }
@@ -87,6 +96,14 @@
     background-color: $gray-200;
   }
 
+  .panel-heading-atstore {
+    border-left: 12px solid var(--info);
+  }
+
+  .panel-heading-inprocessing {
+    border-left: 12px solid var(--info);
+  }
+
   .panel-heading-intransit {
     border-left: 12px solid $primary-color;
   }
@@ -96,6 +113,10 @@
   }
 
   .panel-heading-delivered {
+    border-left: 12px solid var(--success);
+  }
+
+  .panel-heading-finished {
     border-left: 12px solid var(--success);
   }
 
@@ -111,7 +132,7 @@
     border-radius: 16px;
   }
 
-  #radiobtn {
+  .radiobtn {
     .btn {
       min-width: 30vw;
       margin-top: 6px;
