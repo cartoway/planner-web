@@ -60,7 +60,7 @@ class CustomAttribute < ApplicationRecord
   end
 
   def self.ordered_object_classes
-    (%w[stop vehicle visit] | object_classes.keys) # Set Union to be sure no object class is forgotten
+    (%w[vehicle visit] | object_classes.keys) # Set Union to be sure no object class is forgotten
   end
 
   private
