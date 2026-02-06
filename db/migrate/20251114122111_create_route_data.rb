@@ -71,6 +71,9 @@ class CreateRouteData < ActiveRecord::Migration[6.1]
       end
     end
 
+    # Drop and recreate history_live_routes view that depends on columns being removed
+    execute "DROP VIEW IF EXISTS history_live_routes CASCADE"
+
     remove_column :routes, :distance
     remove_column :routes, :emission
     remove_column :routes, :cost_distance
@@ -86,6 +89,12 @@ class CreateRouteData < ActiveRecord::Migration[6.1]
     remove_column :routes, :deliveries
     remove_column :routes, :departure
     remove_column :routes, :departure_status
+
+    # Recreate history_live_routes view with the new structure using route_data
+    view_sql_path = Rails.root.join('docker/superset/history_live_routes.sql')
+    if File.exist?(view_sql_path)
+      execute File.read(view_sql_path)
+    end
   end
 
   def down

@@ -16,6 +16,10 @@ class CreateStoreReloads < ActiveRecord::Migration[6.1]
     add_foreign_key :stops, :store_reloads, on_delete: :cascade
     add_column :stops, :out_of_max_reload, :boolean
 
+    # Temporarily disable after_initialize callbacks that might reference route_data_id
+    # which doesn't exist yet (added in a later migration)
+    StopStore.skip_callback(:initialize, :after, :ensure_route_data, raise: false)
+
     Stop.only_stop_stores.find_each do |stop|
       store_reload = StoreReload.where(store_id: stop.store_id, ref: nil).first
       store_reload ||= StoreReload.create!(
@@ -24,6 +28,9 @@ class CreateStoreReloads < ActiveRecord::Migration[6.1]
 
       stop.update_columns(store_reload_id: store_reload.id)
     end
+
+    # Re-enable the callback after migration
+    StopStore.set_callback(:initialize, :after, :ensure_route_data, if: -> { route_data_id.nil? }, raise: false)
 
     remove_column :vehicle_usage_sets, :store_duration
     remove_column :vehicle_usages, :store_duration
