@@ -31,7 +31,7 @@
                       %td.hide-xs
                         = planning.date && l(planning.date, format: :date)
                       %td.hide-md
-                        - emission = planning.routes.map(&:emission).compact.reduce(&:+)
+                        - emission = planning.routes.map(&:route_data).map(&:emission).compact.reduce(&:+)
                         - if emission
                           = "#{emission.round(2)} #{t('all.unit.kgco2e_html')}"
                       %td.hide-md
