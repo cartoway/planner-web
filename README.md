@@ -141,6 +141,37 @@ Add new locale:
 * Update `config/application.rb`
 * Require the translation assets into `app/assets/javascripts/application.js`
 
+
+### SSO with Microsoft Entra ID (Azure AD)
+
+Single Sign-On (SSO) with Microsoft Entra ID is optional and only enabled when Azure credentials are provided.
+
+#### 1. Application registration in Entra
+
+In the Microsoft Entra / Azure portal:
+
+1. Create an **App registration** for Planner: **Enterprise apps** > **New application** > **Create your own application**. Complete the form
+2. **App registrations** > **All applications** > **<YourAppName>** > **Certificates & secrets** > **New client secret** > Set a name and an expiration date. Note the secret.
+3. Return to **App registrations** > **All applictions** > **<YourAppName>** > **Authenticatiop, (Preview)** > **Add Redirect UI** > **Web** > Configure the **redirect URI** (Web) to match your deployment URL, for example:
+   - Development: `http://localhost:3000/users/auth/entra_id/callback`
+   - Production: `https://your-domain.example.com/users/auth/entra_id/callback`
+4. Return to **App registrations** > **All applications** > **<YourAppName>** > Note the Application (client) ID and the Directory (tenant) ID
+
+> The callback path `/users/auth/entra_id/callback` is defined by Devise/OmniAuth (`omniauth_providers: [:entra_id]` and `OmniauthCallbacksController#entra_id`).
+
+#### 2. Environment variables
+
+Set the following environment variables (they are also declared in `.env.template` and used in `docker-compose.yml`):
+
+* `AZURE_CLIENT_ID` – Entra application (client) ID
+* `AZURE_CLIENT_SECRET` – Entra client secret
+* `AZURE_TENANT_ID` – Entra directory (tenant) ID
+
+#### 3. Usage in the application
+
+* The user can use the SSO sign-in and link/unlink their account through the user form.
+
+
 # Docker
 ## Prerequisite
 

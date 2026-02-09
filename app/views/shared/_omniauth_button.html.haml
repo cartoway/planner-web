@@ -1,0 +1,20 @@
+-# Partial for rendering OmniAuth provider buttons
+-# Usage: render partial: 'shared/omniauth_button', locals: { provider: :entra_id, resource_name: :user, button_class: 'btn-primary', button_style: 'btn-block' }
+- provider = local_assigns[:provider]
+- resource_name = local_assigns[:resource_name] || :user
+- button_class = local_assigns[:button_class] || 'btn-default'
+- button_style = local_assigns[:button_style] || 'btn-block'
+- provider_name = t("all.providers.#{provider}")
+- text = local_assigns[:text] || t('devise.shared.links.sign_in_with_provider', provider: provider_name, default: "Sign in with #{provider_name}")
+
+-# Generate the correct path based on resource_name and provider
+- auth_path = if respond_to?(:omniauth_authorize_path)
+  - omniauth_authorize_path(resource_name, provider)
+- elsif respond_to?("#{resource_name}_#{provider}_omniauth_authorize_path")
+  - send("#{resource_name}_#{provider}_omniauth_authorize_path")
+- else
+  - "/#{resource_name.to_s.pluralize}/auth/#{provider}"
+
+= link_to auth_path, class: "btn #{button_class} #{button_style} sso-button", style: 'margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 20px;' do
+  = omniauth_provider_logo(provider, height: 24, style: 'vertical-align: middle;')
+  %span= text

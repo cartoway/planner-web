@@ -471,6 +471,8 @@ GEM
       ruby2_keywords (>= 0.0.5)
     msgpack (1.7.2)
     multi_json (1.15.0)
+    multi_xml (0.7.1)
+      bigdecimal (~> 3.1)
     multipart-post (2.4.1)
     mustache (1.1.1)
     mustermann (3.0.0)
@@ -512,6 +514,24 @@ GEM
       nenv (~> 0.1)
       shellany (~> 0.0)
     numerizer (0.1.1)
+    oauth2 (2.0.18)
+      faraday (>= 0.17.3, < 4.0)
+      jwt (>= 1.0, < 4.0)
+      logger (~> 1.2)
+      multi_xml (~> 0.5)
+      rack (>= 1.2, < 4)
+      snaky_hash (~> 2.0, >= 2.0.3)
+      version_gem (~> 1.1, >= 1.1.9)
+    omniauth (2.1.4)
+      hashie (>= 3.4.6)
+      logger
+      rack (>= 2.2.3)
+      rack-protection
+    omniauth-entra-id (3.0.1)
+      omniauth-oauth2 (~> 1.8)
+    omniauth-oauth2 (1.9.0)
+      oauth2 (>= 2.0.2, < 3)
+      omniauth (~> 2.0)
     orm_adapter (0.5.0)
     pagy (9.1.0)
     paloma (6.1.0)
@@ -747,6 +767,9 @@ GEM
       rails (>= 3.1.0)
       sprockets (>= 2.0.3)
       tilt (>= 1.3.3)
+    snaky_hash (2.0.3)
+      hashie (>= 0.1.0, < 6)
+      version_gem (>= 1.1.8, < 3)
     sorbet-runtime (0.5.11487)
     spoon (0.0.6)
       ffi
@@ -791,6 +814,7 @@ GEM
     validates_timeliness (6.0.1)
       activemodel (>= 6.0.0, < 7)
       timeliness (>= 0.3.10, < 1)
+    version_gem (1.1.9)
     vonage (7.28.0)
       multipart-post (~> 2.0)
       net-http-persistent (~> 4.0, >= 4.0.2)
@@ -924,6 +948,7 @@ DEPENDENCIES
   net-ftp
   nilify_blanks
   nokogiri
+  omniauth-entra-id
   pagy (~> 9.1)
   paloma
   pg

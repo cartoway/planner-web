@@ -229,6 +229,17 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', :scope => 'user,public_repo'
 
+  # Configure OmniAuth for Azure Entra ID only if credentials are provided
+  if ENV['AZURE_CLIENT_ID'].present? && ENV['AZURE_CLIENT_SECRET'].present? && ENV['AZURE_TENANT_ID'].present?
+    config.omniauth(:entra_id, {
+      client_id: ENV.fetch('AZURE_CLIENT_ID'),
+      tenant_id: ENV.fetch('AZURE_TENANT_ID'),
+      client_secret: ENV.fetch('AZURE_CLIENT_SECRET'),
+      authorize_params: {
+        prompt: 'select_account'
+      }
+    })
+  end
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or
   # change the failure app, you can configure them inside the config.warden block.

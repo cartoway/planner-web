@@ -2684,6 +2684,12 @@ fr:
         URL de la solution de communication VOIP. L'URL doit prendre le
         paramètre '{TEL}' à l'emplacement du numéro de téléphone
       send_email: Envoyer email
+      sso_accounts: Comptes SSO
+      sso_account_linked: lié
+      link_sso_account: Lier le compte %{provider}
+      unlink_sso_account: Délier le compte %{provider}
+      confirm_unlink_sso_account: Êtes-vous sûr de vouloir délier le compte %{provider} ?
+      sso_not_configured: Aucun fournisseur SSO n'est configuré.
     update:
       success: Utilisateur mis à jour avec succès
     password:
@@ -3255,12 +3261,17 @@ fr:
         Bonjour {NAME}. Votre chauffeur {CUSTOMER_NAME} est en route.
         Son arrivée est prévue entre {TIME-5} et {TIME+15}.
   all:
+    providers:
+      entra_id: Microsoft Entra ID
     datepicker: dd-mm-yyyy
     map_attribution:
       osm: >-
         &copy; <a href="http://openstreetmap.org"
         target="_blank">OpenStreetMap</a>, %{attribution}
       here: Here
+    conjunction:
+      or: ou
+      and: et
     verb:
       new: Nouveau
       list: Liste
@@ -3348,6 +3359,13 @@ fr:
     sessions:
       new:
         remember_me: Se souvenir de moi
+    omniauth_callbacks:
+      success: Connexion réussie avec %{kind}.
+      failure: "Impossible de vous authentifier avec %{kind} car \"%{reason}\"."
+      account_linked: Compte %{provider} lié avec succès.
+      link_failed: Échec de la liaison du compte %{provider}.
+      no_account: Aucun compte trouvé avec cet email %{provider}. Veuillez créer un compte d'abord.
+      already_linked: Ce compte %{provider} est déjà lié à un autre utilisateur.
   services:
     external_callback:
       success: Application externe appelée avec succès
@@ -3368,3 +3386,7 @@ fr:
       speed_multiplicator: coef vitesse (déprécié)
       speed_multiplier: coef vitesse
       many_usage_sets: Plusieurs configurations de véhicules présentes
+  identities:
+    destroy:
+      success: Compte %{provider} délié avec succès.
+      unauthorized: Vous n'avez pas l'autorisation de délier ce compte.

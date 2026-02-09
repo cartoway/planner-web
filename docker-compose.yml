@@ -15,6 +15,9 @@ x-web: &web
     LOG_FORMAT: ${LOG_FORMAT:-}
     URL_SHORTENER: ${URL_SHORTENER:-http://url_shortener:8635}
     AVAILABLE_SOLVERS: ${AVAILABLE_SOLVERS:-}
+    AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+    AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
+    AZURE_TENANT_ID: ${AZURE_TENANT_ID}
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/production.rb:/srv/app/config/environments/production.rb
