@@ -14,7 +14,10 @@ Rails.application.routes.draw do
     get 'admin/tools/delayed_job', to: 'admin/tools#delayed_job', as: :admin_tools_delayed_job
   end
 
-  devise_for :users, :controllers => {:registrations => "registrations"}
+  devise_for :users, :controllers => {
+    :registrations => "registrations",
+    :omniauth_callbacks => "omniauth_callbacks"
+  }
   devise_for :vehicles
   devise_scope :user do
     unauthenticated do
@@ -33,6 +36,8 @@ Rails.application.routes.draw do
       patch :set_password
     end
   end
+
+  resources :identities, only: [:destroy]
 
   namespace :admin do
     resources :users do

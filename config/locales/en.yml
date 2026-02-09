@@ -2574,6 +2574,12 @@ en:
         URL of VOIP communications solution. In URL set '{TEL}' in place of the
         phone number
       send_email: Send E-Mail
+      sso_accounts: SSO Accounts
+      sso_account_linked: linked
+      link_sso_account: Link %{provider} account
+      unlink_sso_account: Unlink
+      confirm_unlink_sso_account: Are you sure you want to unlink this %{provider} account?
+      sso_not_configured: No SSO provider is configured.
     update:
       success: User updated successfully
     password:
@@ -3117,12 +3123,17 @@ en:
         Hello {NAME}. Your {CUSTOMER_NAME} driver is on the way.
         He will arrive between {TIME-5} and {TIME+15}.
   all:
+    providers:
+      entra_id: Microsoft Entra ID
     datepicker: mm-dd-yyyy
     map_attribution:
       osm: >-
         © <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a>,
         %{attribution}
       here: Here
+    conjunction:
+      or: or
+      and: and
     verb:
       new: New
       list: List
@@ -3203,9 +3214,18 @@ en:
       links:
         sign_in_prefix: You already have an account?
         sign_up_prefix: Need to create an account?
+        sign_in_with_provider: Sign in with %{provider}
     sessions:
       new:
         remember_me: Remember me
+    omniauth_callbacks:
+      success: Successfully authenticated from %{kind} account.
+      failure: "Could not authenticate you from %{kind} because \"%{reason}\"."
+      account_linked: >-
+        %{provider} account linked successfully
+      link_failed: Failed to link %{provider} account
+      no_account: No account found with this %{provider} email. Please create an account first
+      already_linked: This %{provider} account is already linked to another user
   services:
     external_callback:
       success: External callback successful
@@ -3226,3 +3246,8 @@ en:
       speed_multiplicator: speed multiplicator
       speed_multiplier: speed multiplier
       many_usage_sets: Many vehicle configurations present
+  identities:
+    destroy:
+      success: >-
+        %{provider} account unlinked successfully
+      unauthorized: You are not authorized to unlink this %{provider} account

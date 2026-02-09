@@ -18,7 +18,7 @@
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable,
-         :validatable
+         :validatable, :omniauthable, omniauth_providers: [:entra_id]
 
   default_scope { order(Arel.sql('LOWER(email)')) }
 
@@ -28,6 +28,7 @@ class User < ApplicationRecord
   belongs_to :reseller, optional: true
   belongs_to :customer, optional: true # Admin has no customer
   belongs_to :layer
+  has_many :identities, dependent: :destroy
 
   after_initialize :assign_defaults, if: -> { new_record? }
   before_validation :assign_defaults_layer, if: -> { new_record? }

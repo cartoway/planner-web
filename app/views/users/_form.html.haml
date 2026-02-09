@@ -18,6 +18,12 @@
   = f.text_field :url_click2call do
     %p.help-block= t '.url_click2call_help'
   = f.text_field :api_key, {readonly: true, input_group: content_tag('i', '', class: 'fa fa-key fa-fw')}
+
+  - if @user.persisted?
+    .row.form-group
+      .col-md-offset-2.col-md-8
+        = render partial: 'shared/sso_accounts', locals: { user: @user }
+
   = f.submit
 :ruby
   controller.js(

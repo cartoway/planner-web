@@ -340,6 +340,39 @@ CREATE TABLE public.history_stops (
 
 
 --
+-- Name: identities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.identities (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    provider character varying NOT NULL,
+    uid character varying NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: identities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.identities_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: identities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.identities_id_seq OWNED BY public.identities.id;
+
+
+--
 -- Name: layers; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1668,6 +1701,13 @@ ALTER TABLE ONLY public.destinations ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
+-- Name: identities id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.identities ALTER COLUMN id SET DEFAULT nextval('public.identities_id_seq'::regclass);
+
+
+--
 -- Name: layers id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1930,6 +1970,14 @@ ALTER TABLE ONLY public.deliverable_units
 
 ALTER TABLE ONLY public.destinations
     ADD CONSTRAINT destinations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: identities identities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.identities
+    ADD CONSTRAINT identities_pkey PRIMARY KEY (id);
 
 
 --
@@ -2388,6 +2436,20 @@ CREATE INDEX index_deliverable_units_on_customer_id ON public.deliverable_units 
 --
 
 CREATE UNIQUE INDEX index_deliverable_units_on_customer_id_and_ref ON public.deliverable_units USING btree (customer_id, ref);
+
+
+--
+-- Name: index_identities_on_provider_and_uid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_identities_on_provider_and_uid ON public.identities USING btree (provider, uid);
+
+
+--
+-- Name: index_identities_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_identities_on_user_id ON public.identities USING btree (user_id);
 
 
 --
@@ -2940,6 +3002,14 @@ ALTER TABLE ONLY public.route_geojsons
 
 ALTER TABLE ONLY public.customers
     ADD CONSTRAINT fk_rails_5095b21bc2 FOREIGN KEY (profile_id) REFERENCES public.profiles(id);
+
+
+--
+-- Name: identities fk_rails_5373344100; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.identities
+    ADD CONSTRAINT fk_rails_5373344100 FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -3578,6 +3648,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20251208090000'),
 ('20251212122356'),
 ('20260113123734'),
-('20260123141829');
+('20260123141829'),
+('20260209100651');
 
 

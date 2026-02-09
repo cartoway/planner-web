@@ -1,0 +1,23 @@
+-# Partial for displaying SSO account linking status for all providers
+-# Usage: render partial: 'shared/sso_accounts', locals: { user: @user }
+- user = local_assigns[:user]
+- providers = User.omniauth_providers
+
+- if providers.any?
+  %h4= t 'users.form.sso_accounts'
+  - providers.each do |provider|
+    - identity = user.identities.find_by(provider: provider.to_s)
+    - provider_name = t("all.providers.#{provider}")
+    .sso-provider-item{style: 'margin-bottom: 15px;'}
+      - if identity
+        .alert.alert-info
+          = omniauth_provider_logo(provider, height: 20, style: 'vertical-align: middle; margin-right: 8px;')
+          %strong= provider_name
+          = t 'users.form.sso_account_linked', provider: provider_name
+          = link_to t('users.form.unlink_sso_account', provider: provider_name), identity_path(identity), method: :delete, class: 'btn btn-sm btn-danger', style: 'margin-left: 10px;', data: { confirm: t('users.form.confirm_unlink_sso_account', provider: provider_name) }
+      - else
+        = render partial: 'shared/omniauth_button', locals: { provider: provider, resource_name: :user, button_class: 'btn btn-default', button_style: '', text: t('users.form.link_sso_account', provider: provider_name) }
+- else
+  .alert.alert-warning
+    %i.fa.fa-exclamation-triangle
+    = t 'users.form.sso_not_configured'
