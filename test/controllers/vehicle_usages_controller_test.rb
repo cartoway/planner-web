@@ -124,4 +124,24 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     patch :update, params: { id: @vehicle_usage, vehicle_usage: { vehicle: { phone_number: phone_number }}}
     assert @vehicle_usage.vehicle.reload.phone_number == phone_number
   end
+
+  test 'should update vehicle custom attributes' do
+    customer = @vehicle_usage.vehicle.customer
+    custom_attribute = customer.custom_attributes.for_vehicle.find{ |ca| ca.object_type == 'integer' }
+    assert_not_nil custom_attribute
+
+    patch :update, params: {
+      id: @vehicle_usage,
+      vehicle_usage: {
+        vehicle: {
+          custom_attributes: {
+            custom_attribute.name => '42'
+          }
+        }
+      }
+    }
+
+    typed_hash = @vehicle_usage.vehicle.reload.custom_attributes_typed_hash
+    assert_equal 42, typed_hash[custom_attribute.name]
+  end
 end

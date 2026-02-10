@@ -20,15 +20,22 @@ module CustomAttributesHelper
       object.custom_attributes_typed_hash
     end
     current_value = object.custom_attributes.key?(custom_attribute.name) ? typed_hash[custom_attribute.name] : custom_attribute.typed_default_value
+    placeholder = custom_attribute.typed_default_value ? t('web.form.default', n: custom_attribute.typed_default_value) : t('web.form.empty_entry')
     case custom_attribute.object_type_before_type_cast
     when 0
       render partial: 'shared/check_box', locals: { form: form, name: field_name, checked: current_value, help: custom_attribute.description, label: custom_attribute.name, options: { control_col: 'form-switch', label_col: 'd-none', help_label_class: 'd-none'} }
     when 1
-      text_area_tag field_name, current_value, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control'
+      options = { help: custom_attribute.description, label: custom_attribute.name, class: 'form-control' }
+      options[:placeholder] = placeholder if placeholder
+      text_area_tag field_name, current_value, options
     when 2
-      number_field_tag field_name, current_value, step: 1, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control', onkeypress: "return event.charCode >= 48 && event.charCode <= 57"
+      options = { step: 1, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control', onkeypress: "return event.charCode >= 48 && event.charCode <= 57" }
+      options[:placeholder] = placeholder if placeholder
+      number_field_tag field_name, current_value, options
     when 3
-      number_field_tag field_name, current_value, step: :any, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control'
+      options = { step: :any, help: custom_attribute.description, label: custom_attribute.name, class: 'form-control' }
+      options[:placeholder] = placeholder if placeholder
+      number_field_tag field_name, current_value, options
     when 4
       current_value = typed_hash[custom_attribute.name]
       select_tag field_name, options_for_select(custom_attribute.typed_default_value, current_value), {include_blank: t('web.form.empty_entry'), help: custom_attribute.description, label: custom_attribute.name, class: 'selectpicker form-control' }

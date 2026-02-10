@@ -2695,6 +2695,8 @@ en:
         optional: optional
         deprecated: deprecated
     form:
+      custom_attributes:
+        label: Vehicle custom attributes
       max_distance:
         help: Maximum achievable distance in kilometers
         help_miles: Maximum distance achievable in miles

@@ -2747,6 +2747,7 @@ fr:
       max_ride_distance_desc: distance trajet maximale entre arrêts de la tournée du véhicule
       max_ride_duration: Durée trajet maximale
       max_ride_duration_desc: Durée trajet maximale entre arrêts de la tournée du véhicule
+      missing_name: "nom du véhicule manquant"
       ref_vehicle: référence véhicule
       ref_desc: référence du véhicule
       name_vehicle: nom véhicule
@@ -2800,6 +2801,8 @@ fr:
         optional: optionnel
         deprecated: déprécié
     form:
+      custom_attributes:
+        label: Attributs personnalisés véhicule
       max_distance:
         help: Distance maximale réalisable en kilomètres
         help_miles: Distance maximale réalisable en miles
