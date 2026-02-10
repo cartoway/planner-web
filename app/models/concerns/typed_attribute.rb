@@ -36,6 +36,8 @@ module TypedAttribute
   private
 
   def typed_value(type, value)
+    return if value.blank?
+
     case type
     when 'boolean'
       ActiveRecord::Type::Boolean.new.cast(value)

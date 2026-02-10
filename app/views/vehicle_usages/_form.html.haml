@@ -95,6 +95,17 @@
                   = content_tag('i', '', class: 'fa ' + du.default_icon + ' fa-fw')
             %p.help-block
               = t 'vehicles.form.capacities.help'
+
+      - vehicle_custom_attributes = @vehicle_usage.vehicle.customer.custom_attributes.for_vehicle
+      - if vehicle_custom_attributes.any?
+        - vehicle_custom_attributes.each do |custom_attribute|
+          #vehicle_usage_vehicle_custom_attributes_input.row
+            %label.col-md-offset-2.col-md-8.field
+              = custom_attribute.name
+            .col-md-offset-2.col-md-8.field
+              = custom_attribute_form_field(f, @vehicle_usage.vehicle, custom_attribute, 'vehicle_usage[vehicle]')
+            %p.help-block
+              = custom_attribute.description
       - if @vehicle_usage_sets.count < 2 || (!@vehicle_usage.vehicle.tags.nil? && @vehicle_usage.vehicle.tags.count > 0)
         #vehicle_usage_tag_ids_input
           = f.select :tag_ids, options_for_select(@vehicle_usage.vehicle.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color': (tag.color && tag.color[1..-1]), 'data-icon': tag.icon}]}, @vehicle_usage.vehicle.tags.collect(&:id)), {label: t('activerecord.attributes.vehicle.tag_ids'), help: t('vehicles.form.tags_help') }, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}

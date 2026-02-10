@@ -140,6 +140,7 @@ class VehicleUsagesController < ApplicationController
           :low_emission_zone
         ],
         devices: permit_devices,
+        custom_attributes: RecursiveParamsHelper.permit_recursive(params.dig('vehicle_usage', 'vehicle', 'custom_attributes')),
         tag_ids: []
       ])
     if parameters.key?(:vehicle)
