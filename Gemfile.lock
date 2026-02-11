@@ -944,7 +944,7 @@ DEPENDENCIES
   mustache
   net-ftp
   nilify_blanks
-  nokogiri (>= 1.18.9)
+  nokogiri
   omniauth-entra-id
   pagy (~> 9.1)
   paloma
