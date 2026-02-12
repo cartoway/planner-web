@@ -1124,9 +1124,7 @@ class Route < ApplicationRecord
 
   def clear_eta_data
     self.start_route_data.eta = nil
-    self.start_route_data.status = nil
     self.stop_route_data.eta = nil
-    self.stop_route_data.status = nil
   end
 
   # Update geojson colors for a given sub-tour route_data without recomputing the route

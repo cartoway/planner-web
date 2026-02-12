@@ -46,7 +46,7 @@
           = f.fields_for status_context.to_sym, route.send(status_context), include_id: false do |ff|
             = ff.hidden_field :status, id: "route_#{status_context}_status"
 
-   - if custom_attributes.any?
+    - if custom_attributes.any?
       .form-group.mb-1
         %label
           = t('routes.mobile.form')

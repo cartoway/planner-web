@@ -173,6 +173,10 @@ if @with_stops
     end
     (json.link_phone_number current_user.link_phone_number) if current_user.url_click2call
     json.distance (stop.distance || 0) / 1000
+    if stop.status && planning.customer.enable_stop_status
+      json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
+      json.status_code stop.status.downcase
+    end
     case stop
     when StopVisit
       json.visits true
@@ -201,10 +205,6 @@ if @with_stops
       else
         # Hash { id, quantity, pickup, delivery, icon, label } for deliverable units
         json.quantities visit_quantities(visit, route.vehicle_usage_id && route.vehicle_usage.vehicle)
-      end
-      if stop.status && planning.customer.enable_stop_status
-        json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
-        json.status_code stop.status.downcase
       end
       if stop.route.last_sent_to && stop.status && stop.eta
         (json.eta_formated l(stop.eta, format: :hour_minute)) if stop.eta

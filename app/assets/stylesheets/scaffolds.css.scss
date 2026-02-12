@@ -716,39 +716,49 @@ input.form-control.number-of-days {
     background: none;
   }
 
-  .stop-row {
-    &.stop-row-intransit:after {
-      position: absolute;
-      height: calc(100% + 1px);
-      width: 12px;
-      right: 0;
+  %base-status-bar {
+    position: absolute;
+    height: calc(100% + 2px);
+    width: 12px;
+    right: 0;
+    top: -1px;
+  }
+
+  .stop-row, .store-row {
+    &.row-status-intransit:after {
+      @extend %base-status-bar;
       background: $primary-color;
     }
 
-    &.stop-row-exception:after {
-      position: absolute;
-      height: calc(100% + 1px);
-      width: 12px;
-      right: 0;
+    &.row-status-atstore:after {
+      @extend %base-status-bar;
+      background: var(--info);
+    }
+
+    &.row-status-inprocessing:after {
+      @extend %base-status-bar;
+      background: var(--info);
+    }
+
+    &.row-status-exception:after {
+      @extend %base-status-bar;
       background: var(--warning);
     }
 
-    &.stop-row-delivered:after {
-      position: absolute;
-      height: calc(100% + 1px);
-      width: 12px;
-      right: 0;
+    &.row-status-delivered:after {
+      @extend %base-status-bar;
       background: var(--success);
     }
 
-    &.stop-row-undelivered:after {
-      position: absolute;
-      height: calc(100% + 1px);
-      width: 12px;
-      right: 0;
-      background: var(--danger);
+    &.row-status-finished:after {
+      @extend %base-status-bar;
+      background: var(--success);
     }
 
+    &.row-status-undelivered:after {
+      @extend %base-status-bar;
+      background: var(--danger);
+    }
   }
 
   .ui-state-error{

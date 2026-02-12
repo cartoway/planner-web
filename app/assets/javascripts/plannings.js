@@ -513,12 +513,12 @@ export const plannings_edit = function(params) {
 
       $.each($elt, function(i, elt) {
         $elt = $(elt);
-        if (!el.status || el.status && !$elt.hasClass('stop-row-' + el.status_code)) {
-          var match = $elt.attr("class").match(new RegExp('stop-row-[a-z]*'));
+        if (!el.status || el.status && !$elt.hasClass('row-status-' + el.status_code)) {
+          var match = $elt.attr("class").match(new RegExp('row-status-[a-z]*'));
           if (match !== null) {
             $elt.removeClass(match.shift());
           }
-          $elt.addClass(klass + (el.status_code ? ' stop-row-' + el.status_code : ''));
+          $elt.addClass(klass + (el.status_code ? ' row-status-' + el.status_code : ''));
         }
       });
       var name = content.find('.title .name');
