@@ -21,20 +21,6 @@
           = unit[:label]
           = t('routes.mobile.route_data.to_load')
   = bootstrap_form_for route, url: driver_update_route_path(route), method: :patch, remote: true, html: { class: 'route-status-form' } do |f|
-    - if custom_attributes.any?
-      .form-group.mb-1
-        %label
-          = t('routes.mobile.form')
-        - custom_attributes.each do |custom_attribute|
-          .custom_field.d-flex.align-items-center.justify-content-left.mb-1.row
-            %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
-              = custom_attribute.name
-            .field.mb-0{class: custom_attribute.object_type == 'boolean' ? 'col-xs-4' : 'col-xs-12' }
-              = custom_attribute_form_field(f, route, custom_attribute, 'route', related_field: related_field)
-            .col-xs-12
-              %p.help-block
-                = custom_attribute.description
-
     - if local_assigns[:show_status_controls]
       - current_status = route_data.status
       .form-group.mb-1
@@ -59,3 +45,17 @@
           -# Hidden status field inside .input-group so changeStatuses (stops.js) finds it
           = f.fields_for status_context.to_sym, route.send(status_context), include_id: false do |ff|
             = ff.hidden_field :status, id: "route_#{status_context}_status"
+
+   - if custom_attributes.any?
+      .form-group.mb-1
+        %label
+          = t('routes.mobile.form')
+        - custom_attributes.each do |custom_attribute|
+          .custom_field.d-flex.align-items-center.justify-content-left.mb-1.row
+            %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
+              = custom_attribute.name
+            .field.mb-0{class: custom_attribute.object_type == 'boolean' ? 'col-xs-4' : 'col-xs-12' }
+              = custom_attribute_form_field(f, route, custom_attribute, 'route', related_field: related_field)
+            .col-xs-12
+              %p.help-block
+                = custom_attribute.description

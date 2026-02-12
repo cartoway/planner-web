@@ -15,7 +15,7 @@
       .col-xs-2.p-0
         .d-flex.align-items-center.justify-content-between
           #label-index.label.label-default-negative.p-3{ class: "label-#{stop.status}" }
-            %i.fa.fa-fw{ class: "#{stop.store.default_icon}" }
+            %i.fa.fa-fw{ class: "#{stop.default_icon}" }
       .col-xs-6.p-0
         = stop.name
       .col-xs-4.p-0
@@ -49,6 +49,28 @@
       .container.mt-1
         .form-group.mb-1
           = bootstrap_form_for stop, url: stop_path, method: :patch, remote: true do |f|
+            %label{ for: 'active_status' }
+              = t('stops.mobile.status')
+            .input-group.col-xs-12
+              .radiobtn
+                .d-flex.row.align-items-center.justify-content-between{ style: 'width: 100%'}
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
+                      = t('plannings.edit.stop_store_status.intransit')
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-info{ data: { toggle: 'active_status', title: 'atstore' }, class: ('active' if stop.status == 'atstore') }
+                      = t('plannings.edit.stop_store_status.atstore')
+                .d-flex.align-items-center.justify-content-between
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-info{ data: { toggle: 'active_status', title: 'inprocessing' }, class: ('active' if stop.status == 'inprocessing') }
+                      = t('plannings.edit.stop_store_status.inprocessing')
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-success{ data: { toggle: 'active_status', title: 'finished' }, class: ('active' if stop.status == 'finished') }
+                      = t('plannings.edit.stop_store_status.finished')
+              = f.hidden_field :position, { name: 'stop[position]', id: 'active_status_position' }
+              = f.hidden_field :status_updated_at, { name: 'stop[status_updated_at]', id: 'active_status_updated_at' }
+              = f.hidden_field :status, { name: 'stop[status]', id: 'active_status', onchange: "this.form.submit()" }
+              = f.hidden_field :id, { name: 'stop_id' }
             - previous_route_data_quantities ||= nil
             - previous_route_data_quantities&.each do |unit|
               - if unit[:pickup].present? && unit[:pickup].to_f > 0
@@ -82,25 +104,3 @@
                   .col-xs-12
                     %p.help-block
                       = custom_attribute.description
-            %label{ for: 'active_status' }
-              = t('stops.mobile.status')
-            .input-group.col-xs-12
-              .radiobtn
-                .d-flex.row.align-items-center.justify-content-between{ style: 'width: 100%'}
-                  .col-xs-6.d-flex.justify-content-center
-                    %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
-                      = t('plannings.edit.stop_store_status.intransit')
-                  .col-xs-6.d-flex.justify-content-center
-                    %a.btn.btn-info{ data: { toggle: 'active_status', title: 'atstore' }, class: ('active' if stop.status == 'atstore') }
-                      = t('plannings.edit.stop_store_status.atstore')
-                .d-flex.align-items-center.justify-content-between
-                  .col-xs-6.d-flex.justify-content-center
-                    %a.btn.btn-info{ data: { toggle: 'active_status', title: 'inprocessing' }, class: ('active' if stop.status == 'inprocessing') }
-                      = t('plannings.edit.stop_store_status.inprocessing')
-                  .col-xs-6.d-flex.justify-content-center
-                    %a.btn.btn-success{ data: { toggle: 'active_status', title: 'finished' }, class: ('active' if stop.status == 'finished') }
-                      = t('plannings.edit.stop_store_status.finished')
-              = f.hidden_field :position, { name: 'stop[position]', id: 'active_status_position' }
-              = f.hidden_field :status_updated_at, { name: 'stop[status_updated_at]', id: 'active_status_updated_at' }
-              = f.hidden_field :status, { name: 'stop[status]', id: 'active_status', onchange: "this.form.submit()" }
-              = f.hidden_field :id, { name: 'stop_id' }
