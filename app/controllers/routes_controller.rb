@@ -277,6 +277,11 @@ class RoutesController < ApplicationController
           ('pickup' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym,
           ('delivery' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym
         ]
-      })
+      }) +
+      (@customer || @planning.customer).custom_attributes.for_visit.map{ |ca|
+        "custom_attributes_visit[#{ca.name}]".to_sym
+      } + (@customer || @planning.customer).custom_attributes.for_stop_visit.map{ |ca|
+       "custom_attributes_stop_visit[#{ca.name}]".to_sym
+      }
   end
 end

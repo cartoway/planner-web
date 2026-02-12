@@ -2408,6 +2408,7 @@ fr:
       status_updated_at: horaire statut
       eta: eta
       custom_attributes_visit: attributs visite
+      custom_attributes_stop_visit: attributs arrêt
       stop_size: nombre d'arrêts
       stop_active_size: nombre d'arrêts actifs
       time: durée total
