@@ -2303,6 +2303,7 @@ en:
       status_updated_at: time status changed
       eta: eta
       custom_attributes_visit: visit attributes
+      custom_attributes_stop_visit: stop attributes
       stop_size: number of stops
       stop_active_size: number of active stops
       time: total time
