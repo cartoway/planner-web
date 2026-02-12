@@ -667,6 +667,10 @@ $sidebar-margins: 10px;
         background-color: rgba(223, 240, 216, 0.5);
       }
 
+      .route-data-container {
+        padding-right: 7px !important;
+      }
+
       .route-data-container.list-group-item {
         border-top: unset !important;
       }
