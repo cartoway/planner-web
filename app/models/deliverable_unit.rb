@@ -27,6 +27,7 @@ class DeliverableUnit < ApplicationRecord
 
   nilify_blanks before: :validation
   auto_strip_attributes :label
+  validates :label, uniqueness: { scope: :customer_id, case_sensitive: true }, allow_nil: false, allow_blank: false
   validates :default_pickup, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :default_delivery, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :default_capacity, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true

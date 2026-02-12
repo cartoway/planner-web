@@ -34,7 +34,7 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
 
   test 'should create deliverable unit' do
     assert_difference('DeliverableUnit.count') do
-      post :create, params: { deliverable_unit: { label: @deliverable_unit.label } }
+      post :create, params: { deliverable_unit: { label: 'new label' } }
     end
 
     assert_redirected_to deliverable_units_path
@@ -43,6 +43,17 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
   test 'should not create deliverable unit' do
     assert_no_difference('DeliverableUnit.count') do
       post :create, params: { deliverable_unit: { optimization_overload_multiplier: -1 } }
+    end
+
+    assert_template :new
+    deliverable_unit = assigns(:deliverable_unit)
+    assert deliverable_unit.errors.any?
+    assert_valid response
+  end
+
+  test 'should not create deliverable unit with already existing label' do
+    assert_no_difference('DeliverableUnit.count') do
+      post :create, params: { deliverable_unit: { label: @deliverable_unit.label } }
     end
 
     assert_template :new

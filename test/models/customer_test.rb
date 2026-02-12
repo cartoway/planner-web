@@ -25,7 +25,7 @@ class CustomerTest < ActiveSupport::TestCase
       assert_difference('Vehicle.count', 5) do
         assert_difference('Vehicle.count', 5) do
           assert_difference('VehicleUsageSet.count', 1) do
-            assert_difference('DeliverableUnit.count', 1) do
+            assert_difference('DeliverableUnit.count', 0) do
               assert_difference('Store.count', 1) do
                 reseller.save!
                 assert_equal customer.test, false

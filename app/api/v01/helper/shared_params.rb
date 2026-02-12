@@ -99,7 +99,11 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   end
 
   params :request_deliverable_unit do |options|
-    optional :label, type: String, documentation: { example: 'Regular parcel' }
+    if options[:required_deliverable_unit_params]
+      requires :label, type: String, documentation: { example: 'Regular parcel' }
+    else
+      optional :label, type: String, documentation: { example: 'Regular parcel' }
+    end
     optional :ref, type: String, documentation: { example: 'RP' }
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{::DeliverableUnit::ICON_DEFAULT}.", example: ::DeliverableUnit::ICON_DEFAULT}
     optional :default_quantity, type: Float, documentation: { example: '1.0' }
