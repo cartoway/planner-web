@@ -36,9 +36,15 @@
               .col-xs-6.d-flex.justify-content-center
                 %a.btn.btn-info{ data: { toggle: "route_#{status_context}_status", title: 'atstore' }, class: ('active' if current_status == 'atstore') }
                   = t('plannings.edit.stop_store_status.atstore')
-              .col-xs-6.d-flex.justify-content-center
-                %a.btn.btn-success{ data: { toggle: "route_#{status_context}_status", title: 'finished' }, class: ('active' if current_status == 'finished') }
-                  = t('plannings.edit.stop_store_status.finished')
+              - if status_context == 'start_route_data'
+                .col-xs-6.d-flex.justify-content-center
+                  %a.btn.btn-success{ data: { toggle: "route_#{status_context}_status", title: 'finished' }, class: ('active' if current_status == 'finished') }
+                    = t('plannings.edit.stop_store_status.finished')
+            - if status_context == 'stop_route_data'
+              .d-flex.align-items-center.justify-content-center
+                .col-xs-6.d-flex.justify-content-center
+                  %a.btn.btn-success{ data: { toggle: "route_#{status_context}_status", title: 'finished' }, class: ('active' if current_status == 'finished') }
+                    = t('plannings.edit.stop_store_status.finished')
           -# Hidden status field inside .input-group so changeStatuses (stops.js) finds it
           = f.fields_for status_context.to_sym, route.send(status_context), include_id: false do |ff|
             = ff.hidden_field :status, id: "route_#{status_context}_status"
