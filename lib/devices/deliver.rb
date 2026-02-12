@@ -30,6 +30,8 @@ class Deliver < DeviceBase
   end
 
   def clear_route(customer, route)
+    route.start_route_data.assign_attributes status: nil, eta: nil
+    route.stop_route_data.assign_attributes status: nil, eta: nil
     route.stops.each { |s| s.assign_attributes status: nil, eta: nil }
     true
   end

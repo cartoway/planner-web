@@ -94,6 +94,14 @@
             = render partial: 'stops/mobile_stop_store', locals: { stop: stop, previous: previous, agent: agent, customer: customer, custom_attributes: stop_store_custom_attributes }
           - previous = stop
         - if @route.vehicle_usage&.default_store_stop.present?
+          - agent_link = case agent
+            - when :ios
+              - "http://maps.apple.com/?daddr=#{@route.vehicle_usage.default_store_stop.lat},#{@route.vehicle_usage.default_store_stop.lng}"
+            - else
+              - "geo:#{@route.vehicle_usage.default_store_stop.lat},#{@route.vehicle_usage.default_store_stop.lng}?q=#{@route.vehicle_usage.default_store_stop.lat},#{@route.vehicle_usage.default_store_stop.lng}"
+          - next_status = case @route.stop_route_data.status
+          - when nil
+            - 'intransit'
           .panel.panel-default{ data: { stop_type: 'stop_store' } }
             .panel-heading{ id: "heading-stop-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.stop_route_data.status}", href: "#collapse-stop-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
               .d-flex.align-items-center.justify-content-between.mb-1
@@ -101,8 +109,26 @@
                   .d-flex.align-items-center.justify-content-between
                     #label-index.label.label-default-negative.p-3{ class: "label-#{@route.stop_route_data.status}" }
                       %i.fa.fa-fw{ class: "#{@route.vehicle_usage.default_store_stop.default_icon}" }
-                .col-xs-10.p-0
+                .col-xs-6.p-0
                   = t('routes.mobile.stop_depot')
+                .col-xs-4.p-0
+                  %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'route_stop_route_data_status', title: next_status } }
+                    .d-flex.align-items-center
+                      .fa.fa-regular.fa-square-caret-right.mr-2
+                      #quick-status-text
+                        = t("plannings.edit.stop_status.#{next_status}") if next_status
+              .d-flex.align-items-center
+                .col-xs-12.p-0.mt-1
+                  .d-flex.align-items-center.justify-content-between
+                    .col-xs-8.p-0.mr-2
+                      = @route.vehicle_usage.default_store_stop.street
+                      = @route.vehicle_usage.default_store_stop.postalcode
+                      = @route.vehicle_usage.default_store_stop.city
+                    .col-xs-4.p-0
+                      %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: agent_link }
+                        .d-flex.align-items-center
+                          .fa.fa-diamond-turn-right.mr-2
+                          = t("stops.mobile.navigate")
               .d-flex.align-items-center.justify-content-center
                 .fa.fa-caret-down.fa-fw
             - current_route_data_quantities = route_data_quantities(@route.stop_route_data, @route.vehicle_usage&.vehicle)

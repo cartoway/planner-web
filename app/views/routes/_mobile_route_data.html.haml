@@ -37,9 +37,6 @@
                 %a.btn.btn-info{ data: { toggle: "route_#{status_context}_status", title: 'atstore' }, class: ('active' if current_status == 'atstore') }
                   = t('plannings.edit.stop_store_status.atstore')
               .col-xs-6.d-flex.justify-content-center
-                %a.btn.btn-info{ data: { toggle: "route_#{status_context}_status", title: 'inprocessing' }, class: ('active' if current_status == 'inprocessing') }
-                  = t('plannings.edit.stop_store_status.inprocessing')
-              .col-xs-6.d-flex.justify-content-center
                 %a.btn.btn-success{ data: { toggle: "route_#{status_context}_status", title: 'finished' }, class: ('active' if current_status == 'finished') }
                   = t('plannings.edit.stop_store_status.finished')
           -# Hidden status field inside .input-group so changeStatuses (stops.js) finds it
