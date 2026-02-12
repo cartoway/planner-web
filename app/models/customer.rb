@@ -110,7 +110,7 @@ class Customer < ApplicationRecord
   before_validation :check_router_options_format
   before_save :sanitize_print_header, :nilify_router_options_blanks
   before_save :devices_update_vehicles, prepend: true
-  after_create :create_default_store, :create_default_vehicle_usage_set, :create_default_deliverable_unit
+  after_create :create_default_store, :create_default_vehicle_usage_set
 
   before_update :update_max_vehicles
   before_update :update_outdated, unless: :migration_skip
@@ -617,12 +617,6 @@ class Customer < ApplicationRecord
       name: I18n.t('vehicle_usage_sets.default.name'),
       store_start: stores[0],
       store_stop: stores[0]
-    )
-  end
-
-  def create_default_deliverable_unit
-    deliverable_units.create(
-      default_delivery: 1
     )
   end
 
