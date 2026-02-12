@@ -6,7 +6,7 @@ export const stops_edit = function(params) {
       e.stopPropagation();
     });
   })
-  $(document).on('click', '.radiobtn a, #quick-status', function() {
+  $('#radiobtn a, #quick-status').on('click', function() {
     var selected = $(this).data('title');
     changeStatuses($(this), selected);
   });
@@ -22,8 +22,18 @@ export const stops_edit = function(params) {
   function changeStatuses(element, selected) {
     var panel = $(element).closest('.panel');
     var toggled = $(element).data('toggle');
-    panel.find('.input-group').find('#'+toggled).prop('value', selected);
-    panel.find('.input-group').find('#'+toggled+'_updated_at').prop('value', new Date().toUTCString());
+    var form = panel.find('form');
+    // Support both stop forms (stop[status]) and route driver_update forms (route_*_status by id)
+    var statusInput = form.find('input[name="stop[status]"]').length
+      ? form.find('input[name="stop[status]"]')
+      : form.find('#' + toggled);
+    if (!statusInput.length) return;
+
+    statusInput.val(selected);
+    var updatedAtInput = form.find('input[name="stop[status_updated_at]"]');
+    if (updatedAtInput.length) {
+      updatedAtInput.val(new Date().toISOString());
+    }
 
     panel.find('.radiobtn a[data-toggle="'+toggled+'"]').not('[data-title="'+selected+'"]').removeClass('active');
     panel.find('.radiobtn a[data-toggle="'+toggled+'"][data-title="'+selected+'"]').addClass('active');
@@ -47,7 +57,7 @@ export const stops_edit = function(params) {
     var stopType = panel.data('stop-type');
 
     // Quick "delivered" shortcut only makes sense for StopVisits
-    if (stopType === 'visit' &&selected == 'intransit') {
+    if (stopType === 'visit' && selected == 'intransit') {
       var next_status = 'delivered';
       panel.find('#quick-status').removeClass('d-none');
       panel.find('#quick-status').data('title', next_status);
