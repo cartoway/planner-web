@@ -67,7 +67,7 @@ class V01::DeliverableUnits < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::DeliverableUnit),
       failure: V01::Status.failures
     params do
-      use(:request_deliverable_unit)
+      use(:request_deliverable_unit, required_deliverable_unit_params: true)
     end
     post do
       deliverable_unit = current_customer.deliverable_units.build(deliverable_unit_params)
