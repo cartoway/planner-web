@@ -28,7 +28,7 @@
           = t('stops.mobile.status')
         .input-group.col-xs-12
           .radiobtn
-            .d-flex.row.align-items-center.justify-content-between{ style: 'width: 100%'}
+            .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
               - if status_context == 'stop_route_data'
                 .col-xs-6.d-flex.justify-content-center
                   %a.btn.btn-primary{ data: { toggle: "route_#{status_context}_status", title: 'intransit' }, class: ('active' if current_status == 'intransit') }
