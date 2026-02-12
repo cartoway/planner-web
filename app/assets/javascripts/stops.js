@@ -6,7 +6,7 @@ export const stops_edit = function(params) {
       e.stopPropagation();
     });
   })
-  $('#radiobtn a, #quick-status').on('click', function() {
+  $('.radiobtn a, #quick-status').on('click', function() {
     var selected = $(this).data('title');
     changeStatuses($(this), selected);
   });

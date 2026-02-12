@@ -53,7 +53,7 @@
               = t('stops.mobile.status')
             .input-group.col-xs-12
               .radiobtn
-                .d-flex.row.align-items-center.justify-content-between{ style: 'width: 100%'}
+                .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
                   .col-xs-6.d-flex.justify-content-center
                     %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
                       = t('plannings.edit.stop_store_status.intransit')
