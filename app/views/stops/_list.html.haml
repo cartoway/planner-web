@@ -19,8 +19,8 @@
     - if stop[:store_reload]
       - store_color = stop[:route_data]&.[](:color)
       - sub_tour_index +=1
-      %li.li-store.d-fake-flex.align-items-center.list-group-item.pr-3{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store-reload-id": stop[:store_reload_id], "data-origin-route-id": route[:route_id], "data-sub-tour-index": sub_tour_index, style: "box-shadow: inset 4px 0px 0px 0px var(--box-shadow-color); --box-shadow-color: #{store_color || route_color};" }
-        .row.store-row
+      %li.li-store.d-fake-flex.align-items-center.list-group-item.pr-5{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store-reload-id": stop[:store_reload_id], "data-origin-route-id": route[:route_id], "data-sub-tour-index": sub_tour_index, style: "box-shadow: inset 4px 0px 0px 0px var(--box-shadow-color); --box-shadow-color: #{store_color || route_color};" }
+        .row.store-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{stop[:status_code]}" if stop[:status])}
           .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
             .col-xs-2.d-flex.align-items-center.justify-content-center
               %i.fa.fa-fw{class: (stop[:icon] ? stop[:icon] : 'fa-store'), style: "color: #{store_color || route_color || 'black'};"}
@@ -49,7 +49,6 @@
                 = [stop[:name], stop[:ref]].compact_blank.join(' - ')
           .col-xs-4.col-md-4.d-flex.justify-content-end.align-items-center
             - eta_statement = " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" if stop[:eta_formated]
-            %span.store-status{class: "stop-status-#{stop[:status_code]}", title: "#{stop[:status]}#{eta_statement}", style: ("display: none;" if !stop[:status])}
             .btn-group.pull-right.stop-tools
               %button.btn.btn-default.btn-xs.sub-tour-toggle.sub-tour-visible{type: "button", "aria-pressed": "true", title: t('plannings.edit.sub_tour.toggle'), data: { route_id: route[:route_id], sub_tour_index: sub_tour_index, route_data_id: stop[:route_data]&.[](:id) }}
                 %i.fa{ class: stop[:route_data]&.[](:hidden) ? 'fa-eye-slash' : 'fa-eye' }
@@ -69,10 +68,10 @@
               %a.marker_destroy_store.btn.btn-default.btn-xs{title: t("plannings.edit.destroy_store_help")}
                 %i.fa.fa-trash
       %li.li-store.d-fake-flex.align-items-center.list-group-item.route-data-container{class: ("ui-state-error" if stop[:error]),data: { stop_id: stop[:stop_id], route_data_id: stop[:route_data]&.[](:id), sub_tour_index: sub_tour_index, origin_route_id: route[:route_id] }.compact, style: "box-shadow: inset 4px 0px 0px 0px var(--box-shadow-color); --box-shadow-color: #{store_color || route_color};"}
-        = render partial: 'shared/store_route_data', locals: { route_data: stop[:route_data] }
+        = render partial: 'shared/store_route_data', locals: { route_data: stop[:route_data], status_code: stop[:status_code] }
     - if stop[:rest]
-      %li.d-fake-flex.align-items-center.list-group-item.pr-3{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store-id": stop[:store_id], "data-origin-route-id": route[:route_id] }
-        .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("stop-row-#{stop[:status_code]}" if stop[:status])}
+      %li.d-fake-flex.align-items-center.list-group-item5{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store-id": stop[:store_id], "data-origin-route-id": route[:route_id] }
+        .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{stop[:status_code]}" if stop[:status])}
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
             .col-xs-2.d-flex.justify-content-center.align-items-center
               %input.stop_active{type: "checkbox", checked: ("checked" if stop[:active]), disabled: (true if !@manage_planning[:manage_organize]), title: t('plannings.edit.active_help') }
@@ -123,8 +122,8 @@
                 %a.marker.btn.btn-default.btn-xs{class: ("invisible" if !stop[:geocoded]), href: "#", title: t("plannings.edit.marker_help")}
                   %i.fa.fa-map-marker
     - if stop[:destination] && stop[:visits]
-      %li.d-fake-flex.align-items-center.list-group-item.pr-3{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-origin-route-id": route[:route_id], "data-sub-tour-index": sub_tour_index}
-        .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("stop-row-#{stop[:status_code]}" if stop[:status])}
+      %li.d-fake-flex.align-items-center.list-group-item.pr-5{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-origin-route-id": route[:route_id], "data-sub-tour-index": sub_tour_index}
+        .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{stop[:status_code]}" if stop[:status])}
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
             .col-xs-2.d-flex.justify-content-center.align-items-center
               %input.stop_active{type: "checkbox", checked: ("checked" if stop[:active]), disabled: (true if !@manage_planning[:manage_organize]), title: t('plannings.edit.active_help') }
