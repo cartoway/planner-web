@@ -3,8 +3,11 @@ class V100::Entities::StopStatus < Grape::Entity
     'V100_StopStatus'
   end
 
+  STOP_TYPES = { StopVisit: 'visit', StopStore: 'reload', StopRest: 'rest' }.freeze
+
   expose(:id, documentation: { type: Integer })
   expose(:index, documentation: { type: Integer, desc: 'Stop\'s Index' })
+  expose(:stop_type, documentation: { type: String, desc: 'Type of stop: visit, reload or rest.' }) { |stop| STOP_TYPES[stop.class.name.to_sym] }
   expose(:status, documentation: { type: String, desc: 'Status of stop.' }) { |stop| stop.status && I18n.t('plannings.edit.stop_status.' + stop.status.downcase, default: stop.status) }
   expose(:status_code, documentation: { type: String, desc: 'Status code of stop.' }) { |stop| stop.status && stop.status.downcase }
   expose(:status_updated_at, documentation: { type: DateTime, desc: 'Time when the status has been updated'})
