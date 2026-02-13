@@ -49,7 +49,6 @@ Paloma.controller('Tags', {
 });
 
 export const selectTag = function(event) {
-  console.log('Selecting ...');
   if (event.params.args.data.newTag) {
     event.preventDefault();
     $.ajax({

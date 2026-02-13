@@ -11,15 +11,12 @@ window.CustomAttributes = {
   custom_attributes_array: function() {
     var i = 0;
     const element = $('#default_list');
-    console.log(element);
     if (element.length) {
-      console.log(element.find('default-value-row'));
       i = element.find('default-value-row').length;
     }
 
     $('.btn-remove').on('click', function() {
       var button_id = $(this).closest('.default-value-row').attr('id').split('_').pop();
-      console.log(button_id);
       $('#row_'+ button_id).remove();
     })
 
