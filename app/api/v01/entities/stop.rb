@@ -20,12 +20,6 @@ class V01::Entities::Stop < V01::Entities::StopStatus
     'V01_Stop'
   end
 
-  STOP_TYPES = {
-    StopVisit: 'visit',
-    StopStore: 'reload',
-    StopRest: 'rest'
-  }.freeze
-
   expose(:destination_ref, documentation: { type: String }) { |stop|
     if stop.is_a?(StopVisit) && stop.visit && stop.visit.destination
       stop.visit.destination.ref
@@ -39,9 +33,6 @@ class V01::Entities::Stop < V01::Entities::StopStatus
     elsif stop.is_a?(StopStore) && stop.store_reload
       stop.store_reload.ref
     end
-  }
-  expose(:stop_type, documentation: { type: String }) { |stop|
-    STOP_TYPES[stop.class.name.to_sym]
   }
   expose(:active, documentation: { type: 'Boolean' })
   expose(:distance, documentation: { type: Float, desc: 'Distance between the stop and previous one.' })

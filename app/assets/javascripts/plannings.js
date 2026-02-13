@@ -503,7 +503,7 @@ export const plannings_edit = function(params) {
 
   var updateStopsStatus = function(data) {
     var updateStopAndStoreStatusContent = function(content, el) {
-      var klass = (el.store) ? 'store-row' : 'stop-row';
+      var klass = (el.store || el.stop_type === 'reload') ? 'store-row' : 'stop-row';
       var $elt = content.find('.toggle-status, .' + klass);
       var hadStatus = !($elt.css('display') == 'none');
 
@@ -543,14 +543,20 @@ export const plannings_edit = function(params) {
       $.each(data, function(i, route) {
         if (route.vehicle_usage_id) {
           var $route = $("[data-route-id='" + route.id + "']");
-          var startStop = $route.find('[data-store-id]');
+
+          var startStore = $route.find('[data-store-id][data-type="start"]');
+          var stopStore = $route.find('[data-store-id][data-type="stop"]');
 
           // Adapter pattern for stores
           var startAdapter = { store: true, status: route.departure_status, status_code: route.departure_status_code, eta_formated: route.departure_eta_formated };
           var stopAdapter = { store: true, status: route.arrival_status, status_code: route.arrival_status_code, eta_formated: route.arrival_eta_formated };
 
-          updateStopAndStoreStatusContent(startStop.first(), startAdapter);
-          updateStopAndStoreStatusContent(startStop.last(), stopAdapter);
+          startStore.each(function(i, element) {
+            updateStopAndStoreStatusContent($(element), startAdapter);
+          });
+          stopStore.each(function(i, element) {
+            updateStopAndStoreStatusContent($(element), stopAdapter);
+          });
 
           $.each(route.stops, function(i, stop) {
             var sort = function(element) {
