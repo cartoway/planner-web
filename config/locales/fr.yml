@@ -781,6 +781,7 @@ fr:
           '409': Conflit
           '422': Action impossible
           '500': Une erreur interne est survenue
+          '504': Délai d'attente dépassé
           default: Une erreur est survenue dans l'application
         explanation:
           '404': >-
@@ -794,6 +795,11 @@ fr:
             Une erreur interne s'est produite. Le problème a été signalé, merci
             d'essayer une autre action en attendant. Contactez le support si
             urgence.
+          '504': >-
+            La connexion a été coupée en raison du délai d'attente. L'action en
+            cours continue cependant côté serveur. Les données s'afficheront
+            lorsque l'opération sera terminée. Vous pouvez rafraîchir la page
+            régulièrement, mais il est inutile de relancer la même opération.
           default: >-
             Une erreur interne s'est produite. Le problème a été signalé, merci
             d'essayer une autre action en attendant. Contactez le support si
