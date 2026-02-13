@@ -20,7 +20,7 @@ module CustomAttributesHelper
       object.custom_attributes_typed_hash
     end
     current_value = object.custom_attributes.key?(custom_attribute.name) ? typed_hash[custom_attribute.name] : custom_attribute.typed_default_value
-    placeholder = custom_attribute.typed_default_value ? t('web.form.default', n: custom_attribute.typed_default_value) : t('web.form.empty_entry')
+    placeholder = custom_attribute.typed_default_value || t('web.form.empty_entry')
     case custom_attribute.object_type_before_type_cast
     when 0
       render partial: 'shared/check_box', locals: { form: form, name: field_name, checked: current_value, help: custom_attribute.description, label: custom_attribute.name, options: { control_col: 'form-switch', label_col: 'd-none', help_label_class: 'd-none'} }
