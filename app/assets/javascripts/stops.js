@@ -62,6 +62,16 @@ export const stops_edit = function(params) {
       panel.find('#quick-status').removeClass('d-none');
       panel.find('#quick-status').data('title', next_status);
       panel.find('#quick-status-text').text(I18n.t("plannings.edit.stop_status.delivered"));
+    } else if (stopType === 'store' && selected == 'intransit') {
+      var next_status = 'atstore';
+      panel.find('#quick-status').removeClass('d-none');
+      panel.find('#quick-status').data('title', next_status);
+      panel.find('#quick-status-text').text(I18n.t("plannings.edit.stop_store_status.atstore"));
+    } else if (stopType === 'store' && selected == 'atstore') {
+      var next_status = 'finished';
+      panel.find('#quick-status').removeClass('d-none');
+      panel.find('#quick-status').data('title', next_status);
+      panel.find('#quick-status-text').text(I18n.t("plannings.edit.stop_store_status.finished"));
     } else {
       panel.find('#quick-status').addClass('d-none');
     }

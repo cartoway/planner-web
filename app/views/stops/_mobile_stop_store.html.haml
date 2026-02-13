@@ -6,6 +6,10 @@
 -# - customer: current customer
 
 - next_status = case stop.status
+- when 'intransit'
+  - 'atstore'
+- when 'atstore'
+  - 'finished'
 - when nil
   - 'intransit'
 
@@ -23,7 +27,7 @@
           .d-flex.align-items-center
             .fa.fa-regular.fa-square-caret-right.mr-2
             #quick-status-text
-              = t("plannings.edit.stop_status.#{next_status}") if next_status
+              = t("plannings.edit.stop_store_status.#{next_status}") if next_status
         - agent_link = case agent
         - when :ios
           - "http://maps.apple.com/?daddr=#{stop.lat},#{stop.lng}"
@@ -60,7 +64,8 @@
                   .col-xs-6.d-flex.justify-content-center
                     %a.btn.btn-info{ data: { toggle: 'active_status', title: 'atstore' }, class: ('active' if stop.status == 'atstore') }
                       = t('plannings.edit.stop_store_status.atstore')
-                .d-flex.align-items-center.justify-content-center
+                .d-flex.align-items-center.justify-content-between
+                  .col-xs-6.d-flex.justify-content-center
                   .col-xs-6.d-flex.justify-content-center
                     %a.btn.btn-success{ data: { toggle: 'active_status', title: 'finished' }, class: ('active' if stop.status == 'finished') }
                       = t('plannings.edit.stop_store_status.finished')

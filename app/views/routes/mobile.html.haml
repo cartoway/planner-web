@@ -57,15 +57,26 @@
               - "http://maps.apple.com/?daddr=#{@route.vehicle_usage.default_store_start.lat},#{@route.vehicle_usage.default_store_start.lng}"
             - else
               - "geo:#{@route.vehicle_usage.default_store_start.lat},#{@route.vehicle_usage.default_store_start.lng}?q=#{@route.vehicle_usage.default_store_start.lat},#{@route.vehicle_usage.default_store_start.lng}"
-          .panel.panel-default{ data: { stop_type: 'start_store' } }
+          - next_status = case @route.start_route_data.status
+            - when 'atstore'
+              - 'finished'
+            - when nil
+              - 'atstore'
+          .panel.panel-default{ data: { stop_type: 'store' } }
             .panel-heading{ id: "heading-start-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.start_route_data.status}", href: "#collapse-start-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
               .d-flex.align-items-center.justify-content-between.mb-1
                 .col-xs-2.p-0
                   .d-flex.align-items-center.justify-content-between
                     #label-index.label.label-default-negative.p-3{ class: "label-#{@route.start_route_data.status}" }
                       %i.fa.fa-fw{ class: "#{@route.vehicle_usage.default_store_start.default_icon}" }
-                .col-xs-10.p-0
+                .col-xs-6.p-0
                   = t('routes.mobile.start_depot')
+                .col-xs-4.p-0
+                  %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'route_start_route_data_status', title: next_status } }
+                    .d-flex.align-items-center
+                      .fa.fa-regular.fa-square-caret-right.mr-2
+                      #quick-status-text
+                        = t("plannings.edit.stop_store_status.#{next_status}") if next_status
               .d-flex.align-items-center
                 .col-xs-12.p-0.mt-1
                   .d-flex.align-items-center.justify-content-between
@@ -100,9 +111,13 @@
             - else
               - "geo:#{@route.vehicle_usage.default_store_stop.lat},#{@route.vehicle_usage.default_store_stop.lng}?q=#{@route.vehicle_usage.default_store_stop.lat},#{@route.vehicle_usage.default_store_stop.lng}"
           - next_status = case @route.stop_route_data.status
-          - when nil
-            - 'intransit'
-          .panel.panel-default{ data: { stop_type: 'stop_store' } }
+            - when 'intransit'
+              - 'atstore'
+            - when 'atstore'
+              - 'finished'
+            - when nil
+              - 'intransit'
+          .panel.panel-default{ data: { stop_type: 'store' } }
             .panel-heading{ id: "heading-stop-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.stop_route_data.status}", href: "#collapse-stop-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
               .d-flex.align-items-center.justify-content-between.mb-1
                 .col-xs-2.p-0
@@ -116,7 +131,7 @@
                     .d-flex.align-items-center
                       .fa.fa-regular.fa-square-caret-right.mr-2
                       #quick-status-text
-                        = t("plannings.edit.stop_status.#{next_status}") if next_status
+                        = t("plannings.edit.stop_store_status.#{next_status}") if next_status
               .d-flex.align-items-center
                 .col-xs-12.p-0.mt-1
                   .d-flex.align-items-center.justify-content-between
