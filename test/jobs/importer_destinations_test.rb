@@ -854,6 +854,51 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_equal 2, new_destinations.size, 'Both new destinations should be created'
   end
 
+  test 'should import visit custom_attributes via CSV' do
+    @customer.custom_attributes.create!(
+      name: 'bar_attribute',
+      object_type: 'boolean',
+      object_class: 'visit'
+    )
+    @customer.update!(advanced_options: { 'import' => { 'destinations' => { 'spreadsheetColumnsDef' => { 'custom_attributes_visit[bar_attribute]' => 'foo_attribute' } } } })
+    assert ImportCsv.new(column_def: @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef'), importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_with_custom_custom_attributes_visit.csv', 'text.csv')).import
+    @customer.reload
+    visit = @customer.visits.last
+
+    assert_equal true, visit.custom_attributes_typed_hash['bar_attribute']
+  end
+
+  test 'should import visit custom_attributes via JSON' do
+    @customer.custom_attributes.create!(
+      name: 'api_field',
+      object_type: 'string',
+      object_class: 'visit'
+    )
+    json = [
+      {
+        ref: 'json_ca_test',
+        name: 'JSON Import',
+        street: '1 rue Test',
+        postalcode: '75001',
+        city: 'Paris',
+        country: 'FR',
+        visits: [{
+          ref: 'v1',
+          custom_attributes: { 'api_field' => 'Valeur API' }
+        }]
+      }
+    ]
+
+    assert_difference('Destination.count', 1) do
+      assert_difference('Visit.count', 1) do
+        import_json = ImportJson.new(importer: ImporterDestinations.new(@customer), replace: false, json: json)
+        assert import_json.import, "Import failed: #{import_json.errors.full_messages.join(', ')}"
+      end
+    end
+    visit = Visit.last
+    assert_equal 'Valeur API', visit.custom_attributes_typed_hash['api_field']
+  end
+
   test 'should import new visits without tag but should not add them toplanning with tags' do
     # Use existing planning with ref
     existing_planning = plannings(:planning_one)
