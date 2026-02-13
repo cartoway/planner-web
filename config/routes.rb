@@ -241,7 +241,7 @@ Rails.application.routes.draw do
   root 'index#index'
 
   # Errors
-  %w(404 406 422 500).each do |code|
+  %w(404 406 422 500 504).each do |code|
     get code, to: 'errors#show', code: code
   end
 end
