@@ -81,7 +81,7 @@ class DeliverableUnitTest < ActiveSupport::TestCase
   end
 
   test 'should save with localized attributes' do
-    unit = customers(:customer_one).deliverable_units.build(default_pickup: '2,0', default_delivery: '1,0', default_capacity: '10,0', optimization_overload_multiplier: '0,1')
+    unit = customers(:customer_one).deliverable_units.build(label: 'foo', default_pickup: '2,0', default_delivery: '1,0', default_capacity: '10,0', optimization_overload_multiplier: '0,1')
     assert unit.save
     assert_equal 2, unit.default_pickup
     assert_equal 1, unit.default_delivery
