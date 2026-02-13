@@ -97,7 +97,7 @@ class ImporterDestinations < ImporterBase
         ["delivery#{du.id}".to_sym, {title: I18n.t('destinations.import_file.delivery') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('destinations.import_file.delivery_desc'), format: I18n.t('destinations.import_file.format.float')}]
       ]
     }]).merge(Hash[@customer.custom_attributes.for_visit.map { |ca|
-    ["custom_attributes_visit[#{ca.name}]", { title: "#{I18n.t('destinations.import_file.custom_attributes_visit')}[#{ca.name}]", format: I18n.t("destinations.import_file.format.#{ca.object_type}")}]
+    ["custom_attributes_visit[#{ca.name}]".to_sym, { title: "#{I18n.t('destinations.import_file.custom_attributes_visit')}[#{ca.name}]", format: I18n.t("destinations.import_file.format.#{ca.object_type}")}]
   }])
   end
 
@@ -149,6 +149,10 @@ class ImporterDestinations < ImporterBase
           v[:tag_visits] += v[:tags] if v[:tags]&.any?
           v.delete(:tags)
           v[:tag_visits].uniq!
+          v[:custom_attributes]&.each{ |attr_name, attr_value|
+            v["custom_attributes_visit[#{attr_name}]".to_sym] = attr_value
+          }
+          v.delete(:custom_attributes)
           if v[:quantities] && v[:quantities].is_a?(Array)
             pickup_hash = {}
             delivery_hash = {}
@@ -401,7 +405,7 @@ class ImporterDestinations < ImporterBase
     custom_attributes_visit = {}
     row.each{ |key, _value|
       Regexp.new("^custom_attributes_visit\\[(.*)\\]$").match(key.to_s) { |m|
-        custom_attributes_visit[m[1]] = row.delete(m[0])
+        custom_attributes_visit[m[1]] = row.delete(m[0].to_sym)
       }
     }
     row[:custom_attributes_visit] = custom_attributes_visit if custom_attributes_visit.any?

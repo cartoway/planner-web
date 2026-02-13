@@ -1571,6 +1571,7 @@ fr:
         hour: 'HH:MM'
         second: 'HH:MM:SS'
         yes_no: oui/non
+        boolean: vrai/faux
         required: obligatoire
         advisable: recommandé
         optional: optionnel

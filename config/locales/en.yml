@@ -1513,6 +1513,7 @@ en:
         date_desc: 'MM/DD/AAAA'
         hour: 'HH:MM'
         second: 'HH:MM:SS'
+        boolean: true/false
         yes_no: yes/no
         required: required
         advisable: advised
