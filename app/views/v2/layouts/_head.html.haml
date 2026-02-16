@@ -20,6 +20,8 @@
   I18n.defaultLocale = "#{I18n.default_locale}";
   I18n.locale = "#{I18n.locale}";
 /
+/ Hotwire Turbo - enables partial page updates (only .main content) when navigating between v2 pages
+= turbo_include_tags
 / Application pack - replace with importmap when Rails 6+. Load before vendor.
 = javascript_pack_tag 'v2/application', 'data-turbolinks-track': 'reload'
 = javascript_pack_tag 'vendor', 'data-turbolinks-track': 'reload'

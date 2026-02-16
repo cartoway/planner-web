@@ -28,7 +28,42 @@ class DestinationsControllerTest < ActionController::TestCase
     get :index
     assert_response :success
     assert_not_nil assigns(:destinations)
+    assert_not_nil assigns(:pagination)
+    assert_not_nil assigns(:total_count)
     assert_valid response
+    # V2 layout includes map for destinations
+    assert_select '#map'
+    assert_select '#map_box'
+  end
+
+  test 'index renders multiple selection UI when destinations exist' do
+    get :index
+    assert_response :success
+    assert_select '#destinations-table'
+    assert_select '.index_toggle_selection', 1
+    assert_select '.destination-checkbox', assigns(:destinations).size
+    assert_select '#multiple-delete', 1
+  end
+
+  test 'should filter destinations by key value search' do
+    get :index, params: { q: 'city:Bordeau' }
+    assert_response :success
+    assert_equal 1, assigns(:destinations).size
+    assert_equal 'Bordeau', assigns(:destinations).first.city
+  end
+
+  test 'should filter destinations by filter badges' do
+    get :index, params: { filters: ['name:destination_one'] }
+    assert_response :success
+    assert_equal 1, assigns(:destinations).size
+    assert_equal 'destination_one', assigns(:destinations).first.name
+  end
+
+  test 'should combine filters and live query' do
+    get :index, params: { filters: ['city:Bordeau'], q: 'name:destination' }
+    assert_response :success
+    assert_equal 1, assigns(:destinations).size
+    assert_equal 'destination_one', assigns(:destinations).first.name
   end
 
   test 'should get index in excel' do

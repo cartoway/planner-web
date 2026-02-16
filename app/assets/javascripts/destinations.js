@@ -968,6 +968,37 @@ const destinations_index = function(params, api) {
     markers[id] = marker;
   };
 
+  // V2 mode: server-rendered table + pre-loaded destinations for map (no fetch)
+  if (params.v2_map) {
+    (params.destinations || []).forEach(function(d) {
+      if (d.lat != null && d.lng != null) {
+        addMarker(d.id, d.lat, d.lng);
+      }
+    });
+    if (markersLayers.getLayers().length > 0) {
+      map.fitBounds(markersLayers.getBounds(), { maxZoom: 15, padding: [20, 20] });
+    }
+    $('tr[data-destination_id]').on('click', function() {
+      var id = $(this).attr('data-destination_id');
+      if (markers[id]) over(id, false);
+    });
+
+    // Collapsible sidebar - map.invalidateSize() needed when sidebar width changes
+    var $sidebar = $('.destinations-sidebar');
+    var invalidateMap = function() {
+      setTimeout(function() { map.invalidateSize(); }, 220);
+    };
+    $('.destinations-sidebar-toggle').on('click', function() {
+      $sidebar.addClass('collapsed');
+      invalidateMap();
+    });
+    $('.destinations-sidebar-expand button').on('click', function() {
+      $sidebar.removeClass('collapsed');
+      invalidateMap();
+    });
+    return;
+  }
+
   if (!params.reached_max_destinations) {
     $("#add").click(function() {
       var id = 0;

@@ -1479,10 +1479,27 @@ fr:
         help: Importe les adresses de TomTom WEBFLEET comme clients
     index:
       title: Liste adresses
-      search_help: 'Syntaxe : champ:valeur (ex. name:Paris, city:Lyon)'
+      collapse_list: Réduire la liste
+      expand_list: Afficher la liste
+      select_all: Tout sélectionner
+      search_help: 'Syntaxe : champ:valeur (ex. nom:Paris, ville:Lyon)'
+      remove_filter: Retirer ce filtre
+      search_keys:
+        ref: ref
+        name: nom
+        address: adresse
+        city: ville
+        postalcode: code_postal
+        country: pays
+        phone: telephone
+        comment: commentaire
+        tags: tags
+        visit_ref: ref_visite
+        visit_tags: tags_visite
       new: Nouvelle adresse
       show: Voir la liste complète (%{count})
       default_name: Nouvelle adresse
+      search_help: 'Syntaxe : field:value (ex. name:Paris, city:Lyon)'
       columns: Colonnes
       no_position: manquant
       geocoding_level: Niveau de géocodage

@@ -16,6 +16,25 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 module DestinationsHelper
+  # Builds params hash for destinations index URL (search, filters, pagination).
+  def destinations_index_params(overrides = {})
+    base = { page: params[:page], per_page: params[:per_page], q: params[:q], filters: Array(params[:filters]).compact }
+    base.merge(overrides)
+  end
+
+  # Placeholder example for search input (uses localized keys).
+  def destinations_search_placeholder
+    name_key = I18n.t('destinations.index.search_keys.name', default: 'name')
+    city_key = I18n.t('destinations.index.search_keys.city', default: 'city')
+    "#{name_key}:Paris #{city_key}:Lyon"
+  end
+
+  # Params for URL when removing a filter badge (excludes the given filter, resets to page 1).
+  def destinations_index_params_without_filter(filter_to_remove)
+    remaining = Array(params[:filters]).compact.reject { |f| f.to_s == filter_to_remove.to_s }
+    destinations_index_params(filters: remaining, page: 1)
+  end
+
   def csv_column_titles(customer, options = {})
     custom_columns = customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
     columns(customer, options).map{ |c|
