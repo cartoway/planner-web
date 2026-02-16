@@ -311,6 +311,8 @@ class V01::Destinations < Grape::API
             end
           end
 
+          error! V01::Status.code_response(:code_304), 304 if parsed_ids.empty? && parsed_refs.empty?
+
           destinations_query = current_customer.destinations
           if parsed_ids.any? && parsed_refs.any?
             destinations_query = destinations_query.where('destinations.id IN (?) OR destinations.ref IN (?)', parsed_ids, parsed_refs)
@@ -321,6 +323,8 @@ class V01::Destinations < Grape::API
           end
 
           matching_count = destinations_query.count
+
+          error! V01::Status.code_response(:code_304), 304 if matching_count.zero?
 
           if current_customer.destinations_count == matching_count
             current_customer.delete_all_destinations
