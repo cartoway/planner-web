@@ -439,7 +439,6 @@ class Customer < ApplicationRecord
   end
 
   def delete_all_destinations
-    stops_relations.delete_all
     destinations.delete_all
     self.reload
     reindex_routes
@@ -543,16 +542,15 @@ class Customer < ApplicationRecord
   private
 
   def reindex_routes
-    Route.includes_stops.scoping do
-      plannings.reload.each { |p|
-        p.routes.each do |route|
-          # reindex remaining stops (like rests)
-          route.force_reindex
-          route.outdated = true if !route.geojson_points.try(&:empty?) || !route.geojson_tracks.try(&:empty?)
-        end
-        p.save!
-      }
-    end
+    plannings_to_reindex = plannings.includes(routes: [:route_geojson, :stops])
+    plannings_to_reindex.each { |p|
+      p.routes.each do |route|
+        # reindex remaining stops (like rests)
+        route.force_reindex
+        route.outdated = true if !route.geojson_points.try(&:empty?) || !route.geojson_tracks.try(&:empty?)
+      end
+      p.save!
+    }
   end
 
   def devices_update_vehicles
