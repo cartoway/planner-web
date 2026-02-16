@@ -1,0 +1,21 @@
+// Copyright © Cartoway
+// V2 layout - Bootstrap 5.3.8 compatible styles
+// Compatibility layer for Bootstrap 3 class names used in v2 views
+
+@import "font-awesome";
+
+// Bootstrap 3 → 5 compatibility
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.help-block {
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+  font-size: 0.875em;
+  color: var(--bs-secondary-color);
+}
+
+.table-condensed {
+  font-size: 0.875rem;
+}

@@ -1431,6 +1431,7 @@ en:
         help: Import TomTom WEBFLEET addresses as destinations
     index:
       title: Listing destinations
+      search_help: 'Syntax: field:value (e.g. name:Paris, city:Lyon)'
       new: New Destination
       show: See the full list (%{count})
       default_name: New Destination

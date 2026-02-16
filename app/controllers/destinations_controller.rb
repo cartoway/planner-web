@@ -24,7 +24,6 @@ class DestinationsController < ApplicationController
 
   before_action :authenticate_user!
   before_action :set_destination, only: [:show, :edit, :update, :destroy]
-  before_action :set_custom_attributes, only: [:show, :edit, :update, :destroy, :create, :new]
   after_action :warnings, only: [:create, :update]
   around_action :over_max_limit, only: [:create, :duplicate]
   before_action -> { deny_unless_form_update!(:destination) }, only: [:clear]
@@ -33,22 +32,39 @@ class DestinationsController < ApplicationController
 
   def index
     @customer = current_user.customer
-    @destinations = if request.format.html? || !@customer.is_editable?
-      current_user.customer.destinations.reorder(Arel.sql("CASE WHEN lat IS NULL THEN 0 ELSE 1 END, geocoding_accuracy ASC NULLS LAST")).includes([:tags])
-    else
-      current_user.customer.destinations.reorder(Arel.sql("CASE WHEN lat IS NULL THEN 0 ELSE 1 END, geocoding_accuracy ASC NULLS LAST")).includes_visits
-    end
-    @tags = current_user.customer.tags
     respond_to do |format|
-      format.html
-      format.json
+      format.html do
+        per_page = [[(params[:per_page] || 25).to_i, 1].max, 100].min
+        page = [params[:page].to_i, 1].max
+        scope = current_user.customer.destinations
+                            .reorder('geocoding_accuracy ASC NULLS LAST')
+                            .includes([:tags, visits: :tags])
+        @total_count = scope.count
+        @destinations = scope.offset((page - 1) * per_page).limit(per_page)
+        @tags = current_user.customer.tags
+        @pagination = { page: page, per_page: per_page, total: @total_count }
+        render 'v2/destinations/index', layout: 'v2/layouts/application'
+      end
+      format.json do
+        @destinations = if !@customer.is_editable?
+          current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes([:tags])
+        else
+          current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes_visits
+        end
+        @tags = current_user.customer.tags
+        render :index
+      end
       format.excel do
-        send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
+        @destinations = current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes([:tags, visits: :tags])
+        @tags = current_user.customer.tags
+        send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
             type: 'text/csv',
             filename: format_filename(t('activerecord.models.destinations.other')) + '.csv',
             disposition: params.key?(:disposition) ? params[:disposition] : 'attachment'
       end
       format.csv do
+        @destinations = current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes([:tags, visits: :tags])
+        @tags = current_user.customer.tags
         response.headers['Content-Disposition'] = 'attachment; filename="' + format_filename(t('activerecord.models.destinations.other')) + '.csv"'
       end
     end
@@ -115,7 +131,7 @@ class DestinationsController < ApplicationController
   def import_template
     respond_to do |format|
       format.excel do
-        send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
+        send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
             type: 'text/csv',
             filename: format_filename('import_template.csv'),
             disposition: params.key?(:disposition) ? params[:disposition] : 'attachment'
@@ -132,9 +148,10 @@ class DestinationsController < ApplicationController
   end
 
   def upload_csv
+    @columns_default = current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
+
     respond_to do |format|
       @importer = ImporterDestinations.new(current_user.customer)
-      @columns_default = (current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef') || {}).merge(import_csv_params[:column_def] || {})
       @import_csv = ImportCsv.new(import_csv_params.merge(importer: @importer, content_code: :html, column_def: @columns_default))
       if @import_csv.valid? && @import_csv.import
         if @import_csv.importer.plannings.size == 1 && !current_user.customer.job_destination_geocoding
@@ -176,25 +193,18 @@ class DestinationsController < ApplicationController
   private
 
   def time_with_day_params(params, local_params, times)
-    return unless local_params[:visits_attributes]
-
-    if local_params[:visits_attributes].is_a?(Array)
-      local_params[:visits_attributes].each_with_index do |_, i|
-        times.each do |time|
-          local_params[:visits_attributes][i][time] = ChronicDuration.parse("#{params[:destination][:visits_attributes][i]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][i][time].tr(':', 'h')}min", keep_zero: true) unless params[:destination][:visits_attributes][i]["#{time}_day".to_sym].to_s.empty? || local_params[:visits_attributes][i][time].to_s.empty?
+    if local_params[:visits_attributes]
+      if local_params[:visits_attributes].is_a?(Hash)
+        local_params[:visits_attributes].each do |k, _|
+          times.each do |time|
+            local_params[:visits_attributes][k][time] = ChronicDuration.parse("#{params[:destination][:visits_attributes][k]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][k][time].tr(':', 'h')}min", keep_zero: true) unless params[:destination][:visits_attributes][k]["#{time}_day".to_sym].to_s.empty? || local_params[:visits_attributes][k][time].to_s.empty?
+          end
         end
-      end
-    else
-      local_params[:visits_attributes].each_pair do |k, valu|
-        times.each do |time|
-          next if params[:destination][:visits_attributes][k]["#{time}_day".to_sym].to_s.empty? ||
-                  local_params[:visits_attributes][k][time].to_s.empty?
-
-          local_params[:visits_attributes][k][time] =
-            ChronicDuration.parse(
-              "#{params[:destination][:visits_attributes][k]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][k][time].tr(':', 'h')}min",
-              keep_zero: true
-            )
+      else
+        local_params[:visits_attributes].each_with_index do |_, i|
+          times.each do |time|
+            local_params[:visits_attributes][i][time] = ChronicDuration.parse("#{params[:destination][:visits_attributes][i]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][i][time].tr(':', 'h')}min", keep_zero: true) unless params[:destination][:visits_attributes][i]["#{time}_day".to_sym].to_s.empty? || local_params[:visits_attributes][i][time].to_s.empty?
+          end
         end
       end
     end
@@ -205,31 +215,22 @@ class DestinationsController < ApplicationController
     @destination = current_user.customer.destinations.find params[:id] || params[:destination_id]
   end
 
-  def set_custom_attributes
-    @visit_custom_attributes = current_user.customer.custom_attributes.for_visit
-  end
-
   def warnings
     flash[:warning] = @destination.warnings.join(', ') if @destination.warnings && @destination.warnings.any?
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def destination_params
-    p = params.to_unsafe_h
     # Deals with deprecated quantity
-    p[:visits_attributes]&.each{ |p|
-      if !p[:deliveries] && p[:quantity] && !current_user.customer.deliverable_units.empty?
-        p[:deliveries] = { current_user.customer.deliverable_units[0].id => p.delete(:quantity) }
-      end
-    }
-    if p.dig(:destination, :geocoding_result).to_s.empty?
-      p[:destination].delete(:geocoding_result)
-    else
-      p[:destination][:geocoding_result] = JSON.parse(p[:destination][:geocoding_result])
+    if params[:visits_attributes]
+      params[:visits_attributes].each{ |p|
+        if !p[:quantities] && p[:quantity] && !current_user.customer.deliverable_units.empty?
+          p[:quantities] = { current_user.customer.deliverable_units[0].id => p.delete(:quantity) }
+        end
+      }
     end
-    p = ActionController::Parameters.new(p)
 
-    p.require(:destination).permit(
+    o = params.require(:destination).permit(
       :ref,
       :name,
       :street,
@@ -242,14 +243,10 @@ class DestinationsController < ApplicationController
       :lng,
       :phone_number,
       :comment,
-      :duration,
       :geocoding_accuracy,
       :geocoding_level,
       :geocoder_version,
       :geocoded_at,
-      geocoding_result: [
-        :free
-      ],
       tag_ids: [],
       visits_attributes: [
         :id,
@@ -260,15 +257,19 @@ class DestinationsController < ApplicationController
         :time_window_start_2,
         :time_window_end_2,
         :priority,
-        :revenue,
         :force_position,
         :_destroy,
         tag_ids: [],
-        pickups: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
-        deliveries: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
-        custom_attributes: current_user.customer.custom_attributes.for_visit.map{ |c_u| c_u.name.to_sym }
+        quantities: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
+        quantities_operations: current_user.customer.deliverable_units.map{ |du| du.id.to_s }
       ]
     )
+    o[:visits_attributes].each do |_k, v|
+      v[:quantities_operations].each{ |k, qo|
+        v[:quantities][k] = "#{-v[:quantities][k].to_f}" if v[:quantities][k].to_f > 0 && qo.to_sym == :empty
+      } if v && v[:quantities_operations]
+    end if o[:visits_attributes]
+    o
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
