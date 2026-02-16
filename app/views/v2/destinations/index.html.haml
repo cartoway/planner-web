@@ -1,0 +1,80 @@
+-# Copyright © Cartoway
+- content_for :title, t('destinations.index.title')
+
+%h1= t 'destinations.index.title'
+
+- if current_user.customer.too_many_destinations?
+  .alert.alert-warning{data: {error: "true"}}
+    %p= t 'destinations.index.over_max_limit', limit: current_user.customer.default_max_destinations
+
+-# Key:value search field - placeholder for phase 3 (Stimulus controller when @hotwired/stimulus added)
+.row.row-top
+  .col-md-6
+    .form-group
+      %label{for: "search-query"}= t 'web.help_search_placeholder'
+      %input.form-control#search-query{type: "text", placeholder: "name:Paris city:Lyon"}
+      %small.help-block= t 'destinations.index.search_help', default: 'Syntax: field:value (e.g. name:Paris, city:Lyon)'
+  .col-md-3
+    = link_to new_destination_path, class: 'btn btn-primary btn-sm' do
+      %i.fa.fa-plus.fa-fw
+      = t 'destinations.index.new'
+  .col-md-3.text-right
+    %span#count= @destinations.size
+    = " / #{@total_count} #{t 'activerecord.models.destinations', count: @total_count}"
+
+-# Paginated list placeholder - Turbo Frame target for phase 4
+#destinations-list.row
+  .col-md-12
+    %table.table.table-striped.table-condensed
+      %thead
+        %tr
+          %th= t 'activerecord.attributes.destination.name'
+          %th= t 'activerecord.attributes.destination.address'
+          - if @customer.enable_references
+            %th= t 'activerecord.attributes.destination.ref_small'
+          %th= t 'activerecord.attributes.destination.geocoding_accuracy_small'
+          %th= t 'activerecord.models.visit'
+          %th
+      %tbody
+        - if @destinations.any?
+          - @destinations.each do |destination|
+            %tr{data: {destination_id: destination.id}}
+              %td= destination.name
+              %td= [destination.street, destination.postalcode, destination.city, destination.country].compact.join(' ')
+              - if @customer.enable_references
+                %td= destination.ref
+              %td
+                - if destination.geocoding_accuracy
+                  = number_to_percentage(destination.geocoding_accuracy * 100, precision: 0)
+                - else
+                  –
+              %td= "#{destination.visits.count} #{t 'activerecord.models.visits', count: destination.visits.count}"
+              %td
+                = link_to edit_destination_path(destination), class: 'btn btn-default btn-xs' do
+                  %i.fa.fa-pencil
+        - else
+          %tr
+            %td.text-center.text-muted{colspan: (@customer.enable_references ? 6 : 5)}
+              = t 'api_web.v01.destinations.index.none_destinations', default: 'No destinations found'
+
+-# Pagination controls
+- if @pagination[:per_page].positive? && @pagination[:total] > @pagination[:per_page]
+  - total_pages = (@pagination[:total].to_f / @pagination[:per_page]).ceil
+  %nav.text-center
+    %ul.pagination.pagination-sm
+      %li{class: ('disabled' if @pagination[:page] <= 1)}
+        - if @pagination[:page] > 1
+          = link_to destinations_path(page: @pagination[:page] - 1), class: 'btn btn-default btn-sm' do
+            %i.fa.fa-chevron-left
+        - else
+          %span.btn.btn-default.btn-sm.disabled
+            %i.fa.fa-chevron-left
+      %li.disabled
+        %span.btn.btn-default.btn-sm= "#{@pagination[:page]} / #{total_pages}"
+      %li{class: ('disabled' if @pagination[:page] >= total_pages)}
+        - if @pagination[:page] < total_pages
+          = link_to destinations_path(page: @pagination[:page] + 1), class: 'btn btn-default btn-sm' do
+            %i.fa.fa-chevron-right
+        - else
+          %span.btn.btn-default.btn-sm.disabled
+            %i.fa.fa-chevron-right
