@@ -1467,10 +1467,27 @@ en:
         help: Import TomTom WEBFLEET addresses as destinations
     index:
       title: Listing destinations
+      collapse_list: Collapse list
+      expand_list: Expand list
+      select_all: Select all
       search_help: 'Syntax: field:value (e.g. name:Paris, city:Lyon)'
+      remove_filter: Remove this filter
+      search_keys:
+        ref: ref
+        name: name
+        address: address
+        city: city
+        postalcode: postalcode
+        country: country
+        phone: phone
+        comment: comment
+        tags: tags
+        visit_ref: visit_ref
+        visit_tags: visit_tags
       new: New Destination
       show: See the full list (%{count})
       default_name: New Destination
+      search_help: 'Syntax: field:value (e.g. name:Paris, city:Lyon)'
       columns: Columns
       no_position: missing
       geocoding_level: Geocoding level

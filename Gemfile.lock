@@ -801,6 +801,9 @@ GEM
       date
     timeliness (0.4.5)
     timeout (0.4.1)
+    turbo-rails (2.0.12)
+      actionpack (>= 6.0.0)
+      railties (>= 6.0.0)
     turbolinks (5.2.1)
       turbolinks-source (~> 5.2)
     turbolinks-source (5.2.0)
@@ -999,6 +1002,7 @@ DEPENDENCIES
   sys-cpu
   sys-filesystem
   tidy-html5!
+  turbo-rails
   turbolinks (~> 5.2)
   twitter-bootstrap-rails
   uglifier (< 4.0)
