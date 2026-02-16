@@ -40,10 +40,18 @@ class DestinationsController < ApplicationController
         scope = current_user.customer.destinations
                             .reorder('geocoding_accuracy ASC NULLS LAST')
                             .includes([:tags, visits: :tags])
+
+        # Key:value search - badges (from Enter) + live query (from params[:q])
+        @active_filters = Array(params[:filters]).compact.map(&:strip).reject(&:blank?)
+        conditions = @active_filters.flat_map { |f| DestinationSearchParser.parse(f) }
+        conditions += DestinationSearchParser.parse(params[:q]) if params[:q].to_s.strip.present?
+        scope = DestinationSearchScope.apply(scope, conditions) if conditions.any?
+
         @total_count = scope.count
         @destinations = scope.offset((page - 1) * per_page).limit(per_page)
         @tags = current_user.customer.tags
         @pagination = { page: page, per_page: per_page, total: @total_count }
+        @search_query = params[:q].to_s.strip
         render 'v2/destinations/index', layout: 'v2/layouts/application'
       end
       format.json do
