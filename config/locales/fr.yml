@@ -1525,6 +1525,7 @@ fr:
         help: Importe les adresses de TomTom WEBFLEET comme clients
     index:
       title: Liste adresses
+      search_help: 'Syntaxe : champ:valeur (ex. name:Paris, city:Lyon)'
       new: Nouvelle adresse
       show: Voir la liste complète (%{count})
       default_name: Nouvelle adresse
