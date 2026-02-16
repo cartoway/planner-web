@@ -1849,9 +1849,12 @@ export const plannings_edit = function(params) {
             var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
             routesLayer.focus({routeId: routeId, stopIndex: stopIndex});
           } else {
-            var storeId = $(this).closest("[data-store-id]").attr("data-store-id");
+            var li = $(this).closest("[data-store-id]");
+            var storeId = li.attr("data-store-id");
             if (storeId) {
-              routesLayer.focus({storeId: storeId});
+              var routeId = li.attr("data-origin-route-id");
+              var depotType = li.attr("data-type");
+              routesLayer.focus({ storeId: storeId, routeId: routeId, depotType: depotType });
             }
           }
           $(this).blur();

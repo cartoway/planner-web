@@ -203,12 +203,56 @@ class RoutesController < ApplicationController
   end
 
   def route_driver_params
-    params.require(:route).permit(
+    permitted = params.require(:route).permit(
       :status,
       start_route_data_attributes: [:status],
       stop_route_data_attributes: [:status],
       custom_attributes: RecursiveParamsHelper.permit_recursive(params['route']['custom_attributes'])
     )
+
+    merge_route_custom_attributes!(permitted) if permitted[:custom_attributes].present?
+
+    permitted
+  end
+
+  # Merges incoming custom_attributes using composite keys (related_field:name).
+  # Converts nested or flat incoming params to flat hash with composite keys.
+  def merge_route_custom_attributes!(permitted)
+    merged = (@route.custom_attributes || {}).dup
+    nested_keys = %w[start_route_data stop_route_data]
+    incoming = permitted[:custom_attributes]
+
+    # Convert nested structure (from form) to composite keys
+    if incoming.keys.any? { |k| nested_keys.include?(k.to_s) }
+      incoming.each do |key, value|
+        key_s = key.to_s
+        if nested_keys.include?(key_s) && value.is_a?(Hash)
+          value.each { |name, val| merged["#{key_s}:#{name}"] = val }
+        elsif !nested_keys.include?(key_s)
+          merged[key_s] = value
+        end
+      end
+    else
+      # Flat: infer related_field from route_data_attributes context when keys are not already composite
+      related_field = if permitted[:start_route_data_attributes].present? && permitted[:stop_route_data_attributes].blank?
+        'start_route_data'
+      elsif permitted[:stop_route_data_attributes].present? && permitted[:start_route_data_attributes].blank?
+        'stop_route_data'
+      end
+
+      incoming.each do |k, v|
+        key_s = k.to_s
+        # Keys from form may already be composite (e.g. "start_route_data:Kilométrage"), do not double-prefix
+        storage_key = if related_field && !key_s.include?(':')
+          "#{related_field}:#{key_s}"
+        else
+          key_s
+        end
+        merged[storage_key] = v
+      end
+    end
+
+    permitted[:custom_attributes] = merged
   end
 
   def export_params
@@ -280,8 +324,8 @@ class RoutesController < ApplicationController
       }) +
       (@customer || @planning.customer).custom_attributes.for_visit.map{ |ca|
         "custom_attributes_visit[#{ca.name}]".to_sym
-      } + (@customer || @planning.customer).custom_attributes.for_stop_visit.map{ |ca|
-       "custom_attributes_stop_visit[#{ca.name}]".to_sym
+      } + (@customer || @planning.customer).custom_attributes.for_export_stops_unique_by_name.map{ |ca|
+       "custom_attributes_stop[#{ca.name}]".to_sym
       }
   end
 end

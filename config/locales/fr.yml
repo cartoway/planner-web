@@ -639,6 +639,10 @@ fr:
       attributes:
         inconsistent_customer: n'appartient pas à cet espace client
       models:
+        custom_attribute:
+          attributes:
+            name:
+              cannot_contain_colon: ne peut pas contenir le caractère « : »
         location:
           missing_address_or_latlng: >-
             Le code postal et la ville ne peuvent pas être vides si lat/lng sont
@@ -979,7 +983,8 @@ fr:
       title: Nouvelle propriété additionnelle
     form:
       name: Nom
-      name_help: Nom de la propriété
+      name_help: Nom de la propriété (le caractère « : » n'est pas autorisé)
+      name_pattern_title: Le caractère « : » n'est pas autorisé
       object_class: Entité
       object_class_help_html: >-
         Entité à laquelle lier la propriété.
@@ -2186,6 +2191,9 @@ fr:
         status: 'Statut :'
         status_updated_at: Horaire statut
         eta: 'ETA :'
+        store_reload: Rechargement
+        store_start: 'Site départ'
+        store_stop: 'Site arrivée'
         day: J+
       error:
         no_geolocalization: Pas de géolocalisation
@@ -2415,7 +2423,7 @@ fr:
       status_updated_at: horaire statut
       eta: eta
       custom_attributes_visit: attributs visite
-      custom_attributes_stop_visit: attributs arrêt
+      custom_attributes_stop: attributs arrêt
       stop_size: nombre d'arrêts
       stop_active_size: nombre d'arrêts actifs
       time: durée total

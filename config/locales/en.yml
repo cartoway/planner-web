@@ -633,6 +633,10 @@ en:
       attributes:
         inconsistent_customer: does not belong to this customer
       models:
+        custom_attribute:
+          attributes:
+            name:
+              cannot_contain_colon: cannot contain the character ":"
         location:
           missing_address_or_latlng: Postalcode and city cannot be empty if lat/lng are empty
           lat_outside_range: must be inside range -90..90
@@ -955,7 +959,8 @@ en:
       title: New additional property
     form:
       name: Name
-      name_help: Property name
+      name_help: Property name (cannot contain ":")
+      name_pattern_title: The character ":" is not allowed
       object_class: Entity
       object_class_help_html: >-
         Entity to which property is linked.
@@ -2087,6 +2092,9 @@ en:
         status: 'Status:'
         status_updated_at: 'Time Status:'
         eta: 'ETA:'
+        store_reload: Reload
+        store_start: 'Start store'
+        store_stop: 'Stop store'
         day: D+
       error:
         no_geolocalization: No geolocalization
@@ -2310,7 +2318,7 @@ en:
       status_updated_at: time status changed
       eta: eta
       custom_attributes_visit: visit attributes
-      custom_attributes_stop_visit: stop attributes
+      custom_attributes_stop: stop attributes
       stop_size: number of stops
       stop_active_size: number of active stops
       time: total time

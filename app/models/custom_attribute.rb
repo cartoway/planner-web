@@ -36,12 +36,17 @@ class CustomAttribute < ApplicationRecord
   scope :for_visit, -> { where(object_class: :visit) }
   scope :for_stop_visit, -> { where(object_class: :stop_visit) }
   scope :for_stop_store, -> { where(object_class: :stop_store) }
+  scope :for_export_stops_unique_by_name, -> {
+    export_stops = where(object_class: [:stop_visit, :stop_store, :route])
+    export_stops.where(id: export_stops.unscope(:order).group(:name).select("MIN(id) as id"))
+  }
   scope :for_route, -> { where(object_class: :route) }
   scope :for_related_field, ->(field) { where(related_field: field) }
   scope :without_related_field, -> { where(related_field: nil) }
 
   auto_strip_attributes :name
   validates :name, presence: true
+  validates :name, format: { without: /:/, message: :cannot_contain_colon }
 
   def typed_default_value
     case object_type
@@ -105,6 +110,11 @@ class CustomAttribute < ApplicationRecord
     else
       [value, nil]
     end
+  end
+
+  # Composite key for custom_attributes storage: "related_field:name" when related_field present, else "name"
+  def self.storage_key_for(name, related_field: nil)
+    related_field.present? ? "#{related_field}:#{name}" : name.to_s
   end
 
   def valid_related_fields
