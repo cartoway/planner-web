@@ -3,6 +3,11 @@ module TypedAttribute
 
   class_methods do
     def typed_attr(current_attribute)
+      define_method("#{current_attribute}_has_key?") do |name, related_field: nil|
+        storage_key = CustomAttribute.storage_key_for(name, related_field: related_field)
+        send(current_attribute).key?(storage_key)
+      end
+
       define_method("#{current_attribute}_typed_hash") do |related_field: nil|
         customer =
           if self.respond_to?(:customer)
@@ -24,9 +29,11 @@ module TypedAttribute
           reference_attributes = reference_attributes.where(related_field: nil)
         end
 
-        current_attributes = send(current_attribute)
+        current_attributes = send(current_attribute) || {}
         rhash = Hash[reference_attributes.map{ |r_a|
-          [r_a.name, typed_value(r_a.object_type, current_attributes[r_a.name] || r_a.default_value)]
+          storage_key = CustomAttribute.storage_key_for(r_a.name, related_field: related_field)
+          raw_value = current_attributes[storage_key]
+          [r_a.name, typed_value(r_a.object_type, raw_value || r_a.default_value)]
         }]
         rhash
       end

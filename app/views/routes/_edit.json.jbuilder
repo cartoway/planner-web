@@ -134,6 +134,10 @@ json.store_start do
     json.extract! route.start_route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, :status, :eta, :hidden, :color
     json.quantities route_data_quantities(route.start_route_data, route.vehicle_usage_id && route.vehicle_usage.vehicle)
   end
+  json.custom_attributes (
+    planning.customer.custom_attributes.for_route.for_related_field('start_route_data')
+      .map{ |c_a| custom_attribute_template(c_a, route, related_field: 'start_route_data') }
+  )
 end if route.vehicle_usage && route.vehicle_usage.default_store_start
 (json.start_with_service Time.at(display_start_time(route)).utc.strftime('%H:%M')) if display_start_time(route)
 (json.start_with_service_day number_of_days(display_start_time(route))) if display_start_time(route)
@@ -227,6 +231,12 @@ if @with_stops
         (json.error true) if !stop.store_reload.store.position?
         (json.departure time_over_day(stop.time.to_i + stop.store_reload.default_duration.to_i))
         json.departure_day number_of_days(stop.time.to_i + stop.store_reload.default_duration.to_i)
+        if (store_status = stop.route_data&.status || stop.status) && planning.customer.enable_stop_status
+          json.status t("plannings.edit.stop_store_status.#{store_status.downcase}", default: store_status)
+          json.status_code store_status.downcase
+          json.eta_formated l(stop.route_data.eta, format: :hour_minute) if stop.route_data&.eta
+          json.status_updated_at l(stop.status_updated_at, format: :hour_minute) if stop.status_updated_at
+        end
       end
       json.route_data do
         json.route_id stop.route.id
@@ -247,6 +257,37 @@ if @with_stops
       end
     end
     json.duration l(Time.at(stop.duration).utc, format: :hour_minute_second) if stop.duration > 0
+    # Include route depot statuses and custom attributes for stop-popup display
+    if route.vehicle_usage_id && planning.customer.enable_stop_status
+      if route.vehicle_usage.default_store_start && (route.start_route_data&.status || planning.customer.custom_attributes.for_route.for_related_field('start_route_data').any?)
+        json.store_start do
+          json.name route.vehicle_usage.default_store_start.name
+          if route.start_route_data&.status
+            json.status t("plannings.edit.stop_store_status.#{route.start_route_data.status.downcase}", default: route.start_route_data.status)
+            json.status_code route.start_route_data.status.downcase
+            json.eta_formated l(route.start_route_data.eta, format: :hour_minute) if route.start_route_data.eta
+          end
+          json.custom_attributes (
+            planning.customer.custom_attributes.for_route.for_related_field('start_route_data')
+              .map{ |c_a| custom_attribute_template(c_a, route, related_field: 'start_route_data') }
+          )
+        end
+      end
+      if route.vehicle_usage.default_store_stop && (route.stop_route_data&.status || planning.customer.custom_attributes.for_route.for_related_field('stop_route_data').any?)
+        json.store_stop do
+          json.name route.vehicle_usage.default_store_stop.name
+          if route.stop_route_data&.status
+            json.status t("plannings.edit.stop_store_status.#{route.stop_route_data.status.downcase}", default: route.stop_route_data.status)
+            json.status_code route.stop_route_data.status.downcase
+            json.eta_formated l(route.stop_route_data.eta, format: :hour_minute) if route.stop_route_data.eta
+          end
+          json.custom_attributes (
+            planning.customer.custom_attributes.for_route.for_related_field('stop_route_data')
+              .map{ |c_a| custom_attribute_template(c_a, route, related_field: 'stop_route_data') }
+          )
+        end
+      end
+    end
   end
 end
 
@@ -274,6 +315,10 @@ json.store_stop do
     json.vehicle_id route.vehicle_usage.vehicle_id
     json.extract! route.stop_route_data, :status, :eta
   end
+  json.custom_attributes (
+    planning.customer.custom_attributes.for_route.for_related_field('stop_route_data')
+      .map{ |c_a| custom_attribute_template(c_a, route, related_field: 'stop_route_data') }
+  )
 end if route.vehicle_usage_id && route.vehicle_usage.default_store_stop
 (json.end_without_service Time.at(display_end_time(route)).utc.strftime('%H:%M')) if display_end_time(route)
 (json.end_without_service_day number_of_days(display_end_time(route))) if display_end_time(route)

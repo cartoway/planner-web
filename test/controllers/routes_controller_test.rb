@@ -171,7 +171,8 @@ class RoutesControllerTest < ActionController::TestCase
       customer: vehicle.customer,
       name: 'driver_note',
       object_class: 'route',
-      related_field: 'start_route_data'
+      related_field: 'start_route_data',
+      object_type: 'string'
     )
 
     patch :driver_update, params: {
@@ -181,7 +182,7 @@ class RoutesControllerTest < ActionController::TestCase
         start_route_data_attributes: {
           status: 'in_progress'
         },
-        custom_attributes: { 'driver_note' => 'On route' }
+        custom_attributes: { 'start_route_data:driver_note' => 'On route' }
       },
       format: :json
     }
@@ -190,7 +191,62 @@ class RoutesControllerTest < ActionController::TestCase
     assert_equal({ 'success' => true }, JSON.parse(response.body))
     route.reload
     assert_equal 'in_progress', route.start_route_data.status
-    assert_equal 'On route', route.custom_attributes['driver_note']
+    assert_equal 'On route', route.custom_attributes_typed_hash(related_field: :start_route_data)['driver_note']
+  end
+
+  test 'should distinguish start_route_data and stop_route_data custom_attributes via driver_update' do
+    vehicle = vehicles(:vehicle_one)
+    route = routes(:route_one_one)
+
+    CustomAttribute.create!(
+      customer: vehicle.customer,
+      name: 'odometer',
+      object_class: 'route',
+      related_field: 'start_route_data',
+      object_type: 'float'
+    )
+    CustomAttribute.create!(
+      customer: vehicle.customer,
+      name: 'odometer',
+      object_class: 'route',
+      related_field: 'stop_route_data',
+      object_type: 'float'
+    )
+
+    # Update start custom attribute
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        start_route_data_attributes: { status: 'in_progress' },
+        custom_attributes: {
+          'start_route_data:odometer' => '100'
+        }
+      },
+      format: :json
+    }
+    assert_response :success
+    route.reload
+    assert_equal 100, route.custom_attributes_typed_hash(related_field: :start_route_data)['odometer']
+    assert_not route.custom_attributes_has_key?('odometer', related_field: :stop_route_data),
+               'stop_route_data odometer should not be set yet'
+
+    # Update stop custom attribute without overwriting start
+    patch :driver_update, params: {
+      id: route,
+      driver_token: vehicle.driver_token,
+      route: {
+        stop_route_data_attributes: { status: 'atstore' },
+        custom_attributes: {
+          'stop_route_data:odometer' => '250'
+        }
+      },
+      format: :json
+    }
+    assert_response :success
+    route.reload
+    assert_equal 100, route.custom_attributes_typed_hash(related_field: :start_route_data)['odometer']
+    assert_equal 250, route.custom_attributes_typed_hash(related_field: :stop_route_data)['odometer']
   end
 
   test 'should not update route hidden via driver_update' do

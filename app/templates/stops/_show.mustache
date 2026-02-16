@@ -261,11 +261,42 @@
 <hr>
 {{#i18n}}plannings.edit.popup.store{{/i18n}}
 <ul>
+  {{#status}}
+    <li class="toggle-status"{{^status}} style="display: none;"{{/status}}><i class="fa fa-check fa-fw"></i> {{#i18n}}plannings.edit.popup.status{{/i18n}} <span class="stop-status{{#status}} stop-status-{{status_code}}{{/status}}" title="{{status}}{{#eta_formated}} - {{#i18n}}plannings.edit.popup.eta{{/i18n}} {{eta_formated}}{{/eta_formated}}"></span><span class="status">{{status}}</span></li>
+    <li class="toggle-status-eta"{{^eta_formated}} style="display: none;"{{/eta_formated}}><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.eta{{/i18n}} <span class="eta">{{eta_formated}}</span></li>
+    <li class="toggle-status-update-at"{{^status_updated_at}} style="display: none;"{{/status_updated_at}}><i class="fa fa-circle-check fa-fw"></i> {{#i18n}}plannings.edit.popup.status_updated_at{{/i18n}} <span class="status_updated_at">{{status_updated_at}}</span></li>
+  {{/status}}
   {{#time}}<li><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.time{{/i18n}} {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}</li>{{/time}}
   {{#loads}}
     <li><i class="fa {{unit_icon}} fa-fw"></i> {{#i18n}}plannings.edit.popup.loadings{{/i18n}} {{quantity_formatted}}</li>
   {{/loads}}
   </ul>
+{{#store_start}}
+<hr>
+{{#i18n}}plannings.edit.popup.store_start{{/i18n}}{{#name}} - {{name}}{{/name}}
+<ul>
+  {{#status}}
+    <li class="toggle-status"><i class="fa fa-check fa-fw"></i> {{#i18n}}plannings.edit.popup.status{{/i18n}} <span class="stop-status stop-status-{{status_code}}"></span><span class="status">{{status}}</span></li>
+    <li class="toggle-status-eta"{{^eta_formated}} style="display: none;"{{/eta_formated}}><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.eta{{/i18n}} <span class="eta">{{eta_formated}}</span></li>
+  {{/status}}
+  {{#custom_attributes}}
+    {{{html}}}
+  {{/custom_attributes}}
+</ul>
+{{/store_start}}
+{{#store_stop}}
+<hr>
+{{#i18n}}plannings.edit.popup.store_stop{{/i18n}}{{#name}} - {{name}}{{/name}}
+<ul>
+  {{#status}}
+    <li class="toggle-status"><i class="fa fa-check fa-fw"></i> {{#i18n}}plannings.edit.popup.status{{/i18n}} <span class="stop-status stop-status-{{status_code}}"></span><span class="status">{{status}}</span></li>
+    <li class="toggle-status-eta"{{^eta_formated}} style="display: none;"{{/eta_formated}}><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.eta{{/i18n}} <span class="eta">{{eta_formated}}</span></li>
+  {{/status}}
+  {{#custom_attributes}}
+    {{{html}}}
+  {{/custom_attributes}}
+</ul>
+{{/store_stop}}
 {{#error}}
   <ul class="ui-state-error">
     {{#no_path}}

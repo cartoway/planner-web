@@ -42,6 +42,20 @@ class ApiWeb::V01::StoresController < ApiWeb::V01::ApiWebController
   def show
     respond_to do |format|
       @show_isoline = false
+      if request.format.json? && params[:planning_id].present? && params[:route_id].present? && params[:depot_type].in?(%w[start stop])
+        # Sidebar marker click: show only the depot data for the current route
+        @planning = current_user.customer.plannings.find_by(id: params[:planning_id])
+        if @planning
+          routes = @planning.routes.includes(vehicle_usage: [:store_start, :store_stop, {vehicle_usage_set: [:store_start, :store_stop]}])
+                            .select(&:vehicle_usage_id)
+          route = routes.find { |r| r.id.to_s == params[:route_id] }
+          if params[:depot_type] == 'start' && route && route.vehicle_usage.default_store_start&.id == @store.id
+            @store_start_route = route
+          elsif params[:depot_type] == 'stop' && route && route.vehicle_usage.default_store_stop&.id == @store.id
+            @store_stop_route = route
+          end
+        end
+      end
       format.json
     end
   end

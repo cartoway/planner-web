@@ -52,7 +52,7 @@ const popupModule = (function() {
     return false;
   };
 
-  const _buildContentForPopup = function(marker, map) {
+  const _buildContentForPopup = function(marker, map, focusOptions) {
 
     var route = marker.properties.route_id && _context.options.routes.filter(function(route) {
       return route.route_id == marker.properties.route_id;
@@ -70,8 +70,16 @@ const popupModule = (function() {
       if (_ajaxCanBeProceeded()) {
         var url = _context.options.appBaseUrl;
 
-        if (marker.properties.store_id)
+        if (marker.properties.store_id) {
           url += 'stores/' + marker.properties.store_id + '.json';
+          var params = [];
+          if (_context.planningId) params.push('planning_id=' + _context.planningId);
+          if (focusOptions && focusOptions.routeId && focusOptions.depotType) {
+            params.push('route_id=' + encodeURIComponent(focusOptions.routeId));
+            params.push('depot_type=' + encodeURIComponent(focusOptions.depotType));
+          }
+          if (params.length) url += (url.indexOf('?') >= 0 ? '&' : '?') + params.join('&');
+        }
         else if (marker.properties.visit_id)
           url += 'visits/' + marker.properties.visit_id + '.json';
         else if (marker.properties.route_id)
@@ -136,14 +144,14 @@ const popupModule = (function() {
     });
   };
 
-  const createPopupForLayer = function(layer, map) {
+  const createPopupForLayer = function(layer, map, focusOptions) {
     if (_previousMarker)
       _previousMarker.closePopup();
 
     if (_previousPopup instanceof L.Popup)
       _previousPopup.closePopup();
 
-    _buildContentForPopup(layer, map);
+    _buildContentForPopup(layer, map, focusOptions);
   };
 
   const initializeModule = function(options, that) {
@@ -639,7 +647,10 @@ export const RoutesLayer = L.FeatureGroup.extend({
       this.map.setView(this.markerStores[options.storeId].getLatLng(), this.map.getZoom(), {
         reset: true
       });
-      popupModule.createPopupForLayer(this.markerStores[options.storeId], this.map);
+      popupModule.createPopupForLayer(this.markerStores[options.storeId], this.map, {
+        routeId: options.routeId,
+        depotType: options.depotType
+      });
     } else if (options.routeId) {
       this._setViewForRoute(options.routeId);
     }

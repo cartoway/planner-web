@@ -1,5 +1,6 @@
-visit_custom_attributes = route.planning.customer.custom_attributes.select(&:visit?)
-stop_visit_custom_attributes = route.planning.customer.custom_attributes.select(&:stop_visit?)
+visit_custom_attributes = route.planning.customer.custom_attributes.for_visit
+# One column per name: stop_visit, stop_store and route attributes with the same name share a column
+stop_custom_attributes = route.planning.customer.custom_attributes.for_export_stops_unique_by_name
 
 if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|').include?('store'))
   row = {
@@ -73,8 +74,8 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
   ])
 
   row.merge!(
-    Hash[stop_visit_custom_attributes.map{ |ca|
-      ["custom_attributes_stop_visit[#{ca.name}]".to_sym, nil]
+    Hash[stop_custom_attributes.map{ |ca|
+      ["custom_attributes_stop[#{ca.name}]".to_sym, route.custom_attributes_typed_hash(related_field: :start_route_data)[ca.name]]
     }
   ])
 
@@ -172,8 +173,8 @@ route.stops.each { |stop|
       }
     ])
     row.merge!(
-      Hash[stop_visit_custom_attributes.map{ |ca|
-        ["custom_attributes_stop_visit[#{ca.name}]".to_sym, stop.custom_attributes_typed_hash[ca.name]]
+      Hash[stop_custom_attributes.map{ |ca|
+        ["custom_attributes_stop[#{ca.name}]".to_sym, stop.custom_attributes_typed_hash[ca.name]]
       }
     ])
 
@@ -253,8 +254,8 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
   ])
 
   row.merge!(
-    Hash[stop_visit_custom_attributes.map{ |ca|
-      ["custom_attributes_stop_visit[#{ca.name}]".to_sym, nil]
+    Hash[stop_custom_attributes.map{ |ca|
+      ["custom_attributes_stop[#{ca.name}]".to_sym, route.custom_attributes_typed_hash(related_field: :stop_route_data)[ca.name]]
     }
   ])
 

@@ -8,7 +8,7 @@
   - [label, key.to_s]
 = bootstrap_form_for @custom_attribute, layout: :horizontal do |f|
   = render 'shared/error_messages', model: @custom_attribute
-  = f.text_field :name, help: t('.name_help')
+  = f.text_field :name, help: t('.name_help'), pattern: '[^:]*', title: t('.name_pattern_title')
   = f.select :object_type, CustomAttribute.object_types.keys.map{ |key| [t("custom_attributes.types.#{key}"), key] }, { help: t('.object_type_help') }, class: 'form-control'
   = f.hidden_field :object_class, id: 'custom_attribute_object_class'
   = f.hidden_field :related_field, id: 'custom_attribute_related_field'

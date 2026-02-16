@@ -25,6 +25,28 @@ class CustomAttributeTest < ActiveSupport::TestCase
     assert custom_attribute.errors[:customer].any?, "customer should have validation errors"
   end
 
+  test 'should reject name containing colon' do
+    custom_attribute = CustomAttribute.new(
+      name: 'invalid:name',
+      object_type: 'string',
+      object_class: 'vehicle',
+      customer: @customer
+    )
+    refute custom_attribute.valid?
+    assert_includes custom_attribute.errors[:name],
+      I18n.t('activerecord.errors.models.custom_attribute.attributes.name.cannot_contain_colon')
+  end
+
+  test 'should accept name without colon' do
+    custom_attribute = CustomAttribute.new(
+      name: 'valid_name',
+      object_type: 'string',
+      object_class: 'vehicle',
+      customer: @customer
+    )
+    assert custom_attribute.valid?, "Custom attribute should be valid without colon: #{custom_attribute.errors.full_messages}"
+  end
+
   test 'should strip whitespace from name' do
     custom_attribute = CustomAttribute.create!(
       name: '  test_name  ',

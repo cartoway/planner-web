@@ -815,8 +815,8 @@ class PlanningsController < ApplicationController
     ) +
     (@customer || @planning.customer).custom_attributes.for_visit.map{ |ca|
       "custom_attributes_visit[#{ca.name}]".to_sym
-    } + (@customer || @planning.customer).custom_attributes.for_stop_visit.map{ |ca|
-     "custom_attributes_stop_visit[#{ca.name}]".to_sym
+    } + (@customer || @planning.customer).custom_attributes.for_export_stops_unique_by_name.map{ |ca|
+     "custom_attributes_stop[#{ca.name}]".to_sym
     }
   end
 

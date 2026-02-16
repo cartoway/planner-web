@@ -60,7 +60,7 @@ class V01::CustomAttributes < Grape::API
     params do
       requires :id, type: Integer
 
-      requires :name, type: String
+      requires :name, type: String, regexp: /\A[^:]*\z/
       requires :object_type, type: String
       requires :object_class, type: String
       optional :default_value, types: [Array[String], String, Integer, Float, Boolean]

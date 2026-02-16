@@ -13,13 +13,16 @@ module CustomAttributesHelper
   end
 
   def custom_attribute_form_field(form, object, custom_attribute, prefix, related_field: nil)
-    field_name = "#{prefix}[custom_attributes][#{custom_attribute.name}]"
+    # Use composite key (related_field:name) for Route to distinguish start vs stop
+    storage_key = CustomAttribute.storage_key_for(custom_attribute.name, related_field: related_field)
+    field_name = "#{prefix}[custom_attributes][#{storage_key}]"
     typed_hash = if related_field.present?
       object.custom_attributes_typed_hash(related_field: related_field)
     else
       object.custom_attributes_typed_hash
     end
-    current_value = object.custom_attributes.key?(custom_attribute.name) ? typed_hash[custom_attribute.name] : custom_attribute.typed_default_value
+    has_value = object.custom_attributes.key?(storage_key)
+    current_value = has_value ? typed_hash[custom_attribute.name] : custom_attribute.typed_default_value
     placeholder = custom_attribute.typed_default_value || t('web.form.empty_entry')
     case custom_attribute.object_type_before_type_cast
     when 0
@@ -42,13 +45,26 @@ module CustomAttributesHelper
     end
   end
 
-  def custom_attribute_template(custom_attribute, object)
-    current_value = object.custom_attributes.key?(custom_attribute.name) ? object.custom_attributes_typed_hash[custom_attribute.name] : custom_attribute.typed_default_value
+  # Builds display hash for custom attribute in popups.
+  # For Route with related_field (e.g. start_route_data, stop_route_data), uses composite storage key.
+  def custom_attribute_template(custom_attribute, object, related_field: nil)
+    storage_key = if related_field.present? && object.is_a?(Route)
+                    CustomAttribute.storage_key_for(custom_attribute.name, related_field: related_field)
+                  else
+                    custom_attribute.name
+                  end
+    typed_hash = if related_field.present? && object.respond_to?(:custom_attributes_typed_hash)
+                   object.custom_attributes_typed_hash(related_field: related_field)
+                 else
+                   object.custom_attributes_typed_hash
+                 end
+    has_value = object.custom_attributes.key?(storage_key)
+    current_value = has_value ? typed_hash[custom_attribute.name] : custom_attribute.typed_default_value
     case custom_attribute.object_type_before_type_cast
     when 0
       { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : <i class='fa #{current_value ? 'fa-circle-check' : 'fa-circle-xmark'} fa-fw'></i></li>" }
     when 4
-      { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : #{object.custom_attributes.key?(custom_attribute.name) ? current_value : nil}</li>" }
+      { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : #{has_value ? current_value : nil}</li>" }
     else
       { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : #{current_value}</li>" }
     end

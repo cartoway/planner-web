@@ -66,4 +66,14 @@ class V01::CustomAttributesTest < ActiveSupport::TestCase
       assert_equal "1.1", JSON.parse(last_response.body)['default_value']
     end
   end
+
+  test 'should reject name containing colon on create' do
+    post api(), {name: 'invalid:name', default_value: 1.1, object_type: 'float', object_class: 'vehicle'}
+    assert last_response.client_error?, last_response.body
+  end
+
+  test 'should reject name containing colon on update' do
+    put api(@custom_attribute.id), nil, input: {name: 'invalid:name', object_type: 'string', object_class: 'vehicle'}.to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.client_error?, last_response.body
+  end
 end
