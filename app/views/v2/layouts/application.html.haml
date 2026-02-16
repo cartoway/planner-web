@@ -54,7 +54,7 @@
                       %i.fa.fa-map-location.fa-fw
                       .hidden-menu.menu_label
                         = t 'plannings.menu.plannings'
-                  %ul#planningsCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                  %ul#planningsCollpase.accordion-menu.menu-content.collapse.hidden-menu{'data-bs-parent': '#accordion-menu'}
                     %li{ class: ("disabled" if current_user.customer.too_many_plannings?) }
                       = link_to new_planning_path do
                         %i.fa.fa-plus.fa-fw
@@ -101,7 +101,7 @@
                     %i.fa.fa-draw-polygon.fa-fw
                     .hidden-menu.menu_label
                       = t 'zonings.menu.zonings'
-                %ul#zoningsCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                %ul#zoningsCollpase.accordion-menu.menu-content.collapse.hidden-menu{'data-bs-parent': '#accordion-menu'}
                   %li{ class: ("disabled" if current_user.customer.too_many_zonings?) }
                     = link_to new_zoning_path do
                       %i.fa.fa-plus.fa-fw
@@ -142,13 +142,13 @@
                     %i.fa.fa-map-marker.fa-fw
                     .hidden-menu.menu_label
                       = t 'destinations.menu.destinations'
-                %ul#destinationsCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                %ul#destinationsCollpase.accordion-menu.menu-content.collapse.hidden-menu{'data-bs-parent': '#accordion-menu'}
                   %li{ class: ("disabled" if current_user.customer.too_many_destinations?) }
                     = link_to new_destination_path do
                       %i.fa.fa-plus.fa-fw
                       = t 'all.verb.new'
                   %li
-                    = link_to destinations_path do
+                    = link_to destinations_path, data: { turbo_frame: "main" } do
                       %i.fa.fa-map-marker.fa-fw
                       = t 'all.verb.list'
                   %li.divider
@@ -176,7 +176,7 @@
                     %i.fa.fa-truck-field.fa-fw
                     .hidden-menu
                       = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
-                %ul#vehiclesCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                %ul#vehiclesCollpase.accordion-menu.menu-content.collapse.hidden-menu{'data-bs-parent': '#accordion-menu'}
                   %li
                     = link_to vehicle_usage_sets_path do
                       %i.fa.fa-truck-field.fa-fw
@@ -262,7 +262,7 @@
                         .hidden-menu
                           %span.menu_label
                             = current_user.email
-                  %ul#customerCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                  %ul#customerCollpase.accordion-menu.menu-content.collapse.hidden-menu{'data-bs-parent': '#accordion-menu'}
                     - if current_user.customer
                       %li
                         = link_to edit_customer_path(current_user.customer) do
@@ -295,7 +295,8 @@
       .main
         %div
           %iframe{name: "click2call_iframe", style: "display: none"}
-        = yield
+        = turbo_frame_tag "main" do
+          = yield
       %footer.hidden-print
     #default-modal.modal.bootstrap-dialog.type-primary.fade.size-small.in{"aria-hidden": "false", "data-backdrop": "static", "data-bs-toggle": "modal", role: "dialog", style: "display:none;", tabindex: "-1"}
       .modal-dialog

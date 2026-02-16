@@ -19,3 +19,133 @@
 .table-condensed {
   font-size: 0.875rem;
 }
+
+// Destinations index - compact checkbox column for multiple selection
+.destinations-selection-col {
+  width: 2rem;
+  text-align: center;
+  vertical-align: middle !important;
+}
+
+// Destinations search - filter badges
+.search-filter-badge {
+  display: inline-flex;
+  align-items: center;
+
+  a {
+    opacity: 0.8;
+    text-decoration: none;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// V2 destinations index - map as full background, collapsible list overlay on the left
+// Page is not scrollable; only the destinations list scrolls
+[data-controller~='destinations'][data-action='index'] {
+  .main {
+    overflow: hidden;
+  }
+
+  .main turbo-frame#main {
+    height: 100%;
+    display: block;
+  }
+}
+
+#destinations-map-layout {
+  position: relative;
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+
+  // Map fills the entire layout (background)
+  #map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+  }
+
+  // Sidebar overlay on the left - list + controls
+  .destinations-sidebar {
+    $sidebar-width: 420px;
+    $collapse-width: 40px;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: $sidebar-width;
+    z-index: 2;
+    background: var(--bs-body-bg);
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.2s ease, left 0.2s ease;
+
+    .destinations-sidebar-header {
+      flex-shrink: 0;
+      padding: 1rem;
+      padding-right: 2.5rem; // space for toggle button
+      border-bottom: 1px solid var(--bs-border-color);
+      overflow: hidden;
+    }
+
+    .destinations-sidebar-toggle {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      z-index: 3;
+    }
+
+    #destination_box.destinations-list-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 0 1rem 1rem;
+    }
+
+    // When collapsed: thin strip with expand button only
+    &.collapsed {
+      width: $collapse-width;
+      min-width: $collapse-width;
+
+      .destinations-sidebar-header,
+      .destinations-sidebar-toggle,
+      #destination_box {
+        display: none !important;
+      }
+
+      .destinations-sidebar-expand {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+      }
+    }
+  }
+
+  .destinations-sidebar-expand {
+    display: none;
+  }
+}
+
+// V2 menu - remove link underlines (buttons should not look like links)
+.menu-left a {
+  text-decoration: none !important;
+
+  &:hover,
+  &:focus,
+  &:visited {
+    text-decoration: none !important;
+  }
+}
