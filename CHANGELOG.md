@@ -1,5 +1,25 @@
 # Changelog
 
+## V108.1.0
+  ### Added
+  - Support SSO: Microsoft Entra [#599](https://github.com/cartoway/planner-web/pull/599)
+  - Initialize Superset at Docker image startup [#578](https://github.com/cartoway/planner-web/pull/578)
+  - Mobile: Introduce Stores [#598](https://github.com/cartoway/planner-web/pull/598)
+  - Add `custom_attributes` into Vehicle form [#598](https://github.com/cartoway/planner-web/pull/598)
+  - Planning: Display Store status [#603](https://github.com/cartoway/planner-web/pull/603)
+  - Add missing Dockerfile for Devcontainer [#604](https://github.com/cartoway/planner-web/pull/604)
+  - Export Stops and Stores into CSV planning and routes files [#606](https://github.com/cartoway/planner-web/pull/606) & [#608](https://github.com/cartoway/planner-web/pull/608)
+
+  ### Changed
+  - Bump `nokogiri` version to 1.18.10 [#600](https://github.com/cartoway/planner-web/pull/600)
+  - Force DeliverableUnits to have a label [#606](https://github.com/cartoway/planner-web/pull/606)
+
+  ### Fixed
+  - API: successive Destination#multiple_delete calls might delete all the destinations [#608](https://github.com/cartoway/planner-web/pull/608)
+
+  ### Removed
+  - Remove the dependency to `amoeba` for duplication [#581](https://github.com/cartoway/planner-web/pull/581)
+
 ## V108.0.0
   ### Added
   - Introduce `store_reloads` to represent the reloads at store within routes instead of stores directly [#509](https://github.com/cartoway/planner-web/pull/509)
