@@ -25,8 +25,9 @@ module Consistency
 
   class_methods do
     # Attributes must have a defined #{attr_name}_changed? method
-    def validate_consistency(attributes, &block)
-      validate do |record|
+    # skip_contexts: skip validation when validation_context is in the list (e.g. skip_contexts: [:import])
+    def validate_consistency(attributes, skip_contexts: [], &block)
+      validate(unless: ->(record) { skip_contexts.any? && skip_contexts.include?(record.validation_context) }) do |record|
         consistent_value = block ? block.call(record) : record.send(:customer_id)
         if consistent_value
           attributes.each{ |attr|

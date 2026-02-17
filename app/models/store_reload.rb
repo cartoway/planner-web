@@ -44,7 +44,7 @@ class StoreReload < ApplicationRecord
   validate :time_window_end_after_time_window_start
 
   include Consistency
-  validate_consistency([]) { |store_reload| store_reload.store.try :customer_id }
+  validate_consistency([], skip_contexts: [:import]) { |store_reload| store_reload.store.try :customer_id }
 
   before_update :update_outdated
 

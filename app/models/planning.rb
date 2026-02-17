@@ -44,7 +44,7 @@ class Planning < ApplicationRecord
   validate :begin_after_end_date
 
   include Consistency
-  validate_consistency [:vehicle_usage_set, :order_array, :zonings, :tags]
+  validate_consistency [:vehicle_usage_set, :order_array, :zonings, :tags], skip_contexts: [:import]
 
   before_create :update_zonings, :check_max_planning
   before_destroy :unlink_job_optimizer
@@ -361,6 +361,43 @@ class Planning < ApplicationRecord
     routes.each{ |route|
       (visit.stop_visits.loaded? ? visit.stop_visits.map(&:route_id).include?(route.id) : true) && route.remove_visit(visit)
     }
+  end
+
+  # Consolidated tag sync for import: apply add/remove logic for affected visits
+  # route_ids_collector: array to append modified route_ids (reuses importer's @route_ids_to_outdate)
+  def sync_tags_for_visits(visit_ids, route_ids_collector: nil)
+    return if visit_ids.blank?
+
+    plan_tags = tags.to_a
+    routes_with_stops = routes.includes(:stops)
+    modified = false
+
+    Visit.where(id: visit_ids).includes(:tags, :stop_visits, destination: :tags).find_each do |visit|
+      combined_tags = (visit.tags.to_a | visit.destination.tags.to_a)
+      in_planning = visits_include?(visit)
+
+      if in_planning
+        should_remove = if tag_operation == '_or'
+          (plan_tags & combined_tags).empty?
+        else
+          (plan_tags & combined_tags) != plan_tags
+        end
+        if should_remove
+          route_ids_collector&.concat(visit.stop_visits.map(&:route_id) & routes_with_stops.map(&:id))
+          visit_remove(visit)
+          modified = true
+        end
+      elsif tags_compatible?(combined_tags)
+        route = routes_with_stops.find{ |r| !r.vehicle_usage? }
+        if route
+          route_ids_collector&.<<(route.id)
+          visit_add(visit)
+          modified = true
+        end
+      end
+    end
+
+    save! if modified
   end
 
   def default_empty_routes(ignore_errors = false)

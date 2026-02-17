@@ -33,7 +33,7 @@ class Destination < Location
   time_attr :duration
 
   include Consistency
-  validate_consistency [:tags]
+  validate_consistency [:tags], skip_contexts: [:import]
   validates :ref, uniqueness: { scope: :customer_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
   before_create :check_max_destination
