@@ -185,6 +185,14 @@ class ImporterDestinations < ImporterBase
   end
 
   def before_import(_name, data, options)
+    if options[:delete_plannings]
+      @customer.delete_all_plannings
+      @customer.plannings.reload
+    end
+    if options[:replace]
+      @customer.delete_all_destinations
+    end
+
     @common_tags = {}
     @tag_labels = Hash[@customer.tags.collect{ |tag| [tag.label, tag] }]
     @tag_ids = Hash[@customer.tags.collect{ |tag| [tag.id, tag] }]
@@ -204,13 +212,6 @@ class ImporterDestinations < ImporterBase
     @visit_ids = []
     @store_reload_ids = []
 
-    if options[:delete_plannings]
-      @customer.delete_all_plannings
-      @customer.plannings.reload
-    end
-    if options[:replace]
-      @customer.delete_all_destinations
-    end
     @plannings_hash = CaseInsensitiveHash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref, plan] }]
 
     if options[:line_shift] == 1
@@ -240,13 +241,14 @@ class ImporterDestinations < ImporterBase
     @existing_store_reloads_by_ref = CaseInsensitiveHash.new
     @destinations_visits_attributes_by_ref = CaseInsensitiveHash.new
     @stores_store_reloads_attributes_by_ref = CaseInsensitiveHash.new
-    @customer.destinations.includes_visits.where.not(ref: nil).find_each{ |destination|
+    # Preload stop_visits to get route_ids without loading routes (avoids stale updates)
+    @customer.destinations.includes([{visits: [:tags, :stop_visits]}, :tags]).where.not(ref: nil).find_each{ |destination|
       @existing_destinations_by_ref[destination.ref] = destination
       @existing_visits_by_ref[destination.ref] = CaseInsensitiveHash[destination.visits.map{ |visit| [visit.ref, visit]}]
       @destinations_visits_attributes_by_ref[destination.ref] = CaseInsensitiveHash.new
       destination.visits.each{ |visit| @destinations_visits_attributes_by_ref[visit.destination.ref][visit.ref] = visit }
     }
-    @customer.stores.where.not(ref: nil).find_each{ |store|
+    @customer.stores.includes(:store_reloads).where.not(ref: nil).find_each{ |store|
       @existing_stores_by_ref[store.ref] = store
       @existing_store_reloads_by_ref[store.ref] = CaseInsensitiveHash[store.store_reloads.map{ |store_reload| [store_reload.ref, store_reload]}]
       @stores_store_reloads_attributes_by_ref[store.ref] = CaseInsensitiveHash.new
@@ -291,6 +293,9 @@ class ImporterDestinations < ImporterBase
     @store_reload_index = 0
 
     @nil_visit_available = CaseInsensitiveHash.new{ |h, k| h[k] = CaseInsensitiveHash.new(true) }
+
+    # Collect route_ids for deferred outdated (avoids loading routes during transaction)
+    @route_ids_to_outdate = []
 
     @tag_destinations = []
     @tag_visits = []
@@ -478,7 +483,7 @@ class ImporterDestinations < ImporterBase
     @store_ids = bulk_import_stores(@stores_attributes_without_ref)
     @store_ids += bulk_import_stores(@stores_attributes_by_ref.values)
     # bulk import do not support before_create or before_save callbacks
-    if @customer.destinations.size > max_lines
+    if @customer.destinations.count > max_lines
       raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit')))
     end
     @visit_ids = bulk_import_visits
@@ -486,10 +491,11 @@ class ImporterDestinations < ImporterBase
     @store_reload_ids = bulk_import_store_reloads
     @customer.reload
 
-    # Reload plannings with routes after bulk_import_tags to avoid stale route objects
-    # visit.save! in bulk_import_tags triggers visit.outdated which calls stop.route.save!
-    # This updates route.lock_version in database, making routes in memory stale
-    # Only reload if tags were imported (when tags_imported is true)
+    geocode_or_count_destinations
+    geocode_or_count_stores
+
+    sync_tags_deferred
+
     if tags_imported && @plannings_hash.any?
       reloaded_plannings = @customer.plannings.preload_route_details.where(ref: @plannings_hash.keys).index_by(&:ref)
       @plannings_hash.each{ |ref, planning|
@@ -499,10 +505,9 @@ class ImporterDestinations < ImporterBase
       }
     end
 
-    geocode_or_count_destinations
-    geocode_or_count_stores
-
     prepare_plannings(name, _options)
+
+    @customer.save! if tags_imported
 
     # Update destinations_count and visits_count as activerecord callbacks are not called
     Customer.where(id: @customer.id).update_all(
@@ -560,6 +565,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def finalize_import(_name, _options)
+    outdate_routes_deferred
     if (@destinations_to_geocode_count > 0 || @stores_to_geocode_count > 0) && (!@synchronous && Planner::Application.config.delayed_job_use)
       save_plannings
       @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
@@ -734,7 +740,8 @@ class ImporterDestinations < ImporterBase
         import_result = Visit.import(
           visits_attributes,
           on_duplicate_key_update: { conflict_target: (keys.include?(:id) ? [:id] : [:destination_id, :ref]), columns: (Visit.column_names & keys.collect(&:to_s)) - ['id', 'updated_at'] },
-          validate: true, all_or_none: true, track_validation_failures: true
+          validate: true, all_or_none: true, track_validation_failures: true,
+          validate_with_context: :import
         )
 
         raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
@@ -812,7 +819,8 @@ class ImporterDestinations < ImporterBase
         import_result = StoreReload.import(
           store_reloads_attributes,
           on_duplicate_key_update: { conflict_target: (keys.include?(:id) ? [:id] : [:store_id, :ref]), columns: (StoreReload.column_names & keys.collect(&:to_s)) - ['id', 'updated_at'] },
-          validate: true, all_or_none: true, track_validation_failures: true
+          validate: true, all_or_none: true, track_validation_failures: true,
+          validate_with_context: :import
         )
 
         raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
@@ -828,6 +836,8 @@ class ImporterDestinations < ImporterBase
 
   def bulk_import_tags
     tags_imported = false
+    @tag_sync_affected_visit_ids = []
+
     if @tag_destinations.any?
       destination_ids_and_tag_ids = @tag_destinations.map{ |visit_index, tag_id|
         { destination_id: @destination_index_to_id_hash[visit_index], tag_id: tag_id }
@@ -839,14 +849,8 @@ class ImporterDestinations < ImporterBase
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
 
       if @customer.plannings.any?
-        @customer.destinations.joins(:tags).where(
-          id: destination_ids_and_tag_ids.map{ |tag| tag[:destination_id] }.uniq).where(
-          tags: { id: destination_ids_and_tag_ids.map{ |tag| tag[:tag_id] }.uniq }
-        ).distinct.find_each{ |destination|
-          destination.update_tags_track(true)
-          destination.save!
-        }
-        @customer.save!
+        affected_destination_ids = destination_ids_and_tag_ids.map{ |t| t[:destination_id] }.uniq
+        @tag_sync_affected_visit_ids |= Visit.where(destination_id: affected_destination_ids).pluck(:id)
         tags_imported = true
       end
     end
@@ -861,17 +865,7 @@ class ImporterDestinations < ImporterBase
       raise ImportBaseError.new(import_result.failed_instances.map(&:errors).uniq) if import_result.failed_instances.any?
 
       if @customer.plannings.any?
-        # Default scope requires destinations to be loaded
-        Destination.unscoped do
-          @customer.visits.joins(:tags).where(
-            id: visit_ids_and_tag_ids.map{ |tag| tag[:visit_id] }.uniq).where(
-            tags: { id: visit_ids_and_tag_ids.map{ |tag| tag[:tag_id] }.uniq }
-          ).distinct.find_each{ |visit|
-            visit.update_tags_track(true)
-            visit.save!
-          }
-        end
-        @customer.save!
+        @tag_sync_affected_visit_ids |= visit_ids_and_tag_ids.map{ |t| t[:visit_id] }.uniq
         tags_imported = true
       end
     end
@@ -991,9 +985,8 @@ class ImporterDestinations < ImporterBase
         visit_attributes.merge!(destination_id: destination.id)
         if visit
           visit_attributes.merge!(id: visit.id)
-          # The visit is assumed to be changed
-          # TODO: Find a way to call the `update_outdated` callback during the transaction
-          visit.outdated
+          # Collect route_ids for deferred outdated - avoids loading routes (stale update)
+          @route_ids_to_outdate.concat(visit.stop_visits.map(&:route_id).compact)
 
           # Compact allows to avoid erasing nil fields
           visit_attributes.compact!
@@ -1136,6 +1129,36 @@ class ImporterDestinations < ImporterBase
     (@customer.plannings - @plannings).each{ |planning|
       planning.visit_filling
     }
+  end
+
+  def sync_tags_deferred
+    return if @tag_sync_affected_visit_ids.blank?
+
+    # Sync on in-memory planning objects (from @customer.plannings) so changes are reflected
+    # when autosave persists the customer. This mirrors the old Destination#update_tags /
+    # Visit#update_tags callbacks which operated on customer.plannings in memory.
+    @customer.plannings.each do |planning|
+      planning.sync_tags_for_visits(@tag_sync_affected_visit_ids, route_ids_collector: @route_ids_to_outdate)
+    end
+  end
+
+  def outdate_routes_deferred
+    return if @route_ids_to_outdate.blank?
+
+    route_ids = @route_ids_to_outdate.uniq.compact
+    return if route_ids.empty?
+
+    begin
+      ActiveRecord::Base.lock_optimistically = false
+      Route.where(id: route_ids).find_each do |route|
+        unless route.outdated
+          route.outdated = true
+          route.save!
+        end
+      end
+    ensure
+      ActiveRecord::Base.lock_optimistically = true
+    end
   end
 
   def import_errors_with_indices(slice_lines, slice_index, failed_instances)

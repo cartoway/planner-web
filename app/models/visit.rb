@@ -66,7 +66,7 @@ class Visit < ApplicationRecord
   validates :revenue, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
 
   include Consistency
-  validate_consistency([:tags]) { |visit| visit.destination.try :customer_id }
+  validate_consistency([:tags], skip_contexts: [:import]) { |visit| visit.destination.try :customer_id }
 
   before_save :update_tags, unless: :internal_skip
   before_save :create_orders
