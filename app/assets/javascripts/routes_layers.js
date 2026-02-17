@@ -101,8 +101,19 @@ const popupModule = (function() {
   };
 
   const getPopupContent = function(url, marker, map) {
-    if (marker.getPopup())
+    // Reuse cached content when same context (url) - avoids reload on re-click after popup was closed (unbindPopup clears getPopup())
+    if (marker._popupLoadedUrl === url && marker._popupContent) {
+      marker.bindPopup(L.popup().setContent(marker._popupContent), {
+        minWidth: 200,
+        autoPan: false,
+        closeOnClick: false
+      }).addTo(map);
+      _previousPopup = marker.getPopup();
+      marker.openPopup();
       return;
+    }
+    if (marker.getPopup())
+      marker.unbindPopup();
 
     if (_ajaxRequest.current && _ajaxRequest.current.readyState !== 4)
       return;
@@ -111,26 +122,26 @@ const popupModule = (function() {
       url: url,
       beforeSend: beforeSendWaiting,
       success: function(data) {
-        var popup = marker.bindPopup(L.popup(), {
-          minWidth: 200,
-          autoPan: false,
-          closeOnClick: false
-        }).addTo(map).getPopup();
-
+        marker._popupLoadedUrl = url;
         data.i18n = mustache_i18n;
         data.routes = _context.options.routes.filter(function(route) {
           return route.vehicle_usage_id;
         }).map(function(route) {
           route.color = _context.options.colorsByRoute[route.route_id];
           return route;
-        }); // unnecessary to load all for each stop
+        });
         data.out_of_route_id = _context.options.outOfRouteId;
         data.number = marker.properties.number;
         if (_context.options.url_click2call) {
           phoneNumberCall(data, _context.options.url_click2call);
         }
         $.extend(data, _context.options.popupOptions);
-        popup.setContent(SMT['stops/show'](data));
+        marker._popupContent = SMT['stops/show'](data);
+        marker.bindPopup(L.popup().setContent(marker._popupContent), {
+          minWidth: 200,
+          autoPan: false,
+          closeOnClick: false
+        }).addTo(map);
 
         $('#isochrone_lat').val(data.lat);
         $('#isochrone_lng').val(data.lng);
