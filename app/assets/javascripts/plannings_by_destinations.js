@@ -30,7 +30,7 @@ const planningsShow = function(params) {
   const countMovedDestinations = function(max) {
     movedDestinations++;
     $('.progress-bar').css('width', (movedDestinations * 100 / max) + '%');
-    if (movedDestinations == max) location.href = '';
+    if (movedDestinations == max) Turbolinks.visit(window.location.pathname, { action: 'replace' });
   };
 
   const getQuantitiesByPlanning = function() {

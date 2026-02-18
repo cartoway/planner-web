@@ -391,7 +391,7 @@ const order_arrays_edit = function(params) {
         complete: completeWaiting,
         error: ajaxError,
         success: function() {
-          window.location = '/plannings/' + planning_id + '/edit';
+          Turbolinks.visit('/plannings/' + planning_id + '/edit');
         }
       });
     });

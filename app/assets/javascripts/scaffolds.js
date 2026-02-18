@@ -364,6 +364,26 @@ export const mapInitialize = function(params) {
   return map;
 };
 
+// Patch leaflet-hash to preserve Turbolinks history state.
+// The original uses location.replace(hash) which wipes history.state,
+// breaking Turbolinks back/forward navigation (restorationIdentifier lost).
+function patchLeafletHash() {
+  if (typeof L !== 'undefined' && L.Hash && L.Hash.prototype) {
+    L.Hash.prototype.onMapMove = function() {
+      if (this.movingMap || !this.map._loaded) {
+        return false;
+      }
+      var hash = this.formatHash(this.map);
+      if (this.lastHash != hash) {
+        history.replaceState(history.state, '', hash);
+        this.lastHash = hash;
+      }
+    };
+  }
+}
+
+patchLeafletHash();
+
 // FIXME initOnly used for api-web because Firefox doesn't support hash replace (in Leaflet Hash) within an iframe. A new url is fetched by Turbolinks. Chrome works.
 export const initializeMapHash = function(map, initOnly) {
   if (initOnly) {
@@ -374,7 +394,9 @@ export const initializeMapHash = function(map, initOnly) {
   }
   // FIXME when turbolinks get updated to work with Edge
   else if (navigator.userAgent.indexOf('Edge') === -1) {
+    patchLeafletHash();
     map.addHash();
+
     var removeHash = function() {
       if (map.removeHash) {
         map.removeHash();

@@ -29,7 +29,10 @@ const vehicle_usage_sets_index = function(params) {
   // override accordion collapse bootstrap code
   $('a.accordion-toggle').click(function() {
     var id = $(this).attr('href');
-    window.location.hash = id;
+    // Use replaceState to track accordion state without creating history entries
+    if (history.replaceState) {
+      history.replaceState(null, '', id);
+    }
     var allCollapsed = $('.accordion-body.collapse.in').size() ? true : false;
     $('.accordion-body.collapse.in').each(function() {
       var $this = $(this);

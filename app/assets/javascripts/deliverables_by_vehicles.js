@@ -42,7 +42,7 @@ const deliverable_by_vehicle_show = function(params) {
       pushState: function(p, cb) {
 
         if (!hasState) {
-          return location.assign(p.URL);
+          return Turbolinks.visit(p.URL);
         }
         history.pushState(p.state, p.title, p.URL);
         cb(p.state);
@@ -52,7 +52,9 @@ const deliverable_by_vehicle_show = function(params) {
 
   const popStateHandler = function(event) {
     const state = event.state;
-    if (!state.vehicleId) {
+    if (!state || !state.vehicleId) {
+      // Orphan history entry (e.g. navigated away via Turbolinks then came back)
+      // Let the browser handle it normally
       return;
     }
     $("#vehicle_id")
@@ -62,7 +64,7 @@ const deliverable_by_vehicle_show = function(params) {
   };
 
   window.addEventListener('popstate', popStateHandler);
-  $(document).on('page:before-change', function() {
+  $(document).on('turbolinks:before-cache', function() {
     window.removeEventListener('popstate', popStateHandler);
   });
 

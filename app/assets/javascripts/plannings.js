@@ -700,7 +700,7 @@ export const plannings_edit = function(params) {
     }
     initMarkers();
     backgroundTaskIntervalId = setInterval(backgroundTask, 60000);
-    $(document).on('page:before-change', function() {
+    $(document).on('turbolinks:before-cache', function() {
       clearInterval(backgroundTaskIntervalId);
     });
   }
@@ -3060,7 +3060,7 @@ var plannings_index = function(params) {
       return warning(I18n.t('plannings.index.vehicle_select_error'));
     }
     planning_ids = $('[name^=planning]:checked').map(function() { return $(this).val(); }).toArray().join(',');
-    location.assign('/routes_by_vehicles/' + vehicle_id + '?planning_ids=' + planning_ids);
+    Turbolinks.visit('/routes_by_vehicles/' + vehicle_id + '?planning_ids=' + planning_ids);
   });
 
   $('#deliverables-by-vehicle').on('click', function(e) {
@@ -3069,7 +3069,7 @@ var plannings_index = function(params) {
       return warning(I18n.t('plannings.index.vehicle_select_error'));
     }
     planning_ids = $('[name^=planning]:checked').map(function() { return $(this).val(); }).toArray().join(',');
-    location.assign('/deliverables_by_vehicles/' + vehicle_id + '?planning_ids=' + planning_ids);
+    Turbolinks.visit('/deliverables_by_vehicles/' + vehicle_id + '?planning_ids=' + planning_ids);
   });
 
 };
