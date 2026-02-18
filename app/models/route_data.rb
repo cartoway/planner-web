@@ -1,4 +1,6 @@
 class RouteData < ApplicationRecord
+  nilify_blanks
+
   include QuantityAttr
   quantity_attr :pickups, :deliveries
 
