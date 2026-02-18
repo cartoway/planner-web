@@ -364,9 +364,13 @@ export const mapInitialize = function(params) {
   return map;
 };
 
-// Patch leaflet-hash to preserve Turbolinks history state.
-// The original uses location.replace(hash) which wipes history.state,
-// breaking Turbolinks back/forward navigation (restorationIdentifier lost).
+// Patch leaflet-hash for two issues:
+// 1. The original uses location.replace(hash) which wipes history.state,
+//    breaking Turbolinks back/forward navigation (restorationIdentifier lost).
+// 2. ControlledBounds overrides setView to add an offset for controls/sidebar,
+//    but getCenter() returns the raw container center (already offset). This
+//    causes double-offset on hash restore: the hash stores offset coords, and
+//    setView applies the offset again, shifting the map by menu-left/planbar.
 function patchLeafletHash() {
   if (typeof L !== 'undefined' && L.Hash && L.Hash.prototype) {
     L.Hash.prototype.onMapMove = function() {
@@ -379,6 +383,21 @@ function patchLeafletHash() {
         this.lastHash = hash;
       }
     };
+
+    var originalFormatHash = L.Hash.formatHash;
+    L.Hash.formatHash = function(map) {
+      if (map._deoffsetLatLng) {
+        var center = map._deoffsetLatLng(map.getCenter());
+        var zoom = map.getZoom();
+        var precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
+        return '#' + [zoom,
+          center.lat.toFixed(precision),
+          center.lng.toFixed(precision)
+        ].join('/');
+      }
+      return originalFormatHash.call(this, map);
+    };
+    L.Hash.prototype.formatHash = L.Hash.formatHash;
   }
 }
 
