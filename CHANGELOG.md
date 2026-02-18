@@ -13,6 +13,8 @@
   ### Changed
   - Bump `nokogiri` version to 1.18.10 [#600](https://github.com/cartoway/planner-web/pull/600)
   - Force DeliverableUnits to have a label [#606](https://github.com/cartoway/planner-web/pull/606)
+  - Bump `rack` version to v2.2.22 [#610](https://github.com/cartoway/planner-web/pull/610)
+  - Improve performances of Destination import in update [#609](https://github.com/cartoway/planner-web/pull/609)
 
   ### Fixed
   - API: successive Destination#multiple_delete calls might delete all the destinations [#608](https://github.com/cartoway/planner-web/pull/608)
