@@ -123,13 +123,11 @@ export const zonings_edit = function(params) {
         e.preventDefault();
       }
     }
-    $(document).on('page:change', function() {
-      $(document).off('page:before-change', checkZoningChanges);
-    });
   }
 
-  $(document).on('turbolinks:load', function() {
-    $(document).on('page:before-change', checkZoningChanges);
+  $(document).on('turbolinks:before-visit', checkZoningChanges);
+  $(document).on('turbolinks:before-cache', function() {
+    $(document).off('turbolinks:before-visit', checkZoningChanges);
   });
 
   map.on('pm:drawstart', function(e) {

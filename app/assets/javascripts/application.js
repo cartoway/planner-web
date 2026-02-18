@@ -97,6 +97,24 @@ $(document).on('turbolinks:load', function() {
   Paloma.start();
 });
 
-// $(document).on('page:restore', function() {
-//   Paloma.start();
-// });
+// Fallback for popstate events that Turbolinks ignores (e.g. history.state
+// was wiped by location.replace or replaceState from third-party libs).
+// Turbolinks only handles popstate when event.state has its restorationIdentifier.
+// When missing, the URL changes but the body is never swapped.
+(function() {
+  var popstateHandled = false;
+
+  document.addEventListener('turbolinks:before-render', function() {
+    popstateHandled = true;
+  });
+
+  window.addEventListener('popstate', function(event) {
+    popstateHandled = false;
+
+    setTimeout(function() {
+      if (!popstateHandled) {
+        Turbolinks.visit(window.location.href, { action: 'replace' });
+      }
+    }, 50);
+  });
+})();

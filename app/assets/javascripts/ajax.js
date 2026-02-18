@@ -179,9 +179,9 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
         });
       }, 200);
 
-      $(document).on('page:before-change', function() {
+      $(document).on('turbolinks:before-cache', function cleanupProgressDialog() {
         clearTimeout(progressDialogTimerId);
-        $(document).off('page:before-change');
+        $(document).off('turbolinks:before-cache', cleanupProgressDialog);
       });
     }
 

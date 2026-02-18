@@ -5,6 +5,7 @@ module LinkBack
 
   included do
     after_action :save_link_back, only: [:new, :edit]
+    before_action :clear_stale_link_back, except: [:new, :edit, :create, :update]
   end
 
   private
@@ -25,6 +26,11 @@ module LinkBack
         session.delete(:link_back)
       end
     end
+  end
+
+  # Expire stale link_back when navigating away from new/edit/create/update
+  def clear_stale_link_back
+    session.delete(:link_back) if session[:link_back]
   end
 
   def link_back
