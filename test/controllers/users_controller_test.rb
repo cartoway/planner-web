@@ -53,6 +53,16 @@ class UsersControllerTest < ActionController::TestCase
     assert_redirected_to edit_user_path(@user)
   end
 
+  test 'should update default_display_polylines preference' do
+    assert @user.default_display_polylines
+
+    patch :update, params: { id: @user, user: { default_display_polylines: '0' } }
+    assert_redirected_to edit_user_path(@user)
+
+    @user.reload
+    assert_not @user.default_display_polylines
+  end
+
   test 'should get edit password' do
     sign_out(@user)
     user = users(:unconfirmed_user)

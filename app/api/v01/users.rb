@@ -25,9 +25,9 @@ class V01::Users < Grape::API
       p = ActionController::Parameters.new(params)
       p = p[:user] if p.key?(:user)
       if @current_user.admin?
-        p.permit(:ref, :email, :password, :customer_id, :layer_id, :url_click2call, :time_zone, :locale, :prefered_unit)
+        p.permit(:ref, :email, :password, :customer_id, :layer_id, :url_click2call, :time_zone, :locale, :prefered_unit, :default_display_polylines)
       else
-        p.permit(:layer_id, :url_click2call, :time_zone, :locale, :prefered_unit)
+        p.permit(:layer_id, :url_click2call, :time_zone, :locale, :prefered_unit, :default_display_polylines)
       end
     end
   end

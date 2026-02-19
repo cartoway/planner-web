@@ -636,10 +636,9 @@ export const RoutesLayer = L.FeatureGroup.extend({
   },
 
   switchRoutePolylines: function() {
-    this.options.disableRoutePolylines = !this.options.disableRoutePolylines;
+    this.options.withPolylines = !this.options.withPolylines;
 
     this.hideAllRoutes();
-    this.options.withPolylines = !this.options.disableRoutePolylines;
     this._loadAll();
   },
 

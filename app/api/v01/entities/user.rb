@@ -30,4 +30,5 @@ class V01::Entities::User < Grape::Entity
   expose(:prefered_unit, documentation: { type: String })
   expose(:locale, documentation: { type: String, desc: 'Currently used in mailing' })
   expose(:time_zone, documentation: { type: String })
+  expose(:default_display_polylines, documentation: { type: 'Boolean' })
 end
