@@ -13,6 +13,7 @@
   .row.form-group
     %span.col-md-offset-2.col-md-8
       #map.map-fixed-size
+  = render partial: 'shared/check_box', locals: { form: f, field: :default_display_polylines, label: t('activerecord.attributes.user.default_display_polylines') }
   = f.select :prefered_unit, User.unities, {}, {control_class: 'form-control'}
   = f.select :prefered_currency, currencies_table, {}, {control_class: 'form-control'}
   = f.text_field :url_click2call do

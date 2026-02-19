@@ -77,6 +77,6 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit :layer_id, :url_click2call, :time_zone, :prefered_unit
+    params.require(:user).permit :layer_id, :url_click2call, :time_zone, :prefered_unit, :default_display_polylines
   end
 end

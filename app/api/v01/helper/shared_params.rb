@@ -231,6 +231,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :prefered_unit, type: String
     optional :locale, type: String
     optional :time_zone, type: String, values: ActiveSupport::TimeZone.all.map(&:name)
+    optional :default_display_polylines, type: Boolean
   end
 
   params :request_vehicle do |options|

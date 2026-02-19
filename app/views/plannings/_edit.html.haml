@@ -284,6 +284,7 @@
     color_codes: COLORS_TABLE,
     colors_by_route: Hash[@planning.routes.select(&:vehicle_usage).map{ |r| [r.id, r.default_color] }],
     disable_clusters: !large_plannning,
+    default_display_polylines: current_user.default_display_polylines,
     url_click2call: current_user.link_phone_number,
     spreadsheet_columns: @spreadsheet_columns,
     available_stop_status: @planning.customer.enable_stop_status && @planning.customer.device.available_stop_status?,

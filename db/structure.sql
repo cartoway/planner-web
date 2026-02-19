@@ -1386,7 +1386,8 @@ CREATE TABLE public.users (
     prefered_unit character varying DEFAULT 'km'::character varying,
     locale character varying,
     prefered_currency integer DEFAULT 0,
-    export_settings jsonb DEFAULT '{}'::jsonb
+    export_settings jsonb DEFAULT '{}'::jsonb,
+    default_display_polylines boolean DEFAULT true NOT NULL
 );
 
 
@@ -3666,6 +3667,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260113123734'),
 ('20260123141829'),
 ('20260209100651'),
-('20260204152038');
+('20260204152038'),
+('20260219151139');
 
 

@@ -677,7 +677,8 @@ L.disableRoutePolylinesControl = function(map, routesLayer) {
       var button = L.DomUtil.create('a', '', container);
       button.title = I18n.t('plannings.edit.route_polylines');
 
-      var icon = L.DomUtil.create('i', 'route-polyline-icon fa fa-route fa-lg', button);
+      var initialIcon = routesLayer.options.withPolylines ? 'fa-route' : 'fa-location-dot';
+      var icon = L.DomUtil.create('i', 'route-polyline-icon fa ' + initialIcon + ' fa-lg', button);
       icon.style.marginLeft = '2px';
 
       container.onclick = function() {

@@ -699,6 +699,7 @@ export const plannings_edit = function(params) {
 
   var map = mapInitialize(params);
   var popupOptions = params.manage_planning;
+  var withPolylines = params.default_display_polylines !== false;
   var routesLayer = new RoutesLayer(planning_id, {
     url_click2call: url_click2call,
     unit: prefered_unit,
@@ -708,6 +709,7 @@ export const plannings_edit = function(params) {
     appBaseUrl: params.apiWeb ? '/api-web/0.1/' : '/',
     popupOptions: popupOptions,
     disableClusters: params.disable_clusters,
+    withPolylines: withPolylines,
     planningId: planning_id
   }).on('clickStop', function(stop) {
     enlightenStop({index: stop.index, routeId: stop.routeId});

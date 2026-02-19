@@ -455,6 +455,7 @@ en:
         confirmed_at: Confirmed at
         prefered_unit: Preferred unit
         prefered_currency: Prefered currency
+        default_display_polylines: Display routes traces by default
       vehicle:
         max_distance: Maximum distance
         max_ride_distance: Maximum ride distance

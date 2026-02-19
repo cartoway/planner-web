@@ -461,6 +461,7 @@ fr:
         confirmed_at: Date de confirmation
         prefered_unit: Choix unité
         prefered_currency: Choix devise
+        default_display_polylines: Afficher les tracés des routes par défaut
       vehicle:
         max_distance: Distance maximale
         max_ride_distance: Distance trajet maximale
