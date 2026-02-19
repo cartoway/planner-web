@@ -2,13 +2,13 @@ default: &default
   adapter: postgresql
   pool: 5
   timeout: 5000
-  username: <%= ENV['POSTGRES_USERNAME'] || 'postgres' %>
-  password: <%= ENV['POSTGRES_PASSWORD'] || 'postgres' %>
+  username: <%= ENV['POSTGRES_USER'] || 'planner' %>
+  password: <%= ENV['POSTGRES_PASSWORD'] || 'planner' %>
   host: <%= ENV['POSTGRES_HOST'] || 'db' %>
 
 development:
   <<: *default
-  database: <%= ENV['POSTGRES_DATABASE'] || 'postgres' %>
+  database: <%= ENV['POSTGRES_DB'] || 'planner' %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run
@@ -16,8 +16,8 @@ development:
 # production.
 test:
   <<: *default
-  database: <%= ENV['POSTGRES_DATABASE'] || 'test' %>
+  database: <%= ENV['POSTGRES_DB'] || 'planner_test' %>
 
 production:
   <<: *default
-  database: <%= ENV['POSTGRES_DATABASE'] || 'postgres' %>
+  database: <%= ENV['POSTGRES_DB'] || 'planner' %>

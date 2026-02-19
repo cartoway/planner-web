@@ -1,0 +1,19 @@
+services:
+  url_shortener:
+    image: ghcr.io/teritorio/qr-shortener:master
+    volumes:
+      - ./data:/data
+    environment:
+      RACK_ENV: production
+      URL_BASE: ${URL_SHORTNER_PUBLIC}
+      STORAGE_PATH: /data
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:8635:8635
+    networks:
+      - public-network
+
+networks:
+  public-network:
+    name: public-network
+    external: true
