@@ -31,6 +31,7 @@ config/initializers/dev.rb
 docker/uploads/
 docker/**/__pycache__/
 docker/*.rb
+docker/dumps/*.pg_dump.gz
 /.devcontainer/data/*
 
 # Ignore application configuration

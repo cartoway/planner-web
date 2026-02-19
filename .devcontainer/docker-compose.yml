@@ -17,6 +17,9 @@ x-web: &web
     LOG_FORMAT: ${LOG_FORMAT}
     URL_SHORTENER: ${URL_SHORTENER:-http://url_shortener:8635}
     AVAILABLE_SOLVERS: ${AVAILABLE_SOLVERS:-}
+    POSTGRES_USER: ${POSTGRES_USER:-planner}
+    POSTGRES_DB: ${POSTGRES_DB:-planner}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-planner}
     AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
     AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
     AZURE_TENANT_ID: ${AZURE_TENANT_ID}
@@ -25,20 +28,36 @@ x-web: &web
     - ../.devcontainer/production.rb:/srv/app/config/environments/production.rb
     - ../docker/uploads:/srv/app/public/uploads
   depends_on:
-    - db
-    - redis-cache
+    db:
+      condition: service_healthy
+    redis-cache:
+      condition: service_started
   restart: unless-stopped
 
 services:
   db:
+    # Place a dump file in the docker/dumps directory to load the database from it if no database is found
+    # Devcontainer might display that the container is not running, but the database might be loading the dump
+    # Or the web container might be running the migrations. Wait until the database is ready.
     image: postgis/postgis:15-3.5
+
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_USER=${POSTGRES_USER:-planner}
+      - POSTGRES_DB=${POSTGRES_DB:-planner}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-planner}
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ../docker/dumps:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-planner} -d ${POSTGRES_DB:-planner} && psql -U ${POSTGRES_USER:-planner} -d ${POSTGRES_DB:-planner} -c '\\dt' | grep -q public"]
+      start_interval: 5s
+      start_period: 60s
+      interval: 60s
+      timeout: 10s
+      retries: 5
     restart: unless-stopped
     networks:
-      - planner-network
       - public-network
 
   redis-cache:
@@ -46,33 +65,33 @@ services:
     restart: unless-stopped
     command: redis-server --save ""
     networks:
-      - planner-network
       - public-network
 
   web:
     <<: *web
     command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec rake db:prepare && bundle exec puma -v -p 8080 --pidfile 'server.pid' -t ${PUMA_WORKERS:-0:1}"
     networks:
-      - planner-network
       - public-network
+
   delayed-job:
     <<: *web
     command: bash -c "bundle exec rails runner 'Delayed::Job.delete_all' && LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec './bin/delayed_job run'"
     depends_on:
-      - db
-      - redis-cache
+      db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      web:
+        condition: service_started
     deploy:
       replicas: ${DELAYED_JOB_REPLICAS:-1}
     networks:
-      - planner-network
       - public-network
 
 volumes:
   pg_data:
 
 networks:
-  planner-network:
-    external: false
-
   public-network:
     name: public-network
+    attachable: true

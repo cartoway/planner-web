@@ -6,7 +6,8 @@
   // The .devcontainer/docker-compose.yml file contains any overrides you need/want to make.
   "dockerComposeFile": [
     "../.devcontainer/docker-compose.yml",
-    "../docker-compose-qr-shortener.yml"
+    "../.devcontainer/docker-compose-qr-shortener.yml"
+    // "../.devcontainer/docker-compose-superset.yml"
   ],
   // The 'service' property is the name of the service for the container that VS Code should
   // use. Update this value and .devcontainer/docker-compose.yml to the real service name.
@@ -31,7 +32,7 @@
       ]
     }
   },
-  // "initializeCommand": "cp ./.dockerignore-development ./.dockerignore"
+  "initializeCommand": "bash .devcontainer/setup-network.sh"
   // Uncomment the next line if you want start specific services in your Docker Compose config.
   // "runServices": [],
   // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
