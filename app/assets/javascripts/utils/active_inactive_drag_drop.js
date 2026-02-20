@@ -60,10 +60,44 @@ class ActiveInactiveDragDrop {
 
   init() {
     this.makeDraggable();
+    this.addToggleButtons();
     this.updateItemOrder();
     this.updateHiddenInputs();
     this.addFormValidation();
     this.addEventListeners();
+  }
+
+  // Add "x" button on each item to toggle between active/inactive lists
+  addToggleButtons() {
+    const items = this.container.querySelectorAll(this.options.itemSelector);
+    items.forEach(item => {
+      if (item.querySelector('.item-toggle-btn')) return;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'item-toggle-btn';
+      btn.setAttribute('aria-label', 'Toggle');
+      btn.innerHTML = '<i class="fa fa-xmark fa-fw"></i>';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.toggleItem(item);
+      });
+      item.appendChild(btn);
+    });
+  }
+
+  toggleItem(item) {
+    const isInActive = this.activeContainer.contains(item);
+    const targetContainer = isInActive ? this.inactiveContainer : this.activeContainer;
+
+    if (isInActive && this.activeContainer.children.length <= this.options.minActiveItems) {
+      return;
+    }
+
+    targetContainer.appendChild(item);
+    this.updateItemOrder();
+    this.updateHiddenInputs();
   }
 
   addEventListeners() {
@@ -176,22 +210,28 @@ class ActiveInactiveDragDrop {
 
   getActiveItems() {
     return Array.from(this.activeContainer.querySelectorAll(this.options.itemSelector))
-      .map(item => ({
-        id: item.dataset.id,
-        value: item.dataset.value,
-        text: item.textContent.trim(),
-        element: item
-      }));
+      .map(item => {
+        const textEl = item.querySelector(this.options.textDisplaySelector);
+        return {
+          id: item.dataset.id,
+          value: item.dataset.value,
+          text: textEl ? textEl.textContent.trim() : item.textContent.trim(),
+          element: item
+        };
+      });
   }
 
   getInactiveItems() {
     return Array.from(this.inactiveContainer.querySelectorAll(this.options.itemSelector))
-      .map(item => ({
-        id: item.dataset.id,
-        value: item.dataset.value,
-        text: item.textContent.trim(),
-        element: item
-      }));
+      .map(item => {
+        const textEl = item.querySelector(this.options.textDisplaySelector);
+        return {
+          id: item.dataset.id,
+          value: item.dataset.value,
+          text: textEl ? textEl.textContent.trim() : item.textContent.trim(),
+          element: item
+        };
+      });
   }
 
   makeDraggable() {
@@ -330,6 +370,7 @@ class ActiveInactiveDragDrop {
   // Public methods
   refresh() {
     this.makeDraggable();
+    this.addToggleButtons();
     this.updateItemOrder();
     this.updateHiddenInputs();
   }
@@ -357,8 +398,20 @@ class ActiveInactiveDragDrop {
     textSpan.className = this.options.textDisplayClass;
     textSpan.textContent = itemData.text || itemData.value || itemData.id;
 
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'item-toggle-btn';
+    toggleBtn.setAttribute('aria-label', 'Toggle');
+    toggleBtn.innerHTML = '<i class="fa fa-circle-xmark fa-fw"></i>';
+    toggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleItem(item);
+    });
+
     item.appendChild(orderSpan);
     item.appendChild(textSpan);
+    item.appendChild(toggleBtn);
 
     return item;
   }

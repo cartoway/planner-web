@@ -7,7 +7,7 @@
   gap: 20px;
   margin: 10px 0;
   align-items: stretch;
-  max-height: 400px;
+  max-height: 55vh;
 
   .priority-labels {
     display: flex;
@@ -18,7 +18,6 @@
     border: 2px dashed transparent;
     border-radius: 8px;
     padding: 10px;
-    transition: all 0.2s ease;
   }
 
   .priority-labels:empty {
@@ -80,7 +79,6 @@
     padding: 8px 12px;
     cursor: move;
     user-select: none;
-    transition: all 0.2s ease;
     position: relative;
     min-width: 80px;
     justify-content: space-between;
@@ -100,6 +98,10 @@
       border-color: $success-color;
       background: $success-background-color;
     }
+
+    .item-toggle-btn {
+      margin-left: auto;
+    }
   }
 }
 
@@ -110,7 +112,6 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  max-height: 350px;
 }
 
 .item-list {
@@ -122,12 +123,10 @@
   border: 2px dashed transparent;
   border-radius: 8px;
   padding: 10px;
-  transition: all 0.2s ease;
   background: #f8f9fa;
   flex: 1;
   align-content: flex-start;
   overflow-y: auto;
-  max-height: 250px;
 }
 
 .item-list:empty {
@@ -167,7 +166,6 @@
   border: 1px solid #ddd;
   border-radius: 6px;
   cursor: grab;
-  transition: all 0.2s ease;
   user-select: none;
   min-width: 120px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -175,8 +173,7 @@
 }
 
 .draggable-item:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .draggable-item:active {
@@ -195,22 +192,50 @@
   border-color: #dee2e6;
 }
 
-.item-order {
+%label-common {
+
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: $primary-color;
-  color: $white-background;
   border-radius: 50%;
   font-size: 12px;
   font-weight: bold;
   flex-shrink: 0;
 }
 
+.item-order {
+  @extend %label-common;
+  background: $primary-color;
+  color: $white-background;
+}
+
+.item-toggle-btn {
+  @extend %label-common;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background: #dee2e6;
+  color: #495057;
+
+  &:hover {
+    background: #adb5bd;
+    color: #212529;
+  }
+}
+
 .draggable-item.inactive .item-order {
   background: #6c757d;
+}
+
+.draggable-item.inactive .item-toggle-btn {
+  background: #6c757d;
+  color: $white-background;
+
+  &:hover {
+    background: #495057;
+  }
 }
 
 .item-text {
@@ -257,7 +282,8 @@
     padding: 6px 10px;
   }
 
-  .item-order {
+  .item-order,
+  .item-toggle-btn {
     width: 20px;
     height: 20px;
     font-size: 11px;
