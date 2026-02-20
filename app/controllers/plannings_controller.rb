@@ -750,11 +750,11 @@ class PlanningsController < ApplicationController
 
   def export_columns
     [
-      :ref_planning,
-      :planning,
+      :planning_ref,
+      :planning_name,
       :planning_date,
       :route,
-      :vehicle,
+      :ref_vehicle,
       :order,
       :stop_type,
       :active,
@@ -802,7 +802,7 @@ class PlanningsController < ApplicationController
       :priority,
       :revenue,
       :force_position,
-      :tags_visit
+      :tag_visits
     ] + (
       (@customer || @planning.customer).enable_orders ?
         [:orders] :
@@ -822,11 +822,11 @@ class PlanningsController < ApplicationController
 
   def export_summary_columns
     [
-      :ref_planning,
-      :planning,
+      :planning_ref,
+      :planning_name,
       :planning_date,
       :route,
-      :vehicle,
+      :ref_vehicle,
       :stop_size,
       :stop_active_size,
       :time,

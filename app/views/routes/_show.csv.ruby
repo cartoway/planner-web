@@ -4,13 +4,13 @@ stop_custom_attributes = route.planning.customer.custom_attributes.for_export_st
 
 if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|').include?('store'))
   row = {
-    ref_planning: route.planning.ref,
-    planning: route.planning.name,
+    planning_ref: route.planning.ref,
+    planning_name: route.planning.name,
     planning_date: route.planning.date && I18n.l(route.planning.date, format: :date),
     route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
-    vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
+    ref_vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
     order: 0,
-    stop_type: I18n.t('plannings.export_file.stop_type_store'),
+    stop_type: I18n.t('destinations.import_file.stop_type_store'),
     active: nil,
     wait_time: nil,
     time: route.route_data.start_absolute_time,
@@ -55,7 +55,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     time_window_end_2: nil,
     force_position: nil,
     priority: nil,
-    tags_visit: nil
+    tag_visits: nil
   })
 
   row.merge!(Hash[route.planning.customer.enable_orders ?
@@ -88,18 +88,18 @@ route.stops.each { |stop|
     type =
       case stop.type
       when StopVisit.name
-        I18n.t('plannings.export_file.stop_type_visit')
+        I18n.t('destinations.import_file.stop_type_visit')
       when StopStore.name
-        I18n.t('plannings.export_file.stop_type_store_reload')
+        I18n.t('destinations.import_file.stop_type_store_reload')
       when StopRest.name
         I18n.t('plannings.export_file.stop_type_rest')
       end
     row = {
-      ref_planning: route.planning.ref,
-      planning: route.planning.name,
+      planning_ref: route.planning.ref,
+      planning_name: route.planning.name,
       planning_date: route.planning.date && I18n.l(route.planning.date, format: :date),
       route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
-      vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
+      ref_vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
       order: (index+=1 if route.vehicle_usage_id),
       stop_type: type,
       active: ((stop.active ? '1' : '0') if route.vehicle_usage_id),
@@ -155,7 +155,7 @@ route.stops.each { |stop|
       force_position: (I18n.t("plannings.export_file.force_position_#{stop.force_position}") if stop.is_a?(StopVisit) && stop.force_position),
       priority: (stop.priority if stop.priority),
       revenue: (stop.visit.revenue if stop.is_a?(StopVisit)),
-      tags_visit: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
+      tag_visits: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
     })
 
     row.merge!(Hash[route.planning.customer.enable_orders ?
@@ -184,13 +184,13 @@ route.stops.each { |stop|
 
 if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|').include?('store'))
   row = {
-    ref_planning: route.planning.ref,
-    planning: route.planning.name,
+    planning_ref: route.planning.ref,
+    planning_name: route.planning.name,
     planning_date: route.planning.date && I18n.l(route.planning.date, format: :date),
     route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
-    vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
+    ref_vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
     order: index+1,
-    stop_type: I18n.t('plannings.export_file.stop_type_store'),
+    stop_type: I18n.t('destinations.import_file.stop_type_store'),
     active: nil,
     wait_time: nil,
     time: (route.route_data.end_absolute_time if route.route_data.end),
@@ -235,7 +235,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     time_window_end_2: nil,
     force_position: nil,
     priority: nil,
-    tags_visit: nil
+    tag_visits: nil
   })
 
   row.merge!(Hash[route.planning.customer.enable_orders ?

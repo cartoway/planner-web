@@ -266,7 +266,7 @@ class RoutesController < ApplicationController
   def export_columns
     [
       :route,
-      :vehicle,
+      :ref_vehicle,
       :order,
       :stop_type,
       :active,
@@ -313,7 +313,7 @@ class RoutesController < ApplicationController
       :priority,
       :revenue,
       :force_position,
-      :tags_visit
+      :tag_visits
     ] + (@route.planning.customer.enable_orders ?
       [:orders] :
       @route.planning.customer.deliverable_units.flat_map{ |du|

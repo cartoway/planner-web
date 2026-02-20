@@ -42,7 +42,7 @@ module DestinationsHelper
 
   def columns_visit(customer)
     visit_columns = %i[ref_visit duration time_window_start_1 time_window_end_1 time_window_start_2 time_window_end_2]
-    visit_columns += %i[priority revenue tags_visit force_position]
+    visit_columns += %i[priority revenue tag_visits force_position]
     unless @customer.enable_orders
       customer.deliverable_units.each{ |du|
         visit_columns += ["pickup#{du.id}".to_sym, "delivery#{du.id}".to_sym]

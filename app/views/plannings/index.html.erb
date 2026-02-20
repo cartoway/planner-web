@@ -115,6 +115,7 @@
 <%
 controller.js(
   export_settings: current_user.export_settings,
+  spreadsheet_custom_columns: @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef') || {},
   user_api_key: current_user.api_key,
   customer_id: @customer.id,
   spreadsheet_columns: @spreadsheet_columns,
