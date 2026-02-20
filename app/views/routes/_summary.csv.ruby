@@ -1,9 +1,9 @@
 row = {
-  ref_planning: route.planning.ref,
-  planning: route.planning.name,
+  planning_ref: route.planning.ref,
+  planning_name: route.planning.name,
   planning_date: route.planning.date && I18n.l(route.planning.date, format: :date),
   route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[/\\\-*,!:?;.]}, ' ')),
-  vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
+  ref_vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
   stop_size: route.stops_size,
   stop_active_size: route.size_active,
   time: route.end && route.start && time_over_day(route.end - route.start),

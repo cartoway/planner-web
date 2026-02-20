@@ -99,7 +99,8 @@ const iCalendarExport = function(planningId) {
   });
 };
 
-const spreadsheetModalExport = function(columns, planningId, export_settings) {
+const spreadsheetModalExport = function(columns, planningId, export_settings, custom_columns) {
+  custom_columns = custom_columns || {};
   $('#planning-spreadsheet-modal').on('show.bs.modal', function() {
     if ($('[name=spreadsheet-route]').val())
       $('[name=spreadsheet-out-of-route]').parent().parent().hide();
@@ -130,24 +131,33 @@ const spreadsheetModalExport = function(columns, planningId, export_settings) {
     const $export = $('#columns-export').empty();
     const $skip = $('#columns-skip').empty();
 
-    // Fonction pour obtenir le nom d'affichage traduit d'une colonne
+    // Get display name for a column; falls back to destinations.import_file when key is not in plannings.export_file.
+    // When column has a custom import header, appends it in parentheses.
     function getDisplayName(columnKey) {
-      var displayName;
       var match = columnKey.match(new RegExp('^(.+)\\[(.*)\\]$'));
       var rematch = columnKey.match(/^([a-z]+(?:_[a-z]+)*)(\d+)$/);
+      var baseKey, suffix;
       if (match) {
-        var export_translation = 'plannings.export_file.' + match[1];
-        displayName = I18n.t(export_translation) + '[' + match[2] + ']';
+        baseKey = match[1];
+        suffix = '[' + match[2] + ']';
+      } else if (rematch) {
+        baseKey = rematch[1];
+        suffix = rematch[2];
+      } else {
+        baseKey = columnKey;
+        suffix = '';
       }
-      else if (rematch) {
-        var export_translation = 'plannings.export_file.' + rematch[1];
-        displayName = I18n.t(export_translation) + rematch[2];
+      var exportKey = 'plannings.export_file.' + baseKey;
+      var importKey = 'destinations.import_file.' + baseKey;
+      var t = I18n.t(exportKey);
+      if (!t || t === exportKey || /^\[missing "[a-z0-9_.]+" translation\]$/.test(String(t))) {
+        t = I18n.t(importKey);
       }
-      else {
-        var export_translation = 'plannings.export_file.' + columnKey;
-        displayName = I18n.t(export_translation);
+      var display = t + suffix;
+      if (custom_columns[columnKey]) {
+        display += ' (' + custom_columns[columnKey] + ')';
       }
-      return displayName;
+      return display;
     }
 
     columnsExport.forEach(function(col) {
@@ -2843,7 +2853,7 @@ export const plannings_edit = function(params) {
     });
   });
 
-  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id, params.export_settings);
+  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id, params.export_settings, params.spreadsheet_custom_columns);
 
   var devicesObservePlanning = (function() {
 
@@ -3009,7 +3019,7 @@ var plannings_index = function(params) {
   var requestPending = false;
 
   iCalendarExport();
-  spreadsheetModalExport(params.spreadsheet_columns, null, params.export_settings);
+  spreadsheetModalExport(params.spreadsheet_columns, null, params.export_settings, params.spreadsheet_custom_columns);
 
   var vehicle_id = $('#vehicle_id').val(),
     planning_ids;

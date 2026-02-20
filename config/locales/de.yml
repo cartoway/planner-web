@@ -1242,8 +1242,8 @@ de:
       without_visit_desc: 'besagt, dass es keine zugehörigen Besuche gibt'
       ref_visit: Referenzbesuch
       ref_visit_desc: Referenz-ID dieses Besuchs.
-      tags_visit: Tags des Besuchs
-      tags_visit_desc: tags dieses Besuchs (um diese beispielsweise gruppieren zu können).
+      tag_visits: Tags des Besuchs
+      tag_visits_desc: tags dieses Besuchs (um diese beispielsweise gruppieren zu können).
       format:
         string: Text
         integer: Ganzzahl
@@ -1870,51 +1870,42 @@ de:
       dialog:
         new_planning: Erstellung des neuen Plans läuft. Bitte warten Sie.
     export_file:
-      ref_planning: Referenzplan
-      planning: Plan
-      ref: Referenz
-      vehicle: Fahrzeug
-      route: Strecke
       order: Auftrag
-      stop_type: Haltetyp
-      stop_type_store: speichern
-      stop_type_visit: Besuch
       stop_type_rest: Pause
+      force_position_always_first: immer zuerst
+      force_position_always_final: immer zuletzt
+      force_position_never_first: nie zuerst
+      force_position_neutral: neutral
       wait_time: warten
       time: Zeit
+      departure: Abfahrt
       distance: Entfernung
       drive_time: Fahrtzeit
-      name: Name
-      street: Straße
-      detail: Detail
-      postalcode: Postleitzahl
-      city: Ort
-      state: Status
-      country: Land
-      lat: Breite
-      lng: Länge
-      comment: Bemerkung
-      tags: Tags
-      phone_number: Telefon
-      ref_visit: Referenzbesuch
-      duration: Dauer
-      quantity: Menge
-      quantity_operation: Vorgang
       orders: Aufträge
-      active: aktiv
-      time_window_start_1: öffnen 1
-      time_window_end_1: schließen 1
-      time_window_start_2: öffnen 2
-      time_window_end_2: schließen 2
-      priority: Priorität
-      tags_visit: Tags des Besuchs
       out_of_window: außerhalb des Besuchszeitfensters
       out_of_capacity: nicht ausgelastet
       out_of_drive_time: außerhalb der Schichtzeit des Fahrzeugs
+      out_of_force_position: erzwungene Position nicht eingehalten
       out_of_work_time: außerhalb der Arbeitszeit
       out_of_max_distance: maximal erreichbare Entfernung
+      out_of_max_ride_distance: maximale Fahrtentfernung
+      out_of_max_ride_duration: maximale Fahrtdauer
+      out_of_max_reload: außerhalb des maximalen Nachladens
+      out_of_relation: Beziehungsverletzung
+      out_of_skill: Fähigkeit nicht erfüllt
       status: Status
+      status_updated_at: Zeitpunkt der Statusänderung
       eta: eta
+      custom_attributes_stop: Stoppattribute
+      stop_size: Anzahl der Stopps
+      stop_active_size: Anzahl aktiver Stopps
+      emission: Emission
+      start: Start
+      end: Ende
+      visits_duration: Besuchsdauer
+      cost_distance: Kosten pro Entfernung
+      cost_fixed: Fixkosten
+      cost_time: Kosten pro Zeit
     form:
       ref_help: Eine freie Referenz
       begin_end_date: Gültigkeitszeitraum

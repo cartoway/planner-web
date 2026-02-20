@@ -72,12 +72,12 @@ module RoutesHelper
       if custom_columns&.key?(c)
         custom_columns[c]
       elsif (m = /^(.+)\[(.*)\]$/.match(c))
-        I18n.t("plannings.export_file.#{m[1]}") + "[#{m[2]}]"
+        I18n.t("plannings.export_file.#{m[1]}", default: :"destinations.import_file.#{m[1]}") + "[#{m[2]}]"
       elsif (m = /^([a-z]+(?:_[a-z]+)*)(\d+)$/.match(c))
         deliverable_unit = customer.deliverable_units.where(id: m[2].to_i).first
         I18n.t('destinations.import_file.' + m[1]) + (deliverable_unit.label ? "[#{deliverable_unit.label}]" : "#{deliverable_unit.id}")
       else
-        I18n.t('plannings.export_file.' + c.to_s)
+        I18n.t("plannings.export_file.#{c}", default: :"destinations.import_file.#{c}")
       end
     }
   end

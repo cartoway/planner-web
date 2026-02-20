@@ -214,7 +214,7 @@ class ImportCsv
       row_content = !row.empty? ? (((h = @column_def && @column_def.dup) ? h : {}).each{ |k, _| h[k] = nil }).merge(row) : nil
       if row_content
         row_content[:tags] = row_content[:tags].map(&:label).join(',') if row_content[:tags] && row_content[:tags].is_a?(Enumerable)
-        row_content[:tags_visit] = row_content[:tags_visit].map(&:label).join(',') if row_content[:tags_visit] && row_content[:tags_visit].is_a?(Enumerable)
+        row_content[:tag_visits] = row_content[:tag_visits].map(&:label).join(',') if row_content[:tag_visits] && row_content[:tag_visits].is_a?(Enumerable)
         if @content_code == :html
           error += '<div class="grid-container"><table class="grid">'
           error += '<tr>' + row_content.keys.map{ |a| '<th>' + (@importer.columns[a] && @importer.columns[a][:title] ?

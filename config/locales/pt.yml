@@ -1469,8 +1469,8 @@ pt:
       without_visit_desc: precisa que não existe nenhuma visita associada
       ref_visit: visita de referência
       ref_visit_desc: referência da visita.
-      tags_visit: categoria visita
-      tags_visit_desc: 'categorização da visita (permitirá, por exemplo, agrupa-las).'
+      tag_visits: categoria visita
+      tag_visits_desc: 'categorização da visita (permitirá, por exemplo, agrupa-las).'
       format:
         string: texto
         integer: numero inteiro
@@ -2026,47 +2026,42 @@ pt:
       dialog:
         new_planning: Criando o novo plano de rotas. Por favor aguarde
     export_file:
-      ref_planning: plano de referência
-      planning: plano
-      ref: referência
-      vehicle: veículo
-      route: rota
       order: pedido/encomenda
-      stop_type: tipo de paragem
-      stop_type_store: armazém
-      stop_type_visit: visita
       stop_type_rest: pausa
+      force_position_always_first: sempre primeiro
+      force_position_always_final: sempre último
+      force_position_never_first: nunca primeiro
+      force_position_neutral: neutro
       wait_time: espera
       time: hora
+      departure: partida
       distance: distância
-      drive_time: empo de trajeto
-      name: nome
-      street: rua
-      detail: complemento
-      postalcode: código postal
-      city: localidade
-      state: estado
-      country: país
-      lat: lat
-      lng: lng
-      comment: comentário
-      tags: etiquetas
-      phone_number: telefone
-      ref_visit: visita referencia
-      duration: duração da visita
-      quantity: quantidade
+      drive_time: tempo de trajeto
       orders: encomendas
-      active: ativo
-      time_window_start_1: horário de abertura 1
-      time_window_end_1: horário de fecho 1
-      time_window_start_2: horário de abertura 2
-      time_window_end_2: horário de fecho 2
-      tags_visit: etiquetas da visita
       out_of_window: fora do período da visita
       out_of_capacity: para além da capacidade do veículo
       out_of_drive_time: fora do período temporal do veículo
+      out_of_force_position: posição forçada não cumprida
+      out_of_work_time: fora do tempo de trabalho
+      out_of_max_distance: distância máxima atingível
+      out_of_max_ride_distance: distância máxima de viagem
+      out_of_max_ride_duration: duração máxima de viagem
+      out_of_max_reload: fora do recarregamento máximo
+      out_of_relation: relação violada
+      out_of_skill: competência não preenchida
       status: estado
+      status_updated_at: hora da alteração do estado
       eta: eta
+      custom_attributes_stop: atributos da paragem
+      stop_size: número de paragens
+      stop_active_size: número de paragens ativas
+      emission: emissão
+      start: início
+      end: fim
+      visits_duration: duração da visita
+      cost_distance: custo por distância
+      cost_fixed: custo fixo
+      cost_time: custo por tempo
     form:
       ref_help: Referência livre
       begin_end_date: Período de validade

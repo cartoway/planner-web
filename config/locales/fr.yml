@@ -1566,8 +1566,8 @@ fr:
       without_visit_desc: précise qu'il n'y a pas de visite associée
       ref_visit: référence visite
       ref_visit_desc: référence de la visite.
-      tags_visit: catégories visite
-      tags_visit_desc: catégories de la visite (permettant par exemple de les grouper).
+      tag_visits: catégories visite
+      tag_visits_desc: catégories de la visite (permettant par exemple de les grouper).
       force_position: position forcée
       force_position_desc: position de la visite au sein de la tournée
       force_position_format: '[début | pas début | neutre | fin]'
@@ -2363,87 +2363,42 @@ fr:
       dialog:
         new_planning: 'Création du nouveau plan de tournées en cours, merci de patienter'
     export_file:
-      ref_planning: référence plan
-      planning: plan
-      planning_date: date
-      ref: référence
-      vehicle: véhicule
-      route: tournée
       order: ordre
-      stop_type: type arrêt
-      stop_type_store: site
-      stop_type_visit: visite
       stop_type_rest: pause
-      stop_type_store_reload: rechargement
-      force_position: position forcée
       force_position_always_first: début
       force_position_always_final: fin
       force_position_never_first: pas début
       force_position_neutral: neutre
       wait_time: attente
       time: heure
+      departure: horaire de départ
       distance: distance
       drive_time: temps trajet
-      name: nom
-      street: voie
-      detail: complément
-      postalcode: code postal
-      city: ville
-      state: état
-      country: pays
-      lat: lat
-      lng: lng
-      comment: commentaire
-      tags: catégories
-      phone_number: téléphone
-      ref_visit: référence visite
-      duration: durée visite
-      destination_duration: durée destination
-      quantity: quantité
-      pickup: collecte
-      delivery: livraison
-      max_load: charge max
       orders: commandes
-      active: livré
-      time_window_start_1: horaire début 1
-      time_window_end_1: horaire fin 1
-      time_window_start_2: horaire début 2
-      time_window_end_2: horaire fin 2
-      priority: priorité
-      revenue: revenu
-      tags_visit: catégories visite
       out_of_window: hors créneau visite
       out_of_capacity: hors capacité véhicule
       out_of_drive_time: hors amplitude horaire du véhicule
       out_of_force_position: position forcée non respectée
       out_of_work_time: hors horaire de travail
       out_of_max_distance: hors distance maximale
+      out_of_max_ride_distance: hors distance trajet maximale
+      out_of_max_ride_duration: hors durée trajet maximale
+      out_of_max_reload: hors limite de rechargement maximale
       out_of_relation: relation non respectée
       out_of_skill: compétence non respectée
       status: statut
       status_updated_at: horaire statut
       eta: eta
-      custom_attributes_visit: attributs visite
       custom_attributes_stop: attributs arrêt
       stop_size: nombre d'arrêts
       stop_active_size: nombre d'arrêts actifs
-      time: durée total
-      distance: distance totale
       emission: émission
       start: début
       end: fin
       visits_duration: durée visite
-      wait_time: temps d'attente
-      departure: horaire de départ
-      drive_time: durée conduite
-      out_of_window: hors amplitude horaire
-      out_of_max_ride_distance: hors distance trajet maximale
-      out_of_max_ride_duration: hors durée trajet maximale
-      out_of_max_reload: hors limite de rechargement maximale
       cost_distance: coût kilométrique
       cost_fixed: coût fixe
       cost_time: coût horaire
-      revenue: revenu
     form:
       ref_help: Référence libre
       begin_end_date: Période de validité

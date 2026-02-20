@@ -88,7 +88,7 @@ class ImporterDestinations < ImporterBase
       revenue: {title: I18n.t('destinations.import_file.revenue'), desc: I18n.t('destinations.import_file.revenue_desc'), format: I18n.t('destinations.import_file.format.float')},
       priority: {title: I18n.t('destinations.import_file.priority'), desc: I18n.t('destinations.import_file.priority_desc'), format: I18n.t('destinations.import_file.format.integer')},
       force_position: {title: I18n.t('destinations.import_file.force_position'), desc: I18n.t('destinations.import_file.force_position_desc'), format: I18n.t('destinations.import_file.force_position_format')},
-      tag_visits: {title: I18n.t('destinations.import_file.tags_visit'), desc: I18n.t('destinations.import_file.tags_visit_desc'), format: I18n.t('destinations.import_file.tags_format')},
+      tag_visits: {title: I18n.t('destinations.import_file.tag_visits'), desc: I18n.t('destinations.import_file.tag_visits_desc'), format: I18n.t('destinations.import_file.tags_format')},
       duration: {title: I18n.t('destinations.import_file.duration'), desc: I18n.t('destinations.import_file.duration_desc'), format: I18n.t('destinations.import_file.format.hour')},
     }.merge(Hash[@deliverable_units.flat_map{ |du|
       [
