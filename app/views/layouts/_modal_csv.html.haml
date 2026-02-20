@@ -10,8 +10,8 @@
       .container-fluid
         %input{name: "spreadsheet-route", type: "hidden", value: ""}/
         .row.row.form-group
-          %label.col-md-3.control-label= t 'plannings.edit.dialog.spreadsheet.stops'
-          .col-md-9
+          %label.col-md-2.control-label= t 'plannings.edit.dialog.spreadsheet.stops'
+          .col-md-10
             %div
               %label
                 %input.spreadsheet-stops{checked: "checked", name: "spreadsheet-out-of-route", type: "checkbox", value: "out-of-route"}/
@@ -29,8 +29,8 @@
                 %input.spreadsheet-stops{checked: "checked", name: "spreadsheet-stops-inactives", type: "checkbox", value: "inactive"}/
                 %span= t 'plannings.edit.dialog.spreadsheet.stops_inactives'
         .row.row.form-group
-          %label.col-md-3.control-label= t 'plannings.edit.dialog.spreadsheet.columns'
-          .col-md-9
+          %label.col-md-2.control-label= t 'plannings.edit.dialog.spreadsheet.columns'
+          .col-md-10
             .active-inactive-zones#spreadsheet-columns-container{"data-drag-drop" => "spreadsheet", "data-drag-drop-options" => '{"minActiveItems":1,"activeContainerSelector":".active-zone .item-list","inactiveContainerSelector":".inactive-zone .item-list","itemSelector":".draggable-item","orderDisplaySelector":".item-order","textDisplaySelector":".item-text"}'}
               .active-zone.col-md-6
                 .zone-title
