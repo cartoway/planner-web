@@ -1302,7 +1302,8 @@ class Planning < ApplicationRecord
         ]
       previous_position = s.position
     }
-    next_position = route.vehicle_usage.default_store_stop&.position || stop.position
+
+    next_position = route.vehicle_usage.default_store_stop.position || previous_position
 
     insertion_data <<
       [
