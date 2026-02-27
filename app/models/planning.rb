@@ -1283,8 +1283,10 @@ class Planning < ApplicationRecord
 
   def collect_insertion_data(route, stop, options = {})
     options[:active_only] = true if options[:active_only].nil?
-    previous_position = route.vehicle_usage.default_store_start&.position || stop.position
+    previous_position = route.vehicle_usage.default_store_start&.position || route.stops.find{ |s| s.position? }&.position
     insertion_data = []
+    return [] if previous_position.nil?
+
     route.stops.map{ |s|
       next if s.id == stop.id || !s.active && !options[:active_only] || !s.position?
 
