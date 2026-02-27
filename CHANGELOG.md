@@ -18,6 +18,7 @@
 
   ### Fixed
   - API: successive Destination#multiple_delete calls might delete all the destinations [#608](https://github.com/cartoway/planner-web/pull/608)
+  - Automatic insertion with no depots no longer stick the inserted stop to the first/last position [#614](https://github.com/cartoway/planner-web/pull/614)
 
   ### Removed
   - Remove the dependency to `amoeba` for duplication [#581](https://github.com/cartoway/planner-web/pull/581)
