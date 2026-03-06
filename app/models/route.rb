@@ -68,6 +68,7 @@ class Route < ApplicationRecord
       vehicle: [:router, :tags, {customer: :router}]
     ])
   }
+  scope :includes_route_geojson, -> { includes(:route_geojson) }
   scope :includes_stops, -> { includes(:stops) }
   # The second visit is for counting the visit index from all the visits of the destination
   scope :includes_destinations_and_stores, -> {
