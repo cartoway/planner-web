@@ -285,11 +285,9 @@ function markerClusterIcon(childCount, defaultColor, borderColors) {
 }
 
 var removeInactiveStops = function(data) {
-  $.each(data['features'], function(index, element) {
-    if (index === data['features'].length) return false;
-    if (element['properties']['active'] === false) {
-      data['features'].splice(index, 1);
-    }
+  if (!data || !data.features) return;
+  data.features = data.features.filter(function(element) {
+    return !element || !element.properties || element.properties.active !== false;
   });
 };
 
