@@ -88,6 +88,41 @@ class V01::Plannings < Grape::API
       present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
     end
 
+    desc 'Delete plannings by tags (object must have all provided tags).',
+      nickname: 'deletePlanningsByTag',
+      success: V01::Status.success(:code_204),
+      failure: V01::Status.failures
+    params do
+      requires :tag_ids, type: Array[Integer], desc: 'Tag ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { param_type: 'form', example: '1,2,ref:vip' }
+    end
+    delete 'by_tags' do
+      Route.includes_destinations_and_stores.scoping do
+        Planning.transaction do
+          tag_ids = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer)
+
+          if tag_ids.blank?
+            error! V01::Status.code_response(:code_304), 304
+          end
+
+          plannings_query =
+            current_customer.plannings
+                            .joins(:tags)
+                            .where(tags: { id: tag_ids })
+                            .select('plannings.id')
+                            .reorder(nil)
+                            .group('plannings.id')
+                            .having('COUNT(DISTINCT tags.id) = ?', tag_ids.size)
+          ids = plannings_query.pluck('plannings.id')
+          if ids.empty?
+            error! V01::Status.code_response(:code_304), 304
+          end
+
+          Planning.where(id: ids).destroy_all
+          status 204
+        end
+      end
+    end
+
     desc 'Delete planning.',
       nickname: 'deletePlanning',
       success: V01::Status.success(:code_204),
@@ -204,7 +239,7 @@ class V01::Plannings < Grape::API
           planning.compute_saved
           status 204
         end
-      rescue Exceptions::LoopError => e
+      rescue Exceptions::LoopError
         error! V01::Status.code_response(:code_400), 400
       end
     end

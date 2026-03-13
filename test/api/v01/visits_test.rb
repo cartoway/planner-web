@@ -240,6 +240,54 @@ class V01::VisitsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should destroy only visits having all tags' do
+    customer = customers(:customer_one)
+    tag_foo = customer.tags.create!(label: 'Foo', ref: 'foo')
+    tag_bar = customer.tags.create!(label: 'Bar', ref: 'bar')
+
+    visit_foo = visits(:visit_one)
+    visit_bar = visits(:visit_two)
+    visit_both = visits(:visit_three)
+
+    TagVisit.create!(visit: visit_foo, tag: tag_foo)
+    TagVisit.create!(visit: visit_bar, tag: tag_bar)
+    TagVisit.create!(visit: visit_both, tag: tag_foo)
+    TagVisit.create!(visit: visit_both, tag: tag_bar)
+
+    assert_difference('Visit.count', -1) do
+      delete api('by_tags', tag_ids: "ref:foo,ref:bar")
+      assert_equal 204, last_response.status, last_response.body
+    end
+
+    assert_not Visit.exists?(visit_both.id)
+    assert Visit.exists?(visit_foo.id)
+    assert Visit.exists?(visit_bar.id)
+  end
+
+  test 'should destroy visits having a single matching tag' do
+    customer = customers(:customer_one)
+    tag_foo = customer.tags.create!(label: 'Foo', ref: 'foo')
+    tag_bar = customer.tags.create!(label: 'Bar', ref: 'bar')
+
+    visit_foo = visits(:visit_one)
+    visit_bar = visits(:visit_two)
+    visit_both = visits(:visit_three)
+
+    TagVisit.create!(visit: visit_foo, tag: tag_foo)
+    TagVisit.create!(visit: visit_bar, tag: tag_bar)
+    TagVisit.create!(visit: visit_both, tag: tag_foo)
+    TagVisit.create!(visit: visit_both, tag: tag_bar)
+
+    assert_difference('Visit.count', -2) do
+      delete api('by_tags', tag_ids: "ref:foo")
+      assert_equal 204, last_response.status, last_response.body
+    end
+
+    assert_not Visit.exists?(visit_foo.id)
+    assert_not Visit.exists?(visit_both.id)
+    assert Visit.exists?(visit_bar.id)
+  end
+
   test 'should create a visit using deprecated time fields' do
     assert_difference('Visit.count', 1) do
       visit_attributes = @visit.attributes
@@ -347,6 +395,13 @@ class V01::VisitsWithJobTest < ActiveSupport::TestCase
   test 'should not destroy a destination due to job' do
     assert_difference('Destination.count', 0) do
       delete api_destination(@destination.id, @visit.id)
+      assert_equal 409, last_response.status, last_response.body
+    end
+  end
+
+  test 'should not destroy visits by tags due to job' do
+    assert_difference('Visit.count', 0) do
+      delete api('by_tags', tag_ids: tags(:tag_one).id)
       assert_equal 409, last_response.status, last_response.body
     end
   end

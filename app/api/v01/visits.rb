@@ -191,6 +191,48 @@ class V01::Visits < Grape::API
       end
     end
 
+    desc 'Delete visits by tags (object must have all provided tags).',
+      nickname: 'deleteVisitsByTag',
+      success: V01::Status.success(:code_204),
+      failure: V01::Status.failures
+    params do
+      requires :tag_ids, type: Array[Integer], desc: 'Tag ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { param_type: 'form', example: '1,2,ref:vip' }
+    end
+    delete 'by_tags' do
+      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
+      Visit.transaction do
+        tag_ids = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer)
+
+        if tag_ids.blank?
+          error! V01::Status.code_response(:code_304), 304
+        end
+
+        visits_query =
+          current_customer.visits
+                          .joins(:tags)
+                          .where(tags: { id: tag_ids })
+                          .select('visits.id')
+                          .reorder(nil)
+                          .group('visits.id')
+                          .having('COUNT(DISTINCT tags.id) = ?', tag_ids.size)
+
+        ids = visits_query.pluck('visits.id')
+
+        if ids.empty?
+          error! V01::Status.code_response(:code_304), 304
+        end
+
+        if current_customer.visits.count == ids.size
+          current_customer.delete_all_visits
+        else
+          Visit.where(id: ids).destroy_all
+        end
+
+        status 204
+      end
+    end
+
     desc 'Delete multiple visits.',
       nickname: 'deleteVisits',
       success: V01::Status.success(:code_204),
