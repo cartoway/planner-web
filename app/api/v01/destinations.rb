@@ -274,6 +274,51 @@ class V01::Destinations < Grape::API
       present destination, with: V01::Entities::Destination
     end
 
+    desc 'Delete destinations by tags (object must have all provided tags).',
+      nickname: 'deleteDestinationsByTag',
+      success: V01::Status.success(:code_204),
+      failure: V01::Status.failures
+    params do
+      requires :tag_ids, type: Array[Integer], desc: 'Tag ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { param_type: 'form', example: '1,2,ref:vip' }
+    end
+    delete 'by_tags' do
+      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+
+      Destination.transaction do
+        tag_ids = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer)
+
+        if tag_ids.blank?
+          error! V01::Status.code_response(:code_304), 304
+        end
+
+        destinations_query =
+          current_customer.destinations
+                          .joins(:tags)
+                          .where(tags: { id: tag_ids })
+                          .select('destinations.id')
+                          .reorder(nil)
+                          .group('destinations.id')
+                          .having('COUNT(DISTINCT tags.id) = ?', tag_ids.size)
+
+        ids = destinations_query.pluck('destinations.id')
+        if ids.empty?
+          error! V01::Status.code_response(:code_304), 304
+        end
+
+        if current_customer.destinations_count == ids.size
+          current_customer.delete_all_destinations
+        else
+          Destination.where(id: ids).destroy_all
+        end
+
+        Customer.where(id: current_customer.id).update_all(
+          destinations_count: Destination.where(customer_id: current_customer.id).count,
+          visits_count: Visit.joins(:destination).where(destinations: { customer_id: current_customer.id }).count
+        )
+        status 204
+      end
+    end
+
     desc 'Delete destination.',
       nickname: 'deleteDestination',
       success: V01::Status.success(:code_204),

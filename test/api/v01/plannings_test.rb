@@ -167,6 +167,54 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
   end
 
+  test 'should destroy plannings by tags' do
+    customer = customers(:customer_one)
+    tag_foo = Tag.create!(label: 'Foo', ref: 'foo', customer: customer)
+    tag_bar = Tag.create!(label: 'Bar', ref: 'bar', customer: customer)
+
+    planning_foo = Planning.create!(name: 'Foo only', vehicle_usage_set: customer.vehicle_usage_sets.first, customer: customer)
+    planning_bar = Planning.create!(name: 'Bar only', vehicle_usage_set: customer.vehicle_usage_sets.first, customer: customer)
+    planning_both = Planning.create!(name: 'Foo and Bar', vehicle_usage_set: customer.vehicle_usage_sets.first, customer: customer)
+
+    TagPlanning.create!(planning: planning_foo, tag: tag_foo)
+    TagPlanning.create!(planning: planning_bar, tag: tag_bar)
+    TagPlanning.create!(planning: planning_both, tag: tag_foo)
+    TagPlanning.create!(planning: planning_both, tag: tag_bar)
+
+    assert_difference('Planning.count', -1) do
+      delete api('by_tags', tag_ids: 'ref:foo,ref:bar')
+      assert_equal 204, last_response.status, last_response.body
+    end
+
+    assert_not Planning.exists?(planning_both.id)
+    assert Planning.exists?(planning_foo.id)
+    assert Planning.exists?(planning_bar.id)
+  end
+
+  test 'should destroy plannings having a single matching tag' do
+    customer = customers(:customer_one)
+    tag_foo = Tag.create!(label: 'Foo', ref: 'foo', customer: customer)
+    tag_bar = Tag.create!(label: 'Bar', ref: 'bar', customer: customer)
+
+    planning_foo = Planning.create!(name: 'Foo only', vehicle_usage_set: customer.vehicle_usage_sets.first, customer: customer)
+    planning_bar = Planning.create!(name: 'Bar only', vehicle_usage_set: customer.vehicle_usage_sets.first, customer: customer)
+    planning_both = Planning.create!(name: 'Foo and Bar', vehicle_usage_set: customer.vehicle_usage_sets.first, customer: customer)
+
+    TagPlanning.create!(planning: planning_foo, tag: tag_foo)
+    TagPlanning.create!(planning: planning_bar, tag: tag_bar)
+    TagPlanning.create!(planning: planning_both, tag: tag_foo)
+    TagPlanning.create!(planning: planning_both, tag: tag_bar)
+
+    assert_difference('Planning.count', -2) do
+      delete api('by_tags', tag_ids: 'ref:foo')
+      assert_equal 204, last_response.status, last_response.body
+    end
+
+    assert_not Planning.exists?(planning_foo.id)
+    assert_not Planning.exists?(planning_both.id)
+    assert Planning.exists?(planning_bar.id)
+  end
+
   test 'should force recompute the planning after parameter update' do
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?

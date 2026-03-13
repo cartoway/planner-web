@@ -1009,6 +1009,52 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should destroy only destinations having all tags' do
+    tag_foo = @customer.tags.create!(label: 'Foo', ref: 'foo')
+    tag_bar = @customer.tags.create!(label: 'Bar', ref: 'bar')
+
+    destination_foo = @customer.destinations.create!(name: 'Foo only', city: 'CityFoo')
+    destination_bar = @customer.destinations.create!(name: 'Bar only', city: 'CityBar')
+    destination_both = @customer.destinations.create!(name: 'Foo and Bar', city: 'CityBoth')
+
+    TagDestination.create!(destination: destination_foo, tag: tag_foo)
+    TagDestination.create!(destination: destination_bar, tag: tag_bar)
+    TagDestination.create!(destination: destination_both, tag: tag_foo)
+    TagDestination.create!(destination: destination_both, tag: tag_bar)
+
+    assert_difference('Destination.count', -1) do
+      delete api('by_tags', tag_ids: "ref:foo,ref:bar")
+      assert_equal 204, last_response.status, last_response.body
+    end
+
+    assert_not Destination.exists?(destination_both.id)
+    assert Destination.exists?(destination_foo.id)
+    assert Destination.exists?(destination_bar.id)
+  end
+
+  test 'should destroy destinations having a single matching tag' do
+    tag_foo = @customer.tags.create!(label: 'Foo', ref: 'foo')
+    tag_bar = @customer.tags.create!(label: 'Bar', ref: 'bar')
+
+    destination_foo = @customer.destinations.create!(name: 'Foo only', city: 'CityFoo')
+    destination_bar = @customer.destinations.create!(name: 'Bar only', city: 'CityBar')
+    destination_both = @customer.destinations.create!(name: 'Foo and Bar', city: 'CityBoth')
+
+    TagDestination.create!(destination: destination_foo, tag: tag_foo)
+    TagDestination.create!(destination: destination_bar, tag: tag_bar)
+    TagDestination.create!(destination: destination_both, tag: tag_foo)
+    TagDestination.create!(destination: destination_both, tag: tag_bar)
+
+    assert_difference('Destination.count', -2) do
+      delete api('by_tags', tag_ids: "ref:foo")
+      assert_equal 204, last_response.status, last_response.body
+    end
+
+    assert_not Destination.exists?(destination_foo.id)
+    assert_not Destination.exists?(destination_both.id)
+    assert Destination.exists?(destination_bar.id)
+  end
+
   test 'should geocode' do
     patch api('geocode'), format: :json, destination: { city: @destination.city, name: @destination.name, postalcode: @destination.postalcode, street: @destination.street, state: @destination.state }
     assert last_response.ok?, last_response.body
@@ -1401,6 +1447,13 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
   test 'should not destroy a destination due to job' do
     assert_difference('Destination.count', 0) do
       delete api(@destination.id)
+      assert_equal 409, last_response.status, last_response.body
+    end
+  end
+
+  test 'should not destroy destinations by tags due to job' do
+    assert_difference('Destination.count', 0) do
+      delete api('by_tags', tag_ids: tags(:tag_one).id)
       assert_equal 409, last_response.status, last_response.body
     end
   end
