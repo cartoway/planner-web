@@ -11,6 +11,7 @@ require_relative '../lib/optim/optimizer_wrapper'
 require_relative '../lib/exceptions'
 require_relative '../lib/json_logs_formatter'
 require_relative '../lib/after_commit_wrapper'
+require_relative '../lib/rack_x_robots_tag'
 
 require_relative '../lib/devices/device_base'
 [
@@ -77,6 +78,8 @@ module Planner
     config.middleware.use Rack::Config do |env|
       env['api.tilt.root'] = Rails.root.join 'app', 'api', 'views'
     end
+
+    config.middleware.use Rack::XRobotsTag
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
