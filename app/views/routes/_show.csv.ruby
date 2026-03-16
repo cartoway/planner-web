@@ -1,8 +1,23 @@
-visit_custom_attributes = route.planning.customer.custom_attributes.for_visit
+stops_filter = @params.key?(:stops) ? @params[:stops].split('|') : []
+@pickup_delivery_defs ||= @customer.deliverable_units.map do |du|
+  suffix = du.label ? "[#{du.label}]" : du.id.to_s
+  {
+    du_id: du.id,
+    pickup_header: :"pickup#{suffix}",
+    delivery_header: :"delivery#{suffix}"
+  }
+end
+@pickup_delivery_columns ||= @pickup_delivery_defs.flat_map do |definition|
+  [
+    [definition[:pickup_header], nil],
+    [definition[:delivery_header], nil]
+  ]
+end
+@visit_custom_attributes ||= @customer.custom_attributes.for_visit || []
 # One column per name: stop_visit, stop_store and route attributes with the same name share a column
-stop_custom_attributes = route.planning.customer.custom_attributes.for_export_stops_unique_by_name
+@stop_custom_attributes ||= @customer.custom_attributes.for_export_stops_unique_by_name || []
 
-if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|').include?('store'))
+if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('store'))
   row = {
     planning_ref: route.planning.ref,
     planning_name: route.planning.name,
@@ -37,7 +52,8 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     destination_duration: nil
   }
 
-  row.merge!(state: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.state) if route.planning.customer.with_state?
+  row.merge!(Hash[@pickup_delivery_columns])
+  row.merge!(state: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.state) if @customer.with_state?
 
   row.merge!({
     country: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.country,
@@ -58,23 +74,19 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     tag_visits: nil
   })
 
-  row.merge!(Hash[route.planning.customer.enable_orders ?
+  row.merge!(Hash[@customer.enable_orders ?
     [[:orders, nil]] :
-    route.planning.customer.deliverable_units.flat_map{ |du|
-      [
-        [('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, nil]
-      ]
-    }
+    @pickup_delivery_columns
   ])
 
   row.merge!(
-    Hash[visit_custom_attributes.map{ |ca|
+    Hash[@visit_custom_attributes.map{ |ca|
       ["custom_attributes_visit[#{ca.name}]".to_sym, nil]
     }
   ])
 
   row.merge!(
-    Hash[stop_custom_attributes.map{ |ca|
+    Hash[@stop_custom_attributes.map{ |ca|
       ["custom_attributes_stop[#{ca.name}]".to_sym, route.custom_attributes_typed_hash(related_field: :start_route_data)[ca.name]]
     }
   ])
@@ -83,8 +95,25 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
 end
 
 index = 0
-route.stops.each { |stop|
-  if !@params.key?(:stops) || ((stop.active || !stop.route.vehicle_usage_id || @params[:stops].split('|').include?('inactive')) && (stop.route.vehicle_usage || @params[:stops].split('|').include?('out-of-route')) && (stop.is_a?(StopVisit) || @params[:stops].split('|').include?('rest')))
+include_inactive = stops_filter.empty? || stops_filter.include?('inactive')
+include_out_of_route = stops_filter.empty? || stops_filter.include?('out-of-route')
+requested_types = stops_filter & %w[visit rest store]
+route.stops.sort_by(&:index).each { |stop|
+  type_allowed =
+    if requested_types.empty? || stop.is_a?(StopVisit)
+      true
+    elsif stop.is_a?(StopRest)
+      requested_types.include?('rest')
+    elsif stop.is_a?(StopStore)
+      requested_types.include?('store')
+    else
+      false
+    end
+
+  active_allowed = stop.active || !stop.route.vehicle_usage_id || include_inactive
+  out_of_route_allowed = stop.route.vehicle_usage || include_out_of_route
+
+  if (stops_filter.empty? || type_allowed) && active_allowed && out_of_route_allowed
     type =
       case stop.type
       when StopVisit.name
@@ -130,7 +159,7 @@ route.stops.each { |stop|
       destination_duration: stop.is_a?(StopVisit) ? stop.visit.destination.duration_absolute_time_with_seconds : nil
     }
 
-    row.merge!(state: stop.state) if route.planning.customer.with_state?
+    row.merge!(state: stop.state) if @customer.with_state?
     row.merge!({
       country: stop.country,
       lat: stop.lat&.round(6),
@@ -158,22 +187,33 @@ route.stops.each { |stop|
       tag_visits: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
     })
 
-    row.merge!(Hash[route.planning.customer.enable_orders ?
+    row.merge!(Hash[@pickup_delivery_columns])
+
+    pickups = nil
+    deliveries = nil
+    if stop.is_a?(StopVisit)
+      visit = stop.visit
+      pickups = visit.pickups
+      deliveries = visit.deliveries
+    end
+
+    row.merge!(Hash[@customer.enable_orders ?
       [[:orders, stop.is_a?(StopVisit) && stop.order && stop.order.products.length > 0 ? stop.order.products.collect(&:code).join('/') : nil]] :
-      route.planning.customer.deliverable_units.flat_map{ |du|
-          [
-            [('pickup' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.pickups[du.id] : nil],
-            [('delivery' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, stop.is_a?(StopVisit) ? stop.visit.deliveries[du.id] : nil]
-          ]
+      @pickup_delivery_defs.flat_map{ |definition|
+        du_id = definition[:du_id]
+        [
+          [definition[:pickup_header], pickups && pickups[du_id]],
+          [definition[:delivery_header], deliveries && deliveries[du_id]]
+        ]
       }
     ])
     row.merge!(
-      Hash[visit_custom_attributes.map{ |ca|
+      Hash[@visit_custom_attributes.map{ |ca|
         ["custom_attributes_visit[#{ca.name}]".to_sym, stop.visit && stop.visit.custom_attributes_typed_hash[ca.name]]
       }
     ])
     row.merge!(
-      Hash[stop_custom_attributes.map{ |ca|
+      Hash[@stop_custom_attributes.map{ |ca|
         ["custom_attributes_stop[#{ca.name}]".to_sym, stop.custom_attributes_typed_hash[ca.name]]
       }
     ])
@@ -182,7 +222,7 @@ route.stops.each { |stop|
   end
 }
 
-if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|').include?('store'))
+if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('store'))
   row = {
     planning_ref: route.planning.ref,
     planning_name: route.planning.name,
@@ -217,7 +257,7 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     destination_duration: nil
     }
 
-  row.merge!(state: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.state) if route.planning.customer.with_state?
+  row.merge!(state: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.state) if @customer.with_state?
 
   row.merge!({
     country: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.country,
@@ -238,23 +278,19 @@ if route.vehicle_usage_id && (!@params.key?(:stops) || @params[:stops].split('|'
     tag_visits: nil
   })
 
-  row.merge!(Hash[route.planning.customer.enable_orders ?
+  row.merge!(Hash[@customer.enable_orders ?
     [[:orders, nil]] :
-    route.planning.customer.deliverable_units.flat_map{ |du|
-      [
-        [('quantity' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, nil]
-      ]
-    }
+    Hash[@pickup_delivery_columns]
   ])
 
   row.merge!(
-    Hash[visit_custom_attributes.map{ |ca|
+    Hash[@visit_custom_attributes.map{ |ca|
       ["custom_attributes_visit[#{ca.name}]".to_sym, nil]
     }
   ])
 
   row.merge!(
-    Hash[stop_custom_attributes.map{ |ca|
+    Hash[@stop_custom_attributes.map{ |ca|
       ["custom_attributes_stop[#{ca.name}]".to_sym, route.custom_attributes_typed_hash(related_field: :stop_route_data)[ca.name]]
     }
   ])

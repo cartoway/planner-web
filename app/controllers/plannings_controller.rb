@@ -51,13 +51,14 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       format.html
       format.json
-      format_csv(format)
+      format_csv_stream(format)
     end
   end
 
   def show
     @params = params
     @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
+    @plannings = [@planning]
     @routes = if params[:route_ids]
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
       @with_stops = true
@@ -105,7 +106,7 @@ class PlanningsController < ApplicationController
             filename: filename + '.kmz'
         end
       end
-      format_csv(format)
+      format_csv_stream(format)
     end
   end
 
@@ -883,6 +884,70 @@ class PlanningsController < ApplicationController
       current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), 'csv')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
+    end
+  end
+
+  def format_csv_stream(format)
+    format.excel do
+      stream_plannings_export('excel')
+    end
+    format.csv do
+      stream_plannings_export('csv')
+    end
+  end
+
+  def stream_plannings_export(kind)
+    @customer ||= @plannings.first&.customer || current_user.customer
+    @is_summary = ValueToBoolean.value_to_boolean(export_params[:summary])
+    @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
+    current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), kind)
+    @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
+
+    headers['Content-Type'] = 'text/csv'
+    headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
+    headers['Cache-Control'] = 'no-cache'
+    headers.delete('Content-Length')
+
+    self.response_body = Enumerator.new do |y|
+      csv_io = Object.new
+
+      # Store context on the csv_io instance
+      csv_io.instance_variable_set(:@writer, ->(str) { y << str })
+      csv_io.instance_variable_set(:@kind, kind)
+
+      csv_io.singleton_class.class_eval do
+        def push_chunk(chunk)
+          writer = @writer
+          kind = @kind
+
+          writer.call(
+            if chunk.is_a?(Array)
+              if kind == 'excel'
+                CSV.generate_line(chunk, col_sep: ';', row_sep: "\r\n")
+              else
+                CSV.generate_line(chunk)
+              end
+            else
+              chunk
+            end
+          )
+        end
+
+        alias << push_chunk
+      end
+
+      header = view_context.export_column_titles(@customer, @columns, @custom_columns)
+      csv_io << header
+
+      if kind == 'excel'
+        @plannings.each do |planning|
+          view_context.render(partial: 'routes/index.excel', locals: { planning: planning, csv: csv_io, summary: @is_summary })
+        end
+      else
+        @plannings.each do |planning|
+          view_context.render(partial: 'routes/index.csv', locals: { planning: planning, csv: csv_io, summary: @is_summary })
+        end
+      end
     end
   end
 end
