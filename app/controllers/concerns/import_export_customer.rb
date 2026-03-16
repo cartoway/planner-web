@@ -17,9 +17,10 @@ module ImportExportCustomer
   def self.assign_miscellaneous_attributes(customer, options)
     customer.assign_attributes({
       profile_id: options[:profile_id],
+      reseller_id: options[:reseller_id],
       router_id: options[:router_id],
       router_options: {}
-    })
+    }.compact)
     customer.vehicles.select{ |vehicle| vehicle.router_id.present? }
             .each{ |vehicle| vehicle.assign_attributes(router_id: options[:router_id], router_options: {}) }
     customer.users.select{ |user| user.layer_id.present? }
