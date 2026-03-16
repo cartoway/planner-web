@@ -40,6 +40,7 @@ class ImportExportCustomerTest < ActionController::TestCase
     profile_id = profiles(:profile_two).id
     router_id = routers(:router_two).id
     layer_id = layers(:layer_two).id
+    reseller_id = resellers(:reseller_two).id
 
     assert_difference "Customer.count", 1 do
       assert_difference "Store.count", 4 do
@@ -56,11 +57,12 @@ class ImportExportCustomerTest < ActionController::TestCase
                             assert_difference "Route.count", 6 do
                               assert_difference "Stop.count", 8 do
                                 assert_difference "User.count", 3 do
-                                  c = ImportExportCustomer.import(customer_data_file, { profile_id: profile_id, router_id: router_id, layer_id: layer_id})
+                                  c = ImportExportCustomer.import(customer_data_file, { profile_id: profile_id, router_id: router_id, layer_id: layer_id, reseller_id: reseller_id })
                                   assert_kind_of Customer, c
                                   assert_equal profile_id, c.profile_id
                                   assert_equal router_id, c.router_id
                                   assert_equal layer_id, c.users.first.layer_id
+                                  assert_equal reseller_id, c.reseller_id
                                 end
                               end
                             end

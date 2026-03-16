@@ -107,7 +107,12 @@ class CustomersController < ApplicationController
       File.open(file_path, 'wb'){ |file| file.write(uploaded_io.read) }
 
       string_customer = File.open(file_path, 'rb')
-      options = {profile_id: customer_params[:profile_id], router_id: customer_params[:router_id], layer_id: customer_params[:layer_id]}
+      options = {
+        profile_id: customer_params[:profile_id],
+        reseller_id: current_user.reseller_id,
+        router_id: customer_params[:router_id],
+        layer_id: customer_params[:layer_id]
+      }
 
       File.delete(file_path)
 
