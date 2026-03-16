@@ -249,7 +249,7 @@ class VehicleTest < ActiveSupport::TestCase
     assert vehicle.valid?
 
     vehicle.capacities = { "abc" => 3.0 }
-    assert_not vehicle.valid?
+    refute vehicle.valid?
     assert_includes vehicle.errors[:capacities], I18n.t('activerecord.errors.models.vehicle.attributes.capacities.not_integer', key: "abc")
   end
 end

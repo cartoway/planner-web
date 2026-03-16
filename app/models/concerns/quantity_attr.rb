@@ -4,20 +4,38 @@ module QuantityAttr
   class QuantityHash < Hash
     def self.[](*args)
       hash = new
+
       if args.size == 1 && (args.first.is_a?(Hash) || args.first.is_a?(Array))
-        args.first.each{ |key, value| hash.store(key.to_s, value) }
-      else
-        args.each_slice(2){ |key, value| hash.store(key.to_s, value) }
-      end
-      hash.transform_keys!{ |key|
-        begin
-          Integer(key)
-        rescue StandardError
-          # The error return is delegated to the validation
-          key
+        args.first.each do |key, value|
+          hash.store(normalize_key(key), value)
         end
-      }
+      else
+        args.each_slice(2) do |key, value|
+          hash.store(normalize_key(key), value)
+        end
+      end
+
       hash
+    end
+
+    def self.normalize_key(key)
+      @normalized_keys_cache ||= {}
+
+      case key
+      when Integer
+        key
+      when String
+        return @normalized_keys_cache[key] if @normalized_keys_cache.key?(key)
+
+        normalized = key.match?(/\A-?\d+\z/) ? key.to_i : key
+        @normalized_keys_cache[key] = normalized
+        normalized
+      else
+        s = key.to_s
+        normalized = s.match?(/\A-?\d+\z/) ? s.to_i : s
+        @normalized_keys_cache[key] = normalized
+        normalized
+      end
     end
 
     def key?(key)
