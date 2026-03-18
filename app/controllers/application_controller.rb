@@ -163,6 +163,12 @@ class ApplicationController < ActionController::Base
         format.html do
           redirect_to root_path, notice: I18n.t('devise.failure.unauthenticated')
         end
+        format.csv do
+          redirect_to root_path, notice: I18n.t('devise.failure.unauthenticated')
+        end
+        format.excel do
+          redirect_to root_path, notice: I18n.t('devise.failure.unauthenticated')
+        end
         format.json do
           flash.now[:alert] = I18n.t('devise.failure.unauthenticated')
           render json:   { error: I18n.t('devise.failure.unauthenticated') }.to_json,
