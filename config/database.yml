@@ -13,7 +13,7 @@ development:
 
 test:
   <<: *default
-  database: <%= ENV['POSTGRES_DB'] || 'planner-test' %>
+  database: <%= ENV['POSTGRES_DB_TEST'] || 'planner-test' %>
 
 production:
   <<: *default
