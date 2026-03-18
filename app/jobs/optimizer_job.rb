@@ -66,7 +66,6 @@ class OptimizerJob < OptimizerJobStruct
 
     # Apply result
     if optimum
-      puts "optimum: #{optimum}"
       planning.set_stops(optimum, **{ global: options[:global], active_only: options[:active_only], insertion_only: options[:insertion_only], moving_stop_ids: options[:moving_stop_ids] })
       planning.compute_saved
     end
