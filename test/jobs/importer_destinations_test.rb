@@ -487,7 +487,7 @@ class ImporterDestinationsTest < ActionController::TestCase
         assert_equal 49.173419, Destination.last.lat
         assert_equal(-0.326613, Destination.last.lng)
         assert_equal 39.482, Visit.last.deliveries[2]
-        assert_equal nil, Visit.last.pickups[2]
+        assert_nil Visit.last.pickups[2]
       end
     ensure
       I18n.locale = orig_locale
@@ -745,7 +745,7 @@ class ImporterDestinationsTest < ActionController::TestCase
           route_2 = planning.routes.find{ |r| r.ref == 't2' }
           out_route = planning.routes.find{ |r| !r.vehicle_usage? }
           assert_equal 'p1', planning.ref
-          assert_equal nil, route_1.stops.index{ |stop| stop.is_a?(StopStore) } # Store are removed on update if not provided
+          assert_nil route_1.stops.index{ |stop| stop.is_a?(StopStore) } # Store are removed on update if not provided
           assert_equal 0, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
           assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v10' }
           assert out_route.stops.one?{ |stop| stop.visit&.ref == 'v2' }
