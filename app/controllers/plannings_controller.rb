@@ -914,13 +914,15 @@ class PlanningsController < ApplicationController
       # Store context on the csv_io instance
       csv_io.instance_variable_set(:@writer, ->(str) { y << str })
       csv_io.instance_variable_set(:@kind, kind)
+      csv_io.instance_variable_set(:@target_encoding, I18n.t('encoding'))
 
       csv_io.singleton_class.class_eval do
         def push_chunk(chunk)
           writer = @writer
           kind = @kind
+          target_encoding = @target_encoding
 
-          writer.call(
+          out =
             if chunk.is_a?(Array)
               if kind == 'excel'
                 CSV.generate_line(chunk, col_sep: ';', row_sep: "\r\n")
@@ -930,7 +932,10 @@ class PlanningsController < ApplicationController
             else
               chunk
             end
-          )
+
+          # Excel export is transcoded for Windows clients.
+          out = out.encode(target_encoding, invalid: :replace, undef: :replace, replace: '') if kind == 'excel'
+          writer.call(out)
         end
 
         alias << push_chunk
