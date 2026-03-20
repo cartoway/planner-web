@@ -20,6 +20,7 @@
   - Display custom columns in Destination template [#5c27df8](https://github.com/cartoway/planner-web/commit/5c27df869deb391ea15d7c7d2ffda790cdd01f89)
   - Redirect to root when unauthenticated with `csv` and `excel` format [#617](https://github.com/cartoway/planner-web/pull/617)
   - Fix `store_start` with `start_service_time` on route display [#621](https://github.com/cartoway/planner-web/pull/621)
+  - Ensure `driver_token` uniqueness [#621](https://github.com/cartoway/planner-web/pull/621)
 
 ## V108.1.0
   ### Added

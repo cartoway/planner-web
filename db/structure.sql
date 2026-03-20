@@ -2778,6 +2778,13 @@ CREATE INDEX index_vehicle_usages_on_vehicle_usage_set_id ON public.vehicle_usag
 
 
 --
+-- Name: index_vehicles_on_driver_token; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_vehicles_on_driver_token ON public.vehicles USING btree (driver_token);
+
+
+--
 -- Name: index_visits_on_destination_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3669,6 +3676,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260209100651'),
 ('20260204152038'),
 ('20260219151139'),
-('20260316121551');
+('20260316121551'),
+('20260316131419');
 
 

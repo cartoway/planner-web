@@ -16,6 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 require 'jwt'
+require 'securerandom'
 
 class Vehicle < ApplicationRecord
   # Include default devise modules. Others available are:
@@ -59,6 +60,7 @@ class Vehicle < ApplicationRecord
   validates :contact_email, format: { with: /\A(([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})(\s*,\s*|\s*;\s*|\s+)?)+\z/i }, allow_blank: true
   validates :max_distance, numericality: true, allow_nil: true
   validates :max_ride_distance, numericality: true, allow_nil: true
+  validates :driver_token, uniqueness: true, allow_nil: true
 
   after_initialize :assign_defaults, :increment_max_vehicles, if: -> { new_record? }
   before_validation :check_router_options_format
@@ -177,7 +179,7 @@ class Vehicle < ApplicationRecord
   end
 
   def reset_driver_token
-    self.driver_token = JWT.encode({ vehicle_id: self.id }, Planner::Application.config.secret_key_base, 'HS256')
+    self.driver_token = generate_unique_driver_token
   end
 
   private
@@ -248,5 +250,9 @@ class Vehicle < ApplicationRecord
         self.router_options[k] = Vehicle.to_delocalized_decimal(v) if v.is_a?(String)
       end
     end
+  end
+
+  def generate_unique_driver_token
+    SecureRandom.urlsafe_base64(48)
   end
 end
