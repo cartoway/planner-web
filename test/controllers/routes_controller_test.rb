@@ -29,6 +29,46 @@ class RoutesControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'should show route when start depot is missing' do
+    vehicle_usage = @route.vehicle_usage
+    vehicle_usage.update!(store_start: nil)
+
+    get :show, params: { id: @route }
+    assert_response :success
+    assert_valid response
+  end
+
+  test 'should show route when start depot is missing and start_with_service is present' do
+    vehicle_usage = @route.vehicle_usage
+    vehicle_usage.update!(store_start: nil, service_time_start: 15.minutes.to_i)
+    @route.route_data.update!(start: 8.hours.to_i)
+
+    get :show, params: { id: @route }
+    assert_response :success
+    assert_valid response
+    assert_includes response.body, '08:15'
+  end
+
+  test 'should show route when end depot is missing' do
+    vehicle_usage = @route.vehicle_usage
+    vehicle_usage.update!(store_stop: nil)
+
+    get :show, params: { id: @route }
+    assert_response :success
+    assert_valid response
+  end
+
+  test 'should show route when end depot is missing and end_without_service is present' do
+    vehicle_usage = @route.vehicle_usage
+    vehicle_usage.update!(store_stop: nil, service_time_end: 15.minutes.to_i)
+    @route.route_data.update!(end: 17.hours.to_i)
+
+    get :show, params: { id: @route }
+    assert_response :success
+    assert_valid response
+    assert_includes response.body, '16:45'
+  end
+
   test 'should show route as csv' do
     get :show, params: { id: @route, type: :csv }
     assert_response :success

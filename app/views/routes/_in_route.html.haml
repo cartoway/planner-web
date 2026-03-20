@@ -72,7 +72,7 @@
         = render partial: 'routes/edit_head', locals: { route: route, summary: summary }
       - if route[:store_start] || route[:start_with_service]
         - color = route[:color_fake] || route[:color] || 'black'
-        - current_color = route[:store_start][:route_data]&.[](:color)
+        - current_color = route[:store_start]&.[](:route_data)&.[](:color)
         %ul.stops.list-group{ style: ("display: none" if route[:hidden]) }
           %li.li-store.d-fake-flex.align-items-center.list-group-item.pr-5{class:('ui-state-error' if route[:store_start]&.[](:error)), data: { store_id: route[:store_start]&.[](:id), type: 'start', sub_tour_index: 0, origin_route_id: route[:route_id] }.compact, style: "box-shadow: inset 4px 0px 0px 0px var(--box-shadow-color); --box-shadow-color: #{current_color || color};"}
             .row.store-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{route[:store_start][:status_code]}" if route[:store_start] && route[:store_start][:status_code])}
