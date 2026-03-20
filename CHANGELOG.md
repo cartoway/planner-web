@@ -1,5 +1,25 @@
 # Changelog
 
+## V108.2.0
+  ### Added
+  - User: Add an option to display routes without polylines by default [#613](https://github.com/cartoway/planner-web/pull/613)
+  - API: Delete operation by_tags on `Destination`, `Visit` and `Planning`. It destroys the objects having all the tags provided [#615](https://github.com/cartoway/planner-web/pull/615)
+  - Add a quick toggle button on `ActiveInactiveDragDrop` module [#613](https://github.com/cartoway/planner-web/pull/613)
+
+  ### Changed
+  - Devcontainer:
+    - Use separated docker-compose for qr-shortener and superset [#613](https://github.com/cartoway/planner-web/pull/617)
+    - Add support for loading PostgreSQL dumps in `docker/dumps/load-dump.sh` [#613](https://github.com/cartoway/planner-web/pull/613)
+  - Improve planning CSV export performance [#617](https://github.com/cartoway/planner-web/pull/617)
+  - Disable automatic reference generation by robot agent [#51d37bf](https://github.com/cartoway/planner-web/commit/51d37bf1f269dde1db70ccf39a078970548ec4b2) & [#616](https://github.com/cartoway/planner-web/pull/616)
+
+  ### Fixed
+  - Ensure imported customer dump is attached to the current reseller [#617](https://github.com/cartoway/planner-web/pull/617)
+  - Fix map drift on planning reload [#611](https://github.com/cartoway/planner-web/pull/611)
+  - Fix return on previous page throug `back=true` and browser back [#611](https://github.com/cartoway/planner-web/pull/611)
+  - Display custom columns in Destination template [#5c27df8](https://github.com/cartoway/planner-web/commit/5c27df869deb391ea15d7c7d2ffda790cdd01f89)
+  - Redirect to root when unauthenticated with `csv` and `excel` format [#617](https://github.com/cartoway/planner-web/pull/617)
+
 ## V108.1.0
   ### Added
   - Support SSO: Microsoft Entra [#599](https://github.com/cartoway/planner-web/pull/599)
