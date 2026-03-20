@@ -252,4 +252,15 @@ class VehicleTest < ActiveSupport::TestCase
     refute vehicle.valid?
     assert_includes vehicle.errors[:capacities], I18n.t('activerecord.errors.models.vehicle.attributes.capacities.not_integer', key: "abc")
   end
+
+  test 'should generate unique driver_token for each vehicle' do
+    customer = customers(:customer_one)
+
+    vehicle_one = customer.vehicles.create!(name: 'Token uniqueness 1')
+    vehicle_two = customer.vehicles.create!(name: 'Token uniqueness 2')
+
+    assert vehicle_one.driver_token.present?
+    assert vehicle_two.driver_token.present?
+    refute_equal vehicle_one.driver_token, vehicle_two.driver_token
+  end
 end

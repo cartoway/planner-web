@@ -63,6 +63,9 @@ class ImportExportCustomerTest < ActionController::TestCase
                                   assert_equal router_id, c.router_id
                                   assert_equal layer_id, c.users.first.layer_id
                                   assert_equal reseller_id, c.reseller_id
+                                  source_driver_tokens = customer.vehicles.pluck(:driver_token)
+                                  duplicated_driver_tokens = c.vehicles.pluck(:driver_token)
+                                  assert_empty(source_driver_tokens & duplicated_driver_tokens)
                                 end
                               end
                             end

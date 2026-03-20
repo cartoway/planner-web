@@ -174,7 +174,7 @@ class Customer < ApplicationRecord
       deliverable_unit_ids = DeliverableUnit.import_in_batches(new_deliverable_unit_attributes, validate: false)
       deliverable_unit_ids_map = Hash[self.deliverable_units.map(&:id).zip(deliverable_unit_ids)]
 
-      new_vehicle_attributes = self.vehicles.map{ |vehicle| vehicle.import_attributes.except('id').merge('customer_id'=> customer_id, 'skip_duplication_callbacks'=> true) }
+      new_vehicle_attributes = self.vehicles.map{ |vehicle| vehicle.import_attributes.except('id', 'driver_token').merge('customer_id'=> customer_id, 'skip_duplication_callbacks'=> true) }
       new_vehicles = new_vehicle_attributes.map{ |vehicle_attrs| Vehicle.new(vehicle_attrs) }
       new_vehicles.each { |vehicle|
         vehicle.capacities = Hash[vehicle.capacities.to_a.map{ |q| deliverable_unit_ids_map[q[0].to_i] && [deliverable_unit_ids_map[q[0].to_i], q[1]] }.compact]
