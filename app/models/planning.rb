@@ -1355,6 +1355,8 @@ class Planning < ApplicationRecord
   end
 
   def prefered_route_and_index(available_routes, stop, options = {})
+    return [available_routes.first, nil] if available_routes.size == 1 && available_routes.first.stops.empty?
+
     min_detour = available_routes.flat_map { |route|
       route.compute # Update the eventual outdated route
       insertion_data = collect_insertion_data(route, stop, options)
