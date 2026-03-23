@@ -180,6 +180,11 @@ class Planning < ApplicationRecord
        { zoning_id: zoning.id, planning_id: new_planning_id }
       }
       PlanningsZoning.import(new_plannings_zoning_attributes, validate: false)
+
+      # Update customer plannings count
+      self.customer.update(
+        plannings_count: self.customer.plannings.count + 1
+      )
       new_planning_id
     end
   end
