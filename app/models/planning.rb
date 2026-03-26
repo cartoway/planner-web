@@ -1098,7 +1098,7 @@ class Planning < ApplicationRecord
     routes.each do |route|
       if route.vehicle_usage && !route.drive_time.nil?
         result[:routes_drive_time] += route.drive_time
-        result[:vehicles_used] += 1 if route.drive_time > 0
+        result[:vehicles_used] += 1 if route.vehicle_usage && route.size_active.positive?
 
         composed_cost = [route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+)
         result[:routes_cost] =
