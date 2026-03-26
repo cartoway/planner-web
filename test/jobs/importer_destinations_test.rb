@@ -667,6 +667,25 @@ class ImporterDestinationsTest < ActionController::TestCase
 
     assert_difference('Planning.count', 0) do
       assert_difference('Route.count', 0) do
+        assert_difference('Stop.count', 0) do
+          assert ImportCsv.new(
+            importer: ImporterDestinations.new(@customer),
+            replace: false,
+            file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_with_order.csv', 'text.csv')
+          ).import
+          @customer.reload
+          planning = @customer.plannings.last
+          route_1 = planning.routes.find{ |r| r.ref == 't1' }
+
+          v1_pos = route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+          v2_pos = route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
+          assert v1_pos < v2_pos
+        end
+      end
+    end
+
+    assert_difference('Planning.count', 0) do
+      assert_difference('Route.count', 0) do
         assert_difference('Stop.count', 1) do
           # Put visit v1 in out_route and introduce new visit v10
           assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_v1_out_route_v2.csv', 'text.csv')).import

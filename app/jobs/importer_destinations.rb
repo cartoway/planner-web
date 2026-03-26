@@ -47,6 +47,7 @@ class ImporterDestinations < ImporterBase
     {
       route: {title: I18n.t('destinations.import_file.route'), desc: I18n.t('destinations.import_file.route_desc'), format: I18n.t('destinations.import_file.format.string')},
       ref_vehicle: {title: I18n.t('destinations.import_file.ref_vehicle'), desc: I18n.t('destinations.import_file.ref_vehicle_desc'), format: I18n.t('destinations.import_file.format.string')},
+      index: {title: I18n.t('destinations.import_file.index'), desc: I18n.t('destinations.import_file.index_desc'), format: I18n.t('destinations.import_file.format.integer')},
       active: {title: I18n.t('destinations.import_file.active'), desc: I18n.t('destinations.import_file.active_desc'), format: I18n.t('destinations.import_file.format.yes_no')},
       stop_type: {title: I18n.t('destinations.import_file.stop_type'), desc: I18n.t('destinations.import_file.stop_type_desc'), format: I18n.t('destinations.import_file.stop_format')}
     }
@@ -1043,7 +1044,15 @@ class ImporterDestinations < ImporterBase
           @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
           @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] = row[:route]
         end
-        @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [:store_reload, store_reload_attributes, { active: ValueToBoolean.value_to_boolean(row[:active], true), custom_attributes: row[:stop_custom_attributes] }]
+        @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [
+          :store_reload,
+          store_reload_attributes,
+          {
+            active: ValueToBoolean.value_to_boolean(row[:active], true),
+            custom_attributes: row[:stop_custom_attributes],
+            index: normalize_route_order(row[:index])
+          }
+        ]
         @store_reload_ids << store_reload_attributes[:id] if store_reload_attributes[:id]
       end
     end
@@ -1071,7 +1080,15 @@ class ImporterDestinations < ImporterBase
           @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
           @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] = row[:route]
         end
-        @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [:visit, visit_attributes, { active: ValueToBoolean.value_to_boolean(row[:active], true), custom_attributes: row[:stop_custom_attribute_visits] }]
+        @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [
+          :visit,
+          visit_attributes,
+          {
+            active: ValueToBoolean.value_to_boolean(row[:active], true),
+            custom_attributes: row[:stop_custom_attribute_visits],
+            index: normalize_route_order(row[:index])
+          }
+        ]
         @visit_ids << visit_attributes[:id] if visit_attributes[:id]
       end
     end
@@ -1103,19 +1120,25 @@ class ImporterDestinations < ImporterBase
         end
         routes_hash.each{ |k, v|
           # Duplicated visit lines are only represented by a single visit
-          v[:visits].select!{ |_type, attribute, _active|
+          v[:visits].select!{ |_type, attribute, _stop_attributes|
             attribute[:id] ||
               @visit_index_to_id_hash[attribute[:visit_index]] ||
               @store_reload_index_to_id_hash[attribute[:store_reload_index]]
           }
-          visit_ids = v[:visits].map{ |type, attribute, _active|
+          if v[:visits].any? { |_type, _attribute, stop_attributes| !stop_attributes[:index].nil? }
+            v[:visits] = v[:visits].sort_by.with_index { |(_type, _attribute, stop_attributes), position|
+              [stop_attributes[:index] || Float::INFINITY, position]
+            }
+          end
+
+          visit_ids = v[:visits].map{ |type, attribute, _stop_attributes|
             next unless type == :visit
 
             attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
           }
           visits = Visit.includes_destinations_and_stores.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
 
-          store_reload_ids = v[:visits].map{ |type, attribute, _active|
+          store_reload_ids = v[:visits].map{ |type, attribute, _stop_attributes|
             next unless type == :store_reload
 
             attribute[:id] || @store_reload_index_to_id_hash[attribute[:store_reload_index]]
@@ -1208,5 +1231,13 @@ class ImporterDestinations < ImporterBase
     return parsed_date if parsed_date.year > 100
 
     Date.strptime(date_string, I18n.t('destinations.import_file.format.date_short'))
+  end
+
+  def normalize_route_order(value)
+    return nil if value.nil? || value.to_s.strip.empty?
+
+    Integer(value)
+  rescue ArgumentError, TypeError
+    nil
   end
 end
