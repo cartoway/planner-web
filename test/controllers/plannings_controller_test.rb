@@ -11,7 +11,7 @@ class PlanningsControllerTest < ActionController::TestCase
     request.host = @reseller.host
     @planning = plannings(:planning_one)
     @stop = stops(:stop_one_one)
-    @export_settings_params = { columns: 'planning_ref|planning_name|planning_date|route|ref_vehicle|order|stop_type|active|wait_time|time|distance|drive_time|out_of_window|out_of_capacity|out_of_drive_time|out_of_force_position|out_of_work_time|out_of_max_distance|out_of_max_ride_distance|out_of_max_ride_duration|status|status_updated_at|eta|ref|name|street|detail|postalcode|city|country|lat|lng|comment|phone_number|tags|ref_visit|destination_duration|duration|time_window_start_1|time_window_end_1|time_window_start_2|time_window_end_2|priority|revenue|force_position|tag_visits|quantity1',
+    @export_settings_params = { columns: 'planning_ref|planning_name|planning_date|route|ref_vehicle|index|stop_type|active|wait_time|time|distance|drive_time|out_of_window|out_of_capacity|out_of_drive_time|out_of_force_position|out_of_work_time|out_of_max_distance|out_of_max_ride_distance|out_of_max_ride_duration|status|status_updated_at|eta|ref|name|street|detail|postalcode|city|country|lat|lng|comment|phone_number|tags|ref_visit|destination_duration|duration|time_window_start_1|time_window_end_1|time_window_start_2|time_window_end_2|priority|revenue|force_position|tag_visits|quantity1',
                                 skips: '',
                                 stops: 'out-of-route|store|rest|inactive'}
     sign_in users(:user_one)
