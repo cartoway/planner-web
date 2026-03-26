@@ -804,6 +804,26 @@ class PlanningTest < ActiveSupport::TestCase
     assert planning.compute
     assert_not planning.zoning_outdated
   end
+
+  test 'averages should count one-stop route without depots as used vehicle' do
+    planning = plannings(:planning_one)
+    target_route = routes(:route_one_one)
+
+    target_route.vehicle_usage.update!(store_start: nil, store_stop: nil)
+
+    vehicle_routes = planning.routes.select(&:vehicle_usage?)
+    vehicle_routes.each do |route|
+      route.stops.update_all(active: false)
+    end
+
+    target_route.reload
+    target_route.stops.order(:index).select{ |s| s.is_a?(StopVisit) }.first.update!(active: true)
+    planning.routes.each(&:reload)
+
+    averages = planning.averages('km')
+    assert averages
+    assert_equal 1, averages[:vehicles_used], averages.inspect
+  end
 end
 
 class PlanningTestError < ActiveSupport::TestCase
