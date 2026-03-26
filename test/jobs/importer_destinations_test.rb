@@ -415,6 +415,36 @@ class ImporterDestinationsTest < ActionController::TestCase
     end
   end
 
+  test 'should allow duplicate visit ref when destination ref is missing' do
+    assert_difference('Destination.count', 2) do
+      assert_difference('Visit.count', 2) do
+        assert ImportCsv.new(
+          importer: ImporterDestinations.new(@customer),
+          replace: false,
+          file: tempfile(
+            'test/fixtures/files/import_destinations_duplicate_visit_ref_without_destination_ref.csv',
+            'text.csv'
+          )
+        ).import
+      end
+    end
+  end
+
+  test 'should allow duplicate destination ref when visit refs are missing' do
+    assert_difference('Destination.count', 1) do
+      assert_difference('Visit.count', 2) do
+        assert ImportCsv.new(
+          importer: ImporterDestinations.new(@customer),
+          replace: false,
+          file: tempfile(
+            'test/fixtures/files/import_destinations_same_destination_ref_without_visit_ref.csv',
+            'text.csv'
+          )
+        ).import
+      end
+    end
+  end
+
   test 'should not import too many routes' do
     assert_no_difference('Destination.count') do
       assert_no_difference('Visit.count') do

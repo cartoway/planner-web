@@ -1,0 +1,3 @@
+type arrêt,référence,référence visite,nom,ville,lat,lng,catégories
+, ,visit_ref_shared,Point 1,Nantes,47.2619410343,-1.58758074045,été
+, ,visit_ref_shared,Point 2,Nantes,47.2615187289,-1.58688336611,été
