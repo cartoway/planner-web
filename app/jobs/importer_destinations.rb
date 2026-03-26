@@ -307,7 +307,13 @@ class ImporterDestinations < ImporterBase
   def uniq_ref(row)
     row[:stop_type] = row[:stop_type].present? ? valid_stop_type(row[:stop_type]) : I18n.t('destinations.import_file.stop_type_visit')
     return if row.key?(:stop_type) && row[:stop_type] != I18n.t('destinations.import_file.stop_type_visit')
-    row[:ref] || row[:ref_visit] ? [row[:ref], row[:ref_visit]] : nil
+
+    # Visit refs are only unique inside a destination.
+    # If visit ref is missing, duplicates must not be rejected by uniq_ref.
+    return nil if row[:ref_visit].blank?
+    return nil if row[:ref].blank?
+
+    [row[:ref], row[:ref_visit]]
   end
 
   def prepare_quantities(row)
