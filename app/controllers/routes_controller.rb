@@ -267,7 +267,7 @@ class RoutesController < ApplicationController
     [
       :route,
       :ref_vehicle,
-      :order,
+      :index,
       :stop_type,
       :active,
       :wait_time,
