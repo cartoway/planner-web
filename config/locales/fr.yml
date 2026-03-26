@@ -1531,6 +1531,8 @@ fr:
       quantity1_2_desc: 'déprécié : utiliser « quantités » à la place.'
       active: livré
       active_desc: indique si le client est livré durant cette tournée ou pas
+      index: ordre
+      index_desc: ordre d'affichage des visites dans la tournée
       open: horaire début
       open_desc: 'déprécié : utiliser « horaire début 1 » à la place.'
       close: horaire fin
@@ -2363,7 +2365,6 @@ fr:
       dialog:
         new_planning: 'Création du nouveau plan de tournées en cours, merci de patienter'
     export_file:
-      order: ordre
       stop_type_rest: pause
       force_position_always_first: début
       force_position_always_final: fin
