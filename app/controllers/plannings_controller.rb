@@ -756,7 +756,7 @@ class PlanningsController < ApplicationController
       :planning_date,
       :route,
       :ref_vehicle,
-      :order,
+      :index,
       :stop_type,
       :active,
       :wait_time,
