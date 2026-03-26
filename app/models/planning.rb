@@ -1109,10 +1109,8 @@ class Planning < ApplicationRecord
     }
 
     routes.each do |route|
-      if route.vehicle_usage && !route.drive_time.nil?
-        result[:routes_drive_time] += route.drive_time
-        result[:vehicles_used] += 1 if route.drive_time > 0
-
+      if route.vehicle_usage && (route.size_active.positive? || (route.vehicle_usage.default_store_start.present? && route.vehicle_usage.default_store_stop.present? && route.drive_time.present?))
+        result[:routes_drive_time] += route.drive_time if route.drive_time.present?
         composed_cost = [route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+)
         result[:routes_cost] =
           if result[:routes_cost].nil? || composed_cost.nil?
@@ -1129,16 +1127,17 @@ class Planning < ApplicationRecord
         result[:routes_visits_duration] += route.visits_duration if route.visits_duration
         result[:routes_wait_time] += route.wait_time if route.wait_time
 
-        routes_distance += route.distance
+        routes_distance += route.distance if route.distance.present?
       end
       result[:vehicles] += 1 if route.vehicle_usage
+      result[:vehicles_used] += 1 if route.vehicle_usage && route.size_active.positive?
     end
 
     if result[:routes_drive_time] != 0
       result[:routes_speed_average] = ((routes_distance / result[:routes_drive_time]) * converter).round
       result[:routes_wait_time] = result[:routes_wait_time] > 0 ? result[:routes_wait_time] : nil
       result[:routes_visits_duration] = result[:routes_visits_duration] > 0 ? result[:routes_visits_duration] : nil
-    else
+    elsif result[:vehicles_used] == 0
       result = nil
     end
 
