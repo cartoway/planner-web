@@ -122,6 +122,7 @@ class ImporterDestinations < ImporterBase
   def import_columns
     columns_planning.merge(columns_route).merge(columns_destination).merge(columns_visit).merge(
       without_visit: {title: I18n.t('destinations.import_file.without_visit'), desc: I18n.t('destinations.import_file.without_visit_desc'), format: I18n.t('destinations.import_file.format.yes_no')},
+      _json_group_key: {},
       stop_custom_attributes: {},
       stop_custom_attribute_visits: {},
 
@@ -139,11 +140,14 @@ class ImporterDestinations < ImporterBase
 
   # convert json with multi visits in several rows like in csv
   def json_to_rows(json)
-    json.collect{ |dest|
+    json.each_with_index.collect{ |dest, destination_row_index|
       dest[:tags] ||= []
       dest[:tags] |= dest[:tag_ids].collect(&:to_i) if dest.key?(:tag_ids)
       if dest.key?(:visits) && !dest[:visits].empty?
         dest[:visits].collect{ |v|
+          # Keep a stable key to group rows coming from the same JSON destination
+          # when the destination has no ref and contains multiple visits.
+          v[:_json_group_key] = destination_row_index
           v[:ref_visit] = v.delete(:ref)
           v[:stop_custom_attribute_visits] = v[:stop_custom_attributes] || {}
           v[:tag_visits] = v[:tag_ids]&.map(&:to_i) || []
@@ -172,11 +176,11 @@ class ImporterDestinations < ImporterBase
           dest.except(:visits).merge(v)
         }
       elsif dest.key?(:visits) && dest[:visits].empty? && is_visit?(dest[:stop_type])
-        [dest.merge(without_visit: 'x')]
+        [dest.merge(without_visit: 'x', _json_group_key: destination_row_index)]
       elsif is_visit?(dest[:stop_type])
-        [dest.merge(without_visit: 'y')] # Import without visit but without a destroy neither
+        [dest.merge(without_visit: 'y', _json_group_key: destination_row_index)] # Import without visit but without a destroy neither
       else
-        [dest]
+        [dest.merge(_json_group_key: destination_row_index)]
       end
     }.flatten
   end
@@ -258,6 +262,7 @@ class ImporterDestinations < ImporterBase
 
     @destinations_visits_attributes_by_ref[nil] = CaseInsensitiveHash.new
     @destinations_attributes_by_ref = CaseInsensitiveHash.new
+    @destinations_attributes_by_json_group = {}
     @visits_attributes_with_destination = {}
     @visits_attributes_without_ref = []
     @visits_attributes_without_destination_with_ref_visit = CaseInsensitiveHash.new
@@ -997,9 +1002,25 @@ class ImporterDestinations < ImporterBase
       end
       prepare_visit_with_destination_ref(row, line, destination, index, destination_attributes, visit_attributes) if index
     else
-      @destinations_attributes_without_ref << [@destination_index, [line], destination_attributes]
-      prepare_visit_without_destination_ref(row, line, @destination_index, destination_attributes, visit_attributes)
-      @destination_index += 1
+      # In case of a JSON input, we know the associated destination by the _json_group_key even wihout a ref
+      json_group_key = row[:_json_group_key]
+      if json_group_key.present?
+        index, lines, grouped_attributes = @destinations_attributes_by_json_group[json_group_key]
+        if grouped_attributes
+          destination_attributes = grouped_attributes
+        else
+          index = @destination_index
+          reset_geocoding(destination_attributes)
+          @destinations_attributes_by_json_group[json_group_key] = [index, [line], destination_attributes]
+          @destinations_attributes_without_ref << [index, [line], destination_attributes]
+          @destination_index += 1
+        end
+        prepare_visit_without_destination_ref(row, line, index, destination_attributes, visit_attributes)
+      else
+        @destinations_attributes_without_ref << [@destination_index, [line], destination_attributes]
+        prepare_visit_without_destination_ref(row, line, @destination_index, destination_attributes, visit_attributes)
+        @destination_index += 1
+      end
     end
   end
 
