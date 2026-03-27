@@ -105,6 +105,7 @@ class V01::Entities::RouteProperties < Grape::Entity
   expose(:end, documentation: { type: DateTime }) { |m|
     (m.planning.date || Time.zone.today).beginning_of_day + m.end if m.end
   }
+  expose(:ref, documentation: { type: String })
   expose(:hidden, documentation: { type: 'Boolean' })
   expose(:locked, documentation: { type: 'Boolean' })
   expose(:color, documentation: { type: String, desc: 'Color code with #. For instance: #FF0000.' })
