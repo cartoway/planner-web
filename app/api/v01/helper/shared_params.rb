@@ -178,6 +178,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
 
   params :request_route do |options|
     optional :force_start, type: Boolean
+    optional :ref,  type: String
     optional :hidden, type: Boolean
     optional :locked, type: Boolean
     optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Planner::Application.config.destination_color_default}." }
