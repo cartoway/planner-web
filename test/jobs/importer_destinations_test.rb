@@ -948,6 +948,45 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_equal 'Valeur API', visit.custom_attributes_typed_hash['api_field']
   end
 
+  test 'should import one destination with two visits from JSON when destination has no ref' do
+    json = [
+      {
+        name: 'CHARCUTERIE ESNAULT',
+        street: '26 PLACE ALBERT LEBRUN',
+        postalcode: '14380',
+        city: 'ST SEVER CALVADOS',
+        country: 'France',
+        lat: 48.839653,
+        lng: -1.04687,
+        visits: [
+          {
+            ref: '1063536101',
+            time_window_start_1: '07:00:00',
+            time_window_end_1: '19:00:00',
+            duration: '00:03:00'
+          },
+          {
+            ref: '1063536210',
+            time_window_start_1: '07:00:00',
+            time_window_end_1: '19:00:00',
+            duration: '00:03:00'
+          }
+        ]
+      }
+    ]
+
+    assert_difference('Destination.count', 1) do
+      assert_difference('Visit.count', 2) do
+        import_json = ImportJson.new(importer: ImporterDestinations.new(@customer), replace: false, json: json)
+        assert import_json.import, "Import failed: #{import_json.errors.full_messages.join(', ')}"
+      end
+    end
+
+    destination = Destination.order(:id).last
+    assert_equal 2, destination.visits.count
+    assert_equal ['1063536101', '1063536210'].sort, destination.visits.pluck(:ref).sort
+  end
+
   test 'should import new visits without tag but should not add them toplanning with tags' do
     # Use existing planning with ref
     existing_planning = plannings(:planning_one)
