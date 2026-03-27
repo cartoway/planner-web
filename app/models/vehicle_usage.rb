@@ -341,7 +341,7 @@ class VehicleUsage < ApplicationRecord
   end
 
   def rest_stop_after_rest_start
-    if self.rest_stop.present? && ((self.rest_start.present? && self.rest_stop < self.rest_start) || !self.rest_start.present?)
+    if self.rest_stop.present? && ((self.rest_start.present? && self.rest_stop < self.rest_start) || self.default_rest_start.blank?)
       errors.add(:rest_stop, I18n.t('activerecord.errors.models.vehicle_usage.attributes.rest_stop.after'))
     end
   end
