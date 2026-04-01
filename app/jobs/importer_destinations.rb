@@ -1048,7 +1048,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_visit_without_destination_ref(row, line, destination_index, destination_attributes, visit_attributes)
-    return if row[:without_visit] == 'x'
+    return if row[:without_visit].present?
 
     @visits_attributes_without_ref << [[line], visit_attributes.merge(destination_index: destination_index)]
   end
@@ -1072,7 +1072,7 @@ class ImporterDestinations < ImporterBase
           store_reload_attributes,
           {
             active: ValueToBoolean.value_to_boolean(row[:active], true),
-            custom_attributes: row[:stop_custom_attributes],
+            custom_attributes: normalize_stop_custom_attributes(row[:stop_custom_attributes]),
             index: normalize_route_order(row[:index])
           }
         ]
@@ -1111,7 +1111,7 @@ class ImporterDestinations < ImporterBase
           visit_attributes,
           {
             active: ValueToBoolean.value_to_boolean(row[:active], true),
-            custom_attributes: row[:stop_custom_attribute_visits],
+            custom_attributes: normalize_stop_custom_attributes(row[:stop_custom_attribute_visits] || row[:stop_custom_attributes]),
             index: normalize_route_order(row[:index])
           }
         ]
@@ -1223,6 +1223,12 @@ class ImporterDestinations < ImporterBase
     ensure
       ActiveRecord::Base.lock_optimistically = true
     end
+  end
+
+  def normalize_stop_custom_attributes(value)
+    return {} unless value.is_a?(Hash)
+
+    value.transform_keys(&:to_s)
   end
 
   def sync_plannings_routes_outdated_from_db
