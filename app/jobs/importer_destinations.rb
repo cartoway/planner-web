@@ -559,18 +559,19 @@ class ImporterDestinations < ImporterBase
   def save_plannings
     Route.no_touching do
       @plannings.each { |planning|
-        planning.save! && planning.reload
+        planning.update_columns(updated_at: Time.current)
       }
     end
   end
 
   def finalize_import(_name, _options)
-    outdate_routes_deferred
     if (@destinations_to_geocode_count > 0 || @stores_to_geocode_count > 0) && (!@synchronous && Planner::Application.config.delayed_job_use)
       save_plannings
+      outdate_routes_deferred(persist: true)
       @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
     elsif !@plannings.empty?
-      save_plannings
+      sync_plannings_routes_outdated_from_db
+      outdate_routes_deferred(persist: @synchronous)
       @plannings.each{ |planning|
         planning.compute_saved(ignore_errors: true)
       }
@@ -1142,11 +1143,21 @@ class ImporterDestinations < ImporterBase
     end
   end
 
-  def outdate_routes_deferred
+  def outdate_routes_deferred(persist: true)
     return if @route_ids_to_outdate.blank?
 
     route_ids = @route_ids_to_outdate.uniq.compact
     return if route_ids.empty?
+
+    if !persist
+      route_ids_set = route_ids.each_with_object({}) { |id, h| h[id] = true }
+      @plannings.each do |planning|
+        planning.routes.each do |route|
+          route.outdated = true if route_ids_set.include?(route.id)
+        end
+      end
+      return
+    end
 
     begin
       ActiveRecord::Base.lock_optimistically = false
@@ -1158,6 +1169,20 @@ class ImporterDestinations < ImporterBase
       end
     ensure
       ActiveRecord::Base.lock_optimistically = true
+    end
+  end
+
+  def sync_plannings_routes_outdated_from_db
+    route_ids = @plannings.flat_map{ |planning| planning.routes.map(&:id) }.compact.uniq
+    return if route_ids.empty?
+
+    outdated_by_id = Route.where(id: route_ids).pluck(:id, :outdated).to_h
+    @plannings.each do |planning|
+      planning.routes.each do |route|
+        next unless outdated_by_id.key?(route.id)
+
+        route.outdated = outdated_by_id[route.id]
+      end
     end
   end
 
