@@ -10,6 +10,13 @@ class ImportJsonTest < ActiveSupport::TestCase
     assert import_csv.valid?
   end
 
+  test 'symbolize_keys_recursive handles array root from Grape params' do
+    ij = ImportJson.new(importer: @importer, replace: false, json: nil)
+    payload = [{ 'name' => 'd1', 'visits' => [{ 'start' => '08:00' }] }]
+    out = ij.send(:symbolize_keys_recursive, payload)
+    assert_equal [{ name: 'd1', visits: [{ start: '08:00' }] }], out
+  end
+
   test 'should not import too many destinations' do
     importer_destinations = ImporterDestinations.new(customers(:customer_one))
     def importer_destinations.max_lines

@@ -948,6 +948,21 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_equal 'Valeur API', visit.custom_attributes_typed_hash['api_field']
   end
 
+  test 'should import destination without ref and without visits without creating a visit' do
+    [
+      { name: 'Sans clef visits', street: '1 rue A', postalcode: '75001', city: 'Paris', country: 'FR' },
+      { name: 'Visites vides', street: '2 rue B', postalcode: '75002', city: 'Paris', country: 'FR', visits: [] }
+    ].each do |payload|
+      assert_difference('Destination.count', 1) do
+        assert_no_difference('Visit.count') do
+          import_json = ImportJson.new(importer: ImporterDestinations.new(@customer), replace: false, json: [payload])
+          assert import_json.import, "Import failed: #{import_json.errors.full_messages.join(', ')}"
+        end
+      end
+      assert_equal 0, Destination.order(:id).last.visits.count
+    end
+  end
+
   test 'should import one destination with two visits from JSON when destination has no ref' do
     json = [
       {
@@ -985,6 +1000,37 @@ class ImporterDestinationsTest < ActionController::TestCase
     destination = Destination.order(:id).last
     assert_equal 2, destination.visits.count
     assert_equal ['1063536101', '1063536210'].sort, destination.visits.pluck(:ref).sort
+  end
+
+  test 'should import destination with string keys and multiple visits refs' do
+    json = [
+      {
+        'ref' => '400692',
+        'name' => 'INITIAL ORTHEZ - VETEMENT',
+        'street' => '18 AVENUE DU PESQUE',
+        'postalcode' => '64300',
+        'city' => 'ORTHEZ',
+        'country' => 'France',
+        'lat' => 43.482107,
+        'lng' => -0.768097,
+        'visits' => [
+          { 'ref' => '400692106', 'time_window_start_1' => '06:00:00', 'time_window_end_1' => '17:00:00', 'duration' => '00:03:00' },
+          { 'ref' => '400692276', 'time_window_start_1' => '06:00:00', 'time_window_end_1' => '17:00:00', 'duration' => '00:03:00' },
+          { 'ref' => '400692306', 'time_window_start_1' => '06:00:00', 'time_window_end_1' => '17:00:00', 'duration' => '00:03:00' }
+        ]
+      }
+    ]
+
+    assert_difference('Destination.count', 1) do
+      assert_difference('Visit.count', 3) do
+        import_json = ImportJson.new(importer: ImporterDestinations.new(@customer), replace: false, json: json)
+        assert import_json.import, "Import failed: #{import_json.errors.full_messages.join(', ')}"
+      end
+    end
+
+    destination = Destination.find_by(ref: '400692')
+    assert destination
+    assert_equal %w[400692106 400692276 400692306].sort, destination.visits.pluck(:ref).sort
   end
 
   test 'should import new visits without tag but should not add them toplanning with tags' do

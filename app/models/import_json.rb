@@ -29,7 +29,8 @@ class ImportJson
   end
 
   def import(synchronous = false)
-    data = @importer.json_to_rows json
+    normalized = symbolize_keys_recursive(json)
+    data = @importer.json_to_rows(normalized)
     if data
       begin
         last_row = nil
@@ -61,6 +62,20 @@ class ImportJson
         Rails.logger.error e.backtrace.join("\n")
         return false
       end
+    end
+  end
+
+  private
+
+  # Grape may pass destinations as an Array of Hashes; deep_symbolize_keys only exists on Hash.
+  def symbolize_keys_recursive(value)
+    case value
+    when Array
+      value.map { |item| symbolize_keys_recursive(item) }
+    when Hash
+      value.deep_symbolize_keys
+    else
+      value
     end
   end
 end

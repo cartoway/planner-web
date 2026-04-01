@@ -1048,6 +1048,8 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_visit_without_destination_ref(row, line, destination_index, destination_attributes, visit_attributes)
+    return if row[:without_visit] == 'x'
+
     @visits_attributes_without_ref << [[line], visit_attributes.merge(destination_index: destination_index)]
   end
 
@@ -1080,6 +1082,9 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_destination_in_planning(row, line, destination_attributes, visit_attributes)
+    w = row[:without_visit]
+    return if w && w.to_s.strip.present?
+
     if visit_attributes
       # Instersection of tags of all rows for tags of new planning
       if !@common_tags[row[:planning_ref]]
