@@ -1,5 +1,9 @@
 # Changelog
 
+## V108.2.1
+  ### Fixed
+  - StaleUpdate on destination import with existing planning [#625](https://github.com/cartoway/planner-web/pull/625)
+
 ## V108.2.0
   ### Added
   - User: Add an option to display routes without polylines by default [#613](https://github.com/cartoway/planner-web/pull/613)
