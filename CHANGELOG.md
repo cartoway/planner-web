@@ -1,5 +1,18 @@
 # Changelog
 
+## Dev
+  ### Added
+  - Import: Order destination/visits in planning routes using index field [#626](https://github.com/cartoway/planner-web/pull/626)
+  - API: Expose route ref [#626](https://github.com/cartoway/planner-web/pull/626)
+
+  ### Changed
+  - Improve planning summary CSV export performance [#626](https://github.com/cartoway/planner-web/pull/626)
+  - JSON Import: visits nested within a single destination belongs to the same destination [#626](https://github.com/cartoway/planner-web/pull/626)
+  - Routes without depot, with a single visit are now counted as active routes [#626](https://github.com/cartoway/planner-web/pull/626)
+
+  ### Fixed
+  - Rest stop validation use the default rest_start value for comparison [#626](https://github.com/cartoway/planner-web/pull/626)
+
 ## V108.2.3
   ### Modified
     - Destinations list: bulk delete now sends selected IDs in the request body instead of encoding them in the URL [#100218c](https://github.com/cartoway/planner-web/commit/100218c453bdabfc395c4f7f727e271139b5250a)
