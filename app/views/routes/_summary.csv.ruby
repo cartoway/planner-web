@@ -1,8 +1,25 @@
+@pickup_delivery_defs ||= route.planning.customer.deliverable_units.map do |du|
+  suffix = du.label ? "[#{du.label}]" : du.id.to_s
+  {
+    du_id: du.id,
+    max_load_header: :"max_load#{suffix}",
+    pickup_header: :"pickup#{suffix}",
+    delivery_header: :"delivery#{suffix}"
+  }
+end
+@pickup_delivery_columns ||= @pickup_delivery_defs.flat_map do |definition|
+  [
+    [definition[:max_load_header], nil],
+    [definition[:pickup_header], nil],
+    [definition[:delivery_header], nil]
+  ]
+end
+
 row = {
   planning_ref: route.planning.ref,
   planning_name: route.planning.name,
   planning_date: route.planning.date && I18n.l(route.planning.date, format: :date),
-  route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[/\\\-*,!:?;.]}, ' ')),
+  route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
   ref_vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
   stop_size: route.stops_size,
   stop_active_size: route.size_active,
@@ -25,14 +42,16 @@ row = {
   tags: route.vehicle_usage && (route.vehicle_usage.tags | route.vehicle_usage.vehicle.tags).collect(&:label).join(',')
 }
 
+row.merge!(Hash[@pickup_delivery_columns])
 row.merge!(Hash[route.planning.customer.enable_orders ?
-    [[:orders, nil]] :
-    route.planning.customer.deliverable_units.flat_map{ |du|
-      [
-        [('max_load' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, route.max_loads[du.id]],
-        [('pickup' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, route.pickups[du.id]],
-        [('delivery' + (du.label ? "[#{du.label}]" : "#{du.id}")).to_sym, route.deliveries[du.id]]
-      ]
-    }
-  ])
+  [[:orders, nil]] :
+  @pickup_delivery_defs.flat_map{ |definition|
+    du_id = definition[:du_id]
+    [
+      [definition[:max_load_header], route.max_loads[du_id]],
+      [definition[:pickup_header], route.pickups[du_id]],
+      [definition[:delivery_header], route.deliveries[du_id]]
+    ]
+  }
+])
 csv << @columns.map{ |c| row[c.to_sym] }
