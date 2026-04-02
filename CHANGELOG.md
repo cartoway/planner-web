@@ -1,5 +1,18 @@
 # Changelog
 
+## Dev
+  ### Added
+  - Import: Order destination/visits in planning routes using index field [#626](https://github.com/cartoway/planner-web/pull/626)
+  - API: Expose route ref [#626](https://github.com/cartoway/planner-web/pull/626)
+
+  ### Changed
+  - Improve planning summary CSV export performance [#626](https://github.com/cartoway/planner-web/pull/626)
+  - JSON Import: visits nested within a single destination belongs to the same destination [#626](https://github.com/cartoway/planner-web/pull/626)
+  - Routes without depot, with a single visit are now counted as active routes [#626](https://github.com/cartoway/planner-web/pull/626)
+
+  ### Fixed
+  - Rest stop validation use the default rest_start value for comparison [#626](https://github.com/cartoway/planner-web/pull/626)
+
 ## V108.2.1
   ### Fixed
   - StaleUpdate on destination import with existing planning [#625](https://github.com/cartoway/planner-web/pull/625)
