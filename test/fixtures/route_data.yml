@@ -10,6 +10,7 @@ route_data_one_one:
   start: 32:00
   pickups: {}
   deliveries: {}
+  size_active: 4
 
 route_data_three_one:
   distance: 1.5
