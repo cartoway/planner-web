@@ -20,9 +20,22 @@ require 'simplify_geojson_tracks_job'
 
 class Route < ApplicationRecord
   delegate :tracks, :tracks=, :points, :points=, to: :route_geojson, allow_nil: true, prefix: :geojson
-  delegate :distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, to: :route_data
+  delegate :distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end,
+           :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure,
+           :size_destinations, :size_store_reloads, :no_geolocalization, :no_path,
+           :unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time,
+           :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_reload,
+           :out_of_relation, :out_of_skill, :out_of_window, :out_of_max_ride_distance,
+           :out_of_max_ride_duration, :max_loads, to: :route_data
 
-  RELATION_ORDER_KEYS = %i[pickup_delivery order sequence]
+  RELATION_ORDER_KEYS = %i[pickup_delivery order sequence].freeze
+  ROUTE_DATA_METRICS_FIELDS = %i[
+    size_active size_destinations size_store_reloads stops_size
+    no_geolocalization no_path unmanageable_capacity out_of_capacity
+    out_of_drive_time out_of_force_position out_of_work_time out_of_window
+    out_of_max_distance out_of_max_reload out_of_relation out_of_skill
+    out_of_max_ride_distance out_of_max_ride_duration
+  ].freeze
 
   attr_accessor :migration_skip
   attr_reader :geojson_tracks_store,
@@ -105,6 +118,18 @@ class Route < ApplicationRecord
     super
   end
 
+  def stops_size
+    return route_data.stops_size if use_persisted_route_metrics?
+
+    stops.size
+  end
+
+  def size_active
+    return route_data.size_active if use_persisted_route_metrics?
+
+    stops.count(&:active)
+  end
+
   def outdated_if_changed
     return unless will_save_change_to_force_start?
 
@@ -184,7 +209,31 @@ class Route < ApplicationRecord
       visits_duration: nil,
       revenue: nil,
       cost_distance: nil,
-      cost_time: nil
+      cost_time: nil,
+      size_active: 0,
+      size_destinations: 0,
+      size_store_reloads: 0,
+      stops_size: 0,
+      no_geolocalization: false,
+      no_path: false,
+      out_of_window: false,
+      out_of_drive_time: false,
+      out_of_force_position: false,
+      out_of_work_time: false,
+      out_of_max_distance: false,
+      out_of_max_reload: false,
+      out_of_max_ride_distance: false,
+      out_of_max_ride_duration: false,
+      out_of_relation: false,
+      out_of_skill: false
+    }
+  end
+
+  def init_load_route_data_attributes
+    {
+      unmanageable_capacity: false,
+      out_of_capacity: 0,
+      max_loads: {}
     }
   end
 
@@ -259,10 +308,16 @@ class Route < ApplicationRecord
       sub_tour_index = 0  # First sub-tour starts at index 0
       sub_tour_color = self.start_route_data.color
       stops_sort.each{ |stop|
+        previous_route_data_attributes[:size_active] += 1 if stop.active
+        previous_route_data_attributes[:stops_size] += 1 if stop.position?
+        previous_route_data_attributes[:size_store_reloads] += 1 if stop.is_a?(StopStore)
+        previous_route_data_attributes[:no_geolocalization] = true if !stop.is_a?(StopStore) && !stop.position?
+
         stop_attributes = {}
         if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
           stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
           stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
+          previous_route_data_attributes[:no_path] ||= stop_attributes[:no_path]
 
           store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index, color: sub_tour_color))
           if stop.is_a?(StopStore)
@@ -291,7 +346,9 @@ class Route < ApplicationRecord
             else
               stop_attributes[:wait_time] = nil
             end
+
             stop_attributes[:out_of_window] = !!(late_wait && late_wait > 0)
+            previous_route_data_attributes[:out_of_window] ||= stop_attributes[:out_of_window]
             route_attributes[:revenue] = route_attributes[:revenue].nil? ? stop.visit&.revenue : route_attributes[:revenue] + (stop.visit&.revenue || 0)
             previous_route_data_attributes[:revenue] = (previous_route_data_attributes[:revenue] || 0) + (stop.visit&.revenue || 0)
             route_attributes[:distance] += stop_attributes[:distance] if stop_attributes[:distance]
@@ -305,14 +362,17 @@ class Route < ApplicationRecord
               previous_route_data_attributes[:visits_duration] += stop.destination_duration
             end
             stop_attributes[:out_of_drive_time] = stop_attributes[:time] > vehicle_usage.default_time_window_end
+            previous_route_data_attributes[:out_of_drive_time] ||= stop_attributes[:out_of_drive_time]
             stop_attributes[:out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], stop_attributes[:time])
+            previous_route_data_attributes[:out_of_work_time] ||= stop_attributes[:out_of_work_time]
             stop_attributes[:out_of_max_distance] = max_distance && (route_attributes[:distance] > max_distance)
+            previous_route_data_attributes[:out_of_max_distance] ||= stop_attributes[:out_of_max_distance]
             if previous_with_pos&.is_a? Stop
               # max_ride only apply between stops (stores excluded)
               stop_attributes[:out_of_max_ride_distance] = max_ride_distance && stop_attributes[:distance] && (stop_attributes[:distance] > max_ride_distance)
               stop_attributes[:out_of_max_ride_duration] = max_ride_duration && (stop_attributes[:drive_time] > max_ride_duration)
-              route_attributes[:out_of_max_ride_distance] ||= stop_attributes[:out_of_max_ride_distance]
-              route_attributes[:out_of_max_ride_duration] ||= stop_attributes[:out_of_max_ride_duration]
+              previous_route_data_attributes[:out_of_max_ride_distance] ||= stop_attributes[:out_of_max_ride_distance]
+              previous_route_data_attributes[:out_of_max_ride_duration] ||= stop_attributes[:out_of_max_ride_duration]
             else
               stop_attributes[:out_of_max_ride_distance] = stop_attributes[:out_of_max_ride_duration] = false
             end
@@ -330,7 +390,7 @@ class Route < ApplicationRecord
           previous_route_data_attributes[:end] = stop_attributes[:time]
           previous_route_data_attributes[:cost_distance] = previous_route_data_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
           previous_route_data_attributes[:cost_time] = (route_attributes[:end] - previous_route_data_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
-          previous_route_data.assign_attributes(previous_route_data_attributes)
+          previous_route_data.assign_attributes(previous_route_data_attributes.compact)
 
           # reset route data attributes
           previous_route_data_attributes = init_store_route_data_attributes
@@ -358,8 +418,8 @@ class Route < ApplicationRecord
         route_attributes[:cost_fixed] = vehicle_usage.default_cost_fixed if vehicle_usage.default_cost_fixed
         route_attributes[:cost_time] = (route_attributes[:end] - route_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
         previous_route_data_attributes[:cost_time] = (route_attributes[:end] - previous_route_data_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
-        previous_route_data.assign_attributes(previous_route_data_attributes)
       end
+      previous_route_data.assign_attributes(previous_route_data_attributes.compact)
       route_attributes[:stop_no_path] = vehicle_usage.default_store_stop&.position? && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?
 
       # Add service time to end point
@@ -377,6 +437,22 @@ class Route < ApplicationRecord
       route_only_attributes = route_attributes.slice(:stop_distance, :stop_drive_time, :stop_no_path, :stop_out_of_drive_time, :stop_out_of_work_time, :stop_out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration)
       route_data_attributes = route_attributes.slice(:distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure)
 
+      route_data_map = stops_sort.select{ |stop| stop.is_a?(StopStore) }.map(&:route_data).map(&:symbolized_attributes)
+      compacted_route_data_attributes = self.start_route_data.symbolized_attributes.slice(*ROUTE_DATA_METRICS_FIELDS)
+
+      route_data_map.each{ |route_data|
+        compacted_route_data_attributes.each{ |k, v|
+          if v.is_a?(Integer)
+            compacted_route_data_attributes[k] += route_data[k] || 0
+          elsif k == :max_loads
+            compacted_route_data_attributes[k].each{ |unit, value|  value = [value, v[unit]].compact.max }
+          else
+            compacted_route_data_attributes[k] ||= v
+          end
+        }
+      }
+      route_data_attributes.merge!(compacted_route_data_attributes)
+      route_data_attributes[:size_destinations] = stops_sort.select{ |stop| stop.is_a?(StopVisit) }.map{ |stop| stop.visit.destination_id }.compact.uniq.size
       # Assign route-only attributes to self
       self.assign_attributes(route_only_attributes)
 
@@ -728,69 +804,6 @@ class Route < ApplicationRecord
     true
   end
 
-  def size_active
-    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/active_stops") do
-      vehicle_usage_id ? (stops.loaded? ? stops.select(&:active).size : stops.where(active: true).count) : 0
-    end
-  end
-
-  def stops_size
-    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/stops_size") do
-      stops.size
-    end
-  end
-
-  def size_store_reloads
-    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/store_reloads_size") do
-      stops.where(type: 'StopStore').count
-    end
-  end
-
-  def size_destinations
-    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/destination_stops") do
-      if stops.loaded?
-        stops.select(&:active).map{ |s| s.is_a?(StopVisit) ? s.visit.destination_id : nil }.compact.uniq.size
-      else
-        stops.joins(visit: :destination)
-             .where(type: StopVisit.name, active: true)
-             .distinct
-             .count('destinations.id')
-      end
-    end
-  end
-
-  def no_geolocalization
-    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/no_location_stops") do
-      stops.loaded? ?
-        stops.any?{ |s| s.is_a?(StopVisit) && !s.position? } :
-        stops.joins(visit: :destination).where('destinations.lat IS NULL AND destinations.lng IS NULL').count > 0
-    end
-  end
-
-  def no_path
-    Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/no_path_stops") do
-      vehicle_usage_id && (stop_no_path ||
-        (stops.loaded? ?
-          stops.any?{ |s| s.is_a?(StopVisit) && s.no_path } :
-          stops.select(:no_path).where(type: 'StopVisit', no_path: true).count > 0))
-    end
-  end
-
-  [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_reload, :out_of_relation, :out_of_skill].each do |s|
-    define_method "#{s}" do
-      Rails.application.config.planner_cache.fetch("#{cache_key_with_version}/out_of_#{s}_cache") do
-        vehicle_usage_id && (respond_to?("stop_#{s}") && send("stop_#{s}") ||
-          if stops.loaded?
-            stops.any?(&s)
-          else
-            h = {}
-            h[s] = true
-            stops.select(s).where(h).count > 0
-          end)
-      end
-    end
-  end
-
   def compute_loads(stops_sort = nil)
     stop_load_hash = {}
     route_pickups = QuantityAttr::QuantityHash.new(0) # total route pickups
@@ -835,35 +848,25 @@ class Route < ApplicationRecord
     # The route data cumulates the stops pickups and deliveries
     self.route_data.assign_attributes(pickups: route_pickups, deliveries: route_deliveries)
 
+    previous_route_data_attributes = init_load_route_data_attributes
     current_loads = self.start_route_data.deliveries.dup
     (stops_sort || stops).each { |stop|
       case stop.class.name
       when StopVisit.name
-        process_stop_loads(stop, current_loads)
+        process_stop_loads(stop, current_loads, previous_route_data_attributes)
       when StopStore.name
         current_loads = stop.route_data.deliveries.dup
         stop.out_of_capacity = out_of_capacity?(current_loads)
+        previous_route_data_attributes[:out_of_capacity] ||= stop.out_of_capacity
+        previous_route_data.assign_attributes(previous_route_data_attributes)
+        previous_route_data_attributes = init_load_route_data_attributes
+        previous_route_data = stop.route_data
       end
 
       stop_load_hash[stop.id] = current_loads
       current_loads = current_loads.dup
     }
     [stop_load_hash, pickups, deliveries]
-  end
-
-  def max_loads
-    units = planning.customer.deliverable_units
-
-    max_loads = {}
-    units.each { |unit|
-      max_loads[unit.id] = deliveries[unit.id] || 0
-      stops.each { |stop|
-        if !stop.is_a?(StopRest)
-          max_loads[unit.id] = [max_loads[unit.id], stop.loads[unit.id] || 0].max
-        end
-      }
-    }
-    max_loads
   end
 
   def reverse_order
@@ -1337,14 +1340,6 @@ class Route < ApplicationRecord
   def invalidate_route_cache
     @traces = nil
     @geojson_tracks_store = nil
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/active_stops")
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/stops_size")
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/destination_stops")
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_location_stops")
-    Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/no_path_stops")
-    [:unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_reload, :out_of_relation, :out_of_skill].each do |s|
-      Rails.application.config.planner_cache.delete("#{self.cache_key_with_version}/out_of_#{s}_cache")
-    end
   end
 
   private
@@ -1502,7 +1497,7 @@ class Route < ApplicationRecord
     final_features
   end
 
-  def process_stop_loads(stop, current_loads)
+  def process_stop_loads(stop, current_loads, previous_route_data_attributes)
     @deliverable_units ||= planning.customer.deliverable_units
     stop.out_of_capacity = nil if @deliverable_units.empty?
 
@@ -1521,6 +1516,7 @@ class Route < ApplicationRecord
         delivery = default_deliveries[du.id]
         current_loads[du.id] =
           (current_loads[du.id] || 0) + (pickup || 0) - (delivery || 0)
+        previous_route_data_attributes[:max_loads][du.id] = [previous_route_data_attributes[:max_loads][du.id], current_loads[du.id]].compact.max
         has_pickup = pickup && pickup > 0
         has_delivery = delivery && delivery > 0
         unmanageable_capacity ||= (has_pickup || has_delivery) && (!@default_capacities.key?(du.id) || @default_capacities[du.id] == 0)
@@ -1532,6 +1528,8 @@ class Route < ApplicationRecord
     stop.loads = current_loads
     stop.unmanageable_capacity = unmanageable_capacity
     stop.out_of_capacity = out_of_capacity
+    previous_route_data_attributes[:unmanageable_capacity] ||= stop.unmanageable_capacity
+    previous_route_data_attributes[:out_of_capacity] ||= stop.out_of_capacity
 
     current_loads
   end
@@ -1547,5 +1545,12 @@ class Route < ApplicationRecord
       return true if @default_capacities[du.id] && (loads[du.id].round(2) > @default_capacities[du.id].round(2) || loads[du.id].round(2) < 0)
     end
     false
+  end
+
+  def use_persisted_route_metrics?
+    return false unless route_data
+    return true if stops.empty?
+
+    route_data.stops_size.positive?
   end
 end

@@ -17,7 +17,7 @@
       <name>
         <%= route.vehicle_usage.default_store_start.name %>
       </name>
-      <desc><%= route.end_time + (number_of_days(route.end) ? " (+#{number_of_days(route.end)})" : '') if route.end %>
+      <desc><%= route.route_data.end_time + (number_of_days(route.route_data.end) ? " (+#{number_of_days(route.route_data.end)})" : '') if route.route_data.end %>
 <%= [route.vehicle_usage.default_store_start.street, route.vehicle_usage.default_store_start.postalcode, route.vehicle_usage.default_store_start.city, route.vehicle_usage.default_store_start.state, route.vehicle_usage.default_store_start.country].select{ |i| !i.blank? }.join(', ') %>.
       <% if route.stop_out_of_drive_time %>
 <%= t 'plannings.edit.error.out_of_drive_time' %>
@@ -102,7 +102,7 @@ route.stops.each{ |stop|
       <name>
         <%= route.vehicle_usage.default_store_stop.name %>
       </name>
-      <desc><%= route.end_time + (number_of_days(route.end) ? " (+#{number_of_days(route.end)})" : '') if route.end %>
+      <desc><%= route.route_data.end_time + (number_of_days(route.route_data.end) ? " (+#{number_of_days(route.route_data.end)})" : '') if route.route_data.end %>
 <%= [route.vehicle_usage.default_store_stop.street, route.vehicle_usage.default_store_stop.postalcode, route.vehicle_usage.default_store_stop.city, route.vehicle_usage.default_store_stop.state, route.vehicle_usage.default_store_stop.country].select{ |i| !i.blank? }.join(', ') %>.
       <% if route.stop_out_of_drive_time %>
 <%= t 'plannings.edit.error.out_of_drive_time' %>
