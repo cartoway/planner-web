@@ -16,6 +16,32 @@ class RouteTest < ActiveSupport::TestCase
     assert_not route.save, 'Saved without required fields'
   end
 
+  test 'max_loads returns per deliverable unit peaks from route_data baseline and stop loads' do
+    route = routes(:route_one_one)
+    route.compute_saved!
+    route.stops.load
+    ml = route.max_loads
+    ml_with_arg = route.max_loads
+    assert_equal ml, ml_with_arg
+    route.planning.customer.deliverable_units.each do |du|
+      next unless ml.key?(du.id)
+
+      assert_operator ml[du.id], :>=, route.deliveries[du.id] || 0
+    end
+  end
+
+  test 'compute_saved! persists computed metrics on route_data for snapshot reads when not outdated' do
+    route = routes(:route_one_one)
+    route.route_data.distance = route.route_data.emission = route.route_data.start = route.route_data.end = nil
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+    expected_stops = Stop.where(route_id: route.id).count
+    assert_equal expected_stops, route.route_data.stops_size
+    assert_equal expected_stops, route.stops_size
+    assert_kind_of Hash, route.route_data.max_loads
+  end
+
   test 'should save without loading stops' do
     route = routes(:route_one_one)
     assert route.update(outdated: true)
@@ -146,15 +172,17 @@ class RouteTest < ActiveSupport::TestCase
 
     assert_equal 4, route.size_active
     route.active(:none)
+    route.compute_saved!
     assert_equal 0, route.size_active
     route.active(:all)
+    route.compute_saved!
     assert_equal 4, route.size_active
     route.stops[0].active = false
+    route.compute_saved!
     assert_equal 3, route.size_active
     route.active(:foo_bar)
+    route.compute_saved!
     assert_equal 0, route.size_active
-
-    route.save!
   end
 
   test 'should reverse stops' do
