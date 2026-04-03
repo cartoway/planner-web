@@ -1,5 +1,5 @@
 stops_filter = @params.key?(:stops) ? @params[:stops].split('|') : []
-@pickup_delivery_defs ||= @customer.deliverable_units.map do |du|
+pickup_delivery_defs ||= @customer.deliverable_units.map do |du|
   suffix = du.label ? "[#{du.label}]" : du.id.to_s
   {
     du_id: du.id,
@@ -7,7 +7,7 @@ stops_filter = @params.key?(:stops) ? @params[:stops].split('|') : []
     delivery_header: :"delivery#{suffix}"
   }
 end
-@pickup_delivery_columns ||= @pickup_delivery_defs.flat_map do |definition|
+pickup_delivery_columns ||= pickup_delivery_defs.flat_map do |definition|
   [
     [definition[:pickup_header], nil],
     [definition[:delivery_header], nil]
@@ -52,7 +52,7 @@ if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('stor
     destination_duration: nil
   }
 
-  row.merge!(Hash[@pickup_delivery_columns])
+  row.merge!(Hash[pickup_delivery_columns])
   row.merge!(state: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.state) if @customer.with_state?
 
   row.merge!({
@@ -76,7 +76,7 @@ if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('stor
 
   row.merge!(Hash[@customer.enable_orders ?
     [[:orders, nil]] :
-    @pickup_delivery_columns
+    pickup_delivery_columns
   ])
 
   row.merge!(
@@ -187,7 +187,7 @@ route.stops.sort_by(&:index).each { |stop|
       tag_visits: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
     })
 
-    row.merge!(Hash[@pickup_delivery_columns])
+    row.merge!(Hash[pickup_delivery_columns])
 
     pickups = nil
     deliveries = nil
@@ -199,7 +199,7 @@ route.stops.sort_by(&:index).each { |stop|
 
     row.merge!(Hash[@customer.enable_orders ?
       [[:orders, stop.is_a?(StopVisit) && stop.order && stop.order.products.length > 0 ? stop.order.products.collect(&:code).join('/') : nil]] :
-      @pickup_delivery_defs.flat_map{ |definition|
+      pickup_delivery_defs.flat_map{ |definition|
         du_id = definition[:du_id]
         [
           [definition[:pickup_header], pickups && pickups[du_id]],
@@ -280,7 +280,7 @@ if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('stor
 
   row.merge!(Hash[@customer.enable_orders ?
     [[:orders, nil]] :
-    Hash[@pickup_delivery_columns]
+    Hash[pickup_delivery_columns]
   ])
 
   row.merge!(

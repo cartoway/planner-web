@@ -30,6 +30,10 @@ class ApplicationRecord < ActiveRecord::Base
     self.attributes.slice(*self.class.column_names).except('lock_version', 'created_at', 'updated_at')
   end
 
+  def symbolized_attributes
+    self.attributes.slice(*self.class.column_names).symbolize_keys
+  end
+
   # Import records in batches and return all IDs
   def self.import_in_batches(attributes_array, batch_size: 1000, **options)
     return [] if attributes_array.empty?

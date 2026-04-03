@@ -748,7 +748,26 @@ CREATE TABLE public.route_data (
     created_at timestamp(6) without time zone,
     updated_at timestamp(6) without time zone,
     hidden boolean DEFAULT false NOT NULL,
-    color character varying
+    color character varying,
+    size_active integer DEFAULT 0 NOT NULL,
+    size_destinations integer DEFAULT 0 NOT NULL,
+    size_store_reloads integer DEFAULT 0 NOT NULL,
+    stops_size integer DEFAULT 0 NOT NULL,
+    no_geolocalization boolean DEFAULT false NOT NULL,
+    no_path boolean DEFAULT false NOT NULL,
+    out_of_capacity boolean DEFAULT false NOT NULL,
+    out_of_drive_time boolean DEFAULT false NOT NULL,
+    out_of_force_position boolean DEFAULT false NOT NULL,
+    out_of_max_distance boolean DEFAULT false NOT NULL,
+    out_of_max_reload boolean DEFAULT false NOT NULL,
+    out_of_max_ride_distance boolean DEFAULT false NOT NULL,
+    out_of_max_ride_duration boolean DEFAULT false NOT NULL,
+    out_of_relation boolean DEFAULT false NOT NULL,
+    out_of_skill boolean DEFAULT false NOT NULL,
+    out_of_window boolean DEFAULT false NOT NULL,
+    out_of_work_time boolean DEFAULT false NOT NULL,
+    unmanageable_capacity boolean DEFAULT false NOT NULL,
+    max_loads jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -3677,6 +3696,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260204152038'),
 ('20260219151139'),
 ('20260316121551'),
-('20260316131419');
+('20260316131419'),
+('20260402122124');
 
 
