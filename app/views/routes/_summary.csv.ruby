@@ -1,20 +1,3 @@
-@pickup_delivery_defs ||= route.planning.customer.deliverable_units.map do |du|
-  suffix = du.label ? "[#{du.label}]" : du.id.to_s
-  {
-    du_id: du.id,
-    max_load_header: :"max_load#{suffix}",
-    pickup_header: :"pickup#{suffix}",
-    delivery_header: :"delivery#{suffix}"
-  }
-end
-@pickup_delivery_columns ||= @pickup_delivery_defs.flat_map do |definition|
-  [
-    [definition[:max_load_header], nil],
-    [definition[:pickup_header], nil],
-    [definition[:delivery_header], nil]
-  ]
-end
-
 row = {
   planning_ref: route.planning.ref,
   planning_name: route.planning.name,
@@ -42,10 +25,10 @@ row = {
   tags: route.vehicle_usage && (route.vehicle_usage.tags | route.vehicle_usage.vehicle.tags).collect(&:label).join(',')
 }
 
-row.merge!(Hash[@pickup_delivery_columns])
+row.merge!(Hash[pickup_delivery_columns])
 row.merge!(Hash[route.planning.customer.enable_orders ?
   [[:orders, nil]] :
-  @pickup_delivery_defs.flat_map{ |definition|
+  pickup_delivery_defs.flat_map{ |definition|
     du_id = definition[:du_id]
     [
       [definition[:max_load_header], route.max_loads[du_id]],
