@@ -16,9 +16,9 @@
 
       .checkbox-destroy.d-none
         = render partial: 'shared/check_box', locals: { form: f, field: :_destroy, label: t('all.verb.destroy'), help: t('.destroy'), control_col: 'form-switch col-md-offset-2 col-md-6 d-none' }
-        - if visit.destination.customer.enable_references
-          = f.text_field :ref do
-            %p.help-block= t '.ref_help'
+      - if visit.destination.customer.enable_references
+        = f.text_field :ref do
+          %p.help-block= t '.ref_help'
 
       - unless visit.destination.customer.enable_orders
         #visit_quantity_input{class: "#{nested_has_error?(:pickups, visit.id)} #{nested_has_error?(:deliveries, visit.id)}"}
