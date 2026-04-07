@@ -37,4 +37,7 @@ row.merge!(Hash[route.planning.customer.enable_orders ?
     ]
   }
 ])
-csv << @columns.map{ |c| row[c.to_sym] }
+csv << @columns.map{ |c|
+  value = row[c.to_sym]
+  value == '' ? nil : value
+}
