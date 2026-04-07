@@ -60,15 +60,15 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should get index as csv' do
     get :index, params: { format: :csv, summary: true }
     assert_response :success
-    assert_equal 'r2,planning2,,,,1,0,,,,16:00,,,,,"","","",,,,,,', response.body.split("\n")[1]
-    assert_equal 'r1,planning1,10/10/2015,route_one,001,4,4,,0.0,1.5,32:00,,,,,"","","",,,,,"",', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
+    assert_equal 'r2,planning2,,,,1,0,,,,16:00,,,,,,,,,,,,,', response.body.split("\n")[1]
+    assert_equal 'r1,planning1,10/10/2015,route_one,001,4,4,,0.0,1.5,32:00,,,,,,,,,,,,,', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
   end
 
   test 'should get index as excel csv' do
     get :index, params: { format: :excel, summary: true }
     assert_response :success
-    assert_match 'r2;planning2;;;;1;0;;;;16:00;;;;;"";"";"";;;;;;', response.body.split("\n")[1]
-    assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;0.0;1.5;32:00;;;;;"";"";"";;;;;"";', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
+    assert_match 'r2;planning2;;;;1;0;;;;16:00;;;;;;;;;;;;;', response.body.split("\n")[1]
+    assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;0.0;1.5;32:00;;;;;;;;;;;;;', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
   end
 
   test 'should get new' do
@@ -264,15 +264,15 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should show planning summary as csv' do
     get :show, params: { id: @planning, format: :csv, summary: true }
     assert_response :success
-    assert_equal 'r1,planning1,10/10/2015,,,1,0,,,,,,,,,"","","",,,,,,', response.body.split("\n")[1]
-    assert_equal 'r1,planning1,10/10/2015,route_one,001,4,4,,0.0,1.5,32:00,,,,,"","","",,,,,"",', response.body.split("\n").find{ |l| l.include?('001') }
+    assert_equal 'r1,planning1,10/10/2015,,,1,0,,,,,,,,,,,,,,,,,', response.body.split("\n")[1]
+    assert_equal 'r1,planning1,10/10/2015,route_one,001,4,4,,0.0,1.5,32:00,,,,,,,,,,,,,', response.body.split("\n").find{ |l| l.include?('001') }
   end
 
   test 'should show planning summary as excel csv' do
     get :show, params: { id: @planning, format: :excel, summary: true }
     assert_response :success
-    assert_match 'r1;planning1;10/10/2015;;;1;0;;;;;;;;;"";"";"";;;;;;', response.body.split("\n")[1]
-    assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;0.0;1.5;32:00;;;;;"";"";"";;;;;"";', response.body.split("\n").find{ |l| l.include?('001') }
+    assert_match 'r1;planning1;10/10/2015;;;1;0;;;;;;;;;;;;;;;;;', response.body.split("\n")[1]
+    assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;0.0;1.5;32:00;;;;;;;;;;;;;', response.body.split("\n").find{ |l| l.include?('001') }
   end
 
   test 'should show planning as csv with order array' do
@@ -282,8 +282,8 @@ class PlanningsControllerTest < ActionController::TestCase
 
     get :show, params: { id: @planning, format: :csv }
     assert_response :success
-    assert_equal 'r1,planning1,10/10/2014,,,,visite,,,,,,,"","","","","","","","","","","",,,,a,unaffected_one,MyString,MyString,MyString,MyString,,1.5,1.5,MyString,MyString,tag1,a,,00:01:00,10:00,11:00,,,,,neutre,tag1,,false,default_stop_value,1', response.body.split("\n")[1]
-    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,,00:00,1.1,,"","","","","","","","","","","",,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,"",b,,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2,false,default_stop_value,1', response.body.split("\n").select{ |l| l.include?('001') }[1]
+    assert_equal 'r1,planning1,10/10/2014,,,,visite,,,,,,,,,,,,,,,,,,,,,a,unaffected_one,MyString,MyString,MyString,MyString,,1.5,1.5,MyString,MyString,tag1,a,,00:01:00,10:00,11:00,,,,,neutre,tag1,,false,default_stop_value,1', response.body.split("\n")[1]
+    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,,00:00,1.1,,,,,,,,,,,,,,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,,b,,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2,false,default_stop_value,1', response.body.split("\n").select{ |l| l.include?('001') }[1]
   end
 
   test "it shouldn't have special char in ref routes when using vehicle name" do

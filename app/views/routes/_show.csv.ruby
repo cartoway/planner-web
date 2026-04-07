@@ -91,7 +91,10 @@ if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('stor
     }
   ])
 
-  csv << @columns.map{ |c| row[c.to_sym] }
+  csv << @columns.map{ |c|
+    value = row[c.to_sym]
+    value == '' ? nil : value
+  }
 end
 
 index = 0
@@ -218,7 +221,10 @@ route.stops.sort_by(&:index).each { |stop|
       }
     ])
 
-    csv << @columns.map{ |c| row[c.to_sym] }
+    csv << @columns.map{ |c|
+      value = row[c.to_sym]
+      value == '' ? nil : value
+    }
   end
 }
 
@@ -295,5 +301,8 @@ if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('stor
     }
   ])
 
-  csv << @columns.map{ |c| row[c.to_sym] }
+  csv << @columns.map{ |c|
+    value = row[c.to_sym]
+    value == '' ? nil : value
+  }
 end
