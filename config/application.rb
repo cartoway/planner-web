@@ -3,6 +3,7 @@ require_relative 'boot'
 require 'ostruct'
 require 'rails/all'
 require_relative '../app/middleware/reseller_by_host'
+require_relative '../app/middleware/per_route_timeout'
 require_relative '../lib/routers/osrm'
 require_relative '../lib/routers/otp'
 require_relative '../lib/routers/here'
@@ -80,6 +81,9 @@ module Planner
     end
 
     config.middleware.use Rack::XRobotsTag
+    config.middleware.use PerRouteTimeout
+    config.x.per_route_timeouts = {}
+    config.x.per_route_default_timeout = 30
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do

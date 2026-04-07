@@ -187,4 +187,17 @@ Rails.application.configure do
   config.validate_during_duplication = false
 
   config.logger_sms = nil
+
+  # Per route timeout configuration
+  config.x.per_route_timeouts = {
+    %r{^/customers/upload_dump} => 1000,
+    %r{^/api/0.1/plannings/[0-9]+/routes/[0-9]+/visits/moves} => 240,
+    %r{^/destinations\.(json|excel)} => 240,
+    %r{^/destinations/upload_csv} => 1000,
+    %r{^/plannings/[0-9]+/refresh.json} => 1500,
+    %r{^/plannings/} => 360,
+    %r{^/api/} => 120,
+    %r{^/} => 120,
+  }
+  config.x.per_route_default_timeout = 120
 end
