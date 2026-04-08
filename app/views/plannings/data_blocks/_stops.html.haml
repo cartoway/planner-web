@@ -1,0 +1,6 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+.col-xs-4{title: t("plannings.edit.stops_help"), style: "order: #{ui_order}"}
+  .primary.route-info
+    %i.fa.fa-check-square.fa-fw>
+    = "#{size_active} / #{size}"
+    = t('plannings.edit.stops')

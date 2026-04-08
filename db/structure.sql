@@ -724,6 +724,43 @@ ALTER SEQUENCE public.resellers_id_seq OWNED BY public.resellers.id;
 
 
 --
+-- Name: roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.roles (
+    id bigint NOT NULL,
+    reseller_id bigint NOT NULL,
+    name character varying NOT NULL,
+    ref character varying,
+    icon character varying,
+    color character varying,
+    operations jsonb DEFAULT '{}'::jsonb NOT NULL,
+    forms jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: roles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.roles_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
+
+
+--
 -- Name: route_data; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1406,7 +1443,9 @@ CREATE TABLE public.users (
     locale character varying,
     prefered_currency integer DEFAULT 0,
     export_settings jsonb DEFAULT '{}'::jsonb,
-    default_display_polylines boolean DEFAULT true NOT NULL
+    default_display_polylines boolean DEFAULT true NOT NULL,
+    role_id bigint,
+    headers jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -1786,6 +1825,13 @@ ALTER TABLE ONLY public.resellers ALTER COLUMN id SET DEFAULT nextval('public.re
 
 
 --
+-- Name: roles id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_id_seq'::regclass);
+
+
+--
 -- Name: route_data id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2064,6 +2110,14 @@ ALTER TABLE ONLY public.profiles
 
 ALTER TABLE ONLY public.resellers
     ADD CONSTRAINT resellers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
 
 
 --
@@ -2552,6 +2606,20 @@ CREATE INDEX index_relations_customer_current_successord_id ON public.stops_rela
 
 
 --
+-- Name: index_roles_on_reseller_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_roles_on_reseller_id ON public.roles USING btree (reseller_id);
+
+
+--
+-- Name: index_roles_on_reseller_id_and_ref; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_roles_on_reseller_id_and_ref ON public.roles USING btree (reseller_id, ref) WHERE (ref IS NOT NULL);
+
+
+--
 -- Name: index_route_geojsons_on_route_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2731,6 +2799,13 @@ CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
 --
 
 CREATE UNIQUE INDEX index_users_on_reset_password_token ON public.users USING btree (reset_password_token);
+
+
+--
+-- Name: index_users_on_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_users_on_role_id ON public.users USING btree (role_id);
 
 
 --
@@ -3104,6 +3179,14 @@ ALTER TABLE ONLY public.stops_relations
 
 
 --
+-- Name: users fk_rails_642f17018b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT fk_rails_642f17018b FOREIGN KEY (role_id) REFERENCES public.roles(id) ON DELETE SET NULL;
+
+
+--
 -- Name: stops fk_rails_6652f557f6; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3157,6 +3240,14 @@ ALTER TABLE ONLY public.tag_visits
 
 ALTER TABLE ONLY public.customers
     ADD CONSTRAINT fk_rails_b3c8f2f3d5 FOREIGN KEY (reseller_id) REFERENCES public.resellers(id);
+
+
+--
+-- Name: roles fk_rails_b9e148290b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT fk_rails_b9e148290b FOREIGN KEY (reseller_id) REFERENCES public.resellers(id);
 
 
 --
@@ -3697,6 +3788,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260219151139'),
 ('20260316121551'),
 ('20260316131419'),
-('20260402122124');
+('20260402122124'),
+('20260408082217');
 
 

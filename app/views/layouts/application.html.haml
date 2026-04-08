@@ -31,9 +31,15 @@
                 %li.menu-section.menu-list-item
                   = link_to admin_users_path do
                     .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-user-gear.fa-fw
+                      %i.fa.fa-address-book.fa-fw
                       .hidden-menu
                         = t 'admin.users.menu.users'
+                %li.menu-section.menu-list-item
+                  = link_to admin_roles_path do
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-id-badge.fa-fw
+                      .hidden-menu
+                        = t 'admin.roles.menu.roles'
                 %li.menu-section.menu-list-item
                   = link_to admin_tools_delayed_job_path do
                     .d-flex.align-items-center.justify-content-center

@@ -26,6 +26,27 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_response :not_found
   end
 
+  test 'vehicle_usage_sets are forbidden when forms vehicle_usages is hidden' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.merge('vehicle_usages' => { 'visible' => false, 'usable' => false })
+    role = Role.create!(
+      reseller: @reseller,
+      name: "no-vus-forms-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    assert_not u.reload.form_visible?(:vehicle_usages)
+    ability = Ability.new(u)
+    assert ability.cannot? :manage, @vehicle_usage_set
+
+    sign_in u
+    get :index
+    assert_response :redirect
+    assert_redirected_to root_url
+  end
+
   test 'should get index vehicle_usage_set' do
     get :index
     assert_response :success

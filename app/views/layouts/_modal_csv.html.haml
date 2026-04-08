@@ -31,7 +31,7 @@
         .row.row.form-group
           %label.col-md-2.control-label= t 'plannings.edit.dialog.spreadsheet.columns'
           .col-md-10
-            .active-inactive-zones#spreadsheet-columns-container{"data-drag-drop" => "spreadsheet", "data-drag-drop-options" => '{"minActiveItems":1,"activeContainerSelector":".active-zone .item-list","inactiveContainerSelector":".inactive-zone .item-list","itemSelector":".draggable-item","orderDisplaySelector":".item-order","textDisplaySelector":".item-text"}'}
+            .active-inactive-zones#spreadsheet-columns-container{"data-drag-drop" => "spreadsheet", "data-drag-drop-options" => '{"minActiveItems":1,"itemSelector":".draggable-item","orderDisplaySelector":".item-order","textDisplaySelector":".item-text","columns":[{"containerSelector":".active-zone .item-list"},{"containerSelector":".inactive-zone .item-list","inactive":true}]}'}
               .active-zone.col-md-6
                 .zone-title
                   %label

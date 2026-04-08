@@ -23,4 +23,29 @@ module FontAwesome
   ICONS_TABLE_TAG ||= ['fa-square', 'fa-bookmark', 'fa-star', 'fa-certificate', 'fa-user-gear']
 
   ICONS_TABLE_UNIT ||= ['fa-dumpster', 'fa-briefcase', 'fa-cubes', 'fa-stop-circle', 'fa-spoon', 'fa-pie-chart', 'fa-th-large', 'fa-cube']
+
+  ICONS_TABLE_ROLE ||= ['fa-hammer', 'fa-screwdriver-wrench', 'fa-marker', 'fa-user-tie', 'fa-glasses', 'fa-dolly', 'fa-code', 'fa-eye']
+
+  # Returns a single token like "fa-user", or nil if blank. Accepts "user" or "fa-user".
+  def self.normalized_fa_icon_token(value)
+    return nil if value.blank?
+
+    s = value.to_s.strip
+    return nil if s.empty?
+
+    body = s.delete_prefix('fa-')
+    "fa-#{body}"
+  end
+
+  def self.icon_token_in_table?(value)
+    token = normalized_fa_icon_token(value)
+    return true if token.nil?
+
+    ICONS_TABLE.include?(token)
+  end
+
+  # Same grouping as TagsController#icons_table (preferred tag icons, then the rest).
+  def self.icons_table_grouped
+    [ICONS_TABLE_TAG, (ICONS_TABLE - ICONS_TABLE_TAG)]
+  end
 end

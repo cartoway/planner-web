@@ -1,0 +1,8 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- averages = local_assigns[:averages]
+- if averages && averages[:total_revenue] && averages[:total_cost]
+  .col-xs-4{title: t('plannings.edit.balance_help'), style: "order: #{ui_order}"}
+    .route-info{ class: (averages[:total_balance] < 0 ? 'danger' : averages[:total_balance] == 0 ? 'secondary' : 'success')}
+      %i.fa.fa-scale-balanced.fa-fw
+      = averages[:total_balance]
+      = t("all.unit.currency_symbol.#{prefered_currency}")

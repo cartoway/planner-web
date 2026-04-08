@@ -1,0 +1,7 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- averages = local_assigns[:averages]
+- if averages
+  .col-xs-4{title: t("plannings.edit.emission_help"), style: "order: #{ui_order}"}
+    .primary.route-info
+      %i.fa.fa-flask.fa-fw>
+      = "#{averages[:emission]} #{t('all.unit.kgco2e_html')}"

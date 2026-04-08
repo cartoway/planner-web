@@ -1,0 +1,53 @@
+- javascript 'admin_roles'
+
+- content_for :title, t('.title')
+
+%h1= t('.title')
+
+.row.row-top
+  .col-md-6
+    = link_to new_admin_role_path, class: 'btn btn-primary btn-sm' do
+      %i.fa.fa-plus.fa-fw
+      = t('.new')
+  .col-md-6
+    .form-inline.pull-right
+      = text_field_tag :roles_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control', 'data-change' => 'filter', 'data-target' => '#roles'
+      %span#roles_count= @roles.count
+      = t('activerecord.models.roles', count: @roles.count)
+
+= form_tag admin_roles_path, method: :delete do
+  %table#roles.table.table-striped.table-hover
+    %thead
+      %tr
+        %th
+          %button.btn.btn-default.btn-xs{ type: 'button', 'data-toggle' => 'selection', 'data-target' => '#roles', title: t('all.verb.toggle_selection') }
+            %i.fa.fa-check.fa-fw
+        %th= Role.human_attribute_name(:name)
+        %th= Role.human_attribute_name(:icon)
+        %th= t('activerecord.attributes.tag.ref')
+        %th.text-right
+    %tbody
+      - @roles.each do |role|
+        %tr
+          %td
+            = check_box_tag("roles[#{role.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions')
+          %td= role.name
+          %td= role_icon(role)
+          %td= role.ref
+          %td.text-right
+            = link_to edit_admin_role_path(role), class: 'btn btn-primary btn-sm' do
+              %i.fa.fa-edit.fa-fw
+              = t('all.verb.edit')
+            = link_to duplicate_admin_role_path(role), method: :post, class: 'btn btn-default btn-sm' do
+              %i.fa.fa-copy.fa-fw
+              = t('all.verb.duplicate')
+            = link_to admin_role_path(role), method: :delete, class: 'btn btn-danger btn-sm', data: { confirm: t('admin.roles.confirm_destroy') } do
+              %i.fa.fa-trash.fa-fw
+              = t('all.verb.destroy')
+
+  - unless @roles.empty?
+    #multiple-actions.row
+      .col-md-12
+        = button_tag type: :submit, class: 'btn btn-danger btn-sm', data: { confirm: t('all.verb.destroy_confirm') } do
+          %i.fa.fa-trash.fa-fw
+          = t('all.verb.destroy_selection')

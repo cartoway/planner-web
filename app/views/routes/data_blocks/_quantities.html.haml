@@ -1,0 +1,22 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- route[:quantities]&.each do |unit|
+  - [:delivery, :pickup].each do |sym|
+    - flag_key = :"has_#{sym}"
+    - if unit[flag_key] || unit[flag_key.to_s]
+      .col-xs-4.route-data-advanced{style: "order: #{ui_order}"}
+        .route-info{class: "#{route[:vehicle_id] ? 'primary' : 'inactive'} #{unit[:out_of_capacity] && 'danger'}", title: [unit[:label] || unit['label'], t('plannings.edit.route_quantity_help')].compact.join(' - ')}
+          %i.fa.fa-fw{class: unit[:unit_icon] || unit['unit_icon']}
+          - if sym == :pickup
+            %i.fa.fa-fw.fa-up-long{title: t("plannings.edit.pickup_help")}
+            = unit[:pickup] || unit['pickup']
+          - if sym == :delivery
+            - if unit[:has_pickup] || unit['has_pickup']
+              %i.fa.fa-fw.fa-down-long{title: t("plannings.edit.delivery_help")}
+            = unit[:delivery] || unit['delivery']
+          - cap = unit[:capacity] || unit['capacity']
+          - if cap
+            = "/ #{cap}"
+          /
+          - lbl = unit[:label] || unit['label']
+          - if lbl
+            = "#{lbl}"

@@ -301,6 +301,7 @@ class V01::Plannings < Grape::API
     get ':id/optimize' do
       Route.includes_destinations_and_stores.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+        authorize!(:optimize, planning)
         raise Exceptions::JobInProgressError if planning.customer.job_optimizer
 
         begin

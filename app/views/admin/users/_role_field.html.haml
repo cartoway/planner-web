@@ -1,0 +1,3 @@
+.row
+  = f.collection_select :role_id, @roles_for_select, :id, :name, { include_blank: t('admin.users.form.role_blank') }, { class: 'form-control' }
+  %p.help-block.col-md-offset-2= t('admin.users.form.role_help')

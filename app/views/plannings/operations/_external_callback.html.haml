@@ -1,0 +1,7 @@
+- if @callback_button
+  .row.w-100
+    %p.text-center.col-md-12
+      - dis = @manage_planning[:disable_external_callback]
+      %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{type: "button", disabled: dis, data: { customer_id: current_user.customer.id, planning_id: @planning.id }}
+        %i.fa.fa-desktop.fa-fw
+        = @planning.customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')

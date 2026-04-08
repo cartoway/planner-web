@@ -1,0 +1,8 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- averages = local_assigns[:averages]
+- if averages && averages[:total_cost]
+  .col-xs-4{title: t('plannings.edit.total_cost_help'), style: "order: #{ui_order}"}
+    .primary.route-info
+      %i.fa.fa-coins.fa-fw
+      = averages[:total_cost]
+      = t("all.unit.currency_symbol.#{prefered_currency}")

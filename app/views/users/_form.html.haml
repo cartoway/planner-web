@@ -25,6 +25,8 @@
       .col-md-offset-2.col-md-8
         = render partial: 'shared/sso_accounts', locals: { user: @user }
 
+  = render 'display_ui_self_service'
+
   = f.submit
 :ruby
   controller.js(

@@ -30,6 +30,7 @@ class RoutesController < ApplicationController
   load_and_authorize_resource
 
   include PlanningExport
+  include PlanningToolbarPermissions
 
   def mobile
     manage_planning
@@ -179,7 +180,7 @@ class RoutesController < ApplicationController
 
   def manage_planning
     @manage_planning = ApiWeb::V01::PlanningsController.manage
-    @callback_button = true
+    apply_route_toolbar_operation_flags!
   end
 
   # Use callbacks to share common setup or constraints between actions.

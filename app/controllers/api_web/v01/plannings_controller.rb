@@ -16,6 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
+  include PlanningToolbarPermissions
+
   skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
   before_action :manage_planning
   around_action :includes_sub_models, only: [:print]
@@ -23,6 +25,7 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
   def edit
     @planning = current_user.customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
     authorize! :edit, @planning
+    apply_planning_toolbar_operation_flags!
     @spreadsheet_columns = []
     @with_devices = true
     capabilities
@@ -42,10 +45,9 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
   private
 
   # Use callbacks to share common setup or constraints between actions.
-  # rights should be checked before thanks to CanCan::Ability
+  # permissions should be checked before thanks to CanCan::Ability
   def manage_planning
     @manage_planning = ApiWeb::V01::PlanningsController.manage
-    @callback_button = true
   end
 
   def includes_sub_models

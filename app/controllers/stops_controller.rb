@@ -18,6 +18,7 @@
 
 class StopsController < ApplicationController
   include PlanningsHelper
+  include PlanningToolbarPermissions
 
   before_action :authenticate_user!, except: [:edit, :update]
   before_action :set_route_context, only: [:create_store_reload, :destroy]
@@ -131,13 +132,14 @@ class StopsController < ApplicationController
   def set_route_context
     @manage_planning =
       if request.referer&.match('api-web')
-        @callback_button = true
         ApiWeb::V01::PlanningsController.manage
       else
         PlanningsController.manage
       end
     @route = current_user.customer.plannings.find(params[:planning_id])
                          .routes.includes_destinations_and_stores.where(id: params[:route_id]).first!
+    @planning = @route.planning
+    apply_planning_toolbar_operation_flags!
     @available_store_reloads =
       current_user.customer.stores.flat_map { |store|
         store.store_reloads.map.with_index { |store_reload, index|
@@ -151,7 +153,6 @@ class StopsController < ApplicationController
           }
         }
       }.compact
-    @callback_button = true
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
   end
