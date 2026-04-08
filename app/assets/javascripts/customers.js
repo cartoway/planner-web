@@ -137,6 +137,14 @@ const customers_index = function (params) {
 };
 
 const customers_edit = function (params) {
+  // Open Bootstrap tab from URL hash
+  if (window.location.hash) {
+    var $tabLink = $('a[href="' + window.location.hash + '"][data-toggle="tab"]');
+    if ($tabLink.length) {
+      $tabLink.tab('show');
+    }
+  }
+
   /* Speed Multiplier */
   $('form.number-to-percentage').submit(function (e) {
     $.each($(e.target).find('input[type=\'number\'].number-to-percentage'), function (i, element) {

@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'nokogiri'
 
 class UsersControllerTest < ActionController::TestCase
   setup do
@@ -31,6 +32,31 @@ class UsersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'self-service display UI drag-drop options are valid JSON' do
+    # Non-reseller users see display_ui_self_service; JSON must parse in the browser (turbolinks:load).
+    get :edit, params: { id: @user }
+    assert_response :success
+    html = Nokogiri::HTML(response.body)
+    el = html.at_css('#display-ui-headers-planning')
+    assert el, 'expected #display-ui-headers-planning in edit form for non-admin user'
+    opts = el['data-drag-drop-options']
+    assert opts.present?
+    parsed = JSON.parse(opts)
+    assert_equal 0, parsed['minActiveItems']
+    assert_equal '.draggable-item', parsed['itemSelector']
+    assert_kind_of Array, parsed['columns']
+    assert_equal 2, parsed['columns'].size
+    assert_equal 'user[headers][planning][active][]', parsed['columns'].first['inputName']
+    assert_equal 'user[headers][planning][hidden][]', parsed['columns'].last['inputName']
+    assert_not parsed['columns'].first['inactive']
+    assert_not parsed['columns'].last['inactive']
+
+    el_route = html.at_css('#display-ui-headers-route')
+    assert el_route, 'expected #display-ui-headers-route for self-service route headers'
+    parsed_route = JSON.parse(el_route['data-drag-drop-options'])
+    assert_equal 'user[headers][route][active][]', parsed_route['columns'].first['inputName']
+  end
+
   test 'should get edit as admin' do
     @user = users(:user_admin)
     sign_in(@user)
@@ -43,6 +69,22 @@ class UsersControllerTest < ActionController::TestCase
   test 'should update user' do
     patch :update, params: { id: @user, user: { layer_id: @user.layer.id } }
     assert_redirected_to edit_user_path(@user)
+  end
+
+  test 'self-service update persists planning header order' do
+    hp = Preferences::Catalog::HEADER_PLANNING
+    new_order = hp.rotate(1).first(4)
+    planning_hidden = (hp - new_order).sort_by { |id| hp.index(id) }
+    patch :update, params: {
+      id: @user,
+      user: {
+        layer_id: @user.layer_id,
+        headers: { planning: { active: new_order, hidden: planning_hidden } }
+      }
+    }
+    assert_redirected_to edit_user_path(@user)
+    @user.reload
+    assert_equal new_order, @user.header_block_order(:planning).first(new_order.size)
   end
 
   test 'should update user as admin' do

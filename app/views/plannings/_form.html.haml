@@ -9,9 +9,14 @@
         = f.text_field :ref, help: t('.ref_help')
   %div
     = f.text_field :name, required: true
+  - vus_manage = @manage_planning.nil? || @manage_planning[:manage_vehicle_usage_set]
+  - vus_disable = @manage_planning && @manage_planning[:disable_vehicle_usage_set]
   - if @planning.customer.vehicle_usage_sets.size > 1
-    %div
-      = f.collection_select :vehicle_usage_set_id, @planning.customer.vehicle_usage_sets, :id, :name, {}, {label: @planning.id ? t('activerecord.attributes.planning.vehicle_usage_set_small') : [], required: true, control_class: 'form-control'}
+    - if vus_manage
+      %div
+        = f.collection_select :vehicle_usage_set_id, @planning.customer.vehicle_usage_sets, :id, :name, {}, { label: @planning.id ? t('activerecord.attributes.planning.vehicle_usage_set_small') : [], required: true, control_class: 'form-control', disabled: vus_disable }
+    - else
+      = f.hidden_field :vehicle_usage_set_id, value: (@planning.vehicle_usage_set_id.presence || @planning.customer.vehicle_usage_sets.first&.id)
   - else
     = f.hidden_field :vehicle_usage_set_id, value: @planning.customer.vehicle_usage_sets[0].id
   %div

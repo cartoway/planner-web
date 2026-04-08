@@ -23,6 +23,8 @@ class CustomersController < ApplicationController
 
   load_and_authorize_resource
 
+  helper Admin::UsersHelper
+
   include V01::Devices::DeviceHelpers
 
   def index
@@ -156,10 +158,11 @@ class CustomersController < ApplicationController
 
   def set_customer
     @customer = if current_user.admin?
-                  current_user.reseller.customers.find(params[:id])
+                  current_user.reseller.customers.includes(users: :role).find(params[:id])
                 else
                   raise(ActiveRecord::RecordNotFound) if params[:id].to_s != current_user.customer.id.to_s
-                  current_user.customer
+
+                  Customer.includes(users: :role).find(current_user.customer_id)
                 end
   end
 

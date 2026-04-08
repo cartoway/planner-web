@@ -1,0 +1,28 @@
+- javascript 'admin_roles'
+= bootstrap_form_for [:admin, @role], layout: :horizontal, html: { class: 'form-horizontal' } do |f|
+  = render 'shared/error_messages', model: @role
+  %fieldset#role-details
+    = f.text_field :name, required: true
+    = f.text_field :ref, help: t('.ref_help')
+    .row
+      = f.color_field :color, control_class: 'col-md-1', help: t('.color_help')
+    .row
+      %label.col-md-offset-2.col-md-2.control-label= t('activerecord.attributes.role.icon')
+      .col-md-offset-2.col-md-8.field
+        = select_tag 'role[icon]', grouped_options_for_select([                                                                                                                  |
+          [t('roles.form.prefered_icons'),                                                                                                                                       |
+            @grouped_role_icons[0].map { |icon| [icon, icon, { data: { content: "<i class='fa fa-fw #{icon}'></i> #{icon}" }, selected: (@role.icon == icon) ? true : nil }]},], |
+            [t('roles.form.other_icons'),                                                                                                                                        |
+              @grouped_role_icons[1].map { |icon| [icon, icon, { data: { content: "<i class='fa fa-fw #{icon}'></i> #{icon}" }, selected: (@role.icon == icon) ? true : nil }]}  |
+            ]                                                                                                                                                                    |
+          ]), include_blank: t('web.form.default', n: 'fa-hammer'), class: 'form-control  width_1_2 selectpicker', 'data-live-search' => 'true'                                  |
+        %p.help-block= t('admin.roles.form.icon_help')
+  %fieldset#role-permissions
+    %legend= t('admin.roles.form.permissions_legend')
+    %p.help-block.col-md-offset-2= t('admin.roles.form.permissions_help')
+    = render 'shared/role_permissions_admin_drag_drop',
+      record: @role,
+      param_prefix: 'role',
+      label_col_classes: 'control-label col-md-offset-2 col-md-2',
+      field_col_classes: 'col-md-offset-2 col-md-8 field'
+  = f.submit

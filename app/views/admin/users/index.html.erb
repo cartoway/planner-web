@@ -23,6 +23,7 @@
       <th><button type="button" class="btn btn-default btn-xs" data-toggle="selection" data-target="#users" title="<%= t 'all.verb.toggle_selection' %>"><i class="fa fa-check fa-fw"></i></button></th>
       <th><%= t 'activerecord.attributes.user.email' %></th>
       <th><%= t 'activerecord.attributes.user.customer' %></th>
+      <th class="text-center"><%= t 'admin.users.index.role_column' %></th>
       <th class="text-right"><%= t 'activerecord.attributes.user.sign_in_count' %></th>
       <th><%= t 'activerecord.attributes.user.sign_in_at' %></th>
       <th><%= t 'activerecord.attributes.user.confirmed_at' %></th>
@@ -49,6 +50,7 @@
             <% end %>
           <% end %>
         </td>
+        <td class="text-center"><%= admin_user_role_display(user) %></td>
         <td class="text-right"><%= user.sign_in_count %></td>
         <td><%= user.current_sign_in_at && l(user.current_sign_in_at) %></td>
         <td><%= user.confirmed_at && l(user.confirmed_at) %></td>

@@ -47,6 +47,12 @@ Rails.application.routes.draw do
     end
     delete 'users' => 'users#destroy_multiple'
     resources :profiles
+    resources :roles, except: [:show] do
+      member do
+        post :duplicate
+      end
+    end
+    delete 'roles' => 'roles#destroy_multiple'
     resources :resellers
   end
 

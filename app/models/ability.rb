@@ -27,14 +27,16 @@ class Ability
         can [:index, :new, :create, :send_email], User
         can [:edit, :update, :password, :set_password], User, id: user.id # Own admin user
         can :manage, Reseller, id: user.reseller_id
+        can :manage, Role, reseller_id: user.reseller_id
         can [:index], Profile
+        can :manage, VehicleUsage, vehicle_usage_set: { customer: { reseller_id: user.reseller_id } }
       else
         can :index, :reporting
         can [:edit, :update, :password, :set_password], User, id: user.id
         can [:edit, :update, :external_callback], Customer, id: user.customer.id
         can [:stop_job_optimizer, :stop_job_destination_geocoding, :stop_job_store_geocoding], Customer
         can :manage, VehicleUsageSet, customer_id: user.customer.id
-        can [:edit, :update, :toggle], VehicleUsage, vehicle_usage_set: {customer_id: user.customer.id}
+        can [:create, :edit, :update, :toggle], VehicleUsage, vehicle_usage_set: { customer_id: user.customer.id }
         can :manage, Tag, customer_id: user.customer.id
         can [:new, :create], Tag
         can :manage, Destination, customer_id: user.customer.id
@@ -62,6 +64,8 @@ class Ability
           # can [:new, :create], DeliverableUnit
         end
         can :manage, CustomAttribute, customer_id: user.customer.id
+        Preferences::OperationAbilityMap.apply_cannot_rules!(self, user)
+        Preferences::FormAbilityMap.apply_cannot_rules!(self, user)
       end
     else
       can [:password, :set_password], User

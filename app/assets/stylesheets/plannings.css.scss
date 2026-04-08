@@ -368,9 +368,34 @@ $sidebar-margins: 10px;
 
       #planning {
         .route-tools {
+          align-items: flex-start;
           display: flex;
-          justify-content: space-between;
+          flex-wrap: nowrap;
           margin: 2px 1px;
+
+          .route-tools__left,
+          .route-tools__center,
+          .route-tools__right {
+            display: flex;
+            flex: 1 1 0;
+            min-width: 0;
+          }
+
+          .route-tools__left {
+            justify-content: flex-start;
+          }
+
+          .route-tools__center {
+            justify-content: center;
+          }
+
+          .route-tools__right {
+            justify-content: flex-end;
+          }
+
+          .route-tools__right .route-btn-group {
+            float: none;
+          }
         }
 
         .global_info {
@@ -384,6 +409,20 @@ $sidebar-margins: 10px;
               padding-left: 0;
               padding-right: 0;
             }
+          }
+        }
+
+        .display-ui-planning-head,
+        .routes .display-ui-route-head {
+          margin-left: 0;
+          margin-right: 0;
+
+          > .col-xs-4 {
+            float: none;
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+            min-width: 0;
+            box-sizing: border-box;
           }
         }
 
@@ -716,6 +755,12 @@ $sidebar-margins: 10px;
 
       .vehicle_select, .vehicle_select + .fake {
         vertical-align: middle;
+      }
+
+      .vehicle-usage-select-disabled .select2-container--bootstrap {
+        cursor: not-allowed;
+        opacity: 0.65;
+        pointer-events: none;
       }
 
       .panel-heading {

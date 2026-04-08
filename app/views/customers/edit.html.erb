@@ -39,7 +39,7 @@
     <div role="tabpanel" class="tab-pane" id="users">
       <% if current_user.admin? %>
         <p>
-          <%= link_to new_admin_user_path(customer_id: @customer.id, url: edit_customer_path(@customer)), class: 'btn btn-default btn-sm' do %>
+          <%= link_to new_admin_user_path(customer_id: @customer.id, url: edit_customer_path(@customer, anchor: 'users')), class: 'btn btn-default btn-sm' do %>
             <i class="fa fa-plus fa-fw"></i>
             <%= t '.user.new' %>
           <% end %>
@@ -49,6 +49,7 @@
         <thead>
           <tr>
             <th><%= t 'activerecord.attributes.user.email' %></th>
+            <th class="text-center"><%= t '.role_column' %></th>
             <th class="text-right"><%= t 'activerecord.attributes.user.sign_in_count' %></th>
             <th><%= t 'activerecord.attributes.user.sign_in_at' %></th>
             <th><%= t 'activerecord.attributes.user.confirmed_at' %></th>
@@ -63,6 +64,7 @@
           <% @customer.users.each do |user| %>
             <tr>
               <td><%= user.email %></td>
+              <td class="text-center"><%= admin_user_role_display(user) %></td>
               <td class="text-right"><%= user.sign_in_count %></td>
               <td><%= user.current_sign_in_at && l(user.current_sign_in_at) %></td>
               <td><%= user.confirmed_at && l(user.confirmed_at) %></td>
@@ -70,15 +72,15 @@
                 <td><a href="/?api_key=<%= user.api_key %>"><%= t '.user.connect_as' %></a></td>
                 <td class="text-right">
                   <div class="btn-group" role="group">
-                    <%= link_to send_email_admin_user_path(user), class: 'btn btn-default btn-sm' do %>
+                    <%= link_to send_email_admin_user_path(user, url: edit_customer_path(@customer, anchor: 'users')), class: 'btn btn-default btn-sm' do %>
                       <i class="fa fa-envelope fa-fw"></i>
                       <%= t '.send_email' %>
                     <% end %>
-                    <%= link_to edit_admin_user_path(user), class: 'btn btn-primary btn-sm' do %>
+                    <%= link_to edit_admin_user_path(user, url: edit_customer_path(@customer, anchor: 'users')), class: 'btn btn-primary btn-sm' do %>
                       <i class="fa fa-edit fa-fw"></i>
                       <%= t 'all.verb.edit' %>
                     <% end %>
-                    <%= link_to admin_user_path(user), class: 'btn btn-danger btn-sm', method: :delete, data: {confirm: t('all.verb.destroy_confirm') } do %>
+                    <%= link_to admin_user_path(user, url: edit_customer_path(@customer, anchor: 'users')), class: 'btn btn-danger btn-sm', method: :delete, data: {confirm: t('all.verb.destroy_confirm') } do %>
                       <i class="fa fa-trash fa-fw"></i>
                       <%= t 'all.verb.destroy' %>
                     <% end %>

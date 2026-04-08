@@ -30,7 +30,13 @@ class UsersController < ApplicationController
   end
 
   def update
-    if @user.update user_params
+    raw = params.require(:user)
+    attrs = raw.permit(:layer_id, :url_click2call, :time_zone, :prefered_unit, :default_display_polylines)
+    headers_ui = raw.permit(headers: { planning: { active: [], hidden: [] }, route: { active: [], hidden: [] } })[:headers]
+    @user.assign_attributes(attrs)
+    @user.apply_self_service_display_ui!(headers_params: headers_ui) if headers_ui.present?
+
+    if @user.save
       redirect_to_default
     else
       render action: :edit
@@ -74,9 +80,5 @@ class UsersController < ApplicationController
 
   def user_password_params
     params.require(:user).permit :password, :password_confirmation
-  end
-
-  def user_params
-    params.require(:user).permit :layer_id, :url_click2call, :time_zone, :prefered_unit, :default_display_polylines
   end
 end

@@ -1,0 +1,9 @@
+- if route[:vehicle_id] && @manage_planning[:manage_route_vehicle_usage]
+  - opts = { href: edit_vehicle_usage_path(route[:vehicle_usage_id], back: true), title: t('plannings.edit.vehicle_help') }
+  - opts[:class] = 'btn btn-primary btn-xs'
+  - if @manage_planning[:disable_route_vehicle_usage]
+    - opts[:class] = "#{opts[:class]} disabled"
+    - opts[:tabindex] = -1
+    - opts[:onclick] = 'return false;'
+  %a{opts}
+    %i.fa.fa-truck-field

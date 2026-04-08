@@ -7,5 +7,6 @@
   = f.email_field :email, autocomplete: "off"
   = render partial: 'users/time_zone'
   = f.collection_select :customer_id, @customers, :id, :name, {}, {class: 'form-control'}
+  = render 'role_field', f: f
   = render partial: 'shared/check_box', locals: { form: f, field: :send_email, label: t('admin.users.menu.send_email'), options: { checked: true } }
   = f.submit

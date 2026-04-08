@@ -145,6 +145,7 @@ class V01::Routes < Grape::API
             raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
             Stop.includes_destinations_and_stores.scoping do
+              authorize!(:optimize, get_route)
               if !Optimizer.optimize(get_route.planning, get_route, { global: false, synchronous: params[:synchronous], active_only: params[:all_stops].nil? ? params[:active_only] : !params[:all_stops], ignore_overload_multipliers: params[:ignore_overload_multipliers] })
                 status 304
               else

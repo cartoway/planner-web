@@ -18,6 +18,6 @@ class I18nTest < ActiveSupport::TestCase
       ap missing_keys.leaves
     end
 
-    assert_equal missing_keys.leaves.count, 0
+    assert_equal 0, missing_keys.leaves.count
   end
 end

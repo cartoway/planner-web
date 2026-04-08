@@ -38,6 +38,8 @@ if route.vehicle_usage_id
     json.devices route_devices(list_devices, route)
   end
   json.vehicle_id route.vehicle_usage.vehicle.id
+  json.visits_duration time_over_day(route.visits_duration.to_i)
+  json.wait_time time_over_day(route.wait_time.to_i)
   json.vehicle_name route.vehicle_usage.vehicle.name
   json.time_window_start route.vehicle_usage.default_time_window_start_time
   if route.vehicle_usage.vehicle&.default_router
@@ -52,8 +54,8 @@ if route.vehicle_usage_id
       json.prefered_currency current_user.prefered_currency
       json.speed route.speed_average(current_user.prefered_unit)
 
-      json.visits_duration time_over_day(route.visits_duration) if route.visits_duration && route.visits_duration > 0
-      json.wait_time time_over_day(route.wait_time) if route.wait_time
+      json.visits_duration time_over_day(route.visits_duration.to_i)
+      json.wait_time time_over_day(route.wait_time.to_i)
     end
   end
   json.emission route.emission ? number_to_human(route.emission, precision: 4) : '-'
@@ -126,8 +128,8 @@ json.store_start do
       json.prefered_currency current_user.prefered_currency
       json.speed speed_average(route.start_route_data, current_user.prefered_unit)
 
-      json.visits_duration time_over_day(route.start_route_data.visits_duration) if route.start_route_data.visits_duration && route.start_route_data.visits_duration > 0
-      json.wait_time time_over_day(route.start_route_data.wait_time) if route.start_route_data.wait_time
+      json.visits_duration time_over_day(route.start_route_data.visits_duration.to_i)
+      json.wait_time time_over_day(route.start_route_data.wait_time.to_i)
     end
     json.duration time_over_day(route.start_route_data.duration) if route.start_route_data.duration
     json.distance locale_distance(route.start_route_data.distance || 0, current_user.prefered_unit)
@@ -247,8 +249,8 @@ if @with_stops
           json.prefered_currency current_user.prefered_currency
           json.speed speed_average(stop.route_data, current_user.prefered_unit)
 
-          json.visits_duration time_over_day(stop.route_data.visits_duration) if stop.route_data.visits_duration && stop.route_data.visits_duration > 0
-          json.wait_time time_over_day(stop.route_data.wait_time) if stop.route_data.wait_time
+          json.visits_duration time_over_day(stop.route_data.visits_duration.to_i)
+          json.wait_time time_over_day(stop.route_data.wait_time.to_i)
         end
         json.duration time_over_day(stop.route_data.duration) if stop.route_data.duration
         json.distance locale_distance(stop.route_data.distance || 0, current_user.prefered_unit)

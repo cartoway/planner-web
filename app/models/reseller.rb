@@ -19,6 +19,7 @@ require 'sanitize'
 
 class Reseller < ApplicationRecord
   has_many :customers, inverse_of: :reseller, autosave: true, dependent: :delete_all
+  has_many :roles, dependent: :destroy
 
   nilify_blanks
   auto_strip_attributes :host, :name, :welcome_url, :help_url, :contact_url, :website_url

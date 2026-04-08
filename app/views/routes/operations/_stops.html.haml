@@ -1,0 +1,46 @@
+- if @manage_planning[:manage_route_stops]
+  .btn-group
+    - stops_disabled = !route[:with_stops] || @manage_planning[:disable_route_stops]
+    %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", title: t("plannings.edit.route_stops_active_help"), type: "button", disabled: stops_disabled}
+      %span{data: {'size-active': route[:size_active], size: route[:size] }}
+        %i.fa.fa-check-square.fa-fw
+        = "#{route[:size_active]}/#{route[:size]}"
+        = t('plannings.edit.stops')
+        %span.caret
+    %ul.dropdown-menu{role: "menu"}
+      %li
+        %a.active_none{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/none"}
+          %i.fa.fa-regular.fa-square.fa-fw
+          = t('plannings.edit.active_none')
+      %li
+        %a.active_reverse{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/reverse"}
+          %i.fa.fa-random.fa-fw
+          = t('plannings.edit.active_reverse')
+      %li
+        %a.active_all{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/all"}
+          %i.fa.fa-check-square.fa-fw
+          = t('plannings.edit.active_all')
+      - if route[:status_any]
+        %li.divider{role: "separator"}
+        - if route[:status_all]
+          %li
+            %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/#{route[:code]}"}
+              %span.stop-status{class: "stop-status-#{route[:code]}", title: route[:status]}
+              = route[:status]
+        %li
+          %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/status_any"}
+            %span.stop-status
+            = t('plannings.edit.stop_status.any')
+        %li
+          %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/status_none"}
+            %span.stop-status.stop-status-none
+            = t('plannings.edit.stop_status.none')
+      %li.divider{role: "separator"}
+      %li
+        %a.reverse_order{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/reverse_order"}
+          %i.fa.fa-arrow-right-arrow-left.fa-rotate-90.fa-fw
+          = t('plannings.edit.reverse_order')
+      %li
+        %a{"data-route-id": route[:route_id], "data-target": "#planning-move-stops-modal", "data-toggle": "modal", href: "#"}
+          %i.fa.fa-truck-ramp-box.fa-fw
+          = t('plannings.edit.move_stops')
