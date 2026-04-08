@@ -28,6 +28,13 @@ class CustomersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'admin customer edit users tab lists role column' do
+    sign_in users(:user_admin)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select 'table#users thead th', { text: I18n.t('customers.edit.role_column'), count: 1 }
+  end
+
   test 'should update customer' do
     sign_in users(:user_one)
     patch :update, params: { id: @customer, customer: {name: 123, router_dimension: 'distance', router_options: {motorway: 'true', trailers: 2, weight: 10, width: '3,55', hazardous_goods: 'gas', low_emission_zone: 'false'}, optimization_minimal_time: 4, optimization_time: 10}}

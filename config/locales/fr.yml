@@ -78,6 +78,10 @@ fr:
       deliverable_units:
         one: capacité
         other: capacités
+      role: Rôle
+      roles:
+        one: rôle
+        other: rôles
       destination: Client
       destinations:
         one: destination
@@ -365,6 +369,11 @@ fr:
         customer_behavior_url: URL de comportement compte
         customer_dashboard_url: URL du tableau de bord du compte
         planning_dashboard_url: URL du tableau de bord de planification
+      role:
+        name: Nom
+        ref: Référence
+        icon: Icône
+        color: Couleur
       route:
         distance: Distance
         emission: Émissions
@@ -462,6 +471,7 @@ fr:
         prefered_unit: Choix unité
         prefered_currency: Choix devise
         default_display_polylines: Afficher les tracés des routes par défaut
+        role_id: Rôle
       vehicle:
         max_distance: Distance maximale
         max_ride_distance: Distance trajet maximale
@@ -704,6 +714,10 @@ fr:
               bad_customer: non associé à l'espace client
             polygon:
               invalid_json: n'est pas une chaîne de caractères JSON valide
+        user:
+          attributes:
+            role_id:
+              invalid: doit appartenir au même revendeur que l’espace client
         customer:
           attributes:
             optimization_dicho_minimum_service_size:
@@ -760,6 +774,8 @@ fr:
           icon_unknown: n'est pas une icône font-awesome autorisée
           icon_size_invalid: n'est pas une taille valide
           uniqueness: Une catégorie existe déjà avec ce nom
+        role:
+          icon_unknown: n'est pas une icône font-awesome autorisée
         optimization_time:
           must_be_greater_than_minimal_time: doit être supérieur à la durée minimale
         router:
@@ -942,6 +958,37 @@ fr:
         favicon_help: 'Icône du site web, 16x16 pixels au format PNG ou ICO.'
         protocol_url_http: HTTP
         protocol_url_https: HTTPS
+        roles_link: Rôles
+    roles:
+      menu:
+        roles: Rôles
+      index:
+        title: Rôles
+        new: Nouveau rôle
+      new:
+        title: Nouveau rôle
+      edit:
+        title: Modifier le rôle
+      form:
+        permissions_legend: Permissions
+        permissions_help: >-
+          Définit les permissions (barres d’outils et formulaires) pour les utilisateurs auxquels ce rôle est assigné.
+        forms_title: Formulaires
+        forms_help: >-
+          La colonne de gauche autorise la création, l’édition et la suppression. La colonne centrale affiche le formulaire dans la navigation en consultation seule. La colonne de droite le masque.
+        icon_help: >-
+          Choisissez une icône dans la liste
+        color_help: >-
+          Couleur d’affichage de l’icône
+        ref_help: Référence libre
+      flash:
+        created: Rôle créé.
+        updated: Rôle mis à jour.
+        destroyed: Rôle supprimé.
+        destroyed_multiple: Rôles supprimés.
+        duplicated: Rôle dupliqué. Vous pouvez le modifier depuis la liste.
+      duplicate_suffix: ' (copie)'
+      confirm_destroy: Supprimer ce rôle ?
     users:
       menu:
         users: Utilisateurs
@@ -950,13 +997,20 @@ fr:
       index:
         title: Modifier utilisateurs
         new: Nouvel utilisateur
+        role_column: Rôle
       new:
         title: Nouvel utilisateur
+      form:
+        role_blank: Aucun rôle
+        role_legend: Rôle (référence)
+        role_help: >-
+          Les barres d’outils et l’accès aux formulaires appliqués à l’utilisateur suivent les permissions définies pour ce rôle.
       create:
         success: User créé avec succès
       edit:
         title: Modifier utilisateur
         connect_as: Connecter en tant que…
+        password_optional_note: Laisser vide pour conserver le mot de passe actuel.
       update:
         success: Utilisateur mis à jour avec succès
       destroy:
@@ -1032,6 +1086,7 @@ fr:
       title: Modifier paramétrage de l'espace client
       send_email: Envoyer email de confirmation
       password: Changer le mot de passe
+      role_column: Rôle
       user:
         connect_as: Connecter en tant que…
         list: Liste des utilisateurs
@@ -2464,6 +2519,10 @@ fr:
       deliverable_unit: Capacités
       fail: Impossible de charger les plannings pour ce véhicule
       empty: Aucune capacité à afficher
+  roles:
+    form:
+      prefered_icons: Conseillés
+      other_icons: Autres
   routes_by_vehicles:
     show:
       title_page: Tournées par véhicule
@@ -2697,6 +2756,21 @@ fr:
       unlink_sso_account: Délier le compte %{provider}
       confirm_unlink_sso_account: Êtes-vous sûr de vouloir délier le compte %{provider} ?
       sso_not_configured: Aucun fournisseur SSO n'est configuré.
+      display_ui:
+        planning_headers: Données planning
+        route_headers: Données tournées
+        planning_toolbar: Outils planning
+        route_toolbar: Outils tournées
+        active: Visibles
+        inactive: Masqués
+        data_active: Actives
+        data_hidden: Masqués
+        operations_active: Actives
+        operations_disabled: Désactivés
+        operations_hidden: Masqués
+        headers_help: Faites glisser les blocs entre les listes pour les afficher ou les masquer. L’ordre des blocs est affiché sur le plan.
+        operations_help: >-
+          Actives : affichage et comportement normaux. Désactivés : visibles mais inutilisables. Masqués : non affichés et actions refusées.
     update:
       success: Utilisateur mis à jour avec succès
     password:
@@ -3400,3 +3474,31 @@ fr:
     destroy:
       success: Compte %{provider} délié avec succès.
       unauthorized: Vous n'avez pas l'autorisation de délier ce compte.
+  display_ui:
+    header_blocks:
+      stops: Arrêts
+      duration: Durée
+      distance: Distance
+      total_revenue: Chiffre d’affaires
+      total_cost: Coût
+      balance: Solde
+      vehicles: Véhicules
+      emission: Émission
+      speed: Vitesse
+      quantities: Quantités
+      used_reloads: Rechargements
+      wait_time: Temps d’attente
+      visits_duration: Durée des visites
+    operations:
+      external_callback: Application externe
+      optimize: Optimiser
+      zoning: Zonage
+      vehicle_usage_set: Configuration des véhicules (plan)
+      toggle_routes: Afficher ou masquer les tournées
+      toggle_route_data: Affichage des données tournée
+      lock_routes: Verrouiller les tournées
+      export: Exporter
+      refresh: Actualiser
+      vehicle_usage: Utilisation véhicule
+      stops: Arrêts
+      view: Affichage

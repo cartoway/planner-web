@@ -1,0 +1,25 @@
+- if @manage_planning[:manage_toggle_routes]
+  .dropdown.btn-group
+    - dis = @manage_planning[:disable_toggle_routes]
+    - if dis
+      %span#toggle_routes_dropdown_button.btn.btn-default.btn-sm.disabled
+        %i.fa.fa-eye
+        %span.caret
+    - else
+      %a#toggle_routes_dropdown_button.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle" => "dropdown", title: t('plannings.edit.toggle_routes'), type: "button"}
+        %i.fa.fa-eye
+        %span.caret
+    - unless dis
+      %ul#toggle_routes_dropdown.dropdown-menu{role: "menu"}
+        %li{"data-selection": "none"}
+          %a.active_none
+            %i.fa.fa-eye-slash.fa-fw
+            = t 'plannings.edit.active_none'
+        %li{"data-selection": "reverse"}
+          %a.active_reverse
+            %i.fa.fa-random.fa-fw
+            = t 'plannings.edit.active_reverse'
+        %li{"data-selection": "all"}
+          %a.active_all
+            %i.fa.fa-eye.fa-fw
+            = t 'plannings.edit.active_all'

@@ -1,0 +1,50 @@
+- return if @user.admin?
+.row.form-group
+  %label.col-md-offset-2.col-md-8
+    = t('users.form.display_ui.planning_headers')
+  .col-md-offset-2.col-md-8.field
+    - active_h, hidden_h = @user.header_blocks_split('planning')
+    .priority-zones.active-inactive-zones.headers-data-dnd#display-ui-headers-planning{ "data-drag-drop" => "user", "data-drag-drop-options" => Preferences::DragDropOptions.headers_zone_options('user', 'planning').to_json }
+      .headers-two-columns
+        .headers-planning-tier-active.priority-active.active-zone
+          .zone-title= t('users.form.display_ui.data_active')
+          .item-list
+            - active_h.each_with_index do |bid, index|
+              .draggable-item{ data: { value: bid, index: index } }
+                %span.item-order
+                %span.item-text= t("display_ui.header_blocks.#{bid}", default: bid.to_s.humanize)
+                %input{ type: 'hidden', name: 'user[headers][planning][active][]', value: bid }
+        .headers-planning-tier-hidden.priority-inactive.inactive-zone
+          .zone-title= t('users.form.display_ui.data_hidden')
+          .item-list
+            - hidden_h.each_with_index do |bid, index|
+              .draggable-item.headers-tier-hidden-item{ data: { value: bid, index: index } }
+                %span.item-order
+                %span.item-text= t("display_ui.header_blocks.#{bid}", default: bid.to_s.humanize)
+                %input{ type: 'hidden', name: 'user[headers][planning][hidden][]', value: bid }
+    %small.help-block= t('users.form.display_ui.headers_help')
+
+.row.form-group
+  %label.col-md-offset-2.col-md-8
+    = t('users.form.display_ui.route_headers')
+  .col-md-offset-2.col-md-8.field
+    - active_r, hidden_r = @user.header_blocks_split('route')
+    .priority-zones.active-inactive-zones.headers-data-dnd#display-ui-headers-route{ "data-drag-drop" => "user", "data-drag-drop-options" => Preferences::DragDropOptions.headers_zone_options('user', 'route').to_json }
+      .headers-two-columns
+        .headers-route-tier-active.priority-active.active-zone
+          .zone-title= t('users.form.display_ui.data_active')
+          .item-list
+            - active_r.each_with_index do |bid, index|
+              .draggable-item{ data: { value: bid, index: index } }
+                %span.item-order
+                %span.item-text= t("display_ui.header_blocks.#{bid}", default: bid.to_s.humanize)
+                %input{ type: 'hidden', name: 'user[headers][route][active][]', value: bid }
+        .headers-route-tier-hidden.priority-inactive.inactive-zone
+          .zone-title= t('users.form.display_ui.data_hidden')
+          .item-list
+            - hidden_r.each_with_index do |bid, index|
+              .draggable-item.headers-tier-hidden-item{ data: { value: bid, index: index } }
+                %span.item-order
+                %span.item-text= t("display_ui.header_blocks.#{bid}", default: bid.to_s.humanize)
+                %input{ type: 'hidden', name: 'user[headers][route][hidden][]', value: bid }
+    %small.help-block= t('users.form.display_ui.headers_help')

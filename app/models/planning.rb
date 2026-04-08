@@ -1135,8 +1135,6 @@ class Planning < ApplicationRecord
 
     if result[:routes_drive_time] != 0
       result[:routes_speed_average] = ((routes_distance / result[:routes_drive_time]) * converter).round
-      result[:routes_wait_time] = result[:routes_wait_time] > 0 ? result[:routes_wait_time] : nil
-      result[:routes_visits_duration] = result[:routes_visits_duration] > 0 ? result[:routes_visits_duration] : nil
     elsif result[:vehicles_used] == 0
       result = nil
     end

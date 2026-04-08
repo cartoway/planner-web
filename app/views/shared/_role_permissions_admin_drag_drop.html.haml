@@ -1,0 +1,109 @@
+-# Toolbar + form permissions only (no headers). Same drag-drop contract as preferences_admin_drag_drop.
+- record = local_assigns.fetch(:record)
+- param_prefix = local_assigns.fetch(:param_prefix).to_s
+- label_col_classes = local_assigns.fetch(:label_col_classes)
+- field_col_classes = local_assigns.fetch(:field_col_classes)
+- cid_op = dom_id(record, 'operations_planning')
+- cid_or = dom_id(record, 'operations_route')
+- cid_forms = dom_id(record, 'forms_resources')
+- forms_opts = Preferences::DragDropOptions.forms_three_tier_options(param_prefix)
+
+.form-group
+  .row
+    %label{ class: label_col_classes }
+      = t('users.form.display_ui.planning_toolbar')
+    %div{ class: field_col_classes }
+      - active_po, disabled_po, hidden_po = record.operations_tier_split('planning')
+      .priority-zones.active-inactive-zones.operations-toolbar-dnd.operations-three-zones{ id: cid_op, "data-drag-drop" => "generic", "data-drag-drop-options" => Preferences::DragDropOptions.operations_three_zone_options(param_prefix, 'planning').to_json }
+        .operations-three-columns
+          .operations-tier-active.priority-active.active-zone
+            .zone-title= t('users.form.display_ui.operations_active')
+            .item-list
+              - active_po.each_with_index do |sid, index|
+                .draggable-item{ data: { value: sid, index: index } }
+                  %span.item-order
+                  %span.item-text= t("display_ui.operations.#{sid}", default: sid.to_s.humanize)
+                  %input{ type: 'hidden', name: "#{param_prefix}[operations][planning][]", value: sid }
+          .operations-tier-disabled.priority-disabled.disabled-zone
+            .zone-title= t('users.form.display_ui.operations_disabled')
+            .item-list
+              - disabled_po.each_with_index do |sid, index|
+                .draggable-item{ data: { value: sid, index: index } }
+                  %span.item-order
+                  %span.item-text= t("display_ui.operations.#{sid}", default: sid.to_s.humanize)
+                  %input{ type: 'hidden', name: "#{param_prefix}[operations][planning_disabled][]", value: sid }
+          .operations-tier-hidden.priority-inactive.inactive-zone
+            .zone-title= t('users.form.display_ui.operations_hidden')
+            .item-list
+              - hidden_po.each_with_index do |sid, index|
+                .draggable-item.inactive{ data: { value: sid, index: index } }
+                  %span.item-order
+                  %span.item-text= t("display_ui.operations.#{sid}", default: sid.to_s.humanize)
+      %p.help-block= t('users.form.display_ui.operations_help')
+
+.form-group
+  .row
+    %label{ class: label_col_classes }
+      = t('users.form.display_ui.route_toolbar')
+    %div{ class: field_col_classes }
+      - active_ro, disabled_ro, hidden_ro = record.operations_tier_split('route')
+      .priority-zones.active-inactive-zones.operations-toolbar-dnd.operations-three-zones{ id: cid_or, "data-drag-drop" => "generic", "data-drag-drop-options" => Preferences::DragDropOptions.operations_three_zone_options(param_prefix, 'route').to_json }
+        .operations-three-columns
+          .operations-tier-active.priority-active.active-zone
+            .zone-title= t('users.form.display_ui.operations_active')
+            .item-list
+              - active_ro.each_with_index do |sid, index|
+                .draggable-item{ data: { value: sid, index: index } }
+                  %span.item-order
+                  %span.item-text= t("display_ui.operations.#{sid}", default: sid.to_s.humanize)
+                  %input{ type: 'hidden', name: "#{param_prefix}[operations][route][]", value: sid }
+          .operations-tier-disabled.priority-disabled.disabled-zone
+            .zone-title= t('users.form.display_ui.operations_disabled')
+            .item-list
+              - disabled_ro.each_with_index do |sid, index|
+                .draggable-item{ data: { value: sid, index: index } }
+                  %span.item-order
+                  %span.item-text= t("display_ui.operations.#{sid}", default: sid.to_s.humanize)
+                  %input{ type: 'hidden', name: "#{param_prefix}[operations][route_disabled][]", value: sid }
+          .operations-tier-hidden.priority-inactive.inactive-zone
+            .zone-title= t('users.form.display_ui.operations_hidden')
+            .item-list
+              - hidden_ro.each_with_index do |sid, index|
+                .draggable-item.inactive{ data: { value: sid, index: index } }
+                  %span.item-order
+                  %span.item-text= t("display_ui.operations.#{sid}", default: sid.to_s.humanize)
+      %p.help-block= t('users.form.display_ui.operations_help')
+
+.form-group
+  .row
+    %label{ class: label_col_classes }
+      = t('admin.roles.form.forms_title')
+    %div{ class: field_col_classes }
+      = hidden_field_tag "#{param_prefix}[forms_ui]", '1'
+      - active_forms, disabled_forms, hidden_forms = record.forms_resources_three_way_split
+      .active-inactive-zones.role-forms-dnd.role-forms-three-zones{ id: cid_forms, "data-drag-drop" => "generic", "data-drag-drop-options" => forms_opts.to_json }
+        .forms-three-columns
+          .forms-tier-active.priority-active.active-zone
+            .zone-title= t('users.form.display_ui.operations_active')
+            .item-list
+              - active_forms.each_with_index do |fid, index|
+                .draggable-item{ data: { value: fid, index: index } }
+                  %span.item-order
+                  %span.item-text= t("activerecord.models.#{fid}.other", default: fid.to_s.humanize)
+                  %input{ type: 'hidden', name: "#{param_prefix}[forms_active][]", value: fid }
+          .forms-tier-disabled.priority-disabled.disabled-zone
+            .zone-title= t('users.form.display_ui.operations_disabled')
+            .item-list
+              - disabled_forms.each_with_index do |fid, index|
+                .draggable-item{ data: { value: fid, index: index } }
+                  %span.item-order
+                  %span.item-text= t("activerecord.models.#{fid}.other", default: fid.to_s.humanize)
+                  %input{ type: 'hidden', name: "#{param_prefix}[forms_disabled][]", value: fid }
+          .forms-tier-hidden.priority-inactive.inactive-zone
+            .zone-title= t('users.form.display_ui.operations_hidden')
+            .item-list
+              - hidden_forms.each_with_index do |fid, index|
+                .draggable-item.inactive{ data: { value: fid, index: index } }
+                  %span.item-order
+                  %span.item-text= t("activerecord.models.#{fid}.other", default: fid.to_s.humanize)
+      %p.help-block= t('admin.roles.form.forms_help')

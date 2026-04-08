@@ -1,0 +1,164 @@
+- if @manage_planning[:manage_route_export_menu] || @manage_planning[:manage_route_export_print_only]
+  - export_dis = @manage_planning[:disable_route_export]
+  - if @manage_planning[:manage_route_export_menu]
+    %button.btn.btn-default.btn-xs.dropdown-toggle{"data-toggle" => "dropdown", title: t('plannings.edit.export_help'), type: "button", disabled: export_dis}
+      %i.fa.fa-share-nodes
+      %span.caret
+    %ul.dropdown-menu.pull-right{role: "menu"}
+      - if @callback_button && summary[:external_callback_url]
+        %li.link.customer_external_callback_url{data: {customer_id: current_user.customer.id, planning_id: summary[:planning_id], route_id: route[:route_id]}}
+          %i.fa.fa-desktop.fa-fw
+          - if summary[:external_callback_name]
+            = summary[:external_callback_name]
+          - else
+            = t('plannings.edit.customer_external_callback_url.action')
+        %li.divider{role: "separator"}
+      - if route[:tomtom]
+        .dropdown-spacing
+          = t('plannings.edit.dialog.tomtom.title')
+          \:
+          - if route[:devices][:tomtom_id]
+            = route[:devices][:tomtom_id][:text]
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "tomtom", "data-type" => "orders"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.tomtom_send_orders.singular.action')
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "tomtom", "data-type" => "waypoints", title: "t('plannings.edit.tomtom_send_waypoints.title')"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.tomtom_send_waypoints.singular.action')
+        %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "tomtom"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.tomtom_clear.singular.action')
+        %li.divider{role: "separator"}
+
+      - if route[:teksat]
+        .dropdown-spacing
+          = t('plannings.edit.dialog.teksat.title')
+          \:
+          - if route[:devices][:teksat_id]
+            = route[:devices][:teksat_id][:text]
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "teksat"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.teksat_send.singular.action')
+        %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "teksat"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.teksat_clear.singular.action')
+        %li.divider{role: "separator"}
+      - if route[:orange]
+        .dropdown-spacing
+          = t('plannings.edit.dialog.orange.title')
+          \:
+          - if route[:devices][:orange_id]
+            = route[:devices][:orange_id][:text]
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "orange"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.orange_send.singular.action')
+        %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "orange"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.orange_clear.singular.action')
+        %li.divider{role: "separator"}
+      - if route[:masternaut]
+        .dropdown-spacing
+          = t('plannings.edit.dialog.orange.title')
+          \:
+          - if route[:devices][:masternaut_ref]
+            = route[:devices][:masternaut_ref][:text]
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "masternaut"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.masternaut_send.singular.action')
+        %li.divider{role: "separator"}
+      - if route[:alyacom]
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "alyacom"}
+          %i.fa.fa-mobile.fa-fw
+          = t('plannings.edit.alyacom_send.singular.action')
+        %li.divider{role: "separator"}
+      - if route[:trimble]
+        .dropdown-spacing
+          = t('plannings.edit.dialog.orange.title')
+          \:
+          - if route[:devices][:trimble_ref]
+            = route[:devices][:trimble_ref][:text]
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "trimble"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.trimble_send.singular.action')
+        %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "trimble"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.trimble_clear.singular.action')
+        %li.divider{role: "separator"}
+      - if route[:notico]
+        .dropdown-spacing
+          = t('plannings.edit.dialog.orange.title')
+          \:
+          - if route[:devices][:agent_id]
+            = route[:devices][:agent_id][:text]
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "notico"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.notico_send.singular.action')
+        %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "notico"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.notico_clear.singular.action')
+        %li.divider{role: "separator"}
+      - if route[:deliver]
+        .dropdown-spacing
+          = t('plannings.edit.dialog.deliver.title')
+        %li
+          %a{ href: driver_url(@planning, route) }
+            %i.fa.fa-link.fa-fw
+            = t('plannings.edit.deliver_send.singular.access')
+        - if @planning.customer.enable_sms
+          %li
+            = link_to modal_route_path(route[:route_id], modal: 'sms_drivers'), remote: true, format: 'js', 'data-toggle': "modal", 'data-target': "#planning-send-sms-drivers-modal", 'data-keyboard': "true", id: 'send-sms-drivers' do
+              %i.fa.fa-fw.fa-comment-sms
+              = t('plannings.edit.deliver_send.singular.send_sms')
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "deliver"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.deliver_send.singular.action')
+        %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "deliver"}
+          %i.fa.fa-rectangle-xmark.fa-fw
+          = t('plannings.edit.deliver_clear.singular.action')
+        %li.divider{role: "separator"}
+      - if route[:praxedo]
+        .dropdown-spacing
+          = t('plannings.edit.dialog.praxedo.title')
+          \:
+          - if route[:devices][:praxedo_agent_id]
+            = route[:devices][:praxedo_agent_id][:text]
+        %li.link.device-operation{"data-operation" => "send", "data-route-id" => route[:route_id], "data-service" => "praxedo"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.praxedo_send.singular.action')
+        %li.link.device-operation{"data-operation" => "clear", "data-route-id" => route[:route_id], "data-service" => "praxedo"}
+          %i.fa.fa-mobile.fa-rotate-90.fa-fw
+          = t('plannings.edit.praxedo_clear.singular.action')
+        %li.divider{role: "separator"}
+      %li
+        %a{href: "/api-web/0.1/plannings/#{summary[:planning_id]}/routes/#{route[:route_id]}/print", target: "_blank"}
+          %i.fa.fa-print.fa-fw
+          = t('plannings.edit.export.print')
+      %li.divider{role: "separator"}
+      %li
+        %a.export_spreadsheet
+          %i.fa.fa-table.fa-fw
+          = t('plannings.edit.export.spreadsheet')
+      %li.divider{role: "separator"}
+      %li
+        %a{href: route[:calendar_url_api_key]}
+          %i.fa.fa-calendar.fa-fw
+          = t('plannings.edit.export.icalendar.action')
+      - if route[:contact_email]
+        %li.icalendar_email{"data-email" => "true"}
+          %a{href: route[:calendar_url]}
+            %i.fa.fa-envelope.fa-fw
+            = t('plannings.edit.export.icalendar.action_email')
+      - if @planning.customer.enable_sms
+        %li.divider{role: "separator"}
+        %li
+          %a.send_sms{href: "/api/0.1/plannings/#{summary[:planning_id]}/routes/#{route[:route_id]}/send_sms"}
+            %i.fa.fa-mobile.fa-fw
+            = t('plannings.edit.send_sms')
+  - elsif @manage_planning[:manage_route_export_print_only]
+    - print_href = "/api-web/0.1/plannings/#{summary[:planning_id]}/routes/#{route[:route_id]}/print"
+    - if export_dis
+      %span.btn.btn-default.btn-xs.disabled{title: t('plannings.edit.export.print')}
+        %i.fa.fa-print.fa-fw
+    - else
+      %a.btn.btn-default.btn-xs{href: print_href, target: "_blank", title: t('plannings.edit.export.print')}
+        %i.fa.fa-print.fa-fw

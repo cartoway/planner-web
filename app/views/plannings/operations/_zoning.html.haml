@@ -1,0 +1,10 @@
+- if @manage_planning[:manage_zoning]
+  .d-flex.justify-content-center.w-100
+    .col-xs-12.col-md-12
+      = bootstrap_form_for [:apply_zonings, @planning], { layout: :horizontal, default_div_class: '', html: { id: "planning_zoning_#{@planning.id}", class: 'form-horizontal update-zonings-form', title: t('plannings.edit.zonings.label') }} do |f|
+        %label
+          = t('plannings.edit.zonings.label')
+        = zoning_select f, @planning
+        .d-flex.justify-content-center
+          - dis = @manage_planning[:disable_zoning]
+          = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: (@planning.zoning_outdated ? t('plannings.edit.outdated_zoning') : nil), disabled: dis

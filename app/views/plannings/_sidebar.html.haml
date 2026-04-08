@@ -1,4 +1,4 @@
-- outdated ||= nil
+- outdated = local_assigns.fetch(:outdated, nil)
 .global_info
   = render partial: 'edit_head.html.haml', locals: local_assigns
 - if outdated

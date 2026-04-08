@@ -21,6 +21,27 @@ class UserTest < ActiveSupport::TestCase
     assert user.valid?
   end
 
+  test 'toolbar segment visibility follows role operations when role_id is set' do
+    return unless Role.column_names.include?('operations')
+
+    reseller = resellers(:reseller_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['optimize'] = {
+      'visible' => false, 'usable' => false, 'customizable' => true
+    }
+    role = Role.create!(
+      reseller: reseller,
+      name: 'Restricted toolbar',
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    assert user.operation_segment_visible?(:planning, 'zoning')
+    assert_not user.operation_segment_visible?(:planning, 'optimize')
+  end
+
   test 'should reset device attributes on duplication' do
     u = users(:user_one)
     customer_dopple = Customer.for_duplication.find(u.customer.id).duplicate

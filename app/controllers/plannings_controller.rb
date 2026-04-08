@@ -27,6 +27,7 @@ class PlanningsController < ApplicationController
 
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
+  before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal, :move]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar, :update_stop]
@@ -40,6 +41,7 @@ class PlanningsController < ApplicationController
   include PlanningExport
   include PlanningsHelper
   include SharedHelper
+  include PlanningToolbarPermissions
 
   def index
     @plannings = current_user.customer.plannings.select{ |planning|
@@ -113,6 +115,7 @@ class PlanningsController < ApplicationController
   def new
     @planning = current_user.customer.plannings.build
     @planning.vehicle_usage_set = current_user.customer.vehicle_usage_sets[0]
+    bootstrap_manage_planning_flags!
   end
 
   def edit
@@ -126,7 +129,7 @@ class PlanningsController < ApplicationController
       raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.plannings.over_max_limit'))) if current_user.customer.too_many_plannings?
 
       @router_error = nil
-      @planning = current_user.customer.plannings.create(planning_params)
+      @planning = current_user.customer.plannings.create(permitted_planning_attributes(planning_for_sanitize: nil))
       if @planning.valid?
         @planning.default_routes
         @planning = Planning.where(id: @planning.id).preload_route_details.first!
@@ -147,6 +150,7 @@ class PlanningsController < ApplicationController
           format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.created', model: @planning.class.model_name.human) }
         end
       else
+        bootstrap_manage_planning_flags!
         format.html { render action: 'new' }
       end
     end
@@ -155,7 +159,7 @@ class PlanningsController < ApplicationController
   def update
     respond_to do |format|
       Route.no_touching do
-        if @planning.update(planning_params)
+        if @planning.update(permitted_planning_attributes)
           format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.updated', model: @planning.class.model_name.human) }
         else
           capabilities
@@ -551,7 +555,7 @@ class PlanningsController < ApplicationController
   end
 
   def self.manage
-    Hash[[:edit, :zoning, :export, :organize, :vehicle, :destination, :store].map{ |v| ["manage_#{v}".to_sym, true] }]
+    Hash[[:edit, :zoning, :vehicle_usage_set, :export, :organize, :vehicle, :destination, :store].map{ |v| ["manage_#{v}".to_sym, true] }]
   end
 
   private
@@ -676,15 +680,14 @@ class PlanningsController < ApplicationController
   def set_planning_without_stops
     @manage_planning =
       if request.referer&.match('api-web')
-        @callback_button = true
         ApiWeb::V01::PlanningsController.manage
       else
         PlanningsController.manage
       end
-    @callback_button = true
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
+    apply_planning_toolbar_operation_flags!
   end
 
   def set_driver_planning
@@ -707,7 +710,6 @@ class PlanningsController < ApplicationController
   def set_planning
     @manage_planning =
       if request.referer&.match('api-web')
-        @callback_button = true
         ApiWeb::V01::PlanningsController.manage
       else
         PlanningsController.manage
@@ -715,6 +717,7 @@ class PlanningsController < ApplicationController
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_route_details.first!
+    apply_planning_toolbar_operation_flags!
   end
 
   def check_no_existing_job
@@ -727,6 +730,37 @@ class PlanningsController < ApplicationController
     p[:begin_date] = Date.strptime(p[:begin_date], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK) unless p[:begin_date].blank?
     p[:end_date] = Date.strptime(p[:end_date], I18n.t('time.formats.datepicker')).strftime(ACTIVE_RECORD_DATE_MASK) unless p[:end_date].blank?
     p
+  end
+
+  def permitted_planning_attributes(planning_for_sanitize: @planning)
+    sanitize_planning_vehicle_usage_set_param!(planning_params, planning_for_sanitize)
+  end
+
+  def bootstrap_manage_planning_flags!
+    @manage_planning = PlanningsController.manage
+    apply_planning_toolbar_operation_flags!
+  end
+
+  # When planning operations.vehicle_usage_set is hidden or disabled, ignore submitted vehicle_usage_set_id.
+  def sanitize_planning_vehicle_usage_set_param!(permitted, record = @planning)
+    return permitted if current_user.customer.vehicle_usage_sets.size <= 1
+    return permitted if planning_vehicle_usage_set_change_allowed?
+
+    default_set_id = current_user.customer.vehicle_usage_sets.first&.id
+    permitted[:vehicle_usage_set_id] = if record&.persisted?
+      record.vehicle_usage_set_id
+    else
+      default_set_id
+    end
+    permitted
+  end
+
+  def planning_vehicle_usage_set_change_allowed?
+    return true if current_user.customer.vehicle_usage_sets.size <= 1
+    return true unless current_user.respond_to?(:operation_segment_visible?)
+
+    current_user.operation_segment_visible?(:planning, 'vehicle_usage_set') &&
+      current_user.operation_segment_usable?(:planning, 'vehicle_usage_set')
   end
 
   def filter_params

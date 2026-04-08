@@ -1,0 +1,13 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- if route[:vehicle_id]
+  .col-xs-4{title: t('plannings.edit.stops_help'), style: "order: #{ui_order}"}
+    .primary.route-info
+      %i.fa.fa-check-square.fa-fw>
+      = "#{route[:size_active]}/#{route[:size]}"
+      = t('plannings.edit.stops')
+- else
+  .col-xs-4{style: "order: #{ui_order}"}
+    .route-info.inactive{ data: { "size-active": route[:size]}}
+      %i.fa.fa-check-square.fa-fw
+      = route[:size]
+      = t('plannings.edit.stops')

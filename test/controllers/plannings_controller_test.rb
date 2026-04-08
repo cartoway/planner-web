@@ -163,6 +163,49 @@ class PlanningsControllerTest < ActionController::TestCase
     end
   end
 
+  test 'update ignores vehicle_usage_set_id when planning vehicle_usage_set operation segment is hidden' do
+    u = users(:user_one)
+    previous_role_id = u.role_id
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['vehicle_usage_set'] = {
+      'visible' => false,
+      'customizable' => true,
+      'usable' => false
+    }
+    role = Role.create!(
+      reseller: u.customer.reseller,
+      name: "hide-planning-vus-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    u.reload
+
+    target_id = vehicle_usage_sets(:vehicle_usage_set_three).id
+    assert_not_equal target_id, @planning.vehicle_usage_set_id
+
+    orig_locale = I18n.locale
+    begin
+      I18n.locale = I18n.default_locale = :en
+      patch :update, params: {
+        id: @planning,
+        planning: {
+          name: @planning.name,
+          vehicle_usage_set_id: target_id,
+          zoning_ids: @planning.zonings.collect(&:id),
+          date: '10-10-2015'
+        }
+      }
+
+      assert_redirected_to edit_planning_path(@planning)
+      @planning.reload
+      assert_equal vehicle_usage_sets(:vehicle_usage_set_one).id, @planning.vehicle_usage_set_id
+    ensure
+      I18n.locale = orig_locale
+      u.update!(role_id: previous_role_id)
+    end
+  end
+
   test 'should not create planning' do
     assert_difference('Planning.count', 0) do
       post :create, params: { planning: { name: '', vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id } }
@@ -382,6 +425,44 @@ class PlanningsControllerTest < ActionController::TestCase
     get :edit, params: { id: @planning }
     assert_response :success
     assert_valid response
+  end
+
+  test 'edit assigns manage_planning toolbar flags from planning operation segments' do
+    get :edit, params: { id: @planning }
+    assert_response :success
+    mp = assigns(:manage_planning)
+    assert_includes mp.keys, :manage_optimize
+    assert_includes mp.keys, :disable_optimize
+    assert_includes mp.keys, :manage_toggle_routes
+    assert_includes mp.keys, :disable_planning_export
+    assert_includes mp.keys, :manage_route_export_menu
+    assert_includes mp.keys, :manage_route_optimize
+    assert_includes mp.keys, :disable_route_export
+    assert_includes mp.keys, :manage_route_vehicle_usage
+    assert_equal false, assigns(:callback_button)
+  end
+
+  test 'edit manage_optimize follows role operations when role_id is set' do
+    return unless Role.column_names.include?('operations')
+
+    reseller = resellers(:reseller_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['optimize'] = {
+      'visible' => false, 'usable' => false, 'customizable' => true
+    }
+    role = Role.create!(
+      reseller: reseller,
+      name: 'No optimize toolbar role',
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u = users(:user_one)
+    u.update!(role_id: role.id)
+
+    sign_in u
+    get :edit, params: { id: @planning }
+    assert_response :success
+    assert_equal false, assigns(:manage_planning)[:manage_optimize]
   end
 
   test 'should update planning and change zoning' do
@@ -618,6 +699,24 @@ class PlanningsControllerTest < ActionController::TestCase
     get :optimize, params: { planning_id: @planning, format: :js, global: true, ignore_overload_multipliers: overload_multipliers }
     assert_response :success
     assert_equal @planning.routes.size, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
+  end
+
+  test 'optimize returns forbidden when planning optimize segment is not usable' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['optimize'] =
+      ops['planning']['segment_controls']['optimize'].dup.merge('usable' => false)
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "no-planning-optimize-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    get :optimize, params: { planning_id: @planning, format: :js, global: true }
+    assert_response :forbidden
   end
 
   test 'should not optimize when an optimization job is already running' do

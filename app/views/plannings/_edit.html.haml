@@ -19,10 +19,11 @@
           %button.btn.btn-default.btn-sm.sidebar-close{title: t('.collapse_planning_panel'), type: "button"}
             %i.fa.fa-caret-left
       #planning_tools.row
-        - if @callback_button && @planning.customer.enable_external_callback? && @planning.customer.external_callback_url
+        - if @callback_button
           .row
             %p.text-center.col-md-12
-              %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{ data: { customer_id: current_user.customer.id, planning_id: @planning.id }, type: "button"}
+              - dis = @manage_planning[:disable_external_callback]
+              %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{ data: { customer_id: current_user.customer.id, planning_id: @planning.id }, type: "button", disabled: dis }
                 %i.fa.fa-desktop.fa-fw
                 = @planning.customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
         #route_selector.row
@@ -45,15 +46,16 @@
                     - unless @planning.id
                       %p.help-block= t('activerecord.attributes.planning.tags_help')
           %br
-        - if @planning.customer.vehicle_usage_sets.size > 1
+        - if @manage_planning[:manage_vehicle_usage_set] && @planning.customer.vehicle_usage_sets.size > 1
+          - dis = @manage_planning[:disable_vehicle_usage_set]
           = bootstrap_form_for @planning, {layout: :horizontal, default_div_class: ''} do |f|
             .d-flex.justify-content-center
               .col-xs-12.col-md-12
                 %label
                   = t('activerecord.attributes.planning.vehicle_usage_set_id')
-                = f.collection_select :vehicle_usage_set_id, @planning.customer.vehicle_usage_sets, :id, :name, { control_col: 'col-xs-12 col-md-12', label: '', label_class: 'd-none' }, {required: true, control_class: 'form-control' }
+                = f.collection_select :vehicle_usage_set_id, @planning.customer.vehicle_usage_sets, :id, :name, { control_col: 'col-xs-12 col-md-12', label: '', label_class: 'd-none' }, { required: true, control_class: 'form-control', disabled: dis }
                 .d-flex.justify-content-center
-                  = f.submit message: t('plannings.edit.vehicle_usage_set.action'), button: 'btn btn-default'
+                  = f.submit message: t('plannings.edit.vehicle_usage_set.action'), button: 'btn btn-default', disabled: dis
         - if @manage_planning[:manage_zoning]
           .d-flex.justify-content-center
             .col-xs-12.col-md-12
@@ -62,139 +64,20 @@
                   = t('plannings.edit.zonings.label')
                 = zoning_select f, @planning
                 .d-flex.justify-content-center
-                  = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: @planning.zoning_outdated && t('.outdated_zoning')
+                  - dis = @manage_planning[:disable_zoning]
+                  = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil), disabled: dis
       #global_tools.row
-        .btn-group
-          %button#optimize_all.btn.btn-primary.btn-sm.optimize{title: t('.optimize'), type: "button", "data-toggle": "modal", "data-target": "#optimization-modal" }
-            %i.fa.fa-gears
-            = t('plannings.edit.dialog.optimization.optimize')
+        - if @manage_planning[:manage_optimize]
+          .btn-group
+            - dis = @manage_planning[:disable_optimize]
+            %button#optimize_all.btn.btn-primary.btn-sm.optimize{title: t('.optimize'), type: "button", "data-toggle": "modal", "data-target": "#optimization-modal", disabled: dis }
+              %i.fa.fa-gears
+              = t('plannings.edit.dialog.optimization.optimize')
         .pull-right.btn-group
-          .dropdown.btn-group
-            %a#toggle_routes_dropdown_button.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.toggle_routes'), type: "button"}
-              %i.fa.fa-eye
-              %span.caret
-            -# https://github.com/twbs/bootstrap/issues/1411
-            %ul#toggle_routes_dropdown.dropdown-menu{role: "menu"}
-              %li{"data-selection": "none"}
-                %a.active_none
-                  %i.fa.fa-eye-slash.fa-fw
-                  = t 'plannings.edit.active_none'
-              %li{"data-selection": "reverse"}
-                %a.active_reverse
-                  %i.fa.fa-random.fa-fw
-                  = t 'plannings.edit.active_reverse'
-              %li{"data-selection": "all"}
-                %a.active_all
-                  %i.fa.fa-eye.fa-fw
-                  = t 'plannings.edit.active_all'
-          .dropdown.btn-group
-            %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.toggle_route_data'), type: "button"}
-              %i.fa.fa-chart-column
-              %span.caret
-            -# https://github.com/twbs/bootstrap/issues/1411
-            %ul#data_routes_dropdown.dropdown-menu{role: "menu"}
-              %li{"data-selection": "none"}
-                %a.active_none
-                  %i.fa.fa-angle-left.fa-fw{style: "transform: rotate(-45deg);"}
-                  = t 'plannings.edit.active_none'
-              - if planning_quantities(@planning).any?
-                %li{"data-selection": "simple"}
-                  %a.active_simple
-                    %i.fa.fa-chart-column.fa-fw
-                    = t 'plannings.edit.active_simple'
-              %li{"data-selection": "all"}
-                %a.active_all
-                  %i.fa.fa-square-poll-vertical.fa-fw
-                  = t 'plannings.edit.active_all'
-          .dropdown.btn-group
-            %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle": "dropdown", title: t('.lock_routes'), type: "button"}
-              %i.fa.fa-unlock
-              %span.caret
-            -# https://github.com/twbs/bootstrap/issues/1411
-            %ul#lock_routes_dropdown.dropdown-menu{role: "menu"}
-              %li{"data-selection": "none"}
-                %a.active_none
-                  %i.fa.fa-unlock.fa-fw
-                  = t 'plannings.edit.active_none'
-              %li{"data-selection": "reverse"}
-                %a.active_reverse
-                  %i.fa.fa-random.fa-fw
-                  = t 'plannings.edit.active_reverse'
-              %li{"data-selection": "all"}
-                %a.active_all
-                  %i.fa.fa-lock.fa-fw
-                  = t 'plannings.edit.active_all'
-          - if @manage_planning[:manage_export]
-            .dropdown.btn-group
-              %a.btn.btn-default.btn-sm.right.export.dropdown-toggle{"data-toggle": "dropdown", title: t('.exports'), type: "button"}
-                %i.fa.fa-share-nodes
-                %span.caret
-              %ul.dropdown-menu
-                %li.dropdown-header
-                  %h5
-                    = t('plannings.edit.all_plannings_related')
-                %hr
-                  - if current_user.customer.enable_external_callback? && current_user.customer.external_callback_url
-                    %li.link.customer_external_callback_url{ data: { customer_id: current_user.customer.id, planning_id: @planning.id } }
-                      %i.fa.fa-desktop.fa-fw
-                      = current_user.customer.external_callback_name || t('plannings.edit.customer_external_callback_url.action')
-                    %li.divider{role: "separator"}
-                - @device_definitions.each do |key, data|
-                  - definition = data[:definition]
-                  - routes_with_configured_devices = data[:routes_with_configured_devices]
-                  - if key == :deliver && @planning.customer.enable_sms
-                    %li
-                      = link_to planning_modal_path(@planning, modal: 'sms_drivers'), remote: true, format: 'js', 'data-toggle': "modal", 'data-target': "#planning-send-sms-drivers-modal", 'data-keyboard': "true", id: 'send-sms-drivers' do
-                        %i.fa.fa-fw.fa-comment-sms
-                        = t('plannings.edit.deliver_send.plural.send_sms')
-                  - if routes_with_configured_devices.any?
-                    - definition[:route_operations].each do |route_operation|
-                      - options = { planning_id: "#{@planning.id}" }
-                      - options.merge!({ toggle: 'tooltip', title: "#{t(plannings.edit.tomtom_send_waypoints.title).html_safe}" }) if route_operation.is_a?(Hash) && route_operation[:send].to_s == 'waypoints'
-                      - options.merge!({ service: "#{definition[:device]}", operation: "#{route_operation.is_a?(Hash) ? route_operation.keys[0] : route_operation}" })
-                      %li.link.device-operation{data: options}
-                        %i.fa.fa-fw{ class: (route_operation == :clear ? 'fa-rectangle-xmark' : 'fa-mobile fa-rotate-90') }
-                          - translation = "#{definition[:device]}_#{route_operation.is_a?(Hash) ? route_operation.keys[0].to_s + '_' + route_operation.values[0].to_s : route_operation.to_s}.plural.action"
-                        = t("plannings.edit.#{translation}")
-                    - if definition[:route_operations].any?
-                      %li.divider{role: "separator"}
-                %li
-                  = link_to api_web_v01_print_planning_path(@planning), target: :_blank do
-                    %i.fa.fa-print.fa-fw
-                    = t '.export.print'
-                %li.divider{role: "separator"}
-                %li
-                  %a.export_spreadsheet
-                    %i.fa.fa-table.fa-fw
-                    = t '.export.spreadsheet'
-                %li
-                  = link_to planning_path(@planning, format: 'excel', summary: true), target: :_blank do
-                    %i.fa.fa-table.fa-fw
-                    = t '.export.summary_spreadsheet'
-                %li.divider{role: "separator"}
-                %li
-                  = link_to api_planning_calendar_path(@planning, api_key: current_user.api_key) do
-                    %i.fa.fa-calendar.fa-fw
-                    = t '.export.icalendar.action'
-                - if @planning.routes.any?{|route| route.vehicle_usage_id && !route.vehicle_usage.vehicle.contact_email.blank? }
-                  %li.icalendar_email{"data-email": "true"}
-                    = link_to api_planning_calendar_path(@planning, email: 1) do
-                      %i.fa.fa-envelope.fa-fw
-                      = t '.export.icalendar.action_email'
-                - if @planning.customer.enable_sms && @planning.customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
-                  %li.divider{role: "separator"}
-                  %li
-                    %a.send_sms{href: "/api/0.1/plannings/#{@planning.id}/send_sms"}
-                      %i.fa.fa-mobile.fa-fw
-                      = t '.send_sms'
-                %li.divider{role: "separator"}
-                %li
-                  %a.historize{href: "/api/0.1/plannings/#{@planning.id}/historize"}
-                    %i.fa.fa-chart-line.fa-fw
-                    = t '.historize'
-            - if @manage_planning[:manage_print]
-              = link_to api_web_v01_print_planning_path(@planning), class: 'btn btn-default btn-sm', title: t('.export.print'), target: :_blank do
-                %i.fa.fa-print.fa-fw
+          - Preferences::Catalog.planning_edit_global_toolbar_operation_ids.each do |op|
+            - path = Preferences::Catalog.toolbar_operation_partial('planning', op)
+            - next if path.blank?
+            = render partial: path
       #planning.row
 
 #map.sidebar-map

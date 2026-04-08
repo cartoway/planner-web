@@ -1,0 +1,8 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- averages = local_assigns.fetch(:averages, nil)
+- value = local_assigns[:wait_time].presence || (averages && (averages[:routes_wait_time] || averages['routes_wait_time']))
+- display = value.present? ? value : time_over_day(0)
+.col-xs-4{title: t("plannings.edit.wait_time_help"), style: "order: #{ui_order}"}
+  .primary.route-info
+    %i.fa.fa-hourglass-half.fa-fw{"aria-hidden": "true"}>
+    = display

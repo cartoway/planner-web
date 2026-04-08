@@ -1,10 +1,11 @@
+- vehicle_usage_select_disabled = !@manage_planning[:manage_route_vehicle_usage] || @manage_planning[:disable_route_vehicle_usage]
 .panel.panel-default
   .panel-heading
     .row
       .col-xs-5
         %input#route_ref.form-control{name: "route[ref]", placeholder: t("plannings.edit.route_placeholder"), type: "text", value: route[:ref]}
-      .col-xs-5
-        %select.vehicle_select.select2-xs{"data-initial-value": route[:vehicle_id], name: "route[vehicle]", style: "display:none", value: route[:vehicle_id]}
+      .col-xs-5{class: ('vehicle-usage-select-disabled' if vehicle_usage_select_disabled)}
+        %select.vehicle_select.select2-xs{"data-initial-value": route[:vehicle_id], name: "route[vehicle]", style: "display:none", value: route[:vehicle_id], disabled: vehicle_usage_select_disabled}
           %option{selected: "selected", value: route[:vehicle_id]}
             = route[:vehicle_id]
         %span.select2.select2-container.select2-container--bootstrap.input-sm.select2-container--below{dir: "ltr", style: "display: inline-block;"}
