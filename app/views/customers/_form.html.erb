@@ -304,19 +304,25 @@
         <% current_priority = (@customer.solver_priority || available_solvers).select { |s| available_solvers.include?(s) } %>
         <% inactive_solvers = available_solvers - current_priority %>
         <!--
-          Generic Active/Inactive Drag & Drop Component Usage:
-          - data-drag-drop: type identifier for translations and callbacks
-          - data-drag-drop-options: JSON configuration for the component
-          - .draggable-item: class for draggable elements
-          - .item-list: class for drop zones
-          - .item-order: class for order display
-          - .item-text: class for text display
+          ActiveInactiveDragDrop: data-drag-drop-options must include options.columns (>= 2).
+          See app/assets/javascripts/utils/active_inactive_drag_drop.js
         -->
-        <div class="priority-zones active-inactive-zones" id="priority-container" data-drag-drop="solver" data-drag-drop-options='{"minActiveItems": 1, "hiddenInputSelector": "input[name*=\"customer[advanced_options][solver_priority][]\"]", "activeContainerSelector": ".priority-active .priority-labels", "inactiveContainerSelector": ".priority-inactive .priority-labels", "itemSelector": ".label", "orderDisplaySelector": ".order", "textDisplaySelector": ".name"}'>
+        <% solver_drag_drop = {
+          minActiveItems: 1,
+          itemSelector: '.label',
+          orderDisplaySelector: '.item-order, .order',
+          textDisplaySelector: '.name',
+          columns: [
+            { containerSelector: '.priority-active .priority-labels', inputName: 'customer[advanced_options][solver_priority][]' },
+            { containerSelector: '.priority-inactive .priority-labels', inactive: true }
+          ]
+        } %>
+        <div class="priority-zones active-inactive-zones" id="priority-container" data-drag-drop="solver" data-drag-drop-options="<%= ERB::Util.html_escape(solver_drag_drop.to_json) %>">
           <div class="priority-active active-zone">
             <div class="priority-labels item-list" id="priority-active">
               <% current_priority.each_with_index do |solver, index| %>
                 <div class="label draggable-item" data-solver="<%= solver %>" data-value="<%= solver %>" data-index="<%= index %>">
+                  <span class="order item-order"></span>
                   <span class="name item-text"><%= solver.upcase %></span>
                   <input type="hidden" name="customer[advanced_options][solver_priority][]" value="<%= solver %>" />
                 </div>
@@ -328,6 +334,7 @@
             <div class="priority-labels item-list" id="priority-inactive">
               <% inactive_solvers.each_with_index do |solver, index| %>
                 <div class="label inactive draggable-item inactive" data-solver="<%= solver %>" data-value="<%= solver %>" data-index="<%= index %>">
+                  <span class="order item-order"></span>
                   <span class="name item-text"><%= solver.upcase %></span>
                 </div>
               <% end %>

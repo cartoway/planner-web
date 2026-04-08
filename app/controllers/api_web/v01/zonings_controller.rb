@@ -50,7 +50,7 @@ class ApiWeb::V01::ZoningsController < ApiWeb::V01::ApiWebController
   end
 
   # Use callbacks to share common setup or constraints between actions.
-  # rights should be checked before thanks to CanCan::Ability
+  # permissions should be checked before thanks to CanCan::Ability
   def manage_zoning
     @manage_zoning = ApiWeb::V01::ZoningsController.manage
   end

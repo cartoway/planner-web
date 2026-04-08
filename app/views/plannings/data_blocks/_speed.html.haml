@@ -1,0 +1,7 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- averages = local_assigns[:averages]
+- if averages
+  .col-xs-4{title: t("plannings.edit.route_speed_average_help"), style: "order: #{ui_order}"}
+    .primary.route-info
+      %i.fa.fa-tachometer.fa-fw{"aria-hidden": "true"}>
+      = "#{averages[:routes_speed_average]} #{averages[:prefered_unit]}/h"

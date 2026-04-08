@@ -1,67 +1,8 @@
-- averages ||= nil
-.row.route-data.route-header
-  - if averages
-    - if averages[:total_revenue]
-      .col-xs-4{title: t('plannings.edit.revenue_help')}
-        .primary.route-info
-          %i.fa.fa-hand-holding-dollar.fa-fw
-          = averages[:total_revenue]
-          = t("all.unit.currency_symbol.#{prefered_currency}")
-    - if averages[:total_cost]
-      .col-xs-4{title: t('plannings.edit.total_cost_help')}
-        .primary.route-info
-          %i.fa.fa-coins.fa-fw
-          = averages[:total_cost]
-          = t("all.unit.currency_symbol.#{prefered_currency}")
-    - if averages[:total_revenue] && averages[:total_cost]
-      .col-xs-4{title: t('plannings.edit.balance_help')}
-        .route-info{ class: (averages[:total_balance] < 0 ? 'danger' : averages[:total_balance] == 0 ? 'secondary' : 'success')}
-          %i.fa.fa-scale-balanced.fa-fw
-          = averages[:total_balance]
-          = t("all.unit.currency_symbol.#{prefered_currency}")
-  .col-xs-4{title: t("plannings.edit.stops_help")}
-    .primary.route-info
-      %i.fa.fa-check-square.fa-fw>
-      = "#{size_active} / #{size}"
-      = t('plannings.edit.stops')
-  - if averages
-    .col-xs-4{title: t("plannings.edit.vehicles_used_help")}
-      .primary.route-info
-        %i.fa.fa-truck-field.fa-fw{"aria-hidden" => "true"}>
-        = "#{averages[:vehicles_used]} / #{averages[:vehicles]}"
-        = t('plannings.edit.routes')
-    .col-xs-4{title: t("plannings.edit.emission_help")}
-      .primary.route-info
-        %i.fa.fa-flask.fa-fw>
-        = "#{averages[:emission]} #{t('all.unit.kgco2e_html')}"
-  .col-xs-4{title: t("plannings.edit.duration_help")}
-    .route-info.primary
-      %i.fa.fa-stopwatch.fa-fw>
-      = duration
-  .col-xs-4{title: t("plannings.edit.distance_help")}
-    .route-info.primary
-      %i.fa.fa-road.fa-fw
-      = distance
-  - if averages
-    .col-xs-4{title: t("plannings.edit.route_speed_average_help")}
-      .primary.route-info
-        %i.fa.fa-tachometer.fa-fw{"aria-hidden": "true"}>
-        = "#{averages[:routes_speed_average]} #{averages[:prefered_unit]}/h"
-    - averages[:total_quantities].each do |unit|
-      - [:delivery, :pickup].each do |sym|
-        - if unit.fetch("has_#{sym}".to_sym)
-          .col-xs-4.route-data-advanced{title: [unit[:label], t("plannings.edit.quantity_help")].compact.join(' - ')}
-            .primary.route-info{class: ("danger" if unit[:out_of_capacity])}
-              %i.fa.fa-fw{class: unit[:unit_icon]}
-              - if sym == :pickup
-                %i.fa.fa-fw.fa-up-long{title: t("plannings.edit.pickup_help")}
-                = unit[:pickup]
-              - if sym == :delivery
-                - if unit[:has_pickup]
-                  %i.fa.fa-fw.fa-down-long{title: t("plannings.edit.delivery_help")}
-                = unit[:delivery]
-              - if unit[:capacity]
-                = "/ #{unit[:capacity]}"
-              /
-              - if unit[:label]
-                = "#{unit[:label]}"
+-# `averages` is present from `head_data` / `show.json` when available. Planning wait/visit header blocks read `routes_wait_time` / `routes_visits_duration` inside it. `show.json` may still pass root `wait_time` / `visits_duration` for first paint — never use `averages ||= nil` (NameError if the local was not passed).
+- averages = local_assigns.fetch(:averages, nil)
+- header_order = planning_header_block_order
+.row.route-data.route-header.display-ui-planning-head{style: 'display: flex; flex-wrap: wrap;'}
+  - header_order.each_with_index do |key, idx|
+    - partial = Preferences::Catalog.header_block_partial('planning', key)
+    - next if partial.blank?
+    = render partial: partial, locals: local_assigns.merge(averages: averages, ui_order: idx)

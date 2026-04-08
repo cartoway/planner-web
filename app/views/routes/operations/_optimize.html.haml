@@ -1,0 +1,4 @@
+- if route[:vehicle_id] && @manage_planning[:manage_route_optimize]
+  - dis = route[:locked] || @manage_planning[:disable_route_optimize]
+  %button.btn.btn-primary.btn-xs.optimize{type: "button", title: t('plannings.edit.optimize_help'), "data-keyboard" => "true", "data-target" => "#optimization-modal", "data-toggle" => "modal", disabled: dis}
+    %i.fa.fa-gear

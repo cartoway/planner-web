@@ -1,0 +1,7 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- if route[:used_reloads] && route[:used_reloads] > 0
+  .col-xs-4{title: t('plannings.edit.used_reloads_help'), style: "order: #{ui_order}"}
+    .route-info.primary
+      %i.fa.fa-rotate.fa-fw
+      = route[:used_reloads]
+      = t('plannings.edit.used_reloads')

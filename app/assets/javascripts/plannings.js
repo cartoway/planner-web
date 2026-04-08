@@ -183,6 +183,11 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
   }
   renderSpreadsheetColumns(columnsExport, columnsSkip);
 
+  var spreadsheetDndRoot = document.getElementById('spreadsheet-columns-container');
+  if (spreadsheetDndRoot && spreadsheetDndRoot._dragDropInstance) {
+    spreadsheetDndRoot._dragDropInstance.refresh();
+  }
+
   if (export_settings && export_settings['format']) {
     $('[name=spreadsheet-format][value=' + export_settings['format'] + ']').prop('checked', true);
   }
@@ -1686,16 +1691,27 @@ export const plannings_edit = function(params) {
       select.next('.select2-container--bootstrap').addClass('input-sm');
     });
 
-    fake_select2($(".vehicle_select", context), function(select) {
-      select.select2({
-        minimumResultsForSearch: -1,
-        data: vehicles_array,
-        templateSelection: templateSelectionVehicles,
-        templateResult: templateResultVehicles,
-        formatNoMatches: I18n.t('web.select2.empty_result')
-      }).select2("open");
-      select.next('.select2-container--bootstrap').addClass('input-sm');
-    });
+    var vehicleSelectDisabled = params.manage_planning &&
+      (!params.manage_planning.manage_route_vehicle_usage || params.manage_planning.disable_route_vehicle_usage);
+
+    if (vehicleSelectDisabled) {
+      $(".vehicle_select", context).each(function() {
+        var $sel = $(this);
+        $sel.prop('disabled', true);
+        $sel.next().off('click keydown');
+      });
+    } else {
+      fake_select2($(".vehicle_select", context), function(select) {
+        select.select2({
+          minimumResultsForSearch: -1,
+          data: vehicles_array,
+          templateSelection: templateSelectionVehicles,
+          templateResult: templateResultVehicles,
+          formatNoMatches: I18n.t('web.select2.empty_result')
+        }).select2("open");
+        select.next('.select2-container--bootstrap').addClass('input-sm');
+      });
+    }
 
     var $routes = context.hasClass('route') ? context : $(".route", context);
 
@@ -1987,17 +2003,23 @@ export const plannings_edit = function(params) {
 
   var checkLockAndActive = function() {
     var maxUnlockedStops = 0;
+    var mp = params.manage_planning;
+    // Match server partials: routes/operations/_optimize (route segment + locks).
+    var routeOptimizeLockedByPolicy = mp && (mp.disable_route_optimize || mp.manage_route_optimize === false);
+    var globalOptimizeLockedByPolicy = mp && (mp.disable_optimize || mp.manage_optimize === false);
+
     $('.route[data-route-id]').each(function() {
       var isRouteLocked = $(this).find('.lock i').hasClass('fa-lock');
       var stopCount = $(this).find('[data-size-active]').data('size-active');
 
       if (!isRouteLocked && stopCount)
         maxUnlockedStops = Math.max(maxUnlockedStops, stopCount);
-      if (!isRouteLocked && stopCount > 1) {
+      var canEnableRouteOptimize = !isRouteLocked && stopCount > 1 && !routeOptimizeLockedByPolicy;
+      if (canEnableRouteOptimize) {
         $(this).find('button.optimize').prop('disabled', false);
-      }
-      else
+      } else {
         $(this).find('button.optimize').prop('disabled', true);
+      }
     });
 
     if (!maxUnlockedStops) {
@@ -2005,10 +2027,11 @@ export const plannings_edit = function(params) {
     } else {
       $('#planning_zoning_button').removeAttr('disabled');
     }
-    if (maxUnlockedStops < 2) {
-      $('#global_tools').find('button.optimize').attr('disabled', 'disabled');
+    var $optimizeAll = $('#optimize_all');
+    if (maxUnlockedStops < 2 || globalOptimizeLockedByPolicy) {
+      $optimizeAll.attr('disabled', 'disabled');
     } else {
-      $('#global_tools').find('button.optimize').removeAttr('disabled');
+      $optimizeAll.removeAttr('disabled');
     }
   };
 

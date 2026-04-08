@@ -1,0 +1,6 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- if route[:vehicle_id]
+  .col-xs-4{style: "order: #{ui_order}"}
+    .route-info.primary{class: ('danger' if route[:route_out_of_max_distance]), title: t('plannings.edit.route_distance_help')}
+      %i.fa.fa-road.fa-fw>
+      = route[:distance]

@@ -1,18 +1,44 @@
-// Active/Inactive Drag & Drop Component
-// Usage: new ActiveInactiveDragDrop(containerId, options)
+/**
+ * ActiveInactiveDragDrop — multi-column drag-and-drop for active / inactive (and optional middle) lists.
+ *
+ * Construction: `new ActiveInactiveDragDrop(containerElement | containerId, options)`
+ * Auto-init: elements with `[data-drag-drop]` are wired from `initDataDragDropRoots` (Turbolinks + DOMContentLoaded).
+ *
+ * Required option: `columns` — array of at least 2 entries:
+ *   - `containerSelector` (string): querySelector relative to the root container; must resolve to the `.item-list` (or equivalent) host.
+ *   - `inputName` (string, optional): name= on generated hidden inputs for non-inactive columns. Omit with no hiddenInputSelector to sync order only.
+ *   - `hiddenInputSelector` (string, optional): alternative way to infer input name from existing markup.
+ *   - `inactive` (boolean): true → no hidden inputs, order display uses `inactiveOrderDisplay`; does not count toward minActiveItems the same way.
+ *   - `toggleTo` (number, optional): 0-based column index for the item “×” button; overrides default next-column / 2-col swap.
+ *   - `toggleButtons` (false): hide per-row toggle; call `refresh()` after injecting rows via JS.
+ *
+ * Other notable options: `minActiveItems`, `itemSelector`, `orderDisplaySelector`, `textDisplaySelector`,
+ * `showOrder`, `orderFormat`, `onUpdate`, `onValidationError`, CSS class overrides (`activeZoneClass`, `dragOverClass`, …).
+ *
+ * Public API: `refresh()`, `addItem(data, active)`, `removeItem(id)`, `getActiveItems()`, `getInactiveItems()`, `destroy()` (partial).
+ *
+ * Drag/drop handlers live in `active_inactive_drag_drop/drag_handlers_mixin.js`, loaded immediately after this file in application.js.
+ */
 class ActiveInactiveDragDrop {
-  constructor(containerId, options = {}) {
-    this.containerId = containerId;
+  constructor(containerOrId, options = {}) {
+    this._initialized = false;
+    let root = null;
+    if (typeof containerOrId === 'string') {
+      this.containerId = containerOrId;
+      root = containerOrId ? document.getElementById(containerOrId) : null;
+    } else if (containerOrId && containerOrId.nodeType === Node.ELEMENT_NODE) {
+      root = containerOrId;
+      this.containerId = root.id || '';
+    } else {
+      this.containerId = '';
+      root = null;
+    }
+
     this.options = {
-      // Container selectors
-      activeContainerSelector: '.active-zone .item-list, .priority-active .priority-labels',
-      inactiveContainerSelector: '.inactive-zone .item-list, .priority-inactive .priority-labels',
+      columns: null,
 
       // Item selectors
       itemSelector: '.draggable-item, .label',
-
-      // Input selectors
-      hiddenInputSelector: 'input[name*="priority"]',
 
       // Display selectors
       orderDisplaySelector: '.item-order, .order',
@@ -22,6 +48,9 @@ class ActiveInactiveDragDrop {
       minActiveItems: 1,
       orderFormat: 'number', // 'number', 'letter', 'custom'
       inactiveOrderDisplay: '-',
+      toggleButtons: true,
+      // When false, skip numbering badges (active/inactive columns only; order is irrelevant).
+      showOrder: true,
 
       // Callbacks
       onUpdate: null,
@@ -40,34 +69,68 @@ class ActiveInactiveDragDrop {
       ...options
     };
 
-    this.container = document.getElementById(containerId);
+    this.container = root;
     if (!this.container) {
-      console.error(`Container with id "${containerId}" not found`);
+      const hint = typeof containerOrId === 'string' ? containerOrId : '(element)';
+      console.error(`ActiveInactiveDragDrop: container not found (${hint})`);
       return;
     }
 
-    this.activeContainer = this.container.querySelector(this.options.activeContainerSelector);
-    this.inactiveContainer = this.container.querySelector(this.options.inactiveContainerSelector);
-
-    if (!this.activeContainer || !this.inactiveContainer) {
-      console.error('Active or inactive container not found');
+    if (!Array.isArray(this.options.columns) || this.options.columns.length < 2) {
+      console.error('ActiveInactiveDragDrop: options.columns must be an array with at least 2 column definitions');
       return;
     }
+
+    this.columnTiers = this._buildColumnTiers();
+    if (this.columnTiers.some(t => !t.element)) {
+      console.error('ActiveInactiveDragDrop: one or more containerSelector targets were not found inside the root element');
+      return;
+    }
+
+    this.activeContainer = this.columnTiers.find(t => !t.inactive)?.element || null;
+    this.inactiveContainer = this.columnTiers.filter(t => t.inactive).map(t => t.element)[0] || null;
 
     this.draggedElement = null;
     this.init();
+    this._initialized = true;
+  }
+
+  /**
+   * @returns {{ element: Element, inactive: boolean, inputName: string|null, toggleTo: number|null }[]}
+   */
+  _buildColumnTiers() {
+    return this.options.columns.map(col => {
+      const el = this.container.querySelector(col.containerSelector);
+      const inactive = Boolean(col.inactive);
+      const inputName = col.inputName || this.extractInputNameFromSelector(col.hiddenInputSelector) || null;
+      let toggleTo = null;
+      if (col.toggleTo !== undefined && col.toggleTo !== null && col.toggleTo !== '') {
+        const n = Number(col.toggleTo);
+        if (Number.isInteger(n)) {
+          toggleTo = n;
+        }
+      }
+      return {
+        element: el,
+        inactive,
+        inputName: inactive ? null : inputName,
+        toggleTo
+      };
+    });
   }
 
   init() {
     this.makeDraggable();
-    this.addToggleButtons();
+    if (this.options.toggleButtons !== false) {
+      this.addToggleButtons();
+    }
     this.updateItemOrder();
     this.updateHiddenInputs();
     this.addFormValidation();
     this.addEventListeners();
   }
 
-  // Add "x" button on each item to toggle between active/inactive lists
+  // Add "x" button on each item to cycle through columns (or toggle in 2-column mode)
   addToggleButtons() {
     const items = this.container.querySelectorAll(this.options.itemSelector);
     items.forEach(item => {
@@ -77,7 +140,7 @@ class ActiveInactiveDragDrop {
       btn.type = 'button';
       btn.className = 'item-toggle-btn';
       btn.setAttribute('aria-label', 'Toggle');
-      btn.innerHTML = '<i class="fa fa-xmark fa-fw"></i>';
+      btn.innerHTML = '<i class="fa fa-times fa-fw"></i>';
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -87,54 +150,160 @@ class ActiveInactiveDragDrop {
     });
   }
 
-  toggleItem(item) {
-    const isInActive = this.activeContainer.contains(item);
-    const targetContainer = isInActive ? this.inactiveContainer : this.activeContainer;
+  /** Comma-separated itemSelector values are valid for Element.closest(). */
+  _itemSelectorForClosest() {
+    return this.options.itemSelector.split(',').map(s => s.trim()).filter(Boolean).join(', ');
+  }
 
-    if (isInActive && this.activeContainer.children.length <= this.options.minActiveItems) {
+  _resolveItemRow(node) {
+    if (!node || typeof node.closest !== 'function') {
+      return null;
+    }
+    return node.closest(this._itemSelectorForClosest());
+  }
+
+  _queryOrderDisplayElement(item) {
+    const parts = this.options.orderDisplaySelector.split(',').map(s => s.trim()).filter(Boolean);
+    for (const p of parts) {
+      const el = item.querySelector(p);
+      if (el) {
+        return el;
+      }
+    }
+    return null;
+  }
+
+  /** Ensures a visible order index target exists (server markup may omit it). */
+  _ensureOrderDisplayElement(item) {
+    let el = this._queryOrderDisplayElement(item);
+    if (el) {
+      return el;
+    }
+    el = document.createElement('span');
+    el.className = `${this.options.orderDisplayClass} order`.replace(/\s+/g, ' ').trim();
+    const textAnchor = item.querySelector(this.options.textDisplaySelector);
+    if (textAnchor) {
+      item.insertBefore(el, textAnchor);
+    } else {
+      item.insertBefore(el, item.firstChild);
+    }
+    return el;
+  }
+
+  _columnIndexOfItem(item) {
+    return this.columnTiers.findIndex(t => t.element.contains(item));
+  }
+
+  _isInactiveListElement(listEl) {
+    const tier = this.columnTiers.find(t => t.element === listEl);
+    return Boolean(tier && tier.inactive);
+  }
+
+  /**
+   * Default: next column (i+1) % n, or swap for exactly 2 columns.
+   * If columns[i].toggleTo is a valid index ≠ i, move there instead.
+   */
+  _toggleDestinationIndex(fromIdx) {
+    const n = this.columnTiers.length;
+    const tier = this.columnTiers[fromIdx];
+    if (tier.toggleTo != null && Number.isInteger(tier.toggleTo)) {
+      const to_index = tier.toggleTo;
+      if (to_index >= 0 && to_index < n && to_index !== fromIdx) {
+        return to_index;
+      }
+    }
+    if (n === 2) {
+      return fromIdx === 0 ? 1 : 0;
+    }
+    return (fromIdx + 1) % n;
+  }
+
+  toggleItem(item) {
+    const idx = this._columnIndexOfItem(item);
+    if (idx < 0) {
       return;
     }
 
-    targetContainer.appendChild(item);
+    const targetIdx = this._toggleDestinationIndex(idx);
+    if (targetIdx === idx) {
+      return;
+    }
+
+    const fromTier = this.columnTiers[idx];
+    const targetTier = this.columnTiers[targetIdx];
+    const movingToInactive = targetTier.inactive;
+    const fromVisible = !fromTier.inactive;
+    if (fromVisible && movingToInactive &&
+        this.visibleTierItemCount() <= this.options.minActiveItems) {
+      return;
+    }
+
+    targetTier.element.appendChild(item);
     this.updateItemOrder();
     this.updateHiddenInputs();
   }
 
+  visibleTierItemCount() {
+    return this.columnTiers
+      .filter(t => !t.inactive)
+      .reduce((sum, t) => sum + t.element.querySelectorAll(this.options.itemSelector).length, 0);
+  }
+
   addEventListeners() {
-    [this.activeContainer, this.inactiveContainer].forEach(container => {
-      container.addEventListener('dragstart', this.handleDragStart.bind(this));
-      container.addEventListener('dragend', this.handleDragEnd.bind(this));
-      container.addEventListener('dragover', this.handleDragOver.bind(this));
-      container.addEventListener('dragleave', this.handleDragLeave.bind(this));
-      container.addEventListener('drop', this.handleDrop.bind(this));
+    this.columnTiers.forEach(tier => {
+      tier.element.addEventListener('dragstart', this.handleDragStart.bind(this));
+      tier.element.addEventListener('dragend', this.handleDragEnd.bind(this));
+      tier.element.addEventListener('dragover', this.handleDragOver.bind(this));
+      tier.element.addEventListener('dragleave', this.handleDragLeave.bind(this));
+      tier.element.addEventListener('drop', this.handleDrop.bind(this));
     });
   }
 
   updateItemOrder() {
-    // Update order for active items
-    const activeItems = this.activeContainer.querySelectorAll(this.options.itemSelector);
-    activeItems.forEach((item, index) => {
-      const orderElement = item.querySelector(this.options.orderDisplaySelector);
-      if (orderElement) {
-        orderElement.textContent = this.formatOrder(index + 1);
+    if (this.options.showOrder === false) {
+      const orderSelectors = this.options.orderDisplaySelector.split(',').map(s => s.trim()).filter(Boolean);
+      this.columnTiers.forEach(tier => {
+        const items = tier.element.querySelectorAll(this.options.itemSelector);
+        items.forEach((item, index) => {
+          item.dataset.index = index;
+          if (tier.inactive) {
+            item.classList.add(this.options.inactiveItemClass);
+          } else {
+            item.classList.remove(this.options.inactiveItemClass);
+          }
+          orderSelectors.forEach(sel => {
+            item.querySelectorAll(sel).forEach(el => {
+              el.textContent = '';
+              el.style.display = 'none';
+              el.setAttribute('aria-hidden', 'true');
+            });
+          });
+        });
+      });
+      return;
+    }
+
+    this.columnTiers.forEach(tier => {
+      const items = tier.element.querySelectorAll(this.options.itemSelector);
+      if (tier.inactive) {
+        items.forEach((item, index) => {
+          const orderElement = this._ensureOrderDisplayElement(item);
+          orderElement.textContent = this.options.inactiveOrderDisplay;
+          orderElement.style.display = '';
+          orderElement.removeAttribute('aria-hidden');
+          item.dataset.index = index;
+          item.classList.add(this.options.inactiveItemClass);
+        });
+      } else {
+        items.forEach((item, index) => {
+          const orderElement = this._ensureOrderDisplayElement(item);
+          orderElement.textContent = this.formatOrder(index + 1);
+          orderElement.style.display = '';
+          orderElement.removeAttribute('aria-hidden');
+          item.dataset.index = index;
+          item.classList.remove(this.options.inactiveItemClass);
+        });
       }
-      item.dataset.index = index;
-
-      // Remove inactive class from active items
-      item.classList.remove(this.options.inactiveItemClass);
-    });
-
-    // Update order for inactive items
-    const inactiveItems = this.inactiveContainer.querySelectorAll(this.options.itemSelector);
-    inactiveItems.forEach((item, index) => {
-      const orderElement = item.querySelector(this.options.orderDisplaySelector);
-      if (orderElement) {
-        orderElement.textContent = this.options.inactiveOrderDisplay;
-      }
-      item.dataset.index = index;
-
-      // Add inactive class to inactive items
-      item.classList.add(this.options.inactiveItemClass);
     });
   }
 
@@ -150,88 +319,71 @@ class ActiveInactiveDragDrop {
   }
 
   updateHiddenInputs() {
-    const activeItems = this.activeContainer.querySelectorAll(this.options.itemSelector);
-    const hiddenInputs = this.container.querySelectorAll(this.options.hiddenInputSelector);
-
-    // Get the input name before removing existing inputs
-    const inputName = this.getHiddenInputName();
-
-    // Remove all existing hidden inputs
-    hiddenInputs.forEach(input => input.remove());
-
-    // Create new hidden inputs for active items
-    activeItems.forEach(item => {
-      const value = item.dataset.value || item.dataset.id || item.textContent.trim();
-      const hiddenInput = document.createElement('input');
-      hiddenInput.type = 'hidden';
-      hiddenInput.name = inputName;
-      hiddenInput.value = value;
-      item.appendChild(hiddenInput);
+    this.columnTiers.forEach(tier => {
+      this._syncTierHiddenInputs(tier);
     });
 
-    // Call callback if provided
     if (this.options.onUpdate) {
       this.options.onUpdate(this.getActiveItems(), this.getInactiveItems());
     }
   }
 
-  getHiddenInputName() {
-    // Try to extract name from selector in container dataset first
-    let selector = this.options.hiddenInputSelector;
-    if (this.container && this.container.dataset.dragDropOptions) {
-      try {
-        const containerOptions = JSON.parse(this.container.dataset.dragDropOptions);
-        if (containerOptions.hiddenInputSelector) {
-          selector = containerOptions.hiddenInputSelector;
-        }
-      } catch (e) {
-        // Fallback to options if parsing fails
-      }
+  _syncTierHiddenInputs(tier) {
+    const items = tier.element.querySelectorAll(this.options.itemSelector);
+    items.forEach(item => {
+      item.querySelectorAll('input[type="hidden"]').forEach(h => h.remove());
+    });
+
+    if (tier.inactive) {
+      return;
     }
 
-    // Extract name from selector (e.g., input[name*="customer[...]"])
-    // Match name*="..." or name="..." and capture everything between quotes
-    const nameMatch = selector.match(/name\s*\*?\s*=\s*["']([^"']+)["']/);
-    if (nameMatch && nameMatch[1]) {
-      return nameMatch[1];
+    if (!tier.inputName) {
+      return;
     }
 
-    // Try to find existing input in active items
-    const activeItems = this.activeContainer.querySelectorAll(this.options.itemSelector);
-    for (const item of activeItems) {
-      const existingInput = item.querySelector(this.options.hiddenInputSelector);
-      if (existingInput) {
-        return existingInput.name;
-      }
-    }
-
-    return 'priority[]';
+    items.forEach(item => {
+      const value = item.dataset.value || item.dataset.id || item.textContent.trim();
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = tier.inputName;
+      hiddenInput.value = value;
+      item.appendChild(hiddenInput);
+    });
   }
 
+  extractInputNameFromSelector(selector) {
+    if (!selector || typeof selector !== 'string') {
+      return null;
+    }
+    const nameMatch = selector.match(/name\s*=\s*["']([^"']+)["']/);
+    return nameMatch && nameMatch[1] ? nameMatch[1] : null;
+  }
+
+  _itemsPayload(listElement) {
+    return Array.from(listElement.querySelectorAll(this.options.itemSelector)).map(item => {
+      const textEl = item.querySelector(this.options.textDisplaySelector);
+      return {
+        id: item.dataset.id,
+        value: item.dataset.value,
+        text: textEl ? textEl.textContent.trim() : item.textContent.trim(),
+        element: item
+      };
+    });
+  }
+
+  /** All items in non-inactive columns, in column order. */
   getActiveItems() {
-    return Array.from(this.activeContainer.querySelectorAll(this.options.itemSelector))
-      .map(item => {
-        const textEl = item.querySelector(this.options.textDisplaySelector);
-        return {
-          id: item.dataset.id,
-          value: item.dataset.value,
-          text: textEl ? textEl.textContent.trim() : item.textContent.trim(),
-          element: item
-        };
-      });
+    return this.columnTiers
+      .filter(t => !t.inactive)
+      .flatMap(t => this._itemsPayload(t.element));
   }
 
+  /** All items in inactive columns, in column order. */
   getInactiveItems() {
-    return Array.from(this.inactiveContainer.querySelectorAll(this.options.itemSelector))
-      .map(item => {
-        const textEl = item.querySelector(this.options.textDisplaySelector);
-        return {
-          id: item.dataset.id,
-          value: item.dataset.value,
-          text: textEl ? textEl.textContent.trim() : item.textContent.trim(),
-          element: item
-        };
-      });
+    return this.columnTiers
+      .filter(t => t.inactive)
+      .flatMap(t => this._itemsPayload(t.element));
   }
 
   makeDraggable() {
@@ -245,8 +397,8 @@ class ActiveInactiveDragDrop {
     const form = this.container.closest('form');
     if (form) {
       form.addEventListener('submit', (e) => {
-        const activeItems = this.activeContainer.querySelectorAll(this.options.itemSelector);
-        if (activeItems.length < this.options.minActiveItems) {
+        const count = this.visibleTierItemCount();
+        if (count < this.options.minActiveItems) {
           e.preventDefault();
           const errorMessage = this.options.onValidationError ?
             this.options.onValidationError() :
@@ -258,127 +410,24 @@ class ActiveInactiveDragDrop {
     }
   }
 
-  // Event handlers
-  handleDragStart(e) {
-    this.draggedElement = e.target;
-    e.target.style.opacity = '0.5';
-    e.target.classList.add('dragging');
-  }
-
-  handleDragEnd(e) {
-    e.target.style.opacity = '1';
-    e.target.classList.remove('dragging');
-    this.draggedElement = null;
-
-    // Clean up all drag-over indicators
-    this.container.querySelectorAll(`${this.options.itemSelector}, .${this.options.itemListClass}`).forEach(element => {
-      element.classList.remove(this.options.dragOverClass);
-    });
-  }
-
-  handleDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-
-    const target = e.target.closest(this.options.itemSelector);
-    const targetContainer = e.target.closest(`.${this.options.itemListClass}`);
-
-    // Remove drag-over class from all containers
-    this.container.querySelectorAll(`.${this.options.itemListClass}`).forEach(container => {
-      container.classList.remove(this.options.dragOverClass);
-    });
-
-    if (target && target !== this.draggedElement) {
-      target.classList.add(this.options.dragOverClass);
-    } else if (targetContainer && targetContainer !== this.draggedElement.closest(`.${this.options.itemListClass}`)) {
-      // Highlight the container if dropping on empty space
-      targetContainer.classList.add(this.options.dragOverClass);
-    }
-  }
-
-  handleDragLeave(e) {
-    const target = e.target.closest(this.options.itemSelector);
-    const targetContainer = e.target.closest(`.${this.options.itemListClass}`);
-
-    if (target) {
-      target.classList.remove(this.options.dragOverClass);
-    }
-
-    // Only remove container highlight if we're leaving the container entirely
-    if (targetContainer && !targetContainer.contains(e.relatedTarget)) {
-      targetContainer.classList.remove(this.options.dragOverClass);
-    }
-  }
-
-  handleDrop(e) {
-    e.preventDefault();
-
-    const target = e.target.closest(this.options.itemSelector);
-    const targetContainer = e.target.closest(`.${this.options.itemListClass}`);
-    const draggedContainer = this.draggedElement.closest(`.${this.options.itemListClass}`);
-
-    // Clean up all drag-over indicators
-    this.container.querySelectorAll(`${this.options.itemSelector}, .${this.options.itemListClass}`).forEach(element => {
-      element.classList.remove(this.options.dragOverClass);
-    });
-
-    if (this.draggedElement) {
-      // If dropping on an item
-      if (target && target !== this.draggedElement) {
-        // If moving between containers
-        if (targetContainer !== draggedContainer) {
-          // Check if we're trying to move to inactive zone and it would leave active zone empty
-          if (targetContainer === this.inactiveContainer &&
-              draggedContainer === this.activeContainer &&
-              this.activeContainer.children.length <= this.options.minActiveItems) {
-            // Don't allow moving the last active item to inactive
-            return;
-          }
-          // Move the element to the new container
-          targetContainer.appendChild(this.draggedElement);
-        } else {
-          // Reorder within the same container
-          const draggedIndex = parseInt(this.draggedElement.dataset.index);
-          const targetIndex = parseInt(target.dataset.index);
-
-          if (draggedIndex < targetIndex) {
-            target.parentNode.insertBefore(this.draggedElement, target.nextSibling);
-          } else {
-            target.parentNode.insertBefore(this.draggedElement, target);
-          }
-        }
-      }
-      // If dropping on empty container
-      else if (targetContainer && targetContainer !== draggedContainer) {
-        // Check if we're trying to move to inactive zone and it would leave active zone empty
-        if (targetContainer === this.inactiveContainer &&
-            draggedContainer === this.activeContainer &&
-            this.activeContainer.children.length <= this.options.minActiveItems) {
-          // Don't allow moving the last active item to inactive
-          return;
-        }
-        // Move the element to the empty container
-        targetContainer.appendChild(this.draggedElement);
-      }
-
-      // Update order numbers and hidden inputs
-      this.updateItemOrder();
-      this.updateHiddenInputs();
-    }
-  }
-
   // Public methods
   refresh() {
     this.makeDraggable();
-    this.addToggleButtons();
+    if (this.options.toggleButtons !== false) {
+      this.addToggleButtons();
+    }
     this.updateItemOrder();
     this.updateHiddenInputs();
   }
 
   addItem(itemData, active = true) {
     const item = this.createItemElement(itemData);
-    const container = active ? this.activeContainer : this.inactiveContainer;
-    container.appendChild(item);
+    const tier = active ?
+      this.columnTiers.find(t => !t.inactive) :
+      this.columnTiers.find(t => t.inactive);
+    if (tier) {
+      tier.element.appendChild(item);
+    }
     this.refresh();
   }
 
@@ -391,27 +440,29 @@ class ActiveInactiveDragDrop {
     if (itemData.value) item.dataset.value = itemData.value;
 
     const orderSpan = document.createElement('span');
-    orderSpan.className = this.options.orderDisplayClass;
+    orderSpan.className = `${this.options.orderDisplayClass} order`.replace(/\s+/g, ' ').trim();
     orderSpan.textContent = this.options.inactiveOrderDisplay;
 
     const textSpan = document.createElement('span');
     textSpan.className = this.options.textDisplayClass;
     textSpan.textContent = itemData.text || itemData.value || itemData.id;
 
-    const toggleBtn = document.createElement('button');
-    toggleBtn.type = 'button';
-    toggleBtn.className = 'item-toggle-btn';
-    toggleBtn.setAttribute('aria-label', 'Toggle');
-    toggleBtn.innerHTML = '<i class="fa fa-circle-xmark fa-fw"></i>';
-    toggleBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.toggleItem(item);
-    });
-
     item.appendChild(orderSpan);
     item.appendChild(textSpan);
-    item.appendChild(toggleBtn);
+
+    if (this.options.toggleButtons !== false) {
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'item-toggle-btn';
+      toggleBtn.setAttribute('aria-label', 'Toggle');
+      toggleBtn.innerHTML = '<i class="fa fa-times fa-fw"></i>';
+      toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.toggleItem(item);
+      });
+      item.appendChild(toggleBtn);
+    }
 
     return item;
   }
@@ -434,7 +485,7 @@ class ActiveInactiveDragDrop {
 }
 
 // Helper function to initialize with common configurations
-function initializeDragDrop(containerId, type = 'generic', options = {}) {
+function initializeDragDrop(containerOrId, type = 'generic', options = {}) {
   const defaultOptions = {
     minActiveItems: 1,
     onValidationError: function() {
@@ -442,19 +493,41 @@ function initializeDragDrop(containerId, type = 'generic', options = {}) {
     }
   };
 
-  return new ActiveInactiveDragDrop(containerId, { ...defaultOptions, ...options });
+  return new ActiveInactiveDragDrop(containerOrId, { ...defaultOptions, ...options });
 }
 
-// Initialize when Turbolinks loads
-document.addEventListener('turbolinks:load', function() {
-  // Auto-initialize common patterns
-  const containers = document.querySelectorAll('[data-drag-drop]');
-  containers.forEach(container => {
-    if (container._dragDropInstance) return;
-    const type = container.dataset.dragDrop;
-    const options = container.dataset.dragDropOptions ?
-      JSON.parse(container.dataset.dragDropOptions) : {};
+function parseDragDropOptionsFromDataset(container) {
+  const raw = container.dataset.dragDropOptions;
+  if (!raw || raw === '') {
+    return {};
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error('ActiveInactiveDragDrop: invalid data-drag-drop-options JSON', e, raw);
+    return {};
+  }
+}
 
-    container._dragDropInstance = initializeDragDrop(container.id, type, options);
+function initDataDragDropRoots() {
+  document.querySelectorAll('[data-drag-drop]').forEach(container => {
+    if (container._dragDropInstance) return;
+    const type = container.dataset.dragDrop || 'generic';
+    const options = parseDragDropOptionsFromDataset(container);
+    const instance = initializeDragDrop(container, type, options);
+    if (instance && instance._initialized) {
+      container._dragDropInstance = instance;
+    }
+  });
+}
+
+// Drop cached expando so a restored Turbolinks page re-runs init (toggles / order spans).
+document.addEventListener('turbolinks:before-cache', function() {
+  document.querySelectorAll('[data-drag-drop]').forEach(el => {
+    delete el._dragDropInstance;
   });
 });
+
+// Initialize when Turbolinks loads (and once on first paint if the event already ran).
+document.addEventListener('turbolinks:load', initDataDragDropRoots);
+document.addEventListener('DOMContentLoaded', initDataDragDropRoots);

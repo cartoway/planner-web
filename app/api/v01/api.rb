@@ -19,6 +19,12 @@ require 'exceptions'
 
 class V01::Api < Grape::API
   helpers do
+    include CancanGrapeHelpers
+
+    def api_status_module
+      V01::Status
+    end
+
     def session
       env[Rack::RACK_SESSION]
     end
@@ -41,9 +47,6 @@ class V01::Api < Grape::API
       current_customer(nil, skip_customer_requirement: true)
       error!(V01::Status.code_response(:code_401), 401) unless @current_user
       error!(V01::Status.code_response(:code_402, after: "Subscription expired (#{@current_customer.end_subscription.to_s}) - Contact your reseller."), 402) if @current_customer && @current_customer.end_subscription && @current_customer.end_subscription < Time.now
-    end
-
-    def authorize!
     end
 
     def set_time_zone

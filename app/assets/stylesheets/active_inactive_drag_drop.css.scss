@@ -38,7 +38,7 @@
     align-items: stretch;
   }
 
-  .priority-active, .priority-inactive {
+  .priority-active, .priority-disabled, .priority-inactive {
     flex: 1 1 200px;
     min-width: 200px;
     display: flex;
@@ -61,13 +61,21 @@
     cursor: move;
   }
 
-  .inactive .order {
+  .inactive .item-order {
     background: $grey-color;
     color: $white-background;
   }
 
+  .item-list input[type="hidden"] {
+    display: none;
+  }
+
   .label input[type="hidden"] {
     display: none;
+  }
+
+  .draggable-item .item-toggle-btn {
+    margin-left: auto;
   }
 
   .label {
@@ -263,6 +271,93 @@
 
 .inactive-zone .zone-title {
   color: $grey-color;
+}
+
+.disabled-zone .zone-title {
+  color: #856404;
+}
+
+.active-inactive-zones.operations-toolbar-dnd.operations-three-zones {
+  display: block;
+  max-height: none;
+
+  .operations-three-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .operations-tier-active,
+  .operations-tier-disabled,
+  .operations-tier-hidden {
+    flex: 1 1 180px;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .operations-tier-disabled .draggable-item:not(.inactive) {
+    opacity: 0.78;
+    border-style: dashed;
+  }
+}
+
+.active-inactive-zones.headers-data-dnd {
+  display: block;
+  max-height: none;
+
+  .headers-two-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .headers-planning-tier-active,
+  .headers-planning-tier-hidden,
+  .headers-route-tier-active,
+  .headers-route-tier-hidden {
+    flex: 1 1 180px;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .headers-tier-hidden-item {
+    opacity: 0.55;
+    border-style: dashed;
+  }
+}
+
+.active-inactive-zones.role-forms-dnd.role-forms-three-zones {
+  display: block;
+  max-height: none;
+
+  .forms-three-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .forms-tier-active,
+  .forms-tier-disabled,
+  .forms-tier-hidden {
+    flex: 1 1 180px;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .forms-tier-disabled .draggable-item:not(.inactive) {
+    opacity: 0.78;
+    border-style: dashed;
+  }
+
+  .draggable-item {
+    min-width: 100px;
+  }
 }
 
 // Responsive design

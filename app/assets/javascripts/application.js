@@ -59,6 +59,7 @@
 
 // Custom components
 //= require utils/active_inactive_drag_drop
+//= require utils/active_inactive_drag_drop/drag_handlers_mixin
 
 // jQuery Turbolinks documentation informs to load all scripts before turbolinks
 //= require jquery.turbolinks

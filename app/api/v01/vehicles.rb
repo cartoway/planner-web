@@ -203,6 +203,7 @@ class V01::Vehicles < Grape::API
       use :request_vehicle
     end
     put ':id' do
+      authorize!(:update, VehicleUsage)
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
       vehicle = current_customer.vehicles.where(ParseIdsRefs.where_clause([params[:id]])).first!
       vehicle.update! vehicle_params
@@ -227,6 +228,7 @@ class V01::Vehicles < Grape::API
       use :request_vehicle_usage
     end
     post do
+      authorize!(:create, VehicleUsage)
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
       if Planner::Application.config.manage_vehicles_only_admin
         if @current_user.admin?

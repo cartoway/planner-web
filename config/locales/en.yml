@@ -72,6 +72,10 @@ en:
       deliverable_units:
         one: deliverable unit
         other: deliverable units
+      role: Role
+      roles:
+        one: role
+        other: roles
       destination: Destination
       destinations:
         one: destination
@@ -359,6 +363,11 @@ en:
         customer_behavior_url: Customer's Behavior URL
         customer_dashboard_url: Customer's Dashboard URL
         planning_dashboard_url: Planning's Dashboard URL
+      role:
+        name: Name
+        ref: Reference
+        icon: Icon
+        color: Color
       route:
         distance: Distance
         emission: Emission
@@ -456,6 +465,7 @@ en:
         prefered_unit: Preferred unit
         prefered_currency: Prefered currency
         default_display_polylines: Display routes traces by default
+        role_id: Role
       vehicle:
         max_distance: Maximum distance
         max_ride_distance: Maximum ride distance
@@ -694,6 +704,10 @@ en:
               bad_customer: not associated with account
             polygon:
               invalid_json: is not a valid stringified json
+        user:
+          attributes:
+            role_id:
+              invalid: must belong to the same reseller as the account
         customer:
           attributes:
             optimization_dicho_minimum_service_size:
@@ -748,6 +762,8 @@ en:
           icon_unknown: is not in font-awesome icons list
           icon_size_invalid: is not a valid size
           uniqueness: Category with the same label already exist
+        role:
+          icon_unknown: is not in font-awesome icons list
         optimization_time:
           must_be_greater_than_minimal_time: must be greater than minimal time
         router:
@@ -918,6 +934,37 @@ en:
         favicon_help: 'Website icon, 16×16 pixels in PNG or ICO format.'
         protocol_url_http: HTTP
         protocol_url_https: HTTPS
+        roles_link: Roles
+    roles:
+      menu:
+        roles: Roles
+      index:
+        title: Roles
+        new: New role
+      new:
+        title: New role
+      edit:
+        title: Edit role
+      form:
+        permissions_legend: Permissions
+        permissions_help: >-
+          Defines toolbar and form permissions for users assigned this role.
+        forms_title: Forms (navigation)
+        forms_help: >-
+          The left column allows creating, editing, and deleting records. The middle column shows the form in navigation but only for viewing. The right column hides it.
+        icon_help: >-
+          Pick an icon from the list
+        color_help: >-
+          Color associated to the role icon
+        ref_help: A free reference
+      flash:
+        created: Role created.
+        updated: Role updated.
+        destroyed: Role deleted.
+        destroyed_multiple: Selected roles have been deleted.
+        duplicated: Role duplicated. You can edit it from the list.
+      duplicate_suffix: ' (copy)'
+      confirm_destroy: Delete this role?
     users:
       menu:
         users: Users
@@ -926,13 +973,20 @@ en:
       index:
         title: Editing users
         new: New user
+        role_column: Role
       new:
         title: New user
+      form:
+        role_blank: No role
+        role_legend: Role (reference)
+        role_help: >-
+          Toolbar actions and form access for this user follow the permissions defined for this role.
       create:
         success: User created successfully
       edit:
         title: Edit user
         connect_as: Connect as…
+        password_optional_note: Leave blank to keep the current password.
       update:
         success: User updated successfully
       destroy:
@@ -1008,6 +1062,7 @@ en:
       title: Editing customer account settings
       send_email: Send Confirmation E-Mail
       password: Change Password
+      role_column: Role
       user:
         connect_as: Connect as…
         list: Users list
@@ -2568,6 +2623,10 @@ en:
         large: large
       prefered_icons: Preferred
       other_icons: Others
+  roles:
+    form:
+      prefered_icons: Recommended
+      other_icons: Others
   users:
     menu:
       sign_out: Sign out
@@ -2586,6 +2645,21 @@ en:
       unlink_sso_account: Unlink
       confirm_unlink_sso_account: Are you sure you want to unlink this %{provider} account?
       sso_not_configured: No SSO provider is configured.
+      display_ui:
+        planning_headers: Planning overview — header blocks (visible)
+        route_headers: Route panel — header blocks (visible)
+        planning_toolbar: Planning sidebar — customizable toolbar segments
+        route_toolbar: Route header — customizable toolbar segments
+        active: Visible
+        inactive: Hidden
+        data_active: Active
+        data_hidden: Hidden
+        operations_active: Active
+        operations_disabled: Disabled
+        operations_hidden: Hidden
+        headers_help: Drag blocks between lists to show or hide them. Order in the visible list is preserved.
+        operations_help: >-
+          Active segments work normally. Disabled segments stay visible but cannot be used. Hidden segments are not shown and actions are denied.
     update:
       success: User updated successfully
     password:
@@ -3259,3 +3333,31 @@ en:
       success: >-
         %{provider} account unlinked successfully
       unauthorized: You are not authorized to unlink this %{provider} account
+  display_ui:
+    header_blocks:
+      stops: Stops
+      duration: Duration
+      distance: Distance
+      total_revenue: Revenue
+      total_cost: Cost
+      balance: Balance
+      vehicles: Vehicles
+      emission: Emission
+      speed: Speed
+      quantities: Quantities
+      used_reloads: Reloads
+      wait_time: Wait time
+      visits_duration: Visits duration
+    operations:
+      external_callback: External callback
+      optimize: Optimize
+      zoning: Zoning
+      vehicle_usage_set: Vehicle configuration (planning)
+      toggle_routes: Show/hide routes
+      toggle_route_data: Route data display
+      lock_routes: Lock routes
+      export: Export
+      refresh: Refresh
+      vehicle_usage: Vehicle usage
+      stops: Stops
+      view: View

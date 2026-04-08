@@ -168,6 +168,7 @@ class V01::Destinations < Grape::API
       use(:request_destination, skip_visit_id: true)
     end
     post do
+      authorize!(:create, Destination)
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
@@ -264,6 +265,7 @@ class V01::Destinations < Grape::API
       use :request_destination
     end
     put ':id' do
+      authorize!(:update, Destination)
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]

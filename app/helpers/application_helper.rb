@@ -20,6 +20,7 @@ require 'exceptions'
 
 module ApplicationHelper
   include Pagy::Frontend
+  include PreferencesHelper
 
   def javascript(*files)
     files.each do |file|

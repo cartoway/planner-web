@@ -1,0 +1,8 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- if route[:vehicle_id] && route[:route_averages]
+  .col-xs-4{style: "order: #{ui_order}"}
+    .primary.route-info{title: t('plannings.edit.route_speed_average_help')}
+      %i.fa.fa-tachometer.fa-fw{"aria-hidden" => "true"}>
+      = route[:route_averages][:speed]
+      = route[:route_averages][:prefered_unit]
+      \/h

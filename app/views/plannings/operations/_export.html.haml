@@ -1,0 +1,83 @@
+- if @manage_planning[:manage_export] || @manage_planning[:manage_print]
+  - export_dis = @manage_planning[:disable_planning_export]
+  - if @manage_planning[:manage_export]
+    .dropdown.btn-group
+      - if export_dis
+        %span.btn.btn-default.btn-sm.right.export.disabled
+          %i.fa.fa-share-nodes
+          %span.caret
+      - else
+        %a.btn.btn-default.btn-sm.right.export.dropdown-toggle{"data-toggle" => "dropdown", title: t('plannings.edit.exports'), type: "button"}
+          %i.fa.fa-share-nodes
+          %span.caret
+      - unless export_dis
+        %ul.dropdown-menu
+          %li.dropdown-header
+            %h5
+              = t('plannings.edit.all_plannings_related')
+          %hr
+          - if current_user.customer.enable_external_callback? && current_user.customer.external_callback_url
+            %li.link.customer_external_callback_url{ data: { customer_id: current_user.customer.id, planning_id: @planning.id } }
+              %i.fa.fa-desktop.fa-fw
+              = current_user.customer.external_callback_name || t('plannings.edit.customer_external_callback_url.action')
+            %li.divider{role: "separator"}
+          - @device_definitions.each do |key, data|
+            - definition = data[:definition]
+            - routes_with_configured_devices = data[:routes_with_configured_devices]
+            - if key == :deliver && @planning.customer.enable_sms
+              %li
+                = link_to planning_modal_path(@planning, modal: 'sms_drivers'), remote: true, format: 'js', 'data-toggle': "modal", 'data-target': "#planning-send-sms-drivers-modal", 'data-keyboard': "true", id: 'send-sms-drivers' do
+                  %i.fa.fa-fw.fa-comment-sms
+                  = t('plannings.edit.deliver_send.plural.send_sms')
+            - if routes_with_configured_devices.any?
+              - definition[:route_operations].each do |route_operation|
+                - options = { planning_id: "#{@planning.id}" }
+                - options.merge!({ toggle: 'tooltip', title: t('plannings.edit.tomtom_send_waypoints.title') }) if route_operation.is_a?(Hash) && route_operation[:send].to_s == 'waypoints'
+                - options.merge!({ service: "#{definition[:device]}", operation: "#{route_operation.is_a?(Hash) ? route_operation.keys[0] : route_operation}" })
+                %li.link.device-operation{data: options}
+                  %i.fa.fa-fw{ class: (route_operation == :clear ? 'fa-rectangle-xmark' : 'fa-mobile fa-rotate-90') }
+                  - translation = "#{definition[:device]}_#{route_operation.is_a?(Hash) ? route_operation.keys[0].to_s + '_' + route_operation.values[0].to_s : route_operation.to_s}.plural.action"
+                  = t("plannings.edit.#{translation}")
+              - if definition[:route_operations].any?
+                %li.divider{role: "separator"}
+          %li
+            = link_to api_web_v01_print_planning_path(@planning), target: :_blank do
+              %i.fa.fa-print.fa-fw
+              = t('plannings.edit.export.print')
+          %li.divider{role: "separator"}
+          %li
+            %a.export_spreadsheet
+              %i.fa.fa-table.fa-fw
+              = t('plannings.edit.export.spreadsheet')
+          %li
+            = link_to planning_path(@planning, format: 'excel', summary: true), target: :_blank do
+              %i.fa.fa-table.fa-fw
+              = t('plannings.edit.export.summary_spreadsheet')
+          %li.divider{role: "separator"}
+          %li
+            = link_to api_planning_calendar_path(@planning, api_key: current_user.api_key) do
+              %i.fa.fa-calendar.fa-fw
+              = t('plannings.edit.export.icalendar.action')
+          - if @planning.routes.any?{|route| route.vehicle_usage_id && !route.vehicle_usage.vehicle.contact_email.blank? }
+            %li.icalendar_email{"data-email": "true"}
+              = link_to api_planning_calendar_path(@planning, email: 1) do
+                %i.fa.fa-envelope.fa-fw
+                = t('plannings.edit.export.icalendar.action_email')
+          - if @planning.customer.enable_sms && @planning.customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
+            %li.divider{role: "separator"}
+            %li
+              %a.send_sms{href: "/api/0.1/plannings/#{@planning.id}/send_sms"}
+                %i.fa.fa-mobile.fa-fw
+                = t('plannings.edit.send_sms')
+          %li.divider{role: "separator"}
+          %li
+            %a.historize{href: "/api/0.1/plannings/#{@planning.id}/historize"}
+              %i.fa.fa-chart-line.fa-fw
+              = t('plannings.edit.historize')
+  - elsif @manage_planning[:manage_print]
+    - if export_dis
+      %span.btn.btn-default.btn-sm.disabled{title: t('plannings.edit.export.print')}
+        %i.fa.fa-print.fa-fw
+    - else
+      = link_to api_web_v01_print_planning_path(@planning), class: 'btn btn-default btn-sm', title: t('plannings.edit.export.print'), target: :_blank do
+        %i.fa.fa-print.fa-fw

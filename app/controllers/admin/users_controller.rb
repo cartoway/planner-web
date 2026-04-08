@@ -20,9 +20,10 @@ class Admin::UsersController < ApplicationController
 
   before_action :find_user, except: [:index, :new, :create, :destroy_multiple]
   before_action :find_customers, except: [:index, :destroy_multiple]
+  before_action :find_roles_for_select, except: [:index, :destroy_multiple]
 
   def index
-    @users = User.from_customers_for_reseller_id(current_user.reseller_id)
+    @users = User.from_customers_for_reseller_id(current_user.reseller_id).includes(:role)
   end
 
   def new
@@ -32,7 +33,7 @@ class Admin::UsersController < ApplicationController
 
   def create
     password = Time.now.to_i + rand(10000)
-    @user = User.new user_params.merge(password: password, password_confirmation: password)
+    @user = User.new(user_initial_attributes.merge(password: password, password_confirmation: password))
     @user.save
     if @user.persisted?
       redirect_to_default
@@ -42,7 +43,7 @@ class Admin::UsersController < ApplicationController
   end
 
   def update
-    if @user.update user_params
+    if @user.update(user_params)
       redirect_to_default
     else
       render action: :edit
@@ -73,18 +74,44 @@ class Admin::UsersController < ApplicationController
   private
 
   def redirect_to_default
-    redirect_to !params[:url].blank? ? params[:url] : admin_users_path, notice: t("admin.users.#{action_name}.success")
+    redirect_to redirect_after_user_save_path, notice: t("admin.users.#{action_name}.success")
+  end
+
+  # Return to customer edit (users tab) only when the form or link passed url= (see customers/edit).
+  # From admin users index, there is no url → admin_users_path.
+  def redirect_after_user_save_path
+    return params[:url] if params[:url].present?
+
+    admin_users_path
   end
 
   def find_customers
     @customers = current_user.reseller.customers.order(:name)
   end
 
+  def find_roles_for_select
+    @roles_for_select = current_user.reseller.roles.order(:name)
+  end
+
   def find_user
     User.from_customers_for_reseller_id(current_user.reseller_id).find params[:id]
   end
 
+  def user_initial_attributes
+    attrs = params.require(:user).permit(:email, :customer_id, :time_zone, :send_email, :role_id)
+    attrs[:role_id] = nil if attrs[:role_id].blank?
+    attrs.to_h
+  end
+
   def user_params
-    params.require(:user).permit(:email, :customer_id, :password, :password_confirmation, :time_zone, :send_email)
+    p = params.require(:user).permit(
+      :email, :customer_id, :password, :password_confirmation, :time_zone, :send_email, :role_id
+    )
+    if p[:password].blank? && p[:password_confirmation].blank?
+      p.delete(:password)
+      p.delete(:password_confirmation)
+    end
+    p[:role_id] = nil if p[:role_id].blank?
+    p
   end
 end

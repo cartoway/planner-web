@@ -27,6 +27,7 @@ class User < ApplicationRecord
 
   belongs_to :reseller, optional: true
   belongs_to :customer, optional: true # Admin has no customer
+  belongs_to :role, optional: true
   belongs_to :layer
   has_many :identities, dependent: :destroy
 
@@ -36,6 +37,7 @@ class User < ApplicationRecord
 
   validates :customer, presence: true, unless: :admin?
   validates :layer, presence: true
+  validate :role_matches_customer_reseller, unless: :admin?
 
   attr_accessor :send_email
 
@@ -51,6 +53,8 @@ class User < ApplicationRecord
   include RefSanitizer
 
   include Confirmable
+  include ::UserPreferences
+  include PreferencesCatalogSplits
 
   scope :for_reseller_id, ->(reseller_id) { where(reseller_id: reseller_id) }
   scope :from_customers_for_reseller_id, ->(reseller_id) { joins(:customer).where(customers: {reseller_id: reseller_id}) }
@@ -111,6 +115,7 @@ class User < ApplicationRecord
   def assign_defaults
     set_default_time_zone
     self.api_key || self.api_key_random
+    # headers: normalized on validation (UserPreferences#normalize_user_preferences). Toolbar/forms come from Role or catalog defaults.
   end
 
   def assign_defaults_layer
@@ -119,5 +124,16 @@ class User < ApplicationRecord
                    else
                      customer && customer.profile.layers.order(:id).find_by!(overlay: false)
                    end
+  end
+
+  def role_matches_customer_reseller
+    return if role_id.blank? || customer.blank?
+
+    r = Role.find_by(id: role_id)
+    return if r.blank?
+
+    return if r.reseller_id == customer.reseller_id
+
+    errors.add(:role_id, :invalid)
   end
 end

@@ -16,6 +16,18 @@ module BootstrapForm
   end
 
   class FormBuilder
+    SUBMIT_DEFAULTS = {
+      action: nil,
+      message: nil,
+      icon: nil,
+      button: nil,
+      title: nil,
+      disable_with: nil,
+      col_class: nil,
+      row_class: nil,
+      disabled: false
+    }.freeze
+
     def default_label_col
       'col-md-offset-2 col-md-7'
     end
@@ -32,16 +44,17 @@ module BootstrapForm
       Haml::Template.new { haml.strip_heredoc }.render(self, locals)
     end
 
-    def submit(action: nil, message: nil, icon: nil, button: nil, title: nil, disable_with: nil, col_class: nil, row_class: nil)
-      action = action == 'new' ? 'create' : 'update'
+    def submit(**options)
+      opts = SUBMIT_DEFAULTS.merge(options)
+      action = opts[:action] == 'new' ? 'create' : 'update'
       object = self.object.class.name.underscore
 
-      output = render_haml <<-HAML, object: object, action: action, message: message, icon: icon, disable_with: disable_with, col_class: col_class, row_class: row_class
-        %div{ id: "#{object}_div_input", class: "#{row_class || 'row form-group'}" }
-          %div{ class: "#{col_class || 'col-md-offset-2 col-md-6'}" }
-            %button{ name: 'button', type: 'submit', class: "#{button || 'btn btn-primary'}", title: "#{title}", data: disable_with ? { disable_with:  "#{disable_with}" } : {}}
-              %i.fa{ class: "#{icon || 'fa-floppy-disk'}" }
-              = message || I18n.t("helpers.submit.#{action}", model: I18n.t("activerecord.models.#{object.pluralize}.one"))
+      output = render_haml <<-HAML, object: object, action: action, opts: opts
+        %div{ id: "#{object}_div_input", class: "#{opts[:row_class] || 'row form-group'}" }
+          %div{ class: "#{opts[:col_class] || 'col-md-offset-2 col-md-6'}" }
+            %button{ name: 'button', type: 'submit', class: "#{opts[:button] || 'btn btn-primary'}", title: "#{opts[:title]}", disabled: opts[:disabled], data: opts[:disable_with] ? { disable_with:  "#{opts[:disable_with]}" } : {}}
+              %i.fa{ class: "#{opts[:icon] || 'fa-floppy-disk'}" }
+              = opts[:message] || I18n.t("helpers.submit.#{action}", model: I18n.t("activerecord.models.#{object.pluralize}.one"))
       HAML
       output.html_safe
     end

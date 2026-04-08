@@ -1,0 +1,7 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- if route[:vehicle_id] && route[:route_averages] && route[:total_revenue]
+  .col-xs-4{title: t('plannings.edit.revenue_help'), style: "order: #{ui_order}"}
+    .primary.route-info
+      %i.fa.fa-hand-holding-dollar.fa-fw
+      = route[:total_revenue]
+      = t("all.unit.currency_symbol.#{route[:route_averages][:prefered_currency]}")

@@ -1,0 +1,26 @@
+- if @manage_planning[:manage_toggle_route_data]
+  .dropdown.btn-group
+    - dis = @manage_planning[:disable_toggle_route_data]
+    - if dis
+      %span.btn.btn-default.btn-sm.disabled
+        %i.fa.fa-chart-column
+        %span.caret
+    - else
+      %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle" => "dropdown", title: t('plannings.edit.toggle_route_data'), type: "button"}
+        %i.fa.fa-chart-column
+        %span.caret
+    - unless dis
+      %ul#data_routes_dropdown.dropdown-menu{role: "menu"}
+        %li{"data-selection": "none"}
+          %a.active_none
+            %i.fa.fa-angle-left.fa-fw{style: "transform: rotate(-45deg);"}
+            = t 'plannings.edit.active_none'
+        - if planning_quantities(@planning).any?
+          %li{"data-selection": "simple"}
+            %a.active_simple
+              %i.fa.fa-chart-column.fa-fw
+              = t 'plannings.edit.active_simple'
+        %li{"data-selection": "all"}
+          %a.active_all
+            %i.fa.fa-square-poll-vertical.fa-fw
+            = t 'plannings.edit.active_all'

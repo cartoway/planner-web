@@ -1,0 +1,25 @@
+- if @manage_planning[:manage_lock_routes]
+  .dropdown.btn-group
+    - dis = @manage_planning[:disable_lock_routes]
+    - if dis
+      %span.btn.btn-default.btn-sm.disabled
+        %i.fa.fa-unlock
+        %span.caret
+    - else
+      %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle" => "dropdown", title: t('plannings.edit.lock_routes'), type: "button"}
+        %i.fa.fa-unlock
+        %span.caret
+    - unless dis
+      %ul#lock_routes_dropdown.dropdown-menu{role: "menu"}
+        %li{"data-selection": "none"}
+          %a.active_none
+            %i.fa.fa-unlock.fa-fw
+            = t 'plannings.edit.active_none'
+        %li{"data-selection": "reverse"}
+          %a.active_reverse
+            %i.fa.fa-random.fa-fw
+            = t 'plannings.edit.active_reverse'
+        %li{"data-selection": "all"}
+          %a.active_all
+            %i.fa.fa-lock.fa-fw
+            = t 'plannings.edit.active_all'
