@@ -1186,7 +1186,7 @@ class ImporterDestinations < ImporterBase
       route_ids_set = route_ids.each_with_object({}) { |id, h| h[id] = true }
       @plannings.each do |planning|
         planning.routes.each do |route|
-          route.outdated = true if route_ids_set.include?(route.id)
+          route.outdated = true if route_ids_set.key?(route.id)
         end
       end
       return
@@ -1209,7 +1209,7 @@ class ImporterDestinations < ImporterBase
     route_ids = @plannings.flat_map{ |planning| planning.routes.map(&:id) }.compact.uniq
     return if route_ids.empty?
 
-    outdated_by_id = Route.where(id: route_ids).pluck(:id, :outdated).to_h
+    outdated_by_id = Route.where(id: route_ids, outdated: true).pluck(:id, :outdated).to_h
     @plannings.each do |planning|
       planning.routes.each do |route|
         next unless outdated_by_id.key?(route.id)
