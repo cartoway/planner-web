@@ -533,17 +533,28 @@ class ImporterDestinations < ImporterBase
   def geocode_or_count_destinations
     @destinations_to_geocode_count = @customer.destinations.not_positioned.count
     if @destinations_to_geocode_count > 0 && (@synchronous || !Planner::Application.config.delayed_job_use)
-      @customer.destinations.includes_visits.not_positioned.find_in_batches(batch_size: 50){ |destinations|
-        geocode_args = destinations.collect(&:geocode_args)
-        begin
-          results = Planner::Application.config.geocoder.code_bulk(geocode_args)
-          destinations.zip(results).each { |destination, result|
-            if result
+      @customer.destinations.includes_visits.not_positioned.unscope(:order).find_in_batches(batch_size: 50) { |destinations|
+        Destination.transaction do
+          geocode_args = destinations.collect(&:geocode_args)
+          begin
+            results = Planner::Application.config.geocoder.code_bulk(geocode_args)
+            geocoded = []
+            destinations.zip(results).each do |destination, result|
+              next unless result
+
               destination.geocode_result(result)
-              destination.save
+              geocoded << destination
             end
-          }
-        rescue GeocodeError # avoid stop import because of geocoding job
+            if geocoded.any?
+              Destination.import(
+                geocoded,
+                on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+                validate: true, all_or_none: true, track_validation_failures: true,
+                validate_with_context: :import
+              )
+            end
+          rescue GeocodeError # avoid stop import because of geocoding job
+          end
         end
       }
     end
@@ -552,17 +563,28 @@ class ImporterDestinations < ImporterBase
   def geocode_or_count_stores
     @stores_to_geocode_count = @customer.stores.not_positioned.count
     if @stores_to_geocode_count > 0 && (@synchronous || !Planner::Application.config.delayed_job_use)
-      @customer.stores.not_positioned.find_in_batches(batch_size: 50){ |stores|
-        geocode_args = stores.collect(&:geocode_args)
-        begin
-          results = Planner::Application.config.geocoder.code_bulk(geocode_args)
-          stores.zip(results).each { |store, result|
-            if result
+      @customer.stores.not_positioned.unscope(:order).find_in_batches(batch_size: 50) { |stores|
+        Store.transaction do
+          geocode_args = stores.collect(&:geocode_args)
+          begin
+            results = Planner::Application.config.geocoder.code_bulk(geocode_args)
+            geocoded = []
+            stores.zip(results).each do |store, result|
+              next unless result
+
               store.geocode_result(result)
-              store.save
+              geocoded << store
             end
-          }
-        rescue GeocodeError # avoid stop import because of geocoding job
+            if geocoded.any?
+              Store.import(
+                geocoded,
+                on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+                validate: true, all_or_none: true, track_validation_failures: true,
+                validate_with_context: :import
+              )
+            end
+          rescue GeocodeError # avoid stop import because of geocoding job
+          end
         end
       }
     end
@@ -583,7 +605,7 @@ class ImporterDestinations < ImporterBase
       @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderJob.new(@customer.id, @plannings.any? ? @plannings.map(&:id) : nil))
     elsif @plannings.any?
       sync_plannings_routes_outdated_from_db
-      outdate_routes_deferred(persist: @synchronous)
+      outdate_routes_deferred(persist: !@synchronous)
       @plannings.each{ |planning|
         planning.compute_saved(ignore_errors: true)
       }
