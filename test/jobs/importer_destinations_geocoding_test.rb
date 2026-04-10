@@ -232,4 +232,30 @@ class ImporterDestinationsGeocodingTest < ActiveSupport::TestCase
       Planner::Application.config.delayed_job_use = original_delayed_job_use
     end
   end
+
+  test 'geocoding job payload has nil planning_ids when import rows have no route' do
+    original_delayed_job_use = Planner::Application.config.delayed_job_use
+
+    begin
+      Planner::Application.config.delayed_job_use = true
+
+      destinations_data = [
+        {
+          name: "Test Destination",
+          city: "Paris",
+          postalcode: "75001"
+        }
+      ]
+
+      @importer.import(destinations_data, 'test_import', false, {}) { |row, line| row }
+
+      @customer.reload
+      payload = @customer.job_destination_geocoding.payload_object
+      assert_instance_of GeocoderJob, payload
+      assert_nil payload.planning_ids,
+                 "Importer only passes planning_ids when prepare_plannings filled @plannings (rows with :route)"
+    ensure
+      Planner::Application.config.delayed_job_use = original_delayed_job_use
+    end
+  end
 end

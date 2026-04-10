@@ -2,7 +2,7 @@ GeocoderJobStruct ||= Job.new(:customer_id, :planning_ids)
 class GeocoderJob < GeocoderJobStruct
   def perform
     customer = Customer.find(customer_id)
-    Delayed::Worker.logger.info("GeocoderJob perform", customer_id: customer_id)
+    Delayed::Worker.logger.info("GeocoderJob perform", customer_id: customer_id, planning_ids: planning_ids)
     destination_count = customer.destinations.not_positioned.count
     store_count = customer.stores.not_positioned.count
     i = 0
@@ -57,10 +57,12 @@ class GeocoderJob < GeocoderJobStruct
     customer.reload
 
     Destination.transaction do
-      unless !planning_ids || planning_ids.empty?
-        customer.plannings.where(id: planning_ids).each{ |planning|
-          planning.compute_saved
-        }
+      if planning_ids&.any?
+        Preloaders::PlanningBatchPreload.each_batch(customer.plannings.where(id: planning_ids), batch_size: 10) do |batch|
+          batch.each do |planning|
+            planning.compute_saved(ignore_errors: true)
+          end
+        end
       end
     end
     job_progress_save({ 'first_progression': 100, 'completed': true })
