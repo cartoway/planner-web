@@ -181,6 +181,13 @@ class PlanningTest < ActiveSupport::TestCase
     end
   end
 
+  test 'visit_filling adds no stops when every customer visit is already on a route' do
+    planning = plannings(:planning_one)
+    assert_no_difference('Stop.count') do
+      planning.visit_filling
+    end
+  end
+
   test 'move stop on same route from inside to start' do
     planning = plannings(:planning_one)
     r = planning.routes.select{ |route| route == routes(:route_one_one) }.first
