@@ -580,8 +580,8 @@ class ImporterDestinations < ImporterBase
     if (@destinations_to_geocode_count > 0 || @stores_to_geocode_count > 0) && (!@synchronous && Planner::Application.config.delayed_job_use)
       save_plannings
       outdate_routes_deferred(persist: true)
-      @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderJob.new(@customer.id, !@plannings.empty? ? @plannings.map(&:id) : nil))
-    elsif !@plannings.empty?
+      @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderJob.new(@customer.id, @plannings.any? ? @plannings.map(&:id) : nil))
+    elsif @plannings.any?
       sync_plannings_routes_outdated_from_db
       outdate_routes_deferred(persist: @synchronous)
       @plannings.each{ |planning|
@@ -1176,10 +1176,15 @@ class ImporterDestinations < ImporterBase
       end
     }
 
-    # Add new visits to pre existing plannings
-    (@customer.plannings - @plannings).each{ |planning|
-      planning.visit_filling
-    }
+    # Add new visits to pre existing plannings — batch preload (Rails 6: avoid eager load on the full relation)
+    imported_planning_ids = @plannings.map(&:id).compact
+    relation = @customer.plannings
+    relation = relation.where.not(id: imported_planning_ids) if imported_planning_ids.any?
+    Preloaders::PlanningBatchPreload.each_batch(relation, batch_size: 10) do |batch|
+      batch.each do |planning|
+        planning.visit_filling
+      end
+    end
   end
 
   def sync_tags_deferred
@@ -1212,10 +1217,10 @@ class ImporterDestinations < ImporterBase
     begin
       ActiveRecord::Base.lock_optimistically = false
       Route.where(id: route_ids).find_each do |route|
-        unless route.outdated
-          route.outdated = true
-          route.save!
-        end
+        next if route.outdated
+
+        route.outdated = true
+        route.save!
       end
     ensure
       ActiveRecord::Base.lock_optimistically = true
