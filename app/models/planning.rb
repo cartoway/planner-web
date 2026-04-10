@@ -571,6 +571,7 @@ class Planning < ApplicationRecord
     end
 
     if stop
+      stop.route.outdated = true if stop.route != route
       move_stop(route, stop, index)
     end
   end
@@ -582,6 +583,7 @@ class Planning < ApplicationRecord
     end
 
     if stop
+      stop.route.outdated = true if stop.route != route
       move_stop(route, stop, index)
     end
   end

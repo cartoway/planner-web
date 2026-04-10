@@ -122,6 +122,40 @@ class PlanningTest < ActiveSupport::TestCase
     planning.save!
   end
 
+  test 'update_routes marks out_route and vehicle routes outdated when moving visit from unplanned to vehicle' do
+    planning = plannings(:planning_one)
+    out_route = routes(:route_zero_one)
+    vehicle_route = routes(:route_one_one)
+    visit = visits(:visit_one)
+
+    StopVisit.where(route_id: [vehicle_route.id]).delete_all
+    StopVisit.where(visit_id: visit.id).delete_all
+
+    out_route.reload
+    out_route.add_visits([[visit, true]], false, true)
+    out_route.save!
+
+    Route.where(planning_id: planning.id).update_all(outdated: false)
+
+    planning.reload
+    visit.reload
+
+    routes_hash = {
+      'route_one' => {
+        ref_vehicle: vehicles(:vehicle_one).ref,
+        visits: [[visit, { active: true, custom_attributes: {}, index: 1 }]]
+      }
+    }
+
+    assert planning.update_routes(routes_hash, false)
+    planning.save!
+
+    out_route.reload
+    vehicle_route.reload
+    assert out_route.outdated, 'unplanned route should be outdated after visit moved off'
+    assert vehicle_route.outdated, 'vehicle route should be outdated after receiving visit from import-like update'
+  end
+
   test 'should not set_routes for tags' do
     planning = plannings(:planning_one)
     planning.tags << tags(:tag_two)
