@@ -18,61 +18,7 @@
   end
 
   routes_relation.find_in_batches(batch_size: summary ? 100 : 30) do |batch|
-    if summary
-      ActiveRecord::Associations::Preloader.new.preload(
-        batch,
-        [
-          :route_data,
-          :stops,
-          { planning: { customer: :deliverable_units } },
-          {
-            vehicle_usage: [
-              :tags,
-              { vehicle: [:tags] }
-            ]
-          }
-        ]
-      )
-    else
-      # Rails 6 in_batches is poorly efficient with include_associations scopes, so we preload the associations manually
-      ActiveRecord::Associations::Preloader.new.preload(
-        batch,
-        [
-          {
-            stops: [
-              :route_data,
-              {
-                visit: [
-                  :relation_currents,
-                  :relation_successors,
-                  :tags,
-                  {
-                    destination: [
-                      :tags,
-                      :visits,
-                      { customer: :deliverable_units }
-                    ]
-                  }
-                ]
-              },
-              { store_reload: [:store] },
-              { store: [:customer] }
-            ]
-          },
-          {
-            vehicle_usage: [
-              :store_start,
-              :store_stop,
-              :store_rest,
-              :store_reloads,
-              :tags,
-              { vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads] },
-              { vehicle: [:router, :tags, { customer: [:router, :deliverable_units] }] }
-            ]
-          }
-        ]
-      )
-    end
+    Preloaders::RouteBatchPreload.preload!(batch, summary: summary)
     sorted_batch = batch.sort_by { |route|
       [
         route.vehicle_usage_id.nil? ? 0 : 1,

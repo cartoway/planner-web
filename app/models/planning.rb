@@ -349,11 +349,26 @@ class Planning < ApplicationRecord
   end
 
   def visit_filling
-    visit_ids = routes.includes_stops.flat_map{ |route| route.stops.map{ |stop| stop.visit_id }}
-    Visit.includes_destinations_and_stores.where(id: (customer.visit_ids - visit_ids)).select{ |visit|
-      tags_compatible?(visit.tags.to_a | visit.destination.tags.to_a)
-    }.each{ |visit| visit_add(visit) }
-    self.save!
+    route_ids = routes.loaded? ? routes.map(&:id) : routes.pluck(:id)
+    on_route_visit_ids =
+      Stop.only_stop_visits
+          .unscope(:order)
+          .where(route_id: route_ids)
+          .where.not(visit_id: nil)
+          .distinct
+          .pluck(:visit_id)
+
+    candidates =
+      Visit.unscope(:order)
+           .joins(:destination)
+           .where(destinations: { customer_id: customer.id })
+    candidates = candidates.where.not(id: on_route_visit_ids) if on_route_visit_ids.any?
+    candidates = apply_visit_filling_tag_scope(candidates)
+
+    candidates.find_each do |visit|
+      visit_add(visit)
+    end
+    save!
   end
 
   def visit_remove(visit)
@@ -711,11 +726,7 @@ class Planning < ApplicationRecord
   end
 
   def tags_compatible?(tags_)
-    if self.tag_operation == '_or'
-      (tags_.to_a & tags.to_a).present?
-    else
-      (tags_.to_a & tags.to_a).size == tags.size
-    end
+    tags_compatible_given_plan_tags?(tags_.to_a, tags.to_a)
   end
 
   def stores
@@ -1195,6 +1206,55 @@ class Planning < ApplicationRecord
   end
 
   private
+
+  def tags_compatible_given_plan_tags?(combined_tags, plan_tags)
+    if tag_operation == '_or'
+      (combined_tags & plan_tags).present?
+    else
+      (combined_tags & plan_tags).size == plan_tags.size
+    end
+  end
+
+  def apply_visit_filling_tag_scope(relation)
+    plan_tag_ids = tag_plannings.pluck(:tag_id).uniq
+    if tag_operation == '_or'
+      return relation.none if plan_tag_ids.empty?
+
+      relation.where(visit_filling_plan_tag_or_condition(plan_tag_ids))
+    elsif plan_tag_ids.empty?
+      relation
+    else
+      relation.where(visit_filling_plan_tag_and_condition(plan_tag_ids))
+    end
+  end
+
+  def visit_filling_plan_tag_count_subquery(visits_table)
+    <<~SQL.squish
+      SELECT COUNT(DISTINCT x.tag_id)
+      FROM (
+        SELECT tag_visits.tag_id FROM tag_visits
+        WHERE tag_visits.visit_id = #{visits_table}.id
+          AND tag_visits.tag_id IN (?)
+        UNION
+        SELECT tag_destinations.tag_id FROM tag_destinations
+        WHERE tag_destinations.destination_id = #{visits_table}.destination_id
+          AND tag_destinations.tag_id IN (?)
+      ) x
+    SQL
+  end
+
+  def visit_filling_plan_tag_and_condition(plan_tag_ids)
+    visits_table = Visit.quoted_table_name
+    n = plan_tag_ids.size
+    sql = "(#{visit_filling_plan_tag_count_subquery(visits_table)}) = ?"
+    [sql, plan_tag_ids, plan_tag_ids, n]
+  end
+
+  def visit_filling_plan_tag_or_condition(plan_tag_ids)
+    visits_table = Visit.quoted_table_name
+    sql = "(#{visit_filling_plan_tag_count_subquery(visits_table)}) > 0"
+    [sql, plan_tag_ids, plan_tag_ids]
+  end
 
   def compute_within_existing_transaction(options = {}, routes_to_enqueue = [])
     geojson_data = []
