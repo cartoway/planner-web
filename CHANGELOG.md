@@ -8,6 +8,7 @@
 
   ### Fixed
   - Missing route timings when updating existing plannings with new stops [#632](https://github.com/cartoway/planner-web/pull/632)
+  - Visit ref was hidden [#632](https://github.com/cartoway/planner-web/pull/632)
 
 ## V108.2.1
   ### Fixed
