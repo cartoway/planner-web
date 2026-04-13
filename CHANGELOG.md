@@ -1,5 +1,14 @@
 # Changelog
 
+## V108.2.2
+  ### Modified
+  - Improve data preloads for destination import [#632](https://github.com/cartoway/planner-web/pull/632)
+  - Improve Tags intersection operation when importing new destinations [#632](https://github.com/cartoway/planner-web/pull/632)
+  - Save geocoding results by batch [#632](https://github.com/cartoway/planner-web/pull/632)
+
+  ### Fixed
+  - Missing route timings when updating existing plannings with new stops [#632](https://github.com/cartoway/planner-web/pull/632)
+
 ## V108.2.1
   ### Fixed
   - StaleUpdate on destination import with existing planning [#625](https://github.com/cartoway/planner-web/pull/625)
