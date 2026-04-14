@@ -11,8 +11,9 @@ class ImporterDestinationsGeocodingTest < ActiveSupport::TestCase
     @destinations_to_geocode = @customer.destinations.not_positioned.count
   end
 
-  teardown do
+  def teardown
     I18n.locale = @original_locale
+    super
   end
 
   test 'geocoding tasks are called in synchronous mode' do
