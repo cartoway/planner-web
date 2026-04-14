@@ -40,9 +40,18 @@ module PreferencesCatalogSplits
   # Active | disabled | hidden toolbar item ids for admin operations DnD (segment_controls visible + usable).
   def operations_tier_split(zone)
     z = zone.to_s
-    allowed = z == 'route' ? Preferences::Catalog::OPERATION_GROUPS_ROUTE : Preferences::Catalog::OPERATION_GROUPS_PLANNING
-    ops = read_operations_hash[z] || {}
-    ops = ops.is_a?(Hash) ? ops.stringify_keys : {}
+    allowed = case z
+              when 'route' then Preferences::Catalog::OPERATION_GROUPS_ROUTE
+              when 'stop' then Preferences::Catalog::OPERATION_GROUPS_STOP
+              else Preferences::Catalog::OPERATION_GROUPS_PLANNING
+              end
+    ops = case z
+          when 'stop'
+            Preferences::Catalog.normalize_stop_zone(read_operations_hash['stop'])
+          else
+            h = read_operations_hash[z] || {}
+            h.is_a?(Hash) ? h.stringify_keys : {}
+          end
     order = Array(ops['segments']).map(&:to_s)
     controls = ops['segment_controls'].is_a?(Hash) ? ops['segment_controls'].stringify_keys : {}
 

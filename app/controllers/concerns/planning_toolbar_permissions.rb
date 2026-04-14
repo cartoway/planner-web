@@ -60,6 +60,24 @@ module PlanningToolbarPermissions
     route_operation_visible?(operation_id) && !route_operation_usable?(operation_id)
   end
 
+  def stop_operation_visible?(operation_id)
+    return true if current_user.try(:admin?)
+    return true unless current_user.respond_to?(:operation_segment_visible?)
+
+    current_user.operation_segment_visible?(:stop, operation_id)
+  end
+
+  def stop_operation_usable?(operation_id)
+    return true if current_user.try(:admin?)
+    return true unless current_user.respond_to?(:operation_segment_usable?)
+
+    current_user.operation_segment_usable?(:stop, operation_id)
+  end
+
+  def stop_operation_disabled?(operation_id)
+    stop_operation_visible?(operation_id) && !stop_operation_usable?(operation_id)
+  end
+
   # PlanningsController before_action: block optimize / optimize_route when the matching toolbar operation is not usable.
   def enforce_operation_usable_for_optimize!
     usable =
@@ -118,6 +136,7 @@ module PlanningToolbarPermissions
     @manage_planning[:disable_planning_export] = planning_op_disabled.call('export')
 
     apply_route_toolbar_operation_flags!
+    apply_stop_toolbar_operation_flags!
   end
 
   # Per-route header tools (operations.route). Depends on planning toolbar flags having been applied first.
@@ -149,5 +168,15 @@ module PlanningToolbarPermissions
       route_vehicle_usage_operation_visible && @manage_planning[:manage_vehicle] && form_ok
     form_update_ok = !current_user.respond_to?(:form_update?) || current_user.form_update?(:vehicle_usages)
     @manage_planning[:disable_route_vehicle_usage] = route_op_disabled.call('vehicle_usage') || !form_update_ok
+  end
+
+  def apply_stop_toolbar_operation_flags!
+    return unless current_user
+
+    stop_op_visible = method(:stop_operation_visible?)
+    stop_op_disabled = method(:stop_operation_disabled?)
+
+    @manage_planning[:manage_stop_lock] = stop_op_visible.call('lock_stop')
+    @manage_planning[:disable_stop_lock] = stop_op_disabled.call('lock_stop')
   end
 end

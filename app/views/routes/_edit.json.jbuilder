@@ -187,6 +187,7 @@ if @with_stops
     when StopVisit
       json.visits true
       visit = stop.visit
+      json.locked stop.locked
       json.visit_id visit.id
       json.duration visit.default_duration
       json.destination do

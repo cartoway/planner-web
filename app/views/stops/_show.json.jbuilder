@@ -37,6 +37,7 @@ duration = nil
 case stop
 when StopVisit
   json.visits true
+  json.locked stop.locked
   visit = stop.visit
   json.visit_id visit.id
   json.destination_id visit.destination.id

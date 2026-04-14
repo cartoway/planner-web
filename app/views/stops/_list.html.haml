@@ -122,7 +122,8 @@
                 %a.marker.btn.btn-default.btn-xs{class: ("invisible" if !stop[:geocoded]), href: "#", title: t("plannings.edit.marker_help")}
                   %i.fa.fa-map-marker
     - if stop[:destination] && stop[:visits]
-      %li.d-fake-flex.align-items-center.list-group-item.pr-5{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-origin-route-id": route[:route_id], "data-sub-tour-index": sub_tour_index}
+      - visit_li_classes = [("ui-state-error" if stop[:error]), ("stop-visit-locked" if stop[:locked] && route[:vehicle_usage_id])].compact.join(' ')
+      %li.d-fake-flex.align-items-center.list-group-item.pr-5{class: visit_li_classes.presence, "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-origin-route-id": route[:route_id], "data-sub-tour-index": sub_tour_index}
         .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{stop[:status_code]}" if stop[:status])}
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
             .col-xs-2.d-flex.justify-content-center.align-items-center
@@ -165,6 +166,8 @@
                 %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path_help")}
               - if stop[:out_of_skill]
                 %i.fa.fa-tags.fa-fw{title: t("plannings.edit.error.out_of_skill_help")}
+              - if stop[:locked] && route[:vehicle_usage_id]
+                %i.fa.fa-lock.fa-fw.text-warning{title: t('plannings.edit.stop_locked_indicator_title')}
 
               - title = stop[:name]
               - if stop[:index_visit]
@@ -173,6 +176,8 @@
                 - title += " - #{stop[:status]}"
               - if stop[:eta_formated]
                 - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
+              - if stop[:locked] && route[:vehicle_usage_id]
+                - title += " — #{t('plannings.edit.stop_locked_indicator_title')}"
               %span.name{title: title}
                 = stop[:name]
                 - if stop[:index_visit]
@@ -186,6 +191,9 @@
                 - if @manage_planning[:manage_destination]
                   %a.marker_edit.btn.btn-default.btn-xs{href: "/destinations/#{stop[:destination][:destination_id]}/edit?back=true#collapseVisit#{stop[:visit_id]}", title: t("plannings.edit.edit_visit_help")}
                     %i.fa.fa-pencil
+                - if route[:vehicle_usage_id] && @manage_planning[:manage_stop_lock]
+                  %button.stop_locked_toggle.btn.btn-xs{type: 'button', title: t('plannings.edit.stop_locked_help'), class: (stop[:locked] ? 'btn-warning' : 'btn-default'), disabled: @manage_planning[:disable_stop_lock], data: { route_id: route[:route_id], stop_id: stop[:stop_id], locked: stop[:locked] ? 'true' : 'false' }}
+                    %i.fa{class: "fa-#{'un' unless stop[:locked]}lock"}
                 - if stop[:geocoded]
                   %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                     %i.fa.fa-map-marker

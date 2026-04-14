@@ -2518,6 +2518,34 @@ export const plannings_edit = function(params) {
     });
   });
 
+  $(".main").on('click', '.stop_locked_toggle', function(event) {
+    event.preventDefault();
+    var $btn = $(this);
+    if ($btn.prop('disabled')) {
+      return;
+    }
+    var route_id = $btn.data('route-id') || $btn.closest('[data-route-id]').attr('data-route-id');
+    var stop_id = $btn.data('stop-id') || $btn.closest('[data-stop-id]').attr('data-stop-id');
+    var locked = $btn.data('locked') === true || $btn.data('locked') === 'true';
+    $.ajax({
+      type: 'PATCH',
+      data: JSON.stringify({
+        stop: {
+          locked: !locked
+        }
+      }),
+      contentType: 'application/json',
+      url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '.js',
+      beforeSend: beforeSendWaiting,
+      success: function() {
+        updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
+        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
+      },
+      complete: completeAjaxMap,
+      error: ajaxError
+    });
+  });
+
   $(".main").on("click", ".send_to_route", function() {
     var route_id = $(this).closest("[data-route-id]").attr("data-route-id");
     var stopId = $(this).closest("[data-stop-id]").attr("data-stop-id");

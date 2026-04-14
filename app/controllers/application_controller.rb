@@ -34,6 +34,7 @@ class ApplicationController < ActionController::Base
   rescue_from Exceptions::JobInProgressError, with: :job_in_progress
   rescue_from Exceptions::StopIndexError, with: :stop_index_error
   rescue_from Exceptions::OutdatedRequestError, with: :conflict_error
+  rescue_from PreferencesAuthorization::Forbidden, with: :forbidden_error
 
   layout :layout_by_resource
 
@@ -236,6 +237,16 @@ class ApplicationController < ActionController::Base
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 409 }, status: 409 }
       format.json { render json: { type: 'conflict', error: I18n.t('errors.management.status.title.409') }, status: 409 }
       format.all { render body: nil, status: :conflict }
+    end
+  end
+
+  def forbidden_error(_exception)
+    respond_to do |format|
+      flash[:error] = [I18n.t('errors.management.status.title.403')]
+      format.html { head :forbidden }
+      format.js { head :forbidden }
+      format.json { head :forbidden }
+      format.any { head :forbidden }
     end
   end
 

@@ -44,7 +44,11 @@ module Preferences
       BASE.merge(showOrder: false, columns: [
         { containerSelector: '.operations-tier-active .item-list', inputName: "#{p}[operations][#{z}][]" },
         { containerSelector: '.operations-tier-disabled .item-list', inputName: "#{p}[operations][#{z}_disabled][]" },
-        { containerSelector: '.operations-tier-hidden .item-list', inactive: true }
+        {
+          containerSelector: '.operations-tier-hidden .item-list',
+          inputName: "#{p}[operations][#{z}_hidden][]",
+          inactive: true
+        }
       ])
     end
 
