@@ -39,6 +39,32 @@ const user_edit_settings = function(params) {
   $('.select2').select2();
 };
 
+// Admin user form: role dropdown with Font Awesome icons (bootstrap-select, same pattern as admin/roles).
+function initAdminUserRoleSelectpicker() {
+  var $role = $('select.admin-user-role-selectpicker');
+  if (!$role.length) {
+    return;
+  }
+  $role.each(function() {
+    var $el = $(this);
+    if ($el.parent().hasClass('bootstrap-select')) {
+      $el.selectpicker('destroy');
+    }
+    $el.selectpicker();
+  });
+}
+
+$(document).on('turbolinks:load', initAdminUserRoleSelectpicker);
+
+$(document).on('turbolinks:before-cache', function() {
+  $('select.admin-user-role-selectpicker').each(function() {
+    var $el = $(this);
+    if ($el.parent().hasClass('bootstrap-select')) {
+      $el.selectpicker('destroy');
+    }
+  });
+});
+
 Paloma.controller('Users', {
   edit: function() {
     user_edit_settings(this.params);

@@ -980,7 +980,7 @@ en:
         role_blank: No role
         role_legend: Role (reference)
         role_help: >-
-          Toolbar actions and form access for this user follow the permissions defined for this role.
+          Toolbar actions and form access for this user follow the permissions defined for this role. Without a role, default permissions are used.
       create:
         success: User created successfully
       edit:

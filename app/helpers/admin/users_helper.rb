@@ -21,6 +21,35 @@
 module Admin::UsersHelper
   include Admin::RolesHelper
 
+  # Options for role select with bootstrap-select HTML (icon + name), same idea as admin/roles icon field.
+  def admin_user_role_select_options(roles)
+    roles.map do |role|
+      [
+        role.name,
+        role.id,
+        { data: { content: admin_user_role_option_content(role) } }
+      ]
+    end
+  end
+
+  def admin_user_role_option_content(role)
+    name = ERB::Util.html_escape(role.name)
+    icon = role.icon.presence
+    if icon.blank?
+      name
+    else
+      # String style matches role_icon (RolesHelper); color only on the icon so label stays readable.
+      icon_el = content_tag(:i, '', class: format('fa fa-fw %s', icon))
+      icon_markup =
+        if role.color.present?
+          content_tag(:span, icon_el, class: 'admin-user-role-select-option-icon', style: format('color: %s', role.color))
+        else
+          icon_el
+        end
+      (icon_markup + ' '.html_safe + name).html_safe
+    end
+  end
+
   # Role icon (same styling as roles index) with role name as native tooltip.
   def admin_user_role_display(user)
     role = user.role
