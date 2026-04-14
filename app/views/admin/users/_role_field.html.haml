@@ -1,3 +1,7 @@
 .row
-  = f.collection_select :role_id, @roles_for_select, :id, :name, { include_blank: t('admin.users.form.role_blank') }, { class: 'form-control' }
-  %p.help-block.col-md-offset-2= t('admin.users.form.role_help')
+  = f.select :role_id,
+    options_for_select(admin_user_role_select_options(@roles_for_select), @user.role_id),
+    { include_blank: t('admin.users.form.role_blank') },
+    { class: 'form-control selectpicker admin-user-role-selectpicker', 'data-live-search' => 'true' }
+  %p.help-block.col-md-offset-2.col-md-8
+    = t('admin.users.form.role_help')
