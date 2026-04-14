@@ -8,8 +8,17 @@ class V100::Stops < Grape::API
       p = ActionController::Parameters.new(params)
       p.permit(
         :active,
+        :locked,
         custom_attributes: RecursiveParamsHelper.permit_recursive(current_customer.custom_attributes.map(&:name))
       )
+    end
+
+    def deny_stop_locked_update_unless_permitted!
+      return unless params.key?(:locked) || params.key?('locked')
+
+      return if @current_user.admin? || @current_user.operation_segment_usable?(:stop, 'lock_stop')
+
+      error!(V100::Status.code_response(:code_403, message: 'Forbidden'), 403)
     end
   end
 
@@ -33,9 +42,11 @@ class V100::Stops < Grape::API
             params do
               requires :id, type: Integer
               optional :active, type: Boolean
+              optional :locked, type: Boolean
               optional :custom_attributes, type: Hash
             end
             put ':id' do
+              deny_stop_locked_update_unless_permitted!
               planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
               raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, planning.id)
               route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) } || raise(ActiveRecord::RecordNotFound.new)

@@ -198,6 +198,38 @@ class OptimizerWrapperTest < ActionController::TestCase
     remove_request_stub(@stub_VrpSubmit)
   end
 
+  test 'locked StopVisit gets sticky_vehicle_ids on global optimization when route has vehicle' do
+    begin
+      stop = stops(:stop_one_one)
+      StopVisit.where(id: stop.id).update_all(locked: true)
+      stop.reload
+      planning = plannings(:planning_one)
+      vrp = @optim.build_vrp(planning, planning.routes, global: true)
+      service = vrp[:services].find { |s| s[:id] == "s#{stop.id}" }
+      assert_equal ["v#{stop.route_id}"], service[:sticky_vehicle_ids]
+    ensure
+      StopVisit.where(id: stops(:stop_one_one).id).update_all(locked: false)
+      remove_request_stub(@stub_VrpJob)
+      remove_request_stub(@stub_VrpSubmit)
+    end
+  end
+
+  test 'locked StopVisit on route without vehicle has no sticky_vehicle_ids' do
+    begin
+      stop = stops(:stop_unaffected)
+      StopVisit.where(id: stop.id).update_all(locked: true)
+      stop.reload
+      planning = plannings(:planning_one)
+      vrp = @optim.build_vrp(planning, planning.routes, global: true)
+      service = vrp[:services].find { |s| s[:id] == "s#{stop.id}" }
+      assert_nil service[:sticky_vehicle_ids]
+    ensure
+      StopVisit.where(id: stops(:stop_unaffected).id).update_all(locked: false)
+      remove_request_stub(@stub_VrpJob)
+      remove_request_stub(@stub_VrpSubmit)
+    end
+  end
+
   test 'should build rests' do
     begin
       stops = @planning.routes.flat_map{ |route| route.stops.select{ |stop| stop.is_a?(StopVisit) } }

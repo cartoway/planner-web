@@ -28,6 +28,9 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     assert out['route']['segment_controls']['export']['usable']
     assert_not out['route']['segment_controls']['vehicle_usage']['visible']
     assert_not out['route']['segment_controls']['vehicle_usage']['usable']
+
+    assert_not out['stop']['segment_controls']['lock_stop']['visible']
+    assert_not out['stop']['segment_controls']['lock_stop']['usable']
   end
 
   test 'merge_operations_with_params maps disabled column to visible but not usable' do
@@ -53,6 +56,66 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
 
     assert out['route']['segment_controls']['vehicle_usage']['visible']
     assert_not out['route']['segment_controls']['vehicle_usage']['usable']
+  end
+
+  test 'default_operations hides stop lock_stop until enabled via merge' do
+    defs = Preferences::Catalog.default_operations
+    assert_not defs['stop']['segment_controls']['lock_stop']['visible']
+    assert_not defs['stop']['segment_controls']['lock_stop']['usable']
+
+    out = Preferences::Catalog.merge_operations_with_params(
+      defs.deep_dup,
+      { 'stop' => %w[lock_stop] }
+    )
+    assert out['stop']['segment_controls']['lock_stop']['visible']
+    assert out['stop']['segment_controls']['lock_stop']['usable']
+  end
+
+  test 'merge_operations_with_params applies stop disabled when active column is omitted from params' do
+    seed = Preferences::Catalog.default_operations.deep_dup
+    out = Preferences::Catalog.merge_operations_with_params(
+      seed,
+      { 'stop_disabled' => %w[lock_stop] }
+    )
+    assert out['stop']['segment_controls']['lock_stop']['visible']
+    assert_not out['stop']['segment_controls']['lock_stop']['usable']
+  end
+
+  test 'merge_operations_with_params applies stop hidden when active and disabled columns are omitted' do
+    seed = Preferences::Catalog.default_operations.deep_dup
+    seed['stop']['segment_controls']['lock_stop'] = { 'visible' => true, 'usable' => true, 'customizable' => true }
+    out = Preferences::Catalog.merge_operations_with_params(
+      seed,
+      { 'stop_hidden' => %w[lock_stop] }
+    )
+    assert_not out['stop']['segment_controls']['lock_stop']['visible']
+    assert_not out['stop']['segment_controls']['lock_stop']['usable']
+  end
+
+  test 'operations_tier_split stop uses catalog defaults when operations JSON has no stop key' do
+    dummy = OpSplitDummy.new
+    dummy.operations = {
+      'planning' => Preferences::Catalog.default_operations['planning'],
+      'route' => Preferences::Catalog.default_operations['route']
+    }
+    _active, _disabled, hidden = dummy.operations_tier_split('stop')
+    assert_includes hidden, 'lock_stop'
+  end
+
+  test 'operations_tier_split stop zone respects lock_stop visibility' do
+    dummy = OpSplitDummy.new
+    dummy.operations = {
+      'stop' => {
+        'segments' => %w[lock_stop],
+        'segment_controls' => {
+          'lock_stop' => { 'visible' => true, 'usable' => false }
+        }
+      }
+    }
+    active, disabled, hidden = dummy.operations_tier_split('stop')
+    assert_equal [], active
+    assert_equal %w[lock_stop], disabled
+    assert_equal [], hidden
   end
 
   test 'operations_tier_split groups ids into active disabled and hidden buckets' do
