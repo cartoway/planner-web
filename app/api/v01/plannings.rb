@@ -44,7 +44,7 @@ class V01::Plannings < Grape::API
       success: V01::Status.success(:code_201, V01::Entities::Planning),
       failure: V01::Status.failures
     params do
-      use :params_from_entity, entity: V01::Entities::Planning.documentation.except(:id, :route_ids, :outdated, :tag_ids).deep_merge(
+      use :params_from_entity, entity: V01::Entities::Planning.documentation_for_params.deep_merge(
         name: { required: true },
       )
       optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
@@ -69,7 +69,7 @@ class V01::Plannings < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      use :params_from_entity, entity: V01::Entities::Planning.documentation.except(:id, :route_ids, :outdated, :tag_ids)
+      use :params_from_entity, entity: V01::Entities::Planning.documentation_for_params
       optional :routes, type: Array[V01::Entities::Route]
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
