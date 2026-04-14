@@ -1004,7 +1004,7 @@ fr:
         role_blank: Aucun rôle
         role_legend: Rôle (référence)
         role_help: >-
-          Les barres d’outils et l’accès aux formulaires appliqués à l’utilisateur suivent les permissions définies pour ce rôle.
+          Les barres d’outils et l’accès aux formulaires appliqués à l’utilisateur suivent les permissions définies pour ce rôle. Sans rôle, les permissions par défaut sont utilisées.
       create:
         success: User créé avec succès
       edit:
