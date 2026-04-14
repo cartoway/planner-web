@@ -37,6 +37,9 @@ class Route < ApplicationRecord
     out_of_max_ride_distance out_of_max_ride_duration
   ].freeze
 
+  # Exposed on API (Route / RouteStatus); includes max_loads (jsonb on route_data).
+  ROUTE_DATA_API_METRIC_FIELDS = (ROUTE_DATA_METRICS_FIELDS + [:max_loads]).freeze
+
   attr_accessor :migration_skip
   attr_reader :geojson_tracks_store,
               :geojson_points_store

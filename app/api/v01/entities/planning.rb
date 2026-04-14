@@ -15,9 +15,57 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
+
+# Aggregate each route's primary route_data (sizes, alert flags) for planning API payloads.
+class V01::Entities::PlanningRouteDataAlerts
+  INTEGER_FIELDS = Route::ROUTE_DATA_METRICS_FIELDS.first(4).freeze
+  BOOLEAN_FIELDS = (Route::ROUTE_DATA_METRICS_FIELDS - INTEGER_FIELDS).freeze
+
+  # Returns a string-keyed hash; recomputed at most once per planning instance per serialization pass.
+  def self.serialize(planning)
+    cache = :@_route_metrics_json
+    return planning.instance_variable_get(cache) if planning.instance_variable_defined?(cache)
+
+    rds = planning.routes.map(&:route_data).compact
+    out = if rds.empty?
+      empty_aggregate_hash
+    else
+      h = {}
+      INTEGER_FIELDS.each { |k| h[k] = rds.sum { |rd| rd.public_send(k).to_i } }
+      BOOLEAN_FIELDS.each { |k| h[k] = rds.any? { |rd| rd.public_send(k) } }
+      h
+    end
+    result = out.stringify_keys
+    planning.instance_variable_set(cache, result)
+    result
+  end
+
+  def self.empty_aggregate_hash
+    h = {}
+    INTEGER_FIELDS.each { |k| h[k] = 0 }
+    BOOLEAN_FIELDS.each { |k| h[k] = false }
+    h
+  end
+end
+
 class V01::Entities::Planning < Grape::Entity
+  AGGREGATE_BASE = 'Aggregated from each route main route_data'.freeze
+
   def self.entity_name
     'V01_Planning'
+  end
+
+  def self.aggregate_field_doc(attr)
+    if V01::Entities::PlanningRouteDataAlerts::INTEGER_FIELDS.include?(attr)
+      { type: Integer, desc: "#{AGGREGATE_BASE}: sum of #{attr}." }
+    else
+      { type: 'Boolean', desc: "#{AGGREGATE_BASE}: true if any route has #{attr}." }
+    end
+  end
+
+  # Read-only aggregates must not appear in POST/PUT param documentation.
+  def self.documentation_for_params
+    documentation.except(:id, :route_ids, :outdated, :tag_ids, *Route::ROUTE_DATA_METRICS_FIELDS)
   end
 
   expose(:id, documentation: { type: Integer })
@@ -42,6 +90,11 @@ class V01::Entities::Planning < Grape::Entity
     m.tag_operation.delete_prefix('_')
   }
   expose(:updated_at, documentation: { type: DateTime, desc: 'Last Updated At'})
+  Route::ROUTE_DATA_METRICS_FIELDS.each do |attr|
+    expose(attr, documentation: V01::Entities::Planning.aggregate_field_doc(attr)) { |p|
+      V01::Entities::PlanningRouteDataAlerts.serialize(p)[attr.to_s]
+    }
+  end
   expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
     if options[:geojson] && options[:geojson] != :false
       m.to_geojson(true, true,

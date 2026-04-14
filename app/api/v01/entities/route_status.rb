@@ -23,5 +23,25 @@ class V01::Entities::RouteStatus < Grape::Entity
   expose(:arrival_eta, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device.' }) { |route| route.stop_route_data&.eta }
   expose(:arrival_eta_formated, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device.' }) { |route| route.arrival_eta && I18n.l(route.arrival_eta, format: :hour_minute) }
 
+  expose(:size_active, documentation: { type: Integer, desc: 'Main route_data: active stops count.' })
+  expose(:size_destinations, documentation: { type: Integer })
+  expose(:size_store_reloads, documentation: { type: Integer })
+  expose(:stops_size, documentation: { type: Integer })
+  expose(:no_geolocalization, documentation: { type: 'Boolean' })
+  expose(:no_path, documentation: { type: 'Boolean' })
+  expose(:unmanageable_capacity, documentation: { type: 'Boolean' })
+  expose(:out_of_capacity, documentation: { type: 'Boolean' })
+  expose(:out_of_drive_time, documentation: { type: 'Boolean' })
+  expose(:out_of_force_position, documentation: { type: 'Boolean' })
+  expose(:out_of_work_time, documentation: { type: 'Boolean' })
+  expose(:out_of_window, documentation: { type: 'Boolean' })
+  expose(:out_of_max_distance, documentation: { type: 'Boolean' })
+  expose(:out_of_max_reload, documentation: { type: 'Boolean' })
+  expose(:out_of_max_ride_distance, documentation: { type: 'Boolean' })
+  expose(:out_of_max_ride_duration, documentation: { type: 'Boolean' })
+  expose(:out_of_relation, documentation: { type: 'Boolean' })
+  expose(:out_of_skill, documentation: { type: 'Boolean' })
+  expose(:max_loads, documentation: { type: Hash, desc: 'Main route_data max loads (jsonb).' })
+
   expose(:stops, using: V01::Entities::StopStatus, documentation: { type: V01::Entities::StopStatus, is_array: true })
 end

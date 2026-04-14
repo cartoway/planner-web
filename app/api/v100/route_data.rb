@@ -27,8 +27,8 @@ class V100::RouteData < Grape::API
   resource :route_data do
     desc 'Update route data attributes.',
       nickname: 'updateRouteData',
-      success: V01::Status.success(:code_200, V01::Entities::RouteDataProperties),
-      failure: V01::Status.failures
+      success: V100::Status.success(:code_200, V100::Entities::RouteDataProperties),
+      failure: V100::Status.failures
     params do
       requires :id, type: Integer, desc: 'RouteData identifier'
       optional :hidden, type: Boolean, desc: 'Hide or show the sub-tour'
@@ -45,7 +45,7 @@ class V100::RouteData < Grape::API
       route ||= ::Stop.where(route_data_id: route_data.id).includes(:route).first!.route
       route.refresh_geojson_colors_for_route_data(route_data)
 
-      present route_data, with: V01::Entities::RouteDataProperties
+      present route_data, with: V100::Entities::RouteDataProperties
     end
   end
 end
