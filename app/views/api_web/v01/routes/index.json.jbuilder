@@ -47,6 +47,7 @@ json.routes @routes do |route|
     if stop.is_a?(StopVisit)
       json.visits true
       visit = stop.visit
+      json.locked stop.locked
       json.visit_id visit.id
       json.destination do
         json.destination_id visit.destination.id

@@ -20,6 +20,8 @@
 module PreferencesAuthorization
   extend ActiveSupport::Concern
 
+  class Forbidden < StandardError; end
+
   private
 
   def deny_unless_operation_usable!(zone, segment_id)
@@ -47,11 +49,6 @@ module PreferencesAuthorization
   end
 
   def refuse_display_ui!
-    respond_to do |format|
-      format.html { head :forbidden }
-      format.js { head :forbidden }
-      format.json { head :forbidden }
-      format.any { head :forbidden }
-    end
+    raise Forbidden
   end
 end

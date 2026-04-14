@@ -114,7 +114,11 @@ class Admin::RolesController < ApplicationController
       :icon,
       :color,
       :forms_ui,
-      operations: { planning: [], planning_disabled: [], route: [], route_disabled: [] },
+      operations: {
+        planning: [], planning_disabled: [], planning_hidden: [],
+        route: [], route_disabled: [], route_hidden: [],
+        stop: [], stop_disabled: [], stop_hidden: []
+      },
       forms_active: [],
       forms_disabled: []
     )

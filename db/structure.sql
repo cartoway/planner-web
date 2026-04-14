@@ -1001,6 +1001,7 @@ CREATE TABLE public.stops (
     store_reload_id integer,
     out_of_max_reload boolean,
     route_data_id integer,
+    locked boolean DEFAULT false NOT NULL,
     CONSTRAINT check_visit_id CHECK ((((type)::text <> 'StopVisit'::text) OR (visit_id IS NOT NULL)))
 );
 
@@ -3789,6 +3790,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260316121551'),
 ('20260316131419'),
 ('20260402122124'),
-('20260408082217');
+('20260408082217'),
+('20260414111726');
 
 

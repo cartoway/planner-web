@@ -798,6 +798,7 @@ fr:
       description: La page que vous essayez d'atteindre a provoqué une erreur
       status:
         title:
+          '403': Accès refusé
           '404': Page introuvable
           '409': Conflit
           '422': Action impossible
@@ -2155,6 +2156,9 @@ fr:
       locked_help: >-
         Verrouille la tournée pour les opérations globales sur le plan de
         tournées
+      stop_locked_help: >-
+        Conserver cette visite sur la tournée véhicule actuelle lors de l’optimisation
+      stop_locked_indicator_title: Verrouillé sur cette tournée véhicule
       center_view_help: Centre la carte sur la tournée
       vehicle_help: Paramétrer le véhicule
       export_help: Exporter la tournée
@@ -2761,6 +2765,7 @@ fr:
         route_headers: Données tournées
         planning_toolbar: Outils planning
         route_toolbar: Outils tournées
+        stop_toolbar: Actions sur les arrêts visite
         active: Visibles
         inactive: Masqués
         data_active: Actives
@@ -3502,3 +3507,4 @@ fr:
       vehicle_usage: Utilisation véhicule
       stops: Arrêts
       view: Affichage
+      lock_stop: Verrouiller la visite sur la tournée

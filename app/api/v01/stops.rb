@@ -23,7 +23,15 @@ class V01::Stops < Grape::API
     # Never trust parameters from the scary internet, only allow the white list through.
     def stop_params
       p = ActionController::Parameters.new(params)
-      p.permit(:active)
+      p.permit(:active, :locked)
+    end
+
+    def deny_stop_locked_update_unless_permitted!
+      return unless params.key?(:locked) || params.key?('locked')
+
+      return if @current_user.admin? || @current_user.operation_segment_usable?(:stop, 'lock_stop')
+
+      error!(V01::Status.code_response(:code_403, message: 'Forbidden'), 403)
     end
   end
 
@@ -58,9 +66,10 @@ class V01::Stops < Grape::API
               failure: V01::Status.failures
             params do
               requires :id, type: Integer
-              use :params_from_entity, entity: V01::Entities::Stop.documentation.slice(:active)
+              use :params_from_entity, entity: V01::Entities::Stop.documentation.slice(:active, :locked)
             end
             put ':id' do
+              deny_stop_locked_update_unless_permitted!
               planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!
               raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, planning.id)
               route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) } || raise(ActiveRecord::RecordNotFound.new)

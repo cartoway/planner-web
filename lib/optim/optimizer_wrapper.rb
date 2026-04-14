@@ -322,9 +322,11 @@ class OptimizerWrapper
       point_hash[service_point[:id]] = service_point
 
       tags_label = stop.is_a?(StopVisit) ? (stop.visit.destination.tags | stop.visit.tags).map(&:label) & planning.all_skills.map(&:label) : nil
-      sticky_vehicle_ids = stop.route.vehicle_usage_id &&
-          (!options[:global] || stop.is_a?(StopRest)) &&
-          (options[:moving_stop_ids].nil? || route_ids.include?(stop.route_id) || options[:moving_stop_ids].exclude?(stop.id)) ? ["v#{stop.route_id}"] : nil
+      sticky_eligible = stop.route.vehicle_usage_id &&
+        (options[:moving_stop_ids].nil? || route_ids.include?(stop.route_id) || options[:moving_stop_ids].exclude?(stop.id))
+      base_sticky = sticky_eligible && (!options[:global] || stop.is_a?(StopRest))
+      visit_locked_sticky = sticky_eligible && stop.is_a?(StopVisit) && stop.locked
+      sticky_vehicle_ids = (base_sticky || visit_locked_sticky) ? ["v#{stop.route_id}"] : nil
       {
         id: "s#{stop.id}",
         type: 'service',
