@@ -8,7 +8,7 @@
  *   - `containerSelector` (string): querySelector relative to the root container; must resolve to the `.item-list` (or equivalent) host.
  *   - `inputName` (string, optional): name= on generated hidden inputs for non-inactive columns. Omit with no hiddenInputSelector to sync order only.
  *   - `hiddenInputSelector` (string, optional): alternative way to infer input name from existing markup.
- *   - `inactive` (boolean): true → no hidden inputs, order display uses `inactiveOrderDisplay`; does not count toward minActiveItems the same way.
+ *   - `inactive` (boolean): true → order display uses `inactiveOrderDisplay`; does not count toward minActiveItems the same way. Hidden inputs are omitted unless `inputName` is set.
  *   - `toggleTo` (number, optional): 0-based column index for the item “×” button; overrides default next-column / 2-col swap.
  *   - `toggleButtons` (false): hide per-row toggle; call `refresh()` after injecting rows via JS.
  *
@@ -113,7 +113,7 @@ class ActiveInactiveDragDrop {
       return {
         element: el,
         inactive,
-        inputName: inactive ? null : inputName,
+        inputName: inactive && !inputName ? null : inputName,
         toggleTo
       };
     });
@@ -334,7 +334,7 @@ class ActiveInactiveDragDrop {
       item.querySelectorAll('input[type="hidden"]').forEach(h => h.remove());
     });
 
-    if (tier.inactive) {
+    if (tier.inactive && !tier.inputName) {
       return;
     }
 

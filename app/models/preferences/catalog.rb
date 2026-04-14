@@ -29,6 +29,7 @@ module Preferences
     HEADER_ROUTE_DEFAULT = Headers::HEADER_ROUTE_DEFAULT
     OPERATION_GROUPS_PLANNING = Operations::OPERATION_GROUPS_PLANNING
     OPERATION_GROUPS_ROUTE = Operations::OPERATION_GROUPS_ROUTE
+    OPERATION_GROUPS_STOP = Operations::OPERATION_GROUPS_STOP
     FORM_RESOURCES = Forms::FORM_RESOURCES
     DEFAULT_BOOL = Core::DEFAULT_BOOL
 
@@ -73,8 +74,12 @@ module Preferences
         Operations.normalize_operations(raw)
       end
 
-      def merge_operations_zone_from_three_columns_dragndrop(zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids)
-        Operations.merge_operations_zone_from_three_columns_dragndrop(zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids)
+      def normalize_stop_zone(zone_hash)
+        Operations.normalize_stop_zone(zone_hash)
+      end
+
+      def merge_operations_zone_from_three_columns_dragndrop(zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids, hidden_ordered_ids = nil)
+        Operations.merge_operations_zone_from_three_columns_dragndrop(zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids, hidden_ordered_ids)
       end
 
       def merge_operations_with_params(base_ops, raw_params)

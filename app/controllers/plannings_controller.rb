@@ -42,6 +42,7 @@ class PlanningsController < ApplicationController
   include PlanningsHelper
   include SharedHelper
   include PlanningToolbarPermissions
+  include PreferencesAuthorization
 
   def index
     @plannings = current_user.customer.plannings.select{ |planning|
@@ -408,6 +409,7 @@ class PlanningsController < ApplicationController
         Planning.transaction do
           @route = @planning.routes.find(Integer(params[:route_id]))
           @stop = @route.stops.find(Integer(params[:stop_id])) if @route
+          enforce_stop_locked_update_permission! if @stop && params[:stop].present? && params[:stop].to_unsafe_h.key?('locked')
           @stop.assign_attributes(stop_params) if @stop
           if @stop && @route.compute_saved! && @route.reload && @planning.reload
             @routes = [@route]
@@ -768,7 +770,15 @@ class PlanningsController < ApplicationController
   end
 
   def stop_params
-    params.require(:stop).permit(:active)
+    permitted = [:active]
+    permitted << :locked if @stop.is_a?(StopVisit)
+    params.require(:stop).permit(*permitted)
+  end
+
+  def enforce_stop_locked_update_permission!
+    return if current_user.admin?
+
+    deny_unless_operation_usable!(:stop, 'lock_stop')
   end
 
   def export_params

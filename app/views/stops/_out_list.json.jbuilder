@@ -70,6 +70,7 @@ if @with_stops
     json.distance (stop.distance || 0) / 1000
     if stop.is_a?(StopVisit)
       json.visits true
+      json.locked stop.locked
       visit = stop.visit
       json.visit_id visit.id
       json.duration visit.default_duration

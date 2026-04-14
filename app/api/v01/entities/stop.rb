@@ -35,6 +35,7 @@ class V01::Entities::Stop < V01::Entities::StopStatus
     end
   }
   expose(:active, documentation: { type: 'Boolean' })
+  expose(:locked, documentation: { type: 'Boolean', desc: 'When true, optimization keeps this visit on its current vehicle route (StopVisit only).' })
   expose(:distance, documentation: { type: Float, desc: 'Distance between the stop and previous one.' })
   expose(:drive_time, documentation: { type: Integer, desc: 'Time in seconds between the stop and previous one.' })
   expose(:visit_id, documentation: { type: Integer })

@@ -678,6 +678,37 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_not JSON.parse(response.body)['routes'][0][:outdated]
   end
 
+  test 'update_stop with locked is forbidden without lock_stop operation permission' do
+    patch :update_stop, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, stop_id: stops(:stop_one_one).id, stop: { locked: true } }
+    assert_response :forbidden
+  end
+
+  test 'update_stop with locked succeeds when role allows lock_stop' do
+    u = users(:user_one)
+    role = nil
+    ops = Preferences::Catalog.merge_operations_with_params(
+      Preferences::Catalog.default_operations.deep_dup,
+      { 'stop' => %w[lock_stop] }
+    )
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "stop-lock-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    patch :update_stop, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, stop_id: stops(:stop_one_one).id, stop: { locked: true } }
+    assert_response :success
+    assert stops(:stop_one_one).reload.locked
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    StopVisit.where(id: stops(:stop_one_one).id).update_all(locked: false)
+    sign_in users(:user_one)
+  end
+
   test 'should not update stop with error' do
     Route.stub_any_instance(:compute_saved!, lambda { |*a| raise }) do
       stop = stops(:stop_one_one)

@@ -784,6 +784,7 @@ en:
       description: The page you want to access raised an error
       status:
         title:
+          '403': Access denied
           '404': Cannot find the page
           '409': Conflict
           '422': Unprocessable request
@@ -2060,6 +2061,8 @@ en:
         reset_color: Reset sub-tour color
       locked_unplanned_help: Lock the out of route on global plan operations
       locked_help: Lock the route on global plan operations
+      stop_locked_help: Keep this visit on the current vehicle route when optimizing
+      stop_locked_indicator_title: Locked on this vehicle route
       center_view_help: Center the map on the route
       vehicle_help: Vehicle parameters
       export_help: Export route
@@ -2650,6 +2653,7 @@ en:
         route_headers: Route panel — header blocks (visible)
         planning_toolbar: Planning sidebar — customizable toolbar segments
         route_toolbar: Route header — customizable toolbar segments
+        stop_toolbar: Visit row — customizable actions
         active: Visible
         inactive: Hidden
         data_active: Active
@@ -3361,3 +3365,4 @@ en:
       vehicle_usage: Vehicle usage
       stops: Stops
       view: View
+      lock_stop: Lock visit to vehicle route
