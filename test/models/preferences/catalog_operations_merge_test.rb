@@ -29,6 +29,8 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     assert_not out['route']['segment_controls']['vehicle_usage']['visible']
     assert_not out['route']['segment_controls']['vehicle_usage']['usable']
 
+    assert out['stop']['segment_controls']['active_stop']['visible']
+    assert out['stop']['segment_controls']['move_stop']['visible']
     assert_not out['stop']['segment_controls']['lock_stop']['visible']
     assert_not out['stop']['segment_controls']['lock_stop']['usable']
   end
@@ -67,6 +69,8 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
       defs.deep_dup,
       { 'stop' => %w[lock_stop] }
     )
+    assert_not out['stop']['segment_controls']['active_stop']['visible']
+    assert_not out['stop']['segment_controls']['move_stop']['visible']
     assert out['stop']['segment_controls']['lock_stop']['visible']
     assert out['stop']['segment_controls']['lock_stop']['usable']
   end
@@ -100,6 +104,8 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     }
     _active, disabled, hidden = dummy.operations_tier_split('stop')
     assert_equal [], hidden
+    assert_includes disabled, 'active_stop'
+    assert_includes disabled, 'move_stop'
     assert_includes disabled, 'lock_stop'
   end
 
@@ -149,8 +155,10 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
       assert out['route']['segment_controls'][id]['visible'], id
       assert_not out['route']['segment_controls'][id]['usable'], id
     end
-    assert out['stop']['segment_controls']['lock_stop']['visible']
-    assert_not out['stop']['segment_controls']['lock_stop']['usable']
+    Preferences::Catalog::OPERATION_GROUPS_STOP.each do |id|
+      assert out['stop']['segment_controls'][id]['visible'], id
+      assert_not out['stop']['segment_controls'][id]['usable'], id
+    end
   end
 
   test 'new_role_admin_operations_seed matches default_operations when YAML omits new_role override' do

@@ -176,6 +176,12 @@ module PlanningToolbarPermissions
     stop_op_visible = method(:stop_operation_visible?)
     stop_op_disabled = method(:stop_operation_disabled?)
 
+    @manage_planning[:manage_stop_active] = stop_op_visible.call('active_stop')
+    @manage_planning[:disable_stop_active] = stop_op_disabled.call('active_stop')
+
+    @manage_planning[:manage_stop_move] = stop_op_visible.call('move_stop')
+    @manage_planning[:disable_stop_move] = stop_op_disabled.call('move_stop')
+
     @manage_planning[:manage_stop_lock] = stop_op_visible.call('lock_stop')
     @manage_planning[:disable_stop_lock] = stop_op_disabled.call('lock_stop')
   end
