@@ -53,7 +53,7 @@ class Admin::ResellersController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def reseller_params
-    params.require(:reseller).permit(
+    p = params.require(:reseller).permit(
       :host,
       :name,
       :application_name,
@@ -75,10 +75,13 @@ class Admin::ResellersController < ApplicationController
       :customer_behavior_url,
       :customer_dashboard_url,
       :planning_dashboard_url,
+      :default_role_id,
       messagings: {
         vonage: [:api_key, :api_secret],
         sms_partner: [:api_key]
       }
     )
+    p[:default_role_id] = nil if p[:default_role_id].blank?
+    p
   end
 end

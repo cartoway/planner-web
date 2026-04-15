@@ -57,10 +57,6 @@ module UserPreferences
     ::Preferences::Catalog.truthy?(v)
   end
 
-  def operation_segment_customizable?(zone, segment_id)
-    ::Preferences::Catalog.truthy?(operation_segment_control(zone, segment_id)['customizable'])
-  end
-
   def form_policy(resource)
     key = resource.to_s
     unless ::Preferences::Catalog::FORM_RESOURCES.include?(key)
@@ -113,7 +109,7 @@ module UserPreferences
   end
 
   def default_segment_control
-    ::Preferences::Catalog::DEFAULT_BOOL.slice('visible', 'customizable', 'usable').dup
+    ::Preferences::Catalog::DEFAULT_BOOL.slice('visible', 'usable').dup
   end
 
   def read_headers_hash
@@ -122,13 +118,21 @@ module UserPreferences
 
   # Effective toolbar JSON (no users.operations column; role or catalog defaults).
   def read_operations_hash
-    raw = permissions_from_role? ? role.operations : {}
+    raw = if permissions_from_role?
+            role.operations
+          else
+            ::Preferences::Catalog.no_role_operations_seed_hash
+          end
     ::Preferences::Catalog.normalize_operations(raw.is_a?(Hash) ? raw : {}).deep_stringify_keys
   end
 
   # Effective forms policy JSON (no users.forms column; role or catalog defaults).
   def read_forms_hash
-    raw = permissions_from_role? ? role.forms : {}
+    raw = if permissions_from_role?
+            role.forms
+          else
+            ::Preferences::Catalog.no_role_forms_seed_hash
+          end
     ::Preferences::Catalog.normalize_forms(raw.is_a?(Hash) ? raw : {}).stringify_keys
   end
 

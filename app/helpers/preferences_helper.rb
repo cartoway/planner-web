@@ -64,9 +64,20 @@ module PreferencesHelper
     current_user.form_visible?(resource)
   end
 
+  def current_user_form_create?(resource)
+    return true unless user_signed_in? && current_user.respond_to?(:form_create?)
+
+    current_user.form_create?(resource)
+  end
+
   def current_user_form_update?(resource)
     return true unless user_signed_in? && current_user.respond_to?(:form_update?)
 
     current_user.form_update?(resource)
+  end
+
+  # Planning create/update forms (header flat form, new planning form, sidebar fragments).
+  def current_user_planning_form_submit_enabled?(planning)
+    planning.new_record? ? current_user_form_create?(:plannings) : current_user_form_update?(:plannings)
   end
 end

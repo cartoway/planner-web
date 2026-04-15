@@ -17,28 +17,9 @@
 # along with Cartoway Planner. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-module Preferences
-  module Catalog
-    # Shared booleans for segment_controls and related JSON.
-    module Core
-      DEFAULT_BOOL = {
-        'visible' => true,
-        'usable' => true,
-        'create' => true,
-        'update' => true
-      }.freeze
 
-      module_function
+Rails.application.config.default_new_reseller_role_config =
+  Rails.application.config_for(:default_new_reseller_role).deep_stringify_keys
 
-      def truthy?(val)
-        val != false && val != '0' && val != 0 && val != 'false'
-      end
-
-      def filter_order(list, allowed)
-        return [] if list.blank?
-
-        Array(list).map(&:to_s).uniq & allowed
-      end
-    end
-  end
-end
+Rails.application.config.default_permissions_config =
+  Rails.application.config_for(:default_permissions).deep_stringify_keys

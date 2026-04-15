@@ -20,11 +20,16 @@ require 'sanitize'
 class Reseller < ApplicationRecord
   has_many :customers, inverse_of: :reseller, autosave: true, dependent: :delete_all
   has_many :roles, dependent: :destroy
+  # Column remains default_role_id; name cannot be :default_role (conflicts with ActiveRecord::Base#default_role).
+  belongs_to :new_user_default_role, class_name: 'Role', foreign_key: :default_role_id, optional: true
+
+  after_create :create_default_permissions_role
 
   nilify_blanks
   auto_strip_attributes :host, :name, :welcome_url, :help_url, :contact_url, :website_url
   validates :host, presence: true
   validates :name, presence: true
+  validate :new_user_default_role_belongs_to_reseller
 
   mount_uploader :logo_large, Admin::LogoLargeUploader
   mount_uploader :logo_small, Admin::LogoSmallUploader
@@ -37,6 +42,18 @@ class Reseller < ApplicationRecord
   end
 
   private
+
+  def create_default_permissions_role
+    role = Role.create_default_permissions_role_for!(self)
+    update_column(:default_role_id, role.id) if role.present?
+  end
+
+  def new_user_default_role_belongs_to_reseller
+    return if default_role_id.blank?
+    return if new_user_default_role&.reseller_id == id
+
+    errors.add(:default_role_id, :invalid)
+  end
 
   def invalidate_cache
     ResellerCacheService.invalidate(host)

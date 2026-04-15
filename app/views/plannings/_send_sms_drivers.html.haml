@@ -40,4 +40,4 @@
                           %i.fa.fa-fw.fa-pencil
         .clearfix
         .modal-footer
-          = f.submit message: t('plannings.edit.send_sms_drivers'), icon: '', col_class: '', row_class: ''
+          = f.submit message: t('plannings.edit.send_sms_drivers'), icon: '', col_class: '', row_class: '', disabled: !current_user_planning_form_submit_enabled?(planning)

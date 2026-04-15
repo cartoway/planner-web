@@ -6,5 +6,5 @@
           = t('plannings.edit.zonings.label')
         = zoning_select f, @planning
         .d-flex.justify-content-center
-          - dis = @manage_planning[:disable_zoning]
+          - dis = @manage_planning[:disable_zoning] || !current_user_planning_form_submit_enabled?(@planning)
           = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: (@planning.zoning_outdated ? t('plannings.edit.outdated_zoning') : nil), disabled: dis

@@ -39,7 +39,7 @@ class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
     seg = ops['planning']['segments'] || Preferences::Catalog::OPERATION_GROUPS_PLANNING
     ops['planning']['segments'] = seg
     controls = (ops['planning']['segment_controls'] || {}).stringify_keys
-    controls['optimize'] = { 'visible' => true, 'customizable' => true, 'usable' => false }
+    controls['optimize'] = { 'visible' => true, 'usable' => false }
     ops['planning']['segment_controls'] = controls
 
     assign_role_with_operations!(@user, ops)
@@ -60,7 +60,7 @@ class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
     seg = ops['route']['segments'] || Preferences::Catalog::OPERATION_GROUPS_ROUTE
     ops['route']['segments'] = seg
     controls = (ops['route']['segment_controls'] || {}).stringify_keys
-    controls['optimize'] = { 'visible' => true, 'customizable' => true, 'usable' => false }
+    controls['optimize'] = { 'visible' => true, 'usable' => false }
     ops['route']['segment_controls'] = controls
 
     assign_role_with_operations!(@user, ops)
@@ -75,7 +75,7 @@ class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
     seg = ops['planning']['segments'] || Preferences::Catalog::OPERATION_GROUPS_PLANNING
     ops['planning']['segments'] = seg
     controls = (ops['planning']['segment_controls'] || {}).stringify_keys
-    controls['zoning'] = { 'visible' => true, 'customizable' => true, 'usable' => false }
+    controls['zoning'] = { 'visible' => true, 'usable' => false }
     ops['planning']['segment_controls'] = controls
 
     assign_role_with_operations!(@user, ops)
@@ -91,7 +91,7 @@ class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
     seg = ops['route']['segments'] || Preferences::Catalog::OPERATION_GROUPS_ROUTE
     ops['route']['segments'] = seg
     controls = (ops['route']['segment_controls'] || {}).stringify_keys
-    controls['vehicle_usage'] = { 'visible' => true, 'customizable' => true, 'usable' => false }
+    controls['vehicle_usage'] = { 'visible' => true, 'usable' => false }
     ops['route']['segment_controls'] = controls
 
     assign_role_with_operations!(@user, ops)

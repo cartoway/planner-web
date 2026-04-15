@@ -363,6 +363,7 @@ en:
         customer_behavior_url: Customer's Behavior URL
         customer_dashboard_url: Customer's Dashboard URL
         planning_dashboard_url: Planning's Dashboard URL
+        default_role_id: Default role for new users
       role:
         name: Name
         ref: Reference
@@ -708,6 +709,10 @@ en:
           attributes:
             role_id:
               invalid: must belong to the same reseller as the account
+        reseller:
+          attributes:
+            default_role_id:
+              invalid: must be a role of this reseller
         customer:
           attributes:
             optimization_dicho_minimum_service_size:
@@ -876,11 +881,14 @@ en:
         help_urls: Help center and contact urls
         social_urls: Social networks urls
         analysis_urls: Dashboard Analytics urls
+        customer_defaults: Customer-facing defaults
         messagings: Messaging services
       form:
         host_help: Web URL hostname and port used to match this reseller
         name_help: Reseller brand name
         application_name_help: Reseller Website name
+        default_role_help: >-
+          Preselected role when an administrator creates a user. Leave blank for no default.
         sms_api_key_help: Api key to be able to send SMS
         website_url_help: >-
           Website address. It's possible to use "{LG}" which will be replaced by
@@ -966,6 +974,7 @@ en:
         duplicated: Role duplicated. You can edit it from the list.
       duplicate_suffix: ' (copy)'
       confirm_destroy: Delete this role?
+      default_permissions_role_name: Default permissions
     users:
       menu:
         users: Users
@@ -2651,9 +2660,9 @@ en:
       display_ui:
         planning_headers: Planning overview — header blocks (visible)
         route_headers: Route panel — header blocks (visible)
-        planning_toolbar: Planning sidebar — customizable toolbar segments
-        route_toolbar: Route header — customizable toolbar segments
-        stop_toolbar: Visit row — customizable actions
+        planning_toolbar: Planning sidebar — toolbar segments
+        route_toolbar: Route header — toolbar segments
+        stop_toolbar: Visit row — actions
         active: Visible
         inactive: Hidden
         data_active: Active
