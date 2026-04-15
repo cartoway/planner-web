@@ -5,7 +5,7 @@
 #   planning: { segments: [...], segment_controls: { <id>: { visible, usable }, ... } }
 #   route:    { ... }
 #   stop:     { ... }
-# forms mirrors normalize_forms keys: plannings, destinations, visits, vehicle_usages → { visible, usable }
+# forms mirrors normalize_forms keys: plannings, destinations, visits, vehicle_usages, stores → { visible, usable }
 #
 # Shared operations/forms for no_role and new_role use a YAML anchor on no_role and merge (<<) into new_role.
 #
@@ -25,12 +25,14 @@ default: &default
           export: { visible: true, usable: false }
           refresh: { visible: true, usable: false }
       route:
-        segments: [vehicle_usage, optimize, stops, view, export]
+        segments: [vehicle_usage, optimize, stops, view, lock, paint, export]
         segment_controls:
           vehicle_usage: { visible: true, usable: false }
           optimize: { visible: true, usable: false }
           stops: { visible: true, usable: false }
           view: { visible: true, usable: false }
+          lock: { visible: true, usable: false }
+          paint: { visible: true, usable: false }
           export: { visible: true, usable: false }
       stop:
         segments: [active_stop, move_stop, lock_stop]
@@ -43,6 +45,7 @@ default: &default
       visits: { visible: true, usable: false }
       destinations: { visible: true, usable: false }
       vehicle_usages: { visible: true, usable: false }
+      stores: { visible: true, usable: false }
   new_role:
     <<: *restricted_operations_and_forms
 
@@ -68,12 +71,14 @@ test:
           export: { visible: true, usable: true }
           refresh: { visible: true, usable: true }
       route:
-        segments: [vehicle_usage, optimize, stops, view, export]
+        segments: [vehicle_usage, optimize, stops, view, lock, paint, export]
         segment_controls:
           vehicle_usage: { visible: true, usable: true }
           optimize: { visible: true, usable: true }
           stops: { visible: true, usable: true }
           view: { visible: true, usable: true }
+          lock: { visible: true, usable: true }
+          paint: { visible: true, usable: true }
           export: { visible: true, usable: true }
       stop:
         segments: [active_stop, move_stop, lock_stop]
@@ -86,6 +91,7 @@ test:
       visits: { visible: true, usable: true }
       destinations: { visible: true, usable: true }
       vehicle_usages: { visible: true, usable: true }
+      stores: { visible: true, usable: true }
 
 production:
   <<: *default

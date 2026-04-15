@@ -2372,7 +2372,7 @@ export const plannings_edit = function(params) {
               popover: true,
               manage_organize: true,
               manage_destination: true,
-              manage_store: false,
+              manage_store: !!mpPop.manage_store,
               move_stop_allowed: !!(mpPop.manage_stop_move && !mpPop.disable_stop_move),
               stop_active_allowed: !!(mpPop.manage_stop_active && !mpPop.disable_stop_active)
             });

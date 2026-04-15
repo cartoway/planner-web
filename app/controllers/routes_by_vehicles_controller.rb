@@ -16,6 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class RoutesByVehiclesController < ApplicationController
+  include PlanningToolbarPermissions
+
   before_action :authenticate_user!
   before_action :manage_routes
 
@@ -31,6 +33,7 @@ class RoutesByVehiclesController < ApplicationController
     }
     @with_stops = true
     @with_planning = true
+    apply_manage_routes_store_flag_from_route_toolbar!
     capabilities
   end
 
@@ -42,6 +45,15 @@ class RoutesByVehiclesController < ApplicationController
 
   def manage_routes
     @manage_routes = RoutesByVehiclesController.manage
+  end
+
+  def apply_manage_routes_store_flag_from_route_toolbar!
+    return if @routes.blank?
+
+    @planning = @routes.first.planning
+    @manage_planning = PlanningsController.manage
+    apply_planning_toolbar_operation_flags!
+    @manage_routes = @manage_routes.merge(manage_store: @manage_planning[:manage_store])
   end
 
   def capabilities

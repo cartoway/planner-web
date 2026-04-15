@@ -121,7 +121,7 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     }
     active, disabled, hidden = dummy.operations_tier_split('stop')
     assert_equal [], active
-    assert_equal %w[lock_stop], disabled
+    assert_equal %w[lock_stop active_stop move_stop], disabled
     assert_equal [], hidden
   end
 

@@ -31,6 +31,16 @@ class V01::Routes < Grape::API
       p.permit(:force_start, :start, :hidden, :locked, :ref, :color, route_data_attributes: [:departure])
     end
 
+    # Route header color and sub-tour paint tools share operations.route.paint.
+    def deny_route_color_update_unless_paint_usable!
+      color_in_body = params&.key?(:color) || params[:route]&.key?(:color)
+      return unless color_in_body
+
+      return if @current_user.admin? || @current_user.operation_segment_usable?(:route, 'paint')
+
+      error!(V01::Status.code_response(:code_403, message: 'Forbidden'), 403)
+    end
+
     def get_route
       unless @route
         planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!
@@ -58,6 +68,7 @@ class V01::Routes < Grape::API
         put ':id' do
           raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
 
+          deny_route_color_update_unless_paint_usable!
           get_route.update! route_params
           get_route.compute_saved
           present get_route, with: V01::Entities::RouteProperties
