@@ -23,6 +23,7 @@ require 'zip'
 class RoutesController < ApplicationController
   before_action :authenticate_user!, except: [:mobile, :update_position, :driver_update]
   before_action :set_route, only: [:update, :modal]
+  before_action :authorize_route_paint_for_color!, only: [:update]
 
   before_action :authenticate_driver!, only: [:mobile, :update_position, :driver_update]
   before_action :set_driver_route, only: [:mobile, :driver_update]
@@ -177,6 +178,20 @@ class RoutesController < ApplicationController
   end
 
   private
+
+  def authorize_route_paint_for_color!
+    return unless params[:route].present?
+
+    rp = params[:route]
+    rp = rp.to_unsafe_h if rp.respond_to?(:to_unsafe_h)
+    rp = rp.stringify_keys
+    return unless rp.key?('color')
+
+    return if current_user.try(:admin?)
+    return if current_user.respond_to?(:operation_segment_usable?) && current_user.operation_segment_usable?(:route, 'paint')
+
+    raise CanCan::AccessDenied
+  end
 
   def manage_planning
     @manage_planning = ApiWeb::V01::PlanningsController.manage

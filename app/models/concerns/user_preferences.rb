@@ -64,8 +64,8 @@ module UserPreferences
     end
 
     f = effective_read_forms_hash[key] || {}
-    vis = ::Preferences::Catalog.truthy?(f.fetch('visible', true))
-    use = ::Preferences::Catalog.truthy?(f.fetch('usable', true))
+    vis = ::Preferences::Catalog.truthy?(f.fetch('visible', ::Preferences::Catalog::Forms::NORMALIZE_FORM_VISIBLE_DEFAULT))
+    use = ::Preferences::Catalog.truthy?(f.fetch('usable', ::Preferences::Catalog::Forms::NORMALIZE_FORM_USABLE_DEFAULT))
     can_mutate = vis && use
     {
       'visible' => vis,

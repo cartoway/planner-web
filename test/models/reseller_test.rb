@@ -27,17 +27,24 @@ class ResellerTest < ActiveSupport::TestCase
       Preferences::Catalog.baseline_role_forms_json,
       role.forms
     )
+    assert_difference('Role.count', -1) do
+      reseller.destroy!
+    end
   end
 
   test 'create_default_permissions_role_for! is idempotent' do
     host = "reseller-idem-#{SecureRandom.hex(6)}.example.test"
     reseller = Reseller.new(host: host, name: 'Idempotent role test')
-    assert_difference('Reseller.count', 1) do
+    assert_difference('Role.count', 1) do
       reseller.save!
     end
 
-    assert_no_difference('Reseller.count') do
+    assert_no_difference('Role.count') do
       Role.create_default_permissions_role_for!(reseller)
+    end
+
+    assert_difference('Role.count', -1) do
+      reseller.destroy!
     end
   end
 

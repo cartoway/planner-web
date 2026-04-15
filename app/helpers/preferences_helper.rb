@@ -39,7 +39,7 @@ module PreferencesHelper
   # Fixed route-head toolbar groups
   ROUTE_TOOLBAR_VEHICLE_OPTIMIZE = %w[vehicle_usage optimize].freeze
   ROUTE_TOOLBAR_STOPS = %w[stops].freeze
-  ROUTE_TOOLBAR_VIEW_EXPORT = %w[view export].freeze
+  ROUTE_TOOLBAR_VIEW_EXPORT = %w[view lock export].freeze
 
   def toolbar_operation_visible?(zone, operation_id)
     return true unless user_signed_in? && current_user.respond_to?(:operation_segment_visible?)
@@ -79,5 +79,10 @@ module PreferencesHelper
   # Planning create/update forms (header flat form, new planning form, sidebar fragments).
   def current_user_planning_form_submit_enabled?(planning)
     planning.new_record? ? current_user_form_create?(:plannings) : current_user_form_update?(:plannings)
+  end
+
+  # Stores form (depot / reload); read-only GET edit when forms.stores visible but not usable.
+  def current_user_store_form_submit_enabled?(store)
+    store.new_record? ? current_user_form_create?(:stores) : current_user_form_update?(:stores)
   end
 end

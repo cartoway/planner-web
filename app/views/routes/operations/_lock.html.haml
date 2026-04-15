@@ -1,0 +1,4 @@
+- if @manage_planning[:manage_route_lock]
+  - lock_dis = @manage_planning[:disable_route_lock]
+  %button.lock.btn.btn-xs{class: (route[:locked] ? 'btn-warning' : 'btn-default'), title: t('plannings.edit.locked_help'), type: "button", disabled: lock_dis}
+    %i.fa{class: "fa-#{'un' if !route[:locked]}lock"}

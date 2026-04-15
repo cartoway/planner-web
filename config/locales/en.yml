@@ -3374,6 +3374,8 @@ en:
       vehicle_usage: Vehicle usage
       stops: Stops
       view: View
+      lock: Lock route
+      paint: Paint color
       active_stop: Enable or disable stop on the plan
       move_stop: Move stops on the plan
       lock_stop: Lock visit to vehicle route

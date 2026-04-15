@@ -119,7 +119,7 @@
   %button#store_reload-new.btn.btn-default.btn-sm{title: "#{t('stores.form.store_reload.new_help')}", type: "button"}
     %i.fa.fa-plus.fa-fw
     = t('stores.form.store_reload.new')
-  = f.submit
+  = f.submit disabled: !current_user_store_form_submit_enabled?(@store)
 #store_reload-fieldset-template
   = render 'store_reloads/form', store_reload: @store.store_reloads.build, i: 0, customer: @store.customer
 
