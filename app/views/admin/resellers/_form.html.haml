@@ -13,7 +13,7 @@
         = t('admin.resellers.form.protocol_url_https')
   = f.text_field :name, required: true, help: t('.name_help')
   = f.text_field :application_name, help: t('.application_name_help')
-
+  = render 'customer_defaults', f: f
   = render 'messagings', f: f
   = render 'help_urls', f: f
   = render 'analysis_urls', f: f

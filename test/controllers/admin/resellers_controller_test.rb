@@ -25,4 +25,20 @@ class Admin::ResellersControllerTest < ActionController::TestCase
     patch :update, params: { id: @reseller, reseller: { name: @reseller&.name }}
     assert_redirected_to edit_admin_reseller_path(@reseller)
   end
+
+  test 'should update reseller default_role_id' do
+    return unless Role.column_names.include?('operations')
+
+    role = Role.create!(
+      reseller: @reseller,
+      name: 'Pick default',
+      ref: 'pick_default',
+      operations: Preferences::Catalog.baseline_role_operations_json,
+      forms: Preferences::Catalog.baseline_role_forms_json
+    )
+
+    patch :update, params: { id: @reseller, reseller: { name: @reseller.name, default_role_id: role.id } }
+    assert_redirected_to edit_admin_reseller_path(@reseller)
+    assert_equal role.id, @reseller.reload.default_role_id
+  end
 end

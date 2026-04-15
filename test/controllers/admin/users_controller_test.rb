@@ -33,6 +33,23 @@ class Admin::UsersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'new preselects reseller default_role when set' do
+    return unless Role.column_names.include?('operations')
+
+    role = Role.create!(
+      reseller: @reseller,
+      name: 'Default pick',
+      ref: 'new_user_default',
+      operations: Preferences::Catalog.baseline_role_operations_json,
+      forms: Preferences::Catalog.baseline_role_forms_json
+    )
+    @reseller.update_column(:default_role_id, role.id)
+
+    get :new
+    assert_response :success
+    assert_equal role.id, assigns(:user).role_id
+  end
+
   test 'should create user' do
     assert_difference('User.count') do
       post :create, params: { user: { customer_id: customers(:customer_one).id, email: 'ty@io.com' } }

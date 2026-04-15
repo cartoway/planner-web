@@ -23,6 +23,10 @@ module Preferences
     module Forms
       FORM_RESOURCES = %w[plannings destinations visits vehicle_usages].freeze
 
+      # Missing per-resource entries in normalize_forms (disabled tier: visible, not usable).
+      NORMALIZE_FORM_VISIBLE_DEFAULT = true
+      NORMALIZE_FORM_USABLE_DEFAULT = false
+
       module_function
 
       def default_forms
@@ -44,15 +48,18 @@ module Preferences
           seen << key
           e = entry.is_a?(Hash) ? entry.stringify_keys : {}
           out[key] = {
-            'visible' => Core.truthy?(e.fetch('visible', true)),
-            'usable' => Core.truthy?(e.fetch('usable', true))
+            'visible' => Core.truthy?(e.fetch('visible', NORMALIZE_FORM_VISIBLE_DEFAULT)),
+            'usable' => Core.truthy?(e.fetch('usable', NORMALIZE_FORM_USABLE_DEFAULT))
           }
         end
 
         FORM_RESOURCES.each do |key|
           next if seen.include?(key)
 
-          out[key] = default_forms[key].dup
+          out[key] = {
+            'visible' => Core.truthy?(NORMALIZE_FORM_VISIBLE_DEFAULT),
+            'usable' => Core.truthy?(NORMALIZE_FORM_USABLE_DEFAULT)
+          }
         end
 
         out

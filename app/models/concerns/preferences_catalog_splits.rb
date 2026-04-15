@@ -57,8 +57,9 @@ module PreferencesCatalogSplits
 
     bucket = lambda do |id|
       c = controls[id].is_a?(Hash) ? controls[id].stringify_keys : {}
-      vis = Preferences::Catalog.truthy?(c.fetch('visible', true))
-      use = Preferences::Catalog.truthy?(c.fetch('usable', true))
+      # Defaults must match Operations.normalize_zone missing segment_controls (visible, not usable).
+      vis = Preferences::Catalog.truthy?(c.fetch('visible', Preferences::Catalog::Operations::NORMALIZE_SEGMENT_VISIBLE_DEFAULT))
+      use = Preferences::Catalog.truthy?(c.fetch('usable', Preferences::Catalog::Operations::NORMALIZE_SEGMENT_USABLE_DEFAULT))
       return :hidden unless vis
 
       use ? :active : :disabled

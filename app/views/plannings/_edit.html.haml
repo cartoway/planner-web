@@ -47,7 +47,7 @@
                       %p.help-block= t('activerecord.attributes.planning.tags_help')
           %br
         - if @manage_planning[:manage_vehicle_usage_set] && @planning.customer.vehicle_usage_sets.size > 1
-          - dis = @manage_planning[:disable_vehicle_usage_set]
+          - dis = @manage_planning[:disable_vehicle_usage_set] || !current_user_planning_form_submit_enabled?(@planning)
           = bootstrap_form_for @planning, {layout: :horizontal, default_div_class: ''} do |f|
             .d-flex.justify-content-center
               .col-xs-12.col-md-12
@@ -64,7 +64,7 @@
                   = t('plannings.edit.zonings.label')
                 = zoning_select f, @planning
                 .d-flex.justify-content-center
-                  - dis = @manage_planning[:disable_zoning]
+                  - dis = @manage_planning[:disable_zoning] || !current_user_planning_form_submit_enabled?(@planning)
                   = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil), disabled: dis
       #global_tools.row
         - if @manage_planning[:manage_optimize]

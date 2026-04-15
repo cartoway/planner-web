@@ -29,6 +29,7 @@ class Admin::UsersController < ApplicationController
   def new
     @customer = Customer.find params[:customer_id] if params[:customer_id]
     @user = @customer ? @customer.users.new : User.new
+    apply_reseller_default_role_to_new_user
   end
 
   def create
@@ -91,6 +92,17 @@ class Admin::UsersController < ApplicationController
 
   def find_roles_for_select
     @roles_for_select = current_user.reseller.roles.order(:name)
+  end
+
+  # Preselect reseller.default_role_id (new user default role) when creating a user.
+  def apply_reseller_default_role_to_new_user
+    return if @user.role_id.present?
+
+    drid = current_user.reseller.default_role_id
+    return if drid.blank?
+    return unless current_user.reseller.roles.exists?(id: drid)
+
+    @user.role_id = drid
   end
 
   def find_user

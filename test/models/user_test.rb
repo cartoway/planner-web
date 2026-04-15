@@ -27,7 +27,7 @@ class UserTest < ActiveSupport::TestCase
     reseller = resellers(:reseller_one)
     ops = Preferences::Catalog.default_operations.deep_dup
     ops['planning']['segment_controls']['optimize'] = {
-      'visible' => false, 'usable' => false, 'customizable' => true
+      'visible' => false, 'usable' => false
     }
     role = Role.create!(
       reseller: reseller,
