@@ -1,3 +1,4 @@
+- move_stops_ok = @manage_planning && @manage_planning[:manage_stop_move] && !@manage_planning[:disable_stop_move]
 #lasso-info-modal.modal.fade{role: "dialog", tabindex: "-1"}
   .modal-dialog
     .modal-content
@@ -53,6 +54,6 @@
           .lasso-actions
             %button#clear-lasso-selection.btn.btn-default{"data-dismiss" => "modal", type: "button"}
               = t('all.verb.cancel')
-            %button#move-stops-btn.btn.btn-primary{disabled: true, type: "button"}
+            %button#move-stops-btn.btn.btn-primary{disabled: true, type: "button", style: ('display: none;' unless move_stops_ok), data: { move_forbidden: (!move_stops_ok) }}
               %i.fa.fa-arrow-right.fa-fw
               = t('plannings.edit.lasso.move_stops')

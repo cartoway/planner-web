@@ -3517,4 +3517,6 @@ fr:
       vehicle_usage: Utilisation véhicule
       stops: Arrêts
       view: Affichage
+      active_stop: Activer ou désactiver l’arrêt sur le plan
+      move_stop: Déplacer les arrêts sur le plan
       lock_stop: Verrouiller la visite sur la tournée

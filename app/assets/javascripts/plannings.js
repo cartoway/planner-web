@@ -2309,12 +2309,15 @@ export const plannings_edit = function(params) {
       if ($sortable_route.hasClass('ui-sortable')) {
         $sortable_route.sortable('destroy');
       }
+      var mpToolbar = params.manage_planning;
+      var stopSortableDisabled = !!(mpToolbar && (!mpToolbar.manage_stop_move || mpToolbar.disable_stop_move));
       $sortable_route.sortable({
         distance: 8,
         connectWith: ".sortable",
         containment: "#edit-planning",
         tolerance: "pointer",
         appendTo: '#planning',
+        disabled: stopSortableDisabled,
         items: "> li:not(.route-data-container)",
         cancel: '.wait',
         helper: function(event, ui) {
@@ -2357,6 +2360,7 @@ export const plannings_edit = function(params) {
           var $this = $(this);
           var stops = $.grep(route.stops, function(e) { return e.stop_id === $this.data('stop-id'); });
           if (stops.length > 0) {
+            var mpPop = params.manage_planning || {};
             var stopData = $.extend(stops[0], {
               number: $('.number', $this).text(),
               i18n: mustache_i18n,
@@ -2368,7 +2372,9 @@ export const plannings_edit = function(params) {
               popover: true,
               manage_organize: true,
               manage_destination: true,
-              manage_store: false
+              manage_store: false,
+              move_stop_allowed: !!(mpPop.manage_stop_move && !mpPop.disable_stop_move),
+              stop_active_allowed: !!(mpPop.manage_stop_active && !mpPop.disable_stop_active)
             });
 
             $this.popover({

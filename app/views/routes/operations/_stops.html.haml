@@ -1,3 +1,4 @@
+- move_stops_ok = @manage_planning[:manage_stop_move] && !@manage_planning[:disable_stop_move]
 - if @manage_planning[:manage_route_stops]
   .btn-group
     - stops_disabled = !route[:with_stops] || @manage_planning[:disable_route_stops]
@@ -40,7 +41,12 @@
         %a.reverse_order{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/reverse_order"}
           %i.fa.fa-arrow-right-arrow-left.fa-rotate-90.fa-fw
           = t('plannings.edit.reverse_order')
-      %li
-        %a{"data-route-id": route[:route_id], "data-target": "#planning-move-stops-modal", "data-toggle": "modal", href: "#"}
-          %i.fa.fa-truck-ramp-box.fa-fw
-          = t('plannings.edit.move_stops')
+      %li{class: ('disabled' unless move_stops_ok)}
+        - if move_stops_ok
+          %a{"data-route-id": route[:route_id], "data-target": "#planning-move-stops-modal", "data-toggle": "modal", href: "#"}
+            %i.fa.fa-truck-ramp-box.fa-fw
+            = t('plannings.edit.move_stops')
+        - else
+          %span.text-muted
+            %i.fa.fa-truck-ramp-box.fa-fw
+            = t('plannings.edit.move_stops')
