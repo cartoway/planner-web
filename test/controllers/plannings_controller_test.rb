@@ -682,6 +682,48 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :forbidden
   end
 
+  test 'update_stop with active is forbidden without active_stop operation permission' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['stop']['segment_controls']['active_stop'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "no-active-stop-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    patch :update_stop, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, stop_id: stops(:stop_one_one).id, stop: { active: false } }
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
+  test 'patch move is forbidden without move_stop operation permission' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['stop']['segment_controls']['move_stop'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "no-move-stop-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
   test 'update_stop with locked succeeds when role allows lock_stop' do
     u = users(:user_one)
     role = nil

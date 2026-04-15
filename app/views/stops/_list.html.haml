@@ -74,7 +74,8 @@
         .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{stop[:status_code]}" if stop[:status])}
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
             .col-xs-2.d-flex.justify-content-center.align-items-center
-              %input.stop_active{type: "checkbox", checked: ("checked" if stop[:active]), disabled: (true if !@manage_planning[:manage_organize]), title: t('plannings.edit.active_help') }
+              - stop_active_disabled = !@manage_planning[:manage_organize] || !@manage_planning[:manage_stop_active] || @manage_planning[:disable_stop_active]
+              %input.stop_active{type: "checkbox", checked: ("checked" if stop[:active]), disabled: (true if stop_active_disabled), title: t('plannings.edit.active_help') }
             .col-xs-10.d-flex.align-items-center
               .col-xs-5.d-flex.justify-content-center
                 %span.number.stop-label.label{class: (stop[:color_force] ? "color_force" : "" ) + (stop[:active] ? "" : " inactive" ), style: "background-color: #{ stop[:active] ? store_color : 'transparent' };"}
@@ -127,7 +128,8 @@
         .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{stop[:status_code]}" if stop[:status])}
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
             .col-xs-2.d-flex.justify-content-center.align-items-center
-              %input.stop_active{type: "checkbox", checked: ("checked" if stop[:active]), disabled: (true if !@manage_planning[:manage_organize]), title: t('plannings.edit.active_help') }
+              - stop_active_disabled = !@manage_planning[:manage_organize] || !@manage_planning[:manage_stop_active] || @manage_planning[:disable_stop_active]
+              %input.stop_active{type: "checkbox", checked: ("checked" if stop[:active]), disabled: (true if stop_active_disabled), title: t('plannings.edit.active_help') }
             .col-xs-10.d-flex.align-items-center
               .col-xs-5.d-flex.justify-content-center
                 %span.number.stop-label.label{class: (stop[:color_force] ? "color_force" : "" ) + (stop[:active] ? "" : " inactive" ), style: "background-color: #{ stop[:active] ? store_color || route[:color] : 'transparent' };"}

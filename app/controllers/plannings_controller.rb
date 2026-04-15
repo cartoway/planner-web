@@ -28,6 +28,7 @@ class PlanningsController < ApplicationController
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
+  before_action :enforce_stop_move_permission!, only: %i[move move_stops_modal]
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal, :move]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar, :update_stop]
@@ -323,6 +324,8 @@ class PlanningsController < ApplicationController
     @selection_info = { stops_count: 0 }
 
     planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
+    @planning = planning
+    bootstrap_manage_planning_flags!
     @available_routes = planning_summary(planning)[:routes]
 
     if selected_stop_ids.any?
@@ -409,7 +412,11 @@ class PlanningsController < ApplicationController
         Planning.transaction do
           @route = @planning.routes.find(Integer(params[:route_id]))
           @stop = @route.stops.find(Integer(params[:stop_id])) if @route
-          enforce_stop_locked_update_permission! if @stop && params[:stop].present? && params[:stop].to_unsafe_h.key?('locked')
+          if @stop && params[:stop].present?
+            stop_h = params[:stop].to_unsafe_h
+            enforce_stop_active_update_permission! if stop_h.key?('active')
+            enforce_stop_locked_update_permission! if stop_h.key?('locked')
+          end
           @stop.assign_attributes(stop_params) if @stop
           if @stop && @route.compute_saved! && @route.reload && @planning.reload
             @routes = [@route]
@@ -779,6 +786,18 @@ class PlanningsController < ApplicationController
     return if current_user.admin?
 
     deny_unless_operation_usable!(:stop, 'lock_stop')
+  end
+
+  def enforce_stop_active_update_permission!
+    return if current_user.admin?
+
+    deny_unless_operation_usable!(:stop, 'active_stop')
+  end
+
+  def enforce_stop_move_permission!
+    return if current_user.admin?
+
+    deny_unless_operation_usable!(:stop, 'move_stop')
   end
 
   def export_params

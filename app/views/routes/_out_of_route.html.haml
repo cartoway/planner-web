@@ -2,6 +2,7 @@
 - routes ||= updated_routes
 - route ||= routes.find{ |route| route[:vehicle_id].nil? }
 - out_pagy ||= nil
+- move_stops_ok = @manage_planning[:manage_stop_move] && !@manage_planning[:disable_stop_move]
 %li.route.out_route{"data-route-id": route[:route_id]}
   #out_of_route.panel.panel-default
     .panel-heading.out-header
@@ -18,10 +19,15 @@
           %i.fa.fa-share-nodes
           %span.caret
         %ul.dropdown-menu.pull-right{role: "menu"}
-          %li
-            %a{"data-route-id": route[:route_id], "data-target" => "#planning-move-stops-modal", "data-toggle" => "modal", href: "#"}
-              %i.fa.fa-external-link.fa-fw
-              = t('plannings.edit.move_stops')
+          %li{class: ('disabled' unless move_stops_ok)}
+            - if move_stops_ok
+              %a{"data-route-id": route[:route_id], "data-target" => "#planning-move-stops-modal", "data-toggle" => "modal", href: "#"}
+                %i.fa.fa-external-link.fa-fw
+                = t('plannings.edit.move_stops')
+            - else
+              %span.text-muted
+                %i.fa.fa-external-link.fa-fw
+                = t('plannings.edit.move_stops')
     #out_route_scroll.route-details.out-content.modern-scroll
       .route-stops
         .panel-body

@@ -30,6 +30,8 @@ module Preferences
       ].freeze
 
       OPERATION_GROUPS_STOP = %w[
+        active_stop
+        move_stop
         lock_stop
       ].freeze
 

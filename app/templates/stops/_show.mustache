@@ -8,10 +8,10 @@
 <div{{#planning_id}}{{^store}}{{^vehicle_name}} class="ui-state-error"{{/vehicle_name}}{{/store}}{{/planning_id}}>
   {{#planning_id}}
   {{^store}}
-  {{#manage_organize}}
+  {{#manage_organize}}{{#move_stop_allowed}}
   <span class="dropdown route-select">
   <span class="dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.send_to_route_help{{/i18n}}">
-  {{/manage_organize}}
+  {{/move_stop_allowed}}{{/manage_organize}}
   {{/store}}
   {{/planning_id}}
   {{#vehicle_name}}{{vehicle_name}}{{/vehicle_name}}
@@ -19,7 +19,7 @@
   {{#planning_id}}
   {{^store}}
   {{^rest}}
-  {{#manage_organize}}
+  {{#manage_organize}}{{#move_stop_allowed}}
   <span class="caret"></span>
   </span>
   <ul class="dropdown-menu" role="menu">
@@ -38,7 +38,7 @@
     <button class="automatic_insert btn btn-default btn-xs" title="{{#i18n}}plannings.edit.automatic_insert_help{{/i18n}}"><i class="fa fa-bolt"></i></button>
     {{/automatic_insert}}
   </div>
-  {{/manage_organize}}
+  {{/move_stop_allowed}}{{/manage_organize}}
   {{/rest}}
   {{/store}}
   {{/planning_id}}
@@ -80,7 +80,7 @@
   {{/rest}}
   {{#visit}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/visit}}
   {{#store_reload}}{{#color}}<span class="number label label-default" style="background-color: {{color}};">{{#number}}{{number}}{{/number}}{{^number}}-{{/number}}</span>{{/color}}{{/store_reload}}
-  {{^popover}}{{#manage_organize}}{{#vehicle_name}}{{^store}}{{^store_reload}}<input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>{{/store_reload}}{{/store}}{{/vehicle_name}}{{/manage_organize}}{{/popover}}
+  {{^popover}}{{#manage_organize}}{{#stop_active_allowed}}{{#vehicle_name}}{{^store}}{{^store_reload}}<input type="checkbox" class="stop_active"{{#active}} checked="checked"{{/active}} title="{{#i18n}}plannings.edit.active_help{{/i18n}}"/>{{/store_reload}}{{/store}}{{/vehicle_name}}{{/stop_active_allowed}}{{/manage_organize}}{{/popover}}
   <b>{{#ref}}{{ref}} {{/ref}}{{name}}</b><br/>
   {{#street}}{{street}}<br/>{{/street}}
   {{#detail}}
