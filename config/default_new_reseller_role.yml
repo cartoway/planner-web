@@ -48,8 +48,10 @@ default: &default
           view: { visible: true, usable: true }
           export: { visible: true, usable: true }
       stop:
-        segments: [lock_stop]
+        segments: [active_stop, move_stop, lock_stop]
         segment_controls:
+          active_stop: { visible: true, usable: true }
+          move_stop: { visible: true, usable: true }
           lock_stop: { visible: false, usable: false }
     forms:
       plannings: { visible: true, usable: true }
