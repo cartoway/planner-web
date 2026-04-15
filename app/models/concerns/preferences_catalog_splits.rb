@@ -99,7 +99,7 @@ module PreferencesCatalogSplits
   # Active | disabled | hidden form resource ids (visible + usable, same semantics as operations tiers).
   def forms_resources_three_way_split
     allowed = Preferences::Catalog::FORM_RESOURCES
-    h = read_forms_hash
+    h = Preferences::Catalog.normalize_forms(read_forms_hash)
     ordered = []
     h.each_key { |k| ordered << k if allowed.include?(k) }
     allowed.each { |k| ordered << k unless ordered.include?(k) }
@@ -110,8 +110,8 @@ module PreferencesCatalogSplits
 
     ordered.each do |id|
       e = h[id].is_a?(Hash) ? h[id].stringify_keys : {}
-      vis = Preferences::Catalog.truthy?(e.fetch('visible', true))
-      use = Preferences::Catalog.truthy?(e.fetch('usable', true))
+      vis = Preferences::Catalog.truthy?(e.fetch('visible', Preferences::Catalog::Forms::NORMALIZE_FORM_VISIBLE_DEFAULT))
+      use = Preferences::Catalog.truthy?(e.fetch('usable', Preferences::Catalog::Forms::NORMALIZE_FORM_USABLE_DEFAULT))
 
       if !vis
         hidden << id

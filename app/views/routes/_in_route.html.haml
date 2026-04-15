@@ -1,4 +1,5 @@
 - vehicle_usage_select_disabled = !@manage_planning[:manage_route_vehicle_usage] || @manage_planning[:disable_route_vehicle_usage]
+- route_color_select_disabled = !@manage_planning[:manage_route_paint] || @manage_planning[:disable_route_paint]
 .panel.panel-default
   .panel-heading
     .row
@@ -19,8 +20,8 @@
               %span.select2-selection__arrow{role: "presentation"}
                 %b{role: "presentation"}
           %span.dropdown-wrapper{"aria-hidden": "true"}
-      .col-xs-2.color-select-container
-        %select.color_select.select2-xs{name: "route[color]", style: "display:none", value: route[:color]}
+      .col-xs-2.color-select-container{class: ('vehicle-usage-select-disabled' if route_color_select_disabled)}
+        %select.color_select.select2-xs{name: "route[color]", style: "display:none", value: route[:color], disabled: route_color_select_disabled}
           - @colors.each do |color|
             %option{value: color, selected: ('selected' if color == route[:color])}
         %span.select2.select2-container.select2-container--bootstrap.input-sm.select2-container--below{dir: "ltr", style: "display: inline-block;"}
@@ -108,15 +109,19 @@
                 .col-xs-4.col-md-4.d-flex.justify-content-end.align-items-center
                   - eta_statement = " - #{t('plannings.edit.popup.eta')} #{route[:store_start][:eta_formated]}" if route[:store_start][:eta_formated]
                   .btn-group.pull-right.stop-tools
-                    - if current_user.customer.enable_store_stops
+                    - route_depot_view_disabled = @manage_planning[:disable_route_view]
+                    - route_depot_paint_disabled = @manage_planning[:disable_route_paint]
+                    - route_depot_stops_disabled = @manage_planning[:disable_route_stops]
+                    - if current_user.customer.enable_store_stops && @manage_planning[:manage_route_view]
                       .btn-group
-                        %button.btn.btn-default.btn-xs.sub-tour-toggle.sub-tour-visible{type: "button", "aria-pressed": "true", title: t('plannings.edit.sub_tour.toggle'), data: { route_id: route[:route_id], sub_tour_index: 0, route_data_id: route[:store_start][:route_data]&.[](:id) }}
+                        %button.btn.btn-default.btn-xs.sub-tour-toggle.sub-tour-visible{type: "button", "aria-pressed": "true", title: t('plannings.edit.sub_tour.toggle'), disabled: (true if route_depot_view_disabled), data: { route_id: route[:route_id], sub_tour_index: 0, route_data_id: route[:store_start][:route_data]&.[](:id) }}
                           %i.fa{ class: route[:store_start][:route_data]&.[](:hidden) ? 'fa-eye-slash' : 'fa-eye' }
+                    - if current_user.customer.enable_store_stops && @manage_planning[:manage_route_paint]
                       .btn-group
-                        %input.sub-tour-color-picker{type: "color", value: (current_color || '#bdc3c4'), style: "display: none;", "data-route-id": route[:route_id], "data-sub-tour-index": 0, "data-route-data-id": route[:store_start][:route_data]&.[](:id)}
-                        %button.btn.btn-default.btn-xs.sub-tour-color-btn{type: "button", title: t("plannings.edit.sub_tour.change_color_help"), "data-route-id": route[:route_id], "data-sub-tour-index": 0, "data-route-data-id": route[:store_start][:route_data]&.[](:id)}
+                        %input.sub-tour-color-picker{type: "color", value: (current_color || '#bdc3c4'), style: "display: none;", disabled: (true if route_depot_paint_disabled), "data-route-id": route[:route_id], "data-sub-tour-index": 0, "data-route-data-id": route[:store_start][:route_data]&.[](:id)}
+                        %button.btn.btn-default.btn-xs.sub-tour-color-btn{type: "button", title: t("plannings.edit.sub_tour.change_color_help"), disabled: (true if route_depot_paint_disabled), "data-route-id": route[:route_id], "data-sub-tour-index": 0, "data-route-data-id": route[:store_start][:route_data]&.[](:id)}
                           %i.fa.fa-paint-brush{style: "color: #{current_color};"}
-                        %button.btn.btn-default.btn-xs.sub-tour-color-reset{type: "button", title: t("plannings.edit.sub_tour.reset_color"), "data-route-id": route[:route_id], "data-sub-tour-index": 0, "data-route-data-id": route[:store_start][:route_data]&.[](:id), style: "display: #{current_color ? 'block' : 'none'};"}
+                        %button.btn.btn-default.btn-xs.sub-tour-color-reset{type: "button", title: t("plannings.edit.sub_tour.reset_color"), disabled: (true if route_depot_paint_disabled), "data-route-id": route[:route_id], "data-sub-tour-index": 0, "data-route-data-id": route[:store_start][:route_data]&.[](:id), style: "display: #{current_color ? 'block' : 'none'};"}
                           %i.fa.fa-undo
                     - if @manage_planning[:manage_store]
                       .btn-group
@@ -127,11 +132,11 @@
                         %i.fa.fa-map-marker
                     - if current_user.customer.enable_store_stops
                       .btn-group
-                        .btn.btn-default.btn-xs.route-data-toggle{title: t("plannings.edit.toggle_route_data_help")}
+                        %button.btn.btn-default.btn-xs.route-data-toggle{type: "button", title: t("plannings.edit.toggle_route_data_help"), data: { route_data_id: route[:store_start][:route_data]&.[](:id) }.compact}
                           %i.fa.fa-chart-simple
-                    - if current_user.customer.enable_store_stops && @available_store_reloads.any?
+                    - if current_user.customer.enable_store_stops && @manage_planning[:manage_route_stops] && @available_store_reloads.any?
                       .dropdown.btn-group
-                        %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
+                        %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", disabled: (true if route_depot_stops_disabled), title: t("plannings.edit.create_store_help")}
                           %i.fa.fa-plus
                         %ul.dropdown-menu.pull-right.store-dropdown{role: "menu"}
                           - @available_store_reloads.each do |store_reload|
@@ -179,6 +184,7 @@
               .col-xs-2.col-md-2.d-flex.justify-content-end.align-items-center
                 - eta_statement = " - #{t('plannings.edit.popup.eta')} #{route[:store_stop][:eta_formated]}" if route[:store_stop][:eta_formated]
                 .btn-group.pull-right.stop-tools
+                  - route_depot_stops_disabled = @manage_planning[:disable_route_stops]
                   - if @manage_planning[:manage_store]
                     .btn-group
                       %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_stop][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
@@ -186,9 +192,9 @@
                   .btn-group
                     %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                       %i.fa.fa-map-marker
-                  - if current_user.customer.enable_store_stops && @available_store_reloads.any?
+                  - if current_user.customer.enable_store_stops && @manage_planning[:manage_route_stops] && @available_store_reloads.any?
                     .dropdown.btn-group
-                      %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", title: t("plannings.edit.create_store_help")}
+                      %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", disabled: (true if route_depot_stops_disabled), title: t("plannings.edit.create_store_help")}
                         %i.fa.fa-plus
                       %ul.dropdown-menu.pull-right.store-dropdown{role: "menu"}
                         - @available_store_reloads.each do |store_reload|

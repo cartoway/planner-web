@@ -1,6 +1,6 @@
 - used_reloads ||= nil
 - classes = [("d-none" if used_reloads && used_reloads == 0), ("row-status-#{status_code}" if status_code)].compact.join(" ")
-.row.store-row.in-route.route-data.d-flex.flex-wrap.align-items-center{"data-route-id": route_data[:route_id], class: classes}
+.row.store-row.in-route.route-data.align-items-center{"data-route-id": route_data[:route_id], class: classes}
   - if route_data[:vehicle_id]
     - if route_data[:duration]
       .col-xs-4
