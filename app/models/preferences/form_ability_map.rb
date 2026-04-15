@@ -46,8 +46,14 @@ module Preferences
           ability.cannot :new, model
         end
 
+        # Mutable actions: only when visible and usable (form_policy create/update).
         if user.respond_to?(:form_update?) && !user.form_update?(resource_key)
           ability.cannot :update, model
+        end
+
+        # Read-only UI (e.g. planning map GET edit): allowed when the form resource is visible but not usable;
+        # deny opening edit screens only when the resource is hidden in permissions DnD.
+        if user.respond_to?(:form_visible?) && !user.form_visible?(resource_key)
           ability.cannot :edit, model
         end
       end

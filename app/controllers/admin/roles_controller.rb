@@ -29,7 +29,12 @@ class Admin::RolesController < ApplicationController
 
   def new
     authorize! :create, Role
-    @role = @reseller.roles.build
+    # Empty JSON columns default every form resource to visible+usable in the DnD split;
+    # seed from catalog so new roles match config/default_permissions (+new_role+) and role_attributes on create.
+    @role = @reseller.roles.build(
+      operations: Preferences::Catalog.new_role_admin_operations_seed,
+      forms: Preferences::Catalog.new_role_admin_forms_seed
+    )
   end
 
   def create
@@ -158,15 +163,15 @@ class Admin::RolesController < ApplicationController
   end
 
   def operations_seed_for_role_form
-    return Preferences::Catalog.default_operations if @role.blank? || @role.new_record?
+    return Preferences::Catalog.new_role_admin_operations_seed if @role.blank? || @role.new_record?
 
-    @role.operations.present? ? @role.operations.deep_dup : Preferences::Catalog.default_operations
+    @role.operations.present? ? @role.operations.deep_dup : Preferences::Catalog.new_role_admin_operations_seed
   end
 
   def forms_seed_for_role_form
-    return Preferences::Catalog.default_forms if @role.blank? || @role.new_record?
+    return Preferences::Catalog.new_role_admin_forms_seed if @role.blank? || @role.new_record?
 
-    @role.forms.present? ? @role.forms.deep_dup : Preferences::Catalog.default_forms
+    @role.forms.present? ? @role.forms.deep_dup : Preferences::Catalog.new_role_admin_forms_seed
   end
 
   def json_column_dup(value)

@@ -19,6 +19,14 @@
 class Ability
   include CanCan::Ability
   def initialize(user = nil)
+    # Default CanCan aliases map :edit -> :update, so `cannot :update` blocks GET edit.
+    # Form permissions need GET edit (planning map, etc.) when forms.* is visible but not usable,
+    # while PATCH update stays denied via FormAbilityMap. Map :edit -> :read instead.
+    clear_aliased_actions
+    alias_action :index, :show, to: :read
+    alias_action :new, to: :create
+    alias_action :edit, to: :read
+
     if user
       if user.admin?
         can :manage, Customer, reseller_id: user.reseller_id

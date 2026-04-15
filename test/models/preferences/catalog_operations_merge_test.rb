@@ -83,7 +83,7 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
 
   test 'merge_operations_with_params applies stop hidden when active and disabled columns are omitted' do
     seed = Preferences::Catalog.default_operations.deep_dup
-    seed['stop']['segment_controls']['lock_stop'] = { 'visible' => true, 'usable' => true, 'customizable' => true }
+    seed['stop']['segment_controls']['lock_stop'] = { 'visible' => true, 'usable' => true }
     out = Preferences::Catalog.merge_operations_with_params(
       seed,
       { 'stop_hidden' => %w[lock_stop] }
@@ -98,8 +98,9 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
       'planning' => Preferences::Catalog.default_operations['planning'],
       'route' => Preferences::Catalog.default_operations['route']
     }
-    _active, _disabled, hidden = dummy.operations_tier_split('stop')
-    assert_includes hidden, 'lock_stop'
+    _active, disabled, hidden = dummy.operations_tier_split('stop')
+    assert_equal [], hidden
+    assert_includes disabled, 'lock_stop'
   end
 
   test 'operations_tier_split stop zone respects lock_stop visibility' do
@@ -131,11 +132,64 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
       }
     }
     active, disabled, hidden = dummy.operations_tier_split('planning')
-    assert_equal %w[zoning], disabled
     assert_equal %w[external_callback], hidden
-    # After explicit `segments` order, any catalog id not yet seen uses default controls (visible + usable → active).
+    # Catalog ids not listed in segment_controls use Operations.normalize_zone defaults (visible, not usable → disabled).
     sp = Preferences::Catalog::OPERATION_GROUPS_PLANNING
-    assert_equal %w[optimize] + (sp - %w[zoning optimize external_callback]), active
+    assert_equal %w[optimize], active
+    assert_equal((sp - %w[optimize external_callback]).sort, disabled.sort)
+  end
+
+  test 'normalize_operations empty hash defaults every segment to disabled tier' do
+    out = Preferences::Catalog.normalize_operations({})
+    Preferences::Catalog::OPERATION_GROUPS_PLANNING.each do |id|
+      assert out['planning']['segment_controls'][id]['visible'], id
+      assert_not out['planning']['segment_controls'][id]['usable'], id
+    end
+    Preferences::Catalog::OPERATION_GROUPS_ROUTE.each do |id|
+      assert out['route']['segment_controls'][id]['visible'], id
+      assert_not out['route']['segment_controls'][id]['usable'], id
+    end
+    assert out['stop']['segment_controls']['lock_stop']['visible']
+    assert_not out['stop']['segment_controls']['lock_stop']['usable']
+  end
+
+  test 'new_role_admin_operations_seed matches default_operations when YAML omits new_role override' do
+    prev = Rails.application.config.default_permissions_config
+    cfg = prev.deep_dup
+    cfg['new_role'] = { 'operations' => nil, 'forms' => nil }
+    Rails.application.config.default_permissions_config = cfg
+    seed = Preferences::Catalog.new_role_admin_operations_seed
+    assert_equal(
+      Preferences::Catalog.normalize_operations(Preferences::Catalog.default_operations),
+      Preferences::Catalog.normalize_operations(seed)
+    )
+  ensure
+    Rails.application.config.default_permissions_config = prev
+  end
+
+  test 'baseline_role_operations_json uses disabled tier when default_role.operations is null' do
+    prev = Rails.application.config.default_new_reseller_role_config
+    Rails.application.config.default_new_reseller_role_config = {
+      'default_role' => {
+        'ref' => 'default',
+        'operations' => nil,
+        'forms' => nil
+      }
+    }
+    out = Preferences::Catalog.baseline_role_operations_json
+    %w[planning route stop].each do |zone|
+      allowed = case zone
+                when 'route' then Preferences::Catalog::OPERATION_GROUPS_ROUTE
+                when 'stop' then Preferences::Catalog::OPERATION_GROUPS_STOP
+                else Preferences::Catalog::OPERATION_GROUPS_PLANNING
+                end
+      allowed.each do |id|
+        assert out[zone]['segment_controls'][id]['visible'], "#{zone} #{id} visible"
+        assert_not out[zone]['segment_controls'][id]['usable'], "#{zone} #{id} usable"
+      end
+    end
+  ensure
+    Rails.application.config.default_new_reseller_role_config = prev
   end
 
   test 'header catalogs include optional wait_time and visits_duration ids' do
@@ -179,5 +233,21 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     assert_not out['visits']['usable']
     assert_not out['destinations']['visible']
     assert_not out['destinations']['usable']
+  end
+
+  test 'normalize_forms uses NORMALIZE_FORM_* defaults for sparse hashes' do
+    dv = Preferences::Catalog::Forms::NORMALIZE_FORM_VISIBLE_DEFAULT
+    du = Preferences::Catalog::Forms::NORMALIZE_FORM_USABLE_DEFAULT
+    out = Preferences::Catalog.normalize_forms({ 'plannings' => { 'visible' => true } })
+    assert_equal dv, out['plannings']['visible']
+    assert_equal du, out['plannings']['usable']
+
+    filled = Preferences::Catalog.normalize_forms({ 'plannings' => { 'visible' => true, 'usable' => true } })
+    assert filled['destinations']['visible']
+    assert_not filled['destinations']['usable']
+  end
+
+  test 'normalize_forms empty hash is still default_forms (full access catalog seed)' do
+    assert_equal Preferences::Catalog.default_forms, Preferences::Catalog.normalize_forms({})
   end
 end

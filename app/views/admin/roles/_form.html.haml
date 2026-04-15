@@ -4,8 +4,7 @@
   %fieldset#role-details
     = f.text_field :name, required: true
     = f.text_field :ref, help: t('.ref_help')
-    .row
-      = f.color_field :color, control_class: 'col-md-1', help: t('.color_help')
+    = f.color_field :color, help: t('.color_help')
     .row
       %label.col-md-offset-2.col-md-2.control-label= t('activerecord.attributes.role.icon')
       .col-md-offset-2.col-md-8.field

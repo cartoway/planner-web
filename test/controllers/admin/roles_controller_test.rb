@@ -15,6 +15,18 @@ class Admin::RolesControllerTest < ActionController::TestCase
     @role.update!(icon: 'fa-star', color: '#cc0000') if Role.column_names.include?('icon')
   end
 
+  test 'new seeds forms as visible but not usable (disabled tier)' do
+    return unless Role.column_names.include?('operations')
+
+    get :new
+    assert_response :success
+    role = assigns(:role)
+    active, disabled, hidden = role.forms_resources_three_way_split
+    assert_empty active
+    assert_equal Preferences::Catalog::FORM_RESOURCES.sort, disabled.sort
+    assert_empty hidden
+  end
+
   test 'create persists name and optional icon and color' do
     assert_difference('Role.count', 1) do
       post :create, params: {

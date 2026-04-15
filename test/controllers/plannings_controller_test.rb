@@ -177,7 +177,6 @@ class PlanningsControllerTest < ActionController::TestCase
     ops = Preferences::Catalog.default_operations.deep_dup
     ops['planning']['segment_controls']['vehicle_usage_set'] = {
       'visible' => false,
-      'customizable' => true,
       'usable' => false
     }
     role = Role.create!(
@@ -459,7 +458,7 @@ class PlanningsControllerTest < ActionController::TestCase
     reseller = resellers(:reseller_one)
     ops = Preferences::Catalog.default_operations.deep_dup
     ops['planning']['segment_controls']['optimize'] = {
-      'visible' => false, 'usable' => false, 'customizable' => true
+      'visible' => false, 'usable' => false
     }
     role = Role.create!(
       reseller: reseller,
@@ -1221,5 +1220,24 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_includes route.keys, :route_id
     assert_includes route.keys, :name
     assert_includes route.keys, :color
+  end
+
+  test 'GET edit succeeds with plannings form visible but not usable (read-only role)' do
+    user = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['plannings'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: user.customer.reseller,
+      name: "readonly-plannings-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    get :edit, params: { id: @planning }
+    assert_response :success
+  ensure
+    user.update!(role_id: nil)
   end
 end

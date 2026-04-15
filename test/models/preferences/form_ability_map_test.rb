@@ -52,16 +52,39 @@ class PreferencesFormAbilityMapTest < ActiveSupport::TestCase
     assert ability.cannot?(:update, @destination)
   end
 
-  test 'customer cannot edit vehicle_usage when forms vehicle_usages is not mutable' do
+  test 'customer can open vehicle_usage edit in read-only when visible but not usable' do
     forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
     forms['vehicle_usages'] = { 'visible' => true, 'usable' => false }
 
     assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
 
     ability = Ability.new(@user)
-    assert ability.cannot?(:edit, @vehicle_usage)
+    assert ability.can?(:edit, @vehicle_usage)
     assert ability.cannot?(:update, @vehicle_usage)
     assert ability.cannot?(:toggle, @vehicle_usage)
+  end
+
+  test 'customer can open planning edit in read-only when plannings visible but not usable' do
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['plannings'] = { 'visible' => true, 'usable' => false }
+
+    assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
+
+    ability = Ability.new(@user)
+    planning = plannings(:planning_one)
+    assert_equal @user.customer_id, planning.customer_id
+    assert ability.can?(:edit, planning)
+    assert ability.cannot?(:update, planning)
+  end
+
+  test 'customer cannot open planning edit when plannings form is hidden' do
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['plannings'] = { 'visible' => false, 'usable' => false }
+
+    assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
+
+    ability = Ability.new(@user)
+    assert ability.cannot?(:edit, plannings(:planning_one))
   end
 
   test 'hidden vehicle_usages denies delete_vehicle on own customer even when customer is manageable' do

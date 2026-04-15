@@ -1,0 +1,9 @@
+%fieldset
+  %legend
+    %i.fa.fa-users{"aria-hidden" => "true"}
+    = t("admin.resellers.edit.customer_defaults")
+  = f.collection_select :default_role_id, @reseller.roles.order(:name), :id, :name,
+    { include_blank: t("admin.users.form.role_blank") },
+    { class: "form-control selectpicker reseller-default-role-selectpicker", autocomplete: "new-password", "data-live-search" => "true" }
+  %p.help-block.col-md-offset-2.col-md-8
+    = t("admin.resellers.form.default_role_help")

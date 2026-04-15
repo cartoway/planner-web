@@ -62,8 +62,36 @@ module Preferences
         Operations.default_operations
       end
 
-      def zone_default(segment_ids)
-        Operations.zone_default(segment_ids)
+      # Reseller system default role operations (YAML or disabled-tier fallback; see Operations.baseline_role_operations_json).
+      def baseline_role_operations_json
+        Operations.baseline_role_operations_json
+      end
+
+      # Optional override from config/default_new_reseller_role.yml; otherwise same as normalize_forms({}).
+      def baseline_role_forms_json
+        raw = ConfigSeeds.default_role_forms_raw
+        raw.nil? ? normalize_forms({}) : normalize_forms(raw.is_a?(Hash) ? raw.stringify_keys : {})
+      end
+
+      # Admin "New role" drag-and-drop seed (unnormalized shape ok; Role normalizes on save).
+      def new_role_admin_operations_seed
+        raw = ConfigSeeds.new_role_operations_raw
+        (raw.nil? ? Operations.default_operations : normalize_operations(raw.is_a?(Hash) ? raw.stringify_keys : {})).deep_dup
+      end
+
+      def new_role_admin_forms_seed
+        raw = ConfigSeeds.new_role_forms_raw
+        (raw.nil? ? default_forms : normalize_forms(raw.is_a?(Hash) ? raw.stringify_keys : {})).deep_dup
+      end
+
+      def no_role_operations_seed_hash
+        raw = ConfigSeeds.no_role_operations_raw
+        raw.nil? ? {} : (raw.is_a?(Hash) ? raw.stringify_keys : {})
+      end
+
+      def no_role_forms_seed_hash
+        raw = ConfigSeeds.no_role_forms_raw
+        raw.nil? ? {} : (raw.is_a?(Hash) ? raw.stringify_keys : {})
       end
 
       def normalize_zone(zone_hash, allowed_ids)
