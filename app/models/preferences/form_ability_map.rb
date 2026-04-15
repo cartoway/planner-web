@@ -30,6 +30,7 @@ module Preferences
       when 'destinations' then Destination
       when 'visits' then Visit
       when 'vehicle_usages' then VehicleUsage
+      when 'stores' then Store
       else
         raise ArgumentError, "FormAbilityMap: add model for forms.#{key}"
       end

@@ -77,6 +77,16 @@ class PreferencesFormAbilityMapTest < ActiveSupport::TestCase
     assert ability.cannot?(:update, planning)
   end
 
+  test 'customer cannot update store when forms.stores is not usable' do
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['stores'] = { 'visible' => true, 'usable' => false }
+
+    assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
+
+    ability = Ability.new(@user)
+    assert ability.cannot?(:update, stores(:store_one))
+  end
+
   test 'customer cannot open planning edit when plannings form is hidden' do
     forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
     forms['plannings'] = { 'visible' => false, 'usable' => false }
