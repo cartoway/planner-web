@@ -700,7 +700,8 @@ CREATE TABLE public.resellers (
     authorized_fleet_administration boolean DEFAULT false,
     customer_dashboard_url character varying,
     messagings jsonb DEFAULT '{}'::jsonb NOT NULL,
-    planning_dashboard_url character varying
+    planning_dashboard_url character varying,
+    default_role_id bigint
 );
 
 
@@ -2607,6 +2608,13 @@ CREATE INDEX index_relations_customer_current_successord_id ON public.stops_rela
 
 
 --
+-- Name: index_resellers_on_default_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_resellers_on_default_role_id ON public.resellers USING btree (default_role_id);
+
+
+--
 -- Name: index_roles_on_reseller_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3252,6 +3260,14 @@ ALTER TABLE ONLY public.roles
 
 
 --
+-- Name: resellers fk_rails_e84a9c1d8f; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resellers
+    ADD CONSTRAINT fk_rails_e84a9c1d8f FOREIGN KEY (default_role_id) REFERENCES public.roles(id) ON DELETE SET NULL;
+
+
+--
 -- Name: plannings_zonings fk_rails_c4685d96c0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3791,6 +3807,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260316131419'),
 ('20260402122124'),
 ('20260408082217'),
-('20260414111726');
+('20260414111726'),
+('20260415151648');
 
 

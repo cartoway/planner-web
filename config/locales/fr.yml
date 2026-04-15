@@ -369,6 +369,7 @@ fr:
         customer_behavior_url: URL de comportement compte
         customer_dashboard_url: URL du tableau de bord du compte
         planning_dashboard_url: URL du tableau de bord de planification
+        default_role_id: Rôle par défaut pour les nouveaux utilisateurs
       role:
         name: Nom
         ref: Référence
@@ -718,6 +719,10 @@ fr:
           attributes:
             role_id:
               invalid: doit appartenir au même revendeur que l’espace client
+        reseller:
+          attributes:
+            default_role_id:
+              invalid: doit être un rôle de ce revendeur
         customer:
           attributes:
             optimization_dicho_minimum_service_size:
@@ -894,11 +899,15 @@ fr:
         help_urls: Liens centre d'aide & contact
         social_urls: Liens réseaux sociaux
         analysis_urls: Liens tableaux de bord analytiques
+        customer_defaults: Paramètres liés aux clients
         messagings: Service d'envoi
       form:
         host_help: Nom d'hôte et port de l'URL web utilisés pour détecter ce revendeur
         name_help: Marque du revendeur
         application_name_help: Nom du site Web du revendeur
+        default_role_help: >-
+          Rôle présélectionné lorsqu’un administrateur crée un utilisateur.
+          Laisser vide pour aucun défaut.
         sms_api_key_help: Clé d'API pour envoi de SMS
         website_url_help: >-
           Adresse du site web. Vous pouvez utiliser « {LG} » qui sera remplacé
@@ -990,6 +999,7 @@ fr:
         duplicated: Rôle dupliqué. Vous pouvez le modifier depuis la liste.
       duplicate_suffix: ' (copie)'
       confirm_destroy: Supprimer ce rôle ?
+      default_permissions_role_name: Permissions par défaut
     users:
       menu:
         users: Utilisateurs

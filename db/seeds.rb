@@ -36,16 +36,26 @@ public_transport = RouterWrapper.create!(
     name_locale: {fr: 'Calculateur pour transport en commun', en: 'Public Transport router'},
     options: {time: true, distance: false, avoid_zones: false, isochrone: true, isodistance: true, max_walk_distance: true})
 
-profile_osm = Profile.create!(name: "1. OSM", layers: [mapnik_fr, mapnik, stamen_bw], routers: [car, bicycle, pedestrian, public_transport])
+Profile.create!(name: "1. OSM", layers: [mapnik_fr, mapnik, stamen_bw], routers: [car, bicycle, pedestrian, public_transport])
 profile_all = Profile.create!(name: "2. All", layers: [mapnik_fr, mapnik, stamen_bw, here_layer], routers: [car, bicycle, pedestrian, here_car, here_truck, public_transport])
-profile_other = Profile.create!(name: "3. Other", layers: [mapnik_fr, mapnik, stamen_bw], routers: [car])
+Profile.create!(name: "3. Other", layers: [mapnik_fr, mapnik, stamen_bw], routers: [car])
 
 reseller = Reseller.create!(host: "localhost:8080", name: "Planner Web", authorized_fleet_administration: true)
+
+Role.create!(
+  reseller: reseller,
+  name: 'Démo (permissions restreintes)',
+  ref: 'seed_restricted',
+  operations: Preferences::Catalog.normalize_operations(Preferences::Catalog.no_role_operations_seed_hash),
+  forms: Preferences::Catalog.normalize_forms(Preferences::Catalog.no_role_forms_seed_hash)
+)
+
 customer = Customer.create!(reseller: reseller, name: "Toto", default_country: "France", router: car, profile: profile_all, test: true, max_vehicles: 2)
 unit = DeliverableUnit.create!(label: "Parcel", customer: customer)
-admin = User.create!(email: "admin@example.com", password: "12345678", reseller: reseller, layer: mapnik)
-test = User.create!(email: "test@example.com", password: "12345678", layer: mapnik, customer: customer)
+User.create!(email: "admin@example.com", password: "12345678", reseller: reseller, layer: mapnik)
+User.create!(email: "test@example.com", password: "12345678", layer: mapnik, customer: customer)
 toto = User.create!(email: "toto@example.com", password: "12345678", layer: mapnik, customer: customer)
+toto.update!(role: reseller.roles.find_by!(ref: 'seed_restricted'))
 
 Tag.create!(label: "lundi", customer: customer)
 Tag.create!(label: "jeudi", customer: customer)

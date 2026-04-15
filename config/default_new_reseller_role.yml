@@ -1,0 +1,67 @@
+# Reseller system role: stable Role#ref and optional explicit permissions (YAML → normalize_*).
+#
+# default_role.ref — stable Role#ref; changing it requires a data migration on roles.ref.
+#
+# default_role.operations / default_role.forms — optional YAML override for that role’s JSON.
+#   null or omit operations → built-in fallback normalize_operations({}): every catalog segment visible, not usable.
+#   null or omit forms → normalize_forms({}) (see Forms module).
+#   When set, value is passed through normalize_operations / normalize_forms (same validation as admin saves).
+#
+# Example (planning fragment only — duplicate pattern for route, stop, and all segment ids as needed):
+#   default_role:
+#     ref: default
+#     operations:
+#       planning:
+#         segments: [optimize, zoning, vehicle_usage_set]
+#         segment_controls:
+#           optimize: { visible: true, usable: true }
+#           zoning: { visible: true, usable: false }
+#     forms:
+#       plannings: { visible: true, usable: true }
+#       visits: { visible: true, usable: false }
+#
+# default_role.icon — optional FontAwesome token for the system role (FontAwesome::ICONS_TABLE; see admin role form).
+#
+default: &default
+  default_role:
+    ref: default
+    icon: fa-hammer
+    operations:
+      planning:
+        segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, export, refresh]
+        segment_controls:
+          external_callback: { visible: true, usable: true }
+          optimize: { visible: true, usable: true }
+          zoning: { visible: true, usable: true }
+          vehicle_usage_set: { visible: true, usable: true }
+          toggle_routes: { visible: true, usable: true }
+          toggle_route_data: { visible: true, usable: true }
+          lock_routes: { visible: true, usable: true }
+          export: { visible: true, usable: true }
+          refresh: { visible: true, usable: true }
+      route:
+        segments: [vehicle_usage, optimize, stops, view, export]
+        segment_controls:
+          vehicle_usage: { visible: true, usable: true }
+          optimize: { visible: true, usable: true }
+          stops: { visible: true, usable: true }
+          view: { visible: true, usable: true }
+          export: { visible: true, usable: true }
+      stop:
+        segments: [lock_stop]
+        segment_controls:
+          lock_stop: { visible: false, usable: false }
+    forms:
+      plannings: { visible: true, usable: true }
+      visits: { visible: true, usable: true }
+      destinations: { visible: true, usable: true }
+      vehicle_usages: { visible: true, usable: true }
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

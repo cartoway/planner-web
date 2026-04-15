@@ -33,34 +33,18 @@ module Preferences
         lock_stop
       ].freeze
 
+      # Missing segment_controls entries in normalize_zone / normalize_stop_zone (disabled tier: visible, not usable).
+      NORMALIZE_SEGMENT_VISIBLE_DEFAULT = true
+      NORMALIZE_SEGMENT_USABLE_DEFAULT = false
+
       module_function
 
+      # Full toolbar seed when +new_role.operations+ is null in default_permissions.yml: same source as
+      # config/default_new_reseller_role.yml (+default_role.operations+). If that YAML omits operations,
+      # falls back to normalize_operations({}) (disabled tier for all zones).
       def default_operations
-        {
-          'planning' => zone_default(OPERATION_GROUPS_PLANNING),
-          'route' => zone_default(OPERATION_GROUPS_ROUTE),
-          'stop' => stop_zone_default
-        }
-      end
-
-      def zone_default(segment_ids)
-        {
-          'segments' => segment_ids.dup,
-          'segment_controls' => segment_ids.index_with { |_id| Core::DEFAULT_BOOL.slice('visible', 'customizable', 'usable').dup }
-        }
-      end
-
-      def stop_zone_default
-        {
-          'segments' => OPERATION_GROUPS_STOP.dup,
-          'segment_controls' => OPERATION_GROUPS_STOP.index_with do |id|
-            if id == 'lock_stop'
-              { 'visible' => false, 'customizable' => true, 'usable' => false }
-            else
-              Core::DEFAULT_BOOL.slice('visible', 'customizable', 'usable').dup
-            end
-          end
-        }
+        raw = Preferences::Catalog::ConfigSeeds.default_role_operations_raw
+        normalize_operations(raw.is_a?(Hash) ? raw.stringify_keys : {})
       end
 
       def normalize_stop_zone(zone_hash)
@@ -72,11 +56,9 @@ module Preferences
         segment_controls = {}
         OPERATION_GROUPS_STOP.each do |id|
           c = controls[id].is_a?(Hash) ? controls[id].stringify_keys : {}
-          default_unlocked = id != 'lock_stop'
           segment_controls[id] = {
-            'visible' => Core.truthy?(c.fetch('visible', default_unlocked)),
-            'customizable' => Core.truthy?(c.fetch('customizable', true)),
-            'usable' => Core.truthy?(c.fetch('usable', default_unlocked))
+            'visible' => Core.truthy?(c.fetch('visible', NORMALIZE_SEGMENT_VISIBLE_DEFAULT)),
+            'usable' => Core.truthy?(c.fetch('usable', NORMALIZE_SEGMENT_USABLE_DEFAULT))
           }
         end
 
@@ -93,9 +75,8 @@ module Preferences
         allowed_ids.each do |id|
           c = controls[id].is_a?(Hash) ? controls[id].stringify_keys : {}
           segment_controls[id] = {
-            'visible' => Core.truthy?(c.fetch('visible', true)),
-            'customizable' => Core.truthy?(c.fetch('customizable', true)),
-            'usable' => Core.truthy?(c.fetch('usable', true))
+            'visible' => Core.truthy?(c.fetch('visible', NORMALIZE_SEGMENT_VISIBLE_DEFAULT)),
+            'usable' => Core.truthy?(c.fetch('usable', NORMALIZE_SEGMENT_USABLE_DEFAULT))
           }
         end
 
@@ -111,8 +92,15 @@ module Preferences
         }
       end
 
-      def merge_operations_zone_from_three_columns_dragndrop(zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids, hidden_ordered_ids = nil)
-        ze = zone_existing.is_a?(Hash) ? zone_existing.stringify_keys : {}
+      # Reseller system default role toolbar JSON from config/default_new_reseller_role.yml (+default_role.operations+).
+      # When +operations+ is absent or null (no usable config), falls back to normalize_operations({}) — all catalog
+      # segments listed with the disabled tier (visible, not usable); see NORMALIZE_SEGMENT_* defaults.
+      def baseline_role_operations_json
+        raw = Preferences::Catalog::ConfigSeeds.default_role_operations_raw
+        raw.nil? ? normalize_operations({}) : normalize_operations(raw.is_a?(Hash) ? raw.stringify_keys : {})
+      end
+
+      def merge_operations_zone_from_three_columns_dragndrop(_zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids, hidden_ordered_ids = nil)
         active_filtered = Core.filter_order(active_ordered_ids, allowed_ids)
         disabled_filtered = Core.filter_order(disabled_ordered_ids, allowed_ids)
         disabled_filtered -= active_filtered
@@ -125,16 +113,13 @@ module Preferences
                      end
         merged_segments = active_filtered + disabled_filtered + hidden_ids
 
-        controls_seed = ze['segment_controls'].is_a?(Hash) ? ze['segment_controls'].stringify_keys : {}
         segment_controls = {}
         allowed_ids.each do |id|
-          seed = controls_seed[id].is_a?(Hash) ? controls_seed[id].stringify_keys : {}
           in_active = active_filtered.include?(id)
           in_disabled = disabled_filtered.include?(id)
           segment_controls[id] = {
             'visible' => in_active || in_disabled,
-            'usable' => in_active,
-            'customizable' => Core.truthy?(seed.fetch('customizable', true))
+            'usable' => in_active
           }
         end
 
