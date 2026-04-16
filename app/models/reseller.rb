@@ -44,6 +44,10 @@ class Reseller < ApplicationRecord
   private
 
   def create_default_permissions_role
+    ref = Role.default_permissions_role_ref
+    # Skip second run when role + FK already set (duplicate after_create).
+    return if roles.exists?(ref: ref) && default_role_id.present?
+
     role = Role.create_default_permissions_role_for!(self)
     update_column(:default_role_id, role.id) if role.present?
   end

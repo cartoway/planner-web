@@ -9,12 +9,10 @@ class ResellerTest < ActiveSupport::TestCase
 
   test 'creates default permissions role on create' do
     host = "reseller-test-#{SecureRandom.hex(6)}.example.test"
-    reseller = Reseller.new(host: host, name: 'New reseller for role test')
-    assert_difference('Role.count', 1) do
-      reseller.save!
-    end
+    reseller = Reseller.create!(host: host, name: 'New reseller for role test')
+    assert_equal 1, reseller.reload.roles.count
 
-    role = reseller.roles.first!
+    role = reseller.roles.find_by!(ref: Role.default_permissions_role_ref)
     assert_equal Role.default_permissions_role_ref, role.ref
     assert_equal role.id, reseller.reload.default_role_id
     assert_equal I18n.t('admin.roles.default_permissions_role_name'), role.name
@@ -27,23 +25,25 @@ class ResellerTest < ActiveSupport::TestCase
       Preferences::Catalog.baseline_role_forms_json,
       role.forms
     )
-    assert_difference('Role.count', -1) do
+    reseller_id = reseller.id
+    assert_difference(-> { Role.where(reseller_id: reseller_id).count }, -1) do
       reseller.destroy!
     end
   end
 
   test 'create_default_permissions_role_for! is idempotent' do
     host = "reseller-idem-#{SecureRandom.hex(6)}.example.test"
-    reseller = Reseller.new(host: host, name: 'Idempotent role test')
-    assert_difference('Role.count', 1) do
-      reseller.save!
-    end
+    reseller = Reseller.create!(host: host, name: 'Idempotent role test')
+    assert_equal 1, reseller.reload.roles.count
 
-    assert_no_difference('Role.count') do
+    reseller.reload
+
+    assert_no_difference(-> { reseller.roles.count }) do
       Role.create_default_permissions_role_for!(reseller)
     end
 
-    assert_difference('Role.count', -1) do
+    reseller_id = reseller.id
+    assert_difference(-> { Role.where(reseller_id: reseller_id).count }, -1) do
       reseller.destroy!
     end
   end
@@ -90,5 +90,13 @@ class ResellerTest < ActiveSupport::TestCase
   test 'should call invalidate cache after update' do
     ResellerCacheService.expects(:invalidate).once.with(@reseller.host)
     @reseller.update!(name: 'New Name')
+  end
+
+  test 'default_permissions_role_ref raises when default_role.ref is missing or blank in config' do
+    Role.stubs(:default_role_yaml_hash).returns({})
+    error = assert_raises(ArgumentError) { Role.default_permissions_role_ref }
+    assert_equal I18n.t('activerecord.errors.models.role.default_role_config_missing_ref'), error.message
+  ensure
+    Role.unstub(:default_role_yaml_hash)
   end
 end

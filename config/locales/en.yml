@@ -769,6 +769,8 @@ en:
           uniqueness: Category with the same label already exist
         role:
           icon_unknown: is not in font-awesome icons list
+          default_role_config_missing_ref: >-
+            The default role configuration must contain a reference. (Contact your administrator)
         optimization_time:
           must_be_greater_than_minimal_time: must be greater than minimal time
         router:
@@ -950,6 +952,7 @@ en:
       index:
         title: Roles
         new: New role
+        users_count: Users count
       new:
         title: New role
       edit:
