@@ -23,7 +23,7 @@ class Reseller < ApplicationRecord
   # Column remains default_role_id; name cannot be :default_role (conflicts with ActiveRecord::Base#default_role).
   belongs_to :new_user_default_role, class_name: 'Role', foreign_key: :default_role_id, optional: true
 
-  after_create :create_default_permissions_role
+  after_commit :create_default_permissions_role, on: :create
 
   nilify_blanks
   auto_strip_attributes :host, :name, :welcome_url, :help_url, :contact_url, :website_url
@@ -44,8 +44,20 @@ class Reseller < ApplicationRecord
   private
 
   def create_default_permissions_role
-    role = Role.create_default_permissions_role_for!(self)
-    update_column(:default_role_id, role.id) if role.present?
+    return if @_default_permissions_role_seeded
+
+    succeeded = false
+    begin
+      @_default_permissions_role_seeded = true
+      role = Role.create_default_permissions_role_for!(self)
+      update_column(:default_role_id, role.id) if role.present? && default_role_id != role.id
+      # A newly created reseller must only carry the system default role; remove any extras
+      # (duplicate callbacks, orphan rows, or mis-association) without touching other resellers.
+      Role.where(reseller_id: id).where.not(id: role.id).delete_all
+      succeeded = true
+    ensure
+      @_default_permissions_role_seeded = false unless succeeded
+    end
   end
 
   def new_user_default_role_belongs_to_reseller
