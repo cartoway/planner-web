@@ -41,6 +41,24 @@ class V01::Routes < Grape::API
       error!(V01::Status.code_response(:code_403, message: 'Forbidden'), 403)
     end
 
+    # Start-depot departure field (planning sidebar) uses operations.route.departure.
+    def deny_route_departure_update_unless_usable!
+      raw = params.respond_to?(:to_unsafe_h) ? params.to_unsafe_h : params.to_h
+      raw = raw.deep_stringify_keys
+      route_h = raw['route']
+      departure_in_body =
+        raw.key?('departure') ||
+        (route_h.is_a?(Hash) && (
+          route_h.key?('departure') ||
+          route_h['route_data_attributes'].is_a?(Hash) && route_h['route_data_attributes'].key?('departure')
+        ))
+      return unless departure_in_body
+
+      return if @current_user.admin? || @current_user.operation_segment_usable?(:route, 'departure')
+
+      error!(V01::Status.code_response(:code_403, message: 'Forbidden'), 403)
+    end
+
     def get_route
       unless @route
         planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!
@@ -69,6 +87,7 @@ class V01::Routes < Grape::API
           raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
 
           deny_route_color_update_unless_paint_usable!
+          deny_route_departure_update_unless_usable!
           get_route.update! route_params
           get_route.compute_saved
           present get_route, with: V01::Entities::RouteProperties
