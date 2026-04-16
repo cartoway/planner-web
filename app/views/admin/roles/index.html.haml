@@ -12,8 +12,8 @@
   .col-md-6
     .form-inline.pull-right
       = text_field_tag :roles_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control', 'data-change' => 'filter', 'data-target' => '#roles'
-      %span#roles_count= @roles.count
-      = t('activerecord.models.roles', count: @roles.count)
+      %span#roles_count= @roles.size
+      = t('activerecord.models.roles', count: @roles.size)
 
 = form_tag admin_roles_path, method: :delete do
   %table#roles.table.table-striped.table-hover
@@ -25,6 +25,7 @@
         %th= Role.human_attribute_name(:name)
         %th= Role.human_attribute_name(:icon)
         %th= t('activerecord.attributes.tag.ref')
+        %th.text-right= t('.users_count')
         %th.text-right
     %tbody
       - @roles.each do |role|
@@ -34,6 +35,7 @@
           %td= role.name
           %td= role_icon(role)
           %td= role.ref
+          %td.text-right= @user_counts_by_role_id[role.id] || 0
           %td.text-right
             = link_to edit_admin_role_path(role), class: 'btn btn-primary btn-sm' do
               %i.fa.fa-edit.fa-fw
