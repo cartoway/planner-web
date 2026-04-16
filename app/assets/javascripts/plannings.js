@@ -1424,7 +1424,7 @@ export const plannings_edit = function(params) {
   });
 
   function initRouteDepartureTimeEntry() {
-    $('.route-departure-field').timeEntry('destroy').timeEntry({
+    $('.route-departure-field:not(:disabled)').timeEntry('destroy').timeEntry({
       show24Hours: true,
       unlimitedHours: true,
       defaultTime: '00:00',

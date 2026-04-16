@@ -3518,7 +3518,8 @@ fr:
       stops: Arrêts
       view: Affichage
       lock: Verrouillage tournée
-      paint: Coloration tournée
+      paint: Couleur tournée
+      departure: Horaire de départ
       active_stop: Activer ou désactiver l’arrêt sur le plan
       move_stop: Déplacer les arrêts sur le plan
       lock_stop: Verrouiller la visite sur la tournée

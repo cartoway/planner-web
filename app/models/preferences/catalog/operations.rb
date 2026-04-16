@@ -26,7 +26,7 @@ module Preferences
       ].freeze
 
       OPERATION_GROUPS_ROUTE = %w[
-        vehicle_usage optimize stops view lock paint export
+        vehicle_usage optimize stops departure view lock paint export
       ].freeze
 
       OPERATION_GROUPS_STOP = %w[

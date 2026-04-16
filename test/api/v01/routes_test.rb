@@ -326,6 +326,31 @@ class V01::RoutesTest < V01::RoutesBaseTest
     role&.destroy
   end
 
+  test 'PUT route departure returns 403 when operations.route.departure is not usable' do
+    return unless Role.column_names.include?('operations')
+
+    user = users(:user_one)
+    previous_role_id = user.role_id
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['route']['segment_controls']['departure'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: user.customer.reseller,
+      name: "api-no-departure-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.normalize_operations(ops),
+      forms: Preferences::Catalog.default_forms
+    )
+    user.update!(role_id: role.id)
+
+    clear_jobs
+    put api(@route.planning.id, @route.id),
+        { departure: '08:00' }.to_json,
+        'CONTENT_TYPE' => 'application/json'
+    assert_equal 403, last_response.status, last_response.body
+  ensure
+    user.update!(role_id: previous_role_id) if user && previous_role_id != user.role_id
+    role&.destroy
+  end
+
   test 'should find route by ref case insensitive' do
     # Set a specific ref for the route
     @route.update(ref: 'TestRoute')
