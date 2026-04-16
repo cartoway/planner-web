@@ -3376,6 +3376,7 @@ en:
       view: View
       lock: Lock route
       paint: Paint color
+      departure: Departure time
       active_stop: Enable or disable stop on the plan
       move_stop: Move stops on the plan
       lock_stop: Lock visit to vehicle route
