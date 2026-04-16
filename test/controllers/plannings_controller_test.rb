@@ -1282,4 +1282,25 @@ class PlanningsControllerTest < ActionController::TestCase
   ensure
     user.update!(role_id: nil)
   end
+
+  test 'PATCH duplicate is forbidden when plannings form is visible but not usable' do
+    user = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['plannings'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: user.customer.reseller,
+      name: "readonly-plannings-dup-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    assert_no_difference('Planning.count') do
+      patch :duplicate, params: { planning_id: @planning }
+    end
+    assert_response :forbidden
+  ensure
+    user.update!(role_id: nil)
+  end
 end
