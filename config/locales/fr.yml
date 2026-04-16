@@ -977,6 +977,7 @@ fr:
       index:
         title: Rôles
         new: Nouveau rôle
+        users_count: Nombre d'utilisateurs
       new:
         title: Nouveau rôle
       edit:

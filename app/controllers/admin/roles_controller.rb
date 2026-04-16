@@ -25,6 +25,12 @@ class Admin::RolesController < ApplicationController
   def index
     authorize! :manage, Role
     @roles = @reseller.roles.order(:name)
+    @user_counts_by_role_id =
+      if @reseller.roles.exists?
+        User.where(role_id: @reseller.roles.select(:id)).unscope(:order).group(:role_id).count
+      else
+        {}
+      end
   end
 
   def new

@@ -27,6 +27,13 @@ class Admin::RolesControllerTest < ActionController::TestCase
     assert_empty hidden
   end
 
+  test 'index lists roles and assigns user counts per role' do
+    get :index
+    assert_response :success
+    assert_kind_of ActiveRecord::Relation, assigns(:roles)
+    assert assigns(:user_counts_by_role_id).is_a?(Hash)
+  end
+
   test 'create persists name and optional icon and color' do
     assert_difference('Role.count', 1) do
       post :create, params: {
