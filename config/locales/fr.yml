@@ -781,6 +781,8 @@ fr:
           uniqueness: Une catégorie existe déjà avec ce nom
         role:
           icon_unknown: n'est pas une icône font-awesome autorisée
+          default_role_config_missing_ref: >-
+            La configuration du rôle par défaut doit contenir une référence. (Contactez votre administrateur)
         optimization_time:
           must_be_greater_than_minimal_time: doit être supérieur à la durée minimale
         router:

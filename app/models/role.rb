@@ -36,18 +36,20 @@ class Role < ApplicationRecord
   before_validation :normalize_operations_and_forms_json
 
   # Idempotent: returns existing or newly created system default role for this reseller.
+  # with_lock on the reseller serializes find+create (no TOCTOU between find_by and create!).
   def self.create_default_permissions_role_for!(reseller)
     ref = default_permissions_role_ref
-    existing = reseller.roles.find_by(ref: ref)
-    return existing if existing
-
-    reseller.roles.create!(
-      name: I18n.t('admin.roles.default_permissions_role_name', default: 'Default permissions'),
-      ref: ref,
-      icon: default_new_reseller_role_icon,
-      operations: default_new_reseller_role_operations_json,
-      forms: default_new_reseller_role_forms_json
-    )
+    reseller.with_lock do
+      reseller.roles.find_by(ref: ref) || reseller.roles.create!(
+        name: I18n.t('admin.roles.default_permissions_role_name', default: 'Default permissions'),
+        ref: ref,
+        icon: default_new_reseller_role_icon,
+        operations: default_new_reseller_role_operations_json,
+        forms: default_new_reseller_role_forms_json
+      )
+    end
+  rescue ActiveRecord::RecordNotUnique
+    reseller.roles.find_by!(ref: ref)
   end
 
   class << self
@@ -55,7 +57,12 @@ class Role < ApplicationRecord
     # System role created for each reseller (see Reseller#create_default_permissions_role).
     # ref / icon / operations / forms are read from config/default_new_reseller_role.yml (+default_role+).
     def default_permissions_role_ref
-      default_role_yaml_hash.fetch('ref', 'default').to_s
+      raw = default_role_yaml_hash['ref']
+      if raw.nil? || raw.to_s.strip.empty?
+        raise ArgumentError, I18n.t('activerecord.errors.models.role.default_role_config_missing_ref')
+      end
+
+      raw.to_s.strip
     end
 
     def default_new_reseller_role_icon
