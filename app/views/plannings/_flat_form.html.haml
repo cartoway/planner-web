@@ -19,5 +19,9 @@
       .col
         = link_to @planning.customer.reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', @planning.id.to_s), target: '_blank', :class => "btn btn-default", title: t('analytics.index.link') do
           %i.fa.fa-chart-line.fa-fw
+    - if @planning.persisted?
+      .col
+        = link_to planning_duplicate_path(@planning), method: :patch, target: '_blank', rel: 'noopener', class: 'btn btn-default', title: t('all.verb.duplicate'), disabled: current_user.customer.too_many_plannings? || !current_user_planning_form_submit_enabled?(@planning), data: { turbolinks: false } do
+          %i.fa.fa-copy.fa-fw
     .col
       = f.submit row_class: '', col_class: '', disabled: !current_user_planning_form_submit_enabled?(@planning)
