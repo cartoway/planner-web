@@ -522,6 +522,7 @@ class PlanningsController < ApplicationController
   end
 
   def duplicate
+    deny_unless_form_update!(:plannings)
     respond_to do |format|
       @planning = @planning.duplicate
       @planning.save! validate: Planner::Application.config.validate_during_duplication
