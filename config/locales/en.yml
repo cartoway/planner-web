@@ -952,6 +952,7 @@ en:
       index:
         title: Roles
         new: New role
+        users_count: Users count
       new:
         title: New role
       edit:
