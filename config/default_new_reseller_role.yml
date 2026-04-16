@@ -40,11 +40,12 @@ default: &default
           export: { visible: true, usable: true }
           refresh: { visible: true, usable: true }
       route:
-        segments: [vehicle_usage, optimize, stops, view, lock, paint, export]
+        segments: [vehicle_usage, optimize, stops, departure, view, lock, paint, export]
         segment_controls:
           vehicle_usage: { visible: true, usable: true }
           optimize: { visible: true, usable: true }
           stops: { visible: true, usable: true }
+          departure: { visible: true, usable: true }
           view: { visible: true, usable: true }
           lock: { visible: true, usable: true }
           paint: { visible: true, usable: true }

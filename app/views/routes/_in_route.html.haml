@@ -1,5 +1,6 @@
 - vehicle_usage_select_disabled = !@manage_planning[:manage_route_vehicle_usage] || @manage_planning[:disable_route_vehicle_usage]
 - route_color_select_disabled = !@manage_planning[:manage_route_paint] || @manage_planning[:disable_route_paint]
+- route_departure_field_disabled = !@manage_planning[:manage_route_departure] || @manage_planning[:disable_route_departure]
 .panel.panel-default
   .panel-heading
     .row
@@ -89,7 +90,10 @@
                       .d-flex.justify-content-center{class: (route[:start_with_service] ? 'col-xs-5' : 'col-xs-6 primary stop-info pull-right pl-0 ml-0')}
                         - if route[:store_start] && route[:departure]
                           .mr-2.fa.fa-magnet.fa-fw.fa-rotate-90
-                        = text_field_tag "route[route_data][departure]", value, min: 0, step: 1, placeholder: route[:time_window_start], class: 'form-control editable route-departure-field', data: { route_id: route[:route_id], planning_id: summary[:planning_id], summary: summary }
+                        - if @manage_planning[:manage_route_departure]
+                          = text_field_tag "route[route_data][departure]", value, min: 0, step: 1, placeholder: route[:time_window_start], class: 'form-control editable route-departure-field', disabled: (true if route_departure_field_disabled), data: { route_id: route[:route_id], planning_id: summary[:planning_id], summary: summary }
+                        - else
+                          %span.form-control-static.text-muted= value
                         - if route[:time_day]
                           = "(+#{route[:time_day]})"
                       - if route[:start_with_service]

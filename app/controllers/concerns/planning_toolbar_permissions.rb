@@ -168,6 +168,9 @@ module PlanningToolbarPermissions
     @manage_planning[:manage_route_paint] = route_op_visible.call('paint')
     @manage_planning[:disable_route_paint] = route_op_disabled.call('paint')
 
+    @manage_planning[:manage_route_departure] = route_op_visible.call('departure')
+    @manage_planning[:disable_route_departure] = route_op_disabled.call('departure')
+
     store_form_visible = !current_user.respond_to?(:form_visible?) || current_user.form_visible?(:stores)
     store_form_usable = !current_user.respond_to?(:form_update?) || current_user.form_update?(:stores)
     @manage_planning[:manage_store] = store_form_visible
