@@ -27,6 +27,7 @@ module Preferences
     HEADER_ROUTE = Headers::HEADER_ROUTE
     HEADER_PLANNING_DEFAULT = Headers::HEADER_PLANNING_DEFAULT
     HEADER_ROUTE_DEFAULT = Headers::HEADER_ROUTE_DEFAULT
+    STOP_LIST_MAX_ACTIVE = StopList::MAX_ACTIVE
     OPERATION_GROUPS_PLANNING = Operations::OPERATION_GROUPS_PLANNING
     OPERATION_GROUPS_ROUTE = Operations::OPERATION_GROUPS_ROUTE
     OPERATION_GROUPS_STOP = Operations::OPERATION_GROUPS_STOP
@@ -56,6 +57,14 @@ module Preferences
 
       def normalize_headers(raw)
         Headers.normalize_headers(raw)
+      end
+
+      def normalize_stop_list_zone(raw)
+        StopList.normalize_zone(raw)
+      end
+
+      def stop_list_field_value(stop, field_id)
+        StopList.field_value(stop, field_id)
       end
 
       def default_operations

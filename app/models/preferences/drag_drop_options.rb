@@ -34,8 +34,29 @@ module Preferences
       z = zone_key.to_s
       BASE.merge(columns: [
         { containerSelector: ".headers-#{z}-tier-active .item-list", inputName: "#{p}[headers][#{z}][active][]" },
-        { containerSelector: ".headers-#{z}-tier-hidden .item-list", inputName: "#{p}[headers][#{z}][hidden][]" }
+        {
+          containerSelector: ".headers-#{z}-tier-hidden .item-list",
+          inputName: "#{p}[headers][#{z}][hidden][]",
+          inactive: true
+        }
       ])
+    end
+
+    # Stop list primary line (user profile): at most 3 fields in the active column.
+    def stop_list_zone_options(param_prefix)
+      p = param_prefix.to_s
+      BASE.merge(
+        minActiveItems: 1,
+        maxActiveItems: ::Preferences::Catalog::STOP_LIST_MAX_ACTIVE,
+        columns: [
+          { containerSelector: '.stop-list-tier-active .item-list', inputName: "#{p}[headers][stop_list][active][]" },
+          {
+            containerSelector: '.stop-list-tier-hidden .item-list',
+            inputName: "#{p}[headers][stop_list][hidden][]",
+            inactive: true
+          }
+        ]
+      )
     end
 
     def operations_three_zone_options(param_prefix, zone_key)

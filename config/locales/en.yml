@@ -2660,8 +2660,13 @@ en:
       unlink_sso_account: Unlink
       confirm_unlink_sso_account: Are you sure you want to unlink this %{provider} account?
       sso_not_configured: No SSO provider is configured.
+      drag_drop:
+        active_column_not_empty: At least one item must remain in the active list.
+        active_column_at_most: At most %{count} items can be in the active list.
       display_ui:
         planning_headers: Planning overview — header blocks (visible)
+        stop_list: Stop list (sidebar) — fields on the line
+        stop_list_help: Drag fields between lists. At most three can be active; order in the active list is used left to right (joined with “ - ”).
         route_headers: Route panel — header blocks (visible)
         planning_toolbar: Planning sidebar — toolbar segments
         route_toolbar: Route header — toolbar segments
@@ -3350,6 +3355,25 @@ en:
         %{provider} account unlinked successfully
       unauthorized: You are not authorized to unlink this %{provider} account
   display_ui:
+    stop_list_fields:
+      name: Name
+      ref: Reference
+      destination_name: Destination name
+      destination_ref: Destination reference
+      visit_ref: Visit reference
+      street: Street
+      postalcode: Postal code
+      city: City
+      country: Country
+      lat: Latitude
+      lng: Longitude
+      detail: Address complement
+      comment: Comment
+      phone_number: Phone
+      destination_duration: Destination duration
+      tags: Tags
+      eta: ETA
+      status: Status
     header_blocks:
       stops: Stops
       duration: Duration
