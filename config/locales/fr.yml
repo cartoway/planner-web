@@ -2773,8 +2773,13 @@ fr:
       unlink_sso_account: Délier le compte %{provider}
       confirm_unlink_sso_account: Êtes-vous sûr de vouloir délier le compte %{provider} ?
       sso_not_configured: Aucun fournisseur SSO n'est configuré.
+      drag_drop:
+        active_column_not_empty: Au moins un élément doit rester dans la liste active.
+        active_column_at_most: Au plus %{count} éléments peuvent être dans la liste active.
       display_ui:
         planning_headers: Données planning
+        stop_list: Liste d’arrêts (panneau) — champs sur la ligne
+        stop_list_help: Faites glisser les champs entre les listes. Au plus trois peuvent être actifs ; l’ordre dans la liste active est utilisé de gauche à droite (séparé par «  - »).
         route_headers: Données tournées
         planning_toolbar: Outils planning
         route_toolbar: Outils tournées
@@ -3493,6 +3498,25 @@ fr:
       success: Compte %{provider} délié avec succès.
       unauthorized: Vous n'avez pas l'autorisation de délier ce compte.
   display_ui:
+    stop_list_fields:
+      name: Nom
+      ref: Référence
+      destination_name: Nom de la destination
+      destination_ref: Référence destination
+      visit_ref: Référence visite
+      street: Rue
+      postalcode: Code postal
+      city: Ville
+      country: Pays
+      lat: Latitude
+      lng: Longitude
+      detail: Complément d’adresse
+      comment: Commentaire
+      phone_number: Téléphone
+      destination_duration: Durée sur site (destination)
+      tags: Étiquettes
+      eta: ETA
+      status: Statut
     header_blocks:
       stops: Arrêts
       duration: Durée

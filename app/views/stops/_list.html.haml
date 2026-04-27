@@ -45,8 +45,9 @@
                 %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path")}
               - if stop[:out_of_max_reload]
                 %i.fa.fa-arrows-rotate.fa-fw{title: t("plannings.edit.error.out_of_max_reload_help")}
-              %span.name{title: stop[:name]}
-                = [stop[:name], stop[:ref]].compact_blank.join(' - ')
+              - sd_line = stop_list_primary_line(stop).presence || stop[:name].to_s
+              %span.name{title: sd_line}
+                = sd_line
           .col-xs-4.col-md-4.d-flex.justify-content-end.align-items-center
             - eta_statement = " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" if stop[:eta_formated]
             .btn-group.pull-right.stop-tools
@@ -119,7 +120,7 @@
                 - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
               %span.name{title: title}
                 %i.fa.fa-coffee.fa-fw
-                = stop[:name]
+                = stop_list_primary_line(stop).presence || stop[:name]
           .col-xs-2.col-md-4.hover-tools{style: "display: none;"}
             .col-xs-0.col-md-6
             .col-xs-12.col-md-6.d-flex.justify-content-end.align-items-center
@@ -188,10 +189,7 @@
               - if stop[:locked] && route[:vehicle_usage_id]
                 - title += " — #{t('plannings.edit.stop_locked_indicator_title')}"
               %span.name{title: title}
-                = stop[:name]
-                - if stop[:index_visit]
-                  \#
-                  = stop[:index_visit]
+                = stop_list_primary_line(stop).presence || stop[:name]
           .col-xs-2.col-md-4.hover-tools{style: "display: none;"}
             .col-xs-0.col-md-6
             .col-xs-12.col-md-6.d-flex.justify-content-end.align-items-center

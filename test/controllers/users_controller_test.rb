@@ -49,12 +49,21 @@ class UsersControllerTest < ActionController::TestCase
     assert_equal 'user[headers][planning][active][]', parsed['columns'].first['inputName']
     assert_equal 'user[headers][planning][hidden][]', parsed['columns'].last['inputName']
     assert_not parsed['columns'].first['inactive']
-    assert_not parsed['columns'].last['inactive']
+    assert parsed['columns'].last['inactive']
 
     el_route = html.at_css('#display-ui-headers-route')
     assert el_route, 'expected #display-ui-headers-route for self-service route headers'
     parsed_route = JSON.parse(el_route['data-drag-drop-options'])
     assert_equal 'user[headers][route][active][]', parsed_route['columns'].first['inputName']
+
+    el_sd = html.at_css('#display-ui-stop-list')
+    assert el_sd, 'expected #display-ui-stop-list for stop list display preferences'
+    parsed_sd = JSON.parse(el_sd['data-drag-drop-options'])
+    assert_equal 3, parsed_sd['maxActiveItems']
+    assert_equal 1, parsed_sd['minActiveItems']
+    assert_equal 'user[headers][stop_list][active][]', parsed_sd['columns'].first['inputName']
+    assert_equal 'user[headers][stop_list][hidden][]', parsed_sd['columns'].last['inputName']
+    assert parsed_sd['columns'].last['inactive']
   end
 
   test 'should get edit as admin' do
@@ -69,6 +78,24 @@ class UsersControllerTest < ActionController::TestCase
   test 'should update user' do
     patch :update, params: { id: @user, user: { layer_id: @user.layer.id } }
     assert_redirected_to edit_user_path(@user)
+  end
+
+  test 'self-service update persists stop_list field order' do
+    patch :update, params: {
+      id: @user,
+      user: {
+        layer_id: @user.layer_id,
+        headers: {
+          stop_list: {
+            active: %w[ref name],
+            hidden: %w[eta status]
+          }
+        }
+      }
+    }
+    assert_redirected_to edit_user_path(@user)
+    @user.reload
+    assert_equal %w[ref name], @user.stop_list_active_field_ids
   end
 
   test 'self-service update persists planning header order' do
