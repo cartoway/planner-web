@@ -3201,6 +3201,7 @@ en:
       tooltip: Search an address
       search: Search an address...
       empty_result: No results found
+      submit_search: Search
   api_web:
     v01:
       plannings:
