@@ -200,11 +200,11 @@ class OptimizerWrapper
   private
 
   # Latest allowed start time for the activity so that service (visit duration) ends by the UI time window end.
-  # When strict_timewindows is false, the window end matches the UI end (+ soft overtime), i.e. arrival/start-based.
-  def service_activity_timewindow_end(stop, time_window_end, activity_window_start, extra_time, strict_timewindows)
+  # When strict_within_timewindows is false, the window end matches the UI end (+ soft overtime), i.e. arrival/start-based.
+  def service_activity_timewindow_end(stop, time_window_end, activity_window_start, extra_time, strict_within_timewindows)
     return nil unless time_window_end
 
-    duration_adjustment = strict_timewindows ? stop.duration : 0
+    duration_adjustment = strict_within_timewindows ? stop.duration : 0
     raw_end = time_window_end + extra_time - duration_adjustment
     if activity_window_start && raw_end < activity_window_start
       activity_window_start
@@ -326,11 +326,11 @@ class OptimizerWrapper
     route_ids = routes.map(&:id)
     enable_upper_bound = options.key?(:enable_optimization_soft_upper_bound) ? options[:enable_optimization_soft_upper_bound] : planning.customer.enable_optimization_soft_upper_bound
     extra_time = enable_upper_bound && (options[:stop_max_upper_bound] || planning.customer.stop_max_upper_bound) || 0
-    strict_timewindows =
-      if options.key?(:enable_strict_timewindows)
-        options[:enable_strict_timewindows]
+    strict_within_timewindows =
+      if options.key?(:enable_strict_within_timewindows)
+        options[:enable_strict_within_timewindows]
       else
-        planning.customer.enable_strict_timewindows
+        planning.customer.enable_strict_within_timewindows
       end
     override_default_priorities = !options[:global] && stops.all?{ |stop| stop.priority.to_i == 0 }
 
@@ -348,9 +348,9 @@ class OptimizerWrapper
       visit_locked_sticky = sticky_eligible && stop.is_a?(StopVisit) && stop.locked
       sticky_vehicle_ids = (base_sticky || visit_locked_sticky) ? ["v#{stop.route_id}"] : nil
       tw1_start = stop.time_window_start_1 && (stop.time_window_start_1 + stop.destination_duration)
-      tw1_end = stop.time_window_end_1 && service_activity_timewindow_end(stop, stop.time_window_end_1, tw1_start, extra_time, strict_timewindows)
+      tw1_end = stop.time_window_end_1 && service_activity_timewindow_end(stop, stop.time_window_end_1, tw1_start, extra_time, strict_within_timewindows)
       tw2_start = stop.time_window_start_2 && (stop.time_window_start_2 + stop.destination_duration)
-      tw2_end = stop.time_window_end_2 && service_activity_timewindow_end(stop, stop.time_window_end_2, tw2_start, extra_time, strict_timewindows)
+      tw2_end = stop.time_window_end_2 && service_activity_timewindow_end(stop, stop.time_window_end_2, tw2_start, extra_time, strict_within_timewindows)
       {
         id: "s#{stop.id}",
         type: 'service',
