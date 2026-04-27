@@ -87,7 +87,7 @@ module UserPreferences
     form_policy(resource)['update']
   end
 
-  # Self-service: header block order only (headers JSON on User).
+  # Self-service: header block order + stop list display fields (headers JSON on User).
   def apply_self_service_display_ui!(headers_params: nil)
     return if headers_params.blank?
 
@@ -99,7 +99,15 @@ module UserPreferences
     base = read_headers_hash.dup
     base['planning'] = hp['planning'] if hp['planning'].present?
     base['route'] = hp['route'] if hp['route'].present?
+    sl = hp['stop_list'].presence || hp['stop_display']
+    base['stop_list'] = sl if sl.present?
     self.headers = ::Preferences::Catalog.normalize_headers(base)
+  end
+
+  # Ordered field ids (e.g. name, ref) for the planning stop list primary line, max 3 after normalize.
+  def stop_list_active_field_ids
+    z = read_headers_hash['stop_list'].presence || read_headers_hash['stop_display']
+    ::Preferences::Catalog::StopList.normalize_zone(z)['active']
   end
 
   private

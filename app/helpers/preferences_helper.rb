@@ -85,4 +85,28 @@ module PreferencesHelper
   def current_user_store_form_submit_enabled?(store)
     store.new_record? ? current_user_form_create?(:stores) : current_user_form_update?(:stores)
   end
+
+  # Primary text for a stop row in the planning sidebar (field order from user preferences, max 3 fields).
+  def stop_list_primary_line(stop)
+    ids = stop_list_active_field_ids_for_ui
+    parts = ids.filter_map { |fid| stop_list_field_part(stop, fid) }
+    parts.compact_blank.join(' - ')
+  end
+
+  def stop_list_active_field_ids_for_ui
+    if user_signed_in? && current_user.respond_to?(:stop_list_active_field_ids) && !current_user.admin?
+      current_user.stop_list_active_field_ids
+    else
+      ::Preferences::Catalog::StopList::DEFAULT_ACTIVE.dup # unfrozen copy for callers that may mutate
+    end
+  end
+
+  def stop_list_field_part(stop, field_id)
+    val = ::Preferences::Catalog.stop_list_field_value(stop, field_id)
+    return nil if val.blank?
+
+    return "#{I18n.t('plannings.edit.popup.eta')} #{val}" if field_id.to_s == 'eta'
+
+    val
+  end
 end

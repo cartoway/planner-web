@@ -12,7 +12,7 @@
  *   - `toggleTo` (number, optional): 0-based column index for the item “×” button; overrides default next-column / 2-col swap.
  *   - `toggleButtons` (false): hide per-row toggle; call `refresh()` after injecting rows via JS.
  *
- * Other notable options: `minActiveItems`, `itemSelector`, `orderDisplaySelector`, `textDisplaySelector`,
+ * Other notable options: `minActiveItems`, `maxActiveItems`, `itemSelector`, `orderDisplaySelector`, `textDisplaySelector`,
  * `showOrder`, `orderFormat`, `onUpdate`, `onValidationError`, CSS class overrides (`activeZoneClass`, `dragOverClass`, …).
  *
  * Public API: `refresh()`, `addItem(data, active)`, `removeItem(id)`, `getActiveItems()`, `getInactiveItems()`, `destroy()` (partial).
@@ -46,6 +46,7 @@ class ActiveInactiveDragDrop {
 
       // Configuration
       minActiveItems: 1,
+      maxActiveItems: null,
       orderFormat: 'number', // 'number', 'letter', 'custom'
       inactiveOrderDisplay: '-',
       toggleButtons: true,
@@ -54,6 +55,9 @@ class ActiveInactiveDragDrop {
 
       // Callbacks
       onUpdate: null,
+      onMaxActiveValidationError: null,
+      /** Set by initializeDragDrop for I18n scope (e.g. user → users). */
+      dragDropI18nScope: null,
       onValidationError: null,
 
       // CSS classes
@@ -235,6 +239,13 @@ class ActiveInactiveDragDrop {
     const fromVisible = !fromTier.inactive;
     if (fromVisible && movingToInactive &&
         this.visibleTierItemCount() <= this.options.minActiveItems) {
+      this._showValidationPNotify(this._validationMessageMin());
+      return;
+    }
+
+    if (!fromVisible && !movingToInactive &&
+        this.wouldViolateMaxActiveAfterMoveToActive(targetTier.element, fromTier.element)) {
+      this._showValidationPNotify(this._validationMessageMax());
       return;
     }
 
@@ -400,14 +411,45 @@ class ActiveInactiveDragDrop {
         const count = this.visibleTierItemCount();
         if (count < this.options.minActiveItems) {
           e.preventDefault();
-          const errorMessage = this.options.onValidationError ?
-            this.options.onValidationError() :
-            `At least ${this.options.minActiveItems} item(s) must be active`;
-          alert(errorMessage);
+          this._showValidationPNotify(this._validationMessageMin());
+          return false;
+        }
+        const max = this.options.maxActiveItems;
+        if (max && max > 0 && count > max) {
+          e.preventDefault();
+          this._showValidationPNotify(this._validationMessageMax());
           return false;
         }
       });
     }
+  }
+
+  _validationMessageMin() {
+    return this.options.onValidationError ?
+      this.options.onValidationError.call(this) :
+      `At least ${this.options.minActiveItems} item(s) must be active`;
+  }
+
+  _validationMessageMax() {
+    const max = this.options.maxActiveItems;
+    return this.options.onMaxActiveValidationError ?
+      this.options.onMaxActiveValidationError.call(this) :
+      `At most ${max} item(s) can be active`;
+  }
+
+  _showValidationPNotify(message) {
+    if (!message) {
+      return;
+    }
+    if (typeof window.notify === 'function') {
+      window.notify('warning', message);
+      return;
+    }
+    if (typeof window.warning === 'function') {
+      window.warning(message);
+      return;
+    }
+    console.warn('[ActiveInactiveDragDrop]', message);
   }
 
   // Public methods
@@ -486,14 +528,30 @@ class ActiveInactiveDragDrop {
 
 // Helper function to initialize with common configurations
 function initializeDragDrop(containerOrId, type = 'generic', options = {}) {
+  const i18nScope = type === 'user' ? 'users' : type;
   const defaultOptions = {
     minActiveItems: 1,
     onValidationError: function() {
-      return I18n.t(`${type}.form.priority_not_empty`);
+      const scope = this.options.dragDropI18nScope || type;
+      return I18n.t(`${scope}.form.drag_drop.active_column_not_empty`, {
+        defaultValue: 'At least one item must remain in the active list.'
+      });
+    },
+    onMaxActiveValidationError: function() {
+      const scope = this.options.dragDropI18nScope || type;
+      const maxItems = this.options.maxActiveItems;
+      return I18n.t(`${scope}.form.drag_drop.active_column_at_most`, {
+        count: maxItems,
+        defaultValue: `At most ${maxItems} item(s) can be in the active list.`
+      });
     }
   };
 
-  return new ActiveInactiveDragDrop(containerOrId, { ...defaultOptions, ...options });
+  return new ActiveInactiveDragDrop(containerOrId, {
+    ...defaultOptions,
+    ...options,
+    dragDropI18nScope: i18nScope
+  });
 }
 
 function parseDragDropOptionsFromDataset(container) {

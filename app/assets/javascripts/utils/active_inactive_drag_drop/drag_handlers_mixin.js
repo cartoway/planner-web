@@ -81,6 +81,12 @@ Object.assign(ActiveInactiveDragDrop.prototype, {
       if (targetContainer !== draggedContainer) {
         if (this._isInactiveListElement(targetContainer) &&
             this.wouldViolateMinActiveAfterMoveToInactive(draggedContainer)) {
+          this._showValidationPNotify(this._validationMessageMin());
+          return;
+        }
+        if (!this._isInactiveListElement(targetContainer) &&
+            this.wouldViolateMaxActiveAfterMoveToActive(targetContainer, draggedContainer)) {
+          this._showValidationPNotify(this._validationMessageMax());
           return;
         }
         targetContainer.appendChild(this.draggedElement);
@@ -99,6 +105,12 @@ Object.assign(ActiveInactiveDragDrop.prototype, {
     } else if (targetContainer && targetContainer !== draggedContainer) {
       if (this._isInactiveListElement(targetContainer) &&
           this.wouldViolateMinActiveAfterMoveToInactive(draggedContainer)) {
+        this._showValidationPNotify(this._validationMessageMin());
+        return;
+      }
+      if (!this._isInactiveListElement(targetContainer) &&
+          this.wouldViolateMaxActiveAfterMoveToActive(targetContainer, draggedContainer)) {
+        this._showValidationPNotify(this._validationMessageMax());
         return;
       }
       targetContainer.appendChild(this.draggedElement);
@@ -117,5 +129,22 @@ Object.assign(ActiveInactiveDragDrop.prototype, {
       return false;
     }
     return this.visibleTierItemCount() <= this.options.minActiveItems;
+  },
+
+  /** Block inactive→active when visible tiers already hold maxActiveItems (reorder within active is allowed). */
+  wouldViolateMaxActiveAfterMoveToActive(targetContainer, draggedContainer) {
+    const max = this.options.maxActiveItems;
+    if (!max || max <= 0) {
+      return false;
+    }
+    const targetTier = this.columnTiers.find(t => t.element === targetContainer);
+    if (!targetTier || targetTier.inactive) {
+      return false;
+    }
+    const fromTier = this.columnTiers.find(t => t.element === draggedContainer);
+    if (fromTier && !fromTier.inactive) {
+      return false;
+    }
+    return this.visibleTierItemCount() >= max;
   }
 });
