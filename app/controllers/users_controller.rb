@@ -32,7 +32,11 @@ class UsersController < ApplicationController
   def update
     raw = params.require(:user)
     attrs = raw.permit(:layer_id, :url_click2call, :time_zone, :prefered_unit, :default_display_polylines)
-    headers_ui = raw.permit(headers: { planning: { active: [], hidden: [] }, route: { active: [], hidden: [] } })[:headers]
+    headers_ui = raw.permit(headers: {
+      planning: { active: [], hidden: [] },
+      route: { active: [], hidden: [] },
+      stop_list: { active: [], hidden: [] }
+    })[:headers]
     @user.assign_attributes(attrs)
     @user.apply_self_service_display_ui!(headers_params: headers_ui) if headers_ui.present?
 

@@ -28,9 +28,15 @@ module PreferencesCatalogSplits
     header_blocks_split(kind).first
   end
 
-  # [active_ids, hidden_ids] for admin header DnD (headers.planning / headers.route).
+  # [active_ids, hidden_ids] for admin header DnD (headers.planning / headers.route) or stop_list.
   def header_blocks_split(kind)
     k = kind.to_s
+    if k == 'stop_list'
+      z = read_headers_hash['stop_list'].presence || read_headers_hash['stop_display']
+      h = Preferences::Catalog::StopList.normalize_zone(z)
+      return [h['active'], h['hidden']]
+    end
+
     allowed = k == 'route' ? Preferences::Catalog::HEADER_ROUTE : Preferences::Catalog::HEADER_PLANNING
     z = read_headers_hash[k]
     h = Preferences::Catalog.normalize_header_zone(z, allowed)
