@@ -441,9 +441,13 @@ class PlanningsController < ApplicationController
     enable_optimization_soft_upper_bound = ValueToBoolean::value_to_boolean(params[:enable_optimization_soft_upper_bound])
     vehicle_max_upper_bound = params[:vehicle_max_upper_bound].blank? ? nil : ScheduleType.new.cast(params[:vehicle_max_upper_bound])
     stop_max_upper_bound = params[:stop_max_upper_bound].blank? ? nil : ScheduleType.new.cast(params[:stop_max_upper_bound])
+    if params.key?(:enable_strict_timewindows)
+      @planning.customer.enable_strict_timewindows =
+        ValueToBoolean::value_to_boolean(params[:enable_strict_timewindows])
+    end
     respond_to do |format|
       begin
-        if Optimizer.optimize(@planning, nil, { global: global, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers, nb_route: nb_route, enable_optimization_soft_upper_bound: enable_optimization_soft_upper_bound, vehicle_max_upper_bound: vehicle_max_upper_bound, stop_max_upper_bound: stop_max_upper_bound }) && @planning.customer.save!
+        if Optimizer.optimize(@planning, nil, { global: global, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers, nb_route: nb_route, enable_optimization_soft_upper_bound: enable_optimization_soft_upper_bound, vehicle_max_upper_bound: vehicle_max_upper_bound, stop_max_upper_bound: stop_max_upper_bound, enable_strict_timewindows: @planning.customer.enable_strict_timewindows }) && @planning.customer.save!
           planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
           format.js { render partial: 'routes/update.js.erb', locals: { optimizer: planning_data[:optimizer], updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
         else
@@ -468,10 +472,14 @@ class PlanningsController < ApplicationController
     enable_optimization_soft_upper_bound = ValueToBoolean::value_to_boolean(params[:enable_optimization_soft_upper_bound])
     vehicle_max_upper_bound = params[:vehicle_max_upper_bound].blank? ? nil : ScheduleType.new.cast(params[:vehicle_max_upper_bound])
     stop_max_upper_bound = params[:stop_max_upper_bound].blank? ? nil : ScheduleType.new.cast(params[:stop_max_upper_bound])
+    if params.key?(:enable_strict_timewindows)
+      @planning.customer.enable_strict_timewindows =
+        ValueToBoolean::value_to_boolean(params[:enable_strict_timewindows])
+    end
     respond_to do |format|
       route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
       begin
-        if route && Optimizer.optimize(@planning, route, { global: false, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers, enable_optimization_soft_upper_bound: enable_optimization_soft_upper_bound, vehicle_max_upper_bound: vehicle_max_upper_bound, stop_max_upper_bound: stop_max_upper_bound }) && @planning.customer.save!
+        if route && Optimizer.optimize(@planning, route, { global: false, synchronous: false, active_only: active_only, ignore_overload_multipliers: ignore_overload_multipliers, enable_optimization_soft_upper_bound: enable_optimization_soft_upper_bound, vehicle_max_upper_bound: vehicle_max_upper_bound, stop_max_upper_bound: stop_max_upper_bound, enable_strict_timewindows: @planning.customer.enable_strict_timewindows }) && @planning.customer.save!
           @routes = [route.reload]
           planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
           format.js { render partial: 'routes/update.js.erb', locals: { optimizer: planning_data[:optimizer], updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
