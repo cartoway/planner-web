@@ -214,6 +214,7 @@ class CustomersController < ApplicationController
         :enable_sms,
         :enable_sms_intransit,
         :enable_optimization_soft_upper_bound,
+        :enable_strict_timewindows,
         :enable_vehicle_costs,
         :stop_max_upper_bound,
         :vehicle_max_upper_bound,
@@ -275,6 +276,7 @@ class CustomersController < ApplicationController
     else
       allowed_params = [
         :enable_optimization_soft_upper_bound,
+        :enable_strict_timewindows,
         :enable_sms_intransit,
         :stop_max_upper_bound,
         :vehicle_max_upper_bound,

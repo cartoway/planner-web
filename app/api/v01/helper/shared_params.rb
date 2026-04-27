@@ -80,6 +80,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :external_callback_name, type: String, documentation: { desc: 'External callback name' }
 
     optional :enable_optimization_soft_upper_bound, type: Boolean, documentation: { desc: 'Enable overtimes' }
+    optional :enable_strict_timewindows, type: Boolean, documentation: { desc: 'Strict time windows (visit must finish before displayed window end)' }
     optional :stop_max_upper_bound, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :vehicle_max_upper_bound, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
 

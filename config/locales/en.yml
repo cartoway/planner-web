@@ -211,6 +211,7 @@ en:
         enable_sms: Enable SMS
         enable_sms_intransit: Enable SMS in transit
         enable_optimization_soft_upper_bound: Enable overtimes
+        enable_strict_timewindows: Strict time windows
         sms_template: Customer SMS template
         sms_driver_template: Driver SMS template
         sms_intransit_template: Inroute SMS template
@@ -1218,6 +1219,8 @@ en:
       solver_priority_inactive: Inactive solvers
       solver_priority_not_empty: At least one solver must be active
       enable_optimization_soft_upper_bound_help: Enable overtimes in optimization
+      enable_strict_timewindows_help: >-
+        When enabled, each visit time window end is reduced by the visit duration so the stop is late only if service would finish after the displayed end (plan display and schedule calculations).
       enable_global_optimization_test: Enabled if Test
       enable_sms_intransit_help: Enable SMS in transit when the driver is on the way
       stop_max_upper_bound: Visit overtime
@@ -2255,6 +2258,11 @@ en:
             Allow overtimes
           enable_optimization_soft_upper_bound_false_help: >-
             Deny overtimes
+          enable_strict_timewindows: Strict time windows
+          enable_strict_timewindows_true_help: >-
+            The window end is the latest time by which the visit must finish; service duration must fit before that end.
+          enable_strict_timewindows_false_help: >-
+            Time windows are not narrowed by visit duration (previous behavior).
           vehicle_max_upper_bound: Driver shift overtime
           stop_max_upper_bound: Visit overtime
         optimizer:
