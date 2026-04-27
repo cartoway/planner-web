@@ -255,8 +255,39 @@ label .popover {
 }
 
 /* Leaflet geocoder */
-.leaflet-control-geocoder-expanded input, .leaflet-control-geocoder-error {
-  width: 350px;
+.leaflet-control-geocoder-expanded.leaflet-control-geocoder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.leaflet-control-geocoder-expanded > .leaflet-control-geocoder-form-no-error,
+.leaflet-control-geocoder-expanded > ul.leaflet-control-geocoder-alternatives {
+  flex-basis: 100%;
+}
+
+.leaflet-control-geocoder-expanded .leaflet-control-geocoder-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+  vertical-align: middle;
+}
+
+.leaflet-control-geocoder-expanded .leaflet-control-geocoder-form input {
+  flex: 1;
+  min-width: 200px;
+  width: auto !important;
+}
+
+.leaflet-control-geocoder-form button.leaflet-control-geocoder-submit {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  margin: 0 4px;
+  line-height: 1.428571429;
 }
 
 ul.leaflet-control-geocoder-alternatives {

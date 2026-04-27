@@ -3342,6 +3342,7 @@ fr:
       tooltip: Rechercher une adresse
       search: Recherche d'adresse...
       empty_result: Pas de résultat
+      submit_search: Rechercher
   api_web:
     v01:
       plannings:
