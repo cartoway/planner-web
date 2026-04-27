@@ -51,7 +51,7 @@ class V01::Entities::Customer < Grape::Entity
   expose(:external_callback_name, documentation: { type: String, desc: 'External callback name' })
 
   expose(:enable_optimization_soft_upper_bound, documentation: { type: 'Boolean', desc: 'Enable overtimes' })
-  expose(:enable_strict_timewindows, documentation: { type: 'Boolean', desc: 'Strict time windows (visit must finish before displayed window end)' })
+  expose(:enable_strict_within_timewindows, documentation: { type: 'Boolean', desc: 'Visit duration counted inside each time window (whole visit between start and end)' })
   expose(:stop_max_upper_bound, documentation: { type: DateTime }) { |m| m.stop_max_upper_bound_absolute_time_with_seconds }
   expose(:vehicle_max_upper_bound, documentation: { type: DateTime }){ |m| m.vehicle_max_upper_bound_absolute_time_with_seconds }
 

@@ -217,7 +217,7 @@ fr:
         enable_sms: Activer l'envoi de SMS
         enable_sms_intransit: Activer l'envoi de SMS d'approche
         enable_optimization_soft_upper_bound: Autoriser les dépassements horaires
-        enable_strict_timewindows: Créneaux stricts
+        enable_strict_within_timewindows: Créneau strict (durée de visite comprise)
         sms_template: Modèle SMS clients
         sms_driver_template: Modèle SMS livreurs
         sms_intransit_template: Modèle SMS d'approche
@@ -1252,8 +1252,8 @@ fr:
       solver_priority_inactive: Solveurs inactifs
       solver_priority_not_empty: Au moins un solveur doit être actif
       enable_optimization_soft_upper_bound_help: Autoriser les dépassements horaires durant l'optimisation
-      enable_strict_timewindows_help: >-
-        Si activé, la fin de chaque créneau est réduite de la durée de visite, afin que la visite doive se terminer avant la fin affichée du créneau (affichages et calculs du plan).
+      enable_strict_within_timewindows_help: >-
+        Si cette option est activée, la durée de visite est comprise dans le créneau horaire : la visite (arrivée et service) doit s’inscrire entièrement entre l’heure d’ouverture et l’heure de fermeture, et la fin affichée est la dernière heure possible de fin de visite. L’affichage et les calculs du plan s’appuient sur cette règle.
       enable_global_optimization_test: Actif si Test
       enable_sms_intransit_help: Activer l'envoi de SMS d'approche lorsque le chauffeur est en route
       stop_max_upper_bound: Dépassement max créneaux horaires visites
@@ -2365,11 +2365,11 @@ fr:
             Autoriser les dépassements horaires
           enable_optimization_soft_upper_bound_false_help: >-
             Interdire les dépassements horaires
-          enable_strict_timewindows: Créneaux stricts
-          enable_strict_timewindows_true_help: >-
-            La fin du créneau correspond à la fin de la visite : la durée de service doit tenir avant cette fin.
-          enable_strict_timewindows_false_help: >-
-            Les créneaux ne sont pas réduits de la durée de visite.
+          enable_strict_within_timewindows: Durée de visite dans le créneau
+          enable_strict_within_timewindows_true_help: >-
+            Oui : la durée de visite fait partie du créneau ; tout l’arrêt doit avoir lieu entre l’ouverture et la fermeture, et un retard correspond à une fin de visite après la fermeture du créneau.
+          enable_strict_within_timewindows_false_help: >-
+            Non : la durée de visite n’est pas réservée à l’intérieur du créneau (comportement précédent : la visite peut dépasser l’heure de fin affichée).
           vehicle_max_upper_bound: 'Hors amplitude chauffeur'
           stop_max_upper_bound: 'Dépassements créneaux visites'
         optimizer:

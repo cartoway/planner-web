@@ -461,11 +461,11 @@ class OptimizerWrapperTest < ActionController::TestCase
     remove_request_stub(stub_vrp_job) if stub_vrp_job
   end
 
-  test 'should narrow service timewindow end when strict timewindows is enabled' do
+  test 'should narrow service timewindow end when strict within timewindows is enabled' do
     begin
       planning = plannings(:planning_one)
-      previous = planning.customer.enable_strict_timewindows
-      planning.customer.update!(enable_strict_timewindows: true)
+      previous = planning.customer.enable_strict_within_timewindows
+      planning.customer.update!(enable_strict_within_timewindows: true)
       stop = planning.routes.flat_map(&:stops).find{ |s| s.is_a?(StopVisit) && s.time_window_end_1 }
       assert stop, 'fixture should include a StopVisit with a first time window end'
 
@@ -475,7 +475,7 @@ class OptimizerWrapperTest < ActionController::TestCase
 
       assert_equal stop.time_window_end_1 - stop.duration, tw[:end]
     ensure
-      planning.customer.update_columns(enable_strict_timewindows: previous)
+      planning.customer.update_columns(enable_strict_within_timewindows: previous)
       remove_request_stub(@stub_VrpJob)
       remove_request_stub(@stub_VrpSubmit)
     end
