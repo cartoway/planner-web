@@ -308,7 +308,8 @@ export const mapInitialize = function(params) {
       position: 'topleft',
       placeholder: I18n.t('web.geocoder.search'),
       errorMessage: I18n.t('web.geocoder.empty_result'),
-      defaultMarkGeocode: false
+      defaultMarkGeocode: false,
+      expand: 'click'
     }).on('markgeocode', function(e) {
       this._map.fitBounds(e.geocode.bbox, {
         maxZoom: 15,
@@ -326,6 +327,87 @@ export const mapInitialize = function(params) {
       }, 2000);
     }).addTo(map);
     map._controls.push(geocoderControl);
+
+    var geocoderStopClickPropagation = function(e) {
+      L.DomEvent.stopPropagation(e);
+    };
+    L.DomEvent.on(geocoderControl._form, 'click', geocoderStopClickPropagation);
+    L.DomEvent.on(geocoderControl._errorElement, 'click', geocoderStopClickPropagation);
+    L.DomEvent.on(geocoderControl._alts, 'click', geocoderStopClickPropagation);
+
+    var geocoderOriginalGeocode = geocoderControl._geocode.bind(geocoderControl);
+    geocoderControl._geocode = function(suggest) {
+      var q = this._input && this._input.value != null ? String(this._input.value).trim() : '';
+      if (!q) {
+        return;
+      }
+      return geocoderOriginalGeocode(suggest);
+    };
+
+    L.DomEvent.disableClickPropagation(geocoderControl._form);
+    L.DomEvent.disableClickPropagation(geocoderControl._errorElement);
+    L.DomEvent.disableClickPropagation(geocoderControl._alts);
+
+    var submitBtn = L.DomUtil.create('button', 'leaflet-control-geocoder-submit btn btn-default btn-sm', geocoderControl._form);
+    submitBtn.type = 'button';
+    submitBtn.title = I18n.t('web.geocoder.submit_search');
+    submitBtn.setAttribute('aria-label', I18n.t('web.geocoder.submit_search'));
+    submitBtn.innerHTML = '<span class="fa fa-search fa-fw"></span>';
+    var geocoderIconBtn = geocoderControl._container.querySelector('.leaflet-control-geocoder-icon');
+    var geocoderIconPreventBlurCollapse = function() {
+      geocoderControl._preventBlurCollapse = true;
+    };
+    if (geocoderIconBtn) {
+      L.DomEvent.on(geocoderIconBtn, 'mousedown touchstart', geocoderIconPreventBlurCollapse, geocoderControl);
+    }
+
+    L.DomEvent.on(submitBtn, 'mousedown', function() {
+      geocoderControl._preventBlurCollapse = true;
+    }, geocoderControl);
+    L.DomEvent.on(submitBtn, 'click', function(e) {
+      L.DomEvent.stop(e);
+      geocoderControl._input.focus();
+      geocoderControl._geocode(false);
+    }, geocoderControl);
+    L.DomEvent.disableClickPropagation(submitBtn);
+
+    var mapContainer = map.getContainer();
+
+    $(document).on('mousedown.geocoderBlurGuard' + map._leaflet_id, function(e) {
+      var t = e.target;
+      if (geocoderControl._container.contains(t)) {
+        return;
+      }
+      if (!mapContainer.contains(t)) {
+        geocoderControl._preventBlurCollapse = true;
+      }
+    });
+
+    var closeGeocoderIfLeafletOutsideGeocoder = function(e) {
+      var t = e.target;
+      if (geocoderControl._container.contains(t)) {
+        return;
+      }
+      if (!mapContainer.contains(t)) {
+        return;
+      }
+      if (geocoderControl._container.classList.contains('leaflet-control-geocoder-expanded')) {
+        geocoderControl._collapse();
+      }
+    };
+    $(mapContainer).on('mousedown.leafletGeocoderLeafletOther' + map._leaflet_id, closeGeocoderIfLeafletOutsideGeocoder);
+
+    $(document).on('turbolinks:before-cache.leafletGeocoderOutside' + map._leaflet_id, function leafletGeocoderOutsideCleanup() {
+      if (geocoderIconBtn) {
+        L.DomEvent.off(geocoderIconBtn, 'mousedown touchstart', geocoderIconPreventBlurCollapse, geocoderControl);
+      }
+      L.DomEvent.off(geocoderControl._form, 'click', geocoderStopClickPropagation);
+      L.DomEvent.off(geocoderControl._errorElement, 'click', geocoderStopClickPropagation);
+      L.DomEvent.off(geocoderControl._alts, 'click', geocoderStopClickPropagation);
+      $(document).off('mousedown.geocoderBlurGuard' + map._leaflet_id);
+      $(mapContainer).off('mousedown.leafletGeocoderLeafletOther' + map._leaflet_id, closeGeocoderIfLeafletOutsideGeocoder);
+      $(document).off('turbolinks:before-cache.leafletGeocoderOutside' + map._leaflet_id, leafletGeocoderOutsideCleanup);
+    });
 
     $('.leaflet-control-geocoder-icon').prop('title', I18n.t('web.geocoder.tooltip'));
   }
