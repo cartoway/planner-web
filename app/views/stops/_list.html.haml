@@ -111,7 +111,8 @@
               - if stop[:no_path]
                 %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path_help")}
 
-              - title = stop[:name]
+              - sd_line = stop_list_primary_line(stop).presence || stop[:name].to_s
+              - title = sd_line
               - if stop[:index_visit]
                 - title += " # #{stop[:index_visit]}"
               - if stop[:status]
@@ -120,7 +121,7 @@
                 - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
               %span.name{title: title}
                 %i.fa.fa-coffee.fa-fw
-                = stop_list_primary_line(stop).presence || stop[:name]
+                = sd_line
           .col-xs-2.col-md-4.hover-tools{style: "display: none;"}
             .col-xs-0.col-md-6
             .col-xs-12.col-md-6.d-flex.justify-content-end.align-items-center
@@ -179,7 +180,8 @@
               - if stop[:locked] && route[:vehicle_usage_id]
                 %i.fa.fa-lock.fa-fw.text-warning{title: t('plannings.edit.stop_locked_indicator_title')}
 
-              - title = stop[:name]
+              - sd_line = stop_list_primary_line(stop).presence || stop[:name].to_s
+              - title = sd_line
               - if stop[:index_visit]
                 - title += " # #{stop[:index_visit]}"
               - if stop[:status]
@@ -189,7 +191,7 @@
               - if stop[:locked] && route[:vehicle_usage_id]
                 - title += " — #{t('plannings.edit.stop_locked_indicator_title')}"
               %span.name{title: title}
-                = stop_list_primary_line(stop).presence || stop[:name]
+                = sd_line
           .col-xs-2.col-md-4.hover-tools{style: "display: none;"}
             .col-xs-0.col-md-6
             .col-xs-12.col-md-6.d-flex.justify-content-end.align-items-center

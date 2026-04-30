@@ -26,31 +26,6 @@
 
 .row.form-group
   %label.col-md-offset-2.col-md-8
-    = t('users.form.display_ui.stop_list')
-  .col-md-offset-2.col-md-8.field
-    - active_sl, hidden_sl = @user.header_blocks_split('stop_list')
-    .priority-zones.active-inactive-zones.headers-data-dnd#display-ui-stop-list{ "data-drag-drop" => "user", "data-drag-drop-options" => Preferences::DragDropOptions.stop_list_zone_options('user').to_json }
-      .headers-two-columns
-        .stop-list-tier-active.priority-active.active-zone
-          .zone-title= t('users.form.display_ui.data_active')
-          .item-list
-            - active_sl.each_with_index do |fid, index|
-              .draggable-item{ data: { value: fid, index: index } }
-                %span.item-order
-                %span.item-text= t("display_ui.stop_list_fields.#{fid}", default: fid.to_s.humanize)
-                %input{ type: 'hidden', name: 'user[headers][stop_list][active][]', value: fid }
-        .stop-list-tier-hidden.priority-inactive.inactive-zone
-          .zone-title= t('users.form.display_ui.data_hidden')
-          .item-list
-            - hidden_sl.each_with_index do |fid, index|
-              .draggable-item.headers-tier-hidden-item{ data: { value: fid, index: index } }
-                %span.item-order
-                %span.item-text= t("display_ui.stop_list_fields.#{fid}", default: fid.to_s.humanize)
-                %input{ type: 'hidden', name: 'user[headers][stop_list][hidden][]', value: fid }
-    %small.help-block= t('users.form.display_ui.stop_list_help')
-
-.row.form-group
-  %label.col-md-offset-2.col-md-8
     = t('users.form.display_ui.route_headers')
   .col-md-offset-2.col-md-8.field
     - active_r, hidden_r = @user.header_blocks_split('route')
@@ -73,3 +48,28 @@
                 %span.item-text= t("display_ui.header_blocks.#{bid}", default: bid.to_s.humanize)
                 %input{ type: 'hidden', name: 'user[headers][route][hidden][]', value: bid }
     %small.help-block= t('users.form.display_ui.headers_help')
+
+.row.form-group
+  %label.col-md-offset-2.col-md-8
+    = t('users.form.display_ui.stop_list')
+  .col-md-offset-2.col-md-8.field
+    - active_sl, hidden_sl = @user.header_blocks_split('stop_list')
+    .priority-zones.active-inactive-zones.headers-data-dnd#display-ui-stop-list{ "data-drag-drop" => "user", "data-drag-drop-options" => Preferences::DragDropOptions.stop_list_zone_options('user').to_json }
+      .headers-two-columns
+        .stop-list-tier-active.priority-active.active-zone
+          .zone-title= t('users.form.display_ui.data_active')
+          .item-list
+            - active_sl.each_with_index do |fid, index|
+              .draggable-item{ data: { value: fid, index: index } }
+                %span.item-order
+                %span.item-text= t("display_ui.stop_list_fields.#{fid}", default: fid.to_s.humanize)
+                %input{ type: 'hidden', name: 'user[headers][stop_list][active][]', value: fid }
+        .stop-list-tier-hidden.priority-inactive.inactive-zone
+          .zone-title= t('users.form.display_ui.data_hidden')
+          .item-list
+            - hidden_sl.each_with_index do |fid, index|
+              .draggable-item.headers-tier-hidden-item{ data: { value: fid, index: index } }
+                %span.item-order
+                %span.item-text= t("display_ui.stop_list_fields.#{fid}", default: fid.to_s.humanize)
+                %input{ type: 'hidden', name: 'user[headers][stop_list][hidden][]', value: fid }
+    %small.help-block= t('users.form.display_ui.stop_list_help')

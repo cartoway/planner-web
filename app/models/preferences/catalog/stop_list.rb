@@ -25,9 +25,10 @@ module Preferences
       FIELD_IDS = %w[
         name ref destination_name destination_ref visit_ref
         street postalcode city country lat lng
-        detail comment phone_number destination_duration tags
+        detail comment phone_number destination_duration tags tags_visit
         eta status
       ].freeze
+
       DEFAULT_ACTIVE = %w[name ref].freeze
       MAX_ACTIVE = 3
 
@@ -42,6 +43,12 @@ module Preferences
 
       def normalize_zone(raw)
         z = raw.is_a?(Hash) ? raw.stringify_keys : {}
+        %w[active hidden].each do |side|
+          next unless z[side].is_a?(Array)
+
+          # Users who had the short-lived list field id "tags_destination" map back to "tags"
+          z[side] = z[side].map { |id| id.to_s == 'tags_destination' ? 'tags' : id }.uniq
+        end
         active = Core.filter_order(z['active'], FIELD_IDS)
         hidden_src = Core.filter_order(z['hidden'], FIELD_IDS)
         active.uniq!
@@ -80,7 +87,8 @@ module Preferences
         when 'comment' then stop_get(stop, :comment).presence&.to_s
         when 'phone_number' then stop_get(stop, :phone_number).presence&.to_s
         when 'destination_duration' then stop_get(stop, :destination_duration).presence&.to_s
-        when 'tags' then tags_line_from(stop)
+        when 'tags' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags')
+        when 'tags_visit' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags_visit')
         when 'eta' then stop_get(stop, :eta_formated).presence
         when 'status' then stop_get(stop, :status).presence
         end
@@ -98,19 +106,23 @@ module Preferences
       end
       private_class_method :visit_stop?
 
-      def tags_line_from(stop)
-        tp = stop_get(stop, :tags_present)
-        return nil unless tp.is_a?(Hash)
+      def tags_labels_from_key(tag_data, key)
+        return nil unless tag_data.is_a?(Hash)
 
-        tags = tp['tags'] || tp[:tags]
-        return nil if tags.blank?
+        raw = tag_data[key.to_s] || tag_data[key.to_sym]
+        normalize_tag_labels_line(raw)
+      end
+      private_class_method :tags_labels_from_key
 
-        labels = Array(tags).map do |t|
+      def normalize_tag_labels_line(raw)
+        return nil if raw.blank?
+
+        labels = Array(raw).map do |t|
           t.is_a?(Hash) ? (t['label'] || t[:label]) : t
         end
         labels.compact.map(&:to_s).reject(&:blank?).join(', ').presence
       end
-      private_class_method :tags_line_from
+      private_class_method :normalize_tag_labels_line
 
       def coord_display(val)
         return nil if val.nil? || val == ''
