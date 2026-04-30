@@ -791,6 +791,7 @@ CREATE TABLE public.route_data (
     color character varying,
     size_active integer DEFAULT 0 NOT NULL,
     size_destinations integer DEFAULT 0 NOT NULL,
+    size_active_destinations integer DEFAULT 0 NOT NULL,
     size_store_reloads integer DEFAULT 0 NOT NULL,
     stops_size integer DEFAULT 0 NOT NULL,
     no_geolocalization boolean DEFAULT false NOT NULL,
@@ -3813,6 +3814,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260415151648'),
 ('20260427100657'),
 ('20260428104204'),
-('20260429122243');
+('20260429122243'),
+('20260430145821');
 
 

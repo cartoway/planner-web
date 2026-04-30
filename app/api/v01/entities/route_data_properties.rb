@@ -26,6 +26,7 @@ class V01::Entities::RouteDataProperties < Grape::Entity
 
   expose :size_active, documentation: { type: Integer }
   expose :size_destinations, documentation: { type: Integer }
+  expose :size_active_destinations, documentation: { type: Integer }
   expose :size_store_reloads, documentation: { type: Integer }
   expose :stops_size, documentation: { type: Integer }
   expose :no_geolocalization, documentation: { type: 'Boolean' }

@@ -22,7 +22,7 @@ class Route < ApplicationRecord
   delegate :tracks, :tracks=, :points, :points=, to: :route_geojson, allow_nil: true, prefix: :geojson
   delegate :distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end,
            :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure,
-           :size_destinations, :size_store_reloads, :no_geolocalization, :no_path,
+           :size_destinations, :size_store_reloads, :size_active_destinations, :no_geolocalization, :no_path,
            :unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time,
            :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_reload,
            :out_of_relation, :out_of_skill, :out_of_window, :out_of_max_ride_distance,
@@ -30,7 +30,7 @@ class Route < ApplicationRecord
 
   RELATION_ORDER_KEYS = %i[pickup_delivery order sequence].freeze
   ROUTE_DATA_METRICS_FIELDS = %i[
-    size_active size_destinations size_store_reloads stops_size
+    size_active size_destinations size_active_destinations size_store_reloads stops_size
     no_geolocalization no_path unmanageable_capacity out_of_capacity
     out_of_drive_time out_of_force_position out_of_work_time out_of_window
     out_of_max_distance out_of_max_reload out_of_relation out_of_skill
@@ -133,6 +133,12 @@ class Route < ApplicationRecord
     stops.count(&:active)
   end
 
+  def size_active_destinations
+    return route_data.size_active_destinations if use_persisted_route_metrics?
+
+    stops.select { |s| s.is_a?(StopVisit) && s.active? }.filter_map { |s| s.visit&.destination_id }.uniq.size
+  end
+
   def outdated_if_changed
     return unless will_save_change_to_force_start?
 
@@ -215,6 +221,7 @@ class Route < ApplicationRecord
       cost_time: nil,
       size_active: 0,
       size_destinations: 0,
+      size_active_destinations: 0,
       size_store_reloads: 0,
       stops_size: 0,
       no_geolocalization: false,
@@ -456,6 +463,8 @@ class Route < ApplicationRecord
       }
       route_data_attributes.merge!(compacted_route_data_attributes)
       route_data_attributes[:size_destinations] = stops_sort.select{ |stop| stop.is_a?(StopVisit) }.map{ |stop| stop.visit.destination_id }.compact.uniq.size
+      route_data_attributes[:size_active_destinations] =
+        stops_sort.select { |stop| stop.is_a?(StopVisit) && stop.active? }.filter_map { |stop| stop.visit&.destination_id }.uniq.size
       # Assign route-only attributes to self
       self.assign_attributes(route_only_attributes)
 
