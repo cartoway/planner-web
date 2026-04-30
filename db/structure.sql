@@ -164,7 +164,8 @@ CREATE TABLE public.customers (
     enable_vehicle_costs boolean DEFAULT false NOT NULL,
     store_reload_duration integer,
     optimization_dicho_minimum_service_size integer,
-    enable_strict_within_timewindows boolean DEFAULT false NOT NULL
+    enable_strict_within_timewindows boolean DEFAULT false NOT NULL,
+    stops_preload_limit integer DEFAULT 1000 NOT NULL
 );
 
 
@@ -3811,6 +3812,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260414111726'),
 ('20260415151648'),
 ('20260427100657'),
-('20260428104204');
+('20260428104204'),
+('20260429122243');
 
 

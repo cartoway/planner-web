@@ -39,6 +39,7 @@ class V01::Entities::Customer < Grape::Entity
   expose(:router_options, using: V01::Entities::RouterOptions, documentation: { type: V01::Entities::RouterOptions })
   expose(:speed_multiplier, documentation: { type: Float })
   expose(:history_cron_hour, documentation: { type: Integer })
+  expose(:stops_preload_limit, documentation: { type: Integer, desc: 'Max stops to preload the route content when opening a plan', default: 1000 })
 
   expose(:print_planning_annotating, documentation: { type: 'Boolean' })
   expose(:print_header, documentation: { type: String })

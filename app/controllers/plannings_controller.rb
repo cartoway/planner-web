@@ -577,6 +577,14 @@ class PlanningsController < ApplicationController
 
   private
 
+  def planning_routes_preload_stops?(planning)
+    stops_count = 0
+    planning
+      .routes
+      .select { |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }
+      .none? { |r| (stops_count += r.stops_size) >= planning.customer.stops_preload_limit }
+  end
+
   def move_respond
     respond_to do |format|
       begin

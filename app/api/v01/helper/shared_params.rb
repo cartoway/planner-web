@@ -81,6 +81,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
 
     optional :enable_optimization_soft_upper_bound, type: Boolean, documentation: { desc: 'Enable overtimes' }
     optional :enable_strict_within_timewindows, type: Boolean, documentation: { desc: 'Visit duration inside the time window (whole visit between window start and end)' }
+    optional :stops_preload_limit, type: Integer, documentation: { desc: 'Max stops to preload the route content when opening a plan' }
     optional :stop_max_upper_bound, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :vehicle_max_upper_bound, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
 

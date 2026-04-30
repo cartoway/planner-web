@@ -230,6 +230,7 @@ en:
         router_warning: This routing engine is unauthorized in this profile
         layer_warning: This layer is unauthorized in this profile
         planning_date_offset: Planning date offset
+        stops_preload_limit: Stops preload limit
         router_id: Routing Engine
         router_dimension: Router objective
         router_options_traffic: Take into account traffic
@@ -1126,6 +1127,8 @@ en:
       optimization_parameters: Optimization settings
       planning_date_offset_help: >-
         Number of days to add to the date of the route plan compared to the current date.
+      stops_preload_limit_help: >-
+        Maximal number of stops before switching to manual loading of route stops.
       router_help: Profile used by route plan by default
       router_options_default: '%{n} (default value)'
       router_options_traffic_yes: 'Yes'
