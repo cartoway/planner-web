@@ -312,7 +312,7 @@ class Route < ApplicationRecord
       sub_tour_color = self.start_route_data.color
       stops_sort.each{ |stop|
         previous_route_data_attributes[:size_active] += 1 if stop.active
-        previous_route_data_attributes[:stops_size] += 1 if stop.position?
+        previous_route_data_attributes[:stops_size] += 1
         previous_route_data_attributes[:size_store_reloads] += 1 if stop.is_a?(StopStore)
         previous_route_data_attributes[:no_geolocalization] = true if !stop.is_a?(StopStore) && !stop.position?
 
