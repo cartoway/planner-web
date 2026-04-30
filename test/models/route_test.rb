@@ -185,6 +185,13 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal 0, route.size_active
   end
 
+  test 'size_active_destinations is zero when no active visit stops' do
+    route = routes(:route_one_one)
+    route.active(:none)
+    route.compute_saved!
+    assert_equal 0, route.size_active_destinations
+  end
+
   test 'should reverse stops' do
     route = routes(:route_one_one)
     ids = route.stops.collect(&:id)
