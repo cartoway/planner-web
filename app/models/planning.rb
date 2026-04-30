@@ -1130,7 +1130,7 @@ class Planning < ApplicationRecord
         routes_distance += route.distance if route.distance.present?
       end
       result[:vehicles] += 1 if route.vehicle_usage
-      result[:vehicles_used] += 1 if route.vehicle_usage && route.size_active.positive?
+      result[:vehicles_used] += 1 if route.vehicle_usage && route.size_active_destinations.positive?
     end
 
     if result[:routes_drive_time] != 0
