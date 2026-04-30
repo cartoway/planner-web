@@ -1104,6 +1104,7 @@ en:
       title: Import customer
       label: Select customer from .dump file
       submit: Import customer
+      import_user_role: Role for imported users
     upload_dump:
       success: Customer successfully imported
       file_empty: .dump file must be filled

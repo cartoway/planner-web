@@ -49,7 +49,7 @@ class Customer < ApplicationRecord
   has_many :messaging_logs, dependent: :destroy
   enum router_dimension: Router::DIMENSION
 
-  attr_accessor :deliverable_units_updated, :device, :exclude_users, :migration_skip
+  attr_accessor :deliverable_units_updated, :device, :exclude_users, :migration_skip, :import_user_role_id
 
   include HashBoolAttr
   store_accessor :router_options, :time, :distance, :avoid_zones, :isochrone, :isodistance, :traffic, :track, :motorway, :toll, :low_emission_zone, :trailers, :weight, :weight_per_axle, :height, :width, :length, :hazardous_goods, :max_walk_distance, :approach, :snap, :strict_restriction

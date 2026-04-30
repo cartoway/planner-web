@@ -132,9 +132,22 @@ class CustomersControllerTest < ActionController::TestCase
   test 'should render import action if no file is uploaded on import' do
     sign_in users(:user_admin)
 
-    post :upload_dump, params: { customer: { profile_id: profiles(:profile_one).id, router_id: routers(:router_one).id, layer_id: layers(:layer_one).id }}
+    reseller = users(:user_admin).reseller
+    import_role = Role.create_default_permissions_role_for!(reseller)
+
+    post :upload_dump, params: { customer: { profile_id: profiles(:profile_one).id, router_id: routers(:router_one).id, layer_id: layers(:layer_one).id, import_user_role_id: import_role.id }}
 
     assert_template :import
+  end
+
+  test 'import page includes role select for imported users' do
+    sign_in users(:user_admin)
+    Role.create_default_permissions_role_for!(users(:user_admin).reseller)
+
+    get :import
+
+    assert_response :success
+    assert_select "select[name='customer[import_user_role_id]']"
   end
 
   test 'should require authentication' do

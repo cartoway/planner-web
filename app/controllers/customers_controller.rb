@@ -96,6 +96,7 @@ class CustomersController < ApplicationController
 
   def import
     @customer = current_user.reseller.customers.build
+    @customer.import_user_role_id = current_user.reseller.default_role_id
   end
 
   def upload_dump
@@ -113,7 +114,8 @@ class CustomersController < ApplicationController
         profile_id: customer_params[:profile_id],
         reseller_id: current_user.reseller_id,
         router_id: customer_params[:router_id],
-        layer_id: customer_params[:layer_id]
+        layer_id: customer_params[:layer_id],
+        role_id: validated_import_user_role_id
       }
 
       File.delete(file_path)
@@ -155,6 +157,15 @@ class CustomersController < ApplicationController
   end
 
   private
+
+  # Import upload: role must belong to current reseller; otherwise use reseller default_role_id.
+  def validated_import_user_role_id
+    reseller = current_user.reseller
+    rid = customer_params[:import_user_role_id]
+    return reseller.default_role_id if rid.blank? || !Role.exists?(id: customer_params[:import_user_role_id], reseller_id: reseller.id)
+
+    rid
+  end
 
   def set_customer
     @customer = if current_user.admin?
@@ -245,6 +256,7 @@ class CustomersController < ApplicationController
         :router_dimension,
         :speed_multiplier,
         :layer_id,
+        :import_user_role_id,
         :uploaded_file,
         :history_cron_hour,
         router_options: [
@@ -299,6 +311,7 @@ class CustomersController < ApplicationController
         :external_callback_name,
         :planning_date_offset,
         :stops_preload_limit,
+        :role_id,
         :router_id,
         :router_dimension,
         :speed_multiplier,
