@@ -43,8 +43,8 @@ class Admin::RolesControllerTest < ActionController::TestCase
         }.tap { |r| r.merge!(icon: 'fa-truck', color: '#336699') if Role.column_names.include?('icon') }
       }
     end
-    assert_redirected_to admin_roles_path
     created = Role.order(:id).last
+    assert_redirected_to edit_admin_role_path(created)
     assert_equal 'New role from test', created.name
     assert_equal 'sales', created.ref
     if Role.column_names.include?('icon')
@@ -103,7 +103,7 @@ class Admin::RolesControllerTest < ActionController::TestCase
       }
     }
 
-    assert_redirected_to admin_roles_path
+    assert_redirected_to edit_admin_role_path(@role)
     @role.reload
 
     sp = Preferences::Catalog::OPERATION_GROUPS_PLANNING
@@ -132,7 +132,7 @@ class Admin::RolesControllerTest < ActionController::TestCase
       }.compact
     }
 
-    assert_redirected_to admin_roles_path
+    assert_redirected_to edit_admin_role_path(@role)
     @role.reload
     assert_equal 'Renamed', @role.name
     assert_equal 'ops', @role.ref
