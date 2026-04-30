@@ -2675,13 +2675,13 @@ en:
         active_column_not_empty: At least one item must remain in the active list.
         active_column_at_most: At most %{count} items can be in the active list.
       display_ui:
-        planning_headers: Planning overview — header blocks (visible)
-        stop_list: Stop list (sidebar) — fields on the line
-        stop_list_help: Drag fields between lists. At most three can be active; order in the active list is used left to right (joined with “ - ”).
-        route_headers: Route panel — header blocks (visible)
-        planning_toolbar: Planning sidebar — toolbar segments
-        route_toolbar: Route header — toolbar segments
-        stop_toolbar: Visit row — actions
+        planning_headers: Planning data
+        stop_list: Stop label
+        stop_list_help: Allows to personalize the label displayed for each stop within routes. Drag fields between lists. At most three elements can be active; order in the active list is used left to right (joined with “ - ”).
+        route_headers: Route data
+        planning_toolbar: Planning toolbar
+        route_toolbar: Route toolbar
+        stop_toolbar: Stop actions
         active: Visible
         inactive: Hidden
         data_active: Active
@@ -2689,7 +2689,7 @@ en:
         operations_active: Active
         operations_disabled: Disabled
         operations_hidden: Hidden
-        headers_help: Drag blocks between lists to show or hide them. Order in the visible list is preserved.
+        headers_help: Allows to personalize the display of data on the plan. Drag blocks between lists to show or hide them. The blocks are displayed in the order of the "Active" list.
         operations_help: >-
           Active segments work normally. Disabled segments stay visible but cannot be used. Hidden segments are not shown and actions are denied.
     update:
@@ -3383,7 +3383,8 @@ en:
       comment: Comment
       phone_number: Phone
       destination_duration: Destination duration
-      tags: Tags
+      tags: Destination tags
+      tags_visit: Visit tags
       eta: ETA
       status: Status
     header_blocks:

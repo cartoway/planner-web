@@ -10,7 +10,8 @@
           .title
             - if !stop[:geocoded]
               %i.fa.fa-map-marker.fa-fw{title: t("plannings.edit.error.no_geolocalization")}
-            - title = "#{stop[:name]}"
+            - sd_line = stop_list_primary_line(stop).presence || stop[:name].to_s
+            - title = sd_line
             - title += " # #{stop[:index_visit]}" if stop[:index_visit]
             - sd_line = stop_list_primary_line(stop).presence || stop[:name].to_s
             %span{title: title}
