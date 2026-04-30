@@ -2789,12 +2789,12 @@ fr:
         active_column_at_most: Au plus %{count} éléments peuvent être dans la liste active.
       display_ui:
         planning_headers: Données planning
-        stop_list: Liste d’arrêts (panneau) — champs sur la ligne
-        stop_list_help: Faites glisser les champs entre les listes. Au plus trois peuvent être actifs ; l’ordre dans la liste active est utilisé de gauche à droite (séparé par «  - »).
+        stop_list: Libellé des arrêts
+        stop_list_help: Permet de peronnaliser le libellé affiché pour chaque arrêt au sein des tournées. Faites glisser les champs entre les listes. Au plus trois éléments peuvent être actifs ; l’ordre dans la liste "Actives" est utilisé de gauche à droite (séparé par «  - »).
         route_headers: Données tournées
         planning_toolbar: Outils planning
         route_toolbar: Outils tournées
-        stop_toolbar: Actions sur les arrêts visite
+        stop_toolbar: Actions sur les arrêts
         active: Visibles
         inactive: Masqués
         data_active: Actives
@@ -2802,9 +2802,10 @@ fr:
         operations_active: Actives
         operations_disabled: Désactivés
         operations_hidden: Masqués
-        headers_help: Faites glisser les blocs entre les listes pour les afficher ou les masquer. L’ordre des blocs est affiché sur le plan.
+        headers_help: Permet de personnaliser l'affichage du récapitulatif des données sur le plan. Faites glisser les blocs entre les listes pour les afficher ou les masquer. Les blocs sont affichés dans l'ordre de la liste "Actives".
         operations_help: >-
-          Actives : affichage et comportement normaux. Désactivés : visibles mais inutilisables. Masqués : non affichés et actions refusées.
+          Permet de personnaliser les actions disponibles sur le plan. Faites glisser les actions entre les listes pour les activer, les désactiver ou les masquer
+          Actives : Affichés et utilisables. Désactivés : visibles mais inutilisables. Masqués : non affichés et actions refusées.
     update:
       success: Utilisateur mis à jour avec succès
     password:
@@ -3525,22 +3526,23 @@ fr:
       detail: Complément d’adresse
       comment: Commentaire
       phone_number: Téléphone
-      destination_duration: Durée sur site (destination)
-      tags: Étiquettes
+      destination_duration: Durée à la destination
+      tags: Catégories destination
+      tags_visit: Catégories visite
       eta: ETA
       status: Statut
     header_blocks:
       stops: Arrêts
       duration: Durée
       distance: Distance
-      total_revenue: Chiffre d’affaires
+      total_revenue: Revenu
       total_cost: Coût
       balance: Solde
-      vehicles: Véhicules
+      vehicles: nombre de véhicules
       emission: Émission
-      speed: Vitesse
+      speed: Vitesse moyenne
       quantities: Quantités
-      used_reloads: Rechargements
+      used_reloads: nombre de rechargements
       wait_time: Temps d’attente
       visits_duration: Durée des visites
     operations:
@@ -3553,12 +3555,12 @@ fr:
       lock_routes: Verrouiller les tournées
       export: Exporter
       refresh: Actualiser
-      vehicle_usage: Utilisation véhicule
+      vehicle_usage: Sélecteur de véhicule
       stops: Arrêts
       view: Affichage
       lock: Verrouillage tournée
       paint: Couleur tournée
       departure: Horaire de départ
-      active_stop: Activer ou désactiver l’arrêt sur le plan
-      move_stop: Déplacer les arrêts sur le plan
-      lock_stop: Verrouiller la visite sur la tournée
+      active_stop: Activer/désactiver l'arrêt
+      move_stop: Déplacer l'arrêt
+      lock_stop: Verrouiller l'arrêt
