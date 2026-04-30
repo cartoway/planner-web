@@ -25,5 +25,11 @@ module ImportExportCustomer
             .each{ |vehicle| vehicle.assign_attributes(router_id: options[:router_id], router_options: {}) }
     customer.users.select{ |user| user.layer_id.present? }
             .each{ |user| user.assign_attributes(layer_id: options[:layer_id]) }
+
+    return if options[:role_id].blank?
+
+    customer.users.each do |user|
+      user.assign_attributes(role_id: options[:role_id])
+    end
   end
 end

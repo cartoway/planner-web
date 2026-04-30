@@ -6,9 +6,9 @@
 
   <%= bootstrap_form_for @customer, url: upload_dump_customers_path, layout: :horizontal, html: { class: 'form-horizontal', multipart: true } do |f| %>
 
-    <div class='form-group'>
-    <label class="col-md-2 control-label" for="uploaded-customer"><%= t('activerecord.models.customer') %></label>
-      <div class='col-md-6'>
+    <div class='row'>
+    <label class="col-md-offset-2 col-md-8 control-label" for="uploaded-customer"><%= t('activerecord.models.customer') %></label>
+      <div class='col-md-offset-2 col-md-8'>
           <label class="btn btn-default form-control" id="upload-customer" for="uploaded-customer">
             <%= f.file_field :uploaded_file, class: "hidden", id: 'uploaded-customer', onchange: "$('.file-label').html(this.files[0].name);$('.file-label').attr('title',this.files[0].name)" %>
             <p class="file-label"><%= t('.label') %></p>
@@ -17,7 +17,12 @@
     </div>
 
     <%= render partial: 'profile_router_inputs', locals: { f: f } %>
-    <%= f.collection_select :layer_id, Layer.all.sort_by(&:id).select{ |l| !l[:overlay] }, :id, :translated_name, {}, {} %>
+    <%= f.collection_select :import_user_role_id,
+          @customer.reseller.roles,
+          :id, :name,
+          { required: true, label: t('customers.import.import_user_role')},
+          { class: 'form-control' } %>
+    <%= f.collection_select :layer_id, Layer.all.sort_by(&:id).select{ |l| !l[:overlay] }, :id, :translated_name, {}, { class: 'form-control' } %>
     <div class="col-md-2"></div>
     <p class="help-block layer-unauthorized hidden warning has-warning" style="display:block!important;"><%= t('activerecord.attributes.customer.layer_warning') %></p>
 
