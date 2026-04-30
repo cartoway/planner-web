@@ -18,6 +18,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class Admin::RolesController < ApplicationController
+  include LinkBack
+
   before_action :set_reseller
   before_action :set_role, only: %i[edit update destroy]
   before_action :set_role_icon_groups, except: [:index]
@@ -49,7 +51,7 @@ class Admin::RolesController < ApplicationController
     authorize! :create, @role
     @role.assign_attributes(role_attributes)
     if @role.save
-      redirect_to admin_roles_path, notice: t('admin.roles.flash.created')
+      redirect_to(link_back || edit_admin_role_path(@role), notice: t('admin.roles.flash.created'))
     else
       render :new
     end
@@ -62,7 +64,7 @@ class Admin::RolesController < ApplicationController
   def update
     authorize! :update, @role
     if @role.update(role_attributes)
-      redirect_to admin_roles_path, notice: t('admin.roles.flash.updated')
+      redirect_to(link_back || edit_admin_role_path(@role), notice: t('admin.roles.flash.updated'))
     else
       render :edit
     end
