@@ -425,6 +425,13 @@ class OptimizerWrapper
       vehicle = route.vehicle_usage.vehicle
       vehicle_skills = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten.compact.uniq.map(&:label)
 
+      costs = {
+        cost_fixed: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_fixed || options[:cost_fixed] || 0,
+        cost_distance_multiplier: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_distance || 0,
+        cost_time_multiplier: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_time || 1,
+      }
+      costs[:cost_waiting_time_multiplier] = costs[:cost_time_multiplier] * (planning.customer.optimization_cost_waiting_time || 1)
+
       # Only register as rest StopRests without destination
       vehicle_rests = route.stops.select{ |stop| stop.is_a?(StopRest) && !stop.position? }
       capacities = vehicle.default_capacities&.map{ |k, v|
@@ -457,10 +464,7 @@ class OptimizerWrapper
         start_point_id: route.vehicle_usage.default_store_start&.id && "d#{route.vehicle_usage.default_store_start.id}",
         end_point_id: route.vehicle_usage.default_store_stop&.id && "d#{route.vehicle_usage.default_store_stop.id}",
         reload_depot_ids: vehicle_store_reload_ids,
-        cost_fixed: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_fixed || options[:cost_fixed] || 0,
-        cost_distance_multiplier: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_distance || 0,
-        cost_time_multiplier: planning.customer.enable_vehicle_costs  && route.vehicle_usage.default_cost_time || 1,
-        cost_waiting_time_multiplier: route.vehicle_usage.vehicle.default_router_dimension == 'time' ? options[:optimization_cost_waiting_time] : 0,
+        **costs,
         shift_preference: (route.force_start || options[:force_start]) ? 'force_start' : nil,
         rest_ids: vehicle_rests.map{ |r| "r#{r[:id]}" },
         capacities: capacities || [],
