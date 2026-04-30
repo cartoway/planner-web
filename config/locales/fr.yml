@@ -1129,6 +1129,7 @@ fr:
       title: Importer un espace client
       label: Sélectionner un espace client à partir d'un fichier .dump
       submit: Importer l'espace client
+      import_user_role: Rôle des utilisateurs importés
     upload_dump:
       success: Client importé avec succès
       file_empty: Un fichier .dump doit être renseigné
