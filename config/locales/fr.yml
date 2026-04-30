@@ -236,6 +236,7 @@ fr:
         router_warning: Ce calculateur d'itinéraire n'est pas autorisé dans ce profil
         layer_warning: Ce fond de carte n'est pas autorisé dans ce profil
         planning_date_offset: Date de base des plans
+        stops_preload_limit: Préchargement des arrêts
         router_id: Calculateur d'itinéraire
         router_dimension: Objectif du calculateur
         router_options_traffic: Tenir compte du trafic
@@ -1151,6 +1152,8 @@ fr:
       optimization_parameters: Paramètres d'optimisation
       planning_date_offset_help: >-
         Nombre de jours à ajouter à la date du plan de tournées par rapport à la date du jour.
+      stops_preload_limit_help: >-
+        Nombre maximal d'arrêts avant de passer à un chargement manuel des arrêts des tournées du plan.
       router_help: Profil utilisé pour les calculs d'itinéraires par défaut
       router_options_default: '%{n} (valeur par défaut)'
       router_options_traffic_yes: Oui
