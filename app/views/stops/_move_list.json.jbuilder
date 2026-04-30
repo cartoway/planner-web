@@ -39,14 +39,7 @@ json.stops stops do |stop|
     (json.icon visit.icon) if visit.icon
   end
   json.index_visit visit.destination.visits.index(visit) + 1 if visit.destination.visits.size > 1
-  tags = visit.destination.tags | visit.tags
-  if !tags.empty?
-    json.tags_present do
-      json.tags do
-        json.array! tags, :label
-      end
-    end
-  end
+  visit_stop_tags_present_json!(json, visit)
   if stop.route.planning.customer.enable_orders
     order = stop.order
     if order

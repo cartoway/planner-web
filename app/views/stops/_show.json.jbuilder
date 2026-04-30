@@ -45,14 +45,7 @@ when StopVisit
   json.index_visit (visit.destination.visits.index(visit) + 1) if visit.destination.visits.size > 1
   json.revenue visit.revenue.round(2) if visit.revenue
   json.prefered_currency t("all.unit.currency_symbol.#{current_user.prefered_currency}")
-  tags = visit.destination.tags | visit.tags
-  if !tags.empty?
-    json.tags_present do
-      json.tags do
-        json.array! tags, :label
-      end
-    end
-  end
+  visit_stop_tags_present_json!(json, visit)
   if stop.status
     json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
     json.status_code stop.status.downcase

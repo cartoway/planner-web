@@ -18,14 +18,7 @@ json.visits true
 json.visit_id @visit.id
 json.destination_id @visit.destination.id
 json.color @visit.default_color
-tags = @visit.destination.tags | @visit.tags
-if !tags.empty?
-  json.tags_present do
-    json.tags do
-      json.array! tags, :label
-    end
-  end
-end
+visit_stop_tags_present_json!(json, @visit)
 unless @visit.destination.customer.enable_orders
   json.quantities visit_quantities(@visit, nil) do |units|
     json.pickup units[:pickup] if units[:pickup]

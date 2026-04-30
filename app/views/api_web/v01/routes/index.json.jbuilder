@@ -54,14 +54,7 @@ json.routes @routes do |route|
         (json.color visit.color) if visit.color
         (json.icon visit.icon) if visit.icon
       end
-      tags = visit.destination.tags | visit.tags
-      unless tags.empty?
-        json.tags_present do
-          json.tags do
-            json.array! tags, :label
-          end
-        end
-      end
+      visit_stop_tags_present_json!(json, visit)
       if @planning.customer.enable_orders
         order = stop.order
         if order
