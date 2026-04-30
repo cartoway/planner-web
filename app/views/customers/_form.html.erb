@@ -31,6 +31,8 @@
 
   <%= f.number_field :planning_date_offset, help: t('.planning_date_offset_help'), placeholder: t('.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.planning_date_offset_default)), min: 0, append: content_tag('i', '', class: 'fa fa-calendar fa-fw') %>
 
+  <%= f.number_field :stops_preload_limit, min: 1, help: t('.stops_preload_limit_help'), placeholder: t('.value_default', n: '1000'), append: content_tag('i', '', class: 'fa fa-list-ol fa-fw') %>
+
   <%= render partial: 'profile_router_inputs', locals: { f: f } %>
 
   <div id="router_options_traffic_input" class="<%= @customer.router.try(&:traffic?) ? '' : 'router-option-disabled' %>">

@@ -104,6 +104,7 @@ class Customer < ApplicationRecord
   validate :router_belong_to_profile, if: :new_record?
   validates_inclusion_of :print_barcode, in: Customer::PRINT_BARCODE, allow_nil: true
   validates :history_cron_hour, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 23 }, allow_nil: true
+  validates :stops_preload_limit, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_destinations }
 
   after_initialize :assign_defaults, :update_max_vehicles, if: :new_record?
   after_initialize :assign_device
