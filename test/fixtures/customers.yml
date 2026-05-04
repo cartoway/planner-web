@@ -13,6 +13,7 @@ customer_one:
   optimization_time: 10
   optimization_minimal_time: 3
   enable_optimization_soft_upper_bound: false
+  enable_strict_within_timewindows: false
   optimization_stop_soft_upper_bound: 3
   optimization_vehicle_soft_upper_bound: 3
   stop_max_upper_bound: 120
@@ -59,6 +60,7 @@ customer_one_other:
   enable_orders: true
   optimization_time: 10
   optimization_minimal_time: 3
+  enable_strict_within_timewindows: false
   optimization_stop_soft_upper_bound: 3
   optimization_vehicle_soft_upper_bound: 3
   profile: profile_one
@@ -79,6 +81,7 @@ customer_two:
   enable_orders: false
   optimization_time: 10
   optimization_minimal_time: 3
+  enable_strict_within_timewindows: false
   profile: profile_two
   speed_multiplier: 1.1
   default_country: France

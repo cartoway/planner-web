@@ -16,6 +16,10 @@ class CustomerTest < ActiveSupport::TestCase
     assert_not customer.save, 'Saved without required fields'
   end
 
+  test 'defaults enable_strict_within_timewindows to true for new customers' do
+    assert_equal true, Customer.new.enable_strict_within_timewindows
+  end
+
   test 'should save' do
     reseller = resellers(:reseller_one)
     customer = reseller.customers.build(name: 'test', max_vehicles: 5, with_state: true,
