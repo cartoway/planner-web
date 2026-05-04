@@ -26,6 +26,7 @@ class CustomersController < ApplicationController
   helper Admin::UsersHelper
 
   include V01::Devices::DeviceHelpers
+  include PlanningToolbarPermissions
 
   def index
     respond_to do |format|
@@ -127,6 +128,11 @@ class CustomersController < ApplicationController
   end
 
   def external_callback
+    unless planning_operation_usable?('external_callback') || route_operation_usable?('external_callback')
+      render json: {}, status: :forbidden
+      return
+    end
+
     if current_user.customer.enable_external_callback
       external_url = current_user.customer.external_callback_url
       @planning = current_user.customer.plannings.find(params[:planning_id]) if params[:planning_id]
