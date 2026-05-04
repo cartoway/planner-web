@@ -321,7 +321,7 @@ class Route < ApplicationRecord
         previous_route_data_attributes[:size_active] += 1 if stop.active
         previous_route_data_attributes[:stops_size] += 1
         previous_route_data_attributes[:size_store_reloads] += 1 if stop.is_a?(StopStore)
-        previous_route_data_attributes[:no_geolocalization] = true if !stop.is_a?(StopStore) && !stop.position?
+        previous_route_data_attributes[:no_geolocalization] = true if !stop.is_a?(StopRest) && !stop.position?
 
         stop_attributes = {}
         if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
