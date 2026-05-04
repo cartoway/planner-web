@@ -285,6 +285,7 @@ class V01::Destinations < Grape::API
     end
     delete 'by_tags' do
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      authorize!(:destroy, Destination)
 
       Destination.transaction do
         tag_ids = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer)
@@ -330,6 +331,7 @@ class V01::Destinations < Grape::API
     end
     delete ':id' do
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      authorize!(:destroy, Destination)
 
       current_customer.destinations.where(ParseIdsRefs.where_clause([params[:id]])).first!.destroy
       status 204
@@ -344,6 +346,8 @@ class V01::Destinations < Grape::API
     end
     delete do
       Destination.transaction do
+        authorize!(:destroy, Destination)
+
         if params[:ids] && !params[:ids].empty?
           parsed_ids = []
           parsed_refs = []

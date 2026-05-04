@@ -123,7 +123,7 @@
               - active_forms.each_with_index do |fid, index|
                 .draggable-item{ data: { value: fid, index: index } }
                   %span.item-order
-                  %span.item-text= t("activerecord.models.#{fid}.other", default: fid.to_s.humanize)
+                  %span.item-text= t("admin.roles.form.form_resources.#{fid}", default: t("activerecord.models.#{fid}.other", default: fid.to_s.humanize))
                   %input{ type: 'hidden', name: "#{param_prefix}[forms_active][]", value: fid }
           .forms-tier-disabled.priority-disabled.disabled-zone
             .zone-title= t('users.form.display_ui.operations_disabled')
@@ -131,7 +131,7 @@
               - disabled_forms.each_with_index do |fid, index|
                 .draggable-item{ data: { value: fid, index: index } }
                   %span.item-order
-                  %span.item-text= t("activerecord.models.#{fid}.other", default: fid.to_s.humanize)
+                  %span.item-text= t("admin.roles.form.form_resources.#{fid}", default: t("activerecord.models.#{fid}.other", default: fid.to_s.humanize))
                   %input{ type: 'hidden', name: "#{param_prefix}[forms_disabled][]", value: fid }
           .forms-tier-hidden.priority-inactive.inactive-zone
             .zone-title= t('users.form.display_ui.operations_hidden')
@@ -139,5 +139,5 @@
               - hidden_forms.each_with_index do |fid, index|
                 .draggable-item.inactive{ data: { value: fid, index: index } }
                   %span.item-order
-                  %span.item-text= t("activerecord.models.#{fid}.other", default: fid.to_s.humanize)
+                  %span.item-text= t("admin.roles.form.form_resources.#{fid}", default: t("activerecord.models.#{fid}.other", default: fid.to_s.humanize))
       %p.help-block= t('admin.roles.form.forms_help')
