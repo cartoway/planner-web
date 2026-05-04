@@ -38,4 +38,22 @@ class PreferencesHelperTest < ActionView::TestCase
     assert_not current_user_planning_form_submit_enabled?(plannings(:planning_one))
     assert_not current_user_planning_form_submit_enabled?(Planning.new(customer: @current_user.customer))
   end
+
+  test 'current_user_destination_form_submit_enabled is false when forms.destination is visible but not usable' do
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['destination'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @current_user.customer.reseller,
+      name: "helper-destination-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    @current_user.update!(role_id: role.id)
+    @current_user.reload
+
+    assert_not current_user_destination_form_submit_enabled?(destinations(:destination_one))
+    assert_not current_user_destination_form_submit_enabled?(
+      Destination.new(customer: @current_user.customer)
+    )
+  end
 end

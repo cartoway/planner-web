@@ -1,3 +1,4 @@
+- dest_form_mutable = current_user_destination_form_submit_enabled?(@destination)
 = bootstrap_form_for(@destination, layout: :horizontal, html: {class: "form-horizontal", "data-destination_id" => (@destination.id or 0)}) do |f|
   = render 'shared/error_messages', model: @destination
   %fieldset#destination-details
@@ -96,7 +97,7 @@
         .col-md-2
         #visits-tools.col-xs-12.col-md-8
           .pull-right
-            %button#visits-attributes-change-bulk.btn.btn-default.btn-sm{"data-target" => "#visits-attributes-change-bulk-modal", "data-toggle" => "modal", title: "#{t('destinations.form.visit.attributes_change_bulk_help')}", type: "button"}
+            %button#visits-attributes-change-bulk.btn.btn-default.btn-sm{"data-target" => "#visits-attributes-change-bulk-modal", "data-toggle" => "modal", title: "#{t('destinations.form.visit.attributes_change_bulk_help')}", type: "button", disabled: !dest_form_mutable}
               %i.fa.fa-list.fa-fw
               = t('destinations.form.visit.attributes_change_bulk')
             %button#visits-expand.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.collapse_all_help')}", type: "button"}
@@ -104,15 +105,15 @@
               = t('destinations.form.visit.collapse_all')
         .col-md-2
     - ((!@destination.visits.empty? && @destination.visits) || [@destination.visits.build]).each_with_index do |visit, i|
-      = render 'visits/form', visit: visit, i: i+1
-  %button#visit-new.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button"}
+      = render 'visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable
+  %button#visit-new.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button", disabled: !dest_form_mutable}
     %i.fa.fa-plus.fa-fw
     = t('destinations.form.visit.new')
   = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
   = hidden_field :destination, :geocoded_at, :value => @destination.geocoded_at
-  = f.submit
+  = f.submit disabled: !dest_form_mutable
 #visit-fieldset-template
-  = render 'visits/form', visit: @destination.visits.build, i: 0
+  = render 'visits/form', visit: @destination.visits.build, i: 0, destination_form_mutable: dest_form_mutable
 #visits-attributes-change-bulk-modal.modal.fade{role: "dialog", tabindex: "-1"}
   .modal-dialog
     .modal-content
@@ -136,7 +137,7 @@
         %button.btn.btn-default{"data-dismiss" => "modal", type: "button"}
           %i.fa.fa-undo.fa-fw
           = t 'all.verb.cancel'
-        %button.btn.btn-primary{"data-dismiss" => "modal", name: "visits-attributes-change-bulk-apply", type: "button"}
+        %button.btn.btn-primary{"data-dismiss" => "modal", name: "visits-attributes-change-bulk-apply", type: "button", disabled: !dest_form_mutable}
           %i.fa.fa-list.fa-fw
           = t 'all.verb.apply'
 

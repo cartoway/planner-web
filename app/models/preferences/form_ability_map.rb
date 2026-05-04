@@ -24,38 +24,37 @@ module Preferences
     # Admin DnD label (fr): "Configurations de véhicules" — hidden tier must lock fleet UIs (sets, usages, vehicles).
     VEHICLE_CONFIGURATION_FORMS_KEY = 'vehicle_usages'
 
-    RESOURCE_MODEL = ::Preferences::Catalog::FORM_RESOURCES.index_with do |key|
-      case key
-      when 'plannings' then Planning
-      when 'destinations' then Destination
-      when 'visits' then Visit
-      when 'vehicle_usages' then VehicleUsage
-      when 'stores' then Store
-      else
-        raise ArgumentError, "FormAbilityMap: add model for forms.#{key}"
-      end
-    end.freeze
+    # forms.destination applies to both Destination and Visit UIs.
+    FORM_KEY_MODELS = {
+      'plannings' => [Planning],
+      'destination' => [Destination, Visit],
+      'vehicle_usages' => [VehicleUsage],
+      'stores' => [Store]
+    }.freeze
 
     def self.apply_cannot_rules!(ability, user)
       return if user.blank? || user.admin?
 
-      RESOURCE_MODEL.each do |resource_key, model|
-        # No block: CanCanCan does not run blocks for class-level can? checks (e.g. can?(:create, Destination)),
-        # so conditional denies must be registered as plain cannot rules when the form disallows the action.
-        if user.respond_to?(:form_create?) && !user.form_create?(resource_key)
-          ability.cannot :create, model
-          ability.cannot :new, model
-        end
+      FORM_KEY_MODELS.each do |resource_key, models|
+        models.each do |model|
+          # No block: CanCanCan does not run blocks for class-level can? checks (e.g. can?(:create, Destination)),
+          # so conditional denies must be registered as plain cannot rules when the form disallows the action.
+          if user.respond_to?(:form_create?) && !user.form_create?(resource_key)
+            ability.cannot :create, model
+            ability.cannot :new, model
+          end
 
-        # Mutable actions: only when visible and usable (form_policy create/update).
-        if user.respond_to?(:form_update?) && !user.form_update?(resource_key)
-          ability.cannot :update, model
-        end
+          # Mutable actions: only when visible and usable (form_policy create/update).
+          if user.respond_to?(:form_update?) && !user.form_update?(resource_key)
+            ability.cannot :update, model
+            ability.cannot :destroy, model
+          end
 
-        # Read-only UI (e.g. planning map GET edit): allowed when the form resource is visible but not usable;
-        # deny opening edit screens only when the resource is hidden in permissions DnD.
-        if user.respond_to?(:form_visible?) && !user.form_visible?(resource_key)
-          ability.cannot :edit, model
+          # Read-only UI (e.g. planning map GET edit): allowed when the form resource is visible but not usable;
+          # deny opening edit screens only when the resource is hidden in permissions DnD.
+          if user.respond_to?(:form_visible?) && !user.form_visible?(resource_key)
+            ability.cannot :edit, model
+          end
         end
       end
 

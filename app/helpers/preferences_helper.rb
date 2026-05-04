@@ -86,6 +86,11 @@ module PreferencesHelper
     store.new_record? ? current_user_form_create?(:stores) : current_user_form_update?(:stores)
   end
 
+  # Destination + visits form; read-only edit when forms.destination is visible but not usable.
+  def current_user_destination_form_submit_enabled?(destination)
+    destination.new_record? ? current_user_form_create?(:destination) : current_user_form_update?(:destination)
+  end
+
   # Primary text for a stop row in the planning sidebar (field order from user preferences, max 3 fields).
   def stop_list_primary_line(stop)
     ids = stop_list_active_field_ids_for_ui

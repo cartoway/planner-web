@@ -991,6 +991,11 @@ fr:
         forms_title: Formulaires
         forms_help: >-
           La colonne de gauche autorise la création, l’édition et la suppression. La colonne centrale affiche le formulaire dans la navigation en consultation seule. La colonne de droite le masque.
+        form_resources:
+          plannings: Plans
+          destination: Destination/Visites
+          vehicle_usages: Configurations de véhicules
+          stores: Sites
         icon_help: >-
           Choisissez une icône dans la liste
         color_help: >-

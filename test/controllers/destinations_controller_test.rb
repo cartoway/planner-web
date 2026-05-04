@@ -395,4 +395,25 @@ class DestinationsControllerTest < ActionController::TestCase
       assert_redirected_to edit_destination_path(assigns(:destination))
     end
   end
+
+  test 'clear returns forbidden when destination form is read-only' do
+    return unless Role.column_names.include?('forms')
+
+    user = users(:user_one)
+    role = Role.create!(
+      reseller: user.customer.reseller,
+      name: "clear-ro-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(
+        'destination' => { 'visible' => true, 'usable' => false }
+      )
+    )
+    user.update!(role_id: role.id)
+
+    delete :clear
+
+    assert_response :forbidden
+  ensure
+    user.update!(role_id: nil) if user.reload.role_id.present?
+  end
 end
