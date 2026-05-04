@@ -23,6 +23,7 @@ import {
   largeNbMarkers
 } from '../../assets/javascripts/scaffolds';
 import {
+  applyStopPopupManagePlanning,
   beforeSendWaiting,
   mustache_i18n,
   phoneNumberCall,
@@ -136,6 +137,7 @@ const popupModule = (function() {
           phoneNumberCall(data, _context.options.url_click2call);
         }
         $.extend(data, _context.options.popupOptions);
+        applyStopPopupManagePlanning(data, _context.options.popupOptions);
         marker._popupContent = SMT['stops/show'](data);
         marker.bindPopup(L.popup().setContent(marker._popupContent), {
           minWidth: 200,
