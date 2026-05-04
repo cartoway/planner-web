@@ -19,6 +19,7 @@
 import { RoutesLayer } from '../../assets/javascripts/routes_layers';
 import { selectTag } from '../../assets/javascripts/tags';
 import {
+  applyStopPopupManagePlanning,
   beforeSendWaiting,
   completeAjaxMap,
   ajaxError,
@@ -2365,27 +2366,25 @@ export const plannings_edit = function(params) {
           var stops = $.grep(route.stops, function(e) { return e.stop_id === $this.data('stop-id'); });
           if (stops.length > 0) {
             var mpPop = params.manage_planning || {};
-            var stopData = $.extend(stops[0], {
+            var stopData = $.extend({}, stops[0], {
               number: $('.number', $this).text(),
               i18n: mustache_i18n,
-              planning_id: data.planning_id,
+              planning_id: data.planning_id != null ? data.planning_id : planning_id,
               routes: routesWithVehicle,
               out_of_route_id: outOfRouteId,
               route_id: route.route_id,
               vehicle_name: route.vehicle_name,
               popover: true,
-              manage_organize: true,
               manage_destination: true,
-              manage_store: !!mpPop.manage_store,
-              move_stop_allowed: !!(mpPop.manage_stop_move && !mpPop.disable_stop_move),
-              stop_active_allowed: !!(mpPop.manage_stop_active && !mpPop.disable_stop_active)
+              manage_store: Boolean(mpPop.manage_store)
             });
-
+            applyStopPopupManagePlanning(stopData, mpPop);
             $this.popover({
               content: SMT['stops/show'](stopData),
               html: true,
               placement: 'auto',
               trigger: 'manual',
+              container: 'body',
               viewport: {
                 selector: '.sidebar-content',
                 padding: 20
