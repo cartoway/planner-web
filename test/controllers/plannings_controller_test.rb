@@ -239,6 +239,77 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal 3, JSON.parse(response.body)['routes'].size
   end
 
+  test 'show json omits external callback when planning external_callback segment is not visible' do
+    return unless Role.column_names.include?('operations')
+
+    customers(:customer_one).update!(
+      enable_external_callback: true,
+      external_callback_url: 'https://example.com/cb'
+    )
+
+    reseller = resellers(:reseller_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['external_callback'] = {
+      'visible' => false, 'usable' => false
+    }
+    role = Role.create!(
+      reseller: reseller,
+      name: 'No planning callback role',
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    users(:user_one).update!(role_id: role.id)
+
+    sign_in users(:user_one)
+    get :show, params: { format: :json, id: @planning }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal false, body['customer_enable_external_callback']
+    assert_nil body['customer_external_callback_url']
+    assert_nil body['customer_external_callback_name']
+    assert_equal true, body['customer_external_callback_disabled']
+  ensure
+    users(:user_one).update!(role_id: nil)
+    customers(:customer_one).update_columns(enable_external_callback: false, external_callback_url: nil, external_callback_name: nil)
+    role&.destroy
+  end
+
+  test 'show json keeps external callback url when segment visible but not usable and sets disabled' do
+    return unless Role.column_names.include?('operations')
+
+    customers(:customer_one).update!(
+      enable_external_callback: true,
+      external_callback_url: 'https://example.com/cb',
+      external_callback_name: 'CB'
+    )
+
+    reseller = resellers(:reseller_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['external_callback'] = {
+      'visible' => true, 'usable' => false
+    }
+    role = Role.create!(
+      reseller: reseller,
+      name: 'Planning callback view-only role',
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    users(:user_one).update!(role_id: role.id)
+
+    sign_in users(:user_one)
+    get :show, params: { format: :json, id: @planning }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['customer_enable_external_callback']
+    assert_equal 'CB', body['customer_external_callback_name']
+    assert_equal 'https://example.com/cb', body['customer_external_callback_url']
+    assert_equal true, body['customer_external_callback_disabled']
+  ensure
+    users(:user_one).update!(role_id: nil)
+    customers(:customer_one).update_columns(enable_external_callback: false, external_callback_url: nil, external_callback_name: nil)
+    role&.destroy
+  end
+
   test 'should show only some routes from planning' do
     get :show, params: { format: :json, id: @planning, route_ids: "#{routes(:route_one_one).id},#{routes(:route_three_one).id}" }
     assert_response :success

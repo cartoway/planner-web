@@ -23,6 +23,8 @@ class PreferencesCatalogViewRegistryTest < ActiveSupport::TestCase
                  Preferences::Catalog.toolbar_operation_partial('planning', 'vehicle_usage_set')
     assert_equal 'routes/operations/vehicle_usage',
                  Preferences::Catalog.toolbar_operation_partial('route', 'vehicle_usage')
+    assert_equal 'routes/operations/external_callback',
+                 Preferences::Catalog.toolbar_operation_partial('route', 'external_callback')
   end
 
   test 'planning_edit_global_toolbar_operation_ids is a fixed catalog order' do

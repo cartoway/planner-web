@@ -203,6 +203,43 @@ class CustomersControllerTest < ActionController::TestCase
     assert_response :forbidden
   end
 
+  test 'external_callback is forbidden when planning and route external_callback segments are not usable' do
+    return unless Role.column_names.include?('operations')
+
+    user = users(:user_one)
+    @customer.update!(
+      enable_external_callback: true,
+      external_callback_url: 'https://example.com/{PLANNING_ID}/{API_KEY}/{CUSTOMER_ID}'
+    )
+
+    reseller = resellers(:reseller_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['external_callback'] = {
+      'visible' => true, 'usable' => false
+    }
+    ops['route'] ||= {}
+    ops['route']['segment_controls'] ||= {}
+    ops['route']['segment_controls']['external_callback'] = {
+      'visible' => true, 'usable' => false
+    }
+    role = Role.create!(
+      reseller: reseller,
+      name: 'Planning callback view-only role',
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    planning = @customer.plannings.first
+    post :external_callback, params: { id: @customer.id, planning_id: planning.id }, format: :json
+    assert_response :forbidden
+  ensure
+    user.update!(role_id: nil)
+    @customer.update_columns(enable_external_callback: false, external_callback_url: nil, external_callback_name: nil)
+    role&.destroy
+  end
+
   test 'should handle external callback error' do
     user = users(:user_one)
     sign_in user
