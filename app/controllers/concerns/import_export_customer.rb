@@ -8,6 +8,8 @@ module ImportExportCustomer
 
   def self.import(customer_data_file, options)
     customer = Marshal.load(customer_data_file.read)
+    Customer.reset_column_information
+    User.reset_column_information
     self.assign_miscellaneous_attributes(customer, options)
     customer = customer.duplicate
     customer.save! validate: Planner::Application.config.validate_during_duplication
@@ -29,7 +31,7 @@ module ImportExportCustomer
     return if options[:role_id].blank?
 
     customer.users.each do |user|
-      user.assign_attributes(role_id: options[:role_id])
+      user.write_attribute(:role_id, options[:role_id])
     end
   end
 end
