@@ -67,15 +67,12 @@ class PlanningsController < ApplicationController
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
       @with_stops = true
       @planning.routes.where(id: route_ids).includes_destinations_and_stores.includes_vehicle_usages
+    elsif planning_routes_preload_stops?(@planning)
+      @with_stops = true
+      @planning.routes.available.includes_destinations_and_stores.includes_vehicle_usages
     else
-      stops_count = 0
-      if @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
-        @with_stops = true
-        @planning.routes.available.includes_destinations_and_stores.includes_vehicle_usages
-      else
-        @with_stops = false
-        @planning.routes.available.includes_vehicle_usages
-      end
+      @with_stops = false
+      @planning.routes.available.includes_vehicle_usages
     end
     respond_to do |format|
       format.html
@@ -246,8 +243,7 @@ class PlanningsController < ApplicationController
   end
 
   def sidebar
-    stops_count = 0
-    @with_stops = @planning.routes.select{ |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.none?{ |r| (stops_count += r.stops_size) >= 1000 }
+    @with_stops = planning_routes_preload_stops?(@planning)
     @routes =
       if @with_stops
         @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available
