@@ -669,6 +669,27 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test 'get refresh is forbidden when planning refresh operation is not usable' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['refresh'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "no-refresh-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    get :refresh, params: { planning_id: @planning, format: :json }
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
   test 'should apply none zoning' do
     @planning.zoning_outdated = true
     @planning.save!

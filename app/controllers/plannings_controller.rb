@@ -28,6 +28,7 @@ class PlanningsController < ApplicationController
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
+  before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal, :move]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar, :update_stop]

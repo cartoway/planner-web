@@ -1,9 +1,11 @@
 - outdated = local_assigns.fetch(:outdated, nil)
 .global_info
   = render partial: 'edit_head.html.haml', locals: local_assigns
-- if outdated
+- refresh_visible = @manage_planning && @manage_planning[:manage_refresh]
+- refresh_disabled = @manage_planning && @manage_planning[:disable_refresh]
+- if outdated && refresh_visible
   %p.text-center
-    %button#refresh.btn.btn-warning.btn-sm{title: t("plannings.edit.refresh_help"), type: "button"}
+    %button#refresh.btn.btn-warning.btn-sm{title: t("plannings.edit.refresh_help"), type: "button", disabled: refresh_disabled}
       %i.fa.fa-refresh.fa-fw
       = t("plannings.edit.refresh")
 %ol.routes

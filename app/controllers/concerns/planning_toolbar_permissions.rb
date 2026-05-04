@@ -18,7 +18,6 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
-# Toolbar visibility / usability for planning and route operations (ids from Preferences::Catalog operations JSON).
 module PlanningToolbarPermissions
   extend ActiveSupport::Concern
 
@@ -26,7 +25,6 @@ module PlanningToolbarPermissions
     helper_method :planning_external_callback_json_partial?, :planning_external_callback_segment_disabled? if respond_to?(:helper_method)
   end
 
-  # Planning JSON / @callback_button: show when the planning segment is visible and the customer has a callback URL.
   def planning_external_callback_json_partial?
     return false unless @planning
 
@@ -35,7 +33,6 @@ module PlanningToolbarPermissions
       @planning.customer.external_callback_url.present?
   end
 
-  # True when the callback entry should be greyed out (visible but not usable). Always true when there is no partial entry.
   def planning_external_callback_segment_disabled?
     return true unless planning_external_callback_json_partial?
 
@@ -94,7 +91,12 @@ module PlanningToolbarPermissions
     stop_operation_visible?(operation_id) && !stop_operation_usable?(operation_id)
   end
 
-  # PlanningsController before_action: block optimize / optimize_route when the matching toolbar operation is not usable.
+  def enforce_operation_usable_for_refresh!
+    return if planning_operation_usable?('refresh')
+
+    head :forbidden
+  end
+
   def enforce_operation_usable_for_optimize!
     usable =
       if action_name == 'optimize_route'
@@ -107,7 +109,6 @@ module PlanningToolbarPermissions
     head :forbidden
   end
 
-  # Call after @manage_planning and @planning are set. Mutates @manage_planning and @callback_button.
   def apply_planning_toolbar_operation_flags!
     return unless @planning && current_user
 
@@ -133,6 +134,9 @@ module PlanningToolbarPermissions
     @manage_planning[:manage_optimize] = planning_op_visible.call('optimize')
     @manage_planning[:disable_optimize] = planning_op_disabled.call('optimize')
 
+    @manage_planning[:manage_refresh] = planning_op_visible.call('refresh')
+    @manage_planning[:disable_refresh] = planning_op_disabled.call('refresh')
+
     @manage_planning[:manage_toggle_routes] = planning_op_visible.call('toggle_routes')
     @manage_planning[:disable_toggle_routes] = planning_op_disabled.call('toggle_routes')
 
@@ -154,7 +158,6 @@ module PlanningToolbarPermissions
     apply_stop_toolbar_operation_flags!
   end
 
-  # Per-route header tools (operations.route). Depends on planning toolbar flags having been applied first.
   def apply_route_toolbar_operation_flags!
     return unless current_user
 

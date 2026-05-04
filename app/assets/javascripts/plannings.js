@@ -333,6 +333,11 @@ export const plannings_edit = function(params) {
     optimisationDuration = params.optimization_duration;
   colorCodes.unshift('');
 
+  function planningRefreshUsable() {
+    var mp = params.manage_planning;
+    return !!(mp && mp.manage_refresh && !mp.disable_refresh);
+  }
+
   function getZonings() {
     return $("#planning_zoning_ids").val() || [];
   }
@@ -2155,14 +2160,19 @@ export const plannings_edit = function(params) {
 
     var refreshBtn = $('button#refresh');
     if (refreshBtn.length) {
-      var outdated = true;
-      for (var id in routes) {
-        if (routes[id].outdated) {
-          outdated = false;
-          break;
+      if (!params.manage_planning || !params.manage_planning.manage_refresh) {
+        refreshBtn.hide();
+      } else {
+        refreshBtn.prop('disabled', !!params.manage_planning.disable_refresh);
+        var outdated = true;
+        for (var id in routes) {
+          if (routes[id].outdated) {
+            outdated = false;
+            break;
+          }
         }
+        if (outdated) refreshBtn.hide();
       }
-      if (outdated) refreshBtn.hide();
     }
 
     $.each(routes_devices, function(i, d) {
@@ -2288,7 +2298,8 @@ export const plannings_edit = function(params) {
       sidebar.find('.center_view').prop('disabled', true);
       $(".routes").sortable();
     }
-    $("#planning").on("click", "#refresh", function() {
+    $("#planning").off('click.planningRefresh', '#refresh').on('click.planningRefresh', '#refresh', function() {
+        if (!planningRefreshUsable()) return false;
         $.ajax({
           type: 'GET',
           url: '/plannings/' + planning_id + '/refresh.json?with_stops=' + withStopsInSidePanel,
@@ -2594,7 +2605,9 @@ export const plannings_edit = function(params) {
   };
 
   var checkForDisplayPlanningFirstTime = function(data) {
-    if (data.outdated) {
+    var mp = params.manage_planning || {};
+    if (data.outdated && mp.manage_refresh) {
+      $('#refresh-modal').prop('disabled', !!mp.disable_refresh);
 
       var displayPlanningAfterModal = function() {
         var cursorBody = $('body').css('cursor');
@@ -2617,7 +2630,8 @@ export const plannings_edit = function(params) {
         keyboard: true,
         show: true
       });
-      $("#refresh-modal").click(function() {
+      $('#refresh-modal').off('click.planningRefresh').on('click.planningRefresh', function() {
+        if (!planningRefreshUsable()) return false;
         $('#refresh').prop('disabled', true);
         $('#planning-refresh-modal').off('hidden.bs.modal');
         $('#planning-refresh-modal').modal('hide');
@@ -2630,7 +2644,7 @@ export const plannings_edit = function(params) {
           error: ajaxError
         });
       });
-      $('#planning-refresh-modal').on('hidden.bs.modal', displayPlanningFirstTime(data));
+      $('#planning-refresh-modal').off('hidden.bs.modal.planningRefresh').on('hidden.bs.modal.planningRefresh', displayPlanningAfterModal);
     } else {
       displayPlanningFirstTime(data);
     }
@@ -2719,7 +2733,8 @@ export const plannings_edit = function(params) {
       routesLayer.showAllRoutes();
     }
 
-    $('#refresh').click(function() {
+    $('#refresh').off('click.planningRefresh').on('click.planningRefresh', function() {
+      if (!planningRefreshUsable()) return false;
       $(this).prop('disabled', true);
       $.ajax({
         type: 'GET',
