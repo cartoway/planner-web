@@ -8,38 +8,42 @@
 <div{{#planning_id}}{{^store}}{{^vehicle_name}} class="ui-state-error"{{/vehicle_name}}{{/store}}{{/planning_id}}>
   {{#planning_id}}
   {{^store}}
-  {{#manage_organize}}{{#move_stop_allowed}}
-  <span class="dropdown route-select">
-  <span class="dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.send_to_route_help{{/i18n}}">
-  {{/move_stop_allowed}}{{/manage_organize}}
-  {{/store}}
-  {{/planning_id}}
-  {{#vehicle_name}}{{vehicle_name}}{{/vehicle_name}}
-  {{^vehicle_name}}{{#i18n}}plannings.edit.out_of_route{{/i18n}}{{/vehicle_name}}
-  {{#planning_id}}
-  {{^store}}
-  {{^rest}}
-  {{#manage_organize}}{{#move_stop_allowed}}
-  <span class="caret"></span>
-  </span>
-  <ul class="dropdown-menu" role="menu">
-    {{#vehicle_name}}
-      <li><a href="/plannings/{{planning_id}}/{{out_of_route_id}}/{{stop_id}}/move/-1.json" class="send_to_route">{{#i18n}}plannings.edit.out_of_route{{/i18n}}</a></li>
-    {{/vehicle_name}}
-    {{#routes}}
-      {{#vehicle_usage_id}}
-        <li><a href="/plannings/{{planning_id}}/{{route_id}}/{{stop_id}}/move.json" class="send_to_route"><div class="color_small" style="background:{{color}}"></div> {{name}}</a></li>
-      {{/vehicle_usage_id}}
-    {{/routes}}
-  </ul>
-  </span>
-  <div class="btn-group pull-right stop-tools">
-    {{#automatic_insert}}
-    <button class="automatic_insert btn btn-default btn-xs" title="{{#i18n}}plannings.edit.automatic_insert_help{{/i18n}}"><i class="fa fa-bolt"></i></button>
-    {{/automatic_insert}}
-  </div>
-  {{/move_stop_allowed}}{{/manage_organize}}
-  {{/rest}}
+  {{#manage_organize}}
+    {{#move_stop_allowed}}
+      {{^rest}}
+      <span class="dropdown route-select">
+        <span class="dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.send_to_route_help{{/i18n}}">
+          {{#vehicle_name}}{{vehicle_name}}{{/vehicle_name}}
+          {{^vehicle_name}}{{#i18n}}plannings.edit.out_of_route{{/i18n}}{{/vehicle_name}}
+          <span class="caret"></span>
+        </span>
+        <ul class="dropdown-menu" role="menu">
+          {{#vehicle_name}}
+            <li><a href="/plannings/{{planning_id}}/{{out_of_route_id}}/{{stop_id}}/move/-1.json" class="send_to_route">{{#i18n}}plannings.edit.out_of_route{{/i18n}}</a></li>
+          {{/vehicle_name}}
+          {{#routes}}
+            {{#vehicle_usage_id}}
+              <li><a href="/plannings/{{planning_id}}/{{route_id}}/{{stop_id}}/move.json" class="send_to_route"><div class="color_small" style="background:{{color}}"></div> {{name}}</a></li>
+            {{/vehicle_usage_id}}
+          {{/routes}}
+        </ul>
+      </span>
+      <div class="btn-group pull-right stop-tools">
+        {{#automatic_insert}}
+        <button class="automatic_insert btn btn-default btn-xs" title="{{#i18n}}plannings.edit.automatic_insert_help{{/i18n}}"><i class="fa fa-bolt"></i></button>
+        {{/automatic_insert}}
+      </div>
+      {{/rest}}
+      {{#rest}}
+      {{#vehicle_name}}{{vehicle_name}}{{/vehicle_name}}
+      {{^vehicle_name}}{{#i18n}}plannings.edit.out_of_route{{/i18n}}{{/vehicle_name}}
+      {{/rest}}
+    {{/move_stop_allowed}}
+    {{^move_stop_allowed}}
+      {{#vehicle_name}}{{vehicle_name}}{{/vehicle_name}}
+      {{^vehicle_name}}{{#i18n}}plannings.edit.out_of_route{{/i18n}}{{/vehicle_name}}
+    {{/move_stop_allowed}}
+  {{/manage_organize}}
   {{/store}}
   {{/planning_id}}
 </div>

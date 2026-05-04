@@ -65,6 +65,13 @@ export const mustache_i18n = function() {
   };
 };
 
+export const applyStopPopupManagePlanning = function(view, managePlanning) {
+  var mp = managePlanning || {};
+  view.manage_organize = mp.manage_organize !== false;
+  view.move_stop_allowed = Boolean(mp.manage_stop_move) && !Boolean(mp.disable_stop_move);
+  view.stop_active_allowed = Boolean(mp.manage_stop_active) && !Boolean(mp.disable_stop_active);
+};
+
 let needCbAfterDeletingJob = true;
 let progressDialogFrozen = false;
 export const freezeProgressDialog = function(dialog) {
