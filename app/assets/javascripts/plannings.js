@@ -1528,6 +1528,10 @@ export const plannings_edit = function(params) {
 
   var externalCallbackUrl = function() {
     $(document).on('click', '.customer_external_callback_url', function(e) {
+      if ($(this).hasClass('disabled') || $(this).closest('li').hasClass('disabled')) {
+        e.preventDefault();
+        return false;
+      }
       const data = {};
       $.each($(this).data(), function(key, value) {
         data[camelToSnake(key)] = value;
