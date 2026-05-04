@@ -1354,7 +1354,7 @@ export const plannings_edit = function(params) {
     $(".modal-optim-warning").hide();
     var routeId = $(this).val();
     if (routeId.length === 0) {
-      var routeLen = $('li[data-color]').find('.fa-unlock').length;
+      var routeLen = $('ol.routes:not(.out_routes)').find('li.route[data-route-id]').length;
       optimizationTimer.setOptimDuration(routeLen);
       $('div#optimization-global').show();
       var sizeRoutes = 0;
