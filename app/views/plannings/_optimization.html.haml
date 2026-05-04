@@ -56,17 +56,6 @@
                 %label{"data-toggle" => "tooltip", :title => "#{t('plannings.edit.dialog.optimization.enable_optimization_soft_upper_bound_false_help')}"}
                   = radio_button_tag :enable_optimization_soft_upper_bound, :false, false, checked: !current_user.customer.enable_optimization_soft_upper_bound
                   = t 'all.value._no'
-            #optimization-strict-within-timewindows.row
-              .col-xs-7
-                %label
-                  = t 'plannings.edit.dialog.optimization.enable_strict_within_timewindows'
-              .col-xs-5
-                %label{"data-toggle" => "tooltip", :title => "#{t('plannings.edit.dialog.optimization.enable_strict_within_timewindows_true_help')}"}
-                  = radio_button_tag :enable_strict_within_timewindows, :true, true, checked: current_user.customer.enable_strict_within_timewindows
-                  = t 'all.value._yes'
-                %label{"data-toggle" => "tooltip", :title => "#{t('plannings.edit.dialog.optimization.enable_strict_within_timewindows_false_help')}"}
-                  = radio_button_tag :enable_strict_within_timewindows, :false, false, checked: !current_user.customer.enable_strict_within_timewindows
-                  = t 'all.value._no'
             #optimization-vehicle-max-upper-bound.row{ class: ('d-none' unless current_user.customer.enable_optimization_soft_upper_bound) }
               .col-xs-7
                 = t 'plannings.edit.dialog.optimization.vehicle_max_upper_bound'

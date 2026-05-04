@@ -2788,7 +2788,6 @@ export const plannings_edit = function(params) {
         ignore_overload_multipliers: ignore_overload_multipliers,
         nb_route: optimizationTimer.getNbRoute(),
         enable_optimization_soft_upper_bound: $('input[name="enable_optimization_soft_upper_bound"]:checked').val(),
-        enable_strict_within_timewindows: $('input[name="enable_strict_within_timewindows"]:checked').val(),
         vehicle_max_upper_bound: $('input[name="vehicle_max_upper_bound"]').val(),
         stop_max_upper_bound: $('input[name="stop_max_upper_bound"]').val()
       },
