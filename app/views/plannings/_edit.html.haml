@@ -85,6 +85,7 @@
 #planning-refresh-modal.modal.fade{role: "dialog", tabindex: "-1"}
   .modal-dialog
     .modal-content
+      - refresh_dis = @manage_planning && @manage_planning[:disable_refresh]
       .modal-header
         %button.close{type: "button", "data-dismiss": "modal"}
           &times;
@@ -98,7 +99,7 @@
       .modal-footer
         %button.btn.btn-default{type: "button", "data-dismiss": "modal"}
           = t('all.verb.dismiss')
-        %button#refresh-modal.btn.btn-primary{type: "button"}
+        %button#refresh-modal.btn.btn-primary{type: "button", disabled: refresh_dis}
           = t('plannings.edit.refresh')
 
 #planning-move-stops-modal.modal.fade{role: "dialog", tabindex: "-1"}
