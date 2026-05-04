@@ -23,9 +23,9 @@ module Preferences
     module StopList
       # Visit stops expose destination_* / visit_* via route/stop JSON; non-visit rows omit most of these.
       FIELD_IDS = %w[
-        name ref destination_name destination_ref visit_ref
+        name ref destination_name visit_ref
         street postalcode city country lat lng
-        detail comment phone_number destination_duration tags tags_visit
+        detail comment phone_number destination_duration visit_duration tags tags_visit
         eta status
       ].freeze
 
@@ -43,12 +43,6 @@ module Preferences
 
       def normalize_zone(raw)
         z = raw.is_a?(Hash) ? raw.stringify_keys : {}
-        %w[active hidden].each do |side|
-          next unless z[side].is_a?(Array)
-
-          # Users who had the short-lived list field id "tags_destination" map back to "tags"
-          z[side] = z[side].map { |id| id.to_s == 'tags_destination' ? 'tags' : id }.uniq
-        end
         active = Core.filter_order(z['active'], FIELD_IDS)
         hidden_src = Core.filter_order(z['hidden'], FIELD_IDS)
         active.uniq!
@@ -71,11 +65,10 @@ module Preferences
 
         case fid
         when 'name' then stop_get(stop, :name).presence
-        when 'ref' then stop_get(stop, :ref).presence
+        when 'ref'
+          stop_get(stop, :ref).presence || (visit_stop?(stop) ? stop_get(stop, :ref).presence : nil)
         when 'destination_name'
           stop_get(stop, :destination_name).presence || (visit_stop?(stop) ? stop_get(stop, :name).presence : nil)
-        when 'destination_ref'
-          stop_get(stop, :destination_ref).presence || (visit_stop?(stop) ? stop_get(stop, :ref).presence : nil)
         when 'visit_ref' then stop_get(stop, :visit_ref).presence
         when 'street' then stop_get(stop, :street).presence&.to_s
         when 'postalcode' then stop_get(stop, :postalcode).presence&.to_s
@@ -87,6 +80,7 @@ module Preferences
         when 'comment' then stop_get(stop, :comment).presence&.to_s
         when 'phone_number' then stop_get(stop, :phone_number).presence&.to_s
         when 'destination_duration' then stop_get(stop, :destination_duration).presence&.to_s
+        when 'visit_duration' then stop_get(stop, :visit_duration).presence&.to_s
         when 'tags' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags')
         when 'tags_visit' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags_visit')
         when 'eta' then stop_get(stop, :eta_formated).presence
