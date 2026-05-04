@@ -3375,9 +3375,8 @@ en:
   display_ui:
     stop_list_fields:
       name: Name
-      ref: Reference
+      ref: Destination reference
       destination_name: Destination name
-      destination_ref: Destination reference
       visit_ref: Visit reference
       street: Street
       postalcode: Postal code
@@ -3389,6 +3388,7 @@ en:
       comment: Comment
       phone_number: Phone
       destination_duration: Destination duration
+      visit_duration: Visit duration
       tags: Destination tags
       tags_visit: Visit tags
       eta: ETA

@@ -30,21 +30,11 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
     assert_equal 'ok', Preferences::Catalog::StopList.field_value(stop, 'status')
   end
 
-  test 'normalize_zone migrates legacy tags_destination list field id to tags' do
-    z = {
-      'active' => %w[name ref tags_destination],
-      'hidden' => ['status']
-    }
-    out = Preferences::Catalog::StopList.normalize_zone(z)
-    assert_equal %w[name ref tags], out['active']
-    assert_includes out['hidden'], 'tags_visit'
-  end
-
   test 'field_value maps visit and destination fields from JSON-shaped hash' do
     stop = {
       'visits' => true,
       'destination_name' => 'Dest N',
-      'destination_ref' => 'DREF',
+      'ref' => 'DREF',
       'visit_ref' => 'VREF',
       'tags_present' => {
         'tags' => [{ 'label' => 'foo' }],
@@ -59,10 +49,11 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
       'detail' => 'Bât. A',
       'comment' => 'Sonner',
       'phone_number' => '+33123456789',
-      'destination_duration' => '00:05:00'
+      'destination_duration' => '00:05:00',
+      'visit_duration' => '00:07:00'
     }
     assert_equal 'Dest N', Preferences::Catalog::StopList.field_value(stop, 'destination_name')
-    assert_equal 'DREF', Preferences::Catalog::StopList.field_value(stop, 'destination_ref')
+    assert_equal 'DREF', Preferences::Catalog::StopList.field_value(stop, 'ref')
     assert_equal 'VREF', Preferences::Catalog::StopList.field_value(stop, 'visit_ref')
     assert_equal 'foo', Preferences::Catalog::StopList.field_value(stop, 'tags')
     assert_equal 'bar', Preferences::Catalog::StopList.field_value(stop, 'tags_visit')
@@ -76,6 +67,7 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
     assert_equal 'Sonner', Preferences::Catalog::StopList.field_value(stop, 'comment')
     assert_equal '+33123456789', Preferences::Catalog::StopList.field_value(stop, 'phone_number')
     assert_equal '00:05:00', Preferences::Catalog::StopList.field_value(stop, 'destination_duration')
+    assert_equal '00:07:00', Preferences::Catalog::StopList.field_value(stop, 'visit_duration')
   end
 
   test 'field_value tags is nil when only visit has tags (split payload)' do

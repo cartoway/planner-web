@@ -3519,9 +3519,8 @@ fr:
   display_ui:
     stop_list_fields:
       name: Nom
-      ref: Référence
+      ref: Référence destination
       destination_name: Nom de la destination
-      destination_ref: Référence destination
       visit_ref: Référence visite
       street: Rue
       postalcode: Code postal
@@ -3533,6 +3532,7 @@ fr:
       comment: Commentaire
       phone_number: Téléphone
       destination_duration: Durée à la destination
+      visit_duration: Durée de visite
       tags: Catégories destination
       tags_visit: Catégories visite
       eta: ETA
