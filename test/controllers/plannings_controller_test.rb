@@ -57,6 +57,30 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'show respects customer stops_preload_limit for with_stops flag' do
+    customer = customers(:customer_one)
+    original_limit = customer.stops_preload_limit
+    customer.update!(stops_preload_limit: 1)
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    assert_equal false, assigns(:with_stops)
+  ensure
+    customer.update!(stops_preload_limit: original_limit) if customer
+  end
+
+  test 'sidebar respects customer stops_preload_limit for with_stops flag' do
+    customer = customers(:customer_one)
+    original_limit = customer.stops_preload_limit
+    customer.update!(stops_preload_limit: 1)
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_equal false, assigns(:with_stops)
+  ensure
+    customer.update!(stops_preload_limit: original_limit) if customer
+  end
+
   test 'should get index as csv' do
     get :index, params: { format: :csv, summary: true }
     assert_response :success
