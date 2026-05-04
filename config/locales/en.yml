@@ -966,6 +966,11 @@ en:
         forms_title: Forms (navigation)
         forms_help: >-
           The left column allows creating, editing, and deleting records. The middle column shows the form in navigation but only for viewing. The right column hides it.
+        form_resources:
+          plannings: Plans
+          destination: Destination/Visits
+          vehicle_usages: Vehicle configurations
+          stores: Facilities
         icon_help: >-
           Pick an icon from the list
         color_help: >-

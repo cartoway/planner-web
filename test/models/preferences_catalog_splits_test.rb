@@ -18,8 +18,7 @@ class PreferencesCatalogSplitsTest < ActiveSupport::TestCase
     dummy = FormsSplitDummy.new
     dummy.forms = {
       'plannings' => { 'visible' => true, 'usable' => true },
-      'destinations' => { 'visible' => true, 'usable' => true },
-      'visits' => { 'visible' => true, 'usable' => true },
+      'destination' => { 'visible' => true, 'usable' => true },
       'vehicle_usages' => { 'visible' => true, 'usable' => true }
     }
 

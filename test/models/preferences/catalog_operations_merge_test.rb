@@ -234,14 +234,14 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     seed = Preferences::Catalog.default_forms
     out = Preferences::Catalog.merge_forms_with_params(
       seed,
-      { 'forms_active' => %w[plannings], 'forms_disabled' => %w[visits] }
+      { 'forms_active' => %w[plannings], 'forms_disabled' => %w[destination] }
     )
     assert out['plannings']['visible']
     assert out['plannings']['usable']
-    assert out['visits']['visible']
-    assert_not out['visits']['usable']
-    assert_not out['destinations']['visible']
-    assert_not out['destinations']['usable']
+    assert out['destination']['visible']
+    assert_not out['destination']['usable']
+    assert_not out['stores']['visible']
+    assert_not out['stores']['usable']
   end
 
   test 'normalize_forms uses NORMALIZE_FORM_* defaults for sparse hashes' do
@@ -252,8 +252,8 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     assert_equal du, out['plannings']['usable']
 
     filled = Preferences::Catalog.normalize_forms({ 'plannings' => { 'visible' => true, 'usable' => true } })
-    assert filled['destinations']['visible']
-    assert_not filled['destinations']['usable']
+    assert filled['destination']['visible']
+    assert_not filled['destination']['usable']
   end
 
   test 'normalize_forms empty hash is still default_forms (full access catalog seed)' do
