@@ -41,6 +41,8 @@ class V100::Entities::Stop < V100::Entities::StopStatus
   expose(:time, documentation: { type: DateTime, desc: 'Arrival planned at.' }) { |m|
     (m.route.planning.date || Time.zone.today).beginning_of_day + m.time if m.time
   }
+  expose(:no_path, documentation: { type: 'Boolean' })
+  expose(:out_of_skill, documentation: { type: 'Boolean' })
   expose(:out_of_window, documentation: { type: 'Boolean' })
   expose(:out_of_capacity, documentation: { type: 'Boolean' })
   expose(:out_of_drive_time, documentation: { type: 'Boolean' })
@@ -51,5 +53,6 @@ class V100::Entities::Stop < V100::Entities::StopStatus
   expose(:out_of_max_ride_duration, documentation: { type: 'Boolean' })
   expose(:out_of_max_reload, documentation: { type: 'Boolean' })
   expose(:out_of_relation, documentation: { type: 'Boolean' })
+  expose(:unmanageable_capacity, documentation: { type: 'Boolean', desc: 'Capacity units used by the stop are not configured on the vehicle.' })
   expose(:custom_attributes_typed_hash, documentation: {type: Hash, desc: 'Additional properties'}, as: :custom_attributes)
 end
