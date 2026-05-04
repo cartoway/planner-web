@@ -320,6 +320,11 @@ $sidebar-margins: 10px;
     }
   }
 
+  .link.disabled {
+    color: $grey-color;
+    cursor: not-allowed;
+  }
+
   .sidebar {
     .sidebar-content {
       overflow-y: scroll; // important for select2

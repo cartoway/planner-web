@@ -16,8 +16,8 @@
             %h5
               = t('plannings.edit.all_plannings_related')
           %hr
-          - if current_user.customer.enable_external_callback? && current_user.customer.external_callback_url
-            %li.link.customer_external_callback_url{ data: { customer_id: current_user.customer.id, planning_id: @planning.id } }
+          - if @callback_button
+            %li{class: [('disabled' if @manage_planning[:disable_external_callback]), 'link', 'customer_external_callback_url'].compact.join(' '), data: { customer_id: current_user.customer.id, planning_id: @planning.id } }
               %i.fa.fa-desktop.fa-fw
               = current_user.customer.external_callback_name || t('plannings.edit.customer_external_callback_url.action')
             %li.divider{role: "separator"}

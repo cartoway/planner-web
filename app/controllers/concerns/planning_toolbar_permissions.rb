@@ -22,11 +22,27 @@
 module PlanningToolbarPermissions
   extend ActiveSupport::Concern
 
-  private
-
-  def planning_api_web_callback_context?
-    controller_path.start_with?('api_web/') || request.referer&.match('api-web').present?
+  included do
+    helper_method :planning_external_callback_json_partial?, :planning_external_callback_segment_disabled? if respond_to?(:helper_method)
   end
+
+  # Planning JSON / @callback_button: show when the planning segment is visible and the customer has a callback URL.
+  def planning_external_callback_json_partial?
+    return false unless @planning
+
+    planning_operation_visible?('external_callback') &&
+      @planning.customer.enable_external_callback? &&
+      @planning.customer.external_callback_url.present?
+  end
+
+  # True when the callback entry should be greyed out (visible but not usable). Always true when there is no partial entry.
+  def planning_external_callback_segment_disabled?
+    return true unless planning_external_callback_json_partial?
+
+    planning_operation_disabled?('external_callback')
+  end
+
+  private
 
   def planning_operation_visible?(operation_id)
     return true unless current_user.respond_to?(:operation_segment_visible?)
@@ -98,8 +114,7 @@ module PlanningToolbarPermissions
     planning_op_visible = method(:planning_operation_visible?)
     planning_op_disabled = method(:planning_operation_disabled?)
 
-    @callback_button = planning_api_web_callback_context? &&
-                       planning_op_visible.call('external_callback') &&
+    @callback_button = planning_op_visible.call('external_callback') &&
                        @planning.customer.enable_external_callback? &&
                        @planning.customer.external_callback_url.present?
 
@@ -145,6 +160,14 @@ module PlanningToolbarPermissions
 
     route_op_visible = method(:route_operation_visible?)
     route_op_disabled = method(:route_operation_disabled?)
+
+    route_callback_visible =
+      route_op_visible.call('external_callback') &&
+      @planning&.customer&.enable_external_callback? &&
+      @planning&.customer&.external_callback_url.present?
+    @manage_planning[:manage_route_external_callback] = route_callback_visible
+    @manage_planning[:disable_route_external_callback] =
+      route_callback_visible && route_op_disabled.call('external_callback')
 
     route_export_visible = route_op_visible.call('export')
     @manage_planning[:disable_route_export] = route_op_disabled.call('export')
