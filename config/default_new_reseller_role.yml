@@ -18,7 +18,7 @@
 #           zoning: { visible: true, usable: false }
 #     forms:
 #       plannings: { visible: true, usable: true }
-#       visits: { visible: true, usable: false }
+#       destination: { visible: true, usable: false }
 #
 # default_role.icon — optional FontAwesome token for the system role (FontAwesome::ICONS_TABLE; see admin role form).
 #
@@ -59,8 +59,7 @@ default: &default
           lock_stop: { visible: false, usable: false }
     forms:
       plannings: { visible: true, usable: true }
-      visits: { visible: true, usable: true }
-      destinations: { visible: true, usable: true }
+      destination: { visible: true, usable: true }
       vehicle_usages: { visible: true, usable: true }
       stores: { visible: true, usable: true }
 

@@ -27,14 +27,14 @@ class PreferencesFormAbilityMapTest < ActiveSupport::TestCase
     role
   end
 
-  test 'customer can create destination when forms.destinations allows create' do
+  test 'customer can create destination when forms.destination allows create' do
     ability = Ability.new(@user)
     assert ability.can?(:create, Destination)
   end
 
-  test 'customer cannot create destination when forms.destinations is not mutable' do
+  test 'customer cannot create destination when forms.destination is not mutable' do
     forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['destinations'] = { 'visible' => true, 'usable' => false }
+    forms['destination'] = { 'visible' => true, 'usable' => false }
 
     assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
 
@@ -42,14 +42,15 @@ class PreferencesFormAbilityMapTest < ActiveSupport::TestCase
     assert ability.cannot?(:create, Destination)
   end
 
-  test 'customer cannot update destination when forms.destinations disallows update' do
+  test 'customer cannot update destination when forms.destination disallows update' do
     forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['destinations'] = { 'visible' => true, 'usable' => false }
+    forms['destination'] = { 'visible' => true, 'usable' => false }
 
     assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
 
     ability = Ability.new(@user)
     assert ability.cannot?(:update, @destination)
+    assert ability.cannot?(:destroy, @destination)
   end
 
   test 'customer can open vehicle_usage edit in read-only when visible but not usable' do

@@ -95,7 +95,7 @@ class Admin::RolesControllerTest < ActionController::TestCase
         name: @role.name,
         forms_ui: '1',
         forms_active: %w[plannings],
-        forms_disabled: %w[visits vehicle_usages],
+        forms_disabled: %w[destination vehicle_usages],
         operations: {
           planning: %w[zoning optimize external_callback],
           route: %w[vehicle_usage export]
@@ -114,11 +114,11 @@ class Admin::RolesControllerTest < ActionController::TestCase
     expected_route_segments = %w[vehicle_usage export] + (sr - %w[vehicle_usage export])
     assert_equal expected_route_segments, @role.operations['route']['segments']
 
-    assert_equal %w[destinations plannings stores vehicle_usages visits], @role.forms.keys.map(&:to_s).sort
+    assert_equal %w[destination plannings stores vehicle_usages], @role.forms.keys.map(&:to_s).sort
     assert @role.forms['plannings']['visible']
     assert @role.forms['plannings']['usable']
-    assert @role.forms['visits']['visible']
-    assert_not @role.forms['visits']['usable']
+    assert @role.forms['destination']['visible']
+    assert_not @role.forms['destination']['usable']
   end
 
   test 'update persists metadata fields' do
