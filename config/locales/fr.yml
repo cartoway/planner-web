@@ -2048,6 +2048,7 @@ fr:
       lock_routes: Verrouiller les tournées
       toggle_routes: Masquer les tournées
       toggle_route_data: Masquer les statistiques de tournées
+      activate_stops_help: Activer les arrêts des tournées
       zonings:
         label: Sectorisations
         success: Sectorisations appliquées avec succès
@@ -3564,6 +3565,7 @@ fr:
       toggle_routes: Afficher ou masquer les tournées
       toggle_route_data: Affichage des données tournée
       lock_routes: Verrouiller les tournées
+      activate_stops: Activer les arrêts des tournées
       export: Exporter
       refresh: Actualiser
       vehicle_usage: Sélecteur de véhicule
