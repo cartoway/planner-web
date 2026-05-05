@@ -3552,6 +3552,7 @@ fr:
       speed: Vitesse moyenne
       quantities: Quantités
       used_reloads: nombre de rechargements
+      drive_time: Temps de conduite
       wait_time: Temps d’attente
       visits_duration: Durée des visites
       rests_duration: Durée des pauses
