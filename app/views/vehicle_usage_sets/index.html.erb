@@ -1,6 +1,9 @@
 <% javascript 'vehicle_usage_set' %>
 
 <% invisible_class = current_user.customer.vehicle_usage_sets.size > 1 ? '' : 'invisible' %>
+<% can_destroy_vehicle_config = current_user_form_destroy_enabled?(:vehicle_usages) %>
+<% can_update_vehicle_usage = current_user_form_update?(:vehicle_usages) %>
+<% can_view_vehicle_usage = current_user_form_visible?(:vehicle_usages) %>
 
 <% content_for :title, t('.title') %>
 
@@ -34,7 +37,7 @@
   <thead>
     <tr>
       <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
-        <th><button id="add" type="button" class="btn btn-default btn-xs <%= invisible_class %>" title="<%= t 'all.verb.toggle_selection' %>"><i class="fa fa-check fa-fw"></i></button></th>
+        <th><button id="add" type="button" class="btn btn-default btn-xs <%= invisible_class %>" title="<%= t 'all.verb.toggle_selection' %>" <%= 'disabled' unless can_destroy_vehicle_config %>><i class="fa fa-check fa-fw"></i></button></th>
       <% end %>
       <th><%= t 'activerecord.attributes.vehicle_usage_set.name' %></th>
       <th><%= t 'vehicle_usage_sets.index.stores' %></th>
@@ -47,7 +50,7 @@
     <% @vehicle_usage_sets.each_with_index do |_v, i| vehicle_usage_set = @vehicle_usage_sets[i] %>
       <tr class="accordion-heading">
         <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
-          <td><%= check_box_tag("vehicle_usage_sets[#{vehicle_usage_set.id}]", '1', false, class: "#{invisible_class} deleter-check", 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions-vehicle-usage-sets') %></td>
+          <td><%= check_box_tag("vehicle_usage_sets[#{vehicle_usage_set.id}]", '1', false, class: "#{invisible_class} deleter-check", disabled: !can_destroy_vehicle_config, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions-vehicle-usage-sets') %></td>
         <% end %>
         <td>
           <% if @vehicle_usage_sets.count > 1 %>
@@ -81,20 +84,26 @@
           <%= link_to edit_vehicle_usage_set_path(vehicle_usage_set, back: true), :class => 'btn btn-primary btn-sm' ,title: t('all.verb.edit') do %><i class="fa fa-edit fa-fw"></i><% end %>
 
           <% if @vehicle_usage_sets.count > 1 %>
-            <%= link_to vehicle_usage_set, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do %>
-              <i class="fa fa-trash fa-fw"></i>
+            <% if can_destroy_vehicle_config %>
+              <%= link_to vehicle_usage_set, class: 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do %>
+                <i class="fa fa-trash fa-fw"></i>
+              <% end %>
+            <% else %>
+              <button type="button" class="btn btn-danger btn-sm" title="<%= t('all.verb.destroy') %>" disabled>
+                <i class="fa fa-trash fa-fw"></i>
+              </button>
             <% end %>
           <% end %>
-
-
         </td>
-
       </tr>
       <tr class="vehicle_usages">
         <td colspan="<%= current_user.customer.default_max_vehicle_usage_sets > 1 ? 6 : 5 %>">
           <div id="collapseUsageSet<%= vehicle_usage_set.id %>" class="accordion-body collapse<% if @vehicle_usage_sets.count == 1 %> in<% end %>">
             <div class="accordion-inner">
-              <%= render 'vehicle_usages/index', vehicle_usage_set: vehicle_usage_set %>
+              <%= render 'vehicle_usages/index',
+                         vehicle_usage_set: vehicle_usage_set,
+                         can_update_vehicle_usage: can_update_vehicle_usage,
+                         can_view_vehicle_usage: can_view_vehicle_usage %>
             </div>
           </div>
         </td>
@@ -106,7 +115,7 @@
 <% if !@vehicle_usage_sets.empty? && current_user.customer.default_max_vehicle_usage_sets > 1 %>
 <div id="multiple-actions-vehicle-usage-sets" class="row">
   <div class="col-md-12">
-    <%= button_tag type: :submit, class: "btn btn-danger btn-sm btn-destroy #{invisible_class}", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm btn-destroy #{invisible_class}", disabled: !can_destroy_vehicle_config, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
   </div>
 </div>
 <% end %>

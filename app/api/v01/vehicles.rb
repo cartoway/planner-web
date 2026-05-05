@@ -261,6 +261,7 @@ class V01::Vehicles < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     delete ':id' do
+      authorize!(:update, VehicleUsage)
       if Planner::Application.config.manage_vehicles_only_admin
         if @current_user.admin?
           vehicle = Vehicle.for_reseller_id(@current_user.reseller.id).where(ParseIdsRefs.where_clause([params[:id]], table_name: 'vehicles')).first!
@@ -284,6 +285,7 @@ class V01::Vehicles < Grape::API
       requires :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
     end
     delete do
+      authorize!(:update, VehicleUsage)
       Vehicle.transaction do
         if Planner::Application.config.manage_vehicles_only_admin || @current_user.admin?
           if @current_user.admin?

@@ -99,6 +99,7 @@ class V01::VehicleUsageSets < Grape::API
       optional :max_ride_duration, type: Integer, documentation: { desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     end
     post do
+      authorize!(:create, VehicleUsageSet)
       vehicle_usage_set = current_customer.vehicle_usage_sets.build(vehicle_usage_set_params)
       vehicle_usage_set.save!
       present vehicle_usage_set, with: V01::Entities::VehicleUsageSet
@@ -143,6 +144,7 @@ class V01::VehicleUsageSets < Grape::API
       mutually_exclusive :time_window_end, :close
     end
     put ':id' do
+      authorize!(:update, VehicleUsageSet)
       vehicle_usage_set = current_customer.vehicle_usage_sets.find(params[:id])
       vehicle_usage_set.update! vehicle_usage_set_params
       present vehicle_usage_set, with: V01::Entities::VehicleUsageSet
@@ -156,6 +158,7 @@ class V01::VehicleUsageSets < Grape::API
       requires :id, type: Integer
     end
     delete ':id' do
+      authorize!(:destroy, VehicleUsageSet)
       current_customer.vehicle_usage_sets.find(params[:id]).destroy
       status 204
     end
@@ -168,6 +171,7 @@ class V01::VehicleUsageSets < Grape::API
       requires :ids, type: Array[Integer], coerce_with: CoerceArrayInteger
     end
     delete do
+      authorize!(:destroy, VehicleUsageSet)
       VehicleUsageSet.transaction do
         current_customer.vehicle_usage_sets.select{ |vehicle_usage_set| params[:ids].include?(vehicle_usage_set.id) }.each(&:destroy)
       end

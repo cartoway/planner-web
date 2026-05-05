@@ -18,10 +18,12 @@
 class VehicleUsagesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_vehicle_usage, only: [:edit, :update, :toggle]
+  before_action -> { deny_unless_form_update!(:vehicle_usages) }, only: [:update, :toggle]
 
   load_and_authorize_resource
 
   include LinkBack
+  include PreferencesAuthorization
 
   def edit
   end

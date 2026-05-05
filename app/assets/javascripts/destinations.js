@@ -573,6 +573,7 @@ const destinations_index = function(params, api) {
     enable_references = params.enable_references,
     enable_orders = params.enable_orders,
     isEditable = params.is_editable,
+    canDestroy = params.can_destroy !== false,
     disableQuantity = params.disable_quantity;
 
   params.geocoder = true;
@@ -627,6 +628,7 @@ const destinations_index = function(params, api) {
     // must be set here instead of in json because api used for update don't expose all attributes...
     destination.enable_references = enable_references;
     destination.enable_orders = enable_orders;
+    destination.can_destroy = canDestroy;
     destination.i18n = mustache_i18n;
     if (destination.geocoding_accuracy) {
       if (destination.geocoding_accuracy > GlobalConfiguration.geocoderAccuracySuccess) {
@@ -766,6 +768,10 @@ const destinations_index = function(params, api) {
   };
 
   const ajaxCallForRow = function($row, id) {
+    if (!canDestroy) {
+      return;
+    }
+
     $row.on("click", ".destroy", function(event) {
       if (confirm(I18n.t('all.verb.destroy_confirm'))) {
         event.stopPropagation(); // Don't call over(id, move) while the row has been destroyed
@@ -807,6 +813,9 @@ const destinations_index = function(params, api) {
     if (addOrRemove) {
       row.click(function() { over(id, true); });
       ajaxCallForRow(row, id);
+      if (!canDestroy) {
+        row.find('.destroy').prop('disabled', true).addClass('disabled');
+      }
     } else {
       row.off('click');
     }
@@ -1279,6 +1288,10 @@ const destinations_index = function(params, api) {
     $(".tablesorter-filter").addClass("form-control input-sm"); // filter_cssFilter not support setting multiple class at once
 
     $("#multiple-delete").on("click", function() {
+      if (!canDestroy) {
+        return false;
+      }
+
       if (confirm(I18n.t('all.verb.destroy_confirm'))) {
         var destination_ids = $.map($('table tbody :checkbox:checked').closest('tr'), function(val) {
           return $(val).data('destination_id');
