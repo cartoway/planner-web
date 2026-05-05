@@ -19,10 +19,12 @@ class VehicleUsageSetsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_vehicle_usage_set, only: [:show, :edit, :update, :destroy, :duplicate]
   around_action :over_max_limit, only: [:create, :duplicate]
+  before_action -> { deny_unless_form_update!(:vehicle_usages) }, only: [:create, :update, :destroy, :destroy_multiple, :duplicate, :upload_csv]
 
   load_and_authorize_resource
 
   include LinkBack
+  include PreferencesAuthorization
 
   def index
     @customer = current_user.customer

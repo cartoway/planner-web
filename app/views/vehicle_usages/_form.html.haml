@@ -520,4 +520,4 @@
             %i.fa.fa-arrows-left-right.fa-fw
         %p.help-block
           = t '.rest_start_stop_help'
-  = f.submit message: t('.save')
+  = f.submit message: t('.save'), disabled: !current_user_form_update?(:vehicle_usages)

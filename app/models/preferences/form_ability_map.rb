@@ -28,7 +28,7 @@ module Preferences
     FORM_KEY_MODELS = {
       'plannings' => [Planning],
       'destination' => [Destination, Visit],
-      'vehicle_usages' => [VehicleUsage],
+      'vehicle_usages' => [VehicleUsage, VehicleUsageSet],
       'stores' => [Store]
     }.freeze
 

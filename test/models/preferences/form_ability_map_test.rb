@@ -65,6 +65,17 @@ class PreferencesFormAbilityMapTest < ActiveSupport::TestCase
     assert ability.cannot?(:toggle, @vehicle_usage)
   end
 
+  test 'customer cannot update vehicle_usage_set when vehicle configurations are not usable' do
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['vehicle_usages'] = { 'visible' => true, 'usable' => false }
+
+    assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
+
+    ability = Ability.new(@user)
+    assert ability.cannot?(:update, vehicle_usage_sets(:vehicle_usage_set_one))
+    assert ability.cannot?(:destroy, vehicle_usage_sets(:vehicle_usage_set_one))
+  end
+
   test 'customer can open planning edit in read-only when plannings visible but not usable' do
     forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
     forms['plannings'] = { 'visible' => true, 'usable' => false }

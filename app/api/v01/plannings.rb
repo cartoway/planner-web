@@ -96,6 +96,7 @@ class V01::Plannings < Grape::API
       requires :tag_ids, type: Array[Integer], desc: 'Tag ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { param_type: 'form', example: '1,2,ref:vip' }
     end
     delete 'by_tags' do
+      authorize!(:destroy, Planning)
       Route.includes_destinations_and_stores.scoping do
         Planning.transaction do
           tag_ids = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer)
@@ -131,6 +132,7 @@ class V01::Plannings < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     delete ':id' do
+      authorize!(:destroy, Planning)
       Route.includes_destinations_and_stores.scoping do
         current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!.destroy
         status 204
@@ -145,6 +147,7 @@ class V01::Plannings < Grape::API
       requires :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
     end
     delete do
+      authorize!(:destroy, Planning)
       Route.includes_destinations_and_stores.scoping do
         Planning.transaction do
           current_customer.plannings.select{ |planning|

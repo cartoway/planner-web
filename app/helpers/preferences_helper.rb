@@ -76,6 +76,11 @@ module PreferencesHelper
     current_user.form_update?(resource)
   end
 
+  # Destroy follows update mutability in form permissions.
+  def current_user_form_destroy_enabled?(resource)
+    current_user_form_update?(resource)
+  end
+
   # Planning create/update forms (header flat form, new planning form, sidebar fragments).
   def current_user_planning_form_submit_enabled?(planning)
     planning.new_record? ? current_user_form_create?(:plannings) : current_user_form_update?(:plannings)
