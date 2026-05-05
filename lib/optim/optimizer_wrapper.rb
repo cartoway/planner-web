@@ -333,6 +333,7 @@ class OptimizerWrapper
         planning.customer.enable_strict_within_timewindows
       end
     override_default_priorities = !options[:global] && stops.all?{ |stop| stop.priority.to_i == 0 }
+    has_locked_stops = stops.any?(&:locked)
 
     vrp_services = stops.map{ |stop|
       # A stop without position should not be part of an optimization
@@ -373,7 +374,12 @@ class OptimizerWrapper
           duration: stop.duration,
           setup_duration: stop.destination_duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
-        priority: service_priority(stop, sticky_vehicle_ids, override_default_priorities),
+        priority: service_priority(
+          stop,
+          sticky_vehicle_ids,
+          override_default_priorities: override_default_priorities,
+          has_locked_stops: has_locked_stops
+        ),
         quantities: units.map{ |unit|
           next if stop.visit.nil? ||
                   !stop.visit.default_pickups.key?(unit.id) && !stop.visit.default_deliveries.key?(unit.id) ||
@@ -478,8 +484,11 @@ class OptimizerWrapper
     [vrp_vehicles, point_hash.values]
   end
 
-  def service_priority(stop, sticky_vehicle_ids, override_default_priorities)
+  def service_priority(stop, sticky_vehicle_ids, override_default_priorities: false, has_locked_stops: false)
+    return 0 if stop.locked
+
     if override_default_priorities
+      return 2 if sticky_vehicle_ids.present? && has_locked_stops
       return 0 if sticky_vehicle_ids.present?
       return 8
     end
