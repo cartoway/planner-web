@@ -39,6 +39,7 @@ if route.vehicle_usage_id
   end
   json.vehicle_id route.vehicle_usage.vehicle.id
   json.visits_duration time_over_day(route.visits_duration.to_i)
+  json.rests_duration time_over_day(route.rests_duration.to_i)
   json.wait_time time_over_day(route.wait_time.to_i)
   json.vehicle_name route.vehicle_usage.vehicle.name
   json.time_window_start route.vehicle_usage.default_time_window_start_time
@@ -55,6 +56,7 @@ if route.vehicle_usage_id
       json.speed route.speed_average(current_user.prefered_unit)
 
       json.visits_duration time_over_day(route.visits_duration.to_i)
+      json.rests_duration time_over_day(route.rests_duration.to_i)
       json.wait_time time_over_day(route.wait_time.to_i)
     end
   end
@@ -129,11 +131,12 @@ json.store_start do
       json.speed speed_average(route.start_route_data, current_user.prefered_unit)
 
       json.visits_duration time_over_day(route.start_route_data.visits_duration.to_i)
+      json.rests_duration time_over_day(route.start_route_data.rests_duration.to_i)
       json.wait_time time_over_day(route.start_route_data.wait_time.to_i)
     end
     json.duration time_over_day(route.start_route_data.duration) if route.start_route_data.duration
     json.distance locale_distance(route.start_route_data.distance || 0, current_user.prefered_unit)
-    json.extract! route.start_route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, :status, :eta, :hidden, :color
+    json.extract! route.start_route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :rests_duration, :pickups, :deliveries, :departure, :status, :eta, :hidden, :color
     json.quantities route_data_quantities(route.start_route_data, route.vehicle_usage_id && route.vehicle_usage.vehicle)
   end
   json.custom_attributes (
@@ -248,11 +251,12 @@ if @with_stops
           json.speed speed_average(stop.route_data, current_user.prefered_unit)
 
           json.visits_duration time_over_day(stop.route_data.visits_duration.to_i)
+          json.rests_duration time_over_day(stop.route_data.rests_duration.to_i)
           json.wait_time time_over_day(stop.route_data.wait_time.to_i)
         end
         json.duration time_over_day(stop.route_data.duration) if stop.route_data.duration
         json.distance locale_distance(stop.route_data.distance || 0, current_user.prefered_unit)
-        json.extract! stop.route_data, :id, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure, :status, :hidden, :color
+        json.extract! stop.route_data, :id, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :rests_duration, :pickups, :deliveries, :departure, :status, :hidden, :color
         json.quantities route_data_quantities(stop.route_data, stop.route.vehicle_usage_id && stop.route.vehicle_usage.vehicle)
       end
     end

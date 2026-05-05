@@ -23,16 +23,16 @@ module Preferences
     module Headers
       HEADER_PLANNING = %w[
         stops duration distance total_revenue total_cost balance vehicles emission speed quantities
-        wait_time visits_duration
+        wait_time visits_duration rests_duration
       ].freeze
 
       HEADER_ROUTE = %w[
         stops duration distance total_revenue total_cost balance speed emission
-        used_reloads quantities wait_time visits_duration
+        used_reloads quantities wait_time visits_duration rests_duration
       ].freeze
 
-      HEADER_PLANNING_DEFAULT = (HEADER_PLANNING - %w[wait_time visits_duration]).freeze
-      HEADER_ROUTE_DEFAULT = (HEADER_ROUTE - %w[wait_time visits_duration]).freeze
+      HEADER_PLANNING_DEFAULT = (HEADER_PLANNING - %w[wait_time visits_duration rests_duration]).freeze
+      HEADER_ROUTE_DEFAULT = (HEADER_ROUTE - %w[wait_time visits_duration rests_duration]).freeze
 
       module_function
 
