@@ -13,7 +13,7 @@ default: &default
   no_role: &restricted_operations_and_forms
     operations:
       planning:
-        segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, export, refresh]
+        segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, activate_stops, export, refresh]
         segment_controls:
           external_callback: { visible: true, usable: false }
           optimize: { visible: true, usable: false }
@@ -22,6 +22,7 @@ default: &default
           toggle_routes: { visible: true, usable: false }
           toggle_route_data: { visible: true, usable: false }
           lock_routes: { visible: true, usable: false }
+          activate_stops: { visible: false, usable: false }
           export: { visible: true, usable: false }
           refresh: { visible: true, usable: false }
       route:
@@ -60,7 +61,7 @@ test:
   no_role:
     operations:
       planning:
-        segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, export, refresh]
+        segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, activate_stops, export, refresh]
         segment_controls:
           external_callback: { visible: true, usable: true }
           optimize: { visible: true, usable: true }
@@ -69,6 +70,7 @@ test:
           toggle_routes: { visible: true, usable: true }
           toggle_route_data: { visible: true, usable: true }
           lock_routes: { visible: true, usable: true }
+          activate_stops: { visible: false, usable: false }
           export: { visible: true, usable: true }
           refresh: { visible: true, usable: true }
       route:

@@ -75,6 +75,19 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     assert out['stop']['segment_controls']['lock_stop']['usable']
   end
 
+  test 'default_operations hides planning activate_stops until enabled via merge' do
+    defs = Preferences::Catalog.default_operations
+    assert_not defs['planning']['segment_controls']['activate_stops']['visible']
+    assert_not defs['planning']['segment_controls']['activate_stops']['usable']
+
+    out = Preferences::Catalog.merge_operations_with_params(
+      defs.deep_dup,
+      { 'planning' => %w[activate_stops] }
+    )
+    assert out['planning']['segment_controls']['activate_stops']['visible']
+    assert out['planning']['segment_controls']['activate_stops']['usable']
+  end
+
   test 'merge_operations_with_params applies stop disabled when active column is omitted from params' do
     seed = Preferences::Catalog.default_operations.deep_dup
     out = Preferences::Catalog.merge_operations_with_params(

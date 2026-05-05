@@ -22,7 +22,7 @@ module Preferences
     # Maps catalog ids to edit UI partial paths (single source for planning/route heads + toolbars).
     module ViewRegistry
       # Subset of OPERATION_GROUPS_PLANNING rendered in #global_tools .pull-right.btn-group on planning edit.
-      PLANNING_EDIT_GLOBAL_TOOLBAR_OPERATION_IDS = %w[toggle_routes toggle_route_data lock_routes export].freeze
+      PLANNING_EDIT_GLOBAL_TOOLBAR_OPERATION_IDS = %w[toggle_routes toggle_route_data lock_routes activate_stops export].freeze
 
       module_function
 
