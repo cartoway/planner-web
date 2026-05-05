@@ -1,0 +1,7 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- if route[:vehicle_id]
+  - dt = route[:drive_time] || route['drive_time']
+  .col-xs-4{style: "order: #{ui_order}"}
+    .primary.route-info{title: t('plannings.edit.route_driving_time_help')}
+      %i.fa.fa-road.fa-fw{"aria-hidden" => "true"}>
+      = dt.present? ? dt : time_over_day(0)
