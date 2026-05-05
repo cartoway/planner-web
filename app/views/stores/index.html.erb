@@ -16,6 +16,7 @@
   </div>
 </div>
 
+<% can_destroy_stores = current_user_form_destroy_enabled?(:stores) %>
 <%= form_tag stores_path, method: :delete do %>
 <table id="stores" class="table table-striped table-hover">
   <thead>
@@ -39,7 +40,11 @@
         <td><%= store.city %></td>
         <td class="text-right">
           <%= link_to edit_store_path(store), :class => 'btn btn-primary btn-sm' do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
-          <%= link_to store, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <% if can_destroy_stores %>
+            <%= link_to store, class: 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <% else %>
+            <button type="button" class="btn btn-danger btn-sm" disabled><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %></button>
+          <% end %>
         </td>
       </tr>
     <% end %>
@@ -49,7 +54,7 @@
 <% unless @stores.empty? %>
 <div id="multiple-actions" class="row">
   <div class="col-md-12">
-    <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm", disabled: !can_destroy_stores, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
   </div>
 </div>
 <% end %>
