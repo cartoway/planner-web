@@ -230,6 +230,15 @@ class OptimizerWrapperTest < ActionController::TestCase
     end
   end
 
+  test 'service priority keeps locked at zero and shifts sticky to two when locked stops exist' do
+    locked_stop = Struct.new(:locked, :priority).new(true, 9)
+    unlocked_stop = Struct.new(:locked, :priority).new(false, 9)
+
+    assert_equal 0, @optim.send(:service_priority, locked_stop, ['v1'], override_default_priorities: true, has_locked_stops: true)
+    assert_equal 2, @optim.send(:service_priority, unlocked_stop, ['v1'], override_default_priorities: true, has_locked_stops: true)
+    assert_equal 0, @optim.send(:service_priority, unlocked_stop, ['v1'], override_default_priorities: true, has_locked_stops: false)
+  end
+
   test 'should build rests' do
     begin
       stops = @planning.routes.flat_map{ |route| route.stops.select{ |stop| stop.is_a?(StopVisit) } }
