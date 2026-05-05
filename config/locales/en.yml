@@ -3408,6 +3408,7 @@ en:
       speed: Speed
       quantities: Quantities
       used_reloads: Reloads
+      drive_time: Driving time
       wait_time: Wait time
       visits_duration: Visits duration
       rests_duration: Rest duration
