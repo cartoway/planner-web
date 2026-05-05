@@ -488,7 +488,7 @@ class OptimizerWrapper
     return 0 if stop.locked
 
     if override_default_priorities
-      return 2 if sticky_vehicle_ids.present? && has_locked_stops
+      return 8 if sticky_vehicle_ids.present? && has_locked_stops
       return 0 if sticky_vehicle_ids.present?
       return 8
     end
