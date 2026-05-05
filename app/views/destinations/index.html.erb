@@ -1,4 +1,5 @@
 <% javascript 'destination' %>
+<% can_destroy_destinations = current_user_form_destroy_enabled?(:destination) %>
 
 <% content_for :title, t('.title') %>
 
@@ -15,7 +16,7 @@
 <div class="row row-top">
   <div class="col-md-5">
     <button id="add" type="button" class="btn btn-primary btn-sm"><i class="fa fa-plus fa-fw"></i> <%= t '.new' %></button>
-    <button id="multiple-delete" class="btn btn-danger btn-sm"><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %></button>
+    <button id="multiple-delete" class="btn btn-danger btn-sm" <%= 'disabled' unless can_destroy_destinations %>><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %></button>
   </div>
   <div class="col-md-3">
     <span id="count"></span> <%= t 'activerecord.models.destinations', count: 10 %>
@@ -171,6 +172,7 @@ controller.js(
   default_country: @customer.default_country,
   duration_default: @customer.visit_duration_time_with_seconds,
   url_click2call: current_user.link_phone_number,
-  enable_references: @customer.enable_references
+  enable_references: @customer.enable_references,
+  can_destroy: can_destroy_destinations
 )
 %>

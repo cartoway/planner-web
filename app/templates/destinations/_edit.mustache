@@ -191,7 +191,7 @@
   <td>
     <div class="destination-buttons">
       <a href="destinations/{{id}}/edit" class="btn btn-primary btn-xs" title="{{#i18n}}all.verb.edit{{/i18n}}"><i class="fa fa-pencil fa-fw"></i></a>
-      <button type="button" class="destroy btn btn-danger btn-xs" title="{{#i18n}}all.verb.destroy{{/i18n}}"><i class="fa fa-trash fa-fw"></i></button>
+      <button type="button" class="destroy btn btn-danger btn-xs{{^can_destroy}} disabled{{/can_destroy}}" title="{{#i18n}}all.verb.destroy{{/i18n}}" {{^can_destroy}}disabled{{/can_destroy}}><i class="fa fa-trash fa-fw"></i></button>
     </div>
   </td>
 </tr>

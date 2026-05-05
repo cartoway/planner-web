@@ -24,6 +24,7 @@
   </div>
 </div>
 
+<% can_destroy_plannings = current_user_form_destroy_enabled?(:plannings) %>
 <%= form_tag plannings_path, method: :delete do %>
 <table id="plannings" class="table table-striped table-hover">
   <thead>
@@ -71,7 +72,11 @@
           <% end %>
           <%= link_to planning_duplicate_path(planning), disabled: current_user.customer.too_many_plannings?, :class => "btn btn-default btn-sm", method: :patch do %><i class="fa fa-copy fa-fw"></i> <%= t 'all.verb.duplicate' %><% end %>
           <%= link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
-          <%= link_to planning, :class => "btn btn-danger btn-sm", method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <% if can_destroy_plannings %>
+            <%= link_to planning, class: "btn btn-danger btn-sm", method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <% else %>
+            <button type="button" class="btn btn-danger btn-sm" disabled><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %></button>
+          <% end %>
         </td>
       </tr>
     <% end %>
@@ -80,7 +85,7 @@
 
 <div id="multiple_plannings_actions" class="row">
   <div class="form-inline col-md-12">
-    <%= button_tag type: :submit, class: "btn btn-danger btn-sm form-group", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm form-group", disabled: !can_destroy_plannings, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
     <div class="dropdown form-group">
       <button id="btn-export" class="btn btn-sm btn-default dropdown-toggle" type="button" data-toggle="dropdown">
         <i class="fa fa-share-nodes fa-fw"></i> <%= t('.export_selection') %> <span class="caret"></span>
