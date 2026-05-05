@@ -373,7 +373,7 @@ class V01::Plannings < Grape::API
       failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      requires :action, type: String, values: %w(visibility toggle lock), desc: 'Toogle is deprecated, use visibility instead'
+      requires :action, type: String, values: %w(visibility toggle lock active), desc: 'Toogle is deprecated, use visibility instead'
       requires :selection, type: String, values: %w(all reverse none), desc: 'Choose between: show/lock all routes, toggle all routes or hide/unlock all routes'
       optional :route_ids, type: Array[Integer], documentation: { param_type: 'form' }, coerce_with: CoerceArrayInteger, desc: 'Ids separated by comma.'
     end
@@ -402,6 +402,14 @@ class V01::Plannings < Grape::API
                 route.update! locked: !route.locked
               when :none
                 route.update! locked: false
+            end
+          when :active
+            next unless route.vehicle_usage_id
+
+            case params[:selection].to_sym
+              when :all, :reverse, :none
+                route.active(params[:selection].to_sym)
+                route.compute_saved!
             end
         end
       end
