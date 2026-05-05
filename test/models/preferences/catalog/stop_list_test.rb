@@ -50,7 +50,8 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
       'comment' => 'Sonner',
       'phone_number' => '+33123456789',
       'destination_duration' => '00:05:00',
-      'visit_duration' => '00:07:00'
+      'visit_duration' => '00:07:00',
+      'rests_duration' => '00:10:00'
     }
     assert_equal 'Dest N', Preferences::Catalog::StopList.field_value(stop, 'destination_name')
     assert_equal 'DREF', Preferences::Catalog::StopList.field_value(stop, 'ref')
@@ -68,6 +69,7 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
     assert_equal '+33123456789', Preferences::Catalog::StopList.field_value(stop, 'phone_number')
     assert_equal '00:05:00', Preferences::Catalog::StopList.field_value(stop, 'destination_duration')
     assert_equal '00:07:00', Preferences::Catalog::StopList.field_value(stop, 'visit_duration')
+    assert_equal '00:10:00', Preferences::Catalog::StopList.field_value(stop, 'rests_duration')
   end
 
   test 'field_value tags is nil when only visit has tags (split payload)' do

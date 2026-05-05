@@ -2097,7 +2097,9 @@ en:
       route_speed_average_help: Vehicle's speed average
       route_driving_time_help: Driving time
       route_visits_duration_help: Visits duration
+      route_rests_duration_help: Rests duration
       route_wait_time_help: Duration of waiting times
+      rests_duration_help: Rests duration
       drag_help: Drag & drop stops on routes
       active_help: Take or not stops into route
       edit_store_help: Edit store information
@@ -3389,6 +3391,7 @@ en:
       phone_number: Phone
       destination_duration: Destination duration
       visit_duration: Visit duration
+      rests_duration: Rest duration
       tags: Destination tags
       tags_visit: Visit tags
       eta: ETA
@@ -3407,6 +3410,7 @@ en:
       used_reloads: Reloads
       wait_time: Wait time
       visits_duration: Visits duration
+      rests_duration: Rest duration
     operations:
       external_callback: External callback
       optimize: Optimize
