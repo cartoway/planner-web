@@ -48,6 +48,7 @@
   - Redirect to root when unauthenticated with `csv` and `excel` format [#617](https://github.com/cartoway/planner-web/pull/617)
   - Fix `store_start` with `start_service_time` on route display [#621](https://github.com/cartoway/planner-web/pull/621)
   - Ensure `driver_token` uniqueness [#621](https://github.com/cartoway/planner-web/pull/621)
+  - Fix Plannings count on planning duplicate [#623](https://github.com/cartoway/planner-web/pull/623)
 
 ## V108.1.0
   ### Added
