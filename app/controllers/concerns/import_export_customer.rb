@@ -8,10 +8,9 @@ module ImportExportCustomer
 
   def self.import(customer_data_file, options)
     customer = Marshal.load(customer_data_file.read)
-    Customer.reset_column_information
-    User.reset_column_information
     self.assign_miscellaneous_attributes(customer, options)
     customer = customer.duplicate
+    self.assign_user_role(customer, options[:role_id])
     customer.save! validate: Planner::Application.config.validate_during_duplication
     customer
   end
@@ -27,11 +26,13 @@ module ImportExportCustomer
             .each{ |vehicle| vehicle.assign_attributes(router_id: options[:router_id], router_options: {}) }
     customer.users.select{ |user| user.layer_id.present? }
             .each{ |user| user.assign_attributes(layer_id: options[:layer_id]) }
+  end
 
-    return if options[:role_id].blank?
+  def self.assign_user_role(customer, role_id)
+    return if role_id.blank?
 
     customer.users.each do |user|
-      user.write_attribute(:role_id, options[:role_id])
+      user.role_id = role_id
     end
   end
 end
