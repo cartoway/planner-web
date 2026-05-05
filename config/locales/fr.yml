@@ -2196,7 +2196,9 @@ fr:
       route_speed_average_help: Vitesse moyenne du véhicule
       route_driving_time_help: Durée de conduite
       route_visits_duration_help: Durée des visites
+      route_rests_duration_help: Durée des pauses
       route_wait_time_help: Durée des temps d'attentes
+      rests_duration_help: Durée des pauses
       drag_help: Glisser-déposer pour ordonner le client dans les tournées
       active_help: Prendre en compte ou non un client dans la tournée
       edit_store_help: Modifier les informations du site
@@ -3533,6 +3535,7 @@ fr:
       phone_number: Téléphone
       destination_duration: Durée à la destination
       visit_duration: Durée de visite
+      rests_duration: Durée de pause
       tags: Catégories destination
       tags_visit: Catégories visite
       eta: ETA
@@ -3551,6 +3554,7 @@ fr:
       used_reloads: nombre de rechargements
       wait_time: Temps d’attente
       visits_duration: Durée des visites
+      rests_duration: Durée des pauses
     operations:
       external_callback: Application externe
       optimize: Optimiser

@@ -26,7 +26,7 @@ module Preferences
         name ref destination_name visit_ref
         street postalcode city country lat lng
         detail comment phone_number destination_duration visit_duration tags tags_visit
-        eta status
+        rests_duration eta status
       ].freeze
 
       DEFAULT_ACTIVE = %w[name ref].freeze
@@ -81,6 +81,7 @@ module Preferences
         when 'phone_number' then stop_get(stop, :phone_number).presence&.to_s
         when 'destination_duration' then stop_get(stop, :destination_duration).presence&.to_s
         when 'visit_duration' then stop_get(stop, :visit_duration).presence&.to_s
+        when 'rests_duration' then stop_get(stop, :rests_duration).presence&.to_s
         when 'tags' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags')
         when 'tags_visit' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags_visit')
         when 'eta' then stop_get(stop, :eta_formated).presence

@@ -16,6 +16,6 @@ class RouteData < ApplicationRecord
   time_attr :start, :end, :departure
 
   def duration
-    self.visits_duration.to_i + self.wait_time.to_i + self.drive_time.to_i
+    self.visits_duration.to_i + self.rests_duration.to_i + self.wait_time.to_i + self.drive_time.to_i
   end
 end

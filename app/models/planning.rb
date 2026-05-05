@@ -1101,6 +1101,7 @@ class Planning < ApplicationRecord
       routes_revenue: nil,
       routes_emission: nil,
       routes_visits_duration: 0,
+      routes_rests_duration: 0,
       routes_speed_average: 0,
       routes_drive_time: 0,
       routes_wait_time: 0,
@@ -1125,6 +1126,7 @@ class Planning < ApplicationRecord
         end
 
         result[:routes_visits_duration] += route.visits_duration if route.visits_duration
+        result[:routes_rests_duration] += route.rests_duration if route.rests_duration
         result[:routes_wait_time] += route.wait_time if route.wait_time
 
         routes_distance += route.distance if route.distance.present?

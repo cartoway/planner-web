@@ -12,6 +12,7 @@ averages = @planning.averages(current_user.prefered_unit)
 if averages
   json.averages do
     json.routes_visits_duration time_over_day(averages[:routes_visits_duration].to_i)
+    json.routes_rests_duration time_over_day(averages[:routes_rests_duration].to_i)
     json.routes_drive_time time_over_day(averages[:routes_drive_time])
     json.routes_wait_time time_over_day(averages[:routes_wait_time].to_i)
     json.routes_speed_average averages[:routes_speed_average]
