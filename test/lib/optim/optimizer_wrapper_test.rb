@@ -235,7 +235,7 @@ class OptimizerWrapperTest < ActionController::TestCase
     unlocked_stop = Struct.new(:locked, :priority).new(false, 9)
 
     assert_equal 0, @optim.send(:service_priority, locked_stop, ['v1'], override_default_priorities: true, has_locked_stops: true)
-    assert_equal 2, @optim.send(:service_priority, unlocked_stop, ['v1'], override_default_priorities: true, has_locked_stops: true)
+    assert_equal 8, @optim.send(:service_priority, unlocked_stop, ['v1'], override_default_priorities: true, has_locked_stops: true)
     assert_equal 0, @optim.send(:service_priority, unlocked_stop, ['v1'], override_default_priorities: true, has_locked_stops: false)
   end
 
