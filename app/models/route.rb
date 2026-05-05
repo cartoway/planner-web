@@ -21,7 +21,7 @@ require 'simplify_geojson_tracks_job'
 class Route < ApplicationRecord
   delegate :tracks, :tracks=, :points, :points=, to: :route_geojson, allow_nil: true, prefix: :geojson
   delegate :distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end,
-           :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure,
+           :drive_time, :wait_time, :visits_duration, :rests_duration, :pickups, :deliveries, :departure,
            :size_destinations, :size_store_reloads, :size_active_destinations, :no_geolocalization, :no_path,
            :unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time,
            :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_reload,
@@ -198,6 +198,7 @@ class Route < ApplicationRecord
       drive_time: nil,
       wait_time: nil,
       visits_duration: nil,
+      rests_duration: nil,
       pickups: nil,
       deliveries: nil,
       revenue: nil,
@@ -216,6 +217,7 @@ class Route < ApplicationRecord
       drive_time: nil,
       wait_time: nil,
       visits_duration: nil,
+      rests_duration: nil,
       revenue: nil,
       cost_distance: nil,
       cost_time: nil,
@@ -366,6 +368,8 @@ class Route < ApplicationRecord
             route_attributes[:end] = stop_attributes[:time] + stop.duration
             route_attributes[:visits_duration] = (route_attributes[:visits_duration] || 0) + stop.duration if !stop.is_a?(StopRest)
             previous_route_data_attributes[:visits_duration] = (previous_route_data_attributes[:visits_duration] || 0) + stop.duration if !stop.is_a?(StopRest)
+            route_attributes[:rests_duration] = (route_attributes[:rests_duration] || 0) + stop.duration if stop.is_a?(StopRest)
+            previous_route_data_attributes[:rests_duration] = (previous_route_data_attributes[:rests_duration] || 0) + stop.duration if stop.is_a?(StopRest)
             if !stop.is_a?(StopRest) && (previous_with_pos == true || (previous_with_pos.is_a?(Stop) && stop.position != previous_with_pos.position))
               route_attributes[:end] += stop.destination_duration
               route_attributes[:visits_duration] += stop.destination_duration
@@ -445,7 +449,7 @@ class Route < ApplicationRecord
 
       # Separate attributes for Route vs RouteData
       route_only_attributes = route_attributes.slice(:stop_distance, :stop_drive_time, :stop_no_path, :stop_out_of_drive_time, :stop_out_of_work_time, :stop_out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration)
-      route_data_attributes = route_attributes.slice(:distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure)
+      route_data_attributes = route_attributes.slice(:distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :rests_duration, :pickups, :deliveries, :departure)
 
       route_data_map = stops_sort.select{ |stop| stop.is_a?(StopStore) }.map(&:route_data).map(&:symbolized_attributes)
       compacted_route_data_attributes = self.start_route_data.symbolized_attributes.slice(*ROUTE_DATA_METRICS_FIELDS)

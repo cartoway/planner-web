@@ -791,7 +791,6 @@ CREATE TABLE public.route_data (
     color character varying,
     size_active integer DEFAULT 0 NOT NULL,
     size_destinations integer DEFAULT 0 NOT NULL,
-    size_active_destinations integer DEFAULT 0 NOT NULL,
     size_store_reloads integer DEFAULT 0 NOT NULL,
     stops_size integer DEFAULT 0 NOT NULL,
     no_geolocalization boolean DEFAULT false NOT NULL,
@@ -808,7 +807,9 @@ CREATE TABLE public.route_data (
     out_of_window boolean DEFAULT false NOT NULL,
     out_of_work_time boolean DEFAULT false NOT NULL,
     unmanageable_capacity boolean DEFAULT false NOT NULL,
-    max_loads jsonb DEFAULT '{}'::jsonb NOT NULL
+    max_loads jsonb DEFAULT '{}'::jsonb NOT NULL,
+    size_active_destinations integer DEFAULT 0 NOT NULL,
+    rests_duration integer
 );
 
 
@@ -3816,6 +3817,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260428104204'),
 ('20260429122243'),
 ('20260430145821'),
-('20260504094513');
+('20260504094513'),
+('20260505084452');
 
 
