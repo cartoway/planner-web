@@ -1059,10 +1059,11 @@ export const plannings_edit = function(params) {
     routesLayer.showRoutes([routeId]);
   });
 
-  $('#lock_routes_dropdown, #toggle_routes_dropdown').find('li a').click(function() {
+  $('#lock_routes_dropdown, #toggle_routes_dropdown, #activate_stops_dropdown').find('li a').click(function() {
     if (routes.length == 0) return;
 
-    var action = $(this).parent('li').parent('ul').attr('id') == 'lock_routes_dropdown' ? 'lock' : 'toggle';
+    var dropdownId = $(this).parent('li').parent('ul').attr('id');
+    var action = dropdownId == 'lock_routes_dropdown' ? 'lock' : (dropdownId == 'toggle_routes_dropdown' ? 'toggle' : 'active');
     var selection = $(this).parent('li').data('selection');
 
     var successLock = function(data) {
@@ -1099,6 +1100,9 @@ export const plannings_edit = function(params) {
         }
       });
     };
+    var successActive = function() {
+      initPlanningDisplay(planning_id, {firstTime: false});
+    };
 
     $.ajax({
       url: '/api/0.1/plannings/' + planning_id + '/update_routes',
@@ -1114,7 +1118,7 @@ export const plannings_edit = function(params) {
       beforeSend: beforeSendWaiting,
       complete: completeAjaxMap,
       error: ajaxError,
-      success: action == 'lock' ? successLock : successToggle
+      success: action == 'lock' ? successLock : (action == 'toggle' ? successToggle : successActive)
     });
 
   });

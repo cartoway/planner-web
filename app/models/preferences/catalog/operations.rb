@@ -22,7 +22,7 @@ module Preferences
     # Planning / route operation toolbar (ordered tool ids + per-tool segment_controls in JSON).
     module Operations
       OPERATION_GROUPS_PLANNING = %w[
-        external_callback optimize zoning vehicle_usage_set toggle_routes toggle_route_data lock_routes export refresh
+        external_callback optimize zoning vehicle_usage_set toggle_routes toggle_route_data lock_routes activate_stops export refresh
       ].freeze
 
       OPERATION_GROUPS_ROUTE = %w[

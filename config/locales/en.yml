@@ -1964,6 +1964,7 @@ en:
       lock_routes: Lock routes
       toggle_routes: Toggle routes
       toggle_route_data: Hide route stats
+      activate_stops_help: Activate route stops
       zonings:
         label: Sectorisations
         success: Sectorisation applied successfully
@@ -3420,6 +3421,7 @@ en:
       toggle_routes: Show/hide routes
       toggle_route_data: Route data display
       lock_routes: Lock routes
+      activate_stops: Activate route stops
       export: Export
       refresh: Refresh
       vehicle_usage: Vehicle usage

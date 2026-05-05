@@ -1,0 +1,25 @@
+- if @manage_planning[:manage_activate_stops]
+  .dropdown.btn-group
+    - dis = @manage_planning[:disable_activate_stops]
+    - if dis
+      %span.btn.btn-default.btn-sm.disabled
+        %i.fa.fa-square-check
+        %span.caret
+    - else
+      %a.btn.btn-default.btn-sm.dropdown-toggle{"data-toggle" => "dropdown", title: t('plannings.edit.activate_stops_help'), type: "button"}
+        %i.fa.fa-square-check
+        %span.caret
+    - unless dis
+      %ul#activate_stops_dropdown.dropdown-menu{role: "menu"}
+        %li{"data-selection": "none"}
+          %a.active_none
+            %i.fa.fa-regular.fa-square.fa-fw
+            = t('plannings.edit.active_none')
+        %li{"data-selection": "reverse"}
+          %a.active_reverse
+            %i.fa.fa-shuffle.fa-fw
+            = t('plannings.edit.active_reverse')
+        %li{"data-selection": "all"}
+          %a.active_all
+            %i.fa.fa-square-check.fa-fw
+            = t('plannings.edit.active_all')

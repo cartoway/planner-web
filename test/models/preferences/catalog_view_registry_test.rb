@@ -28,7 +28,7 @@ class PreferencesCatalogViewRegistryTest < ActiveSupport::TestCase
   end
 
   test 'planning_edit_global_toolbar_operation_ids is a fixed catalog order' do
-    assert_equal %w[toggle_routes toggle_route_data lock_routes export],
+    assert_equal %w[toggle_routes toggle_route_data lock_routes activate_stops export],
                  Preferences::Catalog.planning_edit_global_toolbar_operation_ids
   end
 end
