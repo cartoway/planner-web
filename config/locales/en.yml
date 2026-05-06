@@ -1980,8 +1980,8 @@ en:
       without_stops_title: >-
         Stops from this sizeable plan were not loaded to improve display
         performance
-      load_stops_out_of_route: Load unplanned stops
-      load_stops: Load stops in this route
+      load_stops_out_of_route: Loading unplanned stops
+      load_stops: Loading stops of the route
       optimize: Optimize all unlocked routes
       optimize_help: Optimize the route
       optimize_canceled: Optimization Canceled

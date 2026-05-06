@@ -45,7 +45,7 @@
                         = o_route[:name]
           .clearfix
 - if !route[:with_stops] && route[:size].to_i > 0
-  .d-flex.justify-content-center.load-stops
-    %button.btn.btn-default{ title: t("plannings.edit.without_stops_title")}
-      %i.fa.fa-rectangle-list.fa-fw
+  .d-flex.justify-content-center.load-stops.text-muted{data: { auto_load: true }}
+    %span
+      %i.fa.fa-spinner.fa-spin.fa-fw
       = t("plannings.edit.load_stops")
