@@ -214,7 +214,7 @@
                   %i.fa.fa-sort.fa-rotate-90.fa-fw
                 = stop[:time_windows_condensed]
   - if !route[:with_stops] && route[:size] > 0
-    .d-flex.justify-content-center.load-stops
-      %button.btn.btn-default{ title: t("plannings.edit.without_stops_title") }
-        %i.fa.fa-rectangle-list.fa-fw
+    .d-flex.justify-content-center.load-stops.text-muted{data: { auto_load: true }}
+      %span
+        %i.fa.fa-spinner.fa-spin.fa-fw
         = t("plannings.edit.load_stops")

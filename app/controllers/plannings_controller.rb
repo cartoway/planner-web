@@ -210,6 +210,7 @@ class PlanningsController < ApplicationController
 
   def refresh_route
     @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.includes_destinations_and_stores.first!
+    @with_stops = true
     stops_count = @route.stops.count
     page = params[:out_page] || 1
     if @route.vehicle_usage_id
