@@ -62,6 +62,10 @@ class PlanningsControllerTest < ActionController::TestCase
     original_limit = customer.stops_preload_limit
     customer.update!(stops_preload_limit: 1)
 
+    @planning.routes.each do |route|
+      route.route_data.update!(stops_size: 1)
+    end
+
     get :show, params: { id: @planning.id, format: :json }
     assert_response :success
     assert_equal false, assigns(:with_stops)
@@ -73,6 +77,10 @@ class PlanningsControllerTest < ActionController::TestCase
     customer = customers(:customer_one)
     original_limit = customer.stops_preload_limit
     customer.update!(stops_preload_limit: 1)
+
+    @planning.routes.each do |route|
+      route.route_data.update!(stops_size: 1)
+    end
 
     get :sidebar, params: { planning_id: @planning.id }, xhr: true
     assert_response :success
