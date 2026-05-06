@@ -44,6 +44,7 @@ class RouteSidebarSerializer
       time_day: @view_helpers.number_of_days(@route.start),
       size: @stops_count || route_data&.stops_size.to_i,
       size_active: route_data&.size_active.to_i,
+      size_destinations: route_size_destinations(route_data),
       skills: vehicle_usage_skills(vehicle_usage),
       devices: serialized_devices(vehicle_usage),
       store_start: serialize_store_start(vehicle_usage, vehicle, route_data),
@@ -66,9 +67,13 @@ class RouteSidebarSerializer
     data[:end_without_service_day] = day_from_display_end_time
     data[:departure] = route_data&.departure_time if route_data&.start_time
     data[:time_window_start] = vehicle_usage&.default_time_window_start_time
+    data[:max_reload] = vehicle_usage&.default_max_reload if vehicle_usage
     data[:optimized_at_formatted] = @route.optimized_at && @view_helpers.l(@route.optimized_at)
     data[:last_sent_at_formatted] = @route.last_sent_at && @view_helpers.l(@route.last_sent_at)
     data[:last_sent_to] = @route.last_sent_to
+    data[:contact_email] = vehicle&.contact_email if vehicle&.contact_email.present?
+    merge_device_flags!(data, vehicle_usage, vehicle)
+    merge_status_filters!(data, route_stops)
     data[:route_error] = route_error?
     merge_route_errors!(data)
     data
@@ -94,6 +99,51 @@ class RouteSidebarSerializer
     return {} unless vehicle_usage
 
     @view_helpers.route_devices(@view_helpers.planning_devices(@planning.customer), @route)
+  end
+
+  def merge_device_flags!(data, vehicle_usage, vehicle)
+    return unless vehicle_usage && vehicle
+
+    customer.device.configured_definitions.each do |key, definition|
+      has_route_operation = definition[:route_operations].present?
+      has_vehicle_form = definition[:forms][:vehicle]
+      has_required_device_keys = definition[:forms][:vehicle].keys.all? { |k| vehicle.devices[k].present? }
+      next unless has_route_operation && has_vehicle_form && has_required_device_keys
+
+      data[key] = true
+      data[:driver_token] = vehicle.driver_token if key == :deliver
+    end
+  end
+
+  def merge_status_filters!(data, route_stops)
+    return unless @with_stops
+
+    status_map = {}
+    route_stops.each do |stop|
+      next unless stop.status
+
+      code = stop.status.downcase
+      status_map[code] ||= {
+        code: code,
+        status: I18n.t("plannings.edit.stop_status.#{code}", default: stop.status)
+      }
+    end
+
+    default_statuses = %i[planned intransit started finished delivered exception rejected undelivered].map do |status|
+      {
+        code: status.to_s,
+        status: I18n.t("plannings.edit.stop_status.#{status}")
+      }
+    end
+    data[:status_all] = (status_map.values + default_statuses).uniq { |status| status[:code] }
+    data[:status_any] = status_map.any? || customer.device.available_stop_status?
+  end
+
+  def route_size_destinations(route_data)
+    return nil unless route_data
+    return nil if route_data.size_destinations == route_data.size_active
+
+    route_data.size_destinations
   end
 
   def route_duration_seconds(vehicle_usage)
@@ -127,6 +177,7 @@ class RouteSidebarSerializer
       end
 
     inactive_stops = 0
+    sub_tour_index_counter = 0
     sorted_route_stops.map do |stop|
       base = serialize_stop_common(stop)
       if stop.active
@@ -141,7 +192,8 @@ class RouteSidebarSerializer
       when StopRest
         base.merge(rest: { rest: true, store_id: @route.vehicle_usage&.default_store_rest&.id })
       when StopStore
-        serialize_store_stop_data(base, stop)
+        sub_tour_index_counter += 1
+        serialize_store_stop_data(base, stop, sub_tour_index_counter)
       else
         base
       end
@@ -175,7 +227,17 @@ class RouteSidebarSerializer
       time_day: stop.time && @view_helpers.number_of_days(stop.time),
       wait_time: stop.wait_time && stop.wait_time > 60 ? format('%<hours>i:%<minutes>02i', hours: stop.wait_time / 3600, minutes: stop.wait_time / 60 % 60) : nil,
       time_window_start_end_1: !!stop.time_window_start_1 || !!stop.time_window_end_1,
+      time_window_start_1: stop.time_window_start_1 && stop.time_window_start_1_time,
+      time_window_start_1_day: stop.time_window_start_1 && @view_helpers.number_of_days(stop.time_window_start_1),
+      time_window_end_1: stop.time_window_end_1 && stop.time_window_end_1_time,
+      time_window_end_1_day: stop.time_window_end_1 && @view_helpers.number_of_days(stop.time_window_end_1),
+      time_window_start_end_2: !!stop.time_window_start_2 || !!stop.time_window_end_2,
+      time_window_start_2: stop.time_window_start_2 && stop.time_window_start_2_time,
+      time_window_start_2_day: stop.time_window_start_2 && @view_helpers.number_of_days(stop.time_window_start_2),
+      time_window_end_2: stop.time_window_end_2 && stop.time_window_end_2_time,
+      time_window_end_2_day: stop.time_window_end_2 && @view_helpers.number_of_days(stop.time_window_end_2),
       time_windows_condensed: @view_helpers.stop_condensed_time_windows(stop),
+      priority: stop.priority,
       out_of_window: stop.out_of_window,
       out_of_capacity: stop.out_of_capacity,
       out_of_drive_time: stop.out_of_drive_time,
@@ -189,7 +251,9 @@ class RouteSidebarSerializer
       no_path: stop.no_path,
       unmanageable_capacity: stop.unmanageable_capacity,
       out_of_skill: stop.out_of_skill,
-      locked: stop.respond_to?(:locked) ? stop.locked : false
+      locked: stop.respond_to?(:locked) ? stop.locked : false,
+      link_phone_number: @view_helpers.current_user.url_click2call ? @view_helpers.current_user.link_phone_number : nil,
+      distance: (stop.distance || 0) / 1000.0
     }
     data[:ref] = nil unless @planning.customer.enable_references
     data
@@ -212,21 +276,27 @@ class RouteSidebarSerializer
       },
       destination_name: destination&.name,
       destination_ref: destination&.ref.presence,
-      visit_ref: visit&.ref.presence
+      visit_ref: visit&.ref.presence,
+      duration: visit&.default_duration,
+      quantities: visit_quantities(visit)
     )
   end
 
-  def serialize_store_stop_data(base, stop)
+  def serialize_store_stop_data(base, stop, sub_tour_index)
     rd = stop.route_data
     base.merge(
+      sub_tour_index: sub_tour_index,
       store_reload_id: stop.store_reload&.id,
       icon: stop.store_reload&.store&.icon,
       store_reload: {
         store_reload: true,
         store_id: stop.store_reload&.store&.id,
         store_reload_id: stop.store_reload&.id,
+        geocoded: stop.store_reload&.store&.position?,
+        error: !stop.store_reload&.store&.position?,
         departure: stop.time && stop.store_reload ? @view_helpers.time_over_day(stop.time.to_i + stop.store_reload.default_duration.to_i) : nil,
-        departure_day: stop.time && stop.store_reload ? @view_helpers.number_of_days(stop.time.to_i + stop.store_reload.default_duration.to_i) : nil
+        departure_day: stop.time && stop.store_reload ? @view_helpers.number_of_days(stop.time.to_i + stop.store_reload.default_duration.to_i) : nil,
+        status_updated_at: stop.status_updated_at && @view_helpers.l(stop.status_updated_at, format: :hour_minute)
       },
       route_data: serialize_route_data(rd),
       status: (rd&.status || stop.status) && I18n.t("plannings.edit.stop_store_status.#{(rd&.status || stop.status).downcase}", default: rd&.status || stop.status),
@@ -241,13 +311,27 @@ class RouteSidebarSerializer
     {
       id: store.id,
       name: store.name,
+      street: store.street,
+      postalcode: store.postalcode,
+      city: store.city,
+      country: store.country,
+      lat: store.lat,
+      lng: store.lng,
+      color: store.color,
       geocoded: store.position?,
+      error: !store.position?,
       no_path: false,
       icon: store.icon,
+      icon_size: store.icon_size,
       departure: route_data&.start_time,
+      status: @route.start_route_data&.status && I18n.t("plannings.edit.stop_status.#{@route.start_route_data.status.downcase}", default: @route.start_route_data.status.downcase),
       status_code: @route.start_route_data&.status&.downcase,
       eta_formated: @route.start_route_data&.eta && @view_helpers.l(@route.start_route_data.eta, format: :hour_minute),
-      route_data: serialize_route_data(@route.start_route_data, vehicle: vehicle)
+      eta: @route.start_route_data&.eta,
+      time: route_data&.start && route_data.start_time,
+      time_day: route_data&.start && @view_helpers.number_of_days(route_data.start),
+      route_data: serialize_route_data(@route.start_route_data, vehicle: vehicle),
+      custom_attributes: start_route_custom_attribute_templates
     }
   end
 
@@ -258,12 +342,31 @@ class RouteSidebarSerializer
     {
       id: store.id,
       name: store.name,
+      street: store.street,
+      postalcode: store.postalcode,
+      city: store.city,
+      country: store.country,
+      lat: store.lat,
+      lng: store.lng,
+      color: store.color,
       geocoded: store.position?,
+      error: !store.position? || @route.stop_no_path || @route.stop_out_of_drive_time || @route.stop_out_of_work_time || @route.stop_out_of_max_distance,
       no_path: @route.stop_no_path,
       icon: store.icon,
+      icon_size: store.icon_size,
       eta_formated: @route.stop_route_data&.eta && @view_helpers.l(@route.stop_route_data.eta, format: :hour_minute),
+      eta: @route.stop_route_data&.eta,
+      status: @route.stop_route_data&.status && I18n.t("plannings.edit.stop_status.#{@route.stop_route_data.status.downcase}", default: @route.stop_route_data.status.downcase),
       status_code: @route.stop_route_data&.status&.downcase,
-      route_data: serialize_route_data(@route.stop_route_data, vehicle: vehicle)
+      time: @route.route_data&.end && @route.route_data.end_time,
+      time_day: @route.end && @view_helpers.number_of_days(@route.end),
+      stop_out_of_drive_time: @route.stop_out_of_drive_time,
+      stop_out_of_work_time: @route.stop_out_of_work_time,
+      stop_out_of_max_distance: @route.stop_out_of_max_distance,
+      stop_distance: (@route.stop_distance || 0) / 1000.0,
+      stop_drive_time: @route.stop_drive_time,
+      route_data: serialize_route_data(@route.stop_route_data, vehicle: vehicle),
+      custom_attributes: stop_route_custom_attribute_templates
     }
   end
 
@@ -274,6 +377,22 @@ class RouteSidebarSerializer
       id: route_data.id,
       route_id: @route.id,
       vehicle_id: vehicle&.id,
+      status: route_data.status,
+      eta: route_data.eta,
+      emission: route_data.emission,
+      cost_distance: route_data.cost_distance,
+      cost_fixed: route_data.cost_fixed,
+      cost_time: route_data.cost_time,
+      revenue: route_data.revenue,
+      start: route_data.start,
+      end: route_data.end,
+      drive_time: route_data.drive_time,
+      wait_time: route_data.wait_time,
+      visits_duration: route_data.visits_duration,
+      rests_duration: route_data.rests_duration,
+      pickups: route_data.pickups,
+      deliveries: route_data.deliveries,
+      departure: route_data.departure,
       hidden: route_data.hidden,
       color: route_data.color,
       duration: route_data.duration && @view_helpers.time_over_day(route_data.duration),
@@ -282,7 +401,20 @@ class RouteSidebarSerializer
       route_out_of_work_time: @route.stop_out_of_work_time,
       route_out_of_max_distance: @route.stop_out_of_max_distance,
       work_or_window_time: @route.vehicle_usage&.work_or_window_time,
+      route_averages: serialize_route_data_averages(route_data),
       quantities: vehicle ? @view_helpers.route_data_quantities(route_data, vehicle) : []
+    }
+  end
+
+  def serialize_route_data_averages(route_data)
+    {
+      drive_time: route_data.drive_time && @view_helpers.time_over_day(route_data.drive_time),
+      prefered_unit: @view_helpers.current_user.prefered_unit,
+      prefered_currency: @view_helpers.current_user.prefered_currency,
+      speed: @view_helpers.speed_average(route_data, @view_helpers.current_user.prefered_unit),
+      visits_duration: @view_helpers.time_over_day(route_data.visits_duration.to_i),
+      rests_duration: @view_helpers.time_over_day(route_data.rests_duration.to_i),
+      wait_time: @view_helpers.time_over_day(route_data.wait_time.to_i)
     }
   end
 
@@ -353,6 +485,32 @@ class RouteSidebarSerializer
       tags_visit: visit_tags.map { |tag| { label: tag.label } },
       tags_merged: merged_tags.map { |tag| { label: tag.label } }
     }
+  end
+
+  def visit_quantities(visit)
+    return nil if customer.enable_orders
+
+    @view_helpers.visit_quantities(visit, @route.vehicle_usage&.vehicle)
+  end
+
+  def start_route_custom_attribute_templates
+    @start_route_custom_attribute_templates ||=
+      customer.custom_attributes
+              .for_route
+              .for_related_field('start_route_data')
+              .map { |custom_attribute| @view_helpers.custom_attribute_template(custom_attribute, @route, related_field: 'start_route_data') }
+  end
+
+  def stop_route_custom_attribute_templates
+    @stop_route_custom_attribute_templates ||=
+      customer.custom_attributes
+              .for_route
+              .for_related_field('stop_route_data')
+              .map { |custom_attribute| @view_helpers.custom_attribute_template(custom_attribute, @route, related_field: 'stop_route_data') }
+  end
+
+  def customer
+    @planning.customer
   end
 
   def formatted_display_start_time
