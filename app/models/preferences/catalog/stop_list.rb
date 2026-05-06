@@ -79,9 +79,13 @@ module Preferences
         when 'detail' then stop_get(stop, :detail).presence&.to_s
         when 'comment' then stop_get(stop, :comment).presence&.to_s
         when 'phone_number' then stop_get(stop, :phone_number).presence&.to_s
-        when 'destination_duration' then stop_get(stop, :destination_duration).presence&.to_s
-        when 'visit_duration' then stop_get(stop, :visit_duration).presence&.to_s
-        when 'rests_duration' then stop_get(stop, :rests_duration).presence&.to_s
+        when 'destination_duration'
+          stop_get(stop, :destination_duration).presence&.to_s ||
+            stop_get(stop, :destination_duration_time_with_seconds).presence&.to_s
+        when 'visit_duration'
+          stop_get(stop, :visit_duration).presence&.to_s ||
+            stop_get(stop, :duration_time_with_seconds).presence&.to_s ||
+            stop_get(stop, :duration).presence&.to_s
         when 'tags' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags')
         when 'tags_visit' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags_visit')
         when 'eta' then stop_get(stop, :eta_formated).presence
