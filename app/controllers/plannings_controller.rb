@@ -26,7 +26,8 @@ class PlanningsController < ApplicationController
   before_action :authenticate_driver!, only: [:driver_move]
 
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  before_action :set_planning, only: [:edit, :duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
+  before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
+  before_action :set_planning_for_edit, only: [:edit]
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal, :move]
@@ -767,6 +768,21 @@ class PlanningsController < ApplicationController
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
     @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_route_details.first!
+    apply_planning_toolbar_operation_flags!
+  end
+
+  # Edit initial page render does not need route stops preloaded.
+  # Sidebar/show endpoints load detailed data on demand.
+  def set_planning_for_edit
+    @manage_planning =
+      if request.referer&.match('api-web')
+        ApiWeb::V01::PlanningsController.manage
+      else
+        PlanningsController.manage
+      end
+    @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
+    @colors = COLORS_TABLE.dup.unshift(nil)
+    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
     apply_planning_toolbar_operation_flags!
   end
 
