@@ -1,3 +1,18 @@
+customer = planning.customer
+enable_orders = customer.enable_orders
+enable_stop_status = customer.enable_stop_status
+route_vehicle = route.vehicle_usage&.vehicle
+configured_device_definitions = customer.device.configured_definitions
+available_stop_status = customer.device.available_stop_status?
+customer_deliverable_units = local_assigns[:customer_deliverable_units] || customer.deliverable_units.to_a
+start_route_custom_attributes = local_assigns[:start_route_custom_attributes] || customer.custom_attributes.for_route.for_related_field('start_route_data')
+stop_route_custom_attributes = local_assigns[:stop_route_custom_attributes] || customer.custom_attributes.for_route.for_related_field('stop_route_data')
+start_route_custom_attribute_templates = start_route_custom_attributes.map { |c_a| custom_attribute_template(c_a, route, related_field: 'start_route_data') }
+stop_route_custom_attribute_templates = stop_route_custom_attributes.map { |c_a| custom_attribute_template(c_a, route, related_field: 'stop_route_data') }
+destination_visit_index_cache = {}
+visit_quantities_cache = {}
+route_data_quantities_cache = {}
+
 json.route_id route.id
 if @with_planning
   json.planning_id route.planning_id
@@ -9,11 +24,17 @@ if @with_planning
     json.color tag.default_color
   end
 end
-json.extract! route, :ref, :hidden, :locked, :outdated, :size_active
+json.extract! route, :ref, :hidden, :locked, :outdated
 (json.duration time_over_day(route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + (route.vehicle_usage ? route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i : 0)))
 json.distance locale_distance(route.distance || 0, current_user.prefered_unit)
-json.size stops_count || route.stops_size
-json.size_destinations route.size_destinations if route.size_destinations != route.size_active
+route_data_metrics = route.route_data
+route_stops_size = route_data_metrics&.stops_size
+route_size_destinations = route_data_metrics&.size_destinations
+route_size_active = route_data_metrics&.size_active || 0
+json.size_active route_size_active
+json.size stops_count || route_stops_size || 0
+json.size_destinations route_size_destinations if route_size_destinations && route_size_destinations != route_size_active
+route_stops = @with_stops ? route.stops.to_a : []
 (json.start_time route.route_data.start_time) if route.route_data.start
 (json.start_day number_of_days(route.start)) if route.start
 (json.end_time route.route_data.end_time) if route.route_data.end
@@ -23,30 +44,30 @@ json.color_fake route.color
 json.last_sent_to route.last_sent_to if route.last_sent_to
 json.last_sent_at_formatted l(route.last_sent_at) if route.last_sent_at
 json.optimized_at_formatted l(route.optimized_at) if route.optimized_at
-unless planning.customer.enable_orders
+unless enable_orders
   json.quantities route_quantities(planning, route)
 end
 if route.vehicle_usage_id
-  json.name [route.ref, route.vehicle_usage.vehicle.name].compact.join(' ') unless @with_planning
-  json.default_color route.vehicle_usage.vehicle.color
-  json.color route.color || route.vehicle_usage.vehicle.color
-  json.contact_email route.vehicle_usage.vehicle.contact_email if route.vehicle_usage.vehicle.contact_email
+  json.name [route.ref, route_vehicle.name].compact.join(' ') unless @with_planning
+  json.default_color route_vehicle.color
+  json.color route.color || route_vehicle.color
+  json.contact_email route_vehicle.contact_email if route_vehicle.contact_email
   json.vehicle_usage_id route.vehicle_usage.id
   json.max_reload route.vehicle_usage.default_max_reload
-  json.used_reloads route.size_store_reloads
+  json.used_reloads route_data_metrics&.size_store_reloads || 0
   if @with_devices
     json.devices route_devices(list_devices, route)
   end
-  json.vehicle_id route.vehicle_usage.vehicle.id
+  json.vehicle_id route_vehicle.id
   json.visits_duration time_over_day(route.visits_duration.to_i)
   json.rests_duration time_over_day(route.rests_duration.to_i)
   json.wait_time time_over_day(route.wait_time.to_i)
-  json.vehicle_name route.vehicle_usage.vehicle.name
+  json.vehicle_name route_vehicle.name
   json.time_window_start route.vehicle_usage.default_time_window_start_time
-  if route.vehicle_usage.vehicle&.default_router
-    json.router_name route.vehicle_usage.vehicle.default_router.name_locale[I18n.locale.to_s] ||
-                     route.vehicle_usage.vehicle.default_router.name_locale[I18n.default_locale.to_s] ||
-                     route.vehicle_usage.vehicle.default_router.name
+  if route_vehicle&.default_router
+    json.router_name route_vehicle.default_router.name_locale[I18n.locale.to_s] ||
+                     route_vehicle.default_router.name_locale[I18n.default_locale.to_s] ||
+                     route_vehicle.default_router.name
   end
   if route.drive_time != 0 && !route.drive_time.nil?
     json.route_averages do
@@ -72,10 +93,10 @@ if route.vehicle_usage_id
   end
 
   # Devices
-  planning.customer.device.configured_definitions.each do |key, definition|
+  configured_device_definitions.each do |key, definition|
     has_route_operation = !definition[:route_operations].empty?
     has_vehicle = definition[:forms][:vehicle]
-    has_blank_key = definition[:forms][:vehicle].keys.all?{ |k| !route.vehicle_usage.vehicle.devices[k].blank? }
+    has_blank_key = definition[:forms][:vehicle].keys.all?{ |k| !route_vehicle.devices[k].blank? }
 
     if has_route_operation && has_vehicle && has_blank_key
       json.set!(key, true)
@@ -87,7 +108,7 @@ if route.vehicle_usage_id
   end
   if @with_stops && @with_devices
     status_map = {}
-    route.stops.each do |stop|
+    route_stops.each do |stop|
       next unless stop.status
       status_map[stop.status.downcase] ||= {
         code: stop.status.downcase,
@@ -103,14 +124,14 @@ if route.vehicle_usage_id
         }
       }).uniq
     end
-    json.status_any status_map.any? || planning.customer.device.available_stop_status?
+    json.status_any status_map.any? || available_stop_status
   end
 else
   json.name t("plannings.edit.out_of_route")
 end
 json.store_start do
   json.extract! route.vehicle_usage.default_store_start, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
-  if route.start_route_data&.status && planning.customer.enable_stop_status
+  if route.start_route_data&.status && enable_stop_status
     json.status_code route.start_route_data.status.downcase
     json.status t("plannings.edit.stop_status.#{route.start_route_data.status.downcase}", default: route.start_route_data.status.downcase)
     json.eta_formated l(route.start_route_data.eta, format: :hour_minute) if route.start_route_data.eta
@@ -137,12 +158,15 @@ json.store_start do
     json.duration time_over_day(route.start_route_data.duration) if route.start_route_data.duration
     json.distance locale_distance(route.start_route_data.distance || 0, current_user.prefered_unit)
     json.extract! route.start_route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :rests_duration, :pickups, :deliveries, :departure, :status, :eta, :hidden, :color
-    json.quantities route_data_quantities(route.start_route_data, route.vehicle_usage_id && route.vehicle_usage.vehicle)
+    json.quantities(
+      route_data_quantities_cache[route.start_route_data.id] ||= route_data_quantities(
+        route.start_route_data,
+        route_vehicle,
+        units: customer_deliverable_units
+      )
+    )
   end
-  json.custom_attributes (
-    planning.customer.custom_attributes.for_route.for_related_field('start_route_data')
-      .map{ |c_a| custom_attribute_template(c_a, route, related_field: 'start_route_data') }
-  )
+  json.custom_attributes start_route_custom_attribute_templates
 end if route.vehicle_usage && route.vehicle_usage.default_store_start
 (json.start_with_service Time.at(display_start_time(route)).utc.strftime('%H:%M')) if display_start_time(route)
 (json.start_with_service_day number_of_days(display_start_time(route))) if display_start_time(route)
@@ -152,7 +176,15 @@ json.with_stops @with_stops
 if @with_stops
   inactive_stops = 0
   sub_tour_index_counter = 0
-  json.stops route.vehicle_usage_id ? route.stops : (route.stops.all?{ |s| s.name.to_i != 0 } ? route.stops.sort_by{ |s| s.name.to_i } : route.stops.sort_by{ |s| s.name.to_s.downcase }) do |stop|
+  sorted_route_stops =
+    if route.vehicle_usage_id
+      route_stops
+    elsif route_stops.all? { |stop| stop.name.to_i != 0 }
+      route_stops.sort_by { |stop| stop.name.to_i }
+    else
+      route_stops.sort_by { |stop| stop.name.to_s.downcase }
+    end
+  json.stops sorted_route_stops do |stop|
     (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position || stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_max_reload || stop.out_of_relation || stop.no_path || stop.unmanageable_capacity || stop.out_of_skill
     json.stop_id stop.id
     json.stop_index stop.index
@@ -182,7 +214,7 @@ if @with_stops
     end
     (json.link_phone_number current_user.link_phone_number) if current_user.url_click2call
     json.distance (stop.distance || 0) / 1000
-    if stop.status && planning.customer.enable_stop_status
+    if stop.status && enable_stop_status
       json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
       json.status_code stop.status.downcase
     end
@@ -202,16 +234,20 @@ if @with_stops
         (json.color visit.color) if visit.color
         (json.icon visit.icon) if visit.icon
       end
-      json.index_visit (visit.destination.visits.index(visit) + 1) if visit.destination.visits.size > 1
+      destination_visits_index =
+        destination_visit_index_cache[visit.destination_id] ||= visit.destination.visits.each_with_index.to_h { |v, i| [v.id, i + 1] }
+      json.index_visit destination_visits_index[visit.id] if destination_visits_index.size > 1
       visit_stop_tags_present_json!(json, visit)
-      if planning.customer.enable_orders
+      if enable_orders
         order = stop.order
         if order
           json.orders order.products.collect(&:code).join(', ')
         end
       else
         # Hash { id, quantity, pickup, delivery, icon, label } for deliverable units
-        json.quantities visit_quantities(visit, route.vehicle_usage_id && route.vehicle_usage.vehicle)
+        json.quantities(
+          visit_quantities_cache[visit.id] ||= visit_quantities(visit, route_vehicle)
+        )
       end
       if stop.route.last_sent_to && stop.status && stop.eta
         (json.eta_formated l(stop.eta, format: :hour_minute)) if stop.eta
@@ -234,7 +270,7 @@ if @with_stops
         (json.error true) if !stop.store_reload.store.position?
         (json.departure time_over_day(stop.time.to_i + stop.store_reload.default_duration.to_i))
         json.departure_day number_of_days(stop.time.to_i + stop.store_reload.default_duration.to_i)
-        if (store_status = stop.route_data&.status || stop.status) && planning.customer.enable_stop_status
+        if (store_status = stop.route_data&.status || stop.status) && enable_stop_status
           json.status t("plannings.edit.stop_store_status.#{store_status.downcase}", default: store_status)
           json.status_code store_status.downcase
           json.eta_formated l(stop.route_data.eta, format: :hour_minute) if stop.route_data&.eta
@@ -257,13 +293,19 @@ if @with_stops
         json.duration time_over_day(stop.route_data.duration) if stop.route_data.duration
         json.distance locale_distance(stop.route_data.distance || 0, current_user.prefered_unit)
         json.extract! stop.route_data, :id, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :rests_duration, :pickups, :deliveries, :departure, :status, :hidden, :color
-        json.quantities route_data_quantities(stop.route_data, stop.route.vehicle_usage_id && stop.route.vehicle_usage.vehicle)
+        json.quantities(
+          route_data_quantities_cache[stop.route_data.id] ||= route_data_quantities(
+            stop.route_data,
+            route_vehicle,
+            units: customer_deliverable_units
+          )
+        )
       end
     end
     json.duration l(Time.at(stop.duration).utc, format: :hour_minute_second) if stop.duration > 0
     # Include route depot statuses and custom attributes for stop-popup display
-    if route.vehicle_usage_id && planning.customer.enable_stop_status
-      if route.vehicle_usage.default_store_start && (route.start_route_data&.status || planning.customer.custom_attributes.for_route.for_related_field('start_route_data').any?)
+    if route.vehicle_usage_id && enable_stop_status
+      if route.vehicle_usage.default_store_start && (route.start_route_data&.status || start_route_custom_attributes.any?)
         json.store_start do
           json.name route.vehicle_usage.default_store_start.name
           if route.start_route_data&.status
@@ -271,13 +313,10 @@ if @with_stops
             json.status_code route.start_route_data.status.downcase
             json.eta_formated l(route.start_route_data.eta, format: :hour_minute) if route.start_route_data.eta
           end
-          json.custom_attributes (
-            planning.customer.custom_attributes.for_route.for_related_field('start_route_data')
-              .map{ |c_a| custom_attribute_template(c_a, route, related_field: 'start_route_data') }
-          )
+          json.custom_attributes start_route_custom_attribute_templates
         end
       end
-      if route.vehicle_usage.default_store_stop && (route.stop_route_data&.status || planning.customer.custom_attributes.for_route.for_related_field('stop_route_data').any?)
+      if route.vehicle_usage.default_store_stop && (route.stop_route_data&.status || stop_route_custom_attributes.any?)
         json.store_stop do
           json.name route.vehicle_usage.default_store_stop.name
           if route.stop_route_data&.status
@@ -285,10 +324,7 @@ if @with_stops
             json.status_code route.stop_route_data.status.downcase
             json.eta_formated l(route.stop_route_data.eta, format: :hour_minute) if route.stop_route_data.eta
           end
-          json.custom_attributes (
-            planning.customer.custom_attributes.for_route.for_related_field('stop_route_data')
-              .map{ |c_a| custom_attribute_template(c_a, route, related_field: 'stop_route_data') }
-          )
+          json.custom_attributes stop_route_custom_attribute_templates
         end
       end
     end
@@ -297,7 +333,7 @@ end
 
 json.store_stop do
   json.extract! route.vehicle_usage.default_store_stop, :id, :name, :street, :postalcode, :city, :country, :lat, :lng, :color, :icon, :icon_size
-  if route.stop_route_data&.status && planning.customer.enable_stop_status
+  if route.stop_route_data&.status && enable_stop_status
     json.status_code route.stop_route_data.status.downcase
     json.status t("plannings.edit.stop_status.#{route.stop_route_data.status.downcase}", default: route.stop_route_data.status.downcase)
     json.eta_formated l(route.stop_route_data.eta, format: :hour_minute) if route.stop_route_data.eta
@@ -319,10 +355,7 @@ json.store_stop do
     json.vehicle_id route.vehicle_usage.vehicle_id
     json.extract! route.stop_route_data, :status, :eta
   end
-  json.custom_attributes (
-    planning.customer.custom_attributes.for_route.for_related_field('stop_route_data')
-      .map{ |c_a| custom_attribute_template(c_a, route, related_field: 'stop_route_data') }
-  )
+  json.custom_attributes stop_route_custom_attribute_templates
 end if route.vehicle_usage_id && route.vehicle_usage.default_store_stop
 (json.end_without_service Time.at(display_end_time(route)).utc.strftime('%H:%M')) if display_end_time(route)
 (json.end_without_service_day number_of_days(display_end_time(route))) if display_end_time(route)

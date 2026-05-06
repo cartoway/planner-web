@@ -250,10 +250,35 @@ class PlanningsController < ApplicationController
       else
         @planning.routes.includes_vehicle_usages.available
       end
-    json_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+    external_callback_locals =
+      if planning_external_callback_json_partial?
+        {
+          external_callback_enabled: current_user.customer.enable_external_callback?,
+          external_callback_name: current_user.customer.external_callback_name,
+          external_callback_url: current_user.customer.external_callback_url,
+          external_callback_disabled: planning_external_callback_segment_disabled?
+        }
+      else
+        {
+          external_callback_enabled: false,
+          external_callback_name: nil,
+          external_callback_url: nil,
+          external_callback_disabled: true
+        }
+      end
+    sidebar_locals = PlanningSidebarPresenter.new(
+      planning: @planning,
+      routes: @routes,
+      current_user: current_user,
+      with_stops: @with_stops,
+      view_helpers: view_context,
+      with_planning: false,
+      with_devices: true,
+      **external_callback_locals
+    ).build
 
     respond_to do |format|
-      format.js { render partial: 'sidebar', locals: json_data.merge(summary: planning_summary(@planning)) }
+      format.js { render partial: 'sidebar', locals: sidebar_locals.merge(summary: planning_summary(@planning)) }
     end
   end
 
@@ -579,7 +604,7 @@ class PlanningsController < ApplicationController
     planning
       .routes
       .select { |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }
-      .none? { |r| (stops_count += r.stops_size) >= planning.customer.stops_preload_limit }
+      .none? { |route| (stops_count += route.route_data&.stops_size.to_i) >= planning.customer.stops_preload_limit }
   end
 
   def move_respond

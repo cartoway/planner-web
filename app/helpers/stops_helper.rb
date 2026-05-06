@@ -22,9 +22,9 @@ module StopsHelper
     StopQuantities.normalize(stop, vehicle, options)
   end
 
-  def route_data_quantities(route_data, vehicle)
+  def route_data_quantities(route_data, vehicle, units: nil)
     quantities = []
-    units = vehicle.customer.deliverable_units
+    units ||= vehicle.customer.deliverable_units
 
     units.each do |unit|
       pickup = route_data.pickups[unit.id].to_f
