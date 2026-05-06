@@ -11,11 +11,38 @@ if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
   end
 else
   routes_for_sidebar = @routes || (@with_stops ? @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available : @planning.routes)
-  customer_custom_attributes = @planning.customer.custom_attributes.to_a
-  route_custom_attributes = customer_custom_attributes.select { |custom_attribute| custom_attribute.object_class == 'route' }
-  start_route_custom_attributes = route_custom_attributes.select { |custom_attribute| custom_attribute.related_field == 'start_route_data' }
-  stop_route_custom_attributes = route_custom_attributes.select { |custom_attribute| custom_attribute.related_field == 'stop_route_data' }
-  customer_deliverable_units = @planning.customer.deliverable_units.to_a
+  routes_array = routes_for_sidebar.to_a
+
+  duration_total = 0
+  distance_total = 0
+  size_total = 0
+  size_active_total = 0
+
+  routes_array.each do |route|
+    route_data = route.route_data
+    vehicle_usage = route.vehicle_usage
+
+    distance_total += route.distance || 0
+    size_total += route_data&.stops_size || 0
+    size_active_total += route_data&.size_active || 0
+
+    next unless vehicle_usage
+
+    duration_total += route.visits_duration.to_i
+    duration_total += route.wait_time.to_i
+    duration_total += route.drive_time.to_i
+    duration_total += vehicle_usage.default_service_time_start.to_i
+    duration_total += vehicle_usage.default_service_time_end.to_i
+  end
+
+  routes_data = routes_array.map do |route|
+    RouteSidebarSerializer.new(
+      route: route,
+      planning: @planning,
+      with_stops: @with_stops,
+      view_helpers: self
+    ).as_hash
+  end
 
   json.prefered_unit current_user.prefered_unit
   json.extract! @planning, :id, :ref
@@ -33,24 +60,11 @@ else
     json.customer_external_callback_url nil
     json.customer_external_callback_disabled true
   end
-  duration = routes_for_sidebar.select(&:vehicle_usage).to_a.sum(0){ |route| route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i}
-  json.duration time_over_day(duration)
-  json.distance locale_distance(routes_for_sidebar.to_a.sum(0){ |route| route.distance || 0 }, current_user.prefered_unit)
+  json.duration time_over_day(duration_total)
+  json.distance locale_distance(distance_total, current_user.prefered_unit)
   (json.outdated true) if @planning.outdated
-  json.size routes_for_sidebar.to_a.sum(0) { |route| route.route_data&.stops_size || 0 }
-  json.size_active routes_for_sidebar.to_a.sum(0) { |route| route.route_data&.size_active || 0 }
+  json.size size_total
+  json.size_active size_active_total
 
-  json.routes routes_for_sidebar,
-              partial: 'routes/edit',
-              formats: [:json],
-              handlers: [:jbuilder],
-              as: :route,
-              locals: {
-                list_devices: planning_devices(@planning.customer),
-                stops_count: nil,
-                planning: @planning,
-                start_route_custom_attributes: start_route_custom_attributes,
-                stop_route_custom_attributes: stop_route_custom_attributes,
-                customer_deliverable_units: customer_deliverable_units
-              }
+  json.routes routes_data
 end
