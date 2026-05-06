@@ -9,6 +9,12 @@ module TypedAttribute
       end
 
       define_method("#{current_attribute}_typed_hash") do |related_field: nil|
+        typed_hash_cache = instance_variable_get(:@_typed_attr_hash_cache) || {}
+        cache_key = [current_attribute, related_field]
+        if typed_hash_cache.key?(cache_key)
+          return typed_hash_cache[cache_key]
+        end
+
         customer =
           if self.respond_to?(:customer)
             self.customer
@@ -21,21 +27,40 @@ module TypedAttribute
         current_type =
           CustomAttribute.object_classes[self.class.to_s.snakecase]
 
-        reference_attributes = customer.send(current_attribute).where(object_class: current_type)
-        if related_field.present?
-          reference_attributes = reference_attributes.where(related_field: related_field)
-        elsif related_field.nil? && self.is_a?(Route)
-          # For Route, if related_field is explicitly nil, only get attributes without related_field
-          reference_attributes = reference_attributes.where(related_field: nil)
-        end
+        reference_attributes =
+          if customer.association(current_attribute).loaded?
+            customer.send(current_attribute).select do |custom_attribute|
+              next false unless custom_attribute.object_class_before_type_cast == current_type
+
+              if related_field.present?
+                custom_attribute.related_field == related_field.to_s
+              elsif related_field.nil? && self.is_a?(Route)
+                custom_attribute.related_field.nil?
+              else
+                true
+              end
+            end
+          else
+            scoped_attributes = customer.send(current_attribute).where(object_class: current_type)
+            if related_field.present?
+              scoped_attributes = scoped_attributes.where(related_field: related_field)
+            elsif related_field.nil? && self.is_a?(Route)
+              # For Route, if related_field is explicitly nil, only get attributes without related_field
+              scoped_attributes = scoped_attributes.where(related_field: nil)
+            end
+            scoped_attributes
+          end
 
         current_attributes = send(current_attribute) || {}
-        rhash = Hash[reference_attributes.map{ |r_a|
+        typed_hash = Hash[reference_attributes.map { |r_a|
           storage_key = CustomAttribute.storage_key_for(r_a.name, related_field: related_field)
           raw_value = current_attributes[storage_key]
           [r_a.name, typed_value(r_a.object_type, raw_value || r_a.default_value)]
         }]
-        rhash
+
+        typed_hash_cache[cache_key] = typed_hash
+        instance_variable_set(:@_typed_attr_hash_cache, typed_hash_cache)
+        typed_hash
       end
     end
   end

@@ -44,7 +44,7 @@
                         .color_small{style: "background:#{o_route[:color]}"}
                         = o_route[:name]
           .clearfix
-- if !route[:with_stops] && route[:size] > 0
+- if !route[:with_stops] && route[:size].to_i > 0
   .d-flex.justify-content-center.load-stops
     %button.btn.btn-default{ title: t("plannings.edit.without_stops_title")}
       %i.fa.fa-rectangle-list.fa-fw

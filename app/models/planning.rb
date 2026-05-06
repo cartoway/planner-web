@@ -59,6 +59,7 @@ class Planning < ApplicationRecord
 
   scope :preload_routes_without_stops, -> {
     preload(
+      { customer: :custom_attributes },
       routes: [
         :route_data, :start_route_data, :stop_route_data,
         { vehicle_usage: [
