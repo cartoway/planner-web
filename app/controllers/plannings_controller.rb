@@ -223,7 +223,13 @@ class PlanningsController < ApplicationController
       current_route.stops = @out_stops
     end
     planning_summary = planning_summary(@planning)
-    route_data = JSON.parse(render_to_string(template: 'routes/_edit.json.jbuilder', locals: { route: current_route, stops_count: stops_count, planning: @planning }), symbolize_names: true)
+    route_data = RouteSidebarSerializer.new(
+      route: current_route,
+      planning: @planning,
+      with_stops: @with_stops,
+      view_helpers: view_context,
+      stops_count: stops_count
+    ).as_hash
     route_data[:route_id] = @route.id
     respond_to do |format|
       if current_route.vehicle_usage_id
@@ -276,7 +282,12 @@ class PlanningsController < ApplicationController
       view_helpers: view_context,
       with_planning: false,
       with_devices: true,
-      **external_callback_locals
+      external_callback: {
+        enabled: external_callback_locals[:external_callback_enabled],
+        name: external_callback_locals[:external_callback_name],
+        url: external_callback_locals[:external_callback_url],
+        disabled: external_callback_locals[:external_callback_disabled]
+      }
     ).build
 
     respond_to do |format|
@@ -329,7 +340,12 @@ class PlanningsController < ApplicationController
     # Build route_info via existing route json (without stops)
     @with_stops = false
     route_json =
-      route && JSON.parse(render_to_string(template: 'routes/_edit.json.jbuilder', formats: [:json], locals: { route: route, stops_count: nil, planning: @planning }), symbolize_names: true)
+      route && RouteSidebarSerializer.new(
+        route: route,
+        planning: @planning,
+        with_stops: @with_stops,
+        view_helpers: view_context
+      ).as_hash
     # Build stops via dedicated jbuilder
     stops_json = JSON.parse(render_to_string(partial: 'stops/move_list.json.jbuilder', formats: [:json], locals: { stops: stops }), symbolize_names: true)
     stops = stops_json[:stops] || []
@@ -606,7 +622,9 @@ class PlanningsController < ApplicationController
     planning
       .routes
       .select { |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }
-      .none? { |route| (stops_count += route.route_data&.stops_size.to_i) >= planning.customer.stops_preload_limit }
+      .none? do |route|
+        (stops_count += route.route_data&.stops_size) >= planning.customer.stops_preload_limit
+      end
   end
 
   def move_respond

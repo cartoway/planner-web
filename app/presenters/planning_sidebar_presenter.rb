@@ -1,5 +1,5 @@
 class PlanningSidebarPresenter
-  def initialize(planning:, routes:, current_user:, with_stops:, view_helpers:, with_planning: false, with_devices: true, external_callback_enabled:, external_callback_name:, external_callback_url:, external_callback_disabled:)
+  def initialize(planning:, routes:, current_user:, with_stops:, view_helpers:, with_planning: false, with_devices: true, external_callback: {})
     @planning = planning
     @routes = routes
     @current_user = current_user
@@ -7,10 +7,10 @@ class PlanningSidebarPresenter
     @view_helpers = view_helpers
     @with_planning = with_planning
     @with_devices = with_devices
-    @external_callback_enabled = external_callback_enabled
-    @external_callback_name = external_callback_name
-    @external_callback_url = external_callback_url
-    @external_callback_disabled = external_callback_disabled
+    @external_callback_enabled = external_callback.fetch(:enabled, false)
+    @external_callback_name = external_callback.fetch(:name, nil)
+    @external_callback_url = external_callback.fetch(:url, nil)
+    @external_callback_disabled = external_callback.fetch(:disabled, true)
   end
 
   def build

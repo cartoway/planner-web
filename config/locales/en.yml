@@ -3392,7 +3392,6 @@ en:
       phone_number: Phone
       destination_duration: Destination duration
       visit_duration: Visit duration
-      rests_duration: Rest duration
       tags: Destination tags
       tags_visit: Visit tags
       eta: ETA

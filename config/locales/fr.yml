@@ -3536,7 +3536,6 @@ fr:
       phone_number: Téléphone
       destination_duration: Durée à la destination
       visit_duration: Durée de visite
-      rests_duration: Durée de pause
       tags: Catégories destination
       tags_visit: Catégories visite
       eta: ETA
