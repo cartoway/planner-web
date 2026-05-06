@@ -10,6 +10,13 @@ if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
     end
   end
 else
+  routes_for_sidebar = @routes || (@with_stops ? @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available : @planning.routes)
+  customer_custom_attributes = @planning.customer.custom_attributes.to_a
+  route_custom_attributes = customer_custom_attributes.select { |custom_attribute| custom_attribute.object_class == 'route' }
+  start_route_custom_attributes = route_custom_attributes.select { |custom_attribute| custom_attribute.related_field == 'start_route_data' }
+  stop_route_custom_attributes = route_custom_attributes.select { |custom_attribute| custom_attribute.related_field == 'stop_route_data' }
+  customer_deliverable_units = @planning.customer.deliverable_units.to_a
+
   json.prefered_unit current_user.prefered_unit
   json.extract! @planning, :id, :ref
   json.planning_id @planning.id
@@ -26,12 +33,24 @@ else
     json.customer_external_callback_url nil
     json.customer_external_callback_disabled true
   end
-  duration = @planning.routes.select(&:vehicle_usage).to_a.sum(0){ |route| route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i}
+  duration = routes_for_sidebar.select(&:vehicle_usage).to_a.sum(0){ |route| route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i}
   json.duration time_over_day(duration)
-  json.distance locale_distance(@planning.routes.to_a.sum(0){ |route| route.distance || 0 }, current_user.prefered_unit)
+  json.distance locale_distance(routes_for_sidebar.to_a.sum(0){ |route| route.distance || 0 }, current_user.prefered_unit)
   (json.outdated true) if @planning.outdated
-  json.size @planning.routes.to_a.sum(0){ |route| route.stops_size }
-  json.size_active @planning.cached_active_stops_sum
+  json.size routes_for_sidebar.to_a.sum(0) { |route| route.route_data&.stops_size || 0 }
+  json.size_active routes_for_sidebar.to_a.sum(0) { |route| route.route_data&.size_active || 0 }
 
-  json.routes (@routes || (@with_stops ? @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available : @planning.routes)), partial: 'routes/edit', formats: [:json], handlers: [:jbuilder], as: :route, locals: { list_devices: planning_devices(@planning.customer), stops_count: nil, planning: @planning }
+  json.routes routes_for_sidebar,
+              partial: 'routes/edit',
+              formats: [:json],
+              handlers: [:jbuilder],
+              as: :route,
+              locals: {
+                list_devices: planning_devices(@planning.customer),
+                stops_count: nil,
+                planning: @planning,
+                start_route_custom_attributes: start_route_custom_attributes,
+                stop_route_custom_attributes: stop_route_custom_attributes,
+                customer_deliverable_units: customer_deliverable_units
+              }
 end

@@ -53,13 +53,14 @@ module CustomAttributesHelper
                   else
                     custom_attribute.name
                   end
-    typed_hash = if related_field.present? && object.respond_to?(:custom_attributes_typed_hash)
-                   object.custom_attributes_typed_hash(related_field: related_field)
-                 else
-                   object.custom_attributes_typed_hash
-                 end
-    has_value = object.custom_attributes.key?(storage_key)
-    current_value = has_value ? typed_hash[custom_attribute.name] : custom_attribute.typed_default_value
+    raw_custom_attributes = object.custom_attributes || {}
+    has_value = raw_custom_attributes.key?(storage_key)
+    current_value =
+      if has_value
+        object_type_cast(custom_attribute.object_type, raw_custom_attributes[storage_key])
+      else
+        custom_attribute.typed_default_value
+      end
     case custom_attribute.object_type_before_type_cast
     when 0
       { html: "<li><i class='fa fa-file-lines fa-fw'></i> #{custom_attribute.name} : <i class='fa #{current_value ? 'fa-circle-check' : 'fa-circle-xmark'} fa-fw'></i></li>" }

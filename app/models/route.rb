@@ -1565,7 +1565,7 @@ class Route < ApplicationRecord
 
   def use_persisted_route_metrics?
     return false unless route_data
-    return true if stops.empty?
+    return true if association(:stops).loaded? && stops.empty?
 
     route_data.stops_size.positive?
   end
