@@ -2064,8 +2064,8 @@ fr:
       without_stops_title: >-
         Les arrêts de ce plan de tournées volumineux n'ont pas été chargés pour
         améliorer les performances de l'affichage
-      load_stops_out_of_route: Charger les arrêts non assignés
-      load_stops: Charger les arrêts de cette tournée
+      load_stops_out_of_route: Chargement des arrêts non assignés
+      load_stops: Chargement des arrêts de la tournée
       optimize: Optimiser toutes les tournées non verrouillées
       optimize_help: Optimiser la tournée
       optimize_canceled: Optimisation annulée

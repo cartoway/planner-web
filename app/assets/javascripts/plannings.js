@@ -52,10 +52,24 @@ $(function() {
 
 export const panelLoading = function(route_id) {
   var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
-  route_panel.sortable('disable')
-             .closest('.panel')
-             .addClass('spinner-container')
-             .append('<div class="spinner-border"></div>');
+  route_panel.each(function(_idx, panel) {
+    var $panel = $(panel);
+    if ($panel.hasClass('ui-sortable')) {
+      $panel.sortable('disable');
+    }
+    $panel.closest('.panel')
+      .addClass('spinner-container')
+      .append('<div class="spinner-border"></div>');
+  });
+};
+
+export const clearPanelLoading = function(route_id) {
+  var selector = route_id ? 'li[data-route-id="' + route_id + '"] .panel' : '.panel';
+  $(selector).each(function(_idx, panel) {
+    var $panel = $(panel);
+    $panel.removeClass('spinner-container');
+    $panel.find('> .spinner-border').remove();
+  });
 };
 
 const getPlanningsId = function() {
@@ -473,23 +487,99 @@ export const plannings_edit = function(params) {
     });
   };
 
+  var autoLoadStopsQueue = [];
+  var autoLoadStopsInFlight = false;
+  var autoLoadStopsKnown = {};
+  var autoLoadStopsBatchSize = 5;
+
   var refreshSidebarRoute = function(planning_id, route_id, options) {
+    options = options || {};
+    if (typeof options.updateHeader === 'undefined') {
+      options.updateHeader = false;
+    }
+    var backgroundMode = !!(options && options.background);
     $.ajax({
       type: 'GET',
       url: '/plannings/' + planning_id + '/' + route_id + '/refresh.js?with_stops=' + true,
-      beforeSend: beforeSendWaiting,
+      beforeSend: backgroundMode ? null : beforeSendWaiting,
       error: ajaxError,
       success: function() {
-        updateSuccess(locals.summary, map, [locals.route], options);
-        initRouteSelector();
-        updateSelectionCount('#route_selector', '#planning_route_ids');
-        if (!locals.route.vehicle_usage_id) {
+        var isRouteOnlyUpdate = !!(options && (options.skipCallbacks || options.background));
+        if (isRouteOnlyUpdate) {
+          // refresh.js already replaced the specific li.route in DOM.
+          // Keep client models in sync and re-bind interactions only for this route.
+          var route = locals.route;
+          var routeIndex = routes.findIndex(function(r) { return r.route_id == route.route_id; });
+          if (routeIndex !== -1) {
+            routes[routeIndex] = $.extend({}, routes[routeIndex], route);
+          }
+          var $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
+          initRoutes($routePanel, locals.summary, { skipCallbacks: true });
+          setupRouteSortable(route);
+          if (!(options && options.skipMap)) {
+            routesLayer.refreshRoutes([route.route_id], routes);
+          }
+        } else {
+          updateSuccess(locals.summary, map, [locals.route], options);
+        }
+        if (!isRouteOnlyUpdate) {
+          initRouteSelector();
+          updateSelectionCount('#route_selector', '#planning_route_ids');
+        }
+        if (!isRouteOnlyUpdate && !locals.route.vehicle_usage_id) {
           continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
         }
       },
-      complete: completeAjaxMap
+      complete: function() {
+        clearPanelLoading(route_id);
+        if (options && typeof options.onComplete === 'function') {
+          options.onComplete();
+        }
+        if (!backgroundMode) {
+          completeAjaxMap();
+        }
+      }
     });
   }
+
+  var processAutoLoadStopsQueue = function(planning_id) {
+    if (autoLoadStopsInFlight || !autoLoadStopsQueue.length) return;
+
+    autoLoadStopsInFlight = true;
+    var batchRouteIds = autoLoadStopsQueue.splice(0, autoLoadStopsBatchSize).filter(Boolean);
+    if (!batchRouteIds.length) {
+      autoLoadStopsInFlight = false;
+      processAutoLoadStopsQueue(planning_id);
+      return;
+    }
+
+    var pending = batchRouteIds.length;
+    $.each(batchRouteIds, function(_idx, routeId) {
+      panelLoading(routeId);
+      refreshSidebarRoute(planning_id, routeId, {
+        background: true,
+        skipMap: true,
+        skipCallbacks: true,
+        onComplete: function() {
+          pending -= 1;
+          if (pending <= 0) {
+            autoLoadStopsInFlight = false;
+            processAutoLoadStopsQueue(planning_id);
+          }
+        }
+      });
+    });
+  };
+
+  var enqueueAutoLoadStops = function(planning_id, context) {
+    $('.load-stops', context).each(function(_idx, node) {
+      var routeId = $(node).closest('[data-route-id]').attr('data-route-id');
+      if (!routeId || autoLoadStopsKnown[routeId]) return;
+      autoLoadStopsKnown[routeId] = true;
+      autoLoadStopsQueue.push(routeId);
+    });
+    processAutoLoadStopsQueue(planning_id);
+  };
 
   var requestVehiclePositionPending = false;
   var requestVehiclePosition = function() {
@@ -1302,7 +1392,8 @@ export const plannings_edit = function(params) {
       var isLocked = unplannedRoute.find("button.lock > i").hasClass("fa-lock");
       var keepVisit = $('[name=sticky_vehicle]:checked').val() === 'true';
 
-      !isLocked && keepVisit && (unplannedRoute.find("li[data-stop-id]").length || unplannedRoute.find(".load-stops").length)? _modalWarning.show() : _modalWarning.hide();
+      var unplannedSize = Number(unplannedRoute.find("[data-size]").first().data("size") || 0);
+      !isLocked && keepVisit && (unplannedRoute.find("li[data-stop-id]").length || unplannedSize > 0) ? _modalWarning.show() : _modalWarning.hide();
     };
   })();
 
@@ -2012,6 +2103,7 @@ export const plannings_edit = function(params) {
         panelLoading(routeId);
         refreshSidebarRoute(params.planning_id, routeId);
       });
+      enqueueAutoLoadStops(params.planning_id, context);
     }
   };
 
@@ -2129,15 +2221,10 @@ export const plannings_edit = function(params) {
       });
       $.each(routes, function(i, rv) {
         if (rv.route_id == route.route_id) {
-          routes[i] = {
-            route_id: route.route_id,
+          routes[i] = $.extend({}, rv, route, {
             color: route.color || vehicle_usage.color,
-            vehicle_usage_id: route.vehicle_usage_id,
-            ref: route.ref,
-            name: route.name,
-            outdated: route.outdated,
             devices: route.devices || params.devices
-          };
+          });
         }
       });
       updateColorsForRoutesAndStops(i, route);
@@ -2292,9 +2379,51 @@ export const plannings_edit = function(params) {
     });
   }
 
+  var setupRouteSortable = function(route) {
+    var sortableUpdate = false;
+    var $sortable_route = $(".route[data-route-id='" + route.route_id + "'] .stops.sortable");
+    if ($sortable_route.hasClass('ui-sortable')) {
+      $sortable_route.sortable('destroy');
+    }
+    var routeHasPendingLoadMarker = $(`.route[data-route-id="${route.route_id}"] .load-stops`).length > 0;
+    var routeStopsLoaded = !!route.with_stops || !routeHasPendingLoadMarker;
+    if (!routeStopsLoaded) {
+      return;
+    }
+    var mpToolbar = params.manage_planning;
+    var stopSortableDisabled = !!(mpToolbar && (!mpToolbar.manage_stop_move || mpToolbar.disable_stop_move));
+    $sortable_route.sortable({
+      distance: 8,
+      connectWith: ".sortable",
+      containment: "#edit-planning",
+      tolerance: "pointer",
+      appendTo: '#planning',
+      disabled: stopSortableDisabled,
+      items: "> li:not(.route-data-container)",
+      cancel: '.wait',
+      helper: function(event, ui) {
+        var $clone = $(ui).clone();
+        $clone.wrap('<ol class="routes"><li class="route"><ul class="stops"></ol></li></ol>');
+        return $clone.parent().parent().parent();
+      },
+      start: function(event, ui) {
+        sortableUpdate = false;
+      },
+      update: function() {
+        sortableUpdate = true;
+      },
+      stop: function(event, ui) {
+        if (sortableUpdate) {
+          sortPlanning(event, ui);
+        }
+      }
+    }).disableSelection();
+  };
+
   var updateSuccess = function(data, map, routes, options) {
+    var isBackgroundUpdate = !!(options && (options.skipCallbacks || options.background));
     var sidebar = $('.sidebar');
-    if (sidebar.hasClass('extended')) {
+    if (!isBackgroundUpdate && sidebar.hasClass('extended')) {
       if ($("#planning.routes").hasClass('ui-sortable')) {
         $(".routes").sortable('destroy');
       }
@@ -2302,7 +2431,8 @@ export const plannings_edit = function(params) {
       sidebar.find('.center_view').prop('disabled', true);
       $(".routes").sortable();
     }
-    $("#planning").off('click.planningRefresh', '#refresh').on('click.planningRefresh', '#refresh', function() {
+    if (!isBackgroundUpdate) {
+      $("#planning").off('click.planningRefresh', '#refresh').on('click.planningRefresh', '#refresh', function() {
         if (!planningRefreshUsable()) return false;
         $.ajax({
           type: 'GET',
@@ -2316,6 +2446,7 @@ export const plannings_edit = function(params) {
           error: ajaxError
         });
       });
+    }
 
     checkLockAndActive();
     var routesWithVehicle = data.routes.filter(function(route) { return route.vehicle_usage_id; });
@@ -2324,39 +2455,7 @@ export const plannings_edit = function(params) {
       const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
       initRoutes($routePanel, data, options);
 
-      var sortableUpdate = false;
-      var $sortable_route = $(".route[data-route-id='" + route.route_id + "'] .stops.sortable");
-      if ($sortable_route.hasClass('ui-sortable')) {
-        $sortable_route.sortable('destroy');
-      }
-      var mpToolbar = params.manage_planning;
-      var stopSortableDisabled = !!(mpToolbar && (!mpToolbar.manage_stop_move || mpToolbar.disable_stop_move));
-      $sortable_route.sortable({
-        distance: 8,
-        connectWith: ".sortable",
-        containment: "#edit-planning",
-        tolerance: "pointer",
-        appendTo: '#planning',
-        disabled: stopSortableDisabled,
-        items: "> li:not(.route-data-container)",
-        cancel: '.wait',
-        helper: function(event, ui) {
-          var $clone = $(ui).clone();
-          $clone.wrap('<ol class="routes"><li class="route"><ul class="stops"></ol></li></ol>');
-          return $clone.parent().parent().parent();
-        },
-        start: function(event, ui) {
-          sortableUpdate = false;
-        },
-        update: function() {
-          sortableUpdate = true;
-        },
-        stop: function(event, ui) {
-          if (sortableUpdate) {
-            sortPlanning(event, ui);
-          }
-        }
-      }).disableSelection();
+      setupRouteSortable(route);
       $(".route[data-route-id='" + route.route_id + "'] li[data-stop-id]")
         .mouseover(function() {
           if ($(window).width() >= 992) {
@@ -2422,19 +2521,23 @@ export const plannings_edit = function(params) {
         });
     });
 
-    updateDataHeader(data.planning_id);
+    if (options && options.updateHeader && !(options.skipCallbacks || options.background)) {
+      updateDataHeader(data.planning_id);
+    }
 
-    $(document).keyup(function(event) {
-      if ($(".sidebar").hasClass('extended') && event.keyCode === 27 && typeof lastPopover !== 'undefined') {
-        $(lastPopover).popover('hide');
-      }
-    });
+    if (!isBackgroundUpdate) {
+      $(document).keyup(function(event) {
+        if ($(".sidebar").hasClass('extended') && event.keyCode === 27 && typeof lastPopover !== 'undefined') {
+          $(lastPopover).popover('hide');
+        }
+      });
 
-    dropdownAutoDirection($('#planning').find('[data-toggle="dropdown"]'));
+      dropdownAutoDirection($('#planning').find('[data-toggle="dropdown"]'));
 
-    map.closePopup();
+      map.closePopup();
 
-    checkLockAndActive();
+      checkLockAndActive();
+    }
 
     var updateOptimButton = function(routes) {
       routes.forEach(function(route) {
