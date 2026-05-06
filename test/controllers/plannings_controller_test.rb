@@ -81,6 +81,16 @@ class PlanningsControllerTest < ActionController::TestCase
     customer.update!(stops_preload_limit: original_limit) if customer
   end
 
+  test 'sidebar js includes planning locals happy path' do
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+
+    assert_response :success
+    assert_includes response.body, "$('#planning').html("
+    assert_includes response.body, 'var locals ='
+    assert_match(/"planning_id":#{@planning.id}/, response.body)
+    assert_match(/"routes":\[/, response.body)
+  end
+
   test 'should get index as csv' do
     get :index, params: { format: :csv, summary: true }
     assert_response :success
