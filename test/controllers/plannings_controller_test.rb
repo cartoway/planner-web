@@ -711,6 +711,15 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test 'refresh_route succeeds for unassigned (out) route' do
+    out_route = routes(:route_zero_one)
+    assert_nil out_route.vehicle_usage_id
+
+    get :refresh_route, params: { planning_id: @planning.id, route_id: out_route.id, format: :js }
+    assert_response :success
+    assert_includes response.body, 'out_of_route'
+  end
+
   test 'get refresh is forbidden when planning refresh operation is not usable' do
     u = users(:user_one)
     ops = Preferences::Catalog.default_operations.deep_dup
