@@ -32,7 +32,7 @@ module ImportExportCustomer
     return if role_id.blank?
 
     customer.users.each do |user|
-      user.role_id = role_id
+      user.update!(role_id: role_id)
     end
   end
 end
