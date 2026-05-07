@@ -5,4 +5,4 @@
     .primary.route-info
       %i.fa.fa-hand-holding-dollar.fa-fw
       = averages[:total_revenue]
-      = t("all.unit.currency_symbol.#{prefered_currency}")
+      = t("all.unit.currency_symbol.#{current_user.prefered_currency}")

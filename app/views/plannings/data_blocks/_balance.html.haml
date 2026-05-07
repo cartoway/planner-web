@@ -5,4 +5,4 @@
     .route-info{ class: (averages[:total_balance] < 0 ? 'danger' : averages[:total_balance] == 0 ? 'secondary' : 'success')}
       %i.fa.fa-scale-balanced.fa-fw
       = averages[:total_balance]
-      = t("all.unit.currency_symbol.#{prefered_currency}")
+      = t("all.unit.currency_symbol.#{current_user.prefered_currency}")
