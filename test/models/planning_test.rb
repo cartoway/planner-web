@@ -122,7 +122,7 @@ class PlanningTest < ActiveSupport::TestCase
     planning.save!
   end
 
-  test 'update_routes marks out_route and vehicle routes outdated when moving visit from unplanned to vehicle' do
+  test 'update_routes marks vehicle routes outdated when moving visit from unplanned to vehicle' do
     planning = plannings(:planning_one)
     out_route = routes(:route_zero_one)
     vehicle_route = routes(:route_one_one)
@@ -152,7 +152,7 @@ class PlanningTest < ActiveSupport::TestCase
 
     out_route.reload
     vehicle_route.reload
-    assert out_route.outdated, 'unplanned route should be outdated after visit moved off'
+    refute out_route.outdated, 'unplanned route cannot be outdated'
     assert vehicle_route.outdated, 'vehicle route should be outdated after receiving visit from import-like update'
   end
 
