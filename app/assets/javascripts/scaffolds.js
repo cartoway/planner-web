@@ -866,8 +866,10 @@ export const templateTag = function(item) {
 };
 
 export function continuousListLoading(listRef, linkRef, loadingRef, offset) {
+  var namespace = '.continuousListLoading';
   var loadNextPage = function() {
     var element = $(listRef);
+    if (!element.length) { return }
     if ($(linkRef + ' a').data("loading")) { return }  // prevent multiple loading
     if (element[0].scrollHeight - element.scrollTop() - offset <= element.outerHeight()) {
       var nextLink = $(linkRef + ' a')[0];
@@ -878,9 +880,10 @@ export function continuousListLoading(listRef, linkRef, loadingRef, offset) {
       }
     }
   };
-  window.addEventListener('resize', loadNextPage);
-  $(listRef).on('scroll', loadNextPage);
-  window.addEventListener('load', loadNextPage);
+  // Prevent listener accumulation across repeated route refreshes.
+  $(window).off('resize' + namespace).on('resize' + namespace, loadNextPage);
+  $(listRef).off('scroll' + namespace).on('scroll' + namespace, loadNextPage);
+  loadNextPage();
 };
 
 export function updateSelectionCount(containerRef, selectorRef) {

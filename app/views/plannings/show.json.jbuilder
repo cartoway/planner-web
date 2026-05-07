@@ -12,6 +12,7 @@ if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
 else
   routes_for_sidebar = @routes || (@with_stops ? @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available : @planning.routes)
   routes_array = routes_for_sidebar.to_a
+  @planning.customer.custom_attributes.load
 
   duration_total = 0
   distance_total = 0

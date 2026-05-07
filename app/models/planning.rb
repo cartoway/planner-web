@@ -596,8 +596,18 @@ class Planning < ApplicationRecord
       if stop.is_a?(StopVisit)
         visit, active = stop.visit, stop.active
         stop_id = stop.id
-        routes.find{ |r| r.id == stop.route_id }.move_stop_out(stop)
-        route.add(visit, index || 1, { active: active || stop.route.vehicle_usage.nil? }, stop_id)
+        source_route = routes.find{ |r| r.id == stop.route_id }
+        was_active = stop.active?
+        removed_had_position = stop.position?
+        source_route.move_stop_out(stop)
+        source_route.fast_remove_out_route!(
+          visit: visit,
+          removed_stop_id: stop_id,
+          was_active: was_active,
+          removed_had_position: removed_had_position,
+          planning: self
+        )
+        route.add(visit, index || 1, { active: active || source_route.vehicle_usage.nil? }, stop_id)
       elsif force && stop.is_a?(StopRest)
         active = stop.active
         stop_id = stop.id

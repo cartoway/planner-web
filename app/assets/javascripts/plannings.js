@@ -526,8 +526,8 @@ export const plannings_edit = function(params) {
           initRouteSelector();
           updateSelectionCount('#route_selector', '#planning_route_ids');
         }
-        if (!isRouteOnlyUpdate && !locals.route.vehicle_usage_id) {
-          continuousListLoading('#out_route_scroll', '#out_list_next_link', '#out_list_loading', 100);
+        if (!locals.route.vehicle_usage_id) {
+          continuousListLoading('#out_route_scroll', '#out_list_next_link', '#loading-indicator', 100);
         }
       },
       complete: function() {
@@ -1618,6 +1618,7 @@ export const plannings_edit = function(params) {
           refreshSidebarRoute(planning_id, route_id);
         });
         routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
+        updateDataHeader(planning_id);
       },
       complete: completeAjaxMap,
       error: function(request, status, error) {
@@ -2027,7 +2028,7 @@ export const plannings_edit = function(params) {
               beforeSendWaiting();
             },
             success: function() {
-              updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
+              updateSuccess(locals.summary, map, locals.updated_routes, { skipCallbacks: true, updateHeader: true });
               routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
             },
             complete: completeAjaxMap,
@@ -2094,6 +2095,9 @@ export const plannings_edit = function(params) {
         quantities: params.quantities,
         routesLayer: routesLayer,
         refreshSidebarRoute: refreshSidebarRoute,
+        updatePlanningDataHeader: function() {
+          updateDataHeader(planning_id);
+        },
         mustacheI18n: mustache_i18n
       });
       /** End move_stops */
@@ -2521,7 +2525,7 @@ export const plannings_edit = function(params) {
         });
     });
 
-    if (options && options.updateHeader && !(options.skipCallbacks || options.background)) {
+    if (options && options.updateHeader && !options.background) {
       updateDataHeader(data.planning_id);
     }
 
@@ -2637,7 +2641,7 @@ export const plannings_edit = function(params) {
       url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '.js',
       beforeSend: beforeSendWaiting,
       success: function() {
-        updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
+        updateSuccess(locals.summary, map, locals.updated_routes, { skipCallbacks: true, updateHeader: true });
         routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
       },
       complete: completeAjaxMap,
@@ -2665,7 +2669,7 @@ export const plannings_edit = function(params) {
       url: '/plannings/' + planning_id + '/' + route_id + '/' + stop_id + '.js',
       beforeSend: beforeSendWaiting,
       success: function() {
-        updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
+        updateSuccess(locals.summary, map, locals.updated_routes, { skipCallbacks: true, updateHeader: true });
         routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
       },
       complete: completeAjaxMap,
@@ -2692,6 +2696,7 @@ export const plannings_edit = function(params) {
           refreshSidebarRoute(planning_id, route_id);
         });
         routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
+        updateDataHeader(planning_id);
         map.closePopup();
       },
       complete: function() {
@@ -2934,7 +2939,7 @@ export const plannings_edit = function(params) {
           displayOptimModal(locals, options)
         }
         else if (locals.updated_routes) {
-          updateSuccess(locals.summary, map, locals.updated_routes, {skipCallbacks: true});
+          updateSuccess(locals.summary, map, locals.updated_routes, { skipCallbacks: true, updateHeader: true });
           routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
         }
       },

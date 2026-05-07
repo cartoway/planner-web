@@ -32,6 +32,7 @@ export class MoveStopsModal {
     this.quantities = [];
     this.routesLayer = null;
     this.refreshSidebarRoute = null;
+    this.updatePlanningDataHeader = null;
     this.mustacheI18n = null;
     this.modalSelector = '#planning-move-stops-modal';
     this.isInitialized = false;
@@ -46,6 +47,7 @@ export class MoveStopsModal {
    * @param {Array} options.quantities - Quantities array
    * @param {Object} options.routesLayer - Routes layer instance
    * @param {Function} options.refreshSidebarRoute - Function to refresh sidebar route
+   * @param {Function} [options.updatePlanningDataHeader] - Refreshes planning-level head / global_info after moves
    * @param {Object} options.mustacheI18n - Mustache i18n object
    */
   initialize(options) {
@@ -55,6 +57,7 @@ export class MoveStopsModal {
     this.quantities = options.quantities || [];
     this.routesLayer = options.routesLayer;
     this.refreshSidebarRoute = options.refreshSidebarRoute;
+    this.updatePlanningDataHeader = options.updatePlanningDataHeader || function() {};
     this.mustacheI18n = options.mustacheI18n;
 
     if (!this.isInitialized) {
@@ -370,6 +373,8 @@ export class MoveStopsModal {
         if (this.routesLayer && this.routesLayer.refreshRoutes) {
           this.routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
         }
+
+        this.updatePlanningDataHeader();
       },
       complete: completeAjaxMap
     });
