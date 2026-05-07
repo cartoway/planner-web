@@ -84,7 +84,7 @@ class StopsControllerTest < ActionController::TestCase
         route_id: @route.id,
         stop_id: @stop_store_reload.id,
         format: :js
-      }
+      }, xhr: true
     end
     assert_response :success
   end
@@ -96,7 +96,7 @@ class StopsControllerTest < ActionController::TestCase
         route_id: @route.id,
         stop_id: @stop.id,
         format: :js
-      }
+      }, xhr: true
     end
     assert_response :no_content
   end
@@ -108,7 +108,7 @@ class StopsControllerTest < ActionController::TestCase
         route_id: @route.id,
         stop_id: 99999,
         format: :js
-      }
+      }, xhr: true
     end
     assert_response :not_found
   end
@@ -120,7 +120,7 @@ class StopsControllerTest < ActionController::TestCase
         route_id: 99999,
         stop_id: @stop_store_reload.id,
         format: :js
-      }
+      }, xhr: true
     end
     assert_response :not_found
   end
@@ -132,7 +132,7 @@ class StopsControllerTest < ActionController::TestCase
         route_id: @route.id,
         stop_id: @stop_store_reload.id,
         format: :js
-      }
+      }, xhr: true
     end
     assert_response :not_found
   end
