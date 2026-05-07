@@ -516,6 +516,7 @@ export const plannings_edit = function(params) {
           var $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
           initRoutes($routePanel, locals.summary, { skipCallbacks: true });
           setupRouteSortable(route);
+          bindRouteStopHoverAndPopovers(route, locals.summary);
           if (!(options && options.skipMap)) {
             routesLayer.refreshRoutes([route.route_id], routes);
           }
@@ -2383,6 +2384,81 @@ export const plannings_edit = function(params) {
     });
   }
 
+  // Hover tools + stop popovers: must run after any DOM replace that skips updateSuccess (e.g. refresh_route.js).
+  var bindRouteStopHoverAndPopovers = function(route, planningData) {
+    if (!planningData || !planningData.routes) return;
+
+    var routesWithVehicle = planningData.routes.filter(function(r) { return r.vehicle_usage_id; });
+    var routeStops = route.stops || [];
+
+    $(".route[data-route-id='" + route.route_id + "'] li[data-stop-id]")
+      .off('mouseover.planningStopTools mouseout.planningStopTools click.planningStopPopover')
+      .on('mouseover.planningStopTools', function() {
+        if ($(window).width() >= 992) {
+          $('.not-hover', this).css({
+            display: 'none'
+          });
+        }
+        $('.hover-tools', this).css({
+          display: 'inline-block'
+        });
+      })
+      .on('mouseout.planningStopTools', function() {
+        $('.hover-tools', this).css({
+          display: 'none'
+        });
+        $('.not-hover', this).css({
+          display: 'inline-block'
+        });
+      })
+      .each(function() {
+        var $this = $(this);
+        var stops = $.grep(routeStops, function(e) { return e.stop_id === $this.data('stop-id'); });
+        if (stops.length > 0) {
+          var mpPop = params.manage_planning || {};
+          var stopData = $.extend({}, stops[0], {
+            number: $('.number', $this).text(),
+            i18n: mustache_i18n,
+            planning_id: planningData.planning_id != null ? planningData.planning_id : planning_id,
+            routes: routesWithVehicle,
+            out_of_route_id: outOfRouteId,
+            route_id: route.route_id,
+            vehicle_name: route.vehicle_name,
+            popover: true,
+            manage_destination: true,
+            manage_store: Boolean(mpPop.manage_store)
+          });
+          applyStopPopupManagePlanning(stopData, mpPop);
+          if ($this.data('bs.popover')) {
+            $this.popover('destroy');
+          }
+          $this.popover({
+            content: SMT['stops/show'](stopData),
+            html: true,
+            placement: 'auto',
+            trigger: 'manual',
+            container: 'body',
+            viewport: {
+              selector: '.sidebar-content',
+              padding: 20
+            }
+          });
+
+          $('.close-popover').click(function() {
+            $(lastPopover).popover('hide');
+          });
+        }
+      })
+      .on('click.planningStopPopover', function() {
+        lastPopover = $(this);
+        $("li[data-stop-id!='" + $(this).data('stop-id') + "']").popover('hide');
+        $(this).popover($('.sidebar').hasClass('extended') ? 'toggle' : 'hide');
+        $('.close-popover').click(function() {
+          $(lastPopover).popover('hide');
+        });
+      });
+  };
+
   var setupRouteSortable = function(route) {
     var sortableUpdate = false;
     var $sortable_route = $(".route[data-route-id='" + route.route_id + "'] .stops.sortable");
@@ -2453,76 +2529,13 @@ export const plannings_edit = function(params) {
     }
 
     checkLockAndActive();
-    var routesWithVehicle = data.routes.filter(function(route) { return route.vehicle_usage_id; });
     $.each(routes, function(i, route) {
 
       const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
       initRoutes($routePanel, data, options);
 
       setupRouteSortable(route);
-      $(".route[data-route-id='" + route.route_id + "'] li[data-stop-id]")
-        .mouseover(function() {
-          if ($(window).width() >= 992) {
-            $('.not-hover', this).css({
-              display: 'none'
-            });
-          }
-          $('.hover-tools', this).css({
-            display: 'inline-block'
-          });
-        })
-        .mouseout(function() {
-          $('.hover-tools', this).css({
-            display: 'none'
-          });
-          $('.not-hover', this).css({
-            display: 'inline-block'
-          });
-        })
-        .each(function() {
-          var $this = $(this);
-          var stops = $.grep(route.stops, function(e) { return e.stop_id === $this.data('stop-id'); });
-          if (stops.length > 0) {
-            var mpPop = params.manage_planning || {};
-            var stopData = $.extend({}, stops[0], {
-              number: $('.number', $this).text(),
-              i18n: mustache_i18n,
-              planning_id: data.planning_id != null ? data.planning_id : planning_id,
-              routes: routesWithVehicle,
-              out_of_route_id: outOfRouteId,
-              route_id: route.route_id,
-              vehicle_name: route.vehicle_name,
-              popover: true,
-              manage_destination: true,
-              manage_store: Boolean(mpPop.manage_store)
-            });
-            applyStopPopupManagePlanning(stopData, mpPop);
-            $this.popover({
-              content: SMT['stops/show'](stopData),
-              html: true,
-              placement: 'auto',
-              trigger: 'manual',
-              container: 'body',
-              viewport: {
-                selector: '.sidebar-content',
-                padding: 20
-              }
-            });
-
-            $('.close-popover').click(function() {
-              $(lastPopover).popover('hide');
-            });
-          }
-        })
-        .click(function() {
-          // Stack the last element activated
-          lastPopover = $(this);
-          $("li[data-stop-id!='" + $(this).data('stop-id') + "']").popover('hide');
-          $(this).popover($('.sidebar').hasClass('extended') ? 'toggle' : 'hide');
-          $('.close-popover').click(function() {
-            $(lastPopover).popover('hide');
-          });
-        });
+      bindRouteStopHoverAndPopovers(route, data);
     });
 
     if (options && options.updateHeader && !options.background) {
