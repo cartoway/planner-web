@@ -23,10 +23,10 @@ module Preferences
     module StopList
       # Visit stops expose destination_* / visit_* via route/stop JSON; non-visit rows omit most of these.
       FIELD_IDS = %w[
-        name ref destination_name visit_ref
+        name ref visit_ref
         street postalcode city country lat lng
         detail comment phone_number destination_duration visit_duration tags tags_visit
-        rests_duration eta status
+        eta status
       ].freeze
 
       DEFAULT_ACTIVE = %w[name ref].freeze
@@ -67,8 +67,6 @@ module Preferences
         when 'name' then stop_get(stop, :name).presence
         when 'ref'
           stop_get(stop, :ref).presence || (visit_stop?(stop) ? stop_get(stop, :ref).presence : nil)
-        when 'destination_name'
-          stop_get(stop, :destination_name).presence || (visit_stop?(stop) ? stop_get(stop, :name).presence : nil)
         when 'visit_ref' then stop_get(stop, :visit_ref).presence
         when 'street' then stop_get(stop, :street).presence&.to_s
         when 'postalcode' then stop_get(stop, :postalcode).presence&.to_s

@@ -3379,7 +3379,6 @@ en:
     stop_list_fields:
       name: Name
       ref: Destination reference
-      destination_name: Destination name
       visit_ref: Visit reference
       street: Street
       postalcode: Postal code

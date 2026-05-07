@@ -3523,7 +3523,6 @@ fr:
     stop_list_fields:
       name: Nom
       ref: Référence destination
-      destination_name: Nom de la destination
       visit_ref: Référence visite
       street: Rue
       postalcode: Code postal
