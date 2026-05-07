@@ -670,7 +670,7 @@ class PlanningsControllerTest < ActionController::TestCase
       Route.stub_any_instance(:compute_saved, lambda { |*a| raise }) do
         assert_no_difference('Stop.count') do
           assert_raise do
-            patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :js }
+            patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :js }, xhr: true
             assert_valid response
             assert_response 422
           end
@@ -715,7 +715,7 @@ class PlanningsControllerTest < ActionController::TestCase
     out_route = routes(:route_zero_one)
     assert_nil out_route.vehicle_usage_id
 
-    get :refresh_route, params: { planning_id: @planning.id, route_id: out_route.id, format: :js }
+    get :refresh_route, params: { planning_id: @planning.id, route_id: out_route.id, format: :js }, xhr: true
     assert_response :success
     assert_includes response.body, 'out_of_route'
   end
@@ -906,7 +906,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should optimize one route in planning' do
-    get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
+    get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }, xhr: true
     assert_response :success
     body = JSON.parse(@response.body.match(/var locals = (.*);/)[1])
     assert_equal 1, body['updated_routes'].size
@@ -914,7 +914,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should optimize all routes in planning' do
-    get :optimize, params: { planning_id: @planning, format: :js, global: true }
+    get :optimize, params: { planning_id: @planning, format: :js, global: true }, xhr: true
     assert_response :success
     assert_equal @planning.routes.size, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
   end
@@ -922,7 +922,7 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should optimize planning with overload_multiplier options' do
     overload_multipliers = {}
     @planning.customer.deliverable_units.each_with_index{ |du, index| overload_multipliers[index] = {unit_id: du.id, ignore: true}}
-    get :optimize, params: { planning_id: @planning, format: :js, global: true, ignore_overload_multipliers: overload_multipliers }
+    get :optimize, params: { planning_id: @planning, format: :js, global: true, ignore_overload_multipliers: overload_multipliers }, xhr: true
     assert_response :success
     assert_equal @planning.routes.size, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
   end
@@ -941,7 +941,7 @@ class PlanningsControllerTest < ActionController::TestCase
     u.update!(role_id: role.id)
     sign_in u
 
-    get :optimize, params: { planning_id: @planning, format: :js, global: true }
+    get :optimize, params: { planning_id: @planning, format: :js, global: true }, xhr: true
     assert_response :forbidden
   end
 
@@ -1077,13 +1077,13 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should update active' do
-    patch :active, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id, active: :none }
+    patch :active, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id, active: :none }, xhr: true
     assert_response :success, response.body
     assert_equal 1, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
   end
 
   test 'should reverse route stops' do
-    patch :reverse_order, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
+    patch :reverse_order, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }, xhr: true
     assert_response :success, response.body
     assert_equal 1, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
   end
@@ -1181,19 +1181,19 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should not optimize one route on unprocessable entity' do
       # without_loading Stop, if: -> (obj) { obj.route_id != routes(:route_one_one).id } do
       Customer.stub_any_instance(:save!, lambda { |*a| false } ) do
-        get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
+        get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }, xhr: true
         assert_valid response
         assert_response :unprocessable_entity
       end
 
       Planning.stub_any_instance(:optimize, lambda { |*a| raise VRPNoSolutionError } ) do
-        get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
+        get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }, xhr: true
         assert_valid response
         assert_response :unprocessable_entity
       end
 
       Planning.stub_any_instance(:optimize, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) } ) do
-        get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
+        get :optimize_route, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }, xhr: true
         assert_valid response
         assert_response :unprocessable_entity
       end
@@ -1202,19 +1202,19 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should not optimize on unprocessable entity' do
     Planning.stub_any_instance(:save!, lambda { |*a| false } ) do
-      get :optimize, params: { planning_id: @planning, format: :js, global: true }
+      get :optimize, params: { planning_id: @planning, format: :js, global: true }, xhr: true
       assert_valid response
       assert_response :unprocessable_entity
     end
 
     Planning.stub_any_instance(:optimize, lambda { |*a| raise VRPNoSolutionError } ) do
-      get :optimize, params: { planning_id: @planning, format: :js, global: true }
+      get :optimize, params: { planning_id: @planning, format: :js, global: true }, xhr: true
       assert_valid response
       assert_response :unprocessable_entity
     end
 
     Planning.stub_any_instance(:optimize, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) } ) do
-      get :optimize, params: { planning_id: @planning, format: :js, global: true }
+      get :optimize, params: { planning_id: @planning, format: :js, global: true }, xhr: true
       assert_valid response
       assert_response :unprocessable_entity
     end
@@ -1253,14 +1253,14 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should not update active on unprocessable entity' do
     Route.stub_any_instance(:compute_saved!, lambda { |*a| false }) do
-      patch :active, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id, active: :none }
+      patch :active, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id, active: :none }, xhr: true
       assert_response :unprocessable_entity
     end
   end
 
   test 'should not reverse order on unprocessable entity' do
     Route.stub_any_instance(:compute_saved!, lambda { |*a| false } ) do
-      patch :reverse_order, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }
+      patch :reverse_order, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }, xhr: true
       assert_response :unprocessable_entity
     end
   end
