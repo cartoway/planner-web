@@ -540,6 +540,7 @@ class Route < ApplicationRecord
     else
       compute_out_of_skill(options[:planning])
       _load_stop_hash, self.route_data.pickups, self.route_data.deliveries = compute_loads unless options[:no_quantities]
+      compute_out_of_route_data!
     end
     @geojson_points_store = stops_to_geojson_points unless options[:no_geojson]
 
@@ -783,9 +784,70 @@ class Route < ApplicationRecord
   def move_stop_out(stop, force = false)
     return if !force && stop.is_a?(StopRest)
 
-    shift_index(stop.index + 1, -1)
+    shift_index(stop.index + 1, -1) if vehicle_usage?
     self.stops.destroy(stop)
     self.outdated = true
+  end
+
+  # When a single StopVisit is removed from the unassigned route (no vehicle_usage), a full
+  # compute_saved would run compute_loads and StopVisit.import over every stop — prohibitive
+  # for tens of thousands of visits. This path updates aggregate route_data, drops the removed
+  # stop from stored GeoJSON points, and clears outdated so the route is skipped by
+  # Planning#compute_saved. Stop indices on unassigned routes are not persisted here (they are
+  # not meaningful for that bucket and bulk index updates are costly).
+  def fast_remove_out_route!(visit:, removed_stop_id:, was_active:, removed_had_position:, planning: self.planning)
+    return false if vehicle_usage?
+    return false if stops.any? { |s| s.is_a?(StopStore) }
+
+    units = planning.customer.deliverable_units
+    if was_active && units.any?
+      pick_delta = visit.default_pickups(units)
+      del_delta = visit.default_deliveries(units)
+      [route_data, start_route_data].compact.each do |rd|
+        next unless rd&.persisted?
+
+        new_pick = (rd.pickups || QuantityAttr::QuantityHash.new).dup
+        new_del = (rd.deliveries || QuantityAttr::QuantityHash.new).dup
+        pick_delta.each do |k, v|
+          next if v.nil? || v.to_f == 0
+
+          new_pick[k] = (new_pick[k] || 0).to_f - v.to_f
+        end
+        del_delta.each do |k, v|
+          next if v.nil? || v.to_f == 0
+
+          new_del[k] = (new_del[k] || 0).to_f - v.to_f
+        end
+        rd.update_columns(pickups: new_pick, deliveries: new_del)
+      end
+    end
+
+    new_stops_count = Stop.where(route_id: id).count
+    new_size_active = Stop.where(route_id: id, active: true).count
+    no_geo =
+      if removed_had_position
+        route_data.no_geolocalization
+      else
+        StopVisit.joins(visit: :destination).where(route_id: id).where(
+          'destinations.lat IS NULL OR destinations.lng IS NULL'
+        ).exists?
+      end
+
+    route_data.update_columns(
+      stops_size: new_stops_count,
+      size_destinations: new_stops_count,
+      size_active: new_size_active,
+      no_geolocalization: no_geo,
+      out_of_skill: false
+    )
+
+    patch_route_geojson_after_stop_visit_removed!(removed_stop_id: removed_stop_id)
+
+    self.outdated = false
+    update_columns(outdated: false) if persisted?
+    @computed = true
+    invalidate_route_cache
+    true
   end
 
   def force_reindex
@@ -1360,6 +1422,37 @@ class Route < ApplicationRecord
 
   private
 
+  def patch_route_geojson_after_stop_visit_removed!(removed_stop_id:)
+    return unless route_geojson
+    return if route_geojson.points.blank?
+
+    new_points = []
+    route_geojson.points.each do |feature_json|
+      begin
+        feature = JSON.parse(feature_json)
+      rescue JSON::ParserError
+        new_points << feature_json
+        next
+      end
+
+      sid = feature.dig('properties', 'stop_id')
+      next if sid.present? && sid.to_i == removed_stop_id.to_i
+
+      new_points << feature.to_json
+    end
+
+    route_geojson.update_columns(points: new_points)
+  end
+
+  def compute_out_of_route_data!
+    self.route_data.assign_attributes(
+      stops_size: stops.size,
+      size_destinations: stops.size,
+      no_geolocalization: stops.any? { |s| !s.position? },
+      out_of_skill: stops.any?(&:out_of_skill)
+    )
+  end
+
   # Find the route_data associated with a sub-tour at the given index
   # and set it to hidden: false
   def reveal_sub_tour_route_data(index)
@@ -1409,7 +1502,7 @@ class Route < ApplicationRecord
   end
 
   def remove_stop(stop)
-    shift_index(stop.index + 1, -1)
+    shift_index(stop.index + 1, -1) if vehicle_usage?
     self.outdated = true
     stops.destroy(stop) # Must return a value
   end
@@ -1423,6 +1516,8 @@ class Route < ApplicationRecord
   end
 
   def stop_index_validation
+    return if !vehicle_usage?
+
     if !@no_stop_index_validation && (@stops_updated || @computed) && !stops.empty? && stops.collect(&:index).sum != (stops.length * (stops.length + 1)) / 2
       # Workaround as long as bad index has no solution recompute indices
       reset_indices

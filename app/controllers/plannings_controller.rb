@@ -26,11 +26,12 @@ class PlanningsController < ApplicationController
   before_action :authenticate_driver!, only: [:driver_move]
 
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS
+  UPDATE_ACTIONS_FULL_ROUTE_PRELOAD = UPDATE_ACTIONS - [:update_stop]
+  before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
   before_action :set_planning_for_edit, only: [:edit]
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
-  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal, :move]
+  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal, :move, :update_stop]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar, :update_stop]
   before_action :set_device_definitions, only: [:edit, :update]
@@ -210,25 +211,29 @@ class PlanningsController < ApplicationController
   end
 
   def refresh_route
-    @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.includes_destinations_and_stores.first!
+    @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.first!
     @with_stops = true
-    stops_count = @route.stops.count
+    stops_count = @route.route_data.stops_size
     page = params[:out_page] || 1
-    if @route.vehicle_usage_id
-      current_route = @route
-      current_route.stops.includes_destinations_and_stores.load
-    else
-      @out_pagy, @out_stops = pagy_countless(@route.stops.includes_destinations_and_stores, page: page, page_param: :out_page)
-      current_route = @route.dup
-      current_route.stops = @out_stops
-    end
+    stops_for_sidebar =
+      if @route.vehicle_usage_id
+        current_route = @route
+        # Pass the eager-loaded array to the serializer so it does not call @route.stops.to_a again.
+        current_route.stops.includes_destinations_and_stores.load.to_a
+      else
+        @out_pagy, @out_stops = pagy_countless(@route.stops.includes_destinations_and_stores, page: page, page_param: :out_page)
+        current_route = @route.dup
+        current_route.stops = @out_stops
+        @out_stops
+      end
     planning_summary = planning_summary(@planning)
     route_data = RouteSidebarSerializer.new(
       route: current_route,
       planning: @planning,
       with_stops: @with_stops,
       view_helpers: view_context,
-      stops_count: stops_count
+      stops_count: stops_count,
+      stops: stops_for_sidebar
     ).as_hash
     route_data[:route_id] = @route.id
     respond_to do |format|
@@ -449,15 +454,21 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       begin
         Planning.transaction do
-          @route = @planning.routes.find(Integer(params[:route_id]))
-          @stop = @route.stops.find(Integer(params[:stop_id])) if @route
+          @route = @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.find(Integer(params[:route_id]))
+          @stop = @route.stops.find(Integer(params[:stop_id]))
           if @stop && params[:stop].present?
             stop_h = params[:stop].to_unsafe_h
             deny_unless_operation_usable!(:stop, 'active_stop') if stop_h.key?('active')
             deny_unless_operation_usable!(:stop, 'lock_stop') if stop_h.key?('locked')
           end
           @stop.assign_attributes(stop_params) if @stop
+          updated_route_id = @route.id
           if @stop && @route.compute_saved! && @route.reload && @planning.reload
+            ActiveRecord::Associations::Preloader.new.preload(
+              [@planning],
+              routes: [:route_data, { vehicle_usage: :vehicle }]
+            )
+            @route = Route.where(id: updated_route_id, planning_id: @planning.id).includes_vehicle_usages.includes_destinations_and_stores.first!
             @routes = [@route]
             planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
             format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }

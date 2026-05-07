@@ -326,6 +326,23 @@ class PlanningTest < ActiveSupport::TestCase
     end
   end
 
+  test 'moving one visit from unassigned route uses fast finalize and updates route_data without full compute' do
+    planning = plannings(:planning_one)
+    unassigned = planning.routes.find { |r| r == routes(:route_zero_one) }
+    vehicle_route = planning.routes.find { |r| r == routes(:route_one_one) }
+    stop = unassigned.stops.find { |s| s.is_a?(StopVisit) }
+    assert stop.index
+    before_count = Stop.where(route_id: unassigned.id).count
+
+    planning.move_stop(vehicle_route, stop, 1)
+    planning.save!
+
+    unassigned.reload
+    refute unassigned.outdated?, 'unassigned route should not stay outdated after fast_finalize'
+    assert_equal before_count - 1, Stop.where(route_id: unassigned.id).count
+    assert_equal before_count - 1, unassigned.route_data.reload.stops_size
+  end
+
   test 'should compute' do
     o = plannings(:planning_one)
     assert_no_difference('Stop.count') do

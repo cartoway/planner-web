@@ -12,4 +12,17 @@ class PlanningsHelperTest < ActionView::TestCase
     assert s.key?(:routes)
     assert s[:routes].is_a?(Array)
   end
+
+  test 'planning_summary route sizes match persisted route_data' do
+    planning = plannings(:planning_one)
+    s = planning_summary(planning)
+    by_id = s[:routes].index_by { |r| r[:route_id] }
+    planning.routes.each do |route|
+      row = by_id[route.id]
+      rd = route.route_data
+      assert_equal rd.stops_size, row[:data][:size]
+      assert_equal rd.size_active, row[:data][:size_active]
+      assert_equal rd.size_store_reloads, row[:data][:size_store_reloads]
+    end
+  end
 end
