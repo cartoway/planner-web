@@ -42,6 +42,40 @@ class RouteTest < ActiveSupport::TestCase
     assert_kind_of Hash, route.route_data.max_loads
   end
 
+  test 'compute_saved! persists stops_size and count metrics on route_data for unscheduled route' do
+    route = routes(:route_zero_one)
+    assert_not route.vehicle_usage?
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+    expected_stops = Stop.where(route_id: route.id).count
+    assert_equal expected_stops, route.route_data.stops_size
+    assert_equal expected_stops, route.stops_size
+    assert_equal route.stops.count(&:active), route.route_data.size_active
+  end
+
+  test 'compute_saved! persists stop count metrics on route_data for vehicle route without StopVisit' do
+    route = routes(:route_one_one)
+    assert route.vehicle_usage?
+
+    Route.transaction do
+      route.stops.where(type: StopVisit.name).delete_all
+      route.reload
+      assert_operator route.stops.size, :>=, 1
+      assert(route.stops.none? { |s| s.is_a?(StopVisit) })
+
+      route.outdated = true
+      route.compute_saved!
+      route.reload
+
+      assert_equal route.stops.size, route.route_data.stops_size
+      assert_equal route.stops.count(&:active), route.route_data.size_active
+      assert_equal 0, route.route_data.size_destinations
+
+      raise ActiveRecord::Rollback
+    end
+  end
+
   test 'should save without loading stops' do
     route = routes(:route_one_one)
     assert route.update(outdated: true)

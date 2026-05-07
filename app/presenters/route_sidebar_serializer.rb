@@ -1,17 +1,19 @@
 class RouteSidebarSerializer
-  def initialize(route:, planning:, with_stops:, view_helpers:, stops_count: nil)
+  def initialize(route:, planning:, with_stops:, view_helpers:, stops_count: nil, stops: nil)
     @route = route
     @planning = planning
     @with_stops = with_stops
     @view_helpers = view_helpers
     @stops_count = stops_count
+    @stops = stops
   end
 
   def as_hash
     route_data = @route.route_data
     vehicle_usage = @route.vehicle_usage
     vehicle = vehicle_usage&.vehicle
-    route_stops = @with_stops ? @route.stops.to_a : []
+    with_stops_for_payload = @with_stops && (vehicle_usage.present? || @stops.present?)
+    route_stops = with_stops_for_payload ? (@stops || @route.stops.to_a) : []
     effective_color = @route.color || vehicle&.color
     default_color = vehicle&.color
 
@@ -23,7 +25,7 @@ class RouteSidebarSerializer
       hidden: @route.hidden,
       locked: @route.locked,
       outdated: @route.outdated,
-      with_stops: @with_stops,
+      with_stops: with_stops_for_payload,
       vehicle_usage_id: vehicle_usage&.id,
       vehicle_id: vehicle&.id,
       vehicle_name: vehicle&.name,
@@ -42,7 +44,7 @@ class RouteSidebarSerializer
       end_time: route_data&.end_time,
       end_day: @view_helpers.number_of_days(@route.end),
       time_day: @view_helpers.number_of_days(@route.start),
-      size: @stops_count || route_data&.stops_size.to_i,
+      size: route_size(route_data, vehicle_usage),
       size_active: route_data&.size_active.to_i,
       size_destinations: route_size_destinations(route_data),
       skills: vehicle_usage_skills(vehicle_usage),
@@ -83,6 +85,15 @@ class RouteSidebarSerializer
 
   def total_cost
     [@route.cost_distance, @route.cost_fixed, @route.cost_time].compact.reduce(&:+)&.round(2)
+  end
+
+  def route_size(route_data, vehicle_usage)
+    return @stops_count if @stops_count
+
+    persisted_size = route_data&.stops_size.to_i
+    return persisted_size unless vehicle_usage.nil? && persisted_size.zero?
+
+    @route.stops.unscope(:order).count
   end
 
   def total_balance
@@ -495,18 +506,24 @@ class RouteSidebarSerializer
 
   def start_route_custom_attribute_templates
     @start_route_custom_attribute_templates ||=
-      customer.custom_attributes
-              .for_route
-              .for_related_field('start_route_data')
-              .map { |custom_attribute| @view_helpers.custom_attribute_template(custom_attribute, @route, related_field: 'start_route_data') }
+      route_custom_attributes_for_related_field('start_route_data')
+      .map { |custom_attribute| @view_helpers.custom_attribute_template(custom_attribute, @route, related_field: 'start_route_data') }
   end
 
   def stop_route_custom_attribute_templates
     @stop_route_custom_attribute_templates ||=
-      customer.custom_attributes
-              .for_route
-              .for_related_field('stop_route_data')
-              .map { |custom_attribute| @view_helpers.custom_attribute_template(custom_attribute, @route, related_field: 'stop_route_data') }
+      route_custom_attributes_for_related_field('stop_route_data')
+      .map { |custom_attribute| @view_helpers.custom_attribute_template(custom_attribute, @route, related_field: 'stop_route_data') }
+  end
+
+  def route_custom_attributes_for_related_field(related_field)
+    customer_custom_attributes.select do |custom_attribute|
+      custom_attribute.object_class == 'route' && custom_attribute.related_field == related_field
+    end
+  end
+
+  def customer_custom_attributes
+    @customer_custom_attributes ||= customer.custom_attributes.to_a
   end
 
   def customer
