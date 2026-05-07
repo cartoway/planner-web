@@ -33,7 +33,7 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
   test 'field_value maps visit and destination fields from JSON-shaped hash' do
     stop = {
       'visits' => true,
-      'destination_name' => 'Dest N',
+      'name' => 'Dest N',
       'ref' => 'DREF',
       'visit_ref' => 'VREF',
       'tags_present' => {
@@ -52,7 +52,7 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
       'destination_duration' => '00:05:00',
       'visit_duration' => '00:07:00'
     }
-    assert_equal 'Dest N', Preferences::Catalog::StopList.field_value(stop, 'destination_name')
+    assert_equal 'Dest N', Preferences::Catalog::StopList.field_value(stop, 'name')
     assert_equal 'DREF', Preferences::Catalog::StopList.field_value(stop, 'ref')
     assert_equal 'VREF', Preferences::Catalog::StopList.field_value(stop, 'visit_ref')
     assert_equal 'foo', Preferences::Catalog::StopList.field_value(stop, 'tags')
@@ -94,15 +94,5 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
     }
     assert_equal 'foo', Preferences::Catalog::StopList.field_value(stop, 'tags')
     assert_nil Preferences::Catalog::StopList.field_value(stop, 'tags_visit')
-  end
-
-  test 'field_value destination_name falls back to name for visit stops' do
-    stop = { visits: true, name: 'From dest' }
-    assert_equal 'From dest', Preferences::Catalog::StopList.field_value(stop, 'destination_name')
-  end
-
-  test 'field_value destination_name is nil for non-visit without destination_name' do
-    stop = { name: 'Store', visits: false }
-    assert_nil Preferences::Catalog::StopList.field_value(stop, 'destination_name')
   end
 end
