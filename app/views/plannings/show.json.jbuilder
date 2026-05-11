@@ -67,5 +67,6 @@ else
   json.size size_total
   json.size_active size_active_total
 
+  json.planning_route_errors RouteSidebarSerializer.merge_planning_route_errors_from_sidebar_routes(routes_data)
   json.routes routes_data
 end

@@ -1,0 +1,58 @@
+- if flags[:route_error]
+  %ul.ui-state-error
+    - if flags[:route_no_geolocalization]
+      %li{title: t('plannings.edit.error.no_geolocalization_help')}
+        %i.fa.fa-map-marker.fa-fw
+        = t('plannings.edit.error.no_geolocalization')
+    - if flags[:route_out_of_window]
+      %li{title: t('plannings.edit.error.out_of_window_help')}
+        %i.fa.fa-stopwatch.fa-fw
+        = t('plannings.edit.error.out_of_window')
+    - if !flags[:route_unmanageable_capacity] && flags[:route_out_of_capacity]
+      %li{title: t('plannings.edit.error.out_of_capacity_help')}
+        %i.fa.fa-dumpster.fa-fw
+        = t('plannings.edit.error.out_of_capacity')
+    - if flags[:route_unmanageable_capacity]
+      %li{title: t('plannings.edit.error.unmanageable_capacity_help')}
+        %i.fa.fa-times.fa-fw>
+        = t('plannings.edit.error.unmanageable_capacity')
+    - if flags[:route_out_of_drive_time]
+      %li{title: t('plannings.edit.error.out_of_drive_time_help')}
+        %i.fa.fa-power-off.fa-fw
+        = t('plannings.edit.error.out_of_drive_time')
+    - if flags[:route_out_of_force_position]
+      %li{title: t('plannings.edit.error.out_of_force_position')}
+        %i.fa.fa-angle-right.fa-fw
+        = t('plannings.edit.error.out_of_force_position')
+    - if flags[:route_out_of_work_time]
+      %li{title: t('plannings.edit.error.out_of_work_time')}
+        %i.fa.fa-repeat.fa-fw
+        = t('plannings.edit.error.out_of_work_time')
+    - if flags[:route_out_of_max_distance]
+      %li{title: t('plannings.edit.error.out_of_max_distance')}
+        %i.fa.fa-ruler.fa-fw
+        = t('plannings.edit.error.out_of_max_distance')
+    - if flags[:route_out_of_max_ride_distance]
+      %li{title: t('plannings.edit.error.out_of_max_ride_distance')}
+        %i.fa.fa-compass-drafting.fa-fw
+        = t('plannings.edit.error.out_of_max_ride_distance')
+    - if flags[:route_out_of_max_ride_duration]
+      %li{title: t('plannings.edit.error.out_of_max_ride_duration')}
+        %i.fa.fa-stopwatch-20.fa-fw
+        = t('plannings.edit.error.out_of_max_ride_duration')
+    - if flags[:route_out_of_max_reload]
+      %li{title: t('plannings.edit.error.out_of_max_reload_help')}
+        %i.fa.fa-arrows-rotate.fa-fw
+        = t('plannings.edit.error.out_of_max_reload')
+    - if flags[:route_out_of_relation]
+      %li{title: t('plannings.edit.error.out_of_relation_help')}
+        %i.fa.fa-link-slash.fa-fw
+        = t('plannings.edit.error.out_of_relation')
+    - if flags[:route_no_path]
+      %li{title: t('plannings.edit.error.no_path_help')}
+        %i.fa.fa-road.fa-fw
+        = t('plannings.edit.error.no_path')
+    - if flags[:route_out_of_skill]
+      %li{title: t('plannings.edit.error.out_of_skill_help')}
+        %i.fa.fa-tags.fa-fw
+        = t('plannings.edit.error.out_of_skill')
