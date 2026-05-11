@@ -10,7 +10,7 @@
       %li
         %a.d-flex.align-items-center.justify-content-center.btn{href: "#planning-pane", role: "tab"}
           %i.fa.fa-caret-right
-  .sidebar-content.modern-scroll
+  .sidebar-content
     #planning-pane.sidebar-pane
       #extend_close_panel.row
         .pull-right
@@ -18,67 +18,68 @@
             %i.fa.fa-maximize
           %button.btn.btn-default.btn-sm.sidebar-close{title: t('.collapse_planning_panel'), type: "button"}
             %i.fa.fa-caret-left
-      #planning_tools.row
-        - if @callback_button
-          .row
-            %p.text-center.col-md-12
-              - dis = @manage_planning[:disable_external_callback]
-              %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{ data: { customer_id: current_user.customer.id, planning_id: @planning.id }, type: "button", disabled: dis }
-                %i.fa.fa-desktop.fa-fw
-                = @planning.customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
-        #route_selector.row
-        - if (@planning.id && !@planning.tags.empty?) || !@planning.id
-          .row
+      #route_selector.row
+      #planning-scroll.planning-pane-body.modern-scroll
+        #planning_tools.row
+          - if @callback_button
+            .row
+              %p.text-center.col-md-12
+                - dis = @manage_planning[:disable_external_callback]
+                %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{ data: { customer_id: current_user.customer.id, planning_id: @planning.id }, type: "button", disabled: dis }
+                  %i.fa.fa-desktop.fa-fw
+                  = @planning.customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action')
+          - if (@planning.id && !@planning.tags.empty?) || !@planning.id
+            .row
+              .d-flex.justify-content-center
+                .col-xs-12.col-md-12
+                  %label
+                    = t('activerecord.attributes.planning.tags')
+                  .row.form-group
+                    .input-append
+                      #planning_tag_ids_input.input-group
+                        = select_tag 'planning[tag_ids]', options_for_select(@planning.customer.tags.map { |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}] }, @planning.tags.collect(&:id)), { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control input-group-radiusless', disabled: @planning.id }
+                        - if @planning.id
+                          %span.input-group-addon.input-group-borderless.borderless-disabled= t("activerecord.attributes.planning.tag_operation.#{@planning.tag_operation}")
+                        - else
+                          %span.input-group-addon.input-group-borderless.borderless-empty
+                          = select_tag 'planning[tag_operation]', options_for_select(t('activerecord.attributes.planning.tag_operation').invert), class: 'form-control tag-operation-field', disabled: @planning.id
+                        %span.input-group-addon= content_tag('i', '', class: 'fa fa-tags fa-fw')
+                      - unless @planning.id
+                        %p.help-block= t('activerecord.attributes.planning.tags_help')
+            %br
+          - if @manage_planning[:manage_vehicle_usage_set] && @planning.customer.vehicle_usage_sets.size > 1
+            - dis = @manage_planning[:disable_vehicle_usage_set] || !current_user_planning_form_submit_enabled?(@planning)
+            = bootstrap_form_for @planning, {layout: :horizontal, default_div_class: ''} do |f|
+              .d-flex.justify-content-center
+                .col-xs-12.col-md-12
+                  %label
+                    = t('activerecord.attributes.planning.vehicle_usage_set_id')
+                  = f.collection_select :vehicle_usage_set_id, @planning.customer.vehicle_usage_sets, :id, :name, { control_col: 'col-xs-12 col-md-12', label: '', label_class: 'd-none' }, { required: true, control_class: 'form-control', disabled: dis }
+                  .d-flex.justify-content-center
+                    = f.submit message: t('plannings.edit.vehicle_usage_set.action'), button: 'btn btn-default', disabled: dis
+          - if @manage_planning[:manage_zoning]
             .d-flex.justify-content-center
               .col-xs-12.col-md-12
-                %label
-                  = t('activerecord.attributes.planning.tags')
-                .row.form-group
-                  .input-append
-                    #planning_tag_ids_input.input-group
-                      = select_tag 'planning[tag_ids]', options_for_select(@planning.customer.tags.map { |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}] }, @planning.tags.collect(&:id)), { multiple: true, include_blank: t('web.form.empty_entry'), class: 'form-control input-group-radiusless', disabled: @planning.id }
-                      - if @planning.id
-                        %span.input-group-addon.input-group-borderless.borderless-disabled= t("activerecord.attributes.planning.tag_operation.#{@planning.tag_operation}")
-                      - else
-                        %span.input-group-addon.input-group-borderless.borderless-empty
-                        = select_tag 'planning[tag_operation]', options_for_select(t('activerecord.attributes.planning.tag_operation').invert), class: 'form-control tag-operation-field', disabled: @planning.id
-                      %span.input-group-addon= content_tag('i', '', class: 'fa fa-tags fa-fw')
-                    - unless @planning.id
-                      %p.help-block= t('activerecord.attributes.planning.tags_help')
-          %br
-        - if @manage_planning[:manage_vehicle_usage_set] && @planning.customer.vehicle_usage_sets.size > 1
-          - dis = @manage_planning[:disable_vehicle_usage_set] || !current_user_planning_form_submit_enabled?(@planning)
-          = bootstrap_form_for @planning, {layout: :horizontal, default_div_class: ''} do |f|
-            .d-flex.justify-content-center
-              .col-xs-12.col-md-12
-                %label
-                  = t('activerecord.attributes.planning.vehicle_usage_set_id')
-                = f.collection_select :vehicle_usage_set_id, @planning.customer.vehicle_usage_sets, :id, :name, { control_col: 'col-xs-12 col-md-12', label: '', label_class: 'd-none' }, { required: true, control_class: 'form-control', disabled: dis }
-                .d-flex.justify-content-center
-                  = f.submit message: t('plannings.edit.vehicle_usage_set.action'), button: 'btn btn-default', disabled: dis
-        - if @manage_planning[:manage_zoning]
-          .d-flex.justify-content-center
-            .col-xs-12.col-md-12
-              = bootstrap_form_for [:apply_zonings, @planning], { layout: :horizontal, default_div_class: '', html: { id: "planning_zoning_#{@planning.id}", class: 'form-horizontal update-zonings-form', title: t('plannings.edit.zonings.label') }} do |f|
-                %label
-                  = t('plannings.edit.zonings.label')
-                = zoning_select f, @planning
-                .d-flex.justify-content-center
-                  - dis = @manage_planning[:disable_zoning] || !current_user_planning_form_submit_enabled?(@planning)
-                  = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil), disabled: dis
-      #global_tools.row
-        - if @manage_planning[:manage_optimize]
-          .btn-group
-            - dis = @manage_planning[:disable_optimize]
-            %button#optimize_all.btn.btn-primary.btn-sm.optimize{title: t('.optimize'), type: "button", "data-toggle": "modal", "data-target": "#optimization-modal", disabled: dis }
-              %i.fa.fa-gears
-              = t('plannings.edit.dialog.optimization.optimize')
-        .pull-right.btn-group
-          - Preferences::Catalog.planning_edit_global_toolbar_operation_ids.each do |op|
-            - path = Preferences::Catalog.toolbar_operation_partial('planning', op)
-            - next if path.blank?
-            = render partial: path
-      #planning.row
+                = bootstrap_form_for [:apply_zonings, @planning], { layout: :horizontal, default_div_class: '', html: { id: "planning_zoning_#{@planning.id}", class: 'form-horizontal update-zonings-form', title: t('plannings.edit.zonings.label') }} do |f|
+                  %label
+                    = t('plannings.edit.zonings.label')
+                  = zoning_select f, @planning
+                  .d-flex.justify-content-center
+                    - dis = @manage_planning[:disable_zoning] || !current_user_planning_form_submit_enabled?(@planning)
+                    = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil), disabled: dis
+        #global_tools.row
+          - if @manage_planning[:manage_optimize]
+            .btn-group
+              - dis = @manage_planning[:disable_optimize]
+              %button#optimize_all.btn.btn-primary.btn-sm.optimize{title: t('.optimize'), type: "button", "data-toggle": "modal", "data-target": "#optimization-modal", disabled: dis }
+                %i.fa.fa-gears
+                = t('plannings.edit.dialog.optimization.optimize')
+          .pull-right.btn-group
+            - Preferences::Catalog.planning_edit_global_toolbar_operation_ids.each do |op|
+              - path = Preferences::Catalog.toolbar_operation_partial('planning', op)
+              - next if path.blank?
+              = render partial: path
+        #planning.row
 
 #map.sidebar-map
 
