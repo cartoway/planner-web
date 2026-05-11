@@ -68,7 +68,11 @@ export const mustache_i18n = function() {
 export const applyStopPopupManagePlanning = function(view, managePlanning) {
   var mp = managePlanning || {};
   view.manage_organize = mp.manage_organize !== false;
-  view.move_stop_allowed = Boolean(mp.manage_stop_move) && !Boolean(mp.disable_stop_move);
+  view.planning_move_stops_visible = Boolean(mp.manage_route_stops);
+  view.planning_move_stops_usable = Boolean(mp.manage_route_stops) && !Boolean(mp.disable_route_stops);
+  view.send_stop_to_route_visible = Boolean(mp.manage_stop_move);
+  view.send_stop_to_route_usable = Boolean(mp.manage_stop_move) && !Boolean(mp.disable_stop_move);
+  view.move_stop_allowed = view.send_stop_to_route_usable;
   view.stop_active_allowed = Boolean(mp.manage_stop_active) && !Boolean(mp.disable_stop_active);
 };
 

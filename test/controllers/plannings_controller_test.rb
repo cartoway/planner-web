@@ -562,6 +562,10 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_includes mp.keys, :manage_route_optimize
     assert_includes mp.keys, :disable_route_export
     assert_includes mp.keys, :manage_route_vehicle_usage
+    assert_includes mp.keys, :planning_move_stops_visible
+    assert_includes mp.keys, :planning_move_stops_usable
+    assert_includes mp.keys, :send_stop_to_route_visible
+    assert_includes mp.keys, :send_stop_to_route_usable
     assert_equal false, assigns(:callback_button)
   end
 
@@ -840,6 +844,32 @@ class PlanningsControllerTest < ActionController::TestCase
 
     patch :update_stop, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, stop_id: stops(:stop_one_one).id, stop: { active: false } }
     assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
+  test 'patch move single stop is allowed when route stops not usable if move_stop is allowed' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['route']['segment_controls']['stops'] = { 'visible' => true, 'usable' => false }
+    ops['stop']['segment_controls']['move_stop'] = { 'visible' => true, 'usable' => true }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "move-stop-route-stops-ro-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    get :edit, params: { id: @planning }
+    assert_equal true, assigns(:manage_planning)[:send_stop_to_route_usable]
+    assert_equal false, assigns(:manage_planning)[:planning_move_stops_usable]
+
+    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
+    assert_response :success
   ensure
     u.update!(role_id: nil)
     role&.destroy

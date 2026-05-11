@@ -9,9 +9,10 @@
   {{#planning_id}}
   {{^store}}
   {{#manage_organize}}
-    {{#move_stop_allowed}}
+    {{#send_stop_to_route_visible}}
       {{^rest}}
       <span class="dropdown route-select">
+        {{#send_stop_to_route_usable}}
         <span class="dropdown-toggle" data-toggle="dropdown" title="{{#i18n}}plannings.edit.send_to_route_help{{/i18n}}">
           {{#vehicle_name}}{{vehicle_name}}{{/vehicle_name}}
           {{^vehicle_name}}{{#i18n}}plannings.edit.out_of_route{{/i18n}}{{/vehicle_name}}
@@ -27,22 +28,32 @@
             {{/vehicle_usage_id}}
           {{/routes}}
         </ul>
+        {{/send_stop_to_route_usable}}
+        {{^send_stop_to_route_usable}}
+        <span class="dropdown-toggle text-muted" title="{{#i18n}}plannings.edit.send_to_route_help{{/i18n}}" style="cursor: not-allowed;">
+          {{#vehicle_name}}{{vehicle_name}}{{/vehicle_name}}
+          {{^vehicle_name}}{{#i18n}}plannings.edit.out_of_route{{/i18n}}{{/vehicle_name}}
+          <span class="caret"></span>
+        </span>
+        {{/send_stop_to_route_usable}}
       </span>
+      {{#planning_move_stops_usable}}
       <div class="btn-group pull-right stop-tools">
         {{#automatic_insert}}
         <button class="automatic_insert btn btn-default btn-xs" title="{{#i18n}}plannings.edit.automatic_insert_help{{/i18n}}"><i class="fa fa-bolt"></i></button>
         {{/automatic_insert}}
       </div>
+      {{/planning_move_stops_usable}}
       {{/rest}}
       {{#rest}}
       {{#vehicle_name}}{{vehicle_name}}{{/vehicle_name}}
       {{^vehicle_name}}{{#i18n}}plannings.edit.out_of_route{{/i18n}}{{/vehicle_name}}
       {{/rest}}
-    {{/move_stop_allowed}}
-    {{^move_stop_allowed}}
+    {{/send_stop_to_route_visible}}
+    {{^send_stop_to_route_visible}}
       {{#vehicle_name}}{{vehicle_name}}{{/vehicle_name}}
       {{^vehicle_name}}{{#i18n}}plannings.edit.out_of_route{{/i18n}}{{/vehicle_name}}
-    {{/move_stop_allowed}}
+    {{/send_stop_to_route_visible}}
   {{/manage_organize}}
   {{/store}}
   {{/planning_id}}

@@ -884,6 +884,11 @@ div.grid-container {
   padding-right: 0px !important;
 }
 
+.ph-3 {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
 .card {
   // scss-docs-start card-css-vars
   --#{$prefix}card-spacer-y: #{$card-spacer-y};
