@@ -25,7 +25,8 @@ $navbar-height: 0px;
 $sidebar-width: 550px;
 $sidebar-margins: 10px;
 
-[data-controller='plannings'][data-action='edit'] {
+[data-controller='plannings'][data-action='edit'],
+[data-controller='api_web_v01_plannings'][data-action='edit'] {
   @media screen and (min-width: 768px) {
     .ui-pnotify {
       margin-right: $sidebar-margins; // not possible to use right because it's overloaded by pnotify
@@ -326,8 +327,48 @@ $sidebar-margins: 10px;
   }
 
   .sidebar {
+    &#edit-planning {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
     .sidebar-content {
-      overflow-y: scroll; // important for select2
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+
+      #planning-pane {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+
+        #extend_close_panel {
+          position: relative;
+          z-index: 2;
+        }
+      }
+
+      #planning-scroll.planning-pane-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+      }
+
+      #route_selector {
+        flex-shrink: 0;
+        margin: -22px 2px 4px;
+        padding: 5px 15px 8px;
+        position: relative;
+        z-index: 1;
+        background-color: $white-background;
+        border-bottom: 1px solid $grey-color;
+      }
 
       .zoning_name {
         text-overflow: ellipsis;
@@ -555,6 +596,26 @@ $sidebar-margins: 10px;
     .sidebar-content {
       white-space: nowrap;
       overflow: auto;
+      display: block;
+      flex-direction: unset;
+      min-height: 0;
+
+      #planning-pane {
+        display: block;
+        flex: unset;
+        min-height: unset;
+        overflow: visible;
+      }
+
+      #planning-scroll.planning-pane-body {
+        flex: unset;
+        min-height: unset;
+        overflow: visible;
+      }
+
+      #route_selector {
+        margin-top: 0;
+      }
 
       h1,
       form {
