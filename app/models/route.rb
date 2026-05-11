@@ -348,7 +348,10 @@ class Route < ApplicationRecord
           end
 
           if stop_attributes[:time]
-            open, close, late_wait = stop.best_open_close(stop_attributes[:time])
+            open, close, late_wait = stop.best_open_close(
+              stop_attributes[:time],
+              strict_within_timewindows: planning.customer.enable_strict_within_timewindows
+            )
             stops_time_windows[stop] = [open, close]
             if open && stop_attributes[:time] < open
               stop_attributes[:wait_time] = open - stop_attributes[:time]
@@ -858,10 +861,12 @@ class Route < ApplicationRecord
   end
 
   def sum_out_of_window
+    strict = planning.customer.enable_strict_within_timewindows
     stops.to_a.sum{ |stop|
       if stop.time
-        open, close = stop.best_open_close(stop.time)
-        (open && stop.time < open ? open - stop.time : 0) + (close && stop.time > close ? stop.time - close : 0)
+        open, close = stop.best_open_close(stop.time, strict_within_timewindows: strict)
+        compare_end = strict ? stop.time + stop.duration : stop.time
+        (open && stop.time < open ? open - stop.time : 0) + (close && compare_end > close ? compare_end - close : 0)
       else
         0
       end
