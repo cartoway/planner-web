@@ -1,4 +1,7 @@
 - out_pagy ||= nil
+- move_stops_route_usable = @manage_planning[:planning_move_stops_usable]
+- send_to_route_visible = @manage_planning[:send_stop_to_route_visible]
+- send_to_route_usable = @manage_planning[:send_stop_to_route_usable]
 - route[:stops]&.each do |stop|
   - if stop[:visits]
     %li.waypoint.d-fake-flex.align-items-center.list-group-item{ class: ('ui-state-error' if stop[:error]), data: { "stop-id": stop[:stop_id], "stop-index": stop[:stop_index], "origin-route-id": route[:route_id] }}
@@ -23,7 +26,7 @@
               = stop[:time_windows_condensed]
         .col-xs-6.col-md-3
           .btn-group.pull-right.stop-tools
-            - if stop[:geocoded]
+            - if move_stops_route_usable && stop[:geocoded]
               %button.automatic_insert.btn.btn-default.btn-xs{title: t("plannings.edit.automatic_insert_help")}
                 %i.fa.fa-bolt
             - if @manage_planning[:manage_destination]
@@ -32,17 +35,21 @@
             - if stop[:geocoded]
               %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}>
                 %i.fa.fa-map-marker
-            .btn-group.route-select
-              %button.btn.btn-default.btn-xs.dropdown-toggle{"data-toggle": "dropdown", title: t("plannings.edit.send_to_route_help"), type: "button"}
-                %i.fa.fa-truck-field.fa-fw
-                %span.caret
-              %ul.dropdown-menu.pull-right{role: "menu"}
-                - summary[:routes].each do |o_route|
-                  - if o_route[:vehicle_usage_id]
-                    %li
-                      %a.send_to_route{href: "/plannings/#{@planning.id}/#{o_route[:route_id]}/#{stop[:stop_id]}/move.json", method: :patch}
-                        .color_small{style: "background:#{o_route[:color]}"}
-                        = o_route[:name]
+            - if send_to_route_visible && stop[:geocoded]
+              - send_btn_attrs = { title: t("plannings.edit.send_to_route_help"), type: 'button', disabled: !send_to_route_usable }
+              - send_btn_attrs['data-toggle'] = 'dropdown' if send_to_route_usable
+              .btn-group.route-select
+                %button.btn.btn-default.btn-xs.dropdown-toggle{send_btn_attrs}
+                  %i.fa.fa-truck-field.fa-fw
+                  %span.caret
+                - if send_to_route_usable
+                  %ul.dropdown-menu.pull-right{role: "menu"}
+                    - summary[:routes].each do |o_route|
+                      - if o_route[:vehicle_usage_id]
+                        %li
+                          %a.send_to_route{href: "/plannings/#{@planning.id}/#{o_route[:route_id]}/#{stop[:stop_id]}/move.json", method: :patch}
+                            .color_small{style: "background:#{o_route[:color]}"}
+                            = o_route[:name]
           .clearfix
 - if !route[:with_stops] && route[:size].to_i > 0
   .d-flex.justify-content-center.load-stops.text-muted{data: { auto_load: true }}
