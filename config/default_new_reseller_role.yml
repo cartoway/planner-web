@@ -63,6 +63,7 @@ default: &default
       destination: { visible: true, usable: true }
       vehicle_usages: { visible: true, usable: true }
       stores: { visible: true, usable: true }
+      tags: { visible: true, usable: true }
 
 development:
   <<: *default

@@ -5,7 +5,7 @@
 #   planning: { segments: [...], segment_controls: { <id>: { visible, usable }, ... } }
 #   route:    { ... }
 #   stop:     { ... }
-# forms mirrors normalize_forms keys: plannings, destination, vehicle_usages, stores → { visible, usable }
+# forms mirrors normalize_forms keys: plannings, destination, vehicle_usages, stores, tags → { visible, usable }
 #
 # Shared operations/forms for no_role and new_role use a YAML anchor on no_role and merge (<<) into new_role.
 #
@@ -48,6 +48,7 @@ default: &default
       destination: { visible: true, usable: false }
       vehicle_usages: { visible: true, usable: false }
       stores: { visible: true, usable: false }
+      tags: { visible: true, usable: false }
   new_role:
     <<: *restricted_operations_and_forms
 
@@ -96,6 +97,7 @@ test:
       destination: { visible: true, usable: true }
       vehicle_usages: { visible: true, usable: true }
       stores: { visible: true, usable: true }
+      tags: { visible: true, usable: true }
 
 production:
   <<: *default

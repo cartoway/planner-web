@@ -67,10 +67,12 @@
                       .hidden-menu.menu_label
                         = t 'plannings.menu.plannings'
                   %ul#planningsCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                    %li{ class: ("disabled" if current_user.customer.too_many_plannings?) }
-                      = link_to new_planning_path do
-                        %i.fa.fa-plus.fa-fw
-                        = t 'all.verb.new'
+                    - can_new_planning = !current_user.customer.too_many_plannings?
+                    - if can_new_planning && current_user_form_create?(:plannings)
+                      %li
+                        = link_to new_planning_path do
+                          %i.fa.fa-plus.fa-fw
+                          = t 'all.verb.new'
                     %li
                       = link_to plannings_path do
                         %i.fa.fa-map-location.fa-fw
@@ -164,11 +166,12 @@
                       %i.fa.fa-map-marker.fa-fw
                       = t 'all.verb.list'
                   %li.divider
-                  %li
-                    = link_to tags_path do
-                      %i.fa.fa-tags.fa-fw
-                      = t 'destinations.menu.tags'
-                  %li.divider
+                  - if current_user_form_visible?(:tags)
+                    %li
+                      = link_to tags_path do
+                        %i.fa.fa-tags.fa-fw
+                        = t 'destinations.menu.tags'
+                    %li.divider
                   %li
                     = link_to destination_import_path do
                       %i.fa.fa-upload.fa-fw

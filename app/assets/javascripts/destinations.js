@@ -383,6 +383,8 @@ const destinations_form = function(params, api) {
   $("label[for$='destroy']").hide();
 
   const initVisits = function(parent) {
+    var tagEntityCreateAllowed = params.tag_entity_create_allowed === true;
+
     $('.flag-destroy', parent).click(function() {
       var fieldset = $(this).closest('fieldset');
       $("input:checkbox", fieldset).prop("checked", function(i, val) {
@@ -416,7 +418,7 @@ const destinations_form = function(params, api) {
     });
 
     var formatNoMatches = I18n.t('web.select2.empty_result');
-    $('select[name$=\\[tag_ids\\]\\[\\]]', parent).select2({
+    var visitTagSelect2Opts = {
       theme: 'bootstrap',
       minimumResultsForSearch: -1,
       templateSelection: templateTag,
@@ -425,9 +427,11 @@ const destinations_form = function(params, api) {
         return formatNoMatches;
       },
       width: '100%',
-      tags: true,
-      closeOnSelect: false,
-      createTag: function(params) {
+      closeOnSelect: false
+    };
+    if (tagEntityCreateAllowed) {
+      visitTagSelect2Opts.tags = true;
+      visitTagSelect2Opts.createTag = function(params) {
         var term = $.trim(params.term);
         if (term === '') return null;
         return {
@@ -435,14 +439,19 @@ const destinations_form = function(params, api) {
           newTag: true,
           text: term + ' ( + ' + I18n.t('web.select2.new') + ')'
         };
-      }
-    }).on('select2:open', function(e) {
+      };
+    }
+
+    var $visitTags = $('select[name$=\\[tag_ids\\]\\[\\]]', parent).select2(visitTagSelect2Opts).on('select2:open', function(e) {
       $(e.target).parent().find('.select2-search__field').attr('placeholder', I18n.t('web.select2.placeholder'));
     }).on('select2:close', function(e) {
       $(e.target).parent().find('.select2-search__field').attr('placeholder', '');
-    }).on('select2:selecting', function(e) {
-      selectTag(e);
     });
+    if (tagEntityCreateAllowed) {
+      $visitTags.on('select2:selecting', function(e) {
+        selectTag(e);
+      });
+    }
 
     $('[name$=\\[priority\\]]', parent).slider({
       ticks: [-4, 0, 4],

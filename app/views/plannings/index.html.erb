@@ -14,7 +14,8 @@
 
 <div class="row row-top">
   <div class="col-md-6">
-    <%= link_to new_planning_path, disabled: current_user.customer.too_many_plannings?, class:"btn btn-primary btn-sm" do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
+    <% cannot_new_planning = current_user.customer.too_many_plannings? || !current_user_form_create?(:plannings) %>
+    <%= link_to new_planning_path, disabled: cannot_new_planning, class:"btn btn-primary btn-sm" do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
   </div>
   <div class="col-md-6">
     <div class="form-inline pull-right">
@@ -70,7 +71,7 @@
               <%= t 'customers.menu.analytics' %>
             <% end %>
           <% end %>
-          <%= link_to planning_duplicate_path(planning), disabled: current_user.customer.too_many_plannings?, :class => "btn btn-default btn-sm", method: :patch do %><i class="fa fa-copy fa-fw"></i> <%= t 'all.verb.duplicate' %><% end %>
+          <%= link_to planning_duplicate_path(planning), disabled: current_user.customer.too_many_plannings? || !current_user_planning_form_submit_enabled?(planning), :class => "btn btn-default btn-sm", method: :patch do %><i class="fa fa-copy fa-fw"></i> <%= t 'all.verb.duplicate' %><% end %>
           <%= link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm" do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
           <% if can_destroy_plannings %>
             <%= link_to planning, class: "btn btn-danger btn-sm", method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
@@ -108,7 +109,10 @@
         </li>
       </ul>
       <% if @customer.enable_external_callback? && @customer.external_callback_url %>
-        <button id="external-url" class="btn btn-sm btn-default" data-customer-id="<%= @customer.id %>"><i class="fa fa-desktop fa-fw"></i> <%= @customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action') %></button>
+        <% planning_callback_usable = toolbar_operation_usable?(:planning, 'external_callback') %>
+        <%= button_tag type: 'button', id: 'external-url', class: 'btn btn-sm btn-default', disabled: !planning_callback_usable, data: { customer_id: @customer.id } do %>
+          <i class="fa fa-desktop fa-fw"></i> <%= @customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action') %>
+        <% end %>
       <% end %>
     </div>
   </div>
@@ -125,6 +129,7 @@ controller.js(
   customer_id: @customer.id,
   spreadsheet_columns: @spreadsheet_columns,
   vehicles: Hash[@customer.vehicles.map{ |v| [v.id, {name: v.name, color: v.color}] }],
-  external_url: @customer.external_callback_url
+  external_url: @customer.external_callback_url,
+  planning_external_callback_usable: toolbar_operation_usable?(:planning, 'external_callback')
 )
 %>

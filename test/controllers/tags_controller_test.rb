@@ -7,6 +7,12 @@ class TagsControllerTest < ActionController::TestCase
     request.host = @reseller.host
     @tag = tags(:tag_one)
     sign_in users(:user_one)
+    assert_valid response
+  end
+
+  teardown do
+    u = users(:user_one)
+    u.update!(role_id: nil) if u.reload.role_id.present?
   end
 
   test 'user can only view tags from its customer' do
@@ -84,5 +90,74 @@ class TagsControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to tags_path
+  end
+
+  test 'index redirects when tags form is hidden' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['tags'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "hidden-tags-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    get :index
+    assert_response :redirect
+    assert_redirected_to root_url
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
+  test 'create redirects when tags form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['tags'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "ro-tags-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    assert_no_difference('Tag.count') do
+      post :create, params: { tag: { label: 'from restricted role' } }
+    end
+    assert_response :redirect
+    assert_redirected_to root_url
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
+  test 'destroy_multiple is forbidden when tags form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['tags'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "ro-tags-destroy-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    assert_no_difference('Tag.count') do
+      delete :destroy_multiple, params: { tags: { tags(:tag_one).id => 1, tags(:tag_two).id => 1 } }
+    end
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
   end
 end
