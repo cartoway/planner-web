@@ -60,6 +60,13 @@ $sidebar-margins: 10px;
         }
       }
 
+      ul.ui-state-error {
+        margin: 2px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        border-color: $danger-border-color;
+      }
+
       .route {
         list-style-type: none;
 
@@ -117,14 +124,6 @@ $sidebar-margins: 10px;
 
         .route-info {
           white-space: nowrap;
-        }
-
-        ul.ui-state-error {
-          margin-top: 10px;
-          padding-top: 5px;
-          padding-bottom: 5px;
-          border-color: $danger-border-color;
-          border-radius: 5px;
         }
 
         .service-time {

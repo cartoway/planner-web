@@ -56,7 +56,8 @@ class PlanningSidebarPresenter
       distance: @view_helpers.locale_distance(distance_total, @current_user.prefered_unit),
       size: size_total,
       size_active: size_active_total,
-      routes: routes_data
+      routes: routes_data,
+      planning_route_errors: RouteSidebarSerializer.merge_planning_route_errors_from_sidebar_routes(routes_data)
     }
 
     sidebar_locals[:outdated] = true if @planning.outdated
