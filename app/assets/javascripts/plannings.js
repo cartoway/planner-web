@@ -2481,7 +2481,8 @@ export const plannings_edit = function(params) {
       return;
     }
     var mpToolbar = params.manage_planning;
-    var stopSortableDisabled = !!(mpToolbar && (!mpToolbar.manage_stop_move || mpToolbar.disable_stop_move));
+    var planningMoveStopsUsable = mpToolbar && mpToolbar.manage_route_stops && !mpToolbar.disable_route_stops;
+    var stopSortableDisabled = !planningMoveStopsUsable;
     $sortable_route.sortable({
       distance: 8,
       connectWith: ".sortable",
