@@ -415,6 +415,7 @@ class PlanningsController < ApplicationController
   def automatic_insert
     respond_to do |format|
       begin
+        deny_unless_operation_usable!(:route, 'stops')
         if params[:stop_ids] && !params[:stop_ids].empty?
           stop_ids = params[:stop_ids].collect{ |id| Integer(id) }
           stops = @planning.routes.flat_map{ |r| r.stops.select{ |s| stop_ids.include? s.id } }

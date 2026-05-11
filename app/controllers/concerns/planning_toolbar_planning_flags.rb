@@ -72,6 +72,12 @@ module PlanningToolbarPlanningFlags
     apply_route_toolbar_operation_flags!
     apply_stop_toolbar_operation_flags!
 
+    @manage_planning[:planning_move_stops_visible] = @manage_planning[:manage_route_stops]
+    @manage_planning[:planning_move_stops_usable] = @manage_planning[:manage_route_stops] && !@manage_planning[:disable_route_stops]
+
+    @manage_planning[:send_stop_to_route_visible] = @manage_planning[:manage_stop_move]
+    @manage_planning[:send_stop_to_route_usable] = @manage_planning[:manage_stop_move] && !@manage_planning[:disable_stop_move]
+
     @manage_planning[:manage_activate_stops] =
       planning_op_visible.call('activate_stops') && @manage_planning[:manage_stop_active]
     @manage_planning[:disable_activate_stops] =
