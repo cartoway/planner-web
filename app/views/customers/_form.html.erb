@@ -370,9 +370,8 @@
 
     <%= render partial: 'shared/check_box', locals: { form: f, field: :optimization_force_start, label: t('activerecord.attributes.customer.optimization_force_start'), help: t('.optimization_force_start_help') } %>
   <% end %>
-
-  <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_optimization_soft_upper_bound, label: t('activerecord.attributes.customer.enable_optimization_soft_upper_bound'), help: t('.enable_optimization_soft_upper_bound_help') } %>
   <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_strict_within_timewindows, label: t('activerecord.attributes.customer.enable_strict_within_timewindows'), help: t('.enable_strict_within_timewindows_help') } %>
+  <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_optimization_soft_upper_bound, label: t('activerecord.attributes.customer.enable_optimization_soft_upper_bound'), help: t('.enable_optimization_soft_upper_bound_help') } %>
   <div class="<%= @customer.enable_optimization_soft_upper_bound ? "" : "d-none" %>" id="optimization_soft_upper_bound">
     <%= f.text_field :stop_max_upper_bound, {help: t('.stop_max_upper_bound_help'), placeholder: t('all.unit.hour_minute'), value: @customer.stop_max_upper_bound_time || 0, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} %>
     <%= f.text_field :vehicle_max_upper_bound, { help: t(".vehicle_max_upper_bound"), placeholder: t('all.unit.hour_minute'), value: @customer.vehicle_max_upper_bound_time || 0, append: content_tag('i', '', class: 'fa fa-repeat fa-fw')} %>
