@@ -114,7 +114,7 @@ class Admin::RolesControllerTest < ActionController::TestCase
     expected_route_segments = %w[vehicle_usage export] + (sr - %w[vehicle_usage export])
     assert_equal expected_route_segments, @role.operations['route']['segments']
 
-    assert_equal %w[destination plannings stores vehicle_usages], @role.forms.keys.map(&:to_s).sort
+    assert_equal %w[destination plannings stores tags vehicle_usages], @role.forms.keys.map(&:to_s).sort
     assert @role.forms['plannings']['visible']
     assert @role.forms['plannings']['usable']
     assert @role.forms['destination']['visible']

@@ -12,4 +12,9 @@
   </div>
 <% else %>
   <%= render 'form' %>
+  <%
+    controller.js(
+      tag_entity_create_allowed: current_user_form_create?(:tags)
+    )
+  %>
 <% end %>

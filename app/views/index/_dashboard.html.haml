@@ -7,7 +7,8 @@
             %span
               %i.fa.fa-map-location.fa-fw
               %span= t 'plannings.menu.plannings'
-            = link_to new_planning_path, class: "ml-auto btn #{@customer_summary[:plannings][:count] >= @customer_summary[:plannings][:limit] ? 'btn-default disabled' : 'btn-primary'}" do
+            - too_many_or_cannot_create = @customer_summary[:plannings][:count] >= @customer_summary[:plannings][:limit] || !current_user_form_create?(:plannings)
+            = link_to new_planning_path, class: "ml-auto btn #{too_many_or_cannot_create ? 'btn-default disabled' : 'btn-primary'}" do
               %i.fa.fa-fw.fa-plus
               = t('plannings.index.new')
           - if @customer_summary[:plannings][:count] == 0

@@ -74,7 +74,7 @@
         </td>
         <td class="text-right">
           <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
-            <%= link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), disabled: current_user.customer.too_many_vehicle_usage_sets?, :class => 'btn btn-default btn-sm', method: :patch, title: t('all.verb.duplicate') do %><i class="fa fa-copy fa-fw"></i><% end %>
+            <%= link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), disabled: current_user.customer.too_many_vehicle_usage_sets? || !current_user_form_update?(:vehicle_usages), :class => 'btn btn-default btn-sm', method: :patch, title: t('all.verb.duplicate') do %><i class="fa fa-copy fa-fw"></i><% end %>
           <% end %>
 
           <%= link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), :class => 'btn btn-default btn-sm' do %>

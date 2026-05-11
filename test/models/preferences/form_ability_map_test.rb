@@ -121,4 +121,31 @@ class PreferencesFormAbilityMapTest < ActiveSupport::TestCase
 
     assert ability.cannot?(:delete_vehicle, @user.customer)
   end
+
+  test 'hidden tags denies listing and showing tag records' do
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['tags'] = { 'visible' => false, 'usable' => false }
+
+    assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
+
+    ability = Ability.new(@user)
+    tag = tags(:tag_one)
+    assert_equal @user.customer_id, tag.customer_id
+    assert ability.cannot?(:index, Tag)
+    assert ability.cannot?(:show, tag)
+  end
+
+  test 'tags visible but not usable denies create update destroy on Tag' do
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['tags'] = { 'visible' => true, 'usable' => false }
+
+    assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
+
+    ability = Ability.new(@user)
+    tag = tags(:tag_one)
+    assert ability.cannot?(:create, Tag)
+    assert ability.cannot?(:new, Tag)
+    assert ability.cannot?(:update, tag)
+    assert ability.cannot?(:destroy, tag)
+  end
 end
