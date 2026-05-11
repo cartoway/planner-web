@@ -112,7 +112,7 @@ module RoutesHelper
           devices[key].find{ |dv| dv[:id] == value }
         end
         route_devices_hash[key] = match_device unless match_device.nil? || match_device.empty?
-      else
+      elsif value.present?
         route_devices_hash[key] = value
       end
     end
