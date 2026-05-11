@@ -237,7 +237,10 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
   });
 };
 
-const plannings_form = function() {
+const plannings_form = function(params) {
+  params = params || {};
+  var tagEntityCreateAllowed = params.tag_entity_create_allowed === true;
+
   $('#planning_date, #planning_begin_date, #planning_end_date, #isochrone_date, #isodistance_date').datepicker({
     language: I18n.currentLocale(),
     autoclose: true,
@@ -248,7 +251,7 @@ const plannings_form = function() {
   });
 
   var formatNoMatches = I18n.t('web.select2.empty_result');
-  $('select#planning_tag_ids').select2({
+  var planningTagSelect2Opts = {
     theme: 'bootstrap',
     minimumResultsForSearch: -1,
     templateSelection: templateTag,
@@ -257,9 +260,11 @@ const plannings_form = function() {
       return formatNoMatches;
     },
     width: '100%',
-    tags: true,
-    closeOnSelect: false,
-    createTag: function(params) {
+    closeOnSelect: false
+  };
+  if (tagEntityCreateAllowed) {
+    planningTagSelect2Opts.tags = true;
+    planningTagSelect2Opts.createTag = function(params) {
       var term = $.trim(params.term);
       if (term === '') return null;
       return {
@@ -267,14 +272,19 @@ const plannings_form = function() {
         newTag: true,
         text: term + ' ( + ' + I18n.t('web.select2.new') + ')'
       };
-    }
-  }).on('select2:open', function(e) {
+    };
+  }
+
+  var $planningTags = $('select#planning_tag_ids').select2(planningTagSelect2Opts).on('select2:open', function(e) {
     $(e.target).parent().find('.select2-search__field').attr('placeholder', I18n.t('web.select2.placeholder'));
   }).on('select2:close', function(e) {
     $(e.target).parent().find('.select2-search__field').attr('placeholder', '');
-  }).on('select2:selecting', function(e) {
-    selectTag(e);
   });
+  if (tagEntityCreateAllowed) {
+    $planningTags.on('select2:selecting', function(e) {
+      selectTag(e);
+    });
+  }
 };
 
 const plannings_new = function(params) {
@@ -290,14 +300,14 @@ const plannings_new = function(params) {
     onPlanningCreateModal.modal("show");
   });
 
-  plannings_form();
+  plannings_form(this.params || {});
   $("#planning_zoning_ids").select2({
     theme: 'bootstrap'
   });
 };
 
 export const plannings_edit = function(params) {
-  plannings_form();
+  plannings_form(params);
 
   var prefered_unit = (!params.prefered_unit ? "km" : params.prefered_unit),
     planning_id = params.planning_id,
@@ -3239,6 +3249,9 @@ var plannings_index = function(params) {
 
   $('#external-url').on('click', function(e) {
     e.preventDefault();
+    if (params.planning_external_callback_usable === false) {
+      return false;
+    }
 
     planning_ids = $('[name^=planning]:checked').map(function() { return $(this).val(); }).toArray().join(',');
     if (!requestPending) {

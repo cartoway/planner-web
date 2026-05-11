@@ -867,6 +867,61 @@ class PlanningsControllerTest < ActionController::TestCase
     sign_in users(:user_one)
   end
 
+  test 'patch move with stop_ids from unplanned route is forbidden without move_stop even if route stops is allowed' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['stop']['segment_controls']['move_stop'] = { 'visible' => true, 'usable' => false }
+    ops['route']['segment_controls']['stops'] = { 'visible' => true, 'usable' => true }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "stops-no-move-from-unplanned-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    out_stop = stops(:stop_unaffected)
+    target_route = routes(:route_one_one)
+    assert_nil out_stop.route.vehicle_usage_id
+
+    patch :move, params: {
+      planning_id: @planning,
+      route_id: target_route.id,
+      stop_ids: [out_stop.id],
+      index: 1,
+      format: :json
+    }
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
+  test 'destroy_multiple plannings is forbidden when plannings form disallows update' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['plannings'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "no-planning-destroy-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    assert_no_difference('Planning.count') do
+      delete :destroy_multiple, params: { plannings: { plannings(:planning_one).id => 1, plannings(:planning_two).id => 1 } }
+    end
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
   test 'update_stop with locked succeeds when role allows lock_stop' do
     u = users(:user_one)
     role = nil

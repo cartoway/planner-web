@@ -12,6 +12,7 @@
   controller.js(
     customer_id: @vehicle_usage.vehicle.customer.id,
     devices: @vehicle_usage.vehicle.devices && @vehicle_usage.vehicle.devices.select { |d, v| v && !v.empty? },
-    routers_options: Hash[routers.collect { |r| [r.id, r.options] }]
+    routers_options: Hash[routers.collect { |r| [r.id, r.options] }],
+    vehicle_usage_tag_create_allowed: current_user_form_create?(:tags)
   )
 %>

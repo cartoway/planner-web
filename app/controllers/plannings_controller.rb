@@ -38,6 +38,8 @@ class PlanningsController < ApplicationController
   before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
 
+  before_action -> { deny_unless_form_update!(:plannings) }, only: %i[destroy destroy_multiple duplicate]
+
   load_and_authorize_resource except: [:driver_move]
 
   include Pagy::Backend
@@ -581,7 +583,6 @@ class PlanningsController < ApplicationController
   end
 
   def duplicate
-    deny_unless_form_update!(:plannings)
     respond_to do |format|
       @planning = @planning.duplicate
       @planning.save! validate: Planner::Application.config.validate_during_duplication
@@ -656,6 +657,11 @@ class PlanningsController < ApplicationController
                         .where(routes: { planning_id: @planning.id })
                         .where(id: params[:stop_ids])
                         .pluck(:id, :route_id)
+
+            source_route_ids = stops.map(&:last).uniq
+            if source_route_ids.any? && @planning.routes.where(id: source_route_ids, vehicle_usage_id: nil).exists?
+              deny_unless_operation_usable!(:stop, 'move_stop')
+            end
 
             ids = stops.collect{ |stop_id, route_id| {stop_id: stop_id, route_id: route_id} }
             ids.reverse! if params[:index].to_i > 0

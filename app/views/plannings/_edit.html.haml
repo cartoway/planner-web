@@ -177,5 +177,6 @@
     callback_button: @callback_button,
     available_temperature: available_temperature?,
     devices: planning_devices(@planning.customer),
-    optimization_duration: optimization_duration(@planning.customer)
+    optimization_duration: optimization_duration(@planning.customer),
+    tag_entity_create_allowed: current_user_form_create?(:tags)
   )

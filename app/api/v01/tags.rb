@@ -19,6 +19,7 @@ require 'coerce'
 
 class V01::Tags < Grape::API
   helpers SharedParams
+  helpers CancanGrapeHelpers
   helpers do
     # Never trust parameters from the scary internet, only allow the white list through.
     def tag_params
@@ -38,12 +39,29 @@ class V01::Tags < Grape::API
       optional :ids, type: Array[String], desc: 'Select returned tags by id separated with comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
     end
     get do
+      authorize!(:index, Tag)
       tags = if params.key?(:ids)
                current_customer.tags.select { |tag| params[:ids].any? { |s| ParseIdsRefs.match(s, tag) } }
              else
                current_customer.tags.load
              end
       present tags, with: V01::Entities::Tag
+    end
+
+    desc 'Get visit with corresponding tag id or tag ref',
+      nickname: 'VisitsByTags'
+    params do
+      requires :id, type: String, desc: SharedParams::ID_DESC
+    end
+    get ':id/visits' do
+      authorize!(:show, Tag)
+      destinations = current_customer.destinations.includes_visits
+      visits = destinations.reduce([]) { |sum, d|
+        sum << d.visits.select { |v|
+          v.tags.find { |t| ParseIdsRefs.match(params[:id], t) }
+        }
+      }.flatten
+      present visits, with: V01::Entities::Visit
     end
 
     desc 'Fetch tag.',
@@ -54,6 +72,7 @@ class V01::Tags < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     get ':id' do
+      authorize!(:show, Tag)
       id = ParseIdsRefs.read(params[:id])
       present current_customer.tags.where(id).first!, with: V01::Entities::Tag
     end
@@ -69,6 +88,7 @@ class V01::Tags < Grape::API
       )
     end
     post do
+      authorize!(:create, Tag)
       tag = current_customer.tags.build(tag_params)
       tag.save!
       present tag, with: V01::Entities::Tag
@@ -85,6 +105,7 @@ class V01::Tags < Grape::API
     put ':id' do
       id = ParseIdsRefs.read(params[:id])
       tag = current_customer.tags.where(id).first!
+      authorize!(:update, tag)
       tag.update! tag_params
       present tag, with: V01::Entities::Tag
     end
@@ -98,7 +119,9 @@ class V01::Tags < Grape::API
     end
     delete ':id' do
       id = ParseIdsRefs.read(params[:id])
-      current_customer.tags.where(id).first!.destroy
+      tag = current_customer.tags.where(id).first!
+      authorize!(:destroy, tag)
+      tag.destroy
       status 204
     end
 
@@ -110,27 +133,13 @@ class V01::Tags < Grape::API
       requires :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
     end
     delete do
+      authorize!(:destroy, Tag)
       Tag.transaction do
         current_customer.tags.select do |tag|
           params[:ids].any?{ |s| ParseIdsRefs.match(s, tag) }
         end.each(&:destroy)
         status 204
       end
-    end
-
-    desc 'Get visit with corresponding tag id or tag ref',
-      nickname: 'VisitsByTags'
-    params do
-      requires :id, type: String, desc: SharedParams::ID_DESC
-    end
-    get ':id/visits' do
-      destinations = current_customer.destinations.includes_visits
-      visits = destinations.reduce([]) { |sum, d|
-        sum << d.visits.select { |v|
-          v.tags.find { |t| ParseIdsRefs.match(params[:id], t) }
-        }
-      }.flatten
-      present visits, with: V01::Entities::Visit
     end
   end
 end
