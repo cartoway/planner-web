@@ -455,6 +455,15 @@ export const plannings_edit = function(params) {
 
   sidebar.open('planning-pane');
 
+  var planningSidebarScrollContainer = function() {
+    var $sidebar = $('#edit-planning.sidebar');
+    if ($sidebar.hasClass('extended')) {
+      return $sidebar.find('.sidebar-content');
+    }
+    var $inner = $sidebar.find('#planning-scroll');
+    return $inner.length ? $inner : $sidebar.find('.sidebar-content');
+  };
+
   var vehicleLayer;
   var vehicleMarkers = [];
 
@@ -1250,10 +1259,13 @@ export const plannings_edit = function(params) {
         out_container.animate({
           scrollTop: target.offset().top - out_container.offset().top + out_container.scrollTop() - 40
         });
-      } else if (!route.hasClass('out_route') && (target.offset().top < 0 || target.offset().top > $(".sidebar-content").height())) {
-        $(".sidebar-content").animate({
-          scrollTop: target.offset().top + $(".sidebar-content").scrollTop() - 100
-        });
+      } else if (!route.hasClass('out_route')) {
+        var $planningScroll = planningSidebarScrollContainer();
+        if (target.offset().top < 0 || target.offset().top > $planningScroll.height()) {
+          $planningScroll.animate({
+            scrollTop: target.offset().top + $planningScroll.scrollTop() - 100
+          });
+        }
       }
     }
   };
@@ -1293,8 +1305,9 @@ export const plannings_edit = function(params) {
             route.css('box-shadow', '');
           }, 1500);
           if (route.length) {
-            $('.sidebar-content').animate({
-              scrollTop: route.offset().top + $('.sidebar-content').scrollTop() - 100
+            var $scroll = planningSidebarScrollContainer();
+            $scroll.animate({
+              scrollTop: route.offset().top + $scroll.scrollTop() - 100
             });
           }
         });
@@ -1723,7 +1736,7 @@ export const plannings_edit = function(params) {
   var initRouteSelector = function() {
     var previousSelection = [];
     $('#planning_route_ids').select2({
-      dropdownParent: $('#planning_route_ids').parent(),
+      dropdownParent: $('#route_selector'),
       closeOnSelect : false,
       allowClear: true,
       theme: 'bootstrap',

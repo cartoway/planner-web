@@ -33,6 +33,7 @@ class ApiWeb::V01::PlanningsControllerTest < ActionController::TestCase
       get :edit, params: { id: @planning }
       assert_response :success
       assert_valid response
+      assert_match(/id=["']planning-scroll["']/, response.body)
     end
   end
 

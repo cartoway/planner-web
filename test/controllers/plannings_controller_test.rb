@@ -548,6 +548,7 @@ class PlanningsControllerTest < ActionController::TestCase
     get :edit, params: { id: @planning }
     assert_response :success
     assert_valid response
+    assert_match(/id=["']planning-scroll["']/, response.body)
   end
 
   test 'edit assigns manage_planning toolbar flags from planning operation segments' do
