@@ -72,11 +72,14 @@ class Stop < ApplicationRecord
   before_save :outdate_route
 
   # Return best fit time window, and late (positive) time or waiting time (negative).
-  def best_open_close(time)
+  # When strict_within_timewindows is true, the close side compares service end (arrival + duration)
+  # to the window end, matching optimization (visit must finish by time_window_end).
+  def best_open_close(time, strict_within_timewindows: false)
+    close_compare_time = strict_within_timewindows && time ? time + duration : time
     [[time_window_start_1, time_window_end_1], [time_window_start_2, time_window_end_2]].select{ |open, close|
       open || close
     }.collect{ |open, close|
-      [open, close, eval_open_close(open, close, time)]
+      [open, close, eval_open_close(open, close, time, close_compare_time)]
     }.min_by{ |_open, _close, eval|
       eval.abs
     }
@@ -106,13 +109,13 @@ class Stop < ApplicationRecord
 
   private
 
-  def eval_open_close(open, close, time)
+  def eval_open_close(open, close, time, close_compare_time = time)
     if open && time < open
       time - open # Negative
-    elsif close && time > close
+    elsif close && close_compare_time > close
       soft_upper_bound = self.route.planning.customer.optimization_stop_soft_upper_bound || Planner::Application.config.optimize_stop_soft_upper_bound
       if soft_upper_bound > 0
-        (time - close) * soft_upper_bound # Positive
+        (close_compare_time - close) * soft_upper_bound # Positive
       else
         2**31 # Strict
       end

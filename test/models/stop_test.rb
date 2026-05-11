@@ -37,6 +37,18 @@ class StopTest < ActiveSupport::TestCase
     assert_nil stop.icon_size
   end
 
+  test 'best_open_close strict_within_timewindows compares service end to window close' do
+    stop = stops(:stop_one_one)
+    # visit_one: time_window_end_11:00, duration 5:33 (333 seconds)
+    arrival = Time.zone.parse('2000-01-01 10:58:00').seconds_since_midnight
+
+    _open, _close, late_arrival_only = stop.best_open_close(arrival, strict_within_timewindows: false)
+    assert late_arrival_only <= 0, 'arrival before window end should not count as late'
+
+    _open, _close, late_strict = stop.best_open_close(arrival, strict_within_timewindows: true)
+    assert late_strict > 0, 'arrival + duration past window end should count as late when strict_within_timewindows'
+  end
+
   test 'should return color and icon of stop rest' do
     stop = stops :stop_one_four
 
