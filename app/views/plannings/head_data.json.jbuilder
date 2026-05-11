@@ -25,3 +25,5 @@ if averages
     json.total_quantities planning_quantities(@planning)
   end
 end
+
+json.planning_route_errors RouteSidebarSerializer.merge_planning_route_errors_from_models(@planning.routes)

@@ -641,6 +641,13 @@ $sidebar-margins: 10px;
     }
   }
 
+  ul.ui-state-error {
+    margin: 2px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-color: $danger-border-color;
+  }
+
   .routes {
     padding: 0px;
     margin: 0px;
@@ -737,13 +744,6 @@ $sidebar-margins: 10px;
             max-width: 190px; // because of DnD
           }
         }
-      }
-
-      ul.ui-state-error {
-        margin: 2px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        border-color: $danger-border-color;
       }
 
       .sortable {
