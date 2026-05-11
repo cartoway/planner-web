@@ -1,4 +1,38 @@
 class RouteSidebarSerializer
+  ROUTE_ERROR_HASH_KEYS = %i[
+    route_no_geolocalization route_out_of_window route_out_of_capacity
+    route_out_of_drive_time route_out_of_force_position route_out_of_work_time
+    route_out_of_max_distance route_out_of_max_ride_distance route_out_of_max_ride_duration
+    route_out_of_max_reload route_out_of_relation route_no_path route_unmanageable_capacity route_out_of_skill
+  ].freeze
+
+  def self.merge_planning_route_errors_from_sidebar_routes(routes_data)
+    routes = Array(routes_data)
+    return planning_route_errors_empty if routes.empty?
+
+    merged = ROUTE_ERROR_HASH_KEYS.each_with_object({}) do |key, h|
+      h[key] = routes.any? { |r| r[key] }
+    end
+    merged[:route_error] = merged.values.any? || routes.any? { |r| r[:route_error] }
+    merged
+  end
+
+  def self.merge_planning_route_errors_from_models(routes)
+    routes_array = Array(routes)
+    return planning_route_errors_empty if routes_array.empty?
+
+    merged = ROUTE_ERROR_HASH_KEYS.each_with_object({}) do |key, h|
+      attr = key.to_s.delete_prefix('route_').to_sym
+      h[key] = routes_array.any? { |r| r.public_send(attr) }
+    end
+    merged[:route_error] = merged.values.any?
+    merged
+  end
+
+  def self.planning_route_errors_empty
+    @planning_route_errors_empty ||= ROUTE_ERROR_HASH_KEYS.index_with { false }.merge(route_error: false).freeze
+  end
+
   def initialize(route:, planning:, with_stops:, view_helpers:, stops_count: nil, stops: nil)
     @route = route
     @planning = planning
