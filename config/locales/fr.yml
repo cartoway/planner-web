@@ -996,6 +996,7 @@ fr:
           destination: Destination/Visites
           vehicle_usages: Configurations de véhicules
           stores: Sites
+          tags: Catégories
         icon_help: >-
           Choisissez une icône dans la liste
         color_help: >-

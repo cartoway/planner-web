@@ -15,7 +15,7 @@
           %i.fa{class: "fa-eye#{'-slash' if route[:hidden]}"}
         %button.lock.btn.btn-xs{class: (route[:locked] ? 'btn-warning': 'btn-default'), title: t('plannings.edit.locked_unplanned_help'), type: "button"}
           %i.fa{class: "fa-#{'un' if !route[:locked]}lock"}
-        %button.btn.btn-default.btn-xs.dropdown-toggle{"data-toggle" => "dropdown", title: t('plannings.edit.move_stops'), type: "button"}
+        %button.btn.btn-default.btn-xs.dropdown-toggle{"data-toggle" => "dropdown", title: t('plannings.edit.move_stops'), type: "button", disabled: !move_stops_ok}
           %i.fa.fa-share-nodes
           %span.caret
         %ul.dropdown-menu.pull-right{role: "menu"}

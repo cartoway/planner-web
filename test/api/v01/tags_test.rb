@@ -130,4 +130,64 @@ class V01::TagsTest < ActiveSupport::TestCase
     assert last_response.ok?, last_response.body
     assert_equal 0, JSON.parse(last_response.body).size
   end
+
+  test 'GET tags returns 403 when tags form is hidden' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['tags'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-hidden-tags-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    get api()
+    assert_equal 403, last_response.status, last_response.body
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'GET tags succeeds when tags form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['tags'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-ro-tags-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    get api()
+    assert last_response.ok?, last_response.body
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'POST tag returns 403 when tags form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['tags'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-ro-tags-post-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    assert_no_difference('Tag.count') do
+      @tag.label = 'api new label'
+      post api(), @tag.attributes
+      assert_equal 403, last_response.status, last_response.body
+    end
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
 end

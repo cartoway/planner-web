@@ -29,7 +29,8 @@ module Preferences
       'plannings' => [Planning],
       'destination' => [Destination, Visit],
       'vehicle_usages' => [VehicleUsage, VehicleUsageSet],
-      'stores' => [Store]
+      'stores' => [Store],
+      'tags' => [Tag]
     }.freeze
 
     def self.apply_cannot_rules!(ability, user)
@@ -64,6 +65,7 @@ module Preferences
       end
 
       apply_vehicle_configuration_hidden_gate!(ability, user)
+      apply_tag_form_visibility_gate!(ability, user)
     end
 
     # When forms.vehicle_usages is in the hidden tier (not visible), block all fleet configuration screens.
@@ -81,5 +83,16 @@ module Preferences
       end
     end
     private_class_method :apply_vehicle_configuration_hidden_gate!
+
+    # When forms.tags is hidden, deny tag library / tag detail (assigning tags on other records stays on plannings, destination, vehicle_usages).
+    def self.apply_tag_form_visibility_gate!(ability, user)
+      return if user.blank? || user.admin?
+      return unless user.respond_to?(:form_visible?)
+      return if user.form_visible?('tags')
+
+      ability.cannot :index, ::Tag
+      ability.cannot :show, ::Tag
+    end
+    private_class_method :apply_tag_form_visibility_gate!
   end
 end

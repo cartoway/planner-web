@@ -31,5 +31,5 @@
     </div>
   </div>
 
-  <%= f.submit %>
+  <%= f.submit disabled: (@tag.new_record? ? !current_user_form_create?(:tags) : !current_user_form_update?(:tags)) %>
 <% end %>

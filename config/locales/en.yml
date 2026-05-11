@@ -971,6 +971,7 @@ en:
           destination: Destination/Visits
           vehicle_usages: Vehicle configurations
           stores: Facilities
+          tags: Tags
         icon_help: >-
           Pick an icon from the list
         color_help: >-

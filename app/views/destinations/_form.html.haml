@@ -155,5 +155,6 @@
     destination_id: @destination.id || 0,
     map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)],
     map_lat: @destination.lat || @destination.customer.default_position[:lat],
-    map_lng: @destination.lng || @destination.customer.default_position[:lng]
+    map_lng: @destination.lng || @destination.customer.default_position[:lng],
+    tag_entity_create_allowed: current_user_form_create?(:tags)
   )

@@ -63,7 +63,9 @@ const vehicle_usages_form = function(params) {
   routerOptionsSelect('#vehicle_usage_vehicle_router', params);
 
   var noResults = I18n.t('vehicles.form.tags_empty');
-  $('select[name$=\\[tag_ids\\]\\[\\]]', '#vehicle_usage_vehicle_tag_ids_input').select2({
+  var tagCreateAllowed = params.vehicle_usage_tag_create_allowed !== false;
+
+  var vehicleTagSelect2Opts = {
     theme: 'bootstrap',
     minimumResultsForSearch: -1,
     templateSelection: templateTag,
@@ -74,9 +76,11 @@ const vehicle_usages_form = function(params) {
       }
     },
     width: '100%',
-    tags: true,
-    closeOnSelect: false,
-    createTag: function(params) {
+    closeOnSelect: false
+  };
+  if (tagCreateAllowed) {
+    vehicleTagSelect2Opts.tags = true;
+    vehicleTagSelect2Opts.createTag = function(params) {
       var term = $.trim(params.term);
       if (term === '') return null;
       return {
@@ -84,27 +88,20 @@ const vehicle_usages_form = function(params) {
         newTag: true,
         text: term + ' ( + ' + I18n.t('web.select2.new') + ')'
       };
-    }
-  }).on('select2:open', function(e) {
+    };
+  }
+
+  var $tagSelects = $('#vehicle_usage_tag_ids_input, #vehicle_usage_vehicle_tag_ids_input').find('select[name$="[tag_ids][]"]');
+  $tagSelects.select2(vehicleTagSelect2Opts).on('select2:open', function(e) {
     $(e.target).parent().find('.select2-search__field').attr('placeholder', I18n.t('web.select2.placeholder'));
   }).on('select2:close', function(e) {
     $(e.target).parent().find('.select2-search__field').attr('placeholder', '');
-  }).on('select2:selecting', function(e) {
-    selectTag(e);
   });
-
-  $('select[name$=\\[tag_ids\\]\\[\\]]', '#vehicle_usage_tag_ids_input').select2({
-    theme: 'bootstrap',
-    minimumResultsForSearch: -1,
-    templateSelection: templateTag,
-    templateResult: templateTag,
-    language: {
-      noResults: function() {
-        return noResults;
-      }
-    },
-    width: '100%'
-  });
+  if (tagCreateAllowed) {
+    $tagSelects.on('select2:selecting', function(e) {
+      selectTag(e);
+    });
+  }
 };
 
 const devicesObserveVehicle = (function() {
