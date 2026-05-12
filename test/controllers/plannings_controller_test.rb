@@ -725,6 +725,44 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_includes response.body, 'out_of_route'
   end
 
+  test 'refresh_routes returns JSON for multiple vehicle routes' do
+    r1 = routes(:route_one_one)
+    r3 = routes(:route_three_one)
+    assert r1.vehicle_usage_id.present? && r3.vehicle_usage_id.present?
+
+    get :refresh_routes, params: {
+      planning_id: @planning.id,
+      route_ids: "#{r1.id},#{r3.id}",
+      with_stops: true,
+      format: :json
+    }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['summary'].present?
+    assert_equal 2, body['routes'].size
+    assert_equal [r1.id, r3.id].sort, body['routes'].map { |h| h['route_id'] }.sort
+    assert body['routes'].first['html'].present?
+    assert body['routes'].first['route'].present?
+  end
+
+  test 'refresh_routes rejects batch including out-of-route' do
+    out_route = routes(:route_zero_one)
+    vehicle_route = routes(:route_one_one)
+
+    get :refresh_routes, params: {
+      planning_id: @planning.id,
+      route_ids: "#{vehicle_route.id},#{out_route.id}",
+      format: :json
+    }
+    assert_response :unprocessable_entity
+    assert_equal 'vehicle_routes_only', JSON.parse(response.body)['error']
+  end
+
+  test 'refresh_routes bad request when route_ids missing' do
+    get :refresh_routes, params: { planning_id: @planning.id, format: :json }
+    assert_response :bad_request
+  end
+
   test 'get refresh is forbidden when planning refresh operation is not usable' do
     u = users(:user_one)
     ops = Preferences::Catalog.default_operations.deep_dup
