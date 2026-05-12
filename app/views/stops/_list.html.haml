@@ -94,7 +94,7 @@
                     = stop[:time]
                     - if stop[:time_day]
                       = "(+#{stop[:time_day]})"
-          .col-xs-4.col-md-4.d-flex
+          .col-xs-6.col-md-8.d-flex
             .title
               - if stop[:out_of_window]
                 %i.fa.fa-stopwatch.fa-fw{title: t("plannings.edit.error.out_of_window_help")}
@@ -122,9 +122,8 @@
               %span.name{title: title}
                 %i.fa.fa-coffee.fa-fw
                 = sd_line
-          .col-xs-2.col-md-4.hover-tools{style: "display: none;"}
-            .col-xs-0.col-md-6
-            .col-xs-12.col-md-6.d-flex.justify-content-end.align-items-center
+          .stop-row-hover-tools.hover-tools
+            .stop-row-hover-tools__inner.d-flex.justify-content-end.align-items-center
               %i.fa.fa-reorder.fa-fw{title: t("plannings.edit.drag_help")}
               .btn-group.pull-right.stop-tools
                 %a.marker_edit.btn.btn-default.btn-xs.invisible{href: "/"}
@@ -192,9 +191,15 @@
                 - title += " — #{t('plannings.edit.stop_locked_indicator_title')}"
               %span.name{title: title}
                 = sd_line
-          .col-xs-2.col-md-4.hover-tools{style: "display: none;"}
-            .col-xs-0.col-md-6
-            .col-xs-12.col-md-6.d-flex.justify-content-end.align-items-center
+          .col-xs-12.col-md-4.not-hover
+            .col-xs-6.col-md-0.d-flex
+            .col-xs-6.col-md-12.d-flex
+              - if stop[:time_window_start_end_1]
+                .timewindow-info{title: stop[:time_windows_condensed]}
+                  %i.fa.fa-sort.fa-rotate-90.fa-fw
+                = stop[:time_windows_condensed]
+          .stop-row-hover-tools.hover-tools
+            .stop-row-hover-tools__inner.d-flex.justify-content-end.align-items-center
               %i.fa.fa-reorder.fa-fw{title: t("plannings.edit.drag_help")}
               .btn-group.stop-tools
                 - if @manage_planning[:manage_destination]
@@ -206,13 +211,6 @@
                 - if stop[:geocoded]
                   %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                     %i.fa.fa-map-marker
-          .col-xs-12.col-md-4.not-hover
-            .col-xs-6.col-md-0.d-flex
-            .col-xs-6.col-md-12.d-flex
-              - if stop[:time_window_start_end_1]
-                .timewindow-info{title: stop[:time_windows_condensed]}
-                  %i.fa.fa-sort.fa-rotate-90.fa-fw
-                = stop[:time_windows_condensed]
   - if !route[:with_stops] && route[:size] > 0
     .d-flex.justify-content-center.load-stops.text-muted{data: { auto_load: true }}
       %span

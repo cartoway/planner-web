@@ -307,6 +307,8 @@ export const fake_select2 = function(selector, callback) {
   };
 
   selector.next()
+    .off('click', fake_select2_click)
+    .off('keydown', fake_select2_key_event)
     .on('click', fake_select2_click)
     .on('keydown', fake_select2_key_event);
 };

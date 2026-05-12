@@ -147,6 +147,7 @@ Rails.application.routes.draw do
     get 'data_header'
     patch 'filter_routes'
     get 'refresh'
+    get 'refresh_routes' => 'plannings#refresh_routes'
     get 'sidebar'
     get 'modal'
     get 'move_stops_modal'
