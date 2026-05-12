@@ -278,7 +278,9 @@ class Customer < ApplicationRecord
       TagVehicle.import_in_batches(new_tag_vehicle_attributes, validate: false) if new_tag_vehicle_attributes.any?
 
       unless self.exclude_users
-        new_user_attributes = self.users.map{ |user| user.import_attributes.except('encrypted_password', 'id').merge('customer_id'=> customer_id) }
+        new_user_attributes = self.users.map{ |user|
+          user.import_attributes.except('encrypted_password', 'id').merge('customer_id' => customer_id)
+        }
         new_users = new_user_attributes.map do |user|
           new_user = User.new(user)
           new_user.api_key_random
