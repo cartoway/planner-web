@@ -35,42 +35,44 @@
               %span.select2-selection__arrow{role: "presentation"}
                 %b{role: "presentation"}
           %span.dropdown-wrapper{"aria-hidden": "true"}
-  .col-xs-1
-    %i.fa.fa-arrows-left-right
-  .route-skills
-    %ul.route-skills-list
-      - route[:skills].each do |skill|
-        %li.route-skills-item
-          %span
-            %i.fa{class: skill[:icon], style: "color: #{skill[:color]}"}
-            %span
-              = skill[:label]
-  %div
-    - devices = route[:devices]
-    - if devices.is_a?(Hash)
-      - sopac = devices[:sopac_ids]
-      - if sopac.is_a?(Hash) && (sopac_items = sopac[:items] || sopac['items']).present?
-        .temperature-info
-          %h6
-            = t('plannings.edit.sopac_title')
-          - sopac_items.each do |item|
-            %hr
-            %div
-              %span{id: "label-#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
-                %i.fa.fa-wifi.fa-fw
+    .row
+      .col-xs-11
+        .route-skills
+          %ul.route-skills-list
+            - route[:skills].each do |skill|
+              %li.route-skills-item
                 %span
-                  = t('plannings.edit.device_name_label')
-                  = item[:text] || item['text']
-            %div
-              %span{id: "temperature--#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
-                %i.fa.fa-thermometer-half.fa-fw
-                %span
-                  = t('plannings.edit.temperature_label')
-            %div
-              %span{id: "last-date--#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
-                %i.fa.fa-stopwatch.fa-fw
-                %span
-                  = t('plannings.edit.last_temperature_statement_label')
+                  %i.fa{class: skill[:icon], style: "color: #{skill[:color]}"}
+                  %span
+                    = skill[:label]
+      .col-xs-1
+        %i.fa.fa-arrows-left-right
+    %div
+      - devices = route[:devices]
+      - if devices.is_a?(Hash)
+        - sopac = devices[:sopac_ids]
+        - if sopac.is_a?(Hash) && (sopac_items = sopac[:items] || sopac['items']).present?
+          .temperature-info
+            %h6
+              = t('plannings.edit.sopac_title')
+            - sopac_items.each do |item|
+              %hr
+              %div
+                %span{id: "label-#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
+                  %i.fa.fa-wifi.fa-fw
+                  %span
+                    = t('plannings.edit.device_name_label')
+                    = item[:text] || item['text']
+              %div
+                %span{id: "temperature--#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
+                  %i.fa.fa-thermometer-half.fa-fw
+                  %span
+                    = t('plannings.edit.temperature_label')
+              %div
+                %span{id: "last-date--#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
+                  %i.fa.fa-stopwatch.fa-fw
+                  %span
+                    = t('plannings.edit.last_temperature_statement_label')
   .route-details
     .route-stops{class: ('optimum' if route[:optimized_at_formatted])}
       .panel-body

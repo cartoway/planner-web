@@ -1,7 +1,7 @@
 - manage_toggle_routes = @manage_planning && @manage_planning[:manage_toggle_routes]
 - manage_lock_routes = @manage_planning && @manage_planning[:manage_lock_routes]
-- selector_hidden = !manage_toggle_routes || !manage_lock_routes
-- selector_disabled = (@manage_planning && @manage_planning[:disable_toggle_routes]) || (@manage_planning && @manage_planning[:disable_lock_routes])
+- selector_hidden = !manage_toggle_routes && !manage_lock_routes
+- selector_disabled = (@manage_planning && @manage_planning[:disable_toggle_routes]) && (@manage_planning && @manage_planning[:disable_lock_routes])
 - unless selector_hidden
   .col-xs-12.multiple.ph-0
     %label

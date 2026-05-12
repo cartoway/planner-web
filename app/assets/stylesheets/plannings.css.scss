@@ -362,7 +362,7 @@ $sidebar-margins: 10px;
 
       #route_selector {
         flex-shrink: 0;
-        margin: -22px 2px 4px;
+        margin: -22px 0px 4px;
         padding: 5px 15px 8px;
         position: relative;
         z-index: 1;
@@ -479,13 +479,12 @@ $sidebar-margins: 10px;
 
             .route-data i {
               margin-right: 5px;
-
             }
           }
         }
 
         .route-skills {
-          margin: 2px 8px;
+          margin: 2px 0px;
 
           .route-skills-list {
             box-sizing: border-box;
@@ -707,6 +706,11 @@ $sidebar-margins: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
     border-color: $danger-border-color;
+
+    li {
+      list-style: none;
+      margin-left: -16px;
+    }
   }
 
   .routes {
@@ -1115,6 +1119,14 @@ $sidebar-margins: 10px;
       &::-webkit-scrollbar-thumb {
         background: #666;
       }
+    }
+  }
+}
+
+.route-data-advanced {
+  .route-info {
+    i.fa-fw {
+      margin-right: 2px;
     }
   }
 }
