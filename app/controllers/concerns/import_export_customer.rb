@@ -22,6 +22,7 @@ module ImportExportCustomer
       router_id: options[:router_id],
       router_options: {}
     }.compact)
+    customer.assign_attributes(role_id: nil) if customer.respond_to?(:role_id)
     customer.vehicles.select{ |vehicle| vehicle.router_id.present? }
             .each{ |vehicle| vehicle.assign_attributes(router_id: options[:router_id], router_options: {}) }
     customer.users.select{ |user| user.layer_id.present? }

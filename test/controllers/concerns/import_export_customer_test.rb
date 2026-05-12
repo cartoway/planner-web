@@ -86,4 +86,35 @@ class ImportExportCustomerTest < ActionController::TestCase
   ensure
     customer_data_file.close! if customer_data_file
   end
+
+  test 'import does not use source dump role_id on insert (FK to roles is per reseller)' do
+    customer = customers(:customer_one)
+    source_only_role = Role.create_default_permissions_role_for!(resellers(:reseller_one))
+    customer.users.update_all(role_id: source_only_role.id)
+
+    customer_data = ImportExportCustomer.export(customer)
+    customer_data_file = Tempfile.new(['customer_dump', '.bin'])
+    customer_data_file.binmode
+    customer_data_file.write(customer_data)
+    customer_data_file.rewind
+
+    reseller_id = resellers(:reseller_two).id
+    import_role = Role.create_default_permissions_role_for!(Reseller.find(reseller_id))
+
+    assert_difference 'Customer.count', 1 do
+      c = ImportExportCustomer.import(
+        customer_data_file,
+        {
+          profile_id: profiles(:profile_two).id,
+          router_id: routers(:router_two).id,
+          layer_id: layers(:layer_two).id,
+          reseller_id: reseller_id,
+          role_id: import_role.id
+        }
+      )
+      assert_equal [import_role.id], c.users.reload.map(&:role_id).uniq
+    end
+  ensure
+    customer_data_file&.close!
+  end
 end
