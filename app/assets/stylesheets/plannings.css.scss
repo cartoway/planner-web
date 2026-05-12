@@ -50,6 +50,9 @@ $sidebar-margins: 10px;
   }
   #planning-move-stops-modal {
     .modal-body {
+      .hover-tools {
+        display: none;
+      }
       .overflow-500 {
         max-height: calc(100% - 800px);
         overflow: auto;
@@ -358,6 +361,9 @@ $sidebar-margins: 10px;
         flex: 1 1 auto;
         min-height: 0;
         overflow-y: auto;
+        overflow-x: hidden;
+        // Avoid scroll chaining into the map / window when the list hits an edge (smoother wheel / touch).
+        overscroll-behavior: contain;
       }
 
       #route_selector {
@@ -483,6 +489,39 @@ $sidebar-margins: 10px;
           }
         }
 
+        .route li[data-stop-id] > .row.stop-row {
+          position: relative;
+        }
+
+        .route li[data-stop-id] > .row .stop-row-hover-tools.hover-tools {
+          position: absolute;
+          top: 1px;
+          right: 0;
+          bottom: 0;
+          z-index: 3;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          width: 33.333%;
+          max-width: 11rem;
+          min-width: 4.25rem;
+          padding-right: 4px;
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .route li[data-stop-id]:hover > .row .stop-row-hover-tools.hover-tools {
+          opacity: 1;
+          pointer-events: auto;
+          background: linear-gradient(to left, $white-background 0%, rgba(255, 255, 255, 0.94) 45%, rgba(255, 255, 255, 0) 85%);
+        }
+
+        @media (min-width: 992px) {
+          .route li[data-stop-id]:hover > .row .not-hover {
+            visibility: hidden;
+          }
+        }
+
         .route-skills {
           margin: 2px 0px;
 
@@ -595,6 +634,7 @@ $sidebar-margins: 10px;
     .sidebar-content {
       white-space: nowrap;
       overflow: auto;
+      overscroll-behavior: contain;
       display: block;
       flex-direction: unset;
       min-height: 0;
@@ -899,7 +939,6 @@ $sidebar-margins: 10px;
                 border: 0;
                 height: 34px;
                 padding-top: 7px;
-                z-index: 1;
               }
 
               input, .store {

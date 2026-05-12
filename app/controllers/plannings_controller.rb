@@ -20,6 +20,8 @@ require 'value_to_boolean'
 require 'zip'
 
 class PlanningsController < ApplicationController
+  REFRESH_ROUTES_BATCH_MAX = 10
+
   protect_from_forgery except: [:optimize, :optimize_route]
 
   before_action :authenticate_user!, except: [:driver_move]
@@ -31,9 +33,9 @@ class PlanningsController < ApplicationController
   before_action :set_planning_for_edit, only: [:edit]
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
-  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :move_stops_modal, :move, :update_stop]
+  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :move, :update_stop]
   before_action :set_driver_planning, only: [:driver_move]
-  before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :reverse_order, :sidebar, :update_stop]
+  before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
   before_action :set_device_definitions, only: [:edit, :update]
   before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
   around_action :over_max_limit, only: [:create, :duplicate]
@@ -246,6 +248,60 @@ class PlanningsController < ApplicationController
       else
         format.js { render partial: 'stops/out_list.js.erb', locals: { route: route_data, summary: planning_summary, out_pagy: @out_pagy } }
       end
+    end
+  end
+
+  # Batch sidebar HTML + route payloads for several vehicle routes (e.g. progressive stop load).
+  # Params: route_ids as comma-separated list or route_ids[] (max REFRESH_ROUTES_BATCH_MAX).
+  def refresh_routes
+    route_ids = normalize_refresh_routes_ids(params[:route_ids])
+    if route_ids.empty?
+      head :bad_request
+      return
+    end
+
+    found = @planning.routes.where(id: route_ids).includes_vehicle_usages.index_by(&:id)
+    if route_ids.any? { |id| !found.key?(id) }
+      head :bad_request
+      return
+    end
+
+    ordered_routes = route_ids.map { |id| found[id] }
+    if ordered_routes.any? { |r| r.vehicle_usage_id.blank? }
+      render json: { error: 'vehicle_routes_only' }, status: :unprocessable_entity
+      return
+    end
+
+    # One eager-loaded query for all batch stops (same includes as route.stops.includes_destinations_and_stores).
+    stops_by_route_id =
+      Stop.where(route_id: route_ids)
+        .includes_destinations_and_stores
+        .by_route_then_index
+        .to_a
+        .group_by(&:route_id)
+
+    planning_summary = planning_summary(@planning)
+    payloads = ordered_routes.map do |route|
+      stops_for_sidebar = stops_by_route_id[route.id] || []
+      route_data = RouteSidebarSerializer.new(
+        route: route,
+        planning: @planning,
+        with_stops: true,
+        view_helpers: view_context,
+        stops_count: route.route_data.stops_size,
+        stops: stops_for_sidebar
+      ).as_hash
+      route_data[:route_id] = route.id
+      html = render_to_string(
+        partial: 'routes/in_route.html.haml',
+        formats: [:html],
+        locals: { route: route_data, summary: planning_summary }
+      )
+      { route_id: route.id, html: html, route: route_data }
+    end
+
+    respond_to do |format|
+      format.json { render json: { summary: planning_summary, routes: payloads } }
     end
   end
 
@@ -629,6 +685,24 @@ class PlanningsController < ApplicationController
   end
 
   private
+
+  def normalize_refresh_routes_ids(raw)
+    parts =
+      case raw
+      when Array
+        raw
+      when ActionController::Parameters
+        raw.values
+      when String
+        raw.split(',')
+      else
+        []
+      end
+    parts = parts.map(&:presence).compact
+    parts.map { |s| Integer(s.to_s) }.uniq.take(REFRESH_ROUTES_BATCH_MAX)
+  rescue ArgumentError, TypeError
+    []
+  end
 
   def planning_routes_preload_stops?(planning)
     stops_count = 0
