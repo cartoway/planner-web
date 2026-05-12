@@ -1735,8 +1735,13 @@ export const plannings_edit = function(params) {
 
   var initRouteSelector = function() {
     var previousSelection = [];
-    $('#planning_route_ids').select2({
-      dropdownParent: $('#route_selector'),
+    var $planningRouteIds = $('#planning_route_ids');
+    if (!$planningRouteIds.length) {
+      return;
+    }
+    var $routeDropdownParent = $planningRouteIds.closest('.multiple');
+    $planningRouteIds.select2({
+      dropdownParent: $routeDropdownParent,
       closeOnSelect : false,
       allowClear: true,
       theme: 'bootstrap',
