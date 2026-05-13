@@ -38,6 +38,8 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_match(/map_overlay_title/, response.body)
     assert_select 'link[href*="maplibre-gl"]', 1
     assert_select 'script[src*="maplibre-gl"]', 1
+    assert_select '.main > .main-primary', 1
+    assert_select '.main > .main-primary turbo-frame#main', 1
   end
 
   test 'index renders v2 list and search when destinations exist' do
