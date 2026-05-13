@@ -35,7 +35,6 @@ import {
   fake_select2,
   progressDialog
 } from '../../assets/javascripts/ajax';
-
 const destinations_form = function(params, api) {
   var destination_id = params.destination_id,
     marker_lat = $(":input[name$=\\[lat\\]]").val(),
@@ -1036,8 +1035,6 @@ const destinations_index = function(params, api) {
         error: ajaxError
       });
     });
-  } else {
-    $('#add').prop('disabled', true).hide();
   }
 
   const filter_text = function(exactText, normalizedValue, filter) {
