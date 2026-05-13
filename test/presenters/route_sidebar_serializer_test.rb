@@ -26,6 +26,42 @@ class RouteSidebarSerializerTest < ActiveSupport::TestCase
     end
   end
 
+  test 'planning_stops_totals sums route_data from all routes' do
+    rd1 = Struct.new(:stops_size, :size_active).new(3, 2)
+    rd2 = Struct.new(:stops_size, :size_active).new(5, 1)
+    r_nil = Struct.new(:route_data).new(nil)
+    r1 = Struct.new(:route_data).new(rd1)
+    r2 = Struct.new(:route_data).new(rd2)
+    planning = Struct.new(:routes).new([r1, r2, r_nil])
+    totals = RouteSidebarSerializer.planning_stops_totals(planning)
+    assert_equal 8, totals[:size]
+    assert_equal 3, totals[:size_active]
+  end
+
+  test 'planning_stops_totals matches sum over all planning routes' do
+    planning = plannings(:planning_one)
+    totals = RouteSidebarSerializer.planning_stops_totals(planning)
+    expected_size = planning.routes.sum { |r| r.route_data&.stops_size.to_i }
+    expected_active = planning.routes.sum { |r| r.route_data&.size_active.to_i }
+    assert_equal expected_size, totals[:size]
+    assert_equal expected_active, totals[:size_active]
+  end
+
+  test 'planning_stops_totals_for_routes sums only given routes' do
+    planning = plannings(:planning_one)
+    routes = planning.routes.to_a
+    skip 'need at least two routes' if routes.size < 2
+
+    subset = routes.first(1)
+    partial = RouteSidebarSerializer.planning_stops_totals_for_routes(subset)
+    full = RouteSidebarSerializer.planning_stops_totals_for_routes(routes)
+    assert_operator partial[:size], :<=, full[:size]
+    assert_equal(
+      subset.sum { |r| r.route_data&.stops_size.to_i },
+      partial[:size]
+    )
+  end
+
   test 'merge_planning_route_errors_from_models reads route attribute methods' do
     attrs = RouteSidebarSerializer::ROUTE_ERROR_HASH_KEYS.index_with { false }.merge(route_out_of_window: true)
     fake_route = Object.new

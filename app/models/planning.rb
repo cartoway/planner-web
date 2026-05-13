@@ -1104,7 +1104,7 @@ class Planning < ApplicationRecord
     save!
   end
 
-  def averages(metric)
+  def averages(metric, routes: nil)
     routes_distance = 0
     converter = metric == 'km' ? 3.6 : 2.237
     result = {
@@ -1120,7 +1120,9 @@ class Planning < ApplicationRecord
       vehicles: 0
     }
 
-    routes.each do |route|
+    route_collection = routes || self.routes
+
+    route_collection.each do |route|
       if route.vehicle_usage && (route.size_active.positive? || (route.vehicle_usage.default_store_start.present? && route.vehicle_usage.default_store_stop.present? && route.drive_time.present?))
         result[:routes_drive_time] += route.drive_time if route.drive_time.present?
         composed_cost = [route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+)
@@ -1162,11 +1164,12 @@ class Planning < ApplicationRecord
     end.flatten.compact
   end
 
-  def quantities
+  def quantities(routes: nil)
     Route.includes_deliverable_units.scoping do
       quantity_hash = {}
       units = self.customer.deliverable_units
-      self.routes.each{ |route|
+      route_collection = routes || self.routes
+      route_collection.each{ |route|
         vehicle = route.vehicle_usage.try(:vehicle)
 
         units.each{ |unit|
