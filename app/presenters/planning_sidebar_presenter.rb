@@ -15,8 +15,9 @@ class PlanningSidebarPresenter
 
   def build
     customer = @planning.customer
-    routes_array = @routes.to_a
     customer.custom_attributes.load
+    routes_array = @routes.to_a
+    stats_routes = @view_helpers.planning_statistics_routes(@planning, routes_array, @current_user)
 
     routes_data = routes_array.map do |route|
       RouteSidebarSerializer.new(
@@ -27,16 +28,13 @@ class PlanningSidebarPresenter
       ).as_hash
     end
 
+    stops_totals = RouteSidebarSerializer.planning_stops_totals_for_routes(stats_routes)
+
     duration_total = 0
     distance_total = 0
-    size_total = 0
-    size_active_total = 0
 
-    routes_array.each do |route|
+    stats_routes.each do |route|
       distance_total += route.distance || 0
-      route_data = route.route_data
-      size_total += route_data&.stops_size || 0
-      size_active_total += route_data&.size_active || 0
       next unless route.vehicle_usage
 
       duration_total += route.visits_duration.to_i
@@ -54,8 +52,8 @@ class PlanningSidebarPresenter
       customer_id: customer.id,
       duration: @view_helpers.time_over_day(duration_total),
       distance: @view_helpers.locale_distance(distance_total, @current_user.prefered_unit),
-      size: size_total,
-      size_active: size_active_total,
+      size: stops_totals[:size],
+      size_active: stops_totals[:size_active],
       routes: routes_data,
       planning_route_errors: RouteSidebarSerializer.merge_planning_route_errors_from_sidebar_routes(routes_data)
     }
@@ -70,7 +68,7 @@ class PlanningSidebarPresenter
     sidebar_locals[:customer_external_callback_url] = @external_callback_url
     sidebar_locals[:customer_external_callback_disabled] = @external_callback_disabled
 
-    if (averages = @planning.averages(@current_user.prefered_unit))
+    if (averages = @planning.averages(@current_user.prefered_unit, routes: stats_routes))
       sidebar_locals[:averages] = {
         routes_visits_duration: @view_helpers.time_over_day(averages[:routes_visits_duration].to_i),
         routes_rests_duration: @view_helpers.time_over_day(averages[:routes_rests_duration].to_i),
@@ -83,7 +81,7 @@ class PlanningSidebarPresenter
         total_cost: averages[:routes_cost]&.round(2),
         total_revenue: averages[:routes_revenue]&.round(2),
         total_balance: ((averages[:routes_revenue] || 0) - (averages[:routes_cost] || 0)).round(2),
-        total_quantities: @view_helpers.planning_quantities(@planning)
+        total_quantities: @view_helpers.planning_quantities(@planning, routes: stats_routes)
       }
     end
 

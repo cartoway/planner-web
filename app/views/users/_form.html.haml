@@ -16,6 +16,7 @@
   = render partial: 'shared/check_box', locals: { form: f, field: :default_display_polylines, label: t('activerecord.attributes.user.default_display_polylines') }
   = f.select :prefered_unit, User.unities, {}, {control_class: 'form-control'}
   = f.select :prefered_currency, currencies_table, {}, {control_class: 'form-control'}
+  = render partial: 'shared/check_box', locals: { form: f, field: :filter_planning_route_data, label: t('activerecord.attributes.user.filter_planning_route_data'), help: t('users.form.filter_planning_route_data_help') }
   = f.text_field :url_click2call do
     %p.help-block= t '.url_click2call_help'
   = f.text_field :api_key, {readonly: true, input_group: content_tag('i', '', class: 'fa fa-key fa-fw')}
