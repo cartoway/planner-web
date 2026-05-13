@@ -14,18 +14,16 @@ else
   routes_array = routes_for_sidebar.to_a
   @planning.customer.custom_attributes.load
 
+  stats_routes = planning_statistics_routes(@planning, routes_array, current_user)
+
   duration_total = 0
   distance_total = 0
-  size_total = 0
-  size_active_total = 0
+  stops_totals = RouteSidebarSerializer.planning_stops_totals_for_routes(stats_routes)
 
-  routes_array.each do |route|
-    route_data = route.route_data
+  stats_routes.each do |route|
     vehicle_usage = route.vehicle_usage
 
     distance_total += route.distance || 0
-    size_total += route_data&.stops_size || 0
-    size_active_total += route_data&.size_active || 0
 
     next unless vehicle_usage
 
@@ -64,8 +62,8 @@ else
   json.duration time_over_day(duration_total)
   json.distance locale_distance(distance_total, current_user.prefered_unit)
   (json.outdated true) if @planning.outdated
-  json.size size_total
-  json.size_active size_active_total
+  json.size stops_totals[:size]
+  json.size_active stops_totals[:size_active]
 
   json.planning_route_errors RouteSidebarSerializer.merge_planning_route_errors_from_sidebar_routes(routes_data)
   json.routes routes_data

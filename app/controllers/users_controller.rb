@@ -31,7 +31,7 @@ class UsersController < ApplicationController
 
   def update
     raw = params.require(:user)
-    attrs = raw.permit(:layer_id, :url_click2call, :time_zone, :prefered_unit, :default_display_polylines)
+    attrs = raw.permit(:layer_id, :url_click2call, :time_zone, :prefered_unit, :default_display_polylines, :filter_planning_route_data)
     headers_ui = raw.permit(headers: {
       planning: { active: [], hidden: [] },
       route: { active: [], hidden: [] },

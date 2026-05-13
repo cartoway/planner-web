@@ -473,6 +473,7 @@ fr:
         confirmed_at: Date de confirmation
         prefered_unit: Choix unité
         prefered_currency: Choix devise
+        filter_planning_route_data: Statistiques planning limitées aux tournées affichées
         default_display_polylines: Afficher les tracés des routes par défaut
         role_id: Rôle
       vehicle:
@@ -2797,6 +2798,8 @@ fr:
       drag_drop:
         active_column_not_empty: Au moins un élément doit rester dans la liste active.
         active_column_at_most: Au plus %{count} éléments peuvent être dans la liste active.
+      filter_planning_route_data_help: >-
+        Lorsque cette option est activée, les totaux des données planning (durée, distance, arrêts, moyennes, etc.) ne comptent que les tournées visibles (non masquées par le filtre afficher/masquer). Sinon, ils portent sur l’ensemble du plan.
       display_ui:
         planning_headers: Données planning
         stop_list: Libellé des arrêts

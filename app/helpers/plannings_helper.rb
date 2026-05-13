@@ -63,6 +63,15 @@ module PlanningsHelper
     }
   end
 
+  # Routes whose persisted metrics (duration, distance, stops, averages) feed planning-level totals.
+  # +sidebar_routes+ is the set already loaded for the sidebar (e.g. visible routes or a route_ids subset).
+  def planning_statistics_routes(planning, sidebar_routes, user)
+    sidebar = Array(sidebar_routes)
+    return sidebar if user&.filter_planning_route_data
+
+    planning.routes.includes_vehicle_usages.to_a
+  end
+
   def planning_summary(planning)
     {
       planning_id: planning.id,
@@ -113,8 +122,8 @@ module PlanningsHelper
     quantities
   end
 
-  def planning_quantities(planning)
-    planning.quantities
+  def planning_quantities(planning, routes: nil)
+    routes ? planning.quantities(routes: routes) : planning.quantities
   end
 
   def optimization_duration(customer)

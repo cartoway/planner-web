@@ -33,6 +33,18 @@ class RouteSidebarSerializer
     @planning_route_errors_empty ||= ROUTE_ERROR_HASH_KEYS.index_with { false }.merge(route_error: false).freeze
   end
 
+  def self.planning_stops_totals(planning)
+    planning_stops_totals_for_routes(planning.routes)
+  end
+
+  def self.planning_stops_totals_for_routes(routes)
+    Array(routes).each_with_object({ size: 0, size_active: 0 }) do |route, acc|
+      rd = route.route_data
+      acc[:size] += rd&.stops_size.to_i
+      acc[:size_active] += rd&.size_active.to_i
+    end
+  end
+
   def initialize(route:, planning:, with_stops:, view_helpers:, stops_count: nil, stops: nil)
     @route = route
     @planning = planning

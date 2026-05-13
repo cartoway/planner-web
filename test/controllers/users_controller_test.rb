@@ -132,6 +132,16 @@ class UsersControllerTest < ActionController::TestCase
     assert_not @user.default_display_polylines
   end
 
+  test 'should update filter_planning_route_data' do
+    assert_equal false, @user.filter_planning_route_data
+
+    patch :update, params: { id: @user, user: { layer_id: @user.layer_id, filter_planning_route_data: '1' } }
+    assert_redirected_to edit_user_path(@user)
+
+    @user.reload
+    assert_equal true, @user.filter_planning_route_data
+  end
+
   test 'should get edit password' do
     sign_out(@user)
     user = users(:unconfirmed_user)

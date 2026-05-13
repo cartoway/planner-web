@@ -25,4 +25,24 @@ class PlanningsHelperTest < ActionView::TestCase
       assert_equal rd.size_store_reloads, row[:data][:size_store_reloads]
     end
   end
+
+  test 'planning_statistics_routes returns sidebar routes when filter_planning_route_data is enabled' do
+    planning = plannings(:planning_one)
+    sidebar = planning.routes.available.to_a
+    user = users(:user_two)
+    user.update!(filter_planning_route_data: true)
+    got = planning_statistics_routes(planning, sidebar, user)
+    assert_equal sidebar.map(&:id).sort, got.map(&:id).sort
+  ensure
+    user.update!(filter_planning_route_data: false)
+  end
+
+  test 'planning_statistics_routes returns all planning routes when filter_planning_route_data is disabled' do
+    planning = plannings(:planning_one)
+    sidebar = planning.routes.available.to_a
+    user = users(:user_two)
+    user.update!(filter_planning_route_data: false)
+    got = planning_statistics_routes(planning, sidebar, user)
+    assert_equal planning.routes.map(&:id).sort, got.map(&:id).sort
+  end
 end
