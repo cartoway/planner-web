@@ -216,3 +216,6 @@ group :production do
   gem 'redis-store', '~> 1.4.1' # Ensure redis-store dependency is at least 1.4.1 for CVE-2017-1000248 correction
   gem 'redis-rails'
 end
+
+gem "importmap-rails", "~> 2.2"
+gem "stimulus-rails", "~> 1.3"

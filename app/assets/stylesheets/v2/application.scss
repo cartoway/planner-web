@@ -2,6 +2,7 @@
 // V2 layout - Bootstrap 5.3.8 compatible styles
 // Compatibility layer for Bootstrap 3 class names used in v2 views
 
+@import "variables";
 @import "font-awesome";
 
 // Bootstrap 3 → 5 compatibility
@@ -53,6 +54,86 @@
     height: 100%;
     display: block;
   }
+}
+
+// Shared MapLibre controls (see app/javascript/maplibre/*.js). Use on other pages by wrapping the map in .cartoway-maplibre-host.
+@mixin cartoway-maplibre-shared-controls {
+  .maplibregl-ctrl-top-right {
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+  }
+
+  .cartoway-maplibre-geocoder {
+    margin-top: 0.35rem;
+    min-width: 220px;
+    max-width: min(320px, 42vw);
+    background: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius, 0.25rem);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .cartoway-maplibre-geocoder-form .form-control {
+    min-width: 0;
+  }
+
+  .cartoway-maplibre-geocoder-results {
+    max-height: 220px;
+    overflow-y: auto;
+    margin: 0;
+    border-top: 1px solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+  }
+
+  .cartoway-maplibre-geocoder-result {
+    cursor: pointer;
+    font-size: 0.8125rem;
+
+    &:hover {
+      background: var(--bs-secondary-bg);
+    }
+  }
+
+  .cartoway-maplibre-layer-switch {
+    margin-top: 0.35rem;
+    padding: 0.25rem;
+    min-width: 10rem;
+    background: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius, 0.25rem);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .cartoway-maplibre-overlay-toggles {
+    margin-top: 0.35rem;
+    padding: 0.35rem 0.5rem;
+    max-width: min(280px, 50vw);
+    background: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius, 0.25rem);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    font-size: 0.8125rem;
+  }
+
+  .cartoway-maplibre-overlay-toggles-summary {
+    cursor: pointer;
+    font-weight: 600;
+    user-select: none;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  .cartoway-maplibre-overlay-toggles-body {
+    margin-top: 0.35rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--bs-border-color);
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+}
+
+.cartoway-maplibre-host {
+  @include cartoway-maplibre-shared-controls;
 }
 
 #destinations-map-layout {
@@ -136,6 +217,125 @@
 
   .destinations-sidebar-expand {
     display: none;
+  }
+
+  // MapLibre GL (destinations index v2)
+  @include cartoway-maplibre-shared-controls;
+
+  .destinations-v2-marker {
+    width: 28px;
+    height: 40px;
+    background: url("/images/marker-428BCA.svg") center / contain no-repeat;
+    cursor: pointer;
+  }
+
+  .destinations-v2-marker--active {
+    background-image: url("/images/marker-FFBB00.svg");
+  }
+}
+
+// V2 menu — match v1 (scaffolds) + neutralize Bootstrap 5 link / dropdown / button defaults inside .menu-left
+.menu-left {
+  .menu-list-item > a,
+  .menu-list-item > a.menu-section,
+  a.menu-section {
+    color: #fff !important;
+    text-decoration: none !important;
+
+    &:hover,
+    &:focus,
+    &:visited {
+      color: darken(#fff, 12%) !important;
+      text-decoration: none !important;
+    }
+  }
+
+  .menu-section {
+    margin-top: 24px !important;
+    color: #fff !important;
+    font-size: 24px;
+
+    &:hover,
+    &:focus {
+      background-color: $primary-color;
+      border-left: 3px solid $focus-menu-border;
+    }
+  }
+
+  .help.menu-section {
+    .btn {
+      color: $primary-color;
+    }
+
+    > a {
+      &:hover,
+      &:focus {
+        border-left: none !important;
+      }
+    }
+
+    &:hover,
+    &:focus {
+      background-color: $primary-color;
+      border-left: none;
+    }
+  }
+
+  // Bootstrap 5 dropdown toggle: keep v1 look (no blue link, no extra caret spacing)
+  // Bootstrap 5: restore BS3-like .btn-default used in v1 menu (help block)
+  .btn.btn-default {
+    color: #333 !important;
+    background-color: #fff !important;
+    border-color: #ccc !important;
+
+    &:hover,
+    &:focus {
+      color: #333 !important;
+      background-color: #e6e6e6 !important;
+      border-color: #adadad !important;
+    }
+  }
+
+  .menu-list-item .dropdown-toggle {
+    &::after {
+      border-top-color: #fff;
+      vertical-align: 0.15em;
+    }
+  }
+
+  .menu-list-item .btn {
+    color: #fff !important;
+    border-color: rgba(255, 255, 255, 0.45);
+    background: transparent;
+
+    &:hover,
+    &:focus {
+      color: #fff !important;
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.65);
+    }
+  }
+
+  // #menu-settings sits outside #accordion-menu (same as v1)
+  #menu-settings.menu-content {
+    li:not(#menu-help) > a {
+      color: #fff !important;
+
+      &:hover,
+      &:focus {
+        color: darken(#fff, 18%) !important;
+        text-decoration: none !important;
+      }
+    }
+
+    // #menu-help: inner .btn.btn-default carries foreground (v1 scaffolds .help.menu-section .btn)
+    #menu-help > a {
+      color: inherit;
+    }
+
+    #menu-help .btn.btn-default {
+      color: $primary-color !important;
+    }
   }
 }
 

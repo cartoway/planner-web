@@ -1,0 +1,5 @@
+-# Copyright © Cartoway
+-# V2 layout: no Paloma / no legacy Sprockets application.js (Hotwire + importmap instead).
+- if user_signed_in?
+  :javascript
+    var resellerName = #{@reseller_name.to_json};

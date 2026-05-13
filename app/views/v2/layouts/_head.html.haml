@@ -1,6 +1,6 @@
 -# Copyright © Cartoway
 /
-  Head partial - Bootstrap 5.3.8 - prepared for Importmaps + Hotwire migration (Rails 6+)
+  Head partial - Bootstrap 5.3.8 + Hotwire (Turbo + Stimulus) via importmap — no Webpack for v2.
 - @reseller_name = @reseller.name
 %title= [yield(:title), @reseller_name].select{ |t| !t.empty? }.join(' – ')
 = csrf_meta_tags
@@ -9,6 +9,8 @@
 = stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track' => true
 / Bootstrap 5.3.8 - loads after application so it overrides Bootstrap 3 for v2 pages
 %link{rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css", integrity: "sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB", crossorigin: "anonymous"}
+%link{rel: "stylesheet", href: "https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css", crossorigin: "anonymous"}
+%script{src: "https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.min.js", crossorigin: "anonymous"}
 = favicon_link_tag 'apple-touch-57.png', :rel => 'apple-touch-icon', :type => 'image/png'
 = favicon_link_tag 'apple-touch-72.png', :rel => 'apple-touch-icon', :type => 'image/png', :sizes => '72x72'
 = favicon_link_tag 'apple-touch-114.png', :rel => 'apple-touch-icon', :type => 'image/png', :sizes => '114x114'
@@ -19,13 +21,7 @@
   I18n = {};
   I18n.defaultLocale = "#{I18n.default_locale}";
   I18n.locale = "#{I18n.locale}";
-/
-/ Hotwire Turbo - enables partial page updates (only .main content) when navigating between v2 pages
-= turbo_include_tags
-/ Application pack - replace with importmap when Rails 6+. Load before vendor.
-= javascript_pack_tag 'v2/application', 'data-turbolinks-track': 'reload'
-= javascript_pack_tag 'vendor', 'data-turbolinks-track': 'reload'
-= javascript_include_tag 'application', 'data-turbolinks-track' => true
+= javascript_importmap_tags
 / Bootstrap 5.3.8 JS (Popper included)
 %script{src: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js", integrity: "sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI", crossorigin: "anonymous", defer: true}
 = yield(:javascript)
