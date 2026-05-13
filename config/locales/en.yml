@@ -3292,6 +3292,9 @@ en:
     default: You are not authorized to access this page
   unlock_operation:
     default: Contact support to activate this feature
+  v2:
+    layout:
+      form_sidebar_aria: Form panel
   web:
     key_not_found: Your connection key is invalid
     slow_browser: >-
