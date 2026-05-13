@@ -275,10 +275,10 @@ class PlanningsController < ApplicationController
     # One eager-loaded query for all batch stops (same includes as route.stops.includes_destinations_and_stores).
     stops_by_route_id =
       Stop.where(route_id: route_ids)
-        .includes_destinations_and_stores
-        .by_route_then_index
-        .to_a
-        .group_by(&:route_id)
+          .includes_destinations_and_stores
+          .by_route_then_index
+          .to_a
+          .group_by(&:route_id)
 
     planning_summary = planning_summary(@planning)
     payloads = ordered_routes.map do |route|
