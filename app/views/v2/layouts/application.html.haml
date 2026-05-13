@@ -279,11 +279,17 @@
                   .hidden-menu
                     = t 'devise.registrations.new.sign_up'
 
-      .main
+      .main{ class: ('main--form-sidebar' if content_for?(:form_sidebar)) }
         %div
           %iframe{name: "click2call_iframe", style: "display: none"}
-        = turbo_frame_tag "main" do
-          = yield
+        .main-primary
+          = turbo_frame_tag "main" do
+            = yield
+        -# Optional right column: use content_for(:form_sidebar) in the view (e.g. render "form", f: f).
+        - if content_for?(:form_sidebar)
+          %aside.v2-form-sidebar.hidden-print{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria') }
+            .v2-form-sidebar-inner
+              = yield :form_sidebar
       %footer.hidden-print
     #default-modal.modal.bootstrap-dialog.type-primary.fade.size-small.in{"aria-hidden": "false", "data-backdrop": "static", "data-bs-toggle": "modal", role: "dialog", style: "display:none;", tabindex: "-1"}
       .modal-dialog

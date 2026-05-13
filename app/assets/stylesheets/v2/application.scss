@@ -50,7 +50,8 @@
     overflow: hidden;
   }
 
-  .main turbo-frame#main {
+  .main turbo-frame#main,
+  .main .main-primary turbo-frame#main {
     height: 100%;
     display: block;
   }
@@ -347,5 +348,55 @@
   &:focus,
   &:visited {
     text-decoration: none !important;
+  }
+}
+
+// V2 main: optional right column — fill with content_for :form_sidebar (e.g. = render "form", ...)
+.main {
+  .main-primary {
+    min-height: 0;
+  }
+
+  &.main--form-sidebar {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
+
+    .main-primary {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    .v2-form-sidebar {
+      flex: 0 0 clamp(280px, 32vw, 420px);
+      max-width: min(420px, 40vw);
+      border-left: 1px solid var(--bs-border-color, #dee2e6);
+      background: var(--bs-body-bg, #fff);
+      box-shadow: -4px 0 12px rgba(0, 0, 0, 0.06);
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    .v2-form-sidebar-inner {
+      padding: 1rem 1.25rem;
+    }
+  }
+
+  @media (max-width: 991.98px) {
+    &.main--form-sidebar {
+      flex-direction: column;
+
+      .v2-form-sidebar {
+        flex: 0 0 auto;
+        max-width: none;
+        border-left: none;
+        border-top: 1px solid var(--bs-border-color, #dee2e6);
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+        max-height: min(50vh, 28rem);
+      }
+    }
   }
 }
