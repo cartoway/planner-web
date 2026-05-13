@@ -1477,6 +1477,7 @@ en:
       title: Listing destinations
       collapse_list: Collapse list
       expand_list: Expand list
+      map_overlay_layers: Overlay layers
       select_all: Select all
       search_help: 'Syntax: field:value (e.g. name:Paris, city:Lyon)'
       remove_filter: Remove this filter
