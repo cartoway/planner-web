@@ -374,6 +374,10 @@ $sidebar-margins: 10px;
         z-index: 1;
         background-color: $white-background;
         border-bottom: 1px solid $grey-color;
+
+        .select2-container {
+          padding: 0 2px;
+        }
       }
 
       .zoning_name {
@@ -650,10 +654,6 @@ $sidebar-margins: 10px;
         flex: unset;
         min-height: unset;
         overflow: visible;
-      }
-
-      #route_selector {
-        margin-top: 0;
       }
 
       h1,
