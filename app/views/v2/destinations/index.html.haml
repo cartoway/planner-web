@@ -1,9 +1,9 @@
 -# Copyright © Cartoway
 -# V2 destinations index - map as background, collapsible list overlay on the left
 - content_for :title, t('destinations.index.title')
-= javascript 'destination'
-
-#destinations-map-layout
+- layers = (@customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: request.ssl? ? layer.urlssl : layer.url, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
+- v2_js_config = { map_lat: @customer.default_position[:lat], map_lng: @customer.default_position[:lng], map_zoom: 12, geocoder: true, map_overlay_title: t('destinations.index.map_overlay_layers'), map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)], destinations: @destinations.select(&:position?).map{ |d| { id: d.id, lat: d.lat, lng: d.lng, name: d.name } } }.to_json
+#destinations-map-layout{data: { controller: 'v2--destinations-index', config: v2_js_config }}
   #map.destinations-map
 
   .destinations-sidebar
@@ -93,6 +93,3 @@
                   %i.fa.fa-chevron-right
 
 
-- layers = (@customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: request.ssl? ? layer.urlssl : layer.url, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
-- js_params = { is_editable: @customer.is_editable?, reached_max_destinations: @destinations.size > @customer.default_max_destinations, map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)], map_lat: @customer.default_position[:lat], map_lng: @customer.default_position[:lng], geocoder: true, v2_map: true, destinations: @destinations.select(&:position?).map{ |d| { id: d.id, lat: d.lat, lng: d.lng, name: d.name } } }
-= controller.js(js_params)

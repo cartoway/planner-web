@@ -31,18 +31,20 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_not_nil assigns(:pagination)
     assert_not_nil assigns(:total_count)
     assert_valid response
-    # V2 layout includes map for destinations
+    # V2 destinations index: full-page map + sidebar list
     assert_select '#map'
-    assert_select '#map_box'
+    assert_select '#destinations-map-layout[data-controller="v2--destinations-index"]'
+    assert_select 'script[type="importmap"]', 1
+    assert_match(/map_overlay_title/, response.body)
+    assert_select 'link[href*="maplibre-gl"]', 1
+    assert_select 'script[src*="maplibre-gl"]', 1
   end
 
-  test 'index renders multiple selection UI when destinations exist' do
+  test 'index renders v2 list and search when destinations exist' do
     get :index
     assert_response :success
-    assert_select '#destinations-table'
-    assert_select '.index_toggle_selection', 1
-    assert_select '.destination-checkbox', assigns(:destinations).size
-    assert_select '#multiple-delete', 1
+    assert_select '#destinations-search-form'
+    assert_select 'tr.destination', assigns(:destinations).size
   end
 
   test 'should filter destinations by key value search' do
