@@ -9,7 +9,18 @@ Rails.application.config.assets.unknown_asset_fallback = true
 # Add Yarn node_modules folder to the asset load path.
 Rails.application.config.assets.paths << Rails.root.join('node_modules')
 
+# Importmap (v2): allow path_to_asset / digest for every ESM file under app/javascript and vendor/javascript.
+# Otherwise Sprockets raises AssetNotPrecompiledError and the browser falls back to /controllers/... (HTML, wrong MIME).
+Rails.application.config.assets.precompile << lambda do |_logical_path, filename|
+  next false unless filename
+
+  fn = filename.to_s
+  [
+    Rails.root.join('app', 'javascript').to_s,
+    Rails.root.join('vendor', 'javascript').to_s
+  ].any? { |root| fn.start_with?("#{root}/") }
+end
+
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
-# Rails.application.config.assets.precompile += %w( admin.js admin.css )
