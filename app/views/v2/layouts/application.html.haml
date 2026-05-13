@@ -5,7 +5,7 @@
     %meta{content: "text/html; charset=UTF-8", "http-equiv": "Content-Type"}/
     = render partial: 'v2/layouts/head'
   %body{"data-controller": "#{controller.controller_path.gsub('/', '_')} #{controller.controller_path.gsub('/', '-')}-v2", "data-action": "#{controller.action_name}"}
-    #wrapper
+    #wrapper{data: { controller: 'menu-left' }}
       .menu-left.hidden-print{style: "overflow: hidden;"}
         .top-menu
           %a#logo.logo{href: "/"}= image_tag @reseller.logo_small.url || "logo.svg", width: 150, height: 40, alt: @reseller.name
@@ -49,7 +49,7 @@
             - if user_signed_in? && current_user.customer
               - if !@unsubscribed
                 %li#menu-plan.menu-list-item
-                  %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#planningsCollpase'}
+                  %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#planningsCollpase', data: { turbo: false }}
                     .d-flex.align-items-center.justify-content-center
                       %i.fa.fa-map-location.fa-fw
                       .hidden-menu.menu_label
@@ -90,13 +90,13 @@
                               = planning.name
               - else
                 %li#menu-plan.disabled.menu-section.menu-content.menu-list-item
-                  %a{href: "#"}
+                  %a{href: "#", data: { turbo: false }}
                     %i.fa.fa-map-location.fa-fw
                     .hidden-menu
                       = t 'plannings.menu.plannings'
 
               %li#menu-zoning.menu-list-item
-                %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#zoningsCollpase'}
+                %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#zoningsCollpase', data: { turbo: false }}
                   .d-flex.align-items-center.justify-content-center
                     %i.fa.fa-draw-polygon.fa-fw
                     .hidden-menu.menu_label
@@ -137,7 +137,7 @@
                             = zoning.name
 
               %li#menu-destination.menu-list-item
-                %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#destinationsCollpase'}
+                %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#destinationsCollpase', data: { turbo: false }}
                   .d-flex.align-items-center.justify-content-center
                     %i.fa.fa-map-marker.fa-fw
                     .hidden-menu.menu_label
@@ -171,7 +171,7 @@
                       %i.fa.fa-trash.fa-fw
                       = t 'destinations.menu.clear'
               %li.pannel.panel-default.menu-list-item
-                %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#vehiclesCollpase'}
+                %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#vehiclesCollpase', data: { turbo: false }}
                   .d-flex.align-items-center.justify-content-center
                     %i.fa.fa-truck-field.fa-fw
                     .hidden-menu
@@ -203,94 +203,81 @@
                     = link_to reporting_index_path do
                       %i.fa.fa-line-chart.fa-fw
                       %span.menu_label= t('reporting.index.title')
-            - if user_signed_in?
-              - if current_user.customer && @reseller.subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
-                %li#menu-subscription.subscription.menu-section.menu-list-item
-                  = link_to @reseller.subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                    %i.fa.fa-rocket.fa-fw
+        - if user_signed_in?
+          #menu-settings.menu-content
+            .divider.solid
+
+            - if @reseller.customer_dashboard_url && current_user.customer
+              %li.menu-section.menu-list-item
+                = link_to @reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s), target: '_blank' do
+                  .d-flex.align-items-center.justify-content-center
+                    %i.fa.fa-chart-line.fa-fw
                     .hidden-menu
-                      %span.menu_label
-                        = t 'web.subscription'
-              - if @reseller.help_url
-                %li#menu-help.dropdown.help.menu-sectqion.menu-list-item
-                  = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), class: 'dropdown-toggle', 'data-bs-toggle': "dropdown" do
-                    %i.fa.fa-info-circle.fa-fw
-                    .hidden-menu
-                      %span.menu_label
-                        = t 'web.help_menu'
-                  %ul.dropdown-menu
-              - if @reseller.help_search_url
-                %li.menu-list-item{style: "padding-left: 10px; padding-right: 15px;"}
+                      = t 'customers.menu.analytics'
+
+            - if current_user.customer && @reseller.subscription_url && (current_user.customer.test? || (current_user.customer.end_subscription && current_user.customer.end_subscription < Time.now))
+              %li#menu-subscription.subscription.menu-section.menu-list-item
+                = link_to @reseller.subscription_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
+                  %i.fa.fa-rocket.fa-fw
                   .hidden-menu
-                    = form_tag @reseller.help_search_url, method: 'get', target: '_blank' do
-                      = text_field_tag :q, nil, class: 'form-control', placeholder: t('web.help_search_placeholder')
-              - if @reseller.help_url
-                %li.menu-list-item{ class: ("disabled" if !@reseller.help_search_url && !@reseller.contact_url) }
-                  = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                    %i.fa.fa-info-circle.fa-fw
-                    .hidden-menu
+                    %span.menu_label
+                      = t 'web.subscription'
+            - if @reseller.help_url
+              %li#menu-help.help.menu-section.menu-list-item
+                = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank', data: { turbo: false } do
+                  .d-flex.align-items-center.justify-content-center.col-md-12.btn.btn-default
+                    %i.fa.fa-book-open.fa-fw
+                    .hidden-menu.menu_label
                       = t 'web.help'
-              - if @reseller.contact_url
-                %li.menu-list-item
-                  = link_to @reseller.contact_url.gsub('{LG}', I18n.locale.to_s), target: '_blank' do
-                    %i.fa.fa-phone.fa-fw
-                    .hidden-menu
-                      = t 'web.contact'
-
-              #menu-settings
-                .divider.solid
-
-                - if @reseller.customer_dashboard_url && current_user.customer
-                  %li.menu-section.menu-list-item
-                    = link_to @reseller.customer_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s), target: '_blank' do
-                      .d-flex.align-items-center.justify-content-center
-                        %i.fa.fa-chart-line.fa-fw
-                        .hidden-menu
-                          = t 'customers.menu.analytics'
-                %li.dropdown.menu-list-item
-                  - if current_user.customer
-                    %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#customerCollpase'}
-                      .d-flex.align-items-center.justify-content-center
-                        %i.fa.fa-user-gear.fa-fw
-                        .hidden-menu
-                          %span.menu_label
-                            = current_user.customer.name
-                  - else
-                    %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#customerCollpase'}
-                      .d-flex.align-items-center.justify-content-center
-                        %i.fa.fa-user-gear.fa-fw
-                        .hidden-menu
-                          %span.menu_label
-                            = current_user.email
-                  %ul#customerCollpase.accordion-menu.menu-content.collapse.hidden-menu{'data-bs-parent': '#accordion-menu'}
-                    - if current_user.customer
-                      %li
-                        = link_to edit_customer_path(current_user.customer) do
-                          %i.fa.fa-wrench.fa-fw
-                          = t 'customers.menu.customer'
-                    %li
-                      = link_to edit_user_path(current_user) do
-                        %i.fa.fa-user-gear.fa-fw
-                        = t 'customers.menu.user_settings'
-                    %li.divider
-                    %li
-                      = link_to destroy_user_session_path, method: :delete do
-                        %i.fa.fa-power-off.fa-fw
-                        = t 'users.menu.sign_out'
-            - else
-              #menu-settings
-                .divider.solid
-                %li.menu-list-item
-                  = link_to new_user_session_path, class: 'btn' do
+            %li.dropdown.menu-list-item
+              - if current_user.customer
+                %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#customerCollpase', data: { turbo: false }}
+                  .d-flex.align-items-center.justify-content-center
                     %i.fa.fa-user-gear.fa-fw
                     .hidden-menu
-                      = t 'devise.sessions.new.sign_in'
-                - if Mapotempo::Application.config.self_care
-                  %li.menu-list-item
-                    = link_to new_user_registration_path, class: 'btn' do
-                      %i.fa.fa-user-gear.fa-fw
-                      .hidden-menu
-                        = t 'devise.registrations.new.sign_up'
+                      %span.menu_label
+                        = current_user.customer.name
+              - else
+                %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#customerCollpase', data: { turbo: false }}
+                  .d-flex.align-items-center.justify-content-center
+                    %i.fa.fa-user-gear.fa-fw
+                    .hidden-menu
+                      %span.menu_label
+                        = current_user.email
+              %ul#customerCollpase.accordion-menu.menu-content.collapse.hidden-menu{'data-bs-parent': '#accordion-menu'}
+                - if current_user.customer
+                  %li
+                    = link_to edit_customer_path(current_user.customer) do
+                      %i.fa.fa-wrench.fa-fw
+                      = t 'customers.menu.customer'
+                  %li
+                    = link_to custom_attributes_path do
+                      %i.fa.fa-file-lines.fa-fw
+                      = t 'custom_attributes.menu.custom_attributes'
+
+                %li
+                  = link_to edit_user_path(current_user) do
+                    %i.fa.fa-user-gear.fa-fw
+                    = t 'customers.menu.user_settings'
+                %li.divider
+                %li
+                  = link_to destroy_user_session_path, method: :delete do
+                    %i.fa.fa-power-off.fa-fw
+                    = t 'users.menu.sign_out'
+        - else
+          #menu-settings.menu-content
+            .divider.solid
+            %li.menu-list-item
+              = link_to new_user_session_path, class: 'btn' do
+                %i.fa.fa-user-gear.fa-fw
+                .hidden-menu
+                  = t 'devise.sessions.new.sign_in'
+            - if Planner::Application.config.self_care
+              %li.menu-list-item
+                = link_to new_user_registration_path, class: 'btn' do
+                  %i.fa.fa-user-gear.fa-fw
+                  .hidden-menu
+                    = t 'devise.registrations.new.sign_up'
 
       .main
         %div
@@ -311,4 +298,4 @@
             %button.btn.btn-primary{"data-bs-dismiss": "modal", style: "display:none;", type: "button"}
               = t('web.dialog.close')
     = render 'shared/flash_messages'
-    = render 'layouts/javascript'
+    = render 'v2/layouts/javascript'

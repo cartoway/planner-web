@@ -1519,6 +1519,7 @@ fr:
       title: Liste adresses
       collapse_list: Réduire la liste
       expand_list: Afficher la liste
+      map_overlay_layers: Couches superposées
       select_all: Tout sélectionner
       search_help: 'Syntaxe : champ:valeur (ex. nom:Paris, ville:Lyon)'
       remove_filter: Retirer ce filtre
