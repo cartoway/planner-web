@@ -467,6 +467,7 @@ en:
         confirmed_at: Confirmed at
         prefered_unit: Preferred unit
         prefered_currency: Prefered currency
+        filter_planning_route_data: Limit planning statistics to visible routes
         default_display_polylines: Display routes traces by default
         role_id: Role
       vehicle:
@@ -2684,6 +2685,8 @@ en:
       drag_drop:
         active_column_not_empty: At least one item must remain in the active list.
         active_column_at_most: At most %{count} items can be in the active list.
+      filter_planning_route_data_help: >-
+        When enabled, planning header totals (duration, distance, stops, averages, etc.) only include routes that are visible (not hidden via show/hide). When disabled, totals cover the entire plan.
       display_ui:
         planning_headers: Planning data
         stop_list: Stop label

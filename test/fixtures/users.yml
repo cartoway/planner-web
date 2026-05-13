@@ -12,6 +12,7 @@ user_admin:
   confirmation_token: <%= User.new.generate_confirmation_token %>
   reset_password_token:
   time_zone: 'Hawaii'
+  filter_planning_route_data: false
 
 user_one:
   email: u1@plop.com
@@ -25,6 +26,7 @@ user_one:
   confirmation_token: <%= User.new.generate_confirmation_token %>
   reset_password_token: plip
   time_zone: 'Hawaii'
+  filter_planning_route_data: false
 
 user_two:
   email: u2@plop.com
@@ -38,6 +40,7 @@ user_two:
   confirmation_token: <%= User.new.generate_confirmation_token %>
   reset_password_token: plop
   time_zone: 'Hawaii'
+  filter_planning_route_data: false
 
 user_three:
   email: u3@plop.com
@@ -51,6 +54,7 @@ user_three:
   confirmation_token: <%= User.new.generate_confirmation_token %>
   reset_password_token: foo
   time_zone: 'Hawaii'
+  filter_planning_route_data: false
 
 unconfirmed_user:
   email: unconfirmed@example.com
@@ -61,3 +65,4 @@ unconfirmed_user:
   confirmation_token: <%= User.new.generate_confirmation_token %>
   reset_password_token: bar
   time_zone: 'Hawaii'
+  filter_planning_route_data: false

@@ -662,17 +662,6 @@ CREATE TABLE public.profiles_routers (
 
 
 --
--- Name: relation_fragments; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.relation_fragments (
-    relation_id integer NOT NULL,
-    visit_id integer NOT NULL,
-    index integer
-);
-
-
---
 -- Name: resellers; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1001,8 +990,8 @@ CREATE TABLE public.stops (
     status_updated_at timestamp without time zone,
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     loads jsonb DEFAULT '{}'::jsonb NOT NULL,
-    out_of_skill boolean,
     store_id integer,
+    out_of_skill boolean,
     store_reload_id integer,
     out_of_max_reload boolean,
     route_data_id integer,
@@ -1451,7 +1440,8 @@ CREATE TABLE public.users (
     export_settings jsonb DEFAULT '{}'::jsonb,
     default_display_polylines boolean DEFAULT true NOT NULL,
     role_id bigint,
-    headers jsonb DEFAULT '{}'::jsonb NOT NULL
+    headers jsonb DEFAULT '{}'::jsonb NOT NULL,
+    filter_planning_route_data boolean DEFAULT false NOT NULL
 );
 
 
@@ -2588,20 +2578,6 @@ CREATE INDEX index_plannings_zonings_on_planning_id ON public.plannings_zonings 
 --
 
 CREATE INDEX index_plannings_zonings_on_zoning_id ON public.plannings_zonings USING btree (zoning_id);
-
-
---
--- Name: index_relation_fragments_on_relation_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_relation_fragments_on_relation_id ON public.relation_fragments USING btree (relation_id);
-
-
---
--- Name: index_relation_fragments_on_visit_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_relation_fragments_on_visit_id ON public.relation_fragments USING btree (visit_id);
 
 
 --
@@ -3804,8 +3780,8 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20251212122356'),
 ('20260113123734'),
 ('20260123141829'),
-('20260209100651'),
 ('20260204152038'),
+('20260209100651'),
 ('20260219151139'),
 ('20260316121551'),
 ('20260316131419'),
@@ -3818,6 +3794,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260429122243'),
 ('20260430145821'),
 ('20260504094513'),
-('20260505084452');
+('20260505084452'),
+('20260513094805');
 
 
