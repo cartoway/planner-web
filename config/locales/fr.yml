@@ -3443,6 +3443,9 @@ fr:
     default: Vous n'êtes pas autorisé à accéder à cette page
   unlock_operation:
     default: Contactez le support pour activer cette fonctionnalité
+  v2:
+    layout:
+      form_sidebar_aria: Panneau latéral de formulaire
   web:
     key_not_found: Votre clé de connexion n'est pas reconnue
     slow_browser: >-
