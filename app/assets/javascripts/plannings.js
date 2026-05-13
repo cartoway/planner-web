@@ -299,7 +299,7 @@ const plannings_new = function(params) {
     onPlanningCreateModal.modal("show");
   });
 
-  plannings_form(this.params || {});
+  plannings_form(params || {});
   $("#planning_zoning_ids").select2({
     theme: 'bootstrap'
   });
