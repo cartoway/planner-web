@@ -23,12 +23,15 @@ class DestinationsController < ApplicationController
   include PreferencesAuthorization
 
   before_action :authenticate_user!
-  before_action :set_destination, only: [:show, :edit, :update, :destroy]
+  before_action :set_destination, only: [:show, :edit, :update, :destroy, :append_visit]
   after_action :warnings, only: [:create, :update]
   around_action :over_max_limit, only: [:create, :duplicate]
   before_action -> { deny_unless_form_update!(:destination) }, only: [:clear]
 
   load_and_authorize_resource
+
+  # visits/_form and v2/visits/_form iterate @visit_custom_attributes; keep it set for v1 and v2 destination flows.
+  before_action :assign_visit_custom_attributes, only: [:new, :edit, :create, :update, :append_visit]
 
   def index
     @customer = current_user.customer
@@ -51,7 +54,23 @@ class DestinationsController < ApplicationController
         @tags = current_user.customer.tags
         @pagination = { page: page, per_page: per_page, total: @total_count }
         @search_query = params[:q].to_s.strip
-        render 'v2/destinations/index', layout: 'v2/layouts/application'
+
+        frame_list = turbo_frame_request? && turbo_frame_request_id == 'destinations_list'
+
+        unless frame_list
+          # Map pins for all geolocated rows in the filtered scope (not only the current page), with list page
+          # so marker clicks can open the correct pagination and highlight the table row.
+          id_to_page = scope.pluck(:id).each_with_index.to_h { |did, idx| [did, (idx / per_page) + 1] }
+          @v2_map_destinations = scope.where.not(lat: nil).where.not(lng: nil).pluck(:id, :lat, :lng, :name).map do |did, la, ln, name|
+            { id: did, lat: la.to_f, lng: ln.to_f, name: name.to_s, page: id_to_page[did] || 1 }
+          end
+        end
+
+        if frame_list
+          render partial: 'v2/destinations/list_frame', layout: false
+        else
+          render 'v2/destinations/index', layout: 'v2/layouts/application'
+        end
       end
       format.json do
         @destinations = if !@customer.is_editable?
@@ -92,9 +111,41 @@ class DestinationsController < ApplicationController
     @destination = current_user.customer.destinations.build
     @destination.postalcode = current_user.customer.stores[0].postalcode
     @destination.city = current_user.customer.stores[0].city
+    if turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
+      render "new_sidebar", layout: false
+    end
   end
 
   def edit
+    if turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
+      render "edit_sidebar", layout: false
+    end
+  end
+
+  # V2 sidebar: persist a new visit server-side, then re-render the destination form in turbo-frame#form_sidebar.
+  def append_visit
+    unless turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
+      respond_to do |format|
+        format.html { redirect_to edit_destination_path(@destination) }
+      end
+      return
+    end
+
+    respond_to do |format|
+      format.html do
+        visit = build_visit_to_append
+        ActiveRecord::Base.transaction do
+          visit.save!
+          @destination.customer.save!
+        end
+        @destination.reload
+        render "edit_sidebar", layout: false
+      rescue ActiveRecord::RecordInvalid => e
+        @destination.reload
+        flash.now[:error] = e.record.errors.full_messages.to_sentence
+        render "edit_sidebar", layout: false, status: :unprocessable_entity
+      end
+    end
   end
 
   def create
@@ -107,7 +158,13 @@ class DestinationsController < ApplicationController
         format.html { redirect_to link_back || edit_destination_path(@destination), notice: t('activerecord.successful.messages.created', model: @destination.class.model_name.human) }
       else
         flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
-        format.html { render action: 'new' }
+        format.html do
+          if turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
+            render "new_sidebar", layout: false, status: :unprocessable_entity
+          else
+            render action: "new"
+          end
+        end
       end
     end
   end
@@ -123,7 +180,13 @@ class DestinationsController < ApplicationController
           format.html { redirect_to link_back || edit_destination_path(@destination), notice: t('activerecord.successful.messages.updated', model: @destination.class.model_name.human) }
         else
           flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
-          format.html { render action: 'edit' }
+          format.html do
+            if turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
+              render "edit_sidebar", layout: false, status: :unprocessable_entity
+            else
+              render action: "edit"
+            end
+          end
         end
       end
     end
@@ -200,19 +263,49 @@ class DestinationsController < ApplicationController
 
   private
 
+  def build_visit_to_append
+    last = @destination.visits.reorder(id: :desc).first
+    if last
+      visit = last.dup
+      visit.destination = @destination
+      visit.ref = nil
+      visit
+    else
+      @destination.visits.build(duration: @destination.customer.visit_duration)
+    end
+  end
+
+  def assign_visit_custom_attributes
+    customer = @destination&.customer || current_user&.customer
+    @visit_custom_attributes = customer ? customer.custom_attributes.for_visit.to_a : []
+  end
+
   def time_with_day_params(params, local_params, times)
-    if local_params[:visits_attributes]
-      if local_params[:visits_attributes].is_a?(Hash)
-        local_params[:visits_attributes].each do |k, _|
-          times.each do |time|
-            local_params[:visits_attributes][k][time] = ChronicDuration.parse("#{params[:destination][:visits_attributes][k]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][k][time].tr(':', 'h')}min", keep_zero: true) unless params[:destination][:visits_attributes][k]["#{time}_day".to_sym].to_s.empty? || local_params[:visits_attributes][k][time].to_s.empty?
-          end
+    va = local_params[:visits_attributes]
+    return if va.blank?
+
+    raw_root = params[:destination]&.dig(:visits_attributes)
+    return if raw_root.blank?
+
+    if va.is_a?(Array)
+      va.each_with_index do |_, i|
+        times.each do |time|
+          local_params[:visits_attributes][i][time] = ChronicDuration.parse("#{raw_root[i]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][i][time].tr(':', 'h')}min", keep_zero: true) unless raw_root[i]["#{time}_day".to_sym].to_s.empty? || local_params[:visits_attributes][i][time].to_s.empty?
         end
-      else
-        local_params[:visits_attributes].each_with_index do |_, i|
-          times.each do |time|
-            local_params[:visits_attributes][i][time] = ChronicDuration.parse("#{params[:destination][:visits_attributes][i]["#{time}_day".to_sym]} days and #{local_params[:visits_attributes][i][time].tr(':', 'h')}min", keep_zero: true) unless params[:destination][:visits_attributes][i]["#{time}_day".to_sym].to_s.empty? || local_params[:visits_attributes][i][time].to_s.empty?
-          end
+      end
+    else
+      # Strong params use ActionController::Parameters (not a Hash); keys are usually "1", "2", …
+      va.each_pair do |k, _|
+        raw = raw_root[k] || raw_root[k.to_s] || raw_root[k.to_i]
+        next unless raw
+
+        times.each do |time|
+          day_key = "#{time}_day"
+          day_part = raw[day_key] || raw[day_key.to_sym]
+          next if day_part.to_s.empty? || local_params[:visits_attributes][k][time].to_s.empty?
+
+          local_params[:visits_attributes][k][time] =
+            ChronicDuration.parse("#{day_part} days and #{local_params[:visits_attributes][k][time].tr(':', 'h')}min", keep_zero: true)
         end
       end
     end

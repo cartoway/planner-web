@@ -1,0 +1,34 @@
+<div class="container py-4">
+  <h1 class="h3 mb-2">Design system — overview</h1>
+  <p class="text-muted mb-4">
+    Lookbook previews use the same shell as documented in <code>app/views/layouts/lookbook_preview.html.haml</code>
+    (Bootstrap 5 CDN, <code>v2/layout_bootstrap_overrides</code>, Font Awesome).
+    Use the navigation tree for typography, buttons, forms, tables, and more.
+  </p>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body">
+          <h2 class="h6 card-title">Quick samples</h2>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <button type="button" class="btn btn-primary btn-sm">Primary</button>
+            <button type="button" class="btn btn-secondary btn-sm">Secondary</button>
+            <button type="button" class="btn btn-outline-primary btn-sm">Outline</button>
+          </div>
+          <p class="small text-muted mb-0">
+            <i class="fa-solid fa-location-dot me-1" aria-hidden="true"></i>
+            Icons via Font Awesome (solid).
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="alert alert-info mb-0 py-2 small" role="status">
+        <strong>Tip:</strong> v2 screens often combine <code>.btn.btn-sm</code>, <code>.table.table-striped.table-condensed</code>,
+        and Turbo frames — see Tables and Navigation. For <code>.row</code> / <code>.col-*</code>, see <strong>Grid layout</strong>.
+        Cartoway surfaces&#8239;: <code>.cartoway-surface-neutral</code>, <code>.cartoway-surface-primary-soft</code>, <code>.cartoway-surface-success-soft</code>.
+      </div>
+    </div>
+  </div>
+</div>

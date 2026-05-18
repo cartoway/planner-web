@@ -34,6 +34,9 @@ gem 'puma'
 gem 'mail'
 gem 'net-ftp'
 
+# Design system / component previews — available in all environments (mount + protect /lookbook as needed).
+gem 'lookbook', '>= 2.3.14'
+
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
   gem 'web-console', '~> 2' # FIXME: require Rails 5
@@ -41,6 +44,9 @@ group :development do
   # Improve error interaction
   gem 'better_errors'
   gem 'binding_of_caller'
+
+  # Live reload for Lookbook UI (optional but recommended)
+  gem 'listen'
 
   # Preview emails
   gem 'letter_opener_web'

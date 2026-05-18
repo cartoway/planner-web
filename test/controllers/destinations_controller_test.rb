@@ -40,13 +40,200 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'script[src*="maplibre-gl"]', 1
     assert_select '.main > .main-primary', 1
     assert_select '.main > .main-primary turbo-frame#main', 1
+    assert_select 'aside.v2-form-sidebar.v2-form-sidebar--collapsed', 1
+    assert_select 'aside.v2-form-sidebar turbo-frame#form_sidebar', 1
+  end
+
+  test 'v2 index map payload includes list page for each geolocated destination' do
+    get :index
+    assert_response :success
+    payload = assigns(:v2_map_destinations)
+    assert payload.is_a?(Array)
+    assert(payload.all? { |h| h[:page].present? && h[:id].present? })
+    assert_match('"page":', response.body)
+  end
+
+  test 'v2 index embeds highlight_destination_id in map config when requested' do
+    get :index, params: { highlight_destination_id: @destination.id }
+    assert_response :success
+    assert_match(%("highlight_destination_id":#{@destination.id}), response.body)
+  end
+
+  test 'v2 index paginated list renders only turbo-frame when Turbo-Frame requests destinations_list' do
+    @request.headers['Turbo-Frame'] = 'destinations_list'
+    get :index, params: { per_page: 1, page: 1 }
+    assert_response :success
+    assert_select 'turbo-frame#destinations_list', 1
+    assert_select 'turbo-frame#destinations_list tbody tr.destination', 1
+    assert_select '#destinations-map-layout', 0
+  end
+
+  test 'v2 index edit links target form_sidebar turbo frame' do
+    get :index
+    assert_response :success
+    assert_select %(a[href="#{edit_destination_path(@destination)}"][data-turbo-frame="form_sidebar"][data-turbo-prefetch="false"]), 1
+  end
+
+  test 'v2 index new link targets form_sidebar turbo frame' do
+    get :index
+    assert_response :success
+    assert_select %(a[href="#{new_destination_path}"][data-turbo-frame="form_sidebar"][data-turbo-prefetch="false"]), 1
+  end
+
+  test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar.form-horizontal[action*="destination"]', 1
+    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="_top"]', 1
+    assert_select 'turbo-frame#form_sidebar .v2-form-submit-bar.is-hidden', 1
+    assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar input[type="submit"]', 0
+    assert_select 'turbo-frame#form_sidebar .v2-form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
+    assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar[data-tag-entity-create-allowed]', 1
+  end
+
+  test 'v2 edit sidebar visits list wires visit-collapses controller on #visits' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar #visits[data-controller~="v2--visit-collapses"]', 1
+  end
+
+  test 'v2 edit sidebar collapse-all button uses visit-collapses when several visits' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    assert_difference('Visit.count', 1) do
+      post :append_visit, params: { id: @destination.id }
+    end
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_operator @destination.reload.visits.size, :>, 1
+    assert_select '#visits-expand[data-action*="v2--visit-collapses#toggleAll"]', 1
+  end
+
+  test 'v2 edit sidebar tags multi-selects use Tom Select Stimulus controller' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select '.destination_visits_attributes_tag_ids_input', 2
+    assert_select '.destination_visits_attributes_tag_ids_input select[data-controller~="v2--tom-select"][name="destination[tag_ids][]"][multiple]', 1
+    assert_select 'select[name^="destination[visits_attributes]"][name$="[tag_ids][]"][multiple][data-controller~="v2--tom-select"]', 1
+    assert_select 'select#from_visit_tags[multiple][data-controller~="v2--tom-select"]', 1
+    assert_select 'select#to_visit_tags[multiple][data-controller~="v2--tom-select"]', 1
+    # destination_one has one visit → 2 Tom hosts (destination + visit) + 2 bulk selects in modal
+    assert_select '[data-controller~="v2--tom-select"]', 4
+  end
+
+  test 'v2 edit sidebar destination and visit tag fields use input-group with trailing tags icon' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select %(turbo-frame#form_sidebar #destination-details .destination_visits_attributes_tag_ids_input .input-group > select[name="destination[tag_ids][]"][multiple]), 1
+    assert_select %(turbo-frame#form_sidebar #destination-details .destination_visits_attributes_tag_ids_input .input-group > span.input-group-text), 1
+    assert_select %(turbo-frame#form_sidebar #visits .destination_visits_attributes_tag_ids_input .input-group > select[multiple][name*="[tag_ids][]"]), 1
+    assert_select %(turbo-frame#form_sidebar #visits .destination_visits_attributes_tag_ids_input .input-group > span.input-group-text), 1
+  end
+
+  test 'v2 edit sidebar visit priority uses Bootstrap native range' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select 'input#visit_priority_i1.form-range[type="range"][name="destination[visits_attributes][1][priority]"][min="-4"][max="4"][step="1"]', 1
+    assert_select '.v2-range-output-wrap[data-controller~="v2--range-output"]', 1
+  end
+
+  test 'v2 edit sidebar offers direct delete for each persisted visit' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    n = @destination.visits.select(&:persisted?).size
+    assert_operator n, :>, 0
+    assert_select 'button[data-controller="v2--visit-delete"]', n
+  end
+
+  test 'new responds with form_sidebar fragment when requested via Turbo Frame' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :new
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar.form-horizontal[action*="destinations"]', 1
+    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="form_sidebar"]', 1
+    assert_select 'turbo-frame#form_sidebar .v2-form-submit-bar.is-hidden', 1
+    assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar input[type="submit"]', 0
+    assert_select 'turbo-frame#form_sidebar .v2-form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
+  end
+
+  test 'v2 new destination sidebar has no visit fieldsets and no hidden visit template' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :new
+    assert_response :success
+    assert_select '#visits > fieldset', 0
+    assert_select '#visit-fieldset-template', 0
+  end
+
+  test 'append_visit creates a persisted visit and re-renders form_sidebar' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    before = @destination.visits.count
+    assert_difference('Visit.count', 1) do
+      post :append_visit, params: { id: @destination.id }
+    end
+    assert_response :success
+    assert_equal before + 1, @destination.reload.visits.count
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select '#visits fieldset.v2-visit-fieldset', before + 1
+    assert_select %(a#visit-new[href="#{append_visit_destination_path(@destination)}"][data-turbo-method="post"]), 1
+  end
+
+  test 'append_visit creates first visit when destination has none' do
+    dest = customers(:customer_one).destinations.create!(
+      name: 'solo_dest',
+      street: 'Rue X',
+      postalcode: '33000',
+      city: 'Testville',
+      lat: 44.8,
+      lng: -0.6
+    )
+    assert_equal 0, dest.visits.count
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    assert_difference('Visit.count', 1) do
+      post :append_visit, params: { id: dest.id }
+    end
+    assert_response :success
+    assert_equal 1, dest.reload.visits.count
+  end
+
+  test 'create with validation errors renders new_sidebar when requested via Turbo Frame' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    assert_no_difference('Destination.count') do
+      post :create, params: { destination: {
+        name: '',
+        city: @destination.city,
+        postalcode: @destination.postalcode,
+        street: @destination.street
+      } }
+    end
+    assert_response :unprocessable_entity
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="form_sidebar"]', 1
+  end
+
+  test 'v2 edit sidebar shows map position hint and no embedded Leaflet map' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar .v2-destination-map-position-hint', 1
+    assert_select 'turbo-frame#form_sidebar #map.map-fixed-size', 0
+    assert_select 'turbo-frame#form_sidebar input#destination_lat[step="0.000001"]', 1
+    assert_select 'turbo-frame#form_sidebar input#destination_lng[step="0.000001"]', 1
+    assert_select 'turbo-frame#form_sidebar button[data-v2-map-position-drag-toggle]', 1
   end
 
   test 'index renders v2 list and search when destinations exist' do
     get :index
     assert_response :success
     assert_select '#destinations-search-form'
-    assert_select 'tr.destination', assigns(:destinations).size
+    assert_select 'turbo-frame#destinations_list tr.destination', assigns(:destinations).size
   end
 
   test 'should filter destinations by key value search' do
@@ -269,6 +456,16 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_template :edit
     destination = assigns(:destination)
     assert destination.errors.any?
+    assert_valid response
+  end
+
+  test 'should not update destination in form_sidebar turbo frame' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    patch :update, params: { id: @destination, destination: { name: '' } }
+
+    assert_response :unprocessable_entity
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert assigns(:destination).errors.any?
     assert_valid response
   end
 
