@@ -1,0 +1,149 @@
+-# V2 sidebar-only: same as visits/_form; relative i18n keys via visits.form scope
+- require 'visits_helper'
+- vf = ->(key, **opts) { I18n.t(key, scope: 'visits.form', **opts) }
+- destination_form_mutable = local_assigns.fetch(:destination_form_mutable, true)
+- v2_label_col = local_assigns.fetch(:v2_label_col, 'col-md-offset-1 col-md-10')
+- v2_control_col = local_assigns.fetch(:v2_control_col, 'col-md-offset-1 col-md-10 field')
+= fields_for 'destination[visits_attributes]', visit, index: i, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col do |f|
+  %fieldset.v2-visit-fieldset
+    %a{name: "visit_id=#{visit.id}"}
+    %legend.scheduler-border
+      %a.accordion-toggle.text-decoration-none{href: "#", role: "button", "data-bs-toggle": "collapse", "data-bs-target": "#collapseVisit#{visit.id || 0}", "aria-expanded": "true", "aria-controls": "collapseVisit#{visit.id || 0}"}
+        %span= vf.call('legend', n: i)
+      - if !current_page?(action: 'new')
+        .mb-3.row.destroy-block
+          .col-md-3
+            - if visit.persisted?
+              - vd = visit.destination
+              %button.btn.btn-outline-danger.btn-sm{type: "button", disabled: !destination_form_mutable, title: vf.call('delete_visit_help'), data: { controller: "v2--visit-delete", action: "click->v2--visit-delete#confirmAndDestroy", v2__visit_delete_visit_id_value: visit.id, v2__visit_delete_update_url_value: destination_path(vd), v2__visit_delete_frame_reload_url_value: edit_destination_path(vd), v2__visit_delete_confirm_message_value: vf.call('delete_visit_confirm'), v2__visit_delete_error_validation_message_value: vf.call('delete_visit_error_validation'), v2__visit_delete_error_request_message_value: vf.call('delete_visit_error_request'), v2__visit_delete_error_network_message_value: vf.call('delete_visit_error_network') }}
+                %i.fa.fa-trash.fa-fw
+                = vf.call('delete_visit')
+            - else
+              %button.btn.btn-default.btn-sm.flag-destroy{title: "#{vf.call('delete_help')}", type: "button", disabled: !destination_form_mutable}
+                %i.fa.fa-trash.fa-fw
+                = vf.call('delete')
+    .collapse.show{id: "collapseVisit#{visit.id || 0}"}
+      = f.hidden_field :id
+
+      - unless visit.persisted?
+        .checkbox-destroy.d-none
+          = render partial: 'shared/check_box', locals: { form: f, field: :_destroy, label: t('all.verb.destroy'), help: vf.call('destroy'), options: { control_col: 'form-switch col-md-offset-1 col-md-6 d-none', disabled: !destination_form_mutable } }
+      - if visit.destination.customer.enable_references
+        = f.text_field :ref do
+          %p.help-block= vf.call('ref_help')
+
+      - unless visit.destination.customer.enable_orders
+        #visit_quantity_input.row{class: "#{nested_has_error?(:pickups, visit.id)} #{nested_has_error?(:deliveries, visit.id)}"}
+          %label.col-md-offset-1.col-md-10.field
+            .col-md-4.p-0
+              = t 'activerecord.attributes.visit.pickups'
+            .col-md-4.p-0{ style: 'margin-left: -15px;' }
+              = t 'activerecord.attributes.visit.deliveries'
+          .col-md-offset-1.col-md-10.field
+            - visit.destination.customer.deliverable_units.each do |du|
+              .input-group{"data-deliverable_unit_id" => "#{du.id}"}
+                = number_field "destination[visits_attributes][#{i}][pickups]", du.id, value: visit.pickups && visit.pickups[du.id], placeholder: du.default_pickup && t('web.form.default', n: du.localized_default_pickup), class: 'form-control', step: 'any'
+                = number_field "destination[visits_attributes][#{i}][deliveries]", du.id, value: visit.deliveries && visit.deliveries[du.id], placeholder: du.default_delivery && t('web.form.default', n: du.localized_default_delivery), class: 'form-control', step: 'any'
+                = text_field "destination[visits_attributes][#{i}][quantities_unit]", du.id, value: du.label, class: 'form-control', placeholder: t('deliverable_units.form.label_placeholder'), disabled: true
+                %span.input-group-text
+                  %i{class: "fa #{du.default_icon} fa-fw"}
+            %p.help-block= vf.call('pickups_deliveries.help')
+      = f.text_field :duration,
+        value: visit.duration_time_with_seconds,
+        placeholder: visit.destination.customer.visit_duration ? "#{visit.destination.customer.visit_duration_time_with_seconds} (#{vf.call('duration_default')})" : t('all.unit.hour_minute_second'),
+        append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw'),
+        help: vf.call('duration_help')
+
+      .visit-open-close-input.row{class: "#{nested_has_error?(:time_window_end_1, visit.id)}"}
+        %label.sr-only{for: "destination_visits_attributes_#{i}_time_window_start_1"}= t 'activerecord.attributes.visit.time_window_start_1'
+        %label.sr-only{for: "destination_visits_attributes_#{i}_time_window_end_1"}= t 'activerecord.attributes.visit.time_window_end_1'
+        %label.col-md-offset-1.col-md-10.field= vf.call('time_window_start_end_1')
+        .col-md-offset-1.col-md-10.field
+          .input-group.mb-2
+            %span.input-group-text= t 'web.form.time_window_start_label'
+            = text_field "destination[visits_attributes][#{i}]", :time_window_start_1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_1_time
+            %span.input-group-text.input-group-borderless= t 'web.form.days'
+            = number_field "destination[visits_attributes][#{i}]", :time_window_start_1_day, |
+              class: 'form-control number-of-days',                                          |
+              placeholder: '0',                                                              |
+              min: 0,                                                                        |
+              value: number_of_days(visit.time_window_start_1)                               |
+          .input-group
+            %span.input-group-text= t 'web.form.time_window_end_label'
+            = text_field "destination[visits_attributes][#{i}]", :time_window_end_1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_end_1_time
+            %span.input-group-text.input-group-borderless= t 'web.form.days'
+            = number_field "destination[visits_attributes][#{i}]", :time_window_end_1_day, |
+              class: 'form-control number-of-days',                                        |
+              placeholder: '0',                                                            |
+              min: 0,                                                                      |
+              value: number_of_days(visit.time_window_end_1)                               |
+            %span.input-group-text
+              %i.fa.fa-arrows-left-right.fa-fw
+          %p.help-block= vf.call('close_help')
+      .visit-open-close-input.row{class: "#{nested_has_error?(:time_window_end_2, visit.id)}"}
+        %label.sr-only{for: "destination_visits_attributes_#{i}_time_window_start_2"}= t 'activerecord.attributes.visit.time_window_start_2'
+        %label.sr-only{for: "destination_visits_attributes_#{i}_time_window_end_2"}= t 'activerecord.attributes.visit.time_window_end_2'
+        %label.col-md-offset-1.col-md-10.field= vf.call('time_window_start_end_2')
+        .col-md-offset-1.col-md-10.field
+          .input-group.mb-2
+            %span.input-group-text= t 'web.form.time_window_start_label'
+            = text_field "destination[visits_attributes][#{i}]", :time_window_start_2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_2_time
+            %span.input-group-text.input-group-borderless= t 'web.form.days'
+            = number_field "destination[visits_attributes][#{i}]", :time_window_start_2_day, |
+              class: 'form-control number-of-days',                                          |
+              placeholder: '0',                                                              |
+              min: 0,                                                                        |
+              value: number_of_days(visit.time_window_start_2)                               |
+          .input-group
+            %span.input-group-text= t 'web.form.time_window_end_label'
+            = text_field "destination[visits_attributes][#{i}]", :time_window_end_2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_end_2_time
+            %span.input-group-text.input-group-borderless= t 'web.form.days'
+            = number_field "destination[visits_attributes][#{i}]", :time_window_end_2_day, |
+              class: 'form-control number-of-days',                                        |
+              placeholder: '0',                                                            |
+              min: 0,                                                                      |
+              value: number_of_days(visit.time_window_end_2)                               |
+            %span.input-group-text
+              %i.fa.fa-arrows-left-right.fa-fw
+          %p.help-block= vf.call('close_help')
+      #visit_revenue_input.row
+        %label.col-md-offset-1.col-md-10.field
+          = vf.call('revenue')
+        .col-md-offset-1.col-md-10.field
+          .input-group
+            = number_field "destination[visits_attributes][#{i}]", :revenue,
+              class: 'form-control',
+              min: 0,
+              step: 0.01,
+              value: visit.revenue
+            %span.input-group-text
+              = t("all.unit.currency_symbol.#{current_user.prefered_currency}")
+          %p.help-block
+            = vf.call('revenue_help')
+      #visit_priority_input.row{class: "#{nested_has_error?(:priority, visit.id)}"}
+        - pri = visit.priority.presence || 0
+        - pid = "visit_priority_i#{i}"
+        %label.col-md-offset-1.col-md-10.field{for: pid}= vf.call('priority')
+        .col-md-offset-1.col-md-10.field
+          .v2-range-output-wrap.d-flex.align-items-center.gap-3.flex-wrap.w-100{data: {controller: 'v2--range-output'}}
+            = range_field "destination[visits_attributes][#{i}]", :priority, id: pid, class: 'form-range flex-grow-1', min: -4, max: 4, step: 1, value: pri, disabled: !destination_form_mutable, list: "#{pid}_ticks", data: {action: 'input->v2--range-output#sync'}
+            %datalist{id: "#{pid}_ticks"}
+              %option{value: "-4"}
+              %option{value: "0"}
+              %option{value: "4"}
+            %span.small.text-muted.text-nowrap{data: {v2__range_output_target: 'display'}}= pri
+          %p.help-block= vf.call('priority_help')
+      - tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_form_create?(:tags), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
+      .destination_visits_attributes_tag_ids_input
+        = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: vf.call('tags_help'), append: content_tag('i', '', class: 'fa fa-tags fa-fw')}, {multiple: true, data: tom_select_data}
+
+      = f.select :force_position, options_for_select(visit_force_position_options_for_select, selected: visit_force_position_options_for_select_selected(visit)), {label: t('activerecord.attributes.visit.force_position'), help: vf.call('force_position_help')}, { control_class: 'form-control' }
+
+      - Array(@visit_custom_attributes).each do |custom_attribute|
+        .custom_field
+          %label.col-md-offset-1.col-md-10.field
+            = custom_attribute.name
+          .col-md-offset-1.col-md-10.field
+            = custom_attribute_form_field(f, visit, custom_attribute, "destination[visits_attributes][#{i}]")
+            %p.help-block
+              = custom_attribute.description

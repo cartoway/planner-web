@@ -1,0 +1,178 @@
+// Copyright © Cartoway
+// Cartoway v2 global styles, loaded after the Bootstrap 5 CDN (`layout_bootstrap_overrides.scss` → `v2/layouts/_head.html.haml`).
+// Rules are scoped to `body[data-controller*='-v2']`. Colour tokens come from `../variables`.
+
+@import "../variables";
+
+body[data-controller*='-v2'] {
+  // Cartoway primary for components that read --bs-primary-rgb (gradients, rgba, focus rings)
+  --bs-primary-rgb: 37, 65, 124;
+
+  // Body text and canvas
+  color: $text-black;
+  background-color: $white-background;
+  --bs-body-color: #{$text-black};
+  --bs-body-bg: #{$white-background};
+
+
+  --bs-primary: $primary-color;
+  --bs-btn-bg: $primary-color;
+  --bs-btn-border-color: $primary-color;
+  --bs-btn-hover-bg: $primary-color;
+  --bs-btn-hover-border-color: $primary-color;
+  --bs-btn-active-bg: $primary-color;
+  --bs-btn-active-border-color: $primary-color;
+  --bs-btn-disabled-bg: $primary-disabled-color;
+  --bs-btn-disabled-border-color: $primary-disabled-color;
+
+
+
+  --bs-tertiary-bg: #{$grey-color};
+
+  // Bootstrap grid: no horizontal gutter between columns.
+  --bs-gutter-x: 0;
+
+  .row {
+    --bs-gutter-x: 0;
+  }
+
+  // Main column titles
+  .main h1,
+  .main-primary h1 {
+    margin: 15px 0;
+    padding: 5px 0;
+    border-bottom: 1px solid #e5e5e5;
+    font-weight: 600;
+  }
+
+  .main h2,
+  .main-primary h2,
+  .main .h2,
+  .main-primary .h2 {
+    font-weight: 600;
+    color: $text-black;
+  }
+
+  // Horizontal rules
+  hr {
+    margin-top: 6px;
+    margin-bottom: 6px;
+    opacity: 1;
+    border-color: var(--bs-border-color);
+  }
+
+  // Required controls: light tint until focused
+  .form-control:required:not(:disabled),
+  textarea.form-control:required:not(:disabled),
+  select.form-control:required:not(:disabled) {
+    background-color: #eefaff;
+  }
+
+  .form-control:required:not(:disabled):focus,
+  textarea.form-control:required:not(:disabled):focus,
+  select.form-control:required:not(:disabled):focus {
+    background-color: var(--bs-body-bg);
+  }
+
+  // Placeholder colour
+  .form-control::placeholder,
+  textarea.form-control::placeholder {
+    color: $grey-color;
+    opacity: 1;
+  }
+
+  // Tom Select + trailing `input-group-text` (bootstrap_form append). Keeps addon on the same row as the control.
+  .input-group {
+    flex-wrap: nowrap;
+    align-items: stretch;
+
+    > .ts-wrapper {
+      flex: 1 1 0;
+      min-width: 0;
+      width: auto;
+      max-width: 100%;
+    }
+
+    > .form-control:focus,
+    > .form-select:focus {
+      z-index: 1;
+    }
+  }
+
+  .input-group-text {
+    background-color: var(--bs-secondary-bg);
+  }
+
+  .input-group-text.btn-container {
+    background-color: $lightgrey-color;
+  }
+
+  // Visit form: wide time/quantity rows may wrap inside the narrow sidebar.
+  .visit-open-close-input .input-group,
+  #visit_quantity_input .input-group {
+    flex-wrap: wrap;
+  }
+
+  // Destination and visit fieldsets: no chrome box (legend layout lives in `application.scss`)
+  fieldset#destination-details,
+  fieldset.v2-visit-fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0 0 1rem;
+  }
+
+  // Tables: wrap long cell content in dense lists
+  .table-responsive .table td,
+  .main .table td {
+    max-width: 260px;
+    overflow-wrap: anywhere;
+    word-wrap: break-word;
+  }
+
+  // Danger buttons: keep label readable on red
+  .btn-danger {
+    color: #fff !important;
+  }
+
+  // `.btn-default` is not in Bootstrap 5; map it to the same button tokens as `.btn-outline-secondary`
+  .btn.btn-default {
+    --bs-btn-color: var(--bs-secondary);
+    --bs-btn-border-color: var(--bs-secondary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--bs-secondary);
+    --bs-btn-hover-border-color: var(--bs-secondary);
+    --bs-btn-focus-shadow-rgb: var(--bs-secondary-rgb);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--bs-secondary);
+    --bs-btn-active-border-color: var(--bs-secondary);
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: var(--bs-secondary);
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: var(--bs-secondary);
+    --bs-gradient: none;
+  }
+
+  // Neutral / brand / success panel surfaces (maps, route UI, etc.)
+  .cartoway-surface-neutral {
+    border: 1px solid $grey-color;
+    background-color: $lightgrey-color;
+    border-radius: var(--bs-border-radius, 0.25rem);
+  }
+
+  .cartoway-surface-primary-soft {
+    border: 1px solid $primary-border-color;
+    background-color: $primary-background-color;
+    border-radius: var(--bs-border-radius, 0.25rem);
+  }
+
+  .cartoway-surface-success-soft {
+    border: 1px solid $success-border-color;
+    background-color: $success-background-color;
+    border-radius: var(--bs-border-radius, 0.25rem);
+  }
+
+  // Card-style shadow helper
+  .cartoway-card-shadow {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+}

@@ -1,0 +1,22 @@
+// Copyright © Cartoway
+// Lookbook preview shell — Font Awesome only; Bootstrap 5 comes from CDN.
+@import "font-awesome";
+
+// Mirrors v2/application.scss — compact tables in list frames.
+.table-condensed {
+  font-size: 0.875rem;
+}
+
+.search-filter-badge {
+  display: inline-flex;
+  align-items: center;
+
+  a {
+    opacity: 0.8;
+    text-decoration: none;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
