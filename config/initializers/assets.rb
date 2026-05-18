@@ -21,6 +21,5 @@ Rails.application.config.assets.precompile << lambda do |_logical_path, filename
   ].any? { |root| fn.start_with?("#{root}/") }
 end
 
-# Precompile additional assets.
-# application.js, application.css, and all non-JS/CSS in the app/assets
-# folder are already added.
+# V2: post-Bootstrap overrides (must bypass debug: split mode — otherwise AV falls back to /stylesheets/… 404 + wrong MIME).
+Rails.application.config.assets.precompile += %w[v2/layout_bootstrap_overrides.css lookbook_preview.css]

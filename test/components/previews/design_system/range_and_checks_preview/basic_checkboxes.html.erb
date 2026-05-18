@@ -1,0 +1,28 @@
+<div class="container py-4">
+  <h1 class="h4 mb-2">Basic checkboxes &amp; radios</h1>
+  <p class="text-muted small mb-4">
+    Use <code>.form-check</code> + <code>.form-check-input</code> + <code>.form-check-label</code> (Bootstrap 5).
+    On v2, styles match the v1 Cartoway theme (<code>bootstrap_and_overrides</code> + <code>_variables.scss</code>) via <code>v2/_form_checks_range.scss</code> (SVG check / indeterminate, focus ring, primary when checked).
+    For bootstrap_form-generated fields, use the shared partial <code>shared/check_box</code> (toggle defaults) — see the Toggle scenario.
+  </p>
+
+  <h2 class="h6 text-secondary mb-2">Stacked checkboxes</h2>
+  <div class="form-check mb-2">
+    <input class="form-check-input" type="checkbox" value="" id="ds-cb1" checked>
+    <label class="form-check-label" for="ds-cb1">Option A</label>
+  </div>
+  <div class="form-check mb-4">
+    <input class="form-check-input" type="checkbox" value="" id="ds-cb2">
+    <label class="form-check-label" for="ds-cb2">Option B</label>
+  </div>
+
+  <h2 class="h6 text-secondary mb-2">Radios</h2>
+  <div class="form-check mb-2">
+    <input class="form-check-input" type="radio" name="ds-radio-demo" id="ds-r1" checked>
+    <label class="form-check-label" for="ds-r1">Choice one</label>
+  </div>
+  <div class="form-check mb-0">
+    <input class="form-check-input" type="radio" name="ds-radio-demo" id="ds-r2">
+    <label class="form-check-label" for="ds-r2">Choice two</label>
+  </div>
+</div>

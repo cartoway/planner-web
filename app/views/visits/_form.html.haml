@@ -49,7 +49,7 @@
         %label.col-md-offset-2.col-md-8.field= t '.time_window_start_end_1'
         .col-md-offset-2.col-md-8.field
           .input-group
-            %span.input-group-addon= t 'web.form.from_time'
+            %span.input-group-addon= t 'web.form.time_window_start_label'
             = text_field "destination[visits_attributes][#{i}]", :time_window_start_1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_1_time
             %span.input-group-addon.input-group-borderless= t 'web.form.days'
             = number_field "destination[visits_attributes][#{i}]", :time_window_start_1_day, |
@@ -57,7 +57,7 @@
               placeholder: '0',                                                              |
               min: 0,                                                                        |
               value: number_of_days(visit.time_window_start_1)                               |
-            %span.input-group-addon= t 'web.form.to_time'
+            %span.input-group-addon= t 'web.form.time_window_end_label'
             = text_field "destination[visits_attributes][#{i}]", :time_window_end_1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_end_1_time
             %span.input-group-addon.input-group-borderless= t 'web.form.days'
             = number_field "destination[visits_attributes][#{i}]", :time_window_end_1_day, |
@@ -74,7 +74,7 @@
         %label.col-md-offset-2.col-md-8.field= t '.time_window_start_end_2'
         .col-md-offset-2.col-md-8.field
           .input-group
-            %span.input-group-addon= t 'web.form.from_time'
+            %span.input-group-addon= t 'web.form.time_window_start_label'
             = text_field "destination[visits_attributes][#{i}]", :time_window_start_2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_2_time
             %span.input-group-addon.input-group-borderless= t 'web.form.days'
             = number_field "destination[visits_attributes][#{i}]", :time_window_start_2_day, |
@@ -82,7 +82,7 @@
               placeholder: '0',                                                              |
               min: 0,                                                                        |
               value: number_of_days(visit.time_window_start_2)                               |
-            %span.input-group-addon= t 'web.form.to_time'
+            %span.input-group-addon= t 'web.form.time_window_end_label'
             = text_field "destination[visits_attributes][#{i}]", :time_window_end_2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_end_2_time
             %span.input-group-addon.input-group-borderless= t 'web.form.days'
             = number_field "destination[visits_attributes][#{i}]", :time_window_end_2_day, |
@@ -114,7 +114,7 @@
             = text_field "destination[visits_attributes][#{i}]", :priority, class: 'form-control', value: visit.priority, data: {'slider-value' => visit.priority || 0}
           %p.help-block= t '.priority_help'
       .destination_visits_attributes_tag_ids_input
-        = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: t('.tags_help')}, {multiple: true, input_group: content_tag('i', '', class: 'fa fa-tags fa-fw')}
+        = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: t('.tags_help'), append: content_tag('i', '', class: 'fa fa-tags fa-fw')}, {multiple: true}
 
       = f.select :force_position, options_for_select(visit_force_position_options_for_select, selected: visit_force_position_options_for_select_selected(visit)), {label: t('activerecord.attributes.visit.force_position'), help: t('.force_position_help')}, { control_class: 'form-control' }
 

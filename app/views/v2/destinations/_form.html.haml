@@ -1,0 +1,165 @@
+-# V2 sidebar-only: same fields as destinations/_form; relative i18n keys resolved via destinations.form scope
+- df = ->(key, **opts) { I18n.t(key, scope: 'destinations.form', **opts) }
+- dest_form_mutable = current_user_destination_form_submit_enabled?(@destination)
+-# New records: keep POST in form_sidebar (validation + redirect after create). Persisted: full-page target like legacy edit flow.
+- turbo_submit_target = @destination.persisted? ? "_top" : "form_sidebar"
+- form_html = { class: "form-horizontal", "data-destination_id" => (@destination.id or 0), id: "destination-form-sidebar", "data-turbo-frame" => turbo_submit_target, "data-position-editable" => (dest_form_mutable ? "true" : "false"), "data-tag-entity-create-allowed" => (current_user_form_create?(:tags) ? "true" : "false") }
+- form_html["data-v2--dirty-form-submit-target"] = "form" if dest_form_mutable
+- v2_label_col = 'col-md-offset-1 col-md-10'
+- v2_control_col = 'col-md-offset-1 col-md-10 field'
+= bootstrap_form_for(@destination, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col, html: form_html) do |f|
+  = render 'shared/error_messages', model: @destination
+  %fieldset#destination-details
+    - if @destination.customer.enable_references
+      = f.text_field :ref, help: df.call('ref_help')
+    = hidden_field_tag "destination[geocoding_result]", @destination.geocoding_result.to_json
+    = f.text_field :name, required: true
+    = f.text_field :street, help: t('web.form.helpers.street')
+    = f.text_field :detail, help: df.call('detail_help')
+    #destination_city_input.mb-3.row
+      %label.sr-only{for: "destination_postalcode"}= t 'activerecord.attributes.destination.postalcode'
+      %label.sr-only{for: "destination_city"}= t 'activerecord.attributes.destination.city'
+      %label.col-md-offset-1.col-md-10.field
+        = t 'activerecord.attributes.destination.postalcode'
+        \/ #{t 'activerecord.attributes.destination.city'}
+      .col-md-offset-1.col-md-10.field
+        .input-group
+          = text_field :destination, :postalcode, maxlength: 17, class: 'form-control'
+          = text_field :destination, :city, class: 'form-control'
+          %span.input-group-text
+            %i.fa.fa-map.fa-fw
+    - if !@destination.customer.with_state
+      #destination_country_input.mb-3.row
+        %label.col-md-offset-1.col-md-10.field
+          = "#{t('activerecord.attributes.destination.state')}/#{t('activerecord.attributes.destination.country')}"
+        .col-md-offset-1.col-md-10.field
+          .input-group
+            = text_field :destination, :state, class: 'form-control'
+            = text_field :destination, :country, placeholder: df.call('country_default', n: @destination.customer.default_country), class: 'form-control'
+            %span.input-group-text
+              %i.fa.fa-map.fa-fw
+    - else
+      = f.text_field :country, {placeholder: df.call('country_default', n: @destination.customer.default_country)}
+    .mb-3.row
+      %label.col-md-offset-1.col-md-10.field{for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
+      .col-md-offset-1.col-md-10.field
+        #geocoding_accuracy{ class: ('d-none' unless @destination.geocoding_accuracy) }
+          #geocoding-progress.progress
+            %input{name: "destination[geocoding_accuracy]", type: "hidden", value: @destination.geocoding_accuracy}
+            .progress-bar{ class: "progress-bar-#{@destination.geocode_progress_bar_class}", style: "width: #{((@destination.geocoding_accuracy || 0) * 100).round}%"}
+              %span= @destination.geocoding_accuracy ? ((@destination.geocoding_accuracy || 0) * 100).round.to_s + '%' : ''
+          %p.help-block= df.call('geocoding_accuracy_help')
+          #geocoding_fail.d-none
+            = df.call('geocoding_fail')
+            \-
+            %span.text-muted.small
+              %i.fa.fa-map-marker.fa-fw
+              = df.call('v2_list_map_position_help')
+        #no_geocoding_accuracy{ class: ('d-none' if @destination.geocoding_accuracy)}
+          = df.call('geocoding_accuracy_none')
+        #geocoding_level{ class: ('d-none' unless @destination.geocoding_level)}
+          %input{name: "destination[geocoding_level]", type: "hidden", value: @destination.geocoding_level}
+          %i#geocoding-level-point.fa.fa-map-marker.fa-fw.geocoding-level{ class: ('d-none' unless @destination.point?)}
+          %i#geocoding-level-house.fa.fa-store.fa-fw.geocoding-level{ class: ('d-none' unless @destination.house?)}
+          %i#geocoding-level-point.fa.fa-intersection.fa-fw.geocoding-level{ class: ('d-none' unless @destination.intersection?)}
+          %i#geocoding-level-house.fa.fa-street.fa-fw.geocoding-level{ class: ('d-none' unless @destination.street?)}
+          %i#geocoding-level-point.fa.fa-city.fa-fw.geocoding-level{ class: ('d-none' unless @destination.city?)}
+          %span
+            = t 'activerecord.attributes.destination.geocoding_level'
+            \:
+            %span#geocoding-level-value
+              - if @destination.geocoding_level
+                = t("destinations.form.geocoding_level.#{@destination.geocoding_level}")
+      #geocoding_result_free.col-md-offset-1.col-md-10.field{ class: ('d-none' if @destination.geocoding_result.empty?)}
+        %label= t 'activerecord.attributes.destination.geocoding_result'
+        %input.form-control{ name: "destination[displayed_geocoding_result]", value: @destination.geocoding_result['free'], readonly: 'readonly'}
+      .col-md-offset-1.col-md-10.field
+        #reverse-geocode
+    .mb-3.row
+      .col-md-offset-1.col-md-offset-1.col-md-10.field
+        .alert.alert-info.small.v2-destination-map-position-hint.mb-0{role: "status"}
+          %i.fa.fa-map.fa-fw
+          = df.call('v2_list_map_position_help')
+    #destination_geoloc_input.mb-3.row
+      %label.sr-only{for: "destination_lat"}= t 'activerecord.attributes.destination.lat'
+      %label.sr-only{for: "destination_lnt"}= t 'activerecord.attributes.destination.lng'
+      %label.col-md-offset-1.col-md-10.field
+        = t 'activerecord.attributes.destination.lat'
+        \/ #{t 'activerecord.attributes.destination.lng'}
+      .col-md-offset-1.col-md-10.field
+        .input-group
+          = number_field :destination, :lat, step: 0.000001, class: 'form-control'
+          = number_field :destination, :lng, step: 0.000001, class: 'form-control'
+          - show_map_drag_toggle = dest_form_mutable && @destination.persisted? && @destination.lat.present? && @destination.lng.present?
+          %span.input-group-text.p-0.d-flex.btn-container
+            - if show_map_drag_toggle
+              - drag_idle = df.call('v2_map_position_drag_enable')
+              - drag_active = df.call('v2_map_position_drag_disable')
+              %button.btn.btn-default.border-0.rounded-0.h-100{type: 'button', title: drag_idle, data: { v2_map_position_drag_toggle: true, title_idle: drag_idle, title_active: drag_active }, 'aria-pressed': 'false'}
+                %i.fa.fa-location-crosshairs.fa-fw{"aria-hidden": "true"}
+            - else
+              .d-flex.align-items-center.px-2
+                %i.fa.fa-globe.fa-fw
+    - tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_form_create?(:tags), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
+    .destination_visits_attributes_tag_ids_input
+      = f.select :tag_ids, options_for_select(@destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @destination.tags.collect(&:id)), {label: t('activerecord.attributes.destination.tag_ids'), help: df.call('tags_help'), append: content_tag('i', '', class: 'fa fa-tags fa-fw')}, {multiple: true, data: tom_select_data}
+    = f.text_field :phone_number, {input_group: content_tag('i', '', class: 'fa fa-phone fa-fw')}
+    = f.text_area :comment, help: df.call('comment_help')
+    = f.text_field :duration,
+      value: @destination.duration_time_with_seconds,
+      placeholder: @destination.customer.destination_duration ? "#{@destination.customer.destination_duration_time_with_seconds} (#{df.call('duration_default')})" : t('all.unit.hour_minute_second'),
+      append: content_tag('i', '', class: 'fa fa-map-marker fa-fw'),
+      help: df.call('duration_help')
+  #visits{data: {controller: "v2--visit-collapses"}}
+    - if @destination.visits.size > 1
+      #visits-header.row
+        .col-md-2
+        #visits-tools.col-xs-12.col-md-10
+          .pull-right
+            %button#visits-expand.btn.btn-default.btn-sm{type: "button", title: "#{t('destinations.form.visit.collapse_all_help')}", data: {action: "v2--visit-collapses#toggleAll"}}
+              %i.fa.fa-angle-double-down.fa-fw
+              = t('destinations.form.visit.collapse_all')
+        .col-md-2
+    - @destination.visits.each_with_index do |visit, i|
+      = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_control_col: v2_control_col
+  - if @destination.persisted?
+    - if dest_form_mutable
+      = link_to append_visit_destination_path(@destination), class: 'btn btn-default btn-sm', id: 'visit-new', role: 'button', title: "#{t('destinations.form.visit.new_help')}", data: { turbo_method: :post, turbo_frame: 'form_sidebar', turbo_prefetch: false } do
+        %i.fa.fa-plus.fa-fw
+        = t('destinations.form.visit.new')
+    - else
+      %button#visit-new.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button", disabled: true}
+        %i.fa.fa-plus.fa-fw
+        = t('destinations.form.visit.new')
+  - else
+    %button#visit-new.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button", disabled: true}
+      %i.fa.fa-plus.fa-fw
+      = t('destinations.form.visit.new')
+  = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
+  = hidden_field :destination, :geocoded_at, :value => @destination.geocoded_at
+#visits-attributes-change-bulk-modal.modal.fade{role: "dialog", tabindex: "-1", "aria-labelledby": "visits-attributes-change-bulk-modal-title"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %h4.modal-title#visits-attributes-change-bulk-modal-title= t 'destinations.form.dialog.attributes_change_bulk.title'
+        %button.btn-close{type: "button", "data-bs-dismiss": "modal", "aria-label": t('web.dialog.close')}
+      .modal-body
+        .container-fluid
+          .row
+            .col-md-2
+              %label= t 'activerecord.attributes.visit.tags'
+            .col-md-10
+              .form-inline
+                Remplacer
+                \#{select_tag 'from_visit_tags', options_for_select(@destination.customer.tags.map{ |t| [t.label, t.id] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder') }}}
+                par
+                \#{select_tag 'to_visit_tags', options_for_select(@destination.customer.tags.map{ |t| [t.label, t.id] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder') }}}
+              %p.help-block
+                = t('destinations.form.dialog.attributes_change_bulk.tags_help')
+      .modal-footer
+        %button.btn.btn-default{type: "button", "data-bs-dismiss": "modal"}
+          %i.fa.fa-undo.fa-fw
+          = t 'all.verb.cancel'
+        %button.btn.btn-primary{type: "button", "data-bs-dismiss": "modal", name: "visits-attributes-change-bulk-apply", disabled: !dest_form_mutable}
+          %i.fa.fa-list.fa-fw
+          = t 'all.verb.apply'
