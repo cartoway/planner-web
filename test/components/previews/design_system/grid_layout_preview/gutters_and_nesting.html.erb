@@ -1,0 +1,25 @@
+<div class="container py-4">
+  <h1 class="h4 mb-3">Gouttières &amp; imbrication</h1>
+
+  <h2 class="h6 text-secondary mb-2">Gouttière (<code>g-*</code>, <code>gx-*</code>, <code>gy-*</code>)</h2>
+  <p class="text-muted small mb-2">
+    Sur <code>.row</code>, <code>g-3</code> définit l’écart horizontal <strong>et</strong> vertical entre colonnes (soustrait du padding interne aux <code>col-*</code>).
+    <code>gx-2</code> = horizontal seulement, <code>gy-4</code> = vertical seulement.
+  </p>
+  <div class="row g-3 mb-4">
+    <div class="col-6"><div class="bg-light border py-4 text-center small">A</div></div>
+    <div class="col-6"><div class="bg-light border py-4 text-center small">B</div></div>
+  </div>
+
+  <h2 class="h6 text-secondary mb-2">Ligne imbriquée</h2>
+  <p class="text-muted small mb-2">Une colonne peut contenir une autre <code>.row</code> : les 12 unités recommencent <strong>à l’intérieur</strong> du parent.</p>
+  <div class="row">
+    <div class="col-12">
+      <div class="border p-2 mb-2 small text-muted">Colonne pleine largeur</div>
+      <div class="row g-1">
+        <div class="col-6"><div class="bg-body-secondary py-2 text-center small">nested col-6</div></div>
+        <div class="col-6"><div class="bg-body-secondary py-2 text-center small">nested col-6</div></div>
+      </div>
+    </div>
+  </div>
+</div>

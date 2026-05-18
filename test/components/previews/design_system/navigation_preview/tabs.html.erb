@@ -1,0 +1,19 @@
+<div class="container py-4">
+  <h1 class="h4 mb-4">Tabs</h1>
+
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-a" data-bs-toggle="tab" data-bs-target="#pane-a" type="button" role="tab" aria-controls="pane-a" aria-selected="true">Details</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-b" data-bs-toggle="tab" data-bs-target="#pane-b" type="button" role="tab" aria-controls="pane-b" aria-selected="false">Visits</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link disabled" type="button" disabled>Disabled</button>
+    </li>
+  </ul>
+  <div class="tab-content border border-top-0 rounded-bottom p-3">
+    <div class="tab-pane fade show active" id="pane-a" role="tabpanel" aria-labelledby="tab-a">Panel A content.</div>
+    <div class="tab-pane fade" id="pane-b" role="tabpanel" aria-labelledby="tab-b">Panel B content.</div>
+  </div>
+</div>
