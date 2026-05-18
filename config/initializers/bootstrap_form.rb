@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+# Cartoway “v1” stack: Bootstrap 3–style forms + `bootstrap_form` prepend/append use `.input-group-addon`.
+# For the v2 layout (BS5 CDN), use `builder: BootstrapForm::V2FormBuilder` — see `bootstrap_form_v2_form_builder.rb`.
 module BootstrapForm
   module FormGroup
     def form_group_default_class
@@ -15,6 +19,8 @@ module BootstrapForm
     end
   end
 
+  # Cartoway v1 form builder tweaks. v2 duplicates the same helpers in `BootstrapForm::V2FormBuilder` so they can
+  # diverge (BS5 columns, submit row, etc.) without editing this file.
   class FormBuilder
     SUBMIT_DEFAULTS = {
       action: nil,

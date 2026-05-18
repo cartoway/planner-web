@@ -1,0 +1,35 @@
+<div class="container py-4">
+  <h1 class="h4 mb-3">Grille Bootstrap 5 — <code>.container</code>, <code>.row</code>, <code>.col-*</code></h1>
+
+  <div class="alert alert-secondary small mb-4" role="note">
+    <strong>Principe.</strong> Une ligne <code>.row</code> contient jusqu’à <strong>12 colonnes</strong> virtuelles.
+    Les classes du type <code>col-md-8</code>, <code>col-lg-6</code>, <code>col-6</code> indiquent combien de colonnes (sur 12) l’élément occupe à partir du breakpoint indiqué
+    (<code>sm</code> ≥576px, <code>md</code> ≥768px, <code>lg</code> ≥992px, <code>xl</code> ≥1200px, <code>xxl</code> ≥1400px).
+    Sans breakpoint (<code>col-6</code>), la largeur s’applique à <strong>toutes</strong> les largeurs d’écran.
+  </div>
+
+  <h2 class="h6 text-secondary mb-2">Exemple 12 colonnes (bordures visuelles)</h2>
+  <p class="text-muted small mb-2">Chaque cellule est <code>col-1</code> : douze cellules côte à côte sur une ligne complète.</p>
+  <div class="row g-1 mb-4 text-center small">
+    <% 12.times do |i| %>
+      <div class="col-1"><div class="border bg-light py-2"><%= i + 1 %></div></div>
+    <% end %>
+  </div>
+
+  <h2 class="h6 text-secondary mb-2">Répartition courante</h2>
+  <div class="row g-2 mb-2">
+    <div class="col-md-8"><div class="border bg-primary-subtle py-3 text-center small"><code>col-md-8</code></div></div>
+    <div class="col-md-4"><div class="border bg-secondary-subtle py-3 text-center small"><code>col-md-4</code></div></div>
+  </div>
+  <div class="row g-2 mb-4">
+    <div class="col-12 col-lg-6"><div class="border py-2 text-center small"><code>col-12 col-lg-6</code> — pleine largeur mobile, moitié à partir de <code>lg</code></div></div>
+    <div class="col-12 col-lg-6"><div class="border py-2 text-center small">Colonne jumelle</div></div>
+  </div>
+
+  <h2 class="h6 text-secondary mb-2"><code>.row</code> en v1 vs v2</h2>
+  <p class="text-muted small mb-0">
+    En v1, <code>bootstrap_and_overrides</code> remettait les marges latérales de <code>.row</code> à <code>unset</code> (héritage Bootstrap 3).
+    En v2 (Bootstrap 5), garde les <code>.row</code> dans un <code>.container</code> / <code>.container-fluid</code> pour que les gouttières négatives fonctionnent ;
+    pour supprimer l’espace entre colonnes, utilise <code>g-0</code> sur la ligne (équivalent moderne du vieux <code>.no-gutter</code>).
+  </p>
+</div>
