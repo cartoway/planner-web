@@ -6,6 +6,9 @@ Rails.application.routes.draw do
   mount ApiRoot => '/api'
   mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
+  # Design system / UI previews (Lookbook). Guard avoids boot errors if the gem is omitted from a custom bundle.
+  mount Lookbook::Engine, at: '/lookbook' if defined?(Lookbook::Engine)
+
   authenticated :user, -> user { user.admin? }  do
     match '/delayed_job' => DelayedJobWeb, :anchor => false, :via => [:get, :post]
     mount DelayedJobWeb, at: "/delayed_job"
@@ -126,7 +129,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :destinations
+  resources :destinations do
+    member do
+      post :append_visit
+    end
+  end
   get 'destination/import_template' => 'destinations#import_template'
   get 'destination/import' => 'destinations#import'
   post 'destinations/upload_csv' => 'destinations#upload_csv', :as => 'destinations_import_csv'

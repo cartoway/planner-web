@@ -1429,6 +1429,9 @@ fr:
       duration_default: défaut
       duration_help: 'Durée appliquée une seule fois par destination quelque soit le nombre de visites successives.Si vide utilise la valeur par défaut, format hh:mm:ss'
       locate_manually: Positionner manuellement sur la carte
+      v2_list_map_position_help: "Utilisez le bouton réticule pour activer le déplacement de l'épingle sur la carte en arrière-plan (glisser-déposer ou clic sur la carte) ; les champs latitude et longitude ci-dessous se mettent à jour automatiquement (6 décimales, comme les exports et les API). Cliquez de nouveau sur le bouton (icône en croix) pour terminer."
+      v2_map_position_drag_enable: Déplacer l'épingle sur la carte
+      v2_map_position_drag_disable: Arrêter le déplacement de l'épingle
       geocoding_accuracy_none: Non applicable
       geocoding_fail: Le géocodage a échoué
       geocoding_accuracy_help: Qualité de la conversion de l'adresse vers la position géographique
@@ -3345,6 +3348,12 @@ fr:
       force_position_help: Position de la visite au sein de la tournée
       delete: Marquer à supprimer
       delete_help: Supprimer cette visite (le client sera conservé)
+      delete_visit: Supprimer visite
+      delete_visit_help: Supprimer définitivement cette visite (la destination est conservée)
+      delete_visit_confirm: Supprimer définitivement cette visite ?
+      delete_visit_error_validation: La visite n'a pas pu être supprimée (contraintes ou erreurs de validation).
+      delete_visit_error_request: La demande a échoué. Veuillez réessayer.
+      delete_visit_error_network: Erreur réseau. Veuillez réessayer.
     priority_level:
       high: Haute
       medium: Normale
@@ -3438,6 +3447,8 @@ fr:
   v2:
     layout:
       form_sidebar_aria: Panneau latéral de formulaire
+      form_sidebar_placeholder: "Astuce : utilisez le bouton crayon d'une ligne pour ouvrir le formulaire de modification ici."
+      form_sidebar_close: Fermer le panneau latéral
   web:
     key_not_found: Votre clé de connexion n'est pas reconnue
     slow_browser: >-
@@ -3449,6 +3460,8 @@ fr:
       empty_entry: '- Non renseigné -'
       from_time: de
       to_time: à
+      time_window_start_label: Début
+      time_window_end_label: Fin
       days: J+
       helpers:
         street: 'Numéro et nom de voie, ex. 18 rue de la paix'
