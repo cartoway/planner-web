@@ -35,6 +35,96 @@ import {
   fake_select2,
   progressDialog
 } from '../../assets/javascripts/ajax';
+
+/**
+ * Wire visit (and store-reload) fieldsets: destroy toggle, timeEntry, tag select2, priority slider.
+ * Used by destinations_form (Paloma) and by v2 Turbo sidebar via mountV2DestinationSidebarForm.
+ * @param {JQuery} parent - form or fieldset subtree
+ * @param {{tag_entity_create_allowed?: boolean}} opts
+ */
+function initDestinationVisitsSection(parent, opts) {
+  opts = opts || {};
+  var tagEntityCreateAllowed = opts.tag_entity_create_allowed === true;
+
+  $('.flag-destroy', parent).click(function() {
+    var fieldset = $(this).closest('fieldset');
+    $("input:checkbox", fieldset).prop("checked", function(i, val) {
+      return !val;
+    });
+    $('.checkbox-destroy', fieldset).toggleClass('d-none', 200);
+  });
+
+  $('[name$=\\[duration\\]]', parent).timeEntry({
+    show24Hours: true,
+    showSeconds: true,
+    initialField: 1,
+    defaultTime: '00:00:00',
+    spinnerImage: ''
+  });
+
+  $('[name$=\\[time_window_start_1\\]], [name$=\\[time_window_end_1\\]], [name$=\\[time_window_start_2\\]], [name$=\\[time_window_end_2\\]]', parent).timeEntry({
+    show24Hours: true,
+    spinnerImage: '',
+    defaultTime: '00:00'
+  });
+
+  $('[name$=\\[time_window_start\\]], [name$=\\[time_window_end\\]]', parent).timeEntry({
+    show24Hours: true,
+    spinnerImage: '',
+    defaultTime: '00:00'
+  });
+
+  var formatNoMatches = I18n.t('web.select2.empty_result');
+  var visitTagSelect2Opts = {
+    theme: 'bootstrap',
+    minimumResultsForSearch: -1,
+    templateSelection: templateTag,
+    templateResult: templateTag,
+    formatNoMatches: function() {
+      return formatNoMatches;
+    },
+    width: '100%',
+    closeOnSelect: false
+  };
+  if (tagEntityCreateAllowed) {
+    visitTagSelect2Opts.tags = true;
+    visitTagSelect2Opts.createTag = function(params) {
+      var term = $.trim(params.term);
+      if (term === '') return null;
+      return {
+        id: term,
+        newTag: true,
+        text: term + ' ( + ' + I18n.t('web.select2.new') + ')'
+      };
+    };
+  }
+
+  var $visitTags = $('select[name$=\\[tag_ids\\]\\[\\]]', parent).filter(function () {
+    return $(this).closest('[data-controller~="v2--tom-select"]').length === 0
+  }).select2(visitTagSelect2Opts).on('select2:open', function(e) {
+    $(e.target).parent().find('.select2-search__field').attr('placeholder', I18n.t('web.select2.placeholder'));
+  }).on('select2:close', function(e) {
+    $(e.target).parent().find('.select2-search__field').attr('placeholder', '');
+  });
+  if (tagEntityCreateAllowed) {
+    $visitTags.on('select2:selecting', function(e) {
+      selectTag(e);
+    });
+  }
+
+  // v2 uses native Bootstrap range (input.form-range); only legacy text fields get bootstrap-slider.
+  $('input[type="text"][name$="[priority]"]', parent).slider({
+    ticks: [-4, 0, 4],
+    ticks_labels: [
+      I18n.t('visits.priority_level.low'),
+      I18n.t('visits.priority_level.medium'),
+      I18n.t('visits.priority_level.high')
+    ],
+    step: 4,
+    ticks_snap_bounds: 4
+  });
+}
+
 const destinations_form = function(params, api) {
   var destination_id = params.destination_id,
     marker_lat = $(":input[name$=\\[lat\\]]").val(),
@@ -364,7 +454,7 @@ const destinations_form = function(params, api) {
       .replace(/isit0/g, 'isit' + ($fieldsets.length + 1))
       .replace(/destination([\[_])visits([^0]+)0([\]_])/g, "destination$1visits$2" + ($fieldsets.length + 1) + "$3")
     );
-    initVisits($('#visits').find('fieldset:last-child'));
+    initDestinationVisitsSection($('#visits').find('fieldset:last-child'), { tag_entity_create_allowed: params.tag_entity_create_allowed === true });
   });
 
   $('#store_reload-new').click(function() {
@@ -376,100 +466,18 @@ const destinations_form = function(params, api) {
       .replace(/store_reload0/g, 'store_reload' + ($fieldsets.length + 1))
       .replace(/store([\[_])store_reloads([^0]+)0([\]_])/g, "store$1store_reloads$2" + ($fieldsets.length + 1) + "$3")
     );
-    initVisits($('#store_reloads').find('fieldset:last-child'));
+    initDestinationVisitsSection($('#store_reloads').find('fieldset:last-child'), { tag_entity_create_allowed: params.tag_entity_create_allowed === true });
   });
 
   $("label[for$='destroy']").hide();
 
-  const initVisits = function(parent) {
-    var tagEntityCreateAllowed = params.tag_entity_create_allowed === true;
-
-    $('.flag-destroy', parent).click(function() {
-      var fieldset = $(this).closest('fieldset');
-      $("input:checkbox", fieldset).prop("checked", function(i, val) {
-        return !val;
-      });
-      $('.checkbox-destroy', fieldset).toggleClass('d-none', 200);
-      // $("label[for$='destroy']", fieldset).toggle(200);
-      // $("div.row.form-group", fieldset).toggle(200);
-    });
-
-    $('[name$=\\[duration\\]]', parent).timeEntry({
-      show24Hours: true,
-      showSeconds: true,
-      initialField: 1,
-      defaultTime: '00:00:00',
-      spinnerImage: ''
-    });
-
-    // Visits
-    $('[name$=\\[time_window_start_1\\]], [name$=\\[time_window_end_1\\]], [name$=\\[time_window_start_2\\]], [name$=\\[time_window_end_2\\]]', parent).timeEntry({
-      show24Hours: true,
-      spinnerImage: '',
-      defaultTime: '00:00'
-    });
-
-    // Store reloads
-    $('[name$=\\[time_window_start\\]], [name$=\\[time_window_end\\]]', parent).timeEntry({
-      show24Hours: true,
-      spinnerImage: '',
-      defaultTime: '00:00'
-    });
-
-    var formatNoMatches = I18n.t('web.select2.empty_result');
-    var visitTagSelect2Opts = {
-      theme: 'bootstrap',
-      minimumResultsForSearch: -1,
-      templateSelection: templateTag,
-      templateResult: templateTag,
-      formatNoMatches: function() {
-        return formatNoMatches;
-      },
-      width: '100%',
-      closeOnSelect: false
-    };
-    if (tagEntityCreateAllowed) {
-      visitTagSelect2Opts.tags = true;
-      visitTagSelect2Opts.createTag = function(params) {
-        var term = $.trim(params.term);
-        if (term === '') return null;
-        return {
-          id: term,
-          newTag: true,
-          text: term + ' ( + ' + I18n.t('web.select2.new') + ')'
-        };
-      };
-    }
-
-    var $visitTags = $('select[name$=\\[tag_ids\\]\\[\\]]', parent).select2(visitTagSelect2Opts).on('select2:open', function(e) {
-      $(e.target).parent().find('.select2-search__field').attr('placeholder', I18n.t('web.select2.placeholder'));
-    }).on('select2:close', function(e) {
-      $(e.target).parent().find('.select2-search__field').attr('placeholder', '');
-    });
-    if (tagEntityCreateAllowed) {
-      $visitTags.on('select2:selecting', function(e) {
-        selectTag(e);
-      });
-    }
-
-    $('[name$=\\[priority\\]]', parent).slider({
-      ticks: [-4, 0, 4],
-      ticks_labels: [
-        I18n.t('visits.priority_level.low'),
-        I18n.t('visits.priority_level.medium'),
-        I18n.t('visits.priority_level.high')
-      ],
-      step: 4,
-      ticks_snap_bounds: 4
-    });
-  };
-  initVisits($('form[data-destination_id]'));
+  initDestinationVisitsSection($('form[data-destination_id]'), { tag_entity_create_allowed: params.tag_entity_create_allowed === true });
 
   if (window.location.hash) {
-    $('#visits, #store_reloads').find('.collapse.in').each(function() {
+    $('#visits, #store_reloads').find('.collapse.in, .collapse.show').each(function() {
       var $this = $(this);
       if (window.location.hash != '#' + $this.attr('id'))
-        $this.removeClass('in');
+        $this.removeClass('in show');
     });
     $("#visits, #store_reloads").find(".accordion-toggle[href!='" + window.location.hash + "']").addClass('collapsed');
   }
@@ -477,7 +485,17 @@ const destinations_form = function(params, api) {
   var op = 'show';
   $('#visits-expand, #store_reloads-expand').click(function() {
     op = (op == 'show') ? 'hide' : 'show';
-    $('#visits .collapse, #store_reloads .collapse').collapse(op);
+    var show = op === 'show';
+    var $collapses = $('#visits .collapse, #store_reloads .collapse');
+    if (typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
+      $collapses.each(function() {
+        var inst = bootstrap.Collapse.getOrCreateInstance(this, { toggle: false });
+        if (show) inst.show();
+        else inst.hide();
+      });
+    } else {
+      $collapses.collapse(op);
+    }
   });
 
   $('#from_visit_tags, #to_visit_tags').select2({
@@ -759,7 +777,9 @@ const destinations_index = function(params, api) {
         });
 
       var formatNoMatches = I18n.t('web.select2.empty_result');
-      fake_select2($('select[name$=\\[tag_ids\\]\\[\\]]', $row), function(select) {
+      fake_select2($('select[name$=\\[tag_ids\\]\\[\\]]', $row).filter(function () {
+        return $(this).closest('[data-controller~="v2--tom-select"]').length === 0
+      }), function(select) {
         select.select2({
           theme: 'bootstrap',
           minimumResultsForSearch: -1,
@@ -1388,6 +1408,53 @@ const destinations_index = function(params, api) {
     error: ajaxError
   });
 };
+
+/**
+ * V2 layout: destination edit/new in turbo-frame#form_sidebar — Paloma is stubbed, so destinations_form never runs.
+ * Wire visits UI (same as initDestinationVisitsSection + visit-new + bulk modal) scoped under root (the frame).
+ * Note: `#visits-expand` is handled by Stimulus `v2--visit-collapses` on v2 pages (hotwire entry does not import this bundle).
+ */
+export function mountV2DestinationSidebarForm(root) {
+  if (!root || typeof $ === 'undefined') return;
+  var $root = $(root);
+  var $form = $root.find('#destination-form-sidebar');
+  if (!$form.length) return;
+
+  var tagEntityCreateAllowed = $form.data('tagEntityCreateAllowed') === true;
+  var visitOpts = { tag_entity_create_allowed: tagEntityCreateAllowed };
+
+  initDestinationVisitsSection($form, visitOpts);
+
+  $root.find('#from_visit_tags, #to_visit_tags').each(function() {
+    var $el = $(this);
+    if ($el.hasClass('select2-hidden-accessible')) {
+      try {
+        $el.select2('destroy');
+      } catch (e) { /* ignore */ }
+    }
+  });
+
+  $root.off('click.v2desvis', '[name="visits-attributes-change-bulk-apply"]').on('click.v2desvis', '[name="visits-attributes-change-bulk-apply"]', function() {
+    var fromTags = $root.find('#from_visit_tags').val(),
+      toTags = $root.find('#to_visit_tags').val(),
+      $visitTags = $root.find('#visits select[name$="[tag_ids][]"]');
+    for (var i in fromTags) {
+      $visitTags.each(function(j, elt) {
+        if ($('option[value=' + fromTags[i] + ']', elt).attr('selected')) {
+          $('option[value=' + fromTags[i] + ']', elt).removeAttr('selected');
+          $('option[value=' + toTags[i] + ']', elt).attr('selected', 'selected');
+          $(elt).change();
+        }
+      });
+    }
+  });
+
+  $("label[for$='destroy']", $form).hide();
+}
+
+if (typeof window !== 'undefined') {
+  window.mountV2DestinationSidebarForm = mountV2DestinationSidebarForm;
+}
 
 export const destinations_new = function(params, api) {
   destinations_form(params, api);

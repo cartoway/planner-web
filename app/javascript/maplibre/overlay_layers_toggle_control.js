@@ -5,7 +5,7 @@ const DEFAULT_ROOT_CLASS = 'maplibregl-ctrl maplibregl-ctrl-group cartoway-mapli
 
 /**
  * @param {{ layerId: string, name: string, initialVisible?: boolean }[]} overlaySpecs
- * @param {string} summaryTitle - <details> summary label
+ * @param {string} summaryTitle - native tooltip + aria-label on the summary control (no visible text)
  * @param {{ rootClass?: string, summaryClass?: string, bodyClass?: string, inputIdPrefix?: string }} [options]
  */
 export function OverlayLayersToggleIControl (overlaySpecs, summaryTitle, options = {}) {
@@ -23,7 +23,12 @@ OverlayLayersToggleIControl.prototype.onAdd = function (map) {
   const details = document.createElement('details')
   const summary = document.createElement('summary')
   summary.className = this._summaryClass
-  summary.textContent = this._summaryTitle
+  summary.setAttribute('title', this._summaryTitle)
+  summary.setAttribute('aria-label', this._summaryTitle)
+  const icon = document.createElement('i')
+  icon.className = 'fa fa-layer-group fa-fw'
+  icon.setAttribute('aria-hidden', 'true')
+  summary.appendChild(icon)
   const body = document.createElement('div')
   body.className = this._bodyClass
   const prefix = this._inputIdPrefix

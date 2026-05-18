@@ -279,17 +279,21 @@
                   .hidden-menu
                     = t 'devise.registrations.new.sign_up'
 
-      .main{ class: ('main--form-sidebar' if content_for?(:form_sidebar)) }
+      .main.main--form-sidebar
         %div
           %iframe{name: "click2call_iframe", style: "display: none"}
         .main-primary
           = turbo_frame_tag "main" do
             = yield
-        -# Optional right column: use content_for(:form_sidebar) in the view (e.g. render "form", f: f).
-        - if content_for?(:form_sidebar)
-          %aside.v2-form-sidebar.hidden-print{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria') }
-            .v2-form-sidebar-inner
-              = yield :form_sidebar
+        %aside.v2-form-sidebar.v2-form-sidebar--collapsed.hidden-print{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria'), data: { controller: 'v2--form-sidebar' } }
+          .v2-form-sidebar-chrome.d-none{ data: { 'v2--form-sidebar-target': 'chrome' } }
+            %button.btn-close.v2-form-sidebar-close{ type: 'button', title: t('v2.layout.form_sidebar_close'), 'aria-label': t('v2.layout.form_sidebar_close'), data: { action: 'v2--form-sidebar#close' } }
+          .v2-form-sidebar-inner
+            = turbo_frame_tag 'form_sidebar', data: { 'v2--form-sidebar-target': 'frame' } do
+              - if content_for?(:form_sidebar)
+                = yield :form_sidebar
+        %template#v2-form-sidebar-placeholder-template
+          = render 'v2/layouts/form_sidebar_placeholder'
       %footer.hidden-print
     #default-modal.modal.bootstrap-dialog.type-primary.fade.size-small.in{"aria-hidden": "false", "data-backdrop": "static", "data-bs-toggle": "modal", role: "dialog", style: "display:none;", tabindex: "-1"}
       .modal-dialog
