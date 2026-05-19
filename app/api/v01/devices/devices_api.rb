@@ -39,7 +39,7 @@ class V01::Devices::DevicesApi < Grape::API
         requires :id, type: Integer, desc: 'Customer ID as we need to get customer devices'
       end
       get 'auth/:id' do
-        device = @current_customer.device.enableds[params[:device]]
+        device = @current_customer.device.enableds[params[:device].to_sym]
         if device && device.respond_to?('check_auth')
           require_params = device.respond_to?('definition') && device.definition[:forms][:settings] && device.definition[:forms][:settings].keys
           if require_params && require_params.all?{ |k| params.keys.include? k }
@@ -63,7 +63,7 @@ class V01::Devices::DevicesApi < Grape::API
         optional :type, type: Symbol, desc: 'Action Name'
       end
       post 'send' do
-        device = @current_customer.device.enableds[params[:device]]
+        device = @current_customer.device.enableds[params[:device].to_sym]
         if device && device.respond_to?('send_route')
           Route.transaction do
             route = Route.for_customer_id(@current_customer.id).find params[:route_id]

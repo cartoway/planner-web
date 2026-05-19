@@ -54,19 +54,12 @@ class Praxedo < DeviceBase
   # end
 
   def savon_client_events(customer)
-    Savon.client({basic_auth: [customer.devices[:praxedo][:login], customer.devices[:praxedo][:password]], wsdl: api_url + 'cxf/v6/BusinessEventManager?wsdl', env_namespace: :soapenv, soap_version: 2, multipart: true, proxy: ENV['http_proxy']}.compact) do
-      log false
-      pretty_print_xml true
-      convert_request_keys_to :none
-    end
+    creds = customer.devices[:praxedo]
+    Savon.client(praxedo_savon_options([creds[:login], creds[:password]]))
   end
 
   def check_auth(params)
-    client = Savon.client({basic_auth: [params[:login], params[:password]], wsdl: api_url + 'cxf/v6/BusinessEventManager?wsdl', env_namespace: :soapenv, soap_version: 2, multipart: true, proxy: ENV['http_proxy']}.compact) do
-      log false
-      pretty_print_xml true
-      convert_request_keys_to :none
-    end
+    client = Savon.client(praxedo_savon_options([params[:login], params[:password]]))
 
     get(client, :get_events, {
       requestedEvents: ['']
@@ -272,6 +265,20 @@ class Praxedo < DeviceBase
   end
 
   private
+
+  def praxedo_savon_options(basic_auth)
+    {
+      basic_auth: basic_auth,
+      wsdl: api_url + 'cxf/v6/BusinessEventManager?wsdl',
+      env_namespace: :soapenv,
+      soap_version: 2,
+      multipart: true,
+      log: false,
+      pretty_print_xml: true,
+      convert_request_keys_to: :none,
+      proxy: ENV['http_proxy']
+    }.compact
+  end
 
   def get(client, operation, message = {})
     response = client.call(operation, { message: message })
