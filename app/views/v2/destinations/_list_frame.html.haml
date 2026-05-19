@@ -1,20 +1,28 @@
 -# V2 destinations index list + pagination — wrapped for Turbo Frame partial updates (see destinations#index).
+- can_destroy_destinations = current_user_form_destroy_enabled?(:destination)
 = turbo_frame_tag "destinations_list" do
   .d-flex.justify-content-between.align-items-center.mb-2.p-3
-    = link_to new_destination_path, class: 'btn btn-primary btn-sm', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
-      %i.fa.fa-plus.fa-fw
-      = t 'destinations.index.new'
+    .d-flex.gap-2.align-items-center
+      = link_to new_destination_path, class: 'btn btn-primary btn-sm', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
+        %i.fa.fa-plus.fa-fw
+        = t 'destinations.index.new'
+      %button.btn.btn-danger.btn-sm.destinations-bulk-delete{type: "button", disabled: !can_destroy_destinations, title: t('all.verb.destroy_selection')}
+        %i.fa.fa-trash.fa-fw
+        = t('all.verb.destroy_selection')
     %span#count= "#{@destinations.size} / #{@total_count} #{t 'activerecord.models.destinations', count: @total_count}"
-  %button.btn.btn-default.btn-sm.destinations-sidebar-toggle{type: "button", title: t('destinations.index.collapse_list', default: 'Réduire la liste')}
+  %button.btn.btn-light.btn-sm.destinations-sidebar-toggle{type: "button", title: t('destinations.index.collapse_list', default: 'Réduire la liste')}
     %i.fa.fa-chevron-left
   .destinations-sidebar-expand.d-none
-    %button.btn.btn-default.btn-sm{type: "button", title: t('destinations.index.expand_list', default: 'Afficher la liste')}
+    %button.btn.btn-light.btn-sm{type: "button", title: t('destinations.index.expand_list', default: 'Afficher la liste')}
       %i.fa.fa-chevron-right
   #destination_box.destinations-list-scroll
     .table-responsive
       %table.table.table-striped.table-condensed
         %thead
           %tr
+            %th.destinations-selection-col
+              %button.btn.btn-light.btn-xs.destinations-toggle-selection{type: "button", title: t('all.verb.toggle_selection')}
+                %i.fa.fa-check.fa-fw
             %th= t 'activerecord.attributes.destination.name'
             %th= t 'activerecord.attributes.destination.address'
             - if @customer.enable_references
@@ -26,6 +34,8 @@
           - if @destinations.any?
             - @destinations.each do |destination|
               %tr.destination{data: {destination_id: destination.id, lat: destination.lat, lng: destination.lng}}
+                %td.destinations-selection-col
+                  %input{type: "checkbox", id: "destination_#{destination.id}", name: "destinations[#{destination.id}]", value: "1"}
                 %td= destination.name
                 %td= [destination.street, destination.postalcode, destination.city, destination.country].compact.join(' ')
                 - if @customer.enable_references
@@ -36,12 +46,15 @@
                   - else
                     –
                 %td= "#{destination.visits.count} #{t 'activerecord.models.visits', count: destination.visits.count}"
-                %td
-                  = link_to edit_destination_path(destination), class: 'btn btn-default btn-xs', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
-                    %i.fa.fa-pencil
+                %td.text-nowrap
+                  .btn-group.btn-group-sm{role: "group"}
+                    = link_to edit_destination_path(destination), class: 'btn btn-light btn-xs', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
+                      %i.fa.fa-pencil.fa-fw
+                    %button.btn.btn-danger.btn-xs.destinations-row-delete{type: "button", disabled: !can_destroy_destinations, title: t('all.verb.destroy'), data: { destination_id: destination.id }}
+                      %i.fa.fa-trash.fa-fw
           - else
             %tr
-              %td.text-center.text-muted{colspan: (@customer.enable_references ? 6 : 5)}
+              %td.text-center.text-muted{colspan: (@customer.enable_references ? 7 : 6)}
                 = t 'api_web.v01.destinations.index.none_destinations', default: 'Aucune destination trouvée'
 
     - if @pagination[:per_page].positive? && @pagination[:total] > @pagination[:per_page]
@@ -51,17 +64,17 @@
         %ul.pagination.pagination-sm.justify-content-center
           %li{class: ('disabled' if @pagination[:page] <= 1)}
             - if @pagination[:page] > 1
-              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] - 1)), class: 'btn btn-default btn-sm', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
+              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] - 1)), class: 'btn btn-light btn-sm', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
                 %i.fa.fa-chevron-left
             - else
-              %span.btn.btn-default.btn-sm.disabled
+              %span.btn.btn-light.btn-sm.disabled
                 %i.fa.fa-chevron-left
           %li.disabled
-            %span.btn.btn-default.btn-sm= "#{@pagination[:page]} / #{total_pages}"
+            %span.btn.btn-light.btn-sm= "#{@pagination[:page]} / #{total_pages}"
           %li{class: ('disabled' if @pagination[:page] >= total_pages)}
             - if @pagination[:page] < total_pages
-              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] + 1)), class: 'btn btn-default btn-sm', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
+              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] + 1)), class: 'btn btn-light btn-sm', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
                 %i.fa.fa-chevron-right
             - else
-              %span.btn.btn-default.btn-sm.disabled
+              %span.btn.btn-light.btn-sm.disabled
                 %i.fa.fa-chevron-right

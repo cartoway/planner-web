@@ -236,6 +236,18 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#destinations_list tr.destination', assigns(:destinations).size
   end
 
+  test 'v2 index list renders selection checkboxes and destroy controls' do
+    get :index
+    assert_response :success
+    assert_match(/"can_destroy":true/, response.body)
+    assert_select 'turbo-frame#destinations_list .destinations-toggle-selection', 1
+    assert_select 'turbo-frame#destinations_list .destinations-bulk-delete', 1
+    assert_select 'turbo-frame#destinations_list tr.destination input[type=checkbox][name^="destinations"]',
+                  assigns(:destinations).size
+    assert_select 'turbo-frame#destinations_list button.destinations-row-delete',
+                  assigns(:destinations).size
+  end
+
   test 'should filter destinations by key value search' do
     get :index, params: { q: 'city:Bordeau' }
     assert_response :success
