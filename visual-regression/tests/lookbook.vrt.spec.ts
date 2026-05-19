@@ -2,7 +2,7 @@
 // Lookbook preview paths: Lookbook drops the `Preview` suffix from the Ruby class name for the URL segment.
 
 import { test, expect } from '@playwright/test'
-import { assertCartowayStylesheetsLoaded } from './lookbook-assets'
+import { assertCartowayStylesheetsLoaded, waitForLookbookFonts } from './lookbook-assets'
 
 const LOOKBOOK_PREVIEWS: { path: string; name: string }[] = [
   { path: 'design_system/foundation/default', name: 'foundation-default' },
@@ -43,7 +43,7 @@ for (const { path, name } of LOOKBOOK_PREVIEWS) {
     await page.goto(url, { waitUntil: 'load' })
     await expect(page.locator('body')).toBeVisible()
     await assertCartowayStylesheetsLoaded(page)
-    await page.evaluate(() => document.fonts.ready)
+    await waitForLookbookFonts(page)
     await expect(page.locator('body')).toHaveScreenshot(`${name}.png`, { timeout: 60_000 })
   })
 }
