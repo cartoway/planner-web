@@ -1,0 +1,12 @@
+{
+  "name": "planner-web-visual-regression",
+  "private": true,
+  "description": "Playwright visual snapshots for Lookbook previews (run from repo root in CI).",
+  "scripts": {
+    "test": "playwright test",
+    "test:update": "playwright test --update-snapshots"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.49.1"
+  }
+}
