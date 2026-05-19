@@ -78,6 +78,14 @@ Commit the files under `tests/lookbook.vrt.spec.ts-snapshots/*.png`.
 
 **Important:** regenerate snapshots on **Linux** (or the same image as GitHub Actions) to avoid macOS ↔ Linux drift described in [this article](https://medium.com/@haleywardo/streamlining-playwright-visual-regression-testing-with-github-actions-e077fd33c27c).
 
+### Typography drift (e.g. `≥` on `grid_layout-rows_and_columns`)
+
+The preview text is `≥576px` in HTML — **no space character** between `≥` and the digits. Any gap you see on CI comes from **Montserrat** glyph metrics (side-bearing), not from extra markup.
+
+If Montserrat from Google Fonts is not loaded before the screenshot, Chromium uses a **system fallback** (`system-ui`, etc.): the `≥` often looks **smaller** and **tighter** against the following digits (no apparent space). CI runners usually fetch Google Fonts reliably during `npx playwright install --with-deps` + the test run.
+
+Tests call `waitForLookbookFonts()` after stylesheets load to force Montserrat before `toHaveScreenshot`. If that throws locally, fix network access to `fonts.googleapis.com` or regenerate baselines on CI.
+
 ## CI
 
 The `lookbook_visual` job in `.github/workflows/rubyonrails.yml` runs `npx playwright test`. On failure, the HTML report is published as the `lookbook-playwright-report` artifact.
