@@ -1,5 +1,5 @@
 // Copyright © Cartoway
-// Lookbook preview shell — Font Awesome only; Bootstrap 5 comes from CDN.
+// Lookbook preview shell — Font Awesome; Bootstrap 5 + Cartoway v2 tokens.
 @import "font-awesome";
 
 // Mirrors v2/application.scss — compact tables in list frames.
@@ -20,3 +20,5 @@
     }
   }
 }
+
+@import "v2/lookbook_planning_preview";

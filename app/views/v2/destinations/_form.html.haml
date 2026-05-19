@@ -95,7 +95,7 @@
             - if show_map_drag_toggle
               - drag_idle = df.call('v2_map_position_drag_enable')
               - drag_active = df.call('v2_map_position_drag_disable')
-              %button.btn.btn-default.border-0.rounded-0.h-100{type: 'button', title: drag_idle, data: { v2_map_position_drag_toggle: true, title_idle: drag_idle, title_active: drag_active }, 'aria-pressed': 'false'}
+              %button.btn.btn-light.border-0.rounded-0.h-100{type: 'button', title: drag_idle, data: { v2_map_position_drag_toggle: true, title_idle: drag_idle, title_active: drag_active }, 'aria-pressed': 'false'}
                 %i.fa.fa-location-crosshairs.fa-fw{"aria-hidden": "true"}
             - else
               .d-flex.align-items-center.px-2
@@ -116,7 +116,7 @@
         .col-md-2
         #visits-tools.col-xs-12.col-md-10
           .pull-right
-            %button#visits-expand.btn.btn-default.btn-sm{type: "button", title: "#{t('destinations.form.visit.collapse_all_help')}", data: {action: "v2--visit-collapses#toggleAll"}}
+            %button#visits-expand.btn.btn-light.btn-sm{type: "button", title: "#{t('destinations.form.visit.collapse_all_help')}", data: {action: "v2--visit-collapses#toggleAll"}}
               %i.fa.fa-angle-double-down.fa-fw
               = t('destinations.form.visit.collapse_all')
         .col-md-2
@@ -124,15 +124,15 @@
       = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_control_col: v2_control_col
   - if @destination.persisted?
     - if dest_form_mutable
-      = link_to append_visit_destination_path(@destination), class: 'btn btn-default btn-sm', id: 'visit-new', role: 'button', title: "#{t('destinations.form.visit.new_help')}", data: { turbo_method: :post, turbo_frame: 'form_sidebar', turbo_prefetch: false } do
+      = link_to append_visit_destination_path(@destination), class: 'btn btn-light btn-sm', id: 'visit-new', role: 'button', title: "#{t('destinations.form.visit.new_help')}", data: { turbo_method: :post, turbo_frame: 'form_sidebar', turbo_prefetch: false } do
         %i.fa.fa-plus.fa-fw
         = t('destinations.form.visit.new')
     - else
-      %button#visit-new.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button", disabled: true}
+      %button#visit-new.btn.btn-light.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button", disabled: true}
         %i.fa.fa-plus.fa-fw
         = t('destinations.form.visit.new')
   - else
-    %button#visit-new.btn.btn-default.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button", disabled: true}
+    %button#visit-new.btn.btn-light.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button", disabled: true}
       %i.fa.fa-plus.fa-fw
       = t('destinations.form.visit.new')
   = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
@@ -157,7 +157,7 @@
               %p.help-block
                 = t('destinations.form.dialog.attributes_change_bulk.tags_help')
       .modal-footer
-        %button.btn.btn-default{type: "button", "data-bs-dismiss": "modal"}
+        %button.btn.btn-light{type: "button", "data-bs-dismiss": "modal"}
           %i.fa.fa-undo.fa-fw
           = t 'all.verb.cancel'
         %button.btn.btn-primary{type: "button", "data-bs-dismiss": "modal", name: "visits-attributes-change-bulk-apply", disabled: !dest_form_mutable}
