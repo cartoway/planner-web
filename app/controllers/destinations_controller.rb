@@ -37,7 +37,7 @@ class DestinationsController < ApplicationController
     @customer = current_user.customer
     respond_to do |format|
       format.html do
-        per_page = [[(params[:per_page] || 25).to_i, 1].max, 100].min
+        per_page = (params[:per_page] || 25).to_i.clamp(1, 100)
         page = [params[:page].to_i, 1].max
         scope = current_user.customer.destinations
                             .reorder('geocoding_accuracy ASC NULLS LAST')
@@ -84,7 +84,7 @@ class DestinationsController < ApplicationController
       format.excel do
         @destinations = current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes([:tags, visits: :tags])
         @tags = current_user.customer.tags
-        send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
+        send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
             type: 'text/csv',
             filename: format_filename(t('activerecord.models.destinations.other')) + '.csv',
             disposition: params.key?(:disposition) ? params[:disposition] : 'attachment'
@@ -202,7 +202,7 @@ class DestinationsController < ApplicationController
   def import_template
     respond_to do |format|
       format.excel do
-        send_data Iconv.iconv("#{I18n.t('encoding')}//translit//ignore", 'utf-8', render_to_string).join(''),
+        send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
             type: 'text/csv',
             filename: format_filename('import_template.csv'),
             disposition: params.key?(:disposition) ? params[:disposition] : 'attachment'
@@ -362,14 +362,20 @@ class DestinationsController < ApplicationController
         :_destroy,
         tag_ids: [],
         quantities: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
-        quantities_operations: current_user.customer.deliverable_units.map{ |du| du.id.to_s }
+        quantities_operations: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
+        deliveries: current_user.customer.deliverable_units.map{ |du| du.id.to_s },
+        pickups: current_user.customer.deliverable_units.map{ |du| du.id.to_s }
       ]
     )
-    o[:visits_attributes].each do |_k, v|
-      v[:quantities_operations].each{ |k, qo|
-        v[:quantities][k] = "#{-v[:quantities][k].to_f}" if v[:quantities][k].to_f > 0 && qo.to_sym == :empty
-      } if v && v[:quantities_operations]
-    end if o[:visits_attributes]
+    if o[:visits_attributes]
+      o[:visits_attributes].each_value do |v|
+        next unless v && v[:quantities_operations]
+
+        v[:quantities_operations].each do |k, qo|
+          v[:quantities][k] = "#{-v[:quantities][k].to_f}" if v[:quantities][k].to_f > 0 && qo.to_sym == :empty
+        end
+      end
+    end
     o
   end
 

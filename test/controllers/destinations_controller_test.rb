@@ -1,6 +1,23 @@
 require 'test_helper'
 
 class DestinationsControllerTest < ActionController::TestCase
+  # data-config JSON is HTML-escaped in the v2 index (e.g. &quot;key&quot;:value).
+  def assert_map_config_json_key(key, value = nil)
+    if value.nil?
+      assert(
+        response.body.include?("\"#{key}\":") || response.body.include?("&quot;#{key}&quot;:"),
+        "Expected map config to include #{key}"
+      )
+    else
+      raw = "\"#{key}\":#{value.is_a?(String) ? %("#{value}") : value}"
+      escaped = "&quot;#{key}&quot;:#{value.is_a?(String) ? %(&quot;#{value}&quot;) : value}"
+      assert(
+        response.body.include?(raw) || response.body.include?(escaped),
+        "Expected map config to include #{raw}"
+      )
+    end
+  end
+
   setup do
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
@@ -50,13 +67,13 @@ class DestinationsControllerTest < ActionController::TestCase
     payload = assigns(:v2_map_destinations)
     assert payload.is_a?(Array)
     assert(payload.all? { |h| h[:page].present? && h[:id].present? })
-    assert_match('"page":', response.body)
+    assert_map_config_json_key('page')
   end
 
   test 'v2 index embeds highlight_destination_id in map config when requested' do
     get :index, params: { highlight_destination_id: @destination.id }
     assert_response :success
-    assert_match(%("highlight_destination_id":#{@destination.id}), response.body)
+    assert_map_config_json_key('highlight_destination_id', @destination.id)
   end
 
   test 'v2 index paginated list renders only turbo-frame when Turbo-Frame requests destinations_list' do
@@ -224,8 +241,12 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'turbo-frame#form_sidebar .v2-destination-map-position-hint', 1
     assert_select 'turbo-frame#form_sidebar #map.map-fixed-size', 0
-    assert_select 'turbo-frame#form_sidebar input#destination_lat[step="0.000001"]', 1
-    assert_select 'turbo-frame#form_sidebar input#destination_lng[step="0.000001"]', 1
+    lat = css_select('turbo-frame#form_sidebar input#destination_lat').first
+    lng = css_select('turbo-frame#form_sidebar input#destination_lng').first
+    assert lat, 'expected destination lat input in form sidebar'
+    assert lng, 'expected destination lng input in form sidebar'
+    assert_in_delta 0.000001, lat['step'].to_f, 1e-12
+    assert_in_delta 0.000001, lng['step'].to_f, 1e-12
     assert_select 'turbo-frame#form_sidebar button[data-v2-map-position-drag-toggle]', 1
   end
 
@@ -239,7 +260,7 @@ class DestinationsControllerTest < ActionController::TestCase
   test 'v2 index list renders selection checkboxes and destroy controls' do
     get :index
     assert_response :success
-    assert_match(/"can_destroy":true/, response.body)
+    assert_map_config_json_key('can_destroy', true)
     assert_select 'turbo-frame#destinations_list .destinations-toggle-selection', 1
     assert_select 'turbo-frame#destinations_list .destinations-bulk-delete', 1
     assert_select 'turbo-frame#destinations_list tr.destination input[type=checkbox][name^="destinations"]',

@@ -38,19 +38,16 @@ export default defineConfig({
       caretColor: 'transparent'
     }
   },
-  // Do not use `rails assets:clobber` here: webpacker hooks require Yarn and can exit 1 after
-  // clearing public/assets, leaving Playwright on a stale Puma (wrong CSS). See bin/lookbook-vrt-server.
+  // CI compiles Webpacker before `npx playwright test`; locally run the same prep (see README).
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : {
-        command: 'bin/lookbook-vrt-server',
+        command: 'bundle exec rails server -e test -p 3001 -b 127.0.0.1',
         cwd: repoRoot,
         env: {
           ...process.env,
           RAILS_ENV: 'test',
           DATABASE_URL: databaseUrl,
-          PORT: '3001',
-          HOST: '127.0.0.1',
           DISABLE_SPRING: '1'
         },
         url: `${baseURL}/lookbook`,

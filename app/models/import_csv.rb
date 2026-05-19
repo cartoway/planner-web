@@ -80,9 +80,12 @@ class ImportCsv
                     }.compact
                     # lat or lng must be set even if empty but only when specified in columns
                     row[key] = values.join(' ') if should_fill_row?(key, r, values)
-                  elsif r.key?(v[:title])
-                    # Import with column name
-                    row[key] = r[v[:title]]
+                  else
+                    # Import with column name (localized title or custom column_def mapping)
+                    header = column_def&.[](key).presence || v[:title]
+                    if header && r.key?(header)
+                      row[key] = r[header]
+                    end
                   end
                 }
               end
