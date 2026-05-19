@@ -8,7 +8,8 @@ module PraxedoBase
         password: 'password',
         code_inter_start: 'START',
         code_inter_stop: 'STOP',
-        code_mat: 'LIST_BAC'
+        code_mat: 'LIST_BAC',
+        code_route: 'ROUTE'
       }
     }
     customer.enable_stop_status = true

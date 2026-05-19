@@ -8,7 +8,7 @@ Screenshots of each Lookbook preview in **headless Chromium**, compared to refer
 - PostgreSQL reachable for `RAILS_ENV=test` (Playwright sets `DATABASE_URL` by default to `postgres://rails:password@127.0.0.1:5433/rails_test` — same as the optional `pg-playwright-test` Docker container on host port **5433**; CI uses **5432** on `localhost`)
 - `yarn` + root dependencies (Webpacker, to match CI)
 - Node **≥ 18** for Playwright
-- Do **not** leave `PLAYWRIGHT_SKIP_WEBSERVER=1` set unless you start Rails yourself with the same prep as `bin/lookbook-vrt-server`
+- Do **not** leave `PLAYWRIGHT_SKIP_WEBSERVER=1` set unless you start Rails yourself on port **3001** with `RAILS_ENV=test`
 
 Example local Postgres (once):
 
@@ -30,22 +30,20 @@ Previews load v2 overrides (e.g. `.btn-secondary` / `.btn-light` in `app/assets/
 |---|-----------------------------------------------|----------------|
 | **Environment** | `RAILS_ENV=production` (docker-compose default) | `RAILS_ENV=test` |
 | **v2 CSS** | Assets **precompiled in the Docker image** (`assets:precompile` at build) | Sprockets **recompiles** from the workspace (`layout_bootstrap_overrides` + imports) |
-| **Port** | 8080 (Puma in the container) | 3001 (`bin/lookbook-vrt-server`) |
+| **Port** | 8080 (Puma in the container) | 3001 (Playwright `webServer`) |
 
 These are **not** the same process or asset pipeline. A correct Lookbook on **8080** does not guarantee valid snapshots on **3001**.
 
-### Bootstrap-only screenshots (stale server / failed clobber)
+### Bootstrap-only screenshots (stale server)
 
 Symptoms: grey `btn-secondary`, no Cartoway tokens.
 
 Common causes:
 
-1. **Stale Puma on port 3001** (previous Playwright run) — Playwright hits that server instead of a clean prep.
-2. **`rails assets:clobber`** invokes webpacker and **fails without Yarn** (exit 1) after clearing `public/assets/` — the rest (`webpacker:compile` + server) never starts, but an old server may still be running.
+1. **Stale Puma on port 3001** — stop it or avoid `PLAYWRIGHT_REUSE_SERVER=1` unless you restarted Rails after changing CSS.
+2. **Webpacker not compiled** — run `NODE_ENV=test bin/rails webpacker:compile` at the repo root (same as CI) before Playwright.
 
-Playwright’s `webServer` runs **`bin/lookbook-vrt-server`**: removes `public/assets/`, compiles webpacker when Yarn is available, **checks** that CSS includes `.btn-secondary` overrides, kills the old pid, then starts Rails.
-
-Do **not** use `PLAYWRIGHT_REUSE_SERVER=1` unless you have started `bin/lookbook-vrt-server` yourself (or the same prep as CI).
+Playwright’s `webServer` starts **`bundle exec rails server`** on port 3001 (`RAILS_ENV=test`). It does not run `assets:clobber` (Webpacker can fail without Yarn after clearing `public/assets/`).
 
 To target the container (snapshots = Docker render, not the CI test job):
 
