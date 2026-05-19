@@ -35,7 +35,7 @@ class DestinationSearchParserTest < ActiveSupport::TestCase
   test 'parse accepts all allowed keys' do
     query = 'ref:D001 name:Test address:Rue city:Lyon postalcode:69001 country:France phone:01 comment:Note tags:urgent visit_ref:V1 visit_tags:delivery'
     result = DestinationSearchParser.parse(query)
-    assert_equal 10, result.size
+    assert_equal 11, result.size
     assert_includes result.map { |r| r[:key] }, 'ref'
     assert_includes result.map { |r| r[:key] }, 'tags'
   end
