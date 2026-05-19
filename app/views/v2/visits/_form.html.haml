@@ -19,7 +19,7 @@
                 %i.fa.fa-trash.fa-fw
                 = vf.call('delete_visit')
             - else
-              %button.btn.btn-default.btn-sm.flag-destroy{title: "#{vf.call('delete_help')}", type: "button", disabled: !destination_form_mutable}
+              %button.btn.btn-light.btn-sm.flag-destroy{title: "#{vf.call('delete_help')}", type: "button", disabled: !destination_form_mutable}
                 %i.fa.fa-trash.fa-fw
                 = vf.call('delete')
     .collapse.show{id: "collapseVisit#{visit.id || 0}"}

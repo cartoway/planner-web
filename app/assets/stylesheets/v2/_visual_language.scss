@@ -1,33 +1,123 @@
 // Copyright © Cartoway
-// Cartoway v2 global styles, loaded after the Bootstrap 5 CDN (`layout_bootstrap_overrides.scss` → `v2/layouts/_head.html.haml`).
-// Rules are scoped to `body[data-controller*='-v2']`. Colour tokens come from `../variables`.
+// Cartoway v2 global styles, loaded after the Bootstrap 5 CDN (`layout_bootstrap_overrides.scss` → v2 / Lookbook layouts).
+// Scoped to v2 app pages and the Lookbook preview shell (`body.cartoway-v2`). Colour tokens from `../variables`.
 
 @import "../variables";
 
-body[data-controller*='-v2'] {
-  // Cartoway primary for components that read --bs-primary-rgb (gradients, rgba, focus rings)
+// Theme tokens on `html` so they win over Bootstrap `:root` (link utilities, `var(--bs-primary)`, etc.).
+html:has(body.cartoway-v2),
+html:has(body[data-controller*='-v2']) {
+  --bs-primary: #{$primary-color};
   --bs-primary-rgb: 37, 65, 124;
+  --bs-link-color: #{$primary-color};
+  --bs-link-hover-color: #{darken($primary-color, 10%)};
+  --bs-link-color-rgb: 37, 65, 124;
+}
 
+// Shared scope: `body.cartoway-v2` + controllers whose name ends with `-v2` (includes `lookbook-v2`).
+body.cartoway-v2,
+body[data-controller*='-v2'] {
   // Body text and canvas
   color: $text-black;
   background-color: $white-background;
   --bs-body-color: #{$text-black};
   --bs-body-bg: #{$white-background};
 
-
-  --bs-primary: $primary-color;
-  --bs-btn-bg: $primary-color;
-  --bs-btn-border-color: $primary-color;
-  --bs-btn-hover-bg: $primary-color;
-  --bs-btn-hover-border-color: $primary-color;
-  --bs-btn-active-bg: $primary-color;
-  --bs-btn-active-border-color: $primary-color;
-  --bs-btn-disabled-bg: $primary-disabled-color;
-  --bs-btn-disabled-border-color: $primary-disabled-color;
-
-
-
   --bs-tertiary-bg: #{$grey-color};
+
+  // BS5.3 sets literal `--bs-btn-*` on each variant; body-level tokens are ignored — override per class.
+  .btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #{$primary-color};
+    --bs-btn-border-color: #{$primary-color};
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #{darken($primary-color, 7.5%)};
+    --bs-btn-hover-border-color: #{darken($primary-color, 10%)};
+    --bs-btn-focus-shadow-rgb: 37, 65, 124;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #{darken($primary-color, 10%)};
+    --bs-btn-active-border-color: #{darken($primary-color, 12.5%)};
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #{$primary-disabled-color};
+    --bs-btn-disabled-border-color: #{$primary-disabled-color};
+  }
+
+  // Neutral secondary actions: Cartoway tokens on BS5 `.btn-light` (`--bs-btn-border-color: #ccc`, etc.).
+  .btn.btn-light, .btn.btn-secondary {
+    --bs-btn-color: #333;
+    --bs-btn-bg: #fff;
+    --bs-btn-border-color: #ccc;
+    --bs-btn-hover-color: #333;
+    --bs-btn-hover-bg: #e6e6e6;
+    --bs-btn-hover-border-color: #adadad;
+    --bs-btn-focus-shadow-rgb: 204, 204, 204;
+    --bs-btn-active-color: #333;
+    --bs-btn-active-bg: #d4d4d4;
+    --bs-btn-active-border-color: #8c8c8c;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #333;
+    --bs-btn-disabled-bg: #fff;
+    --bs-btn-disabled-border-color: #ccc;
+    --bs-gradient: none;
+  }
+
+  .btn-outline-primary {
+    --bs-btn-color: #{$primary-color};
+    --bs-btn-border-color: #{$primary-color};
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #{$primary-color};
+    --bs-btn-hover-border-color: #{$primary-color};
+    --bs-btn-focus-shadow-rgb: 37, 65, 124;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #{$primary-color};
+    --bs-btn-active-border-color: #{$primary-color};
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #{$primary-disabled-color};
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: #{$primary-disabled-color};
+  }
+
+  // BS5 default `.btn-outline-light` is almost white — unreadable on our white background.
+  // Use Cartoway greys so label and border stay visible (Lookbook + v2 surfaces).
+  .btn-outline-light, .btn-outline-secondary {
+    --bs-btn-color: #{$text-black};
+    --bs-btn-border-color: #{$grey-color};
+    --bs-btn-hover-color: #{$text-black};
+    --bs-btn-hover-bg: #{$lightgrey-color};
+    --bs-btn-hover-border-color: #{darken($grey-color, 10%)};
+    --bs-btn-focus-shadow-rgb: 189, 195, 196;
+    --bs-btn-active-color: #{$text-black};
+    --bs-btn-active-bg: #{darken($lightgrey-color, 5%)};
+    --bs-btn-active-border-color: #{darken($grey-color, 14%)};
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #{$grey-color};
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: #{$grey-color};
+    --bs-gradient: none;
+  }
+
+  .btn-close {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    background-color: transparent;
+    opacity: 1;
+    box-shadow: none;
+
+    &:hover {
+      background-color: var(--bs-secondary-bg, #f8f9fa);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--bs-primary, #0d6efd);
+      outline-offset: 2px;
+    }
+  }
 
   // Bootstrap grid: no horizontal gutter between columns.
   --bs-gutter-x: 0;
@@ -127,52 +217,5 @@ body[data-controller*='-v2'] {
     max-width: 260px;
     overflow-wrap: anywhere;
     word-wrap: break-word;
-  }
-
-  // Danger buttons: keep label readable on red
-  .btn-danger {
-    color: #fff !important;
-  }
-
-  // `.btn-default` is not in Bootstrap 5; map it to the same button tokens as `.btn-outline-secondary`
-  .btn.btn-default {
-    --bs-btn-color: var(--bs-secondary);
-    --bs-btn-border-color: var(--bs-secondary);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: var(--bs-secondary);
-    --bs-btn-hover-border-color: var(--bs-secondary);
-    --bs-btn-focus-shadow-rgb: var(--bs-secondary-rgb);
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: var(--bs-secondary);
-    --bs-btn-active-border-color: var(--bs-secondary);
-    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-    --bs-btn-disabled-color: var(--bs-secondary);
-    --bs-btn-disabled-bg: transparent;
-    --bs-btn-disabled-border-color: var(--bs-secondary);
-    --bs-gradient: none;
-  }
-
-  // Neutral / brand / success panel surfaces (maps, route UI, etc.)
-  .cartoway-surface-neutral {
-    border: 1px solid $grey-color;
-    background-color: $lightgrey-color;
-    border-radius: var(--bs-border-radius, 0.25rem);
-  }
-
-  .cartoway-surface-primary-soft {
-    border: 1px solid $primary-border-color;
-    background-color: $primary-background-color;
-    border-radius: var(--bs-border-radius, 0.25rem);
-  }
-
-  .cartoway-surface-success-soft {
-    border: 1px solid $success-border-color;
-    background-color: $success-background-color;
-    border-radius: var(--bs-border-radius, 0.25rem);
-  }
-
-  // Card-style shadow helper
-  .cartoway-card-shadow {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   }
 }
