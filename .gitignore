@@ -46,3 +46,8 @@ yarn-error.log*
 .yarn-integrity
 
 .env
+
+# Playwright (Lookbook visual regression)
+/visual-regression/node_modules/
+/visual-regression/playwright-report/
+/visual-regression/test-results/

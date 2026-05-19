@@ -466,20 +466,6 @@
   }
 
   // Bootstrap 5 dropdown toggle: keep v1 look (no blue link, no extra caret spacing)
-  // Bootstrap 5: restore BS3-like .btn-default used in v1 menu (help block)
-  .btn.btn-default {
-    color: #333 !important;
-    background-color: #fff !important;
-    border-color: #ccc !important;
-
-    &:hover,
-    &:focus {
-      color: #333 !important;
-      background-color: #e6e6e6 !important;
-      border-color: #adadad !important;
-    }
-  }
-
   .menu-list-item .dropdown-toggle {
     &::after {
       border-top-color: #fff;
@@ -512,12 +498,12 @@
       }
     }
 
-    // #menu-help: inner .btn.btn-default carries foreground (v1 scaffolds .help.menu-section .btn)
+    // #menu-help: inner neutral button foreground (v1 scaffolds .help.menu-section .btn)
     #menu-help > a {
       color: inherit;
     }
 
-    #menu-help .btn.btn-default {
+    #menu-help .btn.btn-light {
       color: $primary-color !important;
     }
   }
@@ -590,28 +576,6 @@
       padding: 0.5rem 0.5rem 0.25rem 0.75rem;
       background: transparent;
       border: none;
-    }
-
-    .v2-form-sidebar-close.btn-close {
-      flex-shrink: 0;
-      width: 2.25rem;
-      height: 2.25rem;
-      margin: 0;
-      padding: 0;
-      border-radius: 50%;
-      border: 1px solid var(--bs-border-color, #dee2e6);
-      background-color: transparent;
-      opacity: 1;
-      box-shadow: none;
-
-      &:hover {
-        background-color: var(--bs-secondary-bg, #f8f9fa);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--bs-primary, #0d6efd);
-        outline-offset: 2px;
-      }
     }
 
     .v2-form-sidebar-inner {
@@ -702,12 +666,6 @@
       .input-group {
         flex-wrap: wrap;
         max-width: 100%;
-        min-width: 0;
-      }
-
-      .input-group .form-control.width_1_3 {
-        width: auto;
-        flex: 1 1 5rem;
         min-width: 0;
       }
 
