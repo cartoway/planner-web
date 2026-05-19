@@ -4,7 +4,7 @@
   %head
     %meta{content: "text/html; charset=UTF-8", "http-equiv": "Content-Type"}/
     = render partial: 'v2/layouts/head'
-  %body{"data-controller": "#{controller.controller_path.gsub('/', '_')} #{controller.controller_path.gsub('/', '-')}-v2", "data-action": "#{controller.action_name}"}
+  %body.cartoway-v2{"data-controller": "#{controller.controller_path.gsub('/', '_')} #{controller.controller_path.gsub('/', '-')}-v2", "data-action": "#{controller.action_name}"}
     #wrapper{data: { controller: 'menu-left' }}
       .menu-left.hidden-print{style: "overflow: hidden;"}
         .top-menu
@@ -225,7 +225,7 @@
             - if @reseller.help_url
               %li#menu-help.help.menu-section.menu-list-item
                 = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank', data: { turbo: false } do
-                  .d-flex.align-items-center.justify-content-center.col-md-12.btn.btn-default
+                  .d-flex.align-items-center.justify-content-center.col-md-12.btn.btn-light
                     %i.fa.fa-book-open.fa-fw
                     .hidden-menu.menu_label
                       = t 'web.help'

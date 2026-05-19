@@ -1,0 +1,32 @@
+// Copyright © Cartoway
+// Lookbook-only layout for the planning sidebar preview (map + column demo).
+// Planning chrome: `v2/_plannings.scss` (imported from `layout_bootstrap_overrides` on the preview shell).
+
+$planning-sidebar-width: 550px;
+
+.lookbook-planning-sidebar-host {
+  .lookbook-planning-demo-row {
+    align-items: stretch;
+    display: flex;
+    gap: 0.5rem;
+    min-height: 26rem;
+  }
+
+  .lookbook-planning-map-placeholder {
+    background-color: var(--bs-secondary-bg, #eee);
+    border: 1px solid var(--bs-border-color, #ccc);
+    border-radius: var(--bs-border-radius, 0.25rem);
+    flex: 1 1 auto;
+    min-height: 24rem;
+    min-width: 0;
+  }
+
+  .lookbook-planning-column-wrap {
+    display: flex;
+    flex: 0 0 #{$planning-sidebar-width};
+    flex-direction: column;
+    max-width: 100%;
+    min-height: 0;
+    min-width: 0;
+  }
+}
