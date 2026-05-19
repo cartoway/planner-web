@@ -107,6 +107,9 @@ export default class extends Controller {
     /** @type {{ cell: HTMLElement | null, onEnd: (e: AnimationEvent) => void, timer: number } | null} */
     this._mapPinRowHighlightState = null
     this._onTurboFrameLoad = this._onTurboFrameLoad.bind(this)
+    this._canDestroy = !!config.can_destroy
+    this._destroyConfirmMessage = config.destroy_confirm || ''
+    this._formSidebarPlaceholder = config.form_sidebar_placeholder || ''
 
     const maplibregl = getMaplibre()
     const mapEl = this.element.querySelector('#map')
@@ -122,6 +125,7 @@ export default class extends Controller {
     }
 
     this._initSearch(signal)
+    this._initSelectionAndDestroy(signal)
 
     this._onPositionDragToggleDocumentClick = this._onPositionDragToggleDocumentClick.bind(this)
     document.addEventListener('click', this._onPositionDragToggleDocumentClick, { signal })
@@ -394,6 +398,7 @@ export default class extends Controller {
     this.element.addEventListener('click', (e) => {
       const tr = e.target.closest && e.target.closest('tr.destination[data-destination-id]')
       if (tr) {
+        if (e.target.closest && e.target.closest('input[type=checkbox], .destinations-row-delete, a[data-turbo-frame]')) return
         const id = tr.getAttribute('data-destination-id')
         if (!id) return
         // Any click on the list row: highlight + center map on pin (when coordinates exist).
@@ -634,6 +639,121 @@ export default class extends Controller {
       active: false,
       mapClickHandler: null
     }
+  }
+
+  _initSelectionAndDestroy (signal) {
+    this.element.addEventListener('click', (e) => {
+      if (e.target.closest && e.target.closest('.destinations-toggle-selection')) {
+        e.preventDefault()
+        this._toggleRowSelection()
+        return
+      }
+      if (e.target.closest && e.target.closest('.destinations-bulk-delete')) {
+        e.preventDefault()
+        if (!this._canDestroy) return
+        const ids = this._selectedDestinationIds()
+        if (ids.length) this._destroyDestinations(ids)
+        return
+      }
+      const deleteBtn = e.target.closest && e.target.closest('.destinations-row-delete')
+      if (deleteBtn) {
+        e.preventDefault()
+        e.stopPropagation()
+        if (!this._canDestroy) return
+        const id = deleteBtn.getAttribute('data-destination-id')
+        if (id) this._destroyDestinations([id])
+        return
+      }
+      if (e.target.closest && e.target.closest('#destination_box input[type=checkbox][name^="destinations"]')) {
+        e.stopPropagation()
+      }
+    }, { signal })
+  }
+
+  _toggleRowSelection () {
+    const box = this.element.querySelector('#destination_box')
+    if (!box) return
+    box.querySelectorAll('tbody tr.destination input[type=checkbox]').forEach((cb) => {
+      cb.checked = !cb.checked
+    })
+  }
+
+  _selectedDestinationIds () {
+    const box = this.element.querySelector('#destination_box')
+    if (!box) return []
+    return Array.from(box.querySelectorAll('tbody tr.destination input[type=checkbox]:checked'))
+      .map((cb) => {
+        const row = cb.closest('tr.destination')
+        return row && row.getAttribute('data-destination-id')
+      })
+      .filter(Boolean)
+  }
+
+  async _destroyDestinations (ids) {
+    if (!this._canDestroy || !ids || !ids.length) return
+    const msg = this._destroyConfirmMessage
+    if (msg && !window.confirm(msg)) return
+
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+    const headers = {
+      Accept: 'application/json',
+      'X-CSRF-Token': token || ''
+    }
+    const uniqueIds = [...new Set(ids.map((id) => String(id)))]
+
+    try {
+      let res
+      if (uniqueIds.length === 1) {
+        res = await fetch(`/api/0.1/destinations/${encodeURIComponent(uniqueIds[0])}.json`, {
+          method: 'DELETE',
+          headers,
+          credentials: 'same-origin'
+        })
+      } else {
+        const url = `/api/0.1/destinations.json?ids=${encodeURIComponent(uniqueIds.join(','))}`
+        res = await fetch(url, { method: 'DELETE', headers, credentials: 'same-origin' })
+      }
+
+      if (res.status === 204 || res.ok) {
+        uniqueIds.forEach((id) => {
+          this._removeDestinationMarker(id)
+          this._clearFormSidebarIfDestination(id)
+        })
+        visit(this._buildDestinationsIndexUrl(), { frame: 'destinations_list', action: 'advance' })
+        return
+      }
+
+      const text = await res.text().catch(() => '')
+      window.alert(text || `HTTP ${res.status}`)
+    } catch (e) {
+      window.alert(e && e.message ? e.message : String(e))
+    }
+  }
+
+  _removeDestinationMarker (idStr) {
+    const markersById = this._markersById || {}
+    const rec = markersById[idStr]
+    if (!rec) return
+    try {
+      rec.marker.remove()
+    } catch (e) { /* ignore */ }
+    delete markersById[idStr]
+    if (this._iconOverStack) {
+      this._iconOverStack = this._iconOverStack.filter((id) => id !== idStr)
+    }
+  }
+
+  _clearFormSidebarIfDestination (idStr) {
+    const form = document.querySelector('#form_sidebar #destination-form-sidebar')
+    if (!form || String(form.getAttribute('data-destination_id')) !== String(idStr)) return
+    const frame = document.getElementById('form_sidebar')
+    if (!frame) return
+    frame.replaceChildren()
+    const p = document.createElement('p')
+    p.className = 'v2-form-sidebar-placeholder text-muted small mb-0'
+    p.textContent = this._formSidebarPlaceholder
+    frame.appendChild(p)
+    this._teardownPositionEdit()
   }
 
   _initSearch (signal) {

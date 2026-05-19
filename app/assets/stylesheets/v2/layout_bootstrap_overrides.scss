@@ -1,14 +1,17 @@
 // Copyright © Cartoway
-// Loaded after Bootstrap 5 CDN on v2 layout only (see v2/layouts/_head.html.haml).
+// Loaded after Bootstrap 5 CDN on v2 layout only (see v2/layouts/_head.html.haml
 // Typography: 13px root rem + Montserrat for body and Bootstrap font variables.
 
 @import "form_checks_range";
 @import "visual_language";
+@import "plannings";
 
+html:has(body.cartoway-v2),
 html:has(body[data-controller*='-v2']) {
   font-size: 13px;
 }
 
+body.cartoway-v2,
 body[data-controller*='-v2'] {
   --bs-body-font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
   --bs-font-sans-serif: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;

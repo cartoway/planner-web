@@ -1,0 +1,363 @@
+// Copyright © Cartoway
+// V2 planning edit sidebar — mirrors `plannings.css.scss` / `#edit-planning` (BS5 markup: `.input-group-text`, etc.).
+// Loaded via `layout_bootstrap_overrides` (v2 app + Lookbook preview shell).
+
+@import "../variables";
+
+$planning-sidebar-width: 550px;
+// Legacy planning chrome (BS3 planning UI); distinct from global `$grey-color`.
+$planning-chrome-border: #ccc;
+$planning-chrome-surface: #eee;
+
+body.cartoway-v2,
+body[data-controller*='-v2'] {
+  .planbar {
+    flex-shrink: 0;
+    margin-bottom: 0.25rem;
+    min-height: 2rem;
+  }
+
+  .pull-right {
+    float: right;
+  }
+
+  // Planning tags row append/prepend (replaces BS3 `.input-group-addon`).
+  .input-group-text {
+    align-items: center;
+    background-color: $planning-chrome-surface;
+    border: 1px solid $planning-chrome-border;
+    color: #555;
+    display: flex;
+    font-size: 0.875rem;
+    line-height: 1.428571429;
+    padding: 0.375rem 0.75rem;
+    white-space: nowrap;
+  }
+
+  .input-group .form-control {
+    position: relative;
+    z-index: 1;
+  }
+
+  .input-group-borderless {
+    border-left: 0;
+  }
+
+  .borderless-empty {
+    border-right: 0;
+    min-width: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .borderless-disabled {
+    background-color: $planning-chrome-surface;
+    max-width: 40%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // BS3 `.panel` markup still used on planning edit (until migrated to cards).
+  .panel {
+    background-color: $white-background;
+    border: 1px solid transparent;
+    border-color: #ddd;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 0.5rem;
+  }
+
+  .panel-default {
+    border-color: #ddd;
+  }
+
+  .panel-heading {
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 0.125rem 0.3125rem;
+  }
+
+  .panel-body {
+    padding: 0.5rem;
+  }
+
+  .caret {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid;
+    display: inline-block;
+    height: 0;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    width: 0;
+  }
+
+  #edit-planning.sidebar {
+    background-color: $white-background;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-tabs {
+    flex-shrink: 0;
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    a.btn {
+      align-items: center;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid $planning-chrome-border;
+      display: flex;
+      height: 34px;
+      justify-content: center;
+      width: 34px;
+    }
+  }
+
+  .sidebar-content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #planning-pane.sidebar-pane {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  #extend_close_panel {
+    position: relative;
+    z-index: 2;
+  }
+
+  #extend_close_panel.row {
+    display: block;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  #extend_close_panel.row::after {
+    clear: both;
+    content: "";
+    display: table;
+  }
+
+  #route_selector {
+    background-color: $white-background;
+    border-bottom: 1px solid $planning-chrome-border;
+    flex-shrink: 0;
+    margin: -22px 0 4px;
+    padding: 5px 15px 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  #planning-scroll.planning-pane-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  #planning_tools.row,
+  #global_tools.row {
+    display: block;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  #global_tools {
+    overflow: hidden;
+    padding: 4px 0;
+  }
+
+  #global_tools .btn-group {
+    vertical-align: middle;
+  }
+
+  #global_tools .dropdown.btn-group {
+    position: relative;
+  }
+
+  #global_tools .dropdown-menu.show {
+    left: auto;
+    min-width: 12rem;
+    right: 0;
+  }
+
+  #planning.row {
+    display: block;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 10px;
+  }
+
+  .display-ui-planning-head,
+  .routes .display-ui-route-head {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 0;
+    margin-right: 0;
+
+    > .col-xs-4 {
+      box-sizing: border-box;
+      flex: 0 0 33.333333%;
+      float: none;
+      max-width: 33.333333%;
+      min-width: 0;
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  .route-info {
+    background-color: rgba($planning-chrome-surface, 0.7);
+    border: 1px solid rgba($planning-chrome-border, 0.7);
+    padding: 0.25rem;
+
+    .fa {
+      opacity: 0.7;
+    }
+
+    &.primary {
+      font-size: 0.875rem;
+    }
+  }
+
+  ol.routes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .routes .route {
+    display: inline-block;
+    margin: 2px;
+    vertical-align: top;
+    width: $planning-sidebar-width;
+  }
+
+  .routes.out_routes {
+    margin-bottom: 0;
+    max-height: 400px;
+    overflow: auto;
+    position: sticky;
+    z-index: 20;
+
+    .out_route {
+      margin-bottom: 0 !important;
+      width: $planning-sidebar-width;
+    }
+
+    .panel-heading.out-header {
+      background-color: gray;
+      color: $white-background;
+    }
+  }
+
+  .route-skills {
+    margin: 2px 0;
+
+    .route-skills-list {
+      box-sizing: border-box;
+      display: block;
+      line-height: 1.428571429;
+      list-style: none;
+      margin: 0;
+      overflow: hidden;
+      padding: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    .route-skills-item {
+      background: $white-background;
+      border: 1px solid $planning-chrome-border;
+      border-radius: 4px;
+      color: #555;
+      cursor: default;
+      float: left;
+      margin: 0 0 0 3px;
+      padding: 0 6px;
+
+      &:first-child {
+        margin-left: 0;
+      }
+    }
+  }
+
+  // BS3 column widths inside route heading rows (until planning grid is migrated).
+  .col-xs-1 { width: 8.33333333%; }
+  .col-xs-2 { width: 16.66666667%; }
+  .col-xs-4 { width: 33.33333333%; }
+  .col-xs-5 { width: 41.66666667%; }
+  .col-xs-11 { width: 91.66666667%; }
+  .col-xs-12 { width: 100%; }
+
+  #edit-planning .row .col-xs-1,
+  #edit-planning .row .col-xs-2,
+  #edit-planning .row .col-xs-4,
+  #edit-planning .row .col-xs-5,
+  #edit-planning .row .col-xs-11,
+  #edit-planning .row .col-xs-12 {
+    box-sizing: border-box;
+    float: left;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    position: relative;
+  }
+
+  .display-ui-planning-head > .col-xs-4,
+  .display-ui-route-head > .col-xs-4 {
+    float: none;
+  }
+
+  #edit-planning .panel-heading .row {
+    margin-left: -15px;
+    margin-right: -15px;
+  }
+
+  #edit-planning .panel-heading .row::after {
+    clear: both;
+    content: "";
+    display: table;
+  }
+
+  .ph-0 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .width_1_2 {
+    width: 50%;
+  }
+
+  .form-control.input-sm {
+    font-size: 0.875rem;
+    min-height: calc(1.5em + 0.25rem + 2px);
+    padding: 0.25rem 0.5rem;
+  }
+
+  .multiple .bootstrap-select {
+    max-width: 100%;
+  }
+}
