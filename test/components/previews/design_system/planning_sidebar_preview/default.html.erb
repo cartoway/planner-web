@@ -1,0 +1,268 @@
+<%# Structure aligned with app/views/plannings/_edit.html.haml, _selector.html.haml, _sidebar.html.haml, routes/_edit + _out_of_route (static demo). %>
+<div class="lookbook-planning-sidebar-host container-fluid py-2">
+  <p class="text-muted small mb-2">
+    Arborescence et classes calquées sur la v1 (<code>plannings/_edit.html.haml</code>, <code>_selector.html.haml</code>, <code>_sidebar.html.haml</code>, routes). Styles planning v2&nbsp;: <code>v2/_plannings.scss</code>&nbsp;; mise en page démo Lookbook&nbsp;: <code>v2/_lookbook_planning_preview.scss</code>.
+  </p>
+
+  <div class="lookbook-planning-demo-row">
+    <div class="lookbook-planning-map-placeholder d-flex align-items-center justify-content-center text-muted small">
+      #map.sidebar-map (placeholder)
+    </div>
+
+    <div class="lookbook-planning-column-wrap">
+      <div class="planbar d-flex align-items-end">
+        <span class="text-muted small">.planbar.d-flex.align-items-end (aperçu — <code>flat_form</code> omis)</span>
+      </div>
+
+      <div id="edit-planning" class="sidebar">
+        <div class="sidebar-tabs">
+          <ul role="tablist">
+            <li>
+              <a class="d-flex align-items-center justify-content-center btn" href="#planning-pane" role="tab">
+                <i class="fa fa-caret-right" aria-hidden="true"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="sidebar-content">
+          <div id="planning-pane" class="sidebar-pane">
+            <div id="extend_close_panel" class="row">
+              <div class="pull-right">
+                <button type="button" class="btn btn-light btn-sm extend" title="Agrandir le panneau">
+                  <i class="fa fa-maximize" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="btn btn-light btn-sm sidebar-close" title="Réduire le panneau">
+                  <i class="fa fa-caret-left" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+
+            <div id="route_selector" class="row">
+              <div class="col-xs-12 multiple ph-0">
+                <label>Sélecteur d’itinéraires</label>
+                <select id="planning_route_ids" name="planning_route_ids" class="form-control width_1_2 selectpicker" multiple="multiple" data-live-search="true" data-placeholder="">
+                  <option class="global" value="clear" selected>Tout effacer</option>
+                  <option class="global" value="reverse">Inverser</option>
+                  <option class="global" value="all">Tous</option>
+                  <option value="r1">Camion 12 — Route 1</option>
+                  <option value="r2">Camion 08 — Route 2</option>
+                </select>
+                <p class="help-block text-muted small mb-0">Classes v1&nbsp;: <code>selectpicker</code>, <code>width_1_2</code> (pas de plugin JS dans Lookbook).</p>
+              </div>
+            </div>
+
+            <div id="planning-scroll" class="planning-pane-body modern-scroll">
+              <div id="planning_tools" class="row">
+                <div class="row">
+                  <p class="text-center col-md-12">
+                    <button id="external-callback-btn" type="button" class="btn btn-primary btn-sm customer_external_callback_url" disabled>
+                      <i class="fa fa-desktop fa-fw" aria-hidden="true"></i>
+                      Action callback (exemple)
+                    </button>
+                  </p>
+                </div>
+
+                <div class="row">
+                  <div class="d-flex justify-content-center">
+                    <div class="col-xs-12 col-md-12">
+                      <label>Étiquettes</label>
+                      <div class="row form-group">
+                        <div class="input-append">
+                          <div id="planning_tag_ids_input" class="input-group">
+                            <select id="planning_tag_ids" name="planning[tag_ids][]" class="form-control input-group-radiusless" multiple="multiple">
+                              <option value="1">Urgent</option>
+                              <option value="2" selected>Fragile</option>
+                              <option value="3">VIP</option>
+                            </select>
+                            <span class="input-group-text input-group-borderless borderless-disabled">replace</span>
+                            <span class="input-group-text"><i class="fa fa-tags fa-fw" aria-hidden="true"></i></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <br>
+
+                <div class="row">
+                  <form class="form-horizontal" action="#" accept-charset="UTF-8" method="post">
+                    <div class="d-flex justify-content-center">
+                      <div class="col-xs-12 col-md-12">
+                        <label for="planning_vehicle_usage_set_id">Jeu de données véhicules</label>
+                        <select id="planning_vehicle_usage_set_id" name="planning[vehicle_usage_set_id]" class="form-control" required>
+                          <option value="1" selected>Livraison urbaine</option>
+                          <option value="2">Longue distance</option>
+                        </select>
+                        <div class="d-flex justify-content-center">
+                          <input type="submit" name="commit" value="Appliquer le jeu de données" class="btn btn-light" disabled data-disable-with="Appliquer le jeu de données">
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <div class="row">
+                  <div class="d-flex justify-content-center">
+                    <div class="col-xs-12 col-md-12">
+                      <form id="planning_zoning_0" class="form-horizontal update-zonings-form" action="#" accept-charset="UTF-8" method="post" title="Zonage">
+                        <label for="planning_zoning_id">Zonage</label>
+                        <select id="planning_zoning_id" name="planning[zoning_id]" class="form-control">
+                          <option value="">— Aucun —</option>
+                          <option value="1">Centre-ville</option>
+                          <option value="2">Périphérie</option>
+                        </select>
+                        <div class="d-flex justify-content-center">
+                          <input type="submit" name="commit" value="Mettre à jour le zonage" class="btn btn-light" data-disable-with="Mettre à jour le zonage">
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="global_tools" class="row">
+                <div class="btn-group">
+                  <button id="optimize_all" type="button" class="btn btn-primary btn-sm optimize" title="Optimiser" data-toggle="modal" data-target="#optimization-modal">
+                    <i class="fa fa-gears" aria-hidden="true"></i>
+                    Optimiser
+                  </button>
+                </div>
+                <div class="pull-right btn-group">
+                  <div class="dropdown btn-group">
+                    <a class="btn btn-light btn-sm right export dropdown-toggle" href="#" data-toggle="dropdown" title="Exports" role="button">
+                      <i class="fa fa-share-nodes" aria-hidden="true"></i>
+                      <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu show">
+                      <li class="dropdown-header"><h5>Exports (démo)</h5></li>
+                      <li><a href="#"><i class="fa fa-print fa-fw"></i> Imprimer</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div id="planning" class="row">
+                <div class="global_info">
+                  <div class="row route-data route-header display-ui-planning-head" style="display: flex; flex-wrap: wrap;">
+                    <div class="col-xs-4" style="order: 0">
+                      <div class="route-info primary" title="Distance">
+                        <i class="fa fa-road fa-fw" aria-hidden="true"></i>
+                        128 km
+                      </div>
+                    </div>
+                    <div class="col-xs-4" style="order: 1">
+                      <div class="route-info primary" title="Durée">
+                        <i class="fa fa-stopwatch fa-fw" aria-hidden="true"></i>
+                        3h20
+                      </div>
+                    </div>
+                    <div class="col-xs-4" style="order: 2">
+                      <div class="route-info primary" title="Arrêts">
+                        <i class="fa fa-check-square fa-fw" aria-hidden="true"></i>
+                        24 / 24 arrêts
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <ol class="routes">
+                  <li class="route" data-color="#08f" data-default-color="#08f" data-route-id="1">
+                    <div class="panel panel-default">
+                      <div class="panel-heading">
+                        <div class="row">
+                          <div class="col-xs-5">
+                            <input id="route_ref" class="form-control" name="route[ref]" placeholder="Réf. route" type="text" value="R1">
+                          </div>
+                          <div class="col-xs-5">
+                            <select class="form-control input-sm" name="route[vehicle]" aria-label="Véhicule">
+                              <option selected value="vu1">Camion 12 — tournée matin</option>
+                            </select>
+                          </div>
+                          <div class="col-xs-2 color-select-container">
+                            <span class="color_small" style="display:inline-block;width:1rem;height:1rem;background:#08f;vertical-align:middle;border:1px solid #ccc" title="Couleur"></span>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-xs-11">
+                            <div class="route-skills">
+                              <ul class="route-skills-list">
+                                <li class="route-skills-item">
+                                  <span><i class="fa fa-snowflake" style="color:#09c" aria-hidden="true"></i> Froid</span>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                          <div class="col-xs-1">
+                            <i class="fa fa-arrows-left-right" aria-hidden="true"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="route-details">
+                        <div class="route-stops">
+                          <div class="panel-body">
+                            <div class="row route-data route-header display-ui-route-head" data-route-id="1" style="display: flex; flex-wrap: wrap;">
+                              <div class="col-xs-4" style="order: 0">
+                                <div class="route-info primary"><i class="fa fa-road fa-fw"></i> 62 km</div>
+                              </div>
+                              <div class="col-xs-4" style="order: 1">
+                                <div class="route-info primary"><i class="fa fa-stopwatch fa-fw"></i> 1h45</div>
+                              </div>
+                              <div class="col-xs-4" style="order: 2">
+                                <div class="route-info primary"><i class="fa fa-check-square fa-fw"></i> 12 / 12</div>
+                              </div>
+                            </div>
+                          </div>
+                          <ul id="list_box" class="stops sortable list-group">
+                            <li class="list-group-item small py-1">Arrêt démo 1</li>
+                            <li class="list-group-item small py-1">Arrêt démo 2</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ol>
+
+                <ol class="routes out_routes">
+                  <li class="route out_route" data-route-id="out">
+                    <div id="out_of_route" class="panel panel-default">
+                      <div class="panel-heading out-header">
+                        <i class="fa fa-arrows-left-right" aria-hidden="true"></i>
+                        Hors route
+                        <div class="btn-group pull-right">
+                          <button type="button" class="automatic_insert_all btn btn-light btn-xs" title="Insertion auto">
+                            <i class="fa fa-bolt" aria-hidden="true"></i>
+                          </button>
+                          <button type="button" class="toggle btn btn-light btn-xs" title="Afficher / masquer">
+                            <i class="fa fa-eye" aria-hidden="true"></i>
+                          </button>
+                          <button type="button" class="lock btn btn-xs btn-light" title="Verrou">
+                            <i class="fa fa-unlock" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div id="out_route_scroll" class="route-details out-content modern-scroll">
+                        <div class="route-stops">
+                          <div class="panel-body">
+                            <div class="row route-data route-header display-ui-route-head" data-route-id="out" style="display: flex; flex-wrap: wrap;">
+                              <div class="col-xs-4" style="order: 0"><div class="route-info primary"><i class="fa fa-road fa-fw"></i> —</div></div>
+                              <div class="col-xs-4" style="order: 1"><div class="route-info primary"><i class="fa fa-stopwatch fa-fw"></i> —</div></div>
+                              <div class="col-xs-4" style="order: 2"><div class="route-info primary"><i class="fa fa-check-square fa-fw"></i> 1 / 1</div></div>
+                            </div>
+                          </div>
+                          <ul class="stops sortable list-group" id="list_box_out_demo">
+                            <li class="list-group-item small py-1 text-muted">Stop hors route (démo)</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
