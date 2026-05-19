@@ -223,8 +223,6 @@ class DestinationsController < ApplicationController
   end
 
   def upload_csv
-    @columns_default = current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
-
     respond_to do |format|
       @importer = ImporterDestinations.new(current_user.customer, import_planning_attributes_from_params)
       @columns_default = (current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef') || {}).merge(import_csv_params[:column_def] || {})
@@ -373,7 +371,9 @@ class DestinationsController < ApplicationController
       ]
     )
     if o[:visits_attributes]
-      o[:visits_attributes].each_value do |v|
+      visits = o[:visits_attributes]
+      visit_rows = visits.is_a?(Array) ? visits : visits.each_value
+      visit_rows.each do |v|
         next unless v && v[:quantities_operations]
 
         v[:quantities_operations].each do |k, qo|
