@@ -21,3 +21,24 @@ export async function assertCartowayStylesheetsLoaded(page: Page): Promise<void>
   ).toContain('body.cartoway-v2 .btn.btn-secondary')
   expect(css).toContain('--bs-btn-bg: #fff')
 }
+
+/** Lookbook loads Montserrat from Google Fonts; `document.fonts.ready` alone is not enough. */
+export async function waitForLookbookFonts(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const family = 'Montserrat'
+    const loads = ['400 13px', '400 1em', '500 1em', '600 1em', '700 1em']
+    for (const desc of loads) {
+      try {
+        await document.fonts.load(`${desc} ${family}`)
+      } catch {
+        // FontFace load can reject when the family is already loading; keep going.
+      }
+    }
+    await document.fonts.ready
+    if (!document.fonts.check('400 13px Montserrat')) {
+      throw new Error(
+        'Montserrat did not load before screenshot. ≥ and body text metrics will differ from CI (fallback fonts). Check Google Fonts access or regenerate snapshots on CI.'
+      )
+    }
+  })
+}
