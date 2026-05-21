@@ -157,7 +157,7 @@ class V01::Customers < Grape::API
         customer = @current_user.reseller.customers.where(ParseIdsRefs.read(params[:id])).first!
         present customer, with: V01::Entities::CustomerAdmin
       elsif ParseIdsRefs.match params[:id], @current_customer
-        authorize!(:read, @current_customer)
+        authorize!(:edit, @current_customer)
         present @current_customer, with: V01::Entities::Customer
       else
         error! V01::Status.code_response(:code_404, before: 'Customer'), 404
