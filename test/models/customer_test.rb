@@ -101,6 +101,20 @@ class CustomerTest < ActiveSupport::TestCase
       } }
   end
 
+  test 'should update_outdated when enable_strict_within_timewindows changes' do
+    customer = customers(:customer_one)
+    customer.plannings.each { |p|
+      p.routes.select { |r| r.vehicle_usage }.each { |r|
+        assert_not r.outdated
+      } }
+    customer.enable_strict_within_timewindows = !customer.enable_strict_within_timewindows
+    customer.save!
+    customer.plannings.each { |p|
+      p.routes.select { |r| r.vehicle_usage }.each { |r|
+        assert r.outdated
+      } }
+  end
+
   test 'should update max vehicles up' do
     assert !Planner::Application.config.manage_vehicles_only_admin
     customer = customers(:customer_one)
