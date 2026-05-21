@@ -1,4 +1,6 @@
 - return if @user.admin?
+
+= render partial: 'shared/check_box', locals: { form: f, field: :filter_planning_route_data, label: t('activerecord.attributes.user.filter_planning_route_data'), help: t('users.form.filter_planning_route_data_help') }
 .row.form-group
   %label.col-md-offset-2.col-md-8
     = t('users.form.display_ui.planning_headers')
