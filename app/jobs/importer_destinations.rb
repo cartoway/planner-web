@@ -216,6 +216,7 @@ class ImporterDestinations < ImporterBase
     @stores_to_geocode_count = 0
     @visit_ids = []
     @store_reload_ids = []
+    @import_line_shift = options[:line_shift] || 0
 
     @plannings_hash = CaseInsensitiveHash[@customer.plannings.select(&:ref).map{ |plan| [plan.ref, plan] }]
 
@@ -735,7 +736,7 @@ class ImporterDestinations < ImporterBase
           validate_with_context: :import
         )
 
-        raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
+        raise ImportBulkError.new(import_errors_with_indices(slice_lines, import_result.failed_instances)) if import_result.failed_instances.any?
 
         import_result.ids.each.with_index{ |id, index|
           @destination_index_to_id_hash[destination_import_indices[index]] = id
@@ -779,7 +780,7 @@ class ImporterDestinations < ImporterBase
           validate_with_context: :import
         )
 
-        raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
+        raise ImportBulkError.new(import_errors_with_indices(slice_lines, import_result.failed_instances)) if import_result.failed_instances.any?
 
         import_result.ids.each.with_index{ |id, index|
           @visit_index_to_id_hash[visit_import_indices[index]] = id
@@ -817,7 +818,7 @@ class ImporterDestinations < ImporterBase
           validate_with_context: :import
         )
 
-        raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
+        raise ImportBulkError.new(import_errors_with_indices(slice_lines, import_result.failed_instances)) if import_result.failed_instances.any?
 
         import_result.ids.each.with_index{ |id, index|
           @store_index_to_id_hash[store_import_indices[index]] = id
@@ -858,7 +859,7 @@ class ImporterDestinations < ImporterBase
           validate_with_context: :import
         )
 
-        raise ImportBulkError.new(import_errors_with_indices(slice_lines, slice_index, import_result.failed_instances)) if import_result.failed_instances.any?
+        raise ImportBulkError.new(import_errors_with_indices(slice_lines, import_result.failed_instances)) if import_result.failed_instances.any?
 
         import_result.ids.each.with_index{ |id, index|
           @store_reload_index_to_id_hash[store_reload_import_indices[index]] = id
@@ -1263,15 +1264,21 @@ class ImporterDestinations < ImporterBase
     end
   end
 
-  def import_errors_with_indices(slice_lines, slice_index, failed_instances)
+  def import_errors_with_indices(slice_lines, failed_instances)
     failed_instances.group_by{ |index_in_dataset, object_with_errors|
       object_with_errors.errors.messages.map{ |key, message|
         [columns.include?(key) ? columns[key][:title] : nil, message].compact.join(' ')
       }
     }.map{ |errors, grouped_failed_instances|
-      failed_indices = grouped_failed_instances.flat_map{ |index, _object| slice_lines[index].map{ |slice_line| slice_index * 1000 + slice_line + 2 }} # index start at 0 + header
+      failed_indices = grouped_failed_instances.flat_map{ |index, _object|
+        slice_lines[index].map{ |slice_line| csv_line_number(slice_line) }
+      }
       I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' - ' + errors.join(', ')
     }.join(';')
+  end
+
+  def csv_line_number(slice_line)
+    slice_line + 1 + @import_line_shift
   end
 
   def custom_date_parse(date_string)
