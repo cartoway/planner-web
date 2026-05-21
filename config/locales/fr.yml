@@ -998,6 +998,7 @@ fr:
           vehicle_usages: Configurations de véhicules
           stores: Sites
           tags: Catégories
+          customer: Espace client
         icon_help: >-
           Choisissez une icône dans la liste
         color_help: >-

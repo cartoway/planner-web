@@ -96,6 +96,11 @@ module PreferencesHelper
     destination.new_record? ? current_user_form_create?(:destination) : current_user_form_update?(:destination)
   end
 
+  # Customer account settings form; read-only edit when forms.customer is visible but not usable.
+  def current_user_customer_form_submit_enabled?(customer)
+    customer.new_record? ? current_user_form_create?(:customer) : current_user_form_update?(:customer)
+  end
+
   # Primary text for a stop row in the planning sidebar (field order from user preferences, max 3 fields).
   def stop_list_primary_line(stop)
     ids = stop_list_active_field_ids_for_ui
