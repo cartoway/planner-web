@@ -64,6 +64,7 @@ default: &default
       vehicle_usages: { visible: true, usable: true }
       stores: { visible: true, usable: true }
       tags: { visible: true, usable: true }
+      customer: { visible: true, usable: true }
 
 development:
   <<: *default

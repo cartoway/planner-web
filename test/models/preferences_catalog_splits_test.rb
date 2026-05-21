@@ -25,6 +25,7 @@ class PreferencesCatalogSplitsTest < ActiveSupport::TestCase
     active, disabled, hidden = dummy.forms_resources_three_way_split
 
     assert_includes disabled, 'stores'
+    assert_includes disabled, 'customer'
     assert_not_includes active, 'stores'
     assert_not_includes hidden, 'stores'
   end

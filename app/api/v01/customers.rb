@@ -18,6 +18,7 @@
 
 class V01::Customers < Grape::API
   helpers SharedParams
+  helpers CancanGrapeHelpers
   helpers do
     # Never trust parameters from the scary internet, only allow the white list through.
     def customer_params
@@ -156,6 +157,7 @@ class V01::Customers < Grape::API
         customer = @current_user.reseller.customers.where(ParseIdsRefs.read(params[:id])).first!
         present customer, with: V01::Entities::CustomerAdmin
       elsif ParseIdsRefs.match params[:id], @current_customer
+        authorize!(:read, @current_customer)
         present @current_customer, with: V01::Entities::Customer
       else
         error! V01::Status.code_response(:code_404, before: 'Customer'), 404
@@ -193,6 +195,7 @@ class V01::Customers < Grape::API
         customer.update! customer_params
         present customer, with: V01::Entities::CustomerAdmin
       elsif ParseIdsRefs.match params[:id], @current_customer
+        authorize!(:update, @current_customer)
         @current_customer.update! customer_params
         present @current_customer, with: V01::Entities::Customer
       else

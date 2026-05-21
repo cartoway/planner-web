@@ -973,6 +973,7 @@ en:
           vehicle_usages: Vehicle configurations
           stores: Facilities
           tags: Tags
+          customer: Account
         icon_help: >-
           Pick an icon from the list
         color_help: >-
