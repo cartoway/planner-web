@@ -31,8 +31,8 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
 
     assert out['stop']['segment_controls']['active_stop']['visible']
     assert out['stop']['segment_controls']['move_stop']['visible']
-    assert_not out['stop']['segment_controls']['lock_stop']['visible']
-    assert_not out['stop']['segment_controls']['lock_stop']['usable']
+    assert out['stop']['segment_controls']['lock_stop']['visible']
+    assert out['stop']['segment_controls']['lock_stop']['usable']
   end
 
   test 'merge_operations_with_params maps disabled column to visible but not usable' do
@@ -60,10 +60,10 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     assert_not out['route']['segment_controls']['vehicle_usage']['usable']
   end
 
-  test 'default_operations hides stop lock_stop until enabled via merge' do
+  test 'default_operations enables stop lock_stop in reseller default role seed' do
     defs = Preferences::Catalog.default_operations
-    assert_not defs['stop']['segment_controls']['lock_stop']['visible']
-    assert_not defs['stop']['segment_controls']['lock_stop']['usable']
+    assert defs['stop']['segment_controls']['lock_stop']['visible']
+    assert defs['stop']['segment_controls']['lock_stop']['usable']
 
     out = Preferences::Catalog.merge_operations_with_params(
       defs.deep_dup,
@@ -75,10 +75,10 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     assert out['stop']['segment_controls']['lock_stop']['usable']
   end
 
-  test 'default_operations hides planning activate_stops until enabled via merge' do
+  test 'default_operations enables planning activate_stops in reseller default role seed' do
     defs = Preferences::Catalog.default_operations
-    assert_not defs['planning']['segment_controls']['activate_stops']['visible']
-    assert_not defs['planning']['segment_controls']['activate_stops']['usable']
+    assert defs['planning']['segment_controls']['activate_stops']['visible']
+    assert defs['planning']['segment_controls']['activate_stops']['usable']
 
     out = Preferences::Catalog.merge_operations_with_params(
       defs.deep_dup,
