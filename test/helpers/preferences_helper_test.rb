@@ -71,4 +71,11 @@ class PreferencesHelperTest < ActionView::TestCase
 
     assert_not current_user_customer_form_submit_enabled?(@current_user.customer)
   end
+
+  test 'admin user bypasses customer form submit restriction via reseller admin form' do
+    @current_user = users(:user_admin)
+    @current_user.reload
+
+    assert current_user_customer_form_submit_enabled?(customers(:customer_one))
+  end
 end
