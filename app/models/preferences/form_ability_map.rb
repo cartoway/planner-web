@@ -30,7 +30,8 @@ module Preferences
       'destination' => [Destination, Visit],
       'vehicle_usages' => [VehicleUsage, VehicleUsageSet],
       'stores' => [Store],
-      'tags' => [Tag]
+      'tags' => [Tag],
+      'customer' => [Customer]
     }.freeze
 
     def self.apply_cannot_rules!(ability, user)

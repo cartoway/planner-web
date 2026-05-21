@@ -279,4 +279,61 @@ class V01::CustomerTest < ActiveSupport::TestCase
     assert last_response.ok?, last_response.body
     assert_equal(params.with_indifferent_access.merge(solver_params), @customer.reload.advanced_options)
   end
+
+  test 'GET customer returns 403 when customer form is hidden' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['customer'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-hidden-customer-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    get api(@customer.id)
+    assert_equal 403, last_response.status, last_response.body
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'GET customer succeeds when customer form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['customer'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-ro-customer-get-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    get api(@customer.id)
+    assert last_response.ok?, last_response.body
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'PUT customer returns 403 when customer form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['customer'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-ro-customer-put-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    put api(@customer.id), { sms_template: 'read-only-blocked' }
+    assert_equal 403, last_response.status, last_response.body
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
 end
