@@ -37,7 +37,7 @@ default: &default
           toggle_routes: { visible: true, usable: true }
           toggle_route_data: { visible: true, usable: true }
           lock_routes: { visible: true, usable: true }
-          activate_stops: { visible: false, usable: false }
+          activate_stops: { visible: true, usable: true }
           export: { visible: true, usable: true }
           refresh: { visible: true, usable: true }
       route:
@@ -57,7 +57,7 @@ default: &default
         segment_controls:
           active_stop: { visible: true, usable: true }
           move_stop: { visible: true, usable: true }
-          lock_stop: { visible: false, usable: false }
+          lock_stop: { visible: true, usable: true }
     forms:
       plannings: { visible: true, usable: true }
       destination: { visible: true, usable: true }
