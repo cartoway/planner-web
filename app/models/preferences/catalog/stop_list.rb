@@ -29,7 +29,7 @@ module Preferences
         eta status
       ].freeze
 
-      DEFAULT_ACTIVE = %w[name ref].freeze
+      DEFAULT_ACTIVE = %w[name].freeze
       MAX_ACTIVE = 3
 
       module_function
