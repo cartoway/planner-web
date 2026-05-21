@@ -96,8 +96,9 @@ module PreferencesHelper
     destination.new_record? ? current_user_form_create?(:destination) : current_user_form_update?(:destination)
   end
 
-  # Customer account settings form; read-only edit when forms.customer is visible but not usable.
   def current_user_customer_form_submit_enabled?(customer)
+    return true if user_signed_in? && current_user.admin?
+
     customer.new_record? ? current_user_form_create?(:customer) : current_user_form_update?(:customer)
   end
 
