@@ -167,8 +167,12 @@ a.disabled {
 }
 
 #planning_tag_ids_input {
+  position: relative;
+  z-index: 0;
+
   .input-group > .select2-container--bootstrap {
     display: inline-block;
+    z-index: auto;
   }
   .select2-search--inline {
     width: 0px;
