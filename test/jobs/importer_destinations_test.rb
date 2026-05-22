@@ -524,6 +524,39 @@ class ImporterDestinationsTest < ActionController::TestCase
     end
   end
 
+  test 'should import destinations with french or anglo decimal coordinates' do
+    {
+      'import_destinations_fr_decimal.csv' => [:fr, [48.856, -2.352]],
+      'import_destinations_anglo_decimal.csv' => [:en, [48.856, -2.352]]
+    }.each do |filename, (locale, expected_coords)|
+      orig_locale = I18n.locale
+      I18n.locale = locale
+      assert_difference('Destination.count', 1) do
+        ImportCsv.new(
+          importer: ImporterDestinations.new(@customer),
+          replace: false,
+          file: tempfile("test/fixtures/files/#{filename}", 'text.csv')
+        ).import
+      end
+      assert_in_delta expected_coords[0], Destination.last.lat, 0.0001
+      assert_in_delta expected_coords[1], Destination.last.lng, 0.0001
+    ensure
+      I18n.locale = orig_locale
+    end
+  end
+
+  test 'should reject coordinates outside valid range after decimal parsing' do
+    file = Tempfile.new(['invalid_lat', '.csv'])
+    file.write("référence,nom,ville,lat,lng\ninvalid,Test City,Paris,91,0,2\n")
+    file.rewind
+
+    import = ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: file)
+    assert_not import.import
+    assert_match(/latitude/i, import.errors[:base].first)
+  ensure
+    file.close!
+  end
+
   test 'should import destinations CSV file with spaces in headers' do
     assert_difference('Destination.count', 1) do
       ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_headers_with_spaces.csv', 'text.csv')).import
