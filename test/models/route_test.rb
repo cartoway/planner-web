@@ -30,6 +30,23 @@ class RouteTest < ActiveSupport::TestCase
     end
   end
 
+  test 'merge_stop_leg_alerts_into_route_data combines final leg route alerts' do
+    route = routes(:route_one_one)
+    route_data_attributes = { out_of_work_time: false, out_of_drive_time: false, no_path: false }
+    route_attributes = {
+      stop_out_of_work_time: true,
+      stop_out_of_drive_time: false,
+      stop_no_path: true,
+      stop_out_of_max_distance: false
+    }
+
+    route.send(:merge_stop_leg_alerts_into_route_data!, route_data_attributes, route_attributes)
+
+    assert route_data_attributes[:out_of_work_time]
+    assert_not route_data_attributes[:out_of_drive_time]
+    assert route_data_attributes[:no_path]
+  end
+
   test 'compute_saved! persists computed metrics on route_data for snapshot reads when not outdated' do
     route = routes(:route_one_one)
     route.route_data.distance = route.route_data.emission = route.route_data.start = route.route_data.end = nil
