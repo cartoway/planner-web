@@ -28,6 +28,14 @@
     margin-right: 20px;
     vertical-align: middle;
   }
+  .select2-results__option[aria-selected=false]:not(.global) {
+    color: $grey-color;
+    opacity: $btn-disabled-opacity;
+  }
+  .select2-results__option[aria-selected=false]:not(.global):before {
+    border-color: rgba($grey-color, 0.85);
+    background-color: #f5f5f5;
+  }
   .select2-results__option[aria-selected=true]:not(.global):before {
     font-family: "Font Awesome 6 Free";
     font-weight: bold;
@@ -47,9 +55,16 @@
   .select2-container--default .select2-results__option[aria-selected=true] {
     background-color: #fff;
   }
-  .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  .select2-container--default .select2-results__option--highlighted[aria-selected=true],
+  .select2-container--bootstrap .select2-results__option--highlighted[aria-selected=true] {
     background-color: #eaeaeb;
     color: #272727;
+  }
+  .select2-container--default .select2-results__option--highlighted[aria-selected=false]:not(.global),
+  .select2-container--bootstrap .select2-results__option--highlighted[aria-selected=false]:not(.global) {
+    background-color: #eaeaeb;
+    color: $grey-color;
+    opacity: $btn-disabled-opacity;
   }
   .select2-container--default .select2-selection--multiple {
     margin-bottom: 10px;

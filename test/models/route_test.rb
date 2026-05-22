@@ -518,4 +518,20 @@ class RouteTest < ActiveSupport::TestCase
       assert sub_tour_indices.include?(2), 'Should have polyline with sub_tour_index 2'
     end
   end
+
+  test 'available excludes hidden and locked out of route' do
+    planning = plannings(:planning_one)
+    out_of_route = planning.routes.find { |route| route.vehicle_usage_id.nil? }
+    out_of_route.update!(hidden: true, locked: true)
+
+    assert_not_includes planning.routes.available, out_of_route
+  end
+
+  test 'available includes out of route when visible' do
+    planning = plannings(:planning_one)
+    out_of_route = planning.routes.find { |route| route.vehicle_usage_id.nil? }
+    out_of_route.update!(hidden: false, locked: false)
+
+    assert_includes planning.routes.available, out_of_route
+  end
 end

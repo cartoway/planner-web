@@ -26,6 +26,17 @@ class PlanningsHelperTest < ActionView::TestCase
     end
   end
 
+  test 'planning_summary marks out of route routes for selector display' do
+    planning = plannings(:planning_one)
+    s = planning_summary(planning)
+    by_id = s[:routes].index_by { |r| r[:route_id] }
+
+    planning.routes.each do |route|
+      row = by_id[route.id]
+      assert_equal route.vehicle_usage_id.nil?, row[:data][:out_of_route]
+    end
+  end
+
   test 'planning_statistics_routes returns sidebar routes when filter_planning_route_data is enabled' do
     planning = plannings(:planning_one)
     sidebar = planning.routes.available.to_a

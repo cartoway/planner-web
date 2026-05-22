@@ -49,7 +49,7 @@ class PlanningStopsPreloadTest < ActiveSupport::TestCase
   private
 
   def assign_planning_stops_size(total_stops)
-    routes = @planning.routes.select { |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.to_a
+    routes = @planning.routes.select { |route| !route.hidden || !route.locked }.to_a
     per_route = total_stops / routes.size
     remainder = total_stops % routes.size
 
