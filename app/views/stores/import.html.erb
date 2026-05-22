@@ -1,6 +1,7 @@
 <% javascript 'destination' %>
 
 <% content_for :title, t('.title') %>
+<% can_import_stores = current_user_form_create?(:stores) %>
 
 <h1><%= t '.title' %></h1>
 
@@ -17,7 +18,7 @@
       <p class="help-block"><%= t '.csv.help' %></p>
       <%= bootstrap_form_for(@import_csv, url: stores_import_csv_path, layout: :horizontal, multipart: true) do |f| %>
         <%= render 'shared/error_messages', model: @import_csv %>
-        <%= f.file_field :file, required: true %>
+        <%= f.file_field :file, required: true, disabled: !can_import_stores %>
         <p class="help-block col-md-offset-2">
           <%= t('.csv.file_help') %>
           <a data-toggle="modal" data-target="#import-help-modal" data-keyboard="true" href="#help" title="<%= t('.import_template_help') %>"><i class="fa fa-info-circle fa-fw"></i> <%= t('.import_template_help') %></a>
@@ -28,7 +29,7 @@
           <%= f.radio_button :replace, 1, checked: @import_csv.replace, label: t('.replace_yes') %>
           <p class="help-block"><%= t '.replace_yes_help' %></p>
         <% end %>
-        <%= f.submit message: t('all.verb.import'), icon: 'fa-upload' %>
+        <%= f.submit message: t('all.verb.import'), icon: 'fa-upload', disabled: !can_import_stores %>
         <div class="row form-group">
           <div class="col-md-offset-2 col-md-6">
             <a href="/store/import_template.excel" class="btn btn-default" role="button"><i class="fa fa-download fa-fw"></i> <%= t 'import.template_excel' %></a>

@@ -92,6 +92,7 @@ class V01::Stores < Grape::API
       optional :geocoding_accuracy, type: Float, documentation: { desc: 'Must be inside 0..1 range.' }
     end
     post do
+      authorize!(:create, Store)
       store = current_customer.stores.build(store_params)
       current_customer.save!
       present store, with: V01::Entities::Store
@@ -111,6 +112,7 @@ class V01::Stores < Grape::API
       mutually_exclusive :stores, :file
     end
     put do
+      authorize!(:create, Store)
       import = if params[:stores]
                  ImportJson.new(importer: ImporterStores.new(current_customer), replace: params[:replace], json: params[:stores])
                else
@@ -135,6 +137,7 @@ class V01::Stores < Grape::API
     end
     put ':id' do
       store = current_customer.stores.where(ParseIdsRefs.where_clause([params[:id]])).first!
+      authorize!(:update, store)
       store.assign_attributes(store_params)
       store.save!
       store.customer.save! if store.customer

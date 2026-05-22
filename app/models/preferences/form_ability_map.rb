@@ -31,7 +31,9 @@ module Preferences
       'vehicle_usages' => [VehicleUsage, VehicleUsageSet],
       'stores' => [Store],
       'tags' => [Tag],
-      'customer' => [Customer]
+      'customer' => [Customer],
+      'deliverable_units' => [DeliverableUnit],
+      'custom_attributes' => [CustomAttribute]
     }.freeze
 
     def self.apply_cannot_rules!(ability, user)
@@ -67,6 +69,8 @@ module Preferences
 
       apply_vehicle_configuration_hidden_gate!(ability, user)
       apply_tag_form_visibility_gate!(ability, user)
+      apply_deliverable_units_form_visibility_gate!(ability, user)
+      apply_custom_attributes_form_visibility_gate!(ability, user)
     end
 
     # When forms.vehicle_usages is in the hidden tier (not visible), block all fleet configuration screens.
@@ -95,5 +99,25 @@ module Preferences
       ability.cannot :show, ::Tag
     end
     private_class_method :apply_tag_form_visibility_gate!
+
+    def self.apply_deliverable_units_form_visibility_gate!(ability, user)
+      return if user.blank? || user.admin?
+      return unless user.respond_to?(:form_visible?)
+      return if user.form_visible?('deliverable_units')
+
+      ability.cannot :index, DeliverableUnit
+      ability.cannot :show, DeliverableUnit
+    end
+    private_class_method :apply_deliverable_units_form_visibility_gate!
+
+    def self.apply_custom_attributes_form_visibility_gate!(ability, user)
+      return if user.blank? || user.admin?
+      return unless user.respond_to?(:form_visible?)
+      return if user.form_visible?('custom_attributes')
+
+      ability.cannot :index, CustomAttribute
+      ability.cannot :show, CustomAttribute
+    end
+    private_class_method :apply_custom_attributes_form_visibility_gate!
   end
 end

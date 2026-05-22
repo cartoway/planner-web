@@ -22,6 +22,10 @@ class DeliverableUnitsController < ApplicationController
   before_action :set_deliverable_unit, only: [:edit, :update, :destroy]
   before_action :icons_table, except: [:index]
 
+  include PreferencesAuthorization
+  before_action -> { deny_unless_form_create!(:deliverable_units) }, only: [:create]
+  before_action -> { deny_unless_form_update!(:deliverable_units) }, only: [:update, :destroy, :destroy_multiple]
+
   load_and_authorize_resource
 
   def index

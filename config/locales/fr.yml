@@ -999,6 +999,8 @@ fr:
           stores: Sites
           tags: Catégories
           customer: Espace client
+          deliverable_units: Unités livrables
+          custom_attributes: Champs additionnels
         icon_help: >-
           Choisissez une icône dans la liste
         color_help: >-

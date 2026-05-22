@@ -97,6 +97,52 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_redirected_to deliverable_units_path
   end
 
+  test 'create is forbidden when deliverable_units form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['deliverable_units'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "ro-deliverable-units-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    assert_no_difference('DeliverableUnit.count') do
+      post :create, params: { deliverable_unit: { label: 'blocked', ref: 'blocked-ref' } }
+    end
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
+  test 'destroy_multiple is forbidden when deliverable_units form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['deliverable_units'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "ro-deliverable-units-destroy-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    assert_no_difference('DeliverableUnit.count') do
+      delete :destroy_multiple, params: { deliverable_units: { deliverable_units(:deliverable_unit_one_one).id => 1 } }
+    end
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
   test 'should return an icon in any situation' do
     #Default icon value is nil
     assert_equal "fa-dumpster", @deliverable_unit.default_icon, response.body

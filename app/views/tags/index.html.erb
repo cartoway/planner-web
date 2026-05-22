@@ -23,7 +23,7 @@
 <table id="tags" class="table table-striped table-hover">
   <thead>
     <tr>
-      <th><button type="button" class="btn btn-default btn-xs" data-toggle="selection" data-target="#tags" title="<%= t 'all.verb.toggle_selection' %>"><i class="fa fa-check fa-fw"></i></button></th>
+      <th><button type="button" class="btn btn-default btn-xs" data-toggle="selection" data-target="#tags" title="<%= t 'all.verb.toggle_selection' %>"<%= ' disabled' unless can_mutate_tags %>><i class="fa fa-check fa-fw"></i></button></th>
       <th><%= t 'activerecord.attributes.tag.label' %></th>
       <th><%= t 'activerecord.attributes.tag.icon' %></th>
       <th><%= t 'activerecord.attributes.tag.ref' %></th>
@@ -34,7 +34,7 @@
   <tbody>
     <% @tags.each do |tag| %>
       <tr>
-        <td><%= check_box_tag("tags[#{tag.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions') %></td>
+        <td><%= check_box_tag("tags[#{tag.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions', disabled: !can_mutate_tags) %></td>
         <td><%= tag.label %></td>
         <td><%= tag_icon tag %></td>
         <td><%= tag.ref %></td>
