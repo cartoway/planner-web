@@ -353,7 +353,7 @@ $sidebar-margins: 10px;
 
         #extend_close_panel {
           position: relative;
-          z-index: 2;
+          z-index: 10;
         }
       }
 
@@ -368,7 +368,7 @@ $sidebar-margins: 10px;
 
       #route_selector {
         flex-shrink: 0;
-        margin: -22px 0px 4px;
+        margin: -22px 0 4px;
         padding: 5px 15px 8px;
         position: relative;
         z-index: 5;
@@ -611,12 +611,15 @@ $sidebar-margins: 10px;
 
   #extend_close_panel {
     padding-right: 5px;
+    position: relative;
+    z-index: 10;
   }
 
   .extended #extend_close_panel {
     position: fixed;
     right: 5px;
     padding-top: 5px;
+    z-index: 25;
   }
 
   .sidebar-left ~ .sidebar-map {

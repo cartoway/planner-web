@@ -80,8 +80,8 @@ class Route < ApplicationRecord
 
   default_scope { includes(:route_data, :start_route_data, :stop_route_data) }
 
-  scope :available, -> { where("vehicle_usage_id IS NULL OR NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
-  scope :available_or_outdated, -> { where("vehicle_usage_id IS NULL OR NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
+  scope :available, -> { where("NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
+  scope :available_or_outdated, -> { where("NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
   scope :for_customer_id, ->(customer_id) { joins(:planning).where(plannings: {customer_id: customer_id}) }
   scope :includes_vehicle_usages, -> {
     includes(vehicle_usage: [

@@ -24,9 +24,10 @@ class StopQuantities
       delivery = stop.visit.default_deliveries[du.id] || 0
       pickup = pickups[du.id] || 0
       quantity = delivery - pickup
-      q = number_with_precision(loads[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
+      q = ''
+      q += du.label + "\u202F" if du.label
+      q += number_with_precision(loads[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
       q += '/' + number_with_precision(vehicle.default_capacities[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[du.id]
-      q += "\u202F" + du.label if du.label
 
       if pickup > 0
         q += ' (+'
@@ -59,9 +60,10 @@ class StopQuantities
       next if !options[:with_nil] && (loads[du.id].nil? || loads[du.id] == 0)
 
       quantity = loads[du.id] || 0
-      q = number_with_precision(loads[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
+      q = ''
+      q += du.label + "\u202F" if du.label
+      q += number_with_precision(loads[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s
       q += '/' + number_with_precision(vehicle.default_capacities[du.id], precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true).to_s if vehicle && vehicle.default_capacities[du.id]
-      q += "\u202F" + du.label if du.label
 
       {
         deliverable_unit_id: du.id,
