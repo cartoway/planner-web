@@ -566,9 +566,8 @@ export const plannings_edit = function(params) {
         } else {
           updateSuccess(locals.summary, map, [locals.route], options);
         }
-        if (!isRouteOnlyUpdate) {
-          initRouteSelector();
-          updateSelectionCount('#route_selector', '#planning_route_ids');
+        if (isRouteOnlyUpdate && locals.summary) {
+          refreshRouteSelectorFromSummary(locals.summary);
         }
         if (!locals.route.vehicle_usage_id) {
           continuousListLoading('#out_route_scroll', '#out_list_next_link', '#loading-indicator', 100);
@@ -677,6 +676,7 @@ export const plannings_edit = function(params) {
               });
             });
           });
+          refreshRouteSelectorFromSummary(summarySnapshot);
         },
         complete: tickBatchWork
       });
@@ -1899,6 +1899,69 @@ export const plannings_edit = function(params) {
     return false;
   };
 
+  var refreshRouteSelectorFromSummary = function(summary) {
+    var $select = $('#planning_route_ids');
+    if (!$select.length || !summary || !summary.routes) {
+      return;
+    }
+
+    var previousSelection = ($select.val() || []).slice();
+    if ($select.hasClass('select2-hidden-accessible')) {
+      $select.select2('destroy');
+    }
+
+    $select.empty();
+    [
+      { id: 'clear', text: I18n.t('web.select2.route_clear'), className: 'global' },
+      { id: 'reverse', text: I18n.t('web.select2.route_reverse'), className: 'global' },
+      { id: 'all', text: I18n.t('web.select2.route_all'), className: 'global' }
+    ].forEach(function(option) {
+      $select.append(
+        $('<option></option>')
+          .val(option.id)
+          .text(option.text)
+          .addClass(option.className)
+      );
+    });
+
+    summary.routes.filter(function(route) {
+      return route.vehicle_usage_id;
+    }).forEach(function(route) {
+      var $option = $('<option></option>')
+        .val(String(route.route_id))
+        .text(route.name || '');
+
+      if (route.data) {
+        Object.keys(route.data).forEach(function(key) {
+          $option.attr('data-' + key.replace(/_/g, '-'), route.data[key]);
+        });
+      }
+
+      $select.append($option);
+    });
+
+    var validSelection = previousSelection.filter(function(value) {
+      return $select.find('option[value="' + value + '"]').length > 0;
+    });
+    if (validSelection.length) {
+      $select.val(validSelection);
+    } else {
+      $select.find('option').each(function() {
+        var routeId = $(this).val();
+        if (['clear', 'reverse', 'all'].includes(routeId)) {
+          return;
+        }
+        var route = summary.routes.find(function(r) { return String(r.route_id) === routeId; });
+        if (route && !(route.hidden && route.locked)) {
+          $(this).prop('selected', true);
+        }
+      });
+    }
+
+    initRouteSelector();
+    updateSelectionCount('#route_selector', '#planning_route_ids');
+  };
+
   var initRouteSelector = function() {
     var previousSelection = [];
     var $planningRouteIds = $('#planning_route_ids');
@@ -2841,6 +2904,10 @@ export const plannings_edit = function(params) {
     updateOptimButton(routes);
     initRouteDepartureTimeEntry();
 
+    if (data && data.routes) {
+      refreshRouteSelectorFromSummary(data);
+    }
+
   }
 
   // Update only stops by default
@@ -3116,8 +3183,6 @@ export const plannings_edit = function(params) {
       error: ajaxError,
       success: function() {
         updateSuccess(locals.summary, map, locals.routes);
-        initRouteSelector();
-        updateSelectionCount('#route_selector', '#planning_route_ids');
       },
       complete: completeAjaxMap
     });
