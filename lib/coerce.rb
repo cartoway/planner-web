@@ -44,6 +44,8 @@ class CoerceArrayString
 end
 
 class CoerceFloatString
+  SPACE_LIKE_CHARS = /[ \t\r\n\f\v\u00A0\u202F\u2009]/
+
   def self.parse(str, locale: I18n.locale)
     return str.to_f if str.is_a?(Numeric)
     return nil if str.nil? || (str.is_a?(String) && str.strip.empty?)
@@ -54,6 +56,8 @@ class CoerceFloatString
   def self.parse_decimal_string(str, locale: I18n.locale)
     str = str.to_s.strip
     return nil if str.empty?
+
+    str = str.gsub(SPACE_LIKE_CHARS, '')
 
     delimiter = I18n.t('number.format.delimiter', locale: locale)
     separator = I18n.t('number.format.separator', locale: locale)
