@@ -688,13 +688,18 @@ export const plannings_edit = function(params) {
   };
 
   var enqueueAutoLoadStops = function(planning_id, context) {
+    if (params.stops_preload_mode === 'manual') {
+      return;
+    }
+
     var pendingById = {};
-    $('.load-stops', context).each(function(_idx, node) {
-      var rid = $(node).closest('[data-route-id]').attr('data-route-id');
-      if (rid) {
-        pendingById[rid] = true;
+    $('.load-stops-auto', context).each(function(_idx, node) {
+      var routeId = $(node).closest('li.route[data-route-id]').attr('data-route-id');
+      if (routeId) {
+        pendingById[String(routeId)] = true;
       }
     });
+
     autoLoadRoutesQueue = autoLoadRoutesQueue.filter(function(rid) {
       return pendingById[rid];
     });
@@ -702,12 +707,7 @@ export const plannings_edit = function(params) {
     // Visible out-of-route first (same as before).
     var priorityOutRouteIds = [];
     var restRouteIds = [];
-    $('.load-stops', context).each(function(_idx, node) {
-      var $node = $(node);
-      var routeId = $node.closest('[data-route-id]').attr('data-route-id');
-      if (!routeId) {
-        return;
-      }
+    Object.keys(pendingById).forEach(function(routeId) {
       if (autoLoadRouteIds[routeId]) {
         return;
       }
@@ -717,7 +717,7 @@ export const plannings_edit = function(params) {
       if (priorityOutRouteIds.indexOf(routeId) !== -1 || restRouteIds.indexOf(routeId) !== -1) {
         return;
       }
-      var $routeLi = $node.closest('li.route[data-route-id]');
+      var $routeLi = $('li.route[data-route-id="' + routeId + '"]', context);
       if ($routeLi.hasClass('out_route')) {
         var $stopsUl = $routeLi.find('ul.stops').first();
         var stopsListVisible = !$stopsUl.length || $stopsUl.is(':visible');
@@ -732,6 +732,9 @@ export const plannings_edit = function(params) {
     });
     autoLoadRoutesQueue.push.apply(autoLoadRoutesQueue, priorityOutRouteIds);
     autoLoadRoutesQueue.push.apply(autoLoadRoutesQueue, restRouteIds);
+    if (!autoLoadRoutesQueue.length) {
+      return;
+    }
     processAutoLoadRoutesQueue(planning_id);
   };
 
