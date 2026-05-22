@@ -546,15 +546,13 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should reject coordinates outside valid range after decimal parsing' do
-    file = Tempfile.new(['invalid_lat', '.csv'])
-    file.write("référence,nom,ville,lat,lng\ninvalid,Test City,Paris,91,0,2\n")
-    file.rewind
-
-    import = ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: file)
+    import = ImportCsv.new(
+      importer: ImporterDestinations.new(@customer),
+      replace: false,
+      file: tempfile('test/fixtures/files/import_invalid_lat.csv', 'invalid_lat.csv')
+    )
     assert_not import.import
     assert_match(/latitude/i, import.errors[:base].first)
-  ensure
-    file.close!
   end
 
   test 'should import destinations CSV file with spaces in headers' do

@@ -487,7 +487,7 @@ class Route < ApplicationRecord
       # Assign route-only attributes to self
       self.assign_attributes(route_only_attributes)
 
-      self.route_data.assign_attributes(route_data_attributes)
+      self.route_data.assign_attributes(route_data_attributes.compact)
       [stops_sort, stops_drive_time, stops_time_windows]
     end
   end
@@ -1099,14 +1099,15 @@ class Route < ApplicationRecord
   end
 
   def ensure_route_data
+    route_data_defaults = init_store_route_data_attributes.merge(init_load_route_data_attributes)
     if route_data_id.nil?
-      self.route_data = RouteData.new
+      self.route_data = RouteData.new(route_data_defaults)
     end
     if start_route_data_id.nil?
-      self.start_route_data = RouteData.new
+      self.start_route_data = RouteData.new(route_data_defaults)
     end
     if stop_route_data_id.nil?
-      self.stop_route_data = RouteData.new
+      self.stop_route_data = RouteData.new(route_data_defaults)
     end
   end
 
@@ -1677,7 +1678,8 @@ class Route < ApplicationRecord
 
   def merge_stop_leg_alerts_into_route_data!(route_data_attributes, route_attributes)
     STOP_LEG_ROUTE_DATA_ALERT_FIELDS.each do |route_data_key, route_key|
-      route_data_attributes[route_data_key] ||= route_attributes[route_key]
+      route_data_attributes[route_data_key] =
+        route_data_attributes[route_data_key] || route_attributes[route_key] || false
     end
   end
 

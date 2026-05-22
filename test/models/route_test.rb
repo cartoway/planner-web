@@ -47,6 +47,22 @@ class RouteTest < ActiveSupport::TestCase
     assert route_data_attributes[:no_path]
   end
 
+  test 'merge_stop_leg_alerts_into_route_data defaults nil alert fields to false' do
+    route = routes(:route_one_one)
+    route_data_attributes = {}
+    route_attributes = {
+      stop_out_of_work_time: nil,
+      stop_out_of_drive_time: nil,
+      stop_no_path: nil,
+      stop_out_of_max_distance: nil
+    }
+
+    route.send(:merge_stop_leg_alerts_into_route_data!, route_data_attributes, route_attributes)
+
+    assert_equal false, route_data_attributes[:no_path]
+    assert_equal false, route_data_attributes[:out_of_drive_time]
+  end
+
   test 'compute_saved! persists computed metrics on route_data for snapshot reads when not outdated' do
     route = routes(:route_one_one)
     route.route_data.distance = route.route_data.emission = route.route_data.start = route.route_data.end = nil
