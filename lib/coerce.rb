@@ -45,7 +45,7 @@ end
 
 class CoerceFloatString
   def self.parse(str, locale: I18n.locale)
-    return str if str.is_a?(Numeric)
+    return str.to_f if str.is_a?(Numeric)
     return nil if str.nil? || (str.is_a?(String) && str.strip.empty?)
 
     Float(parse_decimal_string(str, locale: locale))

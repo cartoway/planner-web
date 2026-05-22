@@ -78,10 +78,7 @@ class PlanningsControllerTest < ActionController::TestCase
     customer = customers(:customer_one)
     original_limit = customer.stops_preload_limit
     customer.update!(stops_preload_limit: 1500)
-
-    @planning.routes.each do |route|
-      route.route_data.update!(stops_size: 200)
-    end
+    assign_visible_routes_stops_size(1200)
 
     get :sidebar, params: { planning_id: @planning.id }, xhr: true
     assert_response :success
@@ -1670,5 +1667,16 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :forbidden
   ensure
     user.update!(role_id: nil)
+  end
+
+  def assign_visible_routes_stops_size(total_stops)
+    routes = @planning.routes.select { |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.to_a
+    per_route = total_stops / routes.size
+    remainder = total_stops % routes.size
+
+    routes.each_with_index do |route, index|
+      route.route_data.update!(stops_size: per_route + (index < remainder ? 1 : 0))
+    end
+    @planning.reload
   end
 end

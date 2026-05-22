@@ -28,5 +28,6 @@ class CoerceFloatStringTest < ActiveSupport::TestCase
 
   test 'parse passes through numeric values' do
     assert_in_delta 48.856, CoerceFloatString.parse(48.856)
+    assert_kind_of Float, CoerceFloatString.parse(30)
   end
 end
