@@ -633,7 +633,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def convert_localized_fields(row)
-    row[:revenue] = row[:revenue].gsub(/,/, '.')&.to_f if row[:revenue].is_a?(String)
+    row[:revenue] = CoerceFloatString.parse(row[:revenue]) if row[:revenue].is_a?(String) && row[:revenue].present?
   end
 
   def build_store_attributes(row)
@@ -683,20 +683,23 @@ class ImporterDestinations < ImporterBase
   def convert_lat_lng_attributes(destination_attributes)
     return if !destination_attributes.key?(:lat) && !destination_attributes.key?(:lng)
 
-    destination_attributes[:lat] =
-      if destination_attributes[:lat].nil? || destination_attributes[:lat] == ''
-        nil
-      else
-        destination_attributes[:lat].gsub!(',', '.') if destination_attributes[:lat].is_a? String
-        destination_attributes[:lat].to_f
-      end
-    destination_attributes[:lng] =
-      if destination_attributes[:lng].nil? || destination_attributes[:lng] == ''
-        nil
-      else
-        destination_attributes[:lng].gsub!(',', '.') if destination_attributes[:lng].is_a? String
-        destination_attributes[:lng].to_f
-      end
+    destination_attributes[:lat] = parse_import_coordinate(destination_attributes[:lat], :lat) if destination_attributes.key?(:lat)
+    destination_attributes[:lng] = parse_import_coordinate(destination_attributes[:lng], :lng) if destination_attributes.key?(:lng)
+  end
+
+  def parse_import_coordinate(value, axis)
+    return nil if value.nil? || value == ''
+
+    coordinate = CoerceFloatString.parse(value)
+    in_range = case axis
+               when :lat then coordinate.between?(-90.0, 90.0)
+               when :lng then coordinate.between?(-180.0, 180.0)
+               end
+    return coordinate if in_range
+
+    raise ImportInvalidRow.new(I18n.t("destinations.import_file.invalid_#{axis}", value: value))
+  rescue ArgumentError, TypeError
+    raise ImportInvalidRow.new(I18n.t('destinations.import_file.invalid_numeric_value', value: value))
   end
 
   def reset_geocoding(destination_attributes)

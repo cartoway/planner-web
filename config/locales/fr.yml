@@ -1684,6 +1684,8 @@ fr:
       missing_name: « nom » manquant.
       missing_location: « ville / code postal » ou « lat / lng » manquant.
       invalid_numeric_value: 'valeur numérique « %{value} » invalide.'
+      invalid_lat: 'La latitude « %{value} » est invalide (attendu entre -90 et 90, vérifiez le séparateur décimal).'
+      invalid_lng: 'La longitude « %{value} » est invalide (attendu entre -180 et 180, vérifiez le séparateur décimal).'
       invalid_stop: Le type d'arrêt n'est pas valide
       invalid_force_position: Le type de position forcée est invalide
       check_custom_columns: Vérifiez votre définition des colonnes à importer.
