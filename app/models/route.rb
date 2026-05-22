@@ -36,6 +36,12 @@ class Route < ApplicationRecord
     out_of_max_distance out_of_max_reload out_of_relation out_of_skill
     out_of_max_ride_distance out_of_max_ride_duration
   ].freeze
+  STOP_LEG_ROUTE_DATA_ALERT_FIELDS = {
+    no_path: :stop_no_path,
+    out_of_drive_time: :stop_out_of_drive_time,
+    out_of_work_time: :stop_out_of_work_time,
+    out_of_max_distance: :stop_out_of_max_distance
+  }.freeze
 
   # Exposed on API (Route / RouteStatus); includes max_loads (jsonb on route_data).
   ROUTE_DATA_API_METRIC_FIELDS = (ROUTE_DATA_METRICS_FIELDS + [:max_loads]).freeze
@@ -450,6 +456,11 @@ class Route < ApplicationRecord
       route_attributes[:stop_out_of_max_distance] = max_distance ? route_attributes[:distance] > max_distance : false
       route_attributes[:emission] = (vehicle_usage.vehicle.emission.nil? || vehicle_usage.vehicle.consumption.nil?) ? nil : (route_attributes[:distance] / 1000 * vehicle_usage.vehicle.emission * vehicle_usage.vehicle.consumption / 100)
 
+      merge_stop_leg_alerts_into_route_data!(previous_route_data_attributes, route_attributes)
+      previous_route_data.assign_attributes(
+        previous_route_data_attributes.slice(*STOP_LEG_ROUTE_DATA_ALERT_FIELDS.keys).compact
+      )
+
       # Separate attributes for Route vs RouteData
       route_only_attributes = route_attributes.slice(:stop_distance, :stop_drive_time, :stop_no_path, :stop_out_of_drive_time, :stop_out_of_work_time, :stop_out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration)
       route_data_attributes = route_attributes.slice(:distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :rests_duration, :pickups, :deliveries, :departure)
@@ -469,6 +480,7 @@ class Route < ApplicationRecord
         }
       }
       route_data_attributes.merge!(compacted_route_data_attributes)
+      merge_stop_leg_alerts_into_route_data!(route_data_attributes, route_attributes)
       route_data_attributes[:size_destinations] = stops_sort.select{ |stop| stop.is_a?(StopVisit) }.map{ |stop| stop.visit.destination_id }.compact.uniq.size
       route_data_attributes[:size_active_destinations] =
         stops_sort.select { |stop| stop.is_a?(StopVisit) && stop.active? }.filter_map { |stop| stop.visit&.destination_id }.uniq.size
@@ -1661,6 +1673,12 @@ class Route < ApplicationRecord
       return true if @default_capacities[du.id] && (loads[du.id].round(2) > @default_capacities[du.id].round(2) || loads[du.id].round(2) < 0)
     end
     false
+  end
+
+  def merge_stop_leg_alerts_into_route_data!(route_data_attributes, route_attributes)
+    STOP_LEG_ROUTE_DATA_ALERT_FIELDS.each do |route_data_key, route_key|
+      route_data_attributes[route_data_key] ||= route_attributes[route_key]
+    end
   end
 
   def use_persisted_route_metrics?
