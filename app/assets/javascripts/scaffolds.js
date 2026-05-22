@@ -951,8 +951,12 @@ export function selectFormatOption(option) {
 
       // Append active/total stops if available
       if (typeof size !== 'undefined' && size > 0) {
-        var active = (typeof sizeActive !== 'undefined') ? sizeActive : size;
-        label += ' - ' + active + '/' + size;
+        if ($el.data('out-of-route')) {
+          label += ' - ' + size;
+        } else {
+          var active = (typeof sizeActive !== 'undefined') ? sizeActive : size;
+          label += ' - ' + active + '/' + size;
+        }
       }
 
       var icons = [];

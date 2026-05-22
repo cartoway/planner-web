@@ -1924,9 +1924,7 @@ export const plannings_edit = function(params) {
       );
     });
 
-    summary.routes.filter(function(route) {
-      return route.vehicle_usage_id;
-    }).forEach(function(route) {
+    summary.routes.forEach(function(route) {
       var $option = $('<option></option>')
         .val(String(route.route_id))
         .text(route.name || '');
@@ -2007,9 +2005,8 @@ export const plannings_edit = function(params) {
       var displayedRouteIds = Object.keys(routesLayer.clustersByRoute).map(function(id) { return parseInt(id); })
         .concat(Object.keys(routesLayer.layersByRoute).map(function(id) { return parseInt(id); }));
 
-      var outOfRouteId = routesLayer.options.outOfRouteId;
       var routesToHide = displayedRouteIds.filter(function(id) {
-        return selectedRouteIds.indexOf(id) === -1 && id !== outOfRouteId;
+        return selectedRouteIds.indexOf(id) === -1;
       });
 
       var routesToShow = selectedRouteIds.filter(function(id) {
