@@ -36,14 +36,9 @@ module LocalizedAttr
     end
 
     def to_delocalized_decimal(str)
-      delimiter = I18n.t('number.format.delimiter')
-      separator = I18n.t('number.format.separator')
+      return str unless str.is_a?(String)
 
-      str = str.gsub(separator, '.') if str
-      # Do not replace delimiter if it's a point. Because the default separator is a point.
-      str = str.gsub(/#{delimiter}([0-9]{3})/, '\1') if str && I18n.t('number.format.delimiter') != '.'
-
-      return str
+      CoerceFloatString.parse_decimal_string(str) || str
     end
 
     def localize_numeric_value(float)

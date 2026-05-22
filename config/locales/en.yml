@@ -1626,6 +1626,8 @@ en:
       missing_name: '"name" missing.'
       missing_location: '"city / postalcode" or "lat / lng" missing.'
       invalid_numeric_value: 'Invalid numeric value "%{value}".'
+      invalid_lat: 'Latitude "%{value}" is invalid (expected between -90 and 90, check the decimal separator).'
+      invalid_lng: 'Longitude "%{value}" is invalid (expected between -180 and 180, check the decimal separator).'
       invalid_stop: The stop type is invalid
       invalid_force_position: The forced position type is invalid
       check_custom_columns: Check your columns definition.

@@ -44,10 +44,26 @@ class CoerceArrayString
 end
 
 class CoerceFloatString
-  def self.parse(str)
-    str = nil if str.is_a?(String) && str.empty?
-    str.gsub!(',', '.') if str.is_a?(String) && str.match(',')
-    Float(str) if str
+  def self.parse(str, locale: I18n.locale)
+    return str if str.is_a?(Numeric)
+    return nil if str.nil? || (str.is_a?(String) && str.strip.empty?)
+
+    Float(parse_decimal_string(str, locale: locale))
+  end
+
+  def self.parse_decimal_string(str, locale: I18n.locale)
+    str = str.to_s.strip
+    return nil if str.empty?
+
+    delimiter = I18n.t('number.format.delimiter', locale: locale)
+    separator = I18n.t('number.format.separator', locale: locale)
+
+    str = str.gsub(separator, '.') if separator.present?
+    if delimiter.present? && delimiter != '.'
+      str = str.gsub(/#{Regexp.escape(delimiter)}(?=\d{3})/, '')
+    end
+
+    str
   end
 end
 
