@@ -2,11 +2,14 @@
 
 <% content_for :title, t('.title') %>
 
+<% can_destroy_deliverable_units = current_user_form_destroy_enabled?(:deliverable_units) %>
+<% can_create_deliverable_units = current_user_form_create?(:deliverable_units) %>
+
 <h1><%= t '.title' %></h1>
 
 <div class="row row-top">
   <div class="col-md-6">
-    <%= link_to new_deliverable_unit_path, class:"btn btn-primary btn-sm" do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
+    <%= link_to new_deliverable_unit_path, disabled: !can_create_deliverable_units, class:"btn btn-primary btn-sm" do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
   </div>
   <div class="col-md-6">
     <div class="form-inline pull-right">
@@ -20,7 +23,7 @@
 <table id="deliverable_units" class="table table-striped table-hover">
   <thead>
     <tr>
-      <th><button type="button" class="btn btn-default btn-xs" data-toggle="selection" data-target="#deliverable_units" title="<%= t 'all.verb.toggle_selection' %>"><i class="fa fa-check fa-fw"></i></button></th>
+      <th><button type="button" class="btn btn-default btn-xs" data-toggle="selection" data-target="#deliverable_units" title="<%= t 'all.verb.toggle_selection' %>"<%= ' disabled' unless can_destroy_deliverable_units %>><i class="fa fa-check fa-fw"></i></button></th>
       <th><%= t 'activerecord.attributes.deliverable_unit.label' %></th>
       <th><%= t 'activerecord.attributes.deliverable_unit.ref' %></th>
       <th><%= t 'activerecord.attributes.deliverable_unit.icon' %></th>
@@ -35,7 +38,7 @@
   <tbody>
     <% @deliverable_units.each do |deliverable_unit| %>
       <tr>
-        <td><%= check_box_tag("deliverable_units[#{deliverable_unit.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions') %></td>
+        <td><%= check_box_tag("deliverable_units[#{deliverable_unit.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions', disabled: !can_destroy_deliverable_units) %></td>
         <td><%= deliverable_unit.label %></td>
         <td><%= deliverable_unit.ref %></td>
         <td><%= "<i class=\"fa fa-fw #{deliverable_unit.default_icon}\"></i>".html_safe %></td>
@@ -45,7 +48,11 @@
         <td><%= deliverable_unit.default_optimization_overload_multiplier == 0 ? t('deliverable_units.form.optimization_overload_multiplier_no') : deliverable_unit.default_optimization_overload_multiplier == -1 ? t('deliverable_units.form.optimization_overload_multiplier_ignore') : deliverable_unit.localized_optimization_overload_multiplier %></td>
         <td class="text-right">
           <%= link_to edit_deliverable_unit_path(deliverable_unit), :class => 'btn btn-primary btn-sm' do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
-          <%= link_to deliverable_unit, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <% if can_destroy_deliverable_units %>
+            <%= link_to deliverable_unit, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+          <% else %>
+            <button type="button" class="btn btn-danger btn-sm" disabled><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %></button>
+          <% end %>
         </td>
       </tr>
     <% end %>
@@ -55,7 +62,7 @@
 <% unless @deliverable_units.empty? %>
 <div id="multiple-actions" class="row">
   <div class="col-md-12">
-    <%= button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+    <%= button_tag type: :submit, class: "btn btn-danger btn-sm", disabled: !can_destroy_deliverable_units, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
   </div>
 </div>
 <% end %>

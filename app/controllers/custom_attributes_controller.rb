@@ -2,6 +2,10 @@ class CustomAttributesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_custom_attribute, only: [:edit, :update, :destroy, :update_default_value_partial]
 
+  include PreferencesAuthorization
+  before_action -> { deny_unless_form_create!(:custom_attributes) }, only: [:create]
+  before_action -> { deny_unless_form_update!(:custom_attributes) }, only: [:update, :destroy, :destroy_multiple]
+
   load_and_authorize_resource
 
   def index

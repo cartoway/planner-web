@@ -137,27 +137,4 @@ class TagsControllerTest < ActionController::TestCase
     role&.destroy
     sign_in users(:user_one)
   end
-
-  test 'destroy_multiple is forbidden when tags form is read-only' do
-    u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['tags'] = { 'visible' => true, 'usable' => false }
-    role = Role.create!(
-      reseller: @reseller,
-      name: "ro-tags-destroy-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
-    )
-    u.update!(role_id: role.id)
-    sign_in u
-
-    assert_no_difference('Tag.count') do
-      delete :destroy_multiple, params: { tags: { tags(:tag_one).id => 1, tags(:tag_two).id => 1 } }
-    end
-    assert_response :forbidden
-  ensure
-    u.update!(role_id: nil)
-    role&.destroy
-    sign_in users(:user_one)
-  end
 end

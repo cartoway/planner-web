@@ -974,6 +974,8 @@ en:
           stores: Facilities
           tags: Tags
           customer: Account
+          deliverable_units: Deliverable units
+          custom_attributes: Custom attributes
         icon_help: >-
           Pick an icon from the list
         color_help: >-

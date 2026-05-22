@@ -65,6 +65,8 @@ default: &default
       stores: { visible: true, usable: true }
       tags: { visible: true, usable: true }
       customer: { visible: true, usable: true }
+      deliverable_units: { visible: true, usable: true }
+      custom_attributes: { visible: true, usable: true }
 
 development:
   <<: *default

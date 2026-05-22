@@ -26,11 +26,13 @@
 </div>
 
 <% can_destroy_plannings = current_user_form_destroy_enabled?(:plannings) %>
+<% planning_callback_usable = toolbar_operation_usable?(:planning, 'external_callback') %>
+<% planning_callback_visible = toolbar_operation_visible?(:planning, 'external_callback') %>
 <%= form_tag plannings_path, method: :delete do %>
 <table id="plannings" class="table table-striped table-hover">
   <thead>
     <tr>
-      <th><button type="button" class="btn btn-default btn-xs" data-toggle="selection" data-target="#plannings" title="<%= t 'all.verb.toggle_selection' %>"><i class="fa fa-check fa-fw"></i></button></th>
+      <th><button type="button" class="btn btn-default btn-xs" data-toggle="selection" data-target="#plannings" title="<%= t 'all.verb.toggle_selection' %>"<%= ' disabled' unless can_destroy_plannings %>><i class="fa fa-check fa-fw"></i></button></th>
       <th><%= t 'activerecord.attributes.planning.name' %></th>
       <% if @customer.enable_references %>
       <th><%= t 'activerecord.attributes.planning.ref' %></th>
@@ -47,7 +49,7 @@
   <tbody>
     <% @plannings.each do |planning| %>
       <tr>
-        <td><%= check_box_tag("plannings[#{planning.id}]", planning.id, false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple_plannings_actions') %></td>
+        <td><%= check_box_tag("plannings[#{planning.id}]", planning.id, false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple_plannings_actions', disabled: !can_destroy_plannings) %></td>
         <td><%= planning.name %></td>
         <% if @customer.enable_references %>
         <td><%= planning.ref %></td>
@@ -108,8 +110,7 @@
           <a class="export_spreadsheet" href="#"><i class="fa fa-table fa-fw"></i> <%= t '.export.spreadsheet' %></a>
         </li>
       </ul>
-      <% if @customer.enable_external_callback? && @customer.external_callback_url %>
-        <% planning_callback_usable = toolbar_operation_usable?(:planning, 'external_callback') %>
+      <% if @customer.enable_external_callback? && @customer.external_callback_url && planning_callback_visible %>
         <%= button_tag type: 'button', id: 'external-url', class: 'btn btn-sm btn-default', disabled: !planning_callback_usable, data: { customer_id: @customer.id } do %>
           <i class="fa fa-desktop fa-fw"></i> <%= @customer.external_callback_name || I18n.t('plannings.edit.customer_external_callback_url.action') %>
         <% end %>
@@ -130,6 +131,6 @@ controller.js(
   spreadsheet_columns: @spreadsheet_columns,
   vehicles: Hash[@customer.vehicles.map{ |v| [v.id, {name: v.name, color: v.color}] }],
   external_url: @customer.external_callback_url,
-  planning_external_callback_usable: toolbar_operation_usable?(:planning, 'external_callback')
+  planning_external_callback_usable: planning_callback_usable
 )
 %>

@@ -1,6 +1,7 @@
 <% javascript 'vehicle_usage_set' %>
 
 <% content_for :title, t('.title') %>
+<% can_import_vehicle_config = current_user_form_update?(:vehicle_usages) %>
 
 <h1><%= t '.title' %></h1>
 
@@ -17,7 +18,8 @@
       <p class="help-block"><%= t '.csv.help' %></p>
       <%= bootstrap_form_for(@import_csv, url: import_csv_vehicle_usage_sets_path, layout: :horizontal, multipart: true) do |f| %>
         <%= render 'shared/error_messages', model: @import_csv %>
-        <%= f.file_field :file, required: true %>
+        <%= field_set_tag nil, disabled: !can_import_vehicle_config do %>
+        <%= f.file_field :file, required: true, disabled: !can_import_vehicle_config %>
         <p class="help-block col-md-offset-2">
           <%= t('.csv.file_help') %>
           <a data-toggle="modal" data-target="#import-help-modal" data-keyboard="true" href="#help" title="<%= t('.import_template_help') %>"><i class="fa fa-info-circle fa-fw"></i> <%= t('.import_template_help') %>
@@ -29,7 +31,7 @@
           </p>
         <% end %>
         <%= render partial: 'shared/check_box', locals: { form: f, field: :replace_vehicles, label: t('.replace_vehicles'), help: t('.replace_vehicles_help'), options: { checked: @customer.default_max_vehicle_usage_sets <= 1 } } %>
-        <%= f.submit message: t('all.verb.import'), icon: 'fa-upload' %>
+        <%= f.submit message: t('all.verb.import'), icon: 'fa-upload', disabled: !can_import_vehicle_config %>
 
         <div class="row form-group">
           <div class="col-md-offset-2 col-md-6">
@@ -37,6 +39,7 @@
             </a>
           </div>
         </div>
+        <% end %>
       <% end %>
     </div>
   </div>

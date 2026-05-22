@@ -3,6 +3,7 @@
 <% invisible_class = current_user.customer.vehicle_usage_sets.size > 1 ? '' : 'invisible' %>
 <% can_destroy_vehicle_config = current_user_form_destroy_enabled?(:vehicle_usages) %>
 <% can_update_vehicle_usage = current_user_form_update?(:vehicle_usages) %>
+<% can_create_vehicle_usage = current_user_form_create?(:vehicle_usages) %>
 <% can_view_vehicle_usage = current_user_form_visible?(:vehicle_usages) %>
 
 <% content_for :title, t('.title') %>
@@ -20,7 +21,7 @@
 <div class="row row-top">
   <div class="col-md-6">
     <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
-      <%= link_to new_vehicle_usage_set_path, disabled: current_user.customer.too_many_vehicle_usage_sets?, class: 'btn btn-primary btn-sm' do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
+      <%= link_to new_vehicle_usage_set_path, disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_create_vehicle_usage, class: 'btn btn-primary btn-sm' do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
     <% end %>
   </div>
   <div class="col-md-6">

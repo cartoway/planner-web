@@ -210,6 +210,7 @@ class V01::Destinations < Grape::API
       exactly_one_of :file, :destinations, :remote
     end
     put do
+      authorize!(:create, Destination)
       raise Exceptions::JobInProgressError if current_customer.job_optimizer
 
       if params[:destinations]

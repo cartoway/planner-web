@@ -178,6 +178,54 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'import disables file field when vehicle_usages form is read-only' do
+    return unless Role.column_names.include?('forms')
+
+    u = users(:user_one)
+    role = Role.create!(
+      reseller: @reseller,
+      name: "vus-import-ro-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(
+        'vehicle_usages' => { 'visible' => true, 'usable' => false }
+      )
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    get :import
+    assert_response :success
+    assert_select 'fieldset[disabled] input[type=file]'
+  ensure
+    u.update!(role_id: nil) if u.reload.role_id.present?
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
+  test 'upload_csv returns forbidden when vehicle_usages form is read-only' do
+    return unless Role.column_names.include?('forms')
+
+    u = users(:user_one)
+    role = Role.create!(
+      reseller: @reseller,
+      name: "vus-upload-ro-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(
+        'vehicle_usages' => { 'visible' => true, 'usable' => false }
+      )
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    file = fixture_file_upload('import_vehicle_usage_sets_one.csv', 'text/csv')
+    post :upload_csv, params: { import_csv: { replace_vehicles: true, file: file } }
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil) if u.reload.role_id.present?
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
   test 'should show import template' do
     [:csv, :excel].each { |format|
       get :import_template, params: { format: format }

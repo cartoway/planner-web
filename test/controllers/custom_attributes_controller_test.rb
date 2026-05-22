@@ -39,4 +39,34 @@ class CustomAttributesControllerTest < ActionController::TestCase
     end
     assert_redirected_to custom_attributes_path
   end
+
+  test 'create is forbidden when custom_attributes form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['custom_attributes'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "ro-custom-attributes-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    assert_no_difference('CustomAttribute.count') do
+      post :create, params: {
+        custom_attribute: {
+          name: 'blocked',
+          object_type: 'boolean',
+          object_class: 'stop_visit',
+          default_value: false
+        }
+      }
+    end
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
 end

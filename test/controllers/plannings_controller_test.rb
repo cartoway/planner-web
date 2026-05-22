@@ -691,6 +691,35 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal false, assigns(:manage_planning)[:manage_optimize]
   end
 
+  test 'edit disable_refresh follows role operations when refresh is visible but not usable' do
+    return unless Role.column_names.include?('operations')
+
+    reseller = resellers(:reseller_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['refresh'] = {
+      'visible' => true, 'usable' => false
+    }
+    role = Role.create!(
+      reseller: reseller,
+      name: "No refresh usable role #{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u = users(:user_one)
+    u.update!(role_id: role.id)
+
+    sign_in u
+    get :edit, params: { id: @planning }
+    assert_response :success
+    mp = assigns(:manage_planning)
+    assert_equal true, mp[:manage_refresh]
+    assert_equal true, mp[:disable_refresh]
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
   test 'should update planning and change zoning' do
     patch :update, params: { id: @planning, planning: { zoning_id: zonings(:zoning_two).id } }
     assert_redirected_to edit_planning_path(assigns(:planning))

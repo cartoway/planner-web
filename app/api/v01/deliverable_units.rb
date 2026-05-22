@@ -42,6 +42,7 @@ class V01::DeliverableUnits < Grape::API
       optional :ids, type: Array[String], desc: 'Select returned deliverable units by id separated with comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
     end
     get do
+      authorize!(:index, DeliverableUnit)
       deliverable_units = if params.key?(:ids)
                             current_customer.deliverable_units.select { |deliverable_unit| params[:ids].any? { |string| ParseIdsRefs.match(string, deliverable_unit) } }
                           else
@@ -58,6 +59,7 @@ class V01::DeliverableUnits < Grape::API
       requires :id, type: Integer
     end
     get ':id' do
+      authorize!(:show, DeliverableUnit)
       present current_customer.deliverable_units.find(params[:id]), with: V01::Entities::DeliverableUnit
     end
 
@@ -70,6 +72,7 @@ class V01::DeliverableUnits < Grape::API
       use(:request_deliverable_unit, required_deliverable_unit_params: true)
     end
     post do
+      authorize!(:create, DeliverableUnit)
       deliverable_unit = current_customer.deliverable_units.build(deliverable_unit_params)
       deliverable_unit.save!
       present deliverable_unit, with: V01::Entities::DeliverableUnit
@@ -86,6 +89,7 @@ class V01::DeliverableUnits < Grape::API
     put ':id' do
       id = ParseIdsRefs.read(params[:id])
       deliverable_unit = current_customer.deliverable_units.where(id).first!
+      authorize!(:update, deliverable_unit)
       deliverable_unit.update! deliverable_unit_params
       present deliverable_unit, with: V01::Entities::DeliverableUnit
     end
@@ -99,7 +103,9 @@ class V01::DeliverableUnits < Grape::API
     end
     delete ':id' do
       id = ParseIdsRefs.read(params[:id])
-      current_customer.deliverable_units.where(id).first!.destroy
+      deliverable_unit = current_customer.deliverable_units.where(id).first!
+      authorize!(:destroy, deliverable_unit)
+      deliverable_unit.destroy
       status 204
     end
 
@@ -111,6 +117,7 @@ class V01::DeliverableUnits < Grape::API
       requires :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
     end
     delete do
+      authorize!(:destroy, DeliverableUnit)
       DeliverableUnit.transaction do
         current_customer.deliverable_units.select do |deliverable_unit|
           params[:ids].any?{ |s| ParseIdsRefs.match(s, deliverable_unit) }

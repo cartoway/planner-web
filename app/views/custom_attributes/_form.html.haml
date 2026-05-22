@@ -16,4 +16,4 @@
   #default_value_container
     = render partial: 'default_value', locals: { object_type: @custom_attribute.object_type, typed_default_value: @typed_default_value || object_type_cast(@custom_attribute.object_type, @custom_attribute.default_value) }
   = f.text_field :description, { help: t('.description_help') }
-  = f.submit
+  = f.submit disabled: !current_user_custom_attribute_form_submit_enabled?(@custom_attribute)
