@@ -136,10 +136,7 @@ class RouteSidebarSerializer
   def route_size(route_data, vehicle_usage)
     return @stops_count if @stops_count
 
-    persisted_size = route_data&.stops_size.to_i
-    return persisted_size unless vehicle_usage.nil? && persisted_size.zero?
-
-    @route.stops.unscope(:order).count
+    route_data&.stops_size.to_i
   end
 
   def total_balance

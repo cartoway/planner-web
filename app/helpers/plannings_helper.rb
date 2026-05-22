@@ -154,4 +154,16 @@ module PlanningsHelper
       ''
     end
   end
+
+  def planning_stops_preload_mode(planning)
+    PlanningStopsPreload.preload_mode(planning)
+  end
+
+  def planning_stops_preload_full?(planning)
+    planning_stops_preload_mode(planning) == :full
+  end
+
+  def planning_stops_preload_manual?
+    @stops_preload_mode.to_s == 'manual'
+  end
 end

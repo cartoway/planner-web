@@ -212,7 +212,4 @@
                   %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                     %i.fa.fa-map-marker
   - if !route[:with_stops] && route[:size] > 0
-    .d-flex.justify-content-center.load-stops.text-muted{data: { auto_load: true }}
-      %span
-        %i.fa.fa-spinner.fa-spin.fa-fw
-        = t("plannings.edit.load_stops")
+    = render partial: 'stops/load_stops_marker', locals: { route: route }
