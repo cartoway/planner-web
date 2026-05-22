@@ -15,6 +15,7 @@ class CoerceFloatStringTest < ActiveSupport::TestCase
 
   test 'parse accepts french thousands with comma decimal' do
     assert_in_delta 1234.567, CoerceFloatString.parse("1\u202f234,567", locale: :fr)
+    assert_in_delta 1234.567, CoerceFloatString.parse('1 234,567', locale: :fr)
   end
 
   test 'parse accepts anglo thousands with dot decimal' do
