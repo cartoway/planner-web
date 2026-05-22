@@ -1970,7 +1970,7 @@ export const plannings_edit = function(params) {
     }
     var $routeDropdownParent = $planningRouteIds.closest('.multiple');
     $planningRouteIds.select2({
-      dropdownParent: $routeDropdownParent,
+      dropdownParent: $routeDropdownParent.length ? $routeDropdownParent : $('#route_selector'),
       closeOnSelect : false,
       allowClear: true,
       theme: 'bootstrap',
@@ -1981,9 +1981,7 @@ export const plannings_edit = function(params) {
     .off('select2:close select2:open select2:select select2:unselect change')
     .on('select2:open', function(e) {
       previousSelection = $(this).val() || [];
-    }).on('select2:select', function(e) {
-      selectGlobalActions($(this), e);
-    }).on('select2:open', function(e) {
+      $('#route_selector').addClass('is-open');
       setTimeout(function() {
         $('#route_selector .select2-results__option').each(function() {
           var optionValue = $(this).attr('id').split('-').pop();
@@ -1992,6 +1990,10 @@ export const plannings_edit = function(params) {
           }
         });
       }, 0);
+    }).on('select2:close', function() {
+      $('#route_selector').removeClass('is-open');
+    }).on('select2:select', function(e) {
+      selectGlobalActions($(this), e);
     }).on('select2:select select2:unselect', function() {
       updateSelectionCount('#route_selector', '#planning_route_ids');
     })

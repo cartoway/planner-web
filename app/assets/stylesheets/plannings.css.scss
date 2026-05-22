@@ -371,12 +371,20 @@ $sidebar-margins: 10px;
         margin: -22px 0px 4px;
         padding: 5px 15px 8px;
         position: relative;
-        z-index: 1;
+        z-index: 5;
         background-color: $white-background;
         border-bottom: 1px solid $grey-color;
 
+        &.is-open {
+          z-index: 20;
+        }
+
         .select2-container {
           padding: 0 2px;
+        }
+
+        .select2-dropdown {
+          z-index: 21;
         }
       }
 
