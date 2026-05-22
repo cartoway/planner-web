@@ -51,8 +51,4 @@
                             .color_small{style: "background:#{o_route[:color]}"}
                             = o_route[:name]
           .clearfix
-- if !route[:with_stops] && route[:size].to_i > 0
-  .d-flex.justify-content-center.load-stops.text-muted{data: { auto_load: true }}
-    %span
-      %i.fa.fa-spinner.fa-spin.fa-fw
-      = t("plannings.edit.load_stops")
+= render partial: 'stops/load_stops_marker', locals: { route: route }

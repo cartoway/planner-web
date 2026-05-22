@@ -73,12 +73,13 @@ class PlanningsController < ApplicationController
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
       @with_stops = true
       @planning.routes.where(id: route_ids).includes_destinations_and_stores.includes_vehicle_usages
-    elsif planning_routes_preload_stops?(@planning)
-      @with_stops = true
-      @planning.routes.available.includes_destinations_and_stores.includes_vehicle_usages
     else
-      @with_stops = false
-      @planning.routes.available.includes_vehicle_usages
+      assign_stops_preload_from_planning!(@planning)
+      if @with_stops
+        @planning.routes.available.includes_destinations_and_stores.includes_vehicle_usages
+      else
+        @planning.routes.available.includes_vehicle_usages
+      end
     end
     respond_to do |format|
       format.html
@@ -124,6 +125,7 @@ class PlanningsController < ApplicationController
   end
 
   def edit
+    assign_stops_preload_from_planning!(@planning)
     @spreadsheet_columns = export_columns
     @with_devices = true
     capabilities
@@ -288,7 +290,7 @@ class PlanningsController < ApplicationController
         planning: @planning,
         with_stops: true,
         view_helpers: view_context,
-        stops_count: route.route_data.stops_size,
+        stops_count: stops_for_sidebar.size,
         stops: stops_for_sidebar
       ).as_hash
       route_data[:route_id] = route.id
@@ -314,7 +316,7 @@ class PlanningsController < ApplicationController
   end
 
   def sidebar
-    @with_stops = planning_routes_preload_stops?(@planning)
+    assign_stops_preload_from_planning!(@planning)
     @routes =
       if @with_stops
         @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available
@@ -354,7 +356,13 @@ class PlanningsController < ApplicationController
     ).build
 
     respond_to do |format|
-      format.js { render partial: 'sidebar', locals: sidebar_locals.merge(summary: planning_summary(@planning)) }
+      format.js do
+        render partial: 'sidebar',
+               locals: sidebar_locals.merge(
+                 summary: planning_summary(@planning),
+                 stops_preload_mode: @stops_preload_mode.to_s
+               )
+      end
     end
   end
 
@@ -704,14 +712,13 @@ class PlanningsController < ApplicationController
     []
   end
 
+  def assign_stops_preload_from_planning!(planning)
+    @stops_preload_mode = PlanningStopsPreload.preload_mode(planning)
+    @with_stops = @stops_preload_mode == :full
+  end
+
   def planning_routes_preload_stops?(planning)
-    stops_count = 0
-    planning
-      .routes
-      .select { |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }
-      .none? do |route|
-        (stops_count += route.route_data&.stops_size) >= planning.customer.stops_preload_limit
-      end
+    PlanningStopsPreload.preload_stops?(planning)
   end
 
   def move_respond

@@ -57,7 +57,7 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
-  test 'show respects customer stops_preload_limit for with_stops flag' do
+  test 'show uses continuous preload mode when stops exceed lower threshold' do
     customer = customers(:customer_one)
     original_limit = customer.stops_preload_limit
     customer.update!(stops_preload_limit: 1)
@@ -69,6 +69,87 @@ class PlanningsControllerTest < ActionController::TestCase
     get :show, params: { id: @planning.id, format: :json }
     assert_response :success
     assert_equal false, assigns(:with_stops)
+    assert_equal :continuous, assigns(:stops_preload_mode)
+  ensure
+    customer.update!(stops_preload_limit: original_limit) if customer
+  end
+
+  test 'sidebar continuous mode renders auto load markers on routes with stops' do
+    customer = customers(:customer_one)
+    original_limit = customer.stops_preload_limit
+    customer.update!(stops_preload_limit: 1500)
+
+    @planning.routes.each do |route|
+      route.route_data.update!(stops_size: 200)
+    end
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_equal :continuous, assigns(:stops_preload_mode)
+    assert_includes response.body, 'load-stops-auto'
+    sidebar_locals = JSON.parse(response.body.match(/var locals = (.*);/)[1])
+    assert_equal 'continuous', sidebar_locals['stops_preload_mode']
+  ensure
+    customer.update!(stops_preload_limit: original_limit) if customer
+  end
+
+  test 'show preloads all stops in full mode' do
+    customer = customers(:customer_one)
+    original_limit = customer.stops_preload_limit
+    customer.update!(stops_preload_limit: 1000)
+
+    @planning.routes.each do |route|
+      route.route_data.update!(stops_size: 100)
+    end
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    assert_equal true, assigns(:with_stops)
+    assert_equal :full, assigns(:stops_preload_mode)
+  ensure
+    customer.update!(stops_preload_limit: original_limit) if customer
+  end
+
+  test 'sidebar full mode auto loads out of route and preloads vehicle routes' do
+    customer = customers(:customer_one)
+    original_limit = customer.stops_preload_limit
+    customer.update!(stops_preload_limit: 1000)
+
+    @planning.routes.each do |route|
+      route.route_data.update!(stops_size: route.vehicle_usage_id ? 100 : 75)
+    end
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_equal :full, assigns(:stops_preload_mode)
+    assert_equal true, assigns(:with_stops)
+    assert_includes response.body, 'load-stops-auto'
+
+    sidebar_locals = JSON.parse(response.body.match(/var locals = (.*);/)[1])
+    assert_equal 'full', sidebar_locals['stops_preload_mode']
+    out_route = sidebar_locals['routes'].find { |route| route['vehicle_usage_id'].nil? && route['size'].to_i.positive? }
+    vehicle_route = sidebar_locals['routes'].find { |route| route['vehicle_usage_id'].present? && route['size'].to_i.positive? }
+    assert out_route, 'expected out of route with stops in sidebar locals'
+    assert_equal false, out_route['with_stops']
+    assert vehicle_route, 'expected vehicle route with stops in sidebar locals'
+    assert_equal true, vehicle_route['with_stops']
+  ensure
+    customer.update!(stops_preload_limit: original_limit) if customer
+  end
+
+  test 'show uses manual preload mode for very large plannings' do
+    customer = customers(:customer_one)
+    original_limit = customer.stops_preload_limit
+    customer.update!(stops_preload_limit: 1000)
+
+    @planning.routes.each do |route|
+      route.route_data.update!(stops_size: 400)
+    end
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    assert_equal false, assigns(:with_stops)
+    assert_equal :manual, assigns(:stops_preload_mode)
   ensure
     customer.update!(stops_preload_limit: original_limit) if customer
   end
@@ -85,6 +166,26 @@ class PlanningsControllerTest < ActionController::TestCase
     get :sidebar, params: { planning_id: @planning.id }, xhr: true
     assert_response :success
     assert_equal false, assigns(:with_stops)
+    assert_equal :continuous, assigns(:stops_preload_mode)
+  ensure
+    customer.update!(stops_preload_limit: original_limit) if customer
+  end
+
+  test 'sidebar manual mode renders clickable load stops button' do
+    customer = customers(:customer_one)
+    original_limit = customer.stops_preload_limit
+    customer.update!(stops_preload_limit: 1000)
+
+    @planning.routes.each do |route|
+      route.route_data.update!(stops_size: 400)
+    end
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_equal :manual, assigns(:stops_preload_mode)
+    assert_includes response.body, 'load-stops'
+    assert_includes response.body, 'btn btn-default'
+    assert_not_includes response.body, 'load-stops-auto'
   ensure
     customer.update!(stops_preload_limit: original_limit) if customer
   end
