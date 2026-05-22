@@ -28,6 +28,7 @@ class DestinationsController < ApplicationController
   after_action :warnings, only: [:create, :update]
   around_action :over_max_limit, only: [:create, :duplicate]
   before_action -> { deny_unless_form_update!(:destination) }, only: [:clear]
+  before_action -> { deny_unless_form_create!(:destination) }, only: [:upload_csv, :upload_tomtom]
 
   load_and_authorize_resource
 

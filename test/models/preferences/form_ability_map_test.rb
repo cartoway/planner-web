@@ -169,4 +169,26 @@ class PreferencesFormAbilityMapTest < ActiveSupport::TestCase
     assert ability.cannot?(:update, tag)
     assert ability.cannot?(:destroy, tag)
   end
+
+  test 'customer cannot create deliverable unit when forms.deliverable_units is not mutable' do
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['deliverable_units'] = { 'visible' => true, 'usable' => false }
+
+    assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
+
+    ability = Ability.new(@user)
+    assert ability.cannot?(:create, DeliverableUnit)
+    assert ability.cannot?(:destroy, deliverable_units(:deliverable_unit_one_one))
+  end
+
+  test 'hidden custom_attributes denies listing custom attribute records' do
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['custom_attributes'] = { 'visible' => false, 'usable' => false }
+
+    assign_role_with_forms!(@user, Preferences::Catalog.normalize_forms(forms))
+
+    ability = Ability.new(@user)
+    assert ability.cannot?(:index, CustomAttribute)
+    assert ability.cannot?(:show, custom_attributes(:custom_attribute_one))
+  end
 end

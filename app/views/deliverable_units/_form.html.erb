@@ -30,5 +30,5 @@
       </div>
     </div>
   </div>
-  <%= f.submit %>
+  <%= f.submit disabled: !current_user_deliverable_unit_form_submit_enabled?(@deliverable_unit) %>
 <% end %>

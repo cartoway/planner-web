@@ -76,4 +76,44 @@ class V01::CustomAttributesTest < ActiveSupport::TestCase
     put api(@custom_attribute.id), nil, input: {name: 'invalid:name', object_type: 'string', object_class: 'vehicle'}.to_json, CONTENT_TYPE: 'application/json'
     assert last_response.client_error?, last_response.body
   end
+
+  test 'GET custom_attributes returns 403 when form is hidden' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['custom_attributes'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-hidden-custom-attributes-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    get "/api/0.1/custom_attributes.json?api_key=#{u.api_key}"
+    assert_equal 403, last_response.status, last_response.body
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'POST custom_attribute returns 403 when form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['custom_attributes'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-ro-custom-attributes-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    assert_no_difference('CustomAttribute.count') do
+      post "/api/0.1/custom_attributes.json?api_key=#{u.api_key}", { name: 'blocked', object_type: 'float', object_class: 'vehicle', default_value: 1.1 }
+      assert_equal 403, last_response.status, last_response.body
+    end
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
 end

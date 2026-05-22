@@ -1,9 +1,11 @@
 - javascript 'custom_attribute'
 - content_for :title, t('.title')
+- can_destroy_custom_attributes = current_user_form_destroy_enabled?(:custom_attributes)
+- can_create_custom_attributes = current_user_form_create?(:custom_attributes)
 %h1= t '.title'
 .row.row-top
   .col-md-6
-    = link_to new_custom_attribute_path, class:"btn btn-primary btn-sm" do
+    = link_to new_custom_attribute_path, disabled: !can_create_custom_attributes, class:"btn btn-primary btn-sm" do
       %i.fa.fa-plus.fa-fw
       = t '.new'
   .col-md-6
@@ -16,7 +18,7 @@
     %thead
       %tr
         %th
-          %button.btn.btn-default.btn-xs{"data-target" => "#custom_attributes", "data-toggle" => "selection", title: "#{t 'all.verb.toggle_selection'}", type: "button"}
+          %button.btn.btn-default.btn-xs{"data-target" => "#custom_attributes", "data-toggle" => "selection", title: "#{t 'all.verb.toggle_selection'}", type: "button", disabled: !can_destroy_custom_attributes}
             %i.fa.fa-check.fa-fw
         %th= t 'activerecord.attributes.custom_attribute.name'
         %th= t 'activerecord.attributes.custom_attribute.object_type'
@@ -28,7 +30,7 @@
     %tbody
       - @custom_attributes.each do |custom_attribute|
         %tr
-          %td= check_box_tag("custom_attributes[#{custom_attribute.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions')
+          %td= check_box_tag("custom_attributes[#{custom_attribute.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions', disabled: !can_destroy_custom_attributes)
           %td= custom_attribute.name
           %td= t "custom_attributes.types.#{custom_attribute.object_type}"
           %td= t "activerecord.models.#{custom_attribute.object_class}"
@@ -39,12 +41,17 @@
             = link_to edit_custom_attribute_path(custom_attribute), :class => 'btn btn-primary btn-sm' do
               %i.fa.fa-edit.fa-fw
               = t 'all.verb.edit'
-            = link_to custom_attribute, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do
-              %i.fa.fa-trash.fa-fw
-              = t 'all.verb.destroy'
+            - if can_destroy_custom_attributes
+              = link_to custom_attribute, :class => 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do
+                %i.fa.fa-trash.fa-fw
+                = t 'all.verb.destroy'
+            - else
+              %button.btn.btn-danger.btn-sm{ type: 'button', disabled: true }
+                %i.fa.fa-trash.fa-fw
+                = t 'all.verb.destroy'
   - unless @custom_attributes.empty?
     #multiple-actions.row
       .col-md-12
-        = button_tag type: :submit, class: "btn btn-danger btn-sm", data: { confirm: t('all.verb.destroy_confirm') } do
+        = button_tag type: :submit, class: "btn btn-danger btn-sm", disabled: !can_destroy_custom_attributes, data: { confirm: t('all.verb.destroy_confirm') } do
           %i.fa.fa-trash.fa-fw
           = t('all.verb.destroy_selection')

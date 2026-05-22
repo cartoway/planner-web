@@ -26,6 +26,7 @@ class V01::CustomAttributes < Grape::API
       optional :ids, type: Array[Integer], desc: 'Select returned custom_attributes by id.', coerce_with: CoerceArrayInteger
     end
     get do
+      authorize!(:index, CustomAttribute)
       custom_attributes = current_customer.custom_attributes
       if custom_attributes && params.key?(:ids)
         custom_attributes = current_customer.custom_attributes.where(id: params[:ids])
@@ -45,6 +46,7 @@ class V01::CustomAttributes < Grape::API
       requires :id, type: Integer
     end
     get ':id' do
+      authorize!(:show, CustomAttribute)
       custom_attribute = current_customer.custom_attributes.where(id: params[:id]).first
       if custom_attribute
         present custom_attribute, with: V01::Entities::CustomAttribute
@@ -69,6 +71,7 @@ class V01::CustomAttributes < Grape::API
     put ':id' do
       custom_attribute = current_customer.custom_attributes.where(id: params[:id]).first
       if custom_attribute
+        authorize!(:update, custom_attribute)
         custom_attribute.update! custom_attribute_params
         present custom_attribute, with: V01::Entities::CustomAttribute
         return
@@ -84,6 +87,7 @@ class V01::CustomAttributes < Grape::API
       use :params_from_entity, entity: V01::Entities::CustomAttribute.documentation.except(:id)
     end
     post do
+      authorize!(:create, CustomAttribute)
       custom_attribute = current_customer.custom_attributes.build(custom_attribute_params)
       custom_attribute.save!
       current_customer.save!
@@ -99,7 +103,9 @@ class V01::CustomAttributes < Grape::API
     end
     delete ':id' do
       id = ParseIdsRefs.read(params[:id])
-      current_customer.custom_attributes.where(id).first!.destroy
+      custom_attribute = current_customer.custom_attributes.where(id).first!
+      authorize!(:destroy, custom_attribute)
+      custom_attribute.destroy
       status 204
     end
   end

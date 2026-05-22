@@ -9,6 +9,7 @@ class V01::DeliverableUnitsTest < ActiveSupport::TestCase
 
   setup do
     @deliverable_unit = deliverable_units(:deliverable_unit_one_one)
+    customers(:customer_one).update(enable_orders: false)
   end
 
   def api(part = nil, param = {})
@@ -108,5 +109,26 @@ class V01::DeliverableUnitsTest < ActiveSupport::TestCase
       delete api + "&ids=#{deliverable_units(:deliverable_unit_one_one).id},ref:#{deliverable_units(:deliverable_unit_one_two).ref}"
       assert_equal 204, last_response.status, last_response.body
     end
+  end
+
+  test 'POST deliverable unit returns 403 when form is read-only' do
+    u = users(:user_one)
+    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
+    forms['deliverable_units'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-ro-deliverable-units-#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.default_operations,
+      forms: Preferences::Catalog.normalize_forms(forms)
+    )
+    u.update!(role_id: role.id)
+
+    assert_no_difference('DeliverableUnit.count') do
+      post "/api/0.1/deliverable_units.json?api_key=#{u.api_key}", { label: 'blocked', ref: 'blocked-ref' }
+      assert_equal 403, last_response.status, last_response.body
+    end
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
   end
 end
