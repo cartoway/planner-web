@@ -583,6 +583,7 @@ const destinations_index = function(params, api) {
     enable_orders = params.enable_orders,
     isEditable = params.is_editable,
     canDestroy = params.can_destroy !== false,
+    canCreate = params.can_create !== false,
     disableQuantity = params.disable_quantity;
 
   params.geocoder = true;
@@ -968,8 +969,11 @@ const destinations_index = function(params, api) {
     markers[id] = marker;
   };
 
-  if (!params.reached_max_destinations) {
+  if (params.reached_max_destinations) {
+    $('#add').hide();
+  } else if (canCreate) {
     $("#add").click(function() {
+      if (!canCreate) return false;
       var id = 0;
       var center = map.getCenter();
       var destination = {
@@ -1002,7 +1006,7 @@ const destinations_index = function(params, api) {
       });
     });
   } else {
-    $('#add').hide();
+    $('#add').prop('disabled', true).hide();
   }
 
   const filter_text = function(exactText, normalizedValue, filter) {
@@ -1139,13 +1143,15 @@ const destinations_index = function(params, api) {
           return false;
         });
 
-      $('.index_toggle_selection').click(function() {
-        $('tr.destination').not('.filtered').each(function(idx, row) {
-          $('input:checkbox', row).each(function() {
-            this.checked = !this.checked;
+      if (canDestroy) {
+        $('.index_toggle_selection').click(function() {
+          $('tr.destination').not('.filtered').each(function(idx, row) {
+            $('input:checkbox', row).each(function() {
+              this.checked = !this.checked;
+            });
           });
         });
-      });
+      }
     });
 
     var tableOptions = {

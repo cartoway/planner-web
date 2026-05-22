@@ -21,7 +21,10 @@ module Preferences
   module Catalog
     # forms.* resource visibility / usability (admin DnD).
     module Forms
-      FORM_RESOURCES = %w[plannings destination vehicle_usages stores tags customer].freeze
+      FORM_RESOURCES = %w[
+        plannings destination vehicle_usages stores tags customer
+        deliverable_units custom_attributes
+      ].freeze
 
       # Missing per-resource entries in normalize_forms (disabled tier: visible, not usable).
       NORMALIZE_FORM_VISIBLE_DEFAULT = true

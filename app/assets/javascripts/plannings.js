@@ -3076,7 +3076,7 @@ export const plannings_edit = function(params) {
 
   var checkForDisplayPlanningFirstTime = function(data) {
     var mp = params.manage_planning || {};
-    if (data.outdated && mp.manage_refresh) {
+    if (data.outdated && planningRefreshUsable()) {
       $('#refresh-modal').prop('disabled', !!mp.disable_refresh);
 
       var displayPlanningAfterModal = function() {

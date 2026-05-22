@@ -96,6 +96,14 @@ module PreferencesHelper
     destination.new_record? ? current_user_form_create?(:destination) : current_user_form_update?(:destination)
   end
 
+  def current_user_deliverable_unit_form_submit_enabled?(deliverable_unit)
+    deliverable_unit.new_record? ? current_user_form_create?(:deliverable_units) : current_user_form_update?(:deliverable_units)
+  end
+
+  def current_user_custom_attribute_form_submit_enabled?(custom_attribute)
+    custom_attribute.new_record? ? current_user_form_create?(:custom_attributes) : current_user_form_update?(:custom_attributes)
+  end
+
   def current_user_customer_form_submit_enabled?(customer)
     return true if user_signed_in? && current_user.admin?
 

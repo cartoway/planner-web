@@ -28,6 +28,10 @@ class StoresController < ApplicationController
   load_and_authorize_resource
 
   include LinkBack
+  include PreferencesAuthorization
+
+  before_action -> { deny_unless_form_create!(:stores) }, only: [:create, :upload_csv]
+  before_action -> { deny_unless_form_update!(:stores) }, only: [:update, :destroy, :destroy_multiple]
 
   def index
     if current_user.customer.job_store_geocoding
