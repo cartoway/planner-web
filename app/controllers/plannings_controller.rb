@@ -367,9 +367,9 @@ class PlanningsController < ApplicationController
   end
 
   def filter_routes
-    route_ids = filter_params[:route_ids] || []
-    planning_route_ids = @planning.routes.where.not(vehicle_usage_id: nil).pluck(:id)
-    @planning.routes.where(id: planning_route_ids - route_ids).update_all(locked: true, hidden: true)
+    route_ids = (filter_params[:route_ids] || []).filter_map { |id| Integer(id, exception: false) }
+    all_route_ids = @planning.routes.pluck(:id)
+    @planning.routes.where(id: all_route_ids - route_ids).update_all(locked: true, hidden: true)
     @planning.routes.where(id: route_ids).where(locked: true, hidden: true).update_all(locked: false, hidden: false)
 
     respond_to do |format|

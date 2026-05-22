@@ -649,6 +649,26 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_match(/id=["']planning-scroll["']/, response.body)
   end
 
+  test 'filter_routes hides out of route when it is not selected' do
+    out_of_route = @planning.routes.find { |route| route.vehicle_usage_id.nil? }
+    vehicle_route = @planning.routes.find { |route| route.vehicle_usage_id.present? }
+    assert_not_nil out_of_route
+    assert_not_nil vehicle_route
+
+    patch :filter_routes, params: {
+      planning_id: @planning.id,
+      route_ids: [vehicle_route.id]
+    }, as: :json
+
+    assert_response :success
+    assert out_of_route.reload.hidden
+    assert out_of_route.locked
+    refute vehicle_route.reload.hidden
+    refute vehicle_route.locked
+  ensure
+    @planning.routes.update_all(hidden: false, locked: false)
+  end
+
   test 'edit assigns manage_planning toolbar flags from planning operation segments' do
     get :edit, params: { id: @planning }
     assert_response :success
@@ -689,6 +709,10 @@ class PlanningsControllerTest < ActionController::TestCase
     get :edit, params: { id: @planning }
     assert_response :success
     assert_equal false, assigns(:manage_planning)[:manage_optimize]
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
   end
 
   test 'edit disable_refresh follows role operations when refresh is visible but not usable' do
@@ -1699,7 +1723,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   def assign_visible_routes_stops_size(total_stops)
-    routes = @planning.routes.select { |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }.to_a
+    routes = @planning.routes.select { |route| !route.hidden || !route.locked }.to_a
     per_route = total_stops / routes.size
     remainder = total_stops % routes.size
 

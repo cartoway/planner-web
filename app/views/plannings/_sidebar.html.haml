@@ -10,5 +10,7 @@
       = t("plannings.edit.refresh")
 %ol.routes
   = render partial: 'routes/edit.html.haml', locals: { routes: routes, summary: summary }
-%ol.routes.out_routes
-  = render partial: 'routes/out_of_route.html.haml', locals: { routes: routes, summary: summary }
+- out_of_route = routes.find { |route| route[:vehicle_id].nil? }
+- if out_of_route
+  %ol.routes.out_routes
+    = render partial: 'routes/out_of_route.html.haml', locals: { routes: routes, summary: summary, route: out_of_route }

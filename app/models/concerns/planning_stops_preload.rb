@@ -25,7 +25,7 @@ module PlanningStopsPreload
 
   def visible_stops_count(planning)
     planning.routes
-            .select { |route| !route.hidden || !route.locked || route.vehicle_usage_id.nil? }
+            .select { |route| !route.hidden || !route.locked }
             .sum { |route| route.route_data&.stops_size.to_i }
   end
 

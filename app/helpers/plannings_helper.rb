@@ -16,6 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 module PlanningsHelper
+  include PlanningStopsPreloadHelper
+
   def planning_vehicles_array(planning)
     customer = planning.customer
     planning.vehicle_usage_set.vehicle_usages.select{ |vehicle_usage| vehicle_usage.active? }.map{ |vehicle_usage|
@@ -63,8 +65,6 @@ module PlanningsHelper
     }
   end
 
-  # Routes whose persisted metrics (duration, distance, stops, averages) feed planning-level totals.
-  # +sidebar_routes+ is the set already loaded for the sidebar (e.g. visible routes or a route_ids subset).
   def planning_statistics_routes(planning, sidebar_routes, user)
     sidebar = Array(sidebar_routes)
     return sidebar if user&.filter_planning_route_data
@@ -94,7 +94,8 @@ module PlanningsHelper
           ).merge(
             size: route.route_data.stops_size,
             size_active: route.route_data.size_active,
-            size_store_reloads: route.route_data.size_store_reloads
+            size_store_reloads: route.route_data.size_store_reloads,
+            out_of_route: route.vehicle_usage_id.nil?
           ),
         }.delete_if{ |_k, v| v.nil? }
       }
@@ -153,17 +154,5 @@ module PlanningsHelper
     else
       ''
     end
-  end
-
-  def planning_stops_preload_mode(planning)
-    PlanningStopsPreload.preload_mode(planning)
-  end
-
-  def planning_stops_preload_full?(planning)
-    planning_stops_preload_mode(planning) == :full
-  end
-
-  def planning_stops_preload_manual?
-    @stops_preload_mode.to_s == 'manual'
   end
 end
