@@ -524,10 +524,7 @@ export const plannings_edit = function(params) {
   var applySidebarRouteRefreshAfterLoad = function(locals, opts) {
     opts = opts || {};
     var route = locals.route;
-    var routeIndex = routes.findIndex(function(r) { return r.route_id == route.route_id; });
-    if (routeIndex !== -1) {
-      routes[routeIndex] = $.extend({}, routes[routeIndex], route);
-    }
+    updateRouteModel(0, route);
     var $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
     planningPopoverSnapshot = locals.summary;
     var runWidgets = function() {
@@ -2404,6 +2401,30 @@ export const plannings_edit = function(params) {
     });
   };
 
+  var updateRouteModel = function(i, route, routeIndexById) {
+    var vehicle_usage = {};
+    $.each(vehicles_usages_map, function(_i, v) {
+      if (v.vehicle_usage_id == route.vehicle_usage_id) vehicle_usage = v;
+    });
+    var routeIdx = routeIndexById ? routeIndexById[route.route_id] : routes.findIndex(function(r) {
+      return r.route_id == route.route_id;
+    });
+    if (routeIdx === undefined || routeIdx === -1) return;
+
+    var rv = routes[routeIdx];
+    routes[routeIdx] = $.extend({}, rv, route, {
+      color: route.color || vehicle_usage.color,
+      devices: route.devices || params.devices
+    });
+    updateColorsForRoutesAndStops(i, route);
+  };
+
+  var syncRoutesLayerOptions = function() {
+    if (routesLayer) {
+      routesLayer.options.routes = routes;
+    }
+  };
+
   var displayOptimModal = function(locals, options) {
     if (locals.optimizer) {
       optimizationTimer
@@ -2454,22 +2475,6 @@ export const plannings_edit = function(params) {
     var routeIndexById = {};
     for (var rj = 0; rj < routes.length; rj++) {
       routeIndexById[routes[rj].route_id] = rj;
-    }
-
-    const updateRouteModel = function(i, route) {
-      let vehicle_usage = {};
-      $.each(vehicles_usages_map, function(i, v) {
-        if (v.vehicle_usage_id == route.vehicle_usage_id) vehicle_usage = v;
-      });
-      var routeIdx = routeIndexById[route.route_id];
-      if (routeIdx !== undefined) {
-        var rv = routes[routeIdx];
-        routes[routeIdx] = $.extend({}, rv, route, {
-          color: route.color || vehicle_usage.color,
-          devices: route.devices || params.devices
-        });
-      }
-      updateColorsForRoutesAndStops(i, route);
     }
 
     data.i18n = mustache_i18n;
@@ -2523,6 +2528,12 @@ export const plannings_edit = function(params) {
 
     // 1st case: the whole planning needs to be initialized and displayed
     if (typeof options !== 'object' || !options.partial) {
+      if (data.routes) {
+        $.each(data.routes, function(i, route) {
+          updateRouteModel(i, route, routeIndexById);
+        });
+        syncRoutesLayerOptions();
+      }
       data.ref = null; // here to prevent mustache template to get the value
       $.extend(data, params.manage_planning);
       data.callback_button = params.callback_button;
@@ -2805,6 +2816,12 @@ export const plannings_edit = function(params) {
 
   var updateSuccess = function(data, map, routes, options) {
     options = options || {};
+    if (routes && routes.length) {
+      $.each(routes, function(i, route) {
+        updateRouteModel(i, route);
+      });
+      syncRoutesLayerOptions();
+    }
     if (data && data.routes) {
       planningPopoverSnapshot = data;
     }
