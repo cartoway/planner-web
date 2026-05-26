@@ -77,7 +77,7 @@ module DeliverableByVehiclesHelper
           total_stops: r.size_active,
           total_drive_time: r.drive_time.to_i,
           total_visits_time: r.visits_duration.to_i,
-          total_route_duration: r.visits_duration.to_i + r.wait_time.to_i + r.drive_time.to_i + (r.vehicle_usage ? r.vehicle_usage.service_time_start.to_i + r.vehicle_usage.service_time_end.to_i : 0)
+          total_route_duration: r.total_duration
         }
       end
     }
