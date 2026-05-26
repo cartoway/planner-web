@@ -783,6 +783,21 @@ class PlanningsControllerTest < ActionController::TestCase
     }
   end
 
+  test 'move returns not found when target route does not exist' do
+    invalid_route_id = -1
+    assert_not @planning.routes.exists?(invalid_route_id)
+
+    patch :move, params: {
+      planning_id: @planning,
+      route_id: invalid_route_id,
+      stop_id: @planning.routes[0].stops[0].id,
+      index: 1,
+      format: :json
+    }
+    assert_response :not_found
+    assert_equal 'not_found', JSON.parse(response.body)['type']
+  end
+
   test 'should move many stops' do
     stop_ids = @planning.routes.reject { |ro| ro.id == @planning.routes[1].id }.flat_map { |ro| ro.stops.map(&:id) }
     patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: stop_ids, format: :json }
