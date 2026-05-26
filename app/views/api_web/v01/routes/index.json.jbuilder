@@ -3,8 +3,7 @@ json.planning_id @planning.id
 json.routes @routes do |route|
   json.route_id route.id
   json.extract! route, :color, :hidden, :locked, :outdated, :size_active
-  (json.duration '%i:%02i' % [(route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + (route.vehicle_usage ? route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i : 0)) / 60 / 60,
-    (route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + (route.vehicle_usage ? route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i : 0)) / 60 % 60])
+  (json.duration '%i:%02i' % [route.total_duration / 60 / 60, route.total_duration / 60 % 60])
   json.distance number_to_human((route.distance || 0), units: :distance, precision: 3, format: '%n %u')
   json.size route.stops_size
   json.size_destinations route.size_destinations if route.size_destinations != route.size_active

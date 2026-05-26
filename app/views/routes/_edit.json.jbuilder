@@ -25,7 +25,7 @@ if @with_planning
   end
 end
 json.extract! route, :ref, :hidden, :locked, :outdated
-(json.duration time_over_day(route.visits_duration.to_i + route.wait_time.to_i + route.drive_time.to_i + (route.vehicle_usage ? route.vehicle_usage.default_service_time_start.to_i + route.vehicle_usage.default_service_time_end.to_i : 0)))
+(json.duration time_over_day(route.total_duration))
 json.distance locale_distance(route.distance || 0, current_user.prefered_unit)
 route_data_metrics = route.route_data
 route_stops_size = route_data_metrics&.stops_size
