@@ -63,6 +63,17 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal false, route_data_attributes[:out_of_drive_time]
   end
 
+  test 'total_duration includes rests_duration' do
+    route = routes(:route_three_one)
+    route.route_data.update_columns(rests_duration: 2700, visits_duration: 100, wait_time: 50, drive_time: 200)
+
+    expected = 2700 + 100 + 50 + 200 +
+               route.vehicle_usage.default_service_time_start.to_i +
+               route.vehicle_usage.default_service_time_end.to_i
+
+    assert_equal expected, route.total_duration
+  end
+
   test 'plan clears rests_duration on route_data when rest stop is inactive' do
     route = routes(:route_three_one)
     route.route_data.update_column(:rests_duration, 2700)
