@@ -201,10 +201,10 @@ class Route < ApplicationRecord
       start: nil,
       end: nil,
       distance: 0,
-      drive_time: nil,
-      wait_time: nil,
-      visits_duration: nil,
-      rests_duration: nil,
+      drive_time: 0,
+      wait_time: 0,
+      visits_duration: 0,
+      rests_duration: 0,
       pickups: nil,
       deliveries: nil,
       revenue: nil,
@@ -220,10 +220,10 @@ class Route < ApplicationRecord
       emission: nil,
       start: nil,
       end: nil,
-      drive_time: nil,
-      wait_time: nil,
-      visits_duration: nil,
-      rests_duration: nil,
+      drive_time: 0,
+      wait_time: 0,
+      visits_duration: 0,
+      rests_duration: 0,
       revenue: nil,
       cost_distance: nil,
       cost_time: nil,
@@ -434,8 +434,8 @@ class Route < ApplicationRecord
         route_attributes[:end] += drive_time
         previous_route_data_attributes[:end] = route_attributes[:end]
         route_attributes[:stop_distance], route_attributes[:stop_drive_time] = distance, drive_time
-        route_attributes[:drive_time] += drive_time if route_attributes[:drive_time]
-        previous_route_data_attributes[:drive_time] += drive_time if previous_route_data_attributes[:drive_time]
+        route_attributes[:drive_time] += drive_time
+        previous_route_data_attributes[:drive_time] += drive_time
         route_attributes[:cost_distance] = route_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
         previous_route_data_attributes[:cost_distance] = previous_route_data_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
         route_attributes[:cost_fixed] = vehicle_usage.default_cost_fixed if vehicle_usage.default_cost_fixed
@@ -487,7 +487,7 @@ class Route < ApplicationRecord
       # Assign route-only attributes to self
       self.assign_attributes(route_only_attributes)
 
-      self.route_data.assign_attributes(route_data_attributes.compact)
+      route_data.assign_attributes(route_data_attributes.compact)
       [stops_sort, stops_drive_time, stops_time_windows]
     end
   end
