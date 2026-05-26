@@ -63,6 +63,21 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal false, route_data_attributes[:out_of_drive_time]
   end
 
+  test 'plan clears rests_duration on route_data when rest stop is inactive' do
+    route = routes(:route_three_one)
+    route.route_data.update_column(:rests_duration, 2700)
+    route.start_route_data.update_column(:rests_duration, 2700)
+
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    rest.update_column(:active, false)
+
+    route.compute_saved!
+    route.reload
+
+    assert_equal 0, route.route_data.rests_duration
+    assert_equal 0, route.start_route_data.rests_duration
+  end
+
   test 'compute_saved! persists computed metrics on route_data for snapshot reads when not outdated' do
     route = routes(:route_one_one)
     route.route_data.distance = route.route_data.emission = route.route_data.start = route.route_data.end = nil
