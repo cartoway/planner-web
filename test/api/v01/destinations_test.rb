@@ -993,6 +993,21 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should destroy multiple destinations with ids in JSON body' do
+    ids = [
+      destinations(:destination_one).id,
+      destinations(:destination_two).id,
+      destinations(:destination_three).id,
+      destinations(:destination_four).id
+    ].join(',')
+    assert_difference('Destination.count', -3) do
+      delete '/api/0.1/destinations.json?api_key=testkey1',
+             { ids: ids }.to_json,
+             'CONTENT_TYPE' => 'application/json'
+      assert_equal 204, last_response.status, last_response.body
+    end
+  end
+
   test 'should destroy all destinations without params' do
     assert_difference('Destination.count', -4) do
       delete api
