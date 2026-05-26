@@ -49,4 +49,72 @@ module CustomersHelper
     }.to_h
   end
 
+  def customer_router_grouped_options(customer, admin:)
+    if admin
+      profile_router_grouped_options_for_admin(customer)
+    else
+      router_grouped_options_for_customer(Router.all)
+    end
+  end
+
+  def customer_router_selected_value(customer, admin:)
+    return nil if customer.router_id.blank?
+
+    if admin && customer.profile_id.present?
+      "#{customer.profile_id}_#{customer.router_id}_#{customer.router_dimension}"
+    else
+      "#{customer.router_id}_#{customer.router_dimension}"
+    end
+  end
+
+  def profile_router_grouped_options_for_admin(customer)
+    Profile.includes(:routers).map do |profile|
+      [profile.name, profile_router_options(profile)]
+    end
+  end
+
+  def router_grouped_options_for_customer(routers)
+    [
+      [t('activerecord.attributes.router.router_dimensions.time'), router_options_for_dimension(routers, 'time')],
+      [t('activerecord.attributes.router.router_dimensions.distance'), router_options_for_dimension(routers, 'distance')]
+    ]
+  end
+
+  private
+
+  def profile_router_options(profile)
+    profile.routers.flat_map do |router|
+      router_options_for_router(router, profile.id)
+    end
+  end
+
+  def router_options_for_dimension(routers, dimension)
+    routers.select { |router| router.public_send("#{dimension}?") }.map do |router|
+      [router_option_label(router, dimension), router_option_value(router, dimension)]
+    end
+  end
+
+  def router_options_for_router(router, profile_id)
+    options = []
+    if router.time?
+      options << [router_option_label(router, 'time'), router_option_value(router, 'time', profile_id)]
+    end
+    if router.distance?
+      options << [router_option_label(router, 'distance'), router_option_value(router, 'distance', profile_id)]
+    end
+    options
+  end
+
+  def router_option_label(router, dimension)
+    router.translated_name + ' - ' + t("activerecord.attributes.router.router_dimensions.#{dimension}")
+  end
+
+  def router_option_value(router, dimension, profile_id = nil)
+    if profile_id
+      "#{profile_id}_#{router.id}_#{dimension}"
+    else
+      "#{router.id}_#{dimension}"
+    end
+  end
+
 end

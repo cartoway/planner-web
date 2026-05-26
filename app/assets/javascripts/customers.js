@@ -231,16 +231,42 @@ const customers_edit = function (params) {
     $('#customer_sms_intransit_template').on('keyup', smsIntransitCharacterCount);
   }
 
+  var customerRouterSelect2Options = {
+    theme: 'bootstrap',
+    width: '100%'
+  };
+
+  if (params.admin) {
+    customerRouterSelect2Options.templateResult = formatCustomerRouterProfileResult;
+    customerRouterSelect2Options.templateSelection = formatCustomerRouterProfileSelection;
+  } else {
+    customerRouterSelect2Options.templateResult = formatCustomerRouterDimensionResult;
+  }
+
+  $('#customer_router').select2(customerRouterSelect2Options);
+
   routerOptionsSelect('#customer_router', params);
 
-  routersAllowedForProfile(params);
-  $('#customer_profile_id').on('change', function() {
+  if (!params.admin) {
     routersAllowedForProfile(params);
-    if (params['validate_layer'] === true) layersAllowedForProfile(params);
-  });
+    $('#customer_profile_id').on('change', function() {
+      routersAllowedForProfile(params);
+      if (params.validate_layer === true) layersAllowedForProfile(params);
+    });
+  }
+
   $('#customer_router').on('change', function() {
-    removeRouterWarning();
+    if (!params.admin) {
+      removeRouterWarning();
+    }
+    if (params.admin && params.validate_layer === true) {
+      layersAllowedForProfile(params);
+    }
   });
+
+  if (params.admin && params.validate_layer === true) {
+    layersAllowedForProfile(params);
+  }
   $('#customer_layer_id').on('change', function() {
     removeLayerWarning();
   });
@@ -280,9 +306,75 @@ const customers_edit = function (params) {
   });
 };
 
+var escapeCustomerRouterText = function(text) {
+  return $('<span>').text(text || '').html();
+};
+
+var formatCustomerRouterProfileResult = function(data) {
+  if (data.children) {
+    return $('<span class="customer-router-profile-label">' +
+      '<i class="fa fa-layer-group fa-fw" aria-hidden="true"></i>' +
+      escapeCustomerRouterText(data.text) +
+      '</span>');
+  }
+
+  if (!data.id) {
+    return data.text;
+  }
+
+  return $('<span class="customer-router-option-label">' +
+    '<i class="fa fa-route fa-fw" aria-hidden="true"></i>' +
+    escapeCustomerRouterText(data.text) +
+    '</span>');
+};
+
+var formatCustomerRouterProfileSelection = function(data) {
+  if (!data.id) {
+    return data.text;
+  }
+
+  var $option = $(data.element);
+  var profileName = $option.parent('optgroup').attr('label');
+
+  if (!profileName) {
+    return escapeCustomerRouterText(data.text);
+  }
+
+  return $('<span class="customer-router-selection">' +
+    '<span class="customer-router-selection-profile">' + escapeCustomerRouterText(profileName) + '</span>' +
+    '<span class="customer-router-selection-separator" aria-hidden="true">›</span>' +
+    '<span class="customer-router-selection-router">' + escapeCustomerRouterText(data.text) + '</span>' +
+    '</span>');
+};
+
+var formatCustomerRouterDimensionResult = function(data) {
+  if (data.children) {
+    return $('<span class="customer-router-dimension-label">' + escapeCustomerRouterText(data.text) + '</span>');
+  }
+
+  if (!data.id) {
+    return data.text;
+  }
+
+  return $('<span class="customer-router-option-label">' + escapeCustomerRouterText(data.text) + '</span>');
+};
+
+var customerProfileId = function() {
+  var profileField = $('#customer_profile_id');
+  if (profileField.length) {
+    return profileField.val();
+  }
+
+  var routerValue = $('#customer_router').val();
+  if (!routerValue) return;
+
+  var routerParts = routerValue.split('_');
+  return routerParts.length === 3 ? routerParts[0] : undefined;
+};
+
 var routersAllowedForProfile = function(params) {
   var routersModesByProfile = JSON.parse(params.routers_modes_by_profile);
-  var profileId = $('#customer_profile_id').val();
+  var profileId = customerProfileId();
   if (profileId === '' || profileId === undefined) return;
   var routersModesAuthorized = routersModesByProfile[profileId];
   var routerOptions = $('#customer_router option');
@@ -321,7 +413,7 @@ var displayRouterWarning = function() {
 
 var layersAllowedForProfile = function(params) {
   var layersByProfile = JSON.parse(params.layers_by_profile);
-  var profileId = $('#customer_profile_id').val();
+  var profileId = customerProfileId();
   if (profileId == '' || profileId === undefined) return;
   var layersAuthorized = layersByProfile[profileId];
   var layerOptions = $('#customer_layer_id option');

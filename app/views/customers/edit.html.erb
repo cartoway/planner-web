@@ -147,10 +147,11 @@
   </div>
 
 <%
-  routers = @customer.id ? @customer.profile.routers : Router.all
+  routers = current_user.admin? ? Router.all : (@customer.id ? @customer.profile.routers : Router.all)
 
   controller.js(
     customer_id: @customer.id,
+    admin: current_user.admin?,
     routers_options: Hash[routers.collect { |r| [r.id, r.options] }],
     devices: @customer.device.enabled_definitions,
     routers_modes_by_profile: raw(routers_modes_by_profile.to_json)

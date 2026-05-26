@@ -31,7 +31,9 @@ class Admin::CustomersControllerTest < ActionController::TestCase
     assert_difference('Customer.count') do
       assert_difference('Vehicle.count', 2) do
         assert_difference('VehicleUsage.count', 2) do
-          post :create, params: { customer: { name: 'new', max_vehicles: 2, default_country: 'France', speed_multiplier: 1, profile_id: profiles(:profile_one), router: routers(:router_one).id.to_s + '_time' }}
+          profile = profiles(:profile_one)
+          router = routers(:router_one)
+          post :create, params: { customer: { name: 'new', max_vehicles: 2, default_country: 'France', speed_multiplier: 1, router: "#{profile.id}_#{router.id}_time" }}
         end
       end
     end
