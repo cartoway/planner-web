@@ -265,6 +265,16 @@ class Route < ApplicationRecord
     vehicle_usage? && vehicle_usage.rest?
   end
 
+  def total_duration
+    return 0 unless route_data
+
+    seconds = route_data.duration.to_i
+    if vehicle_usage?
+      seconds += vehicle_usage.default_service_time_start.to_i + vehicle_usage.default_service_time_end.to_i
+    end
+    seconds
+  end
+
   def store_traces(trace, options = {})
     if trace && !options[:no_geojson]
       @geojson_tracks_store << {
