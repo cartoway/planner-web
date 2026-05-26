@@ -755,6 +755,10 @@ class PlanningsController < ApplicationController
           @planning.replace_routes_with_loaded(route_ids)
 
           route = @planning.routes.find { |r| r.id == route_id }
+          raise ActiveRecord::RecordNotFound if route.nil?
+          if route.vehicle_usage_id && !route.vehicle_usage.active?
+            raise ActiveRecord::RecordNotFound
+          end
 
           if params[:stop_ids].nil?
             previous_route_id = Stop.find(params[:stop_id]).route_id
