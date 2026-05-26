@@ -186,7 +186,13 @@ class CustomersController < ApplicationController
   def customer_params
     unsafe_params = params.to_unsafe_h
     if unsafe_params[:customer][:router]
-      unsafe_params[:customer][:router_id], unsafe_params[:customer][:router_dimension] = unsafe_params[:customer][:router].split('_')
+      router_parts = unsafe_params[:customer][:router].split('_')
+      if current_user.admin? && router_parts.length == 3
+        unsafe_params[:customer][:profile_id], unsafe_params[:customer][:router_id], unsafe_params[:customer][:router_dimension] = router_parts
+      else
+        unsafe_params[:customer][:router_id], unsafe_params[:customer][:router_dimension] = router_parts
+      end
+      unsafe_params[:customer].delete(:router)
     end
     parse_router_options(unsafe_params[:customer]) if unsafe_params[:customer][:router_options]
     if unsafe_params[:customer][:end_subscription] && !unsafe_params[:customer][:end_subscription].blank?
