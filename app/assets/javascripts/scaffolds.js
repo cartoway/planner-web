@@ -681,7 +681,8 @@ export const routerOptionsSelect = function(selectId, params) {
     }
 
     if (selectedValue) {
-      var routerId = selectedValue.split('_')[0];
+      var routerParts = selectedValue.split('_');
+      var routerId = routerParts.length === 3 ? routerParts[1] : routerParts[0];
       var routerOptions = params.routers_options[routerId];
 
       if (routerId && routerOptions) {

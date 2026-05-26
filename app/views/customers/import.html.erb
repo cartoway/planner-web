@@ -36,6 +36,7 @@
   routers = Router.all
 
   controller.js(
+    admin: current_user.admin?,
     routers_options: Hash[routers.collect { |r| [r.id, r.options] }],
     routers_modes_by_profile: raw(routers_modes_by_profile.to_json),
     validate_layer: true,
