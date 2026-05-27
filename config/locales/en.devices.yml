@@ -53,13 +53,8 @@ en:
           sopac:
             username: Username
             password: Password
-      reseller:
-        messagings:
-          vonage:
-            api_key: API key
-            api_secret: API secret
-          sms_partner:
-            api_key: API key
+            queue_prefix: Queue prefix
+            queue_prefix_help: 'Example: /SOPAC/CARTOWAY (or CARTOWAY only)'
       reseller:
         messagings:
           vonage:
