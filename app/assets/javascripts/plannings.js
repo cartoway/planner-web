@@ -1896,6 +1896,73 @@ export const plannings_edit = function(params) {
     return false;
   };
 
+  var vehicleUsageByUsageId = function(vehicleUsageId) {
+    var found = null;
+    $.each(vehicles_usages_map, function(_i, v) {
+      if (v.vehicle_usage_id == vehicleUsageId) {
+        found = v;
+      }
+    });
+    return found;
+  };
+
+  var buildRouteDisplayName = function(ref, vehicleUsageId) {
+    var vehicleUsage = vehicleUsageByUsageId(vehicleUsageId);
+    if (!vehicleUsage) {
+      return ref || '';
+    }
+    return (ref ? (ref + ' ') : '') + vehicleUsage.name;
+  };
+
+  var captureRouteSelectorSummary = function() {
+    var summaryRoutes = [];
+    $('#planning_route_ids option').each(function() {
+      var $opt = $(this);
+      var routeId = $opt.val();
+      if (['clear', 'reverse', 'all'].indexOf(routeId) !== -1) {
+        return;
+      }
+      var routeFromModel = routes.find(function(r) { return String(r.route_id) === String(routeId); });
+      var data = {};
+      $.each($opt[0].attributes, function(_i, attr) {
+        if (attr.name.indexOf('data-') === 0) {
+          var key = attr.name.slice(5).replace(/-([a-z])/g, function(_m, c) { return c.toUpperCase(); });
+          data[key] = attr.value;
+        }
+      });
+      summaryRoutes.push({
+        route_id: routeId,
+        name: routeFromModel ? routeFromModel.name : $opt.text(),
+        hidden: data.hidden === true || data.hidden === 'true',
+        locked: data.locked === true || data.locked === 'true',
+        data: data
+      });
+    });
+    return { routes: summaryRoutes };
+  };
+
+  var syncRouteRefAfterUpdate = function(routeId, ref, vehicleUsageId) {
+    var displayName = buildRouteDisplayName(ref, vehicleUsageId);
+
+    routes.forEach(function(route) {
+      if (String(route.route_id) === String(routeId)) {
+        route.ref = ref;
+        route.name = displayName;
+      }
+    });
+
+    var summary = (planningPopoverSnapshot && planningPopoverSnapshot.routes) ?
+      planningPopoverSnapshot :
+      captureRouteSelectorSummary();
+    summary.routes.forEach(function(r) {
+      if (String(r.route_id) === String(routeId)) {
+        r.name = displayName;
+      }
+    });
+    planningPopoverSnapshot = summary;
+    refreshRouteSelectorFromSummary(summary);
+  };
+
   var refreshRouteSelectorFromSummary = function(summary) {
     var $select = $('#planning_route_ids');
     if (!$select.length || !summary || !summary.routes) {
@@ -2062,12 +2129,15 @@ export const plannings_edit = function(params) {
 
     var setTooltipRef = function setTooltipRef(vehicleUsageId, ref) {
       var tooltip;
+      var vehicleUsage = vehicleUsageByUsageId(vehicleUsageId);
+      if (!vehicleUsage) {
+        return;
+      }
       if (vehicleMarkers.length
         && vehicleMarkers[vehicleUsageId]
         && (tooltip = vehicleMarkers[vehicleUsageId].getTooltip())) {
         var content = $(tooltip._content);
-        var name = vehicles_usages_map[vehicleUsageId].name;
-        content.find('#vehicle-name').html(ref + ' ' + name);
+        content.find('#vehicle-name').html((ref ? (ref + ' ') : '') + vehicleUsage.name);
         vehicleMarkers[vehicleUsageId].setTooltipContent('<div>' + content.html() + '</div>');
       }
     };
@@ -2272,6 +2342,7 @@ export const plannings_edit = function(params) {
         contentType: 'application/json',
         url: '/api/0.1/plannings/' + planning_id + '/routes/' + id + '.json',
         success: function (response) {
+          syncRouteRefAfterUpdate(id, ref, response.vehicle_usage_id);
           setTooltipRef(response.vehicle_usage_id, ref);
         },
         error: ajaxError
