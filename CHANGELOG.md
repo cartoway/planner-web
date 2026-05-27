@@ -1,5 +1,9 @@
 # Changelog
 
+## V108.2.3
+  ### Modified
+    - Destinations list: bulk delete now sends selected IDs in the request body instead of encoding them in the URL [#100218c](https://github.com/cartoway/planner-web/commit/100218c453bdabfc395c4f7f727e271139b5250a)
+
 ## V108.2.2
   ### Modified
   - Improve data preloads for destination import [#632](https://github.com/cartoway/planner-web/pull/632)
