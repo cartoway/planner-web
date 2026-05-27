@@ -163,7 +163,6 @@ Rails.application.configure do
   config.devices.masternaut.api_url = 'http://gc.api.geonaut.masternaut.com/MasterWS/services'
   config.devices.orange.api_url = 'https://m2m-services.ft-dm.com'
   config.devices.praxedo.api_url = 'https://ww2.praxedo.com/eTech/services/'
-  config.devices.sopac.api_url = "https://restservice1.bluconsole.com/bluconsolerest/1.0/resources/devices"
   config.devices.stg_telematics.api_url = 'https://api.stgfleet.com'
   config.devices.suivi_de_flotte.api_url = 'https://webservice.suivideflotte.net/service/'
   config.devices.tomtom.api_url = 'https://soap.business.tomtom.com/v1.30'
@@ -173,6 +172,7 @@ Rails.application.configure do
   config.devices.cache_object = cache_factory('devices', 30)
   config.devices.deliver_cache_object = cache_factory('devices.deliver', 60*60*24*10)
   config.devices.stg_telematics_cache_object = cache_factory('devices.stg_telematics', 5 * 60)
+  config.devices.sopac_cache_object = cache_factory('devices.sopac', 7 * 24 * 60 * 60)
 
   config.delayed_job_use = true
 

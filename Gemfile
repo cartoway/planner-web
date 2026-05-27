@@ -163,7 +163,9 @@ gem 'browser'
 gem 'color'
 gem 'pagy', '~> 9.1'
 
+gem 'bunny'
 gem 'daemons'
+
 gem 'delayed_job'
 gem 'delayed_job_active_record'
 gem 'delayed_job_web'

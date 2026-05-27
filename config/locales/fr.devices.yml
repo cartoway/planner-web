@@ -53,6 +53,8 @@ fr:
           sopac:
             username: Utilisateur
             password: Mot de passe
+            queue_prefix: Préfixe des files
+            queue_prefix_help: 'Exemple : /SOPAC/CARTOWAY (ou CARTOWAY)'
       reseller:
         messagings:
           vonage:
