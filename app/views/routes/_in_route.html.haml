@@ -64,12 +64,12 @@
                     = t('plannings.edit.device_name_label')
                     = item[:text] || item['text']
               %div
-                %span{id: "temperature--#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
+                %span{id: "temperature-#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
                   %i.fa.fa-thermometer-half.fa-fw
                   %span
                     = t('plannings.edit.temperature_label')
               %div
-                %span{id: "last-date--#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
+                %span{id: "last-date-#{route[:vehicle_id]}-#{item[:id] || item['id']}"}
                   %i.fa.fa-stopwatch.fa-fw
                   %span
                     = t('plannings.edit.last_temperature_statement_label')

@@ -15,6 +15,8 @@ x-web: &web
     LOG_FORMAT: ${LOG_FORMAT:-}
     URL_SHORTENER: ${URL_SHORTENER:-http://url_shortener:8635}
     AVAILABLE_SOLVERS: ${AVAILABLE_SOLVERS:-}
+    SOPAC_RABBITMQ_HOST: ${SOPAC_RABBITMQ_HOST:-rabbitmq-lb.bluconsole.com}
+    SOPAC_RABBITMQ_VHOST: ${SOPAC_RABBITMQ_VHOST:-blu-vhost}
     AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
     AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
     AZURE_TENANT_ID: ${AZURE_TENANT_ID}
@@ -71,6 +73,14 @@ services:
       disable: true
     deploy:
       replicas: ${DELAYED_JOB_REPLICAS:-1}
+
+  sopac-consumer:
+    <<: *web
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec rake sopac:broker:run"
+    healthcheck:
+      disable: true
+    deploy:
+      replicas: ${SOPAC_CONSUMER_REPLICAS:-1}
 
   traefik:
     image: traefik:v3.2
