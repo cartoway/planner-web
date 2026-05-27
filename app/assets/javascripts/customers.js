@@ -19,6 +19,12 @@
 
 import { beforeSendWaiting, completeWaiting, ajaxError } from '../../assets/javascripts/ajax';
 import { routerOptionsSelect, mapInitialize } from '../../assets/javascripts/scaffolds';
+import {
+  escapeCustomerRouterText,
+  formatCustomerRouterProfileResult,
+  formatCustomerRouterProfileSelection,
+  formatCustomerRouterDimensionResult
+} from './router_profile_select2_formatters';
 
 const customers_index = function (params) {
   var map_layers = params.map_layers,
@@ -304,59 +310,6 @@ const customers_edit = function (params) {
   $("#customer_enable_optimization_soft_upper_bound").click(function() {
     $("#optimization_soft_upper_bound").toggleClass('d-none');
   });
-};
-
-var escapeCustomerRouterText = function(text) {
-  return $('<span>').text(text || '').html();
-};
-
-var formatCustomerRouterProfileResult = function(data) {
-  if (data.children) {
-    return $('<span class="customer-router-profile-label">' +
-      '<i class="fa fa-layer-group fa-fw" aria-hidden="true"></i>' +
-      escapeCustomerRouterText(data.text) +
-      '</span>');
-  }
-
-  if (!data.id) {
-    return data.text;
-  }
-
-  return $('<span class="customer-router-option-label">' +
-    '<i class="fa fa-route fa-fw" aria-hidden="true"></i>' +
-    escapeCustomerRouterText(data.text) +
-    '</span>');
-};
-
-var formatCustomerRouterProfileSelection = function(data) {
-  if (!data.id) {
-    return data.text;
-  }
-
-  var $option = $(data.element);
-  var profileName = $option.parent('optgroup').attr('label');
-
-  if (!profileName) {
-    return escapeCustomerRouterText(data.text);
-  }
-
-  return $('<span class="customer-router-selection">' +
-    '<span class="customer-router-selection-profile">' + escapeCustomerRouterText(profileName) + '</span>' +
-    '<span class="customer-router-selection-separator" aria-hidden="true">›</span>' +
-    '<span class="customer-router-selection-router">' + escapeCustomerRouterText(data.text) + '</span>' +
-    '</span>');
-};
-
-var formatCustomerRouterDimensionResult = function(data) {
-  if (data.children) {
-    return $('<span class="customer-router-dimension-label">' + escapeCustomerRouterText(data.text) + '</span>');
-  }
-
-  if (!data.id) {
-    return data.text;
-  }
-
-  return $('<span class="customer-router-option-label">' + escapeCustomerRouterText(data.text) + '</span>');
 };
 
 var customerProfileId = function() {

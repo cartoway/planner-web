@@ -45,4 +45,46 @@ class CustomersHelperTest < ActionView::TestCase
     assert profile_group
     assert profile_group[1].any? { |_label, value| value == "#{profile.id}_#{router.id}_time" }
   end
+
+  test 'router grouped options mark reseller default profile and router' do
+    reseller = resellers(:reseller_one)
+    profile = profiles(:profile_one)
+    router = routers(:router_one)
+    reseller.update!(default_profile_id: profile.id, default_router_id: router.id)
+
+    groups = customer_router_select_options(
+      customers(:customer_one),
+      admin: true,
+      reseller: reseller
+    )
+    profile_group = groups.find { |name, _options| name == profile.name }
+    default_option = profile_group[1].find { |_label, value| value == "#{profile.id}_#{router.id}_time" }
+
+    assert_equal t('customers.form.field_default', n: router.translated_name), default_option[0]
+    assert_equal true, default_option[2][:data][:reseller_default]
+  end
+
+  test 'router select options only include time dimension' do
+    profile = profiles(:profile_one)
+    router = routers(:router_one)
+    profile.routers << router unless profile.routers.include?(router)
+
+    options = profile_router_options(profile)
+    values = options.map { |entry| entry[1] }
+
+    assert values.all? { |value| value.end_with?('_time') }
+    assert_equal 1, values.count { |value| value.include?("_#{router.id}_") }
+    refute_includes values, "#{profile.id}_#{router.id}_distance"
+  end
+
+  test 'import user role options mark reseller default role' do
+    reseller = resellers(:reseller_one)
+    role = reseller.roles.order(:id).first!
+    reseller.update_column(:default_role_id, role.id)
+
+    options = import_user_role_options_for_select(reseller)
+    default_entry = options.find { |_label, id| id == role.id }
+
+    assert_equal t('customers.form.field_default', n: role.name), default_entry[0]
+  end
 end

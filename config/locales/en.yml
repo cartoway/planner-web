@@ -366,6 +366,8 @@ en:
         customer_dashboard_url: Customer's Dashboard URL
         planning_dashboard_url: Planning's Dashboard URL
         default_role_id: Default role for new users
+        default_profile_id: Default profile for new customers
+        default_router_id: Default router for new customers
       role:
         name: Name
         ref: Reference
@@ -716,6 +718,9 @@ en:
           attributes:
             default_role_id:
               invalid: must be a role of this reseller
+            default_router_id:
+              invalid: must be a router allowed by the default profile
+          default_profile_and_router_mismatch: default profile and router must both be set or both left blank
         customer:
           attributes:
             optimization_dicho_minimum_service_size:
@@ -894,6 +899,10 @@ en:
         application_name_help: Reseller Website name
         default_role_help: >-
           Preselected role when an administrator creates a user. Leave blank for no default.
+        default_profile_router_label: Default profile and router for new customers
+        default_profile_router_blank: No default profile / router
+        default_profile_router_help: >-
+          Preselected profile and router when creating a customer. Leave blank for no default.
         sms_api_key_help: Api key to be able to send SMS
         website_url_help: >-
           Website address. It's possible to use "{LG}" which will be replaced by
