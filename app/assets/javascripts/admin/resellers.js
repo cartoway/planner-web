@@ -1,3 +1,10 @@
+'use strict';
+
+import {
+  formatCustomerRouterProfileResult,
+  formatCustomerRouterProfileSelection
+} from '../router_profile_select2_formatters';
+
 // Copyright © Mapotempo, 2015
 //
 // This file is part of Mapotempo.
@@ -29,8 +36,17 @@ function admin_resellers_form(params, api) {
       $('.messaging-fields[data-service="' + this.value + '"]').removeClass('d-none');
     }
   });
-}
 
+  var $defaultProfileRouter = $('#reseller_default_profile_router');
+  if ($defaultProfileRouter.length) {
+    $defaultProfileRouter.select2({
+      theme: 'bootstrap',
+      width: '100%',
+      templateResult: formatCustomerRouterProfileResult,
+      templateSelection: formatCustomerRouterProfileSelection
+    });
+  }
+}
 
 function admin_resellers_edit(params, api) {
   admin_resellers_form(params, api);

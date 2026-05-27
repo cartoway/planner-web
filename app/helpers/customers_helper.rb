@@ -16,6 +16,9 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 module CustomersHelper
+  # Customer and reseller router selects only expose the time (fastest) dimension.
+  ROUTER_SELECT_DIMENSION = 'time'.freeze
+
   def customer_plannings_count(customer)
     capture do
       concat '<span style="color: red; font-weight: bold;">'.html_safe if Rails.configuration.max_plannings_default && Rails.configuration.max_plannings_default <= customer.plannings_count
@@ -49,11 +52,28 @@ module CustomersHelper
     }.to_h
   end
 
-  def customer_router_grouped_options(customer, admin:)
+  def reseller_default_profile_router_combined_value(reseller)
+    return nil if reseller.blank? || reseller.default_profile_id.blank? || reseller.default_router_id.blank?
+
+    "#{reseller.default_profile_id}_#{reseller.default_router_id}_#{reseller.default_router_dimension}"
+  end
+
+  def import_user_role_options_for_select(reseller)
+    reseller.roles.order(:name).map do |role|
+      label = role.name
+      if role.id == reseller.default_role_id
+        label = t('customers.form.field_default', n: role.name)
+      end
+      [label, role.id]
+    end
+  end
+
+  def customer_router_select_options(customer, admin:, reseller: nil)
+    reseller ||= customer.reseller
     if admin
-      profile_router_grouped_options_for_admin(customer)
+      profile_router_grouped_options_for_admin(customer, reseller: reseller)
     else
-      router_grouped_options_for_customer(Router.all)
+      router_options_for_dimension(Router.all, ROUTER_SELECT_DIMENSION, reseller: reseller)
     end
   end
 
@@ -67,46 +87,53 @@ module CustomersHelper
     end
   end
 
-  def profile_router_grouped_options_for_admin(customer)
+  def profile_router_grouped_options_for_admin(_customer, reseller: nil)
     Profile.includes(:routers).map do |profile|
-      [profile.name, profile_router_options(profile)]
+      [profile.name, profile_router_options(profile, reseller: reseller)]
     end
-  end
-
-  def router_grouped_options_for_customer(routers)
-    [
-      [t('activerecord.attributes.router.router_dimensions.time'), router_options_for_dimension(routers, 'time')],
-      [t('activerecord.attributes.router.router_dimensions.distance'), router_options_for_dimension(routers, 'distance')]
-    ]
   end
 
   private
 
-  def profile_router_options(profile)
+  def profile_router_options(profile, reseller: nil)
     profile.routers.flat_map do |router|
-      router_options_for_router(router, profile.id)
+      router_options_for_router(router, profile.id, reseller: reseller)
     end
   end
 
-  def router_options_for_dimension(routers, dimension)
+  def router_options_for_dimension(routers, dimension, reseller: nil)
     routers.select { |router| router.public_send("#{dimension}?") }.map do |router|
-      [router_option_label(router, dimension), router_option_value(router, dimension)]
+      router_option_entry(router, dimension, nil, reseller)
     end
   end
 
-  def router_options_for_router(router, profile_id)
-    options = []
-    if router.time?
-      options << [router_option_label(router, 'time'), router_option_value(router, 'time', profile_id)]
-    end
-    if router.distance?
-      options << [router_option_label(router, 'distance'), router_option_value(router, 'distance', profile_id)]
-    end
-    options
+  def router_options_for_router(router, profile_id, reseller: nil)
+    return [] unless router.time?
+
+    [router_option_entry(router, ROUTER_SELECT_DIMENSION, profile_id, reseller)]
   end
 
-  def router_option_label(router, dimension)
-    router.translated_name + ' - ' + t("activerecord.attributes.router.router_dimensions.#{dimension}")
+  def router_option_entry(router, dimension, profile_id, reseller)
+    label = router_option_label(router, dimension)
+    value = router_option_value(router, dimension, profile_id)
+    html_options = {}
+    if router_option_is_reseller_default?(router, dimension, profile_id, reseller)
+      label = t('customers.form.field_default', n: label)
+      html_options[:data] = { reseller_default: true }
+    end
+    html_options.empty? ? [label, value] : [label, value, html_options]
+  end
+
+  def router_option_is_reseller_default?(router, dimension, profile_id, reseller)
+    return false if reseller.blank? || reseller.default_router_id.blank?
+    return false if reseller.default_router_id != router.id
+    return false if reseller.default_router_dimension != dimension
+
+    profile_id.nil? || reseller.default_profile_id == profile_id
+  end
+
+  def router_option_label(router, _dimension = ROUTER_SELECT_DIMENSION)
+    router.translated_name
   end
 
   def router_option_value(router, dimension, profile_id = nil)

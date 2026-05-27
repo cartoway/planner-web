@@ -21,11 +21,10 @@
   <label class="col-md-offset-2 col-md-8" for="customer_router"><%= t('activerecord.attributes.customer.router') %></label>
   <div class="col-md-offset-2 col-md-8 field">
     <div class="input-group">
+      <% router_selected = customer_router_selected_value(@customer, admin: current_user.admin?) %>
+      <% router_options = customer_router_select_options(@customer, admin: current_user.admin?, reseller: @customer.reseller) %>
       <%= select_tag 'customer[router]',
-        grouped_options_for_select(
-          customer_router_grouped_options(@customer, admin: current_user.admin?),
-          customer_router_selected_value(@customer, admin: current_user.admin?)
-        ),
+        current_user.admin? ? grouped_options_for_select(router_options, router_selected) : options_for_select(router_options, router_selected),
         class: 'form-control select2',
         required: true,
         id: 'customer_router' %>

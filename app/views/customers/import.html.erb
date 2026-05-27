@@ -17,11 +17,10 @@
     </div>
 
     <%= render partial: 'profile_router_inputs', locals: { f: f } %>
-    <%= f.collection_select :import_user_role_id,
-          @customer.reseller.roles,
-          :id, :name,
-          { required: true, label: t('customers.import.import_user_role')},
-          { class: 'form-control' } %>
+    <%= f.select :import_user_role_id,
+          options_for_select(import_user_role_options_for_select(@customer.reseller), @customer.import_user_role_id),
+          {},
+          { required: true, label: t('customers.import.import_user_role'), class: 'form-control' } %>
     <%= f.collection_select :layer_id, Layer.all.sort_by(&:id).select{ |l| !l[:overlay] }, :id, :translated_name, {}, { class: 'form-control' } %>
     <div class="col-md-2"></div>
     <p class="help-block layer-unauthorized hidden warning has-warning" style="display:block!important;"><%= t('activerecord.attributes.customer.layer_warning') %></p>
@@ -40,6 +39,7 @@
     routers_options: Hash[routers.collect { |r| [r.id, r.options] }],
     routers_modes_by_profile: raw(routers_modes_by_profile.to_json),
     validate_layer: true,
-    layers_by_profile: raw(layers_by_profile.to_json)
+    layers_by_profile: raw(layers_by_profile.to_json),
+    default_profile_router: reseller_default_profile_router_combined_value(current_user.reseller)
   )
 %>

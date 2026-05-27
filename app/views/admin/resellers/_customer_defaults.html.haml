@@ -7,3 +7,16 @@
     { class: "form-control selectpicker reseller-default-role-selectpicker", autocomplete: "new-password", "data-live-search" => "true" }
   %p.help-block.col-md-offset-2.col-md-8
     = t("admin.resellers.form.default_role_help")
+  %label.col-md-offset-2.col-md-8.control-label{for: "reseller_default_profile_router"}
+    = t("admin.resellers.form.default_profile_router_label")
+  .col-md-offset-2.col-md-8.field
+    = select_tag "reseller[default_profile_router]",                           |
+        grouped_options_for_select(                                            |
+          reseller_default_profile_router_grouped_options(@reseller),          |
+          reseller_default_profile_router_selected_value(@reseller)            |
+        ),                                                                     |
+        include_blank: t("admin.resellers.form.default_profile_router_blank"), |
+        class: "form-control select2",                                         |
+        id: "reseller_default_profile_router"                                  |
+  %p.help-block.col-md-offset-2.col-md-8
+    = t("admin.resellers.form.default_profile_router_help")

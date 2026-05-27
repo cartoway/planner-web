@@ -154,6 +154,7 @@
     admin: current_user.admin?,
     routers_options: Hash[routers.collect { |r| [r.id, r.options] }],
     devices: @customer.device.enabled_definitions,
-    routers_modes_by_profile: raw(routers_modes_by_profile.to_json)
+    routers_modes_by_profile: raw(routers_modes_by_profile.to_json),
+    default_profile_router: reseller_default_profile_router_combined_value(current_user.reseller)
   )
 %>

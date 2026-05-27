@@ -102,6 +102,11 @@
   margin: 0 200px 15px;
 }
 
+.customer-router-option-label--default,
+.customer-router-selection-router--default {
+  font-weight: 600;
+}
+
 #customers {
     @media screen and (max-width: 991px) {
       tr th:nth-of-type(4), tr td:nth-of-type(4),
