@@ -18,20 +18,31 @@
 class SopacService < DeviceService
 
   def vehicles_temperature(customer)
-    if customer.devices[service_name] && customer.devices[:sopac][:username]
-      with_cache [:vehicles_temperature, service_name, customer.id, customer.devices[:sopac][:username]] do
-        service.vehicles_temperature customer
-      end
+    return unless sopac_active?(customer)
+
+    with_cache [:vehicles_temperature, service_name, customer.id] do
+      service.vehicles_temperature customer
     end
   end
 
   def list_devices
-    if customer.devices[service_name] && customer.devices[:sopac][:username]
-      with_cache [:list_devices, service_name, customer.id, customer.devices[:sopac][:username]] do
-        service.list_devices customer.devices[:sopac]
-      end
-    else
-      []
+    return [] unless sopac_active?(customer)
+
+    # Registry is filled by the broker consumer; do not cache empty lists (stale select options).
+    service.list_devices customer
+  end
+
+  def vehicle_pos
+    return [] unless sopac_active?(customer)
+
+    with_cache [:vehicle_pos, service_name, customer.id] do
+      service.vehicle_pos customer
     end
+  end
+
+  private
+
+  def sopac_active?(customer)
+    SopacBroker::BrokerConfig.customer_enabled?(customer)
   end
 end

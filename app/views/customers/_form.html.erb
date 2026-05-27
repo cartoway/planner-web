@@ -497,6 +497,7 @@
                     <%= f.label_tag name, t("activerecord.attributes.customer.devices.#{key}.#{field}"), class: 'control-label' %>
                   </div>
                   <div class="col-md-offset-2 col-md-8 field">
+                    <% device_field_help_key = ["customers.form.devices.#{key}.#{field}_help", "activerecord.attributes.customer.devices.#{key}.#{field}_help"].find { |k| I18n.exists?(k) } %>
                     <%= case type
                       when :text
                         f.text_field_tag name, @customer.devices[key] && @customer.devices[key][field], autocomplete: 'off', class: 'form-control'
@@ -505,6 +506,9 @@
                       when :boolean
                         render partial: 'shared/check_box', locals: { form: f, name: "customer[devices][#{key}][#{field}]", checked: to_bool(@customer.devices[key] && @customer.devices[key][field]), help: t("customers.form.devices.#{key}.#{field}_help"), label: t("activerecord.attributes.customer.devices.#{key}.#{field}"), options: { label_col: 'd-none', control_col: 'form-switch', help_label_class: ''} }
                       end %>
+                    <% if device_field_help_key && type != :boolean %>
+                      <p class="help-block"><%= t(device_field_help_key) %></p>
+                    <% end %>
                   </div>
                 </div>
               <% } %>
