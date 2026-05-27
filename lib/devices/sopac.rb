@@ -16,10 +16,12 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
-class Sopac < DeviceBase
+require_relative '../sopac/cache'
+require_relative '../sopac/broker_config'
+require_relative '../sopac/broker_connection'
+require_relative '../sopac/registry_bootstrap'
 
-  require 'rexml/document'
-  include REXML
+class Sopac < DeviceBase
 
   def definition
     {
@@ -32,7 +34,8 @@ class Sopac < DeviceBase
       forms: {
         settings: {
           username: :text,
-          password: :password
+          password: :password,
+          queue_prefix: :text
         },
         vehicle: {
           sopac_ids: :select
@@ -42,71 +45,143 @@ class Sopac < DeviceBase
   end
 
   def check_auth(credentials)
-    get(uname: credentials[:username], upass: credentials[:password])
+    config = SopacBroker::BrokerConfig.from_credentials(credentials)
+    unless SopacBroker::BrokerConfig.valid?(config)
+      raise DeviceServiceError, 'Sopac : broker configuration is incomplete'
+    end
+
+    SopacBroker::BrokerConnection.verify!(config)
   end
 
-  def list_devices(credentials)
-    doc = get(uname: credentials[:username], upass: credentials[:password])
-    doc.elements['///'].map { |e|
+  def list_devices(customer)
+    SopacBroker::RegistryBootstrap.call(customer) if SopacBroker::BrokerConfig.customer_enabled?(customer)
+
+    cache = SopacBroker::Cache.new(customer.id)
+    cache.devices_registry.map { |id, entry|
       {
-        id: e.elements['id'].text,
-        text: e.elements['label'].text
+        id: id,
+        text: entry['label'] || entry[:label] || id
       }
     }
   end
 
   def vehicles_temperature(customer)
+    cache = SopacBroker::Cache.new(customer.id)
     customer.vehicles.map { |v|
-      if !v.devices[:sopac_ids]
-        next
-      end
       ids = v.devices[:sopac_ids]
+      next unless ids.is_a?(Array) && ids.any?
+
       {
         vehicle_id: v.id,
         vehicle_name: v.name,
-        device_infos: ids.map { |id|
-          d_info = device_info(customer.devices[:sopac], id)
+        device_infos: ids.filter_map { |id|
+          reading = measurement_reading(cache.read_measurement(id))
+          next if reading.empty?
+
           {
-            device_name: d_info[:label],
+            device_name: reading[:label],
             device_id: id,
-            temperature: d_info[:temperature],
-            humidity: d_info[:humidity],
-            time: d_info[:utc]
+            temperature: reading[:temperature],
+            humidity: reading[:humidity],
+            time: reading[:utc]
           }.compact
         }
       }
     }.compact
   end
 
-  private
+  def vehicle_pos(customer)
+    cache = SopacBroker::Cache.new(customer.id)
+    customer.vehicles.filter_map { |v|
+      ids = v.devices[:sopac_ids]
+      next unless ids.is_a?(Array) && ids.any?
 
-  def get(payload)
-    begin
-      response = RestClient.get api_url, {params: payload, content_type: :xml}
-      doc = REXML::Document.new(response.body)
-      if response.code == 200 && !doc.elements['message']
-        doc
-      elsif doc.elements['message']
-        raise DeviceServiceError.new("Sopac : #{doc.elements['message'].text}")
-      end
-    rescue RestClient::Exception => e
-      raise DeviceServiceError.new("Sopac : #{e.message}")
-    end
+      position = resolve_vehicle_position(cache, ids)
+      next unless position
+
+      position.merge(vehicle_id: v.id, device_name: v.name)
+    }
   end
 
-  def device_info(credentials, id)
-    doc = get({ uname: credentials[:username], upass: credentials[:password], id: id})
+  private
 
-    l = doc.elements['///label'] ? doc.elements['///label'].text : nil
-    t = doc.elements['///ms/m/t'] ? doc.elements['///ms/m/t'].text : nil
-    h = doc.elements['///ms/m/h'] ? doc.elements['///ms/m/h'].text : nil
-    utc = doc.elements['///ms/m/utc'] ? Time.strptime(doc.elements['///ms/m/utc'].text, '%s') : nil
+  def measurement_reading(cached)
+    return {} unless cached
+
+    measurements = cached['m'] || cached[:m]
+    return {} unless measurements.is_a?(Array) && measurements.any?
+
+    latest = measurements.max_by { |m| (m['utc'] || m[:utc]).to_i }
+    utc_ms = (latest['utc'] || latest[:utc]).to_i
+    time = utc_ms.positive? ? Time.at(utc_ms / 1000.0) : nil
 
     {
-      label: l,
-      temperature: t,
-      humidity: h,
-      utc: utc
+      label: cached['label'] || cached[:label],
+      temperature: latest['t'] || latest[:t],
+      humidity: latest['h'] || latest[:h],
+      utc: time
     }.compact
+  end
+
+  def resolve_vehicle_position(cache, logger_ids)
+    logger_ids.each do |logger_id|
+      hub_id = cache.read_logger_hub(logger_id)
+      next if hub_id.blank?
+
+      if (gps = cache.read_hub_gps(hub_id))
+        return position_from_gps(gps, hub_id)
+      end
+
+      if (hub = cache.read_hub(hub_id))
+        return position_from_hub(hub, hub_id)
+      end
+    end
+    nil
+  end
+
+  def position_from_gps(gps, hub_id)
+    lat = gps['lat'] || gps[:lat]
+    lon = gps['lon'] || gps[:lon]
+    return nil if lat.nil? || lon.nil?
+
+    device_time = gps['deviceTime'] || gps[:deviceTime]
+    time = device_time.present? ? Time.at(device_time.to_i) : Time.current
+
+    {
+      lat: lat.to_f,
+      lng: lon.to_f,
+      speed: gps_speed_kmh(gps['speed'] || gps[:speed]),
+      direction: gps_angle(gps['course'] || gps[:course]),
+      time: time,
+      device_name: hub_id
+    }.compact
+  end
+
+  def position_from_hub(hub, hub_id)
+    lat = hub['lat'] || hub[:lat]
+    lon = hub['lon'] || hub[:lon]
+    return nil if lat.nil? || lon.nil?
+
+    last_seen = hub['lastSeen'] || hub[:lastSeen]
+    time = last_seen.present? ? Time.parse(last_seen.to_s) : Time.current
+
+    {
+      lat: lat.to_f,
+      lng: lon.to_f,
+      time: time,
+      device_name: hub_id
+    }
+  end
+
+  def gps_speed_kmh(raw)
+    return nil if raw.nil?
+
+    raw.to_f / 10.0
+  end
+
+  def gps_angle(raw)
+    return nil if raw.nil?
+
+    raw.to_f / 100.0
   end
 end

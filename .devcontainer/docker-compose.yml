@@ -17,6 +17,9 @@ x-web: &web
     LOG_FORMAT: ${LOG_FORMAT}
     URL_SHORTENER: ${URL_SHORTENER:-http://url_shortener:8635}
     AVAILABLE_SOLVERS: ${AVAILABLE_SOLVERS:-}
+    SOPAC_RABBITMQ_HOST: ${SOPAC_RABBITMQ_HOST:-rabbitmq-lb.bluconsole.com}
+    SOPAC_RABBITMQ_VHOST: ${SOPAC_RABBITMQ_VHOST:-blu-vhost}
+    SOPAC_BROKER_ORG_PREFIX: ${SOPAC_BROKER_ORG_PREFIX:-/SOPAC}
     POSTGRES_USER: ${POSTGRES_USER:-planner}
     POSTGRES_DB: ${POSTGRES_DB:-planner}
     POSTGRES_DB_TEST: ${POSTGRES_DB_TEST:-planner-test}
@@ -88,6 +91,21 @@ services:
         condition: service_started
     deploy:
       replicas: ${DELAYED_JOB_REPLICAS:-1}
+    networks:
+      - public-network
+
+  sopac-consumer:
+    <<: *web
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec rake sopac:broker:run"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      web:
+        condition: service_started
+    deploy:
+      replicas: ${SOPAC_CONSUMER_REPLICAS:-1}
     networks:
       - public-network
 
