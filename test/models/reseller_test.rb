@@ -105,6 +105,36 @@ class ResellerTest < ActiveSupport::TestCase
     @reseller.update!(name: 'New Name')
   end
 
+  test 'default profile and router must be set together' do
+    @reseller.default_profile_id = profiles(:profile_one).id
+    assert_not @reseller.valid?
+    assert_includes @reseller.errors[:base], I18n.t('activerecord.errors.models.reseller.default_profile_and_router_mismatch')
+  end
+
+  test 'default router must belong to default profile' do
+    @reseller.assign_attributes(
+      default_profile_id: profiles(:profile_one).id,
+      default_router_id: routers(:router_two).id
+    )
+    assert_not @reseller.valid?
+    assert_includes @reseller.errors[:default_router_id], I18n.t('activerecord.errors.models.reseller.attributes.default_router_id.invalid')
+  end
+
+  test 'apply_defaults_to_customer sets profile and router from reseller' do
+    profile = profiles(:profile_one)
+    router = routers(:router_one)
+    @reseller.update!(
+      default_profile_id: profile.id,
+      default_router_id: router.id
+    )
+    customer = @reseller.customers.build
+    customer.valid?
+
+    assert_equal profile.id, customer.profile_id
+    assert_equal router.id, customer.router_id
+    assert_equal 'time', customer.router_dimension
+  end
+
   test 'default_permissions_role_ref raises when default_role.ref is missing or blank in config' do
     Role.stubs(:default_role_yaml_hash).returns({})
     error = assert_raises(ArgumentError) { Role.default_permissions_role_ref }

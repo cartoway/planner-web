@@ -1,4 +1,14 @@
 module ResellersHelper
+  include CustomersHelper
+
+  def reseller_default_profile_router_grouped_options(reseller)
+    profile_router_grouped_options_for_admin(nil, reseller: reseller)
+  end
+
+  def reseller_default_profile_router_selected_value(reseller)
+    reseller_default_profile_router_combined_value(reseller)
+  end
+
   def messaging_services(reseller)
     messaging_service_objects(reseller).map{ |values|
       {

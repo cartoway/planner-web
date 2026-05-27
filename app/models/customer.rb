@@ -602,6 +602,7 @@ class Customer < ApplicationRecord
   def assign_defaults
     self.default_country ||= I18n.t('customers.default.country')
     self.enable_references ||= Planner::Application.config.enable_references
+    reseller&.apply_defaults_to_customer(self)
   end
 
   def create_default_store

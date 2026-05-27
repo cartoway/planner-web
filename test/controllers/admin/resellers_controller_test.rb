@@ -41,4 +41,39 @@ class Admin::ResellersControllerTest < ActionController::TestCase
     assert_redirected_to edit_admin_reseller_path(@reseller)
     assert_equal role.id, @reseller.reload.default_role_id
   end
+
+  test 'should update reseller default profile and router' do
+    profile = profiles(:profile_one)
+    router = routers(:router_one)
+
+    patch :update, params: {
+      id: @reseller,
+      reseller: {
+        name: @reseller.name,
+        default_profile_id: profile.id,
+        default_router_id: router.id
+      }
+    }
+    assert_redirected_to edit_admin_reseller_path(@reseller)
+    @reseller.reload
+    assert_equal profile.id, @reseller.default_profile_id
+    assert_equal router.id, @reseller.default_router_id
+  end
+
+  test 'should update reseller default profile and router from combined select' do
+    profile = profiles(:profile_one)
+    router = routers(:router_one)
+
+    patch :update, params: {
+      id: @reseller,
+      reseller: {
+        name: @reseller.name,
+        default_profile_router: "#{profile.id}_#{router.id}_time"
+      }
+    }
+    assert_redirected_to edit_admin_reseller_path(@reseller)
+    @reseller.reload
+    assert_equal profile.id, @reseller.default_profile_id
+    assert_equal router.id, @reseller.default_router_id
+  end
 end

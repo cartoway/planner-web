@@ -53,7 +53,10 @@ class Admin::ResellersController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def reseller_params
-    p = params.require(:reseller).permit(
+    unsafe_params = params.to_unsafe_h
+    assign_default_profile_router_from_combined_param(unsafe_params['reseller']) if unsafe_params['reseller']
+
+    p = ActionController::Parameters.new(unsafe_params).require(:reseller).permit(
       :host,
       :name,
       :application_name,
@@ -76,12 +79,29 @@ class Admin::ResellersController < ApplicationController
       :customer_dashboard_url,
       :planning_dashboard_url,
       :default_role_id,
+      :default_profile_id,
+      :default_router_id,
       messagings: {
         vonage: [:api_key, :api_secret],
         sms_partner: [:api_key]
       }
     )
     p[:default_role_id] = nil if p[:default_role_id].blank?
+    p[:default_profile_id] = nil if p[:default_profile_id].blank?
+    p[:default_router_id] = nil if p[:default_router_id].blank?
     p
+  end
+
+  def assign_default_profile_router_from_combined_param(reseller_params)
+    combined = reseller_params['default_profile_router']
+    if combined.present?
+      profile_id, router_id, _dimension = combined.split('_', 3)
+      reseller_params['default_profile_id'] = profile_id
+      reseller_params['default_router_id'] = router_id
+    elsif reseller_params.key?('default_profile_router')
+      reseller_params['default_profile_id'] = nil
+      reseller_params['default_router_id'] = nil
+    end
+    reseller_params.delete('default_profile_router')
   end
 end

@@ -22,6 +22,8 @@ class Reseller < ApplicationRecord
   has_many :roles, dependent: :destroy
   # Column remains default_role_id; name cannot be :default_role (conflicts with ActiveRecord::Base#default_role).
   belongs_to :new_user_default_role, class_name: 'Role', foreign_key: :default_role_id, optional: true
+  belongs_to :default_profile, class_name: 'Profile', optional: true
+  belongs_to :default_router, class_name: 'Router', optional: true
 
   after_commit :create_default_permissions_role, on: :create
 
@@ -30,6 +32,8 @@ class Reseller < ApplicationRecord
   validates :host, presence: true
   validates :name, presence: true
   validate :new_user_default_role_belongs_to_reseller
+  validate :default_profile_and_router_pair
+  validate :default_router_in_default_profile
 
   mount_uploader :logo_large, Admin::LogoLargeUploader
   mount_uploader :logo_small, Admin::LogoSmallUploader
@@ -39,6 +43,30 @@ class Reseller < ApplicationRecord
 
   def help_search_url
     nil
+  end
+
+  # Pre-fill profile / router on new customers when reseller defaults are configured.
+  def apply_defaults_to_customer(customer)
+    return customer unless customer.new_record?
+
+    if customer.profile_id.blank? && default_profile_id.present?
+      customer.profile_id = default_profile_id
+    end
+
+    if customer.router_id.blank? && default_router_id.present?
+      customer.router_id = default_router_id
+      customer.router_dimension = default_router_dimension if customer.router_dimension.blank?
+    end
+
+    customer
+  end
+
+  def default_router_dimension
+    router = default_router
+    return 'time' if router&.time?
+    return 'distance' if router&.distance?
+
+    'time'
   end
 
   private
@@ -65,6 +93,21 @@ class Reseller < ApplicationRecord
     return if new_user_default_role&.reseller_id == id
 
     errors.add(:default_role_id, :invalid)
+  end
+
+  def default_profile_and_router_pair
+    profile_set = default_profile_id.present?
+    router_set = default_router_id.present?
+    return if profile_set == router_set
+
+    errors.add(:base, :default_profile_and_router_mismatch)
+  end
+
+  def default_router_in_default_profile
+    return if default_profile_id.blank? || default_router_id.blank?
+    return if default_profile.routers.exists?(id: default_router_id)
+
+    errors.add(:default_router_id, :invalid)
   end
 
   def invalidate_cache

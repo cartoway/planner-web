@@ -372,6 +372,8 @@ fr:
         customer_dashboard_url: URL du tableau de bord du compte
         planning_dashboard_url: URL du tableau de bord de planification
         default_role_id: Rôle par défaut pour les nouveaux utilisateurs
+        default_profile_id: Profil par défaut pour les nouveaux clients
+        default_router_id: Routeur par défaut pour les nouveaux clients
       role:
         name: Nom
         ref: Référence
@@ -726,6 +728,9 @@ fr:
           attributes:
             default_role_id:
               invalid: doit être un rôle de ce revendeur
+            default_router_id:
+              invalid: doit être un routeur autorisé par le profil par défaut
+          default_profile_and_router_mismatch: le profil et le routeur par défaut doivent être renseignés ensemble ou laissés vides
         customer:
           attributes:
             optimization_dicho_minimum_service_size:
@@ -912,6 +917,11 @@ fr:
         application_name_help: Nom du site Web du revendeur
         default_role_help: >-
           Rôle présélectionné lorsqu’un administrateur crée un utilisateur.
+          Laisser vide pour aucun défaut.
+        default_profile_router_label: Profil et routeur par défaut pour les nouveaux clients
+        default_profile_router_blank: Aucun profil / routeur par défaut
+        default_profile_router_help: >-
+          Profil et routeur présélectionnés lors de la création d’un client.
           Laisser vide pour aucun défaut.
         sms_api_key_help: Clé d'API pour envoi de SMS
         website_url_help: >-
