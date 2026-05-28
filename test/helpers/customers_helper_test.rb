@@ -79,7 +79,7 @@ class CustomersHelperTest < ActionView::TestCase
 
   test 'import user role options mark reseller default role' do
     reseller = resellers(:reseller_one)
-    role = reseller.roles.order(:id).first!
+    role = reseller.roles.order(:id).first || Role.create_default_permissions_role_for!(reseller)
     reseller.update_column(:default_role_id, role.id)
 
     options = import_user_role_options_for_select(reseller)
