@@ -2854,7 +2854,7 @@ export const plannings_edit = function(params) {
       return;
     }
     var mpToolbar = params.manage_planning;
-    var planningMoveStopsUsable = mpToolbar && mpToolbar.manage_route_stops && !mpToolbar.disable_route_stops;
+    var planningMoveStopsUsable = mpToolbar && mpToolbar.planning_move_stops_usable;
     var stopSortableDisabled = !planningMoveStopsUsable;
     $sortable_route.sortable({
       distance: 8,
@@ -2945,6 +2945,7 @@ export const plannings_edit = function(params) {
         quantities: params.quantities,
         routesLayer: routesLayer,
         refreshSidebarRoute: refreshSidebarRoute,
+        planningMoveStopsUsable: !!(params.manage_planning && params.manage_planning.planning_move_stops_usable),
         updatePlanningDataHeader: function() {
           updateDataHeader(planning_id);
         },

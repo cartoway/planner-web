@@ -18,7 +18,7 @@
 
 'use strict';
 
-import { ajaxError, beforeSendWaiting, completeAjaxMap } from '../ajax.js';
+import { ajaxError } from '../ajax.js';
 import { moveStopsModal } from '../modals/move_stops_modal.js';
 
 /**
@@ -36,6 +36,7 @@ export class LassoModule {
     this.dataExtractor = null;
     this.waitingRoute = null;
     this.refreshRoute = null;
+    this.managePlanning = {};
   }
 
   /**
@@ -59,6 +60,7 @@ export class LassoModule {
     this.map = mapInstance;
     this.planningId = planningIdParam;
     this.routesLayer = routesLayerInstance;
+    this.managePlanning = (routesLayerInstance && routesLayerInstance.options && routesLayerInstance.options.popupOptions) || {};
 
     // Store the functions passed from plannings.js
     this.waitingRoute = routeWaitingFunc;
@@ -83,11 +85,7 @@ export class LassoModule {
     });
 
     this.map.on('lasso.finished', (event) => {
-      if (typeof LassoSelection === 'function') {
-        LassoSelection(event, this.map, document.querySelector('.sidebar'));
-      } else {
-        this.onLassoFinished(event);
-      }
+      this.onLassoFinished(event);
     });
 
     return this.addLassoControl();
@@ -235,8 +233,7 @@ export class LassoModule {
         }
       });
 
-      // Use MoveStops modal instead of custom modal
-      this.showMoveStopsModalForLassoSelection();
+      this.showLassoSelectionModal(processedLayers);
     } else {
       // Reset lasso tool when selection is empty
       this.disableLasso();
@@ -279,11 +276,58 @@ export class LassoModule {
     return processedLayers;
   }
 
+  showLassoSelectionModal(processedLayers) {
+    const mp = this.managePlanning || {};
+    if (!mp.planning_move_stops_visible) {
+      this.clearLassoSelection();
+      this.disableLasso();
+      return;
+    }
+
+    const stopIds = processedLayers
+      .map((layer) => layer && layer.properties && layer.properties.stop_id)
+      .filter(Boolean);
+    if (!stopIds.length) {
+      return;
+    }
+
+    const self = this;
+    $.ajax({
+      url: `/plannings/${this.planningId}/selection_details`,
+      data: { stop_ids: stopIds.join(',') },
+      method: 'GET',
+      success(html) {
+        $('#lasso-info-modal').remove();
+        $('body').append(html);
+        $('#lasso-info-modal').modal('show');
+
+        $('#move-stops-btn').off('click.lassoMove').on('click.lassoMove', () => {
+          if (!mp.planning_move_stops_usable || !moveStopsModal.planningMoveStopsUsable) {
+            return;
+          }
+          $('#lasso-info-modal').modal('hide');
+          self.showMoveStopsModalForLassoSelection();
+        });
+
+        $('#lasso-info-modal').off('hidden.bs.modal.lasso').on('hidden.bs.modal.lasso', function() {
+          self.clearLassoSelection();
+          self.disableLasso();
+          $(this).remove();
+        });
+      },
+      error: ajaxError
+    });
+  }
+
   /**
    * Show MoveStops modal for lasso selection
    * This method uses the existing MoveStops modal and simulates stop selection
    */
   showMoveStopsModalForLassoSelection() {
+    if (!(this.managePlanning && this.managePlanning.planning_move_stops_usable)) {
+      return;
+    }
+
     // Extract stops from selected layers (including processed clusters)
     const selectedStops = [];
     const processedLayers = this.processSelectedLayers(this.selectedLayers);
@@ -398,6 +442,7 @@ export class LassoModule {
     this.dataExtractor = null;
     this.waitingRoute = null;
     this.refreshRoute = null;
+    this.managePlanning = {};
     this.selectedLayers = [];
     this.isLassoActive = false;
   }

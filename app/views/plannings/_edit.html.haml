@@ -116,8 +116,9 @@
         .modal-body.routes
         .clearfix
         .modal-footer
-          %button#move-stops-modal.btn.btn-primary{type: "button"}
-            = t('plannings.edit.move_stops')
+          - if @manage_planning[:planning_move_stops_visible]
+            %button#move-stops-modal.btn.btn-primary{type: "button", disabled: !@manage_planning[:planning_move_stops_usable]}
+              = t('plannings.edit.move_stops')
 
 #planning-send-sms-drivers-modal.modal.fade{role: "dialog", tabindex: "-1"}
 
