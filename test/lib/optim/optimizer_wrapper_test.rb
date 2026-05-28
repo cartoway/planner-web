@@ -470,6 +470,26 @@ class OptimizerWrapperTest < ActionController::TestCase
     remove_request_stub(stub_vrp_job) if stub_vrp_job
   end
 
+  test 'should narrow rest timewindow end when strict within timewindows is enabled' do
+    begin
+      planning = plannings(:planning_one)
+      previous = planning.customer.enable_strict_within_timewindows
+      planning.customer.update!(enable_strict_within_timewindows: true)
+      stop = planning.routes.flat_map(&:stops).find { |s| s.is_a?(StopRest) && !s.position? }
+      assert stop, 'fixture should include a StopRest without geolocation for vrp rests'
+
+      vrp = @optim.build_vrp(planning, planning.routes)
+      rest = vrp[:rests].find { |r| r[:id] == "r#{stop.id}" }
+      tw = rest[:timewindows][0]
+
+      assert_equal stop.time_window_end_1 - stop.duration, tw[:end]
+    ensure
+      planning.customer.update_columns(enable_strict_within_timewindows: previous)
+      remove_request_stub(@stub_VrpJob)
+      remove_request_stub(@stub_VrpSubmit)
+    end
+  end
+
   test 'should narrow service timewindow end when strict within timewindows is enabled' do
     begin
       planning = plannings(:planning_one)

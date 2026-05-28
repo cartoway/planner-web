@@ -1,0 +1,9 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- if route[:vehicle_id] && route[:work_duration]
+  .col-xs-4{style: "order: #{ui_order}"}
+    .route-info.primary{class: ('danger' if route[:route_out_of_work_time]), title: t('plannings.edit.route_work_duration_help')}
+      %i.fa.fa-user-clock.fa-fw>
+      = route[:work_duration]
+      - if route[:work_or_window_time]
+        \/
+        = route[:work_or_window_time]

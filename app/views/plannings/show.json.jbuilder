@@ -17,6 +17,7 @@ else
   stats_routes = planning_statistics_routes(@planning, routes_array, current_user)
 
   duration_total = 0
+  work_duration_total = 0
   distance_total = 0
   stops_totals = RouteSidebarSerializer.planning_stops_totals_for_routes(stats_routes)
 
@@ -27,11 +28,8 @@ else
 
     next unless vehicle_usage
 
-    duration_total += route.visits_duration.to_i
-    duration_total += route.wait_time.to_i
-    duration_total += route.drive_time.to_i
-    duration_total += vehicle_usage.default_service_time_start.to_i
-    duration_total += vehicle_usage.default_service_time_end.to_i
+    duration_total += route.total_duration
+    work_duration_total += route.work_duration
   end
 
   routes_data = routes_array.map do |route|
@@ -60,6 +58,7 @@ else
     json.customer_external_callback_disabled true
   end
   json.duration time_over_day(duration_total)
+  json.work_duration time_over_day(work_duration_total)
   json.distance locale_distance(distance_total, current_user.prefered_unit)
   (json.outdated true) if @planning.outdated
   json.size stops_totals[:size]

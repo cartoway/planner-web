@@ -265,10 +265,22 @@ class Route < ApplicationRecord
     vehicle_usage? && vehicle_usage.rest?
   end
 
+  # The route duration including service times unlike the route_data duration which does not include service times
   def total_duration
     return 0 unless route_data
 
     seconds = route_data.duration.to_i
+    if vehicle_usage?
+      seconds += vehicle_usage.default_service_time_start.to_i + vehicle_usage.default_service_time_end.to_i
+    end
+    seconds
+  end
+
+  # The route duration including service times unlike the route_data duration which does not include service times
+  def work_duration
+    return 0 unless route_data
+
+    seconds = route_data.work_duration.to_i
     if vehicle_usage?
       seconds += vehicle_usage.default_service_time_start.to_i + vehicle_usage.default_service_time_end.to_i
     end
@@ -396,7 +408,12 @@ class Route < ApplicationRecord
             end
             stop_attributes[:out_of_drive_time] = stop_attributes[:time] > vehicle_usage.default_time_window_end
             previous_route_data_attributes[:out_of_drive_time] ||= stop_attributes[:out_of_drive_time]
-            stop_attributes[:out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], stop_attributes[:time])
+            rests_before = (route_attributes[:rests_duration] || 0) - (stop.is_a?(StopRest) ? stop.duration : 0)
+            stop_attributes[:out_of_work_time] = vehicle_usage.outside_default_work_time?(
+              route_attributes[:start],
+              stop_attributes[:time],
+              rests_duration: rests_before
+            )
             previous_route_data_attributes[:out_of_work_time] ||= stop_attributes[:out_of_work_time]
             stop_attributes[:out_of_max_distance] = max_distance && (route_attributes[:distance] > max_distance)
             previous_route_data_attributes[:out_of_max_distance] ||= stop_attributes[:out_of_max_distance]
@@ -461,7 +478,11 @@ class Route < ApplicationRecord
       store_traces(trace, options.merge(drive_time: drive_time, distance: distance, sub_tour_index: sub_tour_index, color: sub_tour_color))
 
       route_attributes[:stop_out_of_drive_time] = route_attributes[:end] > vehicle_usage.default_time_window_end
-      route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(route_attributes[:start], route_attributes[:end])
+      route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(
+        route_attributes[:start],
+        route_attributes[:end],
+        rests_duration: route_attributes[:rests_duration]
+      )
       max_distance = vehicle_usage.vehicle.max_distance || planning.vehicle_usage_set.max_distance
       route_attributes[:stop_out_of_max_distance] = max_distance ? route_attributes[:distance] > max_distance : false
       route_attributes[:emission] = (vehicle_usage.vehicle.emission.nil? || vehicle_usage.vehicle.consumption.nil?) ? nil : (route_attributes[:distance] / 1000 * vehicle_usage.vehicle.emission * vehicle_usage.vehicle.consumption / 100)

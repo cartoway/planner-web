@@ -282,14 +282,34 @@ class OptimizerWrapper
 
   # A StopRest with a position is send as a service
   def build_rests(stops, **options)
+    planning = stops.first&.route&.planning
+    enable_upper_bound =
+      if options.key?(:enable_optimization_soft_upper_bound)
+        options[:enable_optimization_soft_upper_bound]
+      else
+        planning&.customer&.enable_optimization_soft_upper_bound
+      end
+    extra_time = enable_upper_bound && (options[:stop_max_upper_bound] || planning&.customer&.stop_max_upper_bound) || 0
+    strict_within_timewindows =
+      if options.key?(:enable_strict_within_timewindows)
+        options[:enable_strict_within_timewindows]
+      else
+        planning&.customer&.enable_strict_within_timewindows
+      end
+
     stops.map{ |stop|
       next if !stop.is_a?(StopRest) || stop.position?
+
+      tw_start = stop.time_window_start_1.try(:to_f)
+      tw_end =
+        stop.time_window_end_1 &&
+        service_activity_timewindow_end(stop, stop.time_window_end_1, tw_start, extra_time, strict_within_timewindows)
 
       {
         id: "r#{stop.id}",
         timewindows: [{
-          start: stop.time_window_start_1.try(:to_f),
-          end: stop.time_window_end_1.try(:to_f)
+          start: tw_start,
+          end: tw_end.try(:to_f)
         }],
         duration: stop.duration
       }

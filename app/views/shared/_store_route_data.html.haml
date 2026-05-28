@@ -4,9 +4,17 @@
   - if route_data[:vehicle_id]
     - if route_data[:duration]
       .col-xs-4
-        .route-info.info{class: ('danger' if route_data[:route_out_of_drive_time] || route_data[:route_out_of_work_time]), title: t('plannings.edit.route_duration_help')}
+        .route-info.info{class: ('danger' if route_data[:route_out_of_drive_time] || route_data[:route_out_of_work_time]), title: t('plannings.edit.route_data_total_duration_help')}
           %i.fa.fa-stopwatch.fa-fw>
           = route_data[:duration]
+          - if route_data[:expected_total_duration]
+            \/
+            = route_data[:expected_total_duration]
+    - if route_data[:work_duration]
+      .col-xs-4
+        .route-info.info{class: ('danger' if route_data[:route_out_of_work_time]), title: t('plannings.edit.route_data_work_duration_help')}
+          %i.fa.fa-business-time.fa-fw>
+          = route_data[:work_duration]
           - if route_data[:work_or_window_time]
             \/
             = route_data[:work_or_window_time]

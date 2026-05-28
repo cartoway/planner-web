@@ -5,7 +5,10 @@
     <div class="col-xs-4" title="{{#i18n}}plannings.edit.vehicles_used_help{{/i18n}}"><div class="primary route-info"><i class="fa fa-truck-field fa-fw" aria-hidden="true"></i>{{averages.vehicles_used}}&nbsp;/&nbsp;{{averages.vehicles}} </div></div>
     <div class="col-xs-4" title="{{#i18n}}plannings.edit.emission_help{{/i18n}}"><div class="primary route-info"><i class="fa fa-flask fa-fw"></i>{{emission}}&nbsp;{{#i18n}}all.unit.kgco2e_html{{/i18n}}</div></div>
   {{/averages}}
-  <div class="col-xs-4" title="{{#i18n}}plannings.edit.duration_help{{/i18n}}"><div class="{{#out_of_drive_time}}danger {{/out_of_drive_time}}primary route-info"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}</div></div>
+  <div class="col-xs-4" title="{{#i18n}}plannings.edit.planning_total_duration_help{{/i18n}}"><div class="{{#out_of_drive_time}}danger {{/out_of_drive_time}}primary route-info"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}</div></div>
+  {{#work_duration}}
+    <div class="col-xs-4" title="{{#i18n}}plannings.edit.planning_work_duration_help{{/i18n}}"><div class="primary route-info"><i class="fa fa-business-time fa-fw" aria-hidden="true"></i>{{work_duration}}</div></div>
+  {{/work_duration}}
   <div class="col-xs-4" title="{{#i18n}}plannings.edit.distance_help{{/i18n}}"><div class="{{#route_out_of_max_distance}}danger {{/route_out_of_max_distance}}primary route-info"><i class="fa fa-road fa-fw"></i>{{distance}}</div></div>
   {{#averages}}
     <div class="col-xs-4" title="{{#i18n}}plannings.edit.route_speed_average_help{{/i18n}}"><div class="primary route-info"><i class="fa fa-tachometer fa-fw" aria-hidden="true"></i>{{averages.routes_speed_average}} {{prefered_unit}}/h</div></div>

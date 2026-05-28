@@ -30,7 +30,10 @@
           </div>
         </div>
         <!-------------------------------- progress-bar ? ------------------------->
-        <span class="primary route-info" title="{{#i18n}}plannings.edit.route_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}/{{work_or_window_time}}</span>
+        <span class="primary route-info" title="{{#i18n}}plannings.edit.route_total_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{duration}}</span>
+        {{#work_duration}}
+          <span class="primary route-info" title="{{#i18n}}plannings.edit.route_work_duration_help{{/i18n}}"><i class="fa fa-business-time fa-fw"></i>{{work_duration}}/{{work_or_window_time}}</span>
+        {{/work_duration}}
         {{#route_averages}}
           (<span title="{{#i18n}}plannings.edit.route_driving_time_help{{/i18n}}"><i class="fa fa-road fa-fw"></i>{{route_averages.drive_time}}</span><!--
           -->{{#route_averages.visits_duration}} <span title="{{#i18n}}plannings.edit.route_visits_duration_help{{/i18n}}"><i class="fa fa-stopwatch fa-fw"></i>{{route_averages.visits_duration}}</span>{{/route_averages.visits_duration}}<!--
