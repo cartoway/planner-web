@@ -36,6 +36,7 @@ export class MoveStopsModal {
     this.mustacheI18n = null;
     this.modalSelector = '#planning-move-stops-modal';
     this.isInitialized = false;
+    this.planningMoveStopsUsable = true;
   }
 
   /**
@@ -59,6 +60,7 @@ export class MoveStopsModal {
     this.refreshSidebarRoute = options.refreshSidebarRoute;
     this.updatePlanningDataHeader = options.updatePlanningDataHeader || function() {};
     this.mustacheI18n = options.mustacheI18n;
+    this.planningMoveStopsUsable = options.planningMoveStopsUsable !== false;
 
     if (!this.isInitialized) {
       this.setupEventHandlers();
@@ -73,6 +75,10 @@ export class MoveStopsModal {
     // Load modal content when opened via data-toggle="modal"
     $(this.modalSelector).off('show.bs.modal.moveStops').on('show.bs.modal.moveStops', (ev) => {
       try {
+        if (!this.planningMoveStopsUsable) {
+          ev.preventDefault();
+          return;
+        }
         const trigger = ev.relatedTarget;
         const routeId = trigger && trigger.getAttribute && trigger.getAttribute('data-route-id');
         if (!routeId) return;
@@ -99,12 +105,16 @@ export class MoveStopsModal {
 
     // Move stops button click
     $("#move-stops-modal").off('click').on('click', () => {
+      if (!this.planningMoveStopsUsable) {
+        return;
+      }
       this.handleMoveStops();
     });
 
     // Listen when server injected content is ready, then initialize behaviors
     $(document).off('move-stops:content-updated').on('move-stops:content-updated', () => {
       try {
+        $('#move-stops-modal').prop('disabled', !this.planningMoveStopsUsable);
         // Initialize UI widgets
         $('#move-stops-toggle').toggleSelect();
         $('[type="checkbox"][data-toggle="disable-multiple-actions"]').toggleMultipleActions();
@@ -385,6 +395,9 @@ export class MoveStopsModal {
    * @param {string} routeId - Route ID to show modal for
    */
   showModal(routeId) {
+    if (!this.planningMoveStopsUsable) {
+      return;
+    }
     // Show loading spinner immediately
     $(`${this.modalSelector} .modal-body`).html('<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>').unbind();
     $(this.modalSelector).modal('show');
@@ -403,6 +416,9 @@ export class MoveStopsModal {
    * @param {Array<number>} stopIds
    */
   showModalForStops(stopIds) {
+    if (!this.planningMoveStopsUsable) {
+      return;
+    }
     // Show loading spinner immediately
     $(`${this.modalSelector} .modal-body`).html('<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>').unbind();
     $(this.modalSelector).modal('show');

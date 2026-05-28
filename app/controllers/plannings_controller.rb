@@ -388,6 +388,10 @@ class PlanningsController < ApplicationController
 
   # Render move stops modal content via Rails (.js.erb)
   def move_stops_modal
+    bootstrap_manage_planning_flags!
+    deny_unless_operation_usable!(:route, 'stops')
+    deny_unless_operation_usable!(:stop, 'move_stop')
+
     route =
       if params[:route_id]
         route_id = Integer(params[:route_id])
@@ -734,6 +738,7 @@ class PlanningsController < ApplicationController
             route_ids << previous_route_id if previous_route_id != route_id
           else
             deny_unless_operation_usable!(:route, 'stops')
+            deny_unless_operation_usable!(:stop, 'move_stop')
             params[:stop_ids].map!(&:to_i)
             stops = Stop.joins(:route)
                         .where(routes: { planning_id: @planning.id })
