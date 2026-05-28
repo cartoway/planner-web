@@ -2166,6 +2166,7 @@ en:
         toggle: Enable/disable lasso selection
         selection_info: Selection information
         move_stops: Move stops
+        move_stops_forbidden: You do not have permission to move stops
         stops_moved_success: Stops moved successfully
         stops_moved_error: Error moving stops
         select_target_route: Transfer stops

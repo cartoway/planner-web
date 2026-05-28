@@ -2266,6 +2266,7 @@ fr:
         toggle: Activer/désactiver la sélection par lasso
         selection_info: Informations de sélection
         move_stops: Déplacer les arrêts
+        move_stops_forbidden: Vous n’avez pas la permission de déplacer des arrêts
         stops_moved_success: Arrêts déplacés avec succès
         stops_moved_error: Erreur lors du déplacement des arrêts
         select_target_route: Transférer les arrêts

@@ -55,6 +55,7 @@
           .lasso-actions
             %button#clear-lasso-selection.btn.btn-default{"data-dismiss" => "modal", type: "button"}
               = t('all.verb.cancel')
-            %button#move-stops-btn.btn.btn-primary{disabled: true, type: "button", style: ('display: none;' unless move_stops_visible), data: { move_forbidden: (!move_stops_usable) }}
-              %i.fa.fa-arrow-right.fa-fw
-              = t('plannings.edit.lasso.move_stops')
+            - if move_stops_visible
+              %button#move-stops-btn.btn.btn-primary{disabled: !move_stops_usable, type: "button", title: (t('plannings.edit.lasso.move_stops_forbidden') unless move_stops_usable)}
+                %i.fa.fa-arrow-right.fa-fw
+                = t('plannings.edit.lasso.move_stops')

@@ -1081,6 +1081,82 @@ class PlanningsControllerTest < ActionController::TestCase
     sign_in users(:user_one)
   end
 
+  test 'edit sets planning_move_stops_usable false when move_stop is not usable' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['route']['segment_controls']['stops'] = { 'visible' => true, 'usable' => true }
+    ops['stop']['segment_controls']['move_stop'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "stops-no-move-stop-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    get :edit, params: { id: @planning }
+    assert_equal false, assigns(:manage_planning)[:send_stop_to_route_usable]
+    assert_equal false, assigns(:manage_planning)[:planning_move_stops_usable]
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
+  test 'get move_stops_modal is forbidden when move_stop operation is not usable' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['route']['segment_controls']['stops'] = { 'visible' => true, 'usable' => true }
+    ops['stop']['segment_controls']['move_stop'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "no-move-stops-modal-move-stop-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    route = routes(:route_one_one)
+    get :move_stops_modal, params: {
+      planning_id: @planning.id,
+      route_id: route.id,
+      format: :js
+    }
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
+  test 'get move_stops_modal is forbidden when route stops operation is not usable' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['route']['segment_controls']['stops'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "no-move-stops-modal-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    route = routes(:route_one_one)
+    get :move_stops_modal, params: {
+      planning_id: @planning.id,
+      route_id: route.id,
+      format: :js
+    }
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
   test 'patch move is forbidden without move_stop operation permission' do
     u = users(:user_one)
     ops = Preferences::Catalog.default_operations.deep_dup
