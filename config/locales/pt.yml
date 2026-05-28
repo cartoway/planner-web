@@ -1920,7 +1920,9 @@ pt:
       vehicle_help: Parâmetros do veículo
       export_help: Exportar a rota
       route_stops_active_help: Selecionar paragens ativas
-      route_duration_help: Duração da rota / Janela temporal do veículo ou tempo de trabalho
+      route_total_duration_help: Duração total da rota (pausas incluídas)
+      route_work_duration_help: Duração de trabalho (sem pausas) / duração máxima de trabalho do veículo
+      planning_work_duration_help: Duração de trabalho cumulada (sem pausas)
       route_distance_help: Distancia da rota
       route_quantity_help: Quantidade / Capacidade do veículo
       drag_help: Arrastar para ordenar as paragens nas rotas

@@ -6,8 +6,11 @@ json.planning_id @planning.id
 visible_for_stats = @planning.routes.available.includes_vehicle_usages.to_a
 stats_routes = planning_statistics_routes(@planning, visible_for_stats, current_user)
 
-duration = stats_routes.select(&:vehicle_usage).sum(0, &:total_duration)
+vehicle_routes = stats_routes.select(&:vehicle_usage)
+duration = vehicle_routes.sum(0, &:total_duration)
+work_duration = vehicle_routes.sum(0, &:work_duration)
 json.duration time_over_day(duration)
+json.work_duration time_over_day(work_duration)
 json.distance locale_distance(stats_routes.sum(0) { |route| route.distance || 0 }, current_user.prefered_unit)
 json.size stats_routes.sum(0) { |route| route.stops_size }
 json.size_active stats_routes.sum(0) { |route| route.vehicle_usage_id ? route.size_active.to_i : 0 }

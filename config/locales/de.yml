@@ -1706,7 +1706,9 @@ de:
       vehicle_help: Fahrzeugparameter
       export_help: Strecke exportieren
       route_stops_active_help: Aktive Haltepunkte auswählen
-      route_duration_help: Streckendauer / Fahrzeugfenster oder Arbeitszeit
+      route_total_duration_help: Gesamtdauer der Strecke (Pausen eingeschlossen)
+      route_work_duration_help: Arbeitszeit (ohne Pausen) / maximale Arbeitszeit des Fahrzeugs
+      planning_work_duration_help: Kumulierte Arbeitszeit (ohne Pausen)
       route_distance_help: Streckenlänge
       route_quantity_help: Menge / Fahrzeugkapazität
       route_speed_average_help: Durchschnittliche Fahrzeuggeschwindigkeit
