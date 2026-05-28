@@ -81,6 +81,9 @@ class RouteSidebarSerializer
       color_fake: @route.color,
       distance: @view_helpers.locale_distance(@route.distance || 0, @view_helpers.current_user.prefered_unit),
       duration: @view_helpers.time_over_day(@route.total_duration),
+      expected_total_duration: @route.total_duration.positive? ?
+        @view_helpers.time_over_day(@route.total_duration) : nil,
+      work_duration: @view_helpers.time_over_day(@route.work_duration),
       visits_duration: @view_helpers.time_over_day(@route.visits_duration.to_i),
       rests_duration: @view_helpers.time_over_day(@route.rests_duration.to_i),
       wait_time: @view_helpers.time_over_day(@route.wait_time.to_i),
@@ -450,6 +453,8 @@ class RouteSidebarSerializer
       hidden: route_data.hidden,
       color: route_data.color,
       duration: route_data.duration && @view_helpers.time_over_day(route_data.duration),
+      expected_total_duration: @route.total_duration.positive? ? @view_helpers.time_over_day(@route.total_duration) : nil,
+      work_duration: @route.work_duration.positive? ? @view_helpers.time_over_day(@route.work_duration) : nil,
       distance: @view_helpers.locale_distance(route_data.distance || 0, @view_helpers.current_user.prefered_unit),
       route_out_of_drive_time: @route.stop_out_of_drive_time,
       route_out_of_work_time: @route.stop_out_of_work_time,

@@ -1,0 +1,6 @@
+- ui_order = local_assigns.fetch(:ui_order, 0)
+- display = local_assigns[:work_duration].presence || time_over_day(0)
+.col-xs-4{title: t('plannings.edit.planning_work_duration_help'), style: "order: #{ui_order}"}
+  .primary.route-info
+    %i.fa.fa-user-clock.fa-fw{"aria-hidden": "true"}>
+    = display

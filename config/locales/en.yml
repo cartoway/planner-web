@@ -2072,6 +2072,7 @@ en:
       outdated_zoning: Sectorisation changed. Apply again to refresh.
       stops_help: Plan stops / total
       duration_help: Total duration
+      planning_total_duration_help: Total route duration (including breaks)
       distance_help: Total distance
       emission_help: Total emission
       cost_help: Route costs
@@ -2108,7 +2109,15 @@ en:
       vehicle_help: Vehicle parameters
       export_help: Export route
       route_stops_active_help: Select active stops
-      route_duration_help: Route duration / Vehicle window or work time
+      route_total_duration_help: >-
+        Total route duration including service times (breaks included) /
+        expected (work time + breaks + service times)
+      route_work_duration_help: >-
+        Work duration excluding breaks, including service times /
+        vehicle maximum work time
+      route_data_total_duration_help: Segment total duration (breaks included, excluding service times)
+      route_data_work_duration_help: Segment work duration (excluding breaks and service times)
+      planning_work_duration_help: Cumulative work duration (excluding breaks)
       route_distance_help: Route distance
       route_quantity_help: Quantity / Vehicle capacity
       route_speed_average_help: Vehicle's speed average
@@ -3416,7 +3425,8 @@ en:
       status: Status
     header_blocks:
       stops: Stops
-      duration: Duration
+      total_duration: Total route duration
+      work_duration: Work duration
       distance: Distance
       total_revenue: Revenue
       total_cost: Cost

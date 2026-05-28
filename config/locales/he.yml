@@ -1248,7 +1248,9 @@ he:
       optimize_help: אופטימיזציה למסלול
       export_help: ייצא מסלול
       route_stops_active_help: בחר עצירות פעילות
-      route_duration_help: משך הנסיעה / חלון זמן הרכב
+      route_total_duration_help: משך המסלול הכולל (הפסקות כלולות)
+      route_work_duration_help: משך עבודה (ללא הפסקות) / משך עבודה מרבי של הרכב
+      planning_work_duration_help: משך עבודה מצטבר (ללא הפסקות)
       route_distance_help: מרחק המסלול
       route_quantity_help: כמות / מגבלת כמות לרכב
       drag_help: גרור ושחרר עצירות על מסלולים

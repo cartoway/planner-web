@@ -74,6 +74,27 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal expected, route.total_duration
   end
 
+  test 'route work_duration and total_duration include service times route_data does not' do
+    route = routes(:route_three_one)
+    route.route_data.update_columns(rests_duration: 2700, visits_duration: 100, wait_time: 50, drive_time: 200)
+    vu = route.vehicle_usage
+    service = vu.default_service_time_start.to_i + vu.default_service_time_end.to_i
+
+    assert_equal 350, route.route_data.work_duration
+    assert_equal 3050, route.route_data.duration
+    assert_equal 350 + service, route.work_duration
+    assert_equal 3050 + service, route.total_duration
+    assert_equal route.route_data.work_duration + service, route.work_duration
+    assert_equal route.route_data.duration + service, route.total_duration
+  end
+
+  test 'work_duration excludes rests_duration from total_duration' do
+    route = routes(:route_three_one)
+    route.route_data.update_columns(rests_duration: 2700, visits_duration: 100, wait_time: 50, drive_time: 200)
+
+    assert_equal route.total_duration - 2700, route.work_duration
+  end
+
   test 'plan clears rests_duration on route_data when rest stop is inactive' do
     route = routes(:route_three_one)
     route.route_data.update_column(:rests_duration, 2700)

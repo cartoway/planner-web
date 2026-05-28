@@ -99,6 +99,21 @@ class VehicleUsageTest < ActiveSupport::TestCase
     assert_equal [:work_time], vehicle_usage.errors.attribute_names
   end
 
+  test 'outside_default_work_time uses work elapsed excluding rests' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.update!(
+      time_window_start: '08:00',
+      time_window_end: '18:00',
+      work_time: 8.hours.to_i
+    )
+
+    start_time = 8.hours.to_i
+    current_time = start_time + 9.hours.to_i
+
+    assert vehicle_usage.outside_default_work_time?(start_time, current_time, rests_duration: 0)
+    assert_not vehicle_usage.outside_default_work_time?(start_time, current_time, rests_duration: 1.hour.to_i)
+  end
+
   test 'should validate time_window_start and time_window_end time exceeding one day' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
     vehicle_usage.update time_window_start: '08:00', time_window_end: '32:00'

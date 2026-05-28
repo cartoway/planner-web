@@ -216,8 +216,13 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
   test 'header catalogs include optional wait_time and visits_duration ids' do
     assert_includes Preferences::Catalog::HEADER_PLANNING, 'wait_time'
     assert_includes Preferences::Catalog::HEADER_PLANNING, 'visits_duration'
+    assert_includes Preferences::Catalog::HEADER_PLANNING, 'total_duration'
+    assert_includes Preferences::Catalog::HEADER_PLANNING, 'work_duration'
+    assert_not_includes Preferences::Catalog::HEADER_PLANNING, 'duration'
     assert_includes Preferences::Catalog::HEADER_ROUTE, 'wait_time'
     assert_includes Preferences::Catalog::HEADER_ROUTE, 'visits_duration'
+    assert_includes Preferences::Catalog::HEADER_ROUTE, 'total_duration'
+    assert_includes Preferences::Catalog::HEADER_ROUTE, 'work_duration'
   end
 
   test 'default_headers omits wait_time and visits_duration from active until enabled in admin' do
@@ -232,12 +237,12 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     hp = Preferences::Catalog::HEADER_PLANNING
     hr = Preferences::Catalog::HEADER_ROUTE
     raw = {
-      'planning' => { 'active' => %w[stops wait_time duration], 'hidden' => [] },
+      'planning' => { 'active' => %w[stops wait_time total_duration work_duration], 'hidden' => [] },
       'route' => { 'active' => %w[wait_time stops], 'hidden' => [] }
     }
     normalized = Preferences::Catalog.normalize_headers(raw)
-    assert_equal %w[stops wait_time duration], normalized['planning']['active']
-    assert_equal (hp - %w[stops wait_time duration]).sort, normalized['planning']['hidden'].sort
+    assert_equal %w[stops wait_time total_duration work_duration], normalized['planning']['active']
+    assert_equal (hp - %w[stops wait_time total_duration work_duration]).sort, normalized['planning']['hidden'].sort
     assert_equal %w[wait_time stops], normalized['route']['active']
     assert_equal (hr - %w[wait_time stops]).sort, normalized['route']['hidden'].sort
     assert_equal Preferences::Catalog::StopList::DEFAULT_ACTIVE, normalized['stop_list']['active']

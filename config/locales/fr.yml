@@ -2165,6 +2165,7 @@ fr:
       outdated_zoning: La sectorisation a été modifiée. Appliquez à nouveau pour actualiser.
       stops_help: Arrêts planifiés / total
       duration_help: Somme des durées des tournées
+      planning_total_duration_help: Durée totale des tournées (pauses incluses)
       distance_help: Somme des distances des tournées
       emission_help: Somme des émissions
       cost_help: Coût de la tournée
@@ -2206,7 +2207,15 @@ fr:
       vehicle_help: Paramétrer le véhicule
       export_help: Exporter la tournée
       route_stops_active_help: Sélectionner les arrêts actifs
-      route_duration_help: Durée de la tournée / Créneau horaire ou durée de travail véhicule
+      route_total_duration_help: >-
+        Durée totale de la tournée, temps de service inclus (pauses incluses) /
+        attendu (durée de travail + pauses + temps de service)
+      route_work_duration_help: >-
+        Durée de travail hors pauses, temps de service inclus /
+        durée de travail maximale du véhicule
+      route_data_total_duration_help: Durée totale du segment (pauses incluses, hors temps de service)
+      route_data_work_duration_help: Durée de travail du segment (hors pauses et hors temps de service)
+      planning_work_duration_help: Durée de travail cumulée (hors pauses)
       route_distance_help: Distance de la tournée
       route_quantity_help: Chargement / Capacité véhicule
       route_data_pickup_help: Quantité à collecter
@@ -3561,7 +3570,8 @@ fr:
       status: Statut
     header_blocks:
       stops: Arrêts
-      duration: Durée
+      total_duration: Durée totale de tournée
+      work_duration: Durée de travail
       distance: Distance
       total_revenue: Revenu
       total_cost: Coût

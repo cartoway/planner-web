@@ -22,17 +22,17 @@ module Preferences
     # Planning / route header metrics (edit head toolbar).
     module Headers
       HEADER_PLANNING = %w[
-        stops duration distance total_revenue total_cost balance vehicles emission speed quantities
+        stops total_duration work_duration distance total_revenue total_cost balance vehicles emission speed quantities
         drive_time wait_time visits_duration rests_duration
       ].freeze
 
       HEADER_ROUTE = %w[
-        stops duration distance total_revenue total_cost balance speed emission
+        stops total_duration work_duration distance total_revenue total_cost balance speed emission
         used_reloads quantities drive_time wait_time visits_duration rests_duration
       ].freeze
 
-      HEADER_PLANNING_DEFAULT = (HEADER_PLANNING - %w[drive_time wait_time visits_duration rests_duration]).freeze
-      HEADER_ROUTE_DEFAULT = (HEADER_ROUTE - %w[drive_time wait_time visits_duration rests_duration]).freeze
+      HEADER_PLANNING_DEFAULT = (HEADER_PLANNING - %w[total_duration drive_time wait_time visits_duration rests_duration]).freeze
+      HEADER_ROUTE_DEFAULT = (HEADER_ROUTE - %w[total_duration drive_time wait_time visits_duration rests_duration]).freeze
 
       module_function
 
