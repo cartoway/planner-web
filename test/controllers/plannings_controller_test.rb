@@ -1668,6 +1668,9 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal 1, assigns(:selection_info)[:stops_count]
     assert assigns(:quantities).any?
     assert assigns(:available_routes).any?
+    assert_equal 1, assigns(:stops).size
+    assert_select '#move-stops.route.move-stops-preview ul.stops.list-group li', 1
+    assert_select '#move-stop-quantities', 1
   end
 
   test "should get selection details modal with HTML format" do

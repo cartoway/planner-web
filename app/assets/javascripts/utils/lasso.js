@@ -300,6 +300,7 @@ export class LassoModule {
         $('#lasso-info-modal').remove();
         $('body').append(html);
         $('#lasso-info-modal').modal('show');
+        self.initLassoMoveStopsPreview();
 
         $('#move-stops-btn').off('click.lassoMove').on('click.lassoMove', () => {
           if (!mp.planning_move_stops_usable || !moveStopsModal.planningMoveStopsUsable) {
@@ -316,6 +317,25 @@ export class LassoModule {
         });
       },
       error: ajaxError
+    });
+  }
+
+  initLassoMoveStopsPreview() {
+    const $modal = $('#lasso-info-modal');
+    const stops = window.lassoSelectionStopsData;
+    delete window.lassoSelectionStopsData;
+
+    $modal.find('.overflow-500').css('max-height', ($(document).height() - 440) + 'px');
+
+    if (!stops || !stops.length || !moveStopsModal.quantities || !moveStopsModal.quantities.length) {
+      return;
+    }
+
+    $modal.find('#move-stop-quantities').empty().fillQuantities({
+      stops: stops,
+      controllerParamsQuantities: moveStopsModal.quantities,
+      withDuration: true,
+      withCapacity: true
     });
   }
 

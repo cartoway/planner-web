@@ -2182,6 +2182,7 @@ en:
         select_route_placeholder: Choose a route...
         please_select_route: Please select a destination route
         selection_summary: Selection summary
+        selected_stops: Selected stops
       popup:
         outdated: Route trace outdated. Refresh your plan (Refresh button).
         time_window_start_end_1: 'Time window 1:'
