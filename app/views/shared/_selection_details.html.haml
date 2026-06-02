@@ -8,7 +8,7 @@
         %h4.modal-title
           %i.fa.fa-mouse-pointer.fa-fw
           = t('plannings.edit.lasso.selection_info')
-      .modal-body
+      .modal-body.routes.move-stops-modal-body
         .container-fluid
           .row
             .col-md-12
@@ -36,6 +36,12 @@
                             = quantity[:delivery]
                           - if quantity[:label]
                             = "#{quantity[:label]}"
+
+            - if @stops.present?
+              .col-md-12
+                = render partial: 'stops/move', locals: { stops: @stops, available_routes: @available_routes, preview: true }
+              :javascript
+                window.lassoSelectionStopsData = #{raw @stops.to_json};
 
             - if @selection_info[:stops_count] > 0 && @available_routes.any?
               .col-md-12
