@@ -421,9 +421,7 @@ class PlanningsController < ApplicationController
         with_stops: @with_stops,
         view_helpers: view_context
       ).as_hash
-    # Build stops via dedicated jbuilder
-    stops_json = JSON.parse(render_to_string(partial: 'stops/move_list.json.jbuilder', formats: [:json], locals: { stops: stops }), symbolize_names: true)
-    stops = stops_json[:stops] || []
+    stops = stops_for_move_list(stops)
 
     respond_to do |format|
       format.js { render partial: 'stops/move.js.erb', locals: { stops: stops, route: route_json, available_routes: available_routes } }
@@ -436,6 +434,7 @@ class PlanningsController < ApplicationController
     @quantities = {}
     @available_routes = []
     @selection_info = { stops_count: 0 }
+    @stops = []
 
     planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
     @planning = planning
@@ -448,9 +447,11 @@ class PlanningsController < ApplicationController
                   .where(id: selected_stop_ids)
                   .includes_destinations_and_stores
                   .only_stop_visits
+                  .by_route_then_index
 
       @selection_info[:stops_count] = stops.size
       @quantities = aggregate_visit_quantities(planning.customer, stops.map(&:visit))
+      @stops = stops_for_move_list(stops)
     end
 
     respond_to do |format|
@@ -697,6 +698,16 @@ class PlanningsController < ApplicationController
   end
 
   private
+
+  def stops_for_move_list(stops)
+    return [] if stops.blank?
+
+    stops_json = JSON.parse(
+      render_to_string(partial: 'stops/move_list.json.jbuilder', formats: [:json], locals: { stops: stops }),
+      symbolize_names: true
+    )
+    stops_json[:stops] || []
+  end
 
   def normalize_refresh_routes_ids(raw)
     parts =

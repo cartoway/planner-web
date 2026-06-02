@@ -21,6 +21,42 @@
 
 @import "variables";
 
+.move-stops-modal-body {
+  .hover-tools {
+    display: none;
+  }
+  .overflow-500 {
+    max-height: calc(100% - 800px);
+    overflow: auto;
+  }
+  .move-stops-toggle {
+    margin: 8px 0 0 18px;
+  }
+  table {
+    text-align: left;
+  }
+  hr {
+    clear: both;
+  }
+  .move-route-selector {
+    vertical-align: middle;
+  }
+  .index-option {
+    margin: 20px 0;
+  }
+
+  .move-stops-preview {
+    .move-stops-stop-id {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .move-stops-options {
+      display: none;
+    }
+  }
+}
+
 $navbar-height: 0px;
 $sidebar-width: 550px;
 $sidebar-margins: 10px;
@@ -48,33 +84,6 @@ $sidebar-margins: 10px;
       }
     }
   }
-  #planning-move-stops-modal {
-    .modal-body {
-      .hover-tools {
-        display: none;
-      }
-      .overflow-500 {
-        max-height: calc(100% - 800px);
-        overflow: auto;
-      }
-      .move-stops-toggle {
-        margin: 8px 0 0 18px;
-      }
-      table {
-        text-align: left;
-      }
-      hr {
-        clear: both;
-      }
-      .move-route-selector {
-        vertical-align: middle;
-      }
-      .index-option{
-        margin: 20px 0;
-      }
-    }
-  }
-
   .select2-container {
     width: 100% !important;
 

@@ -2282,6 +2282,7 @@ fr:
         select_route_placeholder: Choisissez une tournée...
         please_select_route: Veuillez sélectionner une route de destination
         selection_summary: Résumé de la sélection
+        selected_stops: Arrêts sélectionnés
       popup:
         outdated: >-
           Tracé de la tournée obsolète. Veuillez recalculer votre plan de
