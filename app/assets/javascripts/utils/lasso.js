@@ -325,8 +325,6 @@ export class LassoModule {
     const stops = window.lassoSelectionStopsData;
     delete window.lassoSelectionStopsData;
 
-    $modal.find('.overflow-500').css('max-height', ($(document).height() - 440) + 'px');
-
     if (!stops || !stops.length || !moveStopsModal.quantities || !moveStopsModal.quantities.length) {
       return;
     }
