@@ -2,7 +2,18 @@
 
 require 'test_helper'
 
-class RouteSidebarSerializerTest < ActiveSupport::TestCase
+class RouteSidebarSerializerTest < ActionController::TestCase
+  tests PlanningsController
+
+  setup do
+    request.host = resellers(:reseller_one).host
+    sign_in users(:user_one)
+  end
+
+  def route_sidebar_view_helpers
+    @controller.view_context
+  end
+
   test 'merge_planning_route_errors_from_sidebar_routes ORs flags across routes' do
     routes_data = [
       { route_error: false, route_out_of_window: false, route_no_path: false },
@@ -72,7 +83,7 @@ class RouteSidebarSerializerTest < ActiveSupport::TestCase
       route: route,
       planning: planning,
       with_stops: true,
-      view_helpers: ActionController::Base.helpers
+      view_helpers: route_sidebar_view_helpers
     ).as_hash
 
     present_codes = hash[:status_present].map { |s| s[:code] }
