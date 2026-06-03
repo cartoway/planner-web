@@ -30,19 +30,12 @@ class PlanningSidebarPresenter
 
     stops_totals = RouteSidebarSerializer.planning_stops_totals_for_routes(stats_routes)
 
-    duration_total = 0
     distance_total = 0
-
     stats_routes.each do |route|
       distance_total += route.distance || 0
-      next unless route.vehicle_usage
-
-      duration_total += route.visits_duration.to_i
-      duration_total += route.wait_time.to_i
-      duration_total += route.drive_time.to_i
-      duration_total += route.vehicle_usage.default_service_time_start.to_i
-      duration_total += route.vehicle_usage.default_service_time_end.to_i
     end
+
+    time_totals = @view_helpers.planning_time_totals_for_routes(stats_routes)
 
     sidebar_locals = {
       prefered_unit: @current_user.prefered_unit,
@@ -50,7 +43,8 @@ class PlanningSidebarPresenter
       ref: @planning.ref,
       planning_id: @planning.id,
       customer_id: customer.id,
-      duration: @view_helpers.time_over_day(duration_total),
+      duration: @view_helpers.time_over_day(time_totals[:duration_total]),
+      work_duration: @view_helpers.time_over_day(time_totals[:work_duration_total]),
       distance: @view_helpers.locale_distance(distance_total, @current_user.prefered_unit),
       size: stops_totals[:size],
       size_active: stops_totals[:size_active],
