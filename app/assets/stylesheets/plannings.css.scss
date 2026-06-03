@@ -44,6 +44,10 @@
   .index-option {
     margin: 20px 0;
   }
+  .stops.list-group {
+    max-height: 45vh;
+    overflow-y: auto;
+  }
 
   .move-stops-preview {
     .move-stops-stop-id {
