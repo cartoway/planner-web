@@ -62,6 +62,25 @@ class RouteSidebarSerializerTest < ActiveSupport::TestCase
     )
   end
 
+  test 'status_present includes only statuses on route stops' do
+    route = routes(:route_one_one)
+    planning = route.planning
+    stops(:stop_one_one).update_column(:status, 'delivered')
+    stops(:stop_one_two).update_column(:status, 'intransit') if stops(:stop_one_two).route_id == route.id
+
+    hash = RouteSidebarSerializer.new(
+      route: route,
+      planning: planning,
+      with_stops: true,
+      view_helpers: ActionController::Base.helpers
+    ).as_hash
+
+    present_codes = hash[:status_present].map { |s| s[:code] }
+    assert_includes present_codes, 'delivered'
+    assert_includes present_codes, 'intransit'
+    assert_operator hash[:status_all].size, :>, hash[:status_present].size
+  end
+
   test 'merge_planning_route_errors_from_models reads route attribute methods' do
     attrs = RouteSidebarSerializer::ROUTE_ERROR_HASH_KEYS.index_with { false }.merge(route_out_of_window: true)
     fake_route = Object.new

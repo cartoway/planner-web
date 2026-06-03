@@ -733,6 +733,57 @@ input.form-control.number-of-days {
     top: -1px;
   }
 
+  .fa {
+    &.row-status-any {
+      color: var(--accent-color);
+    }
+
+    &.row-status-none {
+      color: var(--light-gray);
+    }
+
+    &.row-status-planned {
+      color: var(--primary);
+    }
+
+    &.row-status-started {
+      color: var(--warning);
+    }
+
+    &.row-status-finished {
+      color: var(--success);
+    }
+
+    &.row-status-undelivered {
+      color: var(--danger);
+    }
+
+    &.row-status-atstore {
+      color: var(--info);
+    }
+
+    &.row-status-inprocessing {
+      color: var(--info);
+    }
+
+    &.row-status-exception {
+      color: var(--warning);
+    }
+
+    &.row-status-delivered {
+      color: var(--success);
+    }
+
+
+    &.row-status-undelivered {
+      color: var(--danger);
+    }
+
+    &.row-status-atstore {
+      color: var(--info);
+    }
+  }
+
   .stop-row, .store-row {
     &.row-status-intransit:after {
       @extend %base-status-bar;

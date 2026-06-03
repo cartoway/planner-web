@@ -1,0 +1,14 @@
+-# Status filters: only statuses present on this route (row bar like the stop list).
+- route[:status_present].each do |status|
+  %li
+    %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/#{status[:code]}"}
+      %i.fa.fa-fw.fa-square{class: "row-status-#{status[:code]}"}
+      = status[:status]
+%li
+  %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/status_none"}
+    %i.fa.fa-fw.fa-square.row-status-none
+    = t('plannings.edit.stop_status.none')
+%li
+  %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/status_any"}
+    %i.fa.fa-fw.fa-check-square.row-status-any
+    = t('plannings.edit.stop_status.any')
