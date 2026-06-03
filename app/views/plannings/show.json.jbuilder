@@ -16,20 +16,14 @@ else
 
   stats_routes = planning_statistics_routes(@planning, routes_array, current_user)
 
-  duration_total = 0
-  work_duration_total = 0
+  time_totals = planning_time_totals_for_routes(stats_routes)
+  duration_total = time_totals[:duration_total]
+  work_duration_total = time_totals[:work_duration_total]
   distance_total = 0
   stops_totals = RouteSidebarSerializer.planning_stops_totals_for_routes(stats_routes)
 
   stats_routes.each do |route|
-    vehicle_usage = route.vehicle_usage
-
     distance_total += route.distance || 0
-
-    next unless vehicle_usage
-
-    duration_total += route.total_duration
-    work_duration_total += route.work_duration
   end
 
   routes_data = routes_array.map do |route|
