@@ -24,19 +24,7 @@
           = t('plannings.edit.active_all')
       - if route[:status_any]
         %li.divider{role: "separator"}
-        - if route[:status_all]
-          %li
-            %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/#{route[:code]}"}
-              %span.stop-status{class: "stop-status-#{route[:code]}", title: route[:status]}
-              = route[:status]
-        %li
-          %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/status_any"}
-            %span.stop-status
-            = t('plannings.edit.stop_status.any')
-        %li
-          %a.active_status{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/status_none"}
-            %span.stop-status.stop-status-none
-            = t('plannings.edit.stop_status.none')
+        = render partial: 'routes/operations/stop_status_filter_menu', locals: { route: route, summary: summary }
       %li.divider{role: "separator"}
       %li
         %a.reverse_order{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/reverse_order"}

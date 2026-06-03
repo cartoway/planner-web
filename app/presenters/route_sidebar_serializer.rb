@@ -108,6 +108,7 @@ class RouteSidebarSerializer
       quantities: route_quantities,
       route_averages: serialize_route_averages,
       status_any: false,
+      status_present: [],
       status_all: [],
       stops: serialize_stops(route_stops)
     }
@@ -192,6 +193,7 @@ class RouteSidebarSerializer
         status: I18n.t("plannings.edit.stop_status.#{status}")
       }
     end
+    data[:status_present] = status_map.values
     data[:status_all] = (status_map.values + default_statuses).uniq { |status| status[:code] }
     data[:status_any] = status_map.any? || customer.device.available_stop_status?
   end
