@@ -58,7 +58,7 @@ class Admin::UsersControllerTest < ActionController::TestCase
   end
 
   test 'create sends password email when send_email toggle is on' do
-    assert_emails 1 do
+    assert_difference('ActionMailer::Base.deliveries.size', 1) do
       post :create, params: {
         user: {
           customer_id: customers(:customer_one).id,
@@ -73,7 +73,7 @@ class Admin::UsersControllerTest < ActionController::TestCase
   end
 
   test 'create sends password email with production-like params' do
-    assert_emails 1 do
+    assert_difference('ActionMailer::Base.deliveries.size', 1) do
       post :create, params: {
         authenticity_token: 'test',
         url: '',
