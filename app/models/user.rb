@@ -48,7 +48,7 @@ class User < ApplicationRecord
   }
 
   after_create :send_password_email, if: :send_password_email_on_create?
-  after_save :send_connection_email, if: -> (user) { user.confirmed_at_changed? && user.confirmed_at_was.nil? }
+  after_save :send_connection_email, if: :send_connection_email_on_save?
 
   include RefSanitizer
 
@@ -106,6 +106,13 @@ class User < ApplicationRecord
 
   def send_password_email_on_create?
     ValueToBoolean.value_to_boolean(send_email, false)
+  end
+
+  def send_connection_email_on_save?
+    return false if saved_change_to_id?
+    return true if saved_change_to_confirmed_at? && confirmed_at_before_last_save.nil?
+
+    confirmation_sent_at.nil? && confirmed_at.nil?
   end
 
   def set_default_time_zone
