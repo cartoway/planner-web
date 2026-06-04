@@ -57,6 +57,38 @@ class Admin::UsersControllerTest < ActionController::TestCase
     assert_redirected_to admin_users_path
   end
 
+  test 'create sends password email when send_email toggle is on' do
+    assert_emails 1 do
+      post :create, params: {
+        user: {
+          customer_id: customers(:customer_one).id,
+          email: 'toggle-on@example.com',
+          send_email: '1'
+        }
+      }
+    end
+    assert_redirected_to admin_users_path
+    created = User.find_by!(email: 'toggle-on@example.com')
+    assert created.confirmation_sent_at.present?
+  end
+
+  test 'create sends password email with production-like params' do
+    assert_emails 1 do
+      post :create, params: {
+        authenticity_token: 'test',
+        url: '',
+        user: {
+          email: 'r+production-like@example.com',
+          time_zone: 'Paris',
+          customer_id: customers(:customer_one).id.to_s,
+          send_email: '1'
+        },
+        button: ''
+      }
+    end
+    assert_redirected_to admin_users_path
+  end
+
   test 'create persists role_id when role belongs to same reseller as customer' do
     role = Role.create!(reseller: @reseller, name: 'Label role')
 

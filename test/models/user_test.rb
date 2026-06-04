@@ -21,6 +21,18 @@ class UserTest < ActiveSupport::TestCase
     assert user.valid?
   end
 
+  test 'after_create sends password email when send_email toggle is on' do
+    assert_emails 1 do
+      User.create!(user_hash(customers(:customer_one), 'fr').merge(send_email: '1'))
+    end
+  end
+
+  test 'after_create does not send password email when send_email toggle is off' do
+    assert_no_emails do
+      User.create!(user_hash(customers(:customer_one), 'fr').merge(send_email: '0'))
+    end
+  end
+
   test 'toolbar segment visibility follows role operations when role_id is set' do
     return unless Role.column_names.include?('operations')
 
