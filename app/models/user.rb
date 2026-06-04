@@ -47,7 +47,7 @@ class User < ApplicationRecord
     gbp: 2
   }
 
-  after_create :send_password_email, if: -> (user) { user.send_email.to_i == 1 }
+  after_create :send_password_email, if: :send_password_email_on_create?
   after_save :send_connection_email, if: -> (user) { user.confirmed_at_changed? && user.confirmed_at_was.nil? }
 
   include RefSanitizer
@@ -103,6 +103,10 @@ class User < ApplicationRecord
   end
 
   private
+
+  def send_password_email_on_create?
+    ValueToBoolean.value_to_boolean(send_email, false)
+  end
 
   def set_default_time_zone
     self.time_zone = self.time_zone == 'UTC' ? I18n.t('default_time_zone') : self.time_zone

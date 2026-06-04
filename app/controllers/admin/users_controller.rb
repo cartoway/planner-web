@@ -15,6 +15,8 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
+require 'value_to_boolean'
+
 class Admin::UsersController < ApplicationController
   load_and_authorize_resource
 
@@ -34,9 +36,12 @@ class Admin::UsersController < ApplicationController
 
   def create
     password = Time.now.to_i + rand(10000)
-    @user = User.new(user_initial_attributes.merge(password: password, password_confirmation: password))
-    @user.save
-    if @user.persisted?
+    attrs = user_initial_attributes
+    send_password_email = send_password_email_requested?(attrs)
+    attrs = attrs.except(:send_email, 'send_email')
+    @user = User.new(attrs.merge(password: password, password_confirmation: password))
+    if @user.save
+      @user.send_password_email if send_password_email
       redirect_to_default
     else
       render action: :new
@@ -113,6 +118,10 @@ class Admin::UsersController < ApplicationController
     attrs = params.require(:user).permit(:email, :customer_id, :time_zone, :send_email, :role_id)
     attrs[:role_id] = nil if attrs[:role_id].blank?
     attrs.to_h
+  end
+
+  def send_password_email_requested?(attrs)
+    ValueToBoolean.value_to_boolean(attrs[:send_email] || attrs['send_email'], false)
   end
 
   def user_params
