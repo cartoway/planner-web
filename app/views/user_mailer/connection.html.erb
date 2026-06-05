@@ -7,7 +7,7 @@
   <tr>
     <td>
       <p>
-        <%= I18n.t('user_mailer.connection.welcome', name: @user.customer.reseller.name) %>
+        <%= I18n.t('user_mailer.connection.welcome', name: @reseller.name) %>
       </p>
       <p>
         <%= I18n.t('user_mailer.connection.detail.content') %>
@@ -26,7 +26,7 @@
           <%= I18n.t('user_mailer.layout.staff.greetings').html_safe %>
         </p>
         <p class="signature">
-          <%= I18n.t('user_mailer.layout.staff.signature', name: @user.customer.reseller.name).html_safe %>
+          <%= I18n.t('user_mailer.layout.staff.signature', name: @reseller.name).html_safe %>
         </p>
       </div>
     </td>
