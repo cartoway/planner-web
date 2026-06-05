@@ -7,12 +7,8 @@ class V01::CustomAttributes < Grape::API
       env[Rack::RACK_SESSION]
     end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
     def custom_attribute_params
-      p = ActionController::Parameters.new(params)
-      p = p[:custom_attributes] if p.key?(:custom_attributes)
-
-      p.permit(:name, :object_type, :object_class, :default_value, :description, default_value: [])
+      declared(params, include_missing: false).except(:id)
     end
   end
 
@@ -61,12 +57,7 @@ class V01::CustomAttributes < Grape::API
       failure: V01::Status.failures(override: {code_404: 'CustomAttribute not found.' })
     params do
       requires :id, type: Integer
-
-      requires :name, type: String, regexp: /\A[^:]*\z/
-      requires :object_type, type: String
-      requires :object_class, type: String
-      optional :default_value, types: [Array[String], String, Integer, Float, Boolean]
-      optional :description, type: String
+      use :request_custom_attribute
     end
     put ':id' do
       custom_attribute = current_customer.custom_attributes.where(id: params[:id]).first
@@ -84,7 +75,7 @@ class V01::CustomAttributes < Grape::API
       success: V01::Status.success(:code_200, V01::Entities::CustomAttribute),
       failure: V01::Status.failures
     params do
-      use :params_from_entity, entity: V01::Entities::CustomAttribute.documentation.except(:id)
+      use :request_custom_attribute, required_custom_attribute_params: true
     end
     post do
       authorize!(:create, CustomAttribute)
