@@ -57,6 +57,17 @@ class V01::CustomAttributesTest < ActiveSupport::TestCase
     assert_equal @custom_attribute.name, custom_attributes['name']
   end
 
+  test 'should update only transmitted custom_attribute fields' do
+    original_object_type = @custom_attribute.object_type
+
+    put api(@custom_attribute.id), nil, input: { name: 'partial update' }.to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+
+    @custom_attribute.reload
+    assert_equal 'partial update', @custom_attribute.name
+    assert_equal original_object_type, @custom_attribute.object_type
+  end
+
   test 'should create a custom_attribute' do
     assert_difference('CustomAttribute.count', 1) do
       new_name = 'new custom'
