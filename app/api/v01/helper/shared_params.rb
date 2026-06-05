@@ -31,6 +31,32 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     requires :quantity, type: Float, coerce_with: CoerceFloatString
   end
 
+  params :request_custom_attribute do |options|
+    name_opts = { type: String, regexp: /\A[^:]*\z/ }
+    object_type_opts = {
+      type: String,
+      values: ::CustomAttribute.object_types.keys.map(&:to_s),
+      documentation: { values: ::CustomAttribute.object_types.keys.map(&:to_s) }
+    }
+    object_class_opts = {
+      type: String,
+      values: ::CustomAttribute.object_classes.keys.map(&:to_s),
+      documentation: { values: ::CustomAttribute.object_classes.keys.map(&:to_s) }
+    }
+
+    if options[:required_custom_attribute_params]
+      requires :name, name_opts
+      requires :object_type, object_type_opts
+      requires :object_class, object_class_opts
+    else
+      optional :name, name_opts
+      optional :object_type, object_type_opts
+      optional :object_class, object_class_opts
+    end
+    optional :default_value, types: [Array[String], String, Integer, Float, Boolean]
+    optional :description, type: String
+  end
+
   params :request_customer do |options|
     optional :end_subscription, type: Date, documentation: { desc: EDIT_ONLY_ADMIN }
     optional :max_vehicles, type: Integer, documentation: { desc: EDIT_ONLY_ADMIN }
