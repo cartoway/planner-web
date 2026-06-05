@@ -68,6 +68,14 @@ class V01::CustomAttributesTest < ActiveSupport::TestCase
     assert_equal original_object_type, @custom_attribute.object_type
   end
 
+  test 'should create a custom_attribute with legacy stop object_class' do
+    assert_difference('CustomAttribute.count', 1) do
+      post api(), { name: 'legacy stop attr', object_type: 'string', object_class: 'stop', default_value: 'x' }
+      assert last_response.created?, last_response.body
+      assert_equal 'stop_visit', JSON.parse(last_response.body)['object_class']
+    end
+  end
+
   test 'should create a custom_attribute' do
     assert_difference('CustomAttribute.count', 1) do
       new_name = 'new custom'

@@ -38,10 +38,12 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
       values: ::CustomAttribute.object_types.keys.map(&:to_s),
       documentation: { values: ::CustomAttribute.object_types.keys.map(&:to_s) }
     }
+    object_class_values = (::CustomAttribute.object_classes.keys.map(&:to_s) + ['stop']).uniq
     object_class_opts = {
       type: String,
-      values: ::CustomAttribute.object_classes.keys.map(&:to_s),
-      documentation: { values: ::CustomAttribute.object_classes.keys.map(&:to_s) }
+      values: object_class_values,
+      documentation: { values: object_class_values },
+      coerce_with: ->(value) { value == 'stop' ? 'stop_visit' : value }
     }
 
     if options[:required_custom_attribute_params]
