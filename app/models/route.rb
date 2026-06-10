@@ -529,6 +529,7 @@ class Route < ApplicationRecord
   # no_quantities
   def compute!(options = {})
     @geojson_points_store = []
+    @deliverable_units = options[:deliverable_units]
     if self.vehicle_usage?
       previous_position_hash = {}
       stops_sort, stops_drive_time, stops_time_windows = plan(
@@ -549,7 +550,7 @@ class Route < ApplicationRecord
         compute_out_of_force_position
         compute_out_of_max_reload
         compute_out_of_relations
-        compute_out_of_skill(options[:planning])
+        compute_out_of_skill(options[:planning], options[:planning_skills])
 
         # Try to minimize waiting time by a later begin
         time = self.end
@@ -584,11 +585,11 @@ class Route < ApplicationRecord
         end
       end
     else
-      compute_out_of_skill(options[:planning])
+      compute_out_of_skill(options[:planning], options[:planning_skills])
       _load_stop_hash, self.route_data.pickups, self.route_data.deliveries = compute_loads unless options[:no_quantities]
       compute_out_of_route_data!
     end
-    @geojson_points_store = stops_to_geojson_points unless options[:no_geojson]
+    @geojson_points_store = stops_to_geojson_points(options) unless options[:no_geojson]
 
     self.outdated = false
     @computed = true
@@ -938,16 +939,17 @@ class Route < ApplicationRecord
     stops_pickups = QuantityAttr::QuantityHash.new(0) # pickups in the next sub-tour
 
     previous_route_data = self.start_route_data
+    deliverable_units = deliverable_units_for_compute
 
     (stops_sort || stops).each{ |stop|
       next if !stop.active
 
       case stop.class.name
       when StopVisit.name
-        stop.visit.default_pickups(planning.customer.deliverable_units).each{ |k, v|
+        stop.visit.default_pickups(deliverable_units).each{ |k, v|
           stops_pickups[k] += (v || 0)
         }
-        stop.visit.default_deliveries(planning.customer.deliverable_units).each{ |k, v|
+        stop.visit.default_deliveries(deliverable_units).each{ |k, v|
           stops_deliveries[k] += (v || 0)
         }
       when StopStore.name
@@ -1163,7 +1165,7 @@ class Route < ApplicationRecord
   def stops_to_geojson_points(options = {})
     return if stops.empty? || options[:no_geojson]
 
-    units = planning.customer.deliverable_units
+    units = deliverable_units_for_compute(options)
 
     inactive_stops = 0
     sub_tour_index = 0
@@ -1387,8 +1389,8 @@ class Route < ApplicationRecord
     end
   end
 
-  def compute_out_of_skill(source_planning = nil)
-    planning_skills = (source_planning || planning).all_skills.map(&:id)
+  def compute_out_of_skill(source_planning = nil, planning_skills_ids = nil)
+    planning_skills = planning_skills_ids || (source_planning || planning).all_skills.map(&:id)
 
     if planning_skills.empty? || !vehicle_usage?
       stops.each{ |stop|
@@ -1467,6 +1469,10 @@ class Route < ApplicationRecord
   def invalidate_route_cache
     @traces = nil
     @geojson_tracks_store = nil
+  end
+
+  def deliverable_units_for_compute(options = {})
+    @deliverable_units || options[:deliverable_units] || planning.deliverable_units_for_compute
   end
 
   private
@@ -1658,7 +1664,7 @@ class Route < ApplicationRecord
   end
 
   def process_stop_loads(stop, current_loads, previous_route_data_attributes)
-    @deliverable_units ||= planning.customer.deliverable_units
+    @deliverable_units ||= deliverable_units_for_compute
     stop.out_of_capacity = nil if @deliverable_units.empty?
 
     return if !stop.active || !stop.position? || !stop.is_a?(StopVisit) || !stop.visit.default_quantities?
@@ -1695,7 +1701,7 @@ class Route < ApplicationRecord
   end
 
   def out_of_capacity?(loads)
-    @deliveryable_units ||= planning.customer.deliverable_units
+    @deliveryable_units ||= deliverable_units_for_compute
     return false if @deliveryable_units.empty?
 
     @default_capacities ||= vehicle_usage&.vehicle&.default_capacities

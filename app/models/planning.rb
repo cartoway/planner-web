@@ -57,48 +57,57 @@ class Planning < ApplicationRecord
 
   include RefSanitizer
 
+  ROUTE_VEHICLE_USAGE_PRELOAD = [
+    :store_start, :store_stop, :store_rest, :store_reloads, :tags,
+    { vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads] },
+    { vehicle: [:router, :tags, { customer: :router }] }
+  ].freeze
+
+  ROUTE_STOPS_PRELOAD = [
+    :route_data, :store,
+    {
+      visit: [
+        :relation_currents, :relation_successors, :tags,
+        { destination: [:tags, { customer: :deliverable_units }] }
+      ],
+      store_reload: [:store]
+    }
+  ].freeze
+
+  ROUTE_DATA_PRELOAD = [:route_data, :start_route_data, :stop_route_data].freeze
+
+  ROUTE_WITHOUT_STOPS_PRELOAD = (
+    ROUTE_DATA_PRELOAD + [{ vehicle_usage: ROUTE_VEHICLE_USAGE_PRELOAD }]
+  ).freeze
+
+  ROUTE_DETAILS_ROUTE_PRELOAD = (
+    ROUTE_DATA_PRELOAD + [
+      { stops: ROUTE_STOPS_PRELOAD },
+      { vehicle_usage: ROUTE_VEHICLE_USAGE_PRELOAD }
+    ]
+  ).freeze
+
+  VEHICLE_USAGE_SET_ASSOCIATIONS = {
+    vehicle_usages: [
+      :tags,
+      { vehicle: [:router, :tags, { customer: :router }] }
+    ]
+  }.freeze
+
+  VEHICLE_USAGE_SET_PRELOAD = [VEHICLE_USAGE_SET_ASSOCIATIONS].freeze
+
   scope :preload_routes_without_stops, -> {
     preload(
       { customer: :custom_attributes },
-      routes: [
-        :route_data, :start_route_data, :stop_route_data,
-        { vehicle_usage: [
-          :store_start, :store_stop, :store_rest, :store_reloads, :tags,
-          {vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads]},
-          {vehicle: [:router, :tags, {customer: :router}]}
-        ]}
-      ],
-      vehicle_usage_set: [
-        { vehicle_usages: {vehicle: [:router, {customer: :router}]} }
-      ]
+      routes: ROUTE_WITHOUT_STOPS_PRELOAD,
+      vehicle_usage_set: VEHICLE_USAGE_SET_PRELOAD
     )
   }
 
   scope :preload_route_details, -> {
     preload(
-      routes: [
-        :route_data, :start_route_data, :stop_route_data,
-        {
-          stops: [
-            :route_data, :store,
-            {
-              visit: [
-                :relation_currents, :relation_successors, :tags,
-                { destination: [:tags, {customer: :deliverable_units}] }
-              ],
-              store_reload: [:store]
-            }
-          ],
-          vehicle_usage: [
-            :store_start, :store_stop, :store_rest, :store_reloads, :tags,
-            {vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads]},
-            {vehicle: [:router, :tags, {customer: :router}]}
-          ]
-        }
-      ],
-      vehicle_usage_set: [{
-        vehicle_usages: {vehicle: [:router, {customer: :router}]}
-      }]
+      routes: ROUTE_DETAILS_ROUTE_PRELOAD,
+      vehicle_usage_set: VEHICLE_USAGE_SET_PRELOAD
     )
   }
 
@@ -1221,6 +1230,11 @@ class Planning < ApplicationRecord
     Route.where(planning_id: id).delete_all
   end
 
+  # Loaded once per planning compute batch and passed to Route#compute! via options.
+  def deliverable_units_for_compute
+    @deliverable_units_for_compute ||= customer.deliverable_units.to_a
+  end
+
   private
 
   def tags_compatible_given_plan_tags?(combined_tags, plan_tags)
@@ -1290,14 +1304,22 @@ class Planning < ApplicationRecord
       end
     }
 
+    compute_options = options.merge(skip_preload: true)
+    if computed_routes.any?
+      compute_options = compute_options.merge(
+        planning_skills: all_skills.map(&:id),
+        deliverable_units: deliverable_units_for_compute
+      )
+    end
+
     # Batch process all segments in parallel
     precompute_traces(all_segments, options)
 
     computed_routes.each{ |r|
       if options[:bang] == false
-        r.compute(options.merge(skip_preload: true))
+        r.compute(compute_options)
       else
-        r.compute!(options.merge(skip_preload: true))
+        r.compute!(compute_options)
       end
       stops_by_type = r.stops.group_by(&:type)
       stop_visits += stops_by_type['StopVisit'].to_a.map(&:import_attributes)
@@ -1337,7 +1359,9 @@ class Planning < ApplicationRecord
       end
     end
 
-    self.save!(touch: false) && self.invalidate_planning_cache
+    self.save!(touch: false) && self.invalidate_planning_cache unless options[:skip_planning_save]
+
+    true
   end
 
   def select_insertion_data(insertion_data)
@@ -1523,19 +1547,26 @@ class Planning < ApplicationRecord
   end
 
   def update_vehicle_usage_set
-    if vehicle_usage_set_id_changed? && !vehicle_usage_set_id_was.nil? && !id.nil?
+    return unless vehicle_usage_set_id_changed? && !vehicle_usage_set_id_was.nil? && !id.nil?
+
+    Route.no_touching do
+      Preloaders::BatchAssociationPreload.preload!([vehicle_usage_set], VEHICLE_USAGE_SET_ASSOCIATIONS)
+
       h = Hash[routes.select(&:vehicle_usage).collect{ |route| [route.vehicle_usage.vehicle, route] }]
       vehicle_usage_set.vehicle_usages.each{ |vehicle_usage|
         if h[vehicle_usage.vehicle] && vehicle_usage.active
-          h[vehicle_usage.vehicle].vehicle_usage = vehicle_usage
-          h[vehicle_usage.vehicle].save!
+          route = h[vehicle_usage.vehicle]
+          route.vehicle_usage = vehicle_usage
+          route.send(:update_vehicle_usage)
         elsif vehicle_usage.active
           vehicle_usage_add vehicle_usage
         elsif h[vehicle_usage.vehicle]
           vehicle_usage_remove h[vehicle_usage.vehicle].vehicle_usage
         end
       }
-      compute
+      persist_destroyed_stops!
+      routes.each { |route| route.association(:planning).target = self; route.association(:planning).loaded! }
+      compute_saved!(bang: true, skip_planning_save: true)
     end
   end
 
@@ -1543,5 +1574,12 @@ class Planning < ApplicationRecord
     if self.begin_date.present? && self.end_date.present? && self.end_date < self.begin_date
       errors.add(:end_date, I18n.t('activerecord.errors.models.planning.attributes.end_date.after'))
     end
+  end
+
+  # For rest destruction
+  def persist_destroyed_stops!
+    routes.each{ |route|
+      route.stops.select(&:marked_for_destruction?).each(&:delete)
+    }
   end
 end
