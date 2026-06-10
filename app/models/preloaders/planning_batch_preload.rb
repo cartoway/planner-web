@@ -25,42 +25,8 @@ module Preloaders
     # Same tree as Planning#preload_route_details, plus :tags (visit_filling / tags_compatible?).
     ASSOCIATIONS = [
       :tags,
-      {
-        routes: [
-          :route_data,
-          :start_route_data,
-          :stop_route_data,
-          {
-            stops: [
-              :route_data,
-              :store,
-              {
-                visit: [
-                  :relation_currents,
-                  :relation_successors,
-                  :tags,
-                  { destination: [:tags, { customer: :deliverable_units }] }
-                ],
-                store_reload: [:store]
-              }
-            ],
-            vehicle_usage: [
-              :store_start,
-              :store_stop,
-              :store_rest,
-              :store_reloads,
-              :tags,
-              { vehicle_usage_set: [:store_start, :store_stop, :store_rest, :store_reloads] },
-              { vehicle: [:router, :tags, { customer: :router }] }
-            ]
-          }
-        ]
-      },
-      {
-        vehicle_usage_set: [
-          { vehicle_usages: { vehicle: [:router, { customer: :router }] } }
-        ]
-      }
+      { routes: Planning::ROUTE_DETAILS_ROUTE_PRELOAD },
+      { vehicle_usage_set: Planning::VEHICLE_USAGE_SET_PRELOAD }
     ].freeze
 
     def self.preload!(records, associations: ASSOCIATIONS)
