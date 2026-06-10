@@ -753,6 +753,25 @@ class PlanningTest < ActiveSupport::TestCase
     refute Job.on_planning(planning.customer.job_optimizer, planning_id)
   end
 
+  test 'deliverable_units_for_compute memoizes customer units' do
+    planning = plannings(:planning_one)
+    assert_same planning.deliverable_units_for_compute, planning.deliverable_units_for_compute
+  end
+
+  test 'update vehicle usage set preloads new set before remapping routes' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+    vehicle_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      vehicle_queries += 1 if payload[:sql].match?(/SELECT "vehicles"\.\* FROM "vehicles" WHERE "vehicles"\."id" =/)
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      planning.update!(vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_three))
+    end
+
+    assert_operator vehicle_queries, :<, 5, "expected batched vehicle load, got #{vehicle_queries} queries"
+  end
+
   test 'should set stops with a geoloc rest in unassigned' do
     planning = plannings(:planning_one)
     unassigned = planning.routes.flat_map{ |r| r.stops.map{ |s| { id: s.id, type: s.optim_type }} }
