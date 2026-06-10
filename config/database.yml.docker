@@ -16,7 +16,7 @@ development:
 # production.
 test:
   <<: *default
-  database: <%= ENV['POSTGRES_DB'] || 'planner_test' %>
+  database: <%= ENV['POSTGRES_DB_TEST'] || 'planner-test' %>
 
 production:
   <<: *default
