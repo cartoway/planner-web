@@ -1567,7 +1567,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should not optimize on unprocessable entity' do
-    Planning.stub_any_instance(:save!, lambda { |*a| false } ) do
+    Customer.stub_any_instance(:save!, lambda { |*a| false } ) do
       get :optimize, params: { planning_id: @planning, format: :js, global: true }, xhr: true
       assert_valid response
       assert_response :unprocessable_entity
