@@ -1,24 +1,52 @@
 # Changelog
 
-## Dev
+## V109.0.0
   ### Added
   - Import: Order destination/visits in planning routes using index field [#626](https://github.com/cartoway/planner-web/pull/626)
   - API: Expose route ref [#626](https://github.com/cartoway/planner-web/pull/626)
+  - Introduce Roles & Preferences as JSON-like dictionaries for permissions and visual preferences:
+    - Define permissions on Customer, Planning, Route, Stop, Destination/Visit, VehicleUsageSet/VehicleUsage/Vehicle, and Tag
+    - Default permissions on new roles are restrictive; the default initial role keeps the previous behavior and is applied to every existing user
+    - Customizable route stop labels
+    - Planning data can be computed on visible routes only
+  - Individual stops can be locked to a route
+  - Add a button to duplicate the current planning
+  - Introduce `strict_within_timewindows`: both the start and end of a visit must occur within the time window (previously only the start was checked). This is the default behavior for new customers
+  - Add progressive route loading for medium-sized plannings
+  - Stops in routes can be activated or deactivated at the planning level
+  - Planning-level alerts
+  - API: Expose `stop_visit` and `stop_store` as `object_class` values for CustomAttributes (legacy `stop` value remains supported)
 
   ### Changed
   - Improve planning summary CSV export performance [#626](https://github.com/cartoway/planner-web/pull/626)
-  - JSON Import: visits nested within a single destination belongs to the same destination [#626](https://github.com/cartoway/planner-web/pull/626)
-  - Routes without depot, with a single visit are now counted as active routes [#626](https://github.com/cartoway/planner-web/pull/626)
+  - JSON Import: visits nested within a single destination belong to the same destination [#626](https://github.com/cartoway/planner-web/pull/626)
+  - Routes without depot, with a single visit, are now counted as active routes [#626](https://github.com/cartoway/planner-web/pull/626)
+  - Move route metrics from Routes to RouteData
+  - CSV export no longer writes empty strings for empty fields
+  - Transmit waiting time to Optimizer-API
+  - Reintroduce `drive_time`, `wait_time`, and other time fields on planning and route data headers (enabled from user preferences). Distinguish total working time from total route time
+  - Improve performance on planning edit and sidebar rendering
+  - Refresh the route selector after planning updates
+  - Merge router profile and router into a single select
+  - Improve performance when switching the vehicle usage set on a planning (reduce N+1 queries on vehicle associations and deliverable units)
+  - Devcontainer:
+    - Test environment now uses a dedicated database (`planner-test`)
+    - Expose the web service port on the host
 
   ### Fixed
-  - Rest stop validation use the default rest_start value for comparison [#626](https://github.com/cartoway/planner-web/pull/626)
+  - Rest stop validation uses the default `rest_start` value for comparison [#626](https://github.com/cartoway/planner-web/pull/626)
+  - Fix the geocoder control closing unexpectedly
+  - Expose missing fields for stops in the API
+  - Bulk destination import could display the wrong line number on error when multiple batches were processed
+  - Coerce float fields according to locale (CSV import and API) and filter space-like characters
+  - Fix user email delivery on edge cases
 
 ## V108.2.3
-  ### Modified
-    - Destinations list: bulk delete now sends selected IDs in the request body instead of encoding them in the URL [#100218c](https://github.com/cartoway/planner-web/commit/100218c453bdabfc395c4f7f727e271139b5250a)
+  ### Changed
+  - Destinations list: bulk delete now sends selected IDs in the request body instead of encoding them in the URL [#100218c](https://github.com/cartoway/planner-web/commit/100218c453bdabfc395c4f7f727e271139b5250a)
 
 ## V108.2.2
-  ### Modified
+  ### Changed
   - Improve data preloads for destination import [#632](https://github.com/cartoway/planner-web/pull/632)
   - Improve Tags intersection operation when importing new destinations [#632](https://github.com/cartoway/planner-web/pull/632)
   - Save geocoding results by batch [#632](https://github.com/cartoway/planner-web/pull/632)
