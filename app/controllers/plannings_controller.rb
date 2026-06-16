@@ -389,8 +389,7 @@ class PlanningsController < ApplicationController
   # Render move stops modal content via Rails (.js.erb)
   def move_stops_modal
     bootstrap_manage_planning_flags!
-    deny_unless_operation_usable!(:route, 'stops')
-    deny_unless_operation_usable!(:stop, 'move_stop')
+    deny_unless_operation_visible!(:route, 'stops') unless params[:stop_ids].present?
 
     route =
       if params[:route_id]
@@ -425,38 +424,6 @@ class PlanningsController < ApplicationController
 
     respond_to do |format|
       format.js { render partial: 'stops/move.js.erb', locals: { stops: stops, route: route_json, available_routes: available_routes } }
-    end
-  end
-
-  def selection_details
-    selected_stop_ids = params[:stop_ids]&.split(',') || []
-
-    @quantities = {}
-    @available_routes = []
-    @selection_info = { stops_count: 0 }
-    @stops = []
-
-    planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
-    @planning = planning
-    bootstrap_manage_planning_flags!
-    @available_routes = planning_summary(planning)[:routes]
-
-    if selected_stop_ids.any?
-      stops = Stop.joins(:route)
-                  .where(routes: { planning_id: planning.id })
-                  .where(id: selected_stop_ids)
-                  .includes_destinations_and_stores
-                  .only_stop_visits
-                  .by_route_then_index
-
-      @selection_info[:stops_count] = stops.size
-      @quantities = aggregate_visit_quantities(planning.customer, stops.map(&:visit))
-      @stops = stops_for_move_list(stops)
-    end
-
-    respond_to do |format|
-      format.html { render partial: 'shared/selection_details', layout: false }
-      format.json { render json: { quantities: @quantities, available_routes: @available_routes, selection_info: @selection_info } }
     end
   end
 

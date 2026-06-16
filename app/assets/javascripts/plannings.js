@@ -2945,7 +2945,9 @@ export const plannings_edit = function(params) {
         quantities: params.quantities,
         routesLayer: routesLayer,
         refreshSidebarRoute: refreshSidebarRoute,
-        planningMoveStopsUsable: !!(params.manage_planning && params.manage_planning.planning_move_stops_usable),
+        planningRouteStopsVisible: !!(params.manage_planning && params.manage_planning.manage_route_stops),
+        stopMoveVisible: !!(params.manage_planning && params.manage_planning.manage_stop_move),
+        stopMoveUsable: !!(params.manage_planning && params.manage_planning.manage_stop_move && !params.manage_planning.disable_stop_move),
         updatePlanningDataHeader: function() {
           updateDataHeader(planning_id);
         },

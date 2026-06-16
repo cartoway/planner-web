@@ -36,7 +36,9 @@ export class MoveStopsModal {
     this.mustacheI18n = null;
     this.modalSelector = '#planning-move-stops-modal';
     this.isInitialized = false;
-    this.planningMoveStopsUsable = true;
+    this.planningRouteStopsVisible = true;
+    this.stopMoveVisible = true;
+    this.stopMoveUsable = true;
   }
 
   /**
@@ -60,28 +62,35 @@ export class MoveStopsModal {
     this.refreshSidebarRoute = options.refreshSidebarRoute;
     this.updatePlanningDataHeader = options.updatePlanningDataHeader || function() {};
     this.mustacheI18n = options.mustacheI18n;
-    this.planningMoveStopsUsable = options.planningMoveStopsUsable !== false;
+    this.planningRouteStopsVisible = options.planningRouteStopsVisible !== false;
+    this.stopMoveVisible = options.stopMoveVisible !== false;
+    this.stopMoveUsable = options.stopMoveUsable !== false;
 
     if (!this.isInitialized) {
       this.setupEventHandlers();
       this.isInitialized = true;
     }
+    this.applyMoveStopsActionVisibility();
   }
 
   /**
    * Setup event handlers for the modal
    */
   setupEventHandlers() {
-    // Load modal content when opened via data-toggle="modal"
+    // Load modal content when opened from the route sidebar (data-toggle="modal").
     $(this.modalSelector).off('show.bs.modal.moveStops').on('show.bs.modal.moveStops', (ev) => {
       try {
-        if (!this.planningMoveStopsUsable) {
+        const trigger = ev.relatedTarget;
+        const routeId = trigger && trigger.getAttribute && trigger.getAttribute('data-route-id');
+        // Programmatic opens (lasso) have no trigger; do not block them here.
+        if (!routeId) {
+          return;
+        }
+
+        if (!this.planningRouteStopsVisible) {
           ev.preventDefault();
           return;
         }
-        const trigger = ev.relatedTarget;
-        const routeId = trigger && trigger.getAttribute && trigger.getAttribute('data-route-id');
-        if (!routeId) return;
 
         // Show loading spinner
         $(`${this.modalSelector} .modal-body`).html('<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>').unbind();
@@ -105,7 +114,7 @@ export class MoveStopsModal {
 
     // Move stops button click
     $("#move-stops-modal").off('click').on('click', () => {
-      if (!this.planningMoveStopsUsable) {
+      if (!this.stopMoveUsable) {
         return;
       }
       this.handleMoveStops();
@@ -114,10 +123,15 @@ export class MoveStopsModal {
     // Listen when server injected content is ready, then initialize behaviors
     $(document).off('move-stops:content-updated').on('move-stops:content-updated', () => {
       try {
-        $('#move-stops-modal').prop('disabled', !this.planningMoveStopsUsable);
         // Initialize UI widgets
         $('#move-stops-toggle').toggleSelect();
         $('[type="checkbox"][data-toggle="disable-multiple-actions"]').toggleMultipleActions();
+
+        $(`${this.modalSelector} .move-stops-stop-id`)
+          .off('change.moveStopsPermissions')
+          .on('change.moveStopsPermissions', () => {
+            this.applyMoveStopsActionVisibility();
+          });
 
         // Initialize select2 with route colors
         const routesList = window.moveStopsData && window.moveStopsData.availableRoutes || [];
@@ -137,6 +151,9 @@ export class MoveStopsModal {
         if (window.moveStopsData && window.moveStopsData.stops) {
           this.setupModalComponents(window.moveStopsData.stops, routesList);
         }
+
+        // After toggleMultipleActions (may re-enable footer controls when stops are checked).
+        this.applyMoveStopsActionVisibility();
       } catch (e) {}
     });
   }
@@ -391,11 +408,38 @@ export class MoveStopsModal {
   }
 
   /**
+   * Show/hide move action controls according to planning permissions.
+   */
+  applyMoveStopsActionVisibility() {
+    const $moveBtn = $('#move-stops-modal');
+    const hasSelectedStops = $(`${this.modalSelector} .move-stops-stop-id:checked:visible`).length > 0;
+    const moveBtnEnabled = this.stopMoveUsable && hasSelectedStops;
+
+    if (this.stopMoveVisible) {
+      $moveBtn.show().prop('disabled', !moveBtnEnabled);
+    } else {
+      $moveBtn.hide();
+    }
+
+    const $moveOptions = $(`${this.modalSelector} .move-stops-options, ${this.modalSelector} .index-option`);
+    const $globalQuantities = $(`${this.modalSelector} #move-stop-global-quantities`).closest('.col-md-12');
+
+    if (this.stopMoveVisible) {
+      $moveOptions.show();
+      $globalQuantities.show();
+      $('#move-route-id, #move-index').prop('disabled', !this.stopMoveUsable);
+    } else {
+      $moveOptions.hide();
+      $globalQuantities.hide();
+    }
+  }
+
+  /**
    * Show the modal for a specific route
    * @param {string} routeId - Route ID to show modal for
    */
   showModal(routeId) {
-    if (!this.planningMoveStopsUsable) {
+    if (!this.planningRouteStopsVisible) {
       return;
     }
     // Show loading spinner immediately
@@ -416,9 +460,7 @@ export class MoveStopsModal {
    * @param {Array<number>} stopIds
    */
   showModalForStops(stopIds) {
-    if (!this.planningMoveStopsUsable) {
-      return;
-    }
+    // Lasso selection: always open the information modal on the planning edit page.
     // Show loading spinner immediately
     $(`${this.modalSelector} .modal-body`).html('<div class="spinner"><i class="fa fa-spin fa-2x fa-spinner"></i></div>').unbind();
     $(this.modalSelector).modal('show');
