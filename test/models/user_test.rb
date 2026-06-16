@@ -21,6 +21,43 @@ class UserTest < ActiveSupport::TestCase
     assert user.valid?
   end
 
+  test 'generate_temporary_password meets devise length and is unpredictable' do
+    passwords = 10.times.map { User.generate_temporary_password }
+
+    assert passwords.all? { |password| password.length.between?(8, 128) }
+    assert_equal passwords.uniq.size, passwords.size
+    refute passwords.any? { |password| password.match?(/\A\d+\z/) }
+  end
+
+  test 'does not assign reseller default role on create' do
+    return unless Role.column_names.include?('operations')
+
+    reseller = resellers(:reseller_one)
+    role = Role.create!(
+      reseller: reseller,
+      name: 'Model default role',
+      ref: "model_default_#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.baseline_role_operations_json,
+      forms: Preferences::Catalog.baseline_role_forms_json
+    )
+    reseller.update_column(:default_role_id, role.id)
+
+    user = User.create!(
+      user_hash(customers(:customer_one), 'fr').merge(email: 'no-api-default-role@example.com')
+    )
+    assert_nil user.role_id
+  ensure
+    reseller&.update_column(:default_role_id, nil)
+    role&.destroy
+  end
+
+  test 'does not assign role on create when reseller has no default role' do
+    user = User.create!(
+      user_hash(customers(:customer_one), 'fr').merge(email: 'no-default-role@example.com')
+    )
+    assert_nil user.role_id
+  end
+
   test 'after_create sends password email when send_email toggle is on' do
     assert_difference('ActionMailer::Base.deliveries.size', 1) do
       User.create!(user_hash(customers(:customer_one), 'fr').merge(send_email: '1'))

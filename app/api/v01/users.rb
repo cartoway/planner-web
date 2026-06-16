@@ -25,10 +25,34 @@ class V01::Users < Grape::API
       p = ActionController::Parameters.new(params)
       p = p[:user] if p.key?(:user)
       if @current_user.admin?
-        p.permit(:ref, :email, :password, :customer_id, :layer_id, :url_click2call, :time_zone, :locale, :prefered_unit, :default_display_polylines)
+        p.permit(:ref, :email, :password, :customer_id, :layer_id, :role_id, :url_click2call, :time_zone, :locale, :prefered_unit, :default_display_polylines)
       else
         p.permit(:layer_id, :url_click2call, :time_zone, :locale, :prefered_unit, :default_display_polylines)
       end
+    end
+
+    def assign_user_password!(user)
+      if user.password.blank?
+        password = User.generate_temporary_password
+        user.password = password
+        user.password_confirmation = password
+      else
+        user.password_confirmation = user.password
+      end
+    end
+
+    def role_id_param_provided?
+      params.key?(:role_id) || params.key?('role_id')
+    end
+
+    def assign_reseller_default_role!(user, reseller)
+      return if role_id_param_provided?
+
+      default_role_id = reseller.default_role_id
+      return if default_role_id.blank?
+      return unless reseller.roles.exists?(id: default_role_id)
+
+      user.role_id = default_role_id
     end
   end
 
@@ -84,7 +108,8 @@ class V01::Users < Grape::API
       if @current_user.admin?
         customer = @current_user.reseller.customers.where(id: params[:customer_id]).first!
         user = customer.users.build(user_params)
-        user.password_confirmation = user.password
+        assign_reseller_default_role!(user, @current_user.reseller)
+        assign_user_password!(user)
         user.send_email = 1
         user.save!
 
