@@ -30,6 +30,13 @@ module PreferencesAuthorization
     refuse_display_ui!
   end
 
+  def deny_unless_operation_visible!(zone, segment_id)
+    return if !current_user.respond_to?(:operation_segment_visible?)
+    return if current_user.operation_segment_visible?(zone, segment_id)
+
+    refuse_display_ui!
+  end
+
   def deny_unless_form_visible!(resource)
     return if current_user.form_visible?(resource)
 

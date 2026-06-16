@@ -48,17 +48,6 @@
     max-height: 45vh;
     overflow-y: auto;
   }
-
-  .move-stops-preview {
-    .move-stops-stop-id {
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .move-stops-options {
-      display: none;
-    }
-  }
 }
 
 $navbar-height: 0px;
