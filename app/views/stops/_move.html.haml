@@ -1,10 +1,8 @@
-- preview = local_assigns.fetch(:preview, false)
-#move-stops.route.row{class: ('move-stops-preview' if preview)}
+#move-stops.route.row
   .row
-    - unless preview
-      .col-xs-4.move-stops-toggle
-        %button#move-stops-toggle.btn.btn-default.btn-xs{ type: 'button', 'data-toggle': 'selection', 'data-target': '#move-stops', title: t('all.verb.toggle_selection') }
-          %i.fa.fa-check.fa-fw
+    .col-xs-4.move-stops-toggle
+      %button#move-stops-toggle.btn.btn-default.btn-xs{ type: 'button', 'data-toggle': 'selection', 'data-target': '#move-stops', title: t('all.verb.toggle_selection') }
+        %i.fa.fa-check.fa-fw
 
     .pull-right
       .route-info.inactive
@@ -19,10 +17,9 @@
   .col-md-12
     #move-stop-quantities.row
 
-  - unless preview
-    %hr.col-md-10.col-md-offset-1/
+  %hr.col-md-10.col-md-offset-1/
 
-  .col-md-12.move-stops-options{class: ('hidden' if preview)}
+  .col-md-12.move-stops-options
     %div
       %label= t('plannings.edit.dialog.move_stops.move_to')
     .move-route-selector
@@ -30,15 +27,12 @@
         - available_routes.each do |r|
           %option{ value: r[:route_id], 'data-vehicle-usage-id': r[:vehicle_usage_id] }= r[:name]
 
-  - unless preview
-    .col-md-12
-      #move-stop-global-quantities.row
-    .col-md-12.index-option
-      %label{ for: 'move-index' }= t('plannings.edit.dialog.move_stops.index.label')
-      .move-stops-index.form-group
-        %select#move-index.form-control
-          %option{ value: '-1', selected: true }= t('plannings.edit.dialog.move_stops.index.end')
-          %option{ value: '1' }= t('plannings.edit.dialog.move_stops.index.start')
-          %option{ value: '' }= t('plannings.edit.dialog.move_stops.index.best_place')
-
-
+  .col-md-12
+    #move-stop-global-quantities.row
+  .col-md-12.index-option
+    %label{ for: 'move-index' }= t('plannings.edit.dialog.move_stops.index.label')
+    .move-stops-index.form-group
+      %select#move-index.form-control
+        %option{ value: '-1', selected: true }= t('plannings.edit.dialog.move_stops.index.end')
+        %option{ value: '1' }= t('plannings.edit.dialog.move_stops.index.start')
+        %option{ value: '' }= t('plannings.edit.dialog.move_stops.index.best_place')

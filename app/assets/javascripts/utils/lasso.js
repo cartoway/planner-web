@@ -18,7 +18,6 @@
 
 'use strict';
 
-import { ajaxError } from '../ajax.js';
 import { moveStopsModal } from '../modals/move_stops_modal.js';
 
 /**
@@ -233,7 +232,7 @@ export class LassoModule {
         }
       });
 
-      this.showLassoSelectionModal(processedLayers);
+      this.showMoveStopsModalForLassoSelection();
     } else {
       // Reset lasso tool when selection is empty
       this.disableLasso();
@@ -276,76 +275,10 @@ export class LassoModule {
     return processedLayers;
   }
 
-  showLassoSelectionModal(processedLayers) {
-    const mp = this.managePlanning || {};
-    if (!mp.planning_move_stops_visible) {
-      this.clearLassoSelection();
-      this.disableLasso();
-      return;
-    }
-
-    const stopIds = processedLayers
-      .map((layer) => layer && layer.properties && layer.properties.stop_id)
-      .filter(Boolean);
-    if (!stopIds.length) {
-      return;
-    }
-
-    const self = this;
-    $.ajax({
-      url: `/plannings/${this.planningId}/selection_details`,
-      data: { stop_ids: stopIds.join(',') },
-      method: 'GET',
-      success(html) {
-        $('#lasso-info-modal').remove();
-        $('body').append(html);
-        $('#lasso-info-modal').modal('show');
-        self.initLassoMoveStopsPreview();
-
-        $('#move-stops-btn').off('click.lassoMove').on('click.lassoMove', () => {
-          if (!mp.planning_move_stops_usable || !moveStopsModal.planningMoveStopsUsable) {
-            return;
-          }
-          $('#lasso-info-modal').modal('hide');
-          self.showMoveStopsModalForLassoSelection();
-        });
-
-        $('#lasso-info-modal').off('hidden.bs.modal.lasso').on('hidden.bs.modal.lasso', function() {
-          self.clearLassoSelection();
-          self.disableLasso();
-          $(this).remove();
-        });
-      },
-      error: ajaxError
-    });
-  }
-
-  initLassoMoveStopsPreview() {
-    const $modal = $('#lasso-info-modal');
-    const stops = window.lassoSelectionStopsData;
-    delete window.lassoSelectionStopsData;
-
-    if (!stops || !stops.length || !moveStopsModal.quantities || !moveStopsModal.quantities.length) {
-      return;
-    }
-
-    $modal.find('#move-stop-quantities').empty().fillQuantities({
-      stops: stops,
-      controllerParamsQuantities: moveStopsModal.quantities,
-      withDuration: true,
-      withCapacity: true
-    });
-  }
-
   /**
-   * Show MoveStops modal for lasso selection
-   * This method uses the existing MoveStops modal and simulates stop selection
+   * Open the move_stops modal for the current lasso selection.
    */
   showMoveStopsModalForLassoSelection() {
-    if (!(this.managePlanning && this.managePlanning.planning_move_stops_usable)) {
-      return;
-    }
-
     // Extract stops from selected layers (including processed clusters)
     const selectedStops = [];
     const processedLayers = this.processSelectedLayers(this.selectedLayers);
@@ -365,14 +298,12 @@ export class LassoModule {
       return;
     }
 
+    // Register handlers before opening the modal.
+    this.setupLassoStopSelection(selectedStops);
+    this.setupLassoCleanup();
+
     // Open modal by providing selected stop IDs (server will infer primary route)
     moveStopsModal.showModalForStops(selectedStops.map(s => s.stop_id));
-
-    // Setup automatic selection of lasso-selected stops when modal loads
-    this.setupLassoStopSelection(selectedStops);
-
-    // Setup cleanup when modal is hidden
-    this.setupLassoCleanup();
   }
 
   /**
@@ -382,15 +313,15 @@ export class LassoModule {
   setupLassoStopSelection(selectedStops) {
     const selectedStopIds = selectedStops.map(stop => stop.stop_id);
 
-    // Wait for modal to be fully loaded, then select the stops
-    $(moveStopsModal.modalSelector).off('shown.bs.modal.lasso').on('shown.bs.modal.lasso', () => {
-      // Select all checkboxes for lasso-selected stops
+    // Content is injected asynchronously after modal open; wait for it before ticking checkboxes.
+    $(document).off('move-stops:content-updated.lasso').on('move-stops:content-updated.lasso', () => {
       selectedStopIds.forEach(stopId => {
         const checkbox = $(`${moveStopsModal.modalSelector} input[name="stop_ids"][value="${stopId}"]`);
         if (checkbox.length > 0) {
           checkbox.prop('checked', true).trigger('change');
         }
       });
+      $(document).off('move-stops:content-updated.lasso');
     });
   }
 
@@ -407,7 +338,7 @@ export class LassoModule {
 
       // Remove custom event handlers
       $(moveStopsModal.modalSelector).off('hidden.bs.modal.lasso');
-      $(moveStopsModal.modalSelector).off('shown.bs.modal.lasso');
+      $(document).off('move-stops:content-updated.lasso');
     });
   }
 
@@ -452,7 +383,7 @@ export class LassoModule {
 
     // Clean up lasso-specific modal behavior
     $(moveStopsModal.modalSelector).off('hidden.bs.modal.lasso');
-    $(moveStopsModal.modalSelector).off('shown.bs.modal.lasso');
+    $(document).off('move-stops:content-updated.lasso');
 
     this.map = null;
     this.planningId = null;
