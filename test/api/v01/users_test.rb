@@ -61,6 +61,52 @@ class V01::UsersTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should create a user without password' do
+    assert_difference('User.count', 1) do
+      post api_admin(), {
+        ref: 'no-password',
+        email: 'nopassword@plop.com',
+        customer_id: @user.customer_id,
+        layer_id: @user.layer_id
+      }
+      assert last_response.created?, last_response.body
+      assert_equal 'nopassword@plop.com', JSON.parse(last_response.body)['email']
+    end
+
+    user = User.find_by!(email: 'nopassword@plop.com')
+    assert user.encrypted_password.present?
+  end
+
+  test 'should create a user with reseller default role when role_id is omitted' do
+    return unless Role.column_names.include?('operations')
+
+    reseller = resellers(:reseller_one)
+    role = Role.create!(
+      reseller: reseller,
+      name: 'API default role',
+      ref: "api_default_#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.baseline_role_operations_json,
+      forms: Preferences::Catalog.baseline_role_forms_json
+    )
+    reseller.update_column(:default_role_id, role.id)
+
+    assert_difference('User.count', 1) do
+      post api_admin(), {
+        ref: 'default-role',
+        email: 'default-role@plop.com',
+        customer_id: @user.customer_id,
+        layer_id: @user.layer_id
+      }
+      assert last_response.created?, last_response.body
+    end
+
+    user = User.find_by!(email: 'default-role@plop.com')
+    assert_equal role.id, user.role_id
+  ensure
+    reseller&.update_column(:default_role_id, nil)
+    role&.destroy
+  end
+
   test 'should not create a user' do
     assert_no_difference('User.count') do
       post api_admin(), {email: 'new@plop.com', password: 'password', customer_id: customers(:customer_two).id, layer_id: @user.layer_id}

@@ -256,6 +256,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
       optional :layer_id, type: Integer
     end
     optional :password, type: String
+    optional :role_id, type: Integer, documentation: { desc: 'Only available in admin. Defaults to the reseller default role when omitted on create.' }
     optional :ref, type: String, documentation: { desc: 'Only available in admin.' }
     optional :api_key, type: String
     optional :url_click2call, type: String

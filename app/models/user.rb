@@ -78,6 +78,10 @@ class User < ApplicationRecord
     end
   end
 
+  def self.generate_temporary_password
+    SecureRandom.alphanumeric(32)
+  end
+
   def api_key_random
     self.api_key = SecureRandom.hex
   end

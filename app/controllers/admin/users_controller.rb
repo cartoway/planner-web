@@ -35,7 +35,7 @@ class Admin::UsersController < ApplicationController
   end
 
   def create
-    password = Time.now.to_i + rand(10000)
+    password = User.generate_temporary_password
     attrs = user_initial_attributes
     send_password_email = send_password_email_requested?(attrs)
     attrs = attrs.except(:send_email, 'send_email')

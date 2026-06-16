@@ -158,4 +158,27 @@ class Admin::RolesControllerTest < ActionController::TestCase
 
     assert_redirected_to admin_roles_path
   end
+
+  test 'destroy succeeds for reseller default role' do
+    @reseller.update_column(:default_role_id, @role.id)
+
+    assert_difference('Role.count', -1) do
+      delete :destroy, params: { id: @role.id }
+    end
+
+    assert_redirected_to admin_roles_path
+    assert_nil @reseller.reload.default_role_id
+  end
+
+  test 'destroy succeeds when users are assigned to role' do
+    user = users(:user_one)
+    user.update_column(:role_id, @role.id)
+
+    assert_difference('Role.count', -1) do
+      delete :destroy, params: { id: @role.id }
+    end
+
+    assert_redirected_to admin_roles_path
+    assert_nil user.reload.role_id
+  end
 end
