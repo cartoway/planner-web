@@ -20,6 +20,16 @@ class CustomerTest < ActiveSupport::TestCase
     assert_equal true, Customer.new.enable_strict_within_timewindows
   end
 
+  test 'planning_date_offset_default uses application config when customer offset is nil' do
+    @customer.update_column(:planning_date_offset, nil)
+    assert_equal Planner::Application.config.planning_date_offset_default, @customer.planning_date_offset_default
+  end
+
+  test 'planning_date_offset_default returns customer offset when set' do
+    @customer.update!(planning_date_offset: 3)
+    assert_equal 3, @customer.planning_date_offset_default
+  end
+
   test 'should save' do
     reseller = resellers(:reseller_one)
     customer = reseller.customers.build(name: 'test', max_vehicles: 5, with_state: true,
