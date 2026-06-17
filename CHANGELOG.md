@@ -41,6 +41,7 @@
   - Coerce float fields according to locale (CSV import and API) and filter space-like characters
   - Fix user email delivery on edge cases
   - Display driving time seconds in trace popups
+  - nil `planning_data_offset` where not using config value
 
 ## V108.2.3
   ### Changed
