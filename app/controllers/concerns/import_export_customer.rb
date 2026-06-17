@@ -20,11 +20,13 @@ module ImportExportCustomer
       profile_id: options[:profile_id],
       reseller_id: options[:reseller_id],
       router_id: options[:router_id],
+      router_dimension: 'time',
       router_options: {}
     }.compact)
     customer.assign_attributes(role_id: nil) if customer.respond_to?(:role_id)
-    customer.vehicles.select{ |vehicle| vehicle.router_id.present? }
-            .each{ |vehicle| vehicle.assign_attributes(router_id: options[:router_id], router_options: {}) }
+    customer.vehicles.each do |vehicle|
+      vehicle.assign_attributes(router_id: nil, router_dimension: nil, router_options: {})
+    end
     customer.users.each do |user|
       user.assign_attributes(layer_id: options[:layer_id]) if user.layer_id.present? && options[:layer_id].present?
       user.assign_attributes(role_id: nil)
