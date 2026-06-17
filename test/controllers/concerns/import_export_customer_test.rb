@@ -62,9 +62,14 @@ class ImportExportCustomerTest < ActionController::TestCase
                                   assert_kind_of Customer, c
                                   assert_equal profile_id, c.profile_id
                                   assert_equal router_id, c.router_id
+                                  assert_equal 'time', c.router_dimension
                                   assert_equal layer_id, c.users.first.layer_id
                                   assert_equal reseller_id, c.reseller_id
                                   assert_equal [import_role.id], c.users.map(&:role_id).uniq
+                                  c.vehicles.each do |vehicle|
+                                    assert_nil vehicle.router_id
+                                    assert_equal router_id, vehicle.default_router.id
+                                  end
                                   source_driver_tokens = customer.vehicles.pluck(:driver_token)
                                   duplicated_driver_tokens = c.vehicles.pluck(:driver_token)
                                   assert_empty(source_driver_tokens & duplicated_driver_tokens)
@@ -113,7 +118,34 @@ class ImportExportCustomerTest < ActionController::TestCase
         }
       )
       assert_equal [import_role.id], c.users.reload.map(&:role_id).uniq
+      assert_equal 'time', c.router_dimension
     end
+  ensure
+    customer_data_file&.close!
+  end
+
+  test 'import always sets router_dimension to time' do
+    customer = customers(:customer_one)
+    customer.update_column(:router_dimension, Customer.router_dimensions[:distance])
+    customer_data = ImportExportCustomer.export(customer)
+    customer_data_file = Tempfile.new(['customer_dump', '.bin'])
+    customer_data_file.binmode
+    customer_data_file.write(customer_data)
+    customer_data_file.rewind
+
+    c = ImportExportCustomer.import(
+      customer_data_file,
+      {
+        profile_id: profiles(:profile_two).id,
+        router_id: routers(:router_two).id,
+        router_dimension: 'distance',
+        layer_id: layers(:layer_two).id,
+        reseller_id: resellers(:reseller_two).id,
+        role_id: Role.create_default_permissions_role_for!(resellers(:reseller_two)).id
+      }
+    )
+
+    assert_equal 'time', c.router_dimension
   ensure
     customer_data_file&.close!
   end
