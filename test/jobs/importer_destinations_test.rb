@@ -575,6 +575,19 @@ class ImporterDestinationsTest < ActionController::TestCase
     end
   end
 
+  test 'should use config planning date offset when customer offset is nil' do
+    @customer.update_column(:planning_date_offset, nil)
+    expected_date = Date.today + @customer.planning_date_offset_default
+
+    assert ImportCsv.new(
+      importer: ImporterDestinations.new(@customer),
+      replace: false,
+      file: tempfile('test/fixtures/files/import_destinations_one.csv', 'text.csv')
+    ).import
+
+    assert_equal expected_date, Planning.last.date
+  end
+
   test 'should import then add geojson and quantities to route' do
     assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_one.csv', 'text.csv')).import
 
