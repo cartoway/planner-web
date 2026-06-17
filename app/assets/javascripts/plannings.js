@@ -990,6 +990,17 @@ export const plannings_edit = function(params) {
   });
 
   params.geocoder = true;
+  params.geocoder_focus_dismiss_selectors = [
+    '#edit-planning',
+    '#planning',
+    '#accordion-menu',
+    '.planbar',
+    '.menu-left',
+    '.leaflet-control-lasso'
+  ];
+  params.geocoder_focus_ignore_selectors = [
+    '#edit-planning #route_selector'
+  ];
 
   var map = mapInitialize(params);
   var popupOptions = params.manage_planning;
