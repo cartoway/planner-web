@@ -283,7 +283,7 @@ class Customer < ApplicationRecord
 
       unless self.exclude_users
         new_user_attributes = self.users.map{ |user|
-          user.import_attributes.except('encrypted_password', 'id').merge('customer_id' => customer_id)
+          user.import_attributes.except('encrypted_password', 'id', 'role_id').merge('customer_id' => customer_id)
         }
         new_users = new_user_attributes.map do |user|
           new_user = User.new(user)
