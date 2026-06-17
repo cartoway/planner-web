@@ -157,6 +157,10 @@ class Customer < ApplicationRecord
     )
   }
 
+  def planning_date_offset_default
+    planning_date_offset || Planner::Application.config.planning_date_offset_default || 0
+  end
+
   def duplicate
     customer_id = self.custom_duplicate
     Customer.find(customer_id)

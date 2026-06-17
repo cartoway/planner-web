@@ -636,13 +636,22 @@ class ImporterDestinations < ImporterBase
     row[:revenue] = CoerceFloatString.parse(row[:revenue]) if row[:revenue].is_a?(String) && row[:revenue].present?
   end
 
+  def planning_date_from_row(row)
+    parsed = row[:planning_date].present? ? custom_date_parse(row[:planning_date]) : nil
+    parsed || default_planning_date
+  end
+
+  def default_planning_date
+    Date.today + @customer.planning_date_offset_default
+  end
+
   def build_store_attributes(row)
     row.delete(:planning_date) if row[:planning_date].blank?
     @plannings_attributes[row[:planning_ref]] ||=
       {
         ref: row[:planning_ref],
         name: row[:planning_name],
-        date: row[:planning_date] && custom_date_parse(row[:planning_date]) || Date.today + @customer.planning_date_offset,
+        date: planning_date_from_row(row),
         customer: @customer,
         vehicle_usage_set: @customer.vehicle_usage_sets[0]
       }
@@ -661,7 +670,7 @@ class ImporterDestinations < ImporterBase
       {
         ref: row[:planning_ref],
         name: row[:planning_name],
-        date: row[:planning_date] && custom_date_parse(row[:planning_date]) || Date.today + @customer.planning_date_offset,
+        date: planning_date_from_row(row),
         customer: @customer,
         vehicle_usage_set: @customer.vehicle_usage_sets[0]
       }
