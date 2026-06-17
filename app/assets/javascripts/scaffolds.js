@@ -252,6 +252,67 @@ export const bootstrap_dialog = function(options) {
 
 export const defaultMapZoom = 12;
 export const largeNbMarkers = 5000;
+
+function setupGeocoderFocusMarker(map, geocoderLayer, geocoderControl, dismissSelectors, ignoreSelectors) {
+  var focusMarker = null;
+  var mapId = map._leaflet_id;
+
+  var clearGeocoderFocusMarker = function() {
+    if (!focusMarker) {
+      return;
+    }
+    geocoderLayer.removeLayer(focusMarker);
+    focusMarker = null;
+  };
+
+  map.clearGeocoderFocusMarker = clearGeocoderFocusMarker;
+
+  geocoderControl.on('markgeocode', function(e) {
+    clearGeocoderFocusMarker();
+    this._map.fitBounds(e.geocode.bbox, {
+      maxZoom: 15,
+      padding: [20, 20]
+    });
+    focusMarker = L.marker(e.geocode.center, {
+      icon: new L.divIcon({
+        html: '',
+        iconSize: new L.Point(14, 14),
+        className: 'focus-geocoder'
+      })
+    }).addTo(geocoderLayer);
+  });
+
+  map.on('popupopen', clearGeocoderFocusMarker);
+
+  var onDismissClick = function(e) {
+    if (!focusMarker || !dismissSelectors || !dismissSelectors.length) {
+      return;
+    }
+    var $target = $(e.target);
+    if (ignoreSelectors && ignoreSelectors.some(function(selector) {
+      return $target.closest(selector).length;
+    })) {
+      return;
+    }
+    if (dismissSelectors.some(function(selector) {
+      return $target.closest(selector).length;
+    })) {
+      clearGeocoderFocusMarker();
+    }
+  };
+
+  if (dismissSelectors && dismissSelectors.length) {
+    $(document).on('click.geocoderFocus' + mapId, onDismissClick);
+  }
+
+  return function cleanupGeocoderFocusMarker() {
+    clearGeocoderFocusMarker();
+    map.off('popupopen', clearGeocoderFocusMarker);
+    $(document).off('click.geocoderFocus' + mapId, onDismissClick);
+    delete map.clearGeocoderFocusMarker;
+  };
+}
+
 export const mapInitialize = function(params) {
   var mapLayer, mapBaseLayers = {},
     mapOverlays = {},
@@ -310,22 +371,14 @@ export const mapInitialize = function(params) {
       errorMessage: I18n.t('web.geocoder.empty_result'),
       defaultMarkGeocode: false,
       expand: 'click'
-    }).on('markgeocode', function(e) {
-      this._map.fitBounds(e.geocode.bbox, {
-        maxZoom: 15,
-        padding: [20, 20]
-      });
-      var focusGeocode = L.marker(e.geocode.center, {
-        icon: new L.divIcon({
-          html: '',
-          iconSize: new L.Point(14, 14),
-          className: 'focus-geocoder'
-        })
-      }).addTo(geocoderLayer);
-      setTimeout(function() {
-        geocoderLayer.removeLayer(focusGeocode);
-      }, 2000);
     }).addTo(map);
+    var cleanupGeocoderFocusMarker = setupGeocoderFocusMarker(
+      map,
+      geocoderLayer,
+      geocoderControl,
+      params.geocoder_focus_dismiss_selectors,
+      params.geocoder_focus_ignore_selectors
+    );
     map._controls.push(geocoderControl);
 
     var geocoderStopClickPropagation = function(e) {
@@ -406,6 +459,7 @@ export const mapInitialize = function(params) {
       L.DomEvent.off(geocoderControl._alts, 'click', geocoderStopClickPropagation);
       $(document).off('mousedown.geocoderBlurGuard' + map._leaflet_id);
       $(mapContainer).off('mousedown.leafletGeocoderLeafletOther' + map._leaflet_id, closeGeocoderIfLeafletOutsideGeocoder);
+      cleanupGeocoderFocusMarker();
       $(document).off('turbolinks:before-cache.leafletGeocoderOutside' + map._leaflet_id, leafletGeocoderOutsideCleanup);
     });
 
