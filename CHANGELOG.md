@@ -40,6 +40,7 @@
   - Bulk destination import could display the wrong line number on error when multiple batches were processed
   - Coerce float fields according to locale (CSV import and API) and filter space-like characters
   - Fix user email delivery on edge cases
+  - Display driving time seconds in trace popups
 
 ## V108.2.3
   ### Changed
