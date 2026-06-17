@@ -162,6 +162,9 @@ export class LassoModule {
    * Enable lasso functionality
    */
   enableLasso() {
+    if (this.map.clearGeocoderFocusMarker) {
+      this.map.clearGeocoderFocusMarker();
+    }
     this.isLassoActive = true;
     this.lassoHandler.enable();
 
@@ -219,6 +222,9 @@ export class LassoModule {
     this.selectedLayers = event.layers;
 
     if (this.selectedLayers.length > 0) {
+      if (this.map.clearGeocoderFocusMarker) {
+        this.map.clearGeocoderFocusMarker();
+      }
       // Process selected layers (including clusters)
       const processedLayers = this.processSelectedLayers(this.selectedLayers);
 
