@@ -505,10 +505,11 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
             if (driveTime) {
               var driveTimeDay = null;
-              if (driveTime > 3600 * 24) {
-                driveTimeDay = driveTime / (3600 * 24) | 0;
+              var driveTimeSeconds = Math.floor(driveTime);
+              if (driveTimeSeconds > 3600 * 24) {
+                driveTimeDay = Math.floor(driveTimeSeconds / (3600 * 24));
               }
-              driveTime = ('0' + parseInt(driveTime / 3600) % 24).slice(-2) + ':' + ('0' + parseInt(driveTime / 60) % 60).slice(-2) + ':' + ('0' + (driveTime % 60)).slice(-2);
+              driveTime = driveTimeSeconds.toHHMMSS();
               if (driveTimeDay) {
                 driveTime += ' (' + I18n.t('plannings.edit.popup.day') + driveTimeDay + ')';
               }

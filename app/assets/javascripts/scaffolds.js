@@ -830,6 +830,15 @@ Number.prototype.toHHMM = function() {
   return hours+':'+minutes;
 };
 
+Number.prototype.toHHMMSS = function() {
+  var sec_num = Math.floor(this);
+  var hours = Math.floor(sec_num / 3600) % 24;
+  var minutes = Math.floor((sec_num % 3600) / 60);
+  var seconds = sec_num % 60;
+
+  return ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2);
+};
+
 Date.prototype.toLocalISOString = function() {
   // ISO 8601
   var d = this
