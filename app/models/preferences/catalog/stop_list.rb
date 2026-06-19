@@ -85,7 +85,7 @@ module Preferences
             stop_get(stop, :duration_time_with_seconds).presence&.to_s ||
             stop_get(stop, :duration).presence&.to_s
         when 'tags' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags')
-        when 'tags_visit' then tags_labels_from_key(stop_get(stop, :tags_present), 'tags_visit')
+        when 'tags_visit' then tags_labels_from_key(stop_get(stop, :visit_tags_present), 'tags')
         when 'eta' then stop_get(stop, :eta_formated).presence
         when 'status' then stop_get(stop, :status).presence
         end

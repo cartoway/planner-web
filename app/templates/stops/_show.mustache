@@ -147,7 +147,8 @@
     <li><i class="fa {{unit_icon}} fa-fw"></i> {{quantity_formatted}}</li>
   {{/loads}}
   {{#orders}}<li><i class="fa fa-cube fa-fw"></i> {{#i18n}}plannings.edit.popup.orders{{/i18n}} {{orders}}</li>{{/orders}}
-  {{#tags_present}}<li><i class="fa fa-tag fa-fw"></i> {{#i18n}}plannings.edit.popup.tags{{/i18n}} {{#tags}}{{label}} {{/tags}}</li>{{/tags_present}}
+  {{#tags_present}}<li><i class="fa fa-tag fa-fw"></i> {{#i18n}}plannings.edit.popup.tags{{/i18n}} {{#tags}}{{label}} {{/tags}}{{#visit_tags_present}}{{#tags}}{{label}} {{/tags}}{{/visit_tags_present}}</li>{{/tags_present}}
+  {{^tags_present}}{{#visit_tags_present}}<li><i class="fa fa-tag fa-fw"></i> {{#i18n}}plannings.edit.popup.tags{{/i18n}} {{#tags}}{{label}} {{/tags}}</li>{{/visit_tags_present}}{{/tags_present}}
 </ul>
 {{#error}}
   <ul class="ui-state-error">
@@ -266,7 +267,8 @@
 {{/store_reload}}
 {{^visits}}
 <ul>
-  {{#tags_present}}<li><i class="fa fa-tag fa-fw"></i> {{#i18n}}plannings.edit.popup.tags{{/i18n}} {{#tags}}{{label}} {{/tags}}</li>{{/tags_present}}
+  {{#tags_present}}<li><i class="fa fa-tag fa-fw"></i> {{#i18n}}plannings.edit.popup.tags{{/i18n}} {{#tags}}{{label}} {{/tags}}{{#visit_tags_present}}{{#tags}}{{label}} {{/tags}}{{/visit_tags_present}}</li>{{/tags_present}}
+  {{^tags_present}}{{#visit_tags_present}}<li><i class="fa fa-tag fa-fw"></i> {{#i18n}}plannings.edit.popup.tags{{/i18n}} {{#tags}}{{label}} {{/tags}}</li>{{/visit_tags_present}}{{/tags_present}}
 </ul>
 {{/visits}}
 </div>
