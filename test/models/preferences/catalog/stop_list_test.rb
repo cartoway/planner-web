@@ -37,8 +37,10 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
       'ref' => 'DREF',
       'visit_ref' => 'VREF',
       'tags_present' => {
-        'tags' => [{ 'label' => 'foo' }],
-        'tags_visit' => [{ 'label' => 'bar' }]
+        'tags' => [{ 'label' => 'foo' }]
+      },
+      'visit_tags_present' => {
+        'tags' => [{ 'label' => 'bar' }]
       },
       'street' => '1 rue Test',
       'postalcode' => '75001',
@@ -78,9 +80,8 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
   test 'field_value tags is nil when only visit has tags (split payload)' do
     stop = {
       'visits' => true,
-      'tags_present' => {
-        'tags' => [],
-        'tags_visit' => [{ 'label' => 'bar' }]
+      'visit_tags_present' => {
+        'tags' => [{ 'label' => 'bar' }]
       }
     }
     assert_nil Preferences::Catalog::StopList.field_value(stop, 'tags')

@@ -97,22 +97,24 @@ module ApplicationHelper
     time.beginning_of_hour + rounded.minutes
   end
 
-  # StopVisit JSON: tags = destination, tags_visit = visit, tags_merged = union for popups (mustache).
+  # StopVisit JSON: tags_present = destination tags, visit_tags_present = visit tags.
   def visit_stop_tags_present_json!(json, visit)
     dest = visit.destination.tags
     vis = visit.tags
-    merged = dest | vis
-    return if merged.empty?
 
-    json.tags_present do
-      json.tags do
-        json.array! dest, :label
+    if dest.any?
+      json.tags_present do
+        json.tags do
+          json.array! dest, :label
+        end
       end
-      json.tags_visit do
-        json.array! vis, :label
-      end
-      json.tags_merged do
-        json.array! merged, :label
+    end
+
+    if vis.any?
+      json.visit_tags_present do
+        json.tags do
+          json.array! vis, :label
+        end
       end
     end
   end
