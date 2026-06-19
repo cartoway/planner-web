@@ -243,7 +243,7 @@ module Routers
 
       [
         properties&.dig('total_distance'),
-        properties&.dig('total_time'),
+        properties&.dig('total_time')&.round(0),
         geometry&.dig('polylines')
       ]
     end
