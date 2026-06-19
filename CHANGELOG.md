@@ -42,6 +42,7 @@
   - Fix user email delivery on edge cases
   - Display driving time seconds in trace popups
   - nil `planning_data_offset` where not using config value
+  - Round router trace travel times to the nearest second to align with optimizer/matrix
 
 ## V108.2.3
   ### Changed

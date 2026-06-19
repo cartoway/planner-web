@@ -8,6 +8,20 @@ class Routers::RouterWrapperTest < ActionController::TestCase
     @customer = customers(:customer_one)
   end
 
+  test 'should round float trace travel time to integer' do
+    feature = {
+      'properties' => { 'router' => { 'total_distance' => 1284.3, 'total_time' => 229.39999999999782 } },
+      'geometry' => { 'polylines' => 'abc' }
+    }
+
+    distance, time, trace = @router_wrapper.send(:extract_feature_data, feature)
+
+    assert_equal 1284.3, distance
+    assert_equal 229, time
+    assert_kind_of Integer, time
+    assert_equal 'abc', trace
+  end
+
   test 'should compute route' do
     begin
       points = [[44.82641, -0.55674], [44.83, -0.557]]
