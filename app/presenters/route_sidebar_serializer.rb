@@ -327,7 +327,8 @@ class RouteSidebarSerializer
       destination_duration: destination&.default_duration_time_with_seconds,
       visit_duration: visit&.default_duration_time_with_seconds,
       index_visit: destination_visit_index(destination, visit),
-      tags_present: visit_tags_present(visit),
+      tags_present: destination_tags_present(visit),
+      visit_tags_present: visit_tags_present(visit),
       destination: {
         destination_id: destination&.id,
         color: visit&.color,
@@ -533,19 +534,22 @@ class RouteSidebarSerializer
     destination_visits.index(visit)&.+(1)
   end
 
+  def destination_tags_present(visit)
+    return nil unless visit
+
+    tags = visit.destination&.tags.to_a
+    return nil if tags.empty?
+
+    { tags: tags.map { |tag| { label: tag.label } } }
+  end
+
   def visit_tags_present(visit)
     return nil unless visit
 
-    destination_tags = visit.destination&.tags.to_a
-    visit_tags = visit.tags.to_a
-    merged_tags = destination_tags | visit_tags
-    return nil if merged_tags.empty?
+    tags = visit.tags.to_a
+    return nil if tags.empty?
 
-    {
-      tags: destination_tags.map { |tag| { label: tag.label } },
-      tags_visit: visit_tags.map { |tag| { label: tag.label } },
-      tags_merged: merged_tags.map { |tag| { label: tag.label } }
-    }
+    { tags: tags.map { |tag| { label: tag.label } } }
   end
 
   def visit_quantities(visit)
