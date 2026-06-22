@@ -38,6 +38,7 @@ class Planning < ApplicationRecord
 
   validates :customer, presence: true
   validates :name, presence: true
+  validates :ref, uniqueness: { scope: :customer_id, case_sensitive: false }, allow_nil: true, allow_blank: true
   validates :vehicle_usage_set, presence: true
   validates :begin_date, presence: true, if: :end_date
   validates :end_date, presence: true, if: :begin_date
