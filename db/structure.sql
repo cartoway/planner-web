@@ -2562,6 +2562,13 @@ CREATE INDEX index_orders_on_visit_id ON public.orders USING btree (visit_id);
 
 
 --
+-- Name: index_plannings_on_customer_id_and_lower_ref; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_plannings_on_customer_id_and_lower_ref ON public.plannings USING btree (customer_id, lower((ref)::text)) WHERE (ref IS NOT NULL);
+
+
+--
 -- Name: index_plannings_on_vehicle_usage_set_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3798,6 +3805,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260504094513'),
 ('20260505084452'),
 ('20260513094805'),
-('20260527153532');
+('20260527153532'),
+('20260623064843');
 
 

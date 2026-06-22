@@ -80,7 +80,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   test 'should create a planning' do
     assert_difference('Planning.count', 1) do
       @planning.name = 'new name'
-      post api(), @planning.attributes.merge({tag_operation: 'and', tag_ids: tags(:tag_one).id, zoning_ids: [zonings(:zoning_one).id]})
+      post api(), @planning.attributes.merge({ref: 'new_planning_ref', tag_operation: 'and', tag_ids: tags(:tag_one).id, zoning_ids: [zonings(:zoning_one).id]})
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal true, response['active']
@@ -92,7 +92,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   test 'should create a planning with begin and end date' do
     assert_difference('Planning.count', 1) do
       @planning.name = 'new name'
-      post api(), @planning.attributes.merge({tag_operation: 'and', begin_date: '20-04-2017', end_date: '25-04-2017'})
+      post api(), @planning.attributes.merge({ref: 'new_planning_with_dates_ref', tag_operation: 'and', begin_date: '20-04-2017', end_date: '25-04-2017'})
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal '2017-04-20', response['begin_date']
@@ -104,7 +104,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     planning = plannings(:planning_four)
 
     assert_difference('Planning.count', 1) do
-      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'and'}).to_json, CONTENT_TYPE: 'application/json'
+      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({ref: 'new_planning_tags_and_ref', tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'and'}).to_json, CONTENT_TYPE: 'application/json'
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal 2, response['tag_ids'].size
@@ -118,7 +118,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
 
     assert_difference('Planning.count', 1) do
-      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'or'}).to_json, CONTENT_TYPE: 'application/json'
+      post '/api/0.1/plannings.json?api_key=testkey3', nil, input: planning.attributes.merge({ref: 'new_planning_tags_or_ref', tag_ids: [tags(:tag_three).id, tags(:tag_four).id], tag_operation: 'or'}).to_json, CONTENT_TYPE: 'application/json'
       assert last_response.created?, last_response.body
       response = JSON.parse(last_response.body)
       assert_equal 2, response['tag_ids'].size
@@ -557,7 +557,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
     assert_difference('Planning.count', 0) do
       assert_difference('Route.count', 0) do
-        post api(), @planning.attributes.merge({tag_operation: 'and'})
+        post api(), @planning.attributes.merge({ref: 'second_planning_ref', tag_operation: 'and'})
         assert last_response.forbidden?, last_response.body
         assert_equal 'dépassement du nombre maximal de plans', JSON.parse(last_response.body)['message']
       end
