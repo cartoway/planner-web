@@ -167,6 +167,10 @@ class Customer < ApplicationRecord
   end
 
   def custom_duplicate
+    reseller_role_ids = Role.where(reseller_id: reseller_id).pluck(:id)
+    fallback_role_id = reseller&.default_role_id
+    fallback_role_id = nil if fallback_role_id.blank? || !reseller_role_ids.include?(fallback_role_id)
+
     self.transaction_without_selects do
       attributes = self.import_attributes.except('id', 'job_destination_geocoding_id', 'job_store_geocoding_id', 'job_optimizer_id')
       attributes['name'] += " (#{I18n.l(Time.zone.now, format: :long)})"
@@ -283,7 +287,10 @@ class Customer < ApplicationRecord
 
       unless self.exclude_users
         new_user_attributes = self.users.map{ |user|
-          user.import_attributes.except('encrypted_password', 'id', 'role_id').merge('customer_id' => customer_id)
+          attrs = user.import_attributes.except('encrypted_password', 'id', 'role_id').merge('customer_id' => customer_id)
+          role_id = role_id_for_duplicated_user(user, reseller_role_ids, fallback_role_id)
+          attrs['role_id'] = role_id if role_id
+          attrs
         }
         new_users = new_user_attributes.map do |user|
           new_user = User.new(user)
@@ -733,5 +740,13 @@ class Customer < ApplicationRecord
     return true if profile && profile.routers.exists?(router_id)
     errors.add(:router, I18n.t('activerecord.errors.models.router.unauthorized'))
     false
+  end
+
+  def role_id_for_duplicated_user(user, reseller_role_ids, fallback_role_id)
+    if user.role_id.present? && reseller_role_ids.include?(user.role_id)
+      user.role_id
+    else
+      fallback_role_id
+    end
   end
 end
