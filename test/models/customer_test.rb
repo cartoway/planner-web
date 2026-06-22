@@ -365,6 +365,63 @@ class CustomerTest < ActiveSupport::TestCase
     end
   end
 
+  test 'duplicate keeps user role when role still exists' do
+    return unless Role.column_names.include?('operations')
+
+    duplicate = nil
+    role = nil
+    customer = Customer.for_duplication.find(customers(:customer_one).id)
+    reseller = customer.reseller
+    role = Role.create!(
+      reseller: reseller,
+      name: "Duplication role #{SecureRandom.hex(4)}",
+      ref: "dup_role_#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.baseline_role_operations_json,
+      forms: Preferences::Catalog.baseline_role_forms_json
+    )
+    user = customer.users.first
+    user.update_column(:role_id, role.id)
+
+    duplicate = customer.duplicate
+    duplicated_user = duplicate.users.find { |u| u.ref == user.ref }
+
+    assert_equal role.id, duplicated_user.role_id
+  ensure
+    duplicate&.destroy
+    role&.destroy
+  end
+
+  test 'duplicate falls back to reseller default role when user role is missing' do
+    return unless Role.column_names.include?('operations')
+
+    duplicate = nil
+    foreign_role = nil
+    previous_default_role_id = nil
+    customer = Customer.for_duplication.find(customers(:customer_one).id)
+    reseller = customer.reseller
+    default_role = Role.create_default_permissions_role_for!(reseller)
+    previous_default_role_id = reseller.default_role_id
+    reseller.update_column(:default_role_id, default_role.id)
+    foreign_role = Role.create!(
+      reseller: resellers(:reseller_two),
+      name: "Foreign role #{SecureRandom.hex(4)}",
+      ref: "dup_foreign_#{SecureRandom.hex(4)}",
+      operations: Preferences::Catalog.baseline_role_operations_json,
+      forms: Preferences::Catalog.baseline_role_forms_json
+    )
+    user = customer.users.first
+    user.update_column(:role_id, foreign_role.id)
+
+    duplicate = customer.duplicate
+    duplicated_user = duplicate.users.find { |u| u.ref == user.ref }
+
+    assert_equal default_role.id, duplicated_user.role_id
+  ensure
+    duplicate&.destroy
+    reseller&.update_column(:default_role_id, previous_default_role_id)
+    foreign_role&.destroy
+  end
+
   test 'should duplicate without outdated routes' do
     duplicated_customer = nil
     @customer = Customer.for_duplication.find(@customer.id)
