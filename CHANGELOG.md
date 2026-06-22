@@ -32,6 +32,7 @@
   - Devcontainer:
     - Test environment now uses a dedicated database (`planner-test`)
     - Expose the web service port on the host
+  - Planning ref must be unique per customer (model validation and database index)
 
   ### Fixed
   - Rest stop validation uses the default `rest_start` value for comparison [#626](https://github.com/cartoway/planner-web/pull/626)

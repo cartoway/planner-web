@@ -526,6 +526,42 @@ class PlanningTest < ActiveSupport::TestCase
     end
   end
 
+  test 'validates uniqueness of ref scoped to customer' do
+    planning = plannings(:planning_one)
+    conflict = Planning.new(
+      name: 'conflict planning',
+      ref: planning.ref,
+      customer: planning.customer,
+      vehicle_usage_set: plannings(:planning_two).vehicle_usage_set,
+      date: planning.date
+    )
+
+    assert_not conflict.valid?
+    assert_includes conflict.errors[:ref], I18n.t('errors.messages.taken')
+
+    case_conflict = Planning.new(
+      name: 'case conflict planning',
+      ref: planning.ref&.upcase,
+      customer: planning.customer,
+      vehicle_usage_set: plannings(:planning_two).vehicle_usage_set,
+      date: planning.date
+    )
+    if planning.ref.present? && planning.ref != planning.ref.upcase
+      assert_not case_conflict.valid?
+      assert_includes case_conflict.errors[:ref], I18n.t('errors.messages.taken')
+    end
+
+    other_customer_planning = Planning.new(
+      name: 'other customer planning',
+      ref: plannings(:planning_two).ref,
+      customer: customers(:customer_two),
+      vehicle_usage_set: plannings(:planning_three).vehicle_usage_set,
+      date: planning.date
+    )
+
+    assert other_customer_planning.valid?, other_customer_planning.errors.full_messages.to_sentence
+  end
+
   test 'validates format of REF field with invalid characters' do
     planning = plannings :planning_one
     assert_raises(ActiveRecord::RecordInvalid) do

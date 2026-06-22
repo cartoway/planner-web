@@ -38,6 +38,7 @@ class Planning < ApplicationRecord
 
   validates :customer, presence: true
   validates :name, presence: true
+  validates :ref, uniqueness: { scope: :customer_id, case_sensitive: false }, allow_nil: true, allow_blank: true
   validates :vehicle_usage_set, presence: true
   validates :begin_date, presence: true, if: :end_date
   validates :end_date, presence: true, if: :begin_date
@@ -116,12 +117,16 @@ class Planning < ApplicationRecord
     Planning.find(planning_id)
   end
 
+  def self.duplicate_timestamp_suffix
+    " (#{I18n.l(Time.zone.now, format: :long)})"
+  end
+
   def custom_duplicate
     Planning.transaction do
       attributes = self.import_attributes.except('id')
-      now = " (#{I18n.l(Time.zone.now, format: :long)})"
-      attributes['name'] += now
-      attributes['ref'] += now if attributes['ref']
+      suffix = self.class.duplicate_timestamp_suffix
+      attributes['name'] += suffix
+      attributes['ref'] += suffix if attributes['ref']
       result = Planning.import([attributes], validate: false)
       new_planning_id = result.ids.first
 
