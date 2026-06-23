@@ -1,8 +1,10 @@
 - ui_order = local_assigns.fetch(:ui_order, 0)
 - averages = local_assigns[:averages]
+- stat_diffs = local_assigns[:stat_diffs]
 - if averages && averages[:total_revenue]
   .col-xs-4{title: t('plannings.edit.revenue_help'), style: "order: #{ui_order}"}
     .primary.route-info
       %i.fa.fa-hand-holding-dollar.fa-fw
       = averages[:total_revenue]
       = t("all.unit.currency_symbol.#{current_user.prefered_currency}")
+      = render 'planning_states/stat_diff', diff: stat_diffs&.[]('total_revenue')

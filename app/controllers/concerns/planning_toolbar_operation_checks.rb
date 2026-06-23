@@ -91,4 +91,10 @@ module PlanningToolbarOperationChecks
 
     head :forbidden
   end
+
+  def enforce_operation_usable_for_duplicate!
+    return if planning_operation_usable?('duplicate')
+
+    head :forbidden
+  end
 end
