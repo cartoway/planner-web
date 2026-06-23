@@ -1,5 +1,7 @@
 - ui_order = local_assigns.fetch(:ui_order, 0)
+- stat_diffs = local_assigns[:stat_diffs]
 .col-xs-4{title: t("plannings.edit.distance_help"), style: "order: #{ui_order}"}
   .route-info.primary
     %i.fa.fa-road.fa-fw
     = distance
+    = render 'planning_states/stat_diff', diff: stat_diffs&.[]('distance')

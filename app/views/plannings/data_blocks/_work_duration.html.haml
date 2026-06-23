@@ -1,6 +1,8 @@
 - ui_order = local_assigns.fetch(:ui_order, 0)
 - display = local_assigns[:work_duration].presence || time_over_day(0)
+- stat_diffs = local_assigns[:stat_diffs]
 .col-xs-4{title: t('plannings.edit.planning_work_duration_help'), style: "order: #{ui_order}"}
   .primary.route-info
     %i.fa.fa-user-clock.fa-fw{"aria-hidden": "true"}>
     = display
+    = render 'planning_states/stat_diff', diff: stat_diffs&.[]('work_duration')

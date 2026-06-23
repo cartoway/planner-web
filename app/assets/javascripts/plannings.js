@@ -46,6 +46,196 @@ import {
 } from '../../assets/javascripts/scaffolds';
 import { moveStopsModal } from './modals/move_stops_modal.js';
 
+var initPlanningStatesModal = function(planningId, options) {
+  options = options || {};
+  var $open = $('#planning-states-open');
+  if (!$open.length) return;
+
+  var dialog = null;
+  var DELETE_CONFIRM_DELAY_MS = 200;
+
+  var renderStateItem = function(state, group) {
+    var pinDisabled = !state.pinned && group.pinned_count >= group.max_pinned;
+    var panelClass = state.pinned ? 'panel-info' : 'panel-default';
+    var pinTitle = state.pinned ? I18n.t('plannings.states.unpin') : I18n.t('plannings.states.pin');
+    var pinBtnClass = state.pinned ? 'btn-info' : 'btn-default';
+    var pinIconHtml = state.pinned
+      ? '<i class="fa fa-thumbtack fa-fw"></i>'
+      : '<i class="fa fa-thumbtack fa-fw" style="transform: rotate(45deg); display: inline-block;"></i>';
+
+    return '<div class="planning-state-item panel ' + panelClass + '" data-state-id="' + state.id + '">' +
+      '<div class="panel-heading clearfix">' +
+        '<span class="planning-state-meta">' +
+          (state.pinned ? '<i class="fa fa-thumbtack text-muted" title="' + I18n.t('plannings.states.pinned') + '"></i> ' : '') +
+          '<strong>' + state.captured_at_label + '</strong>' +
+          ' <span class="text-muted">· ' + state.trigger_label + '</span>' +
+        '</span>' +
+        '<span class="pull-right">' +
+          '<div class="btn-group">' +
+            '<button type="button" class="btn btn-primary btn-xs planning-state-reapply" data-state-id="' + state.id + '" title="' + I18n.t('plannings.states.reapply') + '">' +
+              '<i class="fa fa-floppy-disk fa-fw"></i>' +
+            '</button>' +
+            '<button type="button" class="btn ' + pinBtnClass + ' btn-xs planning-state-pin" data-state-id="' + state.id + '" data-pinned="' + state.pinned + '"' +
+              (pinDisabled ? ' disabled title="' + I18n.t('plannings.states.pin_limit_reached') + '"' : ' title="' + pinTitle + '"') + '>' +
+              pinIconHtml +
+            '</button>' +
+          '</div>' +
+          '<button type="button" class="btn btn-danger btn-xs planning-state-delete" style="margin-left: 6px;" data-state-id="' + state.id + '" title="' + I18n.t('plannings.states.delete') + '">' +
+            '<i class="fa fa-trash fa-fw"></i>' +
+          '</button>' +
+        '</span>' +
+      '</div>' +
+      '<div class="panel-body planning-state-statistics">' +
+        (state.statistics_html || '') +
+      '</div>' +
+    '</div>';
+  };
+
+  var renderStatesList = function(groups) {
+    if (!groups.length) {
+      return '<p class="text-muted">' + I18n.t('plannings.states.empty') + '</p>';
+    }
+
+    return groups.map(function(group) {
+      var statesHtml = (group.states || []).map(function(state) {
+        return renderStateItem(state, group);
+      }).join('');
+      if (!statesHtml) return '';
+
+      return '<div class="planning-state-group" data-category="' + group.category + '">' +
+        '<h4 class="planning-state-group-title">' + group.category_label + '</h4>' +
+        statesHtml +
+      '</div>';
+    }).filter(Boolean).join('');
+  };
+
+  var loadStates = function() {
+    $.getJSON('/plannings/' + planningId + '/planning_states.json', function(states) {
+      if (dialog) {
+        dialog.find('.modal-body').html(renderStatesList(states));
+      }
+    }).fail(ajaxError);
+  };
+
+  var openDialog = function() {
+    var disarmDeleteButtons = function($except) {
+      if (!dialog) return;
+
+      dialog.find('.planning-state-delete-armed').not($except).each(function() {
+        var $btn = $(this);
+        clearTimeout($btn.data('disarmTimeout'));
+        clearTimeout($btn.data('confirmReadyTimeout'));
+        $btn.removeData('armedAt');
+        $btn.removeClass('planning-state-delete-armed planning-state-delete-pending btn-warning').addClass('btn-danger');
+        $btn.css('opacity', '');
+        $btn.html('<i class="fa fa-trash fa-fw"></i>');
+        $btn.attr('title', I18n.t('plannings.states.delete'));
+      });
+    };
+
+    var armDeleteButton = function($btn) {
+      disarmDeleteButtons($btn);
+      $btn.addClass('planning-state-delete-armed planning-state-delete-pending btn-warning').removeClass('btn-danger');
+      $btn.html('<i class="fa fa-trash fa-fw"></i>');
+      $btn.attr('title', I18n.t('plannings.states.delete_confirm_wait'));
+      $btn.data('armedAt', Date.now());
+      $btn.css('opacity', '0.55');
+      $btn.data('confirmReadyTimeout', setTimeout(function() {
+        $btn.removeClass('planning-state-delete-pending');
+        $btn.css('opacity', '');
+        $btn.html('<i class="fa fa-check fa-fw"></i>');
+        $btn.attr('title', I18n.t('plannings.states.delete_confirm'));
+      }, DELETE_CONFIRM_DELAY_MS));
+      $btn.data('disarmTimeout', setTimeout(function() {
+        disarmDeleteButtons();
+      }, 4000));
+    };
+
+    dialog = bootstrap_dialog({
+      title: I18n.t('plannings.states.title'),
+      icon: 'fa-history',
+      message: '<div class="text-center"><i class="fa fa-spinner fa-spin"></i></div>',
+      size: 'modal-lg',
+      dataDismiss: true,
+      footer: '<button type="button" class="btn btn-primary" data-dismiss="modal">' +
+        I18n.t('web.dialog.close') +
+        '</button>'
+    });
+    dialog.modal({
+      show: true,
+      backdrop: true,
+      keyboard: true
+    });
+
+    dialog.on('click', '.planning-state-reapply', function() {
+      var stateId = $(this).data('state-id');
+      $.ajax({
+        type: 'PATCH',
+        url: '/plannings/' + planningId + '/planning_states/' + stateId + '/reapply.json',
+        dataType: 'json',
+        data: options.withStops === undefined ? {} : { with_stops: options.withStops },
+        beforeSend: beforeSendWaiting,
+        complete: completeAjaxMap,
+        error: ajaxError,
+        success: function(data) {
+          if (dialog) dialog.modal('hide');
+          $(document).trigger('planning:state:reapplied', [data]);
+        }
+      });
+    });
+
+    dialog.on('click', '.planning-state-delete', function(e) {
+      e.stopPropagation();
+      var $btn = $(this);
+      var stateId = $btn.data('state-id');
+
+      if (!$btn.hasClass('planning-state-delete-armed')) {
+        armDeleteButton($btn);
+        return;
+      }
+
+      if ($btn.hasClass('planning-state-delete-pending') ||
+          Date.now() - ($btn.data('armedAt') || 0) < DELETE_CONFIRM_DELAY_MS) {
+        return;
+      }
+
+      clearTimeout($btn.data('disarmTimeout'));
+      clearTimeout($btn.data('confirmReadyTimeout'));
+      $.ajax({
+        type: 'DELETE',
+        url: '/plannings/' + planningId + '/planning_states/' + stateId + '.json',
+        success: loadStates,
+        error: ajaxError
+      });
+    });
+
+    dialog.on('click', '.modal-body', function(e) {
+      if (!$(e.target).closest('.planning-state-delete').length) {
+        disarmDeleteButtons();
+      }
+    });
+
+    dialog.on('click', '.planning-state-pin', function() {
+      var $btn = $(this);
+      if ($btn.prop('disabled')) return;
+
+      var stateId = $btn.data('state-id');
+      var pinned = !$btn.data('pinned');
+      $.ajax({
+        type: 'PATCH',
+        url: '/plannings/' + planningId + '/planning_states/' + stateId + '/pin.json',
+        data: { pinned: pinned },
+        success: loadStates,
+        error: ajaxError
+      });
+    });
+
+    loadStates();
+  };
+
+  $open.off('click.planningStates').on('click.planningStates', openDialog);
+};
+
 $(function() {
   // Scope tooltips to planning areas only (avoid scanning the whole document on large pages).
   $('#edit-planning, #plannings').find('[data-toggle="tooltip"]').tooltip();
@@ -331,7 +521,10 @@ export const plannings_edit = function(params) {
 
   plannings_form(params);
 
-  $(document).off('planning:planbar:reloaded.planningsEdit').on('planning:planbar:reloaded.planningsEdit', initPlanningPlanbarFields);
+  $(document).off('planning:planbar:reloaded.planningsEdit').on('planning:planbar:reloaded.planningsEdit', function() {
+    initPlanningPlanbarFields();
+    initPlanningStatesModal(params.planning_id, { withStops: withStopsInSidePanel });
+  });
 
   var prefered_unit = (!params.prefered_unit ? "km" : params.prefered_unit),
     planning_id = params.planning_id,
@@ -431,6 +624,7 @@ export const plannings_edit = function(params) {
   initUpdateRouteDeparture();
   initRouteDepartureTimeEntry();
   initStoreDropdown(params.planning_id);
+  initPlanningStatesModal(planning_id, { withStops: withStopsInSidePanel });
 
   var apply_zoning_modal = bootstrap_dialog({
     title: I18n.t('plannings.edit.dialog.zoning.title'),
@@ -3284,6 +3478,11 @@ export const plannings_edit = function(params) {
       partial: 'stops'
     }, options));
   };
+
+  $(document).off('planning:state:reapplied.planningsEdit').on('planning:state:reapplied.planningsEdit', function(_event, data) {
+    updatePlanning(data, { partial: false });
+    notice(I18n.t('plannings.states.reapply_success'));
+  });
 
   function automaticInsertStops(stop_ids, options) {
     $.ajax($.extend({

@@ -17,13 +17,9 @@
       = f.text_field :date, { placeholder: t('plannings.form.default_date'), value: @planning.date && l(@planning.date, format: :datepicker), input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'}), label_class: 'hidden'}
     - if @planning.new_record?
       = zoning_select f, @planning, t('plannings.edit.zonings.label')
-    - if @planning.customer.reseller.planning_dashboard_url
-      .col
-        = link_to @planning.customer.reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', @planning.id.to_s), target: '_blank', :class => "btn btn-default", title: t('analytics.index.link') do
-          %i.fa.fa-chart-line.fa-fw
+    = render 'plannings/operations/planning_dashboard'
     - if @planning.persisted?
-      .col
-        = link_to planning_duplicate_path(@planning), method: :patch, target: '_blank', rel: 'noopener', class: 'btn btn-default', title: t('all.verb.duplicate'), disabled: current_user.customer.too_many_plannings? || !current_user_planning_form_submit_enabled?(@planning), data: { turbolinks: false } do
-          %i.fa.fa-copy.fa-fw
+      = render 'plannings/operations/planning_states'
+      = render 'plannings/operations/duplicate'
     .col
       = f.submit row_class: '', col_class: '', disabled: !current_user_planning_form_submit_enabled?(@planning)
