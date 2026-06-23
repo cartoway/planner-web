@@ -1,0 +1,5 @@
+<% Array(flash[:error]).flatten.each do |message| %>
+stickyError(<%= raw message.to_json %>);
+<% end %>
+$('.planbar').replaceWith('<%= j render(partial: 'plannings/planbar') %>');
+$(document).trigger('planning:planbar:reloaded');

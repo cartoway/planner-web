@@ -236,10 +236,7 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
   });
 };
 
-const plannings_form = function(params) {
-  params = params || {};
-  var tagEntityCreateAllowed = params.tag_entity_create_allowed === true;
-
+const initPlanningPlanbarFields = function() {
   $('#planning_date, #planning_begin_date, #planning_end_date, #isochrone_date, #isodistance_date').datepicker({
     language: I18n.currentLocale(),
     autoclose: true,
@@ -248,6 +245,21 @@ const plannings_form = function(params) {
     format: I18n.t("all.datepicker"),
     zIndexOffset: 1000
   });
+};
+
+// Reset planbar fields to server-rendered values (defaultValue) so Turbolinks cache
+// and browser form restoration after a failed submit do not keep invalid input.
+const resetPlanningPlanbarForm = function() {
+  $('form[id^="edit_planning"]').each(function() {
+    this.reset();
+  });
+};
+
+const plannings_form = function(params) {
+  params = params || {};
+  var tagEntityCreateAllowed = params.tag_entity_create_allowed === true;
+
+  initPlanningPlanbarFields();
 
   var formatNoMatches = I18n.t('web.select2.empty_result');
   var planningTagSelect2Opts = {
@@ -284,6 +296,12 @@ const plannings_form = function(params) {
       selectTag(e);
     });
   }
+
+  $(document).off('ajax:complete.planningFlatForm').on('ajax:complete.planningFlatForm', 'form[id^="edit_planning"]', function(_event, xhr) {
+    if (xhr.status === 422 && xhr.responseText) {
+      $.globalEval(xhr.responseText);
+    }
+  });
 };
 
 const plannings_new = function(params) {
@@ -306,7 +324,14 @@ const plannings_new = function(params) {
 };
 
 export const plannings_edit = function(params) {
+  resetPlanningPlanbarForm();
+  setTimeout(resetPlanningPlanbarForm, 0);
+
+  $(document).off('turbolinks:before-cache.planningPlanbarForm').on('turbolinks:before-cache.planningPlanbarForm', resetPlanningPlanbarForm);
+
   plannings_form(params);
+
+  $(document).off('planning:planbar:reloaded.planningsEdit').on('planning:planbar:reloaded.planningsEdit', initPlanningPlanbarFields);
 
   var prefered_unit = (!params.prefered_unit ? "km" : params.prefered_unit),
     planning_id = params.planning_id,
