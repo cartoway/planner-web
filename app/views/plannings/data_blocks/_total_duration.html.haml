@@ -1,5 +1,7 @@
 - ui_order = local_assigns.fetch(:ui_order, 0)
+- stat_diffs = local_assigns[:stat_diffs]
 .col-xs-4{title: t('plannings.edit.planning_total_duration_help'), style: "order: #{ui_order}"}
   .primary.route-info
     %i.fa.fa-stopwatch.fa-fw>
     = duration
+    = render 'planning_states/stat_diff', diff: stat_diffs&.[]('total_duration')

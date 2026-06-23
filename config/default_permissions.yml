@@ -14,7 +14,7 @@ default: &default
   no_role: &restricted_operations_and_forms
     operations:
       planning:
-        segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, activate_stops, export, refresh]
+        segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, activate_stops, export, refresh, planning_states, duplicate, planning_dashboard]
         segment_controls:
           external_callback: { visible: true, usable: false }
           optimize: { visible: true, usable: false }
@@ -26,6 +26,9 @@ default: &default
           activate_stops: { visible: true, usable: false }
           export: { visible: true, usable: false }
           refresh: { visible: true, usable: false }
+          planning_states: { visible: true, usable: false }
+          duplicate: { visible: true, usable: false }
+          planning_dashboard: { visible: true, usable: false }
       route:
         segments: [vehicle_usage, optimize, stops, departure, view, lock, paint, external_callback, export]
         segment_controls:
@@ -66,7 +69,7 @@ test:
   no_role:
     operations:
       planning:
-        segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, activate_stops, export, refresh]
+        segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, activate_stops, export, refresh, planning_states, duplicate, planning_dashboard]
         segment_controls:
           external_callback: { visible: true, usable: true }
           optimize: { visible: true, usable: true }
@@ -78,6 +81,9 @@ test:
           activate_stops: { visible: false, usable: false }
           export: { visible: true, usable: true }
           refresh: { visible: true, usable: true }
+          planning_states: { visible: true, usable: true }
+          duplicate: { visible: true, usable: true }
+          planning_dashboard: { visible: true, usable: true }
       route:
         segments: [vehicle_usage, optimize, stops, departure, view, lock, paint, external_callback, export]
         segment_controls:

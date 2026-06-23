@@ -2510,6 +2510,47 @@ fr:
       cost_distance: coût kilométrique
       cost_fixed: coût fixe
       cost_time: coût horaire
+    states:
+      open: Historique des états
+      title: Historique des états
+      reapply: Réappliquer
+      delete: Supprimer
+      delete_confirm: Confirmer la suppression
+      delete_confirm_wait: Patientez avant de confirmer…
+      pin: Épingler
+      unpin: Désépingler
+      pinned: Épinglé
+      pin_limit_reached: Limite d'épingles atteinte pour cette catégorie (3 maximum)
+      empty: Aucun état enregistré
+      reapply_failed: Impossible de réappliquer cet état
+      reapply_success: État réappliqué
+      captured_at: Capturé le
+      total_cost: Coût
+      distance: Distance
+      vehicles_used: Véhicules utilisés
+      categories:
+        mass: Changements massifs
+        group: Activation et groupe
+        individual: Changements individuels
+      triggers:
+        optimize: Optimisation
+        optimize_route: Optimisation de tournée
+        move: Déplacement d'arrêt
+        reverse_order: Inversion d'ordre
+        automatic_insert: Insertion automatique
+        update_stop: Modification d'arrêt
+        active: Activation d'arrêt
+        vehicle_usage_set: Configuration véhicules
+        set_routes: Réaffectation des tournées
+        update_routes: Mise à jour des tournées
+        set_stops: Application optimiseur
+        vehicle_usage_add: Ajout de véhicule
+        vehicle_usage_remove: Retrait de véhicule
+        split_by_zones: Sectorisation
+        apply_zonings: Sectorisation
+        import: Import
+        duplicate: Duplication
+        activate_stops: Activation des arrêts
     form:
       ref_help: Référence libre
       begin_end_date: Période de validité
@@ -3587,6 +3628,9 @@ fr:
       activate_stops: Activer les arrêts des tournées
       export: Exporter
       refresh: Actualiser
+      planning_states: Historique des états
+      duplicate: Dupliquer le plan
+      planning_dashboard: Tableau de bord du plan
       vehicle_usage: Sélecteur de véhicule
       stops: Arrêts
       view: Affichage
