@@ -125,10 +125,7 @@ class PlanningsController < ApplicationController
   end
 
   def edit
-    assign_stops_preload_from_planning!(@planning)
-    @spreadsheet_columns = export_columns
-    @with_devices = true
-    capabilities
+    prepare_planning_edit_view
   end
 
   def create
@@ -169,8 +166,17 @@ class PlanningsController < ApplicationController
         if @planning.update(permitted_planning_attributes)
           format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.updated', model: @planning.class.model_name.human) }
         else
-          capabilities
-          format.html { render action: 'edit' }
+          planning_update_errors = @planning.errors.full_messages
+          @planning.reload
+          flash.now[:error] = planning_update_errors
+          format.html do
+            prepare_planning_edit_view
+            render action: 'edit', status: :unprocessable_entity
+          end
+          format.js do
+            bootstrap_manage_planning_flags!
+            render action: 'update', status: :unprocessable_entity
+          end
         end
       end
     end
@@ -909,6 +915,13 @@ class PlanningsController < ApplicationController
   def bootstrap_manage_planning_flags!
     @manage_planning = PlanningsController.manage
     apply_planning_toolbar_operation_flags!
+  end
+
+  def prepare_planning_edit_view
+    assign_stops_preload_from_planning!(@planning)
+    @spreadsheet_columns = export_columns
+    @with_devices = true
+    capabilities
   end
 
   # When planning operations.vehicle_usage_set is hidden or disabled, ignore submitted vehicle_usage_set_id.

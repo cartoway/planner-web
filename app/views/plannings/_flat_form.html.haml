@@ -1,6 +1,8 @@
-- options = @planning.id ? {layout: :vertical} : {layout: :vertical}
+- options = { layout: :vertical }
+- if @planning.persisted?
+  - options[:remote] = true
+  - options[:html] = { 'data-turbolinks': false, autocomplete: 'off' }
 = bootstrap_form_for @planning, options do |f|
-  = render 'shared/error_messages', model: @planning
   .d-flex.justify-content-start.align-items-end
     - if @planning.customer.enable_references
       .col

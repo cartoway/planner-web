@@ -1,8 +1,6 @@
 - content_for :title, t('.title')
 %div
-  .planbar.d-flex.align-items-end
-    - if @manage_planning[:manage_edit]
-      = render 'flat_form'
+  = render 'plannings/planbar'
 
 #edit-planning.sidebar
   .sidebar-tabs
