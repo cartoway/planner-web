@@ -677,7 +677,9 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_difference('Planning.count', 1) do
       assert_difference('Route.count', 3) do
         assert_difference('Stop.count', 6) do
-          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes.csv', 'text.csv')).import
+          assert_difference('PlanningState.count', 1) do
+            assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes.csv', 'text.csv')).import
+          end
           @customer.reload
           planning = @customer.plannings.last
           route_1 = planning.routes.find{ |r| r.ref == 't1' }
@@ -687,6 +689,9 @@ class ImporterDestinationsTest < ActionController::TestCase
           assert_equal 2, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
           assert_equal 1, route_2.stops.index{ |stop| stop.visit&.ref == 'v3' }
           assert_equal 2, route_2.stops.index{ |stop| stop.visit&.ref == 'v4' }
+          state = planning.planning_states.last
+          assert_equal 'import', state.trigger
+          assert_equal 'mass', state.category
         end
       end
     end
@@ -694,8 +699,10 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_difference('Planning.count', 0) do
       assert_difference('Route.count', 0) do
         assert_difference('Stop.count', 0) do
-          # Permute visits v1 and v2
-          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_v2v1.csv', 'text.csv')).import
+          assert_difference('PlanningState.count', 1) do
+            # Permute visits v1 and v2
+            assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_v2v1.csv', 'text.csv')).import
+          end
           @customer.reload
           planning = @customer.plannings.last
           route_1 = planning.routes.find{ |r| r.ref == 't1' }

@@ -896,6 +896,137 @@ class PlanningTest < ActiveSupport::TestCase
     assert averages
     assert_equal 1, averages[:vehicles_used], averages.inspect
   end
+
+  test 'capture_state stores structure and statistics' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+
+    assert_difference('PlanningState.count', 1) do
+      planning.capture_state!(trigger: 'move')
+    end
+
+    state = planning.planning_states.first
+    assert_equal 'move', state.trigger
+    assert_equal 'individual', state.category
+    assert state.payload['routes'].present?
+    assert state.statistics.key?('distance_total')
+    assert state.statistics.key?('duration_total')
+    assert state.statistics.key?('stops_size')
+    assert state.statistics.key?('routes_visits_duration')
+  end
+
+  test 'capture_state runs compute_saved before persisting' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+    compute_called = false
+
+    planning.stub(:compute_saved!, lambda { |*_args|
+      compute_called = true
+      true
+    }) do
+      planning.capture_state!(trigger: 'move')
+    end
+
+    assert compute_called
+  end
+
+  test 'capture_state does not persist when compute_saved fails' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+
+    planning.stub(:compute_saved!, false) do
+      assert_no_difference('PlanningState.count') do
+        planning.capture_state!(trigger: 'move')
+      end
+    end
+  end
+
+  test 'reapply_state restores structure from snapshot' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+    planning.capture_state!(trigger: 'move')
+    state = planning.planning_states.first
+
+    planning.routes.select(&:vehicle_usage?).each { |route| route.set_visits([], false) }
+
+    assert planning.reapply_state!(state)
+    planning.reload
+
+    snapshot_visit_ids =
+      state.payload['routes'].flat_map { |route| route['stops'] }
+        .select { |stop| stop['type'] == 'visit' }
+        .map { |stop| stop['visit_id'] }
+    current_visit_ids = planning.routes.flat_map(&:stops).grep(StopVisit).map(&:visit_id)
+
+    assert_equal snapshot_visit_ids.sort, current_visit_ids.sort
+  end
+
+  test 'reapply_state restores visits when snapshot includes out of route route' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+    out_of_route = planning.routes.find { |route| !route.vehicle_usage? }
+    visit = visits(:visit_one)
+    out_of_route.set_visits([visit], false)
+
+    planning.capture_state!(trigger: 'move')
+    state = planning.planning_states.first
+    assert state.payload['routes'].any? { |route| route['vehicle_usage_id'].nil? }
+
+    planning.routes.each { |route| route.set_visits([], false) }
+    assert_empty planning.routes.flat_map(&:stops).grep(StopVisit)
+
+    assert planning.reapply_state!(state)
+    planning.reload
+
+    snapshot_visit_ids =
+      state.payload['routes'].flat_map { |route| route['stops'] }
+        .select { |stop| stop['type'] == 'visit' }
+        .map { |stop| stop['visit_id'] }
+    current_visit_ids = planning.routes.flat_map(&:stops).grep(StopVisit).map(&:visit_id)
+
+    assert_equal snapshot_visit_ids.sort, current_visit_ids.sort
+  end
+
+  test 'reapply_state does not capture a new state' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+    planning.capture_state!(trigger: 'move')
+    state = planning.planning_states.first
+
+    assert_no_difference('PlanningState.count') do
+      planning.reapply_state!(state)
+    end
+  end
+
+  test 'optimizer job captures planning state after optimization' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+    route = routes(:route_one_one)
+
+    OptimizerWrapper.stub_any_instance(:optimize, lambda { |_positions, services, vehicles, _options|
+      [[]] + [(services.reverse + vehicles[0][:rests]).collect { |service| service[:stop_id] }]
+    }) do
+      assert_difference('PlanningState.count', 1) do
+        OptimizerJob.new(planning.customer_id, planning.id, route.id, global: false).perform
+      end
+    end
+
+    state = planning.planning_states.order(:id).last
+    assert_equal 'optimize_route', state.trigger
+    assert_equal 'group', state.category
+  end
+
+  test 'optimizer job captures planning state when executed as delayed job' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+    route = routes(:route_one_one)
+    optimizer_job = OptimizerJob.new(planning.customer_id, planning.id, route.id, global: false)
+    delayed_job = delayed_jobs(:job_optimizer)
+
+    OptimizerWrapper.stub_any_instance(:optimize, lambda { |_positions, services, vehicles, _options|
+      [[]] + [(services.reverse + vehicles[0][:rests]).collect { |service| service[:stop_id] }]
+    }) do
+      optimizer_job.before(delayed_job)
+      assert_difference('PlanningState.count', 1) do
+        optimizer_job.perform
+      end
+    end
+
+    state = planning.planning_states.order(:id).last
+    assert_equal 'optimize_route', state.trigger
+  end
 end
 
 class PlanningTestError < ActiveSupport::TestCase

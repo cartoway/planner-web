@@ -1,0 +1,4 @@
+- if @manage_planning[:manage_planning_states]
+  .col
+    %button.btn.btn-default#planning-states-open{ type: 'button', title: t('plannings.states.open'), disabled: @manage_planning[:disable_planning_states] }
+      %i.fa.fa-history.fa-fw

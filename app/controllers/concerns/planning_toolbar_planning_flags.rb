@@ -87,5 +87,14 @@ module PlanningToolbarPlanningFlags
       planning_op_visible.call('activate_stops') && @manage_planning[:manage_stop_active]
     @manage_planning[:disable_activate_stops] =
       planning_op_disabled.call('activate_stops') || @manage_planning[:disable_stop_active]
+
+    @manage_planning[:manage_planning_states] = planning_op_visible.call('planning_states')
+    @manage_planning[:disable_planning_states] = planning_op_disabled.call('planning_states')
+
+    @manage_planning[:manage_duplicate] = planning_op_visible.call('duplicate')
+    @manage_planning[:disable_duplicate] = planning_op_disabled.call('duplicate')
+
+    @manage_planning[:manage_planning_dashboard] = planning_op_visible.call('planning_dashboard')
+    @manage_planning[:disable_planning_dashboard] = planning_op_disabled.call('planning_dashboard')
   end
 end

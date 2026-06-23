@@ -424,6 +424,23 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
   end
 
+  test 'update_routes active captures planning state as mass action' do
+    customers(:customer_one).update job_optimizer_id: nil
+    planning = plannings(:planning_one)
+    route = routes(:route_one_one)
+
+    without_loading Stop do
+      assert_difference -> { planning.planning_states.count }, 1 do
+        patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'all', action: 'active' }
+      end
+      assert last_response.ok?
+
+      state = planning.planning_states.order(:id).last
+      assert_equal 'activate_stops', state.trigger
+      assert_equal 'mass', state.category
+    end
+  end
+
   test 'should raise exceptions if job already in progress' do
     customers(:customer_one).update job_optimizer_id: nil
     planning = plannings(:planning_one)

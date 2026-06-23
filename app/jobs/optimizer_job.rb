@@ -64,11 +64,8 @@ class OptimizerJob < OptimizerJobStruct
       end
     end
 
-    # Apply result
-    if optimum
-      planning.set_stops(optimum, **{ global: options[:global], active_only: options[:active_only], insertion_only: options[:insertion_only], moving_stop_ids: options[:moving_stop_ids] })
-      planning.compute_saved
-    end
+    # Apply result once optimization finished (sync perform or async Delayed::Job worker).
+    apply_optimum_and_capture_state!(planning, optimum) if optimum
   rescue => e
     if @job
       puts e.message
@@ -81,6 +78,22 @@ class OptimizerJob < OptimizerJobStruct
 
   def max_attempts
     1
+  end
+
+  def apply_optimum_and_capture_state!(planning, optimum)
+    planning.set_stops(optimum, **set_stops_options)
+    planning = Planning.where(id: planning.id).first!
+    trigger = route_id.present? ? 'optimize_route' : 'optimize'
+    planning.capture_state!(trigger: trigger)
+  end
+
+  def set_stops_options
+    {
+      global: options[:global],
+      active_only: options[:active_only],
+      insertion_only: options[:insertion_only],
+      moving_stop_ids: options[:moving_stop_ids]
+    }
   end
 
   def route_filter(planning)

@@ -724,12 +724,13 @@ class Route < ApplicationRecord
       collected_stops = objects.map.with_index{ |stop, index|
         object, stop_attributes = stop
         stop_attributes = { active: true, custom_attributes: {} }.merge((stop_attributes || {}).compact)
+        stop_id = stop_attributes.delete(:stop_id)
         stop_index += 1
         if object.is_a?(Visit) && planning.tags_compatible?(object.tags.to_a | object.destination.tags.to_a)
           reveal_sub_tour_route_data(stop_index)
-          stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: stop_index, custom_attributes: stop_attributes[:custom_attributes])
+          stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         elsif object.is_a?(StoreReload)
-          stops.new(type: StopStore.name, store_reload: object, visit: nil, active: true, index: stop_index, custom_attributes: stop_attributes[:custom_attributes])
+          stops.new(type: StopStore.name, store_reload: object, visit: nil, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         end
       }.compact
       Stop.import(collected_stops)

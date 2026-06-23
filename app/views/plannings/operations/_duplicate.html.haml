@@ -1,0 +1,5 @@
+- if @manage_planning[:manage_duplicate]
+  .col
+    - dis = @manage_planning[:disable_duplicate] || current_user.customer.too_many_plannings? || !current_user_planning_form_submit_enabled?(@planning)
+    = link_to planning_duplicate_path(@planning), method: :patch, target: '_blank', rel: 'noopener', class: 'btn btn-default', title: t('all.verb.duplicate'), disabled: dis, data: { turbolinks: false } do
+      %i.fa.fa-copy.fa-fw

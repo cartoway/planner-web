@@ -45,6 +45,7 @@ class Optimizer
       else
         job = OptimizerJob.new(planning.customer.id, planning.id, route&.id, **options)
         if !options[:synchronous] && Planner::Application.config.delayed_job_use
+          # Planning state is captured at the end of OptimizerJob#perform once the solution is applied.
           planning.customer.job_optimizer = Delayed::Job.enqueue(job)
           planning.customer.job_optimizer.save!
         else
