@@ -2408,6 +2408,47 @@ en:
       cost_distance: cost per distance
       cost_fixed: fixed cost
       cost_time: cost per time
+    states:
+      open: Planning states history
+      title: Planning states history
+      reapply: Reapply
+      delete: Delete
+      delete_confirm: Confirm deletion
+      delete_confirm_wait: Wait before confirming…
+      pin: Pin
+      unpin: Unpin
+      pinned: Pinned
+      pin_limit_reached: Pin limit reached for this category (3 maximum)
+      empty: No saved state
+      reapply_failed: Unable to reapply this state
+      reapply_success: State reapplied
+      captured_at: Captured at
+      total_cost: Cost
+      distance: Distance
+      vehicles_used: Vehicles used
+      categories:
+        mass: Bulk changes
+        group: Activation and grouping
+        individual: Individual changes
+      triggers:
+        optimize: Optimization
+        optimize_route: Route optimization
+        move: Stop move
+        reverse_order: Reverse order
+        automatic_insert: Automatic insert
+        update_stop: Stop update
+        active: Stop activation
+        vehicle_usage_set: Vehicle configuration
+        set_routes: Routes reassignment
+        update_routes: Routes update
+        set_stops: Optimizer apply
+        vehicle_usage_add: Vehicle add
+        vehicle_usage_remove: Vehicle remove
+        split_by_zones: Zoning
+        apply_zonings: Zoning
+        import: Import
+        duplicate: Duplication
+        activate_stops: Stop activation
     form:
       ref_help: A free reference
       begin_end_date: Validity period
@@ -3450,6 +3491,9 @@ en:
       activate_stops: Activate route stops
       export: Export
       refresh: Refresh
+      planning_states: Planning state history
+      duplicate: Duplicate plan
+      planning_dashboard: Planning dashboard
       vehicle_usage: Vehicle usage
       stops: Stops
       view: View

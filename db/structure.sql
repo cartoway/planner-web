@@ -588,6 +588,43 @@ CREATE TABLE public.plannings_zonings (
 
 
 --
+-- Name: planning_states; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.planning_states (
+    id bigint NOT NULL,
+    planning_id integer NOT NULL,
+    captured_at timestamp without time zone NOT NULL,
+    trigger character varying NOT NULL,
+    category character varying NOT NULL,
+    pinned boolean DEFAULT false NOT NULL,
+    payload jsonb DEFAULT '{}'::jsonb NOT NULL,
+    statistics jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: planning_states_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.planning_states_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: planning_states_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.planning_states_id_seq OWNED BY public.planning_states.id;
+
+
+--
 -- Name: products; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1831,6 +1868,13 @@ ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_
 
 
 --
+-- Name: planning_states id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.planning_states ALTER COLUMN id SET DEFAULT nextval('public.planning_states_id_seq'::regclass);
+
+
+--
 -- Name: route_data id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2117,6 +2161,14 @@ ALTER TABLE ONLY public.resellers
 
 ALTER TABLE ONLY public.roles
     ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: planning_states planning_states_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.planning_states
+    ADD CONSTRAINT planning_states_pkey PRIMARY KEY (id);
 
 
 --
@@ -2574,6 +2626,27 @@ CREATE UNIQUE INDEX index_plannings_on_customer_id_and_lower_ref ON public.plann
 --
 
 CREATE INDEX index_plannings_on_vehicle_usage_set_id ON public.plannings USING btree (vehicle_usage_set_id);
+
+
+--
+-- Name: index_planning_states_on_planning_id_and_captured_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_planning_states_on_planning_id_and_captured_at ON public.planning_states USING btree (planning_id, captured_at);
+
+
+--
+-- Name: index_planning_states_on_planning_id_category_captured_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_planning_states_on_planning_id_category_captured_at ON public.planning_states USING btree (planning_id, category, captured_at);
+
+
+--
+-- Name: index_planning_states_on_planning_id_category_pinned; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_planning_states_on_planning_id_category_pinned ON public.planning_states USING btree (planning_id, category, pinned);
 
 
 --
@@ -3047,6 +3120,14 @@ ALTER TABLE ONLY public.store_reload_vehicle_usages
 
 ALTER TABLE ONLY public.tag_plannings
     ADD CONSTRAINT fk_rails_2a380b8abf FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
+
+
+--
+-- Name: planning_states fk_rails_planning_states_planning_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.planning_states
+    ADD CONSTRAINT fk_rails_planning_states_planning_id FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
 
 
 --
@@ -3808,6 +3889,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260513094805'),
 ('20260527153532'),
 ('20260623064843'),
-('20260729133352');
+('20260729133352'),
+('20260623141222');
 
 

@@ -1,4 +1,4 @@
-GeocoderJobStruct ||= Job.new(:customer_id, :planning_ids)
+GeocoderJobStruct ||= Job.new(:customer_id, :planning_ids, :capture_planning_state_ids)
 class GeocoderJob < GeocoderJobStruct
   def perform
     customer = Customer.find(customer_id)
@@ -63,6 +63,7 @@ class GeocoderJob < GeocoderJobStruct
             planning.compute_saved(ignore_errors: true)
           end
         end
+        capture_import_planning_states!
       end
     end
     job_progress_save({ 'first_progression': 100, 'completed': true })
@@ -70,5 +71,13 @@ class GeocoderJob < GeocoderJobStruct
     puts e.message
     puts e.backtrace.join("\n")
     raise e
+  end
+
+  private
+
+  def capture_import_planning_states!
+    (capture_planning_state_ids || []).each do |planning_id|
+      Planning.where(id: planning_id).preload_route_details.first!.capture_state!(trigger: 'import')
+    end
   end
 end
