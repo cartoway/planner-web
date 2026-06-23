@@ -28,6 +28,8 @@
 <% can_destroy_plannings = current_user_form_destroy_enabled?(:plannings) %>
 <% planning_callback_usable = toolbar_operation_usable?(:planning, 'external_callback') %>
 <% planning_callback_visible = toolbar_operation_visible?(:planning, 'external_callback') %>
+<% planning_dashboard_visible = toolbar_operation_visible?(:planning, 'planning_dashboard') %>
+<% planning_dashboard_usable = toolbar_operation_usable?(:planning, 'planning_dashboard') %>
 <%= form_tag plannings_path, method: :delete do %>
 <table id="plannings" class="table table-striped table-hover">
   <thead>
@@ -67,8 +69,8 @@
         <% } %>
         </td>
         <td class="text-right">
-          <% if @reseller.planning_dashboard_url && current_user.customer %>
-            <%= link_to @reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', :class => "btn btn-default btn-sm" do %>
+          <% if @reseller.planning_dashboard_url && current_user.customer && planning_dashboard_visible %>
+            <%= link_to @reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', disabled: !planning_dashboard_usable, :class => "btn btn-default btn-sm" do %>
               <i class="fa fa-chart-line fa-fw"></i>
               <%= t 'customers.menu.analytics' %>
             <% end %>

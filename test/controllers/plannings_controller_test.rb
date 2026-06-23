@@ -57,6 +57,58 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'index hides planning dashboard link when planning_dashboard operation is not visible' do
+    return unless Role.column_names.include?('operations')
+
+    @reseller.update!(planning_dashboard_url: 'https://analytics.example.com?p_id={P_ID}')
+    user = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['planning_dashboard'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "no-planning-dashboard-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    get :index
+    assert_response :success
+    assert_not_includes response.body, 'analytics.example.com'
+  ensure
+    user.update!(role_id: nil)
+    role&.destroy
+    @reseller.update!(planning_dashboard_url: nil)
+    sign_in users(:user_one)
+  end
+
+  test 'index shows planning dashboard link disabled when planning_dashboard operation is not usable' do
+    return unless Role.column_names.include?('operations')
+
+    @reseller.update!(planning_dashboard_url: 'https://analytics.example.com?p_id={P_ID}')
+    user = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['planning_dashboard'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "planning-dashboard-disabled-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    get :index
+    assert_response :success
+    assert_select "a[href*='analytics.example.com'][disabled]"
+  ensure
+    user.update!(role_id: nil)
+    role&.destroy
+    @reseller.update!(planning_dashboard_url: nil)
+    sign_in users(:user_one)
+  end
+
   test 'show uses continuous preload mode when stops exceed lower threshold' do
     customer = customers(:customer_one)
     original_limit = customer.stops_preload_limit
@@ -1659,6 +1711,29 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :forbidden
   ensure
     user.update!(role_id: nil)
+  end
+
+  test 'PATCH duplicate is forbidden when duplicate operation is visible but not usable' do
+    user = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['planning']['segment_controls']['duplicate'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: user.customer.reseller,
+      name: "no-duplicate-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    assert_no_difference('Planning.count') do
+      patch :duplicate, params: { planning_id: @planning }
+    end
+    assert_response :forbidden
+  ensure
+    user.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
   end
 
   def assign_visible_routes_stops_size(total_stops)

@@ -75,6 +75,19 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     assert out['stop']['segment_controls']['lock_stop']['usable']
   end
 
+  test 'default_operations includes planning_states duplicate and planning_dashboard in planning toolbar catalog' do
+    defs = Preferences::Catalog.default_operations
+    assert_includes Preferences::Catalog::OPERATION_GROUPS_PLANNING, 'planning_states'
+    assert_includes Preferences::Catalog::OPERATION_GROUPS_PLANNING, 'duplicate'
+    assert_includes Preferences::Catalog::OPERATION_GROUPS_PLANNING, 'planning_dashboard'
+    assert defs['planning']['segment_controls']['planning_states']['visible']
+    assert defs['planning']['segment_controls']['planning_states']['usable']
+    assert defs['planning']['segment_controls']['duplicate']['visible']
+    assert defs['planning']['segment_controls']['duplicate']['usable']
+    assert defs['planning']['segment_controls']['planning_dashboard']['visible']
+    assert defs['planning']['segment_controls']['planning_dashboard']['usable']
+  end
+
   test 'default_operations enables planning activate_stops in reseller default role seed' do
     defs = Preferences::Catalog.default_operations
     assert defs['planning']['segment_controls']['activate_stops']['visible']

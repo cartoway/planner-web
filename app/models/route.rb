@@ -724,12 +724,15 @@ class Route < ApplicationRecord
       collected_stops = objects.map.with_index{ |stop, index|
         object, stop_attributes = stop
         stop_attributes = { active: true, custom_attributes: {} }.merge((stop_attributes || {}).compact)
+        stop_id = stop_attributes.delete(:stop_id)
         stop_index += 1
         if object.is_a?(Visit) && planning.tags_compatible?(object.tags.to_a | object.destination.tags.to_a)
           reveal_sub_tour_route_data(stop_index)
-          stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: stop_index, custom_attributes: stop_attributes[:custom_attributes])
+          stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         elsif object.is_a?(StoreReload)
-          stops.new(type: StopStore.name, store_reload: object, visit: nil, active: true, index: stop_index, custom_attributes: stop_attributes[:custom_attributes])
+          stops.new(type: StopStore.name, store_reload: object, visit: nil, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
+        elsif object.nil?
+          stops.new(type: StopRest.name, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         end
       }.compact
       Stop.import(collected_stops)
@@ -837,7 +840,7 @@ class Route < ApplicationRecord
     return if !force && stop.is_a?(StopRest)
 
     shift_index(stop.index + 1, -1) if vehicle_usage?
-    self.stops.destroy(stop)
+    destroy_stop_record(stop)
     self.outdated = true
   end
 
@@ -1564,7 +1567,16 @@ class Route < ApplicationRecord
   def remove_stop(stop)
     shift_index(stop.index + 1, -1) if vehicle_usage?
     self.outdated = true
-    stops.destroy(stop) # Must return a value
+    destroy_stop_record(stop)
+  end
+
+  def destroy_stop_record(stop)
+    if stop.id
+      stops.where(id: stop.id).destroy_all
+      stops.target.delete(stop) if association(:stops).loaded?
+    else
+      stops.destroy(stop)
+    end
   end
 
   def shift_index(from, by = 1, to = nil)

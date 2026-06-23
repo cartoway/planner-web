@@ -309,6 +309,8 @@ class ImporterDestinations < ImporterBase
 
     @plannings = []
     @plannings_attributes = CaseInsensitiveHash.new
+    @import_capture_before_planning_ids = []
+    @import_captured_state_planning_ids = []
   end
 
   def uniq_ref(row)
@@ -603,18 +605,48 @@ class ImporterDestinations < ImporterBase
     if (@destinations_to_geocode_count > 0 || @stores_to_geocode_count > 0) && (!@synchronous && Planner::Application.config.delayed_job_use)
       save_plannings
       outdate_routes_deferred(persist: true)
-      @customer.job_destination_geocoding = Delayed::Job.enqueue(GeocoderJob.new(@customer.id, @plannings.any? ? @plannings.map(&:id) : nil))
+      @customer.job_destination_geocoding = Delayed::Job.enqueue(
+        GeocoderJob.new(
+          @customer.id,
+          @plannings.any? ? @plannings.map(&:id) : nil,
+          import_new_planning_ids_for_capture
+        )
+      )
     elsif @plannings.any?
       sync_plannings_routes_outdated_from_db
       outdate_routes_deferred(persist: !@synchronous)
       @plannings.each{ |planning|
         planning.compute_saved(ignore_errors: true)
       }
+      capture_import_states_after_finalize!
     end
     @customer.save! && @customer.reload
   end
 
   private
+
+  def capture_import_checkpoint_before!(planning_id)
+    return if @import_capture_before_planning_ids.include?(planning_id)
+
+    Planning.where(id: planning_id).preload_route_details.first!.capture_state!(trigger: 'import')
+    @import_capture_before_planning_ids << planning_id
+  end
+
+  def capture_import_states_after_finalize!
+    import_new_planning_ids_for_capture.uniq.each do |planning_id|
+      next if @import_captured_state_planning_ids.include?(planning_id)
+
+      planning = Planning.where(id: planning_id).preload_route_details.first!
+      next if planning.routes.empty?
+
+      planning.capture_state!(trigger: 'import')
+      @import_captured_state_planning_ids << planning_id
+    end
+  end
+
+  def import_new_planning_ids_for_capture
+    @plannings.map(&:id).compact - @import_capture_before_planning_ids
+  end
 
   def convert_deprecated_fields(row)
     ## TODO: Manage it in API input :
@@ -1158,6 +1190,7 @@ class ImporterDestinations < ImporterBase
 
         planning = ref ? @plannings_hash[ref] : @plannings_hash[@provided_planning_attributes[:ref]]
         planning_id = planning&.id
+        capture_import_checkpoint_before!(planning_id) if planning_id
         unless planning
           attributes = @plannings_attributes[ref]
           planning = Planning.new(attributes)
