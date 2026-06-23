@@ -1,5 +1,12 @@
 # Changelog
 
+##
+  ### Added
+  - Planning states history: capture structural snapshots on mutations and reapply a previous state from the UI
+    - Grouped by category (bulk, route group, individual changes): up to 5 states per category, with up to 3 pin-able states per category that survive pruning
+    - History modal shows the same route-data statistics as the planning header, with deltas vs the current planning (lower is better, except active stops count)
+    - Pin, two-step delete, and full planning reload on reapply
+
 ## V109.0.3
   ### Fixed
   - Planning edit: hide/show a route via the eye icon no longer throws a sortable initialization error

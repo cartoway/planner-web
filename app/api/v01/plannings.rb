@@ -416,6 +416,8 @@ class V01::Plannings < Grape::API
         end
       end
 
+      planning.reload.capture_state!(trigger: 'activate_stops') if params[:action].to_sym == :active
+
       present routes, with: V01::Entities::RouteProperties
     end
 

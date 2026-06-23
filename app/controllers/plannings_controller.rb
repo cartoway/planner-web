@@ -28,11 +28,15 @@ class PlanningsController < ApplicationController
   before_action :authenticate_driver!, only: [:driver_move]
 
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
+  PLANNING_STATE_CAPTURE_ACTIONS = [:move, :driver_move, :reverse_order, :automatic_insert, :update_stop, :active, :apply_zonings].freeze
+  # optimize / optimize_route are excluded: state is captured in OptimizerJob after async completion.
   UPDATE_ACTIONS_FULL_ROUTE_PRELOAD = UPDATE_ACTIONS - [:update_stop]
   before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
+  before_action :remember_vehicle_usage_set_id_for_state_capture, only: [:update]
   before_action :set_planning_for_edit, only: [:edit]
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
+  before_action :enforce_operation_usable_for_duplicate!, only: [:duplicate]
   before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :move, :update_stop]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
@@ -43,6 +47,8 @@ class PlanningsController < ApplicationController
   before_action -> { deny_unless_form_update!(:plannings) }, only: %i[destroy destroy_multiple duplicate]
 
   load_and_authorize_resource except: [:driver_move]
+  after_action :capture_planning_state_after_action, only: PLANNING_STATE_CAPTURE_ACTIONS
+  after_action :capture_planning_state_after_update, only: [:update]
 
   include Pagy::Backend
   include PlanningExport
@@ -629,6 +635,7 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       @planning = @planning.duplicate
       @planning.save! validate: Planner::Application.config.validate_during_duplication
+      @planning.capture_state!(trigger: 'duplicate')
       format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.updated', model: @planning.class.model_name.human) }
     end
   end
@@ -898,6 +905,33 @@ class PlanningsController < ApplicationController
 
   def check_no_existing_job
     raise Exceptions::JobInProgressError if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
+  end
+
+  def capture_planning_state_after_action
+    return unless @planning&.persisted?
+    return unless planning_state_capture_response_successful?
+
+    trigger = action_name == 'driver_move' ? 'move' : action_name
+    @planning.capture_state!(trigger: trigger)
+  end
+
+  def remember_vehicle_usage_set_id_for_state_capture
+    @vehicle_usage_set_id_before_update = @planning&.vehicle_usage_set_id
+  end
+
+  def capture_planning_state_after_update
+    return unless @planning&.persisted?
+    return unless planning_state_capture_response_successful?
+
+    new_set_id = planning_params[:vehicle_usage_set_id]
+    return if new_set_id.blank?
+    return if new_set_id.to_i == @vehicle_usage_set_id_before_update
+
+    @planning.capture_state!(trigger: 'vehicle_usage_set')
+  end
+
+  def planning_state_capture_response_successful?
+    response.successful?
   end
 
   def planning_params

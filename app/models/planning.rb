@@ -57,6 +57,7 @@ class Planning < ApplicationRecord
   thread_mattr_accessor :optimizer_context
 
   include RefSanitizer
+  include PlanningStateCapture
 
   ROUTE_VEHICLE_USAGE_PRELOAD = [
     :store_start, :store_stop, :store_rest, :store_reloads, :tags,
@@ -230,12 +231,13 @@ class Planning < ApplicationRecord
 
       index_routes = (1..routes.size).to_a
       routes_visits.each{ |_ref, r|
-        index_routes.delete(routes.index{ |rr| rr.vehicle_usage? && ParseIdsRefs.match_ref?(r[:ref_vehicle], rr.vehicle_usage.vehicle) }) if r[:ref_vehicle]
+        index = route_index_for_routes_visit(r)
+        index_routes.delete(index) if index
       }
       # Collect ref updates for batch processing
       ref_updates = []
       routes_visits.each{ |ref, r|
-        i = routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && ParseIdsRefs.match_ref?(r[:ref_vehicle], rr.vehicle_usage.vehicle) } || index_routes.shift
+        i = route_index_for_routes_visit(r) || index_routes.shift
         routes[i].ref = ref&.to_s
         ref_updates << { id: routes[i].id, ref: ref&.to_s }
         routes[i].add_objects(r[:visits], recompute, ignore_errors)
@@ -1227,6 +1229,14 @@ class Planning < ApplicationRecord
     end
   end
 
+  def route_index_for_routes_visit(routes_visit)
+    if routes_visit.key?(:vehicle_usage_id)
+      routes.index { |route| route.vehicle_usage_id == routes_visit[:vehicle_usage_id] }
+    elsif routes_visit[:ref_vehicle]
+      routes.index { |route| route.vehicle_usage? && ParseIdsRefs.match_ref?(routes_visit[:ref_vehicle], route.vehicle_usage.vehicle) }
+    end
+  end
+
   def delete_all_routes
     route_ids = routes.pluck(:id)
 
@@ -1552,6 +1562,7 @@ class Planning < ApplicationRecord
   end
 
   def update_vehicle_usage_set
+    return if skip_vehicle_usage_set_callback
     return unless vehicle_usage_set_id_changed? && !vehicle_usage_set_id_was.nil? && !id.nil?
 
     Route.no_touching do
