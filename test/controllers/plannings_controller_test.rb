@@ -753,9 +753,27 @@ class PlanningsControllerTest < ActionController::TestCase
     patch :update, params: { id: @planning, planning: { name: '' } }
 
     assert_template :edit
-    planning = assigns(:planning)
-    assert planning.errors.any?
+    assert_response :unprocessable_entity
+    assert flash[:error].present?
     assert_valid response
+  end
+
+  test 'should not update planning with duplicate ref' do
+    original_ref = @planning.ref
+    patch :update, params: { id: @planning, planning: { name: @planning.name, ref: plannings(:planning_two).ref } }
+
+    assert_template :edit
+    assert_response :unprocessable_entity
+    assert_equal original_ref, assigns(:planning).ref
+    assert flash[:error].present?
+  end
+
+  test 'should not update planning with duplicate ref as js' do
+    patch :update, params: { id: @planning, planning: { name: @planning.name, ref: plannings(:planning_two).ref } }, xhr: true
+
+    assert_response :unprocessable_entity
+    assert_match(/stickyError/, @response.body)
+    assert_includes @response.body, "$('.planbar').replaceWith"
   end
 
   test 'should destroy planning' do
