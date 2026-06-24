@@ -28,6 +28,22 @@ class StopsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'should include rest timewindow duration and time in show json' do
+    rest_stop = stops(:stop_one_four)
+    route = rest_stop.route
+    route.outdated = true
+    route.compute_saved!
+
+    get :show, params: { route_id: route.id, index: rest_stop.index, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal true, body['rest']
+    assert body['time_window_start_1'].present?
+    assert body['time_window_end_1'].present?
+    assert body['duration'].present?
+    assert body['time'].present?
+  end
+
   test 'should create stop store reload' do
     @route.vehicle_usage.update(max_reload: 3)
     assert_difference('Stop.count', 1) do

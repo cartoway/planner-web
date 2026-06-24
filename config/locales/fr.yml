@@ -2240,6 +2240,7 @@ fr:
       edit_visit_help: Modifier les informations du client
       edit_store_reload_help: Modifier les informations du rechargement
       marker_help: Visualiser sur la carte
+      rest_trace_help: Visualiser le tracé de la pause sur la carte
       create_store_help: Ajouter un site intermédiaire
       select_store: Sélectionner un site
       create_store:
@@ -2308,6 +2309,8 @@ fr:
         status_updated_at: Horaire statut
         eta: 'ETA :'
         store_reload: Rechargement
+        rest: Pause
+        rest_duration: 'Durée pause : '
         store_start: 'Site départ'
         store_stop: 'Site arrivée'
         day: J+
