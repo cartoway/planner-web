@@ -265,6 +265,41 @@
   </ul>
 {{/error}}
 {{/store_reload}}
+{{#rest}}
+<hr>
+{{#i18n}}plannings.edit.popup.rest{{/i18n}}
+<ul>
+  {{#time_window_start_end_1}}
+    <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.time_window_start_end_1{{/i18n}}
+      {{time_window_start_1}}{{#time_window_start_1_day}}&nbsp;(+{{time_window_start_1_day}}){{/time_window_start_1_day}} {{^time_window_end_1}}({{#i18n}}plannings.edit.popup.time_window_start_1{{/i18n}}){{/time_window_end_1}}
+      {{#time_window_start_1}}{{#time_window_end_1}}-{{/time_window_end_1}}{{/time_window_start_1}}
+      {{time_window_end_1}}{{#time_window_end_1_day}}&nbsp;(+{{time_window_end_1_day}}){{/time_window_end_1_day}} {{^time_window_start_1}}({{#i18n}}plannings.edit.popup.time_window_end_1{{/i18n}}){{/time_window_start_1}}
+    </li>
+  {{/time_window_start_end_1}}
+  {{#time_window_start_end_2}}
+    <li><i class="fa fa-sort fa-rotate-90 fa-fw"></i> {{#i18n}}plannings.edit.popup.time_window_start_end_2{{/i18n}}
+      {{time_window_start_2}}{{#time_window_start_2_day}}&nbsp;(+{{time_window_start_2_day}}){{/time_window_start_2_day}} {{^time_window_end_2}}({{#i18n}}plannings.edit.popup.time_window_start_2{{/i18n}}){{/time_window_end_2}}
+      {{#time_window_start_2}}{{#time_window_end_2}}-{{/time_window_end_2}}{{/time_window_start_2}}
+      {{time_window_end_2}}{{#time_window_end_2_day}}&nbsp;(+{{time_window_end_2_day}}){{/time_window_end_2_day}} {{^time_window_start_2}}({{#i18n}}plannings.edit.popup.time_window_end_2{{/i18n}}){{/time_window_start_2}}
+    </li>
+  {{/time_window_start_end_2}}
+  {{#time}}<li><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.time{{/i18n}} {{time}}{{#time_day}}&nbsp;(+{{time_day}}){{/time_day}}</li>{{/time}}
+  {{#duration}}<li><i class="fa fa-stopwatch fa-fw"></i> {{#i18n}}plannings.edit.popup.rest_duration{{/i18n}} {{duration}}</li>{{/duration}}
+</ul>
+{{#error}}
+  <ul class="ui-state-error">
+    {{#out_of_window}}
+      <li><i class="fa fa-stopwatch fa-fw" title="{{#i18n}}plannings.edit.error.out_of_window_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_window{{/i18n}}</li>
+    {{/out_of_window}}
+    {{#out_of_drive_time}}
+      <li><i class="fa fa-power-off fa-fw" title="{{#i18n}}plannings.edit.error.out_of_drive_time_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_drive_time{{/i18n}}</li>
+    {{/out_of_drive_time}}
+    {{#out_of_work_time}}
+      <li><i class="fa fa-repeat fa-fw" title="{{#i18n}}plannings.edit.error.out_of_work_time_help{{/i18n}}"></i> {{#i18n}}plannings.edit.error.out_of_work_time{{/i18n}}</li>
+    {{/out_of_work_time}}
+  </ul>
+{{/error}}
+{{/rest}}
 {{^visits}}
 <ul>
   {{#tags_present}}<li><i class="fa fa-tag fa-fw"></i> {{#i18n}}plannings.edit.popup.tags{{/i18n}} {{#tags}}{{label}} {{/tags}}{{#visit_tags_present}}{{#tags}}{{label}} {{/tags}}{{/visit_tags_present}}</li>{{/tags_present}}
