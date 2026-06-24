@@ -300,7 +300,8 @@ class Route < ApplicationRecord
           color: options[:color] || self.default_color,
           drive_time: options[:drive_time],
           distance: options[:distance],
-          sub_tour_index: options[:sub_tour_index]
+          sub_tour_index: options[:sub_tour_index],
+          stop_index: options[:stop_index]
         }.compact
       }.to_json
     end
@@ -359,7 +360,7 @@ class Route < ApplicationRecord
           stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
           previous_route_data_attributes[:no_path] ||= stop_attributes[:no_path]
 
-          store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index, color: sub_tour_color))
+          store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index, color: sub_tour_color, stop_index: stop.index))
           if stop.is_a?(StopStore)
             sub_tour_color = stop.route_data.color
             sub_tour_index += 1
