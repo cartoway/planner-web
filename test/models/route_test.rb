@@ -600,6 +600,23 @@ class RouteTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should add stop_index to polyline for rest without location' do
+    route = routes(:route_three_one)
+    rest_stop = route.stops.find { |stop| stop.is_a?(StopRest) }
+    assert_not rest_stop.position?
+
+    route.outdated = true
+    route.compute_saved!
+
+    assert route.geojson_tracks&.any?, 'Expected geojson tracks after compute'
+
+    trace_for_rest = route.geojson_tracks.map { |track_json| JSON.parse(track_json) }.find do |track|
+      track.dig('properties', 'stop_index') == rest_stop.index &&
+        track.dig('geometry', 'polylines').present?
+    end
+    assert trace_for_rest, 'Expected a polyline trace tagged with the rest stop_index'
+  end
+
   test 'available excludes hidden and locked out of route' do
     planning = plannings(:planning_one)
     out_of_route = planning.routes.find { |route| route.vehicle_usage_id.nil? }

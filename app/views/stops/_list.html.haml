@@ -130,8 +130,9 @@
               .btn-group.pull-right.stop-tools
                 %a.marker_edit.btn.btn-default.btn-xs.invisible{href: "/"}
                   %i.fa.fa-pencil
-                %a.marker.btn.btn-default.btn-xs{class: ("invisible" if !stop[:geocoded]), href: "#", title: t("plannings.edit.marker_help")}
-                  %i.fa.fa-map-marker
+                - if stop[:active]
+                  %a.marker.btn.btn-default.btn-xs{href: "#", title: stop[:geocoded] ? t("plannings.edit.marker_help") : t("plannings.edit.rest_trace_help")}
+                    %i.fa.fa-map-marker
     - if stop[:destination] && stop[:visits]
       - visit_li_classes = [("ui-state-error" if stop[:error]), ("stop-visit-locked" if stop[:locked] && route[:vehicle_usage_id])].compact.join(' ')
       %li.d-fake-flex.align-items-center.list-group-item.pr-5{class: visit_li_classes.presence, "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-origin-route-id": route[:route_id], "data-sub-tour-index": sub_tour_index}
