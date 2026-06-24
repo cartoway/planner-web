@@ -6,6 +6,13 @@
     - Grouped by category (bulk, route group, individual changes): up to 5 states per category, with up to 3 pin-able states per category that survive pruning
     - History modal shows the same route-data statistics as the planning header, with deltas vs the current planning (lower is better, except active stops count)
     - Pin, two-step delete, and full planning reload on reapply
+  - Planning: focus active rests without geolocation on their driving leg
+
+  ### Changed
+  - Sopac: migrate from api to message broker
+
+  ### Fixed
+  - Route compute: place unlocated rests on the driving leg at the latest feasible time when starting at the next stop would fall outside the rest window
 
 ## V109.0.2
   ### Added
