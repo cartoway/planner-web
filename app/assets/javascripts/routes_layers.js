@@ -417,6 +417,9 @@ export const RoutesLayer = L.FeatureGroup.extend({
   onAdd: function(map) {
     L.FeatureGroup.prototype.onAdd.call(this, map);
     this.layersByRoute = {};
+    this.tracesByStopIndex = {};
+    this.highlightedTraceRouteId = null;
+    this.tracePopupMarker = null;
     this.map = map;
     this.map.on('click', this.hideLastPopup).on('zoomstart', this.hideLastPopup);
 
@@ -435,10 +438,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
             popupModule.createPopupForLayer(e.layer, this.map);
           } else if (e.layer instanceof L.Path) {
-            e.layer.setStyle({
-              opacity: 0.9,
-              weight: 7
-            });
+            e.layer.setStyle(this._pathStyle(e.layer, 'hover'));
           }
         }
       }.bind(this))
@@ -454,10 +454,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
             popupModule.closeCurrentRequest();
           }
         } else if (e.layer instanceof L.Path) {
-          e.layer.setStyle({
-            opacity: 0.5,
-            weight: 5
-          });
+          e.layer.setStyle(this._pathStyle(e.layer));
         }
       }.bind(this))
       .on('click', function(e) {
@@ -643,18 +640,127 @@ export const RoutesLayer = L.FeatureGroup.extend({
     this._loadAll();
   },
 
+  _pathStyle: function(layerOrFeature, emphasis) {
+    var props = layerOrFeature.properties || layerOrFeature;
+    var color = (this.subTourColors[props.route_id] && this.subTourColors[props.route_id][props.sub_tour_index]) || props.color;
+    if (emphasis === 'highlight') {
+      return { color: color, opacity: 1, weight: 8 };
+    }
+    if (emphasis === 'dim') {
+      return { color: color, opacity: 0.15, weight: 4 };
+    }
+    if (emphasis === 'hover') {
+      return { color: color, opacity: 0.9, weight: 7 };
+    }
+    return { color: color, opacity: 0.5, weight: 5 };
+  },
+
+  _fitMapBounds: function(bounds, padding) {
+    if (!bounds || !bounds.isValid()) { return; }
+    this.map.invalidateSize();
+    this.map.fitBounds(bounds, {
+      maxZoom: 15,
+      animate: false,
+      padding: padding || [20, 20]
+    });
+  },
+
+  _clearStopFocus: function() {
+    this._resetHighlightedTraces();
+    if (this.tracePopupMarker) {
+      this.map.removeLayer(this.tracePopupMarker);
+      this.tracePopupMarker = null;
+    }
+  },
+
+  _findStopMarker: function(routeId, stopIndex) {
+    if (!this.clustersByRoute[routeId]) { return null; }
+    var markers = this.clustersByRoute[routeId].getLayers();
+    for (var i = 0; i < markers.length; i++) {
+      if (markers[i].properties['index'] == stopIndex) {
+        return markers[i];
+      }
+    }
+    return null;
+  },
+
+  _getTraceLayerForStop: function(routeId, stopIndex) {
+    var traces = this.tracesByStopIndex[routeId];
+    if (!traces) { return null; }
+    var layer = traces[parseInt(stopIndex, 10)];
+    if (!layer) { return null; }
+
+    var bounds = layer.getBounds();
+    if (bounds && bounds.isValid() && !bounds.getNorthEast().equals(bounds.getSouthWest())) {
+      return layer;
+    }
+
+    var layers = this.layersByRoute[routeId] || [];
+    var layerIndex = layers.indexOf(layer);
+    for (var i = layerIndex - 1; i >= 0; i--) {
+      if (!(layers[i] instanceof L.Path)) { continue; }
+      var fallbackBounds = layers[i].getBounds();
+      if (fallbackBounds && fallbackBounds.isValid() && !fallbackBounds.getNorthEast().equals(fallbackBounds.getSouthWest())) {
+        return layers[i];
+      }
+    }
+    return layer;
+  },
+
+  _resetHighlightedTraces: function() {
+    if (!this.highlightedTraceRouteId) { return; }
+    var that = this;
+    (this.layersByRoute[this.highlightedTraceRouteId] || []).forEach(function(layer) {
+      if (layer instanceof L.Path) {
+        layer.setStyle(that._pathStyle(layer));
+      }
+    });
+    this.highlightedTraceRouteId = null;
+  },
+
+  _highlightTrace: function(routeId, layer) {
+    this.highlightedTraceRouteId = routeId;
+    var that = this;
+    this.layersByRoute[routeId].forEach(function(pathLayer) {
+      if (!(pathLayer instanceof L.Path)) { return; }
+      pathLayer.setStyle(that._pathStyle(pathLayer, pathLayer === layer ? 'highlight' : 'dim'));
+      if (pathLayer === layer) {
+        pathLayer.bringToFront();
+      }
+    });
+  },
+
+  _showStopPopupAt: function(routeId, stopIndex, latlng) {
+    var marker = L.marker(latlng, { opacity: 0, interactive: false });
+    marker.properties = { route_id: routeId, index: parseInt(stopIndex, 10) };
+    marker.addTo(this.map);
+    this.tracePopupMarker = marker;
+    popupModule.createPopupForLayer(marker, this.map);
+    popupModule.activeClickMarker = marker;
+  },
+
+  _focusTraceForStop: function(routeId, stopIndex) {
+    var layer = this._getTraceLayerForStop(routeId, stopIndex);
+    if (!layer) { return false; }
+
+    this.map.closePopup();
+    this._highlightTrace(routeId, layer);
+    this._fitMapBounds(layer.getBounds(), [40, 40]);
+    this._showStopPopupAt(routeId, stopIndex, layer.getBounds().getCenter());
+    return true;
+  },
+
   focus: function(options) {
     if (options.routeId && options.stopIndex) {
-      if (this.clustersByRoute[options.routeId]) {
-        var markers = this.clustersByRoute[options.routeId].getLayers();
-        for (var i = 0; i < markers.length; i++) {
-          if (markers[i].properties['index'] == options.stopIndex) {
-            this._setViewForMarker(options.routeId, markers[i]);
-            break;
-          }
-        }
+      var marker = this._findStopMarker(options.routeId, options.stopIndex);
+      this._clearStopFocus();
+      if (marker) {
+        this._setViewForMarker(options.routeId, marker);
+      } else {
+        this._focusTraceForStop(options.routeId, options.stopIndex);
       }
     } else if (options.storeId && this.markerStores[options.storeId]) {
+      this._clearStopFocus();
       this.map.setView(this.markerStores[options.storeId].getLatLng(), this.map.getZoom(), {
         reset: true
       });
@@ -663,6 +769,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
         depotType: options.depotType
       });
     } else if (options.routeId) {
+      this._clearStopFocus();
       this._setViewForRoute(options.routeId);
     }
   },
@@ -721,15 +828,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
     if (!routeId || !this.clustersByRoute[routeId]) return;
 
     this.map.closePopup();
-    var bounds = this.clustersByRoute[routeId].getBounds();
-    if (bounds && bounds.isValid()) {
-      this.map.invalidateSize();
-      this.map.fitBounds(bounds, {
-        maxZoom: 15,
-        animate: false,
-        padding: [20, 20]
-      });
-    }
+    this._fitMapBounds(this.clustersByRoute[routeId].getBounds());
   },
 
   _load: function(routeIds, includeStores, geojson, callback) {
@@ -851,26 +950,24 @@ export const RoutesLayer = L.FeatureGroup.extend({
       },
       onEachFeature: function(feature, layer) {
         if (feature.properties.route_id) {
-          if (!(feature.properties.route_id in this.layersByRoute)) {
-            this.layersByRoute[feature.properties.route_id] = [];
+          var routeId = feature.properties.route_id;
+          if (!(routeId in this.layersByRoute)) {
+            this.layersByRoute[routeId] = [];
           }
-          this.layersByRoute[feature.properties.route_id].push(layer);
+          this.layersByRoute[routeId].push(layer);
+          if (feature.properties.stop_index != null && feature.geometry.type === 'LineString') {
+            if (!(routeId in this.tracesByStopIndex)) {
+              this.tracesByStopIndex[routeId] = {};
+            }
+            this.tracesByStopIndex[routeId][feature.properties.stop_index] = layer;
+          }
         } else if (feature.properties.store_id) {
           this.layerStores = layer;
         }
         layer.properties = feature.properties;
       }.bind(this),
       style: function(feature) {
-        var baseColor = feature.properties.color;
-        var routeId = feature.properties.route_id;
-        var subTourIndex = feature.properties.sub_tour_index;
-        var customColor = this.subTourColors[routeId] && this.subTourColors[routeId][subTourIndex];
-        var color = customColor || baseColor;
-        return {
-          color: color,
-          opacity: 0.5,
-          weight: 5
-        };
+        return this._pathStyle(feature);
       }.bind(this),
       pointToLayer: function(geoJsonPoint, latlng) {
         var icon;
@@ -1011,6 +1108,9 @@ export const RoutesLayer = L.FeatureGroup.extend({
         }.bind(this));
         delete this.layersByRoute[routeId];
       }
+      if (routeId in this.tracesByStopIndex) {
+        delete this.tracesByStopIndex[routeId];
+      }
       if (routeId in this.clustersByRoute) {
         this.removeLayer(this.clustersByRoute[routeId]);
         delete this.clustersByRoute[routeId];
@@ -1029,6 +1129,9 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
     this.layersByRoute = {};
     this.clustersByRoute = {};
+    this.tracesByStopIndex = {};
+    this.highlightedTraceRouteId = null;
+    this.tracePopupMarker = null;
   },
 
   // Lasso initialization
