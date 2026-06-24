@@ -75,12 +75,10 @@ when StopVisit
     current_user.customer.custom_attributes.for_stop_visit.map{ |c_a| custom_attribute_template(c_a, stop) }
   )
 when StopRest
-  json.rest do
-    json.rest true
-    duration = stop.route.vehicle_usage.default_rest_duration_time_with_seconds
-    (json.store_id stop.route.vehicle_usage.default_store_rest.id) if stop.route.vehicle_usage.default_store_rest
-    (json.error true) if stop.route.vehicle_usage.default_store_rest && !stop.route.vehicle_usage.default_store_rest.position?
-  end
+  json.rest true
+  duration = stop.route.vehicle_usage.default_rest_duration_time_with_seconds
+  (json.store_id stop.route.vehicle_usage.default_store_rest.id) if stop.route.vehicle_usage.default_store_rest
+  (json.error true) if stop.route.vehicle_usage.default_store_rest && !stop.route.vehicle_usage.default_store_rest.position?
 when StopStore
   json.store_reload do
     json.store_reload true

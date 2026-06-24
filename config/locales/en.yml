@@ -2140,6 +2140,7 @@ en:
       edit_visit_help: Edit visit/customer information
       edit_store_reload_help: Edit store reload information
       marker_help: Show on map
+      rest_trace_help: Show rest segment on map
       create_store_help: Add an intermediate store
       select_store: Select a store
       create_store:
@@ -2206,6 +2207,8 @@ en:
         status_updated_at: 'Time Status:'
         eta: 'ETA:'
         store_reload: Reload
+        rest: Rest break
+        rest_duration: 'Rest duration: '
         store_start: 'Start store'
         store_stop: 'Stop store'
         day: D+

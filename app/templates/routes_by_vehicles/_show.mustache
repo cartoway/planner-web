@@ -185,7 +185,9 @@
             <span class="name" title="{{name}}"><i class="fa fa-coffee fa-fw"></i> {{name}}</span>
           </div>
           <div class="btn-group pull-right stop-tools">
-            {{#geocoded}}<a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>{{/geocoded}}
+            {{#active}}
+            <a href="#" class="marker btn btn-default btn-xs" title="{{#geocoded}}{{#i18n}}plannings.edit.marker_help{{/i18n}}{{/geocoded}}{{^geocoded}}{{#i18n}}plannings.edit.rest_trace_help{{/i18n}}{{/geocoded}}"><i class="fa fa-map-marker"></i></a>
+            {{/active}}
           </div>
           <div class="clearfix"></div>
         </li>
