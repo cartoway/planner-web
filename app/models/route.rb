@@ -80,6 +80,12 @@ class Route < ApplicationRecord
 
   default_scope { includes(:route_data, :start_route_data, :stop_route_data) }
 
+  ORDER_FOR_PLANNING_SQL = <<~SQL.squish
+    CASE WHEN routes.vehicle_usage_id IS NULL THEN 0 ELSE 1 END ASC,
+    (SELECT vehicle_usages."index" FROM vehicle_usages WHERE vehicle_usages.id = routes.vehicle_usage_id) ASC NULLS LAST
+  SQL
+  scope :ordered_for_planning, -> { order(Arel.sql(ORDER_FOR_PLANNING_SQL)) }
+
   scope :available, -> { where("NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
   scope :available_or_outdated, -> { where("NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
   scope :for_customer_id, ->(customer_id) { joins(:planning).where(plannings: {customer_id: customer_id}) }

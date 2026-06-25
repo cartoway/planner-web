@@ -80,6 +80,31 @@
             -o-border-radius: 50%;
             vertical-align: middle;
           }
+
+          .vehicle-usage-sort-handle {
+            cursor: grab;
+            color: $grey-color;
+            text-align: center;
+            width: 1.5rem;
+            user-select: none;
+            touch-action: none;
+
+            &:active {
+              cursor: grabbing;
+            }
+          }
+
+          tbody.vehicle-usages-sortable {
+            .ui-sortable-helper {
+              display: table;
+              background-color: #fff;
+            }
+
+            .ui-sortable-placeholder {
+              visibility: visible !important;
+              background-color: #f5f5f5;
+            }
+          }
         }
       }
     }

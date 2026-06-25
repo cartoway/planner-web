@@ -74,7 +74,8 @@ class ImporterVehicleUsageSets < ImporterBase
       work_time: { title: I18n.t('vehicle_usage_sets.import.work_time'), desc: I18n.t('vehicle_usage_sets.import.work_time_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
       tags: { title: I18n.t('vehicle_usage_sets.import.tags'), desc: I18n.t('vehicle_usage_sets.import.tags_desc'), format: I18n.t('vehicle_usage_sets.import.tags_format') },
       max_reload: { title: I18n.t('vehicle_usage_sets.import.max_reload'), desc: I18n.t('vehicle_usage_sets.import.max_reload_desc'), format: I18n.t('vehicle_usage_sets.import.format.integer') },
-      store_reloads: { title: I18n.t('vehicle_usage_sets.import.store_reloads'), desc: I18n.t('vehicle_usage_sets.import.store_reloads_desc'), format: I18n.t('vehicle_usage_sets.import.store_reloads_format') }
+      store_reloads: { title: I18n.t('vehicle_usage_sets.import.store_reloads'), desc: I18n.t('vehicle_usage_sets.import.store_reloads_desc'), format: I18n.t('vehicle_usage_sets.import.store_reloads_format') },
+      index: { title: I18n.t('vehicle_usage_sets.import.index'), desc: I18n.t('vehicle_usage_sets.import.index_desc'), format: I18n.t('vehicle_usage_sets.import.format.integer') }
     }
   end
 
@@ -122,7 +123,9 @@ class ImporterVehicleUsageSets < ImporterBase
 
     imported_vehicle_refs = data.map { |datum| datum[I18n.t('vehicles.import.ref_vehicle')] }
     @vehicles_by_ref = CaseInsensitiveHash[@customer.vehicles.select(&:ref).select { |vehicle| imported_vehicle_refs.include?(vehicle.ref) }.collect { |vehicle| [vehicle.ref, vehicle] }]
-    @vehicles_without_ref = @customer.vehicles.to_a.select { |vehicle| vehicle.ref.to_s.empty? || !imported_vehicle_refs.include?(vehicle.ref) }
+
+    prepare_import_rows(data, options)
+    @imported_vehicle_usages_in_order = []
   end
 
   def prepare_capacities(row)
@@ -167,7 +170,7 @@ class ImporterVehicleUsageSets < ImporterBase
     row[:custom_attributes] = custom_attributes if custom_attributes.any?
   end
 
-  def import_row(_name, row, _line, options)
+  def import_row(_name, row, line, options)
     if (row[:time_window_start].nil? || row[:time_window_end].nil?) && @vehicle_usage_set.nil?
       raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.missing_time_window_start_end'))
     elsif row[:name_vehicle].nil? && !@vehicle_usage_set.nil?
@@ -184,12 +187,8 @@ class ImporterVehicleUsageSets < ImporterBase
     row[:store_stop_ref] = row[:store_stop_ref]&.strip
     row[:store_rest_ref] = row[:store_rest_ref]&.strip
 
-    # For each vehicle, create vehicle and vehicle usage
-    vehicle = if !row[:ref_vehicle].nil? && !row[:ref_vehicle].empty? && @vehicles_by_ref[row[:ref_vehicle]]
-      @vehicles_by_ref[row[:ref_vehicle]]
-    else
-      @vehicles_without_ref.shift
-    end
+    vehicle = @vehicle_by_line.fetch(line)
+    vehicle_usage = @vehicle_usage_set.vehicle_usages.find{ |vu| vu.vehicle == vehicle }
 
     if options[:replace_vehicles]
       vehicle_attributes = row.slice(*columns_vehicle.keys, :capacities, :custom_attributes)
@@ -209,8 +208,9 @@ class ImporterVehicleUsageSets < ImporterBase
     vehicle_usage_attributes[:store_stop] = @stores_by_ref[vehicle_usage_attributes.delete(:store_stop_ref)]
     vehicle_usage_attributes[:store_rest] = @stores_by_ref[vehicle_usage_attributes.delete(:store_rest_ref)]
     vehicle_usage_attributes[:store_reloads] = row[:store_reloads]&.map{ |store_reload| store_reload } || []
-    vehicle_usage = @vehicle_usage_set.vehicle_usages.find{ |vu| vu.vehicle == vehicle }
-    vehicle_usage.assign_attributes(vehicle_usage_attributes.except(:name_vehicle_usage_set))
+    row.delete(:index)
+    @imported_vehicle_usages_in_order << vehicle_usage
+    vehicle_usage.assign_attributes(vehicle_usage_attributes.except(:name_vehicle_usage_set, :index))
 
     columns_vehicle_usage_set.keys.each do |key|
       next if key == :tags
@@ -248,6 +248,8 @@ class ImporterVehicleUsageSets < ImporterBase
   end
 
   def after_import(_name, _options)
+    persist_vehicle_usage_indices!
+
     # If all vehicles have the same parameters, set the parameter to the default configuration and remove it from vehicle
     # Exclude required configuration (rest, service, ...) if all fields not in common
     unless @common_configuration[:time_window_start] && @common_configuration[:time_window_end]
@@ -289,5 +291,137 @@ class ImporterVehicleUsageSets < ImporterBase
 
   def finalize_import(_name, options)
     options[:dests].each(&:reload)
+  end
+
+  def vehicle_usage_index_for_line(line)
+    @vehicle_usage_index_by_line.fetch(line)
+  end
+
+  def persist_vehicle_usage_indices!
+    return if @imported_vehicle_usages_in_order.blank?
+
+    ordered_ids = @imported_vehicle_usages_in_order.map(&:id)
+    if @imported_vehicle_usages_in_order.all?(&:persisted?) &&
+       @vehicle_usage_set.vehicle_usages.pluck(:id).sort == ordered_ids.compact.sort
+      @vehicle_usage_set.reorder_vehicle_usages!(ordered_ids)
+    else
+      @imported_vehicle_usages_in_order.each_with_index { |vehicle_usage, position| vehicle_usage.index = position }
+    end
+  end
+
+  def prepare_import_rows(data, options)
+    @vehicle_usage_index_by_line = {}
+    @vehicle_by_line = {}
+    entries = []
+    blank_rows = []
+
+    data.each_with_index do |row, line|
+      if import_row_blank?(row)
+        blank_rows << row
+        next
+      end
+
+      index_value = index_value_from_row(row, options)
+      unless empty_value?(index_value)
+        index = index_value.to_i
+        raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.invalid_index')) if index.negative?
+      end
+
+      entries << {
+        line: line,
+        row: row,
+        index: empty_value?(index_value) ? nil : index_value.to_i
+      }
+    end
+
+    assign_vehicles_to_entries!(entries)
+
+    explicit_indexes = entries.filter_map { |entry| entry[:index] }
+    if explicit_indexes.empty?
+      entries.each_with_index do |entry, position|
+        @vehicle_usage_index_by_line[entry[:line]] = position
+        @vehicle_by_line[entry[:line]] = entry[:vehicle]
+      end
+      return
+    end
+
+    max_index = explicit_indexes.max
+    entries.each do |entry|
+      next unless entry[:index].nil?
+
+      max_index += 1
+      entry[:index] = max_index
+    end
+
+    entries.sort_by! { |entry| [entry[:index], entry[:line]] }
+    entries.each_with_index { |entry, position| entry[:index] = position }
+
+    data.replace(entries.map { |entry| entry[:row] } + blank_rows)
+    entries.each_with_index do |entry, position|
+      @vehicle_usage_index_by_line[position] = position
+      @vehicle_by_line[position] = entry[:vehicle]
+    end
+  end
+
+  def assign_vehicles_to_entries!(entries)
+    assigned_vehicle_ids = []
+
+    entries.each do |entry|
+      ref_vehicle = ref_vehicle_from_row(entry[:row])
+      next if ref_vehicle.empty? || !@vehicles_by_ref[ref_vehicle]
+
+      entry[:vehicle] = @vehicles_by_ref[ref_vehicle]
+      assigned_vehicle_ids << entry[:vehicle].id
+    end
+
+    remaining_vehicles = @customer.vehicles.to_a.reject { |vehicle| assigned_vehicle_ids.include?(vehicle.id) }
+
+    entries.each do |entry|
+      next if entry[:vehicle]
+
+      entry[:vehicle] = remaining_vehicles.shift
+    end
+  end
+
+  def ref_vehicle_from_row(row)
+    return '' if row.nil?
+
+    ref_title = I18n.t('vehicles.import.ref_vehicle')
+    ref = row[:ref_vehicle] || row[ref_title] if row.is_a?(Hash)
+    ref.to_s.strip
+  end
+
+  def index_value_from_row(row, options)
+    return nil if row.nil?
+
+    if row.is_a?(Hash)
+      return row[:index] if row.key?(:index)
+
+      index_title = columns[:index][:title]
+      return row[index_title] if index_title && row.key?(index_title)
+    elsif row.is_a?(Array) && options[:column_def]
+      column_spec = options[:column_def][:index]
+      return nil if column_spec.blank?
+
+      column_spec.split(',').map(&:strip).filter_map { |column|
+        if column.to_i != 0
+          row[column.to_i - 1].is_a?(Array) ? row[column.to_i - 1][1] : row[column.to_i - 1]
+        else
+          row.find { |cell| cell[0] == column }.try { |cell| cell[1] }
+        end
+      }.first
+    end
+
+    nil
+  end
+
+  def import_row_blank?(row)
+    return true if row.nil?
+
+    if row.is_a?(Hash)
+      row.values.all? { |value| empty_value?(value) }
+    else
+      row.all? { |cell| empty_value?(cell.is_a?(Array) ? cell[1] : cell) }
+    end
   end
 end

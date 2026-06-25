@@ -23,7 +23,7 @@ class Planning < ApplicationRecord
   belongs_to :customer, counter_cache: true
   has_and_belongs_to_many :zonings, autosave: true, after_add: :update_zonings_track, after_remove: :update_zonings_track
   before_destroy :delete_all_routes
-  has_many :routes, -> { order("vehicle_usage_id NULLS FIRST") }, inverse_of: :planning, autosave: true
+  has_many :routes, -> { ordered_for_planning }, inverse_of: :planning, autosave: true
 
   has_many :tag_plannings, dependent: :destroy
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
@@ -484,7 +484,7 @@ class Planning < ApplicationRecord
     end
 
     Route.import(new_routes, validate: false)
-    self.routes = Route.where(planning_id: self.id).includes_vehicle_usages
+    self.routes = Route.where(planning_id: self.id).includes_vehicle_usages.ordered_for_planning
     self.routes.each { |route| route.ensure_route_geojson }
     self.routes.each{ |r| r.init_stops(false) }
     self
