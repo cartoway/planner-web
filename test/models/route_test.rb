@@ -406,6 +406,40 @@ class RouteTest < ActiveSupport::TestCase
     }
   end
 
+  test 'plan shifts unpositioned stop_rest start earlier when rest window is violated' do
+    route = routes(:route_one_one)
+    route.vehicle_usage.update_columns(store_rest_id: nil)
+
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    route.move_stop(rest, 2)
+    route.save!
+    route.reload
+
+    departure = 48_700
+    route.route_data.update_columns(departure: departure)
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    prev_stop = route.stops.sort_by(&:index).find { |stop| stop.index < rest.index && stop.active? }
+    next_stop = route.stops.sort_by(&:index).find { |stop| stop.index > rest.index && stop.active? }
+
+    materialized_arrival = prev_stop.time + prev_stop.duration + rest.drive_time
+    strict = route.planning.customer.enable_strict_within_timewindows
+    _open, close, = rest.best_open_close(materialized_arrival, strict_within_timewindows: strict)
+    close_compare_time = strict ? materialized_arrival + rest.duration : materialized_arrival
+    lateness = close && close_compare_time > close ? close_compare_time - close : 0
+    shift = [lateness, rest.drive_time].compact.min
+
+    assert_operator lateness, :>, 0
+    assert_operator shift, :>, 0
+    assert_equal materialized_arrival - shift, rest.time
+    assert_not rest.out_of_window
+    assert_nil rest.wait_time
+    assert_equal materialized_arrival + rest.duration + next_stop.drive_time, next_stop.time
+  end
+
   test 'should return the drive time when compute' do
     route = routes(:route_one_one)
     route.compute_saved!

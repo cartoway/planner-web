@@ -36,6 +36,7 @@
 
   ### Fixed
   - Rest stop validation uses the default `rest_start` value for comparison [#626](https://github.com/cartoway/planner-web/pull/626)
+  - Place the rest on the driving leg and keep it inside the rest time window when the next stop arrival does not fit
   - Fix the geocoder control closing unexpectedly
   - Expose missing fields for stops in the API
   - Bulk destination import could display the wrong line number on error when multiple batches were processed
