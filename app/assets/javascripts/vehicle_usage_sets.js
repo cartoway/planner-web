@@ -18,6 +18,47 @@
 'use strict';
 
 import { bootstrap_dialog, modal_options } from '../../assets/javascripts/scaffolds';
+import { beforeSendWaiting, completeWaiting, ajaxError } from './ajax';
+
+const initVehicleUsagesSortable = function($tbodies) {
+  $tbodies.each(function() {
+    var $tbody = $(this);
+    if ($tbody.hasClass('ui-sortable')) {
+      $tbody.sortable('destroy');
+    }
+    $tbody.sortable({
+      items: '> tr',
+      handle: '.vehicle-usage-sort-handle',
+      axis: 'y',
+      helper: function(_event, $row) {
+        var $originals = $row.children();
+        var $helper = $row.clone();
+        $helper.children().each(function(index) {
+          $(this).width($originals.eq(index).width());
+        });
+        return $helper;
+      },
+      update: function() {
+        var vehicleUsageSetId = $tbody.attr('data-vehicle-usage-set-id');
+        var vehicleUsageIds = $tbody.find('tr[data-vehicle-usage-id]').map(function() {
+          return parseInt($(this).attr('data-vehicle-usage-id'), 10);
+        }).get();
+
+        $.ajax({
+          type: 'PATCH',
+          url: '/vehicle_usage_sets/' + vehicleUsageSetId + '/reorder_vehicle_usages',
+          data: {
+            authenticity_token: $('meta[name="csrf-token"]').attr('content'),
+            vehicle_usage_ids: vehicleUsageIds
+          },
+          beforeSend: beforeSendWaiting,
+          complete: completeWaiting,
+          error: ajaxError
+        });
+      }
+    });
+  });
+};
 
 const vehicle_usage_sets_index = function(params) {
   const showAccordionCheckElements = function(show) {
@@ -74,6 +115,12 @@ const vehicle_usage_sets_index = function(params) {
   };
   $('.vehicle-select').change(onVehicleSelected);
   onVehicleSelected();
+
+  initVehicleUsagesSortable($('tbody.vehicle-usages-sortable--enabled'));
+
+  $('.accordion-body.collapse').on('shown.bs.collapse', function() {
+    initVehicleUsagesSortable($('tbody.vehicle-usages-sortable--enabled', this));
+  });
 
   if (window.location.hash) {
     $('.accordion-body.collapse.in').each(function() {
