@@ -113,6 +113,9 @@ Rails.application.routes.draw do
       get :import_template, to: 'vehicle_usage_sets#import_template'
       post :upload_csv, to: 'vehicle_usage_sets#upload_csv', :as => 'import_csv'
     end
+    member do
+      patch :reorder_vehicle_usages
+    end
     patch 'duplicate'
   end
   delete 'vehicle_usage_sets' => 'vehicle_usage_sets#destroy_multiple'

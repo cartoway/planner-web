@@ -216,7 +216,8 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
       cost_time: 20.25
     )
 
-    vehicle_usage = @vehicle_usage_set.vehicle_usages.first
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_three)
+    assert_nil vehicle_usage.cost_distance
     assert_equal 10.5, vehicle_usage.default_cost_distance
     assert_equal 15.75, vehicle_usage.default_cost_fixed
     assert_equal 20.25, vehicle_usage.default_cost_time
@@ -240,5 +241,24 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     vu.update!(max_reload: 4)
 
     assert_equal 4, vu.default_max_reload
+  end
+
+  test 'reorder_vehicle_usages updates indices' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    first = vehicle_usages(:vehicle_usage_one_one)
+    second = vehicle_usages(:vehicle_usage_one_three)
+
+    vehicle_usage_set.reorder_vehicle_usages!([second.id, first.id])
+
+    assert_equal 1, first.reload.index
+    assert_equal 0, second.reload.index
+  end
+
+  test 'reorder_vehicle_usages rejects invalid ids' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+
+    assert_raises(ArgumentError) do
+      vehicle_usage_set.reorder_vehicle_usages!([vehicle_usages(:vehicle_usage_one_one).id])
+    end
   end
 end

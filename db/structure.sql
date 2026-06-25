@@ -1587,7 +1587,8 @@ CREATE TABLE public.vehicle_usages (
     cost_distance double precision,
     cost_fixed double precision,
     cost_time double precision,
-    max_reload integer
+    max_reload integer,
+    index integer DEFAULT 0 NOT NULL
 );
 
 
@@ -2973,6 +2974,13 @@ CREATE INDEX index_vehicle_usages_on_vehicle_usage_set_id ON public.vehicle_usag
 
 
 --
+-- Name: index_vehicle_usages_on_vehicle_usage_set_id_and_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_vehicle_usages_on_vehicle_usage_set_id_and_index ON public.vehicle_usages USING btree (vehicle_usage_set_id, index);
+
+
+--
 -- Name: index_vehicles_on_driver_token; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3936,6 +3944,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260527153532'),
 ('20260623064843'),
 ('20260623141222'),
-('20260624210858');
+('20260624210858'),
+('20260625210008');
 
 
