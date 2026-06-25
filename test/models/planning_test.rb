@@ -914,18 +914,41 @@ class PlanningTest < ActiveSupport::TestCase
     assert state.statistics.key?('routes_visits_duration')
   end
 
+  test 'capture_state does not load stops on planning association' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_routes_without_stops.first!
+
+    planning.capture_state!(trigger: 'move')
+
+    assert planning.association(:routes).loaded?
+    assert planning.routes.all? { |route| !route.association(:stops).loaded? }
+  end
+
   test 'capture_state runs compute_saved before persisting' do
     planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
     compute_called = false
 
-    planning.stub(:compute_saved!, lambda { |*_args|
+    planning.stub(:compute_saved!, lambda { |*_args, **options|
       compute_called = true
+      assert_equal false, options[:bang]
       true
     }) do
       planning.capture_state!(trigger: 'move')
     end
 
     assert compute_called
+  end
+
+  test 'capture_state skips route compute when all routes are up to date' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_routes_without_stops.first!
+    planning.routes.update_all(outdated: false)
+
+    Route.any_instance.stub(:compute!, ->(*) { flunk 'compute! should not run when routes are up to date' }) do
+      Route.any_instance.stub(:compute, ->(*) { flunk 'compute should not run when routes are up to date' }) do
+        assert_difference('PlanningState.count', 1) do
+          planning.capture_state!(trigger: 'update_stop')
+        end
+      end
+    end
   end
 
   test 'capture_state does not persist when compute_saved fails' do

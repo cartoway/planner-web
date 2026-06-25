@@ -31,16 +31,17 @@ module PlanningStateCapture
     return if skip_state_capture
     return unless persisted?
     return if routes.empty?
-    return unless compute_saved!
+    # Only recompute outdated routes; callers such as update_stop already compute the affected route.
+    return unless compute_saved!(bang: false)
 
-    refresh_routes_for_state_capture!
+    snapshot_source = planning_for_state_snapshot
 
     planning_states.create!(
       captured_at: Time.current,
       trigger: trigger.to_s,
       category: PlanningState.category_for(trigger),
-      payload: build_state_payload,
-      statistics: build_state_statistics
+      payload: build_state_payload(snapshot_source),
+      statistics: build_state_statistics(snapshot_source)
     )
     PlanningState.prune_excess!(id)
   end
@@ -79,24 +80,22 @@ module PlanningStateCapture
 
   private
 
-  def build_state_payload
-    preload_route_details_if_needed
-
+  def build_state_payload(planning = self)
     {
-      'vehicle_usage_set_id' => vehicle_usage_set_id,
-      'routes' => routes.map { |route| serialize_route_for_state(route) }
+      'vehicle_usage_set_id' => planning.vehicle_usage_set_id,
+      'routes' => planning.routes.map { |route| serialize_route_for_state(route) }
     }
   end
 
-  def build_state_statistics
-    averages_data = averages('km') || {}
+  def build_state_statistics(planning = self)
+    averages_data = planning.averages('km') || {}
     distance_total = 0
     duration_total = 0
     work_duration_total = 0
     stops_size = 0
     stops_size_active = 0
 
-    routes.each do |route|
+    planning.routes.each do |route|
       distance_total += route.distance.to_f
       next unless route.vehicle_usage
 
@@ -204,18 +203,8 @@ module PlanningStateCapture
     end
   end
 
-  def preload_route_details_if_needed
-    return if association(:routes).loaded? && routes.all? { |route| route.association(:stops).loaded? }
-
-    refresh_routes_for_state_capture!
-  end
-
-  def refresh_routes_for_state_capture!
-    Planning.where(id: id).preload_route_details.first!.tap do |loaded|
-      self.routes = loaded.routes
-      association(:vehicle_usage_set).reset
-      self.vehicle_usage_set = loaded.vehicle_usage_set
-    end
+  def planning_for_state_snapshot
+    Planning.where(id: id).preload_route_details.first!
   end
 
   def capture_state_for_mutation!(trigger)
