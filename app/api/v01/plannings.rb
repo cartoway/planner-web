@@ -381,36 +381,38 @@ class V01::Plannings < Grape::API
       planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
       raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
-      routes = planning.routes
-      routes = routes.select{ |r| params[:route_ids].include? r.id } unless !params[:route_ids] || params[:route_ids].empty?
-      routes.each do |route|
-        case params[:action].to_sym
-          when :toggle, :visibility
-            case params[:selection].to_sym
+      if params[:action].to_sym == :active
+        planning = current_customer.plannings.where(id: planning.id).preload_route_details.first!
+        routes = planning.routes
+        case params[:selection].to_sym
+        when :all, :reverse, :none
+          routes.each { |route| route.active(params[:selection].to_sym) }
+          planning.compute_saved!
+        end
+      else
+        routes = planning.routes
+        routes = routes.select{ |r| params[:route_ids].include? r.id } unless !params[:route_ids] || params[:route_ids].empty?
+        routes.each do |route|
+          case params[:action].to_sym
+            when :toggle, :visibility
+              case params[:selection].to_sym
               when :all
                 route.update! hidden: false
               when :reverse
                 route.update! hidden: !route.hidden
               when :none
                 route.update! hidden: true
-            end
-          when :lock
-            case params[:selection].to_sym
+              end
+            when :lock
+              case params[:selection].to_sym
               when :all
                 route.update! locked: true
               when :reverse
                 route.update! locked: !route.locked
               when :none
                 route.update! locked: false
-            end
-          when :active
-            next unless route.vehicle_usage_id
-
-            case params[:selection].to_sym
-              when :all, :reverse, :none
-                route.active(params[:selection].to_sym)
-                route.compute_saved!
-            end
+              end
+          end
         end
       end
 
