@@ -4,6 +4,8 @@
       %input.select-unselect-all{ type: 'checkbox', data: { id: vehicle_usage_set.id }, disabled: !can_update_vehicle_usage }
       = t('vehicle_usages.index.select_unselect_all')
   %thead
+    - if can_update_vehicle_usage
+      %th
     %th= t('activerecord.attributes.vehicle.name')
     %th= t('activerecord.attributes.vehicle.router_id')
     %th
@@ -15,9 +17,12 @@
     %th= t('vehicle_usage_sets.index.time')
     %th= t('vehicle_usages.index.devices')
     %th
-  %tbody
+  %tbody{ class: ['vehicle-usages-sortable', ('vehicle-usages-sortable--enabled' if can_update_vehicle_usage)].compact.join(' '), data: { vehicle_usage_set_id: vehicle_usage_set.id } }
     - vehicle_usage_set.vehicle_usages.each do |vehicle_usage|
-      %tr{ class: ('disabled' unless vehicle_usage.active) }
+      %tr{ class: ('disabled' unless vehicle_usage.active), data: { vehicle_usage_id: vehicle_usage.id } }
+        - if can_update_vehicle_usage
+          %td.vehicle-usage-sort-handle
+            %i.fa.fa-grip-vertical.fa-fw{ title: t('vehicle_usages.index.reorder') }
         %td
           %label{ for: "vehicle_usage_vehicle_#{vehicle_usage.id}" }
             %input.vehicle-select{ type: 'checkbox', id: "vehicle_usage_vehicle_#{vehicle_usage.id}", name: "vehicle_usages[#{vehicle_usage_set.id}][#{vehicle_usage.id}]", disabled: !can_update_vehicle_usage }

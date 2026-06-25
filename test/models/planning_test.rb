@@ -896,6 +896,18 @@ class PlanningTest < ActiveSupport::TestCase
     assert averages
     assert_equal 1, averages[:vehicles_used], averages.inspect
   end
+
+  test 'routes are ordered by vehicle usage index with out of route first' do
+    planning = plannings(:planning_one)
+    vehicle_usage_set = planning.vehicle_usage_set
+    first = vehicle_usages(:vehicle_usage_one_one)
+    second = vehicle_usages(:vehicle_usage_one_three)
+
+    vehicle_usage_set.reorder_vehicle_usages!([second.id, first.id])
+    route_ids = planning.routes.reload.map(&:vehicle_usage_id)
+
+    assert_equal [nil, second.id, first.id], route_ids
+  end
 end
 
 class PlanningTestError < ActiveSupport::TestCase

@@ -90,9 +90,11 @@ class V01::Devices::PraxedoTest < ActiveSupport::TestCase
       assert_equal 200, last_response.status
 
       stops_status = JSON.parse(last_response.body)
+      route_status = stops_status.find { |status| status['id'] == @route.id }
+      assert_not_nil route_status
       du_ids = @customer.deliverable_units.map(&:id)
       kg_du = @customer.deliverable_units.select { |du| du.label == 'kg' }.first
-      stops_status.last['quantities'].map do |quantity|
+      route_status['quantities'].each do |quantity|
         assert du_ids.include?(quantity['deliverable_unit_id'])
         if kg_du.id == quantity['deliverable_unit_id']
           assert_equal quantity['quantity'], 45

@@ -21,6 +21,11 @@ class VehicleTest < ActiveSupport::TestCase
   test 'should save' do
     vehicle = customers(:customer_one).vehicles.build(name: '1', max_distance: 200)
     vehicle.save!
+
+    vehicle.vehicle_usages.each do |vehicle_usage|
+      indices = vehicle_usage.vehicle_usage_set.vehicle_usages.pluck(:index)
+      assert_equal indices.uniq.size, indices.size
+    end
   end
 
   test 'should set hash router options' do
@@ -187,7 +192,7 @@ class VehicleTest < ActiveSupport::TestCase
     vehicle.color = '#123123' # Some visits are tagged with #FF0000
     vehicle.save!
     vehicle.reload
-    o = vehicle.vehicle_usages[0].routes[-1]
+    o = routes(:route_one_one)
     features = JSON.parse('[' + ((o.geojson_tracks || []) + (o.geojson_points || [])).join(',') + ']')
     assert_equal ['#123123', '#FF0000'], features.map{ |f| f['properties']['color'] }.uniq.compact
   end

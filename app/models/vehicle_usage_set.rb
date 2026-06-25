@@ -69,6 +69,18 @@ class VehicleUsageSet < ApplicationRecord
   before_create :check_max_vehicle_usage_set, unless: :import_skip
   before_update :update_outdated
 
+  def reorder_vehicle_usages!(ordered_ids)
+    ordered_ids = Array(ordered_ids).map(&:to_i)
+    expected_ids = vehicle_usages.pluck(:id).sort
+    raise ArgumentError, 'invalid vehicle usage ids' unless ordered_ids.sort == expected_ids
+
+    VehicleUsage.transaction do
+      # Unique index on (vehicle_usage_set_id, index): assign temporary negative indices first.
+      assign_vehicle_usage_indices!(ordered_ids) { |position| -(position + 1) }
+      assign_vehicle_usage_indices!(ordered_ids, &:itself)
+    end
+  end
+
   def duplicate
     vehicle_usage_set_id = self.custom_duplicate
     VehicleUsageSet.find(vehicle_usage_set_id)
@@ -86,6 +98,12 @@ class VehicleUsageSet < ApplicationRecord
   end
 
   private
+
+  def assign_vehicle_usage_indices!(ordered_ids)
+    ordered_ids.each_with_index do |vehicle_usage_id, position|
+      vehicle_usages.where(id: vehicle_usage_id).update_all(index: yield(position))
+    end
+  end
 
   def create_vehicle_usages
     if customer
