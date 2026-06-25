@@ -30,6 +30,18 @@ class V01::StoresTest < ActiveSupport::TestCase
     assert_equal @store.id, JSON.parse(last_response.body)[0]['id']
   end
 
+  test 'geojson uses customer default icon and icon size when store values are blank' do
+    @store.update_columns(icon: nil, icon_size: nil)
+    @store.customer.update!(store_icon: 'fa-industry', store_icon_size: 'small')
+
+    get '/api/0.1/stores.geojson?api_key=testkey1'
+    assert last_response.ok?, last_response.body
+    feature = JSON.parse(last_response.body)['features'].find { |f| f.dig('properties', 'store_id') == @store.id }
+
+    assert_equal 'fa-industry', feature.dig('properties', 'icon')
+    assert_equal 'small', feature.dig('properties', 'icon_size')
+  end
+
   test 'should return a store' do
     get api(@store.id)
     assert last_response.ok?, last_response.body

@@ -231,7 +231,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :lng, type: Float, coerce_with: CoerceFloatString
     optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Planner::Application.config.store_color_default}." }
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{Planner::Application.config.store_icon_default}." }
-    optional :icon_size, type: String, values: ::Store::ICON_SIZE, documentation: { desc: "Icon size. Default: #{Planner::Application.config.store_icon_size_default}." }
+    optional :icon_size, type: String, values: MapIconSize::SIZES, documentation: { desc: "Icon size. Default depends on entity type (destination, store)." }
     optional :store_reloads, type: Array, documentation: { param_type: 'body' } do
       use :request_store_reload
     end

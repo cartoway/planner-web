@@ -25,5 +25,5 @@ class V01::Entities::Tag < Grape::Entity
   expose(:ref, documentation: { type: String })
   expose(:color, documentation: { type: String, desc: "Color code with #. Default: #{Planner::Application.config.tag_color_default}." })
   expose(:icon, documentation: { type: String, desc: "Icon name from font-awesome. Default: #{Planner::Application.config.tag_icon_default}." })
-  expose(:icon_size, documentation: { type: String, values: ::Tag::ICON_SIZE, desc: "Icon size. Default: #{Planner::Application.config.tag_icon_size_default}." })
+  expose(:icon_size, documentation: { type: String, values: MapIconSize::SIZES, desc: "Icon size. Default: customer destination_icon_size or #{Planner::Application.config.destination_icon_size_default}." })
 end

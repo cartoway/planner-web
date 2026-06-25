@@ -18,7 +18,7 @@
 require 'font_awesome'
 
 class Store < Location
-  ICON_SIZE = %w(small medium large).freeze
+  include ValidatesIconSize
 
   default_scope { order(:id) }
 
@@ -33,7 +33,6 @@ class Store < Location
 
   auto_strip_attributes :name, :street, :postalcode, :city
   validates_inclusion_of :icon, in: FontAwesome::ICONS_TABLE, allow_nil: true, message: ->(*_) { I18n.t('activerecord.errors.models.store.icon_unknown') }
-  validates :icon_size, inclusion: { in: Store::ICON_SIZE, allow_nil: true, message: ->(*_) { I18n.t('activerecord.errors.models.store.icon_size_invalid') } }
 
   before_destroy :destroy_vehicle_store
   before_save :save_store_reloads
@@ -56,11 +55,11 @@ class Store < Location
   end
 
   def default_icon
-    icon || Planner::Application.config.store_icon_default
+    icon || customer.default_store_icon
   end
 
   def default_icon_size
-    icon_size || Planner::Application.config.store_icon_size_default
+    icon_size || customer.default_store_icon_size
   end
 
   def position

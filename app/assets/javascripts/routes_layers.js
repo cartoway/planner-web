@@ -673,13 +673,20 @@ export const RoutesLayer = L.FeatureGroup.extend({
     }
   },
 
-  _findStopMarker: function(routeId, stopIndex) {
+  _findStopMarker: function(routeId, stopIndex, options) {
+    options = options || {};
     if (!this.clustersByRoute[routeId]) { return null; }
     var markers = this.clustersByRoute[routeId].getLayers();
     for (var i = 0; i < markers.length; i++) {
-      if (markers[i].properties['index'] == stopIndex) {
-        return markers[i];
+      var props = markers[i].properties;
+      if (!props || props.index != stopIndex) { continue; }
+      if (options.subTourIndex != null && parseInt(props.sub_tour_index, 10) !== parseInt(options.subTourIndex, 10)) {
+        continue;
       }
+      if (options.stopId != null && parseInt(props.stop_id, 10) !== parseInt(options.stopId, 10)) {
+        continue;
+      }
+      return markers[i];
     }
     return null;
   },
@@ -751,16 +758,25 @@ export const RoutesLayer = L.FeatureGroup.extend({
   },
 
   focus: function(options) {
-    if (options.routeId && options.stopIndex) {
-      var marker = this._findStopMarker(options.routeId, options.stopIndex);
+    if (options.routeId && options.stopIndex != null) {
+      var marker = this._findStopMarker(options.routeId, options.stopIndex, {
+        subTourIndex: options.subTourIndex,
+        stopId: options.stopId
+      });
       this._clearStopFocus();
       if (marker) {
+        if (marker.properties && marker.properties.type === 'StopStore' && options.subTourIndex != null) {
+          this.bringStopStoreMarkerToFront(options.routeId, options.subTourIndex);
+        } else {
+          this._bringMarkerToFront(options.routeId, marker);
+        }
         this._setViewForMarker(options.routeId, marker);
       } else {
         this._focusTraceForStop(options.routeId, options.stopIndex);
       }
     } else if (options.storeId && this.markerStores[options.storeId]) {
       this._clearStopFocus();
+      this._bringStoreMarkerToFront(options.storeId);
       this.map.setView(this.markerStores[options.storeId].getLatLng(), this.map.getZoom(), {
         reset: true
       });
@@ -801,6 +817,71 @@ export const RoutesLayer = L.FeatureGroup.extend({
       this.subTourColors[normalizedRouteId][subTourIndex] = color;
     } else {
       delete this.subTourColors[normalizedRouteId][subTourIndex];
+    }
+  },
+
+  _defaultZIndexForMarker: function(marker) {
+    if (!marker.properties) { return 0; }
+    if (marker.properties.type === 'StopStore') { return 100; }
+    if (marker.properties.number) { return 500; }
+    return 0;
+  },
+
+  _resetMarkersZIndex: function() {
+    var that = this;
+    Object.keys(this.clustersByRoute).forEach(function(routeId) {
+      that.clustersByRoute[routeId].getLayers().forEach(function(marker) {
+        var defaultZ = marker.properties && marker.properties.defaultZIndex != null ?
+          marker.properties.defaultZIndex :
+          that._defaultZIndexForMarker(marker);
+        marker.setZIndexOffset(defaultZ);
+      });
+    });
+    Object.keys(this.markerStores).forEach(function(storeId) {
+      that.markerStores[storeId].setZIndexOffset(100);
+    });
+  },
+
+  bringStopStoreMarkerToFront: function(routeId, subTourIndex) {
+    if (!this.clustersByRoute[routeId]) { return; }
+
+    this._resetMarkersZIndex();
+
+    var targetSubTourIndex = parseInt(subTourIndex, 10);
+    var stopStoreMarkers = this.clustersByRoute[routeId].getLayers().filter(function(marker) {
+      return marker.properties && marker.properties.type === 'StopStore';
+    });
+
+    stopStoreMarkers.forEach(function(marker) {
+      var isTarget = parseInt(marker.properties.sub_tour_index, 10) === targetSubTourIndex;
+      if (isTarget) {
+        marker.setZIndexOffset(1000);
+        if (marker.bringToFront) {
+          marker.bringToFront();
+        }
+      }
+    });
+  },
+
+  _bringMarkerToFront: function(routeId, marker) {
+    if (!marker || !this.clustersByRoute[routeId]) { return; }
+
+    this._resetMarkersZIndex();
+    marker.setZIndexOffset(1000);
+    if (marker.bringToFront) {
+      marker.bringToFront();
+    }
+  },
+
+  _bringStoreMarkerToFront: function(storeId) {
+    var normalizedStoreId = storeId.toString();
+    var marker = this.markerStores[normalizedStoreId] || this.markerStores[storeId];
+    if (!marker) { return; }
+
+    this._resetMarkersZIndex();
+    marker.setZIndexOffset(1000);
+    if (marker.bringToFront) {
+      marker.bringToFront();
     }
   },
 
@@ -1002,8 +1083,9 @@ export const RoutesLayer = L.FeatureGroup.extend({
             pointColor = 'rgba(' + parseInt(pointColor.substring(1, 3), 16) + ',' + parseInt(pointColor.substring(3, 5), 16) + ',' + parseInt(pointColor.substring(5, 7), 16) + ',0.8)';
           }
           var pointAnchor = new L.Point(this.map.iconSize[pointIconSize].size / 2, this.map.iconSize[pointIconSize].size);
+          var isStopStore = geoJsonPoint.properties.type === 'StopStore';
 
-          if (overlappingMarkers[overlapKey]) {
+          if (overlappingMarkers[overlapKey] && !isStopStore) {
             if (overlappingMarkers.routeIds.indexOf(routeId) === -1 || this.options.disableClusters) {
               // Displays extra point at same coordinates through multiple circle around the original coordinates
               if (((overlappingMarkers[overlapKey]) % Math.pow(2, overlappingMarkers.modulo)) === 0) {
@@ -1063,16 +1145,24 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
         nbMarkers += 1;
 
+        var defaultZIndex = 0;
         if (geoJsonPoint.properties.number) {
-          (lowIndex) ? marker.setZIndexOffset(-999) : marker.setZIndexOffset(500);
+          defaultZIndex = lowIndex ? -999 : 500;
+          marker.setZIndexOffset(defaultZIndex);
+        } else if (geoJsonPoint.properties.type === 'StopStore') {
+          defaultZIndex = 100;
+          marker.setZIndexOffset(defaultZIndex);
         }
 
         marker.properties = geoJsonPoint.properties;
+        marker.properties.defaultZIndex = defaultZIndex;
         // Add route color to each marker
         marker.properties.route_color = this.options.colorsByRoute[geoJsonPoint.properties.route_id];
 
         if (storeId) {
           this.markerStores[storeId] = marker;
+          marker.setZIndexOffset(100);
+          marker.properties.defaultZIndex = 100;
         } else {
           if (!this.clustersByRoute[routeId]) {
             this.clustersByRoute[routeId] = L.markerClusterGroup(this.markerOptions);

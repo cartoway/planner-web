@@ -32,7 +32,7 @@ class V01::Entities::Store < Grape::Entity
   expose(:lng, documentation: { type: Float })
   expose(:color, documentation: { type: String, desc: "Color code with #. Default: #{Planner::Application.config.store_color_default}." })
   expose(:icon, documentation: { type: String, desc: "Icon name from font-awesome. Default: #{Planner::Application.config.store_icon_default}." })
-  expose(:icon_size, documentation: { type: String, values: ::Store::ICON_SIZE, desc: "Icon size. Default: #{Planner::Application.config.store_icon_size_default}." })
+  expose(:icon_size, documentation: { type: String, values: MapIconSize::SIZES, desc: "Icon size. Default: customer store_icon_size or #{Planner::Application.config.store_icon_size_default}." })
   expose(:geocoding_accuracy, documentation: { type: Float })
   expose(:geocoding_level, documentation: { type: String, values: ['point', 'house', 'street', 'intersection', 'city'] })
   expose(:geocoding_result, documentation: { type: JSON })
