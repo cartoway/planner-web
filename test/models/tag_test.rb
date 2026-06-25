@@ -32,4 +32,18 @@ class TagTest < ActiveSupport::TestCase
 
     refute tag2.valid?
   end
+
+  test 'default_icon_size uses customer destination icon size' do
+    @customer.update!(destination_icon_size: 'large')
+    tag = @customer.tags.build(label: 'size-default', color: '#ff0000')
+
+    assert_equal 'large', tag.default_icon_size
+  end
+
+  test 'default_icon_size prefers tag value over customer default' do
+    @customer.update!(destination_icon_size: 'large')
+    tag = @customer.tags.build(label: 'size-override', color: '#ff0000', icon_size: 'small')
+
+    assert_equal 'small', tag.default_icon_size
+  end
 end

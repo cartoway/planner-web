@@ -17,8 +17,21 @@
 #
 require 'sanitize'
 require 'json'
+require 'font_awesome'
 
 class Customer < ApplicationRecord
+  def self.map_icon_size_attributes
+    %i[destination_icon_size store_icon_size rest_icon_size]
+  end
+
+  include ValidatesIconSize
+
+  MAP_ICON_ATTRIBUTES = %i[
+    destination_icon destination_icon_size
+    store_icon store_icon_size
+    rest_icon rest_icon_size
+  ].freeze
+
   PRINT_BARCODE = %w(code128).freeze
 
   default_scope { order(:id) }
@@ -76,6 +89,9 @@ class Customer < ApplicationRecord
   validates :router_dimension, presence: true
   validates :name, presence: true, length: { maximum: 255 }
   validates :default_country, presence: true
+  validates :destination_icon, :store_icon, :rest_icon,
+            inclusion: { in: FontAwesome::ICONS_TABLE, allow_nil: true,
+                         message: ->(*) { I18n.t('activerecord.errors.models.customer.icon_unknown') } }
   # TODO default_max_destinations
   validates :stores, length: { maximum: Planner::Application.config.max_destinations / 10, message: :over_max_limit }
   validate :validate_plannings_count
@@ -159,6 +175,30 @@ class Customer < ApplicationRecord
 
   def planning_date_offset_default
     planning_date_offset || Planner::Application.config.planning_date_offset_default || 0
+  end
+
+  def default_destination_icon
+    destination_icon || Planner::Application.config.destination_icon_default
+  end
+
+  def default_destination_icon_size
+    destination_icon_size || Planner::Application.config.destination_icon_size_default
+  end
+
+  def default_store_icon
+    store_icon || Planner::Application.config.store_icon_default
+  end
+
+  def default_store_icon_size
+    store_icon_size || Planner::Application.config.store_icon_size_default
+  end
+
+  def default_rest_icon
+    rest_icon || Planner::Application.config.rest_icon_default
+  end
+
+  def default_rest_icon_size
+    rest_icon_size || Planner::Application.config.rest_icon_size_default
   end
 
   def duplicate
@@ -634,7 +674,7 @@ class Customer < ApplicationRecord
   end
 
   def update_outdated
-    if optimization_force_start_changed? || visit_duration_changed? || destination_duration_changed? || store_reload_duration_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || enable_strict_within_timewindows_changed? || @deliverable_units_updated
+    if optimization_force_start_changed? || visit_duration_changed? || destination_duration_changed? || map_marker_defaults_changed? || store_reload_duration_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || enable_strict_within_timewindows_changed? || @deliverable_units_updated
       plannings.each { |planning|
         planning.routes.each { |route|
           route.outdated = true
@@ -645,6 +685,10 @@ class Customer < ApplicationRecord
 
   def update_deliverable_units_track(_deliverable_unit)
     @deliverable_units_updated = true
+  end
+
+  def map_marker_defaults_changed?
+    MAP_ICON_ATTRIBUTES.any? { |attribute| public_send("#{attribute}_changed?") }
   end
 
   def update_max_vehicles

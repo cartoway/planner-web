@@ -174,6 +174,10 @@ module Planner
     config.store_icon_default = 'fa-store'.freeze
     config.store_icon_size_default = 'large'.freeze
 
+    # Default values for rests
+    config.rest_icon_default = 'fa-mug-saucer'.freeze
+    config.rest_icon_size_default = 'medium'.freeze
+
     # Default values for vehicles
     config.vehicle_consumption_default = 7.7
     config.vehicle_fuel_type_default = 'light_diesel'.freeze

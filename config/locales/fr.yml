@@ -196,6 +196,12 @@ fr:
         max_vehicle_usage_sets: Max configurations des véhicules
         visit_duration: Durée de visite
         destination_duration: Durée de visite par destination
+        destination_icon: Icône des visites sur la carte
+        destination_icon_size: Taille d'icône des visites
+        store_icon: Icône des sites sur la carte
+        store_icon_size: Taille d'icône des sites
+        rest_icon: Icône des pauses sur la carte
+        rest_icon_size: Taille d'icône des pauses
         store_reload_duration: Durée de rechargement
         default_country: Pays par défaut
         with_state: Ajouter champ État dans les adresses
@@ -746,6 +752,8 @@ fr:
               over_max_limit: dépassement du nombre maximal de sites
             vehicle_usage_sets:
               over_max_limit: dépassement du nombre maximal de configurations des véhicules
+          icon_size_invalid: n'est pas une taille valide
+          icon_unknown: n'est pas une icône font-awesome autorisée
         store:
           at_least_one: Au moins un site est requis
           icon_unknown: n'est pas une icône font-awesome autorisée
@@ -1224,6 +1232,20 @@ fr:
       value_default: '%{n} (valeur par défaut)'
       visit_duration_help: Durée de visite moyenne par client
       destination_duration_help: Durée de visite par destination
+      destination_icon_help: Icône et taille par défaut des visites sur la carte. Les catégories peuvent surcharger cette valeur.
+      store_icon_help: Icône et taille par défaut des sites sur la carte. Chaque site peut surcharger cette valeur.
+      rest_icon_help: Icône et taille par défaut des pauses sur la carte. Le site de pause peut surcharger cette valeur.
+      map_markers:
+        legend: Marqueurs sur la carte
+        destination:
+          prefered_icons: Icônes de visite
+          other_icons: Autres icônes
+        store:
+          prefered_icons: Icônes de site
+          other_icons: Autres icônes
+        rest:
+          prefered_icons: Icônes de pause
+          other_icons: Autres icônes
       store_reload_duration_help: Durée de rechargement moyenne par site
       max_plannings_help: Nombre maximal de plans autorisés dans le compte.
       max_zonings_help: Nombre maximal de sectorisations autorisés dans le compte.
