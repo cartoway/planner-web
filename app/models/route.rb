@@ -391,7 +391,9 @@ class Route < ApplicationRecord
             end
 
             stop_attributes[:out_of_window] = !!(late_wait && late_wait > 0)
-            previous_route_data_attributes[:out_of_window] ||= stop_attributes[:out_of_window]
+
+            # rest lateness is handled in adjust_unpositioned_stop_rest_times!
+            previous_route_data_attributes[:out_of_window] ||= stop_attributes[:out_of_window] if !stop.is_a?(StopRest) || stop.position?
             route_attributes[:revenue] = route_attributes[:revenue].nil? ? stop.visit&.revenue : route_attributes[:revenue] + (stop.visit&.revenue || 0)
             previous_route_data_attributes[:revenue] = (previous_route_data_attributes[:revenue] || 0) + (stop.visit&.revenue || 0)
             route_attributes[:distance] += stop_attributes[:distance] if stop_attributes[:distance]
@@ -519,6 +521,9 @@ class Route < ApplicationRecord
       self.assign_attributes(route_only_attributes)
 
       route_data.assign_attributes(route_data_attributes.compact)
+
+      previous_route_data = self.route_data
+      adjust_unpositioned_stop_rest_times!(previous_route_data, stops_sort, stops_drive_time)
       [stops_sort, stops_drive_time, stops_time_windows]
     end
   end
@@ -1717,6 +1722,32 @@ class Route < ApplicationRecord
     STOP_LEG_ROUTE_DATA_ALERT_FIELDS.each do |route_data_key, route_key|
       route_data_attributes[route_data_key] =
         route_data_attributes[route_data_key] || route_attributes[route_key] || false
+    end
+  end
+
+  def adjust_unpositioned_stop_rest_times!(previous_route_data, stops_sort, stops_drive_time)
+    strict = planning.customer.enable_strict_within_timewindows
+
+    stops_sort.each do |stop|
+      if stop.is_a?(StopStore)
+        previous_route_data = stop.route_data
+      end
+      next unless stop.is_a?(StopRest) && stop.active? && !stop.position? && stop.time
+
+      arrival_time = stop.wait_time ? stop.time - stop.wait_time : stop.time
+      _open, close, = stop.best_open_close(arrival_time, strict_within_timewindows: strict)
+      close_compare_time = strict ? arrival_time + stop.duration : arrival_time
+      lateness = close && close_compare_time > close ? close_compare_time - close : 0
+      next unless lateness.positive?
+
+      shift = [lateness, stops_drive_time[stop]].compact.min
+      next unless shift.positive?
+
+      stop.time = arrival_time - shift
+      stop.wait_time = nil
+      _open, _close, late_wait = stop.best_open_close(stop.time, strict_within_timewindows: strict)
+      stop.out_of_window = !!(late_wait && late_wait.positive?)
+      previous_route_data.out_of_window ||=  stop.out_of_window
     end
   end
 
