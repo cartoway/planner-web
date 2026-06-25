@@ -351,6 +351,16 @@ class Planning < ApplicationRecord
     end
   end
 
+  # Swap in routes preloaded without stops (lighter association for controller responses).
+  def refresh_routes_without_stops!
+    Planning.where(id: id).preload_routes_without_stops.first!.tap do |loaded|
+      self.routes = loaded.routes
+      association(:vehicle_usage_set).reset
+      self.vehicle_usage_set = loaded.vehicle_usage_set
+    end
+    self
+  end
+
   def visits_include?(visit)
     if self.id
       # Don't load all visits if it is not necessary
@@ -1301,6 +1311,19 @@ class Planning < ApplicationRecord
     [sql, plan_tag_ids, plan_tag_ids]
   end
 
+  def preload_routes_for_compute!(routes_to_compute)
+    routes_missing_stops = Array(routes_to_compute).select { |route| !route.association(:stops).loaded? }
+    return if routes_missing_stops.empty?
+
+    routes_by_id = routes_missing_stops.index_by(&:id)
+    Route.where(id: routes_by_id.keys)
+         .includes_vehicle_usages
+         .includes_destinations_and_stores
+         .find_each do |reloaded_route|
+      routes_by_id[reloaded_route.id]&.reload_like_attributes(reloaded_route)
+    end
+  end
+
   def compute_within_existing_transaction(options = {}, routes_to_enqueue = [])
     geojson_data = []
     stop_rests = []
@@ -1310,14 +1333,13 @@ class Planning < ApplicationRecord
 
     # Collect all segments from all routes that need routing
     all_segments = []
-    computed_routes = []
-    routes.each{ |r|
-      if options[:bang]!= false || r.outdated
-        computed_routes << r
-        segments = r.collect_segments_for_routing(r.stops.sort_by(&:index))
-        all_segments << { route: r, segments: segments } if segments.any?
-      end
-    }
+    computed_routes = routes.select { |route| options[:bang] != false || route.outdated }
+    preload_routes_for_compute!(computed_routes)
+
+    computed_routes.each do |route|
+      segments = route.collect_segments_for_routing(route.stops.sort_by(&:index))
+      all_segments << { route: route, segments: segments } if segments.any?
+    end
 
     compute_options = options.merge(skip_preload: true)
     if computed_routes.any?

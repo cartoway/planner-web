@@ -505,7 +505,11 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       begin
         Planning.transaction do
-          @route = @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.find(Integer(params[:route_id]))
+          route_id = Integer(params[:route_id])
+          @route = Route.where(planning_id: @planning.id, id: route_id)
+                        .includes_vehicle_usages
+                        .includes_destinations_and_stores
+                        .first!
           @stop = @route.stops.find(Integer(params[:stop_id]))
           if @stop && params[:stop].present?
             stop_h = params[:stop].to_unsafe_h
@@ -513,13 +517,12 @@ class PlanningsController < ApplicationController
             deny_unless_operation_usable!(:stop, 'lock_stop') if stop_h.key?('locked')
           end
           @stop.assign_attributes(stop_params) if @stop
-          updated_route_id = @route.id
-          if @stop && @route.compute_saved! && @route.reload && @planning.reload
-            ActiveRecord::Associations::Preloader.new.preload(
-              [@planning],
-              routes: [:route_data, { vehicle_usage: :vehicle }]
-            )
-            @route = Route.where(id: updated_route_id, planning_id: @planning.id).includes_vehicle_usages.includes_destinations_and_stores.first!
+          if @stop && @route.compute_saved!
+            @planning = current_user.customer.plannings.where(id: @planning.id).preload_routes_without_stops.first!
+            @route = Route.where(id: route_id, planning_id: @planning.id)
+                          .includes_vehicle_usages
+                          .includes_destinations_and_stores
+                          .first!
             @routes = [@route]
             planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
             format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
@@ -913,6 +916,7 @@ class PlanningsController < ApplicationController
 
     trigger = action_name == 'driver_move' ? 'move' : action_name
     @planning.capture_state!(trigger: trigger)
+    @planning.refresh_routes_without_stops!
   end
 
   def remember_vehicle_usage_set_id_for_state_capture
@@ -928,6 +932,7 @@ class PlanningsController < ApplicationController
     return if new_set_id.to_i == @vehicle_usage_set_id_before_update
 
     @planning.capture_state!(trigger: 'vehicle_usage_set')
+    @planning.refresh_routes_without_stops!
   end
 
   def planning_state_capture_response_successful?
