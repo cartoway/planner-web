@@ -17,9 +17,9 @@
 #
 class VehicleUsageSetsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_vehicle_usage_set, only: [:show, :edit, :update, :destroy, :duplicate]
+  before_action :set_vehicle_usage_set, only: [:show, :edit, :update, :destroy, :duplicate, :reorder_vehicle_usages]
   around_action :over_max_limit, only: [:create, :duplicate]
-  before_action -> { deny_unless_form_update!(:vehicle_usages) }, only: [:create, :update, :destroy, :destroy_multiple, :duplicate, :upload_csv]
+  before_action -> { deny_unless_form_update!(:vehicle_usages) }, only: [:create, :update, :destroy, :destroy_multiple, :duplicate, :upload_csv, :reorder_vehicle_usages]
 
   load_and_authorize_resource
 
@@ -119,6 +119,13 @@ class VehicleUsageSetsController < ApplicationController
       @vehicle_usage_set.save! validate: Planner::Application.config.validate_during_duplication
       format.html { redirect_to edit_vehicle_usage_set_path(@vehicle_usage_set), notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human) }
     end
+  end
+
+  def reorder_vehicle_usages
+    @vehicle_usage_set.reorder_vehicle_usages!(params[:vehicle_usage_ids])
+    head :ok
+  rescue ArgumentError
+    head :unprocessable_entity
   end
 
   def import_template

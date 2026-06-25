@@ -16,6 +16,18 @@ class OptimizerWrapperTest < ActionController::TestCase
     @deliverable_unit = deliverable_units(:deliverable_unit_one_one)
   end
 
+  def out_of_route_for(planning)
+    planning.routes.find { |route| !route.vehicle_usage? }
+  end
+
+  def last_vehicle_route_for(planning)
+    planning.routes.select(&:vehicle_usage?).last
+  end
+
+  def vrp_vehicle_for(route, vrp)
+    vrp[:vehicles].find { |vehicle| vehicle[:id] == "v#{route.id}" }
+  end
+
   test 'should provide extra time for timewindow ends' do
     begin
       planning = plannings(:planning_one)
@@ -65,14 +77,16 @@ class OptimizerWrapperTest < ActionController::TestCase
 
   test 'should build vrp with soft contraints' do
     begin
-      moved_stop = @planning.routes.first.stops.first
-      vrp = @optim.build_vrp(@planning, @planning.routes.to_a.values_at(0, 2), **{ moving_stop_ids: [moved_stop.id], insertion_only: true })
+      out_of_route = out_of_route_for(@planning)
+      target_route = last_vehicle_route_for(@planning)
+      moved_stop = out_of_route.stops.first
+      vrp = @optim.build_vrp(@planning, [out_of_route, target_route], **{ moving_stop_ids: [moved_stop.id], insertion_only: true })
       refute_empty vrp[:relations]
-      assert_equal vrp[:relations].first[:linked_ids], @planning.routes.last.stops.map{ |s| "s#{s.id}" }
+      assert_equal vrp[:relations].first[:linked_ids], target_route.stops.map{ |s| "s#{s.id}" }
       refute_empty vrp[:routes]
       assert_equal(
         vrp[:routes].first[:mission_ids].sort,
-        @planning.routes.last.stops.map{ |s|
+        target_route.stops.map{ |s|
           next if !s.is_a?(StopVisit)
 
           "s#{s.id}"
@@ -187,11 +201,13 @@ class OptimizerWrapperTest < ActionController::TestCase
 
       vrp = @optim.build_vrp(@planning, @planning.routes)
       assert_equal stops.size + rest_stop.size, vrp[:services].size
-      stops.each.with_index{ |stop, index|
-        assert vrp[:services][index]
-        assert_equal stop.time_window_start_1, vrp[:services][index][:activity][:timewindows][0][:start]
-        assert_equal stop.time_window_end_1, vrp[:services][index][:activity][:timewindows][0][:end]
-      }
+      services_by_id = vrp[:services].index_by { |service| service[:id] }
+      stops.each do |stop|
+        service = services_by_id["s#{stop.id}"]
+        assert service
+        assert_equal stop.time_window_start_1, service[:activity][:timewindows][0][:start]
+        assert_equal stop.time_window_end_1, service[:activity][:timewindows][0][:end]
+      end
     end
   ensure
     remove_request_stub(@stub_VrpJob)
@@ -352,7 +368,7 @@ class OptimizerWrapperTest < ActionController::TestCase
   test 'should handle service time in vehicle timewindows' do
     begin
       planning = plannings(:planning_one)
-      route = planning.routes[1]
+      route = planning.routes.select(&:vehicle_usage?).first
 
       route.vehicle_usage.update(
         service_time_start: 300,
@@ -360,9 +376,10 @@ class OptimizerWrapperTest < ActionController::TestCase
       )
 
       vrp = @optim.build_vrp(planning, planning.routes)
+      vehicle = vrp_vehicle_for(route, vrp)
 
-      assert_equal 36000 + 300, vrp[:vehicles][0][:timewindow][:start]
-      assert_equal 54000 - 600, vrp[:vehicles][0][:timewindow][:end]
+      assert_equal 36000 + 300, vehicle[:timewindow][:start]
+      assert_equal 54000 - 600, vehicle[:timewindow][:end]
 
       route.vehicle_usage.vehicle_usage_set.update(
         service_time_start: 120,
@@ -370,15 +387,17 @@ class OptimizerWrapperTest < ActionController::TestCase
       )
 
       vrp = @optim.build_vrp(planning, planning.routes)
+      vehicle = vrp_vehicle_for(route, vrp)
 
-      assert_equal 36000 + 300, vrp[:vehicles][0][:timewindow][:start]
-      assert_equal 54000 - 600, vrp[:vehicles][0][:timewindow][:end]
+      assert_equal 36000 + 300, vehicle[:timewindow][:start]
+      assert_equal 54000 - 600, vehicle[:timewindow][:end]
 
       route.vehicle_usage.update(service_time_start: nil, service_time_end: nil)
       vrp = @optim.build_vrp(planning, planning.routes)
+      vehicle = vrp_vehicle_for(route, vrp)
 
-      assert_equal 36000 + 120, vrp[:vehicles][0][:timewindow][:start]
-      assert_equal 54000 - 180, vrp[:vehicles][0][:timewindow][:end]
+      assert_equal 36000 + 120, vehicle[:timewindow][:start]
+      assert_equal 54000 - 180, vehicle[:timewindow][:end]
     end
   end
 

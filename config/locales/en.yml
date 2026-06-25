@@ -2924,6 +2924,7 @@ en:
       title: Listing vehicle configurations
       capacities: Capacities
       select_unselect_all: Select/Unselect all vehicles
+      reorder: Reorder
       stores: Start - End
       store:
         no_start: No start store
@@ -3034,6 +3035,8 @@ en:
     new:
       title: New vehicles configuration
     import:
+      index: order
+      index_desc: vehicle position in the configuration. If omitted, row order in the file is used
       cost_distance: cost per km
       cost_distance_desc: cost applied per km of the vehicle's route
       cost_fixed: fixed cost
@@ -3136,6 +3139,7 @@ en:
       none_column: None found column
       missing_name: '"name" of the default configuration missing'
       missing_time_window_start_end: begin or end time of the default configuration missing
+      invalid_index: vehicle order must be a non-negative integer
       invalid_numeric_value: 'Invalid numeric value "%{value}".'
       check_custom_columns: Check your columns definition.
     form:
