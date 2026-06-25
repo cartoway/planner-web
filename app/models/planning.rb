@@ -23,7 +23,7 @@ class Planning < ApplicationRecord
   belongs_to :customer, counter_cache: true
   has_and_belongs_to_many :zonings, autosave: true, after_add: :update_zonings_track, after_remove: :update_zonings_track
   before_destroy :delete_all_routes
-  has_many :routes, -> { order("vehicle_usage_id NULLS FIRST") }, inverse_of: :planning, autosave: true
+  has_many :routes, -> { left_joins(:vehicle_usage).order(Arel.sql('vehicle_usages.index ASC NULLS LAST')) }, inverse_of: :planning, autosave: true
 
   has_many :tag_plannings, dependent: :destroy
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track

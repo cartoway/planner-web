@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class VehicleUsage < ApplicationRecord
-  default_scope { order(:id) }
+  default_scope { order(:index) }
 
   belongs_to :vehicle_usage_set
 
@@ -49,6 +49,7 @@ class VehicleUsage < ApplicationRecord
   time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
   attr_localized :cost_distance, :cost_fixed, :cost_time
 
+  validates :index, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :cost_distance, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
   validates :cost_fixed, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
   validates :cost_time, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
@@ -57,6 +58,7 @@ class VehicleUsage < ApplicationRecord
   validate :rest_duration_range
   validate :work_time_inside_window
 
+  before_validation :assign_index, on: :create
   before_update :update_outdated
 
   before_save :update_routes
@@ -300,7 +302,26 @@ class VehicleUsage < ApplicationRecord
     hash
   end
 
+  def index=(value)
+    @index_explicitly_assigned = true
+    super
+  end
+
   private
+
+  def assign_index
+    return if @index_explicitly_assigned
+
+    set = vehicle_usage_set
+    return unless set
+
+    siblings = set.vehicle_usages.to_a.reject { |vu| vu == self }
+    used_indices = siblings.map(&:index)
+    db_max = set.vehicle_usages.where.not(id: id).maximum(:index)
+    max_index = [db_max, used_indices.max].compact.max
+    write_attribute(:index, max_index.nil? ? 0 : max_index + 1)
+    @index_explicitly_assigned = true
+  end
 
   def update_routes
     return if changes.exclude?(:active)

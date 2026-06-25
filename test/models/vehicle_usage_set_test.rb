@@ -241,4 +241,23 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
 
     assert_equal 4, vu.default_max_reload
   end
+
+  test 'reorder_vehicle_usages updates indices' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    first = vehicle_usages(:vehicle_usage_one_one)
+    second = vehicle_usages(:vehicle_usage_one_three)
+
+    vehicle_usage_set.reorder_vehicle_usages!([second.id, first.id])
+
+    assert_equal 1, first.reload.index
+    assert_equal 0, second.reload.index
+  end
+
+  test 'reorder_vehicle_usages rejects invalid ids' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+
+    assert_raises(ArgumentError) do
+      vehicle_usage_set.reorder_vehicle_usages!([vehicle_usages(:vehicle_usage_one_one).id])
+    end
+  end
 end

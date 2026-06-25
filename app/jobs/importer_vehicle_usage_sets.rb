@@ -79,7 +79,9 @@ class ImporterVehicleUsageSets < ImporterBase
   end
 
   def columns
-    columns_vehicle.merge(columns_vehicle_usage_set)
+    {
+      index: { title: I18n.t('vehicle_usage_sets.import.index'), desc: I18n.t('vehicle_usage_sets.import.index_desc'), format: I18n.t('vehicle_usage_sets.import.format.integer') }
+    }.merge(columns_vehicle.merge(columns_vehicle_usage_set))
   end
 
   def json_to_rows(json)
@@ -167,7 +169,7 @@ class ImporterVehicleUsageSets < ImporterBase
     row[:custom_attributes] = custom_attributes if custom_attributes.any?
   end
 
-  def import_row(_name, row, _line, options)
+  def import_row(_name, row, line, options)
     if (row[:time_window_start].nil? || row[:time_window_end].nil?) && @vehicle_usage_set.nil?
       raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.missing_time_window_start_end'))
     elsif row[:name_vehicle].nil? && !@vehicle_usage_set.nil?
@@ -210,6 +212,7 @@ class ImporterVehicleUsageSets < ImporterBase
     vehicle_usage_attributes[:store_rest] = @stores_by_ref[vehicle_usage_attributes.delete(:store_rest_ref)]
     vehicle_usage_attributes[:store_reloads] = row[:store_reloads]&.map{ |store_reload| store_reload } || []
     vehicle_usage = @vehicle_usage_set.vehicle_usages.find{ |vu| vu.vehicle == vehicle }
+    vehicle_usage.index = normalize_vehicle_usage_index(row.delete(:index), line)
     vehicle_usage.assign_attributes(vehicle_usage_attributes.except(:name_vehicle_usage_set))
 
     columns_vehicle_usage_set.keys.each do |key|
@@ -289,5 +292,16 @@ class ImporterVehicleUsageSets < ImporterBase
 
   def finalize_import(_name, options)
     options[:dests].each(&:reload)
+  end
+
+  def normalize_vehicle_usage_index(value, line)
+    if !empty_value?(value)
+      index = value.to_i
+      raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.invalid_index')) if index.negative?
+
+      index
+    else
+      line
+    end
   end
 end

@@ -203,4 +203,37 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
       assert_equal importer.errors[:file][0], I18n.t('destinations.import_file.too_many_lines', n: @customer.max_vehicles)
     end
   end
+
+  test 'should import vehicle usages order from csv row order' do
+    assert_difference('VehicleUsageSet.count', 0) do
+      ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_one.csv', 'text.csv')).import
+    end
+
+    vehicle_usage_set = @customer.vehicle_usage_sets.last
+    ordered_vehicle_names = vehicle_usage_set.vehicle_usages.map { |vehicle_usage| vehicle_usage.vehicle.name }
+
+    assert_equal ['Véhicule 1', 'Véhicule 2'], ordered_vehicle_names
+    assert_equal [0, 1], vehicle_usage_set.vehicle_usages.map(&:index)
+  end
+
+  test 'should import vehicle usages order from explicit index column' do
+    csv = <<~CSV
+      ordre,référence véhicule,nom véhicule,email,numéro de téléphone,émission,consommation,calculateur d'itinéraire,objectif du calculateur,options du calculateur,ajustement de la vitesse,couleur,appareils,horaire début,horaire fin,référence site départ,référence site arrivée,début plage repos,fin plage repos,durée de repos,référence site repos,durée de service avant,durée de service après,distance maximale (en mètres),coût kilométrique,coût fixe,coût horaire
+      1,,Véhicule 1,vehicle1@example.com,0548484953,,10,,,,,,,28800,57600,,,,,,,,,30000,1,2,3
+      0,,Véhicule 2,vehicle2@example.com,,,15,,,,,,,,57600,,,,,,,,,30000,1,2,3
+    CSV
+
+    Tempfile.create(['import_vehicle_usage_sets_index', '.csv']) do |file|
+      file.write(csv)
+      file.rewind
+
+      ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: file).import
+    end
+
+    vehicle_usage_set = @customer.vehicle_usage_sets.last
+    ordered_names = vehicle_usage_set.vehicle_usages.map { |vehicle_usage| vehicle_usage.vehicle.name }
+
+    assert_equal ['Véhicule 2', 'Véhicule 1'], ordered_names
+    assert_equal [0, 1], vehicle_usage_set.vehicle_usages.map(&:index)
+  end
 end

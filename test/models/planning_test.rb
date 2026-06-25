@@ -1050,6 +1050,18 @@ class PlanningTest < ActiveSupport::TestCase
     state = planning.planning_states.order(:id).last
     assert_equal 'optimize_route', state.trigger
   end
+
+  test 'routes are ordered by vehicle usage index with out of route last' do
+    planning = plannings(:planning_one)
+    vehicle_usage_set = planning.vehicle_usage_set
+    first = vehicle_usages(:vehicle_usage_one_one)
+    second = vehicle_usages(:vehicle_usage_one_three)
+
+    vehicle_usage_set.reorder_vehicle_usages!([second.id, first.id])
+    route_ids = planning.routes.reload.map(&:vehicle_usage_id)
+
+    assert_equal [second.id, first.id, nil], route_ids
+  end
 end
 
 class PlanningTestError < ActiveSupport::TestCase

@@ -154,11 +154,11 @@ CREATE TABLE public.customers (
     planning_date_offset integer DEFAULT 1,
     optimization_cost_fixed integer,
     destination_duration integer,
-    sms_intransit_template character varying,
     destinations_count integer DEFAULT 0 NOT NULL,
     visits_count integer DEFAULT 0 NOT NULL,
     plannings_count integer DEFAULT 0 NOT NULL,
     vehicles_count integer DEFAULT 0 NOT NULL,
+    sms_intransit_template character varying,
     enable_sms_intransit boolean DEFAULT false,
     enable_store_stops boolean DEFAULT false,
     enable_vehicle_costs boolean DEFAULT false NOT NULL,
@@ -543,6 +543,43 @@ CREATE TABLE public.orders_products (
 
 
 --
+-- Name: planning_states; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.planning_states (
+    id bigint NOT NULL,
+    planning_id bigint NOT NULL,
+    captured_at timestamp without time zone NOT NULL,
+    trigger character varying NOT NULL,
+    category character varying NOT NULL,
+    pinned boolean DEFAULT false NOT NULL,
+    payload jsonb DEFAULT '{}'::jsonb NOT NULL,
+    statistics jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: planning_states_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.planning_states_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: planning_states_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.planning_states_id_seq OWNED BY public.planning_states.id;
+
+
+--
 -- Name: plannings; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -591,43 +628,6 @@ CREATE TABLE public.plannings_zonings (
     planning_id integer,
     zoning_id integer
 );
-
-
---
--- Name: planning_states; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.planning_states (
-    id bigint NOT NULL,
-    planning_id integer NOT NULL,
-    captured_at timestamp without time zone NOT NULL,
-    trigger character varying NOT NULL,
-    category character varying NOT NULL,
-    pinned boolean DEFAULT false NOT NULL,
-    payload jsonb DEFAULT '{}'::jsonb NOT NULL,
-    statistics jsonb DEFAULT '{}'::jsonb NOT NULL,
-    created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
-);
-
-
---
--- Name: planning_states_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.planning_states_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: planning_states_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.planning_states_id_seq OWNED BY public.planning_states.id;
 
 
 --
@@ -1358,8 +1358,8 @@ ALTER SEQUENCE public.tag_vehicle_usages_id_seq OWNED BY public.tag_vehicle_usag
 CREATE TABLE public.tag_vehicles (
     vehicle_id integer NOT NULL,
     tag_id integer NOT NULL,
-    created_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.047754'::timestamp without time zone NOT NULL,
-    updated_at timestamp(6) without time zone DEFAULT '2024-07-19 16:51:06.047754'::timestamp without time zone NOT NULL,
+    created_at timestamp(6) without time zone DEFAULT '2024-10-10 13:46:07.974729'::timestamp without time zone NOT NULL,
+    updated_at timestamp(6) without time zone DEFAULT '2024-10-10 13:46:07.974729'::timestamp without time zone NOT NULL,
     id bigint NOT NULL
 );
 
@@ -1584,7 +1584,8 @@ CREATE TABLE public.vehicle_usages (
     cost_distance double precision,
     cost_fixed double precision,
     cost_time double precision,
-    max_reload integer
+    max_reload integer,
+    index integer DEFAULT 0 NOT NULL
 );
 
 
@@ -1838,6 +1839,13 @@ ALTER TABLE ONLY public.orders ALTER COLUMN id SET DEFAULT nextval('public.order
 
 
 --
+-- Name: planning_states id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.planning_states ALTER COLUMN id SET DEFAULT nextval('public.planning_states_id_seq'::regclass);
+
+
+--
 -- Name: plannings id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1870,13 +1878,6 @@ ALTER TABLE ONLY public.resellers ALTER COLUMN id SET DEFAULT nextval('public.re
 --
 
 ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_id_seq'::regclass);
-
-
---
--- Name: planning_states id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.planning_states ALTER COLUMN id SET DEFAULT nextval('public.planning_states_id_seq'::regclass);
 
 
 --
@@ -2129,6 +2130,14 @@ ALTER TABLE ONLY public.orders
 
 
 --
+-- Name: planning_states planning_states_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.planning_states
+    ADD CONSTRAINT planning_states_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: plannings plannings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2166,14 +2175,6 @@ ALTER TABLE ONLY public.resellers
 
 ALTER TABLE ONLY public.roles
     ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
-
-
---
--- Name: planning_states planning_states_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.planning_states
-    ADD CONSTRAINT planning_states_pkey PRIMARY KEY (id);
 
 
 --
@@ -2620,17 +2621,10 @@ CREATE INDEX index_orders_on_visit_id ON public.orders USING btree (visit_id);
 
 
 --
--- Name: index_plannings_on_customer_id_and_lower_ref; Type: INDEX; Schema: public; Owner: -
+-- Name: index_planning_states_on_planning_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX index_plannings_on_customer_id_and_lower_ref ON public.plannings USING btree (customer_id, lower((ref)::text)) WHERE (ref IS NOT NULL);
-
-
---
--- Name: index_plannings_on_vehicle_usage_set_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_plannings_on_vehicle_usage_set_id ON public.plannings USING btree (vehicle_usage_set_id);
+CREATE INDEX index_planning_states_on_planning_id ON public.planning_states USING btree (planning_id);
 
 
 --
@@ -2655,6 +2649,20 @@ CREATE INDEX index_planning_states_on_planning_id_category_pinned ON public.plan
 
 
 --
+-- Name: index_plannings_on_customer_id_and_lower_ref; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_plannings_on_customer_id_and_lower_ref ON public.plannings USING btree (customer_id, lower((ref)::text)) WHERE (ref IS NOT NULL);
+
+
+--
+-- Name: index_plannings_on_vehicle_usage_set_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_plannings_on_vehicle_usage_set_id ON public.plannings USING btree (vehicle_usage_set_id);
+
+
+--
 -- Name: index_plannings_zonings_on_planning_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2676,10 +2684,24 @@ CREATE INDEX index_relations_customer_current_successord_id ON public.stops_rela
 
 
 --
+-- Name: index_resellers_on_default_profile_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_resellers_on_default_profile_id ON public.resellers USING btree (default_profile_id);
+
+
+--
 -- Name: index_resellers_on_default_role_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_resellers_on_default_role_id ON public.resellers USING btree (default_role_id);
+
+
+--
+-- Name: index_resellers_on_default_router_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_resellers_on_default_router_id ON public.resellers USING btree (default_router_id);
 
 
 --
@@ -2949,6 +2971,13 @@ CREATE INDEX index_vehicle_usages_on_vehicle_usage_set_id ON public.vehicle_usag
 
 
 --
+-- Name: index_vehicle_usages_on_vehicle_usage_set_id_and_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_vehicle_usages_on_vehicle_usage_set_id_and_index ON public.vehicle_usages USING btree (vehicle_usage_set_id, index);
+
+
+--
 -- Name: index_vehicles_on_driver_token; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3040,6 +3069,22 @@ ALTER TABLE ONLY public.plannings
 
 
 --
+-- Name: tag_plannings fk_plannings_tags_planning_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_plannings
+    ADD CONSTRAINT fk_plannings_tags_planning_id FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tag_plannings fk_plannings_tags_tag_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_plannings
+    ADD CONSTRAINT fk_plannings_tags_tag_id FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
+
+
+--
 -- Name: products fk_products_customer_id; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3048,11 +3093,11 @@ ALTER TABLE ONLY public.products
 
 
 --
--- Name: tag_plannings fk_rails_02f534284a; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: resellers fk_rails_03bb1dfc17; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.tag_plannings
-    ADD CONSTRAINT fk_rails_02f534284a FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.resellers
+    ADD CONSTRAINT fk_rails_03bb1dfc17 FOREIGN KEY (default_router_id) REFERENCES public.routers(id) ON DELETE SET NULL;
 
 
 --
@@ -3120,22 +3165,6 @@ ALTER TABLE ONLY public.store_reload_vehicle_usages
 
 
 --
--- Name: tag_plannings fk_rails_2a380b8abf; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tag_plannings
-    ADD CONSTRAINT fk_rails_2a380b8abf FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
-
-
---
--- Name: planning_states fk_rails_planning_states_planning_id; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.planning_states
-    ADD CONSTRAINT fk_rails_planning_states_planning_id FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
-
-
---
 -- Name: routes fk_rails_2bf8dfa083; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3157,6 +3186,14 @@ ALTER TABLE ONLY public.stops
 
 ALTER TABLE ONLY public.layers_profiles
     ADD CONSTRAINT fk_rails_2d0f95c20f FOREIGN KEY (layer_id) REFERENCES public.layers(id);
+
+
+--
+-- Name: planning_states fk_rails_3036bdb9c4; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.planning_states
+    ADD CONSTRAINT fk_rails_3036bdb9c4 FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE CASCADE;
 
 
 --
@@ -3304,6 +3341,14 @@ ALTER TABLE ONLY public.vehicle_usages
 
 
 --
+-- Name: resellers fk_rails_7a1efe0f9c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resellers
+    ADD CONSTRAINT fk_rails_7a1efe0f9c FOREIGN KEY (default_profile_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+
+--
 -- Name: plannings_zonings fk_rails_87008b08a3; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3312,11 +3357,19 @@ ALTER TABLE ONLY public.plannings_zonings
 
 
 --
--- Name: tag_visits fk_rails_b0e5132e91; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: tag_visits fk_rails_921d431096; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tag_visits
-    ADD CONSTRAINT fk_rails_b0e5132e91 FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_rails_921d431096 FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
+
+
+--
+-- Name: resellers fk_rails_97c579d701; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resellers
+    ADD CONSTRAINT fk_rails_97c579d701 FOREIGN KEY (default_role_id) REFERENCES public.roles(id) ON DELETE SET NULL;
 
 
 --
@@ -3333,14 +3386,6 @@ ALTER TABLE ONLY public.customers
 
 ALTER TABLE ONLY public.roles
     ADD CONSTRAINT fk_rails_b9e148290b FOREIGN KEY (reseller_id) REFERENCES public.resellers(id);
-
-
---
--- Name: resellers fk_rails_e84a9c1d8f; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.resellers
-    ADD CONSTRAINT fk_rails_e84a9c1d8f FOREIGN KEY (default_role_id) REFERENCES public.roles(id) ON DELETE SET NULL;
 
 
 --
@@ -3376,19 +3421,19 @@ ALTER TABLE ONLY public.tag_visits
 
 
 --
+-- Name: tag_destinations fk_rails_d7d57d2bd1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tag_destinations
+    ADD CONSTRAINT fk_rails_d7d57d2bd1 FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
+
+
+--
 -- Name: vehicle_usage_sets fk_rails_d7ffafb662; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.vehicle_usage_sets
     ADD CONSTRAINT fk_rails_d7ffafb662 FOREIGN KEY (store_stop_id) REFERENCES public.stores(id);
-
-
---
--- Name: tag_destinations fk_rails_dda13ef84d; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tag_destinations
-    ADD CONSTRAINT fk_rails_dda13ef84d FOREIGN KEY (tag_id) REFERENCES public.tags(id) ON DELETE CASCADE;
 
 
 --
@@ -3892,9 +3937,11 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260504094513'),
 ('20260505084452'),
 ('20260513094805'),
+('20260526130000'),
 ('20260527153532'),
 ('20260623064843'),
 ('20260623141222'),
-('20260624210858');
+('20260624210858'),
+('20260625210008');
 
 

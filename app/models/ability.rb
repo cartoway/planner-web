@@ -26,6 +26,7 @@ class Ability
     alias_action :index, :show, to: :read
     alias_action :new, to: :create
     alias_action :edit, to: :read
+    alias_action :reorder_vehicle_usages, to: :update
 
     if user
       if user.admin?

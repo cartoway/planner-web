@@ -172,6 +172,19 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_redirected_to edit_vehicle_usage_set_path(assigns(:vehicle_usage_set))
   end
 
+  test 'should reorder vehicle usages' do
+    first = vehicle_usages(:vehicle_usage_one_one)
+    second = vehicle_usages(:vehicle_usage_one_three)
+
+    patch :reorder_vehicle_usages, params: {
+      id: @vehicle_usage_set.id,
+      vehicle_usage_ids: [second.id, first.id]
+    }
+
+    assert_response :success
+    assert_equal [0, 1], [second.reload.index, first.reload.index]
+  end
+
   test 'should import' do
     get :import
     assert_response :success
