@@ -24,8 +24,8 @@
              @grouped_icons[1].map { |icon| [icon, icon, { :data => { :content => "<i class='fa fa-fw #{icon}'></i> #{icon}" }, :selected => (@tag.icon == icon) ? true : nil }] }
             ]
           ]
-        ), include_blank: t('web.form.default', n: 'fa-circle'), class: 'form-control width_1_2 selectpicker', 'data-live-search' => true %>
-        <%= select_tag 'tag[icon_size]', options_for_select([[t('.icon_size.small'), :small], [t('.icon_size.medium'), :medium], [t('.icon_size.large'), :large]], @tag.icon_size), include_blank: t('web.form.default', n: t('.icon_size.medium')), class: 'form-control width_1_2' %>
+        ), include_blank: t('web.form.default', n: @tag.customer.default_destination_icon), class: 'form-control width_1_2 selectpicker', 'data-live-search' => true %>
+        <%= select_tag 'tag[icon_size]', options_for_select([[t('.icon_size.small'), :small], [t('.icon_size.medium'), :medium], [t('.icon_size.large'), :large]], @tag.icon_size), include_blank: t('web.form.default', n: t(".icon_size.#{@tag.customer.default_destination_icon_size}")), class: 'form-control width_1_2' %>
         <span class="input-group-addon"><%= content_tag('i', '', class: 'fa fa-store fa-fw') %></span>
       </div>
     </div>

@@ -190,6 +190,12 @@ en:
         max_vehicle_usage_sets: Max vehicles base settings
         visit_duration: Visit duration
         destination_duration: Destination duration
+        destination_icon: Visit map icon
+        destination_icon_size: Visit icon size
+        store_icon: Store map icon
+        store_icon_size: Store icon size
+        rest_icon: Rest map icon
+        rest_icon_size: Rest icon size
         store_reload_duration: Store reload duration
         default_country: Default country
         with_state: Add State field in addresses
@@ -735,6 +741,8 @@ en:
               over_max_limit: Maximum number of facilities reached
             vehicle_usage_sets:
               over_max_limit: Maximum number of vehicle base settings reached
+          icon_size_invalid: is not a valid size
+          icon_unknown: is not in font-awesome icons list
         store:
           at_least_one: At least one store needed
           icon_unknown: is not in font-awesome icons list
@@ -1190,6 +1198,20 @@ en:
         <strong>%{profile}</strong>
       visit_duration_help: Average time per account
       destination_duration_help: Average time per destination
+      destination_icon_help: Default visit icon and size on the map. Tags can override this value.
+      store_icon_help: Default intermediate store icon and size on the map. Each store can override this value.
+      rest_icon_help: Default rest icon and size on the map. The rest store can override this value.
+      map_markers:
+        legend: Map markers
+        destination:
+          prefered_icons: Visit icons
+          other_icons: Other icons
+        store:
+          prefered_icons: Store icons
+          other_icons: Other icons
+        rest:
+          prefered_icons: Rest icons
+          other_icons: Other icons
       store_reload_duration_help: Average time per store reload
       value_default: '%{n} (default value)'
       max_plannings_help: Maximum number of allowed plans into the account.

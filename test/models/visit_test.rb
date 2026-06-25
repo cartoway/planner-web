@@ -6,6 +6,21 @@ class VisitTest < ActiveSupport::TestCase
     @visit = visits(:visit_one)
   end
 
+  test 'default_icon_size uses customer destination icon size when no tag override' do
+    @visit.customer.update!(destination_icon_size: 'large')
+    @visit.instance_variable_set(:@icon_size, nil)
+
+    assert_equal 'large', @visit.default_icon_size
+  end
+
+  test 'default_icon_size prefers tag icon size over customer default' do
+    @visit.customer.update!(destination_icon_size: 'large')
+    @visit.tags.first.update!(icon_size: 'small')
+    @visit.instance_variable_set(:@icon_size, nil)
+
+    assert_equal 'small', @visit.default_icon_size
+  end
+
   test 'should not save' do
     visit = Visit.new
     assert_not visit.save, 'Saved without required fields'

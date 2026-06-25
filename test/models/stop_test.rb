@@ -35,6 +35,7 @@ class StopTest < ActiveSupport::TestCase
     assert_equal t1.color, stop.color
     assert_nil stop.icon
     assert_nil stop.icon_size
+    assert_equal stop.visit.customer.default_destination_icon_size, stop.default_icon_size
   end
 
   test 'best_open_close strict_within_timewindows compares service end to window close' do
@@ -51,16 +52,25 @@ class StopTest < ActiveSupport::TestCase
 
   test 'should return color and icon of stop rest' do
     stop = stops :stop_one_four
+    customer = stop.route.planning.customer
 
     assert_nil stop.color
     assert_nil stop.icon
     assert_nil stop.icon_size
+    assert_equal customer.default_rest_icon, stop.default_icon
+    assert_equal customer.default_rest_icon_size, stop.default_icon_size
 
     store = stores :store_one
     store.color = '#beef'
     store.icon = 'beef'
-    assert store.color, stop.color
-    assert store.icon, stop.icon
-    assert_nil stop.icon_size
+    store.icon_size = 'small'
+    vehicle_usage = stop.route.vehicle_usage
+    vehicle_usage.update!(store_rest: store)
+
+    assert_equal store.color, stop.color
+    assert_equal store.icon, stop.icon
+    assert_equal store.icon_size, stop.icon_size
+    assert_equal 'beef', stop.default_icon
+    assert_equal 'small', stop.default_icon_size
   end
 end
