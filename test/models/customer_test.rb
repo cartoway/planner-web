@@ -20,6 +20,36 @@ class CustomerTest < ActiveSupport::TestCase
     assert_equal true, Customer.new.enable_strict_within_timewindows
   end
 
+  test 'default_destination_icon_size falls back to application config' do
+    @customer.update_column(:destination_icon_size, nil)
+    assert_equal Planner::Application.config.destination_icon_size_default, @customer.default_destination_icon_size
+  end
+
+  test 'default_destination_icon_size uses customer value when set' do
+    @customer.update!(destination_icon_size: 'large')
+    assert_equal 'large', @customer.default_destination_icon_size
+  end
+
+  test 'default_store_icon_size falls back to application config' do
+    @customer.update_column(:store_icon_size, nil)
+    assert_equal Planner::Application.config.store_icon_size_default, @customer.default_store_icon_size
+  end
+
+  test 'default_rest_icon falls back to application config' do
+    @customer.update_column(:rest_icon, nil)
+    assert_equal Planner::Application.config.rest_icon_default, @customer.default_rest_icon
+  end
+
+  test 'should reject invalid destination_icon_size' do
+    @customer.destination_icon_size = 'huge'
+    assert_not @customer.valid?
+  end
+
+  test 'should reject invalid destination_icon' do
+    @customer.destination_icon = 'fa-not-an-icon'
+    assert_not @customer.valid?
+  end
+
   test 'planning_date_offset_default uses application config when customer offset is nil' do
     @customer.update_column(:planning_date_offset, nil)
     assert_equal Planner::Application.config.planning_date_offset_default, @customer.planning_date_offset_default
@@ -118,6 +148,20 @@ class CustomerTest < ActiveSupport::TestCase
         assert_not r.outdated
       } }
     customer.enable_strict_within_timewindows = !customer.enable_strict_within_timewindows
+    customer.save!
+    customer.plannings.each { |p|
+      p.routes.select { |r| r.vehicle_usage }.each { |r|
+        assert r.outdated
+      } }
+  end
+
+  test 'should update_outdated when map marker defaults change' do
+    customer = customers(:customer_one)
+    customer.plannings.each { |p|
+      p.routes.select { |r| r.vehicle_usage }.each { |r|
+        assert_not r.outdated
+      } }
+    customer.store_icon_size = 'small'
     customer.save!
     customer.plannings.each { |p|
       p.routes.select { |r| r.vehicle_usage }.each { |r|

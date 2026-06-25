@@ -60,8 +60,8 @@ class V01::Stores < Grape::API
                 properties: {
                     store_id: store.id,
                     color: store.color,
-                    icon: store.icon,
-                    icon_size: store.icon_size
+                    icon: store.default_icon,
+                    icon_size: store.default_icon_size
                 }
             }.to_json
           end

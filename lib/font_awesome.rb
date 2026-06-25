@@ -20,6 +20,8 @@ module FontAwesome
 
   ICONS_TABLE_STORE ||= ['fa-store', 'fa-industry', 'fa-shopping-cart', 'fa-stop-circle', 'fa-hospital', 'fa-users-gear']
 
+  ICONS_TABLE_REST ||= ['fa-mug-saucer', 'fa-mug-hot', 'fa-utensils', 'fa-bed', 'fa-couch', 'fa-stop-circle']
+
   ICONS_TABLE_TAG ||= ['fa-square', 'fa-bookmark', 'fa-star', 'fa-certificate', 'fa-user-gear']
 
   ICONS_TABLE_UNIT ||= ['fa-dumpster', 'fa-briefcase', 'fa-cubes', 'fa-stop-circle', 'fa-spoon', 'fa-pie-chart', 'fa-th-large', 'fa-cube']
