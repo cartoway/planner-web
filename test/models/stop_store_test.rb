@@ -114,4 +114,41 @@ class StopStoreTest < ActiveSupport::TestCase
     assert third.valid?, third.errors.full_messages.join(", ")
     assert third.save!, 'Third StopStore should be saved when above max_reload'
   end
+
+  test 'should delegate store icon defaults through store_reload' do
+    @store.update_columns(icon: nil, icon_size: nil)
+    @store.customer.update!(store_icon: 'fa-industry', store_icon_size: 'small')
+
+    assert_equal 'fa-industry', @stop_store.default_icon
+    assert_equal 'small', @stop_store.default_icon_size
+    assert_nil @stop_store.icon
+
+    @store.update!(icon: 'fa-hospital', icon_size: 'large')
+
+    assert_equal 'fa-hospital', @stop_store.default_icon
+    assert_equal 'large', @stop_store.default_icon_size
+  end
+
+  test 'geojson point uses store default icon when store icon is blank' do
+    @store.update_columns(icon: nil)
+    @store.customer.update!(store_icon: 'fa-industry')
+
+    point = JSON.parse(@route.stops_to_geojson_points.find { |feature|
+      JSON.parse(feature).dig('properties', 'stop_id') == @stop_store.id
+    })
+
+    assert_equal 'fa-industry', point.dig('properties', 'icon')
+  end
+
+  test 'geojson emits two overlapping StopStore markers at depot coordinates' do
+    points = @route.stops_to_geojson_points.filter_map { |feature|
+      parsed = JSON.parse(feature)
+      parsed if parsed.dig('properties', 'stop_id') == @stop_store.id
+    }
+
+    assert_equal 2, points.size
+    assert points.all? { |point| point.dig('properties', 'type') == 'StopStore' }
+    assert_equal points.first['geometry']['coordinates'], points.last['geometry']['coordinates']
+    assert_not_equal points.first.dig('properties', 'sub_tour_index'), points.last.dig('properties', 'sub_tour_index')
+  end
 end

@@ -278,8 +278,10 @@
   </div>
 
   <%= f.text_field :destination_duration, {help: t('.destination_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.destination_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-map-marker fa-fw')} %>
+
   <%= f.text_field :visit_duration, {help: t('.visit_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.visit_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} %>
   <%= f.text_field :store_reload_duration, {help: t('.store_reload_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.store_reload_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} %>
+
   <%= f.text_field :default_country, required: true %>
   <%= render partial: 'shared/check_box', locals: { form: f, field: :with_state, label: t('activerecord.attributes.customer.with_state') } %>
 
@@ -376,6 +378,12 @@
     <%= f.text_field :stop_max_upper_bound, {help: t('.stop_max_upper_bound_help'), placeholder: t('all.unit.hour_minute'), value: @customer.stop_max_upper_bound_time || 0, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} %>
     <%= f.text_field :vehicle_max_upper_bound, { help: t(".vehicle_max_upper_bound"), placeholder: t('all.unit.hour_minute'), value: @customer.vehicle_max_upper_bound_time || 0, append: content_tag('i', '', class: 'fa fa-repeat fa-fw')} %>
   </div>
+
+  <legend class="scheduler-border col-md-8"><%= t 'customers.form.map_markers.legend' %></legend>
+  <%= render partial: 'map_marker_defaults', locals: { model_class: :destination, grouped_icons: @destination_grouped_icons, default_icon: Planner::Application.config.destination_icon_default, default_size: Planner::Application.config.destination_icon_size_default, addon_icon: 'fa-location-pin' } %>
+  <%= render partial: 'map_marker_defaults', locals: { model_class: :store, grouped_icons: @store_grouped_icons, default_icon: Planner::Application.config.store_icon_default, default_size: Planner::Application.config.store_icon_size_default, addon_icon: 'fa-store' } %>
+  <%= render partial: 'map_marker_defaults', locals: { model_class: :rest, grouped_icons: @rest_grouped_icons, default_icon: Planner::Application.config.rest_icon_default, default_size: Planner::Application.config.rest_icon_size_default, addon_icon: 'fa-mug-saucer' } %>
+
 
   <legend class="scheduler-border col-md-8">
     <%= t '.outputs' %>

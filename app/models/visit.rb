@@ -215,11 +215,11 @@ class Visit < ApplicationRecord
   end
 
   def default_icon
-    icon || Planner::Application.config.destination_icon_default
+    icon || customer.default_destination_icon
   end
 
   def default_icon_size
-    nil
+    icon_size || customer.default_destination_icon_size
   end
 
   def priority_text

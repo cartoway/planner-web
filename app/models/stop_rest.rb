@@ -173,11 +173,19 @@ class StopRest < Stop
   end
 
   def icon
-    route.vehicle_usage.default_store_rest && route.vehicle_usage.default_store_rest.icon
+    route.vehicle_usage.default_store_rest&.icon
   end
 
   def icon_size
-    route.vehicle_usage.default_store_rest && route.vehicle_usage.default_store_rest.icon_size
+    route.vehicle_usage.default_store_rest&.icon_size
+  end
+
+  def default_icon
+    icon || route.planning.customer.default_rest_icon
+  end
+
+  def default_icon_size
+    icon_size || route.planning.customer.default_rest_icon_size
   end
 
   def to_s

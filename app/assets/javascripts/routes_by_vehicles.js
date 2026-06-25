@@ -177,14 +177,25 @@ const routesByVehicleShow = function(params) {
         $('li[data-route-id=' + routeId + '] li[data-stop-id] .number:not(.color_force)').css('background', color);
       })
       .on("click", ".marker", function() {
-        var stopIndex = $(this).closest("[data-stop-index]").attr("data-stop-index");
+        var $stopLi = $(this).closest("[data-stop-index]");
+        var stopIndex = $stopLi.attr("data-stop-index");
+        var routeId = $(this).closest("[data-route-id]").attr("data-route-id") || $stopLi.attr("data-origin-route-id");
         if (stopIndex) {
-          var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
-          routesLayer.focus({routeId: routeId, stopIndex: stopIndex});
+          routesLayer.focus({
+            routeId: routeId,
+            stopIndex: stopIndex,
+            subTourIndex: $stopLi.data('subTourIndex'),
+            stopId: $stopLi.attr('data-stop-id')
+          });
         } else {
-          var storeId = $(this).closest("[data-store-id]").attr("data-store-id");
+          var $storeLi = $(this).closest("[data-store-id]");
+          var storeId = $storeLi.attr("data-store-id");
           if (storeId) {
-            routesLayer.focus({storeId: storeId});
+            routesLayer.focus({
+              storeId: storeId,
+              routeId: routeId || $storeLi.attr('data-origin-route-id'),
+              subTourIndex: $storeLi.data('subTourIndex')
+            });
           }
         }
         $(this).blur();
