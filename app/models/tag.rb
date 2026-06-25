@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class Tag < ApplicationRecord
-  ICON_SIZE = %w(small medium large).freeze
+  include ValidatesIconSize
 
   attr_accessor :migration_skip
 
@@ -50,7 +50,6 @@ class Tag < ApplicationRecord
   validates_format_of :color, with: /\A(|\#[A-Fa-f0-9]{6})\Z/, allow_nil: true
 
   validates_inclusion_of :icon, in: FontAwesome::ICONS_TABLE, allow_nil: true, message: ->(*_) { I18n.t('activerecord.errors.models.tag.icon_unknown') }
-  validates :icon_size, inclusion: { in: Tag::ICON_SIZE, allow_nil: true, message: ->(*_) { I18n.t('activerecord.errors.models.tag.icon_size_invalid') } }
 
   include RefSanitizer
 
@@ -63,11 +62,11 @@ class Tag < ApplicationRecord
   end
 
   def default_icon
-    icon || Planner::Application.config.tag_icon_default
+    icon || customer.default_destination_icon
   end
 
   def default_icon_size
-    icon_size || Planner::Application.config.tag_icon_size_default
+    icon_size || customer.default_destination_icon_size
   end
 
   private

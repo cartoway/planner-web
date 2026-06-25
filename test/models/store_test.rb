@@ -121,13 +121,20 @@ class StoreTest < ActiveSupport::TestCase
 
     assert_equal Planner::Application.config.store_color_default, store.default_color
     assert_equal Planner::Application.config.store_icon_default, store.default_icon
-    assert_equal Planner::Application.config.store_icon_size_default, store.default_icon_size
+    assert_equal store.customer.default_store_icon_size, store.default_icon_size
 
     store.color = '#beef'
     store.icon = 'beef'
     assert_equal store.color, store.default_color
     assert_equal store.icon, store.default_icon
-    assert_equal Planner::Application.config.store_icon_size_default, store.default_icon_size
+    assert_equal store.customer.default_store_icon_size, store.default_icon_size
+  end
+
+  test 'default_icon_size uses customer store icon size when set' do
+    store = stores(:store_one)
+    store.customer.update!(store_icon_size: 'small')
+
+    assert_equal 'small', store.default_icon_size
   end
 
   test 'should have geocoder version' do

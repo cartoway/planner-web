@@ -97,8 +97,8 @@
               [t('stores.form.other_icons'),                                                                                                                                        |
                 @grouped_icons[1].map{ |icon| [icon, icon, {:data => {:content => "<i class='fa fa-fw #{icon}'></i> #{icon}"}, :selected => (@store.icon == icon) ? true : nil }]}   |
               ]                                                                                                                                                                      |
-            ]), include_blank: t('web.form.default', n: 'fa-store'), class: 'form-control width_1_2 selectpicker', 'data-live-search' => true                                        |
-          = select_tag 'store[icon_size]', options_for_select([[t('.icon_size.small'), :small], [t('.icon_size.medium'), :medium], [t('.icon_size.large'), :large]], @store.icon_size), include_blank: t('web.form.default', n: t('.icon_size.large')), class: 'form-control width_1_2'
+            ]), include_blank: t('web.form.default', n: @store.customer.default_store_icon), class: 'form-control width_1_2 selectpicker', 'data-live-search' => true                                        |
+          = select_tag 'store[icon_size]', options_for_select([[t('.icon_size.small'), :small], [t('.icon_size.medium'), :medium], [t('.icon_size.large'), :large]], @store.icon_size), include_blank: t('web.form.default', n: t(".icon_size.#{@store.customer.default_store_icon_size}")), class: 'form-control width_1_2'
           %span.input-group-addon= content_tag('i', '', class: 'fa fa-store fa-fw')
 
   = hidden_field :store, :geocoder_version, :value => @store.geocoder_version

@@ -165,7 +165,13 @@ CREATE TABLE public.customers (
     store_reload_duration integer,
     optimization_dicho_minimum_service_size integer,
     enable_strict_within_timewindows boolean DEFAULT true NOT NULL,
-    stops_preload_limit integer DEFAULT 1000 NOT NULL
+    stops_preload_limit integer DEFAULT 1000 NOT NULL,
+    destination_icon character varying,
+    destination_icon_size character varying,
+    store_icon character varying,
+    store_icon_size character varying,
+    rest_icon character varying,
+    rest_icon_size character varying
 );
 
 
@@ -3888,6 +3894,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260513094805'),
 ('20260527153532'),
 ('20260623064843'),
-('20260623141222');
+('20260623141222'),
+('20260624210858');
 
 
