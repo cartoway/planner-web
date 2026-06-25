@@ -3036,6 +3036,7 @@ fr:
       title: Configurations de véhicules
       capacities: Capacités
       select_unselect_all: Sélectionner/Dé-sélectionner tous les véhicules
+      reorder: Modifier l'ordre
       stores: Départ - Arrivée
       store:
         no_start: Pas de site de départ
@@ -3148,6 +3149,8 @@ fr:
     new:
       title: Nouvelle configuration de la flotte
     import:
+      index: ordre
+      index_desc: position du véhicule dans la configuration. Si absent, l'ordre des lignes du fichier est utilisé
       cost_distance: coût au kilomètre
       cost_distance_desc: coût appliqué par kilomètre de la tournée
       cost_fixed: coût fixe
@@ -3259,6 +3262,7 @@ fr:
       none_column: Aucune colonne trouvée
       missing_name: « nom » de la configuration par défaut manquant
       missing_time_window_start_end: heure de début ou de fin de la configuration par défaut manquantes
+      invalid_index: l'ordre du véhicule doit être un entier positif ou nul
       invalid_numeric_value: 'valeur numérique « %{value} » invalide.'
       check_custom_columns: Vérifiez votre définition des colonnes à importer.
     form:

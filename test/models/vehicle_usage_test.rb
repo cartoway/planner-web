@@ -12,6 +12,19 @@ class VehicleUsageTest < ActiveSupport::TestCase
     vehicle_usage.save!
   end
 
+  test 'orders vehicle usages by index' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    vehicle_usage_set.reorder_vehicle_usages!([
+      vehicle_usages(:vehicle_usage_one_three).id,
+      vehicle_usages(:vehicle_usage_one_one).id
+    ])
+
+    assert_equal [
+      vehicle_usages(:vehicle_usage_one_three).id,
+      vehicle_usages(:vehicle_usage_one_one).id
+    ], vehicle_usage_set.vehicle_usages.pluck(:id)
+  end
+
   test 'should change store' do
     store = stores(:store_one).dup
     store.name = 's2'

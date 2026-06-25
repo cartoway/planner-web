@@ -172,6 +172,19 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_redirected_to edit_vehicle_usage_set_path(assigns(:vehicle_usage_set))
   end
 
+  test 'should reorder vehicle usages' do
+    first = vehicle_usages(:vehicle_usage_one_one)
+    second = vehicle_usages(:vehicle_usage_one_three)
+
+    patch :reorder_vehicle_usages, params: {
+      id: @vehicle_usage_set.id,
+      vehicle_usage_ids: [second.id, first.id]
+    }
+
+    assert_response :success
+    assert_equal [0, 1], [second.reload.index, first.reload.index]
+  end
+
   test 'should import' do
     get :import
     assert_response :success
@@ -250,15 +263,21 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
 
     csv = CSV.new(response.body)
     headers = csv.first
-    vehicles = [vehicles(:vehicle_three), vehicles(:vehicle_one)]
-    csv.each.with_index{ |line, index|
-      vehicle = vehicles(line[1].to_sym)
+
+    vehicle_one = vehicles(:vehicle_one)
+    vehicle_three = vehicles(:vehicle_three)
+    vehicles_by_ref = {
+      vehicle_one.ref => vehicle_one,
+      vehicle_three.ref => vehicle_three
+    }
+    csv.each do |line|
+      vehicle = vehicles_by_ref[line[1]]
       ['one', 'two', 'three'].each { |key|
-        attr_index = headers.index{ |header| header.include?("[custom_attribute_#{key}]") }
+        attr_index = headers.index { |header| header.include?("[custom_attribute_#{key}]") }
         assert attr_index
         assert_equal vehicle.custom_attributes_typed_hash["custom_attribute_#{key}"].to_s, line[attr_index]
       }
-    }
+    end
   end
 
   test 'should upload' do

@@ -16,7 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class VehicleUsage < ApplicationRecord
-  default_scope { order(:id) }
+  default_scope { order(:index) }
 
   belongs_to :vehicle_usage_set
 
@@ -49,6 +49,7 @@ class VehicleUsage < ApplicationRecord
   time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
   attr_localized :cost_distance, :cost_fixed, :cost_time
 
+  validates :index, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :cost_distance, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
   validates :cost_fixed, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
   validates :cost_time, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
@@ -57,6 +58,8 @@ class VehicleUsage < ApplicationRecord
   validate :rest_duration_range
   validate :work_time_inside_window
 
+  before_validation :assign_index, on: :create
+  before_create :assign_index
   before_update :update_outdated
 
   before_save :update_routes
@@ -300,7 +303,40 @@ class VehicleUsage < ApplicationRecord
     hash
   end
 
+  def index=(value)
+    @index_explicitly_assigned = true
+    super
+  end
+
   private
+
+  def assign_index
+    set = vehicle_usage_set
+    return unless set
+
+    current_index = read_attribute(:index)
+    if @index_explicitly_assigned && !index_taken?(set, current_index)
+      return
+    end
+
+    write_attribute(:index, next_available_index(set))
+    @index_explicitly_assigned = true
+  end
+
+  def index_taken?(set, index)
+    set.vehicle_usages.any? { |vu| vu != self && vu.index == index } ||
+      set.vehicle_usages.where.not(id: id).exists?(index: index)
+  end
+
+  def next_available_index(set)
+    taken = set.vehicle_usages.where.not(id: id).pluck(:index)
+    set.vehicle_usages.each { |vu| taken << vu.index if vu != self && vu.id.nil? }
+
+    taken = taken.compact.uniq
+    return 0 if taken.empty?
+
+    taken.max + 1
+  end
 
   def update_routes
     return if changes.exclude?(:active)
