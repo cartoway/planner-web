@@ -1355,16 +1355,22 @@ export const plannings_edit = function(params) {
       return;
     }
 
+    var afterSubTourToggleRefresh = function() {
+      if (nowVisible) {
+        routesLayer.bringStopStoreMarkerToFront(routeId, subTourIndex);
+      }
+    };
+
     if (activeIndices.length === $buttonsForRoute.length) {
       routesLayer.setSubTourFilter(routeId, null);
       routesLayer.hideRoutes([routeId]);
-      routesLayer.showRoutes([routeId]);
+      routesLayer.showRoutes([routeId], null, afterSubTourToggleRefresh);
       return;
     }
 
     routesLayer.setSubTourFilter(routeId, activeIndices);
     routesLayer.hideRoutes([routeId]);
-    routesLayer.showRoutes([routeId]);
+    routesLayer.showRoutes([routeId], null, afterSubTourToggleRefresh);
   });
 
   var getRouteColor = function(routeId) {
@@ -1438,6 +1444,9 @@ export const plannings_edit = function(params) {
       $(this).find('.store').css('color', customColor);
       $(this)[0].style.setProperty('--box-shadow-color', customColor);
     });
+    if (routesLayer) {
+      routesLayer.bringStopStoreMarkerToFront(routeId, subTourIndex);
+    }
   };
 
   // Update labels for a single sub-tour
@@ -1525,7 +1534,9 @@ export const plannings_edit = function(params) {
     }
 
     routesLayer.hideRoutes([routeId]);
-    routesLayer.showRoutes([routeId]);
+    routesLayer.showRoutes([routeId], null, function() {
+      routesLayer.bringStopStoreMarkerToFront(routeId, subTourIndex);
+    });
   });
 
   // Handle reset button click
@@ -1559,7 +1570,9 @@ export const plannings_edit = function(params) {
     }
 
     routesLayer.hideRoutes([routeId]);
-    routesLayer.showRoutes([routeId]);
+    routesLayer.showRoutes([routeId], null, function() {
+      routesLayer.bringStopStoreMarkerToFront(routeId, subTourIndex);
+    });
   });
 
   $('#lock_routes_dropdown, #toggle_routes_dropdown, #activate_stops_dropdown').find('li a').click(function() {
@@ -2501,17 +2514,29 @@ export const plannings_edit = function(params) {
     });
 
     $p.on('click.planningRouteDelegate', '.route .marker', function() {
-      var stopIndex = $(this).closest("[data-stop-index]").attr("data-stop-index");
+      var $stopLi = $(this).closest('[data-stop-index]');
+      var stopIndex = $stopLi.attr('data-stop-index');
+      var routeId = $(this).closest('[data-route-id]').attr('data-route-id') || $stopLi.attr('data-origin-route-id');
       if (stopIndex) {
-        var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
-        routesLayer.focus({routeId: routeId, stopIndex: stopIndex});
+        routesLayer.focus({
+          routeId: routeId,
+          stopIndex: stopIndex,
+          subTourIndex: $stopLi.data('subTourIndex'),
+          stopId: $stopLi.attr('data-stop-id')
+        });
       } else {
-        var li = $(this).closest("[data-store-id]");
-        var storeId = li.attr("data-store-id");
+        var $storeLi = $(this).closest('[data-store-id]');
+        if (!$storeLi.length) {
+          $storeLi = $(this).closest('li.route').find('.li-store[data-store-id][data-type="start"]').first();
+        }
+        var storeId = $storeLi.attr('data-store-id');
         if (storeId) {
-          var routeId = li.attr("data-origin-route-id");
-          var depotType = li.attr("data-type");
-          routesLayer.focus({ storeId: storeId, routeId: routeId, depotType: depotType });
+          routesLayer.focus({
+            storeId: storeId,
+            routeId: routeId || $storeLi.attr('data-origin-route-id'),
+            depotType: $storeLi.attr('data-type'),
+            subTourIndex: $storeLi.data('subTourIndex')
+          });
         }
       }
       $(this).blur();

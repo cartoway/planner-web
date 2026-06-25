@@ -1083,8 +1083,8 @@ class Route < ApplicationRecord
                   properties: {
                     store_id: store.id,
                     color: store.color,
-                    icon: store.icon,
-                    icon_size: store.icon_size
+                    icon: store.default_icon,
+                    icon_size: store.default_icon_size
                   }
                 }.to_json unless coordinates.empty?
               end.compact
@@ -1206,8 +1206,8 @@ class Route < ApplicationRecord
               active: stop.active,
               number: vehicle_usage? ? stop.number(inactive_stops) : nil,
               color: color || stop.default_color,
-              icon: stop.icon,
-              icon_size: stop.icon_size,
+              icon: stop.default_icon,
+              icon_size: stop.default_icon_size,
               stop_id: stop.id,
               sub_tour_index: sub_index,
               type: stop.type
@@ -1229,8 +1229,8 @@ class Route < ApplicationRecord
             active: stop.active,
             number: vehicle_usage? ? stop.number(inactive_stops) : nil,
             color: sub_tour_color || stop.default_color,
-            icon: stop.icon,
-            icon_size: stop.icon_size,
+            icon: stop.default_icon,
+            icon_size: stop.default_icon_size,
             stop_id: stop.id,
             sub_tour_index: sub_tour_index,
             type: stop.type

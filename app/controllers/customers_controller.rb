@@ -20,6 +20,7 @@
 class CustomersController < ApplicationController
   before_action :authenticate_user!
   before_action :set_customer, only: %i[edit update delete_vehicle external_callback]
+  before_action :set_map_icon_pickers, only: %i[new edit create update]
 
   load_and_authorize_resource
 
@@ -219,6 +220,12 @@ class CustomersController < ApplicationController
         :end_subscription,
         :test,
         :destination_duration,
+        :destination_icon,
+        :destination_icon_size,
+        :store_icon,
+        :store_icon_size,
+        :rest_icon,
+        :rest_icon_size,
         :visit_duration,
         :store_reload_duration,
         :default_country,
@@ -306,6 +313,12 @@ class CustomersController < ApplicationController
         :stop_max_upper_bound,
         :vehicle_max_upper_bound,
         :destination_duration,
+        :destination_icon,
+        :destination_icon_size,
+        :store_icon,
+        :store_icon_size,
+        :rest_icon,
+        :rest_icon_size,
         :visit_duration,
         :store_reload_duration,
         :default_country,
@@ -358,5 +371,20 @@ class CustomersController < ApplicationController
 
       p.require(:customer).permit(*allowed_params)
     end
+  end
+
+  def set_map_icon_pickers
+    @destination_grouped_icons = [
+      FontAwesome::ICONS_TABLE_TAG,
+      FontAwesome::ICONS_TABLE - FontAwesome::ICONS_TABLE_TAG
+    ]
+    @store_grouped_icons = [
+      FontAwesome::ICONS_TABLE_STORE,
+      FontAwesome::ICONS_TABLE - FontAwesome::ICONS_TABLE_STORE
+    ]
+    @rest_grouped_icons = [
+      FontAwesome::ICONS_TABLE_REST,
+      FontAwesome::ICONS_TABLE - FontAwesome::ICONS_TABLE_REST
+    ]
   end
 end
