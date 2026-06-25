@@ -67,28 +67,34 @@
   </thead>
 
   <tbody>
-    <% @customers.each do |customer| %>
-      <tr data-customer_id="<%= customer.id %>" <% if customer.end_subscription && customer.end_subscription < Time.now %> class="disabled"<% end %>>
+    <% @customers.each_with_index do |customer, index| %>
+      <%
+        dashboard_url = analytic_url_for(customer, :customer_dashboard_url)
+        audience_url = analytic_url_for(customer, :customer_audience_url)
+        behavior_url = analytic_url_for(customer, :customer_behavior_url)
+        users_subrow = customer.users.any? &&
+          !(customer.end_subscription && customer.end_subscription < Time.now)
+        detail_subrow = customer.description.present? ||
+          customer.job_optimizer.present? ||
+          customer.job_destination_geocoding.present? ||
+          customer.job_store_geocoding.present?
+        detail_rowspan = 1 + (detail_subrow ? 1 : 0)
+        customer_row_classes = []
+        customer_row_classes << 'customer-block-stripe' if index.even?
+        customer_row_classes << 'disabled' if customer.end_subscription && customer.end_subscription < Time.now
+        customer_row_class = customer_row_classes.join(' ')
+      %>
+      <tr data-customer_id="<%= customer.id %>"<%= " class=\"#{customer_row_class}\"".html_safe if customer_row_class.present? %>>
         <td class="center"><%= check_box_tag("customers[#{customer.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions') %></td>
         <td class="center"><%= customer.ref %></td>
-        <%
-          dashboard_url = analytic_url_for(customer, :customer_dashboard_url)
-          audience_url = analytic_url_for(customer, :customer_audience_url)
-          behavior_url = analytic_url_for(customer, :customer_behavior_url)
-        %>
-        <td><%= customer.name %>
-          <br/>
-          <%= link_to '<i class="fa fa-chart-line" aria-hidden="true"></i>'.html_safe, dashboard_url, target: '_blank', title: t('customers.form.customer_dashboard_url_help') if dashboard_url %>
-          <%= link_to '<i class="fa fa-bar-chart" aria-hidden="true"></i>'.html_safe, audience_url, target: '_blank', title: t('customers.form.audience_url_help') if audience_url %>
-          <%= link_to '<i class="fa fa-pie-chart" aria-hidden="true"></i>'.html_safe, behavior_url, target: '_blank', title: t('customers.form.behavior_url_help') if behavior_url %>
-        </td>
+        <td><%= customer.name %></td>
         <td class="center">
           <%= customer.profile.name %> <br/>
           <%= customer.router.translated_name %>
         </td>
         <td class="center"><%= customer.max_vehicles %></td>
         <td class="center"><%= customer.test ? raw('<i class="fa fa-check" aria-hidden="true"></i>') : '' %></td>
-        <td class="center">
+        <td class="center customer-status-cell">
           <% if customer.users.empty? %>
             <span title="<%= t '.status_no_user' %>"><i class="fa fa-user-gear-times fa-fw"></i><i class="fa fa-warning" style="color: orange;"></i></span>
           <% else %>
@@ -115,32 +121,58 @@
         </td>
         <td><%= customer.destinations_count %> (<%= customer.visits_count %>)</td>
         <td><%= customer_plannings_count customer %></td>
-        <td rowspan="2" class="text-right action-buttons">
-          <div class="btn-group" role="group" aria-label="Actions">
-            <%= link_to [:duplicate, customer], method: :patch, class: "btn btn-default btn-sm", title: t('all.verb.duplicate'), data: { confirm: t('all.verb.destroy_confirm') } do %>
-              <i class="fa fa-copy fa-fw"></i>
+        <td rowspan="<%= detail_rowspan %>" class="text-right action-buttons">
+          <div class="btn-toolbar customer-action-buttons-toolbar" role="toolbar">
+            <% if users_subrow %>
+              <div class="dropdown btn-group customer-users-action-buttons" role="group" aria-label="<%= t('activerecord.models.users', count: customer.users.size) %>">
+                <%= render 'users_dropdown', customer: customer %>
+              </div>
             <% end %>
-            <%= link_to [:export, customer], method: :get, class: "btn btn-default btn-sm", title: t('all.verb.export.button'), data: { confirm: t('all.verb.destroy_confirm') } do %>
-              <i class="fa fa-download fa-fw"></i>
-            <% end %>
-            <%= link_to edit_customer_path(customer), class: "btn btn-primary btn-sm", title: t('all.verb.edit') do %>
-              <i class="fa fa-edit fa-fw"></i>
-            <% end %>
-            <%= link_to customer, class: "btn btn-danger btn-sm", method: :delete, title: t('all.verb.destroy'), data: { confirm: t('all.verb.destroy_confirm') } do %>
-              <i class="fa fa-trash fa-fw"></i>
-            <% end %>
+            <div class="btn-group customer-action-buttons" role="group" aria-label="Actions">
+              <% if dashboard_url %>
+                <%= link_to dashboard_url, target: '_blank', class: 'btn btn-default btn-sm', title: t('customers.form.customer_dashboard_url_help') do %>
+                  <i class="fa fa-chart-line fa-fw"></i>
+                <% end %>
+              <% end %>
+              <% if audience_url %>
+                <%= link_to audience_url, target: '_blank', class: 'btn btn-default btn-sm', title: t('customers.form.audience_url_help') do %>
+                  <i class="fa fa-bar-chart fa-fw"></i>
+                <% end %>
+              <% end %>
+              <% if behavior_url %>
+                <%= link_to behavior_url, target: '_blank', class: 'btn btn-default btn-sm', title: t('customers.form.behavior_url_help') do %>
+                  <i class="fa fa-pie-chart fa-fw"></i>
+                <% end %>
+              <% end %>
+              <%= link_to [:duplicate, customer], method: :patch, class: "btn btn-default btn-sm", title: t('all.verb.duplicate'), data: { confirm: t('all.verb.destroy_confirm') } do %>
+                <i class="fa fa-copy fa-fw"></i>
+              <% end %>
+              <%= link_to [:export, customer], method: :get, class: "btn btn-default btn-sm", title: t('all.verb.export.button'), data: { confirm: t('all.verb.destroy_confirm') } do %>
+                <i class="fa fa-download fa-fw"></i>
+              <% end %>
+              <%= link_to edit_customer_path(customer), class: "btn btn-primary btn-sm", title: t('all.verb.edit') do %>
+                <i class="fa fa-edit fa-fw"></i>
+              <% end %>
+              <%= link_to customer, class: "btn btn-danger btn-sm", method: :delete, title: t('all.verb.destroy'), data: { confirm: t('all.verb.destroy_confirm') } do %>
+                <i class="fa fa-trash fa-fw"></i>
+              <% end %>
+            </div>
           </div>
         </td>
       </tr>
-      <tr data-customer_id="<%= customer.id %>"<% if customer.end_subscription && customer.end_subscription < Time.now %> class="disabled"<% end %>>
-        <td></td>
-        <td colspan="9">
-          <%= render 'job', customer: customer, job: customer.job_optimizer %>
-          <%= render 'job', customer: customer, job: customer.job_destination_geocoding %>
-          <%= render 'job', customer: customer, job: customer.job_store_geocoding %>
-          <%= customer.description %>
-        </td>
-      </tr>
+      <% if detail_subrow %>
+        <tr data-customer_id="<%= customer.id %>" class="customer-detail-row<%= " #{customer_row_class}" if customer_row_class.present? %>">
+          <td></td>
+          <td colspan="9">
+            <%= render 'job', customer: customer, job: customer.job_optimizer %>
+            <%= render 'job', customer: customer, job: customer.job_destination_geocoding %>
+            <%= render 'job', customer: customer, job: customer.job_store_geocoding %>
+            <% if customer.description.present? %>
+              <span class="customer-detail-description"><%= customer.description %></span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
     <% end %>
   </tbody>
 </table>

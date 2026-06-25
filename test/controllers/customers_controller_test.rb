@@ -35,6 +35,27 @@ class CustomersControllerTest < ActionController::TestCase
     assert_select 'table#users thead th', { text: I18n.t('customers.edit.role_column'), count: 1 }
   end
 
+  test 'admin customer index dropdown lists every user without cap' do
+    sign_in users(:user_admin)
+    layer = layers(:layer_one)
+    3.times do |i|
+      User.create!(
+        email: "extra-user-#{i}@example.com",
+        customer: @customer,
+        layer: layer,
+        password: 'dummy_password',
+        password_confirmation: 'dummy_password',
+        time_zone: 'Hawaii'
+      )
+    end
+
+    get :index
+    assert_response :success
+
+    assert_select "#customerUsersDropdown#{@customer.id} .customer-users-summary__row", count: @customer.users.count
+    assert_select "#customerUsersDropdown#{@customer.id} .customer-users-summary__email", text: 'extra-user-0@example.com'
+  end
+
   test 'should update customer' do
     sign_in users(:user_one)
     patch :update, params: { id: @customer, customer: {name: 123, router_dimension: 'distance', router_options: {motorway: 'true', trailers: 2, weight: 10, width: '3,55', hazardous_goods: 'gas', low_emission_zone: 'false'}, optimization_minimal_time: 4, optimization_time: 10}}

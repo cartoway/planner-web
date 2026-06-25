@@ -1,0 +1,17 @@
+- sorted_users = customer.users.sort_by { |user| user.email.to_s.downcase }
+- if sorted_users.any?
+  %button.btn.btn-default.btn-sm.dropdown-toggle{ type: 'button', data: { toggle: 'dropdown', customer_id: customer.id }, title: t('activerecord.models.users', count: sorted_users.size), aria: { expanded: false, haspopup: true } }
+    %i.fa.fa-users.fa-fw
+    = sorted_users.size
+    %span.caret
+  %ul.dropdown-menu.customer-users-dropdown-menu{ id: "customerUsersDropdown#{customer.id}", role: 'menu' }
+    %li
+      .customer-users-summary
+        - sorted_users.each do |user|
+          .customer-users-summary__row
+            %span.customer-users-summary__role{ title: user.role&.name }
+              = admin_user_role_display(user)
+            %span.customer-users-summary__email= user.email
+            = link_to "/?api_key=#{user.api_key}", class: 'btn btn-default btn-xs customer-users-summary__connect', title: t('customers.edit.user.connect_as') do
+              %i.fa.fa-arrow-right-to-bracket.fa-fw
+              %span.sr-only= t('customers.edit.user.connect_as')
