@@ -134,7 +134,7 @@ class Customer < ApplicationRecord
 
   include RefSanitizer
 
-  scope :includes_deps, -> { includes([:profile, :router, :job_optimizer, :job_destination_geocoding, :job_store_geocoding, :users]) }
+  scope :includes_deps, -> { includes([:profile, :router, :job_optimizer, :job_destination_geocoding, :job_store_geocoding, { users: :role }]) }
   scope :includes_stores, -> { includes(:stores) }
   scope :for_duplication, -> {
     preload(
