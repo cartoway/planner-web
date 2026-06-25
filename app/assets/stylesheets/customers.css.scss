@@ -81,20 +81,103 @@
     background-color: transparent;
   }
 
-  .table-striped tr:nth-child(4n+1) td,
-  .table-striped tr:nth-child(4n+2) td {
+  .table-striped tr.customer-block-stripe > td {
     background-color: #f9f9f9;
   }
 
-  .table-striped tr:nth-child(4n+0) td,
-  .table-striped tr:nth-child(4n+2) td {
+  #customers > tbody > tr.customer-detail-row > td {
     border-top: none;
+  }
+
+  #customers .customer-users-dropdown-menu {
+    min-width: 18rem;
+    max-width: 28rem;
+    padding: 8px 10px;
+
+    .customer-users-summary {
+      &__row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+
+        &:last-of-type {
+          margin-bottom: 0;
+        }
+      }
+
+      &__role {
+        flex: 0 0 auto;
+      }
+
+      &__email {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        color: #555;
+      }
+
+      &__connect {
+        flex: 0 0 auto;
+        margin-left: auto;
+      }
+    }
   }
 }
 
-#customers{
-  .action-buttons{
-    width: 165px;
+#customers {
+  .action-buttons {
+    width: 1%;
+    white-space: nowrap;
+    vertical-align: top;
+    overflow: visible;
+  }
+
+  .customer-action-buttons-toolbar {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    float: right;
+    gap: 4px;
+
+    &::before,
+    &::after {
+      content: none;
+      display: none;
+    }
+  }
+
+  .customer-action-buttons,
+  .customer-users-action-buttons {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    float: none;
+    vertical-align: middle;
+
+    > .btn {
+      float: none;
+    }
+  }
+
+  @media screen and (max-width: 991px) {
+    tr th:nth-of-type(4), tr td:nth-of-type(4),
+    tr th:nth-of-type(7), tr td:nth-of-type(7) {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    tr th:nth-of-type(8), tr td:nth-of-type(8),
+    tr th:nth-of-type(9), tr td:nth-of-type(9),
+    tr th:nth-of-type(10), tr td:nth-of-type(10) {
+      display: none;
+    }
   }
 }
 
@@ -105,20 +188,4 @@
 .customer-router-option-label--default,
 .customer-router-selection-router--default {
   font-weight: 600;
-}
-
-#customers {
-    @media screen and (max-width: 991px) {
-      tr th:nth-of-type(4), tr td:nth-of-type(4),
-      tr th:nth-of-type(7), tr td:nth-of-type(7) {
-        display: none;
-      }
-    }
-    @media screen and (max-width: 767px) {
-      tr th:nth-of-type(8), tr td:nth-of-type(8),
-      tr th:nth-of-type(9), tr td:nth-of-type(9),
-      tr th:nth-of-type(10), tr td:nth-of-type(10) {
-        display: none;
-      }
-    }
 }
