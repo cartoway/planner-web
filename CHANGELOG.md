@@ -4,6 +4,9 @@
   ### Added
   - Customers index: users list dropdown per customer
   - Planning: extract inactive stops from vehicle routes to unassigned via a dedicated modal
+  - Destination import:
+    - Place rest stops on routes from CSV
+    - Choose the vehicle usage set for created plannings from the import form
   - Persistent order for vehicle usages:
     - Drag-and-drop reorder on the index page
     - Planning routes sorted by that order

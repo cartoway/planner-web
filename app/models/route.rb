@@ -146,9 +146,15 @@ class Route < ApplicationRecord
   end
 
   def size_active_destinations
-    return route_data.size_active_destinations if use_persisted_route_metrics?
+    return route_data.size_active_destinations if use_persisted_route_metrics? && association(:stops).loaded? && stops.empty?
 
-    stops.select { |s| s.is_a?(StopVisit) && s.active? }.filter_map { |s| s.visit&.destination_id }.uniq.size
+    if association(:stops).loaded?
+      stops.select { |s| s.is_a?(StopVisit) && s.active? }.filter_map { |s| s.visit&.destination_id }.uniq.size
+    elsif id.present?
+      StopVisit.joins(:visit).where(route_id: id, active: true).distinct.count('visits.destination_id')
+    else
+      0
+    end
   end
 
   def outdated_if_changed
@@ -727,12 +733,22 @@ class Route < ApplicationRecord
 
   def add_objects(objects, recompute = true, ignore_errors = false)
     Stop.transaction do
-      stop_index = stops.size
-      collected_stops = objects.map.with_index{ |stop, index|
+      if objects.any? { |stop| rest_stop_import?(stop) }
+        Stop.where(route_id: id, type: StopRest.name).delete_all
+        association(:stops).reset
+      end
+      next_index = stops.size
+      collected_stops = objects.filter_map { |stop|
         object, stop_attributes = stop
         stop_attributes = { active: true, custom_attributes: {} }.merge((stop_attributes || {}).compact)
         stop_id = stop_attributes.delete(:stop_id)
-        stop_index += 1
+        imported_index = stop_attributes[:index] || stop_attributes['index']
+        stop_index =
+          if imported_index
+            imported_index.to_i
+          else
+            next_index += 1
+          end
         if object.is_a?(Visit) && planning.tags_compatible?(object.tags.to_a | object.destination.tags.to_a)
           reveal_sub_tour_route_data(stop_index)
           stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
@@ -741,8 +757,8 @@ class Route < ApplicationRecord
         elsif object == :rest
           stops.new(type: StopRest.name, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         end
-      }.compact
-      Stop.import(collected_stops)
+      }
+      Stop.import(collected_stops) if collected_stops.any?
       self.outdated = true
 
       compute(ignore_errors: ignore_errors) if recompute
@@ -1867,5 +1883,17 @@ class Route < ApplicationRecord
     return true if association(:stops).loaded? && stops.empty?
 
     route_data.stops_size.positive?
+  end
+
+  def rest_stop_import?(stop)
+    object, _stop_attributes =
+      if stop.size == 3
+        type, _attribute, attributes = stop
+        [type == :rest ? :rest : stop[0], attributes]
+      else
+        stop
+      end
+
+    object == :rest
   end
 end
