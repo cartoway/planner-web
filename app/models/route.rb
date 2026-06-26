@@ -732,6 +732,8 @@ class Route < ApplicationRecord
           stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         elsif object.is_a?(StoreReload)
           stops.new(type: StopStore.name, store_reload: object, visit: nil, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
+        elsif object == :rest
+          stops.new(type: StopRest.name, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         end
       }.compact
       Stop.import(collected_stops)
@@ -781,16 +783,23 @@ class Route < ApplicationRecord
     stop
   end
 
-  def add_rest(stop_attributes = {}, stop_id = nil)
+  def add_rest(index = nil, stop_attributes = {}, stop_id = nil)
     stop_attributes = { active: true, custom_attributes: {} }.merge(stop_attributes.compact)
-    index = stops.size + 1
-    stops.build(type: StopRest.name, index: index, active: stop_attributes[:active], id: stop_id, custom_attributes: stop_attributes[:custom_attributes])
+    if self.vehicle_usage.nil?
+      errors.add(:base, I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage'))
+      return false
+    end
+
+    index = stops.size + 1 if !index || index < 0
+    shift_index(index)
+    stop = stops.build(type: StopRest.name, index: index, active: stop_attributes[:active], id: stop_id, custom_attributes: stop_attributes[:custom_attributes])
     self.outdated = true
+    stop
   end
 
   def add_or_update_rest(stop_attributes = {}, stop_id = nil)
     if !stops.find{ |stop| stop.is_a?(StopRest) }
-      add_rest(stop_attributes, stop_id)
+      add_rest(nil, stop_attributes, stop_id)
     end
     self.outdated = true
   end
