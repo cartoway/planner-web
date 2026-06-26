@@ -22,7 +22,7 @@ class ImportCsv
   include ActiveRecord::AttributeAssignment
   extend ActiveModel::Translation
 
-  attr_accessor :importer, :replace, :file, :delete_plannings, :column_def, :content_code, :replace_vehicles
+  attr_accessor :importer, :replace, :file, :delete_plannings, :column_def, :content_code, :replace_vehicles, :vehicle_usage_set_id
   validates :file, presence: true
   validate :data
 
