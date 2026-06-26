@@ -794,6 +794,7 @@ class PlanningsController < ApplicationController
             raise ActiveRecord::RecordNotFound
           end
 
+          fast_path_used = false
           if params[:stop_ids].nil?
             previous_route_id = Stop.find(params[:stop_id]).route_id
             if route.vehicle_usage_id.nil? && previous_route_id == route.id
@@ -801,15 +802,21 @@ class PlanningsController < ApplicationController
               return
             end
             previous_route = @planning.routes.find { |r| r.id == previous_route_id }
-            move_stop(params[:stop_id], route, previous_route_id, previous_route)
+            fast_path_used = move_stop(params[:stop_id], route, previous_route_id, previous_route)
           else
             ids.each{ |id|
               previous_route = @planning.routes.find { |r| r.id == id[:route_id] } || route
-              move_stop(id[:stop_id], route, id[:route_id], previous_route)
+              fast_path_used ||= move_stop(id[:stop_id], route, id[:route_id], previous_route)
             }
           end
 
-          if @planning.compute_saved
+          if fast_path_used
+            # Routes were already patched and marked computed; compute_saved would re-lock rows
+            # and can deadlock when precompute_traces runs in parallel inside the open transaction.
+            @planning.invalidate_planning_cache
+            capture_planning_state_after_success!
+            format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
+          elsif @planning.compute_saved
             capture_planning_state_after_success!
             format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
           else

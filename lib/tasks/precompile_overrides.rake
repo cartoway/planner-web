@@ -15,9 +15,6 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-namespace :assets do
-  task :precompile do
-    Rake::Task['assets:precompile'].invoke
-    Rake::Task['rswag:specs:swaggerize'].invoke
-  end
+Rake::Task['assets:precompile'].enhance do
+  Rake::Task['rswag:specs:swaggerize'].invoke
 end

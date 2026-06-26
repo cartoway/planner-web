@@ -349,8 +349,8 @@ class PlanningTest < ActiveSupport::TestCase
     vehicle_route = planning.routes.find { |r| r == routes(:route_one_one) }
     stop = vehicle_route.stops.find { |s| s.is_a?(StopVisit) }
     stop.update!(active: false)
-    source_size = vehicle_route.route_data.stops_size
-    target_size = unassigned.route_data.stops_size
+    source_size = vehicle_route.stops.size
+    target_size = unassigned.stops.size
 
     planning.move_stop(unassigned, stop, -1)
 
