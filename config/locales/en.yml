@@ -2087,6 +2087,7 @@ en:
         zoom_out: Zoom Out
       reverse_order: Reverse stops order
       move_stops: Move stops
+      extract_inactive_stops: Extract inactive stops
       open_planning_panel: Open plan panel
       collapse_planning_panel: Collapse plan panel
       refresh: Refresh
@@ -2356,6 +2357,11 @@ en:
             start: To the beginning
             end: To the end
             best_place: To the best place
+        extract_inactive_stops:
+          title: Extract inactive stops
+          empty: No inactive stops on routes.
+          help: Locked stops are unchecked by default.
+          confirm: Extract selection
         move_destinations:
           title: Moving stops
           in_progress: 'Assignment of visits to the vehicle in progress, please wait'

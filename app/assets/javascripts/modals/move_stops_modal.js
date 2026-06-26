@@ -120,11 +120,15 @@ export class MoveStopsModal {
       this.handleMoveStops();
     });
 
+    $(this.modalSelector).off('click.moveStopsSelect', '.move-stops-selection [data-selection]')
+      .on('click.moveStopsSelect', '.move-stops-selection [data-selection]', (event) => {
+        const stops = window.moveStopsData && window.moveStopsData.stops;
+        this.applySelection($(event.currentTarget).data('selection'), stops);
+      });
+
     // Listen when server injected content is ready, then initialize behaviors
     $(document).off('move-stops:content-updated').on('move-stops:content-updated', () => {
       try {
-        // Initialize UI widgets
-        $('#move-stops-toggle').toggleSelect();
         $('[type="checkbox"][data-toggle="disable-multiple-actions"]').toggleMultipleActions();
 
         $(`${this.modalSelector} .move-stops-stop-id`)
@@ -286,6 +290,33 @@ export class MoveStopsModal {
     }
 
     return selectedStops;
+  }
+
+  applySelection(action, stops) {
+    const $checkboxes = $(`${this.modalSelector} #move-stops .move-stops-stop-id:visible`);
+    let $lastChanged = $();
+
+    $checkboxes.each(function() {
+      const $checkbox = $(this);
+      if (action === 'all') {
+        $checkbox.prop('checked', true);
+      } else if (action === 'none') {
+        $checkbox.prop('checked', false);
+      } else if (action === 'reverse') {
+        $checkbox.prop('checked', !$checkbox.prop('checked'));
+      }
+      $lastChanged = $checkbox;
+    });
+
+    if ($lastChanged.length) {
+      $lastChanged.trigger('change');
+    } else {
+      this.updateStopsCount();
+      if (stops) {
+        this.calculateQuantities(stops);
+      }
+      this.applyMoveStopsActionVisibility();
+    }
   }
 
   /**

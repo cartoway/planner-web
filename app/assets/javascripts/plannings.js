@@ -45,6 +45,7 @@ import {
   validateTimeFormat
 } from '../../assets/javascripts/scaffolds';
 import { moveStopsModal } from './modals/move_stops_modal.js';
+import { extractInactiveStopsModal } from './modals/extract_inactive_stops_modal.js';
 
 var initPlanningStatesModal = function(planningId, options) {
   options = options || {};
@@ -3449,6 +3450,16 @@ export const plannings_edit = function(params) {
           updateDataHeader(planning_id);
         },
         mustacheI18n: mustache_i18n
+      });
+
+      extractInactiveStopsModal.initialize({
+        planningId: params.planning_id,
+        routesLayer: routesLayer,
+        refreshSidebarRoute: refreshSidebarRoute,
+        stopMoveUsable: !!(params.manage_planning && params.manage_planning.planning_move_stops_usable),
+        updatePlanningDataHeader: function() {
+          updateDataHeader(planning_id);
+        }
       });
 
       enqueueAutoLoadStops(params.planning_id, $('#planning'));

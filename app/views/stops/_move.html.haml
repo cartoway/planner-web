@@ -1,10 +1,18 @@
 #move-stops.route.row
-  .row
-    .col-xs-4.move-stops-toggle
-      %button#move-stops-toggle.btn.btn-default.btn-xs{ type: 'button', 'data-toggle': 'selection', 'data-target': '#move-stops', title: t('all.verb.toggle_selection') }
-        %i.fa.fa-check.fa-fw
+  .row.move-stops-toolbar.d-flex.justify-content-between.align-items-center
+    .col-xs-8.move-stops-selection
+      .btn-group
+        %button.btn.btn-default.btn-sm{ type: 'button', data: { selection: 'none' }, title: t('plannings.edit.active_none') }
+          %i.fa.fa-regular.fa-square.fa-fw
+          = t('plannings.edit.active_none')
+        %button.btn.btn-default.btn-sm{ type: 'button', data: { selection: 'reverse' }, title: t('plannings.edit.active_reverse') }
+          %i.fa.fa-random.fa-fw
+          = t('plannings.edit.active_reverse')
+        %button.btn.btn-default.btn-sm{ type: 'button', data: { selection: 'all' }, title: t('plannings.edit.active_all') }
+          %i.fa.fa-check-square.fa-fw
+          = t('plannings.edit.active_all')
 
-    .pull-right
+    .col-xs-4.d-flex.justify-content-end
       .route-info.inactive
         %i.fa.fa-check-square.fa-fw
         %span#move-stops_count
