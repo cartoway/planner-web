@@ -684,16 +684,28 @@ class ImporterDestinations < ImporterBase
     Date.today + @customer.planning_date_offset_default
   end
 
-  def build_store_attributes(row)
+  def default_vehicle_usage_set
+    @provided_planning_attributes[:vehicle_usage_set] || @customer.vehicle_usage_sets.first
+  end
+
+  def planning_attributes_from_row(row)
     row.delete(:planning_date) if row[:planning_date].blank?
-    @plannings_attributes[row[:planning_ref]] ||=
-      {
-        ref: row[:planning_ref],
-        name: row[:planning_name],
-        date: planning_date_from_row(row),
-        customer: @customer,
-        vehicle_usage_set: @customer.vehicle_usage_sets[0]
-      }
+    planning_ref = row[:planning_ref]
+    @plannings_attributes[planning_ref] ||= {
+      ref: planning_ref,
+      name: row[:planning_name],
+      date: planning_date_from_row(row),
+      customer: @customer,
+      vehicle_usage_set: default_vehicle_usage_set
+    }
+    attributes = @plannings_attributes[planning_ref]
+    attributes[:name] = row[:planning_name] if row[:planning_name].present?
+    attributes[:date] = planning_date_from_row(row) if row[:planning_date].present?
+    attributes
+  end
+
+  def build_store_attributes(row)
+    planning_attributes_from_row(row)
 
     store_attributes = row.slice(*(@@col_store_keys)).merge(customer_id: @customer.id)
     store_reload_attributes = row.slice(*@col_store_reload_keys)
@@ -704,15 +716,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def build_attributes(row)
-    row.delete(:planning_date) if row[:planning_date].blank?
-    @plannings_attributes[row[:planning_ref]] ||=
-      {
-        ref: row[:planning_ref],
-        name: row[:planning_name],
-        date: planning_date_from_row(row),
-        customer: @customer,
-        vehicle_usage_set: @customer.vehicle_usage_sets[0]
-      }
+    planning_attributes_from_row(row)
 
     destination_attributes = row.slice(*(@@col_dest_keys)).merge(customer_id: @customer.id)
     destination_attributes[:duration] = destination_attributes.delete :destination_duration
@@ -1126,15 +1130,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def prepare_rest_in_planning(row, _line)
-    row.delete(:planning_date) if row[:planning_date].blank?
-    @plannings_attributes[row[:planning_ref]] ||=
-      {
-        ref: row[:planning_ref],
-        name: row[:planning_name],
-        date: planning_date_from_row(row),
-        customer: @customer,
-        vehicle_usage_set: @customer.vehicle_usage_sets[0]
-      }
+    planning_attributes_from_row(row)
 
     return unless row.key?(:route)
 
@@ -1232,10 +1228,12 @@ class ImporterDestinations < ImporterBase
         planning = ref ? @plannings_hash[ref] : @plannings_hash[@provided_planning_attributes[:ref]]
         planning_id = planning&.id
         capture_import_checkpoint_before!(planning_id) if planning_id
-        unless planning
+        if planning.nil?
           attributes = @plannings_attributes[ref]
           planning = Planning.new(attributes)
           planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
+        elsif @plannings_attributes[ref]
+          planning.assign_attributes(@plannings_attributes[ref].slice(:vehicle_usage_set, :name, :date).compact)
         end
         planning.assign_attributes(@provided_planning_attributes)
         unless planning.name
