@@ -914,6 +914,113 @@ class Route < ApplicationRecord
     true
   end
 
+  # Inactive StopVisits do not affect route timing; only stops_size changes on the source vehicle route.
+  def shift_stop_indices!(from, by = 1, to = nil)
+    shift_index(from, by, to)
+  end
+
+  def reindex_stops_after_extracting!(removed_stop_id:)
+    remaining_stops = stops.select { |s| s.id != removed_stop_id && s.route_id == id }
+    remaining_stops.sort_by(&:index).each_with_index { |s, i| s.index = i + 1 }
+    persist_stop_indices!(remaining_stops)
+  end
+
+  def persist_stop_indices!(stops_to_persist)
+    return if stops_to_persist.empty?
+
+    import_options = {
+      validate_with_context: :update,
+      raise_error: true,
+      on_duplicate_key_update: { conflict_target: [:id], columns: [:index] }
+    }
+
+    stop_visits = stops_to_persist.select { |s| s.is_a?(StopVisit) }.map(&:import_attributes)
+    stop_rests = stops_to_persist.select { |s| s.is_a?(StopRest) }.map(&:import_attributes)
+    stop_stores = stops_to_persist.select { |s| s.is_a?(StopStore) }.map(&:import_attributes)
+
+    StopVisit.import(stop_visits, **import_options) if stop_visits.any?
+    StopRest.import(stop_rests, **import_options) if stop_rests.any?
+    StopStore.import(stop_stores, **import_options) if stop_stores.any?
+  end
+
+  def sync_route_data_stops_size!
+    ensure_route_data
+    route_data.update_columns(stops_size: Stop.where(route_id: id).count)
+  end
+
+  def sync_out_of_route_metrics!
+    return false if vehicle_usage?
+
+    count = Stop.where(route_id: id).count
+    no_geo = StopVisit.joins(visit: :destination).where(route_id: id).where(
+      'destinations.lat IS NULL OR destinations.lng IS NULL'
+    ).exists?
+    route_data.update_columns(
+      stops_size: count,
+      size_destinations: count,
+      no_geolocalization: no_geo
+    )
+    true
+  end
+
+  def append_stop_visit_to_geojson!(stop)
+    return false unless stop.is_a?(StopVisit) && stop.position?
+
+    ensure_route_geojson
+    feat = {
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [stop.lng, stop.lat]
+      },
+      properties: {
+        route_id: id,
+        index: stop.index,
+        active: stop.active,
+        number: nil,
+        color: stop.default_color,
+        icon: stop.default_icon,
+        icon_size: stop.default_icon_size,
+        stop_id: stop.id,
+        sub_tour_index: 0,
+        type: stop.type
+      }
+    }
+    points = (route_geojson.points || []).dup
+    points << feat.to_json
+    route_geojson.update_columns(points: points)
+    true
+  end
+
+  def patch_route_geojson_after_stop_visit_removed!(removed_stop_id:)
+    return unless route_geojson
+    return if route_geojson.points.blank?
+
+    new_points = []
+    route_geojson.points.each do |feature_json|
+      begin
+        feature = JSON.parse(feature_json)
+      rescue JSON::ParserError
+        new_points << feature_json
+        next
+      end
+
+      sid = feature.dig('properties', 'stop_id')
+      next if sid.present? && sid.to_i == removed_stop_id.to_i
+
+      new_points << feature.to_json
+    end
+
+    route_geojson.update_columns(points: new_points)
+  end
+
+  def mark_computed_without_recompute!
+    self.outdated = false
+    update_columns(outdated: false) if persisted?
+    @computed = true
+    invalidate_route_cache
+  end
+
   def force_reindex
     # Force reindex after customers.destination.destroy_all
     stops.sort_by(&:index).each_with_index{ |stop, index|
@@ -1493,28 +1600,6 @@ class Route < ApplicationRecord
   end
 
   private
-
-  def patch_route_geojson_after_stop_visit_removed!(removed_stop_id:)
-    return unless route_geojson
-    return if route_geojson.points.blank?
-
-    new_points = []
-    route_geojson.points.each do |feature_json|
-      begin
-        feature = JSON.parse(feature_json)
-      rescue JSON::ParserError
-        new_points << feature_json
-        next
-      end
-
-      sid = feature.dig('properties', 'stop_id')
-      next if sid.present? && sid.to_i == removed_stop_id.to_i
-
-      new_points << feature.to_json
-    end
-
-    route_geojson.update_columns(points: new_points)
-  end
 
   def compute_out_of_route_data!
     self.route_data.assign_attributes(

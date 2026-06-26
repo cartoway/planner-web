@@ -26,6 +26,10 @@ json.stops stops do |stop|
   (json.time stop.time_time) if stop.time
   (json.time_day number_of_days(stop.time)) if stop.time
   json.active stop.active
+  json.locked stop.locked
+  route = stop.route
+  vehicle = route.vehicle_usage&.vehicle
+  json.route_name [route.ref, vehicle&.name].compact.join(' ')
   visit = stop.visit
   json.visit_id visit.id
   json.destination_name visit.destination.name

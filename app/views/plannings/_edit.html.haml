@@ -118,6 +118,23 @@
             %button#move-stops-modal.btn.btn-primary{type: "button", disabled: !@manage_planning[:send_stop_to_route_usable]}
               = t('plannings.edit.move_stops')
 
+#planning-extract-inactive-stops-modal.modal.fade{role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      %form
+        .modal-header
+          %button.close{type: "button", "data-dismiss": "modal"}
+            &times;
+          %h4.modal-title
+            %i.fa.fa-arrow-left.fa-fw
+            = t('plannings.edit.dialog.extract_inactive_stops.title')
+        .modal-body.extract-inactive-stops-modal-body
+        .clearfix
+        .modal-footer
+          - if @manage_planning[:planning_move_stops_visible]
+            %button#extract-inactive-stops-modal-confirm.btn.btn-primary{type: "button", disabled: !@manage_planning[:planning_move_stops_usable]}
+              = t('plannings.edit.dialog.extract_inactive_stops.confirm')
+
 #planning-send-sms-drivers-modal.modal.fade{role: "dialog", tabindex: "-1"}
 
 = render partial: 'layouts/modal_csv'
