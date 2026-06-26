@@ -1,0 +1,27 @@
+#extract-inactive-stops.row
+  - if stops.empty?
+    %p= t('plannings.edit.dialog.extract_inactive_stops.empty')
+  - else
+    .row.extract-inactive-stops-toolbar.d-flex.justify-content-between.align-items-center
+      .col-xs-8.extract-inactive-stops-selection
+        .btn-group
+          %button.btn.btn-default.btn-sm{ type: 'button', data: { selection: 'none' }, title: t('plannings.edit.active_none') }
+            %i.fa.fa-regular.fa-square.fa-fw
+            = t('plannings.edit.active_none')
+          %button.btn.btn-default.btn-sm{ type: 'button', data: { selection: 'reverse' }, title: t('plannings.edit.active_reverse') }
+            %i.fa.fa-random.fa-fw
+            = t('plannings.edit.active_reverse')
+          %button.btn.btn-default.btn-sm{ type: 'button', data: { selection: 'all' }, title: t('plannings.edit.active_all') }
+            %i.fa.fa-check-square.fa-fw
+            = t('plannings.edit.active_all')
+
+      .col-xs-4.d-flex.justify-content-end
+        .route-info.inactive
+          %i.fa.fa-check-square.fa-fw
+          %span#extract-inactive-stops_count
+            = stops.count { |stop| stop[:checked] }
+          = " #{t('plannings.edit.stops')}"
+
+    = render partial: 'stops/move_stops_list', locals: { stops: stops, show_route_name: true, hide_hover_tools: true, show_locked_indicator: true, scrollable_list: true }
+
+    %p.help-block.extract-inactive-stops-help= t('plannings.edit.dialog.extract_inactive_stops.help')

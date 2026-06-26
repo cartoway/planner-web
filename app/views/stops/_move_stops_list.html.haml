@@ -1,24 +1,28 @@
-.row
+.row{class: (local_assigns[:scrollable_list] ? 'extract-inactive-stops-list-scroll' : nil)}
   .col-md-12.col-xs-12.col-sm-12
     %ul.stops.list-group
       - stops.each do |stop|
+        - title_col_class = local_assigns[:hide_hover_tools] ? 'col-xs-8 col-md-8' : 'col-xs-4 col-md-4'
         %li.d-fake-flex.align-items-center.list-group-item{class: (stop[:error] ? 'ui-state-error' : nil)}
           .row.stop-row.d-flex.flex-wrap.align-items-center{class: (stop[:status] ? "row-status-#{stop[:status_code]}" : nil)}
             .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
-              .col-xs-2.d-flex.justify-content-center.align-items-center
-                %input.move-stops-stop-id{ type: 'checkbox', name: 'stop_ids', value: stop[:stop_id], checked: 'checked', multiple: true, 'data-toggle': 'disable-multiple-actions', 'data-target': '.modal-footer', 'data-route-id': stop[:route_id] }
+              .col-xs-2.d-flex.justify-content-center.align-items-center.extract-inactive-stops-checkbox
+                %input.move-stops-stop-id{ type: 'checkbox', name: 'stop_ids', value: stop[:stop_id], checked: ((stop.key?(:checked) ? stop[:checked] : true) ? 'checked' : nil), multiple: true, 'data-toggle': 'disable-multiple-actions', 'data-target': '.modal-footer', 'data-route-id': stop[:route_id] }
               .col-xs-10.d-flex.align-items-center
                 .col-xs-5.d-flex.justify-content-center
-                  %span.number.stop-label.label{class: (stop[:color_force] ? 'color_force' : '' ) + (stop[:active] ? '' : ' inactive' ), style: "background-color: #{ stop[:active] ? stop[:color] : 'transparent' };"}
-                    %span{ class: ['stop-status', (stop[:status] ? "stop-status-#{stop[:status_code]}" : nil)].compact.join(' '), title: [stop[:status], (stop[:eta_formated] ? " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" : nil)].compact.join, style: (stop[:status] ? nil : 'display: none;') }
-                    = stop[:number] || stop[:stop_index]
+                  - if local_assigns[:show_locked_indicator] && stop[:locked]
+                    %i.fa.fa-lock.fa-fw.text-warning.extract-inactive-stops-locked-indicator{ title: t('plannings.edit.stop_locked_indicator_title') }
+                  - else
+                    %span.number.stop-label.label{class: (stop[:color_force] ? 'color_force' : '' ) + (stop[:active] ? '' : ' inactive' ), style: "background-color: #{ stop[:active] ? stop[:color] : 'transparent' };"}
+                      %span{ class: ['stop-status', (stop[:status] ? "stop-status-#{stop[:status_code]}" : nil)].compact.join(' '), title: [stop[:status], (stop[:eta_formated] ? " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" : nil)].compact.join, style: (stop[:status] ? nil : 'display: none;') }
+                      = stop[:number] || stop[:stop_index]
                 .col-xs-7
                   .stop-info{class: "#{stop[:active] ? 'primary' : 'info'} #{('danger' if stop[:error])}"}
                     - if stop[:active]
                       = stop[:time]
                       - if stop[:time_day]
                         = "(+#{stop[:time_day]})"
-            .col-xs-4.col-md-4.d-flex
+            %div.d-flex{class: title_col_class}
               .title
                 - unless stop[:geocoded]
                   %i.fa.fa-map-marker.fa-fw{ title: t('plannings.edit.error.no_geolocalization') }
@@ -44,7 +48,11 @@
                   - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
                 %span.name{ title: title }
                   = sd_line
-            .col-xs-2.col-md-4.hover-tools
-              .col-xs-0.col-md-6
-              .col-xs-12.col-md-6.d-flex.align-items-center
-                %i.fa.fa-reorder.fa-fw{title: t('plannings.edit.drag_help')}
+                - if local_assigns[:show_route_name] && stop[:route_name].present?
+                  %br/
+                  %small.text-muted= stop[:route_name]
+            - unless local_assigns[:hide_hover_tools]
+              .col-xs-2.col-md-4.hover-tools
+                .col-xs-0.col-md-6
+                .col-xs-12.col-md-6.d-flex.align-items-center
+                  %i.fa.fa-reorder.fa-fw{title: t('plannings.edit.drag_help')}
