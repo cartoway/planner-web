@@ -24,6 +24,8 @@
           %a{ "data-keyboard": "true", "data-target": "#import-help-modal", "data-toggle": "modal", href: "#help", title: t('.import_template_help') }
             %i.fa.fa-info-circle.fa-fw
             = t('.import_template_help')
+        - if current_user.customer.vehicle_usage_sets.size > 1
+          = f.collection_select :vehicle_usage_set_id, current_user.customer.vehicle_usage_sets, :id, :name, { label: t('activerecord.models.vehicle_usage_set'), help: t('.vehicle_usage_set_help') }, { control_class: 'form-control', disabled: !can_import_destinations }
         = f.form_group :destinations, { label: {text: t('.destinations') }} do
           = f.radio_button :replace, 0, checked: !@import_csv.replace, label: t('.replace_no'), label_class: ''
           %p.help-block= t('.replace_no_help')
