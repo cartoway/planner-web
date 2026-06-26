@@ -3,6 +3,8 @@ route_data_zero_one:
   emission:
   pickups: {}
   deliveries: {}
+  stops_size: 1
+  size_destinations: 1
 
 route_data_one_one:
   distance: 1.5
@@ -11,6 +13,7 @@ route_data_one_one:
   pickups: {}
   deliveries: {}
   size_active: 4
+  stops_size: 4
 
 route_data_three_one:
   distance: 1.5
