@@ -10,10 +10,10 @@
     .input-group
       = select_tag "customer[#{icon_field}]", grouped_options_for_select([                                                                                                   |
           [t("customers.form.map_markers.#{model_class}.prefered_icons"),                                                                                                    |
-            grouped_icons[0].map { |icon| [icon, icon, { data: { content: "<i class='fa fa-fw #{icon}'></i> #{icon}" }, selected: (icon_value == icon) ? true : nil }] }],   |
+            grouped_icons[0].map { |icon| [icon, icon, { data: { content: "<i class='fa fa-fw #{icon}'></i> #{icon}" } }] }],                                              |
           [t("customers.form.map_markers.#{model_class}.other_icons"),                                                                                                       |
-            grouped_icons[1].map { |icon| [icon, icon, { data: { content: "<i class='fa fa-fw #{icon}'></i> #{icon}" }, selected: (icon_value == icon) ? true : nil }] }]    |
-        ]), include_blank: t('customers.form.value_default', n: default_icon), class: 'form-control width_1_2 selectpicker', 'data-live-search' => true                      |
+            grouped_icons[1].map { |icon| [icon, icon, { data: { content: "<i class='fa fa-fw #{icon}'></i> #{icon}" } }] }]                                                |
+        ], icon_value), include_blank: t('customers.form.value_default', n: default_icon), class: 'form-control width_1_2 selectpicker', 'data-live-search' => true                      |
       = select_tag "customer[#{size_field}]", options_for_select([[t('tags.form.icon_size.small'), :small], [t('tags.form.icon_size.medium'), :medium], [t('tags.form.icon_size.large'), :large]], size_value), include_blank: t('customers.form.value_default', n: t("tags.form.icon_size.#{default_size}")), class: 'form-control width_1_2'
       %span.input-group-addon= content_tag('i', '', class: "fa #{addon_icon} fa-fw")
     %p.help-block= t("customers.form.#{model_class}_icon_help")
