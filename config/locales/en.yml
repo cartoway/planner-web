@@ -1445,6 +1445,8 @@ en:
         If routes are present in your new import file, a new plan of routes will
         be created after import.
       delete_plannings_confirm: Delete all previously created plans of routes?
+      vehicle_usage_set_help: >-
+        Vehicle configuration used for plans created during import.
       csv:
         title: CSV File
         help: >-
