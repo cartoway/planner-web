@@ -265,7 +265,7 @@ module PlanningStateCapture
 
       [store_reload, stop_attributes]
     when 'rest'
-      [nil, stop_attributes]
+      [:rest, stop_attributes]
     end
   end
 

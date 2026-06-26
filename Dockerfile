@@ -1,8 +1,14 @@
+# syntax=docker/dockerfile:1
+
 ARG RUBY_IMAGE=3.1.7-alpine
 
 # Step 1: Build (assets, gems, node_modules)
 FROM ruby:${RUBY_IMAGE} AS builder
-ENV NODE_OPTIONS=--openssl-legacy-provider
+ENV NODE_OPTIONS=--openssl-legacy-provider \
+    RAILS_ENV=production \
+    NODE_ENV=production \
+    BUNDLE_WITHOUT="development:test" \
+    API_DOC_MODE=true
 
 # Install build dependencies
 RUN apk add --no-cache \
@@ -23,17 +29,36 @@ RUN apk add --no-cache \
 WORKDIR /srv/app
 
 COPY Gemfile Gemfile.lock ./
-RUN bundle config set --local no-doc 'true' && \
+RUN --mount=type=cache,target=/usr/local/bundle/cache \
+    bundle config set --local no-doc 'true' && \
     bundle install --jobs=4 --retry=3
 
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile && \
-    yarn cache clean
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    yarn install --frozen-lockfile
 
+# Copy only what webpack and i18n need first so later app changes reuse this layer.
+COPY Rakefile config.ru ./
+COPY config/ config/
+COPY bin/ bin/
+COPY app/assets/ app/assets/
+COPY app/javascript/ app/javascript/
+COPY lib/ lib/
+COPY vendor/ vendor/
+COPY public/ public/
+
+RUN bundle exec rake i18n:js:export
+
+# Webpack is the slowest step; keep it separate from sprockets and swagger generation.
+RUN bundle exec rails webpacker:compile
+
+COPY app/ app/
+COPY spec/ spec/
+
+RUN bundle exec rake assets:precompile
+
+# Remaining source (models, db, etc.) without invalidating the asset layers above.
 COPY . .
-
-RUN bundle exec rake i18n:js:export && \
-    bundle exec rake assets:precompile API_DOC_MODE=true
 
 # Step 2: Final image, minimal
 FROM ruby:${RUBY_IMAGE}

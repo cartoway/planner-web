@@ -295,20 +295,23 @@ class Planning < ApplicationRecord
         routes[i].remove_store_reloads
         routes[i].remove_rests if r[:visits].any? { |(obj, _stop_attributes)| obj == :rest }
         r[:visits].each.with_index{ |(obj, stop_attributes), index|
+          stop_index = (stop_attributes[:index] || stop_attributes['index'] || (index + 1)).to_i
           case obj
           when Visit
             if obj.id && stop_visit_ids[obj.id]
-              move_visit(routes[i], obj, index + 1)
+              move_visit(routes[i], obj, stop_index)
             elsif tags_compatible?(obj.tags.to_a | obj.destination.tags.to_a)
-              routes[i].add(obj, index + 1, stop_attributes)
+              routes[i].add(obj, stop_index, stop_attributes)
             end
           when StoreReload
-            routes[i].add_store_reload(obj, index + 1, stop_attributes)
+            routes[i].add_store_reload(obj, stop_index, stop_attributes)
           when :rest
-            routes[i].add_rest(index + 1, stop_attributes)
+            routes[i].add_rest(stop_index, stop_attributes)
           end
         }
       }
+      new_stops = routes.flat_map(&:stops).select(&:new_record?)
+      Stop.import(new_stops, validate: false) if new_stops.any?
       true
     else
       false
@@ -626,6 +629,7 @@ class Planning < ApplicationRecord
     if stop.route != route
       if fast_move_inactive_stop_to_out_of_route?(stop, route)
         fast_move_inactive_stop_to_out_of_route!(route, stop, index)
+        true
       elsif stop.is_a?(StopVisit)
         visit, active = stop.visit, stop.active
         stop_id = stop.id
@@ -641,14 +645,19 @@ class Planning < ApplicationRecord
           planning: self
         )
         route.add(visit, index || 1, { active: active || source_route.vehicle_usage.nil? }, stop_id)
+        false
       elsif force && stop.is_a?(StopRest)
         active = stop.active
         stop_id = stop.id
         routes.find{ |r| r.id == stop.route_id }.move_stop_out(stop, force)
         route.add_rest(nil, { active: active }, stop_id)
+        false
+      else
+        false
       end
     else
       route.move_stop(stop, index || 1)
+      false
     end
   end
 
@@ -1290,10 +1299,19 @@ class Planning < ApplicationRecord
     stop.update!(route_id: out_of_route.id, index: target_index, locked: false)
 
     source_route.sync_route_data_stops_size!
+    source_route.route_data.reload if source_route.route_data&.persisted?
     source_route.patch_route_geojson_after_stop_visit_removed!(removed_stop_id: stop_id) if had_position
 
     out_of_route.sync_out_of_route_metrics!
+    out_of_route.route_data.reload if out_of_route.route_data&.persisted?
     out_of_route.append_stop_visit_to_geojson!(stop.reload) if had_position
+
+    if source_route.association(:stops).loaded?
+      source_route.association(:stops).target.reject! { |s| s.id == stop_id }
+    end
+    if out_of_route.association(:stops).loaded?
+      out_of_route.association(:stops).target << stop
+    end
 
     source_route.mark_computed_without_recompute!
     out_of_route.mark_computed_without_recompute!
