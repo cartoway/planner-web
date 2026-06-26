@@ -1490,6 +1490,9 @@ fr:
         réactivité de l'application). Si des tournées sont présentes dans votre
         fichier d'import, un nouveau plan sera tout de même créé après l'import.
       delete_plannings_confirm: Supprimer tous les plans de vos anciennes tournées ?
+      vehicle_usage_set_help: >-
+        Configuration des véhicules utilisée pour les plans créés lors de
+        l'import.
       csv:
         title: Fichier CSV
         help: >-
