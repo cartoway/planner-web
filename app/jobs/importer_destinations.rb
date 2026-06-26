@@ -468,6 +468,10 @@ class ImporterDestinations < ImporterBase
     type == I18n.t('destinations.import_file.stop_type_store_reload') || type == 'reload'
   end
 
+  def is_rest?(type)
+    type == I18n.t('activerecord.models.stops.type.rest') || type == 'rest'
+  end
+
   def import_row(_name, row, line, _options)
     if is_visit?(row[:stop_type])
       convert_deprecated_fields(row)
@@ -488,6 +492,9 @@ class ImporterDestinations < ImporterBase
       prepare_store_reload(row, line, store_attributes, store_reload_attributes)
       prepare_store_reload_in_planning(row, line, store_attributes, store_reload_attributes)
       store_attributes
+    elsif is_rest?(row[:stop_type])
+      prepare_rest_in_planning(row, line)
+      nil
     end
   end
 
@@ -1118,6 +1125,40 @@ class ImporterDestinations < ImporterBase
     @visits_attributes_without_ref << [[line], visit_attributes.merge(destination_index: destination_index)]
   end
 
+  def prepare_rest_in_planning(row, _line)
+    row.delete(:planning_date) if row[:planning_date].blank?
+    @plannings_attributes[row[:planning_ref]] ||=
+      {
+        ref: row[:planning_ref],
+        name: row[:planning_name],
+        date: planning_date_from_row(row),
+        customer: @customer,
+        vehicle_usage_set: @customer.vehicle_usage_sets[0]
+      }
+
+    return unless row.key?(:route)
+
+    if row[:route] && row[:ref_vehicle]
+      if @plannings_routes[row[:planning_ref]][row[:route]].key?(:ref_vehicle) &&
+         @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] != row[:ref_vehicle] ||
+         @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] &&
+         @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] != row[:route]
+        raise ImportInvalidRow.new(I18n.t('destinations.import_file.refs_route_discordant'))
+      end
+      @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
+      @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] = row[:route]
+    end
+    @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [
+      :rest,
+      {},
+      {
+        active: ValueToBoolean.value_to_boolean(row[:active], true),
+        custom_attributes: row[:stop_custom_attributes],
+        index: normalize_route_order(row[:index])
+      }
+    ]
+  end
+
   def prepare_store_reload_in_planning(row, _line, _store_attributes, store_reload_attributes)
     if store_reload_attributes
       # Add store_reload to route if needed
@@ -1209,8 +1250,9 @@ class ImporterDestinations < ImporterBase
         end
         routes_hash.each{ |k, v|
           # Duplicated visit lines are only represented by a single visit
-          v[:visits].select!{ |_type, attribute, _stop_attributes|
-            attribute[:id] ||
+          v[:visits].select!{ |type, attribute, _stop_attributes|
+            type == :rest ||
+              attribute[:id] ||
               @visit_index_to_id_hash[attribute[:visit_index]] ||
               @store_reload_index_to_id_hash[attribute[:store_reload_index]]
           }
@@ -1234,7 +1276,15 @@ class ImporterDestinations < ImporterBase
           }
           store_reloads = StoreReload.where(id: store_reload_ids).index_by(&:id).values_at(*store_reload_ids)
 
-          v[:visits].map!.with_index{ |(_type, _attribute, active), index| [visits[index] || store_reloads[index], active] }
+          v[:visits].map!.with_index{ |(type, _attribute, stop_attributes), index|
+            object =
+              if type == :rest
+                :rest
+              else
+                visits[index] || store_reloads[index]
+              end
+            [object, stop_attributes]
+          }
         }
         if !(planning_id ? planning.update_routes(routes_hash, recompute = true) : planning.set_routes(routes_hash, false, true))
           raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if routes_hash.keys.size > planning.routes.size || routes_hash.keys.compact.size > @customer.max_vehicles
