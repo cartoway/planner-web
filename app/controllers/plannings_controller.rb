@@ -37,7 +37,7 @@ class PlanningsController < ApplicationController
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
   before_action :enforce_operation_usable_for_duplicate!, only: [:duplicate]
-  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :move, :update_stop]
+  before_action :set_planning_without_stops, only: [:data_header, :filter_routes, :modal, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
   before_action :set_device_definitions, only: [:edit, :update]
@@ -398,6 +398,23 @@ class PlanningsController < ApplicationController
     end
   end
 
+  # Render extract inactive stops modal content via Rails (.js.erb)
+  def extract_inactive_stops_modal
+    bootstrap_manage_planning_flags!
+    deny_unless_operation_visible!(:route, 'stops')
+    deny_unless_operation_usable!(:stop, 'move_stop')
+
+    stops = stops_for_extract_inactive_list(inactive_stops_on_vehicle_routes)
+    out_of_route = @planning.routes.find { |route| route.vehicle_usage_id.nil? }
+
+    respond_to do |format|
+      format.js do
+        render partial: 'stops/extract_inactive_stops.js.erb',
+               locals: { stops: stops, out_of_route_id: out_of_route&.id }
+      end
+    end
+  end
+
   # Render move stops modal content via Rails (.js.erb)
   def move_stops_modal
     bootstrap_manage_planning_flags!
@@ -690,6 +707,22 @@ class PlanningsController < ApplicationController
       symbolize_names: true
     )
     stops_json[:stops] || []
+  end
+
+  def inactive_stops_on_vehicle_routes
+    StopVisit.joins(:route)
+             .where(routes: { planning_id: @planning.id })
+             .where.not(routes: { vehicle_usage_id: nil })
+             .where(active: false)
+             .includes(route: { vehicle_usage: :vehicle })
+             .includes_destinations_and_stores
+             .by_route_then_index
+  end
+
+  def stops_for_extract_inactive_list(stops)
+    stops_for_move_list(stops).map do |stop|
+      stop.merge(checked: !stop[:locked])
+    end
   end
 
   def normalize_refresh_routes_ids(raw)

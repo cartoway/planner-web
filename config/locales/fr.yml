@@ -2178,6 +2178,7 @@ fr:
         zoom_out: Diminuer le zoom
       reverse_order: Inverser l'ordre des arrêts
       move_stops: Déplacer les arrêts
+      extract_inactive_stops: Extraire les arrêts inactifs
       open_planning_panel: Déployer le panneau du plan de tournées
       collapse_planning_panel: Minifier le panneau du plan de tournées
       refresh: Actualiser
@@ -2466,6 +2467,11 @@ fr:
             start: Au début
             end: A la fin
             best_place: Au meilleur endroit
+        extract_inactive_stops:
+          title: Extraire les arrêts inactifs
+          empty: Aucun arrêt inactif sur les tournées.
+          help: Les arrêts verrouillés sont décochés par défaut.
+          confirm: Extraire la sélection
         move_destinations:
           title: Déplacement de vos arrêts
           in_progress: 'Affectation des visites au véhicule en cours, merci de patienter'

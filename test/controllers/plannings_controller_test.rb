@@ -906,6 +906,82 @@ class PlanningsControllerTest < ActionController::TestCase
     end
   end
 
+  test 'extract_inactive_stops_modal lists inactive stops on vehicle routes' do
+    stop = stops(:stop_one_one)
+    stop.update!(active: false)
+
+    get :extract_inactive_stops_modal, params: { id: @planning }, format: :js
+    assert_response :success
+    assert_includes response.body, "\"stop_id\":#{stop.id}"
+    assert_includes response.body, '"checked":true'
+  ensure
+    stop.update!(active: true)
+  end
+
+  test 'extract_inactive_stops_modal unchecks locked inactive stops by default' do
+    stop = stops(:stop_one_one)
+    stop.update!(active: false, locked: true)
+
+    get :extract_inactive_stops_modal, params: { id: @planning }, format: :js
+    assert_response :success
+    assert_includes response.body, "\"stop_id\":#{stop.id}"
+    assert_includes response.body, '"checked":false'
+  ensure
+    stop.update!(active: true, locked: false)
+  end
+
+  test 'move extracts inactive stop to out of route' do
+    vehicle_route = @planning.routes.find(&:vehicle_usage_id)
+    out_of_route = @planning.routes.find { |route| route.vehicle_usage_id.nil? }
+    stop = vehicle_route.stops.find { |s| s.is_a?(StopVisit) }
+    stop.update!(active: false, locked: true)
+    source_stops_size = vehicle_route.route_data.stops_size
+    target_stops_size = out_of_route.route_data.stops_size
+
+    patch :move, params: {
+      planning_id: @planning,
+      route_id: out_of_route.id,
+      stop_ids: [stop.id],
+      index: -1,
+      format: :json
+    }
+
+    assert_response :success
+    stop.reload
+    assert_equal out_of_route.id, stop.route_id
+    assert_not stop.active
+    assert_not stop.locked
+    assert_not vehicle_route.reload.outdated
+    assert_not out_of_route.reload.outdated
+    assert_equal source_stops_size - 1, vehicle_route.route_data.stops_size
+    assert_equal target_stops_size + 1, out_of_route.route_data.stops_size
+    remaining_indices = vehicle_route.stops.reload.sort_by(&:index).map(&:index)
+    assert_equal (1..remaining_indices.size).to_a, remaining_indices
+  ensure
+    stop&.update!(active: true, locked: false)
+  end
+
+  test 'extract_inactive_stops_modal is forbidden without move_stop operation permission' do
+    u = users(:user_one)
+    ops = Preferences::Catalog.default_operations.deep_dup
+    ops['stop']['segment_controls']['move_stop'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "no-extract-inactive-#{SecureRandom.hex(4)}",
+      operations: ops,
+      forms: Preferences::Catalog.default_forms
+    )
+    u.update!(role_id: role.id)
+    sign_in u
+
+    get :extract_inactive_stops_modal, params: { id: @planning }, format: :js
+    assert_response :forbidden
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+    sign_in users(:user_one)
+  end
+
   test 'should not move with error' do
     ApplicationController.stub_any_instance(:server_error, lambda { |*a| raise }) do
       Route.stub_any_instance(:compute_saved, lambda { |*a| raise }) do

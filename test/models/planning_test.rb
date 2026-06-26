@@ -343,6 +343,31 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal before_count - 1, unassigned.route_data.reload.stops_size
   end
 
+  test 'moving inactive visit from vehicle route to unassigned keeps routes computed and updates stops_size only' do
+    planning = plannings(:planning_one)
+    unassigned = planning.routes.find { |r| r == routes(:route_zero_one) }
+    vehicle_route = planning.routes.find { |r| r == routes(:route_one_one) }
+    stop = vehicle_route.stops.find { |s| s.is_a?(StopVisit) }
+    stop.update!(active: false)
+    source_size = vehicle_route.route_data.stops_size
+    target_size = unassigned.route_data.stops_size
+
+    planning.move_stop(unassigned, stop, -1)
+
+    vehicle_route.reload
+    unassigned.reload
+    stop.reload
+
+    refute vehicle_route.outdated?
+    refute unassigned.outdated?
+    assert_equal unassigned.id, stop.route_id
+    assert_not stop.active?
+    assert_equal source_size - 1, vehicle_route.route_data.stops_size
+    assert_equal target_size + 1, unassigned.route_data.stops_size
+  ensure
+    stop&.update!(active: true)
+  end
+
   test 'should compute' do
     o = plannings(:planning_one)
     assert_no_difference('Stop.count') do

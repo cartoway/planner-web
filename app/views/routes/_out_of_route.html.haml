@@ -30,6 +30,15 @@
                 %span.ph-3.text-muted
                   %i.fa.fa-external-link.fa-fw
                   = t('plannings.edit.move_stops')
+            %li{ class: ('disabled' unless move_stops_usable) }
+              - if move_stops_usable
+                %a.ph-3{ href: '#', 'data-toggle': 'modal', 'data-target': '#planning-extract-inactive-stops-modal' }
+                  %i.fa.fa-arrow-left.fa-fw
+                  = t('plannings.edit.extract_inactive_stops')
+              - else
+                %span.ph-3.text-muted
+                  %i.fa.fa-arrow-left.fa-fw
+                  = t('plannings.edit.extract_inactive_stops')
     #out_route_scroll.route-details.out-content.modern-scroll
       .route-stops
         .panel-body
