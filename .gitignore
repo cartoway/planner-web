@@ -25,7 +25,6 @@ coverage
 .idea/*
 config/initializers/dev.rb
 .ruby-gemset
-.ruby-version
 .rake_tasks~
 .byebug_history
 docker/uploads/

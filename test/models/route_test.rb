@@ -306,6 +306,16 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal 0, route.size_active_destinations
   end
 
+  test 'size_active_destinations reflects active stops without recompute' do
+    route = routes(:route_one_one)
+    route.active(:none)
+    route.stops.order(:index).select { |s| s.is_a?(StopVisit) }.first.update!(active: true)
+    route.reload
+    route.association(:stops).reset
+
+    assert_equal 1, route.size_active_destinations
+  end
+
   test 'should reverse stops' do
     route = routes(:route_one_one)
     ids = route.stops.collect(&:id)

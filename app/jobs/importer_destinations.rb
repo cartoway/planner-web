@@ -469,7 +469,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def is_rest?(type)
-    type == I18n.t('activerecord.models.stops.type.rest') || type == 'rest'
+    type == I18n.t('destinations.import_file.stop_type_rest') || type == 'rest'
   end
 
   def import_row(_name, row, line, _options)
@@ -518,14 +518,7 @@ class ImporterDestinations < ImporterBase
 
     sync_tags_deferred
 
-    if tags_imported && @plannings_hash.any?
-      reloaded_plannings = @customer.plannings.preload_route_details.where(ref: @plannings_hash.keys).index_by(&:ref)
-      @plannings_hash.each{ |ref, planning|
-        if reloaded_plannings[ref]
-          @plannings_hash[ref] = reloaded_plannings[ref]
-        end
-      }
-    end
+    reload_plannings_hash!
 
     prepare_plannings(name, _options)
 
@@ -632,6 +625,15 @@ class ImporterDestinations < ImporterBase
 
   private
 
+  def reload_plannings_hash!
+    return if @plannings_hash.blank?
+
+    reloaded_plannings = @customer.plannings.preload_route_details.where(ref: @plannings_hash.keys).index_by(&:ref)
+    @plannings_hash.each{ |ref, _planning|
+      @plannings_hash[ref] = reloaded_plannings[ref] if reloaded_plannings[ref]
+    }
+  end
+
   def capture_import_checkpoint_before!(planning_id)
     return if @import_capture_before_planning_ids.include?(planning_id)
 
@@ -690,6 +692,7 @@ class ImporterDestinations < ImporterBase
 
   def planning_attributes_from_row(row)
     row.delete(:planning_date) if row[:planning_date].blank?
+    row[:planning_ref] = @provided_planning_attributes[:ref] if row[:planning_ref].blank? && @provided_planning_attributes[:ref].present?
     planning_ref = row[:planning_ref]
     @plannings_attributes[planning_ref] ||= {
       ref: planning_ref,
@@ -1233,7 +1236,13 @@ class ImporterDestinations < ImporterBase
           planning = Planning.new(attributes)
           planning.assign_attributes({tag_ids: (ref && @common_tags[ref] || @common_tags[nil] || [])})
         elsif @plannings_attributes[ref]
-          planning.assign_attributes(@plannings_attributes[ref].slice(:vehicle_usage_set, :name, :date).compact)
+          attrs =
+            if planning_id
+              @plannings_attributes[ref].slice(:name).compact
+            else
+              @plannings_attributes[ref].slice(:vehicle_usage_set, :name, :date).compact
+            end
+          planning.assign_attributes(attrs) if attrs.any?
         end
         planning.assign_attributes(@provided_planning_attributes)
         unless planning.name
@@ -1274,12 +1283,15 @@ class ImporterDestinations < ImporterBase
           }
           store_reloads = StoreReload.where(id: store_reload_ids).index_by(&:id).values_at(*store_reload_ids)
 
-          v[:visits].map!.with_index{ |(type, _attribute, stop_attributes), index|
+          v[:visits].map!.with_index { |(type, _attribute, stop_attributes), index|
             object =
-              if type == :rest
+              case type
+              when :rest
                 :rest
-              else
-                visits[index] || store_reloads[index]
+              when :visit
+                visits[index]
+              when :store_reload
+                store_reloads[index]
               end
             [object, stop_attributes]
           }

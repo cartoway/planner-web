@@ -910,7 +910,7 @@ class PlanningsControllerTest < ActionController::TestCase
     stop = stops(:stop_one_one)
     stop.update!(active: false)
 
-    get :extract_inactive_stops_modal, params: { id: @planning }, format: :js
+    get :extract_inactive_stops_modal, params: { planning_id: @planning.id }, format: :js, xhr: true
     assert_response :success
     assert_includes response.body, "\"stop_id\":#{stop.id}"
     assert_includes response.body, '"checked":true'
@@ -922,7 +922,7 @@ class PlanningsControllerTest < ActionController::TestCase
     stop = stops(:stop_one_one)
     stop.update!(active: false, locked: true)
 
-    get :extract_inactive_stops_modal, params: { id: @planning }, format: :js
+    get :extract_inactive_stops_modal, params: { planning_id: @planning.id }, format: :js, xhr: true
     assert_response :success
     assert_includes response.body, "\"stop_id\":#{stop.id}"
     assert_includes response.body, '"checked":false'
@@ -931,12 +931,12 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'move extracts inactive stop to out of route' do
-    vehicle_route = @planning.routes.find(&:vehicle_usage_id)
+    vehicle_route = @planning.routes.find { |route| route.ref == 'route_one' }
     out_of_route = @planning.routes.find { |route| route.vehicle_usage_id.nil? }
     stop = vehicle_route.stops.find { |s| s.is_a?(StopVisit) }
     stop.update!(active: false, locked: true)
-    source_stops_size = vehicle_route.route_data.stops_size
-    target_stops_size = out_of_route.route_data.stops_size
+    source_stops_size = vehicle_route.stops.size
+    target_stops_size = out_of_route.stops.size
 
     patch :move, params: {
       planning_id: @planning,
@@ -953,8 +953,8 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_not stop.locked
     assert_not vehicle_route.reload.outdated
     assert_not out_of_route.reload.outdated
-    assert_equal source_stops_size - 1, vehicle_route.route_data.stops_size
-    assert_equal target_stops_size + 1, out_of_route.route_data.stops_size
+    assert_equal source_stops_size - 1, vehicle_route.route_data.reload.stops_size
+    assert_equal target_stops_size + 1, out_of_route.route_data.reload.stops_size
     remaining_indices = vehicle_route.stops.reload.sort_by(&:index).map(&:index)
     assert_equal (1..remaining_indices.size).to_a, remaining_indices
   ensure
@@ -974,7 +974,7 @@ class PlanningsControllerTest < ActionController::TestCase
     u.update!(role_id: role.id)
     sign_in u
 
-    get :extract_inactive_stops_modal, params: { id: @planning }, format: :js
+    get :extract_inactive_stops_modal, params: { planning_id: @planning.id }, format: :js, xhr: true
     assert_response :forbidden
   ensure
     u.update!(role_id: nil)
