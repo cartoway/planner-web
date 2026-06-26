@@ -22,6 +22,8 @@
 @import "variables";
 
 .move-stops-modal-body {
+  padding: 0 15px;
+
   .hover-tools {
     display: none;
   }
@@ -29,8 +31,8 @@
     max-height: calc(100% - 800px);
     overflow: auto;
   }
-  .move-stops-toggle {
-    margin: 8px 0 0 18px;
+  .move-stops-toolbar {
+    padding: 5px 0;
   }
   table {
     text-align: left;
@@ -47,6 +49,49 @@
   .stops.list-group {
     max-height: 45vh;
     overflow-y: auto;
+  }
+  .list-group-item {
+    padding: 0 5px;
+  }
+
+  .route.row {
+    padding: 0 10px;
+
+  }
+}
+
+.extract-inactive-stops-modal-body {
+  height: 60vh;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  #extract-inactive-stops {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .extract-inactive-stops-toolbar {
+    flex-shrink: 0;
+  }
+
+  .extract-inactive-stops-list-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+
+  .extract-inactive-stops-help {
+    margin: 8px 0 0;
+  }
+
+  .list-group-item {
+    padding: 0 5px
   }
 }
 

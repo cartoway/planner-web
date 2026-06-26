@@ -3,6 +3,7 @@
 ##
   ### Added
   - Customers index: users list dropdown per customer
+  - Planning: extract inactive stops from vehicle routes to unassigned via a dedicated modal
   - Persistent order for vehicle usages:
     - Drag-and-drop reorder on the index page
     - Planning routes sorted by that order
@@ -17,6 +18,7 @@
   ### Changed
   - Sopac: migrate from api to message broker
   - the stop-tools map marker button bring the associated marker to the front
+  - Move stops modal: None / Reverse / All selection buttons and improved list padding
 
   ### Fixed
   - Route compute: place unlocated rests on the driving leg at the latest feasible time when starting at the next stop would fall outside the rest window

@@ -1,0 +1,10 @@
+(function() {
+  var modalSelector = '#planning-extract-inactive-stops-modal';
+  var stops = <%= raw stops.to_json %>;
+  var outOfRouteId = <%= out_of_route_id.to_json %>;
+
+  $(modalSelector + ' .modal-body').html('<%= j render(partial: "stops/extract_inactive_stops", formats: [:html], locals: { stops: stops }) %>');
+
+  window.extractInactiveStopsData = { stops: stops, outOfRouteId: outOfRouteId };
+  $(document).trigger('extract-inactive-stops:content-updated');
+})();
