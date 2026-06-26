@@ -619,7 +619,9 @@ class Planning < ApplicationRecord
     route, index = prefered_route_and_index([route], stop) unless index || !route.vehicle_usage?
 
     if stop.route != route
-      if stop.is_a?(StopVisit)
+      if fast_move_inactive_stop_to_out_of_route?(stop, route)
+        fast_move_inactive_stop_to_out_of_route!(route, stop, index)
+      elsif stop.is_a?(StopVisit)
         visit, active = stop.visit, stop.active
         stop_id = stop.id
         source_route = routes.find{ |r| r.id == stop.route_id }
@@ -1261,6 +1263,36 @@ class Planning < ApplicationRecord
   end
 
   private
+
+  def fast_move_inactive_stop_to_out_of_route?(stop, target_route)
+    stop.is_a?(StopVisit) && !stop.active? &&
+      stop.route.vehicle_usage? && !target_route.vehicle_usage?
+  end
+
+  def fast_move_inactive_stop_to_out_of_route!(out_of_route, stop, index)
+    source_route = routes.find { |r| r.id == stop.route_id }
+    had_position = stop.position?
+    stop_id = stop.id
+
+    source_route.reindex_stops_after_extracting!(removed_stop_id: stop_id)
+    target_index =
+      if index.nil? || index.to_i < 0
+        (Stop.where(route_id: out_of_route.id).maximum(:index) || 0) + 1
+      else
+        index.to_i
+      end
+
+    stop.update!(route_id: out_of_route.id, index: target_index, locked: false)
+
+    source_route.sync_route_data_stops_size!
+    source_route.patch_route_geojson_after_stop_visit_removed!(removed_stop_id: stop_id) if had_position
+
+    out_of_route.sync_out_of_route_metrics!
+    out_of_route.append_stop_visit_to_geojson!(stop.reload) if had_position
+
+    source_route.mark_computed_without_recompute!
+    out_of_route.mark_computed_without_recompute!
+  end
 
   def tags_compatible_given_plan_tags?(combined_tags, plan_tags)
     if tag_operation == '_or'
