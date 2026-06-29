@@ -4,7 +4,7 @@
 - out_pagy ||= nil
 - move_stops_visible = @manage_planning[:planning_move_stops_visible]
 - move_stops_usable = @manage_planning[:planning_move_stops_usable]
-%li.route.out_route{"data-route-id": route[:route_id]}
+%li.route.out_route{"data-route-id": route[:route_id], "data-size": route[:size]}
   #out_of_route.panel.panel-default
     .panel-heading.out-header
       %i.fa.fa-arrows-left-right

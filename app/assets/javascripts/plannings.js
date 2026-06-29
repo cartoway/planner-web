@@ -2456,8 +2456,12 @@ export const plannings_edit = function(params) {
     var globalOptimizeLockedByPolicy = mp && (mp.disable_optimize || mp.manage_optimize === false);
 
     $('.route[data-route-id]').each(function() {
-      var isRouteLocked = $(this).find('.lock i').hasClass('fa-lock');
-      var stopCount = $(this).find('[data-size-active]').data('size-active');
+      var $route = $(this);
+      var isRouteLocked = $route.find('.lock i').hasClass('fa-lock');
+      var stopCount = $route.data('size');
+      if (stopCount == null) {
+        stopCount = $route.find('[data-size]').data('size');
+      }
 
       if (!isRouteLocked && stopCount)
         maxUnlockedStops = Math.max(maxUnlockedStops, stopCount);
