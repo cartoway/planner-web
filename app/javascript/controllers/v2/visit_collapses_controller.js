@@ -11,7 +11,7 @@ export default class extends Controller {
 
   toggleAll (event) {
     event.preventDefault()
-    const collapses = this.element.querySelectorAll(".v2-visit-fieldset .collapse")
+    const collapses = this.element.querySelectorAll(".visit-fieldset .collapse")
     if (!collapses.length) return
 
     const showNext = this.nextShowValue
@@ -27,7 +27,7 @@ export default class extends Controller {
       }
     })
 
-    this.element.querySelectorAll("fieldset.v2-visit-fieldset").forEach((fs) => {
+    this.element.querySelectorAll("fieldset.visit-fieldset").forEach((fs) => {
       const collapse = fs.querySelector(".collapse")
       const trigger = fs.querySelector(".accordion-toggle")
       if (!collapse || !trigger) return

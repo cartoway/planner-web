@@ -21,4 +21,17 @@ module TagsHelper
                 class: 'fa fa-lg %s' % [tag.default_icon],
                 style: 'color: %s' % [tag.default_color]
   end
+
+  # True when the tag has a customer-defined color and/or icon (not inherited defaults).
+  def tag_list_badge_customized?(tag)
+    tag.color.present? || tag.icon.present?
+  end
+
+  def tag_list_badge_icon_class(tag)
+    tag.icon.presence || tag.default_icon
+  end
+
+  def tag_list_badge_icon_style(tag)
+    "color: #{tag.color}" if tag.color.present?
+  end
 end

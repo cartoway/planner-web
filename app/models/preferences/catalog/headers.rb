@@ -46,7 +46,8 @@ module Preferences
             'active' => HEADER_ROUTE_DEFAULT.dup,
             'hidden' => (HEADER_ROUTE - HEADER_ROUTE_DEFAULT).dup
           },
-          'stop_list' => StopList.default_zone
+          'stop_list' => StopList.default_zone,
+          'destinations_list' => DestinationsList.default_zone
         }
       end
 
@@ -76,7 +77,8 @@ module Preferences
         {
           'planning' => normalize_header_zone(h['planning'], HEADER_PLANNING),
           'route' => normalize_header_zone(h['route'], HEADER_ROUTE),
-          'stop_list' => StopList.normalize_zone(h['stop_list'].presence || h['stop_display'])
+          'stop_list' => StopList.normalize_zone(h['stop_list'].presence || h['stop_display']),
+          'destinations_list' => DestinationsList.normalize_zone(h['destinations_list'])
         }
       end
     end

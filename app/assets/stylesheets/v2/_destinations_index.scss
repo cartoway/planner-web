@@ -1,0 +1,516 @@
+// Copyright © Cartoway
+// Destinations index (v2): map layout, list sidebar, filtered search, markers, table cells.
+
+@import "v2/maplibre_controls";
+
+// Compact checkbox column for multiple selection
+.destinations-selection-col {
+  width: 2rem;
+  text-align: center;
+  vertical-align: middle !important;
+}
+
+// Filter badges (active search tokens)
+.search-filter-badge {
+  display: inline-flex;
+  align-items: center;
+
+  a,
+  .search-filter-badge-remove {
+    opacity: 0.8;
+    text-decoration: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    line-height: 1;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.destinations-search-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.destinations-search-input {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  width: 100%;
+  cursor: text;
+
+  &:focus-within {
+    border-color: var(--bs-primary, #0d6efd);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  }
+}
+
+.destinations-search-clause {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  gap: 0.5rem;
+
+  .form-control-plaintext {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    display: block;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+  }
+
+  .form-control-plaintext::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+}
+
+.destinations-search-token {
+  flex: 0 0 auto;
+  font-size: 0.8125rem;
+}
+
+.destinations-search-dropdown {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--bs-border-radius, 0.375rem);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.destinations-search-dropdown-header {
+  padding: 0.55rem 0.75rem 0.4rem;
+  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+  background: var(--bs-tertiary-bg, #f8f9fa);
+}
+
+.destinations-search-dropdown-list {
+  max-height: min(40vh, 18rem);
+  overflow-y: auto;
+}
+
+.destinations-search-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font-size: 0.9375rem;
+
+  &:hover,
+  &:focus {
+    background: var(--bs-secondary-bg, #e9ecef);
+    outline: none;
+  }
+}
+
+.destinations-search-dropdown-item-key {
+  font-weight: 600;
+}
+
+.destinations-search-dropdown-item-example {
+  font-size: 0.875rem;
+}
+
+// Map as full background, collapsible list overlay on the left.
+// Page is not scrollable; only the destinations list scrolls.
+[data-controller~='destinations'][data-action='index'] {
+  .main {
+    overflow: hidden;
+  }
+
+  .main turbo-frame#main,
+  .main .main-primary turbo-frame#main {
+    height: 100%;
+    display: block;
+  }
+}
+
+// Clone markup for "Nouvelle visite" (destinations.js). Legacy destinations.css only hid this under
+// [data-controller='destinations']; v2 index uses v2--destinations-index.
+#visit-fieldset-template {
+  display: none !important;
+}
+
+#destinations-map-layout {
+  position: relative;
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+
+  // Map fills the entire layout (background)
+  #map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+  }
+
+  // Sidebar overlay on the left - list + controls (width follows content, capped for viewport)
+  .destinations-sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: max-content;
+    max-width: 90vw;
+    z-index: 2;
+    background: var(--bs-body-bg);
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+
+    .destinations-search-input {
+      width: auto;
+      min-width: 12rem;
+    }
+
+    .destinations-sidebar-header {
+      flex-shrink: 0;
+      padding: 1rem;
+      padding-right: 2.5rem; // space for toggle button
+      border-bottom: 1px solid var(--bs-border-color);
+      overflow: visible;
+      position: relative;
+      z-index: 4;
+      align-self: stretch;
+
+      .destinations-sidebar-toggle {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        z-index: 10;
+      }
+    }
+
+    .destinations-search-wrapper {
+      position: relative;
+      z-index: 1;
+    }
+
+    // turbo-frame wraps list + toolbar; it must be a flex column so #destination_box flex:1 gets a bounded height and scrolls.
+    turbo-frame#destinations_list {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      min-width: 0;
+      width: max-content;
+      max-width: 100%;
+      overflow: hidden;
+
+      > .d-flex {
+        flex-shrink: 0;
+      }
+    }
+
+    #destination_box.destinations-list-scroll {
+      flex: 1;
+      min-height: 0;
+      min-width: 0;
+      width: max-content;
+      max-width: 100%;
+      overflow-y: auto;
+      overflow-x: auto;
+      // Keep wheel / scrollIntoView chain inside the list; avoids moving .main-primary or the window.
+      overscroll-behavior: contain;
+      padding: 0 1rem 1rem;
+
+      .table-responsive {
+        width: max-content;
+        max-width: 100%;
+        overflow-x: visible;
+      }
+
+      .table {
+        width: auto;
+        margin-bottom: 0;
+      }
+
+      td.destinations-list-address,
+      td.destinations-list-geocoding {
+        white-space: normal;
+      }
+
+      td.destinations-list-address {
+        max-width: 16rem;
+      }
+
+      // Map pin (or ?highlight_destination_id=): row is bold + tinted, then fades (v2--destinations-index).
+      tr.destination.highlight--map-pin td {
+        font-weight: 700;
+        animation: destinationsRowPinHighlightTd 3.5s ease-out forwards;
+      }
+
+      tr.destination.highlight:not(.highlight--map-pin) td {
+        font-weight: inherit;
+        background-color: rgba(var(--bs-warning-rgb), 0.2);
+        transition: background-color 0.15s ease;
+      }
+
+      @keyframes destinationsRowPinHighlightTd {
+        0% {
+          background-color: rgba(var(--bs-warning-rgb), 0.42);
+        }
+
+        55% {
+          background-color: rgba(var(--bs-warning-rgb), 0.14);
+          font-weight: 700;
+        }
+
+        100% {
+          background-color: transparent;
+          font-weight: 400;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        tr.destination.highlight--map-pin td {
+          animation: none;
+          background-color: rgba(var(--bs-warning-rgb), 0.32);
+          font-weight: 700;
+        }
+      }
+
+      td.destinations-list-geocoding {
+        min-width: 6rem;
+      }
+
+      .destinations-list-geocoding-cell {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.25rem 0.35rem;
+
+        .geocoding_level {
+          flex: 0 0 auto;
+          width: 1.25rem;
+          padding-top: 0.15rem;
+        }
+
+        .destinations-list-geocoding-progress {
+          flex: 1 1 5em;
+          min-width: 5em;
+          height: 1.25rem;
+          margin-bottom: 0;
+
+          .progress-bar span {
+            font-size: 0.7rem;
+            line-height: 1.25rem;
+          }
+        }
+
+        .destinations-list-geocoding-result {
+          flex: 1 1 100%;
+          font-size: 0.75rem;
+          line-height: 1.2;
+          color: var(--bs-secondary-color);
+          word-break: break-word;
+          max-width: 18rem;
+        }
+
+        .no_position {
+          color: var(--bs-danger);
+          font-weight: 700;
+          font-size: 0.75rem;
+        }
+      }
+
+      td.destinations-list-tags-cell {
+        min-width: 6rem;
+        max-width: 16rem;
+      }
+
+      .destinations-list-tag-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+      }
+
+      .destinations-list-tag-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        white-space: nowrap;
+        max-width: 100%;
+
+        .fa {
+          flex-shrink: 0;
+        }
+      }
+    }
+
+  }
+
+  .destinations-sidebar-expand.floating-btn.slide-panel-expand-trigger {
+    position: absolute;
+    left: 0.5rem;
+    top: 0.5rem;
+    z-index: 3;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .destinations-sidebar.slide-panel--collapsed + .destinations-sidebar-expand.floating-btn.slide-panel-expand-trigger {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
+
+  @include maplibre-shared-controls;
+
+  .destinations-marker {
+    // Flat marker: solid disc + simple triangle, minimal shadow (aligns with flat app UI)
+    --dm-head-size: 30px;
+    --dm-pin-w: 12px;
+    --dm-pin-h: 9px;
+    --dm-flat: var(--bs-primary, #0d6efd);
+    --dm-flat-stem: #0a58ca;
+    --dm-flat-active: var(--bs-warning, #ffc107);
+    --dm-flat-active-stem: #d39e00;
+
+    width: 38px;
+    height: 46px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    cursor: pointer;
+    pointer-events: auto;
+    transform-origin: 50% 100%;
+    transition: transform 0.18s ease;
+
+    &:hover:not(.destinations-marker--active) {
+      transform: translateY(-2px);
+    }
+
+    &.destinations-marker--active {
+      transform: scale(1.06);
+
+      &:hover {
+        transform: scale(1.06) translateY(-1px);
+      }
+
+      .destinations-marker__head {
+        background: var(--dm-flat-active);
+        border-color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 0 0 2px rgba(0, 0, 0, 0.12);
+      }
+
+      .destinations-marker__pin {
+        border-top-color: var(--dm-flat-active-stem);
+      }
+    }
+
+    &.destinations-marker--dragging {
+      cursor: grab;
+      z-index: 7;
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--bs-primary, #0d6efd);
+      outline-offset: 3px;
+    }
+  }
+
+  .destinations-marker__pulse {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--dm-pin-h) + var(--dm-head-size) * 0.5 - 3px);
+    width: calc(var(--dm-head-size) + 14px);
+    height: calc(var(--dm-head-size) + 14px);
+    margin-left: calc((var(--dm-head-size) + 14px) * -0.5);
+    border-radius: 50%;
+    border: 2px solid var(--dm-flat);
+    opacity: 0;
+    transform: scale(0.85);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .destinations-marker--active .destinations-marker__pulse {
+    border-color: var(--dm-flat-active);
+    animation: destinations-marker-pulse-flat 1.8s ease-out infinite;
+  }
+
+  @keyframes destinations-marker-pulse-flat {
+    0% {
+      opacity: 0.45;
+      transform: scale(0.88);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.25);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .destinations-marker--active .destinations-marker__pulse {
+      animation: none;
+      opacity: 0.3;
+      transform: scale(1);
+    }
+  }
+
+  .destinations-marker__head {
+    position: relative;
+    z-index: 2;
+    width: var(--dm-head-size);
+    height: var(--dm-head-size);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.92);
+    background: var(--dm-flat);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  // Specular highlight — disabled for flat look (kept in DOM for a11y / structure)
+  .destinations-marker__glint {
+    display: none;
+  }
+
+  .destinations-marker__pin {
+    position: relative;
+    z-index: 1;
+    width: 0;
+    height: 0;
+    margin-top: -2px;
+    border-left: calc(var(--dm-pin-w) * 0.5) solid transparent;
+    border-right: calc(var(--dm-pin-w) * 0.5) solid transparent;
+    border-top: var(--dm-pin-h) solid var(--dm-flat-stem);
+    transition: border-top-color 0.18s ease;
+  }
+
+  // Bring the active destination marker above siblings (stacking within map overlays)
+  .maplibregl-marker:has(.destinations-marker--active) {
+    z-index: 900 !important;
+  }
+}

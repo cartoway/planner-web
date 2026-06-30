@@ -1,0 +1,85 @@
+// Copyright © Cartoway
+// Shared MapLibre controls (see app/javascript/maplibre/*.js). Use on other pages by wrapping the map in .maplibre-host.
+
+@mixin maplibre-shared-controls {
+  .maplibregl-ctrl-top-right {
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+  }
+
+  .maplibre-geocoder {
+    margin-top: 0.35rem;
+    min-width: 220px;
+    max-width: min(320px, 42vw);
+    background: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius, 0.25rem);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .maplibre-geocoder-form .form-control {
+    min-width: 0;
+  }
+
+  .maplibre-geocoder-results {
+    max-height: 220px;
+    overflow-y: auto;
+    margin: 0;
+    border-top: 1px solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+  }
+
+  .maplibre-geocoder-result {
+    cursor: pointer;
+    font-size: 0.8125rem;
+
+    &:hover {
+      background: var(--bs-secondary-bg);
+    }
+  }
+
+  .maplibre-layer-switch {
+    margin-top: 0.35rem;
+    padding: 0.25rem;
+    min-width: 10rem;
+    background: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius, 0.25rem);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .maplibre-overlay-toggles {
+    margin-top: 0.35rem;
+    padding: 0.35rem 0.5rem;
+    max-width: min(280px, 50vw);
+    background: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius, 0.25rem);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    font-size: 0.8125rem;
+  }
+
+  .maplibre-overlay-toggles-summary {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    min-height: 2rem;
+    user-select: none;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  .maplibre-overlay-toggles-body {
+    margin-top: 0.35rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--bs-border-color);
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+}
+
+.maplibre-host {
+  @include maplibre-shared-controls;
+}
