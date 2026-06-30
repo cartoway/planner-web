@@ -101,6 +101,8 @@ module UserPreferences
     base['route'] = hp['route'] if hp['route'].present?
     sl = hp['stop_list'].presence || hp['stop_display']
     base['stop_list'] = sl if sl.present?
+    dl = hp['destinations_list'].presence
+    base['destinations_list'] = dl if dl.present?
     self.headers = ::Preferences::Catalog.normalize_headers(base)
   end
 
@@ -108,6 +110,16 @@ module UserPreferences
   def stop_list_active_field_ids
     z = read_headers_hash['stop_list'].presence || read_headers_hash['stop_display']
     ::Preferences::Catalog::StopList.normalize_zone(z)['active']
+  end
+
+  def destinations_list_columns_split
+    z = read_headers_hash['destinations_list']
+    h = ::Preferences::Catalog::DestinationsList.normalize_zone(z)
+    [h['active'], h['hidden']]
+  end
+
+  def destinations_list_active_column_ids
+    destinations_list_columns_split.first
   end
 
   private

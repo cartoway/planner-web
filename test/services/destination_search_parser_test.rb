@@ -22,6 +22,24 @@ class DestinationSearchParserTest < ActiveSupport::TestCase
     ], result
   end
 
+  test 'parse keeps spaces inside filter values' do
+    result = DestinationSearchParser.parse('name:Jean Dupont')
+    assert_equal [{ key: 'name', value: 'Jean Dupont' }], result
+  end
+
+  test 'parse keeps spaces in values across multiple filters' do
+    result = DestinationSearchParser.parse('name:Jean Dupont city:Lyon')
+    assert_equal [
+      { key: 'name', value: 'Jean Dupont' },
+      { key: 'city', value: 'Lyon' }
+    ], result
+  end
+
+  test 'parse keeps spaces in plain text fallback search' do
+    result = DestinationSearchParser.parse('Jean Dupont')
+    assert_equal [{ key: 'q', value: 'Jean Dupont' }], result
+  end
+
   test 'parse uses fallback for plain text without colon' do
     result = DestinationSearchParser.parse('Paris')
     assert_equal [{ key: 'q', value: 'Paris' }], result

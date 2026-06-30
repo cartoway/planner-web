@@ -1,7 +1,7 @@
 // Copyright © Cartoway
 // MapLibre IControl: single-select among mutually exclusive raster base layers (visibility).
 
-const DEFAULT_ROOT_CLASS = 'maplibregl-ctrl maplibregl-ctrl-group cartoway-maplibre-layer-switch'
+const DEFAULT_ROOT_CLASS = 'maplibregl-ctrl maplibregl-ctrl-group maplibre-layer-switch'
 
 /**
  * @param {string[]} baseLayerIds - Map layer ids (e.g. base-0-layer)

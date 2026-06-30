@@ -75,3 +75,28 @@
                 %span.item-text= t("display_ui.stop_list_fields.#{fid}", default: fid.to_s.humanize)
                 %input{ type: 'hidden', name: 'user[headers][stop_list][hidden][]', value: fid }
     %small.help-block= t('users.form.display_ui.stop_list_help')
+
+.row.form-group
+  %label.col-md-offset-2.col-md-8
+    = t('users.form.display_ui.destinations_list')
+  .col-md-offset-2.col-md-8.field
+    - active_dl, hidden_dl = @user.header_blocks_split('destinations_list')
+    .priority-zones.active-inactive-zones.headers-data-dnd#display-ui-destinations-list{ "data-drag-drop" => "user", "data-drag-drop-options" => Preferences::DragDropOptions.destinations_list_zone_options('user').to_json }
+      .headers-two-columns
+        .destinations-list-tier-active.priority-active.active-zone
+          .zone-title= t('users.form.display_ui.data_active')
+          .item-list
+            - active_dl.each_with_index do |cid, index|
+              .draggable-item{ data: { value: cid, index: index } }
+                %span.item-order
+                %span.item-text= t("display_ui.destinations_list_columns.#{cid}", default: cid.to_s.humanize)
+                %input{ type: 'hidden', name: 'user[headers][destinations_list][active][]', value: cid }
+        .destinations-list-tier-hidden.priority-inactive.inactive-zone
+          .zone-title= t('users.form.display_ui.data_hidden')
+          .item-list
+            - hidden_dl.each_with_index do |cid, index|
+              .draggable-item.headers-tier-hidden-item{ data: { value: cid, index: index } }
+                %span.item-order
+                %span.item-text= t("display_ui.destinations_list_columns.#{cid}", default: cid.to_s.humanize)
+                %input{ type: 'hidden', name: 'user[headers][destinations_list][hidden][]', value: cid }
+    %small.help-block= t('users.form.display_ui.destinations_list_help')

@@ -1,0 +1,17 @@
+-# Geocoding column: level icon, accuracy progress bar, geocoder result (v1 destinations list parity).
+%td.destinations-list-geocoding
+  .destinations-list-geocoding-cell
+    - level_icon = destinations_list_geocoding_level_icon_class(destination)
+    - if level_icon
+      %span.geocoding_level{title: destinations_list_geocoding_level_title(destination)}
+        %i.fa.fa-fw.geocoding-level{class: level_icon}
+    - accuracy_percent = destinations_list_geocoding_accuracy_percent(destination)
+    - if accuracy_percent
+      .progress.destinations-list-geocoding-progress
+        .progress-bar{class: "progress-bar-#{destination.geocode_progress_bar_class}", style: "width: #{accuracy_percent}%", role: 'progressbar', aria: { valuenow: accuracy_percent, valuemin: 0, valuemax: 100 }}
+          %span= "#{accuracy_percent}%"
+      - result_free = destinations_list_geocoding_result_free(destination)
+      - if result_free.present?
+        .destinations-list-geocoding-result= result_free
+    - elsif !destination.position?
+      %span.no_position= t('destinations.index.geocoding_empty')

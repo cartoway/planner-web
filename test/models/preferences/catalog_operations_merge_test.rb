@@ -259,6 +259,7 @@ class PreferencesCatalogOperationsMergeTest < ActiveSupport::TestCase
     assert_equal %w[wait_time stops], normalized['route']['active']
     assert_equal (hr - %w[wait_time stops]).sort, normalized['route']['hidden'].sort
     assert_equal Preferences::Catalog::StopList::DEFAULT_ACTIVE, normalized['stop_list']['active']
+    assert_equal Preferences::Catalog::DestinationsList::DEFAULT_ACTIVE, normalized['destinations_list']['active']
   end
 
   test 'merge_forms_with_params maps active disabled and hidden to visible and usable' do

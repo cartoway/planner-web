@@ -34,7 +34,7 @@ export default class extends Controller {
 
   close(event) {
     if (event) event.preventDefault()
-    const tpl = document.getElementById("v2-form-sidebar-placeholder-template")
+    const tpl = document.getElementById("form-sidebar-placeholder-template")
     if (this.hasFrameTarget && tpl && tpl.content) {
       this.frameTarget.innerHTML = ""
       this.frameTarget.appendChild(tpl.content.cloneNode(true))
@@ -46,12 +46,12 @@ export default class extends Controller {
     if (!this.hasFrameTarget) return
     const sidebarForm = this.frameTarget.querySelector("#destination-form-sidebar")
     if (sidebarForm) {
-      this.element.classList.remove("v2-form-sidebar--collapsed")
-      this.element.classList.add("v2-form-sidebar--open")
+      this.element.classList.remove("form-sidebar--collapsed", "slide-panel--collapsed")
+      this.element.classList.add("form-sidebar--open")
       if (this.hasChromeTarget) this.chromeTarget.classList.remove("d-none")
     } else {
-      this.element.classList.add("v2-form-sidebar--collapsed")
-      this.element.classList.remove("v2-form-sidebar--open")
+      this.element.classList.add("form-sidebar--collapsed", "slide-panel--collapsed")
+      this.element.classList.remove("form-sidebar--open")
       if (this.hasChromeTarget) this.chromeTarget.classList.add("d-none")
     }
   }
