@@ -5,7 +5,7 @@
 - v2_label_col = local_assigns.fetch(:v2_label_col, 'col-md-offset-1 col-md-10')
 - v2_control_col = local_assigns.fetch(:v2_control_col, 'col-md-offset-1 col-md-10 field')
 = fields_for 'destination[visits_attributes]', visit, index: i, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col do |f|
-  %fieldset.v2-visit-fieldset
+  %fieldset.visit-fieldset
     %a{name: "visit_id=#{visit.id}"}
     %legend.scheduler-border
       %a.accordion-toggle.text-decoration-none{href: "#", role: "button", "data-bs-toggle": "collapse", "data-bs-target": "#collapseVisit#{visit.id || 0}", "aria-expanded": "true", "aria-controls": "collapseVisit#{visit.id || 0}"}

@@ -130,6 +130,10 @@ Rails.application.routes.draw do
   end
 
   resources :destinations do
+    collection do
+      get :map
+      patch :list_columns
+    end
     member do
       post :append_visit
     end

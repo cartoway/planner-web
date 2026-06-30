@@ -4,6 +4,8 @@
 
 @import "variables";
 @import "font-awesome";
+@import "v2/slide_panel";
+@import "v2/destinations_index";
 
 // Bootstrap 3 → 5 compatibility
 .form-group {
@@ -19,403 +21,6 @@
 
 .table-condensed {
   font-size: 0.875rem;
-}
-
-// Destinations index - compact checkbox column for multiple selection
-.destinations-selection-col {
-  width: 2rem;
-  text-align: center;
-  vertical-align: middle !important;
-}
-
-// Destinations search - filter badges
-.search-filter-badge {
-  display: inline-flex;
-  align-items: center;
-
-  a {
-    opacity: 0.8;
-    text-decoration: none;
-
-    &:hover {
-      opacity: 1;
-    }
-  }
-}
-
-// V2 destinations index - map as full background, collapsible list overlay on the left
-// Page is not scrollable; only the destinations list scrolls
-[data-controller~='destinations'][data-action='index'] {
-  .main {
-    overflow: hidden;
-  }
-
-  .main turbo-frame#main,
-  .main .main-primary turbo-frame#main {
-    height: 100%;
-    display: block;
-  }
-}
-
-// Shared MapLibre controls (see app/javascript/maplibre/*.js). Use on other pages by wrapping the map in .cartoway-maplibre-host.
-@mixin cartoway-maplibre-shared-controls {
-  .maplibregl-ctrl-top-right {
-    margin-top: 0.5rem;
-    margin-right: 0.5rem;
-  }
-
-  .cartoway-maplibre-geocoder {
-    margin-top: 0.35rem;
-    min-width: 220px;
-    max-width: min(320px, 42vw);
-    background: var(--bs-body-bg);
-    border-radius: var(--bs-border-radius, 0.25rem);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  }
-
-  .cartoway-maplibre-geocoder-form .form-control {
-    min-width: 0;
-  }
-
-  .cartoway-maplibre-geocoder-results {
-    max-height: 220px;
-    overflow-y: auto;
-    margin: 0;
-    border-top: 1px solid var(--bs-border-color);
-    background: var(--bs-body-bg);
-  }
-
-  .cartoway-maplibre-geocoder-result {
-    cursor: pointer;
-    font-size: 0.8125rem;
-
-    &:hover {
-      background: var(--bs-secondary-bg);
-    }
-  }
-
-  .cartoway-maplibre-layer-switch {
-    margin-top: 0.35rem;
-    padding: 0.25rem;
-    min-width: 10rem;
-    background: var(--bs-body-bg);
-    border-radius: var(--bs-border-radius, 0.25rem);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  }
-
-  .cartoway-maplibre-overlay-toggles {
-    margin-top: 0.35rem;
-    padding: 0.35rem 0.5rem;
-    max-width: min(280px, 50vw);
-    background: var(--bs-body-bg);
-    border-radius: var(--bs-border-radius, 0.25rem);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-    font-size: 0.8125rem;
-  }
-
-  .cartoway-maplibre-overlay-toggles-summary {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 2rem;
-    min-height: 2rem;
-    user-select: none;
-    list-style: none;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-  }
-
-  .cartoway-maplibre-overlay-toggles-body {
-    margin-top: 0.35rem;
-    padding-top: 0.25rem;
-    border-top: 1px solid var(--bs-border-color);
-    max-height: 40vh;
-    overflow-y: auto;
-  }
-}
-
-.cartoway-maplibre-host {
-  @include cartoway-maplibre-shared-controls;
-}
-
-// Clone markup for "Nouvelle visite" (destinations.js). Legacy destinations.css only hid this under
-// [data-controller='destinations']; v2 index uses v2--destinations-index, so we hide the template globally here.
-#visit-fieldset-template {
-  display: none !important;
-}
-
-#destinations-map-layout {
-  position: relative;
-  height: 100%;
-  min-height: 100vh;
-  overflow: hidden;
-
-  // Map fills the entire layout (background)
-  #map {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 0;
-  }
-
-  // Sidebar overlay on the left - list + controls
-  .destinations-sidebar {
-    $sidebar-width: 520px;
-    $collapse-width: 40px;
-
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: $sidebar-width;
-    z-index: 2;
-    background: var(--bs-body-bg);
-    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
-    transition: width 0.2s ease, left 0.2s ease;
-
-    .destinations-sidebar-header {
-      flex-shrink: 0;
-      padding: 1rem;
-      padding-right: 2.5rem; // space for toggle button
-      border-bottom: 1px solid var(--bs-border-color);
-      overflow: hidden;
-    }
-
-    .destinations-sidebar-toggle {
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
-      z-index: 3;
-    }
-
-    // turbo-frame wraps list + toolbar; it must be a flex column so #destination_box flex:1 gets a bounded height and scrolls.
-    turbo-frame#destinations_list {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow: hidden;
-
-      > .d-flex,
-      > .destinations-sidebar-toggle,
-      > .destinations-sidebar-expand {
-        flex-shrink: 0;
-      }
-    }
-
-    #destination_box.destinations-list-scroll {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      // Keep wheel / scrollIntoView chain inside the list; avoids moving .main-primary or the window.
-      overscroll-behavior: contain;
-      padding: 0 1rem 1rem;
-
-      // Map pin (or ?highlight_destination_id=): row is bold + tinted, then fades (v2--destinations-index).
-      tr.destination.highlight--map-pin td {
-        font-weight: 700;
-        animation: destinationsRowPinHighlightTd 3.5s ease-out forwards;
-      }
-
-      tr.destination.highlight:not(.highlight--map-pin) td {
-        font-weight: inherit;
-        background-color: rgba(var(--bs-warning-rgb), 0.2);
-        transition: background-color 0.15s ease;
-      }
-
-      @keyframes destinationsRowPinHighlightTd {
-        0% {
-          background-color: rgba(var(--bs-warning-rgb), 0.42);
-        }
-
-        55% {
-          background-color: rgba(var(--bs-warning-rgb), 0.14);
-          font-weight: 700;
-        }
-
-        100% {
-          background-color: transparent;
-          font-weight: 400;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        tr.destination.highlight--map-pin td {
-          animation: none;
-          background-color: rgba(var(--bs-warning-rgb), 0.32);
-          font-weight: 700;
-        }
-      }
-    }
-
-    // When collapsed: thin strip with expand button only
-    &.collapsed {
-      width: $collapse-width;
-      min-width: $collapse-width;
-
-      .destinations-sidebar-header,
-      .destinations-sidebar-toggle,
-      #destination_box {
-        display: none !important;
-      }
-
-      .destinations-sidebar-expand {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        right: 0;
-      }
-    }
-  }
-
-  .destinations-sidebar-expand {
-    display: none;
-  }
-
-  // MapLibre GL (destinations index v2)
-  @include cartoway-maplibre-shared-controls;
-
-  .destinations-v2-marker {
-    // Flat marker: solid disc + simple triangle, minimal shadow (aligns with flat app UI)
-    --dm-head-size: 30px;
-    --dm-pin-w: 12px;
-    --dm-pin-h: 9px;
-    --dm-flat: var(--bs-primary, #0d6efd);
-    --dm-flat-stem: #0a58ca;
-    --dm-flat-active: var(--bs-warning, #ffc107);
-    --dm-flat-active-stem: #d39e00;
-
-    width: 38px;
-    height: 46px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    cursor: pointer;
-    pointer-events: auto;
-    transform-origin: 50% 100%;
-    transition: transform 0.18s ease;
-
-    &:hover:not(.destinations-v2-marker--active) {
-      transform: translateY(-2px);
-    }
-
-    &.destinations-v2-marker--active {
-      transform: scale(1.06);
-
-      &:hover {
-        transform: scale(1.06) translateY(-1px);
-      }
-
-      .destinations-v2-marker__head {
-        background: var(--dm-flat-active);
-        border-color: rgba(255, 255, 255, 0.95);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 0 0 2px rgba(0, 0, 0, 0.12);
-      }
-
-      .destinations-v2-marker__pin {
-        border-top-color: var(--dm-flat-active-stem);
-      }
-    }
-
-    &.destinations-v2-marker--dragging {
-      cursor: grab;
-      z-index: 7;
-
-      &:active {
-        cursor: grabbing;
-      }
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--bs-primary, #0d6efd);
-      outline-offset: 3px;
-    }
-  }
-
-  .destinations-v2-marker__pulse {
-    position: absolute;
-    left: 50%;
-    bottom: calc(var(--dm-pin-h) + var(--dm-head-size) * 0.5 - 3px);
-    width: calc(var(--dm-head-size) + 14px);
-    height: calc(var(--dm-head-size) + 14px);
-    margin-left: calc((var(--dm-head-size) + 14px) * -0.5);
-    border-radius: 50%;
-    border: 2px solid var(--dm-flat);
-    opacity: 0;
-    transform: scale(0.85);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .destinations-v2-marker--active .destinations-v2-marker__pulse {
-    border-color: var(--dm-flat-active);
-    animation: destinations-v2-marker-pulse-flat 1.8s ease-out infinite;
-  }
-
-  @keyframes destinations-v2-marker-pulse-flat {
-    0% {
-      opacity: 0.45;
-      transform: scale(0.88);
-    }
-    100% {
-      opacity: 0;
-      transform: scale(1.25);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .destinations-v2-marker--active .destinations-v2-marker__pulse {
-      animation: none;
-      opacity: 0.3;
-      transform: scale(1);
-    }
-  }
-
-  .destinations-v2-marker__head {
-    position: relative;
-    z-index: 2;
-    width: var(--dm-head-size);
-    height: var(--dm-head-size);
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.92);
-    background: var(--dm-flat);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-  }
-
-  // Specular highlight — disabled for flat look (kept in DOM for a11y / structure)
-  .destinations-v2-marker__glint {
-    display: none;
-  }
-
-  .destinations-v2-marker__pin {
-    position: relative;
-    z-index: 1;
-    width: 0;
-    height: 0;
-    margin-top: -2px;
-    border-left: calc(var(--dm-pin-w) * 0.5) solid transparent;
-    border-right: calc(var(--dm-pin-w) * 0.5) solid transparent;
-    border-top: var(--dm-pin-h) solid var(--dm-flat-stem);
-    transition: border-top-color 0.18s ease;
-  }
-
-  // Bring the active destination marker above siblings (stacking within map overlays)
-  .maplibregl-marker:has(.destinations-v2-marker--active) {
-    z-index: 900 !important;
-  }
 }
 
 // V2 menu — match v1 (scaffolds) + neutralize Bootstrap 5 link / dropdown / button defaults inside .menu-left
@@ -527,6 +132,7 @@
   }
 
   &.main--form-sidebar {
+    position: relative;
     display: flex;
     flex-direction: row;
     align-items: stretch;
@@ -534,41 +140,41 @@
 
     .main-primary {
       flex: 1 1 auto;
+      width: 100%;
       min-width: 0;
       overflow-x: hidden;
       overflow-y: auto;
     }
 
-    .v2-form-sidebar {
+    // Overlay on the right; does not shrink .main-primary (map stays full width).
+    .form-sidebar.slide-panel {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 10;
+      width: clamp(300px, 38vw, 560px);
+      max-width: min(560px, 48vw);
       display: flex;
       flex-direction: column;
-      flex: 0 0 clamp(300px, 38vw, 560px);
-      max-width: min(560px, 48vw);
       min-height: 0;
       border-left: 1px solid var(--bs-border-color, #dee2e6);
       background: var(--bs-body-bg, #fff);
       box-shadow: -4px 0 12px rgba(0, 0, 0, 0.06);
-      transition: flex-basis 0.22s ease, max-width 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
 
-      &.v2-form-sidebar--collapsed {
-        flex-basis: 0 !important;
-        flex-grow: 0 !important;
-        max-width: 0 !important;
-        min-width: 0 !important;
+      &.form-sidebar--collapsed {
         border-left-color: transparent;
         box-shadow: none;
         overflow: hidden;
-        visibility: hidden;
-        pointer-events: none;
       }
 
-      &.v2-form-sidebar--open {
+      &.form-sidebar--open {
         visibility: visible;
         pointer-events: auto;
       }
     }
 
-    .v2-form-sidebar-chrome {
+    .form-sidebar-chrome {
       flex: 0 0 auto;
       display: flex;
       justify-content: flex-end;
@@ -578,7 +184,7 @@
       border: none;
     }
 
-    .v2-form-sidebar-inner {
+    .form-sidebar-inner {
       flex: 1 1 auto;
       min-height: 0;
       padding: 1rem 1.25rem;
@@ -588,7 +194,7 @@
     }
 
     // Fill sidebar column: header + scrollable form + submit bar pinned to bottom of this inner viewport.
-    .v2-form-sidebar-inner > turbo-frame#form_sidebar {
+    .form-sidebar-inner > turbo-frame#form_sidebar {
       flex: 1 1 auto;
       min-height: 0;
       display: flex;
@@ -596,12 +202,12 @@
       overflow: hidden;
     }
 
-    turbo-frame#form_sidebar > .v2-destination-form-sidebar-header,
+    turbo-frame#form_sidebar > .destination-form-sidebar-header,
     turbo-frame#form_sidebar > .alert {
       flex: 0 0 auto;
     }
 
-    turbo-frame#form_sidebar > .v2-sidebar-destination-form {
+    turbo-frame#form_sidebar > .sidebar-destination-form {
       flex: 1 1 auto;
       min-height: 0;
       display: flex;
@@ -610,7 +216,7 @@
     }
 
     turbo-frame#form_sidebar > #destination-form-sidebar,
-    .v2-sidebar-destination-form #destination-form-sidebar {
+    .sidebar-destination-form #destination-form-sidebar {
       flex: 1 1 auto;
       min-height: 0;
       overflow-x: hidden;
@@ -618,14 +224,14 @@
     }
 
     // Tom Select wrapper must shrink/grow inside narrow sidebar rows.
-    .v2-form-sidebar-inner .ts-wrapper {
+    .form-sidebar-inner .ts-wrapper {
       width: 100%;
       min-width: 0;
     }
 
     // Tom Select inside `.input-group` + trailing `input-group-text` (bootstrap_form append / input_group).
     // Do not use width: 100% here: it would fill the whole row and push the addon to the next line.
-    .v2-form-sidebar-inner .input-group > .ts-wrapper {
+    .form-sidebar-inner .input-group > .ts-wrapper {
       flex: 1 1 0;
       min-width: 0;
       width: auto;
@@ -633,7 +239,7 @@
     }
 
     // Nested visit form: BS3-style horizontal grid → single column + wrapping groups (narrow sidebar).
-    .v2-form-sidebar-inner #visits .v2-visit-fieldset {
+    .form-sidebar-inner #visits .visit-fieldset {
       font-size: 0.9375rem;
 
       legend.scheduler-border {
@@ -704,7 +310,7 @@
     }
 
     // Submit bar: full width of sidebar inner, flush to bottom; primary control spans full row.
-    .v2-form-submit-bar {
+    .form-submit-bar {
       flex: 0 0 auto;
       position: relative;
       z-index: 5;
@@ -737,25 +343,9 @@
 
   @media (max-width: 991.98px) {
     &.main--form-sidebar {
-      flex-direction: column;
-
-      .v2-form-sidebar {
-        flex: 0 0 auto;
-        max-width: none;
-
-        &.v2-form-sidebar--collapsed {
-          max-height: 0 !important;
-          flex-basis: 0 !important;
-          border-top: none;
-          overflow: hidden;
-        }
-      }
-
-      .v2-form-sidebar:not(.v2-form-sidebar--collapsed) {
-        max-height: min(55vh, 34rem);
-        border-left: none;
-        border-top: 1px solid var(--bs-border-color, #dee2e6);
-        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+      .form-sidebar.slide-panel {
+        width: min(100%, 28rem);
+        max-width: 100%;
       }
     }
   }
