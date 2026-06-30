@@ -2,6 +2,8 @@
 
 module DesignSystem
   class FormsPreview < Lookbook::Preview
+    include DestinationsHelper
+
     layout 'lookbook_preview'
 
     def text_fields
@@ -17,6 +19,10 @@ module DesignSystem
     end
 
     def selects_and_textareas
+      render_with_template
+    end
+
+    def filtered_search
       render_with_template
     end
 

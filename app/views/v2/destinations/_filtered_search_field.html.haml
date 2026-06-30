@@ -1,0 +1,34 @@
+-# Shared filtered-search field (destinations index + Lookbook preview).
+-# locals: input_id, input_name: 'q', input_value: '', active_filters: [], debounce: false
+- input_name = local_assigns.fetch(:input_name, 'q')
+- input_value = '' unless local_assigns.key?(:input_value)
+- active_filters = Array(local_assigns[:active_filters])
+- debounce = !!local_assigns[:debounce]
+- dropdown_id = "#{input_id}-dropdown"
+- input_data = { v2__filtered_search_target: 'input', action: 'focus->v2--filtered-search#open click->v2--filtered-search#open input->v2--filtered-search#filter keydown->v2--filtered-search#handleKeydown' }
+- if debounce
+  - input_data[:min_chars] = 3
+  - input_data[:debounce_ms] = 300
+.destinations-search-wrapper{data: {controller: 'v2--filtered-search'}}
+  %label.form-label{for: input_id}= t('destinations.index.search_label')
+  .destinations-search-input.form-control{data: { action: 'click->v2--filtered-search#focusInput' }}
+    .destinations-search-clause
+      %span.destinations-search-token.badge.bg-primary.d-none{data: {v2__filtered_search_target: 'token'}}
+      - input_attrs = { id: input_id, type: 'search', value: input_value, autocomplete: 'off', data: input_data, role: 'combobox', aria: { expanded: 'false', controls: dropdown_id, autocomplete: 'list' } }
+      - input_attrs[:name] = input_name if input_name.present?
+      %input.form-control-plaintext{input_attrs}
+  .destinations-search-dropdown.d-none{id: dropdown_id, role: 'listbox', aria: { label: t('destinations.index.search_dropdown_label') }, data: {v2__filtered_search_target: 'dropdown', action: 'mousedown->v2--filtered-search#keepFocus'}}
+    .destinations-search-dropdown-header.small.text-muted
+      = t('destinations.index.search_help')
+    .destinations-search-dropdown-list
+      - destinations_search_filter_options.each do |option|
+        %button.destinations-search-dropdown-item{type: 'button', data: { search_key: option[:localized_key], v2__filtered_search_target: 'item', action: 'click->v2--filtered-search#pick' }, role: 'option'}
+          %span.destinations-search-dropdown-item-key= "#{option[:localized_key]}:"
+          %span.destinations-search-dropdown-item-example.text-muted= "#{option[:localized_key]}:…"
+  - if active_filters.present?
+    #search-filters-badges.mt-1
+      - active_filters.each do |filter|
+        %span.badge.bg-primary.me-1.mb-1.search-filter-badge{data: {filter: filter}}
+          = filter
+          %a.ms-1.text-white.search-filter-badge-remove{href: destinations_path(destinations_index_params_without_filter(filter)), title: t('destinations.index.remove_filter'), data: {remove_filter: filter}}
+            %i.fa.fa-times

@@ -1,0 +1,20 @@
+-# locals: destination, column_id
+- case column_id.to_s
+- when 'name'
+  %td= destination.name
+- when 'address'
+  %td.destinations-list-address= destinations_list_formatted_address(destination)
+- when 'ref'
+  %td= destination.ref
+- when 'geocoding'
+  = render 'v2/destinations/list_geocoding_cell', destination: destination
+- when 'comment'
+  %td= destination.comment
+- when 'phone_number'
+  %td= destinations_list_phone_link(destination) || '–'
+- when 'tags'
+  = render 'v2/destinations/list_tag_badges', tags: destination.tags
+- when 'visit_tags'
+  = render 'v2/destinations/list_tag_badges', tags: destinations_list_visit_tags(destination)
+- when 'visits'
+  %td= "#{destination.visits.count} #{t('activerecord.models.visits', count: destination.visits.count)}"

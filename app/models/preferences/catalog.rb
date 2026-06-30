@@ -63,6 +63,14 @@ module Preferences
         StopList.normalize_zone(raw)
       end
 
+      def normalize_destinations_list_zone(raw, customer: nil)
+        DestinationsList.normalize_zone(raw, customer: customer)
+      end
+
+      def destinations_list_allowed_column_ids(customer)
+        DestinationsList.allowed_column_ids(customer)
+      end
+
       def stop_list_field_value(stop, field_id)
         StopList.field_value(stop, field_id)
       end

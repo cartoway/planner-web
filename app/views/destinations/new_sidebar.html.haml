@@ -1,15 +1,15 @@
 -# New destination form loaded inside turbo-frame#form_sidebar (v2 destinations index right column)
 - dest_form_mutable = current_user_destination_form_submit_enabled?(@destination)
 = turbo_frame_tag "form_sidebar" do
-  %header.v2-destination-form-sidebar-header.mb-3
+  %header.destination-form-sidebar-header.mb-3
     %h2.h5.mb-0= t("destinations.new.title")
   - if current_user.customer.too_many_destinations?
     .alert.alert-warning{ data: { error: "true" } }
       %p.mb-0= t("destinations.index.over_max_limit", limit: current_user.customer.default_max_destinations)
   - elsif dest_form_mutable
-    .v2-sidebar-destination-form{ data: { controller: "v2--dirty-form-submit" } }
+    .sidebar-destination-form{ data: { controller: "v2--dirty-form-submit" } }
       = render "v2/destinations/form"
-      .v2-form-submit-bar.is-hidden{ data: { "v2--dirty-form-submit-target": "bar" } }
+      .form-submit-bar.is-hidden{ data: { "v2--dirty-form-submit-target": "bar" } }
         %button.btn.btn-primary{ type: "submit", form: "destination-form-sidebar" }= t("helpers.submit.create", model: @destination.model_name.human)
   - else
     = render "v2/destinations/form"
