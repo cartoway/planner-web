@@ -57,17 +57,42 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'script[src*="maplibre-gl"]', 1
     assert_select '.main > .main-primary', 1
     assert_select '.main > .main-primary turbo-frame#main', 1
-    assert_select 'aside.v2-form-sidebar.v2-form-sidebar--collapsed', 1
-    assert_select 'aside.v2-form-sidebar turbo-frame#form_sidebar', 1
+    assert_select 'aside.form-sidebar.slide-panel--from-right.form-sidebar--collapsed', 1
+    assert_select 'aside.form-sidebar turbo-frame#form_sidebar', 1
   end
 
-  test 'v2 index map payload includes list page for each geolocated destination' do
+  test 'v2 index exposes map geojson url in config instead of inline destinations' do
     get :index
     assert_response :success
-    payload = assigns(:v2_map_destinations)
-    assert payload.is_a?(Array)
-    assert(payload.all? { |h| h[:page].present? && h[:id].present? })
-    assert_map_config_json_key('page')
+    assert_map_config_json_key('map_geojson_url')
+    assert_not response.body.include?('"destinations":[')
+  end
+
+  test 'map returns geojson for filtered scope' do
+    get :map, params: { per_page: 25 }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal 'FeatureCollection', body['type']
+    assert body['features'].is_a?(Array)
+  end
+
+  test 'map bounds_only returns bounds without loading all features' do
+    get :map, params: { bounds_only: true }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal [], body['features']
+    assert body['bounds'].present?
+  end
+
+  test 'map respects bbox filter' do
+    get :map, params: { bbox: '-1,48,3,50', per_page: 25 }
+    assert_response :success
+    body = JSON.parse(response.body)
+    body['features'].each do |f|
+      lng, lat = f['geometry']['coordinates']
+      assert lat.between?(48, 50)
+      assert lng.between?(-1, 3)
+    end
   end
 
   test 'v2 index embeds highlight_destination_id in map config when requested' do
@@ -104,9 +129,9 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar.form-horizontal[action*="destination"]', 1
     assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="_top"]', 1
-    assert_select 'turbo-frame#form_sidebar .v2-form-submit-bar.is-hidden', 1
+    assert_select 'turbo-frame#form_sidebar .form-submit-bar.is-hidden', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar input[type="submit"]', 0
-    assert_select 'turbo-frame#form_sidebar .v2-form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
+    assert_select 'turbo-frame#form_sidebar .form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar[data-tag-entity-create-allowed]', 1
   end
 
@@ -176,9 +201,9 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar.form-horizontal[action*="destinations"]', 1
     assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="form_sidebar"]', 1
-    assert_select 'turbo-frame#form_sidebar .v2-form-submit-bar.is-hidden', 1
+    assert_select 'turbo-frame#form_sidebar .form-submit-bar.is-hidden', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar input[type="submit"]', 0
-    assert_select 'turbo-frame#form_sidebar .v2-form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
+    assert_select 'turbo-frame#form_sidebar .form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
   end
 
   test 'v2 new destination sidebar has no visit fieldsets and no hidden visit template' do
@@ -198,7 +223,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_equal before + 1, @destination.reload.visits.count
     assert_select 'turbo-frame#form_sidebar', 1
-    assert_select '#visits fieldset.v2-visit-fieldset', before + 1
+    assert_select '#visits fieldset.visit-fieldset', before + 1
     assert_select %(a#visit-new[href="#{append_visit_destination_path(@destination)}"][data-turbo-method="post"]), 1
   end
 
@@ -254,6 +279,8 @@ class DestinationsControllerTest < ActionController::TestCase
     get :index
     assert_response :success
     assert_select '#destinations-search-form'
+    assert_select '#search-query[role="combobox"]', 1
+    assert_select '#search-query-dropdown [data-search-key]', DestinationSearchParser::ALLOWED_KEYS.size
     assert_select 'turbo-frame#destinations_list tr.destination', assigns(:destinations).size
   end
 
@@ -269,6 +296,15 @@ class DestinationsControllerTest < ActionController::TestCase
                   assigns(:destinations).size
   end
 
+  test 'list_columns persists user column preferences and refreshes list' do
+    patch :list_columns, params: { active: %w[name address] }
+    assert_response :success
+    assert_equal %w[name address], users(:user_one).reload.destinations_list_active_column_ids
+    assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.name')
+    assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.geocoding'), count: 0
+    assert_select '#destinations-list-col-geocoding', 1
+  end
+
   test 'should filter destinations by key value search' do
     get :index, params: { q: 'city:Bordeau' }
     assert_response :success
@@ -281,6 +317,16 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_equal 1, assigns(:destinations).size
     assert_equal 'destination_one', assigns(:destinations).first.name
+  end
+
+  test 'should filter destinations by filter badge with spaces in value' do
+    destination = destinations(:destination_one)
+    destination.update!(name: 'Jean Dupont')
+
+    get :index, params: { filters: ['name:Jean Dupont'] }
+    assert_response :success
+    assert_equal 1, assigns(:destinations).size
+    assert_equal 'Jean Dupont', assigns(:destinations).first.name
   end
 
   test 'should combine filters and live query' do

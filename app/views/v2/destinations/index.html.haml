@@ -3,15 +3,18 @@
 - content_for :form_sidebar do
   = render "v2/layouts/form_sidebar_placeholder"
 - content_for :title, t('destinations.index.title')
-- layers = (@customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: request.ssl? ? layer.urlssl : layer.url, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
-- v2_js_cfg = { map_lat: @customer.default_position[:lat], map_lng: @customer.default_position[:lng], map_zoom: 12, geocoder: true, map_overlay_title: t('destinations.index.map_overlay_layers'), map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)], destinations: @v2_map_destinations, can_destroy: current_user_form_destroy_enabled?(:destination), destroy_confirm: t('all.verb.destroy_confirm'), form_sidebar_placeholder: t('v2.layout.form_sidebar_placeholder') }
+-# MapLibre loads tiles via fetch; always use HTTPS tile URLs (HTTP OSM tiles 301 without CORS).
+- layers = (@customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: layer.urlssl, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
+- v2_js_cfg = { map_lat: @customer.default_position[:lat], map_lng: @customer.default_position[:lng], map_zoom: 12, geocoder: true, map_overlay_title: t('destinations.index.map_overlay_layers'), map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)], map_geojson_url: map_destinations_path, can_destroy: current_user_form_destroy_enabled?(:destination), destroy_confirm: t('all.verb.destroy_confirm'), form_sidebar_placeholder: t('v2.layout.form_sidebar_placeholder') }
 - v2_js_cfg[:highlight_destination_id] = params[:highlight_destination_id].to_i if params[:highlight_destination_id].present?
 - v2_js_config = v2_js_cfg.to_json
 #destinations-map-layout{data: { controller: 'v2--destinations-index', config: v2_js_config }}
   #map.destinations-map
 
-  .destinations-sidebar
+  .destinations-sidebar.slide-panel.slide-panel--from-left
     .destinations-sidebar-header
+      %button.floating-btn.destinations-sidebar-toggle{type: "button", title: t('destinations.index.collapse_list', default: 'Réduire la liste'), 'aria-label': t('destinations.index.collapse_list', default: 'Réduire la liste')}
+        %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
       %h1.mb-2= t 'destinations.index.title'
       - if current_user.customer.too_many_destinations?
         .alert.alert-warning{data: {error: "true"}}
@@ -20,14 +23,8 @@
         %input{type: "hidden", name: "per_page", value: @pagination[:per_page]}
         - Array(@active_filters).each do |filter|
           %input{type: "hidden", name: "filters[]", value: filter}
-        .destinations-search-wrapper
-          %input.form-control#search-query{type: "text", name: "q", placeholder: destinations_search_placeholder, value: @search_query, autocomplete: "off", data: {min_chars: 3, debounce_ms: 300}}
-          #search-filters-badges.mt-1
-            - if @active_filters.present?
-              - @active_filters.each do |filter|
-                %span.badge.bg-primary.me-1.mb-1.search-filter-badge{data: {filter: filter}}
-                  = filter
-                  %a.ms-1.text-white{href: destinations_path(destinations_index_params_without_filter(filter)), title: t('destinations.index.remove_filter')}
-                    %i.fa.fa-times
-        %small.help-block= t 'destinations.index.search_help', default: 'Syntax: field:value (e.g. name:Paris, city:Lyon)'
+        = render 'v2/destinations/filtered_search_field', input_id: 'search-query', input_value: @search_query, active_filters: Array(@active_filters), debounce: true
+        %small.help-block= t('destinations.index.search_help')
     = render 'v2/destinations/list_frame'
+  %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: "button", title: t('destinations.index.expand_list', default: 'Afficher la liste'), 'aria-label': t('destinations.index.expand_list', default: 'Afficher la liste')}
+    %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}

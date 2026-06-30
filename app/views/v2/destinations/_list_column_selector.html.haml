@@ -1,0 +1,19 @@
+-# Column visibility dropdown for the destinations index list (persists on user.headers).
+- list_columns = destinations_list_columns_selector_options(@customer)
+.dropdown
+  %button.btn.btn-light.btn-sm.dropdown-toggle{type: 'button', 'data-bs-toggle': 'dropdown', 'aria-expanded': 'false', title: t('destinations.index.columns')}
+    %i.fa.fa-table-columns.fa-fw
+    %span.visually-hidden= t('destinations.index.columns')
+  .dropdown-menu.dropdown-menu-end.p-2.shadow-sm{style: 'min-width: 12rem;', 'data-bs-auto-close': 'outside'}
+    = form_tag list_columns_destinations_path, method: :patch, data: { turbo_frame: 'destinations_list', controller: 'v2--destinations-list-columns' } do
+      - destinations_index_params.each do |key, value|
+        - if value.is_a?(Array)
+          - value.each do |item|
+            = hidden_field_tag "#{key}[]", item
+        - elsif value.present?
+          = hidden_field_tag key, value
+      %p.small.text-muted.mb-2= t('destinations.index.columns_help')
+      - list_columns.each do |column|
+        .form-check
+          %input.form-check-input{type: 'checkbox', name: 'active[]', value: column[:id], checked: column[:active], id: "destinations-list-col-#{column[:id]}", data: { action: 'change->v2--destinations-list-columns#submit' }}
+          %label.form-check-label{for: "destinations-list-col-#{column[:id]}"}= column[:label]

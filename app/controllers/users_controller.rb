@@ -35,7 +35,8 @@ class UsersController < ApplicationController
     headers_ui = raw.permit(headers: {
       planning: { active: [], hidden: [] },
       route: { active: [], hidden: [] },
-      stop_list: { active: [], hidden: [] }
+      stop_list: { active: [], hidden: [] },
+      destinations_list: { active: [], hidden: [] }
     })[:headers]
     @user.assign_attributes(attrs)
     @user.apply_self_service_display_ui!(headers_params: headers_ui) if headers_ui.present?

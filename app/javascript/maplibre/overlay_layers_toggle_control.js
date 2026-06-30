@@ -1,7 +1,7 @@
 // Copyright © Cartoway
 // MapLibre IControl: checkboxes to toggle raster overlay layer visibility.
 
-const DEFAULT_ROOT_CLASS = 'maplibregl-ctrl maplibregl-ctrl-group cartoway-maplibre-overlay-toggles'
+const DEFAULT_ROOT_CLASS = 'maplibregl-ctrl maplibregl-ctrl-group maplibre-overlay-toggles'
 
 /**
  * @param {{ layerId: string, name: string, initialVisible?: boolean }[]} overlaySpecs
@@ -12,9 +12,9 @@ export function OverlayLayersToggleIControl (overlaySpecs, summaryTitle, options
   this._specs = overlaySpecs
   this._summaryTitle = summaryTitle || 'Overlays'
   this._rootClass = options.rootClass || DEFAULT_ROOT_CLASS
-  this._summaryClass = options.summaryClass || 'cartoway-maplibre-overlay-toggles-summary'
-  this._bodyClass = options.bodyClass || 'cartoway-maplibre-overlay-toggles-body'
-  this._inputIdPrefix = options.inputIdPrefix || 'cartoway-maplibre-overlay-'
+  this._summaryClass = options.summaryClass || 'maplibre-overlay-toggles-summary'
+  this._bodyClass = options.bodyClass || 'maplibre-overlay-toggles-body'
+  this._inputIdPrefix = options.inputIdPrefix || 'maplibre-overlay-'
 }
 
 OverlayLayersToggleIControl.prototype.onAdd = function (map) {
