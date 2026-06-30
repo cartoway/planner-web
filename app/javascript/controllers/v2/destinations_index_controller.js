@@ -8,6 +8,8 @@ import { buildRasterStyle, pickLayers } from 'maplibre/raster_layers'
 import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { BaseLayerSwitcherIControl } from 'maplibre/base_layer_switcher_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
+import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
+import { DestinationsMapLayers } from 'maplibre/destinations_map_layers'
 
 const DEFAULT_ZOOM = 12
 const MIN_CHARS = 3
@@ -16,19 +18,38 @@ const DEBOUNCE_MS = 300
 const MAP_PIN_ROW_ANIMATION_SUBSTRING = 'destinationsRowPinHighlightTd'
 /** Fallback if `animationend` does not fire (matches animation duration + margin). */
 const MAP_PIN_ROW_FALLBACK_MS = 4500
-/** Lat/lng fractional digits aligned with DB/API usage (see `round(6)` in app/api/v01/destinations.rb). */
-const LOCATION_COORD_DECIMALS = 6
 
 function roundCoord (value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return value
-  const f = 10 ** LOCATION_COORD_DECIMALS
-  return Math.round(value * f) / f
+  return Math.round(value * 1e6) / 1e6 // DB / API precision (see app/api/v01/destinations.rb)
 }
 
 /** Fixed-width string for form fields (matches persisted float rounding). */
 function coordToDbInputString (value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return ''
-  return roundCoord(value).toFixed(LOCATION_COORD_DECIMALS)
+  return roundCoord(value).toFixed(6)
+}
+
+/** Run fn after a slide-panel CSS transition, or immediately if none fires (e.g. reduced motion). */
+function afterSlideTransition (el, fn) {
+  if (!el) {
+    fn()
+    return
+  }
+  let settled = false
+  const finish = () => {
+    if (settled) return
+    settled = true
+    el.removeEventListener('transitionend', onEnd)
+    clearTimeout(fallbackId)
+    fn()
+  }
+  const onEnd = (e) => {
+    if (e.target !== el || e.propertyName !== 'transform') return
+    finish()
+  }
+  el.addEventListener('transitionend', onEnd)
+  const fallbackId = setTimeout(finish, 500)
 }
 
 function getMaplibre () {
@@ -37,24 +58,24 @@ function getMaplibre () {
 
 function createMarkerElement (label) {
   const el = document.createElement('div')
-  el.className = 'destinations-v2-marker'
+  el.className = 'destinations-marker'
   el.setAttribute('role', 'button')
   if (label) el.setAttribute('aria-label', label)
 
   const pulse = document.createElement('span')
-  pulse.className = 'destinations-v2-marker__pulse'
+  pulse.className = 'destinations-marker__pulse'
   pulse.setAttribute('aria-hidden', 'true')
 
   const head = document.createElement('span')
-  head.className = 'destinations-v2-marker__head'
+  head.className = 'destinations-marker__head'
 
   const glint = document.createElement('span')
-  glint.className = 'destinations-v2-marker__glint'
+  glint.className = 'destinations-marker__glint'
   glint.setAttribute('aria-hidden', 'true')
   head.appendChild(glint)
 
   const pin = document.createElement('span')
-  pin.className = 'destinations-v2-marker__pin'
+  pin.className = 'destinations-marker__pin'
   pin.setAttribute('aria-hidden', 'true')
 
   el.appendChild(pulse)
@@ -63,10 +84,15 @@ function createMarkerElement (label) {
   return el
 }
 
+// Split only before the next key:value token, not on spaces inside a value.
+function splitFilterSegments (input) {
+  return input.split(/\s+(?=[^\s:]+:)/).map((part) => part.trim()).filter(Boolean)
+}
+
 function parseKeyValueFilters (input) {
   if (!input || !input.includes(':')) return []
   const result = []
-  input.split(/\s+/).forEach((part) => {
+  splitFilterSegments(input).forEach((part) => {
     const colonIdx = part.indexOf(':')
     if (colonIdx > 0) {
       const key = part.slice(0, colonIdx).trim()
@@ -100,7 +126,10 @@ export default class extends Controller {
     }
 
     this._map = null
-    this._markersById = {}
+    this._mapLayers = null
+    this._domMarker = null
+    this._domMarkerId = null
+    this._domMarkerEl = null
     this._iconOverStack = []
     this._searchDebounce = null
     this._positionEdit = null
@@ -110,6 +139,8 @@ export default class extends Controller {
     this._canDestroy = !!config.can_destroy
     this._destroyConfirmMessage = config.destroy_confirm || ''
     this._formSidebarPlaceholder = config.form_sidebar_placeholder || ''
+    this._mapGeojsonUrl = config.map_geojson_url || '/destinations/map.geojson'
+    this._pendingHighlightId = null
 
     const maplibregl = getMaplibre()
     const mapEl = this.element.querySelector('#map')
@@ -117,10 +148,7 @@ export default class extends Controller {
       this._initMap(maplibregl, mapEl, config, signal)
       const hid = config.highlight_destination_id
       if (hid != null && String(hid) !== '' && String(hid) !== '0') {
-        requestAnimationFrame(() => {
-          this._focusDestinationInList(String(hid), { flyToMap: false, fromMapPin: true })
-          this._stripHighlightParamFromUrl()
-        })
+        this._pendingHighlightId = String(hid)
       }
     }
 
@@ -158,6 +186,11 @@ export default class extends Controller {
   _teardownMap () {
     this._teardownPositionEdit()
     this._clearDestinationHighlight()
+    if (this._mapLayers) {
+      this._mapLayers.disconnect()
+      this._mapLayers = null
+    }
+    this._removeDomMarker()
     const mapEl = this.element.querySelector('#map')
     if (mapEl && mapEl._v2MaplibreMap) {
       try {
@@ -165,25 +198,62 @@ export default class extends Controller {
       } catch (e) { /* ignore */ }
       mapEl._v2MaplibreMap = null
     }
-    Object.keys(this._markersById || {}).forEach((id) => {
-      try {
-        this._markersById[id].marker.remove()
-      } catch (e) { /* ignore */ }
-    })
-    this._markersById = {}
     this._iconOverStack = []
+  }
+
+  _removeDomMarker () {
+    if (this._domMarker) {
+      try { this._domMarker.remove() } catch (e) { /* ignore */ }
+    }
+    this._domMarker = null
+    this._domMarkerId = null
+    this._domMarkerEl = null
+  }
+
+  _destinationRecord (idStr) {
+    if (!this._mapLayers) return null
+    return this._mapLayers.getDestination(idStr)
+  }
+
+  _syncHiddenGeojsonPins () {
+    if (!this._mapLayers) return
+    const hidden = []
+    if (this._domMarkerId) hidden.push(this._domMarkerId)
+    this._mapLayers.setHiddenDestinationIds(hidden)
+  }
+
+  _showDomMarker (idStr, { name = '', lngLat, active = true } = {}) {
+    const maplibregl = getMaplibre()
+    if (!maplibregl || !this._map || !lngLat) return
+
+    if (this._domMarkerId === idStr && this._domMarker) {
+      this._domMarker.setLngLat(lngLat)
+      if (this._domMarkerEl) {
+        this._domMarkerEl.classList.toggle('destinations-marker--active', active)
+      }
+      this._syncHiddenGeojsonPins()
+      return
+    }
+
+    this._removeDomMarker()
+    const el = createMarkerElement(name)
+    if (active) el.classList.add('destinations-marker--active')
+    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat(lngLat)
+      .addTo(this._map)
+    this._domMarker = marker
+    this._domMarkerId = idStr
+    this._domMarkerEl = el
+    this._syncHiddenGeojsonPins()
   }
 
   _clearDestinationHighlight () {
     if (!this.element) return
     this._cancelMapPinRowHighlight()
     this.element.querySelectorAll('tr.destination').forEach((tr) => tr.classList.remove('highlight', 'highlight--map-pin'))
-    const markersById = this._markersById || {}
-    while (this._iconOverStack && this._iconOverStack.length) {
-      const id = this._iconOverStack.pop()
-      const m = markersById[id]
-      if (m) m.el.classList.remove('destinations-v2-marker--active')
-    }
+    this._iconOverStack = []
+    this._removeDomMarker()
+    this._syncHiddenGeojsonPins()
   }
 
   /**
@@ -204,6 +274,48 @@ export default class extends Controller {
   }
 
   /**
+   * Padding for map.flyTo / fitBounds so the target is not hidden under overlay sidebars.
+   */
+  _mapFlyToPadding () {
+    const inset = 48
+    const gutter = 16
+    const layoutRect = this.element.getBoundingClientRect()
+    const padding = { top: inset, bottom: inset, left: inset, right: inset }
+
+    const leftSidebar = this.element.querySelector('.destinations-sidebar')
+    if (leftSidebar) {
+      if (leftSidebar.classList.contains('slide-panel--collapsed')) {
+        const expandBtn = this.element.querySelector('.destinations-sidebar-expand')
+        if (expandBtn) {
+          const expandRect = expandBtn.getBoundingClientRect()
+          padding.left = Math.max(
+            inset,
+            Math.ceil(expandRect.right - layoutRect.left) + gutter
+          )
+        }
+      } else {
+        const sidebarRect = leftSidebar.getBoundingClientRect()
+        if (sidebarRect.width > 0) {
+          padding.left = Math.ceil(sidebarRect.width) + gutter
+        }
+      }
+    }
+
+    const formSidebar = document.querySelector('.form-sidebar')
+    if (formSidebar && !formSidebar.classList.contains('slide-panel--collapsed')) {
+      const formRect = formSidebar.getBoundingClientRect()
+      if (formRect.width > 0) {
+        padding.right = Math.max(
+          inset,
+          Math.ceil(layoutRect.right - formRect.left) + gutter
+        )
+      }
+    }
+
+    return padding
+  }
+
+  /**
    * Highlight table row + map pin; optionally fly map to pin. Used for list clicks, marker clicks, and ?highlight_destination_id=.
    * @param {{ flyToMap?: boolean, fromMapPin?: boolean }} [options]
    */
@@ -211,16 +323,27 @@ export default class extends Controller {
     const flyToMap = !!options.flyToMap
     const fromMapPin = !!options.fromMapPin
     this._clearDestinationHighlight()
-    const markersById = this._markersById || {}
-    const m = markersById[idStr]
-    if (m) {
-      m.el.classList.add('destinations-v2-marker--active')
-      this._iconOverStack.push(idStr)
-      if (flyToMap && this._map) {
-        this._map.flyTo({ center: m.marker.getLngLat(), zoom: Math.max(this._map.getZoom(), 14), duration: 500 })
+    let rec = this._destinationRecord(idStr)
+    const row = Array.from(this.element.querySelectorAll('tr.destination')).find((tr) => tr.getAttribute('data-destination-id') === idStr)
+    if (!rec && row) {
+      const lat = parseFloat(row.getAttribute('data-lat'))
+      const lng = parseFloat(row.getAttribute('data-lng'))
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        rec = { lngLat: [lng, lat], name: '' }
       }
     }
-    const row = Array.from(this.element.querySelectorAll('tr.destination')).find((tr) => tr.getAttribute('data-destination-id') === idStr)
+    if (rec) {
+      this._showDomMarker(idStr, { name: rec.name, lngLat: rec.lngLat, active: true })
+      this._iconOverStack.push(idStr)
+      if (flyToMap && this._map) {
+        this._map.flyTo({
+          center: rec.lngLat,
+          zoom: Math.max(this._map.getZoom(), 14),
+          padding: this._mapFlyToPadding(),
+          duration: 500
+        })
+      }
+    }
     if (row) {
       row.classList.add('highlight')
       if (fromMapPin) {
@@ -264,6 +387,53 @@ export default class extends Controller {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const timer = window.setTimeout(done, prefersReduced ? 2800 : MAP_PIN_ROW_FALLBACK_MS)
     this._mapPinRowHighlightState = { cell, onEnd, timer }
+  }
+
+  _applyPendingHighlight () {
+    if (!this._pendingHighlightId) return
+    const idStr = this._pendingHighlightId
+    if (!this._destinationRecord(idStr)) return
+    this._focusDestinationInList(idStr, { flyToMap: true, fromMapPin: true })
+    this._pendingHighlightId = null
+    this._stripHighlightParamFromUrl()
+  }
+
+  _buildMapGeojsonUrl (overrides = {}) {
+    const base = this._mapGeojsonUrl || '/destinations/map.geojson'
+    const url = new URL(base, window.location.origin)
+    const form = this.element.querySelector('#destinations-search-form')
+    const perInput = form && form.querySelector('input[name="per_page"]')
+    if (perInput && perInput.value) url.searchParams.set('per_page', perInput.value)
+    if (form) {
+      form.querySelectorAll('input[name="filters[]"]').forEach((inp) => {
+        if (inp.value) url.searchParams.append('filters[]', inp.value)
+      })
+    }
+    const qInp = this.element.querySelector('#search-query')
+    if (qInp && qInp.value.trim()) url.searchParams.set('q', qInp.value.trim())
+    Object.entries(overrides).forEach(([key, val]) => {
+      if (val === undefined || val === null || val === '') url.searchParams.delete(key)
+      else url.searchParams.set(key, String(val))
+    })
+    return url.toString()
+  }
+
+  _handleMapPointClick (feature) {
+    const props = feature.properties || {}
+    const idStr = String(props.id)
+    const row = Array.from(this.element.querySelectorAll('tr.destination')).find((tr) => tr.getAttribute('data-destination-id') === idStr)
+    if (row) {
+      this._focusDestinationInList(idStr, { flyToMap: false, fromMapPin: true })
+      this._navigateFormSidebarToRowIfOpen(row, idStr)
+      return
+    }
+    const destPage = Number(props.page)
+    if (Number.isFinite(destPage) && destPage > 0) {
+      const visitUrl = this._buildDestinationsIndexUrl({ page: destPage, highlight_destination_id: idStr })
+      visit(visitUrl, { frame: 'destinations_list', action: 'advance' })
+    } else {
+      this._focusDestinationInList(idStr, { flyToMap: false, fromMapPin: true })
+    }
   }
 
   _buildDestinationsIndexUrl (overrides = {}) {
@@ -355,45 +525,30 @@ export default class extends Controller {
       map.addControl(new OverlayLayersToggleIControl(overlayToggles, overlayTitle), 'top-right')
     }
 
-    const markersById = {}
-    this._markersById = markersById
-
-    ;(params.destinations || []).forEach((d) => {
-      if (d.lat == null || d.lng == null) return
-      const el = createMarkerElement(d.name || '')
-      const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
-        .setLngLat([d.lng, d.lat])
-        .addTo(map)
-      el.addEventListener('click', (e) => {
-        e.stopPropagation()
-        const idStr = String(d.id)
-        const row = Array.from(this.element.querySelectorAll('tr.destination')).find((tr) => tr.getAttribute('data-destination-id') === idStr)
-        if (row) {
-          this._focusDestinationInList(idStr, { flyToMap: false, fromMapPin: true })
-          this._navigateFormSidebarToRowIfOpen(row, idStr)
-          return
+    const highlightId = params.highlight_destination_id
+    this._mapLayers = new DestinationsMapLayers(map, {
+      buildUrl: (overrides) => {
+        const merged = { ...overrides }
+        if (highlightId != null && String(highlightId) !== '' && String(highlightId) !== '0') {
+          merged.highlight_destination_id = String(highlightId)
         }
-        const rawPage = d.page != null ? d.page : d['page']
-        const destPage = Number(rawPage)
-        if (Number.isFinite(destPage) && destPage > 0) {
-          const visitUrl = this._buildDestinationsIndexUrl({ page: destPage, highlight_destination_id: idStr })
-          visit(visitUrl, { frame: 'destinations_list', action: 'advance' })
-        } else {
-          this._focusDestinationInList(idStr, { flyToMap: false, fromMapPin: true })
-        }
-      })
-      markersById[String(d.id)] = { marker, el, lngLat: [d.lng, d.lat] }
+        return this._buildMapGeojsonUrl(merged)
+      },
+      onPointClick: (feature) => this._handleMapPointClick(feature),
+      onFeaturesUpdated: () => this._applyPendingHighlight(),
+      signal
     })
+    this._mapLayers.connect()
 
-    const coords = Object.keys(markersById).map((id) => markersById[id].lngLat)
-    if (coords.length > 0) {
-      const bounds = new maplibregl.LngLatBounds(coords[0], coords[0])
-      coords.forEach((c) => bounds.extend(c))
-      map.fitBounds(bounds, { padding: 48, maxZoom: 15, duration: 0 })
-    }
+    const declusterViewportTitle = ((typeof I18n !== 'undefined' && I18n.t)
+      ? I18n.t('destinations.index.map_decluster_viewport', { defaultValue: 'Déclusteriser la vue' })
+      : 'Déclusteriser la vue')
+    map.addControl(new DeclusterViewportIControl(() => {
+      if (this._mapLayers) this._mapLayers.declusterViewport()
+    }, declusterViewportTitle), 'top-right')
 
     const sidebar = this.element.querySelector('.destinations-sidebar')
-    const scheduleResize = () => { setTimeout(() => map.resize(), 220) }
+    const scheduleResize = () => { afterSlideTransition(sidebar, () => map.resize()) }
 
     this.element.addEventListener('click', (e) => {
       const tr = e.target.closest && e.target.closest('tr.destination[data-destination-id]')
@@ -406,12 +561,12 @@ export default class extends Controller {
         return
       }
       if (e.target.closest && e.target.closest('.destinations-sidebar-toggle')) {
-        if (sidebar) sidebar.classList.add('collapsed')
+        if (sidebar) sidebar.classList.add('slide-panel--collapsed')
         scheduleResize()
         return
       }
-      if (e.target.closest && e.target.closest('.destinations-sidebar-expand button')) {
-        if (sidebar) sidebar.classList.remove('collapsed')
+      if (e.target.closest && e.target.closest('.destinations-sidebar-expand')) {
+        if (sidebar) sidebar.classList.remove('slide-panel--collapsed')
         scheduleResize()
       }
     }, { signal })
@@ -442,7 +597,7 @@ export default class extends Controller {
           this._stripHighlightParamFromUrl()
         }
       })
-      if (this._map) setTimeout(() => this._map.resize(), 220)
+      if (this._map) requestAnimationFrame(() => this._map.resize())
     }
   }
 
@@ -461,8 +616,8 @@ export default class extends Controller {
   /**
    * Snap marker to rounded coordinates and sync list row + destination lat/lng inputs.
    */
-  _syncPositionFromMarker (destinationIdStr, marker, rec) {
-    if (!marker || !rec) return
+  _syncPositionFromMarker (destinationIdStr, marker) {
+    if (!marker) return
     const ll = marker.getLngLat()
     let lat = typeof ll.lat === 'number' ? ll.lat : parseFloat(String(ll.lat))
     let lng = typeof ll.lng === 'number' ? ll.lng : parseFloat(String(ll.lng))
@@ -472,7 +627,7 @@ export default class extends Controller {
     try {
       marker.setLngLat({ lng, lat })
     } catch (e) { /* ignore */ }
-    rec.lngLat = [lng, lat]
+    if (this._mapLayers) this._mapLayers.updateDestinationCoords(destinationIdStr, lng, lat)
     const latInp = document.getElementById('destination_lat')
     const lngInp = document.getElementById('destination_lng')
     const sync = (input, valueStr) => {
@@ -500,8 +655,8 @@ export default class extends Controller {
       try {
         if (state.marker && typeof state.marker.setDraggable === 'function') state.marker.setDraggable(false)
       } catch (e) { /* ignore */ }
-      const rec = this._markersById[state.markerId]
-      if (rec && rec.el) rec.el.classList.remove('destinations-v2-marker--dragging')
+      const rec = this._domMarkerEl
+      if (rec) rec.classList.remove('destinations-marker--dragging')
       state.active = false
     }
     if (state.dragEndHandler && state.marker) {
@@ -524,8 +679,7 @@ export default class extends Controller {
     try {
       if (state.marker && typeof state.marker.setDraggable === 'function') state.marker.setDraggable(false)
     } catch (e) { /* ignore */ }
-    const rec = this._markersById[state.markerId]
-    if (rec && rec.el) rec.el.classList.remove('destinations-v2-marker--dragging')
+    if (this._domMarkerEl) this._domMarkerEl.classList.remove('destinations-marker--dragging')
     state.active = false
     if (state.toggleButton) this._applyPositionDragToggleUi(state.toggleButton, false)
   }
@@ -533,32 +687,30 @@ export default class extends Controller {
   _enablePositionDrag () {
     const state = this._positionEdit
     if (!state || state.active || !this._map) return
-    const rec = this._markersById[state.markerId]
-    if (!rec || !state.marker) return
+    if (!state.marker || this._domMarkerId !== state.markerId) return
     state.mapClickHandler = (e) => {
       if (!this._positionEdit?.active) return
       const t = e.originalEvent && e.originalEvent.target
       if (t && typeof t.closest === 'function') {
         // Clicks on the HTML marker can still surface as map `click`; ignore (drag handles position).
-        if (t.closest('.maplibregl-marker') || t.closest('.mapboxgl-marker') || t.closest('.destinations-v2-marker')) return
+        if (t.closest('.maplibregl-marker') || t.closest('.mapboxgl-marker') || t.closest('.destinations-marker')) return
         // MapLibre UI (zoom, geocoder, layer switcher…): do not move the pin.
         if (t.closest('.maplibregl-ctrl') || t.closest('.mapboxgl-ctrl')) return
       }
       if (!e.lngLat) return
       const mid = this._positionEdit.markerId
       const m = this._positionEdit.marker
-      const r = this._markersById[mid]
-      if (!m || !r) return
+      if (!m) return
       try {
         m.setLngLat(e.lngLat)
       } catch (err) { /* ignore */ }
-      this._syncPositionFromMarker(mid, m, r)
+      this._syncPositionFromMarker(mid, m)
     }
     this._map.on('click', state.mapClickHandler)
     try {
       state.marker.setDraggable(true)
     } catch (e) { /* ignore */ }
-    rec.el.classList.add('destinations-v2-marker--dragging')
+    if (this._domMarkerEl) this._domMarkerEl.classList.add('destinations-marker--dragging')
     state.active = true
     if (state.toggleButton) this._applyPositionDragToggleUi(state.toggleButton, true)
   }
@@ -613,10 +765,23 @@ export default class extends Controller {
     if (!id || id === '0') return
 
     const toggleButton = form.querySelector('[data-v2-map-position-drag-toggle]')
-    const rec = this._markersById[id]
-    const marker = rec && rec.marker
+    let rec = this._destinationRecord(id)
+    if (!rec) {
+      const latInp = form.querySelector('#destination_lat')
+      const lngInp = form.querySelector('#destination_lng')
+      const lat = latInp ? parseFloat(latInp.value) : NaN
+      const lng = lngInp ? parseFloat(lngInp.value) : NaN
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const nameInp = form.querySelector('#destination_name')
+        rec = { lngLat: [lng, lat], name: nameInp ? nameInp.value : '' }
+      }
+    }
+
+    if (rec) this._showDomMarker(id, { name: rec.name, lngLat: rec.lngLat, active: true })
+
+    const marker = this._domMarker
     if (toggleButton) {
-      if (!rec || !marker || typeof marker.setDraggable !== 'function') {
+      if (!marker || typeof marker.setDraggable !== 'function') {
         toggleButton.classList.add('d-none')
         this._applyPositionDragToggleUi(toggleButton, false)
         return
@@ -624,10 +789,10 @@ export default class extends Controller {
       toggleButton.classList.remove('d-none')
       this._applyPositionDragToggleUi(toggleButton, false)
     }
-    if (!rec || !marker || typeof marker.setDraggable !== 'function') return
+    if (!marker || typeof marker.setDraggable !== 'function') return
 
     const dragEndHandler = () => {
-      this._syncPositionFromMarker(id, marker, rec)
+      this._syncPositionFromMarker(id, marker)
     }
 
     marker.on('dragend', dragEndHandler)
@@ -731,15 +896,10 @@ export default class extends Controller {
   }
 
   _removeDestinationMarker (idStr) {
-    const markersById = this._markersById || {}
-    const rec = markersById[idStr]
-    if (!rec) return
-    try {
-      rec.marker.remove()
-    } catch (e) { /* ignore */ }
-    delete markersById[idStr]
+    if (this._domMarkerId === String(idStr)) this._removeDomMarker()
+    if (this._mapLayers) this._mapLayers.removeDestination(idStr)
     if (this._iconOverStack) {
-      this._iconOverStack = this._iconOverStack.filter((id) => id !== idStr)
+      this._iconOverStack = this._iconOverStack.filter((id) => id !== String(idStr))
     }
   }
 
@@ -750,7 +910,7 @@ export default class extends Controller {
     if (!frame) return
     frame.replaceChildren()
     const p = document.createElement('p')
-    p.className = 'v2-form-sidebar-placeholder text-muted small mb-0'
+    p.className = 'form-sidebar-placeholder text-muted small mb-0'
     p.textContent = this._formSidebarPlaceholder
     frame.appendChild(p)
     this._teardownPositionEdit()
@@ -759,38 +919,104 @@ export default class extends Controller {
   _initSearch (signal) {
     const form = this.element.querySelector('#destinations-search-form')
     const input = this.element.querySelector('#search-query')
+    const wrapper = this.element.querySelector('.destinations-search-wrapper')
+    const badges = this.element.querySelector('#search-filters-badges')
     if (!form || !input) return
+
+    const draftFilterValue = () => {
+      const key = (input.dataset.filterKeyDraft || '').trim()
+      const value = input.value.trim()
+      if (!key || !value) return null
+      return `${key}:${value}`
+    }
+
+    const hasCommittedFilter = (raw) => Array.from(form.querySelectorAll('input[name="filters[]"]')).some((field) => field.value === raw)
+
+    const addCommittedFilter = (raw) => {
+      if (!raw || hasCommittedFilter(raw)) return
+
+      const field = document.createElement('input')
+      field.type = 'hidden'
+      field.name = 'filters[]'
+      field.value = raw
+      form.appendChild(field)
+
+      if (!badges) return
+      const badge = document.createElement('span')
+      badge.className = 'badge bg-primary me-1 mb-1 search-filter-badge'
+      badge.dataset.filter = raw
+      badge.append(document.createTextNode(raw))
+
+      const removeBtn = document.createElement('button')
+      removeBtn.type = 'button'
+      removeBtn.className = 'ms-1 text-white search-filter-badge-remove'
+      removeBtn.dataset.removeFilter = raw
+      removeBtn.setAttribute('aria-label', `Remove filter ${raw}`)
+      const icon = document.createElement('i')
+      icon.className = 'fa fa-times'
+      removeBtn.appendChild(icon)
+      badge.appendChild(removeBtn)
+      badges.appendChild(badge)
+    }
+
+    const removeCommittedFilter = (raw) => {
+      Array.from(form.querySelectorAll('input[name="filters[]"]')).forEach((field) => {
+        if (field.value === raw) field.remove()
+      })
+      if (badges) {
+        badges.querySelectorAll('.search-filter-badge').forEach((badge) => {
+          if (badge.dataset.filter === raw) badge.remove()
+        })
+      }
+    }
 
     const submitForm = (additionalFilters = []) => {
       if (additionalFilters.length) {
-        additionalFilters.forEach((raw) => {
-          const field = document.createElement('input')
-          field.type = 'hidden'
-          field.name = 'filters[]'
-          field.value = raw
-          form.appendChild(field)
-        })
+        additionalFilters.forEach((raw) => addCommittedFilter(raw))
         input.value = ''
+        input.dataset.filterKeyDraft = ''
+        if (wrapper) wrapper.dispatchEvent(new CustomEvent('filtered-search:clear-draft'))
       }
-      form.submit()
+      const url = this._buildDestinationsIndexUrl()
+      visit(url, { frame: 'destinations_list', action: 'advance' })
+      this._clearDestinationHighlight()
+      if (this._mapLayers) this._mapLayers.reload({ fitBounds: true })
     }
 
     input.addEventListener('input', () => {
       clearTimeout(this._searchDebounce)
       this._searchDebounce = setTimeout(() => {
         this._searchDebounce = null
-        if (!hasMinCharsForSearch(input.value)) return
-        submitForm()
       }, DEBOUNCE_MS)
     }, { signal })
 
     input.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return
       e.preventDefault()
+      const draftFilter = draftFilterValue()
+      if (draftFilter) {
+        submitForm([draftFilter])
+        return
+      }
       const val = input.value.trim()
       const filters = parseKeyValueFilters(val)
       if (filters.length) submitForm(filters.map((f) => f.raw))
       else if (hasMinCharsForSearch(val)) submitForm()
     }, { signal })
+
+    if (badges) {
+      badges.addEventListener('click', (e) => {
+        const removeBtn = e.target.closest('[data-remove-filter]')
+        if (!removeBtn) return
+        e.preventDefault()
+        const raw = removeBtn.getAttribute('data-remove-filter')
+        if (!raw) return
+        removeCommittedFilter(raw)
+        const url = this._buildDestinationsIndexUrl({ page: 1 })
+        visit(url, { frame: 'destinations_list', action: 'advance' })
+        this._clearDestinationHighlight()
+        if (this._mapLayers) this._mapLayers.reload({ fitBounds: true })
+      }, { signal })
+    }
   }
 }

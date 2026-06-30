@@ -9,6 +9,7 @@ layer_one:
   url: /favicon.ico
   attribution: MyString
   urlssl: /favicon.ico
+  vector_url:
 
 layer_two:
   source: here

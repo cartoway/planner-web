@@ -22,17 +22,112 @@ module DestinationsHelper
     base.merge(overrides)
   end
 
-  # Placeholder example for search input (uses localized keys).
+  # Placeholder example for search input (localized key names).
   def destinations_search_placeholder
-    name_key = I18n.t('destinations.index.search_keys.name', default: 'name')
-    city_key = I18n.t('destinations.index.search_keys.city', default: 'city')
-    "#{name_key}:Paris #{city_key}:Lyon"
+    I18n.t(
+      'destinations.index.search_placeholder',
+      name_key: I18n.t('destinations.index.search_keys.name'),
+      city_key: I18n.t('destinations.index.search_keys.city')
+    )
+  end
+
+  # Search filter keys exposed in the filtered-search dropdown.
+  def destinations_search_filter_options
+    DestinationSearchParser::ALLOWED_KEYS.map do |key|
+      {
+        key: key,
+        localized_key: I18n.t("destinations.index.search_keys.#{key}", default: key)
+      }
+    end
   end
 
   # Params for URL when removing a filter badge (excludes the given filter, resets to page 1).
   def destinations_index_params_without_filter(filter_to_remove)
     remaining = Array(params[:filters]).compact.reject { |f| f.to_s == filter_to_remove.to_s }
     destinations_index_params(filters: remaining, page: 1)
+  end
+
+  # Column ids available for the destinations index table (customer-dependent).
+  def destinations_list_allowed_column_ids(customer)
+    ::Preferences::Catalog.destinations_list_allowed_column_ids(customer)
+  end
+
+  # Active column ids for the destinations index (user preference, filtered by customer).
+  def destinations_list_active_column_ids(customer)
+    allowed = destinations_list_allowed_column_ids(customer)
+    active =
+      if user_signed_in? && current_user.respond_to?(:destinations_list_active_column_ids) && !current_user.admin?
+        current_user.destinations_list_active_column_ids
+      else
+        ::Preferences::Catalog::DestinationsList.default_active_for(customer)
+      end
+    ::Preferences::Catalog.filter_order(active, allowed)
+  end
+
+  def destinations_list_columns_selector_options(customer)
+    active_ids = destinations_list_active_column_ids(customer)
+    destinations_list_allowed_column_ids(customer).map do |id|
+      { id: id, label: destinations_list_column_label(id), active: active_ids.include?(id) }
+    end
+  end
+
+  def destinations_list_column_label(column_id)
+    I18n.t("display_ui.destinations_list_columns.#{column_id}", default: column_id.to_s.humanize)
+  end
+
+  def destinations_list_formatted_address(destination)
+    [destination.street, destination.postalcode, destination.city, destination.country].compact.join(' ')
+  end
+
+  def destinations_list_phone_link(destination)
+    return nil if destination.phone_number.blank?
+
+    href =
+      if current_user.url_click2call.present?
+        current_user.link_phone_number.sub('{TEL}', destination.phone_number.to_s)
+      else
+        "tel:#{destination.phone_number}"
+      end
+    link_to destination.phone_number, href, class: 'text-nowrap'
+  end
+
+  def destinations_list_geocoding_level_title(destination)
+    return nil if destination.geocoding_level.blank?
+
+    "#{I18n.t('activerecord.attributes.destination.geocoding_level')} : #{I18n.t("destinations.form.geocoding_level.#{destination.geocoding_level}")}"
+  end
+
+  def destinations_list_geocoding_level_icon_class(destination)
+    case destination.geocoding_level&.to_s
+    when 'point' then 'fa-map-marker'
+    when 'house' then 'fa-store'
+    when 'street' then 'fa-road'
+    when 'intersection' then 'fa-times'
+    when 'city' then 'fa-exclamation-triangle'
+    end
+  end
+
+  def destinations_list_geocoding_result_free(destination)
+    result = destination.geocoding_result
+    return nil unless result.is_a?(Hash)
+
+    result['free'].presence
+  end
+
+  def destinations_list_geocoding_accuracy_percent(destination)
+    return nil unless destination.geocoding_accuracy
+
+    ((destination.geocoding_accuracy || 0) * 100).round
+  end
+
+  # Unique visit tags across all visits of the destination.
+  def destinations_list_visit_tags(destination)
+    destination.visits.flat_map(&:tags).uniq(&:id).sort_by(&:label)
+  end
+
+  # Unique visit category labels (tags) across all visits of the destination.
+  def destinations_list_visit_tags_labels(destination)
+    destinations_list_visit_tags(destination).map(&:label)
   end
 
   def csv_column_titles(customer, options = {})

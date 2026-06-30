@@ -3,7 +3,12 @@
 
 export function tileUrlForRaster (url) {
   if (!url) return url
-  return String(url).replace(/\{s\}/g, 'a')
+  let normalized = String(url).replace(/\{s\}/g, 'a')
+  // MapLibre fetches raster tiles with XHR/fetch; HTTP tile servers often 301 to HTTPS without CORS headers.
+  if (normalized.startsWith('http://')) {
+    normalized = `https://${normalized.slice('http://'.length)}`
+  }
+  return normalized
 }
 
 export function pickLayers (mapLayers) {
