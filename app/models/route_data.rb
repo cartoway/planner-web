@@ -4,6 +4,28 @@ class RouteData < ApplicationRecord
   include QuantityAttr
   quantity_attr :pickups, :deliveries
 
+  attribute :hidden, :boolean, default: false
+  attribute :size_active, :integer, default: 0
+  attribute :size_destinations, :integer, default: 0
+  attribute :size_store_reloads, :integer, default: 0
+  attribute :stops_size, :integer, default: 0
+  attribute :size_active_destinations, :integer, default: 0
+  attribute :no_geolocalization, :boolean, default: false
+  attribute :no_path, :boolean, default: false
+  attribute :out_of_capacity, :boolean, default: false
+  attribute :out_of_drive_time, :boolean, default: false
+  attribute :out_of_force_position, :boolean, default: false
+  attribute :out_of_max_distance, :boolean, default: false
+  attribute :out_of_max_reload, :boolean, default: false
+  attribute :out_of_max_ride_distance, :boolean, default: false
+  attribute :out_of_max_ride_duration, :boolean, default: false
+  attribute :out_of_relation, :boolean, default: false
+  attribute :out_of_skill, :boolean, default: false
+  attribute :out_of_window, :boolean, default: false
+  attribute :out_of_work_time, :boolean, default: false
+  attribute :unmanageable_capacity, :boolean, default: false
+  attribute :max_loads, default: {}
+
   include LocalizedAttr
 
   attr_localized :pickups

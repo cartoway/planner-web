@@ -445,7 +445,7 @@ class Route < ApplicationRecord
           previous_route_data.assign_attributes(previous_route_data_attributes.compact)
 
           # reset route data attributes
-          previous_route_data_attributes = init_store_route_data_attributes
+          previous_route_data_attributes = init_store_route_data_attributes.merge(init_load_route_data_attributes)
           previous_route_data_attributes[:start] = route_attributes[:end]
 
           previous_route_data = stop.route_data
