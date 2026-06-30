@@ -29,43 +29,18 @@ class DestinationsController < ApplicationController
   before_action -> { deny_unless_form_update!(:destination) }, only: [:clear]
   before_action -> { deny_unless_form_create!(:destination) }, only: [:upload_csv, :upload_tomtom]
 
-  load_and_authorize_resource
+  load_and_authorize_resource except: [:map, :list_columns]
 
   # visits/_form and v2/visits/_form iterate @visit_custom_attributes; keep it set for v1 and v2 destination flows.
   before_action :assign_visit_custom_attributes, only: [:new, :edit, :create, :update, :append_visit]
+  before_action -> { authorize! :index, Destination }, only: [:map]
 
   def index
     @customer = current_user.customer
     respond_to do |format|
       format.html do
-        per_page = (params[:per_page] || 25).to_i.clamp(1, 100)
-        page = [params[:page].to_i, 1].max
-        scope = current_user.customer.destinations
-                            .reorder('geocoding_accuracy ASC NULLS LAST')
-                            .includes([:tags, visits: :tags])
-
-        # Key:value search - badges (from Enter) + live query (from params[:q])
-        @active_filters = Array(params[:filters]).compact.map(&:strip).reject(&:blank?)
-        conditions = @active_filters.flat_map { |f| DestinationSearchParser.parse(f) }
-        conditions += DestinationSearchParser.parse(params[:q]) if params[:q].to_s.strip.present?
-        scope = DestinationSearchScope.apply(scope, conditions) if conditions.any?
-
-        @total_count = scope.count
-        @destinations = scope.offset((page - 1) * per_page).limit(per_page)
-        @tags = current_user.customer.tags
-        @pagination = { page: page, per_page: per_page, total: @total_count }
-        @search_query = params[:q].to_s.strip
-
+        load_destinations_index_page
         frame_list = turbo_frame_request? && turbo_frame_request_id == 'destinations_list'
-
-        unless frame_list
-          # Map pins for all geolocated rows in the filtered scope (not only the current page), with list page
-          # so marker clicks can open the correct pagination and highlight the table row.
-          id_to_page = scope.pluck(:id).each_with_index.to_h { |did, idx| [did, (idx / per_page) + 1] }
-          @v2_map_destinations = scope.where.not(lat: nil).where.not(lng: nil).pluck(:id, :lat, :lng, :name).map do |did, la, ln, name|
-            { id: did, lat: la.to_f, lng: ln.to_f, name: name.to_s, page: id_to_page[did] || 1 }
-          end
-        end
 
         if frame_list
           render partial: 'v2/destinations/list_frame', layout: false
@@ -96,6 +71,25 @@ class DestinationsController < ApplicationController
         response.headers['Content-Disposition'] = 'attachment; filename="' + format_filename(t('activerecord.models.destinations.other')) + '.csv"'
       end
     end
+  end
+
+  def list_columns
+    authorize! :index, Destination
+    @customer = current_user.customer
+    allowed = ::Preferences::Catalog.destinations_list_allowed_column_ids(@customer)
+    active = Array(params[:active]).map(&:to_s) & allowed
+    hidden = Array(params[:hidden]).map(&:to_s) & allowed
+    hidden = (allowed - active) if hidden.empty? && active.any?
+    current_user.apply_self_service_display_ui!(
+      headers_params: { destinations_list: { active: active, hidden: hidden } }
+    )
+    unless current_user.save
+      head :unprocessable_entity
+      return
+    end
+
+    load_destinations_index_page
+    render partial: 'v2/destinations/list_frame', layout: false
   end
 
   def show
@@ -264,7 +258,68 @@ class DestinationsController < ApplicationController
     end
   end
 
+  # GeoJSON for the v2 map (clustered layers, optional bbox / bounds-only).
+  def map
+    scope = destinations_filtered_scope
+    render json: DestinationsMapGeojson.build(
+      scope: scope,
+      per_page: destinations_index_per_page,
+      bbox: parse_map_bbox_param,
+      highlight_id: params[:highlight_destination_id],
+      bounds_only: ActiveModel::Type::Boolean.new.cast(params[:bounds_only])
+    )
+  end
+
   private
+
+  def load_destinations_index_page
+    per_page = destinations_index_per_page
+    page = [params[:page].to_i, 1].max
+    scope = destinations_filtered_scope.includes([:tags, visits: :tags])
+
+    @total_count = scope.count
+    @destinations = scope.offset((page - 1) * per_page).limit(per_page)
+    @tags = current_user.customer.tags
+    @pagination = { page: page, per_page: per_page, total: @total_count }
+    @search_query = params[:q].to_s.strip
+    @active_filters = destinations_index_active_filters
+    allowed = ::Preferences::Catalog.destinations_list_allowed_column_ids(@customer)
+    active = current_user.destinations_list_active_column_ids
+    @destinations_list_columns = ::Preferences::Catalog.filter_order(active, allowed)
+  end
+
+  def destinations_index_per_page
+    (params[:per_page] || 25).to_i.clamp(1, 100)
+  end
+
+  def destinations_index_active_filters
+    Array(params[:filters]).compact.map(&:strip).reject(&:blank?)
+  end
+
+  def destinations_index_search_conditions
+    conditions = destinations_index_active_filters.flat_map { |f| DestinationSearchParser.parse(f) }
+    conditions += DestinationSearchParser.parse(params[:q]) if params[:q].to_s.strip.present?
+    conditions
+  end
+
+  def destinations_filtered_scope
+    scope = current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST')
+    conditions = destinations_index_search_conditions
+    scope = DestinationSearchScope.apply(scope, conditions) if conditions.any?
+    scope
+  end
+
+  # west, south, east, north
+  def parse_map_bbox_param
+    if params[:bbox].present?
+      parts = params[:bbox].to_s.split(',').map(&:to_f)
+      return parts if parts.size == 4 && parts.all?(&:finite?)
+    elsif %w[west south east north].all? { |k| params[k].present? }
+      parts = %w[west south east north].map { |k| params[k].to_f }
+      return parts if parts.all?(&:finite?)
+    end
+    nil
+  end
 
   def build_visit_to_append
     last = @destination.visits.reorder(id: :desc).first

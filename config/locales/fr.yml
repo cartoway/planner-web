@@ -1523,8 +1523,14 @@ fr:
       collapse_list: Réduire la liste
       expand_list: Afficher la liste
       map_overlay_layers: Couches superposées
+      map_decluster_viewport: Déclusteriser la vue
       select_all: Tout sélectionner
+      search_label: Recherche
+      search_placeholder: '%{name_key}:Paris %{city_key}:Lyon'
+      search_dropdown_label: Choisissez une clé de filtre
       search_help: 'Syntaxe : champ:valeur (ex. nom:Paris, ville:Lyon)'
+      columns: Colonnes
+      columns_help: Cochez les colonnes à afficher dans la liste.
       remove_filter: Retirer ce filtre
       search_keys:
         ref: ref
@@ -1541,7 +1547,6 @@ fr:
       new: Nouvelle adresse
       show: Voir la liste complète (%{count})
       default_name: Nouvelle adresse
-      search_help: 'Syntaxe : field:value (ex. name:Paris, city:Lyon)'
       columns: Colonnes
       no_position: manquant
       geocoding_level: Niveau de géocodage
@@ -2917,6 +2922,8 @@ fr:
         planning_headers: Données planning
         stop_list: Libellé des arrêts
         stop_list_help: Permet de peronnaliser le libellé affiché pour chaque arrêt au sein des tournées. Faites glisser les champs entre les listes. Au plus trois éléments peuvent être actifs ; l’ordre dans la liste "Actives" est utilisé de gauche à droite (séparé par «  - »).
+        destinations_list: Colonnes liste adresses
+        destinations_list_help: Permet de personnaliser les colonnes affichées dans la liste des adresses. Faites glisser les colonnes entre les listes ; l’ordre dans « Actives » est respecté de gauche à droite.
         route_headers: Données tournées
         planning_toolbar: Outils planning
         route_toolbar: Outils tournées
@@ -3673,6 +3680,16 @@ fr:
       tags_visit: Catégories visite
       eta: ETA
       status: Statut
+    destinations_list_columns:
+      name: Nom
+      address: Adresse
+      ref: Référence
+      geocoding: Géocodage
+      comment: Commentaire
+      phone_number: Téléphone
+      tags: Catégories
+      visit_tags: Catégories visites
+      visits: Visites
     header_blocks:
       stops: Arrêts
       total_duration: Durée totale de tournée
@@ -3713,3 +3730,11 @@ fr:
       active_stop: Activer/désactiver l'arrêt
       move_stop: Déplacer l'arrêt
       lock_stop: Verrouiller l'arrêt
+  design_system:
+    forms_preview:
+      filtered_search:
+        title: Recherche filtrée
+        description_html: >-
+          Composant réutilisable pour l'index destinations. Cliquez ou focussez le champ pour ouvrir le menu des clés,
+          puis choisissez une clé pour insérer un jeton <code>clé:</code>. Tapez pour filtrer la liste, <kbd>Échap</kbd> pour fermer.
+        hint: 'Exemples de clés : nom, ville, tags, ref_visite.'

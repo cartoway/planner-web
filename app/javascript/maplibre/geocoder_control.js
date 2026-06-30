@@ -3,10 +3,10 @@
 // Reusable on any page that loads MapLibre GL and Bootstrap-ish markup.
 
 const DEFAULT_CLASSES = {
-  root: 'maplibregl-ctrl maplibregl-ctrl-group cartoway-maplibre-geocoder',
-  form: 'cartoway-maplibre-geocoder-form input-group input-group-sm',
-  results: 'cartoway-maplibre-geocoder-results list-unstyled d-none',
-  resultItem: 'cartoway-maplibre-geocoder-result px-2 py-1'
+  root: 'maplibregl-ctrl maplibregl-ctrl-group maplibre-geocoder',
+  form: 'maplibre-geocoder-form input-group input-group-sm',
+  results: 'maplibre-geocoder-results list-unstyled d-none',
+  resultItem: 'maplibre-geocoder-result px-2 py-1'
 }
 
 /**

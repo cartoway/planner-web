@@ -1,0 +1,96 @@
+// Copyright © Cartoway
+// Shared open/close transition for sliding panels (destinations list overlay, form sidebar, …).
+
+$slide-panel-duration: 0.22s;
+$slide-panel-easing: ease;
+
+@mixin slide-panel-motion {
+  transition:
+    flex-basis $slide-panel-duration $slide-panel-easing,
+    max-width $slide-panel-duration $slide-panel-easing,
+    min-width $slide-panel-duration $slide-panel-easing,
+    max-height $slide-panel-duration $slide-panel-easing,
+    transform $slide-panel-duration $slide-panel-easing,
+    opacity $slide-panel-duration $slide-panel-easing,
+    border-color $slide-panel-duration $slide-panel-easing,
+    box-shadow $slide-panel-duration $slide-panel-easing,
+    visibility 0s linear 0s;
+}
+
+@mixin slide-panel-collapsed-motion {
+  transition:
+    flex-basis $slide-panel-duration $slide-panel-easing,
+    max-width $slide-panel-duration $slide-panel-easing,
+    min-width $slide-panel-duration $slide-panel-easing,
+    max-height $slide-panel-duration $slide-panel-easing,
+    transform $slide-panel-duration $slide-panel-easing,
+    opacity $slide-panel-duration $slide-panel-easing,
+    border-color $slide-panel-duration $slide-panel-easing,
+    box-shadow $slide-panel-duration $slide-panel-easing,
+    visibility 0s linear $slide-panel-duration;
+}
+
+.slide-panel {
+  @include slide-panel-motion;
+  overflow: hidden;
+  visibility: visible;
+  pointer-events: auto;
+
+  &--collapsed {
+    @include slide-panel-collapsed-motion;
+    pointer-events: none;
+    visibility: hidden;
+    box-shadow: none;
+  }
+
+  // Absolute overlay sliding off the left edge (destinations list).
+  &--from-left {
+    transform: translateX(0);
+    opacity: 1;
+
+    &.slide-panel--collapsed {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+  }
+
+  // Absolute overlay sliding off the right edge (form sidebar).
+  &--from-right {
+    transform: translateX(0);
+    opacity: 1;
+
+    &.slide-panel--collapsed {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+}
+
+.slide-panel-expand-trigger {
+  opacity: 0;
+  pointer-events: none;
+  @include slide-panel-motion;
+
+  &.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide-panel {
+    transition: none !important;
+
+    &--from-left.slide-panel--collapsed {
+      transform: none;
+    }
+
+    &--from-right.slide-panel--collapsed {
+      transform: none;
+    }
+  }
+
+  .slide-panel-expand-trigger {
+    transition: none !important;
+  }
+}

@@ -36,6 +36,11 @@ module PreferencesCatalogSplits
       h = Preferences::Catalog::StopList.normalize_zone(z)
       return [h['active'], h['hidden']]
     end
+    if k == 'destinations_list'
+      z = read_headers_hash['destinations_list']
+      h = Preferences::Catalog::DestinationsList.normalize_zone(z)
+      return [h['active'], h['hidden']]
+    end
 
     allowed = k == 'route' ? Preferences::Catalog::HEADER_ROUTE : Preferences::Catalog::HEADER_PLANNING
     z = read_headers_hash[k]

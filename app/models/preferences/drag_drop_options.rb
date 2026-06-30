@@ -59,6 +59,21 @@ module Preferences
       )
     end
 
+    def destinations_list_zone_options(param_prefix)
+      p = param_prefix.to_s
+      BASE.merge(
+        minActiveItems: 1,
+        columns: [
+          { containerSelector: '.destinations-list-tier-active .item-list', inputName: "#{p}[headers][destinations_list][active][]" },
+          {
+            containerSelector: '.destinations-list-tier-hidden .item-list',
+            inputName: "#{p}[headers][destinations_list][hidden][]",
+            inactive: true
+          }
+        ]
+      )
+    end
+
     def operations_three_zone_options(param_prefix, zone_key)
       p = param_prefix.to_s
       z = zone_key.to_s

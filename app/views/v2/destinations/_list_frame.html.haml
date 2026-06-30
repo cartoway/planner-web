@@ -1,5 +1,7 @@
 -# V2 destinations index list + pagination — wrapped for Turbo Frame partial updates (see destinations#index).
 - can_destroy_destinations = current_user_form_destroy_enabled?(:destination)
+- list_columns = @destinations_list_columns || destinations_list_active_column_ids(@customer)
+- empty_colspan = 2 + list_columns.size
 = turbo_frame_tag "destinations_list" do
   .d-flex.justify-content-between.align-items-center.mb-2.p-3
     .d-flex.gap-2.align-items-center
@@ -9,12 +11,8 @@
       %button.btn.btn-danger.btn-sm.destinations-bulk-delete{type: "button", disabled: !can_destroy_destinations, title: t('all.verb.destroy_selection')}
         %i.fa.fa-trash.fa-fw
         = t('all.verb.destroy_selection')
+      = render 'v2/destinations/list_column_selector'
     %span#count= "#{@destinations.size} / #{@total_count} #{t 'activerecord.models.destinations', count: @total_count}"
-  %button.btn.btn-light.btn-sm.destinations-sidebar-toggle{type: "button", title: t('destinations.index.collapse_list', default: 'Réduire la liste')}
-    %i.fa.fa-chevron-left
-  .destinations-sidebar-expand.d-none
-    %button.btn.btn-light.btn-sm{type: "button", title: t('destinations.index.expand_list', default: 'Afficher la liste')}
-      %i.fa.fa-chevron-right
   #destination_box.destinations-list-scroll
     .table-responsive
       %table.table.table-striped.table-condensed
@@ -23,12 +21,8 @@
             %th.destinations-selection-col
               %button.btn.btn-light.btn-xs.destinations-toggle-selection{type: "button", title: t('all.verb.toggle_selection')}
                 %i.fa.fa-check.fa-fw
-            %th= t 'activerecord.attributes.destination.name'
-            %th= t 'activerecord.attributes.destination.address'
-            - if @customer.enable_references
-              %th= t 'activerecord.attributes.destination.ref_small'
-            %th= t 'activerecord.attributes.destination.geocoding_accuracy_small'
-            %th= t 'activerecord.models.visit'
+            - list_columns.each do |column_id|
+              %th= destinations_list_column_label(column_id)
             %th
         %tbody
           - if @destinations.any?
@@ -36,16 +30,8 @@
               %tr.destination{data: {destination_id: destination.id, lat: destination.lat, lng: destination.lng}}
                 %td.destinations-selection-col
                   %input{type: "checkbox", id: "destination_#{destination.id}", name: "destinations[#{destination.id}]", value: "1"}
-                %td= destination.name
-                %td= [destination.street, destination.postalcode, destination.city, destination.country].compact.join(' ')
-                - if @customer.enable_references
-                  %td= destination.ref
-                %td
-                  - if destination.geocoding_accuracy
-                    = number_to_percentage(destination.geocoding_accuracy * 100, precision: 0)
-                  - else
-                    –
-                %td= "#{destination.visits.count} #{t 'activerecord.models.visits', count: destination.visits.count}"
+                - list_columns.each do |column_id|
+                  = render 'v2/destinations/list_column_cell', destination: destination, column_id: column_id
                 %td.text-nowrap
                   .btn-group.btn-group-sm{role: "group"}
                     = link_to edit_destination_path(destination), class: 'btn btn-light btn-xs', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
@@ -54,7 +40,7 @@
                       %i.fa.fa-trash.fa-fw
           - else
             %tr
-              %td.text-center.text-muted{colspan: (@customer.enable_references ? 7 : 6)}
+              %td.text-center.text-muted{colspan: empty_colspan}
                 = t 'api_web.v01.destinations.index.none_destinations', default: 'Aucune destination trouvée'
 
     - if @pagination[:per_page].positive? && @pagination[:total] > @pagination[:per_page]
