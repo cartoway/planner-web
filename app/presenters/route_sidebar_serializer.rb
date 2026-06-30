@@ -358,7 +358,7 @@ class RouteSidebarSerializer
         departure_day: stop.time && stop.store_reload ? @view_helpers.number_of_days(stop.time.to_i + stop.store_reload.default_duration.to_i) : nil,
         status_updated_at: stop.status_updated_at && @view_helpers.l(stop.status_updated_at, format: :hour_minute)
       },
-      route_data: serialize_route_data(rd),
+      route_data: serialize_route_data(rd, sub_tour: true),
       status: (rd&.status || stop.status) && I18n.t("plannings.edit.stop_store_status.#{(rd&.status || stop.status).downcase}", default: rd&.status || stop.status),
       status_code: (rd&.status || stop.status)&.downcase
     )
@@ -430,8 +430,10 @@ class RouteSidebarSerializer
     }
   end
 
-  def serialize_route_data(route_data, vehicle: @route.vehicle_usage&.vehicle)
+  def serialize_route_data(route_data, vehicle: @route.vehicle_usage&.vehicle, sub_tour: false)
     return {} unless route_data
+
+    work_duration_seconds = sub_tour ? route_data.work_duration.to_i : @route.work_duration
 
     {
       id: route_data.id,
@@ -456,13 +458,16 @@ class RouteSidebarSerializer
       hidden: route_data.hidden,
       color: route_data.color,
       duration: route_data.duration && @view_helpers.time_over_day(route_data.duration),
-      expected_total_duration: @route.total_duration.positive? ? @view_helpers.time_over_day(@route.total_duration) : nil,
-      work_duration: @route.work_duration.positive? ? @view_helpers.time_over_day(@route.work_duration) : nil,
+      expected_total_duration: sub_tour ? nil : (@route.total_duration.positive? ? @view_helpers.time_over_day(@route.total_duration) : nil),
+      work_duration: work_duration_seconds.positive? ? @view_helpers.time_over_day(work_duration_seconds) : nil,
       distance: @view_helpers.locale_distance(route_data.distance || 0, @view_helpers.current_user.prefered_unit),
-      route_out_of_drive_time: @route.stop_out_of_drive_time,
-      route_out_of_work_time: @route.stop_out_of_work_time,
-      route_out_of_max_distance: @route.stop_out_of_max_distance,
-      work_or_window_time: @route.vehicle_usage&.work_or_window_time,
+      route_out_of_drive_time: sub_tour ? route_data.out_of_drive_time : @route.stop_out_of_drive_time,
+      route_out_of_work_time: sub_tour ? route_data.out_of_work_time : @route.stop_out_of_work_time,
+      route_out_of_max_distance: sub_tour ? route_data.out_of_max_distance : @route.stop_out_of_max_distance,
+      route_out_of_window: sub_tour ? route_data.out_of_window : @route.out_of_window,
+      out_of_window: route_data.out_of_window,
+      out_of_max_reload: route_data.out_of_max_reload,
+      work_or_window_time: sub_tour ? nil : @route.vehicle_usage&.work_or_window_time,
       route_averages: serialize_route_data_averages(route_data),
       quantities: vehicle ? @view_helpers.route_data_quantities(route_data, vehicle) : []
     }

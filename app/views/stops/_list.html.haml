@@ -41,6 +41,8 @@
             .title
               - if !stop[:geocoded]
                 %i.fa.fa-map-marker.fa-fw{title: t("plannings.edit.error.no_geolocalization")}
+              - if stop[:out_of_window]
+                %i.fa.fa-stopwatch.fa-fw{title: t("plannings.edit.error.out_of_window_help")}
               - if stop[:no_path]
                 %i.fa.fa-road.fa-fw{title: t("plannings.edit.error.no_path")}
               - if stop[:out_of_max_reload]
