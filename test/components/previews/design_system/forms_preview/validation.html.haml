@@ -1,0 +1,10 @@
+.container.py-4
+  %h1.h4.mb-4 Validation states
+  .mb-3
+    %label.form-label{:for => "ds-valid"} Valid
+    %input#ds-valid.form-control.is-valid{:autocomplete => "off", :type => "text", :value => "OK"}/
+    .valid-feedback Looks good.
+  .mb-0
+    %label.form-label{:for => "ds-invalid"} Invalid
+    %input#ds-invalid.form-control.is-invalid{:autocomplete => "off", :type => "text", :value => "Bad"}/
+    .invalid-feedback Please correct this field.

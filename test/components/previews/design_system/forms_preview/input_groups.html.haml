@@ -1,0 +1,20 @@
+.container.py-4
+  %h1.h4.mb-4 Input groups
+  .mb-3
+    %label.form-label{:for => "ds-ig1"} With leading icon (Bootstrap 5)
+    .input-group
+      %span.input-group-text
+        %i.fa.fa-map.fa-fw{"aria-hidden" => "true"}
+      %input#ds-ig1.form-control{:autocomplete => "off", :placeholder => "Address line", :type => "text"}/
+  .mb-3
+    %label.form-label{:for => "ds-ig2"} Lat / Lng
+    .input-group
+      %input.form-control{"aria-label" => "Latitude", :autocomplete => "off", :placeholder => "Latitude", :type => "text"}/
+      %input.form-control{"aria-label" => "Longitude", :autocomplete => "off", :placeholder => "Longitude", :type => "text"}/
+      %span.input-group-text
+        %i.fa.fa-globe.fa-fw{"aria-hidden" => "true"}
+  .mb-0
+    %label.form-label{:for => "ds-float"} Floating label
+    .form-floating
+      %input#ds-float.form-control{:autocomplete => "off", :placeholder => "name@example.com", :type => "email"}/
+      %label{:for => "ds-float"} Email

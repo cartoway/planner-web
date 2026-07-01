@@ -1,0 +1,20 @@
+.container.py-4
+  %h1.h4.mb-4 Button groups
+  .btn-group.mb-3{"aria-label" => "btn-light group (v2 neutral)", :role => "group"}
+    %button.btn.btn-light{:type => "button"} Left
+    %button.btn.btn-light{:type => "button"} Middle
+    %button.btn.btn-light{:type => "button"} Right
+  .btn-group.mb-3{"aria-label" => "Disabled group", :role => "group"}
+    %button.btn.btn-outline-secondary{:disabled => "disabled", :type => "button"} Left
+    %button.btn.btn-outline-secondary{:disabled => "disabled", :type => "button"} Middle
+    %button.btn.btn-outline-secondary{:disabled => "disabled", :type => "button"} Right
+  .btn-group.mb-3{"aria-label" => "Basic example", :role => "group"}
+    %button.btn.btn-outline-secondary{:type => "button"} Left
+    %button.btn.btn-outline-secondary{:type => "button"} Middle
+    %button.btn.btn-outline-secondary{:type => "button"} Right
+  .btn-group{"aria-label" => "Pagination-like", :role => "group"}
+    %button.btn.btn-secondary.btn-sm{:disabled => "disabled", :type => "button"}
+      %i.fa.fa-chevron-left{"aria-hidden" => "true"}
+    %span.btn.btn-secondary.btn-sm.disabled 2 / 5
+    %button.btn.btn-secondary.btn-sm{:type => "button"}
+      %i.fa.fa-chevron-right{"aria-hidden" => "true"}

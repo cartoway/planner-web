@@ -1,0 +1,27 @@
+.container.py-4
+  %h1.h4.mb-2
+    Range inputs (
+    %code> .form-range
+    )
+  %p.text-muted.small.mb-4
+    Bootstrap 5.2+ native range. Styling for v2 lives in
+    %code app/assets/stylesheets/v2/_form_checks_range.scss
+    (imported from
+    = succeed ")," do
+      %code layout_bootstrap_overrides
+    %strong after
+    the Bootstrap 5 CDN so thumb/track match the Cartoway primary colour.
+    Prefer this for new sliders; legacy v1 often used jQuery
+    %code bootstrap-slider
+    inside
+    = succeed "." do
+      %code .input-group .slider
+  .mb-4{:style => "max-width: 28rem;"}
+    %label.form-label{:for => "ds-range-demo"} Volume (example)
+    %input#ds-range-demo.form-range{"aria-valuemax" => "100", "aria-valuemin" => "0", "aria-valuenow" => "35", "aria-valuetext" => "35 percent", :max => "100", :min => "0", :step => "1", :type => "range", :value => "35"}/
+    .d-flex.justify-content-between.small.text-muted
+      %span 0
+      %span 100
+  .mb-0{:style => "max-width: 28rem;"}
+    %label.form-label{:for => "ds-range-disabled"} Disabled
+    %input#ds-range-disabled.form-range{:disabled => "disabled", :max => "10", :min => "0", :type => "range", :value => "4"}/

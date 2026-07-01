@@ -1,0 +1,44 @@
+// Copyright © Cartoway
+// Lookbook-only frame for the destinations list preview (sidebar list demo).
+// List chrome: `v2/_destinations_index.scss` (imported from `lookbook_preview.scss`).
+
+.lookbook-destinations-list-host {
+  #destinations-map-layout.lookbook-destinations-list-demo,
+  #destinations-map-layout-collapsed.lookbook-destinations-list-demo {
+    position: relative;
+    height: min(36rem, 85vh);
+    min-height: 20rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: var(--bs-border-radius, 0.375rem);
+    overflow: hidden;
+
+    .lookbook-destinations-list-map-placeholder {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--bs-secondary-bg, #f8f9fa);
+    }
+
+    .destinations-sidebar {
+      max-width: 100%;
+    }
+
+    .destinations-sidebar-expand.floating-btn.slide-panel-expand-trigger {
+      position: absolute;
+      left: 0.5rem;
+      top: 0.5rem;
+      z-index: 3;
+    }
+  }
+
+  #destinations-map-layout-collapsed.lookbook-destinations-list-demo {
+    height: min(14rem, 40vh);
+    min-height: 10rem;
+
+    .destinations-sidebar-expand.floating-btn.slide-panel-expand-trigger {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+    }
+  }
+}

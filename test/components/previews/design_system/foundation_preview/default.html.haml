@@ -1,0 +1,40 @@
+.container.py-4
+  %h1.h3.mb-2 Design system — overview
+  %p.text-muted.mb-4
+    Lookbook previews use the same shell as documented in
+    %code app/views/layouts/lookbook_preview.html.haml
+    (Bootstrap 5 CDN,
+    = succeed "," do
+      %code v2/layout_bootstrap_overrides
+  .row.g-3
+    .col-md-6
+      .card.h-100.border-0.shadow-sm
+        .card-body
+          %h2.h6.card-title Quick samples
+          .d-flex.flex-wrap.gap-2.mb-3
+            %button.btn.btn-primary.btn-sm{:type => "button"} Primary
+            %button.btn.btn-secondary.btn-sm{:type => "button"} Secondary
+            %button.btn.btn-outline-primary.btn-sm{:type => "button"} Outline
+          %p.small.text-muted.mb-0
+            %i.fa-solid.fa-location-dot.me-1{"aria-hidden" => "true"}
+            Icons via Font Awesome (solid).
+    .col-md-6
+      .alert.alert-info.mb-0.py-2.small{:role => "status"}
+        %strong Tip:
+        v2 screens often combine
+        = succeed "," do
+          %code .btn.btn-sm
+        = succeed "," do
+          %code .table.table-striped.table-condensed
+        %code .row
+        \/
+        = succeed "," do
+          %code .col-*
+        = succeed "." do
+          %strong Grid layout
+        = succeed "," do
+          %code .cartoway-surface-neutral
+        = succeed "," do
+          %code .cartoway-surface-primary-soft
+        = succeed "." do
+          %code .cartoway-surface-success-soft

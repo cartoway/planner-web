@@ -1480,8 +1480,10 @@ en:
       title: Listing destinations
       collapse_list: Collapse list
       expand_list: Expand list
+      cancel_position_drag: Cancel placing pin
       map_overlay_layers: Overlay layers
       map_decluster_viewport: De-cluster visible points
+      map_recluster_viewport: Cluster visible points
       select_all: Select all
       search_label: Search
       search_placeholder: '%{name_key}:Paris %{city_key}:Lyon'

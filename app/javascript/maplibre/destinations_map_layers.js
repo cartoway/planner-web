@@ -136,6 +136,21 @@ export class DestinationsMapLayers {
     this._pushSourceData()
   }
 
+  reclusterViewport () {
+    if (!this._layersReady) return
+    this._declusterViewportActive = false
+    this._pushSourceData()
+  }
+
+  isDeclusterViewportActive () {
+    return this._declusterViewportActive
+  }
+
+  setDeclusterViewportActive (active) {
+    if (active) this.declusterViewport()
+    else this.reclusterViewport()
+  }
+
   _onMoveEnd () {
     this._scheduleFetch()
     if (this._declusterViewportActive) this._pushSourceData()
