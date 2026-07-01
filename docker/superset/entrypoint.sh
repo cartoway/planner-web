@@ -24,13 +24,20 @@ if [ "$INITIALIZED" != "t" ]; then
         --email "$SUPERSET_ADMIN_EMAIL" \
         --password "$SUPERSET_ADMIN_PASSWORD" || true
     superset init || true
-    if [ -f "superset-public-permissions.json" ]; then
-        superset fab import-roles -p superset-public-permissions.json || true
+    PERMISSIONS_FILE="/app/superset-public-permissions.json"
+    if [ ! -f "$PERMISSIONS_FILE" ] && [ -f "/app/pythonpath/superset-public-permissions.json" ]; then
+        PERMISSIONS_FILE="/app/pythonpath/superset-public-permissions.json"
+    fi
+    if [ -f "$PERMISSIONS_FILE" ]; then
+        superset fab import-roles -p "$PERMISSIONS_FILE" || true
     fi
 fi
 
 # Initialize the history_live_routes view
-SQL_FILE="/app/pythonpath/history_live_routes.sql"
+SQL_FILE="/usr/local/share/superset/history_live_routes.sql"
+if [ ! -f "$SQL_FILE" ] && [ -f "/app/pythonpath/history_live_routes.sql" ]; then
+    SQL_FILE="/app/pythonpath/history_live_routes.sql"
+fi
 
 if [ ! -f "$SQL_FILE" ]; then
     echo "Warning: SQL file not found: $SQL_FILE" >&2

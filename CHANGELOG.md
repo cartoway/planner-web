@@ -1,6 +1,9 @@
 # Changelog
 
 ## V109.0.1
+  ### Changed
+  - Bundle Superset entrypoint and initialization assets in Docker image for production startup
+
   ### Fixed
   - Route vehicle selector displayed untranslated router names on load and required two clicks to open
 

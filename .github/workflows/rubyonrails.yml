@@ -88,8 +88,52 @@ jobs:
       id-token: write
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Docker Build and Push
         uses: cartoway/docker-compose-build-push-action@main
         with:
           registry_password: ${{ secrets.GITHUB_TOKEN }}
           service: web
+
+  docker-superset:
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev2'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Superset image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/cartoway/planner-web-superset
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/dev' }}
+
+      - name: Build and push Superset image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker/superset
+          file: ./docker/superset/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
