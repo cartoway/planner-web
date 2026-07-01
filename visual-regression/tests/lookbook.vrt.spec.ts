@@ -34,6 +34,7 @@ const LOOKBOOK_PREVIEWS: { path: string; name: string }[] = [
   { path: 'design_system/layout_chrome/cards_and_placeholder', name: 'layout_chrome-cards_and_placeholder' },
   { path: 'design_system/layout_chrome/list_group', name: 'layout_chrome-list_group' },
   { path: 'design_system/layout_chrome/form_sidebar_chrome', name: 'layout_chrome-form_sidebar_chrome' },
+  { path: 'design_system/layout_chrome/xl_floating_button', name: 'layout_chrome-xl_floating_button' },
   { path: 'design_system/planning_sidebar/default', name: 'planning_sidebar-default' }
 ]
 

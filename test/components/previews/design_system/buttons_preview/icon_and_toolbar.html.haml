@@ -1,0 +1,48 @@
+.container.py-4
+  %h1.h4.mb-4 Icon buttons &amp; toolbar
+  %p.text-muted.small.mb-3
+    Common v2 pattern:
+    %code .btn.btn-sm
+    + Font Awesome
+    = succeed "." do
+      %code .fa-fw
+  .d-flex.flex-wrap.align-items-center.gap-2.mb-4
+    \&lt;%= link_to "#", class: "btn btn-primary btn-sm" do %&gt;
+    %i.fa.fa-plus.fa-fw{"aria-hidden" => "true"}
+    New
+    \&lt;% end %&gt;
+    %button.btn.btn-secondary.btn-sm{:title => "Collapse list", :type => "button"}
+      %i.fa.fa-chevron-left{"aria-hidden" => "true"}
+    %button.btn.btn-outline-secondary.btn-sm{:title => "Edit", :type => "button"}
+      %i.fa.fa-pencil{"aria-hidden" => "true"}
+    %button.btn.btn-light.btn-sm{:title => "Neutral action (v2)", :type => "button"}
+      %i.fa.fa-refresh.fa-fw{"aria-hidden" => "true"}
+      Refresh
+  %h2.h6.text-secondary.mb-3
+    Icons —
+    %code disabled
+  .d-flex.flex-wrap.align-items-center.gap-2.mb-4
+    \&lt;%= link_to "#", class: "btn btn-primary btn-sm disabled", tabindex: "-1", "aria-disabled": "true", role: "button" do %&gt;
+    %i.fa.fa-plus.fa-fw{"aria-hidden" => "true"}
+    New
+    \&lt;% end %&gt;
+    %button.btn.btn-secondary.btn-sm{:disabled => "disabled", :title => "Collapse list", :type => "button"}
+      %i.fa.fa-chevron-left{"aria-hidden" => "true"}
+    %button.btn.btn-outline-secondary.btn-sm{:disabled => "disabled", :title => "Edit", :type => "button"}
+      %i.fa.fa-pencil{"aria-hidden" => "true"}
+  .border.rounded.p-2.d-inline-flex.align-items-center.gap-2.bg-body-secondary
+    %span.small.text-muted.me-1 Toolbar
+    %button.btn.btn-secondary.btn-sm{:type => "button"}
+      %i.fa.fa-list.fa-fw{"aria-hidden" => "true"}
+      Bulk
+    %button.btn.btn-secondary.btn-sm{:type => "button"}
+      %i.fa.fa-angle-double-down.fa-fw{"aria-hidden" => "true"}
+      Expand
+  .border.rounded.p-2.d-inline-flex.align-items-center.gap-2.bg-body-secondary.mt-2
+    %span.small.text-muted.me-1 Toolbar (disabled)
+    %button.btn.btn-secondary.btn-sm{:disabled => "disabled", :type => "button"}
+      %i.fa.fa-list.fa-fw{"aria-hidden" => "true"}
+      Bulk
+    %button.btn.btn-secondary.btn-sm{:disabled => "disabled", :type => "button"}
+      %i.fa.fa-angle-double-down.fa-fw{"aria-hidden" => "true"}
+      Expand

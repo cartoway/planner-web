@@ -1,0 +1,30 @@
+.container.py-4
+  %h1.h4.mb-4 Pagination (list footer)
+  %p.text-muted.small.mb-3
+    v2 destinations frame uses a custom
+    %code ul.pagination
+    with
+    = succeed ";" do
+      %code .btn.btn-light.btn-sm
+  %nav{"aria-label" => "Page navigation"}
+    %ul.pagination.pagination-sm.justify-content-center.mb-4
+      %li.page-item.disabled
+        %span.page-link Previous
+      %li.page-item.active{"aria-current" => "page"}
+        %span.page-link 1
+      %li.page-item
+        %a.page-link{:href => "#"} 2
+      %li.page-item
+        %a.page-link{:href => "#"} 3
+      %li.page-item
+        %a.page-link{:href => "#"} Next
+  %p.small.text-secondary.mb-2 Legacy-style control strip (icon buttons)
+  %ul.pagination.pagination-sm.justify-content-center.mb-0
+    %li.page-item
+      %button.btn.btn-secondary.btn-sm.disabled.rounded-0.rounded-start{:type => "button"}
+        %i.fa.fa-chevron-left{"aria-hidden" => "true"}
+    %li.page-item.disabled
+      %span.btn.btn-secondary.btn-sm.disabled.rounded-0.border-start-0 2 / 5
+    %li.page-item
+      %button.btn.btn-secondary.btn-sm.rounded-0.rounded-end.border-start-0{:type => "button"}
+        %i.fa.fa-chevron-right{"aria-hidden" => "true"}

@@ -1,0 +1,19 @@
+.container.py-4
+  %h1.h4.mb-4 Modal
+  %p.text-muted.small.mb-3
+    Same structure as bulk visits modal in
+    = succeed "." do
+      %code v2/destinations/_form
+  %button.btn.btn-primary{"data-bs-target" => "#ds-modal-demo", "data-bs-toggle" => "modal", :type => "button"}
+    Open modal
+  #ds-modal-demo.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "ds-modal-demo-title", :tabindex => "-1"}
+    .modal-dialog
+      .modal-content
+        .modal-header
+          %h2#ds-modal-demo-title.modal-title.fs-5 Modal title
+          %button.btn-close{"aria-label" => "Close", "data-bs-dismiss" => "modal", :type => "button"}
+        .modal-body
+          %p.mb-0 Body copy. Add forms or lists here.
+        .modal-footer
+          %button.btn.btn-secondary{"data-bs-dismiss" => "modal", :type => "button"} Cancel
+          %button.btn.btn-primary{"data-bs-dismiss" => "modal", :type => "button"} Apply

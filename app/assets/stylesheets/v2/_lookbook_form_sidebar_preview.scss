@@ -1,0 +1,85 @@
+// Copyright © Cartoway
+// Lookbook-only frame for the form sidebar chrome preview (right slide panel demo).
+
+.lookbook-form-sidebar-host {
+  #lookbook-form-sidebar-layout.lookbook-form-sidebar-demo,
+  #lookbook-form-sidebar-layout-collapsed.lookbook-form-sidebar-demo {
+    position: relative;
+    height: min(36rem, 85vh);
+    min-height: 20rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: var(--bs-border-radius, 0.375rem);
+    overflow: hidden;
+
+    .lookbook-form-sidebar-map-placeholder {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--bs-secondary-bg, #f8f9fa);
+    }
+
+    .form-sidebar.slide-panel {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 2;
+      width: clamp(280px, 36vw, 420px);
+      max-width: min(420px, 48vw);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--bs-body-bg, #fff);
+      border-left: 1px solid var(--bs-border-color, #dee2e6);
+      box-shadow: -4px 0 12px rgba(0, 0, 0, 0.06);
+
+      &.slide-panel--collapsed {
+        border-left-color: transparent;
+        box-shadow: none;
+      }
+    }
+
+    .form-sidebar-header {
+      flex: 0 0 auto;
+      position: relative;
+      z-index: 4;
+      padding: 1rem 1rem 1rem 2.5rem;
+      border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+
+      .form-sidebar-toggle {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        z-index: 10;
+      }
+    }
+
+    .form-sidebar-inner {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 1rem 1.25rem;
+      overflow: auto;
+    }
+
+    .form-sidebar-expand.floating-btn.slide-panel-expand-trigger {
+      position: absolute;
+      right: 0.5rem;
+      top: 0.5rem;
+      z-index: 3;
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+    }
+  }
+
+  #lookbook-form-sidebar-layout-collapsed.lookbook-form-sidebar-demo {
+    height: min(14rem, 40vh);
+    min-height: 10rem;
+
+    .form-sidebar-expand.floating-btn.slide-panel-expand-trigger {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+    }
+  }
+}

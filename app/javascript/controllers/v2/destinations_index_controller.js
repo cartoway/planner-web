@@ -156,7 +156,11 @@ export default class extends Controller {
     this._initSelectionAndDestroy(signal)
 
     this._onPositionDragToggleDocumentClick = this._onPositionDragToggleDocumentClick.bind(this)
+    this._onPositionDragResize = () => {
+      if (this._positionEdit?.active) this._syncPositionDragCancelButtonPosition()
+    }
     document.addEventListener('click', this._onPositionDragToggleDocumentClick, { signal })
+    window.addEventListener('resize', this._onPositionDragResize, { signal })
 
     document.addEventListener('turbo:before-cache', this._beforeCache, { signal })
     document.addEventListener('turbolinks:before-cache', this._beforeCache, { signal })
@@ -202,6 +206,9 @@ export default class extends Controller {
   }
 
   _removeDomMarker () {
+    if (this._positionEdit && this._domMarkerId === this._positionEdit.markerId) {
+      this._positionEdit.marker = null
+    }
     if (this._domMarker) {
       try { this._domMarker.remove() } catch (e) { /* ignore */ }
     }
@@ -231,6 +238,9 @@ export default class extends Controller {
       if (this._domMarkerEl) {
         this._domMarkerEl.classList.toggle('destinations-marker--active', active)
       }
+      if (this._positionEdit && this._positionEdit.markerId === idStr) {
+        this._positionEdit.marker = this._domMarker
+      }
       this._syncHiddenGeojsonPins()
       return
     }
@@ -244,6 +254,9 @@ export default class extends Controller {
     this._domMarker = marker
     this._domMarkerId = idStr
     this._domMarkerEl = el
+    if (this._positionEdit && this._positionEdit.markerId === idStr) {
+      this._positionEdit.marker = marker
+    }
     this._syncHiddenGeojsonPins()
   }
 
@@ -252,8 +265,12 @@ export default class extends Controller {
     this._cancelMapPinRowHighlight()
     this.element.querySelectorAll('tr.destination').forEach((tr) => tr.classList.remove('highlight', 'highlight--map-pin'))
     this._iconOverStack = []
-    this._removeDomMarker()
-    this._syncHiddenGeojsonPins()
+    const keepMarker =
+      this._positionEdit && this._domMarkerId === this._positionEdit.markerId
+    if (!keepMarker) {
+      this._removeDomMarker()
+      this._syncHiddenGeojsonPins()
+    }
   }
 
   /**
@@ -540,12 +557,22 @@ export default class extends Controller {
     })
     this._mapLayers.connect()
 
-    const declusterViewportTitle = ((typeof I18n !== 'undefined' && I18n.t)
+    const tDecluster = (typeof I18n !== 'undefined' && I18n.t)
       ? I18n.t('destinations.index.map_decluster_viewport', { defaultValue: 'Déclusteriser la vue' })
-      : 'Déclusteriser la vue')
-    map.addControl(new DeclusterViewportIControl(() => {
-      if (this._mapLayers) this._mapLayers.declusterViewport()
-    }, declusterViewportTitle), 'top-right')
+      : 'Déclusteriser la vue'
+    const tRecluster = (typeof I18n !== 'undefined' && I18n.t)
+      ? I18n.t('destinations.index.map_recluster_viewport', { defaultValue: 'Clusteriser la vue' })
+      : 'Clusteriser la vue'
+    this._declusterControl = new DeclusterViewportIControl({
+      getDeclustered: () => !!(this._mapLayers && this._mapLayers.isDeclusterViewportActive()),
+      onToggle: (declustered) => {
+        if (!this._mapLayers) return
+        this._mapLayers.setDeclusterViewportActive(declustered)
+      },
+      titleDecluster: tDecluster,
+      titleRecluster: tRecluster
+    })
+    map.addControl(this._declusterControl, 'top-right')
 
     const sidebar = this.element.querySelector('.destinations-sidebar')
     const scheduleResize = () => { afterSlideTransition(sidebar, () => map.resize()) }
@@ -568,6 +595,11 @@ export default class extends Controller {
       if (e.target.closest && e.target.closest('.destinations-sidebar-expand')) {
         if (sidebar) sidebar.classList.remove('slide-panel--collapsed')
         scheduleResize()
+        return
+      }
+      if (e.target.closest && e.target.closest('.destinations-position-drag-cancel')) {
+        e.preventDefault()
+        this._disablePositionDrag()
       }
     }, { signal })
 
@@ -582,7 +614,15 @@ export default class extends Controller {
     const frame = event.target
     if (!frame || !frame.id) return
     if (frame.id === 'form_sidebar') {
+      const form = frame.querySelector('#destination-form-sidebar')
+      if (!form) {
+        this._onFormSidebarClosed()
+        return
+      }
       this._syncPositionEditFromFormSidebar(frame)
+      if (this._positionEdit?.active) {
+        requestAnimationFrame(() => this._syncPositionDragCancelButtonPosition())
+      }
       return
     }
     if (frame.id === 'destinations_list') {
@@ -645,6 +685,81 @@ export default class extends Controller {
     }
   }
 
+  _refreshPositionEditMarker () {
+    const state = this._positionEdit
+    if (!state) return
+    if (this._domMarkerId === state.markerId && this._domMarker) {
+      state.marker = this._domMarker
+    }
+  }
+
+  /**
+   * Horizontal center of the map band visible beside the open form sidebar (not full layout width).
+   */
+  _positionDragCancelButtonLeftPx () {
+    const layout = this.element
+    const layoutRect = layout.getBoundingClientRect()
+    let visibleRight = layoutRect.right
+
+    const formSidebar = document.querySelector('.form-sidebar')
+    if (formSidebar && !formSidebar.classList.contains('slide-panel--collapsed')) {
+      const formRect = formSidebar.getBoundingClientRect()
+      if (formRect.left < visibleRight) visibleRight = formRect.left
+    }
+
+    const visibleLeft = layoutRect.left
+    const centerX = visibleLeft + (visibleRight - visibleLeft) / 2
+    return centerX - layoutRect.left
+  }
+
+  _syncPositionDragCancelButtonPosition () {
+    const cancelBtn = this.element.querySelector('.destinations-position-drag-cancel')
+    if (!cancelBtn || cancelBtn.classList.contains('d-none')) return
+    cancelBtn.style.left = `${this._positionDragCancelButtonLeftPx()}px`
+  }
+
+  _setMapPositionDragCursor (active) {
+    const canvas = this._map && typeof this._map.getCanvas === 'function' ? this._map.getCanvas() : null
+    if (canvas) canvas.style.cursor = active ? 'crosshair' : ''
+  }
+
+  _syncPositionDragLayout (active) {
+    const layout = this.element
+    const sidebar = layout.querySelector('.destinations-sidebar')
+    const cancelBtn = layout.querySelector('.destinations-position-drag-cancel')
+    const state = this._positionEdit
+
+    if (active) {
+      layout.classList.add('destinations-map-layout--position-drag')
+      if (sidebar && !sidebar.classList.contains('slide-panel--collapsed')) {
+        sidebar.classList.add('slide-panel--collapsed')
+        if (state) state.listSidebarHiddenForDrag = true
+        afterSlideTransition(sidebar, () => {
+          if (this._map) this._map.resize()
+          this._syncPositionDragCancelButtonPosition()
+        })
+      } else if (state) {
+        state.listSidebarHiddenForDrag = false
+      }
+      if (cancelBtn) cancelBtn.classList.remove('d-none')
+      this._setMapPositionDragCursor(true)
+      requestAnimationFrame(() => this._syncPositionDragCancelButtonPosition())
+      return
+    }
+
+    layout.classList.remove('destinations-map-layout--position-drag')
+    this._setMapPositionDragCursor(false)
+    if (state?.listSidebarHiddenForDrag && sidebar) {
+      sidebar.classList.remove('slide-panel--collapsed')
+      state.listSidebarHiddenForDrag = false
+      afterSlideTransition(sidebar, () => { if (this._map) this._map.resize() })
+    }
+    if (cancelBtn) {
+      cancelBtn.classList.add('d-none')
+      cancelBtn.style.left = ''
+    }
+  }
+
   _teardownPositionEdit () {
     const state = this._positionEdit
     if (!state) return
@@ -666,6 +781,7 @@ export default class extends Controller {
       if (state.marker && typeof state.marker.setDraggable === 'function') state.marker.setDraggable(false)
     } catch (e) { /* ignore */ }
     if (state.toggleButton) this._applyPositionDragToggleUi(state.toggleButton, false)
+    this._syncPositionDragLayout(false)
     this._positionEdit = null
   }
 
@@ -681,12 +797,14 @@ export default class extends Controller {
     } catch (e) { /* ignore */ }
     if (this._domMarkerEl) this._domMarkerEl.classList.remove('destinations-marker--dragging')
     state.active = false
+    this._syncPositionDragLayout(false)
     if (state.toggleButton) this._applyPositionDragToggleUi(state.toggleButton, false)
   }
 
   _enablePositionDrag () {
     const state = this._positionEdit
     if (!state || state.active || !this._map) return
+    this._refreshPositionEditMarker()
     if (!state.marker || this._domMarkerId !== state.markerId) return
     state.mapClickHandler = (e) => {
       if (!this._positionEdit?.active) return
@@ -712,6 +830,7 @@ export default class extends Controller {
     } catch (e) { /* ignore */ }
     if (this._domMarkerEl) this._domMarkerEl.classList.add('destinations-marker--dragging')
     state.active = true
+    this._syncPositionDragLayout(true)
     if (state.toggleButton) this._applyPositionDragToggleUi(state.toggleButton, true)
   }
 
@@ -740,12 +859,44 @@ export default class extends Controller {
     if (!btn) return
     const form = document.getElementById('destination-form-sidebar')
     if (!form || !form.contains(btn)) return
+    if (!this._positionEdit) {
+      const frame = document.getElementById('form_sidebar')
+      if (frame) this._syncPositionEditFromFormSidebar(frame)
+    }
     if (!this._positionEdit || btn.classList.contains('d-none')) return
     const fid = form.getAttribute('data-destination_id')
     if (fid == null || String(fid) !== String(this._positionEdit.markerId)) return
+    this._refreshPositionEditMarker()
     e.preventDefault()
     e.stopPropagation()
     this._togglePositionDragMode(btn)
+  }
+
+  _forceResetPositionDragChrome () {
+    const layout = this.element
+    if (!layout.classList.contains('destinations-map-layout--position-drag')) return
+
+    layout.classList.remove('destinations-map-layout--position-drag')
+    this._setMapPositionDragCursor(false)
+    const cancelBtn = layout.querySelector('.destinations-position-drag-cancel')
+    if (cancelBtn) {
+      cancelBtn.classList.add('d-none')
+      cancelBtn.style.left = ''
+    }
+    const sidebar = layout.querySelector('.destinations-sidebar')
+    if (sidebar) {
+      sidebar.classList.remove('slide-panel--collapsed')
+      afterSlideTransition(sidebar, () => { if (this._map) this._map.resize() })
+    }
+  }
+
+  _onFormSidebarClosed () {
+    this._teardownPositionEdit()
+    this._forceResetPositionDragChrome()
+    if (this._domMarker) {
+      this._removeDomMarker()
+      this._syncHiddenGeojsonPins()
+    }
   }
 
   /**
@@ -802,7 +953,8 @@ export default class extends Controller {
       dragEndHandler,
       toggleButton: toggleButton || null,
       active: false,
-      mapClickHandler: null
+      mapClickHandler: null,
+      listSidebarHiddenForDrag: false
     }
   }
 
@@ -981,6 +1133,7 @@ export default class extends Controller {
       visit(url, { frame: 'destinations_list', action: 'advance' })
       this._clearDestinationHighlight()
       if (this._mapLayers) this._mapLayers.reload({ fitBounds: true })
+      if (this._declusterControl) this._declusterControl.syncUi()
     }
 
     input.addEventListener('input', () => {
@@ -1016,6 +1169,7 @@ export default class extends Controller {
         visit(url, { frame: 'destinations_list', action: 'advance' })
         this._clearDestinationHighlight()
         if (this._mapLayers) this._mapLayers.reload({ fitBounds: true })
+        if (this._declusterControl) this._declusterControl.syncUi()
       }, { signal })
     }
   }

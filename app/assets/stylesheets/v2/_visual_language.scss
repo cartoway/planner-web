@@ -127,17 +127,47 @@ body[data-controller*='-v2'] {
     color: inherit;
     line-height: 1;
     cursor: pointer;
+    font-weight: 500;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
 
-    .fa {
-      font-size: 0.875rem;
+  // Pill-shaped floating CTA (icon + label) for map overlays — extends .floating-btn.
+  @mixin xl-floating-button {
+    width: auto;
+    height: auto;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 32px;
+    gap: 0.625rem;
+    padding: 0.625rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+    > .fa {
+      width: 1.25rem;
+      font-size: 1.25rem;
+      line-height: 1;
     }
+
+    > .floating-label {
+      font-weight: 500;
+    }
+  }
+
+  .floating-btn.xl-floating-button {
+    @include xl-floating-button;
   }
 
   .btn-close {
     @include floating-control;
     background-color: transparent;
     box-shadow: none;
+  }
+
+  // Bootstrap header dismiss buttons rely on auto margins; floating-control resets margin to 0.
+  .offcanvas-header,
+  .modal-header {
+    justify-content: space-between;
   }
 
   // Bootstrap grid: no horizontal gutter between columns.

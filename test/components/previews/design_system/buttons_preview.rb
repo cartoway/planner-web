@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module DesignSystem
-  class ButtonsPreview < Lookbook::Preview
-    layout 'lookbook_preview'
+  class ButtonsPreview < ApplicationPreview
+
 
     def variants
       render_with_template
@@ -19,5 +19,5 @@ module DesignSystem
     def button_groups
       render_with_template
     end
-  end
+end
 end
