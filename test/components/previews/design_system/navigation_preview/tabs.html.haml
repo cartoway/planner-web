@@ -1,0 +1,12 @@
+.container.py-4
+  %h1.h4.mb-4 Tabs
+  %ul.nav.nav-tabs.mb-3{:role => "tablist"}
+    %li.nav-item{:role => "presentation"}
+      %button#tab-a.nav-link.active{"aria-controls" => "pane-a", "aria-selected" => "true", "data-bs-target" => "#pane-a", "data-bs-toggle" => "tab", :role => "tab", :type => "button"} Details
+    %li.nav-item{:role => "presentation"}
+      %button#tab-b.nav-link{"aria-controls" => "pane-b", "aria-selected" => "false", "data-bs-target" => "#pane-b", "data-bs-toggle" => "tab", :role => "tab", :type => "button"} Visits
+    %li.nav-item{:role => "presentation"}
+      %button.nav-link.disabled{:disabled => "disabled", :type => "button"} Disabled
+  .tab-content.border.border-top-0.rounded-bottom.p-3
+    #pane-a.tab-pane.fade.show.active{"aria-labelledby" => "tab-a", :role => "tabpanel"} Panel A content.
+    #pane-b.tab-pane.fade{"aria-labelledby" => "tab-b", :role => "tabpanel"} Panel B content.

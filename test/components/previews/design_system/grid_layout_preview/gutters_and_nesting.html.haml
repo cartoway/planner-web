@@ -1,0 +1,44 @@
+.container.py-4
+  %h1.h4.mb-3 Gutters &amp; nesting
+  %h2.h6.text-secondary.mb-2
+    Gutter (
+    %code> g-*
+    ,
+    = succeed "," do
+      %code gx-*
+    = succeed ")" do
+      %code gy-*
+  %p.text-muted.small.mb-2
+    On a
+    = succeed "," do
+      %code .row
+    %code g-3
+    sets horizontal
+    %strong and
+    vertical spacing between columns (subtracted from
+    = succeed ")." do
+      %code col-*
+    %code gx-2
+    \= horizontal only,
+    %code gy-4
+    \= vertical only.
+  .row.g-3.mb-4
+    .col-6
+      .bg-light.border.py-4.text-center.small A
+    .col-6
+      .bg-light.border.py-4.text-center.small B
+  %h2.h6.text-secondary.mb-2 Nested row
+  %p.text-muted.small.mb-2
+    A column can contain another
+    %code .row
+    \: the 12 units restart
+    %strong inside
+    the parent.
+  .row
+    .col-12
+      .border.p-2.mb-2.small.text-muted Full-width column
+      .row.g-1
+        .col-6
+          .bg-body-secondary.py-2.text-center.small nested col-6
+        .col-6
+          .bg-body-secondary.py-2.text-center.small nested col-6

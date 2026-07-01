@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module DesignSystem
-  class OverlaysPreview < Lookbook::Preview
-    layout 'lookbook_preview'
+  class OverlaysPreview < ApplicationPreview
+
 
     def modal
       render_with_template
@@ -15,5 +15,5 @@ module DesignSystem
     def offcanvas
       render_with_template
     end
-  end
+end
 end

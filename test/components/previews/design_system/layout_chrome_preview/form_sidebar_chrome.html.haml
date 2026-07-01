@@ -1,0 +1,42 @@
+.lookbook-form-sidebar-host.container-fluid.py-3
+  %h1.h4.mb-3 Form sidebar chrome
+  %p.text-muted.small.mb-3
+    Same overlay pattern as the destinations index list: map background,
+    %code .slide-panel.slide-panel--from-right
+    on the right, and
+    %code .floating-btn
+    controls to collapse / expand the panel (mirrors
+    %code .destinations-sidebar
+    on the left).
+
+  %h2.h6.text-secondary.mb-2 Open form
+  #lookbook-form-sidebar-layout.lookbook-form-sidebar-demo
+    .lookbook-form-sidebar-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
+      Map (placeholder)
+    %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--open{role: 'complementary', 'aria-label': 'Destination form'}
+      .form-sidebar-header
+        %button.floating-btn.form-sidebar-toggle{type: 'button', title: 'Close form', 'aria-label': 'Close form'}
+          %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
+        %header.destination-form-sidebar-header.mb-0
+          %h2.h5.mb-0 Edit destination
+      .form-sidebar-inner
+        .mb-3
+          %label.form-label{for: 'lookbook-fs-name'} Name
+          %input#lookbook-fs-name.form-control.form-control-sm{type: 'text', autocomplete: 'off', value: 'Boulangerie Dupont'}
+        .mb-3
+          %label.form-label{for: 'lookbook-fs-city'} City
+          %input#lookbook-fs-city.form-control.form-control-sm{type: 'text', autocomplete: 'off', value: 'Bordeaux'}
+        %button.btn.btn-primary.btn-sm{type: 'button'} Save
+    %button.floating-btn.form-sidebar-expand.slide-panel-expand-trigger{type: 'button', title: 'Show form', 'aria-label': 'Show form'}
+      %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
+
+  %h2.h6.text-secondary.mb-2.mt-4 Collapsed
+  #lookbook-form-sidebar-layout-collapsed.lookbook-form-sidebar-demo.lookbook-form-sidebar-demo--collapsed
+    .lookbook-form-sidebar-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
+      Map (placeholder)
+    %aside.form-sidebar.slide-panel.slide-panel--from-right.slide-panel--collapsed{role: 'complementary', 'aria-label': 'Destination form'}
+      .form-sidebar-header
+        %button.floating-btn.form-sidebar-toggle{type: 'button', title: 'Close form', 'aria-label': 'Close form'}
+          %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
+    %button.floating-btn.form-sidebar-expand.slide-panel-expand-trigger{type: 'button', title: 'Show form', 'aria-label': 'Show form'}
+      %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}

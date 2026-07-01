@@ -1,0 +1,200 @@
+\&lt;%# Structure aligned with app/views/plannings/_edit.html.haml, _selector.html.haml, _sidebar.html.haml, routes/_edit + _out_of_route (static demo). %&gt;
+.lookbook-planning-sidebar-host.container-fluid.py-2
+  %p.text-muted.small.mb-2
+    DOM tree and classes mirror v1 (
+    %code> plannings/_edit.html.haml
+    ,
+    = succeed "," do
+      %code _selector.html.haml
+    = succeed "," do
+      %code _sidebar.html.haml
+    , routes). Planning v2 styles:
+    = succeed "\u00A0;" do
+      %code v2/_plannings.scss
+    = succeed "." do
+      %code v2/_lookbook_planning_preview.scss
+  .lookbook-planning-demo-row
+    .lookbook-planning-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
+      \#map.sidebar-map (placeholder)
+    .lookbook-planning-column-wrap
+      .planbar.d-flex.align-items-end
+        %span.text-muted.small
+          \.planbar.d-flex.align-items-end (preview —
+          %code flat_form
+          omitted)
+      #edit-planning.sidebar
+        .sidebar-tabs
+          %ul{:role => "tablist"}
+            %li
+              %a.d-flex.align-items-center.justify-content-center.btn{:href => "#planning-pane", :role => "tab"}
+                %i.fa.fa-caret-right{"aria-hidden" => "true"}
+        .sidebar-content
+          #planning-pane.sidebar-pane
+            #extend_close_panel.row
+              .pull-right
+                %button.btn.btn-light.btn-sm.extend{:title => "Agrandir le panneau", :type => "button"}
+                  %i.fa.fa-maximize{"aria-hidden" => "true"}
+                %button.btn.btn-light.btn-sm.sidebar-close{:title => "Réduire le panneau", :type => "button"}
+                  %i.fa.fa-caret-left{"aria-hidden" => "true"}
+            #route_selector.row
+              .col-xs-12.multiple.ph-0
+                %label Sélecteur d’itinéraires
+                %select#planning_route_ids.form-control.width_1_2.selectpicker{"data-live-search" => "true", "data-placeholder" => "", :multiple => "multiple", :name => "planning_route_ids"}
+                  %option.global{:selected => "selected", :value => "clear"} Tout effacer
+                  %option.global{:value => "reverse"} Inverser
+                  %option.global{:value => "all"} Tous
+                  %option{:value => "r1"} Camion 12 — Route 1
+                  %option{:value => "r2"} Camion 08 — Route 2
+                %p.help-block.text-muted.small.mb-0
+                  v1 classes:
+                  = succeed "," do
+                    %code selectpicker
+                  %code width_1_2
+                  (no JS plugin in Lookbook).
+            #planning-scroll.planning-pane-body.modern-scroll
+              #planning_tools.row
+                .row
+                  %p.text-center.col-md-12
+                    %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{:disabled => "disabled", :type => "button"}
+                      %i.fa.fa-desktop.fa-fw{"aria-hidden" => "true"}
+                      Action callback (exemple)
+                .row
+                  .d-flex.justify-content-center
+                    .col-xs-12.col-md-12
+                      %label Étiquettes
+                      .row.form-group
+                        .input-append
+                          #planning_tag_ids_input.input-group
+                            %select#planning_tag_ids.form-control.input-group-radiusless{:multiple => "multiple", :name => "planning[tag_ids][]"}
+                              %option{:value => "1"} Urgent
+                              %option{:selected => "selected", :value => "2"} Fragile
+                              %option{:value => "3"} VIP
+                            %span.input-group-text.input-group-borderless.borderless-disabled replace
+                            %span.input-group-text
+                              %i.fa.fa-tags.fa-fw{"aria-hidden" => "true"}
+                %br/
+                .row
+                  %form.form-horizontal{"accept-charset" => "UTF-8", :action => "#", :method => "post"}
+                    .d-flex.justify-content-center
+                      .col-xs-12.col-md-12
+                        %label{:for => "planning_vehicle_usage_set_id"} Jeu de données véhicules
+                        %select#planning_vehicle_usage_set_id.form-control{:name => "planning[vehicle_usage_set_id]", :required => ""}
+                          %option{:selected => "selected", :value => "1"} Livraison urbaine
+                          %option{:value => "2"} Longue distance
+                        .d-flex.justify-content-center
+                          %input.btn.btn-light{"data-disable-with" => "Appliquer le jeu de données", :disabled => "disabled", :name => "commit", :type => "submit", :value => "Appliquer le jeu de données"}/
+                .row
+                  .d-flex.justify-content-center
+                    .col-xs-12.col-md-12
+                      %form#planning_zoning_0.form-horizontal.update-zonings-form{"accept-charset" => "UTF-8", :action => "#", :method => "post", :title => "Zonage"}
+                        %label{:for => "planning_zoning_id"} Zonage
+                        %select#planning_zoning_id.form-control{:name => "planning[zoning_id]"}
+                          %option{:value => ""} — Aucun —
+                          %option{:value => "1"} Centre-ville
+                          %option{:value => "2"} Périphérie
+                        .d-flex.justify-content-center
+                          %input.btn.btn-light{"data-disable-with" => "Mettre à jour le zonage", :name => "commit", :type => "submit", :value => "Mettre à jour le zonage"}/
+              #global_tools.row
+                .btn-group
+                  %button#optimize_all.btn.btn-primary.btn-sm.optimize{"data-target" => "#optimization-modal", "data-toggle" => "modal", :title => "Optimiser", :type => "button"}
+                    %i.fa.fa-gears{"aria-hidden" => "true"}
+                    Optimiser
+                .pull-right.btn-group
+                  .dropdown.btn-group
+                    %a.btn.btn-light.btn-sm.right.export.dropdown-toggle{"data-toggle" => "dropdown", :href => "#", :role => "button", :title => "Exports"}
+                      %i.fa.fa-share-nodes{"aria-hidden" => "true"}
+                      %span.caret
+                    %ul.dropdown-menu.show
+                      %li.dropdown-header
+                        %h5 Exports (demo)
+                      %li
+                        %a{:href => "#"}
+                          %i.fa.fa-print.fa-fw
+                          Imprimer
+              #planning.row
+                .global_info
+                  .row.route-data.route-header.display-ui-planning-head{:style => "display: flex; flex-wrap: wrap;"}
+                    .col-xs-4{:style => "order: 0"}
+                      .route-info.primary{:title => "Distance"}
+                        %i.fa.fa-road.fa-fw{"aria-hidden" => "true"}
+                        128 km
+                    .col-xs-4{:style => "order: 1"}
+                      .route-info.primary{:title => "Durée"}
+                        %i.fa.fa-stopwatch.fa-fw{"aria-hidden" => "true"}
+                        3h20
+                    .col-xs-4{:style => "order: 2"}
+                      .route-info.primary{:title => "Arrêts"}
+                        %i.fa.fa-check-square.fa-fw{"aria-hidden" => "true"}
+                        24 / 24 arrêts
+                %ol.routes
+                  %li.route{"data-color" => "#08f", "data-default-color" => "#08f", "data-route-id" => "1"}
+                    .panel.panel-default
+                      .panel-heading
+                        .row
+                          .col-xs-5
+                            %input#route_ref.form-control{:name => "route[ref]", :placeholder => "Réf. route", :type => "text", :value => "R1"}/
+                          .col-xs-5
+                            %select.form-control.input-sm{"aria-label" => "Véhicule", :name => "route[vehicle]"}
+                              %option{:selected => "selected", :value => "vu1"} Camion 12 — tournée matin
+                          .col-xs-2.color-select-container
+                            %span.color_small{:style => "display:inline-block;width:1rem;height:1rem;background:#08f;vertical-align:middle;border:1px solid #ccc", :title => "Couleur"}
+                        .row
+                          .col-xs-11
+                            .route-skills
+                              %ul.route-skills-list
+                                %li.route-skills-item
+                                  %span
+                                    %i.fa.fa-snowflake{"aria-hidden" => "true", :style => "color:#09c"}
+                                    Froid
+                          .col-xs-1
+                            %i.fa.fa-arrows-left-right{"aria-hidden" => "true"}
+                      .route-details
+                        .route-stops
+                          .panel-body
+                            .row.route-data.route-header.display-ui-route-head{"data-route-id" => "1", :style => "display: flex; flex-wrap: wrap;"}
+                              .col-xs-4{:style => "order: 0"}
+                                .route-info.primary
+                                  %i.fa.fa-road.fa-fw
+                                  62 km
+                              .col-xs-4{:style => "order: 1"}
+                                .route-info.primary
+                                  %i.fa.fa-stopwatch.fa-fw
+                                  1h45
+                              .col-xs-4{:style => "order: 2"}
+                                .route-info.primary
+                                  %i.fa.fa-check-square.fa-fw
+                                  12 / 12
+                          %ul#list_box.stops.sortable.list-group
+                            %li.list-group-item.small.py-1 Demo stop 1
+                            %li.list-group-item.small.py-1 Demo stop 2
+                %ol.routes.out_routes
+                  %li.route.out_route{"data-route-id" => "out"}
+                    #out_of_route.panel.panel-default
+                      .panel-heading.out-header
+                        %i.fa.fa-arrows-left-right{"aria-hidden" => "true"}
+                        Hors route
+                        .btn-group.pull-right
+                          %button.automatic_insert_all.btn.btn-light.btn-xs{:title => "Insertion auto", :type => "button"}
+                            %i.fa.fa-bolt{"aria-hidden" => "true"}
+                          %button.toggle.btn.btn-light.btn-xs{:title => "Afficher / masquer", :type => "button"}
+                            %i.fa.fa-eye{"aria-hidden" => "true"}
+                          %button.lock.btn.btn-xs.btn-light{:title => "Verrou", :type => "button"}
+                            %i.fa.fa-unlock{"aria-hidden" => "true"}
+                      #out_route_scroll.route-details.out-content.modern-scroll
+                        .route-stops
+                          .panel-body
+                            .row.route-data.route-header.display-ui-route-head{"data-route-id" => "out", :style => "display: flex; flex-wrap: wrap;"}
+                              .col-xs-4{:style => "order: 0"}
+                                .route-info.primary
+                                  %i.fa.fa-road.fa-fw
+                                  —
+                              .col-xs-4{:style => "order: 1"}
+                                .route-info.primary
+                                  %i.fa.fa-stopwatch.fa-fw
+                                  —
+                              .col-xs-4{:style => "order: 2"}
+                                .route-info.primary
+                                  %i.fa.fa-check-square.fa-fw
+                                  1 / 1
+                          %ul#list_box_out_demo.stops.sortable.list-group
+                            %li.list-group-item.small.py-1.text-muted Out-of-route stop (demo)

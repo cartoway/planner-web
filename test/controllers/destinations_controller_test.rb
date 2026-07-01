@@ -59,6 +59,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '.main > .main-primary turbo-frame#main', 1
     assert_select 'aside.form-sidebar.slide-panel--from-right.form-sidebar--collapsed', 1
     assert_select 'aside.form-sidebar turbo-frame#form_sidebar', 1
+    assert_select 'button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none', 1
   end
 
   test 'v2 index exposes map geojson url in config instead of inline destinations' do

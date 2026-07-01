@@ -40,6 +40,10 @@ export default class extends Controller {
       this.frameTarget.appendChild(tpl.content.cloneNode(true))
     }
     this.refreshState()
+    // Not a Turbo navigation — notify listeners (e.g. destinations index position-drag teardown).
+    if (this.hasFrameTarget) {
+      this.frameTarget.dispatchEvent(new CustomEvent("turbo:frame-load", { bubbles: true }))
+    }
   }
 
   refreshState() {

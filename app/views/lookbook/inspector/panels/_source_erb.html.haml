@@ -1,0 +1,9 @@
+- scenario = scenarios.first
+- source = LookbookDualFormatTemplateResolver.template_source(scenario, :erb)
+.h-full
+  - if source.present?
+    %p.text-muted.small.mb-2 Conversion automatique HAML → ERB (aperçu, non exécuté).
+    = lookbook_render :code, language: 'erb', line_numbers: true, full_height: true do
+      != source
+  - else
+    %p.text-muted.small.mb-0 Aucun template HAML associé à ce scénario.
