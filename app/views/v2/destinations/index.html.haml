@@ -28,3 +28,6 @@
     = render 'v2/destinations/list_frame'
   %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: "button", title: t('destinations.index.expand_list', default: 'Afficher la liste'), 'aria-label': t('destinations.index.expand_list', default: 'Afficher la liste')}
     %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
+  %button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none{type: "button", title: t('destinations.index.cancel_position_drag'), 'aria-label': t('destinations.index.cancel_position_drag')}
+    %i.fa.fa-times{"aria-hidden": "true"}
+    %span.floating-label= t('destinations.index.cancel_position_drag')

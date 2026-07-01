@@ -1,0 +1,25 @@
+.container.py-4
+  %h1.h4.mb-4 Sizes &amp; states
+  %h2.h6.text-secondary.mb-2 Sizes
+  .d-flex.flex-wrap.align-items-center.gap-2.mb-4
+    %button.btn.btn-primary.btn-sm{:type => "button"} Small
+    %button.btn.btn-primary{:type => "button"} Default
+    %button.btn.btn-primary.btn-lg{:type => "button"} Large
+  %h2.h6.text-secondary.mb-2
+    Sizes —
+    %code btn-light
+    (v2 neutral)
+  .d-flex.flex-wrap.align-items-center.gap-2.mb-4
+    %button.btn.btn-light.btn-sm{:type => "button"} Small
+    %button.btn.btn-light{:type => "button"} Default
+    %button.btn.btn-light.btn-lg{:type => "button"} Large
+    %button.btn.btn-light.btn-sm{:disabled => "disabled", :type => "button"} Small disabled
+  %h2.h6.text-secondary.mb-2 Disabled (all sizes)
+  .d-flex.flex-wrap.align-items-center.gap-2.mb-4
+    %button.btn.btn-primary.btn-sm{:disabled => "disabled", :type => "button"} Primary sm
+    %button.btn.btn-primary{:disabled => "disabled", :type => "button"} Primary
+    %button.btn.btn-primary.btn-lg{:disabled => "disabled", :type => "button"} Primary lg
+    %button.btn.btn-outline-danger.btn-sm{:disabled => "disabled", :type => "button"} Outline sm
+    %button.btn.btn-outline-secondary{:disabled => "disabled", :type => "button"} Outline
+  %h2.h6.text-secondary.mb-2 Toggle (needs Bootstrap JS)
+  %button.btn.btn-primary{"data-bs-toggle" => "button", :type => "button"} Toggle

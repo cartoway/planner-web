@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
 module DesignSystem
-  class FormsPreview < Lookbook::Preview
+  class FormsPreview < ApplicationPreview
     include DestinationsHelper
-
-    layout 'lookbook_preview'
 
     def text_fields
       render_with_template
@@ -29,5 +27,9 @@ module DesignSystem
     def validation
       render_with_template
     end
-  end
+
+    def range_inputs
+      render_with_template
+    end
+end
 end

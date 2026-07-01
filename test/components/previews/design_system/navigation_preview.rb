@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module DesignSystem
-  class NavigationPreview < Lookbook::Preview
-    layout 'lookbook_preview'
+  class NavigationPreview < ApplicationPreview
+
 
     def breadcrumbs
       render_with_template
@@ -15,5 +15,5 @@ module DesignSystem
     def pagination
       render_with_template
     end
-  end
+end
 end

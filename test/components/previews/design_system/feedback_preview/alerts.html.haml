@@ -1,0 +1,12 @@
+.container.py-4
+  %h1.h4.mb-4 Alerts
+  .alert.alert-primary{:role => "alert"} Primary alert
+  .alert.alert-success{:role => "alert"} Success — operation completed.
+  .alert.alert-warning{:role => "alert"} Warning — please review.
+  .alert.alert-danger{:role => "alert"} Danger — something went wrong.
+  .alert.alert-info.small.mb-3{:role => "status"}
+    %i.fa.fa-map.fa-fw{"aria-hidden" => "true"}
+    Info compact (similar to map position hints on destination form).
+  .alert.alert-secondary.alert-dismissible.fade.show.mb-0{:role => "alert"}
+    Dismissible alert
+    %button.btn-close{"aria-label" => "Close", "data-bs-dismiss" => "alert", :type => "button"}
