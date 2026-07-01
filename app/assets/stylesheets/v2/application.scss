@@ -102,15 +102,6 @@
         text-decoration: none !important;
       }
     }
-
-    // #menu-help: inner neutral button foreground (v1 scaffolds .help.menu-section .btn)
-    #menu-help > a {
-      color: inherit;
-    }
-
-    #menu-help .btn.btn-light {
-      color: $primary-color !important;
-    }
   }
 }
 
