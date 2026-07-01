@@ -6,7 +6,6 @@ services:
     depends_on:
       - db
       - superset_redis
-    entrypoint: ["/app/pythonpath/entrypoint.sh"]
     environment:
       SUPERSET_SECRET_KEY: lkfzoiezhfoizehfoizhoihfopizajfoizafjpoizaufepoaz
       DATABASE_DIALECT: postgresql+psycopg2
