@@ -1,0 +1,11 @@
+.container.py-4
+  %h1.h4.mb-4 List group
+  .list-group{:style => "max-width: 28rem;"}
+    %a.list-group-item.list-group-item-action.active{"aria-current" => "true", :href => "#"}
+      .d-flex.w-100.justify-content-between
+        %span.mb-1 Active item
+        %small 3
+      %p.mb-0.small.opacity-75 Supporting line
+    %a.list-group-item.list-group-item-action{:href => "#"}
+      Second item
+    %a.list-group-item.list-group-item-action.disabled{"aria-disabled" => "true", :href => "#", :tabindex => "-1"} Disabled

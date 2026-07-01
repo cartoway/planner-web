@@ -1,0 +1,71 @@
+.container.py-4
+  %h1.h4.mb-4 Button variants
+  %h2.h6.text-secondary.mb-2 Solid
+  .d-flex.flex-wrap.gap-2.mb-4
+    %button.btn.btn-primary{:type => "button"} Primary
+    %button.btn.btn-secondary{:type => "button"} Secondary
+    %button.btn.btn-success{:type => "button"} Success
+    %button.btn.btn-danger{:type => "button"} Danger
+    %button.btn.btn-warning{:type => "button"} Warning
+    %button.btn.btn-info{:type => "button"} Info
+    %button.btn.btn-light{:type => "button"} Light
+    %button.btn.btn-dark{:type => "button"} Dark
+    %button.btn.btn-link{:type => "button"} Link
+  %p.text-muted.small.mb-4
+    Neutral actions in v2:
+    %code .btn.btn-light
+    (tokens in
+    = succeed "," do
+      %code v2/_visual_language.scss
+    %code #ccc
+    via
+    = succeed ")." do
+      %code --bs-btn-border-color
+  %h2.h6.text-secondary.mb-2
+    Solid —
+    %code disabled
+  %p.text-muted.small.mb-2
+    %code disabled
+    attribute on
+    %code &lt;button&gt;
+    (or
+    %code .disabled
+    on
+    %code &lt;a class="btn"&gt;
+    with
+    %code tabindex="-1"
+    +
+    %code aria-disabled="true"
+    for links).
+  .d-flex.flex-wrap.gap-2.mb-4
+    %button.btn.btn-primary{:disabled => "disabled", :type => "button"} Primary
+    %button.btn.btn-secondary{:disabled => "disabled", :type => "button"} Secondary
+    %button.btn.btn-success{:disabled => "disabled", :type => "button"} Success
+    %button.btn.btn-danger{:disabled => "disabled", :type => "button"} Danger
+    %button.btn.btn-warning{:disabled => "disabled", :type => "button"} Warning
+    %button.btn.btn-info{:disabled => "disabled", :type => "button"} Info
+    %button.btn.btn-light{:disabled => "disabled", :type => "button"} Light
+    %button.btn.btn-dark{:disabled => "disabled", :type => "button"} Dark
+    %button.btn.btn-link{:disabled => "disabled", :type => "button"} Link
+  %h2.h6.text-secondary.mb-2 Outline
+  .d-flex.flex-wrap.gap-2.mb-4
+    %button.btn.btn-outline-primary{:type => "button"} Primary
+    %button.btn.btn-outline-secondary{:type => "button"} Secondary
+    %button.btn.btn-outline-success{:type => "button"} Success
+    %button.btn.btn-outline-danger{:type => "button"} Danger
+    %button.btn.btn-outline-warning{:type => "button"} Warning
+    %button.btn.btn-outline-info{:type => "button"} Info
+    %button.btn.btn-outline-light{:type => "button"} Light
+    %button.btn.btn-outline-dark{:type => "button"} Dark
+  %h2.h6.text-secondary.mb-2
+    Outline —
+    %code disabled
+  .d-flex.flex-wrap.gap-2.mb-0
+    %button.btn.btn-outline-primary{:disabled => "disabled", :type => "button"} Primary
+    %button.btn.btn-outline-secondary{:disabled => "disabled", :type => "button"} Secondary
+    %button.btn.btn-outline-success{:disabled => "disabled", :type => "button"} Success
+    %button.btn.btn-outline-danger{:disabled => "disabled", :type => "button"} Danger
+    %button.btn.btn-outline-warning{:disabled => "disabled", :type => "button"} Warning
+    %button.btn.btn-outline-info{:disabled => "disabled", :type => "button"} Info
+    %button.btn.btn-outline-light{:disabled => "disabled", :type => "button"} Light
+    %button.btn.btn-outline-dark{:disabled => "disabled", :type => "button"} Dark

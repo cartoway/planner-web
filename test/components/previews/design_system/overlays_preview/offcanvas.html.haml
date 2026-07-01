@@ -1,0 +1,10 @@
+.container.py-4
+  %h1.h4.mb-4 Offcanvas
+  %button.btn.btn-primary{"aria-controls" => "ds-offcanvas", "data-bs-target" => "#ds-offcanvas", "data-bs-toggle" => "offcanvas", :type => "button"}
+    Open panel
+  #ds-offcanvas.offcanvas.offcanvas-end{"aria-labelledby" => "ds-offcanvas-label", :tabindex => "-1"}
+    .offcanvas-header.border-bottom
+      %h2#ds-offcanvas-label.offcanvas-title.h5 Side panel
+      %button.btn-close{"aria-label" => "Close", "data-bs-dismiss" => "offcanvas", :type => "button"}
+    .offcanvas-body
+      %p.text-muted.small Useful pattern for filters or mobile navigation.

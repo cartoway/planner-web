@@ -2,8 +2,8 @@
 
 module DesignSystem
   # Bootstrap 5 grid: containers, rows, columns (see Lookbook templates for markup notes).
-  class GridLayoutPreview < Lookbook::Preview
-    layout 'lookbook_preview'
+  class GridLayoutPreview < ApplicationPreview
+
 
     def rows_and_columns
       render_with_template
@@ -16,5 +16,5 @@ module DesignSystem
     def breakpoints_and_offset
       render_with_template
     end
-  end
+end
 end

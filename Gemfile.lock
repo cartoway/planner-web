@@ -276,6 +276,7 @@ GEM
       rubocop
       smart_properties
     erubi (1.13.0)
+    erubis (2.7.0)
     execjs (2.9.1)
     faraday (2.10.0)
       faraday-net_http (>= 2.0, < 3.2)
@@ -356,6 +357,11 @@ GEM
     hashie (5.0.0)
     highline (3.1.0)
       reline
+    html2haml (2.3.0)
+      erubis (~> 2.7.0)
+      haml (>= 4.0)
+      nokogiri (>= 1.6.0)
+      ruby_parser (~> 3.5)
     html_validation (1.1.6)
     htmlbeautifier (1.4.3)
     htmlentities (4.3.4)
@@ -723,6 +729,9 @@ GEM
       ffi (~> 1.12)
       logger
     ruby2_keywords (0.0.5)
+    ruby_parser (3.21.1)
+      racc (~> 1.5)
+      sexp_processor (~> 4.16)
     rubyzip (2.3.2)
     sanitize (6.1.1)
       crass (~> 1.0.2)
@@ -769,6 +778,7 @@ GEM
     sentry-ruby (5.19.0)
       bigdecimal
       concurrent-ruby (~> 1.0, >= 1.0.2)
+    sexp_processor (4.17.4)
     shellany (0.0.1)
     sim_annealing (0.0.2)
     simplecov (0.22.0)
@@ -947,6 +957,7 @@ DEPENDENCIES
   guard-rake
   haml-rails
   hashie
+  html2haml (~> 2.3)
   html_validation
   http_accept_language
   i18n-js (< 4)
@@ -991,6 +1002,7 @@ DEPENDENCIES
   phonelib
   pnotify-rails
   premailer-rails
+  prism (~> 1.4)
   pry-rails
   puma
   rack-cors

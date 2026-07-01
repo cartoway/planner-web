@@ -227,3 +227,6 @@ end
 
 gem "importmap-rails", "~> 2.2"
 gem "stimulus-rails", "~> 1.3"
+
+gem "html2haml", "~> 2.3", :group => :development
+gem "prism", "~> 1.4"

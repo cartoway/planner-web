@@ -1,0 +1,24 @@
+.container.py-4
+  %h1.h4.mb-4 Text fields
+  .mb-3
+    %label.form-label{:for => "ds-name"} Label
+    %input#ds-name.form-control{:autocomplete => "off", :placeholder => "Placeholder", :type => "text"}/
+    .form-text
+      Helper text — use
+      %code .form-text
+      (Bootstrap 5) or legacy
+      %code .help-block
+      in v2 SCSS.
+  .mb-3
+    %label.form-label{:for => "ds-readonly"} Readonly
+    %input#ds-readonly.form-control{:readonly => "readonly", :type => "text", :value => "Read-only value"}/
+  .row.g-2.mb-3
+    .col-md-6
+      %label.form-label{:for => "ds-pc"} Postal code
+      %input#ds-pc.form-control{:autocomplete => "off", :maxlength => "17", :type => "text"}/
+    .col-md-6
+      %label.form-label{:for => "ds-city"} City
+      %input#ds-city.form-control{:autocomplete => "off", :type => "text"}/
+  .mb-0
+    %label.form-label{:for => "ds-number"} Number
+    %input#ds-number.form-control{:placeholder => "0.00", :step => "any", :type => "number"}/
