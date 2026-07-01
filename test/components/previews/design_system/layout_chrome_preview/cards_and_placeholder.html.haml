@@ -1,0 +1,17 @@
+.container.py-4
+  %h1.h4.mb-4 Cards &amp; empty placeholder
+  .row.g-3.mb-4
+    .col-md-6
+      .card.shadow-sm
+        .card-header.d-flex.justify-content-between.align-items-center
+          %span.fw-semibold Card title
+          %span.badge.text-bg-secondary Draft
+        .card-body
+          %p.card-text.small.mb-0 Card body — summaries, KPIs, or embedded tables.
+        .card-footer.text-muted.small Footer meta
+    .col-md-6
+      %aside.border.rounded.p-3.h-100.bg-body-secondary{:style => "min-height: 8rem;"}
+        %p.form-sidebar-placeholder.text-muted.small.mb-0
+          Placeholder copy (class name matches
+          = succeed ")." do
+            %code v2/layouts/_form_sidebar_placeholder

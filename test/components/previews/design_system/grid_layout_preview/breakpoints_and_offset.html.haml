@@ -1,0 +1,38 @@
+.container.py-4
+  %h1.h4.mb-3
+    Breakpoints &amp; offsets (
+    %code> offset-*
+    )
+  %h2.h6.text-secondary.mb-2 Responsive columns
+  %p.text-muted.small.mb-2
+    %code col-sm-4
+    \= 4 columns out of 12 from
+    %code sm
+    upward; below the breakpoint, the column stacks at
+    %strong full width
+    unless you add
+    %code col-12
+    or another explicit base class.
+  .row.g-2.mb-4
+    .col-sm-4
+      .border.py-2.text-center.small col-sm-4
+    .col-sm-4
+      .border.py-2.text-center.small col-sm-4
+    .col-sm-4
+      .border.py-2.text-center.small col-sm-4
+  %h2.h6.text-secondary.mb-2 Bootstrap 5 offset
+  %p.text-muted.small.mb-2
+    In BS5, use
+    %code offset-md-2
+    (left margin of 2 columns from
+    = succeed ")." do
+      %code md
+    %code .col-md-offset-2
+    (Bootstrap 3) may still appear in legacy views; in new v2 code, prefer
+    = succeed "." do
+      %code offset-md-*
+  .row.g-0.mb-0
+    .col-md-8.offset-md-2
+      .border.bg-light.py-3.text-center.small
+        %code col-md-8 offset-md-2
+        — centered block from tablet up

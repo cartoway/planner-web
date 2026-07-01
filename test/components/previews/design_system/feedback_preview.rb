@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module DesignSystem
-  class FeedbackPreview < Lookbook::Preview
-    layout 'lookbook_preview'
+  class FeedbackPreview < ApplicationPreview
+
 
     def alerts
       render_with_template
@@ -15,5 +15,5 @@ module DesignSystem
     def progress_and_spinners
       render_with_template
     end
-  end
+end
 end

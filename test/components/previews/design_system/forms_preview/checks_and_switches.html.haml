@@ -1,0 +1,29 @@
+.container.py-4
+  %h1.h4.mb-2 Checks &amp; switches
+  %p.text-muted.small.mb-3
+    V2 styling for checkboxes and switches lives in
+    %code app/assets/stylesheets/v2/_form_checks_range.scss
+    (via
+    = succeed ")." do
+      %code layout_bootstrap_overrides
+  .form-check.mb-2
+    %input#ds-check1.form-check-input{:checked => "checked", :type => "checkbox", :value => ""}/
+    %label.form-check-label{:for => "ds-check1"} Checked option
+  .form-check.mb-4
+    %input#ds-check2.form-check-input{:type => "checkbox", :value => ""}/
+    %label.form-check-label{:for => "ds-check2"} Unchecked option
+  .form-check.mb-2
+    %input#ds-radio1.form-check-input{:checked => "checked", :name => "ds-radio", :type => "radio"}/
+    %label.form-check-label{:for => "ds-radio1"} Radio A
+  .form-check.mb-4
+    %input#ds-radio2.form-check-input{:name => "ds-radio", :type => "radio"}/
+    %label.form-check-label{:for => "ds-radio2"} Radio B
+  .form-check.form-switch.mb-3
+    %input#ds-sw1.form-check-input{:checked => "checked", :role => "switch", :type => "checkbox"}/
+    %label.form-check-label{:for => "ds-sw1"} Enabled by default
+  .form-check.form-switch.mb-3
+    %input#ds-sw2.form-check-input{:role => "switch", :type => "checkbox"}/
+    %label.form-check-label{:for => "ds-sw2"} Off
+  .form-check.form-switch.mb-0
+    %input#ds-sw3.form-check-input{:disabled => "disabled", :role => "switch", :type => "checkbox"}/
+    %label.form-check-label{:for => "ds-sw3"} Disabled switch

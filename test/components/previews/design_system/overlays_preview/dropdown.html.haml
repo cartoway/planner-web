@@ -1,0 +1,14 @@
+.container.py-4
+  %h1.h4.mb-4 Dropdown
+  .dropdown
+    %button#ds-dd1.btn.btn-secondary.dropdown-toggle{"aria-expanded" => "false", "data-bs-toggle" => "dropdown", :type => "button"}
+      Actions
+    %ul.dropdown-menu{"aria-labelledby" => "ds-dd1"}
+      %li
+        %a.dropdown-item{:href => "#"} Edit
+      %li
+        %a.dropdown-item{:href => "#"} Duplicate
+      %li
+        %hr.dropdown-divider/
+      %li
+        %a.dropdown-item.text-danger{:href => "#"} Delete

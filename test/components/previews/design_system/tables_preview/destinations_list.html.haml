@@ -1,0 +1,37 @@
+.lookbook-destinations-list-host.container-fluid.py-3
+  %h1.h4.mb-2 Destinations list (v2)
+  %p.text-muted.small.mb-3
+    Same rendering as the v2 index: shared partial
+    %code v2/destinations/_list_frame
+    (toolbar, column selector, geocoding, category badges, pagination) and
+    %code .floating-btn
+    buttons (collapse / expand the list).
+  - if @lookbook_destinations_list_demo
+    %p.text-muted.small.mb-3
+      %span.badge.text-bg-secondary Demo data
+      No destinations in the database — static sample for the design system.
+
+  %h2.h6.text-secondary.mb-2 Open list
+  #destinations-map-layout.lookbook-destinations-list-demo
+    .lookbook-destinations-list-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
+      Map (placeholder)
+    .destinations-sidebar.slide-panel.slide-panel--from-left
+      .destinations-sidebar-header
+        %button.floating-btn.destinations-sidebar-toggle{type: 'button', title: t('destinations.index.collapse_list', default: 'Collapse list'), 'aria-label': t('destinations.index.collapse_list', default: 'Collapse list')}
+          %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
+        %h1.h5.mb-0= t('destinations.index.title')
+      = render 'v2/destinations/list_frame'
+    %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: 'button', title: t('destinations.index.expand_list', default: 'Show list'), 'aria-label': t('destinations.index.expand_list', default: 'Show list')}
+      %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
+
+  %h2.h6.text-secondary.mb-2.mt-4 Collapsed list
+  #destinations-map-layout-collapsed.lookbook-destinations-list-demo.lookbook-destinations-list-demo--collapsed
+    .lookbook-destinations-list-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
+      Map (placeholder)
+    .destinations-sidebar.slide-panel.slide-panel--from-left.slide-panel--collapsed
+      .destinations-sidebar-header
+        %button.floating-btn.destinations-sidebar-toggle{type: 'button', title: t('destinations.index.collapse_list', default: 'Collapse list'), 'aria-label': t('destinations.index.collapse_list', default: 'Collapse list')}
+          %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
+        %h1.h5.mb-0= t('destinations.index.title')
+    %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: 'button', title: t('destinations.index.expand_list', default: 'Show list'), 'aria-label': t('destinations.index.expand_list', default: 'Show list')}
+      %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
