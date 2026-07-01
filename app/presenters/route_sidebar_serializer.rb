@@ -75,7 +75,7 @@ class RouteSidebarSerializer
       vehicle_usage_id: vehicle_usage&.id,
       vehicle_id: vehicle&.id,
       vehicle_name: vehicle&.name,
-      router_name: vehicle&.default_router&.name,
+      router_name: vehicle&.default_router&.translated_name,
       default_color: default_color,
       color: effective_color,
       color_fake: @route.color,

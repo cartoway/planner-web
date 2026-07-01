@@ -73,6 +73,24 @@ class RouteSidebarSerializerTest < ActionController::TestCase
     )
   end
 
+  test 'router_name uses translated router name' do
+    route = routes(:route_one_one)
+    planning = route.planning
+    router = route.vehicle_usage.vehicle.default_router
+
+    I18n.with_locale(:fr) do
+      hash = RouteSidebarSerializer.new(
+        route: route,
+        planning: planning,
+        with_stops: false,
+        view_helpers: route_sidebar_view_helpers
+      ).as_hash
+
+      assert_equal 'Router fr', hash[:router_name]
+      assert_not_equal router.name, hash[:router_name]
+    end
+  end
+
   test 'status_present includes only statuses on route stops' do
     route = routes(:route_one_one)
     planning = route.planning

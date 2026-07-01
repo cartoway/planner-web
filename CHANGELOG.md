@@ -1,5 +1,9 @@
 # Changelog
 
+## V109.0.1
+  ### Fixed
+  - Route vehicle selector displayed untranslated router names on load and required two clicks to open
+
 ## V109.0.0
   ### Added
   - Import: Order destination/visits in planning routes using index field [#626](https://github.com/cartoway/planner-web/pull/626)

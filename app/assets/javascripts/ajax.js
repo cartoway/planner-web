@@ -277,29 +277,29 @@ export const fieldBarProgression = function(dialog, delayedJob, progress, elemen
 
 
 export const fake_select2 = function(selector, callback) {
-  var fake_select2_replace = function(fake_select) {
+  var fake_select2_replace = function(fake_select, openDropdown) {
     var select = fake_select.prev();
     fake_select.hide();
     select.show();
     callback(select);
+    if (openDropdown) {
+      select.select2('open');
+    }
     fake_select.off();
   };
 
   var fake_select2_click = function(e) {
-    // On the first click on select2-look like div, initialize select2, remove the placeholder and resend the click
+    // On the first click on select2-look like div, initialize select2 and open the dropdown.
     var fake_select = $(this);
     e.stopPropagation();
-    fake_select2_replace(fake_select);
-    if (e.clientX && e.clientY) {
-      $(document.elementFromPoint(e.clientX, e.clientY)).click();
-    }
+    fake_select2_replace(fake_select, true);
   };
 
   var fake_select2_key_event = function(e) {
     var fake_select = $(this).closest('.fake');
     e.stopPropagation();
     var parent = $(this).parent();
-    fake_select2_replace(fake_select);
+    fake_select2_replace(fake_select, false);
     var input = $('input', parent);
     input.focus();
     // var ee = jQuery.Event('keydown');
