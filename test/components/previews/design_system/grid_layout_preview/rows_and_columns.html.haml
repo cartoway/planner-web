@@ -1,0 +1,87 @@
+.container.py-4
+  %h1.h4.mb-3
+    Bootstrap 5 grid —
+    = succeed "," do
+      %code .container
+    = succeed "," do
+      %code .row
+    %code .col-*
+  .alert.alert-secondary.small.mb-4{:role => "note"}
+    %strong Principle.
+    A
+    %code .row
+    holds up to
+    %strong 12 virtual columns
+    .
+    Classes such as
+    = succeed "," do
+      %code col-md-8
+    = succeed "," do
+      %code col-lg-6
+    %code col-6
+    set how many columns (out of 12) the element spans from the given breakpoint
+    (
+    %code sm
+    576px,
+    %code md
+    768px,
+    %code lg
+    992px,
+    %code xl
+    1200px,
+    %code xxl
+    1400px).
+    Without a breakpoint (
+    %code> col-6
+    ), the width applies at
+    %strong all
+    viewport sizes.
+  %h2.h6.text-secondary.mb-2 12-column example (visual borders)
+  %p.text-muted.small.mb-2
+    Each cell is
+    %code col-1
+    \: twelve cells side by side on one full row.
+  .row.g-1.mb-4.text-center.small
+    \&lt;% 12.times do |i| %&gt;
+    .col-1
+      .border.bg-light.py-2 &lt;%= i + 1 %&gt;
+    \&lt;% end %&gt;
+  %h2.h6.text-secondary.mb-2 Common split
+  .row.g-2.mb-2
+    .col-md-8
+      .border.bg-primary-subtle.py-3.text-center.small
+        %code col-md-8
+    .col-md-4
+      .border.bg-secondary-subtle.py-3.text-center.small
+        %code col-md-4
+  .row.g-2.mb-4
+    .col-12.col-lg-6
+      .border.py-2.text-center.small
+        %code col-12 col-lg-6
+        — full width on mobile, half from
+        %code lg
+    .col-12.col-lg-6
+      .border.py-2.text-center.small Twin column
+  %h2.h6.text-secondary.mb-2
+    %code .row
+    in v1 vs v2
+  %p.text-muted.small.mb-0
+    In v1,
+    %code bootstrap_and_overrides
+    reset
+    %code .row
+    side margins to
+    %code unset
+    (Bootstrap 3 legacy).
+    In v2 (Bootstrap 5), keep
+    %code .row
+    inside a
+    %code .container
+    \/
+    %code .container-fluid
+    so negative gutters work;
+    to remove space between columns, use
+    %code g-0
+    on the row (modern equivalent of legacy
+    = succeed ")." do
+      %code .no-gutter

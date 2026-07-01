@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module DesignSystem
-  class LayoutChromePreview < Lookbook::Preview
-    layout 'lookbook_preview'
+  class LayoutChromePreview < ApplicationPreview
+
 
     def cards_and_placeholder
       render_with_template
@@ -15,5 +15,9 @@ module DesignSystem
     def form_sidebar_chrome
       render_with_template
     end
-  end
+
+    def xl_floating_button
+      render_with_template
+    end
+end
 end

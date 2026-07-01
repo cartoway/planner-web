@@ -1,0 +1,87 @@
+.container.py-4
+  %h1.h4.mb-4 Selects &amp; textareas
+  %p.text-muted.small.mb-4
+    Selects use the same stack as v2 :
+    %strong Tom Select
+    via Stimulus
+    %code v2--tom-select
+    with
+    %code data-v2--tom-select-simple-value="true"
+    (generic single/multi). Tag fields in the app omit
+    %code simple
+    and use icon/colour render + optional create.
+  .mb-3
+    %label.form-label{:for => "ds-select"} Select (single)
+    %select#ds-select.form-select{"data-controller" => "v2--tom-select", "data-v2--tom-select-placeholder-value" => "Choose an option…", "data-v2--tom-select-simple-value" => "true", :name => "lookbook_demo_select"}
+      %option{:value => ""} Choose an option…
+      %option{:value => "1"} Option one
+      %option{:value => "2"} Option two
+  .mb-3
+    %label.form-label{:for => "ds-multi"} Multiple select
+    %select#ds-multi.form-select{"aria-label" => "Multiple", "data-controller" => "v2--tom-select", "data-v2--tom-select-placeholder-value" => "Add tags…", "data-v2--tom-select-simple-value" => "true", :multiple => "multiple", :name => "lookbook_demo_multi[]"}
+      %option{:value => "a"} Tag A
+      %option{:value => "b"} Tag B
+      %option{:value => "c"} Tag C
+    .form-text
+      Same Tom Select +
+      %code dropdown_input
+      +
+      %code remove_button
+      (multi) as configured in
+      %code tom_select_controller.js
+      simple mode.
+  %h2.h6.text-secondary.mt-4.mb-2
+    Select +
+    %code input-group-text
+    on the right (icon)
+  %p.text-muted.small.mb-3
+    Same pattern as v2 fields with
+    %code append:
+    \/
+    %code input_group:
+    on
+    = succeed "\u00A0:" do
+      %code bootstrap_form
+    %code .input-group
+    with the
+    %code select
+    followed by a
+    %code span.input-group-text
+    (Font Awesome icon).
+    Tom Select wraps the
+    %code select
+    in a
+    = succeed "\u00A0;" do
+      %code .ts-wrapper
+    %code lookbook_preview.scss
+    keeps the group flexing correctly.
+  .mb-3
+    %label.form-label{:for => "ds-select-ig"} Select simple + addon
+    .input-group
+      %select#ds-select-ig.form-select{"data-controller" => "v2--tom-select", "data-v2--tom-select-placeholder-value" => "Choose…", "data-v2--tom-select-simple-value" => "true", :name => "lookbook_demo_select_ig"}
+        %option{:value => ""} Choose…
+        %option{:value => "1"} Option one
+        %option{:value => "2"} Option two
+      %span.input-group-text{"aria-hidden" => "true", :title => "Tags"}
+        %i.fa.fa-tags.fa-fw
+  .mb-3
+    %label.form-label{:for => "ds-multi-ig"} Multi-select + addon
+    .input-group
+      %select#ds-multi-ig.form-select{"aria-label" => "Tags with addon", "data-controller" => "v2--tom-select", "data-v2--tom-select-placeholder-value" => "Select tags…", "data-v2--tom-select-simple-value" => "true", :multiple => "multiple", :name => "lookbook_demo_multi_ig[]"}
+        %option{:value => "a"} Tag A
+        %option{:value => "b"} Tag B
+        %option{:value => "c"} Tag C
+      %span.input-group-text{"aria-hidden" => "true", :title => "Tags"}
+        %i.fa.fa-tags.fa-fw
+  .mb-3
+    %label.form-label{:for => "ds-select-ig2"} Select + addon (other icon)
+    .input-group
+      %select#ds-select-ig2.form-select{"data-controller" => "v2--tom-select", "data-v2--tom-select-placeholder-value" => "Region…", "data-v2--tom-select-simple-value" => "true", :name => "lookbook_demo_select_ig2"}
+        %option{:value => ""} Region…
+        %option{:value => "eu"} Europe
+        %option{:value => "na"} North America
+      %span.input-group-text{"aria-hidden" => "true", :title => "Map"}
+        %i.fa.fa-map.fa-fw
+  .mb-0
+    %label.form-label{:for => "ds-ta"} Textarea
+    %textarea#ds-ta.form-control{:placeholder => "Comment…", :rows => "3"}

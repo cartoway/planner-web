@@ -1522,8 +1522,10 @@ fr:
       title: Liste adresses
       collapse_list: Réduire la liste
       expand_list: Afficher la liste
+      cancel_position_drag: Annuler le placement
       map_overlay_layers: Couches superposées
       map_decluster_viewport: Déclusteriser la vue
+      map_recluster_viewport: Clusteriser la vue
       select_all: Tout sélectionner
       search_label: Recherche
       search_placeholder: '%{name_key}:Paris %{city_key}:Lyon'
