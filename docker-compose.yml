@@ -18,6 +18,10 @@ x-web: &web
     AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
     AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
     AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+    POSTGRES_HOST: ${POSTGRES_HOST:-db}
+    POSTGRES_USER: ${POSTGRES_USER:-planner}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-planner}
+    POSTGRES_DB: ${POSTGRES_DB:-planner}
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/production.rb:/srv/app/config/environments/production.rb
