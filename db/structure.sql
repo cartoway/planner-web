@@ -398,7 +398,8 @@ CREATE TABLE public.layers (
     source character varying NOT NULL,
     "overlay" boolean DEFAULT false,
     print boolean DEFAULT false NOT NULL,
-    name_locale public.hstore DEFAULT ''::public.hstore NOT NULL
+    name_locale public.hstore DEFAULT ''::public.hstore NOT NULL,
+    vector_url character varying
 );
 
 
@@ -3945,6 +3946,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260623064843'),
 ('20260623141222'),
 ('20260624210858'),
-('20260625210008');
+('20260625210008'),
+('20260630143502');
 
 
