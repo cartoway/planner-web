@@ -1541,6 +1541,9 @@ fr:
       search_help: 'Syntaxe : champ:valeur (ex. nom:Paris, ville:Lyon)'
       columns: Colonnes
       columns_help: Cochez les colonnes à afficher dans la liste.
+      sort_by: Trier par %{column}
+      sort_asc: Tri croissant sur %{column}
+      sort_desc: Tri décroissant sur %{column}
       remove_filter: Retirer ce filtre
       search_keys:
         ref: ref

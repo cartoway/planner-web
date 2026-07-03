@@ -283,6 +283,7 @@ class DestinationsController < ApplicationController
     @pagination = { page: page, per_page: per_page, total: @total_count }
     @search_query = params[:q].to_s.strip
     @active_filters = destinations_index_active_filters
+    @destinations_list_sort = DestinationsListSort.parse(params, customer: @customer)
     allowed = ::Preferences::Catalog.destinations_list_allowed_column_ids(@customer)
     active = current_user.destinations_list_active_column_ids(@customer)
     @destinations_list_columns = ::Preferences::Catalog.filter_order(active, allowed)
@@ -303,9 +304,11 @@ class DestinationsController < ApplicationController
   end
 
   def destinations_filtered_scope
-    scope = current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST')
+    scope = current_user.customer.destinations
     conditions = destinations_index_search_conditions
     scope = DestinationSearchScope.apply(scope, conditions) if conditions.any?
+    sort = DestinationsListSort.parse(params, customer: current_user.customer)
+    scope = sort ? sort.apply(scope) : scope.reorder(Arel.sql('destinations.geocoding_accuracy ASC NULLS LAST, destinations.id ASC'))
     scope
   end
 
