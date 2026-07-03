@@ -1487,6 +1487,7 @@ en:
       sort_asc: Sorted ascending by %{column}
       sort_desc: Sorted descending by %{column}
       remove_filter: Remove this filter
+      destinations_count_help: Number of destinations
       search_keys:
         ref: ref
         name: name
@@ -3541,7 +3542,9 @@ en:
       status: Status
     destinations_list_columns:
       name: Name
-      address: Address
+      street: Street
+      postalcode: Postal code
+      city: City
       ref: Reference
       geocoding: Geocoding
       comment: Comment

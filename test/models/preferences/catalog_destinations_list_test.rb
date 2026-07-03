@@ -10,7 +10,9 @@ class PreferencesCatalogDestinationsListTest < ActiveSupport::TestCase
   test 'default active columns respect customer flags' do
     active = Preferences::Catalog::DestinationsList.default_active_for(@customer)
     assert_includes active, 'name'
-    assert_includes active, 'address'
+    assert_includes active, 'street'
+    assert_includes active, 'postalcode'
+    assert_includes active, 'city'
     assert_includes active, 'geocoding'
     @customer.deliverable_units.each do |unit|
       assert_includes active, Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
@@ -68,6 +70,15 @@ class PreferencesCatalogDestinationsListTest < ActiveSupport::TestCase
     assert Preferences::Catalog::DestinationsList.visit_scoped_column?('visit_ref')
     assert Preferences::Catalog::DestinationsList.visit_scoped_column?(col_id)
     assert_not Preferences::Catalog::DestinationsList.visit_scoped_column?('name')
+  end
+
+  test 'normalize_zone expands legacy address column into street postalcode city' do
+    normalized = Preferences::Catalog::DestinationsList.normalize_zone(
+      { 'active' => %w[name address ref], 'hidden' => [] },
+      customer: @customer
+    )
+    assert_equal %w[name street postalcode city ref], normalized['active'] & %w[name street postalcode city ref]
+    assert_not_includes normalized['active'], 'address'
   end
 
   test 'normalize_zone remaps legacy visits column to visit_ref' do
