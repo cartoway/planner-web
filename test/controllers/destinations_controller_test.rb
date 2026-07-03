@@ -321,6 +321,25 @@ class DestinationsControllerTest < ActionController::TestCase
                   assigns(:destinations).size
   end
 
+  test 'v2 index list renders sortable column headers' do
+    get :index
+    assert_response :success
+    assert_select 'turbo-frame#destinations_list th.destinations-list-sortable-col a.destinations-list-sort-link', minimum: 1
+    assert_select 'turbo-frame#destinations_list a.destinations-list-sort-link[data-turbo-frame="destinations_list"]', minimum: 1
+  end
+
+  test 'v2 index list sorts destinations by selected column' do
+    destination_a = destinations(:destination_unaffected_one)
+    destination_b = destinations(:destination_one)
+    destination_a.update_columns(name: 'AAA controller sort')
+    destination_b.update_columns(name: 'ZZZ controller sort')
+
+    get :index, params: { sort: 'name', direction: 'asc', per_page: 100 }
+    assert_response :success
+    ids = css_select('turbo-frame#destinations_list tbody tr.destination').map { |row| row['data-destination-id'].to_i }
+    assert_operator ids.index(destination_a.id), :<, ids.index(destination_b.id)
+  end
+
   test 'list_columns persists user column preferences and refreshes list' do
     patch :list_columns, params: { active: %w[name address] }
     assert_response :success

@@ -22,7 +22,8 @@
               %button.btn.btn-light.btn-xs.destinations-toggle-selection{type: "button", title: t('all.verb.toggle_selection')}
                 %i.fa.fa-check.fa-fw
             - list_columns.each do |column_id|
-              %th= destinations_list_column_label(column_id)
+              %th.destinations-list-sortable-col
+                = destinations_list_sort_header(column_id, destinations_list_column_label(column_id), @destinations_list_sort)
             %th
         %tbody
           - if @destinations.any?

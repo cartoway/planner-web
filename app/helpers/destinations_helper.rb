@@ -18,7 +18,14 @@
 module DestinationsHelper
   # Builds params hash for destinations index URL (search, filters, pagination).
   def destinations_index_params(overrides = {})
-    base = { page: params[:page], per_page: params[:per_page], q: params[:q], filters: Array(params[:filters]).compact }
+    base = {
+      page: params[:page],
+      per_page: params[:per_page],
+      q: params[:q],
+      filters: Array(params[:filters]).compact.presence,
+      sort: params[:sort].presence,
+      direction: params[:direction].presence
+    }.compact
     base.merge(overrides)
   end
 
@@ -112,6 +119,48 @@ module DestinationsHelper
 
   def destinations_list_visit_subrows_enabled?(column_ids)
     Array(column_ids).any? { |id| destinations_list_visit_scoped_column?(id) }
+  end
+
+  def destinations_list_column_sortable?(column_id, customer = nil)
+    customer ||= @customer if defined?(@customer) && @customer
+    return false unless customer
+
+    DestinationsListSort.sortable_column?(column_id, customer: customer)
+  end
+
+  def destinations_list_sort_header(column_id, label, sort_state)
+    return label unless destinations_list_column_sortable?(column_id)
+
+    active = sort_state&.column_id == column_id.to_s
+    direction = active ? sort_state.direction : nil
+    next_direction = sort_state&.next_direction_for(column_id) || 'asc'
+    link_class = ['destinations-list-sort-link', ('is-active' if active)].compact.join(' ')
+    icon_class =
+      if active && direction == 'desc'
+        'fa-sort-down'
+      elsif active
+        'fa-sort-up'
+      else
+        'fa-sort'
+      end
+    title =
+      if active && direction == 'desc'
+        t('destinations.index.sort_desc', column: label)
+      elsif active
+        t('destinations.index.sort_asc', column: label)
+      else
+        t('destinations.index.sort_by', column: label)
+      end
+
+    link_to(
+      destinations_path(destinations_index_params(sort: column_id, direction: next_direction, page: 1)),
+      class: link_class,
+      title: title,
+      data: { turbo_frame: 'destinations_list' },
+      aria: { sort: (active ? (direction == 'desc' ? 'descending' : 'ascending') : 'none') }
+    ) do
+      safe_join([label, content_tag(:i, nil, class: "fa #{icon_class} fa-fw destinations-list-sort-icon", 'aria-hidden': 'true')])
+    end
   end
 
   def destinations_list_visit_tags_for_visit(visit)
