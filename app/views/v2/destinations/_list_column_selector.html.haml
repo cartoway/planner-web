@@ -1,7 +1,7 @@
 -# Column visibility dropdown for the destinations index list (persists on user.headers).
 - list_columns = destinations_list_columns_selector_options(@customer)
 .dropdown
-  %button.btn.btn-light.btn-sm.dropdown-toggle{type: 'button', 'data-bs-toggle': 'dropdown', 'aria-expanded': 'false', title: t('destinations.index.columns')}
+  %button.btn.btn-light.btn-xs.dropdown-toggle{type: 'button', 'data-bs-toggle': 'dropdown', 'aria-expanded': 'false', title: t('destinations.index.columns')}
     %i.fa.fa-table-columns.fa-fw
     %span.visually-hidden= t('destinations.index.columns')
   .dropdown-menu.dropdown-menu-end.p-2.shadow-sm{style: 'min-width: 12rem;', 'data-bs-auto-close': 'outside'}
