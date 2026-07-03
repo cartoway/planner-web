@@ -60,6 +60,6 @@ class DestinationsHelperDeliverableUnitColumnsTest < ActionView::TestCase
     col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(@unit)
     assert destinations_list_visit_subrows_enabled?(%w[name visit_ref])
     assert destinations_list_visit_subrows_enabled?(%w[name] + [col_id])
-    assert_not destinations_list_visit_subrows_enabled?(%w[name address ref])
+    assert_not destinations_list_visit_subrows_enabled?(%w[name street ref])
   end
 end

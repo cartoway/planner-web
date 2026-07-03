@@ -126,7 +126,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_difference('Visit.count', 1) do
       post :append_visit, params: { id: @destination.id }
     end
-    patch :list_columns, params: { active: %w[name address] }
+    patch :list_columns, params: { active: %w[name street] }
     assert_response :success
     @request.headers['Turbo-Frame'] = 'destinations_list'
     get :index, params: { per_page: 100, page: 1 }
@@ -341,9 +341,9 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'list_columns persists user column preferences and refreshes list' do
-    patch :list_columns, params: { active: %w[name address] }
+    patch :list_columns, params: { active: %w[name street] }
     assert_response :success
-    assert_equal %w[name address], users(:user_one).reload.destinations_list_active_column_ids
+    assert_equal %w[name street], users(:user_one).reload.destinations_list_active_column_ids
     assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.name')
     assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.geocoding'), count: 0
     assert_select '#destinations-list-col-geocoding', 1
