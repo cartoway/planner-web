@@ -72,13 +72,13 @@ module Preferences
         { 'active' => active, 'hidden' => hidden_ordered }
       end
 
-      def normalize_headers(raw)
+      def normalize_headers(raw, customer: nil)
         h = raw.is_a?(Hash) ? raw.stringify_keys : {}
         {
           'planning' => normalize_header_zone(h['planning'], HEADER_PLANNING),
           'route' => normalize_header_zone(h['route'], HEADER_ROUTE),
           'stop_list' => StopList.normalize_zone(h['stop_list'].presence || h['stop_display']),
-          'destinations_list' => DestinationsList.normalize_zone(h['destinations_list'])
+          'destinations_list' => DestinationsList.normalize_zone(h['destinations_list'], customer: customer)
         }
       end
     end

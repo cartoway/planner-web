@@ -55,8 +55,8 @@ module Preferences
         Headers.normalize_header_zone(raw, allowed)
       end
 
-      def normalize_headers(raw)
-        Headers.normalize_headers(raw)
+      def normalize_headers(raw, customer: nil)
+        Headers.normalize_headers(raw, customer: customer)
       end
 
       def normalize_stop_list_zone(raw)

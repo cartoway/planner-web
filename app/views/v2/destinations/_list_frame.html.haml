@@ -26,18 +26,16 @@
             %th
         %tbody
           - if @destinations.any?
+            - visit_subrows_enabled = destinations_list_visit_subrows_enabled?(list_columns)
             - @destinations.each do |destination|
-              %tr.destination{data: {destination_id: destination.id, lat: destination.lat, lng: destination.lng}}
-                %td.destinations-selection-col
-                  %input{type: "checkbox", id: "destination_#{destination.id}", name: "destinations[#{destination.id}]", value: "1"}
-                - list_columns.each do |column_id|
-                  = render 'v2/destinations/list_column_cell', destination: destination, column_id: column_id
-                %td.text-nowrap
-                  .btn-group.btn-group-sm{role: "group"}
-                    = link_to edit_destination_path(destination), class: 'btn btn-light btn-xs', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
-                      %i.fa.fa-pencil.fa-fw
-                    %button.btn.btn-danger.btn-xs.destinations-row-delete{type: "button", disabled: !can_destroy_destinations, title: t('all.verb.destroy'), data: { destination_id: destination.id }}
-                      %i.fa.fa-trash.fa-fw
+              - visits = destination.visits.to_a
+              - visits_count = visits.size
+              - if visit_subrows_enabled
+                - visit_rows = visits_count.positive? ? visits : [nil]
+                - visit_rows.each_with_index do |visit, visit_index|
+                  = render 'v2/destinations/list_row', destination: destination, list_columns: list_columns, can_destroy_destinations: can_destroy_destinations, visit: visit, visit_subrow: visit_index.positive?, visit_index: visit_index, visits_count: visits_count
+              - else
+                = render 'v2/destinations/list_row', destination: destination, list_columns: list_columns, can_destroy_destinations: can_destroy_destinations, visit: nil, visit_subrow: false, visit_index: 0, visits_count: visits_count
           - else
             %tr
               %td.text-center.text-muted{colspan: empty_colspan}

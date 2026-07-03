@@ -15,9 +15,17 @@ module Lookbook
 
     Tag = Struct.new(:id, :label, :color, :icon, keyword_init: true)
 
-    Visit = Struct.new(:tags, keyword_init: true) do
-      def initialize(tags: [])
-        super(tags: tags)
+    Visit = Struct.new(:ref, :tags, :pickups, :deliveries, keyword_init: true) do
+      def initialize(ref: nil, tags: [], pickups: {}, deliveries: {})
+        super(ref: ref, tags: tags, pickups: pickups, deliveries: deliveries)
+      end
+
+      def default_pickups
+        pickups
+      end
+
+      def default_deliveries
+        deliveries
       end
     end
 
@@ -85,7 +93,10 @@ module Lookbook
           geocoding_accuracy: 0.92,
           geocoding_result: { 'free' => '12 rue des Lilas, 33000 Bordeaux' },
           tags: [urgent, retail],
-          visits: [Visit.new(tags: [visit_cat]), Visit.new(tags: [visit_cat])]
+          visits: [
+            Visit.new(ref: 'V-001', tags: [visit_cat], deliveries: { 1 => 2.0 }),
+            Visit.new(ref: 'V-002', tags: [visit_cat], deliveries: { 1 => 1.5 })
+          ]
         ),
         Destination.new(
           id: 10_002,
