@@ -38,7 +38,8 @@ module PreferencesCatalogSplits
     end
     if k == 'destinations_list'
       z = read_headers_hash['destinations_list']
-      h = Preferences::Catalog::DestinationsList.normalize_zone(z)
+      cust = respond_to?(:customer) ? customer : nil
+      h = Preferences::Catalog::DestinationsList.normalize_zone(z, customer: cust)
       return [h['active'], h['hidden']]
     end
 

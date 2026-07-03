@@ -3547,7 +3547,7 @@ en:
       phone_number: Phone
       tags: Tags
       visit_tags: Visit categories
-      visits: Visits
+      visit_ref: Visit reference
     header_blocks:
       stops: Stops
       total_duration: Total route duration
