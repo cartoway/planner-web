@@ -2,32 +2,36 @@
 - if destinations_list_visit_scoped_column?(column_id)
   - case column_id.to_s
   - when 'visit_tags'
-    = render 'v2/destinations/list_tag_badges', tags: destinations_list_visit_tags_for_visit(visit)
+    = render 'v2/destinations/list_tag_badges', tags: destinations_list_visit_tags_for_visit(visit), column_id: column_id
   - when 'visit_ref'
-    %td= destinations_list_visit_ref(visit)
+    - visit_ref = destinations_list_visit_ref(visit)
+    = destinations_list_column_td(column_id, tooltip: (visit_ref unless visit_ref == '–')) { visit_ref }
   - else
     - du_data = destinations_list_deliverable_unit_for_visit(visit, column_id, destination.customer)
     - if du_data
-      = render 'v2/destinations/list_deliverable_unit_cell', du_data: du_data
+      = render 'v2/destinations/list_deliverable_unit_cell', du_data: du_data, column_id: column_id
     - else
-      %td –
+      = destinations_list_column_td(column_id) { '–' }
 - elsif visit_subrow
-  %td.destinations-list-cell--destination-spacer
+  %td{class: "#{destinations_list_column_class(column_id)} destinations-list-cell--destination-spacer"}
 - else
   - case column_id.to_s
   - when 'name'
-    %td= destination.name
+    = destinations_list_column_td(column_id, tooltip: destination.name) { destination.name }
   - when 'address'
-    %td.destinations-list-address= destinations_list_formatted_address(destination)
+    - address = destinations_list_formatted_address(destination)
+    = destinations_list_column_td(column_id, tooltip: address) { address }
   - when 'ref'
-    %td= destination.ref
+    = destinations_list_column_td(column_id, tooltip: destination.ref) { destination.ref }
   - when 'geocoding'
-    = render 'v2/destinations/list_geocoding_cell', destination: destination
+    = render 'v2/destinations/list_geocoding_cell', destination: destination, column_id: column_id
   - when 'comment'
-    %td= destination.comment
+    = destinations_list_column_td(column_id, tooltip: destination.comment) { destination.comment }
   - when 'phone_number'
-    %td= destinations_list_phone_link(destination) || '–'
+    - phone = destination.phone_number
+    = destinations_list_column_td(column_id, tooltip: phone) do
+      = destinations_list_phone_link(destination) || '–'
   - when 'tags'
-    = render 'v2/destinations/list_tag_badges', tags: destination.tags
+    = render 'v2/destinations/list_tag_badges', tags: destination.tags, column_id: column_id
   - else
-    %td –
+    = destinations_list_column_td(column_id) { '–' }
