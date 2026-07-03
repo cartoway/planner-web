@@ -15,16 +15,16 @@
     %span#count= "#{@destinations.size} / #{@total_count} #{t 'activerecord.models.destinations', count: @total_count}"
   #destination_box.destinations-list-scroll
     .table-responsive
-      %table.table.table-striped.table-condensed
+      %table.table.table-striped.table-condensed.destinations-list-table
         %thead
           %tr
             %th.destinations-selection-col
               %button.btn.btn-light.btn-xs.destinations-toggle-selection{type: "button", title: t('all.verb.toggle_selection')}
                 %i.fa.fa-check.fa-fw
             - list_columns.each do |column_id|
-              %th.destinations-list-sortable-col
+              %th{class: "#{destinations_list_column_class(column_id)} destinations-list-sortable-col"}
                 = destinations_list_sort_header(column_id, destinations_list_column_label(column_id), @destinations_list_sort)
-            %th
+            %th.destinations-list-actions-col
         %tbody
           - if @destinations.any?
             - visit_subrows_enabled = destinations_list_visit_subrows_enabled?(list_columns)
