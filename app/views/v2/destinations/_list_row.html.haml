@@ -1,0 +1,18 @@
+-# locals: destination, list_columns, can_destroy_destinations, visit:, visit_subrow:, visit_index:, visits_count:
+%tr.destination{class: [('destination-visit-subrow' if visit_subrow)], data: {destination_id: destination.id, lat: destination.lat, lng: destination.lng}}
+  - if visit_subrow
+    %td.destinations-selection-col.destinations-list-cell--destination-spacer
+    - list_columns.each do |column_id|
+      = render 'v2/destinations/list_column_cell', destination: destination, column_id: column_id, visit: visit, visit_subrow: true, visit_index: visit_index, visits_count: visits_count
+    %td.destinations-list-cell--destination-spacer
+  - else
+    %td.destinations-selection-col
+      %input{type: "checkbox", id: "destination_#{destination.id}", name: "destinations[#{destination.id}]", value: "1"}
+    - list_columns.each do |column_id|
+      = render 'v2/destinations/list_column_cell', destination: destination, column_id: column_id, visit: visit, visit_subrow: false, visit_index: visit_index, visits_count: visits_count
+    %td.text-nowrap
+      .btn-group.btn-group-sm{role: "group"}
+        = link_to edit_destination_path(destination), class: 'btn btn-light btn-xs', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
+          %i.fa.fa-pencil.fa-fw
+        %button.btn.btn-danger.btn-xs.destinations-row-delete{type: "button", disabled: !can_destroy_destinations, title: t('all.verb.destroy'), data: { destination_id: destination.id }}
+          %i.fa.fa-trash.fa-fw

@@ -103,7 +103,7 @@ module UserPreferences
     base['stop_list'] = sl if sl.present?
     dl = hp['destinations_list'].presence
     base['destinations_list'] = dl if dl.present?
-    self.headers = ::Preferences::Catalog.normalize_headers(base)
+    self.headers = ::Preferences::Catalog.normalize_headers(base, customer: customer)
   end
 
   # Ordered field ids (e.g. name, ref) for the planning stop list primary line, max 3 after normalize.
@@ -112,20 +112,21 @@ module UserPreferences
     ::Preferences::Catalog::StopList.normalize_zone(z)['active']
   end
 
-  def destinations_list_columns_split
+  def destinations_list_columns_split(customer = nil)
+    customer ||= self.customer if respond_to?(:customer)
     z = read_headers_hash['destinations_list']
-    h = ::Preferences::Catalog::DestinationsList.normalize_zone(z)
+    h = ::Preferences::Catalog::DestinationsList.normalize_zone(z, customer: customer)
     [h['active'], h['hidden']]
   end
 
-  def destinations_list_active_column_ids
-    destinations_list_columns_split.first
+  def destinations_list_active_column_ids(customer = nil)
+    destinations_list_columns_split(customer).first
   end
 
   private
 
   def normalize_user_preferences
-    self.headers = ::Preferences::Catalog.normalize_headers(read_headers_hash)
+    self.headers = ::Preferences::Catalog.normalize_headers(read_headers_hash, customer: customer)
   end
 
   def default_segment_control

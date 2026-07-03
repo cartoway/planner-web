@@ -1,0 +1,16 @@
+-# locals: du_data — { unit:, pickup:, delivery: }
+- unit = du_data[:unit]
+- pickup = du_data[:pickup]
+- delivery = du_data[:delivery]
+%td.destinations-list-deliverable-unit-cell
+  - if pickup.zero? && delivery.zero?
+    –
+  - else
+    %span.destinations-list-deliverable-unit-qty.text-nowrap
+      %i.fa{class: unit.default_icon, 'aria-hidden': 'true'}
+      - if pickup.positive?
+        %i.fa.fa-up-long.fa-fw{'aria-hidden': 'true', title: t('destinations.index.pickup')}
+        = number_with_precision(pickup, precision: 2, delimiter: t('number.format.delimiter'), strip_insignificant_zeros: true)
+      - if delivery.positive?
+        %i.fa.fa-down-long.fa-fw{'aria-hidden': 'true', title: t('destinations.index.delivery')}
+        = number_with_precision(delivery, precision: 2, delimiter: t('number.format.delimiter'), strip_insignificant_zeros: true)

@@ -89,7 +89,7 @@
             - active_dl.each_with_index do |cid, index|
               .draggable-item{ data: { value: cid, index: index } }
                 %span.item-order
-                %span.item-text= t("display_ui.destinations_list_columns.#{cid}", default: cid.to_s.humanize)
+                %span.item-text= destinations_list_column_label(cid, @user.customer)
                 %input{ type: 'hidden', name: 'user[headers][destinations_list][active][]', value: cid }
         .destinations-list-tier-hidden.priority-inactive.inactive-zone
           .zone-title= t('users.form.display_ui.data_hidden')
@@ -97,6 +97,6 @@
             - hidden_dl.each_with_index do |cid, index|
               .draggable-item.headers-tier-hidden-item{ data: { value: cid, index: index } }
                 %span.item-order
-                %span.item-text= t("display_ui.destinations_list_columns.#{cid}", default: cid.to_s.humanize)
+                %span.item-text= destinations_list_column_label(cid, @user.customer)
                 %input{ type: 'hidden', name: 'user[headers][destinations_list][hidden][]', value: cid }
     %small.help-block= t('users.form.display_ui.destinations_list_help')
