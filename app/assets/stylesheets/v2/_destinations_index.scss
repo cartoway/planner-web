@@ -174,7 +174,6 @@
     top: 0;
     bottom: 0;
     width: max-content;
-    max-width: 90vw;
     z-index: 2;
     background: var(--bs-body-bg);
     box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
@@ -238,14 +237,50 @@
       padding: 0 1rem 1rem;
 
       .table-responsive {
-        width: max-content;
+        width: 100%;
         max-width: 100%;
-        overflow-x: visible;
+        overflow-x: auto;
+        overflow-y: visible;
       }
 
       .table {
         width: auto;
         margin-bottom: 0;
+      }
+
+      .destinations-list-table {
+        table-layout: fixed;
+      }
+
+      .destinations-list-col {
+        overflow: hidden;
+      }
+
+      .destinations-list-cell-content {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+      }
+
+      .destinations-list-col--name { width: 7rem; }
+      .destinations-list-col--ref { width: 4.5rem; }
+      .destinations-list-col--address { width: 10rem; }
+      .destinations-list-col--geocoding { width: 7.5rem; }
+      .destinations-list-col--comment { width: 7rem; }
+      .destinations-list-col--phone-number { width: 6.5rem; }
+      .destinations-list-col--tags { width: 7rem; }
+      .destinations-list-col--visit-ref { width: 4.5rem; }
+      .destinations-list-col--visit-tags { width: 7rem; }
+      .destinations-list-col--deliverable-unit { width: 5rem; }
+
+      .destinations-list-col--geocoding .destinations-list-cell-content {
+        white-space: normal;
+      }
+
+      .destinations-list-actions-col {
+        width: 4.75rem;
       }
 
       .table th,
@@ -282,15 +317,6 @@
 
       .destinations-list-sort-link.is-active .destinations-list-sort-icon {
         opacity: 1;
-      }
-
-      td.destinations-list-address,
-      td.destinations-list-geocoding {
-        white-space: normal;
-      }
-
-      td.destinations-list-address {
-        max-width: 16rem;
       }
 
       // Map pin (or ?highlight_destination_id=): row is bold + tinted, then fades (v2--destinations-index).
@@ -330,7 +356,7 @@
       }
 
       td.destinations-list-geocoding {
-        min-width: 6rem;
+        min-width: 0;
       }
 
       .destinations-list-geocoding-cell {
@@ -362,8 +388,10 @@
           font-size: 0.75rem;
           line-height: 1.2;
           color: var(--bs-secondary-color);
-          word-break: break-word;
-          max-width: 18rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 100%;
         }
 
         .no_position {
@@ -373,26 +401,23 @@
         }
       }
 
-      td.destinations-list-tags-cell {
-        min-width: 6rem;
-        max-width: 16rem;
-      }
-
-      td.destinations-list-deliverable-unit-cell {
-        padding: 0 8px;
-      }
-
       .destinations-list-deliverable-unit-qty {
         display: inline-flex;
         align-items: center;
         gap: 0.2rem;
         font-size: 0.8125rem;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .destinations-list-tag-badges {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 0.25rem;
+        overflow: hidden;
+        min-width: 0;
       }
 
       .destinations-list-tag-badge {
@@ -402,6 +427,7 @@
         font-size: 0.75rem;
         font-weight: 500;
         white-space: nowrap;
+        flex-shrink: 0;
         max-width: 100%;
 
         .fa {
