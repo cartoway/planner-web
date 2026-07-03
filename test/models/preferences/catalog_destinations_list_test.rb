@@ -12,6 +12,9 @@ class PreferencesCatalogDestinationsListTest < ActiveSupport::TestCase
     assert_includes active, 'name'
     assert_includes active, 'address'
     assert_includes active, 'geocoding'
+    @customer.deliverable_units.each do |unit|
+      assert_includes active, Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+    end
   end
 
   test 'normalize_zone keeps at least one active column' do
@@ -21,6 +24,67 @@ class PreferencesCatalogDestinationsListTest < ActiveSupport::TestCase
 
   test 'allowed column ids include visit_tags when customer is editable' do
     assert_includes Preferences::Catalog::DestinationsList.allowed_column_ids(@customer), 'visit_tags'
+  end
+
+  test 'allowed column ids include one column per deliverable unit' do
+    allowed = Preferences::Catalog::DestinationsList.allowed_column_ids(@customer.reload)
+    @customer.deliverable_units.each do |unit|
+      col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+      assert_includes allowed, col_id
+    end
+  end
+
+  test 'normalize_zone with customer keeps deliverable unit columns in active' do
+    unit = @customer.deliverable_units.first
+    col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+    normalized = Preferences::Catalog::DestinationsList.normalize_zone(
+      { 'active' => ['name'] + [col_id], 'hidden' => [] },
+      customer: @customer
+    )
+    assert_includes normalized['active'], col_id
+  end
+
+  test 'normalize_zone with customer auto-activates new deliverable unit columns' do
+    unit = @customer.deliverable_units.first
+    col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+    normalized = Preferences::Catalog::DestinationsList.normalize_zone(
+      { 'active' => ['name'], 'hidden' => [] },
+      customer: @customer
+    )
+    assert_includes normalized['active'], col_id
+  end
+
+  test 'normalize_zone without customer strips deliverable unit columns' do
+    normalized = Preferences::Catalog::DestinationsList.normalize_zone(
+      { 'active' => %w[name deliverable_unit_1], 'hidden' => [] }
+    )
+    assert_not_includes normalized['active'], 'deliverable_unit_1'
+  end
+
+  test 'visit_scoped_column? covers visit tags, visits and deliverable unit columns' do
+    unit = @customer.deliverable_units.first
+    col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+    assert Preferences::Catalog::DestinationsList.visit_scoped_column?('visit_tags')
+    assert Preferences::Catalog::DestinationsList.visit_scoped_column?('visit_ref')
+    assert Preferences::Catalog::DestinationsList.visit_scoped_column?(col_id)
+    assert_not Preferences::Catalog::DestinationsList.visit_scoped_column?('name')
+  end
+
+  test 'normalize_zone remaps legacy visits column to visit_ref' do
+    normalized = Preferences::Catalog::DestinationsList.normalize_zone(
+      { 'active' => %w[name visits], 'hidden' => [] },
+      customer: @customer
+    )
+    assert_includes normalized['active'], 'visit_ref'
+    assert_not_includes normalized['active'], 'visits'
+  end
+
+  test 'normalize_zone places visit_ref before visit_tags in active columns' do
+    normalized = Preferences::Catalog::DestinationsList.normalize_zone(
+      { 'active' => %w[name visit_tags visit_ref], 'hidden' => [] },
+      customer: @customer
+    )
+    assert_equal %w[name visit_ref visit_tags], normalized['active'] & %w[name visit_ref visit_tags]
   end
 
   test 'normalize_headers includes destinations_list zone' do

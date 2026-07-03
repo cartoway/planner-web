@@ -275,7 +275,7 @@ class DestinationsController < ApplicationController
   def load_destinations_index_page
     per_page = destinations_index_per_page
     page = [params[:page].to_i, 1].max
-    scope = destinations_filtered_scope.includes([:tags, visits: :tags])
+    scope = destinations_filtered_scope.includes([:tags, { visits: :tags }, { customer: :deliverable_units }])
 
     @total_count = scope.count
     @destinations = scope.offset((page - 1) * per_page).limit(per_page)
@@ -284,7 +284,7 @@ class DestinationsController < ApplicationController
     @search_query = params[:q].to_s.strip
     @active_filters = destinations_index_active_filters
     allowed = ::Preferences::Catalog.destinations_list_allowed_column_ids(@customer)
-    active = current_user.destinations_list_active_column_ids
+    active = current_user.destinations_list_active_column_ids(@customer)
     @destinations_list_columns = ::Preferences::Catalog.filter_order(active, allowed)
   end
 
