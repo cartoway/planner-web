@@ -2,8 +2,6 @@
 
 module DesignSystem
   class NavigationPreview < ApplicationPreview
-
-
     def breadcrumbs
       render_with_template
     end

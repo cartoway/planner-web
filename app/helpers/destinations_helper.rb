@@ -15,7 +15,15 @@
 # along with Mapotempo. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
+# rubocop:disable Metrics/ModuleLength
 module DestinationsHelper
+  GEOCODING_LEVEL_ICONS = {
+    'point' => 'fa-map-marker',
+    'house' => 'fa-store',
+    'street' => 'fa-road',
+    'intersection' => 'fa-times',
+    'city' => 'fa-exclamation-triangle'
+  }.freeze
   # Builds params hash for destinations index URL (search, filters, pagination).
   def destinations_index_params(overrides = {})
     base = {
@@ -239,13 +247,7 @@ module DestinationsHelper
   end
 
   def destinations_list_geocoding_level_icon_class(destination)
-    case destination.geocoding_level&.to_s
-    when 'point' then 'fa-map-marker'
-    when 'house' then 'fa-store'
-    when 'street' then 'fa-road'
-    when 'intersection' then 'fa-times'
-    when 'city' then 'fa-exclamation-triangle'
-    end
+    GEOCODING_LEVEL_ICONS[destination.geocoding_level&.to_s]
   end
 
   def destinations_list_geocoding_result_free(destination)
@@ -376,3 +378,4 @@ module DestinationsHelper
     csv
   end
 end
+# rubocop:enable Metrics/ModuleLength

@@ -2,8 +2,6 @@
 
 module DesignSystem
   class FoundationPreview < ApplicationPreview
-
-
     def default
       render_with_template
     end

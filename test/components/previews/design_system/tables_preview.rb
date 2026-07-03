@@ -25,7 +25,7 @@ module DesignSystem
       ).uniq & allowed
 
       if record_customer&.destinations&.exists?
-        scope = record_customer.destinations.includes([:tags, visits: :tags]).reorder(:id)
+        scope = record_customer.destinations.includes([:tags, { visits: :tags }]).reorder(:id)
         @total_count = scope.count
         @destinations = scope.limit(3).to_a
         @lookbook_destinations_list_demo = false

@@ -2,8 +2,6 @@
 
 module DesignSystem
   class ButtonsPreview < ApplicationPreview
-
-
     def variants
       render_with_template
     end

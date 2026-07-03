@@ -29,7 +29,7 @@ class PlanningsController < ApplicationController
 
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   PLANNING_STATE_CAPTURE_ACTIONS = [:move, :driver_move, :reverse_order, :automatic_insert, :update_stop, :active, :apply_zonings].freeze
-  # optimize / optimize_route are excluded: state is captured in OptimizerJob after async completion.
+  # NOTE: optimize / optimize_route are excluded — state is captured in OptimizerJob after async completion.
   UPDATE_ACTIONS_FULL_ROUTE_PRELOAD = UPDATE_ACTIONS - [:update_stop]
   before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
   before_action :remember_vehicle_usage_set_id_for_state_capture, only: [:update]

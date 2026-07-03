@@ -36,9 +36,9 @@ namespace :sopac do
           SopacBroker::BrokerConfig.for_customer(customer)
         else
           SopacBroker::BrokerConfig.from_credentials(
-            username: ENV['USERNAME'] || ENV['SOPAC_USERNAME'],
-            password: ENV['PASSWORD'] || ENV['SOPAC_PASSWORD'],
-            queue_prefix: ENV['QUEUE_PREFIX'] || ENV['SOPAC_QUEUE_PREFIX']
+            username: ENV['USERNAME'] || ENV.fetch('SOPAC_USERNAME', nil),
+            password: ENV['PASSWORD'] || ENV.fetch('SOPAC_PASSWORD', nil),
+            queue_prefix: ENV['QUEUE_PREFIX'] || ENV.fetch('SOPAC_QUEUE_PREFIX', nil)
           )
         end
 

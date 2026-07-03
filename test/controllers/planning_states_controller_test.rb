@@ -141,8 +141,8 @@ class PlanningStatesControllerTest < ActionController::TestCase
   test 'reapply restores planning structure' do
     snapshot_visit_ids =
       @planning_state.payload['routes'].flat_map { |route| route['stops'] }
-        .select { |stop| stop['type'] == 'visit' }
-        .map { |stop| stop['visit_id'] }
+                     .select { |stop| stop['type'] == 'visit' }
+                     .map { |stop| stop['visit_id'] }
 
     @planning.routes.select(&:vehicle_usage?).each { |route| route.set_visits([], false) }
 

@@ -295,15 +295,16 @@ class Planning < ApplicationRecord
         routes[i].remove_store_reloads
         routes[i].remove_rests if r[:visits].any? { |(obj, _stop_attributes)| obj == :rest }
         r[:visits].each.with_index{ |(obj, stop_attributes), index|
-          if obj.is_a?(Visit)
+          case obj
+          when Visit
             if obj.id && stop_visit_ids[obj.id]
               move_visit(routes[i], obj, index + 1)
             elsif tags_compatible?(obj.tags.to_a | obj.destination.tags.to_a)
               routes[i].add(obj, index + 1, stop_attributes)
             end
-          elsif obj.is_a?(StoreReload)
+          when StoreReload
             routes[i].add_store_reload(obj, index + 1, stop_attributes)
-          elsif obj == :rest
+          when :rest
             routes[i].add_rest(index + 1, stop_attributes)
           end
         }

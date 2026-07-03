@@ -8,16 +8,18 @@ module Lookbook
         true
       end
 
-      def is_editable?
+      def editable?
         true
       end
+
+      alias_method :is_editable?, :editable?
     end
 
     Tag = Struct.new(:id, :label, :color, :icon, keyword_init: true)
 
     Visit = Struct.new(:ref, :tags, :pickups, :deliveries, keyword_init: true) do
       def initialize(ref: nil, tags: [], pickups: {}, deliveries: {})
-        super(ref: ref, tags: tags, pickups: pickups, deliveries: deliveries)
+        super
       end
 
       def default_pickups

@@ -3,8 +3,6 @@
 module DesignSystem
   # Bootstrap 5 grid: containers, rows, columns (see Lookbook templates for markup notes).
   class GridLayoutPreview < ApplicationPreview
-
-
     def rows_and_columns
       render_with_template
     end

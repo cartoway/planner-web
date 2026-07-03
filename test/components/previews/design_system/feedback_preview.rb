@@ -2,8 +2,6 @@
 
 module DesignSystem
   class FeedbackPreview < ApplicationPreview
-
-
     def alerts
       render_with_template
     end

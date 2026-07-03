@@ -6,60 +6,67 @@ module LookbookHamlToErb
 
     def convert(text)
       result = +''
-      i = 0
+      index = 0
 
-      while i < text.length
-        if text[i, 2] == '#{'
-          num_backslashes = 0
-          j = i - 1
-          while j >= 0 && text[j] == '\\'
-            num_backslashes += 1
-            j -= 1
-          end
-
-          if num_backslashes.odd?
-            result.chop!
-            result << '#{'
-            i += 2
-          else
-            depth = 1
-            j = i + 2
-            in_string = nil
-
-            while j < text.length && depth.positive?
-              char = text[j]
-              if in_string
-                if char == in_string
-                  num_backslashes = 0
-                  k = j - 1
-                  while k >= 0 && text[k] == '\\'
-                    num_backslashes += 1
-                    k -= 1
-                  end
-                  in_string = nil unless num_backslashes.odd?
-                end
-              elsif ['"', "'"].include?(char)
-                in_string = char
-              elsif char == '{'
-                depth += 1
-              elsif char == '}'
-                depth -= 1
-              end
-              j += 1
-            end
-
-            raise ArgumentError, "Unclosed interpolation at #{i}" if depth.positive?
-
-            result << "<%= #{text[(i + 2)...(j - 1)]} %>"
-            i = j
-          end
+      while index < text.length
+        if text[index, 2] == '#{'
+          index = append_interpolation(text, index, result)
         else
-          result << text[i]
-          i += 1
+          result << text[index]
+          index += 1
         end
       end
 
       result
+    end
+
+    def append_interpolation(text, index, result)
+      if count_trailing_backslashes(text, index - 1).odd?
+        result.chop!
+        result << '#{'
+        return index + 2
+      end
+
+      j = find_interpolation_end(text, index + 2)
+      raise ArgumentError, "Unclosed interpolation at #{index}" if j.nil?
+
+      result << "<%= #{text[(index + 2)...(j - 1)]} %>"
+      j
+    end
+
+    def find_interpolation_end(text, start_index)
+      depth = 1
+      j = start_index
+      in_string = nil
+
+      while j < text.length && depth.positive?
+        char = text[j]
+        if in_string
+          in_string = nil if char == in_string && !escaped_character?(text, j)
+        elsif ['"', "'"].include?(char)
+          in_string = char
+        elsif char == '{'
+          depth += 1
+        elsif char == '}'
+          depth -= 1
+        end
+        j += 1
+      end
+
+      depth.positive? ? nil : j
+    end
+
+    def escaped_character?(text, index)
+      count_trailing_backslashes(text, index - 1).odd?
+    end
+
+    def count_trailing_backslashes(text, index)
+      count = 0
+      while index >= 0 && text[index] == '\\'
+        count += 1
+        index -= 1
+      end
+      count
     end
   end
 end

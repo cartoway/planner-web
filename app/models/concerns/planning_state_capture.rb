@@ -18,6 +18,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
+# rubocop:disable Metrics/ModuleLength
 module PlanningStateCapture
   extend ActiveSupport::Concern
 
@@ -211,3 +212,4 @@ module PlanningStateCapture
     capture_state!(trigger: trigger)
   end
 end
+# rubocop:enable Metrics/ModuleLength

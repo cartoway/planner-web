@@ -1184,7 +1184,7 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal 'update_stop', state.trigger
     assert_equal 'individual', state.category
     captured_stop = state.payload['routes'].flat_map { |route| route['stops'] }
-      .find { |stop| stop['stop_id'] == stops(:stop_one_one).id }
+                         .find { |stop| stop['stop_id'] == stops(:stop_one_one).id }
     assert_equal false, captured_stop['active']
   end
 

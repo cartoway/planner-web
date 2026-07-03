@@ -998,8 +998,8 @@ class PlanningTest < ActiveSupport::TestCase
 
     snapshot_visit_ids =
       state.payload['routes'].flat_map { |route| route['stops'] }
-        .select { |stop| stop['type'] == 'visit' }
-        .map { |stop| stop['visit_id'] }
+           .select { |stop| stop['type'] == 'visit' }
+           .map { |stop| stop['visit_id'] }
     current_visit_ids = planning.routes.flat_map(&:stops).grep(StopVisit).map(&:visit_id)
 
     assert_equal snapshot_visit_ids.sort, current_visit_ids.sort
@@ -1023,8 +1023,8 @@ class PlanningTest < ActiveSupport::TestCase
 
     snapshot_visit_ids =
       state.payload['routes'].flat_map { |route| route['stops'] }
-        .select { |stop| stop['type'] == 'visit' }
-        .map { |stop| stop['visit_id'] }
+           .select { |stop| stop['type'] == 'visit' }
+           .map { |stop| stop['visit_id'] }
     current_visit_ids = planning.routes.flat_map(&:stops).grep(StopVisit).map(&:visit_id)
 
     assert_equal snapshot_visit_ids.sort, current_visit_ids.sort

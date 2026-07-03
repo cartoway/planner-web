@@ -36,12 +36,10 @@ module LookbookHamlToErb
       when Prism::ArrayNode then extract_array(node)
       when Prism::StringNode then node.unescaped
       when Prism::SymbolNode then node.unescaped.to_sym
-      when Prism::IntegerNode then node.value
-      when Prism::FloatNode then node.value
+      when Prism::IntegerNode, Prism::FloatNode then node.value
       when Prism::TrueNode then true
       when Prism::FalseNode then false
       when Prism::NilNode then nil
-      else nil
       end
     end
 
@@ -79,7 +77,6 @@ module LookbookHamlToErb
       case node
       when Prism::SymbolNode then node.unescaped.to_sym
       when Prism::StringNode then node.unescaped
-      else nil
       end
     end
   end
