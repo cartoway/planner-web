@@ -18,9 +18,12 @@
   - case column_id.to_s
   - when 'name'
     = destinations_list_column_td(column_id, tooltip: destination.name) { destination.name }
-  - when 'address'
-    - address = destinations_list_formatted_address(destination)
-    = destinations_list_column_td(column_id, tooltip: address) { address }
+  - when 'street'
+    = destinations_list_column_td(column_id, tooltip: destination.street) { destination.street }
+  - when 'postalcode'
+    = destinations_list_column_td(column_id, tooltip: destination.postalcode) { destination.postalcode }
+  - when 'city'
+    = destinations_list_column_td(column_id, tooltip: destination.city) { destination.city }
   - when 'ref'
     = destinations_list_column_td(column_id, tooltip: destination.ref) { destination.ref }
   - when 'geocoding'

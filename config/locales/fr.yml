@@ -1537,6 +1537,7 @@ fr:
       sort_asc: Tri croissant sur %{column}
       sort_desc: Tri décroissant sur %{column}
       remove_filter: Retirer ce filtre
+      destinations_count_help: Nombre de destinations
       search_keys:
         ref: ref
         name: nom
@@ -3689,7 +3690,9 @@ fr:
       status: Statut
     destinations_list_columns:
       name: Nom
-      address: Adresse
+      street: Voie
+      postalcode: Code postal
+      city: Ville
       ref: Référence
       geocoding: Géocodage
       comment: Commentaire
