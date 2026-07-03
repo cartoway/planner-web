@@ -17,6 +17,16 @@
     - History modal shows the same route-data statistics as the planning header, with deltas vs the current planning (lower is better, except active stops count)
     - Pin, two-step delete, and full planning reload on reapply
   - Planning: focus active rests without geolocation on their driving leg
+  - Lookbook: design system preview UI on the Cartoway v2 shell
+    - Component previews (foundation, buttons, forms, tables, layout chrome, overlays, navigation, planning sidebar)
+    - Dual HAML/ERB scenario templates with inspector source panels
+    - Visual regression tests for Lookbook previews
+  - V2 application layout: Bootstrap 5 chrome with turbo-frame form sidebar, slide panels, and shared floating controls (`floating-btn`, `xl-floating-button`)
+  - Destinations index (v2): full-page MapLibre map with collapsible list overlay and destination edit form in the right sidebar
+    - Key:value filtered search, paginated turbo-frame list, and user-configurable columns
+    - Map markers via GeoJSON bbox loading; cluster / de-cluster viewport toggle (same icons as planning v1)
+    - Row selection, bulk delete, and highlight from map pin or `highlight_destination_id` deep link
+    - Coordinate editing on the background map: crosshairs toggle, placement mode (hidden list, centred cancel button), sync with lat/lng fields
 
   ### Changed
   - Sopac: migrate from api to message broker
