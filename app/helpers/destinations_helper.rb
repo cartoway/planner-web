@@ -57,7 +57,7 @@ module DestinationsHelper
     allowed = destinations_list_allowed_column_ids(customer)
     active =
       if user_signed_in? && current_user.respond_to?(:destinations_list_active_column_ids) && !current_user.admin?
-        current_user.destinations_list_active_column_ids
+        current_user.destinations_list_active_column_ids(customer)
       else
         ::Preferences::Catalog::DestinationsList.default_active_for(customer)
       end
@@ -67,12 +67,80 @@ module DestinationsHelper
   def destinations_list_columns_selector_options(customer)
     active_ids = destinations_list_active_column_ids(customer)
     destinations_list_allowed_column_ids(customer).map do |id|
-      { id: id, label: destinations_list_column_label(id), active: active_ids.include?(id) }
+      { id: id, label: destinations_list_column_label(id, customer), active: active_ids.include?(id) }
     end
   end
 
-  def destinations_list_column_label(column_id)
+  def destinations_list_column_label(column_id, customer = nil)
+    customer ||= @customer if defined?(@customer) && @customer
+    du_id = ::Preferences::Catalog::DestinationsList.parse_deliverable_unit_column_id(column_id)
+    if du_id && customer
+      unit = customer.deliverable_units.find { |du| du.id == du_id }
+      return unit.label if unit&.label.present?
+    end
+
     I18n.t("display_ui.destinations_list_columns.#{column_id}", default: column_id.to_s.humanize)
+  end
+
+  def destinations_list_deliverable_unit_totals(destination, deliverable_unit)
+    pickup = 0.0
+    delivery = 0.0
+    destination.visits.each do |visit|
+      pickups = visit.default_pickups
+      deliveries = visit.default_deliveries
+      pickup += pickups[deliverable_unit.id].to_f
+      delivery += deliveries[deliverable_unit.id].to_f
+    end
+    { pickup: pickup, delivery: delivery }
+  end
+
+  def destinations_list_deliverable_unit_for_column(destination, column_id, customer = nil)
+    customer ||= destination.customer
+    du_id = ::Preferences::Catalog::DestinationsList.parse_deliverable_unit_column_id(column_id)
+    return nil unless du_id && customer
+
+    unit = customer.deliverable_units.find { |du| du.id == du_id }
+    return nil unless unit
+
+    totals = destinations_list_deliverable_unit_totals(destination, unit)
+    { unit: unit, pickup: totals[:pickup], delivery: totals[:delivery] }
+  end
+
+  def destinations_list_visit_scoped_column?(column_id)
+    ::Preferences::Catalog::DestinationsList.visit_scoped_column?(column_id)
+  end
+
+  def destinations_list_visit_subrows_enabled?(column_ids)
+    Array(column_ids).any? { |id| destinations_list_visit_scoped_column?(id) }
+  end
+
+  def destinations_list_visit_tags_for_visit(visit)
+    return [] unless visit
+
+    visit.tags.sort_by(&:label)
+  end
+
+  def destinations_list_visit_ref(visit)
+    return '–' unless visit
+
+    visit.ref.presence || '–'
+  end
+
+  def destinations_list_deliverable_unit_for_visit(visit, column_id, customer = nil)
+    return nil unless visit
+
+    du_id = ::Preferences::Catalog::DestinationsList.parse_deliverable_unit_column_id(column_id)
+    return nil unless du_id
+
+    customer ||= visit.destination.customer if visit.respond_to?(:destination) && visit.destination
+    return nil unless customer
+
+    unit = customer.deliverable_units.find { |du| du.id == du_id }
+    return nil unless unit
+
+    pickups = visit.default_pickups
+    deliveries = visit.default_deliveries
+    { unit: unit, pickup: pickups[unit.id].to_f, delivery: deliveries[unit.id].to_f }
   end
 
   def destinations_list_formatted_address(destination)

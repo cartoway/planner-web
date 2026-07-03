@@ -111,6 +111,30 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '#destinations-map-layout', 0
   end
 
+  test 'v2 index list renders visit subrows when destination has several visits' do
+    assert_difference('Visit.count', 1) do
+      post :append_visit, params: { id: @destination.id }
+    end
+    @request.headers['Turbo-Frame'] = 'destinations_list'
+    get :index, params: { per_page: 100, page: 1 }
+    assert_response :success
+    assert_select %(turbo-frame#destinations_list tbody tr.destination[data-destination-id="#{@destination.id}"]), 2
+    assert_select 'turbo-frame#destinations_list tr.destination-visit-subrow', 1
+  end
+
+  test 'v2 index list skips visit subrows when no visit-scoped column is active' do
+    assert_difference('Visit.count', 1) do
+      post :append_visit, params: { id: @destination.id }
+    end
+    patch :list_columns, params: { active: %w[name address] }
+    assert_response :success
+    @request.headers['Turbo-Frame'] = 'destinations_list'
+    get :index, params: { per_page: 100, page: 1 }
+    assert_response :success
+    assert_select %(turbo-frame#destinations_list tbody tr.destination[data-destination-id="#{@destination.id}"]), 1
+    assert_select 'turbo-frame#destinations_list tr.destination-visit-subrow', 0
+  end
+
   test 'v2 index edit links target form_sidebar turbo frame' do
     get :index
     assert_response :success
@@ -304,6 +328,16 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.name')
     assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.geocoding'), count: 0
     assert_select '#destinations-list-col-geocoding', 1
+  end
+
+  test 'v2 index list renders deliverable unit column with aggregated visit quantities' do
+    unit = deliverable_units(:deliverable_unit_one_one)
+    col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+
+    get :index
+    assert_response :success
+    assert_select 'turbo-frame#destinations_list thead th', text: unit.label
+    assert_select 'turbo-frame#destinations_list td.destinations-list-deliverable-unit-cell .fa-down-long', minimum: 1
   end
 
   test 'should filter destinations by key value search' do

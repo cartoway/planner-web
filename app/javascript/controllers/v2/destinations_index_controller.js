@@ -341,7 +341,10 @@ export default class extends Controller {
     const fromMapPin = !!options.fromMapPin
     this._clearDestinationHighlight()
     let rec = this._destinationRecord(idStr)
-    const row = Array.from(this.element.querySelectorAll('tr.destination')).find((tr) => tr.getAttribute('data-destination-id') === idStr)
+    const rows = Array.from(this.element.querySelectorAll('tr.destination')).filter(
+      (tr) => tr.getAttribute('data-destination-id') === idStr
+    )
+    const row = rows[0]
     if (!rec && row) {
       const lat = parseFloat(row.getAttribute('data-lat'))
       const lng = parseFloat(row.getAttribute('data-lng'))
@@ -361,11 +364,11 @@ export default class extends Controller {
         })
       }
     }
-    if (row) {
-      row.classList.add('highlight')
+    if (rows.length) {
+      rows.forEach((tr) => tr.classList.add('highlight'))
       if (fromMapPin) {
-        row.classList.add('highlight--map-pin')
-        this._scheduleMapPinRowHighlightFade(row)
+        rows.forEach((tr) => tr.classList.add('highlight--map-pin'))
+        this._scheduleMapPinRowHighlightFade(rows)
       }
       this._scrollDestinationRowIntoView(row)
     }
@@ -383,13 +386,16 @@ export default class extends Controller {
    * After a map pin click (or turbo jump to highlighted row), row is bold + tinted; then fades and classes clear.
    * Pin marker can stay active until the user focuses another destination.
    */
-  _scheduleMapPinRowHighlightFade (row) {
+  _scheduleMapPinRowHighlightFade (rows) {
     this._cancelMapPinRowHighlight()
+    const rowList = Array.isArray(rows) ? rows : [rows]
+    const primaryRow = rowList[0]
+    if (!primaryRow) return
     let finished = false
     const done = () => {
-      if (finished || !row.isConnected) return
+      if (finished || !primaryRow.isConnected) return
       finished = true
-      row.classList.remove('highlight', 'highlight--map-pin')
+      rowList.forEach((row) => row.classList.remove('highlight', 'highlight--map-pin'))
       this._cancelMapPinRowHighlight()
     }
     const onEnd = (e) => {
@@ -397,7 +403,7 @@ export default class extends Controller {
       if (!name.includes(MAP_PIN_ROW_ANIMATION_SUBSTRING)) return
       done()
     }
-    const cell = row.querySelector('td')
+    const cell = primaryRow.querySelector('td')
     if (cell) cell.addEventListener('animationend', onEnd)
     const prefersReduced =
       typeof window.matchMedia === 'function' &&

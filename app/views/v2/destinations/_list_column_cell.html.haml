@@ -1,20 +1,33 @@
--# locals: destination, column_id
-- case column_id.to_s
-- when 'name'
-  %td= destination.name
-- when 'address'
-  %td.destinations-list-address= destinations_list_formatted_address(destination)
-- when 'ref'
-  %td= destination.ref
-- when 'geocoding'
-  = render 'v2/destinations/list_geocoding_cell', destination: destination
-- when 'comment'
-  %td= destination.comment
-- when 'phone_number'
-  %td= destinations_list_phone_link(destination) || '–'
-- when 'tags'
-  = render 'v2/destinations/list_tag_badges', tags: destination.tags
-- when 'visit_tags'
-  = render 'v2/destinations/list_tag_badges', tags: destinations_list_visit_tags(destination)
-- when 'visits'
-  %td= "#{destination.visits.count} #{t('activerecord.models.visits', count: destination.visits.count)}"
+-# locals: destination, column_id, visit: nil, visit_subrow: false, visit_index: 0, visits_count: 0
+- if destinations_list_visit_scoped_column?(column_id)
+  - case column_id.to_s
+  - when 'visit_tags'
+    = render 'v2/destinations/list_tag_badges', tags: destinations_list_visit_tags_for_visit(visit)
+  - when 'visit_ref'
+    %td= destinations_list_visit_ref(visit)
+  - else
+    - du_data = destinations_list_deliverable_unit_for_visit(visit, column_id, destination.customer)
+    - if du_data
+      = render 'v2/destinations/list_deliverable_unit_cell', du_data: du_data
+    - else
+      %td –
+- elsif visit_subrow
+  %td.destinations-list-cell--destination-spacer
+- else
+  - case column_id.to_s
+  - when 'name'
+    %td= destination.name
+  - when 'address'
+    %td.destinations-list-address= destinations_list_formatted_address(destination)
+  - when 'ref'
+    %td= destination.ref
+  - when 'geocoding'
+    = render 'v2/destinations/list_geocoding_cell', destination: destination
+  - when 'comment'
+    %td= destination.comment
+  - when 'phone_number'
+    %td= destinations_list_phone_link(destination) || '–'
+  - when 'tags'
+    = render 'v2/destinations/list_tag_badges', tags: destination.tags
+  - else
+    %td –

@@ -248,6 +248,11 @@
         margin-bottom: 0;
       }
 
+      .table th,
+      .table td {
+        vertical-align: middle;
+      }
+
       td.destinations-list-address,
       td.destinations-list-geocoding {
         white-space: normal;
@@ -340,6 +345,17 @@
       td.destinations-list-tags-cell {
         min-width: 6rem;
         max-width: 16rem;
+      }
+
+      td.destinations-list-deliverable-unit-cell {
+        padding: 0 8px;
+      }
+
+      .destinations-list-deliverable-unit-qty {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        font-size: 0.8125rem;
       }
 
       .destinations-list-tag-badges {
