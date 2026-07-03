@@ -1491,6 +1491,9 @@ en:
       search_help: 'Syntax: field:value (e.g. name:Paris, city:Lyon)'
       columns: Columns
       columns_help: Check the columns to show in the list.
+      sort_by: Sort by %{column}
+      sort_asc: Sorted ascending by %{column}
+      sort_desc: Sorted descending by %{column}
       remove_filter: Remove this filter
       search_keys:
         ref: ref
