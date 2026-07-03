@@ -21,6 +21,10 @@
           %p= t 'destinations.index.over_max_limit', limit: current_user.customer.default_max_destinations
       = form_tag destinations_path, method: :get, id: 'destinations-search-form', class: 'form-group' do
         %input{type: "hidden", name: "per_page", value: @pagination[:per_page]}
+        - if params[:sort].present?
+          %input{type: "hidden", name: "sort", value: params[:sort]}
+        - if params[:direction].present?
+          %input{type: "hidden", name: "direction", value: params[:direction]}
         - Array(@active_filters).each do |filter|
           %input{type: "hidden", name: "filters[]", value: filter}
         = render 'v2/destinations/filtered_search_field', input_id: 'search-query', input_value: @search_query, active_filters: Array(@active_filters), debounce: true
