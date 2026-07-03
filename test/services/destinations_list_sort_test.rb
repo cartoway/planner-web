@@ -40,6 +40,6 @@ class DestinationsListSortTest < ActiveSupport::TestCase
   test 'next_direction_for toggles active column and resets others to asc' do
     sort = DestinationsListSort.new(column_id: 'name', direction: 'asc', customer: @customer)
     assert_equal 'desc', sort.next_direction_for('name')
-    assert_equal 'asc', sort.next_direction_for('address')
+    assert_equal 'asc', sort.next_direction_for('street')
   end
 end
