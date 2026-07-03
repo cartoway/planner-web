@@ -88,22 +88,12 @@ module Preferences
         }
       end
 
-      def remap_legacy_column_ids(ids)
-        ids.flat_map do |id|
-          case id.to_s
-          when 'address' then %w[street postalcode city]
-          when 'visits' then %w[visit_ref]
-          else id.to_s
-          end
-        end.uniq
-      end
-
       def normalize_zone(raw, customer: nil)
         allowed = customer ? allowed_column_ids(customer) : COLUMN_IDS
         default_active = customer ? default_active_for(customer) : DEFAULT_ACTIVE.dup
         z = raw.is_a?(Hash) ? raw.stringify_keys : {}
-        active = Core.filter_order(remap_legacy_column_ids(z['active'] || []), allowed)
-        hidden_src = Core.filter_order(remap_legacy_column_ids(z['hidden'] || []), allowed)
+        active = Core.filter_order(z['active'] || [], allowed)
+        hidden_src = Core.filter_order(z['hidden'] || [], allowed)
         active.uniq!
         hidden_src.uniq!
         hidden_src -= active
