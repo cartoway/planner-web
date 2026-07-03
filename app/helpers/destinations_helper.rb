@@ -89,6 +89,30 @@ module DestinationsHelper
     I18n.t("display_ui.destinations_list_columns.#{column_id}", default: column_id.to_s.humanize)
   end
 
+  def destinations_list_column_class(column_id)
+    du_id = ::Preferences::Catalog::DestinationsList.parse_deliverable_unit_column_id(column_id)
+    slug = du_id ? 'deliverable-unit' : column_id.to_s.tr('_', '-')
+    "destinations-list-col destinations-list-col--#{slug}"
+  end
+
+  def destinations_list_column_td(column_id, tooltip: nil, extra_classes: nil, &block)
+    classes = [destinations_list_column_class(column_id), extra_classes].compact.join(' ')
+    tag.td(class: classes, title: tooltip.presence) do
+      tag.span(class: 'destinations-list-cell-content', &block)
+    end
+  end
+
+  def destinations_list_tags_tooltip(tags)
+    Array(tags).filter_map { |tag| tag.label.presence }.join(', ').presence
+  end
+
+  def destinations_list_geocoding_tooltip(destination)
+    [
+      destinations_list_geocoding_level_title(destination),
+      destinations_list_geocoding_result_free(destination)
+    ].compact.join(' — ').presence
+  end
+
   def destinations_list_deliverable_unit_totals(destination, deliverable_unit)
     pickup = 0.0
     delivery = 0.0
