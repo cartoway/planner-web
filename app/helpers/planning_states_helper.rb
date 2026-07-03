@@ -69,7 +69,7 @@ module PlanningStatesHelper
     render_to_string(
       partial: 'planning_states/statistics_blocks',
       formats: [:html],
-      locals: locals
+      locals: locals.merge(header_block_order: planning_state_header_block_order)
     )
   end
 

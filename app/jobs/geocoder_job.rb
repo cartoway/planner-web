@@ -77,7 +77,7 @@ class GeocoderJob < GeocoderJobStruct
 
   def capture_import_planning_states!
     (capture_planning_state_ids || []).each do |planning_id|
-      Planning.where(id: planning_id).preload_route_details.first!.capture_state!(trigger: 'import')
+      Planning.where(id: planning_id).preload_route_details.first!.capture_state!(trigger: 'import', skip_compute: true)
     end
   end
 end

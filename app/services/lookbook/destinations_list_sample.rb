@@ -13,6 +13,10 @@ module Lookbook
       end
 
       alias_method :is_editable?, :editable?
+
+      def deliverable_units
+        []
+      end
     end
 
     Tag = Struct.new(:id, :label, :color, :icon, keyword_init: true)

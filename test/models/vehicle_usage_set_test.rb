@@ -216,7 +216,7 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
       cost_time: 20.25
     )
 
-    vehicle_usage = @vehicle_usage_set.vehicle_usages.first
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_three)
     assert_equal 10.5, vehicle_usage.default_cost_distance
     assert_equal 15.75, vehicle_usage.default_cost_fixed
     assert_equal 20.25, vehicle_usage.default_cost_time

@@ -324,4 +324,19 @@ class VehicleUsageTest < ActiveSupport::TestCase
 
     assert_nil vehicle_usage.default_max_reload
   end
+
+  test 'assign_index uses next available index when appending to vehicle usage set' do
+    customer = customers(:customer_one)
+    set = vehicle_usage_sets(:vehicle_usage_set_one)
+    next_index = set.vehicle_usages.maximum(:index) + 1
+
+    Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |_url, _mode, _dimension, segments, _options|
+      segments.collect { |_i| [1, 1, '_ibE_seK_seK_seK'] }
+    }) do
+      vehicle = customer.vehicles.create!(name: 'Third vehicle for set one')
+      usage = set.vehicle_usages.find_by!(vehicle_id: vehicle.id)
+
+      assert_equal next_index, usage.index
+    end
+  end
 end

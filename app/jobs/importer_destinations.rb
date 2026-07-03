@@ -640,7 +640,7 @@ class ImporterDestinations < ImporterBase
 
   def capture_import_states_after_finalize!
     import_new_planning_ids_for_capture.each do |planning_id|
-      Planning.where(id: planning_id).preload_route_details.first!.capture_state!(trigger: 'import')
+      Planning.where(id: planning_id).preload_route_details.first!.capture_state!(trigger: 'import', skip_compute: true)
     end
   end
 

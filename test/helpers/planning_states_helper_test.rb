@@ -20,10 +20,30 @@
 
 require 'test_helper'
 
-class PlanningStatesHelperTest < ActionView::TestCase
-  include PlanningStatesHelper
-  include ApplicationHelper
-  include PreferencesHelper
+class PlanningStatesHelperTest < ActionController::TestCase
+  tests PlanningStatesController
+
+  setup do
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
+    sign_in users(:user_one)
+  end
+
+  def helper
+    @controller.helpers
+  end
+
+  def render_statistics_html(statistics, reference_statistics: nil)
+    @controller.render_to_string(
+      partial: 'planning_states/statistics_blocks',
+      formats: [:html],
+      locals: helper.planning_state_statistics_locals(
+        statistics,
+        prefered_unit: 'km',
+        reference_statistics: reference_statistics
+      ).merge(header_block_order: helper.planning_state_header_block_order)
+    )
+  end
 
   test 'planning_state_statistics_html renders route data blocks without speed or quantities' do
     statistics = {
@@ -43,7 +63,7 @@ class PlanningStatesHelperTest < ActionView::TestCase
       'stops_size_active' => 8
     }
 
-    html = planning_state_statistics_html(statistics, prefered_unit: 'km')
+    html = render_statistics_html(statistics)
 
     assert_includes html, 'route-info'
     assert_includes html, 'route-data'
@@ -55,7 +75,7 @@ class PlanningStatesHelperTest < ActionView::TestCase
     state_stats = { 'distance_total' => 10_000.0, 'stops_size_active' => 8 }
     reference_stats = { 'distance_total' => 12_000.0, 'stops_size_active' => 6 }
 
-    diffs = planning_state_stat_diffs(state_stats, reference_stats, prefered_unit: 'km')
+    diffs = helper.planning_state_stat_diffs(state_stats, reference_stats, prefered_unit: 'km')
 
     assert_equal 'text-success', diffs['distance'][:css_class]
     assert diffs['distance'][:formatted].start_with?('−')
@@ -67,7 +87,7 @@ class PlanningStatesHelperTest < ActionView::TestCase
     state_stats = { 'distance_total' => 15_000.0, 'stops_size_active' => 4 }
     reference_stats = { 'distance_total' => 12_000.0, 'stops_size_active' => 7 }
 
-    diffs = planning_state_stat_diffs(state_stats, reference_stats, prefered_unit: 'km')
+    diffs = helper.planning_state_stat_diffs(state_stats, reference_stats, prefered_unit: 'km')
 
     assert_equal 'text-danger', diffs['distance'][:css_class]
     assert diffs['distance'][:formatted].start_with?('+')
@@ -89,18 +109,16 @@ class PlanningStatesHelperTest < ActionView::TestCase
       'routes_cost' => 50.0
     }
 
-    html = planning_state_statistics_html(
-      statistics,
-      prefered_unit: 'km',
-      reference_statistics: reference_statistics
-    )
+    html = render_statistics_html(statistics, reference_statistics: reference_statistics)
 
     assert_includes html, 'stat-diff'
     assert_includes html, 'text-success'
   end
 
   test 'planning_state_header_block_order excludes speed and quantities' do
-    order = planning_state_header_block_order
+    helper.define_singleton_method(:user_signed_in?) { false }
+
+    order = helper.planning_state_header_block_order
 
     assert_not_includes order, 'speed'
     assert_not_includes order, 'quantities'

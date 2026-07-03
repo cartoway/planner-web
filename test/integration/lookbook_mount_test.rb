@@ -52,7 +52,7 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '.lookbook-form-sidebar-host', 1
     assert_select 'aside.form-sidebar.slide-panel.slide-panel--from-right', minimum: 1
-    assert_select 'button.floating-btn.form-sidebar-toggle', minimum: 1
+    assert_select '.form-sidebar-chrome button.btn-close', minimum: 1
     assert_select 'button.floating-btn.form-sidebar-expand.slide-panel-expand-trigger', minimum: 1
     assert_select 'header.destination-form-sidebar-header', minimum: 1
   end

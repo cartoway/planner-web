@@ -58,7 +58,7 @@ class VehicleUsage < ApplicationRecord
   validate :rest_duration_range
   validate :work_time_inside_window
 
-  before_validation :assign_index, on: :create
+  before_create :assign_index
   before_update :update_outdated
 
   before_save :update_routes
@@ -310,15 +310,18 @@ class VehicleUsage < ApplicationRecord
   private
 
   def assign_index
-    return if @index_explicitly_assigned
+    return if @index_explicitly_assigned && persisted?
 
     set = vehicle_usage_set
     return unless set
 
-    siblings = set.vehicle_usages.to_a.reject { |vu| vu == self }
-    used_indices = siblings.map(&:index)
-    db_max = set.vehicle_usages.where.not(id: id).maximum(:index)
-    max_index = [db_max, used_indices.max].compact.max
+    sibling_indices =
+      set.vehicle_usages.target
+         .reject { |vu| vu == self || vu.marked_for_destruction? }
+         .map(&:index)
+    persisted_max =
+      VehicleUsage.unscoped.where(vehicle_usage_set_id: set.id).where.not(id: id).maximum(:index)
+    max_index = ([persisted_max] + sibling_indices).compact.max
     write_attribute(:index, max_index.nil? ? 0 : max_index + 1)
     @index_explicitly_assigned = true
   end

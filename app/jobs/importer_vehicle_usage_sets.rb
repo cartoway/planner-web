@@ -118,6 +118,7 @@ class ImporterVehicleUsageSets < ImporterBase
     end
 
     @common_configuration = {}
+    @import_vehicle_usage_indices = []
 
     @stores_by_ref = CaseInsensitiveHash[@customer.stores.select(&:ref).collect { |store| [store.ref, store] }]
     @store_reloads_by_ref = CaseInsensitiveHash[@customer.store_reloads.select(&:ref).collect { |store_reload| [store_reload.ref, store_reload] }]
@@ -212,7 +213,8 @@ class ImporterVehicleUsageSets < ImporterBase
     vehicle_usage_attributes[:store_rest] = @stores_by_ref[vehicle_usage_attributes.delete(:store_rest_ref)]
     vehicle_usage_attributes[:store_reloads] = row[:store_reloads]&.map{ |store_reload| store_reload } || []
     vehicle_usage = @vehicle_usage_set.vehicle_usages.find{ |vu| vu.vehicle == vehicle }
-    vehicle_usage.index = normalize_vehicle_usage_index(row.delete(:index), line)
+    desired_index = normalize_vehicle_usage_index(row.delete(:index), line)
+    @import_vehicle_usage_indices << { vehicle_usage: vehicle_usage, index: desired_index }
     vehicle_usage.assign_attributes(vehicle_usage_attributes.except(:name_vehicle_usage_set))
 
     columns_vehicle_usage_set.keys.each do |key|
@@ -251,6 +253,8 @@ class ImporterVehicleUsageSets < ImporterBase
   end
 
   def after_import(_name, _options)
+    apply_import_vehicle_usage_indices!
+
     # If all vehicles have the same parameters, set the parameter to the default configuration and remove it from vehicle
     # Exclude required configuration (rest, service, ...) if all fields not in common
     unless @common_configuration[:time_window_start] && @common_configuration[:time_window_end]
@@ -303,5 +307,16 @@ class ImporterVehicleUsageSets < ImporterBase
     else
       line
     end
+  end
+
+  def apply_import_vehicle_usage_indices!
+    return if @import_vehicle_usage_indices.blank?
+
+    ordered_imported = @import_vehicle_usage_indices.sort_by { |entry| entry[:index] }.map { |entry| entry[:vehicle_usage] }
+    trailing = @vehicle_usage_set.vehicle_usages.to_a - ordered_imported
+    ordered_ids = (ordered_imported + trailing).map(&:id).compact
+    @vehicle_usage_set.reorder_vehicle_usages!(ordered_ids) if ordered_ids.any?
+    @vehicle_usage_set.vehicle_usages.reload
+    @import_vehicle_usage_indices = []
   end
 end

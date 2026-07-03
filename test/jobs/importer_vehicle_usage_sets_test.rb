@@ -226,8 +226,9 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
     Tempfile.create(['import_vehicle_usage_sets_index', '.csv']) do |file|
       file.write(csv)
       file.rewind
+      upload = Rack::Test::UploadedFile.new(file.path, 'text/csv')
 
-      ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: file).import
+      ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: upload).import
     end
 
     vehicle_usage_set = @customer.vehicle_usage_sets.last

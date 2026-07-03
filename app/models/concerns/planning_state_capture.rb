@@ -28,12 +28,12 @@ module PlanningStateCapture
     attr_accessor :skip_state_capture, :skip_vehicle_usage_set_callback
   end
 
-  def capture_state!(trigger:)
+  def capture_state!(trigger:, skip_compute: false)
     return if skip_state_capture
     return unless persisted?
-    return if routes.empty?
+    return unless routes.exists?
     # Only recompute outdated routes; callers such as update_stop already compute the affected route.
-    return unless compute_saved!(bang: false)
+    return unless skip_compute || compute_saved!(bang: false)
 
     snapshot_source = planning_for_state_snapshot
 

@@ -1536,6 +1536,8 @@ fr:
       sort_by: Trier par %{column}
       sort_asc: Tri croissant sur %{column}
       sort_desc: Tri décroissant sur %{column}
+      pickup: Collecte
+      delivery: Livraison
       remove_filter: Retirer ce filtre
       destinations_count_help: Nombre de destinations
       search_keys:

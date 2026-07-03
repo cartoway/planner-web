@@ -1176,12 +1176,13 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'update_stop captures planning state after mutation' do
+    @planning.planning_states.delete_all
+
     assert_difference -> { @planning.planning_states.count }, 1 do
       patch :update_stop, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, stop_id: stops(:stop_one_one).id, stop: { active: false } }
     end
     assert_response :success
-    state = @planning.planning_states.order(:id).last
-    assert_equal 'update_stop', state.trigger
+    state = @planning.planning_states.find_by!(trigger: 'update_stop')
     assert_equal 'individual', state.category
     captured_stop = state.payload['routes'].flat_map { |route| route['stops'] }
                          .find { |stop| stop['stop_id'] == stops(:stop_one_one).id }
@@ -1189,6 +1190,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'apply_zonings captures planning state after mutation' do
+    @planning.planning_states.delete_all
     @planning.zoning_outdated = true
     @planning.save!
 
@@ -1196,8 +1198,7 @@ class PlanningsControllerTest < ActionController::TestCase
       patch :apply_zonings, params: { id: @planning, format: :json, planning: { zoning_ids: [zonings(:zoning_one).id] } }
     end
     assert_response :success
-    state = @planning.planning_states.order(:id).last
-    assert_equal 'apply_zonings', state.trigger
+    state = @planning.planning_states.find_by!(trigger: 'apply_zonings')
     assert_equal 'mass', state.category
   end
 
@@ -1446,8 +1447,7 @@ class PlanningsControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to edit_planning_path(assigns(:planning))
-    state = assigns(:planning).planning_states.last
-    assert_equal 'duplicate', state.trigger
+    state = assigns(:planning).planning_states.find_by!(trigger: 'duplicate')
     assert_equal 'mass', state.category
   end
 

@@ -18,7 +18,7 @@ class DestinationsListSort
     id = column_id.to_s
     return false if id.blank?
 
-    ::Preferences::Catalog::DestinationsList.column_available?(id, customer)
+    ::Preferences::Catalog::DestinationsList.allowed_column_ids(customer).include?(id)
   end
 
   def initialize(column_id:, direction:, customer:)

@@ -113,6 +113,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'v2 index list renders visit subrows when destination has several visits' do
     assert_difference('Visit.count', 1) do
+      @request.headers['Turbo-Frame'] = 'form_sidebar'
       post :append_visit, params: { id: @destination.id }
     end
     @request.headers['Turbo-Frame'] = 'destinations_list'
@@ -124,6 +125,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'v2 index list skips visit subrows when no visit-scoped column is active' do
     assert_difference('Visit.count', 1) do
+      @request.headers['Turbo-Frame'] = 'form_sidebar'
       post :append_visit, params: { id: @destination.id }
     end
     patch :list_columns, params: { active: %w[name street] }

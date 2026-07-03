@@ -1,4 +1,4 @@
-- header_order = planning_state_header_block_order
+- header_order = local_assigns[:header_block_order] || planning_state_header_block_order
 .row.route-data.route-header.display-ui-planning-head{style: 'display: flex; flex-wrap: wrap;'}
   - header_order.each_with_index do |key, idx|
     - partial = Preferences::Catalog.header_block_partial('planning', key)

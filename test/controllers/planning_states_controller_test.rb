@@ -29,8 +29,9 @@ class PlanningStatesControllerTest < ActionController::TestCase
     @planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
     sign_in users(:user_one)
     customers(:customer_one).update(job_optimizer_id: nil, job_destination_geocoding_id: nil)
+    @planning.planning_states.delete_all
     @planning.capture_state!(trigger: 'move')
-    @planning_state = @planning.planning_states.first
+    @planning_state = @planning.planning_states.find_by!(trigger: 'move')
   end
 
   def around
