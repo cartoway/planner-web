@@ -1,11 +1,12 @@
--# locals: tags (Array<Tag>)
-%td.destinations-list-tags-cell
-  - if tags.blank?
-    –
-  - else
-    .destinations-list-tag-badges
-      - tags.each do |tag|
-        %span.badge.destinations-list-tag-badge.text-bg-light.border
-          - if tag_list_badge_customized?(tag)
-            %i.fa.fa-fw{class: tag_list_badge_icon_class(tag), style: tag_list_badge_icon_style(tag), "aria-hidden": "true"}
-          = tag.label
+-# locals: tags (Array<Tag>), column_id
+%td{class: destinations_list_column_class(column_id), title: destinations_list_tags_tooltip(tags)}
+  %span.destinations-list-cell-content
+    - if tags.blank?
+      –
+    - else
+      .destinations-list-tag-badges
+        - tags.each do |tag|
+          %span.badge.destinations-list-tag-badge.text-bg-light.border
+            - if tag_list_badge_customized?(tag)
+              %i.fa.fa-fw{class: tag_list_badge_icon_class(tag), style: tag_list_badge_icon_style(tag), "aria-hidden": "true"}
+            = tag.label

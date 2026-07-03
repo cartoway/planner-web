@@ -1,8 +1,12 @@
--# locals: du_data — { unit:, pickup:, delivery: }
+-# locals: du_data — { unit:, pickup:, delivery: }, column_id
 - unit = du_data[:unit]
 - pickup = du_data[:pickup]
 - delivery = du_data[:delivery]
-%td.destinations-list-deliverable-unit-cell
+- qty_label = []
+- qty_label << "#{t('destinations.import_file.pickup')}: #{number_with_precision(pickup, precision: 2, delimiter: t('number.format.delimiter'), strip_insignificant_zeros: true)}" if pickup.positive?
+- qty_label << "#{t('destinations.import_file.delivery')}: #{number_with_precision(delivery, precision: 2, delimiter: t('number.format.delimiter'), strip_insignificant_zeros: true)}" if delivery.positive?
+- tooltip = [unit.label, qty_label.join(', ')].compact.join(' — ').presence
+= destinations_list_column_td(column_id, tooltip: tooltip) do
   - if pickup.zero? && delivery.zero?
     –
   - else
