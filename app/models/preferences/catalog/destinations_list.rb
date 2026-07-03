@@ -21,10 +21,9 @@ module Preferences
   module Catalog
     # User-level destinations index list columns (v2 sidebar table).
     module DestinationsList
-      COLUMN_IDS = %w[name address ref geocoding comment phone_number tags visit_ref visit_tags].freeze
+      COLUMN_IDS = %w[name street postalcode city ref geocoding comment phone_number tags visit_ref visit_tags].freeze
       VISIT_SCOPED_COLUMN_IDS = %w[visit_ref visit_tags].freeze
-      DEFAULT_ACTIVE = %w[name address ref geocoding visit_ref].freeze
-      LEGACY_COLUMN_ID_MAP = { 'visits' => 'visit_ref' }.freeze
+      DEFAULT_ACTIVE = %w[name street postalcode city ref geocoding visit_ref].freeze
       DELIVERABLE_UNIT_COLUMN_PREFIX = 'deliverable_unit_'
 
       module_function
@@ -90,7 +89,13 @@ module Preferences
       end
 
       def remap_legacy_column_ids(ids)
-        ids.map { |id| LEGACY_COLUMN_ID_MAP.fetch(id.to_s, id.to_s) }
+        ids.flat_map do |id|
+          case id.to_s
+          when 'address' then %w[street postalcode city]
+          when 'visits' then %w[visit_ref]
+          else id.to_s
+          end
+        end.uniq
       end
 
       def normalize_zone(raw, customer: nil)

@@ -52,7 +52,9 @@ class DestinationsListSort
     dir = direction.upcase
     case column_id
     when 'name' then "destinations.name #{dir} #{nulls}"
-    when 'address' then address_order_sql(dir, nulls)
+    when 'street' then "destinations.street #{dir} #{nulls}"
+    when 'postalcode' then "destinations.postalcode #{dir} #{nulls}"
+    when 'city' then "destinations.city #{dir} #{nulls}"
     when 'ref' then "destinations.ref #{dir} #{nulls}"
     when 'geocoding' then "destinations.geocoding_accuracy #{dir} #{nulls}"
     when 'comment' then "destinations.comment #{dir} #{nulls}"
@@ -68,16 +70,6 @@ class DestinationsListSort
         'destinations.id ASC'
       end
     end
-  end
-
-  def address_order_sql(dir, nulls)
-    <<~SQL.squish
-      LOWER(
-        COALESCE(destinations.street, '') || ' ' ||
-        COALESCE(destinations.postalcode, '') || ' ' ||
-        COALESCE(destinations.city, '')
-      ) #{dir} #{nulls}
-    SQL
   end
 
   def destination_tags_sort_sql

@@ -5,14 +5,17 @@
 = turbo_frame_tag "destinations_list" do
   .d-flex.justify-content-between.align-items-center.mb-2.p-3
     .d-flex.gap-2.align-items-center
-      = link_to new_destination_path, class: 'btn btn-primary btn-sm', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
+      = link_to new_destination_path, class: 'btn btn-primary btn-xs', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
         %i.fa.fa-plus.fa-fw
         = t 'destinations.index.new'
-      %button.btn.btn-danger.btn-sm.destinations-bulk-delete{type: "button", disabled: !can_destroy_destinations, title: t('all.verb.destroy_selection')}
+      %button.btn.btn-danger.btn-xs.destinations-bulk-delete{type: "button", disabled: !can_destroy_destinations, title: t('all.verb.destroy_selection')}
         %i.fa.fa-trash.fa-fw
         = t('all.verb.destroy_selection')
       = render 'v2/destinations/list_column_selector'
-    %span#count= "#{@destinations.size} / #{@total_count} #{t 'activerecord.models.destinations', count: @total_count}"
+    #count.primary.data-info{title: t('destinations.index.destinations_count_help')}
+      %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+      = "#{@destinations.size} / #{@total_count}"
+      = t('activerecord.models.destinations', count: @total_count)
   #destination_box.destinations-list-scroll
     .table-responsive
       %table.table.table-striped.table-condensed.destinations-list-table
@@ -46,20 +49,20 @@
       - total_pages = (@pagination[:total].to_f / @pagination[:per_page]).ceil
       - pagination_params = destinations_index_params
       %nav.text-center.mt-2
-        %ul.pagination.pagination-sm.justify-content-center
+        %ul.pagination.pagination-xs.justify-content-center
           %li{class: ('disabled' if @pagination[:page] <= 1)}
             - if @pagination[:page] > 1
-              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] - 1)), class: 'btn btn-light btn-sm', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
+              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] - 1)), class: 'btn btn-light btn-xs', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
                 %i.fa.fa-chevron-left
             - else
-              %span.btn.btn-light.btn-sm.disabled
+              %span.btn.btn-light.btn-xs.disabled
                 %i.fa.fa-chevron-left
           %li.disabled
-            %span.btn.btn-light.btn-sm= "#{@pagination[:page]} / #{total_pages}"
+            %span.btn.btn-light.btn-xs= "#{@pagination[:page]} / #{total_pages}"
           %li{class: ('disabled' if @pagination[:page] >= total_pages)}
             - if @pagination[:page] < total_pages
-              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] + 1)), class: 'btn btn-light btn-sm', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
+              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] + 1)), class: 'btn btn-light btn-xs', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
                 %i.fa.fa-chevron-right
             - else
-              %span.btn.btn-light.btn-sm.disabled
+              %span.btn.btn-light.btn-xs.disabled
                 %i.fa.fa-chevron-right
