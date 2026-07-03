@@ -3691,7 +3691,7 @@ fr:
       phone_number: Téléphone
       tags: Catégories
       visit_tags: Catégories visites
-      visits: Visites
+      visit_ref: Référence visite
     header_blocks:
       stops: Arrêts
       total_duration: Durée totale de tournée
