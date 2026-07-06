@@ -157,6 +157,7 @@ export class MoveStopsModal {
         }
 
         // After toggleMultipleActions (may re-enable footer controls when stops are checked).
+        this.updateStopsCount();
         this.applyMoveStopsActionVisibility();
       } catch (e) {}
     });
@@ -278,7 +279,7 @@ export class MoveStopsModal {
    * @returns {Array} Selected stops
    */
   getAvailableStopsToMoveFrom(stops) {
-    const availableStopsToMove = $(`${this.modalSelector} .move-stops-stop-id:checked:visible`);
+    const availableStopsToMove = $(`${this.modalSelector} .move-stops-stop-id:checked`);
     const selectedStops = [];
 
     for (let index = 0; index < availableStopsToMove.length; index++) {
@@ -323,7 +324,7 @@ export class MoveStopsModal {
    * Update the active stops count display
    */
   updateStopsCount() {
-    const checkedStops = $(`${this.modalSelector} .move-stops-stop-id:checked:visible`).length;
+    const checkedStops = $(`${this.modalSelector} .move-stops-stop-id:checked`).length;
     $('#move-stops_count').text(checkedStops);
   }
 
@@ -443,7 +444,7 @@ export class MoveStopsModal {
    */
   applyMoveStopsActionVisibility() {
     const $moveBtn = $('#move-stops-modal');
-    const hasSelectedStops = $(`${this.modalSelector} .move-stops-stop-id:checked:visible`).length > 0;
+    const hasSelectedStops = $(`${this.modalSelector} .move-stops-stop-id:checked`).length > 0;
     const moveBtnEnabled = this.stopMoveUsable && hasSelectedStops;
 
     if (this.stopMoveVisible) {
