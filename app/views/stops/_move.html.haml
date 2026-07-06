@@ -16,7 +16,7 @@
       .route-info.inactive
         %i.fa.fa-check-square.fa-fw
         %span#move-stops_count
-          = stops.size
+          = stops.count { |stop| stop.key?(:checked) ? stop[:checked] : true }
         = " #{t('plannings.edit.stops')}"
 
   = render partial: 'stops/move_stops_list', locals: { stops: stops }
