@@ -23,7 +23,11 @@ class Planning < ApplicationRecord
   belongs_to :customer, counter_cache: true
   has_and_belongs_to_many :zonings, autosave: true, after_add: :update_zonings_track, after_remove: :update_zonings_track
   before_destroy :delete_all_routes
-  has_many :routes, -> { left_joins(:vehicle_usage).order(Arel.sql('vehicle_usages.index ASC NULLS LAST')) }, inverse_of: :planning, autosave: true
+  has_many :routes, -> {
+    left_joins(:vehicle_usage)
+      .order(Arel.sql('routes.vehicle_usage_id NULLS FIRST'))
+      .order('vehicle_usages.index ASC')
+  }, inverse_of: :planning, autosave: true
 
   has_many :tag_plannings, dependent: :destroy
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track
@@ -240,7 +244,6 @@ class Planning < ApplicationRecord
         i = route_index_for_routes_visit(r) || index_routes.shift
         routes[i].ref = ref&.to_s
         ref_updates << { id: routes[i].id, ref: ref&.to_s }
-        routes[i].remove_rests if r[:visits].any? { |(obj, _stop_attributes)| obj == :rest }
         routes[i].add_objects(r[:visits], recompute, ignore_errors)
       }
       ref_updates << { id: routes.find{ |r| !r.vehicle_usage? }.id, ref: nil }
@@ -295,17 +298,18 @@ class Planning < ApplicationRecord
         routes[i].remove_store_reloads
         routes[i].remove_rests if r[:visits].any? { |(obj, _stop_attributes)| obj == :rest }
         r[:visits].each.with_index{ |(obj, stop_attributes), index|
+          target_index = (stop_attributes[:index] || index) + 1
           case obj
           when Visit
             if obj.id && stop_visit_ids[obj.id]
-              move_visit(routes[i], obj, index + 1)
+              move_visit(routes[i], obj, target_index)
             elsif tags_compatible?(obj.tags.to_a | obj.destination.tags.to_a)
-              routes[i].add(obj, index + 1, stop_attributes)
+              routes[i].add(obj, target_index, stop_attributes)
             end
           when StoreReload
-            routes[i].add_store_reload(obj, index + 1, stop_attributes)
+            routes[i].add_store_reload(obj, target_index, stop_attributes)
           when :rest
-            routes[i].add_rest(index + 1, stop_attributes)
+            routes[i].add_rest(target_index, stop_attributes)
           end
         }
       }
@@ -621,7 +625,7 @@ class Planning < ApplicationRecord
   end
 
   def move_stop(route, stop, index, force = false)
-    route, index = prefered_route_and_index([route], stop) unless index || !route.vehicle_usage?
+    route, index = prefered_route_and_index([route], stop) unless index || !route.vehicle_usage? || !stop.position?
 
     if stop.route != route
       if fast_move_inactive_stop_to_out_of_route?(stop, route)
@@ -641,11 +645,11 @@ class Planning < ApplicationRecord
           planning: self
         )
         route.add(visit, index || 1, { active: active || source_route.vehicle_usage.nil? }, stop_id)
-      elsif force && stop.is_a?(StopRest)
+      elsif stop.is_a?(StopRest)
         active = stop.active
         stop_id = stop.id
-        routes.find{ |r| r.id == stop.route_id }.move_stop_out(stop, force)
-        route.add_rest(nil, { active: active }, stop_id)
+        routes.find{ |r| r.id == stop.route_id }.move_stop_out(stop, true)
+        route.add_rest(index, { active: active }, stop_id)
       end
     else
       route.move_stop(stop, index || 1)
@@ -1022,7 +1026,7 @@ class Planning < ApplicationRecord
   end
 
   def fetch_stops_status
-    Visit.transaction do
+    Visit.transaction(requires_new: true) do
       if customer.enable_stop_status
         stops_map = Hash[routes.includes_destinations_and_stores.available.where.not(vehicle_usage_id: nil).flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
         routes.each(&:clear_eta_data)
@@ -1456,6 +1460,8 @@ class Planning < ApplicationRecord
 
   def collect_insertion_data(route, stop, options = {})
     options[:active_only] = true if options[:active_only].nil?
+    return [] if !stop.position?
+
     previous_position = route.vehicle_usage.default_store_start&.position || route.stops.find{ |s| s.position? }&.position
     insertion_data = []
     return [] if previous_position.nil?

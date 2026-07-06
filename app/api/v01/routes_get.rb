@@ -116,7 +116,7 @@ class V01::RoutesGet < Grape::API
           optional :sub_tour_indices, type: Array[Integer], desc: 'Restrict returned polylines to the provided sub-tour indices (requires with_geojson=:polyline).'
         end
         get ':id' do
-          r = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.where(ParseIdsRefs.where_clause([params[:id]])).first!
+          r = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.where(ParseIdsRefs.where_clause([params[:id]], table_name: 'routes')).first!
           if params.key?(:email)
             vehicle = r.vehicle_usage_id && r.vehicle_usage.vehicle
             if vehicle

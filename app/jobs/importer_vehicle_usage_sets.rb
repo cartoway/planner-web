@@ -213,8 +213,17 @@ class ImporterVehicleUsageSets < ImporterBase
     vehicle_usage_attributes[:store_rest] = @stores_by_ref[vehicle_usage_attributes.delete(:store_rest_ref)]
     vehicle_usage_attributes[:store_reloads] = row[:store_reloads]&.map{ |store_reload| store_reload } || []
     vehicle_usage = @vehicle_usage_set.vehicle_usages.find{ |vu| vu.vehicle == vehicle }
-    desired_index = normalize_vehicle_usage_index(row.delete(:index), line)
-    @import_vehicle_usage_indices << { vehicle_usage: vehicle_usage, index: desired_index }
+    index_value = row.delete(:index)
+    if !empty_value?(index_value)
+      @import_vehicle_usage_indices << {
+        vehicle_usage: vehicle_usage,
+        index: parse_vehicle_usage_index(index_value),
+        explicit_index: true,
+        line: line
+      }
+    else
+      @import_vehicle_usage_indices << { vehicle_usage: vehicle_usage, explicit_index: false, line: line }
+    end
     vehicle_usage.assign_attributes(vehicle_usage_attributes.except(:name_vehicle_usage_set))
 
     columns_vehicle_usage_set.keys.each do |key|
@@ -298,25 +307,41 @@ class ImporterVehicleUsageSets < ImporterBase
     options[:dests].each(&:reload)
   end
 
-  def normalize_vehicle_usage_index(value, line)
-    if !empty_value?(value)
-      index = value.to_i
-      raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.invalid_index')) if index.negative?
+  def parse_vehicle_usage_index(value)
+    index = value.to_i
+    raise ImportInvalidRow.new(I18n.t('vehicle_usage_sets.import.invalid_index')) if index.negative?
 
-      index
-    else
-      line
-    end
+    index
   end
 
   def apply_import_vehicle_usage_indices!
     return if @import_vehicle_usage_indices.blank?
 
-    ordered_imported = @import_vehicle_usage_indices.sort_by { |entry| entry[:index] }.map { |entry| entry[:vehicle_usage] }
+    with_explicit, without_explicit = @import_vehicle_usage_indices.partition { |entry| entry[:explicit_index] }
+    with_explicit.sort_by! { |entry| entry[:index] }
+    without_explicit.sort_by! { |entry| entry[:line] }
+
+    if with_explicit.any?
+      next_index = with_explicit.last[:index] + 1
+      without_explicit.each do |entry|
+        entry[:index] = next_index
+        next_index += 1
+      end
+    else
+      without_explicit.each_with_index { |entry, position| entry[:index] = position }
+    end
+
+    ordered_imported = (with_explicit + without_explicit).sort_by { |entry| entry[:index] }.map { |entry| entry[:vehicle_usage] }
     trailing = @vehicle_usage_set.vehicle_usages.to_a - ordered_imported
-    ordered_ids = (ordered_imported + trailing).map(&:id).compact
-    @vehicle_usage_set.reorder_vehicle_usages!(ordered_ids) if ordered_ids.any?
-    @vehicle_usage_set.vehicle_usages.reload
+    ordered = ordered_imported + trailing
+
+    if @vehicle_usage_set.persisted? && ordered.all?(&:persisted?)
+      @vehicle_usage_set.reorder_vehicle_usages!(ordered.map(&:id))
+      @vehicle_usage_set.vehicle_usages.reload
+    else
+      ordered.each_with_index { |vehicle_usage, position| vehicle_usage.index = position }
+    end
+
     @import_vehicle_usage_indices = []
   end
 end

@@ -326,6 +326,22 @@ class PlanningTest < ActiveSupport::TestCase
     end
   end
 
+  test 'move rest without position from one vehicle route to another' do
+    planning = plannings(:planning_one)
+    source = planning.routes.find { |r| r == routes(:route_three_one) }
+    target = planning.routes.find { |r| r == routes(:route_one_one) }
+    rest = source.stops.find { |s| s.is_a?(StopRest) }
+    refute rest.position?
+
+    assert_difference('Stop.count', 0) do
+      planning.move_stop(target, rest, nil)
+      planning.save!
+    end
+
+    refute source.stops.reload.any? { |s| s.id == rest.id }
+    assert target.stops.reload.any? { |s| s.id == rest.id }
+  end
+
   test 'moving one visit from unassigned route uses fast finalize and updates route_data without full compute' do
     planning = plannings(:planning_one)
     unassigned = planning.routes.find { |r| r == routes(:route_zero_one) }
@@ -349,14 +365,10 @@ class PlanningTest < ActiveSupport::TestCase
     vehicle_route = planning.routes.find { |r| r == routes(:route_one_one) }
     stop = vehicle_route.stops.find { |s| s.is_a?(StopVisit) }
     stop.update!(active: false)
-    source_size = vehicle_route.route_data.stops_size
-    target_size = unassigned.route_data.stops_size
+    source_size = vehicle_route.stops.size
+    target_size = unassigned.stops.size
 
     planning.move_stop(unassigned, stop, -1)
-
-    vehicle_route.reload
-    unassigned.reload
-    stop.reload
 
     refute vehicle_route.outdated?
     refute unassigned.outdated?
@@ -1044,9 +1056,7 @@ class PlanningTest < ActiveSupport::TestCase
     planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
     route = routes(:route_one_one)
 
-    OptimizerWrapper.stub_any_instance(:optimize, lambda { |_positions, services, vehicles, _options|
-      [[]] + [(services.reverse + vehicles[0][:rests]).collect { |service| service[:stop_id] }]
-    }) do
+    OptimizerWrapper.stub_any_instance(:optimize, method(:optimizer_global)) do
       assert_difference('PlanningState.count', 1) do
         OptimizerJob.new(planning.customer_id, planning.id, route.id, global: false).perform
       end
@@ -1063,9 +1073,7 @@ class PlanningTest < ActiveSupport::TestCase
     optimizer_job = OptimizerJob.new(planning.customer_id, planning.id, route.id, global: false)
     delayed_job = delayed_jobs(:job_optimizer)
 
-    OptimizerWrapper.stub_any_instance(:optimize, lambda { |_positions, services, vehicles, _options|
-      [[]] + [(services.reverse + vehicles[0][:rests]).collect { |service| service[:stop_id] }]
-    }) do
+    OptimizerWrapper.stub_any_instance(:optimize, method(:optimizer_global)) do
       optimizer_job.before(delayed_job)
       assert_difference('PlanningState.count', 1) do
         optimizer_job.perform
@@ -1076,7 +1084,7 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal 'optimize_route', state.trigger
   end
 
-  test 'routes are ordered by vehicle usage index with out of route last' do
+  test 'routes are ordered with out of route first then by vehicle usage index' do
     planning = plannings(:planning_one)
     vehicle_usage_set = planning.vehicle_usage_set
     first = vehicle_usages(:vehicle_usage_one_one)
@@ -1085,7 +1093,7 @@ class PlanningTest < ActiveSupport::TestCase
     vehicle_usage_set.reorder_vehicle_usages!([second.id, first.id])
     route_ids = planning.routes.reload.map(&:vehicle_usage_id)
 
-    assert_equal [second.id, first.id, nil], route_ids
+    assert_equal [nil, second.id, first.id], route_ids
   end
 end
 

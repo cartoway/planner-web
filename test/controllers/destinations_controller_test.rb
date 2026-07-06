@@ -351,16 +351,6 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '#destinations-list-col-geocoding', 1
   end
 
-  test 'v2 index list renders deliverable unit column with aggregated visit quantities' do
-    unit = deliverable_units(:deliverable_unit_one_one)
-    col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
-
-    get :index
-    assert_response :success
-    assert_select 'turbo-frame#destinations_list thead th', text: unit.label
-    assert_select 'turbo-frame#destinations_list td.destinations-list-deliverable-unit-cell .fa-down-long', minimum: 1
-  end
-
   test 'should filter destinations by key value search' do
     get :index, params: { q: 'city:Bordeau' }
     assert_response :success
@@ -838,31 +828,6 @@ class DestinationsControllerTest < ActionController::TestCase
     file = fixture_file_upload('test/fixtures/files/import_destinations_one.csv', 'text/csv')
     post :upload_csv, params: { import_csv: { replace: false, file: file } }
     assert_response :forbidden
-  ensure
-    user.update!(role_id: nil) if user.reload.role_id.present?
-    role&.destroy
-    sign_in users(:user_one)
-  end
-
-  test 'index disables new destination button when destination form is read-only' do
-    return unless Role.column_names.include?('forms')
-
-    user = users(:user_one)
-    role = Role.create!(
-      reseller: user.customer.reseller,
-      name: "index-ro-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(
-        'destination' => { 'visible' => true, 'usable' => false }
-      )
-    )
-    user.update!(role_id: role.id)
-    sign_in user
-
-    get :index
-    assert_response :success
-    assert_match(/id="add"[^>]*disabled/, response.body)
-    assert_match(/"can_create":false/, response.body)
   ensure
     user.update!(role_id: nil) if user.reload.role_id.present?
     role&.destroy

@@ -877,17 +877,16 @@ class ImporterDestinationsTest < ActionController::TestCase
 
     assert_difference('Planning.count', 1) do
       assert_difference('StopVisit.count', 2) do
-        assert_difference('StopRest.count', 1) do
-          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_with_rest.csv', 'text.csv')).import(true)
-          @customer.reload
-          planning = @customer.plannings.last
-          route_1 = planning.routes.find{ |r| r.ref == 't1' }
-          assert_equal 'p1', planning.ref
-          assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
-          assert_equal 2, route_1.stops.index{ |stop| stop.is_a?(StopRest) }
-          assert_equal 3, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
-          assert route_1.stops.find{ |stop| stop.is_a?(StopRest) }.active
-        end
+        assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_with_rest.csv', 'text.csv')).import(true)
+        @customer.reload
+        planning = @customer.plannings.last
+        route_1 = planning.routes.find{ |r| r.ref == 't1' }
+        assert_equal 'p1', planning.ref
+        assert_equal 2, route_1.stops.count { |stop| stop.is_a?(StopRest) }
+        assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+        assert_equal 2, route_1.stops.index { |stop| stop.is_a?(StopRest) && stop.index == 3 }
+        assert_equal 3, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
+        assert route_1.stops.find { |stop| stop.is_a?(StopRest) && stop.index == 3 }.active
       end
     end
   end

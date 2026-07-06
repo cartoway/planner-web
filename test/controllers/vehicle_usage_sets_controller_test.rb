@@ -263,9 +263,15 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
 
     csv = CSV.new(response.body)
     headers = csv.first
-    vehicles = [vehicles(:vehicle_three), vehicles(:vehicle_one)]
-    csv.each.with_index{ |line, index|
-      vehicle = vehicles(line[1].to_sym)
+    vehicle_three = vehicles(:vehicle_three)
+    vehicle_one = vehicles(:vehicle_one)
+    vehicles_by_ref = {
+      vehicle_three.ref => vehicle_three,
+      vehicle_one.ref => vehicle_one,
+    }
+    csv.each.with_index { |line, _index|
+      vehicle = vehicles_by_ref[line[1]]
+      assert vehicle, "Unexpected vehicle ref in CSV: #{line[1].inspect}"
       ['one', 'two', 'three'].each { |key|
         attr_index = headers.index{ |header| header.include?("[custom_attribute_#{key}]") }
         assert attr_index

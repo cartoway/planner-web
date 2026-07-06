@@ -611,14 +611,10 @@ class Route < ApplicationRecord
         last_lat, last_lng = vehicle_usage.default_store_stop.lat, vehicle_usage.default_store_stop.lng
       end
       segments = stops_sort.select{ |stop|
-        stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
+        stop.active && stop.position?
       }.reverse.collect{ |stop|
-        if stop.position?
-          ret = [stop.lat, stop.lng, last_lat, last_lng] if !last_lat.nil? && !last_lng.nil?
-          last_lat, last_lng = stop.lat, stop.lng
-        elsif stop.is_a?(StopRest)
-          ret = [last_lat, last_lng, last_lat, last_lng] if !last_lat.nil? && !last_lng.nil?
-        end
+        ret = [stop.lat, stop.lng, last_lat, last_lng] if !last_lat.nil? && !last_lng.nil?
+        last_lat, last_lng = stop.lat, stop.lng
         ret
       }.reverse
 
@@ -722,11 +718,19 @@ class Route < ApplicationRecord
   def add_objects(objects, recompute = true, ignore_errors = false)
     Stop.transaction do
       stop_index = stops.size
-      collected_stops = objects.map.with_index{ |stop, index|
-        object, stop_attributes = stop
+      collected_stops = objects.filter_map { |object, stop_attributes|
         stop_attributes = { active: true, custom_attributes: {} }.merge((stop_attributes || {}).compact)
         stop_id = stop_attributes.delete(:stop_id)
-        stop_index += 1
+        explicit_order = stop_attributes.delete(:index) || stop_attributes.delete('index')
+
+        stop_index =
+          if explicit_order
+            explicit_order.to_i + 1
+          else
+            stop_index += 1
+          end
+        shift_index(stop_index) if vehicle_usage? && explicit_order
+
         if object.is_a?(Visit) && planning.tags_compatible?(object.tags.to_a | object.destination.tags.to_a)
           reveal_sub_tour_route_data(stop_index)
           stops.new(type: StopVisit.name, store_reload: nil, visit: object, active: stop_attributes[:active], index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
@@ -736,7 +740,7 @@ class Route < ApplicationRecord
           stops.new(type: StopRest.name, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         end
       }.compact
-      Stop.import(collected_stops)
+      Stop.import(collected_stops) if collected_stops.any?
       self.outdated = true
 
       compute(ignore_errors: ignore_errors) if recompute
@@ -847,9 +851,7 @@ class Route < ApplicationRecord
   def move_stop_out(stop, force = false)
     return if !force && stop.is_a?(StopRest)
 
-    shift_index(stop.index + 1, -1) if vehicle_usage?
-    self.stops.destroy(stop)
-    self.outdated = true
+    destroy_stop!(stop)
   end
 
   # When a single StopVisit is removed from the unassigned route (no vehicle_usage), a full
@@ -1658,9 +1660,38 @@ class Route < ApplicationRecord
   end
 
   def remove_stop(stop)
-    shift_index(stop.index + 1, -1) if vehicle_usage?
+    destroy_stop!(stop)
+  end
+
+  def destroy_stop!(stop)
+    return if stop.nil?
+
+    persisted_id = stop.id if stop.persisted?
+    shifted_stops = []
+    if vehicle_usage? && stop.index
+      stops.each do |route_stop|
+        next if route_stop == stop || route_stop.index.nil? || route_stop.index <= stop.index
+
+        route_stop.index -= 1
+        shifted_stops << route_stop if route_stop.persisted?
+      end
+    end
+
+    if persisted_id
+      ActiveRecord::Base.lock_optimistically = false
+      begin
+        Stop.where(id: persisted_id).delete_all
+        shifted_stops.each { |shifted_stop| Stop.where(id: shifted_stop.id).update_all(index: shifted_stop.index) }
+      ensure
+        ActiveRecord::Base.lock_optimistically = true
+      end
+      if association(:stops).loaded?
+        association(:stops).target.reject! { |s| s.id == persisted_id }
+      end
+    else
+      stops.delete(stop)
+    end
     self.outdated = true
-    stops.destroy(stop) # Must return a value
   end
 
   def shift_index(from, by = 1, to = nil)

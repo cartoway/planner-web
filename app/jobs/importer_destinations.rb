@@ -1253,26 +1253,29 @@ class ImporterDestinations < ImporterBase
             }
           end
 
-          visit_ids = v[:visits].map{ |type, attribute, _stop_attributes|
+          visit_ids = v[:visits].filter_map { |type, attribute, _stop_attributes|
             next unless type == :visit
 
             attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]
           }
-          visits = Visit.includes_destinations_and_stores.where(id: visit_ids).index_by(&:id).values_at(*visit_ids)
+          visits_by_id = Visit.includes_destinations_and_stores.where(id: visit_ids).index_by(&:id)
 
-          store_reload_ids = v[:visits].map{ |type, attribute, _stop_attributes|
+          store_reload_ids = v[:visits].filter_map { |type, attribute, _stop_attributes|
             next unless type == :store_reload
 
             attribute[:id] || @store_reload_index_to_id_hash[attribute[:store_reload_index]]
           }
-          store_reloads = StoreReload.where(id: store_reload_ids).index_by(&:id).values_at(*store_reload_ids)
+          store_reloads_by_id = StoreReload.where(id: store_reload_ids).index_by(&:id)
 
-          v[:visits].map!.with_index{ |(type, _attribute, stop_attributes), index|
+          v[:visits].map! { |(type, attribute, stop_attributes)|
             object =
-              if type == :rest
+              case type
+              when :rest
                 :rest
-              else
-                visits[index] || store_reloads[index]
+              when :visit
+                visits_by_id[attribute[:id] || @visit_index_to_id_hash[attribute[:visit_index]]]
+              when :store_reload
+                store_reloads_by_id[attribute[:id] || @store_reload_index_to_id_hash[attribute[:store_reload_index]]]
               end
             [object, stop_attributes]
           }
