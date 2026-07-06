@@ -317,16 +317,24 @@ export class LassoModule {
    * @param {Array} selectedStops - Array of selected stops from lasso
    */
   setupLassoStopSelection(selectedStops) {
-    const selectedStopIds = selectedStops.map(stop => stop.stop_id);
+    const selectedStopIds = new Set(selectedStops.map(stop => stop.stop_id));
 
     // Content is injected asynchronously after modal open; wait for it before ticking checkboxes.
     $(document).off('move-stops:content-updated.lasso').on('move-stops:content-updated.lasso', () => {
-      selectedStopIds.forEach(stopId => {
-        const checkbox = $(`${moveStopsModal.modalSelector} input[name="stop_ids"][value="${stopId}"]`);
-        if (checkbox.length > 0) {
-          checkbox.prop('checked', true).trigger('change');
-        }
+      $(`${moveStopsModal.modalSelector} input[name="stop_ids"]`).each(function() {
+        const $checkbox = $(this);
+        const shouldCheck = selectedStopIds.has(parseInt($checkbox.val(), 10));
+        $checkbox.prop('checked', shouldCheck);
       });
+
+      // Sync counter and quantities once; per-checkbox change events can run before the modal is visible.
+      const stops = window.moveStopsData && window.moveStopsData.stops;
+      moveStopsModal.updateStopsCount();
+      if (stops) {
+        moveStopsModal.calculateQuantities(stops);
+      }
+      moveStopsModal.applyMoveStopsActionVisibility();
+
       $(document).off('move-stops:content-updated.lasso');
     });
   }
