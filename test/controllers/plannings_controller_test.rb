@@ -930,6 +930,15 @@ class PlanningsControllerTest < ActionController::TestCase
     stop.update!(active: true, locked: false)
   end
 
+  test 'move_stops_modal with stop_ids renders lasso-selected stops and checked count' do
+    stop = stops(:stop_one_one)
+
+    get :move_stops_modal, params: { id: @planning.id, stop_ids: stop.id.to_s }, format: :js
+    assert_response :success
+    assert_includes response.body, "\"stop_id\":#{stop.id}"
+    assert_match(/id=\\"move-stops_count\\">\s*1/, response.body)
+  end
+
   test 'move extracts inactive stop to out of route' do
     vehicle_route = @planning.routes.find { |route| route.ref == 'route_one' }
     out_of_route = @planning.routes.find { |route| route.vehicle_usage_id.nil? }
