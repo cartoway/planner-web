@@ -881,6 +881,9 @@ Metrics/CollectionLiteralLength:
 # Configuration parameters: CountComments, CountAsOne.
 Metrics/ModuleLength:
   Max: 133
+  Exclude:
+    - 'app/models/concerns/planning_state_capture.rb'
+    - 'app/helpers/planning_states_helper.rb'
 
 # Offense count: 25
 # Configuration parameters: CountKeywordArgs.

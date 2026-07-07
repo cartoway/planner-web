@@ -98,8 +98,8 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
 
     snapshot_visit_ids =
       state.payload['routes'].flat_map { |route| route['stops'] }
-        .select { |stop| stop['type'] == 'visit' }
-        .map { |stop| stop['visit_id'] }
+           .select { |stop| stop['type'] == 'visit' }
+           .map { |stop| stop['visit_id'] }
     current_visit_ids = @planning.routes.flat_map(&:stops).grep(StopVisit).map(&:visit_id)
 
     assert_equal snapshot_visit_ids.sort, current_visit_ids.sort
@@ -122,8 +122,8 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
 
     snapshot_visit_ids =
       state.payload['routes'].flat_map { |route| route['stops'] }
-        .select { |stop| stop['type'] == 'visit' }
-        .map { |stop| stop['visit_id'] }
+           .select { |stop| stop['type'] == 'visit' }
+           .map { |stop| stop['visit_id'] }
     current_visit_ids = @planning.routes.flat_map(&:stops).grep(StopVisit).map(&:visit_id)
 
     assert_equal snapshot_visit_ids.sort, current_visit_ids.sort
@@ -141,8 +141,8 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
   test 'optimizer job captures planning state after optimization' do
     route = routes(:route_one_one)
 
-    OptimizerWrapper.stub_any_instance(:optimize, lambda { |*_args|
-      routes = _args[1]
+    OptimizerWrapper.stub_any_instance(:optimize, lambda { |*args|
+      routes = args[1]
       returned_stops = routes.flat_map { |r| r.stops.select { |stop| stop.is_a?(StopVisit) } }
       first_route = routes.find { |r| r.vehicle_usage? }
       first_route_rests = first_route.stops.select { |stop| stop.is_a?(StopRest) }.compact
@@ -168,8 +168,8 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
     optimizer_job = OptimizerJob.new(@planning.customer_id, @planning.id, route.id, **{ global: false })
     delayed_job = delayed_jobs(:job_optimizer)
 
-    OptimizerWrapper.stub_any_instance(:optimize, lambda { |*_args|
-      routes = _args[1]
+    OptimizerWrapper.stub_any_instance(:optimize, lambda { |*args|
+      routes = args[1]
       returned_stops = routes.flat_map { |r| r.stops.select { |stop| stop.is_a?(StopVisit) } }
       first_route = routes.find { |r| r.vehicle_usage? }
       first_route_rests = first_route.stops.select { |stop| stop.is_a?(StopRest) }.compact

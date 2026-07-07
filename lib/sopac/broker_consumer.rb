@@ -87,8 +87,8 @@ module SopacBroker
         config[:queue_names][:hubs_gps] => MessageHandlers::HubGps
       }
 
-      queue_handlers.each do |queue_name, handler|
-        queue_subscriptions << subscribe_queue(connection, customer.id, queue_name, handler)
+      queue_subscriptions = queue_handlers.map do |queue_name, handler|
+        subscribe_queue(connection, customer.id, queue_name, handler)
       end
 
       queue_subscriptions.compact!
@@ -96,7 +96,7 @@ module SopacBroker
         connection.close if connection.open?
         Rails.logger.error(
           "[SopacBroker::BrokerConsumer] no queues available for customer #{customer.id} " \
-          "(prefix #{config[:queue_names].values.first&.split('/')&.slice(0, 3)&.join('/')})"
+          "(prefix #{queue_names_prefix(config)})"
         )
         return
       end
@@ -140,12 +140,10 @@ module SopacBroker
       return unless subscription
 
       subscription.queue_subscriptions.each do |qs|
-        qs.channel.cancel(qs.consumer_tag) if qs.channel.open?
-      rescue StandardError
-        nil
-      end
-      subscription.queue_subscriptions.each do |qs|
-        qs.channel.close if qs.channel.open?
+        next unless qs.channel.open?
+
+        qs.channel.cancel(qs.consumer_tag)
+        qs.channel.close
       rescue StandardError
         nil
       end
@@ -154,7 +152,14 @@ module SopacBroker
     end
 
     def teardown_all
-      @subscriptions.keys.each { |id| teardown_customer(id) }
+      @subscriptions.each_key { |id| teardown_customer(id) }
+    end
+
+    def queue_names_prefix(config)
+      first_queue = config[:queue_names].values.first
+      return unless first_queue
+
+      first_queue.split('/').slice(0, 3).join('/')
     end
   end
 end
