@@ -82,6 +82,8 @@ class OptimizerJob < OptimizerJobStruct
   def apply_optimum_and_capture_state!(planning, optimum)
     planning.set_stops(optimum, **set_stops_options)
     planning = Planning.where(id: planning.id).first!
+    return unless planning.compute_saved!(bang: false)
+
     trigger = route_id.present? ? 'optimize_route' : 'optimize'
     planning.capture_state!(trigger: trigger)
   end
