@@ -31,13 +31,8 @@ module PlanningStateCapture
     return if skip_state_capture
     return unless persisted?
 
-    if trigger.to_s != 'import'
-      return if routes.empty?
-      # Only recompute outdated routes; callers such as update_stop already compute the affected route.
-      return unless compute_saved!(bang: false)
-
-    end
     snapshot_source = planning_for_state_snapshot
+    return if trigger.to_s != 'import' && snapshot_source.routes.empty?
 
     planning_states.create!(
       captured_at: Time.current,
