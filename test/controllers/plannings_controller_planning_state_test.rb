@@ -38,6 +38,16 @@ class PlanningsControllerPlanningStateTest < ActionController::TestCase
     end
   end
 
+  test 'active captures planning state after mutation' do
+    assert_difference -> { @planning.planning_states.count }, 1 do
+      patch :active, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id, active: :none }, xhr: true
+    end
+    assert_response :success
+    state = @planning.planning_states.order(:id).last
+    assert_equal 'active', state.trigger
+    assert_equal 'group', state.category
+  end
+
   test 'update_stop captures planning state after mutation' do
     assert_difference -> { @planning.planning_states.count }, 1 do
       patch :update_stop, params: { planning_id: @planning, format: :json, route_id: routes(:route_one_one).id, stop_id: stops(:stop_one_one).id, stop: { active: false } }
