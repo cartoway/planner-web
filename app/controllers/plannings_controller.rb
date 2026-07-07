@@ -28,8 +28,6 @@ class PlanningsController < ApplicationController
   before_action :authenticate_driver!, only: [:driver_move]
 
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  PLANNING_STATE_CAPTURE_ACTIONS = [:move, :driver_move, :reverse_order, :automatic_insert, :update_stop, :active, :apply_zonings].freeze
-  # optimize / optimize_route are excluded: state is captured in OptimizerJob after async completion.
   UPDATE_ACTIONS_FULL_ROUTE_PRELOAD = UPDATE_ACTIONS - [:update_stop]
   before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
   before_action :remember_vehicle_usage_set_id_for_state_capture, only: [:update]
@@ -47,8 +45,6 @@ class PlanningsController < ApplicationController
   before_action -> { deny_unless_form_update!(:plannings) }, only: %i[destroy destroy_multiple duplicate]
 
   load_and_authorize_resource except: [:driver_move]
-  after_action :capture_planning_state_after_action, only: PLANNING_STATE_CAPTURE_ACTIONS
-  after_action :capture_planning_state_after_update, only: [:update]
 
   include Pagy::Backend
   include PlanningExport
@@ -170,6 +166,7 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       Route.no_touching do
         if @planning.update(permitted_planning_attributes)
+          capture_planning_state_after_vehicle_usage_set_change!
           format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.updated', model: @planning.class.model_name.human) }
         else
           planning_update_errors = @planning.errors.full_messages
@@ -486,6 +483,7 @@ class PlanningsController < ApplicationController
 
           if @planning.compute_saved && @planning.reload
             @routes = @planning.routes.where(id: route_ids).includes_vehicle_usages.includes_destinations_and_stores
+            capture_planning_state_after_success!
             format.json { render action: :show }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
@@ -525,6 +523,7 @@ class PlanningsController < ApplicationController
                           .first!
             @routes = [@route]
             planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+            capture_planning_state_after_success!
             format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
             format.json { render action: 'show', location: @planning }
           else
@@ -626,6 +625,7 @@ class PlanningsController < ApplicationController
       if route && route.active(params[:active].to_s.to_sym) && route.compute_saved!
         @routes = [route]
         planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+        capture_planning_state_after_success!
         format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
       else
         flash[:error] = @planning.errors.full_messages
@@ -649,6 +649,7 @@ class PlanningsController < ApplicationController
       if route && route.reverse_order && route.compute_saved! && route.reload
         @routes = [route]
         planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+        capture_planning_state_after_success!
         format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
       else
         flash[:error] = @planning.errors.full_messages
@@ -665,6 +666,7 @@ class PlanningsController < ApplicationController
         Planning.transaction do
           @planning.split_by_zones(nil)
           if @planning.compute_saved!
+            capture_planning_state_after_success!
             format.json { render action: :show }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
@@ -775,6 +777,7 @@ class PlanningsController < ApplicationController
           end
 
           if @planning.compute_saved
+            capture_planning_state_after_success!
             format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
@@ -910,33 +913,26 @@ class PlanningsController < ApplicationController
     raise Exceptions::JobInProgressError if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
   end
 
-  def capture_planning_state_after_action
+  def capture_planning_state_after_success!(trigger = nil)
     return unless @planning&.persisted?
-    return unless planning_state_capture_response_successful?
 
-    trigger = action_name == 'driver_move' ? 'move' : action_name
+    trigger ||= (action_name == 'driver_move' ? 'move' : action_name)
     @planning.capture_state!(trigger: trigger)
     @planning.refresh_routes_without_stops!
   end
 
-  def remember_vehicle_usage_set_id_for_state_capture
-    @vehicle_usage_set_id_before_update = @planning&.vehicle_usage_set_id
-  end
-
-  def capture_planning_state_after_update
+  def capture_planning_state_after_vehicle_usage_set_change!
     return unless @planning&.persisted?
-    return unless planning_state_capture_response_successful?
 
     new_set_id = planning_params[:vehicle_usage_set_id]
     return if new_set_id.blank?
     return if new_set_id.to_i == @vehicle_usage_set_id_before_update
 
-    @planning.capture_state!(trigger: 'vehicle_usage_set')
-    @planning.refresh_routes_without_stops!
+    capture_planning_state_after_success!('vehicle_usage_set')
   end
 
-  def planning_state_capture_response_successful?
-    response.successful?
+  def remember_vehicle_usage_set_id_for_state_capture
+    @vehicle_usage_set_id_before_update = @planning&.vehicle_usage_set_id
   end
 
   def planning_params
