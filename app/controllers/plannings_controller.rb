@@ -918,7 +918,6 @@ class PlanningsController < ApplicationController
 
     trigger ||= (action_name == 'driver_move' ? 'move' : action_name)
     @planning.capture_state!(trigger: trigger)
-    @planning.refresh_routes_without_stops!
   end
 
   def capture_planning_state_after_vehicle_usage_set_change!
