@@ -1,5 +1,12 @@
 # Changelog
 
+## V109.0.2
+  ### Added
+  - Planning edit: mouse wheel scrolling while drag-and-dropping stops in the sidebar
+
+  ### Fixed
+  - Planning edit: restore auto-scroll when drag-and-dropping stops near the sidebar edges
+
 ## V109.0.1
   ### Changed
   - Bundle Superset entrypoint and initialization assets in Docker image for production startup

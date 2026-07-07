@@ -489,6 +489,209 @@ export const plannings_edit = function(params) {
     return $inner.length ? $inner : $sidebar.find('.sidebar-content');
   };
 
+  var planningDragScrollZoneHeight = 56;
+  var planningDragScrollActive = false;
+  var planningDragScrollIntervalId = null;
+  var planningDragScrollDirection = 0;
+  var planningDragScrollPositionFrameId = null;
+  var isWheelScrollable = function($container) {
+    var element = $container[0];
+    if (!element || !$container.is(':visible')) return false;
+
+    return element.scrollHeight > element.clientHeight;
+  };
+
+  var planningSortableWheelScrollHandler = function(event) {
+    if (!planningDragScrollActive) return;
+
+    var $container = planningSidebarScrollContainer();
+    var elements = document.elementsFromPoint(event.clientX, event.clientY) || [];
+
+    for (var i = 0; i < elements.length; i++) {
+      var $outContent = $(elements[i]).closest('.out-content');
+      if ($outContent.length && isWheelScrollable($outContent)) {
+        $container = $outContent.first();
+        break;
+      }
+    }
+
+    if (!isWheelScrollable($container)) return;
+
+    $container.scrollTop($container.scrollTop() + event.deltaY);
+    positionPlanningDragScrollZones();
+    event.preventDefault();
+  };
+
+  var planningDragScrollZones = function() {
+    var $topZone = $('#planning-drag-scroll-zone--top');
+    var $bottomZone = $('#planning-drag-scroll-zone--bottom');
+    if (!$topZone.length) {
+      $topZone = $('<div id="planning-drag-scroll-zone--top" class="planning-drag-scroll-zone planning-drag-scroll-zone--top" aria-hidden="true"><i class="fa fa-chevron-up" aria-hidden="true"></i></div>');
+      $bottomZone = $('<div id="planning-drag-scroll-zone--bottom" class="planning-drag-scroll-zone planning-drag-scroll-zone--bottom" aria-hidden="true"><i class="fa fa-chevron-down" aria-hidden="true"></i></div>');
+      $('body').append($topZone, $bottomZone);
+    }
+    return { top: $topZone, bottom: $bottomZone };
+  };
+
+  var isPlanningSidebarScrollable = function($container) {
+    var element = $container[0];
+    if (!element || !$container.is(':visible')) return false;
+
+    return element.scrollHeight > element.clientHeight;
+  };
+
+  var planningDragScrollOutRoutesAnchorTop = function(scrollRect, zoneHeight) {
+    var $outRoute = $('li.route.out_route:visible').first();
+    if (!$outRoute.length) {
+      return scrollRect.bottom - zoneHeight;
+    }
+
+    var outRouteRect = $outRoute[0].getBoundingClientRect();
+    if (outRouteRect.top >= scrollRect.bottom || outRouteRect.bottom <= scrollRect.top) {
+      return scrollRect.bottom - zoneHeight;
+    }
+
+    return Math.max(scrollRect.top, Math.min(
+      outRouteRect.top - zoneHeight,
+      scrollRect.bottom - zoneHeight
+    ));
+  };
+
+  var startPlanningDragScrollPositionLoop = function() {
+    if (planningDragScrollPositionFrameId) return;
+
+    var tick = function() {
+      if (!planningDragScrollActive) {
+        planningDragScrollPositionFrameId = null;
+        return;
+      }
+      positionPlanningDragScrollZones();
+      planningDragScrollPositionFrameId = window.requestAnimationFrame(tick);
+    };
+    planningDragScrollPositionFrameId = window.requestAnimationFrame(tick);
+  };
+
+  var stopPlanningDragScrollPositionLoop = function() {
+    if (planningDragScrollPositionFrameId) {
+      window.cancelAnimationFrame(planningDragScrollPositionFrameId);
+      planningDragScrollPositionFrameId = null;
+    }
+  };
+
+  var positionPlanningDragScrollZones = function() {
+    var $scroll = planningSidebarScrollContainer();
+    var scrollElement = $scroll[0];
+    var zones = planningDragScrollZones();
+    if (!scrollElement) return;
+
+    var zoneHeight = planningDragScrollZoneHeight;
+    var scrollRect = scrollElement.getBoundingClientRect();
+    var $routeSelector = $('#route_selector');
+    var routeSelectorRect = $routeSelector.length ? $routeSelector[0].getBoundingClientRect() : scrollRect;
+    var topZoneTop = Math.max(scrollRect.top, routeSelectorRect.bottom);
+    var topZoneHeight = Math.min(zoneHeight, scrollRect.bottom - topZoneTop);
+    if (topZoneHeight > 0) {
+      zones.top.css({
+        top: topZoneTop + 'px',
+        left: scrollRect.left + 'px',
+        width: scrollRect.width + 'px',
+        height: topZoneHeight + 'px',
+        display: ''
+      });
+    } else {
+      zones.top.css({ display: 'none' });
+    }
+
+    var bottomZoneTop = planningDragScrollOutRoutesAnchorTop(scrollRect, zoneHeight);
+
+    zones.bottom.css({
+      top: bottomZoneTop + 'px',
+      left: scrollRect.left + 'px',
+      width: scrollRect.width + 'px',
+      height: zoneHeight + 'px'
+    });
+  };
+
+  var stopPlanningDragScrollMotion = function() {
+    if (planningDragScrollIntervalId) {
+      clearInterval(planningDragScrollIntervalId);
+      planningDragScrollIntervalId = null;
+    }
+    planningDragScrollDirection = 0;
+  };
+
+  var startPlanningDragScrollMotion = function(direction) {
+    if (planningDragScrollIntervalId && planningDragScrollDirection === direction) return;
+
+    stopPlanningDragScrollMotion();
+    planningDragScrollDirection = direction;
+    planningDragScrollIntervalId = window.setInterval(function() {
+      var $scroll = planningSidebarScrollContainer();
+      var element = $scroll[0];
+      if (!element) return;
+
+      var step = direction * 10;
+      var maxScrollTop = element.scrollHeight - element.clientHeight;
+      var nextScrollTop = element.scrollTop + step;
+      if (nextScrollTop <= 0) {
+        element.scrollTop = 0;
+        return;
+      }
+      if (nextScrollTop >= maxScrollTop) {
+        element.scrollTop = maxScrollTop;
+        return;
+      }
+      element.scrollTop = nextScrollTop;
+      positionPlanningDragScrollZones();
+    }, 16);
+  };
+
+  var planningDragScrollMouseMoveHandler = function(event) {
+    if (!planningDragScrollActive) return;
+
+    var zones = planningDragScrollZones();
+    if (!zones.top.hasClass('is-visible') || !zones.bottom.hasClass('is-visible')) return;
+
+    var topRect = zones.top[0].getBoundingClientRect();
+    var bottomRect = zones.bottom[0].getBoundingClientRect();
+    if (event.clientY >= topRect.top && event.clientY <= topRect.bottom) {
+      startPlanningDragScrollMotion(-1);
+    } else if (event.clientY >= bottomRect.top && event.clientY <= bottomRect.bottom) {
+      startPlanningDragScrollMotion(1);
+    } else {
+      stopPlanningDragScrollMotion();
+    }
+  };
+
+  var bindPlanningDragScrollZones = function() {
+    var $scroll = planningSidebarScrollContainer();
+    if (!isPlanningSidebarScrollable($scroll)) return;
+
+    planningDragScrollActive = true;
+    positionPlanningDragScrollZones();
+    var zones = planningDragScrollZones();
+    zones.top.add(zones.bottom).addClass('is-visible');
+    startPlanningDragScrollPositionLoop();
+    $(document).on('mousemove.planningDragScroll', planningDragScrollMouseMoveHandler);
+    document.addEventListener('wheel', planningSortableWheelScrollHandler, { passive: false, capture: true });
+    $scroll.on('scroll.planningDragScroll', positionPlanningDragScrollZones);
+    $('#planning .out-content').on('scroll.planningDragScroll', positionPlanningDragScrollZones);
+    $(window).on('resize.planningDragScroll', positionPlanningDragScrollZones);
+  };
+
+  var unbindPlanningDragScrollZones = function() {
+    planningDragScrollActive = false;
+    stopPlanningDragScrollMotion();
+    stopPlanningDragScrollPositionLoop();
+    var zones = planningDragScrollZones();
+    zones.top.add(zones.bottom).removeClass('is-visible').css({ top: '', left: '', width: '', height: '' });
+    $(document).off('.planningDragScroll');
+    document.removeEventListener('wheel', planningSortableWheelScrollHandler, { capture: true });
+    planningSidebarScrollContainer().off('.planningDragScroll');
+    $('#planning .out-content').off('.planningDragScroll');
+    $(window).off('.planningDragScroll');
+  };
+
   var vehicleLayer;
   var vehicleMarkers = [];
 
@@ -1408,6 +1611,10 @@ export const plannings_edit = function(params) {
           if (element.hasClass('out_route')) { $('#div_out_list_next_link').show(); }
         }
       });
+      if (planningDragScrollActive) {
+        positionPlanningDragScrollZones();
+      }
+      refreshPlanningRouteSortables();
     };
     var successActive = function() {
       initPlanningDisplay(planning_id, {firstTime: false});
@@ -2279,6 +2486,10 @@ export const plannings_edit = function(params) {
       var li = $("ul.stops, ol.stops", $(this).closest("li"));
       li.toggle();
       var hidden = !li.is(":visible");
+      refreshPlanningRouteSortables();
+      if (planningDragScrollActive) {
+        positionPlanningDragScrollZones();
+      }
       var i = $("i", this);
       var route_tools = i.closest('.route-tools');
       $.ajax({
@@ -2295,12 +2506,19 @@ export const plannings_edit = function(params) {
             routesLayer.hideRoutes([id]);
             li.closest(".route-stops").find("#div_out_list_next_link").hide();
             route_tools.find('.center_view').prop('disabled', true);
+            if (li.hasClass('ui-sortable')) {
+              li.sortable('disable');
+            }
           } else {
             i.removeClass("fa-eye-slash").addClass("fa-eye");
             routesLayer.showRoutes([id], JSON.parse(data.geojson));
             li.closest(".route-stops").find("#div_out_list_next_link").show();
             route_tools.find('.center_view').removeAttr('disabled');
+            if (li.hasClass('ui-sortable') && params.manage_planning && params.manage_planning.planning_move_stops_usable) {
+              li.sortable('enable');
+            }
           }
+          refreshPlanningRouteSortables();
         },
         error: ajaxError
       });
@@ -2882,6 +3100,20 @@ export const plannings_edit = function(params) {
     });
   };
 
+  var planningSortableConnectWith = '#planning ul.stops.sortable:visible';
+
+  var refreshPlanningRouteSortables = function() {
+    $('#planning ul.stops.sortable').each(function() {
+      var $sortable = $(this);
+      if (!$sortable.hasClass('ui-sortable')) return;
+
+      $sortable.sortable('option', 'connectWith', planningSortableConnectWith);
+      if (!$sortable.is(':visible')) {
+        $sortable.sortable('disable');
+      }
+    });
+  };
+
   var setupRouteSortable = function(route) {
     var sortableUpdate = false;
     var $sortable_route = $(".route[data-route-id='" + route.route_id + "'] .stops.sortable");
@@ -2898,7 +3130,7 @@ export const plannings_edit = function(params) {
     var stopSortableDisabled = !planningMoveStopsUsable;
     $sortable_route.sortable({
       distance: 8,
-      connectWith: '#planning ul.stops.sortable',
+      connectWith: planningSortableConnectWith,
       containment: "#edit-planning",
       tolerance: "pointer",
       appendTo: '#planning',
@@ -2913,16 +3145,21 @@ export const plannings_edit = function(params) {
       },
       start: function(event, ui) {
         sortableUpdate = false;
+        bindPlanningDragScrollZones();
       },
       update: function() {
         sortableUpdate = true;
       },
       stop: function(event, ui) {
+        unbindPlanningDragScrollZones();
         if (sortableUpdate) {
           sortPlanning(event, ui);
         }
       }
     });
+    if (!$sortable_route.is(':visible')) {
+      $sortable_route.sortable('disable');
+    }
   };
 
   var updateSuccess = function(data, map, routes, options) {
@@ -3006,6 +3243,7 @@ export const plannings_edit = function(params) {
       setupRouteSortable(route);
       bindRouteStopHoverAndPopovers(route, data);
     });
+    refreshPlanningRouteSortables();
 
     if (options && options.updateHeader && !options.background) {
       updateDataHeader(data.planning_id);
