@@ -489,6 +489,38 @@ export const plannings_edit = function(params) {
     return $inner.length ? $inner : $sidebar.find('.sidebar-content');
   };
 
+  var planningSortableWheelScrollHandler = function(event) {
+    var elements = document.elementsFromPoint(event.clientX, event.clientY) || [];
+    var $container = $();
+    for (var i = 0; i < elements.length; i++) {
+      var $el = $(elements[i]);
+      var $outContent = $el.closest('.out-content');
+      if ($outContent.length) {
+        $container = $outContent.first();
+        break;
+      }
+      var $planningScroll = $el.closest('#planning-scroll');
+      if ($planningScroll.length) {
+        $container = $planningScroll;
+        break;
+      }
+    }
+    if (!$container.length) {
+      $container = planningSidebarScrollContainer();
+    }
+    if (!$container.length) return;
+    $container.scrollTop($container.scrollTop() + event.deltaY);
+    event.preventDefault();
+  };
+
+  var bindPlanningSortableWheelScroll = function() {
+    document.addEventListener('wheel', planningSortableWheelScrollHandler, { passive: false, capture: true });
+  };
+
+  var unbindPlanningSortableWheelScroll = function() {
+    document.removeEventListener('wheel', planningSortableWheelScrollHandler, { capture: true });
+  };
+
   var vehicleLayer;
   var vehicleMarkers = [];
 
@@ -2902,7 +2934,9 @@ export const plannings_edit = function(params) {
       containment: "#edit-planning",
       tolerance: "pointer",
       appendTo: '#planning',
-      scroll: false,
+      scroll: true,
+      scrollSensitivity: 40,
+      scrollSpeed: 20,
       disabled: stopSortableDisabled,
       items: "> li:not(.route-data-container)",
       cancel: '.wait',
@@ -2913,11 +2947,13 @@ export const plannings_edit = function(params) {
       },
       start: function(event, ui) {
         sortableUpdate = false;
+        bindPlanningSortableWheelScroll();
       },
       update: function() {
         sortableUpdate = true;
       },
       stop: function(event, ui) {
+        unbindPlanningSortableWheelScroll();
         if (sortableUpdate) {
           sortPlanning(event, ui);
         }
