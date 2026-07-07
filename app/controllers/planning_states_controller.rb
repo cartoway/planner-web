@@ -69,8 +69,8 @@ class PlanningStatesController < ApplicationController
 
     pinned = ValueToBoolean.value_to_boolean(params[:pinned])
     if pinned &&
-        PlanningState.pinned_count_for(@planning.id, @planning_state.category) >= PlanningState::MAX_PINNED_PER_GROUP &&
-        !@planning_state.pinned?
+       PlanningState.pinned_count_for(@planning.id, @planning_state.category) >= PlanningState::MAX_PINNED_PER_GROUP &&
+       !@planning_state.pinned?
       respond_to do |format|
         format.json do
           render json: { error: t('plannings.states.pin_limit_reached') }, status: :unprocessable_entity
