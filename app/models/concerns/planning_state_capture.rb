@@ -60,7 +60,7 @@ module PlanningStateCapture
       self.vehicle_usage_set_id = payload['vehicle_usage_set_id']
       association(:vehicle_usage_set).reset
       vehicle_usage_set
-      unless apply_routes_from_state_payload(payload['routes'], false, true)
+      unless apply_routes_from_state_payload(payload['routes'], recompute: false, ignore_errors: true)
         raise ActiveRecord::Rollback
       end
       invalidate_planning_cache
@@ -157,7 +157,7 @@ module PlanningStateCapture
     end
   end
 
-  def apply_routes_from_state_payload(routes_payload, recompute = true, ignore_errors = false)
+  def apply_routes_from_state_payload(routes_payload, recompute: true, ignore_errors: false)
     routes_visits = build_routes_visits_from_payload(routes_payload, preserve_stop_ids: false)
     out_of_route_objects = build_out_of_route_objects_from_payload(routes_payload, preserve_stop_ids: false)
 
