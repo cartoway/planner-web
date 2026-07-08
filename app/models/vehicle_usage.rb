@@ -16,7 +16,11 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class VehicleUsage < ApplicationRecord
-  default_scope { order(:index) }
+  default_scope { order(:id) }
+
+  scope :ordered_by_index, -> { unscope(:order).order(:index) }
+
+  attr_accessor :import_skip
 
   belongs_to :vehicle_usage_set
 
@@ -354,6 +358,8 @@ class VehicleUsage < ApplicationRecord
   end
 
   def update_outdated
+    return if import_skip
+
     if rest_duration_changed?
       update_rest
     end

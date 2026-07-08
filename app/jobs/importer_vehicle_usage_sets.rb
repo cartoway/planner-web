@@ -112,8 +112,10 @@ class ImporterVehicleUsageSets < ImporterBase
     if @customer.default_max_vehicle_usage_sets > 1
       # Use name of the file for default configuration name
       @vehicle_usage_set = @customer.vehicle_usage_sets.build(name: name)
+      @reuse_existing_vehicle_usage_set = false
     else
       @vehicle_usage_set = @customer.vehicle_usage_sets.last
+      @reuse_existing_vehicle_usage_set = true
     end
 
     @common_configuration = {}
@@ -192,7 +194,9 @@ class ImporterVehicleUsageSets < ImporterBase
 
     if options[:replace_vehicles]
       vehicle_attributes = row.slice(*columns_vehicle.keys, :capacities, :custom_attributes)
-      vehicle_attributes[:ref] = vehicle_attributes.delete(:ref_vehicle)
+      ref_vehicle = vehicle_attributes.delete(:ref_vehicle).to_s.strip
+      vehicle_attributes[:ref] = ref_vehicle unless ref_vehicle.empty?
+      vehicle.ref = nil if ref_vehicle.empty?
       vehicle_attributes[:name] = vehicle_attributes.delete(:name_vehicle)
       vehicle_attributes[:color] = vehicle_attributes.delete(:color) || vehicle.color
       vehicle_attributes[:router] = Router.where(mode: vehicle_attributes.delete(:router_mode)).first
@@ -272,6 +276,7 @@ class ImporterVehicleUsageSets < ImporterBase
       end
       @vehicle_usage_set.assign_attributes @common_configuration
       @vehicle_usage_set.vehicle_usages.each{ |vu|
+        vu.import_skip = true
         vu.assign_attributes Hash[
           @common_configuration.keys.select{ |k| excluded_keys.exclude? k }.map{ |k|
             if k == :store_reloads
@@ -299,11 +304,13 @@ class ImporterVehicleUsageSets < ImporterBase
 
   def persist_vehicle_usage_indices!
     return if @imported_vehicle_usages_in_order.blank?
+    return if @reuse_existing_vehicle_usage_set && !@explicit_import_indexes
 
-    ordered_ids = @imported_vehicle_usages_in_order.map(&:id)
+    ordered_ids = @imported_vehicle_usages_in_order.map(&:id).compact
     if @imported_vehicle_usages_in_order.all?(&:persisted?) &&
-       @vehicle_usage_set.vehicle_usages.pluck(:id).sort == ordered_ids.compact.sort
-      @vehicle_usage_set.reorder_vehicle_usages!(ordered_ids)
+       ordered_ids.sort == @vehicle_usage_set.vehicle_usages.pluck(:id).sort
+      current_order = @vehicle_usage_set.vehicle_usages.sort_by(&:index).map(&:id)
+      @vehicle_usage_set.reorder_vehicle_usages!(ordered_ids) unless current_order == ordered_ids
     else
       @imported_vehicle_usages_in_order.each_with_index { |vehicle_usage, position| vehicle_usage.index = position }
     end
@@ -337,6 +344,7 @@ class ImporterVehicleUsageSets < ImporterBase
     assign_vehicles_to_entries!(entries)
 
     explicit_indexes = entries.filter_map { |entry| entry[:index] }
+    @explicit_import_indexes = explicit_indexes.any?
     if explicit_indexes.empty?
       entries.each_with_index do |entry, position|
         @vehicle_usage_index_by_line[entry[:line]] = position
@@ -374,13 +382,24 @@ class ImporterVehicleUsageSets < ImporterBase
       assigned_vehicle_ids << entry[:vehicle].id
     end
 
-    remaining_vehicles = @customer.vehicles.to_a.reject { |vehicle| assigned_vehicle_ids.include?(vehicle.id) }
+    remaining_vehicles = remaining_vehicles_for_entries(assigned_vehicle_ids)
 
     entries.each do |entry|
       next if entry[:vehicle]
 
       entry[:vehicle] = remaining_vehicles.shift
     end
+  end
+
+  def remaining_vehicles_for_entries(assigned_vehicle_ids)
+    candidates = @customer.vehicles.to_a.reject { |vehicle| assigned_vehicle_ids.include?(vehicle.id) }
+
+    return candidates unless @reuse_existing_vehicle_usage_set && @vehicle_usage_set.persisted?
+
+    vehicles_by_id = @customer.vehicles.index_by(&:id)
+    @vehicle_usage_set.vehicle_usages.sort_by(&:index).filter_map { |vehicle_usage|
+      vehicles_by_id[vehicle_usage.vehicle_id]
+    }.reject { |vehicle| assigned_vehicle_ids.include?(vehicle.id) }
   end
 
   def ref_vehicle_from_row(row)

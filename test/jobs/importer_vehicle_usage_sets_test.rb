@@ -3,6 +3,7 @@ require 'test_helper'
 class ImporterVehicleUsageSetsTest < ActionController::TestCase
   setup do
     @customer = customers(:customer_one)
+    @vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
     Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1, 1, '_ibE_seK_seK_seK'] } } ) do
       @customer.vehicle_usage_sets.reject{ |vu| vu == @vehicle_usage_set }.each(&:destroy)
       @customer.update_attribute(:max_vehicle_usage_sets, 1)
@@ -84,9 +85,9 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
         imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: false, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_one.csv', 'text.csv')).import
 
         assert imported_data
-        assert_equal imported_data.first.contact_email, 'toto@toto.toto'
+        assert_nil imported_data.first.contact_email
         assert_equal imported_data.first.consumption, 1.5
-        assert_nil imported_data.second.contact_email
+        assert_equal imported_data.second.contact_email, 'toto@toto.toto'
         assert_nil imported_data.second.phone_number
         assert_equal imported_data.second.consumption, 1.5
       end
