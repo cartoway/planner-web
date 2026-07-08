@@ -26,7 +26,7 @@ class VehicleUsageSet < ApplicationRecord
   belongs_to :store_rest, class_name: 'Store', inverse_of: :vehicle_usage_set_rests, optional: true
   has_many :plannings, inverse_of: :vehicle_usage_set
   before_destroy :destroy_vehicle_usage_set # Update planning.vehicle_usage_set before destroy self
-  has_many :vehicle_usages, inverse_of: :vehicle_usage_set, dependent: :delete_all, autosave: true
+  has_many :vehicle_usages, -> { ordered_by_index }, inverse_of: :vehicle_usage_set, dependent: :delete_all, autosave: true
 
   has_many :store_reload_vehicle_usage_sets, inverse_of: :vehicle_usage_set, dependent: :destroy
   has_many :store_reloads, through: :store_reload_vehicle_usage_sets
@@ -127,6 +127,8 @@ class VehicleUsageSet < ApplicationRecord
   end
 
   def update_outdated
+    return if import_skip
+
     if rest_duration_changed?
       vehicle_usages.each(&:update_rest)
     end
