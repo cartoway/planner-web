@@ -2,8 +2,6 @@
 
 module DesignSystem
   class LayoutChromePreview < ApplicationPreview
-
-
     def cards_and_placeholder
       render_with_template
     end

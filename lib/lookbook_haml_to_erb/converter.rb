@@ -34,7 +34,6 @@ module LookbookHamlToErb
       when :doctype then emit_doctype(node, depth)
       when :comment then emit_comment(node, depth)
       when :plain then emit_plain(node, depth)
-      when :haml_comment then ''
       else ''
       end
     end
