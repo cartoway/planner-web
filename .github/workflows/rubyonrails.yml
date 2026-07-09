@@ -47,7 +47,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bundle-
       - name: Install Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
           ruby-version: .ruby-version
           bundler-cache: false
@@ -85,7 +85,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bundle-
       - name: Install Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
         with:
           ruby-version: .ruby-version
           bundler-cache: false
