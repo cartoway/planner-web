@@ -1780,6 +1780,7 @@ fr:
       unsupported_browser_modern: >-
         Votre navigateur est trop ancien, s'il vous plaît utilisez un navigateur
         récent.
+      current_browser: 'Navigateur détecté : %{name} (version %{version})'
       download_browser: >-
         Vous pouvez télécharger la dernière version du navigateur libre Firefox
         à cette adresse :

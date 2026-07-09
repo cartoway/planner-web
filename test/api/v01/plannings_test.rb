@@ -547,6 +547,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   test 'should use limitation' do
     customer = @planning.customer
     customer.delete_all_plannings
+    sync_customer_counters!(customer)
     customer.max_plannings = 1
     customer.save!
 

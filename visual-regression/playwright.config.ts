@@ -5,6 +5,9 @@ import { defineConfig, devices } from '@playwright/test'
 
 const repoRoot = '..'
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3001'
+// Match test/integration/lookbook_mount_test.rb — Browser::Middleware rejects requests without a modern UA.
+const MODERN_CHROME_UA =
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
 // `config/database.yml` uses POSTGRES_HOST; when unset, the pg adapter uses a Unix socket
 // (`/var/run/postgresql/.s.PGSQL.5432`). Rails merges DATABASE_URL when set (CI + local Docker).
@@ -24,6 +27,7 @@ export default defineConfig({
   use: {
     baseURL,
     ...devices['Desktop Chrome'],
+    userAgent: MODERN_CHROME_UA,
     colorScheme: 'light',
     viewport: { width: 1280, height: 900 },
     // Stable sans-serif stack; Montserrat may still load from Google (small drift possible).
