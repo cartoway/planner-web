@@ -65,13 +65,16 @@ module Preferences
         customer.deliverable_units.map { |unit| deliverable_unit_column_id(unit) }
       end
 
-      def column_available?(id, customer)
-        du_id = parse_deliverable_unit_column_id(id)
+      def column_available?(column_id, customer)
+        column_id = column_id.to_s
+        du_id = parse_deliverable_unit_column_id(column_id)
         if du_id
           return customer.deliverable_units.any? { |unit| unit.id == du_id }
         end
 
-        case id.to_s
+        return false unless COLUMN_IDS.include?(column_id)
+
+        case column_id
         when 'ref' then customer.enable_references?
         when 'visit_tags', 'visit_ref' then customer.is_editable?
         else true

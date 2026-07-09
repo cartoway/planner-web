@@ -1,5 +1,6 @@
 def modern_browser?(browser)
   [
+    browser.electron?(">= 10.0"),
     browser.chrome?(">= 45"),
     browser.safari?(">= 10"),
     browser.firefox?(">= 52"),
@@ -12,6 +13,7 @@ end
 Rails.configuration.middleware.use Browser::Middleware do
   if !modern_browser?(browser) &&
      !request.env['PATH_INFO'].start_with?('/api/') &&
+     !request.env['PATH_INFO'].start_with?('/lookbook') &&
      request.env['PATH_INFO'] != '/up' &&
      (!request.env['QUERY_STRING'] || !request.env['QUERY_STRING'].include?('disposition=inline'))
     redirect_to unsupported_browser_path(browser: :modern)
