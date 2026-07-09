@@ -7,31 +7,31 @@ module LookbookHamlToErb
 
     def convert(text)
       result = +''
-      i = 0
+      offset = 0
 
-      while i < text.length
-        if text[i, 2] == '#{'
-          i = consume_interpolation(text, i, result)
+      while offset < text.length
+        if text[offset, 2] == '#{'
+          offset = consume_interpolation(text, offset, result)
         else
-          result << text[i]
-          i += 1
+          result << text[offset]
+          offset += 1
         end
       end
 
       result
     end
 
-    def consume_interpolation(text, i, result)
-      if odd_backslashes_before?(text, i)
+    def consume_interpolation(text, offset, result)
+      if odd_backslashes_before?(text, offset)
         result.chop!
         result << '#{'
-        return i + 2
+        return offset + 2
       end
 
-      close_index = find_interpolation_close(text, i + 2)
-      raise ArgumentError, "Unclosed interpolation at #{i}" unless close_index
+      close_index = find_interpolation_close(text, offset + 2)
+      raise ArgumentError, "Unclosed interpolation at #{offset}" unless close_index
 
-      result << "<%= #{text[(i + 2)...(close_index - 1)]} %>"
+      result << "<%= #{text[(offset + 2)...(close_index - 1)]} %>"
       close_index
     end
 

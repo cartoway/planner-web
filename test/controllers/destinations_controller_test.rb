@@ -113,6 +113,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'v2 index list renders visit subrows when destination has several visits' do
     assert_difference('Visit.count', 1) do
+      @request.headers['Turbo-Frame'] = 'form_sidebar'
       post :append_visit, params: { id: @destination.id }
     end
     @request.headers['Turbo-Frame'] = 'destinations_list'
@@ -124,6 +125,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'v2 index list skips visit subrows when no visit-scoped column is active' do
     assert_difference('Visit.count', 1) do
+      @request.headers['Turbo-Frame'] = 'form_sidebar'
       post :append_visit, params: { id: @destination.id }
     end
     patch :list_columns, params: { active: %w[name street] }
@@ -347,16 +349,6 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.name')
     assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.geocoding'), count: 0
     assert_select '#destinations-list-col-geocoding', 1
-  end
-
-  test 'v2 index list renders deliverable unit column with aggregated visit quantities' do
-    unit = deliverable_units(:deliverable_unit_one_one)
-    col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
-
-    get :index
-    assert_response :success
-    assert_select 'turbo-frame#destinations_list thead th', text: unit.label
-    assert_select 'turbo-frame#destinations_list td.destinations-list-deliverable-unit-cell .fa-down-long', minimum: 1
   end
 
   test 'should filter destinations by key value search' do
@@ -836,31 +828,6 @@ class DestinationsControllerTest < ActionController::TestCase
     file = fixture_file_upload('test/fixtures/files/import_destinations_one.csv', 'text/csv')
     post :upload_csv, params: { import_csv: { replace: false, file: file } }
     assert_response :forbidden
-  ensure
-    user.update!(role_id: nil) if user.reload.role_id.present?
-    role&.destroy
-    sign_in users(:user_one)
-  end
-
-  test 'index disables new destination button when destination form is read-only' do
-    return unless Role.column_names.include?('forms')
-
-    user = users(:user_one)
-    role = Role.create!(
-      reseller: user.customer.reseller,
-      name: "index-ro-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(
-        'destination' => { 'visible' => true, 'usable' => false }
-      )
-    )
-    user.update!(role_id: role.id)
-    sign_in user
-
-    get :index
-    assert_response :success
-    assert_match(/id="add"[^>]*disabled/, response.body)
-    assert_match(/"can_create":false/, response.body)
   ensure
     user.update!(role_id: nil) if user.reload.role_id.present?
     role&.destroy

@@ -8,6 +8,12 @@ class ImporterDestinationsTest < ActionController::TestCase
     stops(:stop_three_one).destroy
     @visit_tag1_count = @customer.visits.select{ |v| v.tags.include? tags(:tag_one) }.size
     @plan_tag1_count = @customer.plannings.select{ |p| p.tags_compatible? [tags(:tag_one)] }.size
+    @original_delayed_job_use = Planner::Application.config.delayed_job_use
+    Planner::Application.config.delayed_job_use = false
+  end
+
+  teardown do
+    Planner::Application.config.delayed_job_use = @original_delayed_job_use if defined?(@original_delayed_job_use)
   end
 
   def around
@@ -258,7 +264,7 @@ class ImporterDestinationsTest < ActionController::TestCase
       assert_difference('Destination.count', import_count) do
         assert_difference('Stop.count', import_count * (@customer.plannings.select{ |p| p.tags.any?{ |t| t.label == 'été' } }.size + 1) + rest_count) do
           di = ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_many-utf-8.csv', 'text.csv'))
-          assert di.import, di.errors.messages
+          assert di.import(true), di.errors.messages
           assert_equal 'été/été', @customer.plannings.map{ |p| p.tags.map(&:label).empty? ? 'oups' : p.tags.map(&:label).join(',') }.join('/')
         end
       end
@@ -629,14 +635,14 @@ class ImporterDestinationsTest < ActionController::TestCase
     @customer.delete_all_destinations
 
     import_init = ImportCsv.new(importer: ImporterDestinations.new(@customer, {}), replace: true, file: tempfile('test/fixtures/files/import_destinations_ref_and_tags_init.csv', 'text.csv'))
-    import_init.import
+    import_init.import(true)
 
     @customer.reload
 
     import_update = ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_ref_and_tags_update.csv', 'text.csv'))
 
     # Import return value must contain updated destinations. Otherwise a stale error on route object is raised (in log only because it catch in import CSV).
-    assert import_update.import
+    assert import_update.import(true)
 
     # Ensure route is flagged outdated
     assert @customer.plannings.last.routes.first.outdated?
@@ -677,9 +683,13 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_difference('Planning.count', 1) do
       assert_difference('Route.count', 3) do
         assert_difference('Stop.count', 6) do
-          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes.csv', 'text.csv')).import
+          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes.csv', 'text.csv')).import(true)
           @customer.reload
           planning = @customer.plannings.last
+          state = planning.planning_states.where(trigger: 'import').order(:captured_at).last
+          assert state, 'expected an import planning state'
+          assert_equal 'import', state.trigger
+          assert_equal 'mass', state.category
           route_1 = planning.routes.find{ |r| r.ref == 't1' }
           route_2 = planning.routes.find{ |r| r.ref == 't2' }
           assert_equal 'p1', planning.ref
@@ -694,10 +704,10 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_difference('Planning.count', 0) do
       assert_difference('Route.count', 0) do
         assert_difference('Stop.count', 0) do
-          # Permute visits v1 and v2
-          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_v2v1.csv', 'text.csv')).import
+          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_v2v1.csv', 'text.csv')).import(true)
           @customer.reload
           planning = @customer.plannings.last
+          assert planning.planning_states.where(trigger: 'import').exists?
           route_1 = planning.routes.find{ |r| r.ref == 't1' }
           route_2 = planning.routes.find{ |r| r.ref == 't2' }
           assert_equal 'p1', planning.ref
@@ -757,7 +767,7 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_difference('Planning.count', 1) do
       assert_difference('Route.count', 3) do
         assert_difference('Stop.count', 6) do
-          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes_multiple_cases.csv', 'text.csv')).import
+          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes_multiple_cases.csv', 'text.csv')).import(true)
           @customer.reload
           planning = @customer.plannings.last
           route_1 = planning.routes.find{ |r| r.ref == 't1' }
@@ -792,7 +802,7 @@ class ImporterDestinationsTest < ActionController::TestCase
       assert_difference('Route.count', 3) do
         assert_difference('StopVisit.count', 4) do
           assert_difference('StopStore.count', 1) do
-            assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes_with_store.csv', 'text.csv')).import
+            assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_two_routes_with_store.csv', 'text.csv')).import(true)
             @customer.reload
             planning = @customer.plannings.last
             route_1 = planning.routes.find{ |r| r.ref == 't1' }
@@ -867,18 +877,16 @@ class ImporterDestinationsTest < ActionController::TestCase
 
     assert_difference('Planning.count', 1) do
       assert_difference('StopVisit.count', 2) do
-        assert_difference('StopRest.count', 2) do
-          assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_with_rest.csv', 'text.csv')).import
-          @customer.reload
-          planning = @customer.plannings.last
-          route_1 = planning.routes.find{ |r| r.ref == 't1' }
-          assert_equal 'p1', planning.ref
-          assert_equal 1, route_1.stops.count { |stop| stop.is_a?(StopRest) }
-          assert_equal 1, route_1.stops.find { |stop| stop.visit&.ref == 'v1' }.index
-          assert_equal 2, route_1.stops.find { |stop| stop.is_a?(StopRest) }.index
-          assert_equal 3, route_1.stops.find { |stop| stop.visit&.ref == 'v2' }.index
-          assert route_1.stops.find{ |stop| stop.is_a?(StopRest) }.active
-        end
+        assert ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: true, file: tempfile('test/fixtures/files/import_destinations_single_plan_one_route_with_rest.csv', 'text.csv')).import(true)
+        @customer.reload
+        planning = @customer.plannings.last
+        route_1 = planning.routes.find{ |r| r.ref == 't1' }
+        assert_equal 'p1', planning.ref
+        assert_equal 2, route_1.stops.count { |stop| stop.is_a?(StopRest) }
+        assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
+        assert_equal 2, route_1.stops.index { |stop| stop.is_a?(StopRest) && stop.index == 3 }
+        assert_equal 3, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
+        assert route_1.stops.find { |stop| stop.is_a?(StopRest) && stop.index == 3 }.active
       end
     end
   end

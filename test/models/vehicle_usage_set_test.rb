@@ -261,4 +261,14 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
       vehicle_usage_set.reorder_vehicle_usages!([vehicle_usages(:vehicle_usage_one_one).id])
     end
   end
+
+  test 'custom_duplicate preserves vehicle usage order' do
+    set = vehicle_usage_sets(:vehicle_usage_set_one)
+    ordered_indices = set.vehicle_usages.sort_by(&:index).map(&:index)
+
+    duplicate_id = set.custom_duplicate
+    duplicate = VehicleUsageSet.find(duplicate_id)
+
+    assert_equal ordered_indices, duplicate.vehicle_usages.sort_by(&:index).map(&:index)
+  end
 end

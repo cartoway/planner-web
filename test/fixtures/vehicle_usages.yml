@@ -35,8 +35,8 @@ vehicle_usage_one_three:
   index: 0
   time_window_start:
   time_window_end: 15:00:00
-  store_start: store_without_geo
-  store_stop: store_without_geo
+  store_start: store_one
+  store_stop: store_one
   rest_start: 12:00:00
   rest_stop: 14:00:00
   rest_duration: 00:45:00

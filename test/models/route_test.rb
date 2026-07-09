@@ -308,8 +308,8 @@ class RouteTest < ActiveSupport::TestCase
 
   test 'size_active_destinations reflects active stops without recompute' do
     route = routes(:route_one_one)
-    route.active(:none)
-    route.stops.order(:index).select { |s| s.is_a?(StopVisit) }.first.update!(active: true)
+    route.stops.where(type: 'StopVisit').update_all(active: false)
+    route.stops.order(:index).find_by(type: 'StopVisit').update!(active: true)
     route.reload
     route.association(:stops).reset
 
