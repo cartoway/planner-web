@@ -16,6 +16,15 @@ class V01::ZoningsTest < ActiveSupport::TestCase
     "/api/0.1/zonings#{part}.json?api_key=testkey1&" + param.collect{ |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
   end
 
+  # Single active vehicle usage with a geolocated store (vehicle_usage_set_one has two).
+  def vehicle_usage_set_for_isoline
+    vehicle_usage_sets(:vehicle_usage_set_three)
+  end
+
+  def store_for_isoline
+    vehicle_usages(:vehicle_usage_three_one).default_store_start
+  end
+
   test 'should return customer''s zonings' do
     get api()
     assert last_response.ok?, last_response.body
@@ -100,14 +109,14 @@ class V01::ZoningsTest < ActiveSupport::TestCase
   end
 
   test 'should generate isochrone and isodistance' do
-    store_one = stores(:store_one)
+    store = store_for_isoline
     [:isochrone, :isodistance].each{ |isowhat|
         begin
           uri_template = Addressable::Template.new('http://localhost:5000/0.1/isoline.json')
           stub_table = stub_request(:post, uri_template)
-            .with(:body => hash_including(dimension: (isowhat == :isochrone ? 'time' : 'distance'), loc: "#{store_one.lat},#{store_one.lng}", mode: 'car', size: '5'))
+            .with(:body => hash_including(dimension: (isowhat == :isochrone ? 'time' : 'distance'), loc: "#{store.lat},#{store.lng}", mode: 'car', size: '5'))
             .to_return(status: 200, body: File.new(File.expand_path('../../../web_mocks/', __FILE__) + '/isochrone/isochrone-1.json').read)
-          patch api("#{@zoning.id}/" + isowhat.to_s, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id, size: 5)
+          patch api("#{@zoning.id}/" + isowhat.to_s, vehicle_usage_set_id: vehicle_usage_set_for_isoline.id, size: 5)
           assert last_response.ok?, last_response.body
           assert_equal 1, JSON.parse(last_response.body)['zones'].length
           assert_not_nil JSON.parse(last_response.body)['zones'][0]['polygon']
@@ -118,17 +127,17 @@ class V01::ZoningsTest < ActiveSupport::TestCase
   end
 
   test 'should generate isochrone and isodistance with name according to unit' do
-    store_one = stores(:store_one)
+    store = store_for_isoline
     [:km, :mi].each{ |unit|
         begin
           uri_template = Addressable::Template.new('http://localhost:5000/0.1/isoline.json')
           stub_table = stub_request(:post, uri_template)
-          .with(:body => hash_including(dimension: 'distance', loc: "#{store_one.lat},#{store_one.lng}", mode: 'car', size: '10000'))
+          .with(:body => hash_including(dimension: 'distance', loc: "#{store.lat},#{store.lng}", mode: 'car', size: '10000'))
           .to_return(status: 200, body: File.new(File.expand_path('../../../web_mocks/', __FILE__) + '/isochrone/isochrone-1.json').read)
           users(:user_one).update prefered_unit: :unit
-          patch api("#{@zoning.id}/isodistance", vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id, size: 10000)
+          patch api("#{@zoning.id}/isodistance", vehicle_usage_set_id: vehicle_usage_set_for_isoline.id, size: 10000)
           assert last_response.ok?, last_response.body
-          assert_equal "Isodistance "+ (unit == 'km' ? '10 km' : '6.21 miles') + " depuis " + store_one.name, JSON.parse(last_response.body)['zones'][0]['name']
+          assert_equal "Isodistance "+ (unit == 'km' ? '10 km' : '6.21 miles') + " depuis " + store.name, JSON.parse(last_response.body)['zones'][0]['name']
         ensure
           remove_request_stub(stub_table)
         end

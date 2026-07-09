@@ -39,19 +39,14 @@
       }
     }
 
-    .form-sidebar-header {
+    .form-sidebar-chrome {
       flex: 0 0 auto;
-      position: relative;
-      z-index: 4;
-      padding: 1rem 1rem 1rem 2.5rem;
-      border-bottom: 1px solid var(--bs-border-color, #dee2e6);
-
-      .form-sidebar-toggle {
-        position: absolute;
-        top: 0.5rem;
-        left: 0.5rem;
-        z-index: 10;
-      }
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      padding: 0.5rem 0.5rem 0.25rem 0.75rem;
+      background: transparent;
+      border: none;
     }
 
     .form-sidebar-inner {

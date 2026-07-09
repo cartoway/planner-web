@@ -7,10 +7,9 @@
     = succeed "." do
       %code .fa-fw
   .d-flex.flex-wrap.align-items-center.gap-2.mb-4
-    \&lt;%= link_to "#", class: "btn btn-primary btn-sm" do %&gt;
-    %i.fa.fa-plus.fa-fw{"aria-hidden" => "true"}
-    New
-    \&lt;% end %&gt;
+    = link_to "#", class: "btn btn-primary btn-sm" do
+      %i.fa.fa-plus.fa-fw{"aria-hidden" => "true"}
+      New
     %button.btn.btn-secondary.btn-sm{:title => "Collapse list", :type => "button"}
       %i.fa.fa-chevron-left{"aria-hidden" => "true"}
     %button.btn.btn-outline-secondary.btn-sm{:title => "Edit", :type => "button"}
@@ -22,10 +21,9 @@
     Icons —
     %code disabled
   .d-flex.flex-wrap.align-items-center.gap-2.mb-4
-    \&lt;%= link_to "#", class: "btn btn-primary btn-sm disabled", tabindex: "-1", "aria-disabled": "true", role: "button" do %&gt;
-    %i.fa.fa-plus.fa-fw{"aria-hidden" => "true"}
-    New
-    \&lt;% end %&gt;
+    = link_to "#", class: "btn btn-primary btn-sm disabled", tabindex: "-1", "aria-disabled": "true", role: "button" do
+      %i.fa.fa-plus.fa-fw{"aria-hidden" => "true"}
+      New
     %button.btn.btn-secondary.btn-sm{:disabled => "disabled", :title => "Collapse list", :type => "button"}
       %i.fa.fa-chevron-left{"aria-hidden" => "true"}
     %button.btn.btn-outline-secondary.btn-sm{:disabled => "disabled", :title => "Edit", :type => "button"}

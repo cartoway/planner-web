@@ -244,4 +244,26 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
     assert_equal ['Véhicule indexé', 'Véhicule sans index'], ordered_names
     assert_equal [0, 1], vehicle_usage_set.vehicle_usages.map(&:index)
   end
+
+  test 'should import vehicle usages with explicit index before rows without index' do
+    csv = <<~CSV
+      ordre,référence véhicule,nom véhicule,email,numéro de téléphone,émission,consommation,calculateur d'itinéraire,objectif du calculateur,options du calculateur,ajustement de la vitesse,couleur,appareils,horaire début,horaire fin,référence site départ,référence site arrivée,début plage repos,fin plage repos,durée de repos,référence site repos,durée de service avant,durée de service après,distance maximale (en mètres),coût kilométrique,coût fixe,coût horaire
+      0,,Véhicule 2,vehicle2@example.com,,,15,,,,,,,,57600,,,,,,,,,30000,1,2,3
+      ,,Véhicule 1,vehicle1@example.com,0548484953,,10,,,,,,,28800,57600,,,,,,,,,30000,1,2,3
+    CSV
+
+    Tempfile.create(['import_vehicle_usage_sets_mixed_index', '.csv']) do |file|
+      file.write(csv)
+      file.rewind
+      upload = Rack::Test::UploadedFile.new(file.path, 'text/csv')
+
+      ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: upload).import
+    end
+
+    vehicle_usage_set = @customer.vehicle_usage_sets.last
+    ordered_names = vehicle_usage_set.vehicle_usages.map { |vehicle_usage| vehicle_usage.vehicle.name }
+
+    assert_equal ['Véhicule 2', 'Véhicule 1'], ordered_names
+    assert_equal [0, 1], vehicle_usage_set.vehicle_usages.map(&:index)
+  end
 end

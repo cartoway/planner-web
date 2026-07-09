@@ -272,6 +272,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     }
     csv.each do |line|
       vehicle = vehicles_by_ref[line[1]]
+      assert vehicle, "Unexpected vehicle ref in CSV: #{line[1].inspect}"
       ['one', 'two', 'three'].each { |key|
         attr_index = headers.index { |header| header.include?("[custom_attribute_#{key}]") }
         assert attr_index

@@ -95,11 +95,23 @@ jobs:
         with:
           packages: libz-dev libicu-dev build-essential g++ libgeos-dev libgeos++-dev
           version: 1.0
-      - name: Install Ruby and gems
-        uses: ruby/setup-ruby@4a9ddd6f338a97768b8006bf671dfbad383215f4 # v1.146.0
+      - name: Cache gems
+        uses: actions/cache@v4
         with:
-          bundler-cache: true
-          ruby-version: 3.1.4
+          path: vendor/bundle
+          key: ${{ runner.os }}-bundle-${{ hashFiles('.ruby-version', '**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bundle-
+      - name: Install Ruby
+        uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: false
+      - name: Bundle install
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle config set --local deployment true
+          bundle install --jobs 4 --retry 3
       - name: Rebuild rgeo gem
         run: bundle pristine rgeo
       - name: Set Node.js 14.x (Webpacker)
