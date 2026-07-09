@@ -1486,6 +1486,8 @@ en:
       sort_by: Sort by %{column}
       sort_asc: Sorted ascending by %{column}
       sort_desc: Sorted descending by %{column}
+      pickup: Pickup
+      delivery: Delivery
       remove_filter: Remove this filter
       destinations_count_help: Number of destinations
       search_keys:
