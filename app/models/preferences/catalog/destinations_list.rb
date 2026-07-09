@@ -25,8 +25,16 @@ module Preferences
       VISIT_SCOPED_COLUMN_IDS = %w[visit_ref visit_tags].freeze
       DEFAULT_ACTIVE = %w[name street postalcode city ref geocoding visit_ref].freeze
       DELIVERABLE_UNIT_COLUMN_PREFIX = 'deliverable_unit_'
+      LEGACY_COLUMN_EXPANSIONS = {
+        'address' => %w[street postalcode city],
+        'visits' => ['visit_ref']
+      }.freeze
 
       module_function
+
+      def remap_legacy_column_ids(column_ids)
+        Array(column_ids).flat_map { |id| LEGACY_COLUMN_EXPANSIONS.fetch(id.to_s, id) }
+      end
 
       def deliverable_unit_column_id(unit)
         "#{DELIVERABLE_UNIT_COLUMN_PREFIX}#{unit.id}"
@@ -92,8 +100,8 @@ module Preferences
         allowed = customer ? allowed_column_ids(customer) : COLUMN_IDS
         default_active = customer ? default_active_for(customer) : DEFAULT_ACTIVE.dup
         z = raw.is_a?(Hash) ? raw.stringify_keys : {}
-        active = Core.filter_order(z['active'] || [], allowed)
-        hidden_src = Core.filter_order(z['hidden'] || [], allowed)
+        active = Core.filter_order(remap_legacy_column_ids(z['active']), allowed)
+        hidden_src = Core.filter_order(remap_legacy_column_ids(z['hidden']), allowed)
         active.uniq!
         hidden_src.uniq!
         hidden_src -= active

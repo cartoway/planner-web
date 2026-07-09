@@ -94,4 +94,12 @@ class ParseIdsRefsTest < ActiveSupport::TestCase
 
     assert_empty condition, "All dangerous refs should result in nil condition"
   end
+
+  test 'where_clause with table_name resolves id on joined planning routes' do
+    planning = plannings(:planning_one)
+    route = routes(:route_one_one)
+    condition = ParseIdsRefs.where_clause([route.id.to_s], table_name: 'routes')
+
+    assert_equal route, planning.routes.where(condition).first
+  end
 end

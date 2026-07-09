@@ -56,7 +56,7 @@ class V01::Stops < Grape::API
               requires :id, type: Integer
             end
             get ':id' do
-              s = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.where(ParseIdsRefs.where_clause([params[:route_id]])).first!.stops.where(id: params[:id]).first!
+              s = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!.routes.where(ParseIdsRefs.where_clause([params[:route_id]], table_name: 'routes')).first!.stops.where(id: params[:id]).first!
               present s, with: V01::Entities::Stop
             end
 
