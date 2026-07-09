@@ -91,7 +91,12 @@ class VehicleUsageSet < ApplicationRecord
       attributes = self.import_attributes.except('id')
       attributes['name'] += " (#{I18n.l(Time.zone.now, format: :long)})"
       vehicle_usage_set_id = VehicleUsageSet.import([attributes], validate: false).ids.first
-      new_vehicle_usage_attributes = self.vehicle_usages.map{ |vehicle_usage| vehicle_usage.import_attributes.except('id').merge('vehicle_usage_set_id'=> vehicle_usage_set_id) }
+      new_vehicle_usage_attributes = self.vehicle_usages.map.with_index { |vehicle_usage, position|
+        vehicle_usage.import_attributes.except('id').merge(
+          'vehicle_usage_set_id' => vehicle_usage_set_id,
+          'index' => position
+        )
+      }
       VehicleUsage.import(new_vehicle_usage_attributes, validate: false)
       vehicle_usage_set_id
     end

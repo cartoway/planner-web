@@ -11,6 +11,10 @@ module Lookbook
       def is_editable? # rubocop:disable Naming/PredicatePrefix -- matches Customer#is_editable?
         true
       end
+
+      def deliverable_units
+        []
+      end
     end
 
     Tag = Struct.new(:id, :label, :color, :icon, keyword_init: true)

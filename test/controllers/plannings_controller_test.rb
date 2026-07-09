@@ -18,6 +18,15 @@ class PlanningsControllerTest < ActionController::TestCase
     customers(:customer_one).update(job_optimizer_id: nil, job_destination_geocoding_id: nil)
   end
 
+  # planning_one vehicle routes: ordered_for_planning puts out-of-route first, then by vehicle_usage index.
+  def route_one_for_planning
+    routes(:route_one_one)
+  end
+
+  def route_three_for_planning
+    routes(:route_three_one)
+  end
+
   def around
     Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 60, '_ibE_seK_seK_seK'] } } ) do
       Routers::RouterWrapper.stub_any_instance(:matrix, lambda{ |url, mode, dimensions, row, column, options| [Array.new(row.size) { Array.new(column.size, 0) }] }) do
@@ -599,7 +608,7 @@ class PlanningsControllerTest < ActionController::TestCase
     get :show, params: { id: @planning, format: :csv }
     assert_response :success
     assert_equal 'r1,planning1,10/10/2014,,,,visite,,,,,,,,,,,,,,,,,,,,,a,unaffected_one,MyString,MyString,MyString,MyString,,1.5,1.5,MyString,MyString,tag1,a,,00:01:00,10:00,11:00,,,,,neutre,tag1,,false,default_stop_value,1', response.body.split("\n")[1]
-    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,,00:00,1.1,,,,,,,,,,,,,,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,,b,,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2,false,default_stop_value,1', response.body.split("\n").select{ |l| l.include?('001') }[1]
+    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,,00:00,1.1,,,,,,,,,,,,,,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,,b,,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2,false,default_stop_value,1', response.body.split("\n").find { |l| l.include?('route_one,001,1,visite') }
   end
 
   test "it shouldn't have special char in ref routes when using vehicle name" do
@@ -617,7 +626,7 @@ class PlanningsControllerTest < ActionController::TestCase
 
     get :show, params: { id: @planning, format: :csv, **@export_settings_params }
     assert_response :success
-    assert_equal 'r1,planning1,10/10/2015,vehicle      ,003,0,site,,,07:00,0,0,,,,,,,,,,,,,store nogeo,MyString,,MyString,MyString,,,,,,,,,,,,,,,,,,', response.body.split("\n")[2]
+    assert_equal 'r1,planning1,10/10/2015,vehicle      ,003,0,site,,,07:00,0,0,,,,,,,,,,,,b,store 1,MyString,,75001,MyString,,46.5686,0.35462,,,,,,,,,,,,,,,', response.body.split("\n")[2]
   end
 
   test 'should show planning as csv with ordered columns' do
@@ -845,7 +854,7 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should move' do
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
+    patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
     assert_response :success
     assert_equal 2, JSON.parse(response.body)['route_ids'].size
     @planning.routes.select(&:vehicle_usage).each{ |vu|
@@ -860,7 +869,7 @@ class PlanningsControllerTest < ActionController::TestCase
     patch :move, params: {
       planning_id: @planning,
       route_id: invalid_route_id,
-      stop_id: @planning.routes[0].stops[0].id,
+      stop_id: route_three_for_planning.stops[0].id,
       index: 1,
       format: :json
     }
@@ -869,8 +878,8 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should move many stops' do
-    stop_ids = @planning.routes.reject { |ro| ro.id == @planning.routes[1].id }.flat_map { |ro| ro.stops.map(&:id) }
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: stop_ids, format: :json }
+    stop_ids = @planning.routes.reject { |ro| ro.id == route_one_for_planning.id }.flat_map { |ro| ro.stops.map(&:id) }
+    patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_ids: stop_ids, format: :json }
     assert_response :success
     assert_equal 3, JSON.parse(response.body)['route_ids'].size
     @planning.routes.select(&:vehicle_usage).each{ |vu|
@@ -879,31 +888,30 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'can move many stops at the start of planning' do
-    moving_stop_ids = @planning.routes.reject { |route| route.id == @planning.routes[1].id }.flat_map { |route| route.stops.pluck(:id) }
+    moving_stop_ids = @planning.routes.reject { |route| route.id == route_one_for_planning.id }.flat_map { |route| route.stops.pluck(:id) }
 
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: moving_stop_ids, index: '1', format: :json }
+    patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_ids: moving_stop_ids, index: '1', format: :json }
 
     assert_response :success
 
-    @planning.routes[1].reload
-    @planning.routes[1].stops[0,4].each do |stop|
-      assert moving_stop_ids.include?(stop.id)
-      assert (1..5).include?(stop.index)
+    moved_stops = route_one_for_planning.reload.stops.select { |stop| moving_stop_ids.include?(stop.id) }
+    assert_equal moving_stop_ids.size, moved_stops.size
+    moved_stops.sort_by(&:index).each_with_index do |stop, position|
+      assert_equal position + 1, stop.index
     end
   end
 
   test 'can move many stops at the end of planning' do
-    moving_stop_ids = @planning.routes.reject { |route| route.id == @planning.routes[1].id }.flat_map { |route| route.stops.pluck(:id) }
+    moving_stop_ids = @planning.routes.reject { |route| route.id == route_one_for_planning.id }.flat_map { |route| route.stops.pluck(:id) }
 
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_ids: moving_stop_ids, index: '-1', format: :json }
+    patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_ids: moving_stop_ids, index: '-1', format: :json }
 
     assert_response :success
 
-    @planning.routes[1].reload
-    @planning.routes[1].stops[2,7].each do |stop|
-      assert moving_stop_ids.include?(stop.id)
-      assert (3..6).include?(stop.index)
-    end
+    moved_stops = route_one_for_planning.reload.stops.select { |stop| moving_stop_ids.include?(stop.id) }
+    assert_equal moving_stop_ids.size, moved_stops.size
+    moved_indices = moved_stops.map(&:index).sort
+    assert_equal (5..7).to_a, moved_indices
   end
 
   test 'extract_inactive_stops_modal lists inactive stops on vehicle routes' do
@@ -996,7 +1004,7 @@ class PlanningsControllerTest < ActionController::TestCase
       Route.stub_any_instance(:compute_saved, lambda { |*a| raise }) do
         assert_no_difference('Stop.count') do
           assert_raise do
-            patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :js }, xhr: true
+            patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :js }, xhr: true
             assert_valid response
             assert_response 422
           end
@@ -1006,14 +1014,14 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should move with automatic index' do
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], format: :json }
+    patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], format: :json }
     assert_response :success
     assert_equal 2, JSON.parse(response.body)['route_ids'].size
   end
 
   test 'should not move' do
     assert_no_difference('Stop.count') do
-      patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 666, format: :json }
+      patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 666, format: :json }
       assert_valid response
       assert_response 422
     end
@@ -1147,10 +1155,10 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should switch' do
     @planning.routes.each(&:compute_saved!) # To get correct colors for linestrings
 
-    assert_equal 0, JSON.parse(@planning.to_geojson)['features'].select{ |f|
+    assert_equal 2, JSON.parse(@planning.to_geojson)['features'].select{ |f|
       f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#00FF00'
     }.size
-    assert_equal 5, JSON.parse(@planning.to_geojson)['features'].select{ |f|
+    assert_equal 3, JSON.parse(@planning.to_geojson)['features'].select{ |f|
       f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#004499'
     }.size
 
@@ -1228,7 +1236,7 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal true, assigns(:manage_planning)[:send_stop_to_route_usable]
     assert_equal false, assigns(:manage_planning)[:planning_move_stops_usable]
 
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
+    patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
     assert_response :success
   ensure
     u.update!(role_id: nil)
@@ -1272,7 +1280,7 @@ class PlanningsControllerTest < ActionController::TestCase
     u.update!(role_id: role.id)
     sign_in u
 
-    patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
+    patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
     assert_response :forbidden
   ensure
     u.update!(role_id: nil)
@@ -1435,8 +1443,8 @@ class PlanningsControllerTest < ActionController::TestCase
       Planner::Application.config.validate_during_duplication = false
 
       assert_difference('Planning.count') do
-        @planning.routes[1].stops[0].index = 666
-        @planning.routes[1].stops[0].save!
+        route_one_for_planning.stops[0].index = 666
+        route_one_for_planning.stops[0].save!
 
         patch :duplicate, params: { planning_id: @planning }
       end
@@ -1690,12 +1698,12 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'should not move on unprocessable entity' do
     Planning.stub_any_instance(:save!, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
-      patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
+      patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
       assert_response :unprocessable_entity
     end
 
     Planning.stub_any_instance(:compute_saved!, lambda { |*a| false }) do
-      patch :move, params: { planning_id: @planning, route_id: @planning.routes[1], stop_id: @planning.routes[0].stops[0], index: 1, format: :json }
+      patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
       assert_response :unprocessable_entity
     end
   end

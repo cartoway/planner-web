@@ -42,10 +42,9 @@
     %code col-1
     \: twelve cells side by side on one full row.
   .row.g-1.mb-4.text-center.small
-    \&lt;% 12.times do |i| %&gt;
-    .col-1
-      .border.bg-light.py-2 &lt;%= i + 1 %&gt;
-    \&lt;% end %&gt;
+    - 12.times do |i|
+      .col-1
+        .border.bg-light.py-2= i + 1
   %h2.h6.text-secondary.mb-2 Common split
   .row.g-2.mb-2
     .col-md-8

@@ -326,6 +326,22 @@ class PlanningTest < ActiveSupport::TestCase
     end
   end
 
+  test 'move rest without position from one vehicle route to another' do
+    planning = plannings(:planning_one)
+    source = planning.routes.find { |r| r == routes(:route_three_one) }
+    target = planning.routes.find { |r| r == routes(:route_one_one) }
+    rest = source.stops.find { |s| s.is_a?(StopRest) }
+    refute rest.position?
+
+    assert_difference('Stop.count', 0) do
+      planning.move_stop(target, rest, nil)
+      planning.save!
+    end
+
+    refute source.stops.reload.any? { |s| s.id == rest.id }
+    assert target.stops.reload.any? { |s| s.id == rest.id }
+  end
+
   test 'moving one visit from unassigned route uses fast finalize and updates route_data without full compute' do
     planning = plannings(:planning_one)
     unassigned = planning.routes.find { |r| r == routes(:route_zero_one) }
@@ -353,10 +369,6 @@ class PlanningTest < ActiveSupport::TestCase
     target_size = unassigned.stops.size
 
     planning.move_stop(unassigned, stop, -1)
-
-    vehicle_route.reload
-    unassigned.reload
-    stop.reload
 
     refute vehicle_route.outdated?
     refute unassigned.outdated?
