@@ -7,7 +7,7 @@ namespace :mail do
 
     users = request.select { |user|
       /https?:\/\/cartoway.com\/[^\/]+\/help-center/.match(user.customer.reseller.help_url) && /https?:\/\/cartoway.com\/[^\/]+\/contact-support/.match(user.customer.reseller.contact_url)
-    }
+    }.uniq(&:id)
     users.each do |user|
       begin
         date = user.created_at.to_date

@@ -7,6 +7,9 @@
     <%= t '.unsupported_browser_modern' %>
   <% end %>
   </p>
+  <p>
+    <%= t '.current_browser', name: browser.name, version: browser.full_version %>
+  </p>
   <% if params[:browser] == 'ie' || params[:browser] == 'modern'  %>
   <p>
     <%= t '.download_browser' %>

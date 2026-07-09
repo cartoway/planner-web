@@ -224,6 +224,7 @@ class ZoningsControllerTest < ActionController::TestCase
   test 'should use limitation' do
     customer = @zoning.customer
     customer.zonings.delete_all
+    sync_customer_counters!(customer)
     customer.max_zonings = 1
     customer.save!
 

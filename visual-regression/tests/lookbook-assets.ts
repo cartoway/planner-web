@@ -5,6 +5,15 @@ import { expect, type Page } from '@playwright/test'
 
 export async function assertCartowayStylesheetsLoaded(page: Page): Promise<void> {
   const link = page.locator('link[rel="stylesheet"][href*="layout_bootstrap_overrides"]').first()
+  if ((await link.count()) === 0) {
+    const url = page.url()
+    const title = await page.title()
+    throw new Error(
+      `layout_bootstrap_overrides stylesheet not found on ${url} (title: ${title}). ` +
+        'Expected a Lookbook preview rendered with lookbook_preview layout. ' +
+        'If the URL is /unsupported_browser, use a modern Chrome User-Agent or exclude /lookbook from Browser::Middleware.'
+    )
+  }
   await expect(link).toHaveAttribute('href', /layout_bootstrap_overrides/)
 
   const href = await link.getAttribute('href')

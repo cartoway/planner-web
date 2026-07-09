@@ -730,6 +730,7 @@ class DestinationsControllerTest < ActionController::TestCase
   test 'should use limitation' do
     customer = @destination.customer
     customer.delete_all_destinations
+    sync_customer_counters!(customer)
     customer.max_destinations = 1
     customer.save!
 

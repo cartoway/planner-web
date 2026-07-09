@@ -524,6 +524,7 @@ class CustomerTest < ActiveSupport::TestCase
     @customer.delete_all_destinations
     @customer.delete_all_plannings
     @customer.zonings.delete_all
+    sync_customer_counters!(@customer)
     @customer.reload
     @customer.vehicle_usage_sets[1..-1].each{ |c| @customer.vehicle_usage_sets.destroy(c) }
 

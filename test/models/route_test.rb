@@ -610,7 +610,7 @@ class RouteTest < ActiveSupport::TestCase
     end
   end
 
-  test 'should add stop_index to polyline for rest without location' do
+  test 'should tag adjacent polyline with stop_index for rest without store' do
     route = routes(:route_one_one)
     route.vehicle_usage.update!(store_rest_id: nil)
     rest_stop = route.stops.find { |stop| stop.is_a?(StopRest) }
@@ -619,13 +619,19 @@ class RouteTest < ActiveSupport::TestCase
     route.outdated = true
     route.compute_saved!
 
-    assert route.geojson_tracks&.any?, 'Expected geojson tracks after compute'
+    tracks = route.geojson_tracks.map { |track_json| JSON.parse(track_json) }
+    linestrings = tracks.select { |track| track.dig('geometry', 'polylines').present? }
+    assert linestrings.any?, 'Expected geojson tracks after compute'
 
-    trace_for_rest = route.geojson_tracks.map { |track_json| JSON.parse(track_json) }.find do |track|
-      track.dig('properties', 'stop_index') == rest_stop.index &&
-        track.dig('geometry', 'polylines').present?
+    trace_for_rest = linestrings.find do |track|
+      indices = Array(track.dig('properties', 'stop_indices') || track.dig('properties', 'stop_index'))
+      indices.map(&:to_i).include?(rest_stop.index)
     end
-    assert trace_for_rest, 'Expected a polyline trace tagged with the rest stop_index'
+    assert trace_for_rest, 'Expected the adjacent leg polyline to carry the rest stop_index'
+    assert_equal 1, linestrings.count { |track|
+      indices = Array(track.dig('properties', 'stop_indices') || track.dig('properties', 'stop_index'))
+      indices.map(&:to_i).include?(rest_stop.index)
+    }, 'Rest without store must not create its own polyline leg'
   end
 
   test 'available excludes hidden and locked out of route' do
