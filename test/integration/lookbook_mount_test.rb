@@ -12,6 +12,14 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_match(/lookbook/i, response.body)
   end
 
+  test 'lookbook preview includes v2 layout_bootstrap_overrides stylesheet' do
+    get '/lookbook/preview/design_system/foundation/default', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select 'link[rel="stylesheet"][href*="layout_bootstrap_overrides"]', 1
+    assert_select 'body.cartoway-v2[data-controller="lookbook-v2"]', 1
+  end
+
   test 'planning sidebar bootstrap 5 preview renders' do
     get '/lookbook/preview/design_system/planning_sidebar/default', headers: { 'User-Agent' => MODERN_CHROME_UA }
 
@@ -54,6 +62,15 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_select '.form-sidebar-chrome button.btn-close', minimum: 1
     assert_select 'button.floating-btn.form-sidebar-expand.slide-panel-expand-trigger', minimum: 1
     assert_select 'header.destination-form-sidebar-header', minimum: 1
+  end
+
+  test 'grid layout rows and columns preview renders' do
+    get '/lookbook/preview/design_system/grid_layout/rows_and_columns', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select 'body.cartoway-v2[data-controller="lookbook-v2"]', 1
+    assert_select '.alert.alert-secondary', text: /12 virtual columns/
+    assert_select '.row .col-1', 12
   end
 
   test 'xl floating button preview renders pill floating CTA' do
