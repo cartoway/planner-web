@@ -308,8 +308,9 @@ class DestinationsController < ApplicationController
     conditions = destinations_index_search_conditions
     scope = DestinationSearchScope.apply(scope, conditions) if conditions.any?
     sort = DestinationsListSort.parse(params, customer: current_user.customer)
-    scope = sort ? sort.apply(scope) : scope.reorder(Arel.sql('destinations.geocoding_accuracy ASC NULLS LAST, destinations.id ASC'))
-    scope
+    return sort.apply(scope) if sort
+
+    scope.reorder(Arel.sql('destinations.geocoding_accuracy ASC NULLS LAST, destinations.id ASC'))
   end
 
   # west, south, east, north

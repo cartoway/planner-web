@@ -238,14 +238,16 @@ module DestinationsHelper
     "#{I18n.t('activerecord.attributes.destination.geocoding_level')} : #{I18n.t("destinations.form.geocoding_level.#{destination.geocoding_level}")}"
   end
 
+  GEOCODING_LEVEL_ICON_CLASSES = {
+    'point' => 'fa-map-marker',
+    'house' => 'fa-store',
+    'street' => 'fa-road',
+    'intersection' => 'fa-times',
+    'city' => 'fa-exclamation-triangle'
+  }.freeze
+
   def destinations_list_geocoding_level_icon_class(destination)
-    case destination.geocoding_level&.to_s
-    when 'point' then 'fa-map-marker'
-    when 'house' then 'fa-store'
-    when 'street' then 'fa-road'
-    when 'intersection' then 'fa-times'
-    when 'city' then 'fa-exclamation-triangle'
-    end
+    GEOCODING_LEVEL_ICON_CLASSES[destination.geocoding_level&.to_s]
   end
 
   def destinations_list_geocoding_result_free(destination)

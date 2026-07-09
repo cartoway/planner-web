@@ -2,8 +2,6 @@
 
 module DesignSystem
   class FeedbackPreview < ApplicationPreview
-
-
     def alerts
       render_with_template
     end
@@ -15,5 +13,5 @@ module DesignSystem
     def progress_and_spinners
       render_with_template
     end
-end
+  end
 end
