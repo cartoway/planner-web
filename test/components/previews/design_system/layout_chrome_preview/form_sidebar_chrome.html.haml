@@ -1,25 +1,28 @@
 .lookbook-form-sidebar-host.container-fluid.py-3
   %h1.h4.mb-3 Form sidebar chrome
   %p.text-muted.small.mb-3
-    Same overlay pattern as the destinations index list: map background,
+    Right overlay on the map:
     %code .slide-panel.slide-panel--from-right
-    on the right, and
+    with
+    %code .form-sidebar-chrome
+    and
+    %code .btn-close
+    when the form is open; collapsed state shows the
     %code .floating-btn
-    controls to collapse / expand the panel (mirrors
+    expand trigger on the map edge (unlike
     %code .destinations-sidebar
-    on the left).
+    on the left, which keeps a toggle).
 
   %h2.h6.text-secondary.mb-2 Open form
   #lookbook-form-sidebar-layout.lookbook-form-sidebar-demo
     .lookbook-form-sidebar-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
       Map (placeholder)
     %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--open{role: 'complementary', 'aria-label': 'Destination form'}
-      .form-sidebar-header
-        %button.floating-btn.form-sidebar-toggle{type: 'button', title: 'Close form', 'aria-label': 'Close form'}
-          %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
+      .form-sidebar-chrome
+        %button.btn-close{type: 'button', title: 'Close form', 'aria-label': 'Close form'}
+      .form-sidebar-inner
         %header.destination-form-sidebar-header.mb-0
           %h2.h5.mb-0 Edit destination
-      .form-sidebar-inner
         .mb-3
           %label.form-label{for: 'lookbook-fs-name'} Name
           %input#lookbook-fs-name.form-control.form-control-sm{type: 'text', autocomplete: 'off', value: 'Boulangerie Dupont'}
@@ -35,8 +38,7 @@
     .lookbook-form-sidebar-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
       Map (placeholder)
     %aside.form-sidebar.slide-panel.slide-panel--from-right.slide-panel--collapsed{role: 'complementary', 'aria-label': 'Destination form'}
-      .form-sidebar-header
-        %button.floating-btn.form-sidebar-toggle{type: 'button', title: 'Close form', 'aria-label': 'Close form'}
-          %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
+      .form-sidebar-chrome.d-none
+        %button.btn-close{type: 'button', title: 'Close form', 'aria-label': 'Close form'}
     %button.floating-btn.form-sidebar-expand.slide-panel-expand-trigger{type: 'button', title: 'Show form', 'aria-label': 'Show form'}
       %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}

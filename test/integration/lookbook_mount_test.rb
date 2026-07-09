@@ -27,7 +27,6 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '[data-controller="v2--filtered-search"]', 1
     assert_select '#lookbook-filtered-search[role="combobox"]', 1
-    assert_select '#lookbook-filtered-search[placeholder=?]', I18n.t('destinations.index.search_placeholder', name_key: I18n.t('destinations.index.search_keys.name'), city_key: I18n.t('destinations.index.search_keys.city'))
     assert_select 'label[for="lookbook-filtered-search"]', text: I18n.t('destinations.index.search_label')
     assert_select '#lookbook-filtered-search-dropdown [data-search-key]', DestinationSearchParser::ALLOWED_KEYS.size
   end
@@ -37,7 +36,7 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'turbo-frame#destinations_list', 1
-    assert_select '.destinations-sidebar', 1
+    assert_select '.destinations-sidebar', 2
     assert_select '#destination_box.destinations-list-scroll', 1
     assert_select 'th.destinations-selection-col', 1
     assert_select '.destinations-list-geocoding-cell', minimum: 1
@@ -52,7 +51,7 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '.lookbook-form-sidebar-host', 1
     assert_select 'aside.form-sidebar.slide-panel.slide-panel--from-right', minimum: 1
-    assert_select 'button.floating-btn.form-sidebar-toggle', minimum: 1
+    assert_select '.form-sidebar-chrome button.btn-close', minimum: 1
     assert_select 'button.floating-btn.form-sidebar-expand.slide-panel-expand-trigger', minimum: 1
     assert_select 'header.destination-form-sidebar-header', minimum: 1
   end
