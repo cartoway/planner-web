@@ -8,7 +8,7 @@ module Lookbook
         true
       end
 
-      def is_editable?
+      def is_editable? # rubocop:disable Naming/PredicatePrefix -- matches Customer#is_editable?
         true
       end
     end
@@ -17,7 +17,7 @@ module Lookbook
 
     Visit = Struct.new(:ref, :tags, :pickups, :deliveries, keyword_init: true) do
       def initialize(ref: nil, tags: [], pickups: {}, deliveries: {})
-        super(ref: ref, tags: tags, pickups: pickups, deliveries: deliveries)
+        super
       end
 
       def default_pickups

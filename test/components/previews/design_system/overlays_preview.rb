@@ -2,8 +2,6 @@
 
 module DesignSystem
   class OverlaysPreview < ApplicationPreview
-
-
     def modal
       render_with_template
     end
