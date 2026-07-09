@@ -26,6 +26,10 @@ customer_one:
   max_zonings: 15
   max_destinations: 66
   max_vehicle_usage_sets: 5
+  destinations_count: 4
+  visits_count: 4
+  plannings_count: 2
+  vehicles_count: 2
   print_barcode: code128
   devices:
     fleet:
@@ -67,6 +71,10 @@ customer_one_other:
   speed_multiplier: 1
   default_country: France
   reseller: reseller_one
+  destinations_count: 0
+  visits_count: 0
+  plannings_count: 0
+  vehicles_count: 1
   advanced_options: {}
 
 customer_two:
@@ -86,4 +94,8 @@ customer_two:
   speed_multiplier: 1.1
   default_country: France
   reseller: reseller_two
+  destinations_count: 2
+  visits_count: 2
+  plannings_count: 2
+  vehicles_count: 1
   advanced_options: {}

@@ -13,6 +13,16 @@ class IndexControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'unsupported browser page shows detected browser name and version' do
+    @request.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.9.16 Chrome/144.0.7559.236 Electron/40.10.3 Safari/537.36'
+
+    get :unsupported_browser, params: { browser: 'modern' }
+
+    assert_response :success
+    assert_includes response.body, 'Electron'
+    assert_includes response.body, '40.10.3'
+  end
+
   test 'should raise a warning flash error' do
     user = users(:user_one)
     user.customer.update! end_subscription: Time.now + 15.days

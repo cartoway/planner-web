@@ -300,29 +300,36 @@ class Route < ApplicationRecord
   end
 
   def store_traces(trace, options = {})
-    if trace && !options[:no_geojson]
-      @geojson_tracks_store << {
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          polylines: trace,
-        },
-        properties: {
-          route_id: self.id,
-          color: options[:color] || self.default_color,
-          drive_time: options[:drive_time],
-          distance: options[:distance],
-          sub_tour_index: options[:sub_tour_index],
-          stop_index: options[:stop_index]
-        }.compact
-      }.to_json
-    end
+    return unless trace && !options[:no_geojson]
+
+    stop_indices = [options[:stop_index], @pending_unpositioned_rest_stop_index].compact.map(&:to_i).uniq
+    @pending_unpositioned_rest_stop_index = nil
+
+    properties = {
+      route_id: self.id,
+      color: options[:color] || self.default_color,
+      drive_time: options[:drive_time],
+      distance: options[:distance],
+      sub_tour_index: options[:sub_tour_index],
+      stop_index: stop_indices.first
+    }
+    properties[:stop_indices] = stop_indices if stop_indices.size > 1
+
+    @geojson_tracks_store << {
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        polylines: trace,
+      },
+      properties: properties.compact
+    }.to_json
   end
 
   def plan(departure = nil, options = {})
     options[:ignore_errors] = false if options[:ignore_errors].nil?
 
     @geojson_tracks_store = []
+    @pending_unpositioned_rest_stop_index = nil
 
     route_attributes = init_route_data
     previous_route_data = self.start_route_data
@@ -367,12 +374,19 @@ class Route < ApplicationRecord
         previous_route_data_attributes[:no_geolocalization] = true if !stop.is_a?(StopRest) && !stop.position?
 
         stop_attributes = {}
-        if stop.active && (stop.position? || (stop.is_a?(StopRest) && ((stop.time_window_start_1 && stop.time_window_end_1) || (stop.time_window_start_2 && stop.time_window_end_2)) && stop.duration))
-          stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
-          stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
-          previous_route_data_attributes[:no_path] ||= stop_attributes[:no_path]
+        if stop.active && (stop.position? || scheduled_stop_rest?(stop))
+          if stop.position?
+            stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
+            stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
+            previous_route_data_attributes[:no_path] ||= stop_attributes[:no_path]
 
-          store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index, color: sub_tour_color, stop_index: stop.index))
+            store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index, color: sub_tour_color, stop_index: stop.index))
+          else
+            @pending_unpositioned_rest_stop_index = stop.index
+            stop_attributes[:distance] = nil
+            stop_attributes[:drive_time] = nil
+            stop_attributes[:no_path] = false
+          end
           if stop.is_a?(StopStore)
             sub_tour_color = stop.route_data.color
             sub_tour_index += 1
@@ -1865,6 +1879,13 @@ class Route < ApplicationRecord
       route_data_attributes[route_data_key] =
         route_data_attributes[route_data_key] || route_attributes[route_key] || false
     end
+  end
+
+  def scheduled_stop_rest?(stop)
+    stop.is_a?(StopRest) &&
+      ((stop.time_window_start_1 && stop.time_window_end_1) ||
+       (stop.time_window_start_2 && stop.time_window_end_2)) &&
+      stop.duration
   end
 
   def adjust_unpositioned_stop_rest_times!(previous_route_data, stops_sort, stops_drive_time)

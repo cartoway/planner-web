@@ -1122,6 +1122,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   test 'should use limitation' do
     customer = @destination.customer
     customer.destinations.delete_all
+    sync_customer_counters!(customer)
     customer.max_destinations = 1
     customer.save!
 
