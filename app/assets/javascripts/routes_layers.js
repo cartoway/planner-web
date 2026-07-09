@@ -1036,11 +1036,15 @@ export const RoutesLayer = L.FeatureGroup.extend({
             this.layersByRoute[routeId] = [];
           }
           this.layersByRoute[routeId].push(layer);
-          if (feature.properties.stop_index != null && feature.geometry.type === 'LineString') {
+          if ((feature.properties.stop_index != null && feature.geometry.type === 'LineString') ||
+              (feature.properties.stop_indices && feature.geometry.type === 'LineString')) {
             if (!(routeId in this.tracesByStopIndex)) {
               this.tracesByStopIndex[routeId] = {};
             }
-            this.tracesByStopIndex[routeId][feature.properties.stop_index] = layer;
+            var stopIndices = feature.properties.stop_indices || [feature.properties.stop_index];
+            for (var si = 0; si < stopIndices.length; si++) {
+              this.tracesByStopIndex[routeId][stopIndices[si]] = layer;
+            }
           }
         } else if (feature.properties.store_id) {
           this.layerStores = layer;

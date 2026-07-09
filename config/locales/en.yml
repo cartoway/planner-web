@@ -1730,6 +1730,7 @@ en:
     unsupported_browser:
       unsupported_browser: Unsupported Browser
       unsupported_browser_modern: 'Your browser is too old, please use any recent browser.'
+      current_browser: 'Detected browser: %{name} (version %{version})'
       download_browser: 'You can download the last version of free browser Firefox at: '
   order_arrays:
     menu:

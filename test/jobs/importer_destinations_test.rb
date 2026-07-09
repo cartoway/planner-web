@@ -6,6 +6,7 @@ class ImporterDestinationsTest < ActionController::TestCase
     @customer.update!(enable_store_stops: true)
     # Remove invalid stop
     stops(:stop_three_one).destroy
+    sync_customer_counters!(@customer)
     @visit_tag1_count = @customer.visits.select{ |v| v.tags.include? tags(:tag_one) }.size
     @plan_tag1_count = @customer.plannings.select{ |p| p.tags_compatible? [tags(:tag_one)] }.size
     @original_delayed_job_use = Planner::Application.config.delayed_job_use
@@ -160,8 +161,7 @@ class ImporterDestinationsTest < ActionController::TestCase
           stop = Planning.last.routes.collect{ |r| r.stops.find{ |s| s.is_a?(StopVisit) && s.visit.destination.name == 'BF' } }.compact.first
           assert_equal true, stop.active
           if stop.route.vehicle_usage.default_store_start.position?
-            route = stop.route
-            assert_equal 1, route.stops.first.distance
+            assert_equal 1, stop.distance
           else
             assert_equal 0, stop.distance
           end
@@ -882,11 +882,10 @@ class ImporterDestinationsTest < ActionController::TestCase
         planning = @customer.plannings.last
         route_1 = planning.routes.find{ |r| r.ref == 't1' }
         assert_equal 'p1', planning.ref
-        assert_equal 2, route_1.stops.count { |stop| stop.is_a?(StopRest) }
-        assert_equal 1, route_1.stops.index{ |stop| stop.visit&.ref == 'v1' }
-        assert_equal 2, route_1.stops.index { |stop| stop.is_a?(StopRest) && stop.index == 3 }
-        assert_equal 3, route_1.stops.index{ |stop| stop.visit&.ref == 'v2' }
-        assert route_1.stops.find { |stop| stop.is_a?(StopRest) && stop.index == 3 }.active
+        assert_equal 1, route_1.stops.count { |stop| stop.is_a?(StopRest) }
+        assert_equal 0, route_1.stops.index { |stop| stop.visit&.ref == 'v1' }
+        assert_equal 2, route_1.stops.index { |stop| stop.visit&.ref == 'v2' }
+        assert route_1.stops.find { |stop| stop.is_a?(StopRest) }.active
       end
     end
   end

@@ -10,7 +10,11 @@ require 'rails/test_help'
 require 'webmock/minitest'
 require 'mocha/minitest'
 
-Dir[Rails.root.join('lib/**/*.rb')].each { |file| load file } # only explicitly required files are tracked
+# Load lib files for SimpleCov coverage without re-executing files already required at boot.
+Dir[Rails.root.join('lib/**/*.rb')].each do |file|
+  absolute = File.expand_path(file)
+  require absolute unless $".include?(absolute)
+end
 
 # WebMock.allow_net_connect!
 WebMock.disable_net_connect!
@@ -44,14 +48,15 @@ class ActiveSupport::TestCase
   set_fixture_class route_data_start: RouteData
   set_fixture_class route_data_stop: RouteData
 
-  def before_setup
-    super
-    Customer.find_each do |customer|
-      Customer.where(id: customer.id).update_all(
-        destinations_count: customer.destinations.count,
-        visits_count: Visit.joins(:destination).where(destinations: { customer_id: customer.id }).count,
-        plannings_count: customer.plannings.count,
-        vehicles_count: customer.vehicles.count
+  # Sync counter cache columns when tests bypass ActiveRecord callbacks (delete_all, SQL).
+  def sync_customer_counters!(customer = nil)
+    scope = customer ? Customer.where(id: customer.id) : Customer.all
+    scope.find_each do |record|
+      Customer.where(id: record.id).update_all(
+        destinations_count: record.destinations.count,
+        visits_count: Visit.joins(:destination).where(destinations: { customer_id: record.id }).count,
+        plannings_count: record.plannings.count,
+        vehicles_count: record.vehicles.count
       )
     end
   end
@@ -222,62 +227,3 @@ if ENV['BENCHMARK'] == 'true'
     end
   end
 end
-
-
-# From https://github.com/rails/rails/issues/34790
-#
-# This is required because of an incompatibility between Ruby 2.6 and Rails 4.2, which the Rails team is not going to fix.
-
-rb_version = Gem::Version.new(RUBY_VERSION)
-
-if rb_version >= Gem::Version.new('2.6') && Gem::Version.new(Rails.version) < Gem::Version.new('5')
-  if ! defined?(::ActionController::TestResponse)
-    raise "Needed class is not defined yet, try requiring this file later."
-  end
-
-  if rb_version >= Gem::Version.new('2.7')
-    puts "Using #{__FILE__} for Ruby 2.7."
-
-    class ActionController::TestResponse < ActionDispatch::TestResponse
-      def recycle!
-        @mon_data = nil
-        @mon_data_owner_object_id = nil
-        initialize
-      end
-    end
-
-    class ActionController::LiveTestResponse < ActionController::Live::Response
-      def recycle!
-        @body = nil
-        @mon_data = nil
-        @mon_data_owner_object_id = nil
-        initialize
-      end
-    end
-
-  else
-    puts "Using #{__FILE__} for Ruby 2.6."
-
-    class ActionController::TestResponse < ActionDispatch::TestResponse
-      def recycle!
-        @mon_mutex = nil
-        @mon_mutex_owner_object_id = nil
-        initialize
-      end
-    end
-
-    class ActionController::LiveTestResponse < ActionController::Live::Response
-      def recycle!
-        @body = nil
-        @mon_mutex = nil
-        @mon_mutex_owner_object_id = nil
-        initialize
-      end
-    end
-
-  end
-else
-  puts "#{__FILE__} no longer needed."
-end
-
-# End From https://github.com/rails/rails/issues/34790

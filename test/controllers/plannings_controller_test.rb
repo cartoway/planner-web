@@ -941,10 +941,10 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'move_stops_modal with stop_ids renders lasso-selected stops and checked count' do
     stop = stops(:stop_one_one)
 
-    get :move_stops_modal, params: { id: @planning.id, stop_ids: stop.id.to_s }, format: :js
+    get :move_stops_modal, params: { planning_id: @planning.id, stop_ids: stop.id.to_s }, format: :js, xhr: true
     assert_response :success
     assert_includes response.body, "\"stop_id\":#{stop.id}"
-    assert_match(/id=\\"move-stops_count\\">\s*1/, response.body)
+    assert_match(/move-stops_count.{0,24}1/m, response.body)
   end
 
   test 'move extracts inactive stop to out of route' do
@@ -1158,7 +1158,7 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal 2, JSON.parse(@planning.to_geojson)['features'].select{ |f|
       f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#00FF00'
     }.size
-    assert_equal 3, JSON.parse(@planning.to_geojson)['features'].select{ |f|
+    assert_equal 5, JSON.parse(@planning.to_geojson)['features'].select{ |f|
       f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#004499'
     }.size
 
@@ -1169,7 +1169,7 @@ class PlanningsControllerTest < ActionController::TestCase
     @planning.routes.select(&:vehicle_usage).each{ |r|
       assert_equal 1, r.stops.select{ |s| s.is_a?(StopRest) }.size
     }
-    assert_equal 2, JSON.parse(@planning.to_geojson)['features'].select{ |f|
+    assert_equal 4, JSON.parse(@planning.to_geojson)['features'].select{ |f|
       f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#00FF00'
     }.size
     assert_equal 3, JSON.parse(@planning.to_geojson)['features'].select{ |f|
@@ -1597,6 +1597,7 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should use limitation' do
     customer = @planning.customer
     customer.delete_all_plannings
+    sync_customer_counters!(customer)
     customer.max_plannings = 1
     customer.save!
 

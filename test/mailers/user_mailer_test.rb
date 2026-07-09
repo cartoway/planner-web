@@ -79,9 +79,11 @@ class UserMailerTest < ActionMailer::TestCase
   end
 
   test 'should send an email trough rake task' do
+    Rails.application.load_tasks
     user_one = users(:user_one)
     creation_date = user_one.created_at
 
+    User.where(customer_id: user_one.customer_id).where.not(id: user_one.id).update_all(created_at: Time.zone.today)
     user_one.update(created_at: Time.zone.today - 9.days)
     user_one.customer.update(test: true)
     user_one.customer.reseller.update(contact_url: "https://cartoway.com/{LG}/contact-support/", help_url: "https://cartoway.com/{LG}/help-center")
@@ -96,6 +98,8 @@ class UserMailerTest < ActionMailer::TestCase
 
     user_one.update(created_at: creation_date)
     user_one.customer.reseller.update(contact_url: nil, help_url: nil)
+  ensure
+    Rake::Task['mail:automation'].reenable
   end
 
   test 'should not use attachments for images'  do
