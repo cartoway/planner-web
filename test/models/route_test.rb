@@ -419,6 +419,7 @@ class RouteTest < ActiveSupport::TestCase
   test 'plan shifts unpositioned stop_rest start earlier when rest window is violated' do
     route = routes(:route_one_one)
     route.vehicle_usage.update_columns(store_rest_id: nil)
+    route.planning.customer.update_columns(enable_strict_within_timewindows: true)
 
     rest = route.stops.find { |stop| stop.is_a?(StopRest) }
     route.move_stop(rest, 2)
@@ -435,7 +436,7 @@ class RouteTest < ActiveSupport::TestCase
     prev_stop = route.stops.sort_by(&:index).find { |stop| stop.index < rest.index && stop.active? }
     next_stop = route.stops.sort_by(&:index).find { |stop| stop.index > rest.index && stop.active? }
 
-    materialized_arrival = prev_stop.time + prev_stop.duration + rest.drive_time
+    materialized_arrival = prev_stop.time + prev_stop.duration + (rest.drive_time || 0)
     strict = route.planning.customer.enable_strict_within_timewindows
     _open, close, = rest.best_open_close(materialized_arrival, strict_within_timewindows: strict)
     close_compare_time = strict ? materialized_arrival + rest.duration : materialized_arrival

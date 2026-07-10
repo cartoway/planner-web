@@ -136,8 +136,8 @@ export default class extends Controller {
     /** @type {{ cell: HTMLElement | null, onEnd: (e: AnimationEvent) => void, timer: number } | null} */
     this._mapPinRowHighlightState = null
     this._onTurboFrameLoad = this._onTurboFrameLoad.bind(this)
+    this._onDestroyConfirmed = (event) => this.destroyConfirmed(event)
     this._canDestroy = !!config.can_destroy
-    this._destroyConfirmMessage = config.destroy_confirm || ''
     this._formSidebarPlaceholder = config.form_sidebar_placeholder || ''
     this._mapGeojsonUrl = config.map_geojson_url || '/destinations/map.geojson'
     this._pendingHighlightId = null
@@ -165,6 +165,7 @@ export default class extends Controller {
     document.addEventListener('turbo:before-cache', this._beforeCache, { signal })
     document.addEventListener('turbolinks:before-cache', this._beforeCache, { signal })
     document.addEventListener('turbo:frame-load', this._onTurboFrameLoad, { signal })
+    this.element.addEventListener('confirm-click:confirmed', this._onDestroyConfirmed, { signal })
   }
 
   disconnect () {
@@ -971,20 +972,7 @@ export default class extends Controller {
         this._toggleRowSelection()
         return
       }
-      if (e.target.closest && e.target.closest('.destinations-bulk-delete')) {
-        e.preventDefault()
-        if (!this._canDestroy) return
-        const ids = this._selectedDestinationIds()
-        if (ids.length) this._destroyDestinations(ids)
-        return
-      }
-      const deleteBtn = e.target.closest && e.target.closest('.destinations-row-delete')
-      if (deleteBtn) {
-        e.preventDefault()
-        e.stopPropagation()
-        if (!this._canDestroy) return
-        const id = deleteBtn.getAttribute('data-destination-id')
-        if (id) this._destroyDestinations([id])
+      if (e.target.closest && e.target.closest('.destinations-bulk-delete, .destinations-row-delete')) {
         return
       }
       if (e.target.closest && e.target.closest('#destination_box input[type=checkbox][name^="destinations"]')) {
@@ -1012,10 +1000,26 @@ export default class extends Controller {
       .filter(Boolean)
   }
 
+  destroyConfirmed (event) {
+    if (!this._canDestroy) return
+
+    const button = event.detail?.element
+    if (!button) return
+
+    if (button.classList.contains('destinations-row-delete')) {
+      const id = button.getAttribute('data-destination-id')
+      if (id) this._destroyDestinations([id])
+      return
+    }
+
+    if (button.classList.contains('destinations-bulk-delete')) {
+      const ids = this._selectedDestinationIds()
+      if (ids.length) this._destroyDestinations(ids)
+    }
+  }
+
   async _destroyDestinations (ids) {
     if (!this._canDestroy || !ids || !ids.length) return
-    const msg = this._destroyConfirmMessage
-    if (msg && !window.confirm(msg)) return
 
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     const headers = {

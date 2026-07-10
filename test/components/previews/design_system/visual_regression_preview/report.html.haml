@@ -1,0 +1,99 @@
+.container-fluid.py-4{
+  data: (@vrt_enabled ? {
+    controller: 'lookbook-visual-regression',
+    lookbook_visual_regression_accept_url_value: @accept_url,
+    lookbook_visual_regression_accept_all_url_value: @accept_all_url
+  } : {})
+}
+  %h1.h3 Visual regression
+  %p.text-muted
+    Playwright screenshot comparison against committed baselines
+    %code *-linux.png
+    \.
+
+  - unless @vrt_enabled
+    .alert.alert-info
+      %strong= t('lookbook_visual_regression.vrt_disabled_title')
+      %p.mb-0
+        != t('lookbook_visual_regression.vrt_disabled_hint_html')
+
+  - if @report.nil?
+    .alert.alert-warning
+      %strong= t('lookbook_visual_regression.no_report_title')
+      - if @vrt_enabled
+        %p.mb-0
+          != t('lookbook_visual_regression.no_report_when_enabled_html')
+      - else
+        %p.mb-0
+          != t('lookbook_visual_regression.no_report_when_disabled_html')
+  - else
+    - status_class = @report.passed? ? 'success' : 'danger'
+    .alert{class: "alert-#{status_class}"}
+      %strong= @report.passed? ? 'All previews match' : 'Snapshot mismatches'
+      — #{@report.passed_count} passed, #{@report.failed_count} failed
+      %span.text-muted.ms-2
+        (#{l(@report.generated_at, format: :long)})
+
+    - if @vrt_enabled && @report.failed_count.positive?
+      .mb-3
+        %button.btn.btn-success.btn-sm{
+          type: 'button',
+          data: {
+            controller: 'confirm-click',
+            confirm_click_group_value: 'lookbook-vrt',
+            confirm_click_wait_message_value: t('lookbook_visual_regression.accept_confirm_wait'),
+            confirm_click_confirm_message_value: t('lookbook_visual_regression.accept_all_confirm', count: @report.failed_count),
+            confirm_click_ready_label_value: t('lookbook_visual_regression.accept_all_confirm_ready'),
+            confirm_click_base_class_value: 'btn-success',
+            accept_all: 'true'
+          }
+        }
+          = t('lookbook_visual_regression.accept_all')
+
+    .table-responsive
+      %table.table.table-sm.align-middle
+        %thead
+          %tr
+            %th Preview
+            %th Status
+            %th Expected
+            %th Actual
+            %th Diff
+            %th Actions
+        %tbody
+          - @report.previews.each do |preview|
+            %tr
+              %td
+                %code= preview.name
+              %td
+                - if preview.status == 'passed'
+                  %span.badge.bg-success passed
+                - else
+                  %span.badge.bg-danger failed
+              %td
+                - if preview.expected_url
+                  %a{href: preview.expected_url, target: '_blank', rel: 'noopener'}
+                    %img.border{src: preview.expected_url, alt: 'expected', style: 'max-height: 120px; max-width: 240px;'}
+              %td
+                - if preview.actual_url
+                  %a{href: preview.actual_url, target: '_blank', rel: 'noopener'}
+                    %img.border{src: preview.actual_url, alt: 'actual', style: 'max-height: 120px; max-width: 240px;'}
+              %td
+                - if preview.diff_url
+                  %a{href: preview.diff_url, target: '_blank', rel: 'noopener'}
+                    %img.border{src: preview.diff_url, alt: 'diff', style: 'max-height: 120px; max-width: 240px;'}
+              %td.text-nowrap
+                - if @vrt_enabled && preview.status == 'failed' && preview.actual_url
+                  %button.btn.btn-sm.btn-success{
+                    type: 'button',
+                    data: {
+                      controller: 'confirm-click',
+                      confirm_click_group_value: 'lookbook-vrt',
+                      confirm_click_wait_message_value: t('lookbook_visual_regression.accept_confirm_wait'),
+                      confirm_click_confirm_message_value: t('lookbook_visual_regression.accept_confirm', name: preview.name),
+                      confirm_click_ready_label_value: t('lookbook_visual_regression.accept_confirm_ready'),
+                      confirm_click_base_class_value: 'btn-success',
+                      preview_name: preview.name
+                    }
+                  }
+                    = t('lookbook_visual_regression.accept')

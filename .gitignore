@@ -51,3 +51,5 @@ yarn-error.log*
 /visual-regression/node_modules/
 /visual-regression/playwright-report/
 /visual-regression/test-results/
+/public/lookbook-visual-regression/*
+!/public/lookbook-visual-regression/.gitkeep
