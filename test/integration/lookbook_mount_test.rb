@@ -12,6 +12,88 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_match(/lookbook/i, response.body)
   end
 
+  test 'lookbook visual regression report preview renders when manifest is missing' do
+    public_dir = Rails.root.join('public/lookbook-visual-regression')
+    FileUtils.rm_rf(public_dir)
+
+    get '/lookbook/preview/design_system/visual_regression/report', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_match(/Visual regression/i, response.body)
+    assert_match I18n.t('lookbook_visual_regression.no_report_title'), response.body
+  end
+
+  test 'lookbook visual regression report uses main-app accept URLs when VRT is enabled' do
+    @previous_vrt = ENV.fetch('LOOKBOOK_VRT', nil)
+    ENV['LOOKBOOK_VRT'] = '1'
+    public_dir = Rails.root.join('public/lookbook-visual-regression')
+    FileUtils.mkdir_p(public_dir)
+    File.write(
+      public_dir.join('manifest.json'),
+      {
+        generated_at: Time.zone.now.iso8601,
+        status: 'failed',
+        passed_count: 0,
+        failed_count: 1,
+        previews: [
+          {
+            name: 'foundation-default',
+            path: 'design_system/foundation/default',
+            status: 'failed',
+            expected_url: '/lookbook-visual-regression/foundation-default-expected.png',
+            actual_url: '/lookbook-visual-regression/foundation-default-actual.png',
+            diff_url: '/lookbook-visual-regression/foundation-default-diff.png',
+            lookbook_preview_url: '/lookbook/preview/design_system/foundation/default'
+          }
+        ]
+      }.to_json
+    )
+
+    get '/lookbook/preview/design_system/visual_regression/report', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_includes response.body, "data-lookbook-visual-regression-accept-url-value='/lookbook/visual_regression/accept'"
+    assert_includes response.body, "data-lookbook-visual-regression-accept-all-url-value='/lookbook/visual_regression/accept_all'"
+    assert_not_includes response.body, '/lookbook/lookbook/visual_regression/'
+    assert_not_includes response.body, '&gt;lookbook-visual-regression'
+  ensure
+    ENV['LOOKBOOK_VRT'] = @previous_vrt
+    FileUtils.rm_rf(public_dir)
+  end
+
+  test 'lookbook visual regression report preview renders when manifest exists' do
+    public_dir = Rails.root.join('public/lookbook-visual-regression')
+    FileUtils.mkdir_p(public_dir)
+    File.write(
+      public_dir.join('manifest.json'),
+      {
+        generated_at: Time.zone.now.iso8601,
+        status: 'passed',
+        passed_count: 1,
+        failed_count: 0,
+        previews: [
+          {
+            name: 'foundation-default',
+            path: 'design_system/foundation/default',
+            status: 'passed',
+            expected_url: nil,
+            actual_url: nil,
+            diff_url: nil,
+            lookbook_preview_url: '/lookbook/preview/design_system/foundation/default'
+          }
+        ]
+      }.to_json
+    )
+
+    get '/lookbook/preview/design_system/visual_regression/report', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_match(/Visual regression/i, response.body)
+    assert_match(/foundation-default/, response.body)
+  ensure
+    FileUtils.rm_rf(public_dir)
+  end
+
   test 'lookbook preview includes v2 layout_bootstrap_overrides stylesheet' do
     get '/lookbook/preview/design_system/foundation/default', headers: { 'User-Agent' => MODERN_CHROME_UA }
 

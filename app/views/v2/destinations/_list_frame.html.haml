@@ -8,7 +8,19 @@
       = link_to new_destination_path, class: 'btn btn-primary btn-xs', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
         %i.fa.fa-plus.fa-fw
         = t 'destinations.index.new'
-      %button.btn.btn-danger.btn-xs.destinations-bulk-delete{type: "button", disabled: !can_destroy_destinations, title: t('all.verb.destroy_selection')}
+      %button.btn.btn-danger.btn-xs.destinations-bulk-delete{
+        type: "button",
+        disabled: !can_destroy_destinations,
+        title: t('all.verb.destroy_selection'),
+        data: {
+          controller: 'confirm-click',
+          confirm_click_group_value: 'destinations-destroy',
+          confirm_click_wait_message_value: t('all.verb.destroy_confirm_wait'),
+          confirm_click_confirm_message_value: t('all.verb.destroy_confirm'),
+          confirm_click_ready_label_value: t('all.verb.destroy_confirm_ready'),
+          confirm_click_base_class_value: 'btn-danger'
+        }
+      }
         %i.fa.fa-trash.fa-fw
         = t('all.verb.destroy_selection')
       = render 'v2/destinations/list_column_selector'

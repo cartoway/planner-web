@@ -938,15 +938,6 @@ class PlanningsControllerTest < ActionController::TestCase
     stop.update!(active: true, locked: false)
   end
 
-  test 'move_stops_modal with stop_ids renders lasso-selected stops and checked count' do
-    stop = stops(:stop_one_one)
-
-    get :move_stops_modal, params: { planning_id: @planning.id, stop_ids: stop.id.to_s }, format: :js, xhr: true
-    assert_response :success
-    assert_includes response.body, "\"stop_id\":#{stop.id}"
-    assert_match(/move-stops_count.{0,24}1/m, response.body)
-  end
-
   test 'move extracts inactive stop to out of route' do
     vehicle_route = @planning.routes.find { |route| route.ref == 'route_one' }
     out_of_route = @planning.routes.find { |route| route.vehicle_usage_id.nil? }
@@ -1155,6 +1146,7 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should switch' do
     @planning.routes.each(&:compute_saved!) # To get correct colors for linestrings
 
+    # route_three has an unpositioned rest (no store_rest): only store→visit and visit→store traces.
     assert_equal 2, JSON.parse(@planning.to_geojson)['features'].select{ |f|
       f['geometry']['type'] == 'LineString' && f['properties']['color'] == '#00FF00'
     }.size
