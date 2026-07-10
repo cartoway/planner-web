@@ -45,6 +45,8 @@ RUN bundle config git.allow_insecure true && \
 
 ADD . /srv/app/
 
+RUN chmod +x /srv/app/.devcontainer/*.sh /srv/app/script/export_lookbook_visual_regression_report.rb
+
 RUN bundle exec rake i18n:js:export && \
     bundle exec rake assets:precompile API_DOC_MODE=true
 
