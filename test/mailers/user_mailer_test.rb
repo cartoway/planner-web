@@ -80,26 +80,28 @@ class UserMailerTest < ActionMailer::TestCase
 
   test 'should send an email trough rake task' do
     Rails.application.load_tasks
-    user_one = users(:user_one)
-    creation_date = user_one.created_at
+    user = User.find_by!(email: 'u3@plop.com')
+    creation_date = user.created_at
+    j9_created_at = (Time.zone.today - 9.days).in_time_zone.beginning_of_day
 
-    User.where(customer_id: user_one.customer_id).where.not(id: user_one.id).update_all(created_at: Time.zone.today)
-    user_one.update(created_at: Time.zone.today - 9.days)
-    user_one.customer.update(test: true)
-    user_one.customer.reseller.update(contact_url: "https://cartoway.com/{LG}/contact-support/", help_url: "https://cartoway.com/{LG}/help-center")
-
-    user_one.reload
+    user.update_columns(created_at: j9_created_at)
+    user.customer.reseller.update_columns(
+      contact_url: 'https://cartoway.com/{LG}/contact-support/',
+      help_url: 'https://cartoway.com/{LG}/help-center'
+    )
 
     assert_emails 1 do
+      Rake::Task['mail:automation'].reenable
       Rake::Task['mail:automation'].invoke
     end
 
-    assert_equal I18n.t('user_mailer.accompanying.title'), ActionMailer::Base.deliveries[0].subject
-
-    user_one.update(created_at: creation_date)
-    user_one.customer.reseller.update(contact_url: nil, help_url: nil)
+    assert_equal I18n.t('user_mailer.accompanying.title'), ActionMailer::Base.deliveries.last.subject
   ensure
-    Rake::Task['mail:automation'].reenable
+    if defined?(creation_date) && creation_date && (user = User.find_by(email: 'u3@plop.com'))
+      user.update_columns(created_at: creation_date)
+    end
+    resellers(:reseller_two).update_columns(help_url: nil, contact_url: nil)
+    Rake::Task['mail:automation'].reenable if Rake::Task.task_defined?('mail:automation')
   end
 
   test 'should not use attachments for images'  do

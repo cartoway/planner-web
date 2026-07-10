@@ -4,6 +4,7 @@
   "description": "Playwright visual snapshots for Lookbook previews (run from repo root in CI).",
   "scripts": {
     "test": "playwright test",
+    "test:report": "playwright test --reporter=html,list",
     "test:update": "playwright test --update-snapshots"
   },
   "devDependencies": {

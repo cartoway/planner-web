@@ -3429,6 +3429,8 @@ en:
       destroy: Destroy
       destroy_selection: Destroy selected
       destroy_confirm: Are you sure?
+      destroy_confirm_wait: Wait before confirming…
+      destroy_confirm_ready: Confirm
       confirm: Are you sure?
       duplicate: Duplicate
       toggle_selection: Toggle selection
@@ -3605,6 +3607,27 @@ en:
       active_stop: Enable or disable stop on the plan
       move_stop: Move stops on the plan
       lock_stop: Lock visit to vehicle route
+  lookbook_visual_regression:
+    accept: Accept baseline
+    accept_all: Accept all changes
+    accept_confirm_wait: Wait before confirming…
+    accept_confirm_ready: Confirm
+    accept_all_confirm_ready: Confirm all
+    accept_confirm: 'Replace the baseline for %{name}?'
+    accept_all_confirm: 'Replace %{count} visual regression baselines?'
+    vrt_disabled_title: Visual regression tests are disabled.
+    vrt_disabled_hint_html: >-
+      Set <code>LOOKBOOK_VRT=1</code> in <code>.env</code> and restart the dev stack
+      (Playwright runs on startup), or run
+      <code>.devcontainer/visual-regression.sh test</code>. Restart after changing
+      <code>.env</code>.
+    no_report_title: No report yet.
+    no_report_when_enabled_html: >-
+      Run the visual regression suite (automatic when <code>LOOKBOOK_VRT=1</code>,
+      or <code>.devcontainer/visual-regression.sh test</code>), then refresh this page.
+    no_report_when_disabled_html: >-
+      Enable <code>LOOKBOOK_VRT=1</code> and restart the dev stack, or run
+      <code>.devcontainer/visual-regression.sh test</code>, then refresh this page.
   design_system:
     forms_preview:
       filtered_search:
