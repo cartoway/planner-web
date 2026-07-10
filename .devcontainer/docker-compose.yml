@@ -24,6 +24,7 @@ x-web: &web
     POSTGRES_DB: ${POSTGRES_DB:-planner}
     POSTGRES_DB_TEST: ${POSTGRES_DB_TEST:-planner-test}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-planner}
+    LOOKBOOK_VRT: ${LOOKBOOK_VRT:-0}
     AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
     AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
     AZURE_TENANT_ID: ${AZURE_TENANT_ID}
@@ -31,6 +32,14 @@ x-web: &web
     - ../config/database.yml.docker:/srv/app/config/database.yml
     - ../.devcontainer/production.rb:/srv/app/config/environments/production.rb
     - ../docker/uploads:/srv/app/public/uploads
+    - ../public/lookbook-visual-regression:/srv/app/public/lookbook-visual-regression
+    - ../visual-regression:/srv/app/visual-regression
+    # Host snapshots + Playwright test-results + report PNGs (live sync for Accept baseline in Lookbook).
+    - ../script/export_lookbook_visual_regression_report.rb:/srv/app/script/export_lookbook_visual_regression_report.rb:ro
+    - ../app/services/lookbook/visual_regression:/srv/app/app/services/lookbook/visual_regression:ro
+    - ../app/javascript/controllers/confirm_click_controller.js:/srv/app/app/javascript/controllers/confirm_click_controller.js:ro
+    - ../app/javascript/controllers/lookbook_visual_regression_controller.js:/srv/app/app/javascript/controllers/lookbook_visual_regression_controller.js:ro
+    - ../test/components/previews/design_system/visual_regression_preview:/srv/app/test/components/previews/design_system/visual_regression_preview:ro
   depends_on:
     db:
       condition: service_healthy
@@ -73,9 +82,47 @@ services:
 
   web:
     <<: *web
-    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec rake db:prepare && bundle exec puma -v -p 8080 --pidfile 'server.pid' -t ${PUMA_WORKERS:-0:1}"
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec rake db:prepare && bash /srv/app/.devcontainer/start-web.sh"
     ports:
       - 127.0.0.1:8080:8080
+    networks:
+      - public-network
+
+  lookbook-vrt:
+    image: mcr.microsoft.com/playwright:v1.49.1-jammy
+    depends_on:
+      web:
+        condition: service_started
+    volumes:
+      - ..:/srv/app
+    networks:
+      - public-network
+    environment:
+      LOOKBOOK_VRT: ${LOOKBOOK_VRT:-0}
+      PLAYWRIGHT_SKIP_WEBSERVER: "1"
+      PLAYWRIGHT_BASE_URL: http://web:3001
+      PLAYWRIGHT_HTML_OPEN: never
+    entrypoint: ["/bin/bash", "/srv/app/.devcontainer/run-lookbook-vrt-on-start.sh"]
+    restart: "no"
+
+  lookbook-vrt-export:
+    <<: *web
+    entrypoint: []
+    command: ["bash", "/srv/app/.devcontainer/run-lookbook-vrt-export-on-start.sh"]
+    volumes:
+      - ../config/database.yml.docker:/srv/app/config/database.yml
+      - ../.devcontainer/production.rb:/srv/app/config/environments/production.rb
+      - ../docker/uploads:/srv/app/public/uploads
+      - ../public/lookbook-visual-regression:/srv/app/public/lookbook-visual-regression
+      - ../visual-regression:/srv/app/visual-regression
+    # Host snapshots + Playwright test-results + report PNGs (live sync for Accept baseline in Lookbook).
+      - ../script/export_lookbook_visual_regression_report.rb:/srv/app/script/export_lookbook_visual_regression_report.rb:ro
+      - ../app/services/lookbook/visual_regression:/srv/app/app/services/lookbook/visual_regression:ro
+      - ../.devcontainer/run-lookbook-vrt-export-on-start.sh:/srv/app/.devcontainer/run-lookbook-vrt-export-on-start.sh:ro
+    depends_on:
+      lookbook-vrt:
+        condition: service_completed_successfully
+    restart: "no"
     networks:
       - public-network
 

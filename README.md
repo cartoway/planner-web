@@ -255,6 +255,13 @@ Run tests:
 RAILS_ENV=test docker compose run --rm web rake test I18N=false COVERAGE=false
 ```
 
+## Lookbook visual regression (Playwright)
+
+Screenshots of Lookbook design-system previews are compared in CI (`lookbook_visual` job). **You do not update snapshots on every change** — only when you intentionally change how a covered preview looks (CSS, components, preview templates). Regenerate PNGs with `--update-snapshots`, review the diff, and commit them in the same PR.
+
+- **Host Linux:** [visual-regression/README.md](visual-regression/README.md)
+- **Devcontainer Docker:** `.devcontainer/visual-regression.sh test` / `report` / `update` (see [visual-regression/README.md](visual-regression/README.md) section *From the devcontainer*).
+
 ## Analytics
 
 Analytics can be enabled by adding `docker-compose-superset.yml` to the `COMPOSE_FILE` variable into `.env` file.

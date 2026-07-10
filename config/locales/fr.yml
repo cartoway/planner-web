@@ -3566,6 +3566,8 @@ fr:
       destroy: Supprimer
       destroy_selection: Supprimer sélection
       destroy_confirm: Êtes-vous sûr ?
+      destroy_confirm_wait: Patientez avant de confirmer…
+      destroy_confirm_ready: Confirmer
       confirm: Êtes-vous sûr ?
       duplicate: Dupliquer
       toggle_selection: Inverser sélection
@@ -3743,6 +3745,27 @@ fr:
       active_stop: Activer/désactiver l'arrêt
       move_stop: Déplacer l'arrêt
       lock_stop: Verrouiller l'arrêt
+  lookbook_visual_regression:
+    accept: Accepter la baseline
+    accept_all: Accepter tous les changements
+    accept_confirm_wait: Patientez avant de confirmer…
+    accept_confirm_ready: Confirmer
+    accept_all_confirm_ready: Tout confirmer
+    accept_confirm: 'Remplacer la baseline pour %{name} ?'
+    accept_all_confirm: 'Remplacer %{count} baselines de régression visuelle ?'
+    vrt_disabled_title: Les tests de régression visuelle sont désactivés.
+    vrt_disabled_hint_html: >-
+      Définissez <code>LOOKBOOK_VRT=1</code> dans <code>.env</code> et redémarrez
+      la stack de dev (Playwright au démarrage), ou lancez
+      <code>.devcontainer/visual-regression.sh test</code>. Redémarrez après modification
+      du <code>.env</code>.
+    no_report_title: Aucun rapport pour l'instant.
+    no_report_when_enabled_html: >-
+      Lancez la régression visuelle (automatique si <code>LOOKBOOK_VRT=1</code>,
+      ou <code>.devcontainer/visual-regression.sh test</code>), puis actualisez cette page.
+    no_report_when_disabled_html: >-
+      Activez <code>LOOKBOOK_VRT=1</code> et redémarrez la stack, ou lancez
+      <code>.devcontainer/visual-regression.sh test</code>, puis actualisez cette page.
   design_system:
     forms_preview:
       filtered_search:
