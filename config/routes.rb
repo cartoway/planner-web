@@ -7,7 +7,11 @@ Rails.application.routes.draw do
   mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
   # Design system / UI previews (Lookbook). Guard avoids boot errors if the gem is omitted from a custom bundle.
-  mount Lookbook::Engine, at: '/lookbook' if defined?(Lookbook::Engine)
+  if defined?(Lookbook::Engine)
+    post '/lookbook/visual_regression/accept', to: 'lookbook/visual_regression#accept', as: :lookbook_visual_regression_accept
+    post '/lookbook/visual_regression/accept_all', to: 'lookbook/visual_regression#accept_all', as: :lookbook_visual_regression_accept_all
+    mount Lookbook::Engine, at: '/lookbook'
+  end
 
   authenticated :user, -> user { user.admin? }  do
     match '/delayed_job' => DelayedJobWeb, :anchor => false, :via => [:get, :post]
