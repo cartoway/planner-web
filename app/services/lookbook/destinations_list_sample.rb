@@ -17,7 +17,15 @@ module Lookbook
       end
     end
 
-    Tag = Struct.new(:id, :label, :color, :icon, keyword_init: true)
+    Tag = Struct.new(:id, :label, :color, :icon, keyword_init: true) do
+      def default_color
+        color.presence || Planner::Application.config.tag_color_default
+      end
+
+      def default_icon
+        icon.presence || Planner::Application.config.destination_icon_default
+      end
+    end
 
     Visit = Struct.new(:ref, :tags, :pickups, :deliveries, keyword_init: true) do
       def initialize(ref: nil, tags: [], pickups: {}, deliveries: {})
