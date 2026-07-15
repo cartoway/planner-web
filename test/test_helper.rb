@@ -1,7 +1,19 @@
 if (!ENV.key?('COV') && !ENV.key?('COVERAGE')) || (ENV['COV'] != 'false' && ENV['COVERAGE'] != 'false')
   require 'simplecov'
   SimpleCov.minimum_coverage 84
-  SimpleCov.start 'rails'
+  SimpleCov.start 'rails' do
+    # Lookbook / design-system tooling — not part of planner runtime coverage.
+    # Match both absolute CI paths and SimpleCov project_filename (no leading slash).
+    add_filter do |source_file|
+      path = "#{source_file.filename} #{source_file.project_filename}"
+      path.match?(%r{app/services/lookbook/}) ||
+        path.match?(%r{app/controllers/lookbook/}) ||
+        path.match?(%r{lib/lookbook_haml_to_erb}) ||
+        path.match?(%r{config/initializers/lookbook\.rb}) ||
+        path.match?(%r{app/services/lookbook_dual_format_template_resolver\.rb}) ||
+        path.match?(%r{script/.+lookbook}i)
+    end
+  end
 end
 
 ENV['RAILS_ENV'] ||= 'test'

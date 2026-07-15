@@ -79,12 +79,12 @@ class UserMailerTest < ActionMailer::TestCase
   end
 
   test 'should send an email trough rake task' do
-    Rails.application.load_tasks
-    user = User.find_by!(email: 'u3@plop.com')
-    creation_date = user.created_at
-    j9_created_at = (Time.zone.today - 9.days).in_time_zone.beginning_of_day
+    ensure_mail_automation_task_once!
 
-    user.update_columns(created_at: j9_created_at)
+    user = users(:user_three)
+    creation_date = user.created_at
+
+    user.update_columns(created_at: (Time.zone.today - 9.days).in_time_zone.beginning_of_day)
     user.customer.reseller.update_columns(
       contact_url: 'https://cartoway.com/{LG}/contact-support/',
       help_url: 'https://cartoway.com/{LG}/help-center'
@@ -97,9 +97,7 @@ class UserMailerTest < ActionMailer::TestCase
 
     assert_equal I18n.t('user_mailer.accompanying.title'), ActionMailer::Base.deliveries.last.subject
   ensure
-    if defined?(creation_date) && creation_date && (user = User.find_by(email: 'u3@plop.com'))
-      user.update_columns(created_at: creation_date)
-    end
+    users(:user_three).update_columns(created_at: creation_date) if defined?(creation_date) && creation_date
     resellers(:reseller_two).update_columns(help_url: nil, contact_url: nil)
     Rake::Task['mail:automation'].reenable if Rake::Task.task_defined?('mail:automation')
   end
@@ -124,5 +122,14 @@ class UserMailerTest < ActionMailer::TestCase
       matches = email.body.encoded.to_s.scan(/#{user.customer.reseller.send(prop)}/)
       assert_not matches.blank?
     end
+  end
+
+  private
+
+  # load_tasks appends actions on each call; another test may have loaded them already.
+  def ensure_mail_automation_task_once!
+    Rails.application.load_tasks unless Rake::Task.task_defined?('mail:automation')
+    task = Rake::Task['mail:automation']
+    task.actions.replace([task.actions.last]) if task.actions.size > 1
   end
 end
