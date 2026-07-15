@@ -10,13 +10,16 @@ class LookbookVisualRegressionControllerTest < ActionController::TestCase
     ENV['LOOKBOOK_VRT'] = '1'
 
     @name = 'foundation-default'
-    @snapshots_dir = Rails.root.join('visual-regression/tests/lookbook.vrt.spec.ts-snapshots')
+    @tmp_snapshots = Pathname.new(Dir.mktmpdir('lookbook-snapshots-'))
+    @original_snapshots_dir = Lookbook::VisualRegression::AcceptSnapshot::SNAPSHOTS_DIR
+    Lookbook::VisualRegression::AcceptSnapshot.send(:remove_const, :SNAPSHOTS_DIR)
+    Lookbook::VisualRegression::AcceptSnapshot.const_set(:SNAPSHOTS_DIR, @tmp_snapshots)
+
     @public_dir = Rails.root.join('public/lookbook-visual-regression', @name)
-    @snapshot_path = @snapshots_dir.join("#{@name}-linux.png")
+    @snapshot_path = @tmp_snapshots.join("#{@name}-linux.png")
     @actual_path = @public_dir.join('actual.png')
 
     FileUtils.mkdir_p(@public_dir)
-    FileUtils.mkdir_p(@snapshots_dir)
     File.write(@actual_path, 'new-actual-image')
     File.write(@snapshot_path, 'old-baseline')
   end
@@ -24,6 +27,9 @@ class LookbookVisualRegressionControllerTest < ActionController::TestCase
   teardown do
     ENV['LOOKBOOK_VRT'] = @previous_vrt
     FileUtils.rm_rf(Rails.root.join('public/lookbook-visual-regression'))
+    Lookbook::VisualRegression::AcceptSnapshot.send(:remove_const, :SNAPSHOTS_DIR)
+    Lookbook::VisualRegression::AcceptSnapshot.const_set(:SNAPSHOTS_DIR, @original_snapshots_dir)
+    FileUtils.rm_rf(@tmp_snapshots) if @tmp_snapshots
   end
 
   test 'accept returns forbidden when LOOKBOOK_VRT is disabled' do

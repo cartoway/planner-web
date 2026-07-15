@@ -6,21 +6,25 @@ class LookbookVisualRegressionFailureArtifactsTest < ActiveSupport::TestCase
   setup do
     @name = 'foundation-default'
     @basename = 'foundation-default'
-    @snapshots_dir = Rails.root.join('visual-regression/tests/lookbook.vrt.spec.ts-snapshots')
-    @test_results_dir = Rails.root.join('visual-regression/test-results')
-    @snapshot_path = @snapshots_dir.join("#{@basename}-linux.png")
-    @failure_dir = @test_results_dir.join('lookbook.vrt-lookbook-foundation-default')
+    @tmp_snapshots = Pathname.new(Dir.mktmpdir('lookbook-snapshots-'))
+    @tmp_test_results = Pathname.new(Dir.mktmpdir('lookbook-test-results-'))
+    Lookbook::VisualRegression::FailureArtifacts.stubs(:snapshots_dir).returns(@tmp_snapshots)
+    Lookbook::VisualRegression::FailureArtifacts.stubs(:test_results_dir).returns(@tmp_test_results)
+
+    @snapshot_path = @tmp_snapshots.join("#{@basename}-linux.png")
+    @failure_dir = @tmp_test_results.join('lookbook.vrt-lookbook-foundation-default')
     @actual_path = @failure_dir.join("#{@basename}-actual.png")
 
-    FileUtils.mkdir_p(@snapshots_dir)
     FileUtils.mkdir_p(@failure_dir)
     File.write(@snapshot_path, 'baseline-bytes')
     File.write(@actual_path, 'different-bytes')
   end
 
   teardown do
-    FileUtils.rm_rf(@test_results_dir)
-    FileUtils.rm_rf(@snapshots_dir)
+    Lookbook::VisualRegression::FailureArtifacts.unstub(:snapshots_dir)
+    Lookbook::VisualRegression::FailureArtifacts.unstub(:test_results_dir)
+    FileUtils.rm_rf(@tmp_snapshots) if @tmp_snapshots
+    FileUtils.rm_rf(@tmp_test_results) if @tmp_test_results
   end
 
   test 'failed? is true when actual bytes differ from snapshot' do
