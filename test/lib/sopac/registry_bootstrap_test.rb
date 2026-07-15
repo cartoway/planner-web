@@ -66,4 +66,10 @@ class SopacBroker::RegistryBootstrapTest < ActiveSupport::TestCase
     registry = SopacBroker::RegistryBootstrap.call(@customer)
     assert_equal 'Logger 1', registry['238B019C']['label']
   end
+
+  test 'returns empty registry when measurements queue is missing' do
+    SopacBroker::BrokerConnection.stubs(:connect).raises(Bunny::NotFound.new('missing', nil, nil))
+
+    assert_equal({}, SopacBroker::RegistryBootstrap.call(@customer))
+  end
 end
