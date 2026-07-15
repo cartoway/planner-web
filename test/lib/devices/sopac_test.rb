@@ -87,4 +87,30 @@ class SopacTest < ActiveSupport::TestCase
       queue_prefix: 'SOPAC/CARTOWAY'
     )
   end
+
+  test 'check_auth raises when credentials are incomplete' do
+    error = assert_raises(DeviceServiceError) do
+      @service.check_auth(id: @customer.id, username: 'broker_user', password: nil, queue_prefix: '/SOPAC/X')
+    end
+    assert_match(/incomplete/, error.message)
+  end
+
+  test 'vehicle_pos falls back to hub status when gps is missing' do
+    cache = SopacBroker::Cache.new(@customer.id, store: @store)
+    cache.write_measurement('238B019C', {
+      'id' => '238B019C',
+      'm' => [{ 'utc' => 1, 'hub' => '0000181B' }]
+    })
+    cache.write_hub('0000181B', {
+      'id' => '0000181B',
+      'lat' => 43.1,
+      'lon' => 5.2,
+      'lastSeen' => '2024-06-01T12:00:00Z'
+    })
+
+    positions = @service.vehicle_pos(@customer)
+    assert_equal 1, positions.size
+    assert_in_delta 43.1, positions.first[:lat]
+    assert_in_delta 5.2, positions.first[:lng]
+  end
 end
