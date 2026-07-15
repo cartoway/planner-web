@@ -39,4 +39,18 @@ class SopacBroker::BrokerConfigTest < ActiveSupport::TestCase
     assert SopacBroker::BrokerConfig.valid?(config)
     assert_equal '/SOPAC/CARTOWAY/measurements', config[:queue_names][:measurements]
   end
+
+  test 'customer_enabled? is false when sopac is disabled on customer' do
+    customer = customers(:customer_one)
+    customer.update!(devices: { sopac: { enable: 'false', username: 'u', password: 'p', queue_prefix: '/SOPAC/X' } })
+
+    assert_not SopacBroker::BrokerConfig.customer_enabled?(customer)
+  end
+
+  test 'valid? requires username password and queue names' do
+    config = SopacBroker::BrokerConfig.from_credentials(username: 'u', password: 'p', queue_prefix: '/SOPAC/X')
+
+    assert SopacBroker::BrokerConfig.valid?(config)
+    assert_not SopacBroker::BrokerConfig.valid?(config.merge(password: nil))
+  end
 end
