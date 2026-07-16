@@ -56,10 +56,10 @@ class PlanningsControllerPlanningStateTest < ActionController::TestCase
     state = @planning.planning_states.order(:id).last
     assert_equal 'update_stop', state.trigger
     assert_equal 'individual', state.category
-    captured_stop =
-      state.payload['routes'].flat_map { |route| route['stops'] }
-           .find { |stop| stop['stop_id'] == stops(:stop_one_one).id }
+    captured_route = state.payload['routes'].find { |route| route['route_id'] == routes(:route_one_one).id }
+    captured_stop = captured_route['stops'].find { |stop| stop['visit_id'] == stops(:stop_one_one).visit_id }
     assert_equal false, captured_stop['active']
+    assert_equal false, stops(:stop_one_one).reload.active
   end
 
   test 'apply_zonings captures planning state after mutation' do

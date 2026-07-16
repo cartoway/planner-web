@@ -1,0 +1,30 @@
+- panel_class = planning_state.pinned? ? 'panel-info' : 'panel-default'
+- pin_btn_class = planning_state.pinned? ? 'btn-info' : 'btn-default'
+- pin_disabled = planning_state_pin_disabled?(planning_state, pinned_count: pinned_count, max_pinned: max_pinned)
+- pin_title = pin_disabled ? t('plannings.states.pin_limit_reached') : (planning_state.pinned? ? t('plannings.states.unpin') : t('plannings.states.pin'))
+- stops_mismatch = planning_state.visits_mismatch?(current_visit_ids)
+
+.planning-state-item.panel{class: panel_class, data: { state_id: planning_state.id }}
+  .panel-heading.clearfix
+    %span.planning-state-meta
+      - if planning_state.pinned?
+        %i.fa.fa-thumbtack.text-muted{title: t('plannings.states.pinned')}
+      %strong= t("plannings.states.triggers.#{planning_state.trigger}", default: planning_state.trigger)
+      %span.text-muted
+        ·
+        = l(planning_state.captured_at, format: :long)
+    %span.pull-right
+      .btn-group
+        %button.btn.btn-primary.btn-xs.planning-state-reapply{type: 'button', data: { state_id: planning_state.id }, title: t('plannings.states.reapply')}
+          %i.fa.fa-arrow-rotate-left.fa-fw
+        %button.btn.btn-xs.planning-state-pin{class: pin_btn_class, type: 'button', data: { state_id: planning_state.id, pinned: (planning_state.pinned? ? 'true' : 'false') }, disabled: pin_disabled, title: pin_title}
+          - if planning_state.pinned?
+            %i.fa.fa-thumbtack.fa-fw
+          - else
+            %i.fa.fa-thumbtack.fa-fw{style: 'transform: rotate(45deg); display: inline-block;'}
+  .panel-body.planning-state-statistics
+    - if stops_mismatch
+      .alert.alert-warning.planning-state-stops-mismatch{style: 'margin-bottom: 10px;'}
+        %i.fa.fa-exclamation-triangle.fa-fw
+        = t('plannings.states.stops_mismatch')
+    != planning_state_statistics_html(planning_state.statistics, prefered_unit: prefered_unit, reference_statistics: reference_statistics)

@@ -60,6 +60,74 @@
   }
 }
 
+.planning-states-modal {
+  .modal-header {
+    display: flex;
+    align-items: center;
+  }
+
+  .planning-states-modal-header {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 8px;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .planning-states-modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .data-info {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    font-size: 13px;
+    line-height: 1.2;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .data-info.primary {
+    border: 1px solid $primary-border-color;
+    background-color: $primary-background-color;
+  }
+
+  button.close {
+    position: static;
+    float: none;
+    flex-shrink: 0;
+    align-self: center;
+    margin: 0 0 0 12px;
+    padding: 0;
+    line-height: 1;
+  }
+}
+
+.planning-states-modal-body {
+  padding: 0 15px;
+
+  .planning-states-list.overflow-500 {
+    overflow-y: auto;
+  }
+
+  .planning-state-item {
+    margin-bottom: 10px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .planning-states-empty {
+    margin: 0;
+  }
+}
+
 .extract-inactive-stops-modal-body {
   height: 60vh;
   max-height: 60vh;
