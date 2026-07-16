@@ -116,7 +116,7 @@ export const unfreezeProgressDialog = function(dialog, delayedJob, url, callback
     $(".dialog-error", dialog).hide();
     $(".dialog-no-solution", dialog).hide();
     $(".progress-bar", dialog).css("width", "0%");
-    $('#optimization-progression-step', dialog).hide().empty();
+    $('#resolution-steps-list', dialog).hide().empty();
   });
   dialog.on('keyup', function(e) {
     if (e.keyCode == 27) {
@@ -140,7 +140,6 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     freezeProgressDialog(dialog);
     var progress = delayedJob.progress;
 
-    updateOptimizationProgressionStep(dialog, progress);
     updateOptimizationDetails(dialog, progress);
     $(".progress-bar", dialog).each(function(i, e) {
       // hide or show dialog-progress class
@@ -322,27 +321,34 @@ export const phoneNumberCall = function(object, userCall) {
 };
 
 let optimizationDetailsInitialized = false;
-export const updateOptimizationProgressionStep = function(dialog, progress) {
-  const container = $('#optimization-progression-step', dialog);
+
+const renderOptimizationResolutionSteps = function(dialog, progress) {
+  const container = $('#resolution-steps-list', dialog);
   if (!container.length) {
-    return;
+    return false;
   }
 
   if (!progress || progress.status === 'queued' || progress.completed) {
     container.hide().empty();
-    return;
+    return false;
+  }
+
+  const resolutionSteps = progress.resolution_steps || progress['resolution_steps'] || [];
+  if (!Array.isArray(resolutionSteps) || !resolutionSteps.length) {
+    container.hide().empty();
+    return false;
   }
 
   const i18n = mustache_i18n();
-  const phases = (progress.resolution_steps || []).map(function(step) {
+  const phases = resolutionSteps.map(function(step) {
     return i18n('plannings.edit.dialog.optimizer.resolution_steps.' + step);
   });
 
-  if (phases.length) {
-    container.html(phases.join(' - ')).show();
-  } else {
-    container.hide().empty();
-  }
+  container.html(
+    '<h5>' + i18n('plannings.edit.dialog.optimizer.resolution_phases') + '</h5>' +
+    '<p class="text-muted">' + phases.join(' · ') + '</p>'
+  ).show();
+  return true;
 };
 
 export const updateOptimizationDetails = function(dialog, progress) {
@@ -354,10 +360,11 @@ export const updateOptimizationDetails = function(dialog, progress) {
     return;
   }
 
+  const hasResolutionSteps = renderOptimizationResolutionSteps(dialog, progress);
   const hasSolvers = progress.solvers && Array.isArray(progress.solvers) && progress.solvers.length > 0;
   const hasSkippedServices = progress.skipped_services && Array.isArray(progress.skipped_services) && progress.skipped_services.length > 0;
 
-  if (hasSolvers || hasSkippedServices) {
+  if (hasResolutionSteps || hasSolvers || hasSkippedServices) {
     if (!detailsContainer.is(':visible')) {
       detailsContainer.show();
     }

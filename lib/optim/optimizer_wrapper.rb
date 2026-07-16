@@ -33,6 +33,7 @@ RESOLUTION_STEP_LABELS = {
   'max split process' => 'problem_splitting',
   'dichotomous process' => 'dichotomous'
 }.freeze
+RESOLUTION_STEPS_DISPLAY_ORDER = %w[independent_problems problem_splitting dichotomous resolution].freeze
 
 class OptimizerWrapper
 
@@ -207,6 +208,11 @@ class OptimizerWrapper
       end
     end
     result
+  end
+
+  def self.merge_resolution_steps(previous_steps, new_steps)
+    combined = (Array(previous_steps) + Array(new_steps)).uniq
+    RESOLUTION_STEPS_DISPLAY_ORDER.select { |step| combined.include?(step) }
   end
 
   private
