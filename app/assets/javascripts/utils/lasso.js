@@ -264,13 +264,13 @@ export class LassoModule {
         // This is a cluster, get all individual markers
         const childMarkers = layer.getAllChildMarkers();
         if (childMarkers && Array.isArray(childMarkers)) {
-          processedLayers.push(...childMarkers.filter(marker => marker != null));
+          processedLayers.push.apply(processedLayers, childMarkers.filter(marker => marker != null));
         }
       } else if (layer.getLayers && typeof layer.getLayers === 'function') {
         // This might be another type of group layer
         const childLayers = layer.getLayers();
         if (childLayers && Array.isArray(childLayers)) {
-          processedLayers.push(...childLayers.filter(childLayer => childLayer != null));
+          processedLayers.push.apply(processedLayers, childLayers.filter(childLayer => childLayer != null));
         }
       } else {
         // This is an individual marker/layer

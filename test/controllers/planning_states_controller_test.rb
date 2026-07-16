@@ -46,22 +46,55 @@ class PlanningStatesControllerTest < ActionController::TestCase
     end
   end
 
-  test 'index returns grouped planning states' do
-    get :index, params: { planning_id: @planning.id, format: :json }
+  test 'index returns merged planning states sorted by date' do
+    payload = @planning_state.payload
+    @planning_state.update!(captured_at: 30.minutes.ago)
+    oldest = @planning.planning_states.create!(
+      captured_at: 2.hours.ago,
+      trigger: 'optimize',
+      category: 'mass',
+      payload: payload,
+      statistics: { 'routes_cost' => 1 }
+    )
+    middle = @planning.planning_states.create!(
+      captured_at: 1.hour.ago,
+      trigger: 'optimize_route',
+      category: 'group',
+      payload: payload,
+      statistics: { 'routes_cost' => 2 }
+    )
+
+    get :index, params: { planning_id: @planning.id }, format: :js, xhr: true
 
     assert_response :success
-    body = JSON.parse(response.body)
-    assert body.is_a?(Array)
-    group = body.find { |item| item['category'] == 'individual' }
-    assert group
-    assert_equal I18n.t('plannings.states.categories.individual'), group['category_label']
-    state = group['states'].find { |item| item['id'] == @planning_state.id }
-    assert state
-    assert state['statistics_html'].present?
-    assert_includes state['statistics_html'], 'route-info'
-    assert_equal false, state['pinned']
-    assert_equal 3, group['max_pinned']
-    assert_equal 0, group['pinned_count']
+    ids = response.body.scan(/data-state-id=\\'(\d+)\\'/).flatten.map(&:to_i).uniq
+    assert_equal [oldest.id, middle.id, @planning_state.id], ids
+    assert_includes response.body, I18n.t('plannings.states.count_summary', current: 3, max: PlanningState::MAX_STATES)
+    refute_match(/data-pinned=\\'true\\'/, response.body)
+  end
+
+  test 'index sets stops_mismatch when visit ids diverge' do
+    payload = @planning_state.payload.deep_dup
+    payload['routes'].first['stops'] << {
+      'type' => 'visit',
+      'visit_id' => 9_999_999,
+      'active' => true,
+      'index' => 99
+    }
+    @planning_state.update!(payload: payload)
+
+    get :index, params: { planning_id: @planning.id }, format: :js, xhr: true
+
+    assert_response :success
+    assert_includes response.body, 'planning-state-stops-mismatch'
+    assert_includes response.body, I18n.t('plannings.states.stops_mismatch')
+  end
+
+  test 'index does not set stops_mismatch when visit ids match' do
+    get :index, params: { planning_id: @planning.id }, format: :js, xhr: true
+
+    assert_response :success
+    refute_includes response.body, 'planning-state-stops-mismatch'
   end
 
   test 'pin and unpin planning state' do
@@ -76,13 +109,13 @@ class PlanningStatesControllerTest < ActionController::TestCase
     refute @planning_state.reload.pinned?
   end
 
-  test 'pin returns 422 when category pin limit is reached' do
+  test 'pin returns 422 when global pin limit is reached across categories' do
     payload = @planning_state.payload
-    3.times do |i|
+    %w[mass group individual].each_with_index do |category, i|
       @planning.planning_states.create!(
         captured_at: (10 + i).minutes.ago,
-        trigger: 'move',
-        category: 'individual',
+        trigger: PlanningState::TRIGGER_GROUPS[category].first,
+        category: category,
         payload: payload,
         statistics: { 'routes_cost' => i },
         pinned: true
@@ -110,7 +143,7 @@ class PlanningStatesControllerTest < ActionController::TestCase
     u.update!(role_id: role.id)
     sign_in u
 
-    get :index, params: { planning_id: @planning.id, format: :json }
+    get :index, params: { planning_id: @planning.id }, format: :js, xhr: true
     assert_response :forbidden
   ensure
     u.update!(role_id: nil)

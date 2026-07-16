@@ -68,10 +68,9 @@ class ActiveInactiveDragDrop {
       orderDisplayClass: 'item-order',
       textDisplayClass: 'item-text',
       inactiveItemClass: 'inactive',
-      dragOverClass: 'drag-over',
-
-      ...options
+      dragOverClass: 'drag-over'
     };
+    Object.assign(this.options, options);
 
     this.container = root;
     if (!this.container) {
@@ -91,7 +90,8 @@ class ActiveInactiveDragDrop {
       return;
     }
 
-    this.activeContainer = this.columnTiers.find(t => !t.inactive)?.element || null;
+    const activeTier = this.columnTiers.find(t => !t.inactive);
+    this.activeContainer = activeTier ? activeTier.element : null;
     this.inactiveContainer = this.columnTiers.filter(t => t.inactive).map(t => t.element)[0] || null;
 
     this.draggedElement = null;
@@ -547,11 +547,9 @@ function initializeDragDrop(containerOrId, type = 'generic', options = {}) {
     }
   };
 
-  return new ActiveInactiveDragDrop(containerOrId, {
-    ...defaultOptions,
-    ...options,
+  return new ActiveInactiveDragDrop(containerOrId, Object.assign({}, defaultOptions, options, {
     dragDropI18nScope: i18nScope
-  });
+  }));
 }
 
 function parseDragDropOptionsFromDataset(container) {
