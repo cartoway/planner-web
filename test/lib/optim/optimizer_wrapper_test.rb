@@ -382,6 +382,18 @@ class OptimizerWrapperTest < ActionController::TestCase
     assert_equal [], @optim.send(:resolution_steps, nil)
   end
 
+  test 'merge_resolution_steps cumulates phases across progress updates' do
+    assert_equal %w[dichotomous resolution],
+                 OptimizerWrapper.merge_resolution_steps(%w[dichotomous], %w[resolution])
+    assert_equal %w[problem_splitting dichotomous resolution],
+                 OptimizerWrapper.merge_resolution_steps(
+                   %w[problem_splitting dichotomous],
+                   %w[resolution]
+                 )
+    assert_equal %w[dichotomous resolution],
+                 OptimizerWrapper.merge_resolution_steps(%w[dichotomous], %w[dichotomous resolution])
+  end
+
   test 'should handle service time in vehicle timewindows' do
     begin
       planning = plannings(:planning_one)
