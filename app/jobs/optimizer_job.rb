@@ -46,7 +46,15 @@ class OptimizerJob < OptimizerJobStruct
           options = job_options(planning).merge(options)
           optimum = Planner::Application.config.optimizer.optimize(planning, routes, **options) { |job_id, solution_data|
             if @job
-              job_progress_save solution_data.merge(job_id: job_id, completed: false)
+              previous_progress = @job.progress
+              previous_progress = JSON.parse(previous_progress) if previous_progress.is_a?(String)
+              previous_steps = previous_progress&.dig('resolution_steps') || previous_progress&.dig(:resolution_steps)
+              cumulative_steps = OptimizerWrapper.merge_resolution_steps(previous_steps, solution_data[:resolution_steps])
+              job_progress_save solution_data.merge(
+                job_id: job_id,
+                completed: false,
+                resolution_steps: cumulative_steps
+              )
               Delayed::Worker.logger.info("OptimizerJob", customer_id: customer_id, planning_id: planning_id, progress: @job.progress)
             end
           }
