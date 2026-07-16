@@ -96,7 +96,6 @@ group :test do
   gem 'html_validation'
 
   gem 'rails-controller-testing'
-  gem 'rspec-rails'
 
   # Browser tests
   gem 'capybara'
@@ -119,6 +118,7 @@ gem 'grape-swagger-entity'
 gem 'rack-cors'
 gem 'rswag-api'
 gem 'rswag-specs'
+gem 'rspec-rails' # Used in production for api-web doc generation (rswag:specs:swaggerize)
 gem 'grape_logging'
 
 gem 'rails-i18n', '>= 7'

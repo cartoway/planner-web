@@ -39,7 +39,8 @@ x-web: &web
     - ../app/services/lookbook/visual_regression:/srv/app/app/services/lookbook/visual_regression:ro
     - ../app/javascript/controllers/confirm_click_controller.js:/srv/app/app/javascript/controllers/confirm_click_controller.js:ro
     - ../app/javascript/controllers/lookbook_visual_regression_controller.js:/srv/app/app/javascript/controllers/lookbook_visual_regression_controller.js:ro
-    - ../test/components/previews/design_system/visual_regression_preview:/srv/app/test/components/previews/design_system/visual_regression_preview:ro
+    # Lookbook preview classes live under test/components/previews (excluded from dev image via .dockerignore).
+    - ../test/components/previews:/srv/app/test/components/previews:ro
   depends_on:
     db:
       condition: service_healthy
