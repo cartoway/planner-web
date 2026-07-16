@@ -230,6 +230,25 @@ class V100::StopsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'delete stop store captures planning state after mutation' do
+    customers(:customer_one).update(job_optimizer_id: nil)
+    @planning.planning_states.delete_all
+    deleted_store_reload_id = @stop_store_reload.store_reload_id
+
+    assert_difference -> { @planning.planning_states.count }, 1 do
+      delete api(@planning.id, @route.id, @stop_store_reload.id)
+    end
+
+    assert_equal 204, last_response.status, last_response.body
+    state = @planning.planning_states.order(:id).last
+    assert_equal 'update_stop', state.trigger
+    captured_store_reload_ids =
+      state.payload['routes'].flat_map { |route| route['stops'] }
+           .select { |stop| stop['type'] == 'store_reload' }
+           .map { |stop| stop['store_reload_id'] }
+    refute_includes captured_store_reload_ids, deleted_store_reload_id
+  end
+
   test 'should not delete stop visit' do
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?

@@ -133,7 +133,6 @@ module PlanningStateCapture
     case stop
     when StopVisit
       {
-        'stop_id' => stop.id,
         'type' => 'visit',
         'visit_id' => stop.visit_id,
         'active' => stop.active,
@@ -141,7 +140,6 @@ module PlanningStateCapture
       }
     when StopStore
       {
-        'stop_id' => stop.id,
         'type' => 'store_reload',
         'store_reload_id' => stop.store_reload_id,
         'active' => stop.active,
@@ -149,7 +147,6 @@ module PlanningStateCapture
       }
     when StopRest
       {
-        'stop_id' => stop.id,
         'type' => 'rest',
         'active' => stop.active,
         'index' => stop.index
@@ -158,8 +155,8 @@ module PlanningStateCapture
   end
 
   def apply_routes_from_state_payload(routes_payload, recompute: true, ignore_errors: false)
-    routes_visits = build_routes_visits_from_payload(routes_payload, preserve_stop_ids: false)
-    out_of_route_objects = build_out_of_route_objects_from_payload(routes_payload, preserve_stop_ids: false)
+    routes_visits = build_routes_visits_from_payload(routes_payload)
+    out_of_route_objects = build_out_of_route_objects_from_payload(routes_payload)
 
     default_empty_routes(ignore_errors)
     routes_visits = routes_visits.select { |ref, _data| ref }
@@ -192,7 +189,7 @@ module PlanningStateCapture
     self
   end
 
-  def build_out_of_route_objects_from_payload(routes_payload, preserve_stop_ids: true)
+  def build_out_of_route_objects_from_payload(routes_payload)
     route_snapshot = routes_payload.find { |route| route['vehicle_usage_id'].nil? }
     return [] unless route_snapshot
 
@@ -211,11 +208,11 @@ module PlanningStateCapture
     store_reloads_by_id = StoreReload.where(id: store_reload_ids.uniq).index_by(&:id)
 
     route_snapshot.fetch('stops', []).sort_by { |stop| stop['index'].to_i }.filter_map do |stop_snapshot|
-      build_visit_tuple_from_snapshot(stop_snapshot, visits_by_id, store_reloads_by_id, preserve_stop_ids: preserve_stop_ids)
+      build_visit_tuple_from_snapshot(stop_snapshot, visits_by_id, store_reloads_by_id)
     end
   end
 
-  def build_routes_visits_from_payload(routes_payload, preserve_stop_ids: true)
+  def build_routes_visits_from_payload(routes_payload)
     visit_ids = []
     store_reload_ids = []
     routes_payload.each do |route_snapshot|
@@ -240,17 +237,16 @@ module PlanningStateCapture
       hash["route_#{vehicle_usage_id}"] = {
         vehicle_usage_id: vehicle_usage_id,
         visits: stops.filter_map { |stop_snapshot|
-          build_visit_tuple_from_snapshot(stop_snapshot, visits_by_id, store_reloads_by_id, preserve_stop_ids: preserve_stop_ids)
+          build_visit_tuple_from_snapshot(stop_snapshot, visits_by_id, store_reloads_by_id)
         }
       }
     end
   end
 
-  def build_visit_tuple_from_snapshot(stop_snapshot, visits_by_id, store_reloads_by_id, preserve_stop_ids: true)
+  def build_visit_tuple_from_snapshot(stop_snapshot, visits_by_id, store_reloads_by_id)
     stop_attributes = {
       active: stop_snapshot['active']
     }
-    stop_attributes[:stop_id] = stop_snapshot['stop_id'] if preserve_stop_ids
     stop_attributes.compact!
 
     case stop_snapshot['type']

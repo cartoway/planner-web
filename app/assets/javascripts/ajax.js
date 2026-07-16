@@ -363,7 +363,7 @@ export const updateOptimizationDetails = function(dialog, progress) {
             if (!solverGroups[item.solver]) {
               solverGroups[item.solver] = [];
             }
-            solverGroups[item.solver].push(...item.reasons);
+            solverGroups[item.solver].push.apply(solverGroups[item.solver], item.reasons);
           }
         });
 

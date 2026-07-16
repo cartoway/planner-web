@@ -23,7 +23,7 @@ require 'value_to_boolean'
 class PlanningStatesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_planning
-  before_action :set_planning_state, only: [:reapply, :destroy, :pin]
+  before_action :set_planning_state, only: [:reapply, :pin]
 
   include PlanningsHelper
   include ApplicationHelper
@@ -35,11 +35,10 @@ class PlanningStatesController < ApplicationController
 
   def index
     authorize! :read, @planning
-    @planning_states = @planning.planning_states.to_a
+    @planning_states = @planning.planning_states.reorder(captured_at: :asc).to_a
+    assign_planning_states_context!
 
-    respond_to do |format|
-      format.json { render json: planning_states_json }
-    end
+    respond_to(&:js)
   end
 
   def reapply
@@ -55,21 +54,12 @@ class PlanningStatesController < ApplicationController
     end
   end
 
-  def destroy
-    authorize! :update, @planning
-    @planning_state.destroy!
-
-    respond_to do |format|
-      format.json { head :no_content }
-    end
-  end
-
   def pin
     authorize! :update, @planning
 
     pinned = ValueToBoolean.value_to_boolean(params[:pinned])
     if pinned &&
-       PlanningState.pinned_count_for(@planning.id, @planning_state.category) >= PlanningState::MAX_PINNED_PER_GROUP &&
+       PlanningState.pinned_count_for(@planning.id) >= PlanningState::MAX_PINNED &&
        !@planning_state.pinned?
       respond_to do |format|
         format.json do
@@ -118,44 +108,14 @@ class PlanningStatesController < ApplicationController
     head :forbidden
   end
 
-  def planning_states_json
-    reference_statistics = @planning.route_data_statistics
-    states_by_category = @planning_states.group_by(&:category)
-
-    PlanningState::CATEGORIES.filter_map do |category|
-      states = states_by_category[category]
-      next if states.blank?
-
-      pinned_count = states.count(&:pinned)
-
-      {
-        category: category,
-        category_label: t("plannings.states.categories.#{category}"),
-        max_pinned: PlanningState::MAX_PINNED_PER_GROUP,
-        pinned_count: pinned_count,
-        states: states.map { |state| planning_state_json(state, reference_statistics: reference_statistics) }
-      }
-    end
+  def assign_planning_states_context!
+    @reference_statistics = @planning.route_data_statistics
+    @current_visit_ids = current_planning_visit_ids
+    @pinned_count = @planning_states.count(&:pinned)
+    @prefered_unit = current_user.prefered_unit
   end
 
-  def planning_state_json(state, reference_statistics:)
-    statistics = state.statistics || {}
-    prefered_unit = current_user.prefered_unit
-
-    {
-      id: state.id,
-      category: state.category,
-      pinned: state.pinned,
-      captured_at: state.captured_at,
-      trigger: state.trigger,
-      trigger_label: t("plannings.states.triggers.#{state.trigger}", default: state.trigger),
-      captured_at_label: I18n.l(state.captured_at, format: :long),
-      statistics_html: planning_state_statistics_html(
-        statistics,
-        prefered_unit: prefered_unit,
-        reference_statistics: reference_statistics
-      ),
-      statistics: statistics
-    }
+  def current_planning_visit_ids
+    @planning.routes.flat_map(&:stops).grep(StopVisit).map(&:visit_id).sort
   end
 end

@@ -19,8 +19,9 @@
 #
 
 class PlanningState < ApplicationRecord
-  MAX_PER_GROUP = 5
-  MAX_PINNED_PER_GROUP = 3
+  MAX_STATES = 10
+  MAX_PINNED = 3
+  RETENTION_WEEKS = 12
 
   CATEGORIES = %w[mass group individual].freeze
 
@@ -50,7 +51,7 @@ class PlanningState < ApplicationRecord
   validates :statistics, presence: true
   validate :category_matches_trigger
 
-  default_scope { order(pinned: :desc, captured_at: :desc) }
+  default_scope { order(captured_at: :desc) }
 
   scope :pinned_only, -> { where(pinned: true) }
 
@@ -58,36 +59,53 @@ class PlanningState < ApplicationRecord
     TRIGGER_TO_CATEGORY[trigger.to_s] || 'individual'
   end
 
-  def self.pinned_count_for(planning_id, category)
-    unscoped.where(planning_id: planning_id, category: category, pinned: true).count
+  def self.pinned_count_for(planning_id)
+    unscoped.where(planning_id: planning_id, pinned: true).count
   end
 
   def self.prune_excess!(planning_id)
-    CATEGORIES.each do |category|
-      scope = unscoped.where(planning_id: planning_id, category: category)
+    scope = unscoped.where(planning_id: planning_id)
 
-      pinned_ids =
-        scope.pinned_only
+    pinned_ids =
+      scope.pinned_only
+           .order(captured_at: :desc)
+           .limit(MAX_PINNED)
+           .pluck(:id)
+
+    remaining_slots = MAX_STATES - pinned_ids.size
+    unpinned_ids =
+      if remaining_slots.positive?
+        scope.where(pinned: false)
              .order(captured_at: :desc)
-             .limit(MAX_PINNED_PER_GROUP)
+             .limit(remaining_slots)
              .pluck(:id)
+      else
+        []
+      end
 
-      remaining_slots = MAX_PER_GROUP - pinned_ids.size
-      unpinned_ids =
-        if remaining_slots.positive?
-          scope.where(pinned: false)
-               .order(captured_at: :desc)
-               .limit(remaining_slots)
-               .pluck(:id)
-        else
-          []
-        end
+    ids_to_keep = pinned_ids + unpinned_ids
+    return if ids_to_keep.empty?
 
-      ids_to_keep = pinned_ids + unpinned_ids
-      next if ids_to_keep.empty?
+    scope.where.not(id: ids_to_keep).delete_all
+  end
 
-      scope.where.not(id: ids_to_keep).delete_all
-    end
+  def self.purge_stale!(retention_weeks: RETENTION_WEEKS)
+    cutoff = retention_weeks.weeks.ago
+    unscoped.where(captured_at: ...cutoff).delete_all
+  end
+
+  def visit_ids_from_payload
+    (payload || {}).fetch('routes', []).flat_map { |route|
+      route.fetch('stops', []).filter_map { |stop|
+        next unless stop['type'] == 'visit'
+
+        stop['visit_id']&.to_i
+      }
+    }.sort
+  end
+
+  def visits_mismatch?(current_visit_ids)
+    visit_ids_from_payload != current_visit_ids
   end
 
   private
