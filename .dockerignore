@@ -1,17 +1,47 @@
-.dockerignore
+# Secrets and local env (never bake into images).
 .env
+.env.*
+
+# VCS and CI metadata.
 .git
 .github
+.cursor
+
+# Dev / docs / tests (not used in production image build).
+# Keep .devcontainer/ in context: dev image (ADD .) needs its shell scripts at build time.
+# Production Dockerfile only COPYs explicit paths and never includes .devcontainer/.
+doc
+visual-regression
+test
+coverage
+data
 delayed_job_logs
+
+# Docker build context (image built from Dockerfile, not compose files).
 docker
 docker-compose-*.yml
 docker-compose.yml
 Dockerfile
+
+# Logs, temp, local uploads.
 log/*
+tmp
+server.pid
+
+# Precompiled / generated assets (rebuilt in the builder stage).
 node_modules
 public/api-web/
 public/assets/
 public/javascripts/
 public/packs/
 public/upload/
-tmp
+
+# Tooling lockfiles and dev-only root files.
+package-lock.json
+Guardfile
+CHANGELOG.md
+README.md
+LICENSE
+LICENSES
+superser_history_stops.sql
+src
