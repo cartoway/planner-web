@@ -15,5 +15,9 @@
 # along with Cartoway Planner. If not, see:
 # <http://www.gnu.org/licenses/agpl.html>
 #
-require 'bundler/audit/task'
-Bundler::Audit::Task.new
+begin
+  require 'bundler/audit/task'
+  Bundler::Audit::Task.new
+rescue LoadError
+  # bundler-audit is development-only (excluded from production Docker builds via BUNDLE_WITHOUT).
+end

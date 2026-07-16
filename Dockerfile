@@ -7,6 +7,8 @@ FROM ruby:${RUBY_IMAGE} AS builder
 ENV NODE_OPTIONS=--openssl-legacy-provider \
     RAILS_ENV=production \
     NODE_ENV=production \
+    YARN_PRODUCTION=false \
+    SKIP_JS_COMPRESSOR=1 \
     BUNDLE_WITHOUT="development:test" \
     API_DOC_MODE=true
 
@@ -35,16 +37,16 @@ RUN --mount=type=cache,target=/usr/local/bundle/cache \
 
 COPY package.json yarn.lock ./
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
-    yarn install --frozen-lockfile
+    YARN_PRODUCTION=false yarn install --frozen-lockfile
 
-# Copy only what webpack and i18n need first so later app changes reuse this layer.
+# Rails boot + i18n + Webpacker (no spec/: swagger not needed yet).
 COPY Rakefile config.ru ./
+COPY .babelrc .postcssrc.yml ./
 COPY config/ config/
 COPY bin/ bin/
-COPY app/assets/ app/assets/
-COPY app/javascript/ app/javascript/
 COPY lib/ lib/
 COPY vendor/ vendor/
+COPY app/ app/
 COPY public/ public/
 
 RUN bundle exec rake i18n:js:export
@@ -52,13 +54,15 @@ RUN bundle exec rake i18n:js:export
 # Webpack is the slowest step; keep it separate from sprockets and swagger generation.
 RUN bundle exec rails webpacker:compile
 
-COPY app/ app/
+# rswag:specs:swaggerize (hooked to assets:precompile) reads spec/ only.
 COPY spec/ spec/
 
 RUN bundle exec rake assets:precompile
 
-# Remaining source (models, db, etc.) without invalidating the asset layers above.
-COPY . .
+# Runtime source not required to compile assets (keeps db/script changes off webpack layers).
+COPY db/ db/
+COPY script/ script/
+COPY scripts/ scripts/
 
 # Step 2: Final image, minimal
 FROM ruby:${RUBY_IMAGE}
@@ -66,6 +70,7 @@ FROM ruby:${RUBY_IMAGE}
 ENV RAILS_ENV=production
 ENV NODE_ENV=production
 ENV REDIS_HOST=redis-cache
+ENV BUNDLE_WITHOUT="development:test"
 
 RUN apk add --no-cache \
     bash \
@@ -87,7 +92,7 @@ RUN addgroup -S app && adduser -S app -G app
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY --from=builder /srv/app/ /srv/app/
 
-RUN rm -rf /srv/app/tmp /srv/app/spec /srv/app/test /srv/app/node_modules /srv/app/log /srv/app/coverage
+RUN rm -rf /srv/app/tmp /srv/app/spec /srv/app/node_modules /srv/app/log /srv/app/coverage
 
 
 VOLUME /srv/app/public/uploads
