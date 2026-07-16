@@ -2382,6 +2382,11 @@ en:
           retry_canceling: 'Transmission in progress, try again later'
           solvers: Used solvers
           skipped_services: Skipped solvers and unsupported constraints
+          resolution_steps:
+            independent_problems: Independent sub-problems
+            problem_splitting: Problem splitting
+            dichotomous: Dichotomous optimization
+            resolution: Resolution
           skipped_reasons:
             assert_no_first_solution_strategy: First solution strategy
             assert_no_free_approach_or_return: Free approach or return
