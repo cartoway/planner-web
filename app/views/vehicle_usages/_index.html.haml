@@ -1,8 +1,28 @@
-%table{ id: "accordion-#{vehicle_usage_set.id}", class: 'table table-striped table-hover' }
-  %caption
-    %label
-      %input.select-unselect-all{ type: 'checkbox', data: { id: vehicle_usage_set.id }, disabled: !can_update_vehicle_usage }
-      = t('vehicle_usages.index.select_unselect_all')
+%table{ id: "accordion-#{vehicle_usage_set.id}", class: 'table table-striped table-hover vehicle-usages-table' }
+  %caption.vehicle-usages-table-caption
+    .vehicle-usages-caption-row
+      %label
+        %input.select-unselect-all{ type: 'checkbox', data: { id: vehicle_usage_set.id }, disabled: !can_update_vehicle_usage }
+        = t('vehicle_usages.index.select_unselect_all')
+      - if can_update_vehicle_usage
+        .dropdown.vehicle-usages-sort-dropdown
+          %button.btn.btn-default.btn-sm.dropdown-toggle{ type: 'button', 'data-toggle' => 'dropdown', title: t('vehicle_usages.index.sort') }
+            %i.fa.fa-sort.fa-fw
+            = t('vehicle_usages.index.sort')
+            %span.caret
+          %ul.dropdown-menu.dropdown-menu-right{ role: 'menu' }
+            %li{ data: { sort_field: 'id', sort_direction: 'asc' } }
+              %a= t('vehicle_usages.index.sort_by_id_asc')
+            %li{ data: { sort_field: 'id', sort_direction: 'desc' } }
+              %a= t('vehicle_usages.index.sort_by_id_desc')
+            %li{ data: { sort_field: 'name', sort_direction: 'asc' } }
+              %a= t('vehicle_usages.index.sort_by_name_asc')
+            %li{ data: { sort_field: 'name', sort_direction: 'desc' } }
+              %a= t('vehicle_usages.index.sort_by_name_desc')
+            %li{ data: { sort_field: 'router', sort_direction: 'asc' } }
+              %a= t('vehicle_usages.index.sort_by_router_asc')
+            %li{ data: { sort_field: 'router', sort_direction: 'desc' } }
+              %a= t('vehicle_usages.index.sort_by_router_desc')
   %thead
     - if can_update_vehicle_usage
       %th
@@ -19,7 +39,7 @@
     %th
   %tbody{ class: ['vehicle-usages-sortable', ('vehicle-usages-sortable--enabled' if can_update_vehicle_usage)].compact.join(' '), data: { vehicle_usage_set_id: vehicle_usage_set.id } }
     - vehicle_usage_set.vehicle_usages.each do |vehicle_usage|
-      %tr{ class: ('disabled' unless vehicle_usage.active), data: { vehicle_usage_id: vehicle_usage.id } }
+      %tr{ class: ('disabled' unless vehicle_usage.active), data: { vehicle_usage_id: vehicle_usage.id, vehicle_id: vehicle_usage.vehicle_id, vehicle_name: vehicle_usage.vehicle.name, router_sort: vehicle_usage_router_label(vehicle_usage) } }
         - if can_update_vehicle_usage
           %td.vehicle-usage-sort-handle
             %i.fa.fa-grip-vertical.fa-fw{ title: t('vehicle_usages.index.reorder') }
