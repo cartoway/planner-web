@@ -2482,6 +2482,7 @@ fr:
           error: Impossible d'effectuer le calcul.
           retry_canceling: 'Transmission en cours, réessayez ultérieurement'
           solvers: Solveurs utilisés
+          resolution_phases: Phases de résolution
           skipped_services: Solveurs ignorés et contraintes non supportées
           resolution_steps:
             independent_problems: Problèmes indépendants

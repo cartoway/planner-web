@@ -2373,6 +2373,7 @@ en:
           error: Compute fail.
           retry_canceling: 'Transmission in progress, try again later'
           solvers: Used solvers
+          resolution_phases: Resolution phases
           skipped_services: Skipped solvers and unsupported constraints
           resolution_steps:
             independent_problems: Independent sub-problems

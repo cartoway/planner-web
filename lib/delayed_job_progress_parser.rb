@@ -3,8 +3,11 @@ module DelayedJobProgressParser
     base.class_eval do
       def progress
         parsed_progress = self[:progress]
+        return parsed_progress if parsed_progress.is_a?(Hash)
+        return nil if parsed_progress.blank?
+
         begin
-          JSON.parse(parsed_progress) if parsed_progress.present? && !parsed_progress.is_a?(Hash)
+          JSON.parse(parsed_progress)
         rescue JSON::ParserError
           parsed_progress
         end
