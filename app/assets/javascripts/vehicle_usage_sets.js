@@ -20,6 +20,71 @@
 import { bootstrap_dialog, modal_options } from '../../assets/javascripts/scaffolds';
 import { beforeSendWaiting, completeWaiting, ajaxError } from './ajax';
 
+const persistVehicleUsageOrder = function($tbody) {
+  var vehicleUsageSetId = $tbody.attr('data-vehicle-usage-set-id');
+  var vehicleUsageIds = $tbody.find('tr[data-vehicle-usage-id]').map(function() {
+    return parseInt($(this).attr('data-vehicle-usage-id'), 10);
+  }).get();
+
+  $.ajax({
+    type: 'PATCH',
+    url: '/vehicle_usage_sets/' + vehicleUsageSetId + '/reorder_vehicle_usages',
+    data: {
+      authenticity_token: $('meta[name="csrf-token"]').attr('content'),
+      vehicle_usage_ids: vehicleUsageIds
+    },
+    beforeSend: beforeSendWaiting,
+    complete: completeWaiting,
+    error: ajaxError
+  });
+};
+
+const compareVehicleUsageRows = function($left, $right, field, direction) {
+  var multiplier = direction === 'desc' ? -1 : 1;
+  if (field === 'id') {
+    return multiplier * ($left.data('vehicleId') - $right.data('vehicleId'));
+  }
+  if (field === 'name') {
+    return multiplier * String($left.data('vehicleName') || '').localeCompare(
+      String($right.data('vehicleName') || ''),
+      undefined,
+      { sensitivity: 'base' }
+    );
+  }
+  return multiplier * String($left.data('routerSort') || '').localeCompare(
+    String($right.data('routerSort') || ''),
+    undefined,
+    { sensitivity: 'base' }
+  );
+};
+
+const sortVehicleUsages = function($tbody, field, direction) {
+  var $rows = $tbody.find('tr[data-vehicle-usage-id]').get();
+  $rows.sort(function(left, right) {
+    return compareVehicleUsageRows($(left), $(right), field, direction);
+  });
+  $.each($rows, function(_index, row) {
+    $tbody.append(row);
+  });
+  persistVehicleUsageOrder($tbody);
+};
+
+const initVehicleUsagesSortDropdown = function($scope) {
+  $scope.find('.vehicle-usages-table').each(function() {
+    var $table = $(this);
+    var $tbody = $table.find('tbody.vehicle-usages-sortable--enabled');
+    if (!$tbody.length) return;
+
+    $table.find('.vehicle-usages-sort-dropdown .dropdown-menu a').off('click.vehicleUsagesSort').on('click.vehicleUsagesSort', function(event) {
+      event.preventDefault();
+      var $item = $(this).closest('li');
+      sortVehicleUsages($tbody, $item.data('sortField'), $item.data('sortDirection'));
+      $table.find('.vehicle-usages-sort-dropdown .dropdown-menu li').removeClass('active');
+      $item.addClass('active');
+    });
+  });
+};
+
 const initVehicleUsagesSortable = function($tbodies) {
   $tbodies.each(function() {
     var $tbody = $(this);
@@ -39,22 +104,7 @@ const initVehicleUsagesSortable = function($tbodies) {
         return $helper;
       },
       update: function() {
-        var vehicleUsageSetId = $tbody.attr('data-vehicle-usage-set-id');
-        var vehicleUsageIds = $tbody.find('tr[data-vehicle-usage-id]').map(function() {
-          return parseInt($(this).attr('data-vehicle-usage-id'), 10);
-        }).get();
-
-        $.ajax({
-          type: 'PATCH',
-          url: '/vehicle_usage_sets/' + vehicleUsageSetId + '/reorder_vehicle_usages',
-          data: {
-            authenticity_token: $('meta[name="csrf-token"]').attr('content'),
-            vehicle_usage_ids: vehicleUsageIds
-          },
-          beforeSend: beforeSendWaiting,
-          complete: completeWaiting,
-          error: ajaxError
-        });
+        persistVehicleUsageOrder($tbody);
       }
     });
   });
@@ -117,9 +167,11 @@ const vehicle_usage_sets_index = function(params) {
   onVehicleSelected();
 
   initVehicleUsagesSortable($('tbody.vehicle-usages-sortable--enabled'));
+  initVehicleUsagesSortDropdown($(document));
 
   $('.accordion-body.collapse').on('shown.bs.collapse', function() {
     initVehicleUsagesSortable($('tbody.vehicle-usages-sortable--enabled', this));
+    initVehicleUsagesSortDropdown($(this));
   });
 
   if (window.location.hash) {

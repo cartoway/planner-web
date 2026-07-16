@@ -25,13 +25,20 @@ module VehicleUsagesHelper
     end
   end
 
+  def vehicle_usage_router_label(vehicle_usage)
+    vehicle = vehicle_usage.vehicle
+    customer = vehicle_usage.vehicle_usage_set.customer
+    dimension = vehicle.router_dimension || customer.router_dimension
+    router = vehicle.router || customer.router
+    [router.translated_name, t("activerecord.attributes.router.router_dimensions.#{dimension}")].join(' - ')
+  end
+
   def vehicle_usage_router(vehicle_usage)
-    capture do
-      if vehicle_usage.vehicle.router
-        concat [vehicle_usage.vehicle.router.translated_name, t("activerecord.attributes.router.router_dimensions.#{vehicle_usage.vehicle.router_dimension || @customer.router_dimension}")].join(' - ')
-      else
-        concat span_tag([current_user.customer.router.translated_name, t("activerecord.attributes.router.router_dimensions.#{current_user.customer.router_dimension}")].join(' - '))
-      end
+    label = vehicle_usage_router_label(vehicle_usage)
+    if vehicle_usage.vehicle.router
+      label
+    else
+      span_tag(label)
     end
   end
 
