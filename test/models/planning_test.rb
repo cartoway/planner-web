@@ -114,6 +114,22 @@ class PlanningTest < ActiveSupport::TestCase
     assert_not_equal planning.ref, planning_dup.ref
   end
 
+  test 'duplicate resets customer plannings counter' do
+    planning = plannings(:planning_one)
+    customer = planning.customer
+    customer.update!(max_plannings: customer.plannings.count + 1) if customer.too_many_plannings?
+    Customer.reset_counters(customer.id, :plannings)
+    customer.reload
+
+    assert_equal customer.plannings.count, customer.plannings_count
+
+    planning.duplicate
+    customer.reload
+
+    assert_equal customer.plannings.count, customer.plannings_count
+    assert customer.plannings_count > 1
+  end
+
   test 'should set_routes' do
     planning = plannings(:planning_one)
 

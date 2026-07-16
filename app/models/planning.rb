@@ -115,6 +115,7 @@ class Planning < ApplicationRecord
 
   def duplicate
     planning_id = self.custom_duplicate
+    Customer.reset_counters(customer_id, :plannings)
     Planning.find(planning_id)
   end
 
