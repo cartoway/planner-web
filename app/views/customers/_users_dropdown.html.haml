@@ -4,7 +4,7 @@
     %i.fa.fa-users.fa-fw
     = sorted_users.size
     %span.caret
-  %ul.dropdown-menu.customer-users-dropdown-menu{ id: "customerUsersDropdown#{customer.id}", role: 'menu' }
+  %ul.dropdown-menu.dropdown-menu-right.customer-users-dropdown-menu{ id: "customerUsersDropdown#{customer.id}", role: 'menu' }
     %li
       .customer-users-summary
         - sorted_users.each do |user|
