@@ -21,6 +21,18 @@ class VRPNoSolutionError < StandardError; end
 class VRPUnprocessableError < StandardError; end
 
 PROGRESSION_KEYS = ['split independent process', 'solution', 'repetition', 'split partition process', 'max split process', 'dichotomous process']
+RESOLUTION_STEP_ORDER = [
+  'split independent process',
+  'split partition process',
+  'max split process',
+  'dichotomous process'
+].freeze
+RESOLUTION_STEP_LABELS = {
+  'split independent process' => 'independent_problems',
+  'split partition process' => 'problem_splitting',
+  'max split process' => 'problem_splitting',
+  'dichotomous process' => 'dichotomous'
+}.freeze
 
 class OptimizerWrapper
 
@@ -627,6 +639,7 @@ class OptimizerWrapper
         [nil, 0, 0]
       end
     solution_data.merge!(multipart: multipart, first_progression: matrix_bar, second_progression: resolution_bar)
+    solution_data.merge!(resolution_steps: resolution_steps(progression))
     solution_data
   end
 
@@ -670,6 +683,19 @@ class OptimizerWrapper
 
     ratio = parts[section_index].split(' ').last
     ratio.split('/').map(&:to_i)
+  end
+
+  # Collects all resolution phases present in avancement, in hierarchical order.
+  def resolution_steps(progression)
+    return [] unless progression
+
+    steps = RESOLUTION_STEP_ORDER.filter_map do |key|
+      next unless progression.include?(key)
+
+      RESOLUTION_STEP_LABELS[key]
+    end.uniq
+    steps << 'resolution' if progression.include?('run optimization')
+    steps
   end
 
   def compute_solution_data(job, solution)

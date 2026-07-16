@@ -2483,6 +2483,11 @@ fr:
           retry_canceling: 'Transmission en cours, réessayez ultérieurement'
           solvers: Solveurs utilisés
           skipped_services: Solveurs ignorés et contraintes non supportées
+          resolution_steps:
+            independent_problems: Problèmes indépendants
+            problem_splitting: Découpage du problème
+            dichotomous: Optimisation dichotomique
+            resolution: Résolution
           skipped_reasons:
             assert_no_first_solution_strategy: Stratégie de première solution
             assert_no_free_approach_or_return: Approche et retour libre
