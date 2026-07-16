@@ -116,6 +116,7 @@ export const unfreezeProgressDialog = function(dialog, delayedJob, url, callback
     $(".dialog-error", dialog).hide();
     $(".dialog-no-solution", dialog).hide();
     $(".progress-bar", dialog).css("width", "0%");
+    $('#optimization-progression-step', dialog).hide().empty();
   });
   dialog.on('keyup', function(e) {
     if (e.keyCode == 27) {
@@ -139,6 +140,7 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     freezeProgressDialog(dialog);
     var progress = delayedJob.progress;
 
+    updateOptimizationProgressionStep(dialog, progress);
     updateOptimizationDetails(dialog, progress);
     $(".progress-bar", dialog).each(function(i, e) {
       // hide or show dialog-progress class
@@ -320,6 +322,29 @@ export const phoneNumberCall = function(object, userCall) {
 };
 
 let optimizationDetailsInitialized = false;
+export const updateOptimizationProgressionStep = function(dialog, progress) {
+  const container = $('#optimization-progression-step', dialog);
+  if (!container.length) {
+    return;
+  }
+
+  if (!progress || progress.status === 'queued' || progress.completed) {
+    container.hide().empty();
+    return;
+  }
+
+  const i18n = mustache_i18n();
+  const phases = (progress.resolution_steps || []).map(function(step) {
+    return i18n('plannings.edit.dialog.optimizer.resolution_steps.' + step);
+  });
+
+  if (phases.length) {
+    container.html(phases.join(' - ')).show();
+  } else {
+    container.hide().empty();
+  }
+};
+
 export const updateOptimizationDetails = function(dialog, progress) {
   const detailsContainer = $('#optimization-details', dialog);
   const collapseElement = $('#collapseSolverDetails', dialog);

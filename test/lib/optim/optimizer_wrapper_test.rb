@@ -298,6 +298,7 @@ class OptimizerWrapperTest < ActionController::TestCase
       if solution_data && solution_data[:status] != 'queued' && solution_data[:first_progression] && solution_data[:second_progression]
         assert_equal 100.0, solution_data[:first_progression]
         assert_equal 17.0, solution_data[:second_progression]
+        assert_equal ['resolution'], solution_data[:resolution_steps]
       end
     }
     vrp_simple_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-simple-progression.json')).read
@@ -323,6 +324,7 @@ class OptimizerWrapperTest < ActionController::TestCase
       if solution_data && solution_data[:status] != 'queued' && solution_data[:first_progression] && solution_data[:second_progression]
         assert_equal 75.0, solution_data[:first_progression]
         assert_equal 50.0, solution_data[:second_progression]
+        assert_equal %w[problem_splitting resolution], solution_data[:resolution_steps]
       end
     }
     vrp_max_split_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-max-split-progression.json')).read
@@ -348,6 +350,7 @@ class OptimizerWrapperTest < ActionController::TestCase
       if solution_data && solution_data[:status] != 'queued' && solution_data[:first_progression] && solution_data[:second_progression]
         assert_equal 100.0, solution_data[:first_progression]
         assert_equal 87.5, solution_data[:second_progression]
+        assert_equal %w[dichotomous resolution], solution_data[:resolution_steps]
       end
     }
     vrp_dicho_progression_file = File.new(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-dicho-progression.json')).read
@@ -363,6 +366,20 @@ class OptimizerWrapperTest < ActionController::TestCase
     @optim.optimize(@planning, @planning.routes, **{ optimize_time: 30000 }, &progress)
   ensure
     remove_request_stub(stub_vrp_job) if stub_vrp_job
+  end
+
+  test 'resolution_steps cumulates all phases present in avancement' do
+    assert_equal %w[independent_problems resolution],
+                 @optim.send(:resolution_steps, 'split independent process 1/2 - run optimization')
+    assert_equal %w[problem_splitting resolution],
+                 @optim.send(:resolution_steps, 'split partition process 1/3 - run optimization')
+    assert_equal %w[problem_splitting resolution],
+                 @optim.send(:resolution_steps, 'max split process 2/4 - run optimization')
+    assert_equal %w[dichotomous resolution],
+                 @optim.send(:resolution_steps, 'dichotomous process 7/8 - run optimization')
+    assert_equal %w[resolution],
+                 @optim.send(:resolution_steps, 'run optimization, iterations 501')
+    assert_equal [], @optim.send(:resolution_steps, nil)
   end
 
   test 'should handle service time in vehicle timewindows' do
