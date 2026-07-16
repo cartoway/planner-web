@@ -1,0 +1,8 @@
+(function() {
+  var dialog = window.__planningStatesDialog;
+  if (!dialog) return;
+
+  dialog.find('.planning-states-count').text('<%= j t('plannings.states.count_summary', current: @planning_states.size, max: PlanningState::MAX_STATES) %>');
+  dialog.find('.modal-body').html('<%= j render(partial: "planning_states/list", formats: [:html], locals: { planning_states: @planning_states, reference_statistics: @reference_statistics, current_visit_ids: @current_visit_ids, prefered_unit: @prefered_unit, pinned_count: @pinned_count, max_pinned: PlanningState::MAX_PINNED }) %>');
+  $(document).trigger('planning-states:content-updated');
+})();

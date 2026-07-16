@@ -36,12 +36,12 @@ class PlanningStateTest < ActiveSupport::TestCase
     assert_equal 'individual', PlanningState.category_for('unknown_trigger')
   end
 
-  test 'prune_excess keeps only the 5 most recent states per category' do
+  test 'prune_excess keeps only the 10 most recent states globally' do
     planning = plannings(:planning_one)
     planning.planning_states.delete_all
     payload = { 'vehicle_usage_set_id' => planning.vehicle_usage_set_id, 'routes' => [] }
 
-    6.times do |i|
+    8.times do |i|
       planning.planning_states.create!(
         captured_at: i.seconds.ago,
         trigger: 'optimize',
@@ -51,7 +51,7 @@ class PlanningStateTest < ActiveSupport::TestCase
       )
     end
 
-    3.times do |i|
+    5.times do |i|
       planning.planning_states.create!(
         captured_at: (10 + i).seconds.ago,
         trigger: 'move',
@@ -63,9 +63,8 @@ class PlanningStateTest < ActiveSupport::TestCase
 
     PlanningState.prune_excess!(planning.id)
 
-    assert_equal 5, planning.planning_states.where(category: 'mass').count
-    assert_equal 3, planning.planning_states.where(category: 'individual').count
-    assert planning.planning_states.where(category: 'mass').all? { |state| state.statistics['routes_cost'].to_i <= 4 }
+    assert_equal 10, planning.planning_states.count
+    assert planning.planning_states.all? { |state| state.statistics['routes_cost'].to_i <= 104 }
   end
 
   test 'prune_excess keeps pinned states and fills remaining slots with recent unpinned' do
@@ -84,7 +83,7 @@ class PlanningStateTest < ActiveSupport::TestCase
       )
     end
 
-    6.times do |i|
+    10.times do |i|
       planning.planning_states.create!(
         captured_at: i.seconds.ago,
         trigger: 'optimize',
@@ -96,10 +95,83 @@ class PlanningStateTest < ActiveSupport::TestCase
 
     PlanningState.prune_excess!(planning.id)
 
-    mass_states = planning.planning_states.where(category: 'mass')
-    assert_equal 5, mass_states.count
-    assert pinned_states.all? { |state| mass_states.exists?(id: state.id) }
-    assert_equal 2, mass_states.where(pinned: false).count
-    assert mass_states.where(pinned: false).all? { |state| state.statistics['routes_cost'].to_i <= 1 }
+    states = planning.planning_states.reload
+    assert_equal 10, states.count
+    assert pinned_states.all? { |state| states.exists?(id: state.id) }
+    assert_equal 7, states.where(pinned: false).count
+    assert states.where(pinned: false).all? { |state| state.statistics['routes_cost'].to_i <= 6 }
+  end
+
+  test 'visits_mismatch detects divergent visit ids' do
+    planning = plannings(:planning_one)
+    state = planning.planning_states.create!(
+      captured_at: Time.current,
+      trigger: 'move',
+      category: 'individual',
+      payload: {
+        'vehicle_usage_set_id' => planning.vehicle_usage_set_id,
+        'routes' => [{
+          'route_id' => 1,
+          'vehicle_usage_id' => 1,
+          'stops' => [
+            { 'type' => 'visit', 'visit_id' => 1, 'active' => true, 'index' => 0 },
+            { 'type' => 'visit', 'visit_id' => 2, 'active' => true, 'index' => 1 }
+          ]
+        }]
+      },
+      statistics: { 'routes_cost' => 0 }
+    )
+
+    refute state.visits_mismatch?([1, 2])
+    assert state.visits_mismatch?([1])
+    assert state.visits_mismatch?([1, 2, 3])
+  end
+
+  test 'visits_mismatch ignores stop id changes when visit ids are unchanged' do
+    planning = plannings(:planning_one)
+    state = planning.planning_states.create!(
+      captured_at: Time.current,
+      trigger: 'move',
+      category: 'individual',
+      payload: {
+        'vehicle_usage_set_id' => planning.vehicle_usage_set_id,
+        'routes' => [{
+          'route_id' => 1,
+          'vehicle_usage_id' => 1,
+          'stops' => [
+            { 'type' => 'visit', 'visit_id' => 1, 'active' => true, 'index' => 0 }
+          ]
+        }]
+      },
+      statistics: { 'routes_cost' => 0 }
+    )
+
+    refute state.visits_mismatch?([1])
+  end
+
+  test 'purge_stale deletes states older than retention period' do
+    planning = plannings(:planning_one)
+    planning.planning_states.delete_all
+    payload = { 'vehicle_usage_set_id' => planning.vehicle_usage_set_id, 'routes' => [] }
+
+    recent = planning.planning_states.create!(
+      captured_at: 1.week.ago,
+      trigger: 'move',
+      category: 'individual',
+      payload: payload,
+      statistics: { 'routes_cost' => 1 }
+    )
+    stale = planning.planning_states.create!(
+      captured_at: 13.weeks.ago,
+      trigger: 'move',
+      category: 'individual',
+      payload: payload,
+      statistics: { 'routes_cost' => 2 }
+    )
+
+    assert_equal 1, PlanningState.purge_stale!(retention_weeks: 12)
+
+    assert planning.planning_states.exists?(id: recent.id)
+    refute PlanningState.unscoped.exists?(id: stale.id)
   end
 end

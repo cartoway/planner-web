@@ -182,7 +182,7 @@ Rails.application.routes.draw do
       patch :apply_zonings
       patch :automatic_insert
     end
-    resources :planning_states, only: [:index, :destroy] do
+    resources :planning_states, only: [:index] do
       member do
         patch :reapply
         patch :pin

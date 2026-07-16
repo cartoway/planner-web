@@ -90,6 +90,26 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
     end
   end
 
+  test 'add store reload captures planning state after mutation' do
+    customers(:customer_one).update(job_optimizer_id: nil)
+    @planning.planning_states.delete_all
+    route = @planning.routes.find { |r| r.vehicle_usage }
+    store_reload = store_reloads(:store_reload_one)
+
+    assert_difference -> { @planning.planning_states.count }, 1 do
+      post api(@planning.id, "/#{route.id}/store_reloads/#{store_reload.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
+    end
+
+    assert_equal 201, last_response.status, last_response.body
+    state = @planning.planning_states.order(:id).last
+    assert_equal 'update_stop', state.trigger
+    captured_store_reload_ids =
+      state.payload['routes'].flat_map { |route_snapshot| route_snapshot['stops'] }
+           .select { |stop| stop['type'] == 'store_reload' }
+           .map { |stop| stop['store_reload_id'] }
+    assert_includes captured_store_reload_ids, store_reload.id
+  end
+
   test 'should not add store to out_route' do
     [:during_optimization, nil].each do |mode|
       customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?

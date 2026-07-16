@@ -53,120 +53,70 @@ var initPlanningStatesModal = function(planningId, options) {
   if (!$open.length) return;
 
   var dialog = null;
-  var DELETE_CONFIRM_DELAY_MS = 200;
 
-  var renderStateItem = function(state, group) {
-    var pinDisabled = !state.pinned && group.pinned_count >= group.max_pinned;
-    var panelClass = state.pinned ? 'panel-info' : 'panel-default';
-    var pinTitle = state.pinned ? I18n.t('plannings.states.unpin') : I18n.t('plannings.states.pin');
-    var pinBtnClass = state.pinned ? 'btn-info' : 'btn-default';
-    var pinIconHtml = state.pinned
-      ? '<i class="fa fa-thumbtack fa-fw"></i>'
-      : '<i class="fa fa-thumbtack fa-fw" style="transform: rotate(45deg); display: inline-block;"></i>';
+  var resizePlanningStatesModal = function() {
+    if (!dialog) return;
 
-    return '<div class="planning-state-item panel ' + panelClass + '" data-state-id="' + state.id + '">' +
-      '<div class="panel-heading clearfix">' +
-        '<span class="planning-state-meta">' +
-          (state.pinned ? '<i class="fa fa-thumbtack text-muted" title="' + I18n.t('plannings.states.pinned') + '"></i> ' : '') +
-          '<strong>' + state.captured_at_label + '</strong>' +
-          ' <span class="text-muted">· ' + state.trigger_label + '</span>' +
-        '</span>' +
-        '<span class="pull-right">' +
-          '<div class="btn-group">' +
-            '<button type="button" class="btn btn-primary btn-xs planning-state-reapply" data-state-id="' + state.id + '" title="' + I18n.t('plannings.states.reapply') + '">' +
-              '<i class="fa fa-floppy-disk fa-fw"></i>' +
-            '</button>' +
-            '<button type="button" class="btn ' + pinBtnClass + ' btn-xs planning-state-pin" data-state-id="' + state.id + '" data-pinned="' + state.pinned + '"' +
-              (pinDisabled ? ' disabled title="' + I18n.t('plannings.states.pin_limit_reached') + '"' : ' title="' + pinTitle + '"') + '>' +
-              pinIconHtml +
-            '</button>' +
-          '</div>' +
-          '<button type="button" class="btn btn-danger btn-xs planning-state-delete" style="margin-left: 6px;" data-state-id="' + state.id + '" title="' + I18n.t('plannings.states.delete') + '">' +
-            '<i class="fa fa-trash fa-fw"></i>' +
-          '</button>' +
-        '</span>' +
-      '</div>' +
-      '<div class="panel-body planning-state-statistics">' +
-        (state.statistics_html || '') +
-      '</div>' +
-    '</div>';
+    dialog.find('.planning-states-list.overflow-500')
+      .css('max-height', Math.max(200, $(window).height() - 440) + 'px');
   };
 
-  var renderStatesList = function(groups) {
-    if (!groups.length) {
-      return '<p class="text-muted">' + I18n.t('plannings.states.empty') + '</p>';
-    }
+  var setupPlanningStatesModal = function() {
+    dialog.addClass('planning-states-modal');
+    dialog.find('.modal-dialog').addClass('modal-lg');
+    dialog.find('.modal-body').addClass('planning-states-modal-body');
 
-    return groups.map(function(group) {
-      var statesHtml = (group.states || []).map(function(state) {
-        return renderStateItem(state, group);
-      }).join('');
-      if (!statesHtml) return '';
+    var $header = dialog.find('.modal-header h4');
+    var $closeButton = $header.find('button.close').detach();
 
-      return '<div class="planning-state-group" data-category="' + group.category + '">' +
-        '<h4 class="planning-state-group-title">' + group.category_label + '</h4>' +
-        statesHtml +
-      '</div>';
-    }).filter(Boolean).join('');
+    var $titleGroup = $('<span class="planning-states-modal-title-group"></span>');
+    $header.find('.modal-icon').appendTo($titleGroup);
+    $header.find('.modal-title').appendTo($titleGroup);
+    $header.addClass('planning-states-modal-header')
+      .empty()
+      .append($titleGroup)
+      .append('<span class="primary data-info planning-states-count">—</span>')
+      .append($closeButton);
   };
 
   var loadStates = function() {
-    $.getJSON('/plannings/' + planningId + '/planning_states.json', function(states) {
-      if (dialog) {
-        dialog.find('.modal-body').html(renderStatesList(states));
-      }
-    }).fail(ajaxError);
+    if (!dialog) return;
+
+    window.__planningStatesDialog = dialog;
+    $.ajax({
+      url: '/plannings/' + planningId + '/planning_states.js',
+      dataType: 'script',
+      error: ajaxError
+    });
   };
 
   var openDialog = function() {
-    var disarmDeleteButtons = function($except) {
-      if (!dialog) return;
-
-      dialog.find('.planning-state-delete-armed').not($except).each(function() {
-        var $btn = $(this);
-        clearTimeout($btn.data('disarmTimeout'));
-        clearTimeout($btn.data('confirmReadyTimeout'));
-        $btn.removeData('armedAt');
-        $btn.removeClass('planning-state-delete-armed planning-state-delete-pending btn-warning').addClass('btn-danger');
-        $btn.css('opacity', '');
-        $btn.html('<i class="fa fa-trash fa-fw"></i>');
-        $btn.attr('title', I18n.t('plannings.states.delete'));
-      });
-    };
-
-    var armDeleteButton = function($btn) {
-      disarmDeleteButtons($btn);
-      $btn.addClass('planning-state-delete-armed planning-state-delete-pending btn-warning').removeClass('btn-danger');
-      $btn.html('<i class="fa fa-trash fa-fw"></i>');
-      $btn.attr('title', I18n.t('plannings.states.delete_confirm_wait'));
-      $btn.data('armedAt', Date.now());
-      $btn.css('opacity', '0.55');
-      $btn.data('confirmReadyTimeout', setTimeout(function() {
-        $btn.removeClass('planning-state-delete-pending');
-        $btn.css('opacity', '');
-        $btn.html('<i class="fa fa-check fa-fw"></i>');
-        $btn.attr('title', I18n.t('plannings.states.delete_confirm'));
-      }, DELETE_CONFIRM_DELAY_MS));
-      $btn.data('disarmTimeout', setTimeout(function() {
-        disarmDeleteButtons();
-      }, 4000));
-    };
-
     dialog = bootstrap_dialog({
       title: I18n.t('plannings.states.title'),
       icon: 'fa-history',
       message: '<div class="text-center"><i class="fa fa-spinner fa-spin"></i></div>',
-      size: 'modal-lg',
       dataDismiss: true,
       footer: '<button type="button" class="btn btn-primary" data-dismiss="modal">' +
         I18n.t('web.dialog.close') +
         '</button>'
     });
+    setupPlanningStatesModal();
     dialog.modal({
       show: true,
       backdrop: true,
       keyboard: true
     });
+
+    dialog.on('shown.bs.modal.planningStates', resizePlanningStatesModal);
+    dialog.on('hidden.bs.modal.planningStates', function() {
+      $(window).off('resize.planningStatesModal');
+      $(document).off('planning-states:content-updated.planningStates');
+      dialog.off('.planningStates');
+      window.__planningStatesDialog = null;
+    });
+    $(window).on('resize.planningStatesModal', resizePlanningStatesModal);
+    $(document).off('planning-states:content-updated.planningStates')
+      .on('planning-states:content-updated.planningStates', resizePlanningStatesModal);
 
     dialog.on('click', '.planning-state-reapply', function() {
       var stateId = $(this).data('state-id');
@@ -185,43 +135,12 @@ var initPlanningStatesModal = function(planningId, options) {
       });
     });
 
-    dialog.on('click', '.planning-state-delete', function(e) {
-      e.stopPropagation();
-      var $btn = $(this);
-      var stateId = $btn.data('state-id');
-
-      if (!$btn.hasClass('planning-state-delete-armed')) {
-        armDeleteButton($btn);
-        return;
-      }
-
-      if ($btn.hasClass('planning-state-delete-pending') ||
-          Date.now() - ($btn.data('armedAt') || 0) < DELETE_CONFIRM_DELAY_MS) {
-        return;
-      }
-
-      clearTimeout($btn.data('disarmTimeout'));
-      clearTimeout($btn.data('confirmReadyTimeout'));
-      $.ajax({
-        type: 'DELETE',
-        url: '/plannings/' + planningId + '/planning_states/' + stateId + '.json',
-        success: loadStates,
-        error: ajaxError
-      });
-    });
-
-    dialog.on('click', '.modal-body', function(e) {
-      if (!$(e.target).closest('.planning-state-delete').length) {
-        disarmDeleteButtons();
-      }
-    });
-
     dialog.on('click', '.planning-state-pin', function() {
       var $btn = $(this);
       if ($btn.prop('disabled')) return;
 
-      var stateId = $btn.data('state-id');
-      var pinned = !$btn.data('pinned');
+      var stateId = $btn.data('stateId');
+      var pinned = $btn.attr('data-pinned') !== 'true';
       $.ajax({
         type: 'PATCH',
         url: '/plannings/' + planningId + '/planning_states/' + stateId + '/pin.json',

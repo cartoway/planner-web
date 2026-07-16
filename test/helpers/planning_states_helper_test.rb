@@ -29,8 +29,16 @@ class PlanningStatesHelperTest < ActionController::TestCase
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
     sign_in users(:user_one)
-    get :index, params: { planning_id: plannings(:planning_one).id, format: :json }
+    get :index, params: { planning_id: plannings(:planning_one).id }, format: :js, xhr: true
     @helper_view = @controller.view_context
+  end
+
+  test 'planning_state_pin_disabled? is true when pin limit is reached' do
+    planning_state = PlanningState.new(pinned: false)
+
+    assert planning_state_pin_disabled?(planning_state, pinned_count: 3, max_pinned: 3)
+    refute planning_state_pin_disabled?(planning_state, pinned_count: 2, max_pinned: 3)
+    refute planning_state_pin_disabled?(PlanningState.new(pinned: true), pinned_count: 3, max_pinned: 3)
   end
 
   test 'planning_state_statistics_html renders route data blocks without speed or quantities' do
