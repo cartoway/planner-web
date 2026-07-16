@@ -2972,6 +2972,13 @@ en:
       capacities: Capacities
       select_unselect_all: Select/Unselect all vehicles
       reorder: Reorder
+      sort: Sort
+      sort_by_id_asc: ID (ascending)
+      sort_by_id_desc: ID (descending)
+      sort_by_name_asc: Name (alphabetical)
+      sort_by_name_desc: Name (reverse alphabetical)
+      sort_by_router_asc: Transport mode (alphabetical)
+      sort_by_router_desc: Transport mode (reverse alphabetical)
       stores: Start - End
       store:
         no_start: No start store

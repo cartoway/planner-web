@@ -3093,6 +3093,13 @@ fr:
       capacities: Capacités
       select_unselect_all: Sélectionner/Dé-sélectionner tous les véhicules
       reorder: Modifier l'ordre
+      sort: Trier
+      sort_by_id_asc: ID (croissant)
+      sort_by_id_desc: ID (décroissant)
+      sort_by_name_asc: Nom (ordre alphabétique)
+      sort_by_name_desc: Nom (ordre alphabétique inverse)
+      sort_by_router_asc: Mode de transport (ordre alphabétique)
+      sort_by_router_desc: Mode de transport (ordre alphabétique inverse)
       stores: Départ - Arrivée
       store:
         no_start: Pas de site de départ
