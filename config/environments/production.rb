@@ -24,8 +24,8 @@ Rails.application.configure do
   # Apache or NGINX already handles this.
   config.serve_static_files = ENV['RAILS_SERVE_STATIC_FILES'].present?
 
-  # Compress JavaScripts and CSS.
-  config.assets.js_compressor = :uglifier
+  # Uglifier 3 / uglify-js 2 cannot parse object spread, optional chaining, etc. in Sprockets bundles.
+  config.assets.js_compressor = :uglifier unless ENV['SKIP_JS_COMPRESSOR'] == '1'
   # config.assets.css_compressor = :sass
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
