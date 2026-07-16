@@ -571,7 +571,7 @@ const destinations_import = function(params, api) {
   });
 
   $('[name=columns-save]').click(function() {
-    const advanced_options = { ...params.customer_advanced_options, ...{ 'import': { 'destinations': { 'spreadsheetColumnsDef': {} } } } }
+    const advanced_options = Object.assign({}, params.customer_advanced_options, { 'import': { 'destinations': { 'spreadsheetColumnsDef': {} } } });
     $('.column-def').filter(function(i, e) {
         return $(e).val();
       })

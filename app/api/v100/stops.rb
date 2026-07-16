@@ -76,6 +76,7 @@ class V100::Stops < Grape::API
                 route.compute_saved
                 current_customer.save!
               end
+              Planning.where(id: planning.id).preload_route_details.first!.capture_state!(trigger: 'update_stop')
               status 204
             rescue Exceptions::JobInProgressError
               status 409

@@ -1395,9 +1395,9 @@ en:
       duration_default: 'default'
       duration_help: Duration applied once per destination regardless of the number of successive visits
       locate_manually: Locate manually on the map
-      v2_list_map_position_help: Use the crosshairs button to enable moving this destination's pin on the background map (drag the pin or click the map). Latitude and longitude below update automatically. Click the button again (cross icon) to stop.
-      v2_map_position_drag_enable: Move pin on map
-      v2_map_position_drag_disable: Stop moving pin
+      v2_list_map_position_help: Use the crosshairs button to enable moving this destination's marker on the background map (drag the marker or click the map). Latitude and longitude below update automatically. Click the button again (cross icon) to stop.
+      v2_map_position_drag_enable: Move marker on map
+      v2_map_position_drag_disable: Stop moving marker
       geocoding_accuracy_none: Not applicable
       geocoding_fail: Geocoding has failed
       geocoding_accuracy_help: Conversion quality of the address to the geographic position
@@ -2480,16 +2480,18 @@ en:
       cost_fixed: fixed cost
       cost_time: cost per time
     states:
-      open: Planning states history
-      title: Planning states history
+      open: History
+      title: History
       reapply: Reapply
       delete: Delete
       delete_confirm: Confirm deletion
       delete_confirm_wait: Wait before confirming…
-      pin: Pin
-      unpin: Unpin
-      pinned: Pinned
-      pin_limit_reached: Pin limit reached for this category (3 maximum)
+      pin: Keep
+      unpin: Stop keeping
+      pinned: Kept
+      pin_limit_reached: Retention limit reached (3 maximum)
+      stops_mismatch: Saved stops do not match the current planning
+      count_summary: "%{current} / %{max}"
       empty: No saved state
       reapply_failed: Unable to reapply this state
       reapply_success: State reapplied
@@ -3595,7 +3597,7 @@ en:
       activate_stops: Activate route stops
       export: Export
       refresh: Refresh
-      planning_states: Planning state history
+      planning_states: History
       duplicate: Duplicate plan
       planning_dashboard: Planning dashboard
       vehicle_usage: Vehicle usage

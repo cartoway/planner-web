@@ -57,6 +57,31 @@ class StopsControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test 'create_store_reload captures planning state after mutation' do
+    @planning.planning_states.delete_all
+    @stop_store_reload.destroy!
+    @route.vehicle_usage.update(max_reload: 3)
+
+    assert_difference -> { @planning.planning_states.count }, 1 do
+      post :create_store_reload, params: {
+        planning_id: @planning.id,
+        route_id: @route.id,
+        store_reload_id: @store_reload.id,
+        format: :json
+      }
+    end
+
+    assert_response :success
+    state = @planning.planning_states.order(:id).last
+    assert_equal 'update_stop', state.trigger
+    assert_equal 'individual', state.category
+    captured_store_reload_ids =
+      state.payload['routes'].flat_map { |route| route['stops'] }
+           .select { |stop| stop['type'] == 'store_reload' }
+           .map { |stop| stop['store_reload_id'] }
+    assert_includes captured_store_reload_ids, @store_reload.id
+  end
+
   test 'should handle create_store_reload with invalid planning_id' do
     assert_difference('Stop.count', 0) do
       post :create_store_reload, params: {
@@ -103,6 +128,29 @@ class StopsControllerTest < ActionController::TestCase
       }, xhr: true
     end
     assert_response :success
+  end
+
+  test 'destroy StopStore captures planning state after mutation' do
+    @planning.planning_states.delete_all
+
+    assert_difference -> { @planning.planning_states.count }, 1 do
+      delete :destroy, params: {
+        planning_id: @planning.id,
+        route_id: @route.id,
+        stop_id: @stop_store_reload.id,
+        format: :js
+      }, xhr: true
+    end
+
+    assert_response :success
+    state = @planning.planning_states.order(:id).last
+    assert_equal 'update_stop', state.trigger
+    assert_equal 'individual', state.category
+    captured_store_reload_ids =
+      state.payload['routes'].flat_map { |route| route['stops'] }
+           .select { |stop| stop['type'] == 'store_reload' }
+           .map { |stop| stop['store_reload_id'] }
+    refute_includes captured_store_reload_ids, @store_reload.id
   end
 
   test 'should handle destroy with StopVisit' do

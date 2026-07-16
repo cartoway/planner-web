@@ -1,0 +1,12 @@
+- if planning_states.empty?
+  %p.text-muted.planning-states-empty= t('plannings.states.empty')
+- else
+  .planning-states-list.overflow-500
+    - planning_states.each do |planning_state|
+      = render 'planning_states/state_item',
+        planning_state: planning_state,
+        reference_statistics: reference_statistics,
+        current_visit_ids: current_visit_ids,
+        prefered_unit: prefered_unit,
+        pinned_count: pinned_count,
+        max_pinned: max_pinned

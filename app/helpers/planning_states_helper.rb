@@ -37,6 +37,10 @@ module PlanningStatesHelper
     'balance' => { stat_key: :balance, format: :currency, higher_is_better: true }
   }.freeze
 
+  def planning_state_pin_disabled?(planning_state, pinned_count:, max_pinned:)
+    !planning_state.pinned? && pinned_count >= max_pinned
+  end
+
   def planning_state_statistics_locals(statistics, prefered_unit:, reference_statistics: nil)
     stats = (statistics || {}).stringify_keys
     stat_diffs =
