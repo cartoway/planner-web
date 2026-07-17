@@ -1,20 +1,31 @@
 // Copyright © Cartoway
-// MapLibre IControl: checkboxes to toggle raster overlay layer visibility.
+// MapLibre IControl: base maps (radio) + overlay layers (checkbox) in one panel.
 
 const DEFAULT_ROOT_CLASS = 'maplibregl-ctrl maplibregl-ctrl-group maplibre-overlay-toggles'
 
 /**
  * @param {{ layerId: string, name: string, initialVisible?: boolean }[]} overlaySpecs
  * @param {string} summaryTitle - native tooltip + aria-label on the summary control (no visible text)
- * @param {{ rootClass?: string, summaryClass?: string, bodyClass?: string, inputIdPrefix?: string }} [options]
+ * @param {{
+ *   rootClass?: string,
+ *   summaryClass?: string,
+ *   bodyClass?: string,
+ *   inputIdPrefix?: string,
+ *   bases?: { layerId: string, name: string, selected?: boolean }[],
+ *   baseSectionTitle?: string,
+ *   overlaySectionTitle?: string
+ * }} [options]
  */
 export function OverlayLayersToggleIControl (overlaySpecs, summaryTitle, options = {}) {
-  this._specs = overlaySpecs
-  this._summaryTitle = summaryTitle || 'Overlays'
+  this._specs = overlaySpecs || []
+  this._bases = options.bases || []
+  this._summaryTitle = summaryTitle || 'Layers'
+  this._baseSectionTitle = options.baseSectionTitle || ''
+  this._overlaySectionTitle = options.overlaySectionTitle || ''
   this._rootClass = options.rootClass || DEFAULT_ROOT_CLASS
   this._summaryClass = options.summaryClass || 'maplibre-overlay-toggles-summary'
   this._bodyClass = options.bodyClass || 'maplibre-overlay-toggles-body'
-  this._inputIdPrefix = options.inputIdPrefix || 'maplibre-overlay-'
+  this._inputIdPrefix = options.inputIdPrefix || 'maplibre-layer-'
 }
 
 OverlayLayersToggleIControl.prototype.onAdd = function (map) {
@@ -32,10 +43,55 @@ OverlayLayersToggleIControl.prototype.onAdd = function (map) {
   const body = document.createElement('div')
   body.className = this._bodyClass
   const prefix = this._inputIdPrefix
-  this._specs.forEach((spec, idx) => {
+  const bases = this._bases
+  const overlays = this._specs
+  const showBaseHeading = bases.length > 0 && overlays.length > 0 && this._baseSectionTitle
+  const showOverlayHeading = bases.length > 0 && overlays.length > 0 && this._overlaySectionTitle
+
+  if (showBaseHeading) {
+    const heading = document.createElement('div')
+    heading.className = 'maplibre-overlay-toggles-heading'
+    heading.textContent = this._baseSectionTitle
+    body.appendChild(heading)
+  }
+
+  const radioName = prefix + 'base'
+  bases.forEach((spec, idx) => {
     const row = document.createElement('div')
     row.className = 'form-check mb-1'
-    const inputId = prefix + idx
+    const inputId = prefix + 'base-' + idx
+    const radio = document.createElement('input')
+    radio.type = 'radio'
+    radio.className = 'form-check-input'
+    radio.name = radioName
+    radio.id = inputId
+    radio.checked = !!spec.selected
+    radio.addEventListener('change', () => {
+      if (!radio.checked) return
+      bases.forEach((b) => {
+        map.setLayoutProperty(b.layerId, 'visibility', b.layerId === spec.layerId ? 'visible' : 'none')
+      })
+    })
+    const lbl = document.createElement('label')
+    lbl.className = 'form-check-label'
+    lbl.setAttribute('for', inputId)
+    lbl.textContent = spec.name
+    row.appendChild(radio)
+    row.appendChild(lbl)
+    body.appendChild(row)
+  })
+
+  if (showOverlayHeading) {
+    const heading = document.createElement('div')
+    heading.className = 'maplibre-overlay-toggles-heading'
+    heading.textContent = this._overlaySectionTitle
+    body.appendChild(heading)
+  }
+
+  overlays.forEach((spec, idx) => {
+    const row = document.createElement('div')
+    row.className = 'form-check mb-1'
+    const inputId = prefix + 'overlay-' + idx
     const cb = document.createElement('input')
     cb.type = 'checkbox'
     cb.className = 'form-check-input'
@@ -52,6 +108,7 @@ OverlayLayersToggleIControl.prototype.onAdd = function (map) {
     row.appendChild(lbl)
     body.appendChild(row)
   })
+
   details.appendChild(summary)
   details.appendChild(body)
   wrap.appendChild(details)

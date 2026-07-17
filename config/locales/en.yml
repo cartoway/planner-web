@@ -1478,6 +1478,8 @@ en:
       expand_list: Expand list
       cancel_position_drag: Cancel placing pin
       map_overlay_layers: Overlay layers
+      map_base_layers: Base maps
+      map_layers: Map layers
       map_decluster_viewport: De-cluster visible points
       map_recluster_viewport: Cluster visible points
       select_all: Select all
