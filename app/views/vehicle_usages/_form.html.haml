@@ -296,6 +296,24 @@
             %span.input-group-addon %
           %p.help-block
             = t('vehicles.form.speed_multiplier.help')
+      .row
+        %label.col-md-offset-2.col-md-8.field{for: "visit_duration_coef"}
+          = t('activerecord.attributes.vehicle.visit_duration_coef')
+        .col-md-offset-2.col-md-8.field.input-append
+          .input-group
+            = number_field_tag :visit_duration_coef, (@vehicle_usage.vehicle.visit_duration_coef ? (@vehicle_usage.vehicle.visit_duration_coef * 100).to_i : nil), { min: 10, max: 500, placeholder: t('vehicles.form.visit_duration_coef.default', n: 100), class: 'form-control number-to-percentage' }
+            %span.input-group-addon %
+          %p.help-block
+            = t('vehicles.form.visit_duration_coef.help')
+      .row
+        %label.col-md-offset-2.col-md-8.field{for: "destination_duration_coef"}
+          = t('activerecord.attributes.vehicle.destination_duration_coef')
+        .col-md-offset-2.col-md-8.field.input-append
+          .input-group
+            = number_field_tag :destination_duration_coef, (@vehicle_usage.vehicle.destination_duration_coef ? (@vehicle_usage.vehicle.destination_duration_coef * 100).to_i : nil), { min: 10, max: 500, placeholder: t('vehicles.form.destination_duration_coef.default', n: 100), class: 'form-control number-to-percentage' }
+            %span.input-group-addon %
+          %p.help-block
+            = t('vehicles.form.destination_duration_coef.help')
       = f.fields_for 'devices', @vehicle_usage.vehicle, layout: :horizontal do |f|
         - @vehicle_usage.vehicle.customer.device.configured_definitions.each do |key, definition|
           - if definition[:forms].key?(:vehicle)

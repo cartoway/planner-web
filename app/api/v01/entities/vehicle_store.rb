@@ -42,4 +42,6 @@ class V01::Entities::VehicleStore < V01::Entities::Store
   expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys })
   expose(:speed_multiplicator, documentation: { type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
   expose(:speed_multiplier, documentation: { type: Float })
+  expose(:visit_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to visit durations for this vehicle (default: 1)' })
+  expose(:destination_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to destination durations for this vehicle (default: 1)' })
 end

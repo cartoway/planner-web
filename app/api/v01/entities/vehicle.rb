@@ -49,6 +49,8 @@ class V01::Entities::VehicleWithoutVehicleUsage < Grape::Entity
   expose(:router_options, using: V01::Entities::RouterOptions, documentation: { type: V01::Entities::RouterOptions })
   expose(:speed_multiplicator, documentation: { type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
   expose(:speed_multiplier, documentation: { type: Float })
+  expose(:visit_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to visit durations for this vehicle (default: 1)' })
+  expose(:destination_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to destination durations for this vehicle (default: 1)' })
   expose(:max_distance, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' })
   expose(:max_ride_distance, documentation: { type: Integer, desc: 'Maximum riding distance between two stops within a route in meters' })
   expose(:max_ride_duration, documentation: { type: DateTime, desc: 'Maximum riding time between two stops within a route' }) { |m| m.max_ride_duration_absolute_time_with_seconds }
