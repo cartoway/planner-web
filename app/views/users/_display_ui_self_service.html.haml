@@ -77,6 +77,14 @@
     %small.help-block= t('users.form.display_ui.stop_list_help')
 
 .row.form-group
+  %label.col-md-offset-2.col-md-8{ for: 'user_headers_destinations_index' }
+    = t('users.form.display_ui.destinations_index_v2')
+  .col-md-offset-2.col-md-8.field.form-switch
+    %input#user_headers_destinations_index_legacy{ type: 'hidden', name: 'user[headers][destinations_index]', value: Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY, disabled: @user.destinations_index_v2? }
+    %input.form-check-input#user_headers_destinations_index{ type: 'checkbox', name: 'user[headers][destinations_index]', value: Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2, checked: @user.destinations_index_v2?, role: 'switch', onchange: "document.getElementById('user_headers_destinations_index_legacy').disabled = this.checked" }
+  %small.help-block.col-md-offset-2.col-md-7= t('users.form.display_ui.destinations_index_help')
+
+.row.form-group
   %label.col-md-offset-2.col-md-8
     = t('users.form.display_ui.destinations_list')
   .col-md-offset-2.col-md-8.field
