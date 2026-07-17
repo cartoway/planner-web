@@ -98,7 +98,9 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '#map'
     assert_select '#destinations-map-layout[data-controller="v2--destinations-index"]'
     assert_select 'script[type="importmap"]', 1
-    assert_match(/map_overlay_title/, response.body)
+    assert_match(/map_layers_title/, response.body)
+    assert_match(/geocoder_placeholder/, response.body)
+    assert_match(ERB::Util.html_escape(I18n.t('web.geocoder.search')), response.body)
     assert_select 'link[href*="maplibre-gl"]', 1
     assert_select 'script[src*="maplibre-gl"]', 1
     assert_select '.main > .main-primary', 1
@@ -354,6 +356,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '#destinations-search-form'
     assert_select '#search-query[role="combobox"]', 1
     assert_select '#search-query-dropdown [data-search-key]', DestinationSearchParser::ALLOWED_KEYS.size
+    assert_select '#search-filters-badges', 1
     assert_select 'turbo-frame#destinations_list tr.destination', assigns(:destinations).size
   end
 
