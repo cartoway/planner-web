@@ -39,14 +39,17 @@ class DestinationsController < ApplicationController
     @customer = current_user.customer
     respond_to do |format|
       format.html do
-        load_destinations_index_page
-        frame_list = turbo_frame_request? && turbo_frame_request_id == 'destinations_list'
+        if current_user.destinations_index_v2?
+          load_destinations_index_page
+          frame_list = turbo_frame_request? && turbo_frame_request_id == 'destinations_list'
 
-        if frame_list
-          render partial: 'v2/destinations/list_frame', layout: false
-        else
-          render 'v2/destinations/index', layout: 'v2/layouts/application'
+          if frame_list
+            render partial: 'v2/destinations/list_frame', layout: false
+          else
+            render 'v2/destinations/index', layout: 'v2/layouts/application'
+          end
         end
+        # Legacy: default destinations/index template (application layout).
       end
       format.json do
         @destinations = if !@customer.is_editable?

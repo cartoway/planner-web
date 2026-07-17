@@ -23,6 +23,21 @@ class DestinationsControllerTest < ActionController::TestCase
     request.host = @reseller.host
     @destination = destinations(:destination_one)
     sign_in users(:user_one)
+    enable_destinations_index_v2!
+  end
+
+  def enable_destinations_index_v2!(user = users(:user_one))
+    user.apply_self_service_display_ui!(
+      headers_params: { destinations_index: Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2 }
+    )
+    user.save!
+  end
+
+  def enable_destinations_index_legacy!(user = users(:user_one))
+    user.apply_self_service_display_ui!(
+      headers_params: { destinations_index: Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY }
+    )
+    user.save!
   end
 
   def around
@@ -39,6 +54,37 @@ class DestinationsControllerTest < ActionController::TestCase
 
     get :edit, params: { id: destinations(:destination_four) }
     assert_response :not_found
+  end
+
+  test 'index defaults to legacy destinations list' do
+    enable_destinations_index_legacy!
+    get :index
+    assert_response :success
+    assert_select '#add', 1
+    assert_select '#destinations-map-layout', 0
+  end
+
+  test 'index uses v2 when user preference is set' do
+    enable_destinations_index_legacy!
+    refute users(:user_one).reload.destinations_index_v2?
+
+    enable_destinations_index_v2!
+    assert users(:user_one).reload.destinations_index_v2?
+
+    get :index
+    assert_response :success
+    assert_select '#destinations-map-layout[data-controller="v2--destinations-index"]'
+  end
+
+  test 'destinations index preference keeps last value from toggle dual submit' do
+    user = users(:user_one)
+    user.apply_self_service_display_ui!(headers_params: { destinations_index: %w[legacy v2] })
+    user.save!
+    assert user.reload.destinations_index_v2?
+
+    user.apply_self_service_display_ui!(headers_params: { destinations_index: Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY })
+    user.save!
+    refute user.reload.destinations_index_v2?
   end
 
   test 'should get index' do
