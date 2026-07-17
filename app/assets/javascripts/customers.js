@@ -237,6 +237,14 @@ const customers_edit = function (params) {
     $('#customer_sms_intransit_template').on('keyup', smsIntransitCharacterCount);
   }
 
+  $('select.selectpicker[name="customer[destination_icon]"], select.selectpicker[name="customer[store_icon]"], select.selectpicker[name="customer[rest_icon]"]').each(function() {
+    var $el = $(this);
+    if ($el.parent().hasClass('bootstrap-select')) {
+      $el.selectpicker('destroy');
+    }
+    $el.selectpicker();
+  });
+
   var customerRouterSelect2Options = {
     theme: 'bootstrap',
     width: '100%'
