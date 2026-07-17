@@ -32,12 +32,18 @@ class UsersController < ApplicationController
   def update
     raw = params.require(:user)
     attrs = raw.permit(:layer_id, :url_click2call, :time_zone, :prefered_unit, :default_display_polylines, :filter_planning_route_data)
-    headers_ui = raw.permit(headers: {
-      planning: { active: [], hidden: [] },
-      route: { active: [], hidden: [] },
-      stop_list: { active: [], hidden: [] },
-      destinations_list: { active: [], hidden: [] }
-    })[:headers]
+    permitted_headers = raw.permit(headers: [
+      { planning: { active: [], hidden: [] },
+        route: { active: [], hidden: [] },
+        stop_list: { active: [], hidden: [] },
+        destinations_list: { active: [], hidden: [] } }
+    ])[:headers]
+    # Avoid Parameters#fetch(..., {}): the default Hash is converted to unpermitted Parameters.
+    headers_ui = permitted_headers ? permitted_headers.to_h.with_indifferent_access : ActiveSupport::HashWithIndifferentAccess.new
+    # Toggle may submit a scalar or [legacy, v2]; scalar permit would drop arrays.
+    if raw[:headers]&.key?(:destinations_index) || raw[:headers]&.key?('destinations_index')
+      headers_ui[:destinations_index] = raw[:headers][:destinations_index] || raw[:headers]['destinations_index']
+    end
     @user.assign_attributes(attrs)
     @user.apply_self_service_display_ui!(headers_params: headers_ui) if headers_ui.present?
 

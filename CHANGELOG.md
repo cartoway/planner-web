@@ -27,6 +27,7 @@
     - Map markers via GeoJSON bbox loading; cluster / de-cluster viewport toggle (same icons as planning v1)
     - Row selection, bulk delete, and highlight from map pin or `highlight_destination_id` deep link
     - Coordinate editing on the background map: crosshairs toggle, placement mode (hidden list, centred cancel button), sync with lat/lng fields
+    - User preference to switch between classic (default) and v2 destinations list
 
   ### Changed
   - Sopac: migrate from api to message broker

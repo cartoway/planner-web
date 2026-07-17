@@ -103,7 +103,20 @@ module UserPreferences
     base['stop_list'] = sl if sl.present?
     dl = hp['destinations_list'].presence
     base['destinations_list'] = dl if dl.present?
+    if hp.key?('destinations_index')
+      # Checkbox + hidden fallback may submit both values; keep the last one.
+      base['destinations_index'] = Array(hp['destinations_index']).last
+    end
     self.headers = ::Preferences::Catalog.normalize_headers(base, customer: customer)
+  end
+
+  # Destinations list UI version: "legacy" (default) or "v2".
+  def destinations_index_version
+    ::Preferences::Catalog.normalize_destinations_index(read_headers_hash['destinations_index'])
+  end
+
+  def destinations_index_v2?
+    destinations_index_version == ::Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2
   end
 
   # Ordered field ids (e.g. name, ref) for the planning stop list primary line, max 3 after normalize.

@@ -34,6 +34,11 @@ module Preferences
       HEADER_PLANNING_DEFAULT = (HEADER_PLANNING - %w[total_duration drive_time wait_time visits_duration rests_duration]).freeze
       HEADER_ROUTE_DEFAULT = (HEADER_ROUTE - %w[total_duration drive_time wait_time visits_duration rests_duration]).freeze
 
+      DESTINATIONS_INDEX_LEGACY = 'legacy'
+      DESTINATIONS_INDEX_V2 = 'v2'
+      DESTINATIONS_INDEX_DEFAULT = DESTINATIONS_INDEX_LEGACY
+      DESTINATIONS_INDEX_VALUES = [DESTINATIONS_INDEX_LEGACY, DESTINATIONS_INDEX_V2].freeze
+
       module_function
 
       def default_headers
@@ -47,8 +52,14 @@ module Preferences
             'hidden' => (HEADER_ROUTE - HEADER_ROUTE_DEFAULT).dup
           },
           'stop_list' => StopList.default_zone,
-          'destinations_list' => DestinationsList.default_zone
+          'destinations_list' => DestinationsList.default_zone,
+          'destinations_index' => DESTINATIONS_INDEX_DEFAULT
         }
+      end
+
+      def normalize_destinations_index(raw)
+        value = raw.to_s
+        DESTINATIONS_INDEX_VALUES.include?(value) ? value : DESTINATIONS_INDEX_DEFAULT
       end
 
       def header_zone_active_default(zone)
@@ -78,7 +89,8 @@ module Preferences
           'planning' => normalize_header_zone(h['planning'], HEADER_PLANNING),
           'route' => normalize_header_zone(h['route'], HEADER_ROUTE),
           'stop_list' => StopList.normalize_zone(h['stop_list'].presence || h['stop_display']),
-          'destinations_list' => DestinationsList.normalize_zone(h['destinations_list'], customer: customer)
+          'destinations_list' => DestinationsList.normalize_zone(h['destinations_list'], customer: customer),
+          'destinations_index' => normalize_destinations_index(h['destinations_index'])
         }
       end
     end

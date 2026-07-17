@@ -2840,6 +2840,9 @@ en:
         stop_list_help: Allows to personalize the label displayed for each stop within routes. Drag fields between lists. At most three elements can be active; order in the active list is used left to right (joined with “ - ”).
         destinations_list: Destination list columns
         destinations_list_help: Customize which columns appear in the destinations list. Drag columns between lists; order in “Active” is used left to right.
+        destinations_index: Destinations list
+        destinations_index_v2: New list
+        destinations_index_help: Enable the new map-based destinations list. Disable to keep the classic list.
         route_headers: Route data
         planning_toolbar: Planning toolbar
         route_toolbar: Route toolbar
