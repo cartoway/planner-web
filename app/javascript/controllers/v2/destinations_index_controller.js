@@ -1094,8 +1094,18 @@ export default class extends Controller {
     const form = this.element.querySelector('#destinations-search-form')
     const input = this.element.querySelector('#search-query')
     const wrapper = this.element.querySelector('.destinations-search-wrapper')
-    const badges = this.element.querySelector('#search-filters-badges')
+    let badges = this.element.querySelector('#search-filters-badges')
     if (!form || !input) return
+
+    const ensureBadgesHost = () => {
+      if (badges) return badges
+      if (!wrapper) return null
+      badges = document.createElement('div')
+      badges.id = 'search-filters-badges'
+      badges.className = 'mt-1'
+      wrapper.appendChild(badges)
+      return badges
+    }
 
     const draftFilterValue = () => {
       const key = (input.dataset.filterKeyDraft || '').trim()
@@ -1115,7 +1125,8 @@ export default class extends Controller {
       field.value = raw
       form.appendChild(field)
 
-      if (!badges) return
+      const host = ensureBadgesHost()
+      if (!host) return
       const badge = document.createElement('span')
       badge.className = 'badge bg-primary me-1 mb-1 search-filter-badge'
       badge.dataset.filter = raw
@@ -1130,7 +1141,7 @@ export default class extends Controller {
       icon.className = 'fa fa-times'
       removeBtn.appendChild(icon)
       badge.appendChild(removeBtn)
-      badges.appendChild(badge)
+      host.appendChild(badge)
     }
 
     const removeCommittedFilter = (raw) => {
@@ -1179,8 +1190,9 @@ export default class extends Controller {
       else if (hasMinCharsForSearch(val)) submitForm()
     }, { signal })
 
-    if (badges) {
-      badges.addEventListener('click', (e) => {
+    const badgesHost = ensureBadgesHost()
+    if (badgesHost) {
+      badgesHost.addEventListener('click', (e) => {
         const removeBtn = e.target.closest('[data-remove-filter]')
         if (!removeBtn) return
         e.preventDefault()
