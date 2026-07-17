@@ -494,6 +494,8 @@ class OptimizerWrapper
         router_mode: route.vehicle_usage.vehicle.default_router.try(&:mode),
         router_dimension: route.vehicle_usage.vehicle.default_router_dimension,
         speed_multiplier: route.vehicle_usage.vehicle.default_speed_multiplier,
+        coef_service: vehicle.default_visit_duration_coef,
+        coef_setup: vehicle.default_destination_duration_coef,
         area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:area].join(',') }&.join('|'),
         speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
         timewindow: {

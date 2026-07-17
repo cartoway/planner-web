@@ -435,6 +435,29 @@ class OptimizerWrapperTest < ActionController::TestCase
     assert_equal 10, vrp[:vehicles].first[:cost_fixed]
   end
 
+  test 'maps visit and destination duration coefs to optimizer coef_service and coef_setup' do
+    route = @planning.routes.find(&:vehicle_usage?)
+    vehicle = route.vehicle_usage.vehicle
+    vehicle.update!(visit_duration_coef: 1.5, destination_duration_coef: 0.75)
+
+    vrp = @optim.build_vrp(@planning, @planning.routes)
+    vrp_vehicle = vrp_vehicle_for(route, vrp)
+
+    assert_equal 1.5, vrp_vehicle[:coef_service]
+    assert_equal 0.75, vrp_vehicle[:coef_setup]
+  end
+
+  test 'defaults visit and destination duration coefs to 1 when unset' do
+    route = @planning.routes.find(&:vehicle_usage?)
+    route.vehicle_usage.vehicle.update!(visit_duration_coef: nil, destination_duration_coef: nil)
+
+    vrp = @optim.build_vrp(@planning, @planning.routes)
+    vrp_vehicle = vrp_vehicle_for(route, vrp)
+
+    assert_equal 1, vrp_vehicle[:coef_service]
+    assert_equal 1, vrp_vehicle[:coef_setup]
+  end
+
   test 'should use vehicle costs when enable_vehicle_costs is true' do
     begin
       planning = plannings(:planning_one)
