@@ -27,6 +27,17 @@ class Admin::CustomersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'should render map marker icon selectpickers on edit' do
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select 'select.selectpicker[name=?]', 'customer[destination_icon]'
+    assert_select 'select.selectpicker[name=?]', 'customer[store_icon]'
+    assert_select 'select.selectpicker[name=?]', 'customer[rest_icon]'
+    assert_select '#customer_destination_icon_input'
+    assert_select '#customer_store_icon_input'
+    assert_select '#customer_rest_icon_input'
+  end
+
   test 'should create customer' do
     assert_difference('Customer.count') do
       assert_difference('Vehicle.count', 2) do
