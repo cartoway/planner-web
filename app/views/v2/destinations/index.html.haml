@@ -5,7 +5,18 @@
 - content_for :title, t('destinations.index.title')
 -# MapLibre loads tiles via fetch; always use HTTPS tile URLs (HTTP OSM tiles 301 without CORS).
 - layers = (@customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: layer.urlssl, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
-- v2_js_cfg = { map_lat: @customer.default_position[:lat], map_lng: @customer.default_position[:lng], map_zoom: 12, geocoder: true, map_overlay_title: t('destinations.index.map_overlay_layers'), map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)], map_geojson_url: map_destinations_path, can_destroy: current_user_form_destroy_enabled?(:destination), form_sidebar_placeholder: t('v2.layout.form_sidebar_placeholder') }
+- v2_js_cfg = { map_lat: @customer.default_position[:lat], map_lng: @customer.default_position[:lng], map_zoom: 12, geocoder: true }
+- v2_js_cfg[:geocoder_placeholder] = t('web.geocoder.search')
+- v2_js_cfg[:geocoder_empty] = t('web.geocoder.empty_result')
+- v2_js_cfg[:geocoder_tooltip] = t('web.geocoder.tooltip')
+- v2_js_cfg[:geocoder_submit] = t('web.geocoder.submit_search')
+- v2_js_cfg[:map_layers_title] = t('destinations.index.map_layers')
+- v2_js_cfg[:map_base_layers_title] = t('destinations.index.map_base_layers')
+- v2_js_cfg[:map_overlay_title] = t('destinations.index.map_overlay_layers')
+- v2_js_cfg[:map_layers] = Hash[layers.map{ |l| l[:name] }.zip(layers)]
+- v2_js_cfg[:map_geojson_url] = map_destinations_path
+- v2_js_cfg[:can_destroy] = current_user_form_destroy_enabled?(:destination)
+- v2_js_cfg[:form_sidebar_placeholder] = t('v2.layout.form_sidebar_placeholder')
 - v2_js_cfg[:highlight_destination_id] = params[:highlight_destination_id].to_i if params[:highlight_destination_id].present?
 - v2_js_config = v2_js_cfg.to_json
 #destinations-map-layout{data: { controller: 'v2--destinations-index', config: v2_js_config }}

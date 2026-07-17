@@ -6,7 +6,6 @@ import { Controller } from '@hotwired/stimulus'
 import { visit, navigator as turboNavigator } from '@hotwired/turbo'
 import { buildRasterStyle, pickLayers } from 'maplibre/raster_layers'
 import { GeocoderIControl } from 'maplibre/geocoder_control'
-import { BaseLayerSwitcherIControl } from 'maplibre/base_layer_switcher_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { DestinationsMapLayers } from 'maplibre/destinations_map_layers'
@@ -534,19 +533,32 @@ export default class extends Controller {
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left')
 
     if (params.geocoder) {
-      const placeholder = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t('web.geocoder.search') : 'Search'
-      const emptyMsg = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t('web.geocoder.empty_result') : 'No results'
-      map.addControl(new GeocoderIControl(placeholder, emptyMsg), 'top-right')
+      const placeholder = params.geocoder_placeholder ||
+        ((typeof I18n !== 'undefined' && I18n.t) ? I18n.t('web.geocoder.search') : 'Search an address...')
+      const emptyMsg = params.geocoder_empty ||
+        ((typeof I18n !== 'undefined' && I18n.t) ? I18n.t('web.geocoder.empty_result') : 'No results found')
+      const tooltip = params.geocoder_tooltip ||
+        ((typeof I18n !== 'undefined' && I18n.t) ? I18n.t('web.geocoder.tooltip') : placeholder)
+      const submitLabel = params.geocoder_submit ||
+        ((typeof I18n !== 'undefined' && I18n.t) ? I18n.t('web.geocoder.submit_search') : 'Search')
+      map.addControl(new GeocoderIControl(placeholder, emptyMsg, { tooltip, submitLabel }), 'top-right')
     }
 
     const basesOnly = pickLayers(params.map_layers).bases
-    if (basesOnly.length > 1) {
-      map.addControl(new BaseLayerSwitcherIControl(baseLayerIds, basesOnly), 'top-right')
-    }
-
-    if (overlayToggles && overlayToggles.length > 0) {
-      const overlayTitle = params.map_overlay_title || 'Overlays'
-      map.addControl(new OverlayLayersToggleIControl(overlayToggles, overlayTitle), 'top-right')
+    const baseSpecs = basesOnly.length > 1
+      ? basesOnly.map((b, i) => ({
+        layerId: baseLayerIds[i],
+        name: b.name,
+        selected: !!(b.default || (!basesOnly.some((x) => x.default) && i === 0))
+      }))
+      : []
+    if (baseSpecs.length > 0 || (overlayToggles && overlayToggles.length > 0)) {
+      const layersTitle = params.map_layers_title || params.map_overlay_title || 'Layers'
+      map.addControl(new OverlayLayersToggleIControl(overlayToggles || [], layersTitle, {
+        bases: baseSpecs,
+        baseSectionTitle: params.map_base_layers_title || '',
+        overlaySectionTitle: params.map_overlay_title || ''
+      }), 'top-right')
     }
 
     const highlightId = params.highlight_destination_id

@@ -1528,6 +1528,8 @@ fr:
       expand_list: Afficher la liste
       cancel_position_drag: Annuler le placement
       map_overlay_layers: Couches superposées
+      map_base_layers: Fonds de carte
+      map_layers: Couches de la carte
       map_decluster_viewport: Déclusteriser la vue
       map_recluster_viewport: Clusteriser la vue
       select_all: Tout sélectionner
