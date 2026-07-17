@@ -59,6 +59,10 @@ module Preferences
         Headers.normalize_headers(raw, customer: customer)
       end
 
+      def normalize_destinations_index(raw)
+        Headers.normalize_destinations_index(raw)
+      end
+
       def normalize_stop_list_zone(raw)
         StopList.normalize_zone(raw)
       end
