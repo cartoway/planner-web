@@ -25,10 +25,9 @@
         %button.destinations-search-dropdown-item{type: 'button', data: { search_key: option[:localized_key], v2__filtered_search_target: 'item', action: 'click->v2--filtered-search#pick' }, role: 'option'}
           %span.destinations-search-dropdown-item-key= "#{option[:localized_key]}:"
           %span.destinations-search-dropdown-item-example.text-muted= "#{option[:localized_key]}:…"
-  - if active_filters.present?
-    #search-filters-badges.mt-1
-      - active_filters.each do |filter|
-        %span.badge.bg-primary.me-1.mb-1.search-filter-badge{data: {filter: filter}}
-          = filter
-          %a.ms-1.text-white.search-filter-badge-remove{href: destinations_path(destinations_index_params_without_filter(filter)), title: t('destinations.index.remove_filter'), data: {remove_filter: filter}}
-            %i.fa.fa-times
+  #search-filters-badges.mt-1
+    - active_filters.each do |filter|
+      %span.badge.bg-primary.me-1.mb-1.search-filter-badge{data: {filter: filter}}
+        = filter
+        %a.ms-1.text-white.search-filter-badge-remove{href: destinations_path(destinations_index_params_without_filter(filter)), title: t('destinations.index.remove_filter'), data: {remove_filter: filter}}
+          %i.fa.fa-times
