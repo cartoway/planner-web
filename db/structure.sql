@@ -1639,7 +1639,9 @@ CREATE TABLE public.vehicles (
     max_ride_duration integer,
     max_ride_distance integer,
     driver_token character varying,
-    capacities jsonb DEFAULT '{}'::jsonb
+    capacities jsonb DEFAULT '{}'::jsonb,
+    visit_duration_coef double precision,
+    destination_duration_coef double precision
 );
 
 
@@ -3947,6 +3949,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260623141222'),
 ('20260624210858'),
 ('20260625210008'),
-('20260630143502');
+('20260630143502'),
+('20260717105805');
 
 

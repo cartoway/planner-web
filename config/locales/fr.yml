@@ -496,6 +496,8 @@ fr:
         router_id: Calculateur d'itinéraire
         router_dimension: Objectif du calculateur
         speed_multiplier: Ajustement de la vitesse
+        visit_duration_coef: Coefficient durée de visite
+        destination_duration_coef: Coefficient durée de destination
         customised_color: Couleur personnalisée
         ref: Référence
         contact_email: Email
@@ -513,6 +515,8 @@ fr:
         router_id: Calculateur d'itinéraire
         router_dimension: Objectif du calculateur
         speed_multiplier: Ajustement de la vitesse
+        visit_duration_coef: Coefficient durée de visite
+        destination_duration_coef: Coefficient durée de destination
         customised_color: Couleur personnalisée
         ref: Référence
         contact_email: Email
@@ -3071,6 +3075,18 @@ fr:
           Une valeur supérieure à 100% signifie une vitesse plus élevée.
           L'ajustement global au niveau du paramétrage est également utilisé
           lors des calculs.
+      visit_duration_coef:
+        default: '%{n} (valeur par défaut)'
+        help: >-
+          Coefficient appliqué à la durée de visite pour ce véhicule lors de
+          l'optimisation. Une valeur supérieure à 100% allonge les durées de
+          visite.
+      destination_duration_coef:
+        default: '%{n} (valeur par défaut)'
+        help: >-
+          Coefficient appliqué à la durée de destination pour ce véhicule lors
+          de l'optimisation. Une valeur supérieure à 100% allonge les durées
+          de destination.
       contact_email:
         help: Email du terminal du chauffeur. Il est possible de renseigner plusieurs emails séparés par des espaces, virgules ou points-virgules
       contact_phone:

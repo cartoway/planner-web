@@ -114,6 +114,8 @@ class VehicleUsagesController < ApplicationController
         :router_id,
         :router_dimension,
         :speed_multiplier,
+        :visit_duration_coef,
+        :destination_duration_coef,
         :max_distance,
         :max_ride_distance,
         :max_ride_duration,
