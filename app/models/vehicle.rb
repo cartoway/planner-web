@@ -57,6 +57,8 @@ class Vehicle < ApplicationRecord
   validates :color, presence: true
   validates_format_of :color, with: /\A(\#[A-Fa-f0-9]{6})\Z/
   validates :speed_multiplier, numericality: { greater_than_or_equal_to: 0.5, less_than_or_equal_to: 1.5 }, if: :speed_multiplier
+  validates :visit_duration_coef, numericality: { greater_than: 0, less_than_or_equal_to: 5 }, if: :visit_duration_coef
+  validates :destination_duration_coef, numericality: { greater_than: 0, less_than_or_equal_to: 5 }, if: :destination_duration_coef
   validates :contact_email, format: { with: /\A(([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})(\s*,\s*|\s*;\s*|\s+)?)+\z/i }, allow_blank: true
   validates :max_distance, numericality: true, allow_nil: true
   validates :max_ride_distance, numericality: true, allow_nil: true
@@ -146,6 +148,14 @@ class Vehicle < ApplicationRecord
     customer.speed_multiplier * (speed_multiplier || 1)
   end
 
+  def default_visit_duration_coef
+    visit_duration_coef || 1
+  end
+
+  def default_destination_duration_coef
+    destination_duration_coef || 1
+  end
+
   def default_capacities
     @default_capacities ||= QuantityAttr::QuantityHash[customer.deliverable_units.collect{ |du|
       [du.id, capacities && capacities[du.id] ? capacities[du.id] : du.default_capacity]
@@ -216,7 +226,7 @@ class Vehicle < ApplicationRecord
   end
 
   def update_outdated
-    if emission_changed? || consumption_changed? || capacities_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || max_distance_changed? || max_ride_distance_changed? || max_ride_duration_changed? || tag_ids_changed?
+    if emission_changed? || consumption_changed? || capacities_changed? || router_id_changed? || router_dimension_changed? || router_options_changed? || speed_multiplier_changed? || visit_duration_coef_changed? || destination_duration_coef_changed? || max_distance_changed? || max_ride_distance_changed? || max_ride_duration_changed? || tag_ids_changed?
       vehicle_usages.each{ |vehicle_usage|
         vehicle_usage.routes.each{ |route|
           route.outdated = true
