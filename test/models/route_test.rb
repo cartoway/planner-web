@@ -63,6 +63,31 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal false, route_data_attributes[:out_of_drive_time]
   end
 
+  test 'out_of_max_ride_distance is stored on route_data and resets on recompute' do
+    route = routes(:route_one_one)
+    vehicle = route.vehicle_usage.vehicle
+
+    vehicle.update_columns(max_ride_distance: 500)
+    route.vehicle_usage.vehicle.reload
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+
+    assert route.out_of_max_ride_distance
+    assert route.route_data.out_of_max_ride_distance
+    assert route.stops.any?(&:out_of_max_ride_distance)
+
+    vehicle.update_columns(max_ride_distance: nil)
+    route.vehicle_usage.vehicle.reload
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+
+    assert_not route.out_of_max_ride_distance
+    assert_not route.route_data.out_of_max_ride_distance
+    assert route.stops.none?(&:out_of_max_ride_distance)
+  end
+
   test 'total_duration includes rests_duration' do
     route = routes(:route_three_one)
     route.route_data.update_columns(rests_duration: 2700, visits_duration: 100, wait_time: 50, drive_time: 200)
