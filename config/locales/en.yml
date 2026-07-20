@@ -880,6 +880,7 @@ en:
       csv: 'Invalid file, lines [%{s}]'
       json: Invalid file
       tomtom: 'Invalid tomtom data, record %{s}'
+    invalid_typed_value: 'Invalid value "%{value}" for column %{column} (type: %{type}).'
     template_csv: Import Template Spreadsheet Standard
     template_excel: Import Template Spreadsheet
   admin:
@@ -1704,6 +1705,7 @@ en:
       missing_name: '"name" missing.'
       missing_location: '"city / postalcode" or "lat / lng" missing.'
       invalid_numeric_value: 'Invalid numeric value "%{value}".'
+      invalid_typed_value: 'Invalid value "%{value}" for column %{column} (type: %{type}).'
       invalid_lat: 'Latitude "%{value}" is invalid (expected between -90 and 90, check the decimal separator).'
       invalid_lng: 'Longitude "%{value}" is invalid (expected between -180 and 180, check the decimal separator).'
       invalid_stop: The stop type is invalid
@@ -2923,6 +2925,7 @@ en:
         json: json
         integer: integer
         float: '0.123'
+        boolean: true/false
         hour: 'HH:MM'
         second: 'HH:MM:SS'
         yes_no: yes/no
