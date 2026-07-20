@@ -27,22 +27,22 @@ class ImporterStores < ImporterBase
 
   def columns
     columns = {
-      ref: {title: I18n.t('stores.import_file.ref'), desc: I18n.t('stores.import_file.ref_desc'), format: I18n.t('stores.import_file.format.string')},
-      name: {title: I18n.t('stores.import_file.name'), desc: I18n.t('stores.import_file.name_desc'), format: I18n.t('stores.import_file.format.string'), required: I18n.t('stores.import_file.format.required')},
-      street: {title: I18n.t('stores.import_file.street'), desc: I18n.t('stores.import_file.street_desc'), format: I18n.t('stores.import_file.format.string'), required: I18n.t('stores.import_file.format.advisable')},
-      postalcode: {title: I18n.t('stores.import_file.postalcode'), desc: I18n.t('stores.import_file.postalcode_desc'), format: I18n.t('stores.import_file.format.integer'), required: I18n.t('stores.import_file.format.advisable')},
-      city: {title: I18n.t('stores.import_file.city'), desc: I18n.t('stores.import_file.city_desc'), format: I18n.t('stores.import_file.format.string'), required: I18n.t('stores.import_file.format.advisable')}
+      ref: {title: I18n.t('stores.import_file.ref'), desc: I18n.t('stores.import_file.ref_desc'), format: I18n.t('stores.import_file.format.string'), type: :string},
+      name: {title: I18n.t('stores.import_file.name'), desc: I18n.t('stores.import_file.name_desc'), format: I18n.t('stores.import_file.format.string'), type: :string, required: I18n.t('stores.import_file.format.required')},
+      street: {title: I18n.t('stores.import_file.street'), desc: I18n.t('stores.import_file.street_desc'), format: I18n.t('stores.import_file.format.string'), type: :string, required: I18n.t('stores.import_file.format.advisable')},
+      postalcode: {title: I18n.t('stores.import_file.postalcode'), desc: I18n.t('stores.import_file.postalcode_desc'), format: I18n.t('stores.import_file.format.integer'), type: :string, required: I18n.t('stores.import_file.format.advisable')},
+      city: {title: I18n.t('stores.import_file.city'), desc: I18n.t('stores.import_file.city_desc'), format: I18n.t('stores.import_file.format.string'), type: :string, required: I18n.t('stores.import_file.format.advisable')}
     }
 
-    columns.merge!(state: {title: I18n.t('stores.import_file.state'), desc: I18n.t('stores.import_file.state_desc'), format: I18n.t('stores.import_file.format.string'), required: I18n.t('stores.import_file.format.advisable')}) if @customer.with_state
+    columns.merge!(state: {title: I18n.t('stores.import_file.state'), desc: I18n.t('stores.import_file.state_desc'), format: I18n.t('stores.import_file.format.string'), type: :string, required: I18n.t('stores.import_file.format.advisable')}) if @customer.with_state
 
     columns.merge!({
-      country: {title: I18n.t('stores.import_file.country'), desc: I18n.t('stores.import_file.country_desc'), format: I18n.t('stores.import_file.format.string')},
-      lat: {title: I18n.t('stores.import_file.lat'), desc: I18n.t('stores.import_file.lat_desc'), format: I18n.t('stores.import_file.format.float')},
-      lng: {title: I18n.t('stores.import_file.lng'), desc: I18n.t('stores.import_file.lng_desc'), format: I18n.t('stores.import_file.format.float')},
-      color: {title: I18n.t('stores.import_file.color'), desc: I18n.t('stores.import_file.color_desc'), format: I18n.t('stores.import_file.color_format')},
-      icon: {title: I18n.t('stores.import_file.icon'), desc: I18n.t('stores.import_file.icon_desc'), format: I18n.t('stores.import_file.format.string')},
-      icon_size: {title: I18n.t('stores.import_file.icon_size'), desc: I18n.t('stores.import_file.icon_size_desc'), format: '[' + MapIconSize::SIZES.join(' | ') + ']'},
+      country: {title: I18n.t('stores.import_file.country'), desc: I18n.t('stores.import_file.country_desc'), format: I18n.t('stores.import_file.format.string'), type: :string},
+      lat: {title: I18n.t('stores.import_file.lat'), desc: I18n.t('stores.import_file.lat_desc'), format: I18n.t('stores.import_file.format.float'), type: :float},
+      lng: {title: I18n.t('stores.import_file.lng'), desc: I18n.t('stores.import_file.lng_desc'), format: I18n.t('stores.import_file.format.float'), type: :float},
+      color: {title: I18n.t('stores.import_file.color'), desc: I18n.t('stores.import_file.color_desc'), format: I18n.t('stores.import_file.color_format'), type: :string},
+      icon: {title: I18n.t('stores.import_file.icon'), desc: I18n.t('stores.import_file.icon_desc'), format: I18n.t('stores.import_file.format.string'), type: :string},
+      icon_size: {title: I18n.t('stores.import_file.icon_size'), desc: I18n.t('stores.import_file.icon_size_desc'), format: '[' + MapIconSize::SIZES.join(' | ') + ']', type: :string},
     })
 
     columns
