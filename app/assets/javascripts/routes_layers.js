@@ -527,8 +527,12 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
         return false;
       }.bind(this))
-      .on('popupopen', function() {
-        // Silence is golden
+      .on('popupopen', function(e) {
+        // After layout, recenter on the stop if the popup overflows the map viewport
+        var popup = e.popup;
+        requestAnimationFrame(function() {
+          this._ensureStopPopupVisible(popup);
+        }.bind(this));
       }.bind(this))
       .on('popupclose', function(e) {
         // popupclose event received before click event ...
@@ -903,6 +907,55 @@ export const RoutesLayer = L.FeatureGroup.extend({
         popupModule.activeClickMarker = marker;
       }.bind(this));
     }
+  },
+
+  // Recenter on the stop when its popup overflows the visible map area
+  // (including when it sits under the planning sidebar overlay).
+  _ensureStopPopupVisible: function(popup) {
+    if (!popup || !popup._container || !this.map) {
+      return;
+    }
+
+    var mapRect = this.map.getContainer().getBoundingClientRect();
+    var popupRect = popup._container.getBoundingClientRect();
+    var visibleRect = this._visibleMapRect(mapRect);
+    var overflows =
+      popupRect.top < visibleRect.top ||
+      popupRect.left < visibleRect.left ||
+      popupRect.right > visibleRect.right ||
+      popupRect.bottom > visibleRect.bottom;
+
+    if (!overflows) {
+      return;
+    }
+
+    var latLng = popup.getLatLng();
+    if (latLng) {
+      this.map.panTo(latLng, { animate: true });
+    }
+  },
+
+  // Map container bounds minus overlays that hide the map (e.g. left sidebar)
+  _visibleMapRect: function(mapRect) {
+    var visible = {
+      top: mapRect.top,
+      left: mapRect.left,
+      right: mapRect.right,
+      bottom: mapRect.bottom
+    };
+    var sidebar = document.getElementById('edit-planning') ||
+      document.getElementById('show-routes-by-vehicle') ||
+      document.querySelector('.sidebar.sidebar-left');
+
+    if (!sidebar || sidebar.classList.contains('extended')) {
+      return visible;
+    }
+
+    var sidebarRect = sidebar.getBoundingClientRect();
+    if (sidebarRect.width > 0 && sidebarRect.right > mapRect.left && sidebarRect.left < mapRect.right) {
+      visible.left = Math.max(visible.left, sidebarRect.right);
+    }
+    return visible;
   },
 
   _setViewForRoute: function(routeId) {
