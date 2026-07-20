@@ -357,15 +357,25 @@ class Customer < ApplicationRecord
         User.import_in_batches(new_users, validate: false)
       end
 
-      vehicle_usages = self.vehicle_usage_sets.flat_map{ |vehicle_usage_set| vehicle_usage_set.vehicle_usages }
-      new_vehicle_usage_attributes = vehicle_usages.map{ |vehicle_usage| vehicle_usage.import_attributes.except('id') }
-      new_vehicle_usage_attributes.each { |vehicle_usage|
-        vehicle_usage['vehicle_usage_set_id'] = vehicle_usage_set_ids_map[vehicle_usage['vehicle_usage_set_id']]
-        vehicle_usage['vehicle_id'] = vehicle_ids_map[vehicle_usage['vehicle_id']]
-        vehicle_usage['store_start_id'] = store_ids_map[vehicle_usage['store_start_id']]
-        vehicle_usage['store_stop_id'] = store_ids_map[vehicle_usage['store_stop_id']]
-        vehicle_usage['store_rest_id'] = store_ids_map[vehicle_usage['store_rest_id']]
-      }
+      vehicle_usages = []
+      new_vehicle_usage_attributes = []
+      self.vehicle_usage_sets.each do |vehicle_usage_set|
+        usages = vehicle_usage_set.vehicle_usages.sort_by(&:id)
+        indices = usages.map{ |vu| vu.read_attribute(:index) }
+        reassign_index = indices.any?(&:nil?) || indices.uniq.size != indices.size
+
+        usages.each_with_index do |vehicle_usage, position|
+          attrs = vehicle_usage.import_attributes.except('id')
+          attrs['vehicle_usage_set_id'] = vehicle_usage_set_ids_map[attrs['vehicle_usage_set_id']]
+          attrs['vehicle_id'] = vehicle_ids_map[attrs['vehicle_id']]
+          attrs['store_start_id'] = store_ids_map[attrs['store_start_id']]
+          attrs['store_stop_id'] = store_ids_map[attrs['store_stop_id']]
+          attrs['store_rest_id'] = store_ids_map[attrs['store_rest_id']]
+          attrs['index'] = position if reassign_index
+          vehicle_usages << vehicle_usage
+          new_vehicle_usage_attributes << attrs
+        end
+      end
       vehicle_usage_ids = VehicleUsage.import_in_batches(new_vehicle_usage_attributes, validate: false)
       vehicle_usage_ids_map = Hash[vehicle_usages.map(&:id).zip(vehicle_usage_ids)]
 
