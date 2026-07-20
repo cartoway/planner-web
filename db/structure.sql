@@ -968,8 +968,6 @@ CREATE TABLE public.routes (
     arrival_eta time without time zone,
     arrival_status character varying,
     force_start boolean,
-    out_of_max_ride_distance boolean,
-    out_of_max_ride_duration boolean,
     route_data_id integer,
     start_route_data_id integer,
     stop_route_data_id integer,
@@ -3952,6 +3950,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260624210858'),
 ('20260625210008'),
 ('20260630143502'),
-('20260717105805');
+('20260717105805'),
+('20260720072020');
 
 

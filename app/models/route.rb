@@ -207,8 +207,6 @@ class Route < ApplicationRecord
       stop_no_path: false,
       stop_out_of_drive_time: nil,
       stop_out_of_work_time: nil,
-      out_of_max_ride_distance: nil,
-      out_of_max_ride_duration: nil,
       emission: nil,
       start: nil,
       end: nil,
@@ -448,8 +446,8 @@ class Route < ApplicationRecord
             previous_route_data_attributes[:out_of_max_distance] ||= stop_attributes[:out_of_max_distance]
             if previous_with_pos&.is_a? Stop
               # max_ride only apply between stops (stores excluded)
-              stop_attributes[:out_of_max_ride_distance] = max_ride_distance && stop_attributes[:distance] && (stop_attributes[:distance] > max_ride_distance)
-              stop_attributes[:out_of_max_ride_duration] = max_ride_duration && (stop_attributes[:drive_time] > max_ride_duration)
+              stop_attributes[:out_of_max_ride_distance] = !!(max_ride_distance && stop_attributes[:distance] && (stop_attributes[:distance] > max_ride_distance))
+              stop_attributes[:out_of_max_ride_duration] = !!(max_ride_duration && stop_attributes[:drive_time] && (stop_attributes[:drive_time] > max_ride_duration))
               previous_route_data_attributes[:out_of_max_ride_distance] ||= stop_attributes[:out_of_max_ride_distance]
               previous_route_data_attributes[:out_of_max_ride_duration] ||= stop_attributes[:out_of_max_ride_duration]
             else
@@ -522,20 +520,20 @@ class Route < ApplicationRecord
       )
 
       # Separate attributes for Route vs RouteData
-      route_only_attributes = route_attributes.slice(:stop_distance, :stop_drive_time, :stop_no_path, :stop_out_of_drive_time, :stop_out_of_work_time, :stop_out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration)
+      route_only_attributes = route_attributes.slice(:stop_distance, :stop_drive_time, :stop_no_path, :stop_out_of_drive_time, :stop_out_of_work_time, :stop_out_of_max_distance)
       route_data_attributes = route_attributes.slice(:distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :rests_duration, :pickups, :deliveries, :departure)
 
       route_data_map = stops_sort.select{ |stop| stop.is_a?(StopStore) }.map(&:route_data).map(&:symbolized_attributes)
       compacted_route_data_attributes = self.start_route_data.symbolized_attributes.slice(*ROUTE_DATA_METRICS_FIELDS)
 
-      route_data_map.each{ |route_data|
+      route_data_map.each{ |segment_route_data|
         compacted_route_data_attributes.each{ |k, v|
           if v.is_a?(Integer)
-            compacted_route_data_attributes[k] += route_data[k] || 0
+            compacted_route_data_attributes[k] += segment_route_data[k] || 0
           elsif k == :max_loads
             compacted_route_data_attributes[k].each{ |unit, value|  value = [value, v[unit]].compact.max }
           else
-            compacted_route_data_attributes[k] ||= v
+            compacted_route_data_attributes[k] ||= segment_route_data[k]
           end
         }
       }
