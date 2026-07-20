@@ -149,4 +149,38 @@ class ImportExportCustomerTest < ActionController::TestCase
   ensure
     customer_data_file&.close!
   end
+
+  test 'import dump without vehicle_usage index assigns unique indices per set' do
+    customer = customers(:customer_one)
+    dumped = Marshal.load(ImportExportCustomer.export(customer))
+    # Simulate a dump from before vehicle_usages.index existed (all default to 0)
+    dumped.vehicle_usage_sets.each do |vehicle_usage_set|
+      vehicle_usage_set.vehicle_usages.each { |vu| vu.write_attribute(:index, 0) }
+    end
+
+    customer_data_file = Tempfile.new(['customer_dump', '.bin'])
+    customer_data_file.binmode
+    customer_data_file.write(Marshal.dump(dumped))
+    customer_data_file.rewind
+
+    reseller = resellers(:reseller_two)
+    c = ImportExportCustomer.import(
+      customer_data_file,
+      {
+        profile_id: profiles(:profile_two).id,
+        router_id: routers(:router_two).id,
+        layer_id: layers(:layer_two).id,
+        reseller_id: reseller.id,
+        role_id: Role.create_default_permissions_role_for!(reseller).id
+      }
+    )
+
+    c.vehicle_usage_sets.each do |vehicle_usage_set|
+      indices = vehicle_usage_set.vehicle_usages.ordered_by_index.map(&:index)
+      assert_equal indices.size, indices.uniq.size
+      assert_equal (0...indices.size).to_a, indices
+    end
+  ensure
+    customer_data_file&.close!
+  end
 end
