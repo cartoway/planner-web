@@ -32,50 +32,50 @@ class ImporterVehicleUsageSets < ImporterBase
     router_options = @customer.profile.routers.pluck(:options).reduce(:merge).except('time', 'distance', 'isochrone', 'avoid_zones', 'isodistance').keys
 
     {
-      ref_vehicle: { title: I18n.t('vehicles.import.ref_vehicle'), desc: I18n.t('vehicles.import.ref_desc'), format: I18n.t('vehicles.import.format.string') },
-      name_vehicle: { title: I18n.t('vehicles.import.name_vehicle'), desc: I18n.t('vehicles.import.name_desc'), format: I18n.t('vehicles.import.format.string'), required: I18n.t('vehicle_usage_sets.import.format.required') },
-      contact_email: { title: I18n.t('vehicles.import.contact_email'), desc: I18n.t('vehicles.import.contact_email_desc'), format: I18n.t('vehicles.import.format.string') },
-      phone_number: { title: I18n.t('vehicles.import.phone_number'), desc: I18n.t('vehicles.import.phone_number_desc'), format: I18n.t('vehicles.import.format.string') },
-      emission: { title: I18n.t('vehicles.import.emission'), desc: I18n.t('vehicles.import.emission_desc'), format: '[' + ::Vehicle.emissions_hash.values.map { |emission| emission[0] }.join(' | ') + ']' },
-      consumption: { title: I18n.t('vehicles.import.consumption'), desc: I18n.t('vehicles.import.consumption_desc'), format: I18n.t('vehicles.import.format.float') },
-      max_distance: { title: I18n.t('vehicles.import.max_distance'), desc: I18n.t('vehicles.import.max_distance_desc'), format: I18n.t('vehicles.import.format.integer') },
-      max_ride_distance: { title: I18n.t('vehicles.import.max_ride_distance'), desc: I18n.t('vehicles.import.max_ride_distance_desc'), format: I18n.t('vehicles.import.format.integer') },
-      max_ride_duration: { title: I18n.t('vehicles.import.max_ride_duration'), desc: I18n.t('vehicles.import.max_ride_duration_desc'), format: I18n.t('vehicles.import.format.integer') }
+      ref_vehicle: { title: I18n.t('vehicles.import.ref_vehicle'), desc: I18n.t('vehicles.import.ref_desc'), format: I18n.t('vehicles.import.format.string'), type: :string },
+      name_vehicle: { title: I18n.t('vehicles.import.name_vehicle'), desc: I18n.t('vehicles.import.name_desc'), format: I18n.t('vehicles.import.format.string'), type: :string, required: I18n.t('vehicle_usage_sets.import.format.required') },
+      contact_email: { title: I18n.t('vehicles.import.contact_email'), desc: I18n.t('vehicles.import.contact_email_desc'), format: I18n.t('vehicles.import.format.string'), type: :string },
+      phone_number: { title: I18n.t('vehicles.import.phone_number'), desc: I18n.t('vehicles.import.phone_number_desc'), format: I18n.t('vehicles.import.format.string'), type: :string },
+      emission: { title: I18n.t('vehicles.import.emission'), desc: I18n.t('vehicles.import.emission_desc'), format: '[' + ::Vehicle.emissions_hash.values.map { |emission| emission[0] }.join(' | ') + ']', type: :string },
+      consumption: { title: I18n.t('vehicles.import.consumption'), desc: I18n.t('vehicles.import.consumption_desc'), format: I18n.t('vehicles.import.format.float'), type: :float },
+      max_distance: { title: I18n.t('vehicles.import.max_distance'), desc: I18n.t('vehicles.import.max_distance_desc'), format: I18n.t('vehicles.import.format.integer'), type: :integer },
+      max_ride_distance: { title: I18n.t('vehicles.import.max_ride_distance'), desc: I18n.t('vehicles.import.max_ride_distance_desc'), format: I18n.t('vehicles.import.format.integer'), type: :integer },
+      max_ride_duration: { title: I18n.t('vehicles.import.max_ride_duration'), desc: I18n.t('vehicles.import.max_ride_duration_desc'), format: I18n.t('vehicles.import.format.hour'), type: :hour }
     }.merge(Hash[@customer.deliverable_units.map { |du|
-      ["capacity#{du.id}".to_sym, { title: I18n.t('vehicles.import.capacities') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('vehicles.import.capacities_desc'), format: I18n.t('vehicles.import.format.float') }]
+      ["capacity#{du.id}".to_sym, { title: I18n.t('vehicles.import.capacities') + (du.label ? "[#{du.label}]" : "#{du.id}"), desc: I18n.t('vehicles.import.capacities_desc'), format: I18n.t('vehicles.import.format.float'), type: :float }]
     }]).merge(
-      router_mode: { title: I18n.t('vehicles.import.router_mode'), desc: I18n.t('vehicles.import.router_mode_desc'), format: "[#{router_modes.join(' | ')}]" },
-      router_dimension: { title: I18n.t('vehicles.import.router_dimension'), desc: I18n.t('vehicles.import.router_dimension_desc'), format: "[#{router_dimensions.join(' | ')}]" },
-      router_options: { title: I18n.t('vehicles.import.router_options'), desc: I18n.t('vehicles.import.router_options_desc'), format: I18n.t('vehicles.import.format.json') + " [#{router_options.join(' | ')}]" },
-      speed_multiplier: { title: I18n.t('vehicles.import.speed_multiplier'), desc: I18n.t('vehicles.import.speed_multiplier_desc'), format: I18n.t('vehicles.import.format.integer') },
-      color: { title: I18n.t('vehicles.import.color'), desc: I18n.t('vehicles.import.color_desc'), format: I18n.t('vehicles.import.format.string') },
-      tags_vehicle: { title: I18n.t('vehicles.import.tags'), desc: I18n.t('vehicles.import.tags_desc'), format: I18n.t('vehicles.import.tags_format') },
-      devices: { title: I18n.t('vehicles.import.devices'), desc: I18n.t('vehicles.import.devices_desc'), format: I18n.t('vehicles.import.format.string') }
+      router_mode: { title: I18n.t('vehicles.import.router_mode'), desc: I18n.t('vehicles.import.router_mode_desc'), format: "[#{router_modes.join(' | ')}]", type: :string },
+      router_dimension: { title: I18n.t('vehicles.import.router_dimension'), desc: I18n.t('vehicles.import.router_dimension_desc'), format: "[#{router_dimensions.join(' | ')}]", type: :string },
+      router_options: { title: I18n.t('vehicles.import.router_options'), desc: I18n.t('vehicles.import.router_options_desc'), format: I18n.t('vehicles.import.format.json') + " [#{router_options.join(' | ')}]", type: :string },
+      speed_multiplier: { title: I18n.t('vehicles.import.speed_multiplier'), desc: I18n.t('vehicles.import.speed_multiplier_desc'), format: I18n.t('vehicles.import.format.float'), type: :float },
+      color: { title: I18n.t('vehicles.import.color'), desc: I18n.t('vehicles.import.color_desc'), format: I18n.t('vehicles.import.format.string'), type: :string },
+      tags_vehicle: { title: I18n.t('vehicles.import.tags'), desc: I18n.t('vehicles.import.tags_desc'), format: I18n.t('vehicles.import.tags_format'), type: :tags },
+      devices: { title: I18n.t('vehicles.import.devices'), desc: I18n.t('vehicles.import.devices_desc'), format: I18n.t('vehicles.import.format.string'), type: :string }
     ).merge(Hash[@customer.custom_attributes.for_vehicle.map { |ca|
-      ["custom_attributes[#{ca.name}]", { title: "#{I18n.t('vehicles.import.custom_attributes')}[#{ca.name}]", format: I18n.t("vehicles.import.format.#{ca.object_type}")}]
+      ["custom_attributes[#{ca.name}]", { title: "#{I18n.t('vehicles.import.custom_attributes')}[#{ca.name}]", format: I18n.t("vehicles.import.format.#{ca.object_type}"), type: import_type_for_custom_attribute(ca) }]
     }])
   end
 
   def columns_vehicle_usage_set
     {
-      cost_distance: { title: I18n.t('vehicle_usage_sets.import.cost_distance'), desc: I18n.t('vehicle_usage_sets.import.cost_distance_desc'), format: I18n.t('vehicle_usage_sets.import.format.float') },
-      cost_fixed: { title: I18n.t('vehicle_usage_sets.import.cost_fixed'), desc: I18n.t('vehicle_usage_sets.import.cost_fixed_desc'), format: I18n.t('vehicle_usage_sets.import.format.float') },
-      cost_time: { title: I18n.t('vehicle_usage_sets.import.cost_time'), desc: I18n.t('vehicle_usage_sets.import.cost_time_desc'), format: I18n.t('vehicle_usage_sets.import.format.float') },
-      time_window_start: { title: I18n.t('vehicle_usage_sets.import.time_window_start'), desc: I18n.t('vehicle_usage_sets.import.time_window_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      time_window_end: { title: I18n.t('vehicle_usage_sets.import.time_window_end'), desc: I18n.t('vehicle_usage_sets.import.time_window_end_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      store_start_ref: { title: I18n.t('vehicle_usage_sets.import.store_start_ref'), desc: I18n.t('vehicle_usage_sets.import.store_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.string') },
-      store_stop_ref: { title: I18n.t('vehicle_usage_sets.import.store_stop_ref'), desc: I18n.t('vehicle_usage_sets.import.store_stop_desc'), format: I18n.t('vehicle_usage_sets.import.format.string') },
-      rest_start: { title: I18n.t('vehicle_usage_sets.import.rest_start'), desc: I18n.t('vehicle_usage_sets.import.rest_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      rest_stop: { title: I18n.t('vehicle_usage_sets.import.rest_stop'), desc: I18n.t('vehicle_usage_sets.import.rest_stop_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      rest_duration: { title: I18n.t('vehicle_usage_sets.import.rest_duration'), desc: I18n.t('vehicle_usage_sets.import.rest_duration_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      store_rest_ref: { title: I18n.t('vehicle_usage_sets.import.store_rest_ref'), desc: I18n.t('vehicle_usage_sets.import.store_rest_desc'), format: I18n.t('vehicle_usage_sets.import.format.string') },
-      service_time_start: { title: I18n.t('vehicle_usage_sets.import.service_time_start'), desc: I18n.t('vehicle_usage_sets.import.service_time_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      service_time_end: { title: I18n.t('vehicle_usage_sets.import.service_time_end'), desc: I18n.t('vehicle_usage_sets.import.service_time_end_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      work_time: { title: I18n.t('vehicle_usage_sets.import.work_time'), desc: I18n.t('vehicle_usage_sets.import.work_time_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour') },
-      tags: { title: I18n.t('vehicle_usage_sets.import.tags'), desc: I18n.t('vehicle_usage_sets.import.tags_desc'), format: I18n.t('vehicle_usage_sets.import.tags_format') },
-      max_reload: { title: I18n.t('vehicle_usage_sets.import.max_reload'), desc: I18n.t('vehicle_usage_sets.import.max_reload_desc'), format: I18n.t('vehicle_usage_sets.import.format.integer') },
-      store_reloads: { title: I18n.t('vehicle_usage_sets.import.store_reloads'), desc: I18n.t('vehicle_usage_sets.import.store_reloads_desc'), format: I18n.t('vehicle_usage_sets.import.store_reloads_format') },
-      index: { title: I18n.t('vehicle_usage_sets.import.index'), desc: I18n.t('vehicle_usage_sets.import.index_desc'), format: I18n.t('vehicle_usage_sets.import.format.integer') }
+      cost_distance: { title: I18n.t('vehicle_usage_sets.import.cost_distance'), desc: I18n.t('vehicle_usage_sets.import.cost_distance_desc'), format: I18n.t('vehicle_usage_sets.import.format.float'), type: :float },
+      cost_fixed: { title: I18n.t('vehicle_usage_sets.import.cost_fixed'), desc: I18n.t('vehicle_usage_sets.import.cost_fixed_desc'), format: I18n.t('vehicle_usage_sets.import.format.float'), type: :float },
+      cost_time: { title: I18n.t('vehicle_usage_sets.import.cost_time'), desc: I18n.t('vehicle_usage_sets.import.cost_time_desc'), format: I18n.t('vehicle_usage_sets.import.format.float'), type: :float },
+      time_window_start: { title: I18n.t('vehicle_usage_sets.import.time_window_start'), desc: I18n.t('vehicle_usage_sets.import.time_window_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
+      time_window_end: { title: I18n.t('vehicle_usage_sets.import.time_window_end'), desc: I18n.t('vehicle_usage_sets.import.time_window_end_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
+      store_start_ref: { title: I18n.t('vehicle_usage_sets.import.store_start_ref'), desc: I18n.t('vehicle_usage_sets.import.store_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.string'), type: :string },
+      store_stop_ref: { title: I18n.t('vehicle_usage_sets.import.store_stop_ref'), desc: I18n.t('vehicle_usage_sets.import.store_stop_desc'), format: I18n.t('vehicle_usage_sets.import.format.string'), type: :string },
+      rest_start: { title: I18n.t('vehicle_usage_sets.import.rest_start'), desc: I18n.t('vehicle_usage_sets.import.rest_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
+      rest_stop: { title: I18n.t('vehicle_usage_sets.import.rest_stop'), desc: I18n.t('vehicle_usage_sets.import.rest_stop_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
+      rest_duration: { title: I18n.t('vehicle_usage_sets.import.rest_duration'), desc: I18n.t('vehicle_usage_sets.import.rest_duration_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
+      store_rest_ref: { title: I18n.t('vehicle_usage_sets.import.store_rest_ref'), desc: I18n.t('vehicle_usage_sets.import.store_rest_desc'), format: I18n.t('vehicle_usage_sets.import.format.string'), type: :string },
+      service_time_start: { title: I18n.t('vehicle_usage_sets.import.service_time_start'), desc: I18n.t('vehicle_usage_sets.import.service_time_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
+      service_time_end: { title: I18n.t('vehicle_usage_sets.import.service_time_end'), desc: I18n.t('vehicle_usage_sets.import.service_time_end_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
+      work_time: { title: I18n.t('vehicle_usage_sets.import.work_time'), desc: I18n.t('vehicle_usage_sets.import.work_time_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
+      tags: { title: I18n.t('vehicle_usage_sets.import.tags'), desc: I18n.t('vehicle_usage_sets.import.tags_desc'), format: I18n.t('vehicle_usage_sets.import.tags_format'), type: :tags },
+      max_reload: { title: I18n.t('vehicle_usage_sets.import.max_reload'), desc: I18n.t('vehicle_usage_sets.import.max_reload_desc'), format: I18n.t('vehicle_usage_sets.import.format.integer'), type: :integer },
+      store_reloads: { title: I18n.t('vehicle_usage_sets.import.store_reloads'), desc: I18n.t('vehicle_usage_sets.import.store_reloads_desc'), format: I18n.t('vehicle_usage_sets.import.store_reloads_format'), type: :string },
+      index: { title: I18n.t('vehicle_usage_sets.import.index'), desc: I18n.t('vehicle_usage_sets.import.index_desc'), format: I18n.t('vehicle_usage_sets.import.format.integer'), type: :integer }
     }
   end
 
