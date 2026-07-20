@@ -899,6 +899,7 @@ fr:
       csv: 'Fichier invalide, lignes [%{s}]'
       json: Fichier invalide
       tomtom: 'Données TomTom invalides, enregistrement %{s}'
+    invalid_typed_value: 'valeur « %{value} » invalide pour la colonne %{column} (type : %{type}).'
     template_csv: Modèle import tableur standard
     template_excel: Modèle import tableur
   admin:
@@ -1772,6 +1773,7 @@ fr:
       missing_name: « nom » manquant.
       missing_location: « ville / code postal » ou « lat / lng » manquant.
       invalid_numeric_value: 'valeur numérique « %{value} » invalide.'
+      invalid_typed_value: 'valeur « %{value} » invalide pour la colonne %{column} (type : %{type}).'
       invalid_lat: 'La latitude « %{value} » est invalide (attendu entre -90 et 90, vérifiez le séparateur décimal).'
       invalid_lng: 'La longitude « %{value} » est invalide (attendu entre -180 et 180, vérifiez le séparateur décimal).'
       invalid_stop: Le type d'arrêt n'est pas valide
@@ -3044,6 +3046,7 @@ fr:
         json: json
         integer: nombre
         float: nombre décimal
+        boolean: vrai/faux
         hour: 'HH:MM'
         second: 'HH:MM:SS'
         yes_no: oui/non

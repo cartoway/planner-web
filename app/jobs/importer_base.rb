@@ -16,6 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 require 'csv'
+require 'import_row_caster'
 
 class ImportBaseError < StandardError; end
 class ImportBulkError < StandardError; end
@@ -59,6 +60,9 @@ class ImporterBase
           next if row.nil? || row.except(:lat, :lng).all?{ |_k, v| empty_value?(v) } # Skip empty line
 
           begin
+            # Cast CSV strings using column :type (API/JSON values already coerced by Grape)
+            row = cast_import_row!(row) if respond_to?(:columns, true)
+
             if (ref = uniq_ref(row))
               if refs.key?(ref)
                 raise ImportInvalidRef.new(I18n.t("destinations.import_file.#{ref.is_a?(Array) && ref[0].nil? ? 'refs_visit_duplicate' : 'refs_duplicate'}", refs: ref.is_a?(Array) ? ref.compact.join(' | ') : ref))
@@ -103,6 +107,17 @@ class ImporterBase
   end
 
   private
+
+  def cast_import_row!(row)
+    return row unless respond_to?(:columns)
+
+    ImportRowCaster.cast_row!(row, columns)
+  end
+
+  # Custom attribute "array" stores a single selected option as string
+  def import_type_for_custom_attribute(custom_attribute)
+    custom_attribute.object_type == 'array' ? :string : custom_attribute.object_type.to_sym
+  end
 
   def need_geocode? location
     location.validate # to nilify blanks
