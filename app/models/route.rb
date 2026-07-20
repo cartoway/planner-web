@@ -743,10 +743,15 @@ class Route < ApplicationRecord
 
   def add_objects(objects, recompute = true, ignore_errors = false)
     Stop.transaction do
-      if objects.any? { |stop| rest_stop_import?(stop) }
+      import_has_rest = objects.any? { |stop| rest_stop_import?(stop) }
+      # Auto rest from init_stops is created at index 1. When the import does not
+      # provide a rest, remove it and re-append at the end after imported stops.
+      restore_auto_rest = !import_has_rest && stops.any? { |stop| stop.is_a?(StopRest) }
+      if import_has_rest || restore_auto_rest
         Stop.where(route_id: id, type: StopRest.name).delete_all
         association(:stops).reset
       end
+
       next_index = stops.size
       collected_stops = objects.filter_map { |stop|
         object, stop_attributes = stop
@@ -769,6 +774,12 @@ class Route < ApplicationRecord
           stops.new(type: StopRest.name, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         end
       }
+
+      if restore_auto_rest
+        rest_index = (collected_stops.map(&:index).max || 0) + 1
+        collected_stops << stops.new(type: StopRest.name, active: true, index: rest_index)
+      end
+
       Stop.import(collected_stops) if collected_stops.any?
       self.outdated = true
 

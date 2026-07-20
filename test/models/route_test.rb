@@ -241,6 +241,32 @@ class RouteTest < ActiveSupport::TestCase
     end
   end
 
+  test 'add_objects places auto rest at end when rest is not imported' do
+    route = routes(:route_one_one)
+    route.set_objects([[visits(:visit_two), { active: true }]], false)
+    route.save!
+    route.stops.reload
+
+    assert_equal visits(:visit_two), route.stops.first.visit
+    assert_kind_of StopRest, route.stops.last
+    assert_equal route.stops.size, route.stops.last.index
+  end
+
+  test 'add_objects keeps imported rest at provided index' do
+    route = routes(:route_one_one)
+    route.set_objects([
+      [visits(:visit_two), { active: true, index: 1 }],
+      [:rest, { active: true, index: 2 }],
+      [visits(:visit_one), { active: true, index: 3 }]
+    ], false)
+    route.save!
+    route.stops.reload
+
+    assert_equal visits(:visit_two), route.stops[0].visit
+    assert_kind_of StopRest, route.stops[1]
+    assert_equal visits(:visit_one), route.stops[2].visit
+  end
+
   test 'should add' do
     route = routes(:route_zero_one)
     route.add(visits(:visit_two))
