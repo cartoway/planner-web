@@ -436,6 +436,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
               popupModule.previousMarker.closePopup();
             }
 
+            e.layer._popupFromHover = true;
             popupModule.createPopupForLayer(e.layer, this.map);
           } else if (e.layer instanceof L.Path) {
             e.layer.setStyle(this._pathStyle(e.layer, 'hover'));
@@ -468,6 +469,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
             });
           }
 
+          e.layer._popupFromHover = false;
           popupModule.createPopupForLayer(e.layer, this.map);
           this.clickPopupId = e.layer._leaflet_id;
 
@@ -528,6 +530,13 @@ export const RoutesLayer = L.FeatureGroup.extend({
         return false;
       }.bind(this))
       .on('popupopen', function(e) {
+        var source = e.popup && e.popup._source;
+        // Do not recenter the map when the popup was opened by marker hover
+        if (source && source._popupFromHover) {
+          source._popupFromHover = false;
+          return;
+        }
+
         // After layout, recenter on the stop if the popup overflows the map viewport
         var popup = e.popup;
         requestAnimationFrame(function() {
@@ -784,6 +793,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
       this.map.setView(this.markerStores[options.storeId].getLatLng(), this.map.getZoom(), {
         reset: true
       });
+      this.markerStores[options.storeId]._popupFromHover = false;
       popupModule.createPopupForLayer(this.markerStores[options.storeId], this.map, {
         routeId: options.routeId,
         depotType: options.depotType
@@ -896,6 +906,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
       marker.addTo(this.clustersByRoute[routeId]);
     }
 
+    marker._popupFromHover = false;
     if (this.map.getBounds().contains(marker.getLatLng()) && marker._map) {
       // _map is actually undefined or null (markerCluster set it on clustered markers)
       popupModule.createPopupForLayer(marker, this.map);
