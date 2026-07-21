@@ -324,8 +324,8 @@ class RouteSidebarSerializer
     base.merge(
       visits: true,
       visit_id: visit&.id,
-      destination_duration: destination&.default_duration_time_with_seconds,
-      visit_duration: visit&.default_duration_time_with_seconds,
+      destination_duration: stop.destination_duration_time_with_seconds,
+      visit_duration: stop.duration_time_with_seconds,
       index_visit: destination_visit_index(destination, visit),
       tags_present: destination_tags_present(visit),
       visit_tags_present: visit_tags_present(visit),
@@ -337,7 +337,7 @@ class RouteSidebarSerializer
       destination_name: destination&.name,
       destination_ref: destination&.ref.presence,
       visit_ref: visit&.ref.presence,
-      duration: visit&.default_duration,
+      duration: stop.duration,
       quantities: visit_quantities(visit)
     )
   end

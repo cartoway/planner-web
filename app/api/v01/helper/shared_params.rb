@@ -287,8 +287,6 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     end
     optional :speed_multiplicator, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Deprecated, use speed_multiplier instead.' }
     optional :speed_multiplier, type: Float, coerce_with: CoerceFloatString
-    optional :visit_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient applied to visit durations for this vehicle (default: 1)' }
-    optional :destination_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient applied to destination durations for this vehicle (default: 1)' }
     optional :max_distance, type: Integer, documentation: { desc: 'Maximum achievable distance in meters' }
     optional :max_ride_distance, type: Integer, documentation: { desc: 'Maximum riding distance between two stops within a route in meters' }
     optional :max_ride_duration, type: Integer, documentation: { desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -308,6 +306,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :visit_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient applied to visit durations for this vehicle usage (falls back to vehicle usage set, then 1)' }
+    optional :destination_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient applied to destination durations for this vehicle usage (falls back to vehicle usage set, then 1)' }
     optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', param_type: 'form', example: '1,2,ref:vip' }
 
     optional :store_start_id, type: Integer, documentation: { type: Integer }
@@ -339,6 +339,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :max_reload, type: Integer, documentation: { type: Integer, desc: 'Maximum number of reloads per route' }
     optional :max_ride_distance, type: Integer, documentation: { type: Integer, desc: 'Maximum riding distance between two stops within a route in meters' }
     optional :max_ride_duration, type: Integer, documentation: { type: 'string', desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :visit_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Default coefficient applied to visit durations for vehicle usages in this set (default: 1)' }
+    optional :destination_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Default coefficient applied to destination durations for vehicle usages in this set (default: 1)' }
     # Deprecated fields
     optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: 'Deprecated, use `visit_duration` instead' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :close, type: Integer, documentation: { hidden: true, type: 'string', desc: 'Deprecated, use `time_window_end` instead.' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }

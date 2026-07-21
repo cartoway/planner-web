@@ -197,6 +197,15 @@ const vehicle_usage_sets_edit = function(params) {
     closeOnSelect: false
   });
 
+  $('form.number-to-percentage').submit(function(e) {
+    $.each($(e.target).find('input[type=\'number\'].number-to-percentage'), function(i, element) {
+      var value = $(element).val() ? Number($(element).val()) / 100 : null;
+      var name = $(element).data('param-path') || ('vehicle_usage_set[' + $(element).attr('name') + ']');
+      $($(document.createElement('input')).attr('type', 'hidden').attr('name', name).val(value)).insertAfter($(element));
+    });
+    return true;
+  });
+
   $('#vehicle_usage_set_open, #vehicle_usage_set_close, #vehicle_usage_set_rest_start, #vehicle_usage_set_rest_stop, #vehicle_usage_set_rest_duration, #vehicle_usage_set_service_time_start, #vehicle_usage_set_service_time_end, #vehicle_usage_set_work_time, #vehicle_usage_set_max_ride_duration').timeEntry({
     show24Hours: true,
     spinnerImage: '',

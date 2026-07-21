@@ -65,20 +65,40 @@ class StopVisit < Stop
     visit.destination
   end
 
-  def duration
+  # Raw visit duration
+  def base_duration
     visit.duration || visit.customer.visit_duration || 0
   end
 
-  def duration_time_with_seconds
-    visit.duration_time_with_seconds || visit.customer.visit_duration_time_with_seconds || 0
+  # Effective visit duration (base × vehicle coef).
+  def duration
+    apply_duration_coef(base_duration, visit_duration_coef)
   end
 
-  def destination_duration
+  def duration_time_with_seconds
+    format_duration_time_with_seconds(duration)
+  end
+
+  # Raw destination duration
+  def base_destination_duration
     visit.destination.duration || visit.customer.destination_duration || 0
   end
 
+  # Effective destination duration (base × vehicle coef).
+  def destination_duration
+    apply_duration_coef(base_destination_duration, destination_duration_coef)
+  end
+
   def destination_duration_time_with_seconds
-    visit.destination.duration_time_with_seconds || visit.customer.destination_duration_time_with_seconds || 0
+    format_duration_time_with_seconds(destination_duration)
+  end
+
+  def visit_duration_coef
+    route&.vehicle_usage&.default_visit_duration_coef || 1
+  end
+
+  def destination_duration_coef
+    route&.vehicle_usage&.default_destination_duration_coef || 1
   end
 
   def base_id
@@ -95,5 +115,19 @@ class StopVisit < Stop
 
   def optim_type
     'service'
+  end
+
+  private
+
+  def apply_duration_coef(seconds, coef)
+    return seconds if seconds.zero? || coef.nil? || coef == 1
+
+    (seconds * coef).round
+  end
+
+  def format_duration_time_with_seconds(seconds)
+    return 0 if seconds.zero?
+
+    Time.at(seconds).utc.strftime('%H:%M:%S')
   end
 end

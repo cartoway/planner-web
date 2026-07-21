@@ -36,6 +36,8 @@ class V01::Entities::VehicleUsage < Grape::Entity
   expose(:rest_duration, documentation: { type: DateTime }) { |m| m.rest_duration_absolute_time_with_seconds }
   expose(:store_rest_id, documentation: { type: Integer })
   expose(:active, documentation: { type: 'Boolean' })
+  expose(:visit_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to visit durations (falls back to vehicle usage set, then 1)' })
+  expose(:destination_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to destination durations (falls back to vehicle usage set, then 1)' })
   expose(:tag_ids, documentation: { type: Integer, is_array: true })
 
   # Deprecated fields

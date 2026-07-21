@@ -1,4 +1,4 @@
-= bootstrap_form_for @vehicle_usage_set, layout: :horizontal do |f|
+= bootstrap_form_for @vehicle_usage_set, layout: :horizontal, html: { class: 'number-to-percentage form-horizontal' } do |f|
   = render 'shared/error_messages', model: @vehicle_usage_set
   = f.text_field :name, required: true
   #vehicle_usage_set_store_input.row.form-group
@@ -136,6 +136,24 @@
           = current_user.prefered_unit == 'mi' ? t('all.unit.mile') : t('all.unit.kms')
       %p.help-block
         = t 'vehicle_usages.form.cost.help'
+  .row
+    %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_set_visit_duration_coef"}
+      = t('activerecord.attributes.vehicle_usage_set.visit_duration_coef')
+    .col-md-offset-2.col-md-8.field.input-append
+      .input-group
+        = number_field_tag :visit_duration_coef, (@vehicle_usage_set.visit_duration_coef ? (@vehicle_usage_set.visit_duration_coef * 100).to_i : nil), { min: 10, max: 500, placeholder: t('vehicle_usage_sets.form.visit_duration_coef.default', n: 100), class: 'form-control number-to-percentage', data: { param_path: 'vehicle_usage_set[visit_duration_coef]' } }
+        %span.input-group-addon %
+      %p.help-block
+        = t('vehicle_usage_sets.form.visit_duration_coef.help')
+  .row
+    %label.col-md-offset-2.col-md-8.field{for: "vehicle_usage_set_destination_duration_coef"}
+      = t('activerecord.attributes.vehicle_usage_set.destination_duration_coef')
+    .col-md-offset-2.col-md-8.field.input-append
+      .input-group
+        = number_field_tag :destination_duration_coef, (@vehicle_usage_set.destination_duration_coef ? (@vehicle_usage_set.destination_duration_coef * 100).to_i : nil), { min: 10, max: 500, placeholder: t('vehicle_usage_sets.form.destination_duration_coef.default', n: 100), class: 'form-control number-to-percentage', data: { param_path: 'vehicle_usage_set[destination_duration_coef]' } }
+        %span.input-group-addon %
+      %p.help-block
+        = t('vehicle_usage_sets.form.destination_duration_coef.help')
   #vehicle_usage_vehicle_max_distance.row.form-group
     %label.sr-only{for: "vehicle_usage_vehicle_max_distance"}= t 'activerecord.attributes.vehicle.max_distance'
     %label.col-md-offset-2.col-md-8.field= t 'activerecord.attributes.vehicle.max_distance'
