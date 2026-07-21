@@ -12,6 +12,32 @@ class VehicleUsageTest < ActiveSupport::TestCase
     vehicle_usage.save!
   end
 
+  test 'should not save invalid visit_duration_coef' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.visit_duration_coef = 0
+    assert_not vehicle_usage.save
+    vehicle_usage.visit_duration_coef = 6
+    assert_not vehicle_usage.save
+  end
+
+  test 'default visit and destination duration coefs fall back to set then 1' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    set = vehicle_usage.vehicle_usage_set
+    set.update!(visit_duration_coef: nil, destination_duration_coef: nil)
+    vehicle_usage.update!(visit_duration_coef: nil, destination_duration_coef: nil)
+
+    assert_equal 1, vehicle_usage.default_visit_duration_coef
+    assert_equal 1, vehicle_usage.default_destination_duration_coef
+
+    set.update!(visit_duration_coef: 1.25, destination_duration_coef: 0.8)
+    assert_equal 1.25, vehicle_usage.default_visit_duration_coef
+    assert_equal 0.8, vehicle_usage.default_destination_duration_coef
+
+    vehicle_usage.update!(visit_duration_coef: 2, destination_duration_coef: 0.5)
+    assert_equal 2, vehicle_usage.default_visit_duration_coef
+    assert_equal 0.5, vehicle_usage.default_destination_duration_coef
+  end
+
   test 'orders vehicle usages by index within vehicle usage set' do
     vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
     vehicle_usage_set.reorder_vehicle_usages!([

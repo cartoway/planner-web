@@ -54,9 +54,8 @@ when StopVisit
   if stop.route.last_sent_to && stop.status && stop.eta
     (json.eta_formated l(stop.eta, format: :hour_minute)) if stop.eta
   end
-  duration = visit.default_duration_time_with_seconds
-  destination_duration =
-    visit.destination.default_duration_time_with_seconds
+  duration = stop.duration_time_with_seconds
+  destination_duration = stop.destination_duration_time_with_seconds
 
   json.vehicle_usage_id stop.route.vehicle_usage_id
   if @show_isoline
