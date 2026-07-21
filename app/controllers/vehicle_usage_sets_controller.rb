@@ -190,6 +190,8 @@ class VehicleUsageSetsController < ApplicationController
                                               :cost_distance,
                                               :cost_fixed,
                                               :cost_time,
+                                              :visit_duration_coef,
+                                              :destination_duration_coef,
                                               :time_window_start,
                                               :time_window_end,
                                               :store_start_id,

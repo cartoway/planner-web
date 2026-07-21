@@ -29,11 +29,12 @@ const vehicle_usages_form = function(params) {
     closeOnSelect: false,
   });
 
-  /* Speed Multiplier */
+  /* Speed Multiplier / duration coefficients */
   $('form.number-to-percentage').submit(function(e) {
     $.each($(e.target).find('input[type=\'number\'].number-to-percentage'), function(i, element) {
       var value = $(element).val() ? Number($(element).val()) / 100 : null;
-      $($(document.createElement('input')).attr('type', 'hidden').attr('name', 'vehicle_usage[vehicle][' + $(element).attr('name') + ']').val(value)).insertAfter($(element));
+      var name = $(element).data('param-path') || ('vehicle_usage[vehicle][' + $(element).attr('name') + ']');
+      $($(document.createElement('input')).attr('type', 'hidden').attr('name', name).val(value)).insertAfter($(element));
     });
     return true;
   });

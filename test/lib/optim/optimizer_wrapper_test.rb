@@ -437,8 +437,7 @@ class OptimizerWrapperTest < ActionController::TestCase
 
   test 'maps visit and destination duration coefs to optimizer coef_service and coef_setup' do
     route = @planning.routes.find(&:vehicle_usage?)
-    vehicle = route.vehicle_usage.vehicle
-    vehicle.update!(visit_duration_coef: 1.5, destination_duration_coef: 0.75)
+    route.vehicle_usage.update!(visit_duration_coef: 1.5, destination_duration_coef: 0.75)
 
     vrp = @optim.build_vrp(@planning, @planning.routes)
     vrp_vehicle = vrp_vehicle_for(route, vrp)
@@ -447,9 +446,29 @@ class OptimizerWrapperTest < ActionController::TestCase
     assert_equal 0.75, vrp_vehicle[:coef_setup]
   end
 
+  test 'sends raw service durations to optimizer when vehicle duration coefs are set' do
+    route = @planning.routes.find(&:vehicle_usage?)
+    stop = route.stops.find{ |s| s.is_a?(StopVisit) && s.position? }
+    assert stop, 'fixture should include a StopVisit with position'
+
+    stop.visit.destination.update!(duration: 120)
+    route.vehicle_usage.update!(visit_duration_coef: 2, destination_duration_coef: 0.5)
+    stop.reload
+
+    assert_equal stop.base_duration * 2, stop.duration
+    assert_equal 60, stop.destination_duration
+
+    vrp = @optim.build_vrp(@planning, @planning.routes)
+    service = vrp[:services].find{ |s| s[:id] == "s#{stop.id}" }
+
+    assert_equal stop.base_duration, service[:activity][:duration]
+    assert_equal stop.base_destination_duration, service[:activity][:setup_duration]
+  end
+
   test 'defaults visit and destination duration coefs to 1 when unset' do
     route = @planning.routes.find(&:vehicle_usage?)
-    route.vehicle_usage.vehicle.update!(visit_duration_coef: nil, destination_duration_coef: nil)
+    route.vehicle_usage.update!(visit_duration_coef: nil, destination_duration_coef: nil)
+    route.vehicle_usage.vehicle_usage_set.update!(visit_duration_coef: nil, destination_duration_coef: nil)
 
     vrp = @optim.build_vrp(@planning, @planning.routes)
     vrp_vehicle = vrp_vehicle_for(route, vrp)

@@ -21,6 +21,18 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     vehicle_usage_set.save!
   end
 
+  test 'default visit and destination duration coefs fall back to 1' do
+    assert_nil @vehicle_usage_set.visit_duration_coef
+    assert_nil @vehicle_usage_set.destination_duration_coef
+    assert_equal 1, @vehicle_usage_set.default_visit_duration_coef
+    assert_equal 1, @vehicle_usage_set.default_destination_duration_coef
+
+    @vehicle_usage_set.visit_duration_coef = 1.25
+    @vehicle_usage_set.destination_duration_coef = 0.8
+    assert_equal 1.25, @vehicle_usage_set.default_visit_duration_coef
+    assert_equal 0.8, @vehicle_usage_set.default_destination_duration_coef
+  end
+
   test 'should validate time_window_start and time_window_end time exceeding one day' do
     vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
     vehicle_usage_set.update time_window_start: '08:00', time_window_end: '32:00'
