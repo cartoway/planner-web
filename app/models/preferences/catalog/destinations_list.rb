@@ -23,7 +23,9 @@ module Preferences
     module DestinationsList
       COLUMN_IDS = %w[name street postalcode city ref geocoding comment phone_number tags visit_ref visit_tags].freeze
       VISIT_SCOPED_COLUMN_IDS = %w[visit_ref visit_tags].freeze
-      DEFAULT_ACTIVE = %w[name street postalcode city ref geocoding visit_ref].freeze
+      DEFAULT_ACTIVE = %w[name street postalcode city geocoding].freeze
+      # Cap simultaneous visible columns so the sidebar table stays usable with many deliverable units.
+      MAX_ACTIVE = 8
       DELIVERABLE_UNIT_COLUMN_PREFIX = 'deliverable_unit_'
       LEGACY_COLUMN_EXPANSIONS = {
         'address' => %w[street postalcode city],
@@ -87,7 +89,9 @@ module Preferences
 
       def default_active_for(customer)
         static = DEFAULT_ACTIVE.select { |id| column_available?(id, customer) }
-        static + deliverable_unit_column_ids(customer)
+        first_unit_column = deliverable_unit_column_ids(customer).first
+        active = first_unit_column ? static + [first_unit_column] : static
+        active.take(MAX_ACTIVE)
       end
 
       def default_zone(customer = nil)
@@ -108,16 +112,19 @@ module Preferences
         active.uniq!
         hidden_src.uniq!
         hidden_src -= active
-        if active.empty?
+        active = active.take(MAX_ACTIVE)
+        # Uninitialized zone → defaults. Explicit "deactivate all" keeps active empty.
+        if active.empty? && hidden_src.empty?
           active = Core.filter_order(default_active, allowed)
         end
         if customer
+          # Newly available deliverable-unit columns stay hidden until the user enables them
           deliverable_unit_column_ids(customer).each do |id|
             next if active.include?(id) || hidden_src.include?(id)
 
-            active << id
+            hidden_src << id
           end
-          active = Core.filter_order(active, allowed)
+          active = Core.filter_order(active, allowed).take(MAX_ACTIVE)
         end
         missing_hidden = allowed.reject { |id| active.include?(id) }
         hidden_ordered = (hidden_src & missing_hidden) + (missing_hidden - hidden_src).sort_by { |id| allowed.index(id) }

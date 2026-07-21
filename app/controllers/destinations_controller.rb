@@ -92,7 +92,8 @@ class DestinationsController < ApplicationController
     end
 
     load_destinations_index_page
-    render partial: 'v2/destinations/list_frame', layout: false
+    # Refresh table only — keep toolbar + column dropdown mounted (scroll position preserved).
+    render partial: 'v2/destinations/list_body', layout: false
   end
 
   def show

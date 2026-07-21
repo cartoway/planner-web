@@ -366,9 +366,12 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_map_config_json_key('can_destroy', true)
     assert_select 'turbo-frame#destinations_list .destinations-toggle-selection', 1
     assert_select 'turbo-frame#destinations_list .destinations-bulk-delete', 1
+    assert_select 'turbo-frame#destinations_list .destinations-bulk-delete[data-confirm-click-ready-label-value*="fa-check"]', 1
     assert_select 'turbo-frame#destinations_list tr.destination input[type=checkbox][name^="destinations"]',
                   assigns(:destinations).size
     assert_select 'turbo-frame#destinations_list button.destinations-row-delete',
+                  assigns(:destinations).size
+    assert_select 'turbo-frame#destinations_list button.destinations-row-delete[data-confirm-click-ready-label-value*="fa-check"]',
                   assigns(:destinations).size
   end
 
@@ -391,13 +394,68 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_operator ids.index(destination_a.id), :<, ids.index(destination_b.id)
   end
 
-  test 'list_columns persists user column preferences and refreshes list' do
+  test 'list_columns persists user column preferences and refreshes list body' do
+    @request.headers['Turbo-Frame'] = 'destinations_list_body'
     patch :list_columns, params: { active: %w[name street] }
     assert_response :success
     assert_equal %w[name street], users(:user_one).reload.destinations_list_active_column_ids
-    assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.name')
-    assert_select 'turbo-frame#destinations_list thead th', text: I18n.t('display_ui.destinations_list_columns.geocoding'), count: 0
-    assert_select '#destinations-list-col-geocoding', 1
+    assert_select 'turbo-frame#destinations_list_body thead th', text: I18n.t('display_ui.destinations_list_columns.name')
+    assert_select 'turbo-frame#destinations_list_body thead th', text: I18n.t('display_ui.destinations_list_columns.geocoding'), count: 0
+    assert_select '.destinations-list-column-selector', count: 0
+  end
+
+  test 'list_columns can deactivate all columns' do
+    allowed = ::Preferences::Catalog.destinations_list_allowed_column_ids(users(:user_one).customer)
+    @request.headers['Turbo-Frame'] = 'destinations_list_body'
+    patch :list_columns, params: { active: [], hidden: allowed }
+    assert_response :success
+    assert_empty users(:user_one).reload.destinations_list_active_column_ids
+    assert_select 'turbo-frame#destinations_list_body thead th.destinations-list-col', count: 0
+  end
+
+  test 'list_columns can reset to default columns' do
+    customer = users(:user_one).customer
+    defaults = ::Preferences::Catalog::DestinationsList.default_active_for(customer)
+    @request.headers['Turbo-Frame'] = 'destinations_list_body'
+    patch :list_columns, params: { active: %w[name comment] }
+    assert_response :success
+    assert_equal %w[name comment], users(:user_one).reload.destinations_list_active_column_ids
+
+    patch :list_columns, params: { active: defaults }
+    assert_response :success
+    assert_equal defaults, users(:user_one).reload.destinations_list_active_column_ids
+    assert_select 'turbo-frame#destinations_list_body thead th.destinations-list-col', count: defaults.size
+  end
+
+  test 'list_columns refreshes table without replacing toolbar dropdown' do
+    @request.headers['Turbo-Frame'] = 'destinations_list_body'
+    patch :list_columns, params: { active: %w[name city] }
+    assert_response :success
+    assert_select 'turbo-frame#destinations_list_body', 1
+    assert_select 'turbo-frame#destinations_list', count: 0
+    assert_select '.destinations-list-column-selector', count: 0
+    assert_select '.destinations-bulk-delete', count: 0
+    assert_select 'turbo-frame#destinations_list_body tbody', 1
+  end
+
+  test 'list_columns selector mirrors route selector structure' do
+    get :index
+    assert_response :success
+    assert_select '.destinations-list-column-selector.searchable-checklist-dropdown', 1
+    assert_select '.searchable-checklist-dropdown-search input[type=search]', 1
+    assert_select '.searchable-checklist-dropdown-results', 1
+    assert_select '.searchable-checklist-dropdown-option--global button[data-action*="resetDefaults"]',
+                  text: /#{Regexp.escape(I18n.t('destinations.index.columns_reset_defaults'))}/
+    assert_select 'button[data-action*="deactivateAll"]', count: 0
+    assert_select '.searchable-checklist-dropdown-option .searchable-checklist-dropdown-checkbox[name="active[]"]', minimum: 1
+    assert_select '.searchable-checklist-dropdown-option .form-check', count: 0
+    assert_select '.text-muted', text: I18n.t('destinations.index.columns_help', max: Preferences::Catalog::DESTINATIONS_LIST_MAX_ACTIVE), count: 0
+    assert_select 'button[data-action*="reverseSelection"]', count: 0
+    assert_select 'button[data-action="click->v2--destinations-list-columns#activateAll"]', count: 0
+    assert_select 'form[data-turbo-frame="destinations_list_body"]', 1
+    assert_select 'turbo-frame#destinations_list turbo-frame#destinations_list_body', 1
+    assert_select '.searchable-checklist-dropdown-toggle[data-bs-auto-close="outside"]', 1
+    assert_select '[data-controller*="v2--searchable-checklist-dropdown"][data-controller*="v2--destinations-list-columns"]', 1
   end
 
   test 'should filter destinations by key value search' do

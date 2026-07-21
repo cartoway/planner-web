@@ -5,9 +5,211 @@
 
 // Compact checkbox column for multiple selection
 .destinations-selection-col {
-  width: 2rem;
+  width: 3.25rem;
   text-align: center;
   vertical-align: middle !important;
+}
+
+@mixin destinations-list-col-width($width) {
+  width: $width;
+}
+
+// Fixed column widths + ellipsis.
+// width:0 + table-layout:fixed sizes the table to the sum of column widths and avoids a
+// max-content ↔ .table{width:100%} loop that expands the sidebar to ~1e6px.
+.destinations-list-table.table {
+  table-layout: fixed;
+  width: 0;
+  max-width: none;
+  margin-bottom: 0;
+
+  th,
+  td {
+    vertical-align: middle;
+  }
+
+  .destinations-list-col {
+    box-sizing: border-box;
+    overflow: hidden;
+    @include destinations-list-col-width(7rem);
+  }
+
+  .destinations-list-col--name { @include destinations-list-col-width(10rem); }
+  .destinations-list-col--street { @include destinations-list-col-width(16rem); }
+  .destinations-list-col--postalcode { @include destinations-list-col-width(7.5rem); }
+  .destinations-list-col--city { @include destinations-list-col-width(10rem); }
+  .destinations-list-col--ref { @include destinations-list-col-width(9.5rem); }
+  .destinations-list-col--geocoding { @include destinations-list-col-width(14rem); }
+  .destinations-list-col--comment { @include destinations-list-col-width(9rem); }
+  .destinations-list-col--phone-number { @include destinations-list-col-width(7.5rem); }
+  .destinations-list-col--tags { @include destinations-list-col-width(7rem); }
+  .destinations-list-col--visit-ref { @include destinations-list-col-width(9.5rem); }
+  .destinations-list-col--visit-tags { @include destinations-list-col-width(11rem); }
+  .destinations-list-col--deliverable-unit { @include destinations-list-col-width(10rem); }
+
+  // Selection / actions: wide enough for controls. Actions stays left-aligned with extra
+  // padding so row striping continues past the buttons (and clears the vertical scrollbar).
+  .destinations-selection-col,
+  .destinations-list-actions-col {
+    box-sizing: border-box;
+    overflow: visible;
+    white-space: nowrap;
+  }
+
+  .destinations-selection-col {
+    @include destinations-list-col-width(3.25rem);
+    padding-left: 0.35rem;
+    padding-right: 0.15rem;
+  }
+
+  .destinations-list-actions-col {
+    @include destinations-list-col-width(8rem);
+    padding-left: 0.25rem;
+    padding-right: 1.5rem;
+    text-align: left;
+  }
+
+  .destinations-list-cell-content,
+  .destinations-list-header-label {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .destinations-list-cell-content a {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  th.destinations-list-sortable-col {
+    overflow: hidden;
+  }
+
+  .destinations-list-sort-link {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    &.is-active {
+      font-weight: 600;
+    }
+
+    .destinations-list-header-label {
+      flex: 1 1 auto;
+    }
+
+    .destinations-list-sort-icon {
+      flex: 0 0 auto;
+      opacity: 0.45;
+      font-size: 0.75rem;
+    }
+
+    &.is-active .destinations-list-sort-icon {
+      opacity: 1;
+    }
+  }
+
+  .destinations-list-col--geocoding .destinations-list-cell-content {
+    white-space: normal;
+  }
+
+  .destinations-list-geocoding-cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.25rem 0.35rem;
+    max-width: 100%;
+    min-width: 0;
+
+    .geocoding_level {
+      flex: 0 0 auto;
+      width: 1.25rem;
+      padding-top: 0.15rem;
+    }
+
+    .destinations-list-geocoding-progress {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 1.25rem;
+      margin-bottom: 0;
+
+      .progress-bar span {
+        font-size: 0.7rem;
+        line-height: 1.25rem;
+      }
+    }
+
+    .destinations-list-geocoding-result {
+      flex: 1 1 100%;
+      font-size: 0.75rem;
+      line-height: 1.2;
+      color: var(--bs-secondary-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    .no_position {
+      color: var(--bs-danger);
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+  }
+
+  .destinations-list-deliverable-unit-qty {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.8125rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .destinations-list-tag-badges {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    overflow: hidden;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .destinations-list-tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    .fa {
+      flex-shrink: 0;
+    }
+  }
 }
 
 // Filter badges (active search tokens)
@@ -222,6 +424,16 @@
       > .d-flex {
         flex-shrink: 0;
       }
+
+      // Nested body frame (table only) — keep the flex height chain to #destination_box.
+      turbo-frame#destinations_list_body {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        min-width: 0;
+        overflow: hidden;
+      }
     }
 
     #destination_box.destinations-list-scroll {
@@ -234,91 +446,22 @@
       overflow-x: auto;
       // Keep wheel / scrollIntoView chain inside the list; avoids moving .main-primary or the window.
       overscroll-behavior: contain;
-      padding: 0 1rem 1rem;
+      // Hide the scrollbar chrome so row striping reaches the sidebar edge (wheel/touch still scroll).
+      // A classic scrollbar would leave an unstriped strip along the panel edge.
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 0 0 1rem;
+
+      &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
 
       .table-responsive {
-        width: 100%;
+        width: max-content;
         max-width: 100%;
         overflow-x: auto;
         overflow-y: visible;
-      }
-
-      .table {
-        width: auto;
-        margin-bottom: 0;
-      }
-
-      .destinations-list-table {
-        table-layout: fixed;
-      }
-
-      .destinations-list-col {
-        overflow: hidden;
-      }
-
-      .destinations-list-cell-content {
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        min-width: 0;
-      }
-
-      .destinations-list-col--name { width: 7rem; }
-      .destinations-list-col--street { width: 8rem; }
-      .destinations-list-col--postalcode { width: 4.5rem; }
-      .destinations-list-col--city { width: 6rem; }
-      .destinations-list-col--ref { width: 4.5rem; }
-      .destinations-list-col--geocoding { width: 7.5rem; }
-      .destinations-list-col--comment { width: 7rem; }
-      .destinations-list-col--phone-number { width: 6.5rem; }
-      .destinations-list-col--tags { width: 7rem; }
-      .destinations-list-col--visit-ref { width: 4.5rem; }
-      .destinations-list-col--visit-tags { width: 7rem; }
-      .destinations-list-col--deliverable-unit { width: 5rem; }
-
-      .destinations-list-col--geocoding .destinations-list-cell-content {
-        white-space: normal;
-      }
-
-      .destinations-list-actions-col {
-        width: 4.75rem;
-      }
-
-      .table th,
-      .table td {
-        vertical-align: middle;
-      }
-
-      th.destinations-list-sortable-col {
-        white-space: nowrap;
-      }
-
-      .destinations-list-sort-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        color: inherit;
-        text-decoration: none;
-
-        &:hover,
-        &:focus {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        &.is-active {
-          font-weight: 600;
-        }
-      }
-
-      .destinations-list-sort-icon {
-        opacity: 0.45;
-        font-size: 0.75rem;
-      }
-
-      .destinations-list-sort-link.is-active .destinations-list-sort-icon {
-        opacity: 1;
       }
 
       // Map pin (or ?highlight_destination_id=): row is bold + tinted, then fades (v2--destinations-index).
@@ -354,86 +497,6 @@
           animation: none;
           background-color: rgba(var(--bs-warning-rgb), 0.32);
           font-weight: 700;
-        }
-      }
-
-      td.destinations-list-geocoding {
-        min-width: 0;
-      }
-
-      .destinations-list-geocoding-cell {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-start;
-        gap: 0.25rem 0.35rem;
-
-        .geocoding_level {
-          flex: 0 0 auto;
-          width: 1.25rem;
-          padding-top: 0.15rem;
-        }
-
-        .destinations-list-geocoding-progress {
-          flex: 1 1 5em;
-          min-width: 5em;
-          height: 1.25rem;
-          margin-bottom: 0;
-
-          .progress-bar span {
-            font-size: 0.7rem;
-            line-height: 1.25rem;
-          }
-        }
-
-        .destinations-list-geocoding-result {
-          flex: 1 1 100%;
-          font-size: 0.75rem;
-          line-height: 1.2;
-          color: var(--bs-secondary-color);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          max-width: 100%;
-        }
-
-        .no_position {
-          color: var(--bs-danger);
-          font-weight: 700;
-          font-size: 0.75rem;
-        }
-      }
-
-      .destinations-list-deliverable-unit-qty {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.2rem;
-        font-size: 0.8125rem;
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .destinations-list-tag-badges {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 0.25rem;
-        overflow: hidden;
-        min-width: 0;
-      }
-
-      .destinations-list-tag-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.75rem;
-        font-weight: 500;
-        white-space: nowrap;
-        flex-shrink: 0;
-        max-width: 100%;
-
-        .fa {
-          flex-shrink: 0;
         }
       }
     }
