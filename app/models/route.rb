@@ -769,6 +769,7 @@ class Route < ApplicationRecord
         elsif object.is_a?(StoreReload)
           stops.new(type: StopStore.name, store_reload: object, visit: nil, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         elsif object == :rest
+          apply_import_rest_configuration!(stop_attributes)
           stops.new(type: StopRest.name, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         end
       }
@@ -781,7 +782,12 @@ class Route < ApplicationRecord
       Stop.import(collected_stops) if collected_stops.any?
       self.outdated = true
 
-      compute(ignore_errors: ignore_errors) if recompute
+      if recompute
+        compute(ignore_errors: ignore_errors)
+      elsif collected_stops.any?
+        association(:stops).reset
+        sync_route_data_stop_counters!
+      end
     end
   end
 
@@ -831,6 +837,8 @@ class Route < ApplicationRecord
       errors.add(:base, I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage'))
       return false
     end
+
+    apply_import_rest_configuration!(stop_attributes)
 
     index = stops.size + 1 if !index || index < 0
     shift_index(index)
@@ -983,8 +991,14 @@ class Route < ApplicationRecord
   end
 
   def sync_route_data_stops_size!
+    sync_route_data_stop_counters!
+  end
+
+  def sync_route_data_stop_counters!
     ensure_route_data
-    route_data.update_columns(stops_size: Stop.where(route_id: id).count)
+    count = Stop.where(route_id: id).count
+    active_count = Stop.where(route_id: id, active: true).count
+    route_data.update_columns(stops_size: count, size_active: active_count)
   end
 
   def sync_out_of_route_metrics!
@@ -1940,5 +1954,32 @@ class Route < ApplicationRecord
       end
 
     object == :rest
+  end
+
+  def apply_import_rest_configuration!(attrs)
+    return unless vehicle_usage?
+
+    rest_start = attrs.delete(:rest_start) || attrs.delete('rest_start')
+    rest_stop = attrs.delete(:rest_stop) || attrs.delete('rest_stop')
+    rest_duration = attrs.delete(:rest_duration) || attrs.delete('rest_duration')
+
+    return if vehicle_usage.rest?
+
+    if rest_start.blank? || rest_stop.blank? || rest_duration.blank?
+      raise ImportInvalidRow.new(I18n.t('destinations.import_file.rest_window_and_duration_required'))
+    end
+
+    vu = vehicle_usage
+    vu.assign_attributes(rest_start: rest_start, rest_stop: rest_stop, rest_duration: rest_duration)
+    return unless vu.rest_start_changed? || vu.rest_stop_changed? || vu.rest_duration_changed?
+
+    # Persist without callbacks/autosave: VehicleUsage has routes autosave: true and
+    # before_update :update_outdated (update_rest), which must not run mid-import/recompute.
+    vu.update_columns(
+      rest_start: vu.rest_start,
+      rest_stop: vu.rest_stop,
+      rest_duration: vu.rest_duration,
+      updated_at: Time.current
+    )
   end
 end

@@ -243,8 +243,6 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                 ref: 'r1',
               },
               destinations: [{
-                vehicle: '001',
-                route: 'route_one',
                 name: 'New store',
                 ref: 'store_ref',
                 street: '123 Store Street',
@@ -255,7 +253,9 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                 lng: 3.89636993408203,
                 stop_type: 'reload',
                 visits: [{
-                  duration: '00:10:00'
+                  duration: '00:10:00',
+                  route: 'route_one',
+                  ref_vehicle: '001',
                 }]
               }]
             }.to_json, CONTENT_TYPE: 'application/json'
@@ -265,12 +265,53 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
             # zoning sets stops out_of_route
             planning = plannings(:planning_one)
-            stops = planning.routes.find{ |r| r.ref == 'route_one' }.stops
-            stop = stops.first
+            route = planning.routes.find{ |r| r.ref == 'route_one' }
+            stop = route.stops.find{ |s| s.is_a?(StopStore) && s.store_reload.store.ref == 'store_ref' }
+            assert_not_nil stop
             assert_equal 'StopStore', stop.type
             assert_equal 'store_ref', stop.store_reload.store.ref
           end
         end
+      end
+    end
+  ensure
+    I18n.locale = orig_locale
+  end
+
+  test 'should create bulk from json with store destination using legacy destination route params' do
+    @customer.update(enable_store_stops: true)
+    orig_locale = I18n.locale
+    I18n.locale = :en
+
+    assert_difference('Store.count', 1) do
+      assert_difference('Stop.count', 1) do
+        put api(), nil, input: {
+          planning: {
+            ref: 'r1',
+          },
+          destinations: [{
+            vehicle: '001',
+            route: 'route_one',
+            name: 'Legacy store',
+            ref: 'store_ref_legacy',
+            street: '123 Store Street',
+            postalcode: '12345',
+            city: 'Store City',
+            lat: 43.5710885456786,
+            lng: 3.89636993408203,
+            stop_type: 'reload',
+            visits: [{
+              duration: '00:10:00'
+            }]
+          }]
+        }.to_json, CONTENT_TYPE: 'application/json'
+        assert last_response.ok?, last_response.body
+
+        planning = plannings(:planning_one)
+        route = planning.routes.find{ |r| r.ref == 'route_one' }
+        stop = route.stops.find{ |s| s.is_a?(StopStore) && s.store_reload.store.ref == 'store_ref_legacy' }
+        assert_not_nil stop
+        assert_equal 'StopStore', stop.type
       end
     end
   ensure
@@ -1164,12 +1205,12 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             ref: 'r1',
           },
           destinations: [{
-            route: 'route_one',
-            vehicle: '001',
             ref: existing_store.ref,
             stop_type: 'reload',
             visits: [{
-              ref: existing_store_reload.ref
+              ref: existing_store_reload.ref,
+              route: 'route_one',
+              ref_vehicle: '001',
             }]
           }]
         }.to_json, CONTENT_TYPE: 'application/json'
@@ -1177,8 +1218,9 @@ class V01::DestinationsTest < ActiveSupport::TestCase
         assert last_response.ok?, last_response.body
 
         planning = plannings(:planning_one)
-        stops = planning.routes.find{ |r| r.ref == 'route_one' }.stops
-        stop = stops.first
+        route = planning.routes.find{ |r| r.ref == 'route_one' }
+        stop = route.stops.find{ |s| s.is_a?(StopStore) && s.store_reload.ref == existing_store_reload.ref }
+        assert_not_nil stop
         assert_equal 'StopStore', stop.type
         assert_equal existing_store_reload.ref, stop.store_reload.ref
       end
@@ -1250,8 +1292,6 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                 ref: 'r1',
               },
               destinations: [{
-                vehicle: '001',
-                route: 'route_one',
                 name: 'New store with custom attributes',
                 ref: 'store_ref_custom',
                 street: '123 Store Street',
@@ -1267,7 +1307,9 @@ class V01::DestinationsTest < ActiveSupport::TestCase
                   'stop_urgent' => false
                 },
                 visits: [{
-                  duration: '00:10:00'
+                  duration: '00:10:00',
+                  route: 'route_one',
+                  ref_vehicle: '001',
                 }]
               }]
             }.to_json, CONTENT_TYPE: 'application/json'
@@ -1505,11 +1547,10 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
     @customer.reload
     planning.reload
     route.reload
-    assert_equal 3, route.stops.size # 2 + rest
+    assert_equal 3, route.stops.size # 2 visits + rest
 
-    # The rest is in first position
-    assert_equal 'a', route.stops[0].visit.ref
-    assert_equal 'b', route.stops[1].visit.ref
+    visit_refs = route.stops.select { |stop| stop.is_a?(StopVisit) }.map { |stop| stop.visit.ref }
+    assert_equal %w[a b], visit_refs
   end
 
   test 'should import sequential destinations in same planning in no route' do
