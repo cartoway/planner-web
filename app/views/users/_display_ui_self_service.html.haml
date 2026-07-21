@@ -107,4 +107,4 @@
                 %span.item-order
                 %span.item-text= destinations_list_column_label(cid, @user.customer)
                 %input{ type: 'hidden', name: 'user[headers][destinations_list][hidden][]', value: cid }
-    %small.help-block= t('users.form.display_ui.destinations_list_help')
+    %small.help-block= t('users.form.display_ui.destinations_list_help', max: Preferences::Catalog::DESTINATIONS_LIST_MAX_ACTIVE)

@@ -25,6 +25,7 @@
   - V2 application layout: Bootstrap 5 chrome with turbo-frame form sidebar, slide panels, and shared floating controls (`floating-btn`, `xl-floating-button`)
   - Destinations index (v2): full-page MapLibre map with collapsible list overlay and destination edit form in the right sidebar
     - Key:value filtered search, paginated turbo-frame list, and user-configurable columns
+      (default: name, street, postalcode, city, geocoding, and the first deliverable unit; at most 8 active)
     - Map markers via GeoJSON bbox loading; cluster / de-cluster viewport toggle (same icons as planning v1)
     - Row selection, bulk delete, and highlight from map pin or `highlight_destination_id` deep link
     - Coordinate editing on the background map: crosshairs toggle, placement mode (hidden list, centred cancel button), sync with lat/lng fields

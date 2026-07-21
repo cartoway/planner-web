@@ -43,4 +43,11 @@ class DestinationsHelperTest < ActionView::TestCase
     assert_equal %w[tag1 tag2], destinations_list_visit_tags_labels(@destination.reload)
     assert_equal 2, destinations_list_visit_tags(@destination).size
   end
+
+  test 'destinations_list_sort_header wraps label for ellipsis' do
+    @customer = customers(:customer_one)
+    html = destinations_list_sort_header('name', 'Nom', nil)
+    assert_includes html, 'destinations-list-header-label'
+    assert_includes html, 'destinations-list-sort-link'
+  end
 end

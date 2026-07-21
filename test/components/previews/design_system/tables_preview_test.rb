@@ -12,6 +12,12 @@ class DesignSystem::TablesPreviewTest < ActiveSupport::TestCase
     assert_equal 'Boulangerie Dupont', args[:assigns][:destinations].first.name
     assert args[:assigns][:destinations_list_columns].present?
     assert args[:assigns][:pagination].present?
-    assert_includes args[:assigns][:destinations_list_columns], 'ref'
+
+    customer = Lookbook::DestinationsListSample.customer
+    expected_columns = (
+      Preferences::Catalog::DestinationsList.default_active_for(customer) + %w[tags visit_tags]
+    ).uniq & Preferences::Catalog.destinations_list_allowed_column_ids(customer)
+    assert_equal expected_columns, args[:assigns][:destinations_list_columns]
+    assert_not_includes args[:assigns][:destinations_list_columns], 'ref'
   end
 end

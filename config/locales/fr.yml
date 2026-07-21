@@ -1539,7 +1539,9 @@ fr:
       search_dropdown_label: Choisissez une clé de filtre
       search_help: 'Syntaxe : champ:valeur (ex. nom:Paris, ville:Lyon)'
       columns: Colonnes
-      columns_help: Cochez les colonnes à afficher dans la liste.
+      columns_help: Cochez les colonnes à afficher dans la liste (au plus %{max} colonnes actives).
+      columns_reset_defaults: Valeurs par défaut
+      columns_count: "%{count} / %{max}"
       sort_by: Trier par %{column}
       sort_asc: Tri croissant sur %{column}
       sort_desc: Tri décroissant sur %{column}
@@ -2950,7 +2952,7 @@ fr:
         stop_list: Libellé des arrêts
         stop_list_help: Permet de peronnaliser le libellé affiché pour chaque arrêt au sein des tournées. Faites glisser les champs entre les listes. Au plus trois éléments peuvent être actifs ; l’ordre dans la liste "Actives" est utilisé de gauche à droite (séparé par «  - »).
         destinations_list: Colonnes liste adresses
-        destinations_list_help: Permet de personnaliser les colonnes affichées dans la liste des adresses. Faites glisser les colonnes entre les listes ; l’ordre dans « Actives » est respecté de gauche à droite.
+        destinations_list_help: Permet de personnaliser les colonnes affichées dans la liste des adresses. Faites glisser les colonnes entre les listes ; au plus %{max} colonnes peuvent être actives ; l’ordre dans « Actives » est respecté de gauche à droite.
         destinations_index: Liste adresses
         destinations_index_v2: Nouvelle liste
         destinations_index_help: Activez la nouvelle liste avec carte. Désactivez pour conserver la liste classique.
@@ -3813,3 +3815,12 @@ fr:
           Composant réutilisable pour l'index destinations. Cliquez ou focussez le champ pour ouvrir le menu des clés,
           puis choisissez une clé pour insérer un jeton <code>clé:</code>. Tapez pour filtrer la liste, <kbd>Échap</kbd> pour fermer.
         hint: 'Exemples de clés : nom, ville, tags, ref_visite.'
+    overlays_preview:
+      searchable_checklist_dropdown:
+        title: Dropdown checklist avec recherche
+        description_html: >-
+          Dropdown Bootstrap réutilisable avec recherche, action globale « valeurs par défaut » et liste de cases à cocher
+          limitée à un nombre maximum d’éléments actifs. Utilisé par le sélecteur de colonnes destinations.
+        toggle_title: Colonnes
+        reset_defaults: Valeurs par défaut
+        hint: 'Ouvrez le menu, tapez pour filtrer, cochez des cases (max 5), ou réinitialisez les valeurs par défaut.'
