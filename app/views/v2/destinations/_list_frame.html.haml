@@ -1,7 +1,4 @@
 -# V2 destinations index list + pagination — wrapped for Turbo Frame partial updates (see destinations#index).
-- can_destroy_destinations = current_user_form_destroy_enabled?(:destination)
-- list_columns = @destinations_list_columns || destinations_list_active_column_ids(@customer)
-- empty_colspan = 2 + list_columns.size
 = turbo_frame_tag "destinations_list" do
   .d-flex.justify-content-between.align-items-center.mb-2.p-3
     .d-flex.gap-2.align-items-center
@@ -10,14 +7,14 @@
         = t 'destinations.index.new'
       %button.btn.btn-danger.btn-xs.destinations-bulk-delete{
         type: "button",
-        disabled: !can_destroy_destinations,
+        disabled: !current_user_form_destroy_enabled?(:destination),
         title: t('all.verb.destroy_selection'),
         data: {
           controller: 'confirm-click',
           confirm_click_group_value: 'destinations-destroy',
           confirm_click_wait_message_value: t('all.verb.destroy_confirm_wait'),
           confirm_click_confirm_message_value: t('all.verb.destroy_confirm'),
-          confirm_click_ready_label_value: t('all.verb.destroy_confirm_ready'),
+          confirm_click_ready_label_value: %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{t('all.verb.destroy_selection')}),
           confirm_click_base_class_value: 'btn-danger'
         }
       }
@@ -28,53 +25,4 @@
       %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
       = "#{@destinations.size} / #{@total_count}"
       = t('activerecord.models.destinations', count: @total_count)
-  #destination_box.destinations-list-scroll
-    .table-responsive
-      %table.table.table-striped.table-condensed.destinations-list-table
-        %thead
-          %tr
-            %th.destinations-selection-col
-              %button.btn.btn-light.btn-xs.destinations-toggle-selection{type: "button", title: t('all.verb.toggle_selection')}
-                %i.fa.fa-check.fa-fw
-            - list_columns.each do |column_id|
-              %th{class: "#{destinations_list_column_class(column_id)} destinations-list-sortable-col"}
-                = destinations_list_sort_header(column_id, destinations_list_column_label(column_id), @destinations_list_sort)
-            %th.destinations-list-actions-col
-        %tbody
-          - if @destinations.any?
-            - visit_subrows_enabled = destinations_list_visit_subrows_enabled?(list_columns)
-            - @destinations.each do |destination|
-              - visits = destination.visits.to_a
-              - visits_count = visits.size
-              - if visit_subrows_enabled
-                - visit_rows = visits_count.positive? ? visits : [nil]
-                - visit_rows.each_with_index do |visit, visit_index|
-                  = render 'v2/destinations/list_row', destination: destination, list_columns: list_columns, can_destroy_destinations: can_destroy_destinations, visit: visit, visit_subrow: visit_index.positive?, visit_index: visit_index, visits_count: visits_count
-              - else
-                = render 'v2/destinations/list_row', destination: destination, list_columns: list_columns, can_destroy_destinations: can_destroy_destinations, visit: nil, visit_subrow: false, visit_index: 0, visits_count: visits_count
-          - else
-            %tr
-              %td.text-center.text-muted{colspan: empty_colspan}
-                = t 'api_web.v01.destinations.index.none_destinations', default: 'Aucune destination trouvée'
-
-    - if @pagination[:per_page].positive? && @pagination[:total] > @pagination[:per_page]
-      - total_pages = (@pagination[:total].to_f / @pagination[:per_page]).ceil
-      - pagination_params = destinations_index_params
-      %nav.text-center.mt-2
-        %ul.pagination.pagination-xs.justify-content-center
-          %li{class: ('disabled' if @pagination[:page] <= 1)}
-            - if @pagination[:page] > 1
-              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] - 1)), class: 'btn btn-light btn-xs', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
-                %i.fa.fa-chevron-left
-            - else
-              %span.btn.btn-light.btn-xs.disabled
-                %i.fa.fa-chevron-left
-          %li.disabled
-            %span.btn.btn-light.btn-xs= "#{@pagination[:page]} / #{total_pages}"
-          %li{class: ('disabled' if @pagination[:page] >= total_pages)}
-            - if @pagination[:page] < total_pages
-              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] + 1)), class: 'btn btn-light btn-xs', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
-                %i.fa.fa-chevron-right
-            - else
-              %span.btn.btn-light.btn-xs.disabled
-                %i.fa.fa-chevron-right
+  = render 'v2/destinations/list_body'

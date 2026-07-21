@@ -121,6 +121,20 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_select '#lookbook-filtered-search-dropdown [data-search-key]', DestinationSearchParser::ALLOWED_KEYS.size
   end
 
+  test 'searchable checklist dropdown preview renders' do
+    get '/lookbook/preview/design_system/overlays/searchable_checklist_dropdown', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select '[data-controller="v2--searchable-checklist-dropdown"]', 1
+    assert_select '.lookbook-searchable-checklist-dropdown-host', 1
+    assert_select '.searchable-checklist-dropdown-menu.show', 1
+    assert_select '.searchable-checklist-dropdown-toggle[aria-expanded="true"]', 1
+    assert_select '.searchable-checklist-dropdown-search input[type=search]', 1
+    assert_select '.searchable-checklist-dropdown-option--global button[data-action*="resetDefaults"]', 1
+    assert_select '.searchable-checklist-dropdown-checkbox', 12
+    assert_select '[data-v2--searchable-checklist-dropdown-max-active-value="5"]', 1
+  end
+
   test 'destinations list preview renders v2 list frame' do
     get '/lookbook/preview/design_system/tables/destinations_list', headers: { 'User-Agent' => MODERN_CHROME_UA }
 
