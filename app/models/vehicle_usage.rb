@@ -57,6 +57,8 @@ class VehicleUsage < ApplicationRecord
   validates :cost_distance, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
   validates :cost_fixed, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
   validates :cost_time, numericality: {only_float: true, greater_than_or_equal_to: 0}, allow_nil: true
+  validates :visit_duration_coef, numericality: { greater_than: 0, less_than_or_equal_to: 5 }, if: :visit_duration_coef
+  validates :destination_duration_coef, numericality: { greater_than: 0, less_than_or_equal_to: 5 }, if: :destination_duration_coef
   validate :time_window_end_after_end
   validate :rest_stop_after_rest_start
   validate :rest_duration_range
@@ -90,6 +92,14 @@ class VehicleUsage < ApplicationRecord
 
   def default_cost_time
     cost_time || vehicle_usage_set.cost_time
+  end
+
+  def default_visit_duration_coef
+    visit_duration_coef || vehicle_usage_set.default_visit_duration_coef
+  end
+
+  def default_destination_duration_coef
+    destination_duration_coef || vehicle_usage_set.default_destination_duration_coef
   end
 
   def default_time_window_start
@@ -368,7 +378,7 @@ class VehicleUsage < ApplicationRecord
        store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? ||
        store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed? ||
        cost_distance_changed? || cost_fixed_changed? || cost_time_changed? ||
-       max_reload_changed?
+       max_reload_changed? || visit_duration_coef_changed? || destination_duration_coef_changed?
       routes.each{ |route|
         route.outdated = true
       }

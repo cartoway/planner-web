@@ -386,10 +386,15 @@ class OptimizerWrapper
       base_sticky = sticky_eligible && (!options[:global] || stop.is_a?(StopRest))
       visit_locked_sticky = sticky_eligible && stop.is_a?(StopVisit) && stop.locked
       sticky_vehicle_ids = (base_sticky || visit_locked_sticky) ? ["v#{stop.route_id}"] : nil
-      tw1_start = stop.time_window_start_1 && (stop.time_window_start_1 + stop.destination_duration)
+      # Use effective (coef-applied) destination duration for TW shift; VRP duration
+      # fields stay raw so coef_service / coef_setup are not double-applied.
+      setup_for_tw = stop.destination_duration
+      tw1_start = stop.time_window_start_1 && (stop.time_window_start_1 + setup_for_tw)
       tw1_end = stop.time_window_end_1 && service_activity_timewindow_end(stop, stop.time_window_end_1, tw1_start, extra_time, strict_within_timewindows)
-      tw2_start = stop.time_window_start_2 && (stop.time_window_start_2 + stop.destination_duration)
+      tw2_start = stop.time_window_start_2 && (stop.time_window_start_2 + setup_for_tw)
       tw2_end = stop.time_window_end_2 && service_activity_timewindow_end(stop, stop.time_window_end_2, tw2_start, extra_time, strict_within_timewindows)
+      service_duration = stop.respond_to?(:base_duration) ? stop.base_duration : stop.duration
+      setup_duration = stop.respond_to?(:base_destination_duration) ? stop.base_destination_duration : stop.destination_duration
       {
         id: "s#{stop.id}",
         type: 'service',
@@ -409,8 +414,8 @@ class OptimizerWrapper
               end: tw2_end
             }
           ].compact,
-          duration: stop.duration,
-          setup_duration: stop.destination_duration
+          duration: service_duration,
+          setup_duration: setup_duration
         }.delete_if{ |_k, v| v.nil? || v.respond_to?(:empty?) && v.empty? },
         priority: service_priority(
           stop,
@@ -494,8 +499,8 @@ class OptimizerWrapper
         router_mode: route.vehicle_usage.vehicle.default_router.try(&:mode),
         router_dimension: route.vehicle_usage.vehicle.default_router_dimension,
         speed_multiplier: route.vehicle_usage.vehicle.default_speed_multiplier,
-        coef_service: vehicle.default_visit_duration_coef,
-        coef_setup: vehicle.default_destination_duration_coef,
+        coef_service: route.vehicle_usage.default_visit_duration_coef,
+        coef_setup: route.vehicle_usage.default_destination_duration_coef,
         area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:area].join(',') }&.join('|'),
         speed_multiplier_area: Zoning.speed_multiplier_areas(planning.zonings)&.map{ |a| a[:speed_multiplier_area] }&.join('|'),
         timewindow: {

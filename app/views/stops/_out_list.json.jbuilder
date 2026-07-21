@@ -76,8 +76,8 @@ if @with_stops
       json.destination_name visit.destination.name
       json.destination_ref visit.destination.ref.presence
       json.visit_ref visit.ref.presence
-      json.destination_duration visit.destination.default_duration_time_with_seconds
-      json.duration visit.default_duration
+      json.destination_duration stop.destination_duration_time_with_seconds
+      json.duration stop.duration
       json.destination do
         json.destination_id visit.destination.id
         (json.color visit.color) if visit.color

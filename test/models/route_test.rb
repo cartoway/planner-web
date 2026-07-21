@@ -215,6 +215,26 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal 1000 * (route.stops.size + 1), route.distance
   end
 
+  test 'compute applies vehicle duration coefficients to visits_duration' do
+    route = routes(:route_one_one)
+    vehicle_usage = route.vehicle_usage
+
+    route.stops.select{ |s| s.is_a?(StopVisit) }.each do |stop|
+      stop.visit.destination.update_columns(duration: 60)
+    end
+
+    vehicle_usage.update!(visit_duration_coef: 1, destination_duration_coef: 1)
+    route.outdated = true
+    route.compute_saved!
+    base_visits_duration = route.visits_duration
+
+    vehicle_usage.update!(visit_duration_coef: 2, destination_duration_coef: 2)
+    route.outdated = true
+    route.compute_saved!
+
+    assert_equal base_visits_duration * 2, route.visits_duration
+  end
+
   test 'should compute empty' do
     route = routes(:route_one_one)
     assert route.stops.size > 1

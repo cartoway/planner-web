@@ -13,34 +13,9 @@ class VehicleTest < ActiveSupport::TestCase
     assert_not vehicle.save, 'Saved without required fields'
   end
 
-  test 'should not save speed_multiplier' do
+  test 'should not save invalid speed_multiplier' do
     vehicle = customers(:customer_one).vehicles.build(name: 'plop', speed_multiplier: 2)
     assert_not vehicle.save
-  end
-
-  test 'should not save invalid visit_duration_coef' do
-    vehicle = customers(:customer_one).vehicles.build(name: 'plop', visit_duration_coef: 0)
-    assert_not vehicle.save
-    vehicle.visit_duration_coef = 6
-    assert_not vehicle.save
-  end
-
-  test 'should not save invalid destination_duration_coef' do
-    vehicle = customers(:customer_one).vehicles.build(name: 'plop', destination_duration_coef: -1)
-    assert_not vehicle.save
-  end
-
-  test 'default visit and destination duration coefs fall back to 1' do
-    vehicle = vehicles(:vehicle_one)
-    assert_nil vehicle.visit_duration_coef
-    assert_nil vehicle.destination_duration_coef
-    assert_equal 1, vehicle.default_visit_duration_coef
-    assert_equal 1, vehicle.default_destination_duration_coef
-
-    vehicle.visit_duration_coef = 1.25
-    vehicle.destination_duration_coef = 0.8
-    assert_equal 1.25, vehicle.default_visit_duration_coef
-    assert_equal 0.8, vehicle.default_destination_duration_coef
   end
 
   test 'should save' do

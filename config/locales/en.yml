@@ -491,8 +491,6 @@ en:
         router_id: Routing Engine
         router_dimension: Router objective
         speed_multiplier: Speed multiplier
-        visit_duration_coef: Visit duration coefficient
-        destination_duration_coef: Destination duration coefficient
         customised_color: Select a custom color
         ref: Reference
         contact_email: E-Mail
@@ -510,8 +508,6 @@ en:
         router_id: Routing Engine
         router_dimension: Router objective
         speed_multiplier: Speed multiplier
-        visit_duration_coef: Visit duration coefficient
-        destination_duration_coef: Destination duration coefficient
         customised_color: Select a custom color
         ref: Reference
         contact_email: E-Mail
@@ -542,6 +538,8 @@ en:
         cost_distance: Distance cost
         cost_fixed: Fixed cost
         cost_time: Hourly cost
+        visit_duration_coef: Visit duration coefficient
+        destination_duration_coef: Destination duration coefficient
       vehicle_usages:
         vehicle_id: Vehicle
         time_window_start: Open
@@ -566,6 +564,8 @@ en:
         cost_distance: Distance cost
         cost_fixed: Fixed cost
         cost_time: Hourly cost
+        visit_duration_coef: Visit duration coefficient
+        destination_duration_coef: Destination duration coefficient
       vehicle_usage_set:
         name: Name
         time_window_start: Open
@@ -588,6 +588,8 @@ en:
         cost_distance: Distance cost
         cost_fixed: Fixed cost
         cost_time: Hourly cost
+        visit_duration_coef: Visit duration coefficient
+        destination_duration_coef: Destination duration coefficient
         created_at: Created
         updated_at: Updated
       visit:
@@ -2981,17 +2983,6 @@ en:
         help: >-
           A value higher than 100% means higher speed. The global tune up set on
           settings is also used on computation.
-      visit_duration_coef:
-        default: '%{n} (default value)'
-        help: >-
-          Coefficient applied to visit duration for this vehicle during
-          optimization. A value higher than 100% increases visit durations.
-      destination_duration_coef:
-        default: '%{n} (default value)'
-        help: >-
-          Coefficient applied to destination duration for this vehicle during
-          optimization. A value higher than 100% increases destination
-          durations.
       contact_email:
         help: Driver's device E-Mail. Several emails might be transmitted separated by spaces, commas or semicolons.
       contact_phone:
@@ -3050,6 +3041,18 @@ en:
           The cost of a route is a formula. It applies the fixed cost if the
           vehicle is used. Then costs related to time and distance are applied
           regarding the total time and total distance of the route.
+      visit_duration_coef:
+        default: '%{n} (default value)'
+        help: >-
+          Coefficient applied to visit duration for this vehicle during
+          computation and optimization. A value higher than 100% increases
+          visit durations.
+      destination_duration_coef:
+        default: '%{n} (default value)'
+        help: >-
+          Coefficient applied to destination duration for this vehicle during
+          computation and optimization. A value higher than 100% increases
+          destination durations.
       driver:
         legend: Driver
       vehicle_usage:
@@ -3243,6 +3246,17 @@ en:
       stores_help: Start and end facilities
       store_reloads_help: Possible store reloads
       max_reload_help: Maximum number of reloads per route.
+      visit_duration_coef:
+        default: '%{n} (default value)'
+        help: >-
+          Default coefficient applied to visit duration during computation and
+          optimization. A value higher than 100% increases visit durations.
+      destination_duration_coef:
+        default: '%{n} (default value)'
+        help: >-
+          Default coefficient applied to destination duration during computation
+          and optimization. A value higher than 100% increases destination
+          durations.
       service_times: Service times
       service_time_start_addon: before
       service_time_end_addon: after
