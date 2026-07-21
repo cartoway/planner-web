@@ -644,7 +644,7 @@ export default class extends Controller {
       }
       return
     }
-    if (frame.id === 'destinations_list') {
+    if (frame.id === 'destinations_list' || frame.id === 'destinations_list_body') {
       requestAnimationFrame(() => {
         const url = new URL(window.location.href)
         const hid = url.searchParams.get('highlight_destination_id')

@@ -1,19 +1,29 @@
--# Column visibility dropdown for the destinations index list (persists on user.headers).
+-# Column visibility dropdown — thin wrapper around the shared searchable checklist.
 - list_columns = destinations_list_columns_selector_options(@customer)
-.dropdown
-  %button.btn.btn-light.btn-xs.dropdown-toggle{type: 'button', 'data-bs-toggle': 'dropdown', 'aria-expanded': 'false', title: t('destinations.index.columns')}
-    %i.fa.fa-table-columns.fa-fw
-    %span.visually-hidden= t('destinations.index.columns')
-  .dropdown-menu.dropdown-menu-end.p-2.shadow-sm{style: 'min-width: 12rem;', 'data-bs-auto-close': 'outside'}
-    = form_tag list_columns_destinations_path, method: :patch, data: { turbo_frame: 'destinations_list', controller: 'v2--destinations-list-columns' } do
-      - destinations_index_params.each do |key, value|
-        - if value.is_a?(Array)
-          - value.each do |item|
-            = hidden_field_tag "#{key}[]", item
-        - elsif value.present?
-          = hidden_field_tag key, value
-      %p.small.text-muted.mb-2= t('destinations.index.columns_help')
-      - list_columns.each do |column|
-        .form-check
-          %input.form-check-input{type: 'checkbox', name: 'active[]', value: column[:id], checked: column[:active], id: "destinations-list-col-#{column[:id]}", data: { action: 'change->v2--destinations-list-columns#submit' }}
-          %label.form-check-label{for: "destinations-list-col-#{column[:id]}"}= column[:label]
+- max_active = Preferences::Catalog::DESTINATIONS_LIST_MAX_ACTIVE
+- default_active_ids = Preferences::Catalog::DestinationsList.default_active_for(@customer)
+- active_column_ids = list_columns.select { |column| column[:active] }.map { |column| column[:id] }
+- active_count = active_column_ids.size
+- at_default_columns = active_column_ids.to_set == default_active_ids.to_set
+= render 'v2/shared/searchable_checklist_dropdown',
+  items: list_columns.map { |column| { id: column[:id], label: column[:label], checked: column[:active] } },
+  max_active: max_active,
+  default_active_ids: default_active_ids,
+  toggle_title: t('destinations.index.columns'),
+  toggle_icon_class: 'fa fa-table-columns fa-fw',
+  count_label: t('destinations.index.columns_count', count: active_count, max: max_active),
+  sr_only_label: t('destinations.index.columns'),
+  global_action_label: t('destinations.index.columns_reset_defaults'),
+  global_action_disabled: at_default_columns,
+  id_prefix: 'destinations-list-col',
+  wrapper_class: 'destinations-list-column-selector',
+  form_url: list_columns_destinations_path,
+  form_method: :patch,
+  form_data: { turbo_frame: 'destinations_list_body', v2__destinations_list_columns_target: 'form' },
+  extra_controllers: 'v2--destinations-list-columns' do
+  - destinations_index_params.each do |key, value|
+    - if value.is_a?(Array)
+      - value.each do |item|
+        = hidden_field_tag "#{key}[]", item
+    - elsif value.present?
+      = hidden_field_tag key, value

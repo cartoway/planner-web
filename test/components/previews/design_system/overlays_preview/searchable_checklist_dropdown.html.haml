@@ -1,0 +1,20 @@
+.container.py-4
+  %h1.h4.mb-3= t('design_system.overlays_preview.searchable_checklist_dropdown.title')
+  %p.text-muted.small.mb-4= t('design_system.overlays_preview.searchable_checklist_dropdown.description_html').html_safe
+  - active_ids = @items.select { |i| i[:checked] }.map { |i| i[:id] }
+  - at_defaults = active_ids.map(&:to_s).sort == @default_active_ids.map(&:to_s).sort
+  .lookbook-searchable-checklist-dropdown-host
+    = render 'v2/shared/searchable_checklist_dropdown',
+      items: @items,
+      max_active: @max_active,
+      default_active_ids: @default_active_ids,
+      toggle_title: t('design_system.overlays_preview.searchable_checklist_dropdown.toggle_title'),
+      toggle_icon_class: 'fa fa-table-columns fa-fw',
+      count_label: "#{active_ids.size} / #{@max_active}",
+      sr_only_label: t('design_system.overlays_preview.searchable_checklist_dropdown.toggle_title'),
+      global_action_label: t('design_system.overlays_preview.searchable_checklist_dropdown.reset_defaults'),
+      global_action_disabled: at_defaults,
+      id_prefix: 'lookbook-checklist',
+      menu_end: false,
+      open: true
+  %p.form-text.mt-3.mb-0= t('design_system.overlays_preview.searchable_checklist_dropdown.hint')

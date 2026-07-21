@@ -63,6 +63,7 @@ module Preferences
       p = param_prefix.to_s
       BASE.merge(
         minActiveItems: 1,
+        maxActiveItems: ::Preferences::Catalog::DESTINATIONS_LIST_MAX_ACTIVE,
         columns: [
           { containerSelector: '.destinations-list-tier-active .item-list', inputName: "#{p}[headers][destinations_list][active][]" },
           {
