@@ -7,21 +7,53 @@ class PreferencesCatalogDestinationsListTest < ActiveSupport::TestCase
     @customer = customers(:customer_one)
   end
 
-  test 'default active columns respect customer flags' do
+  test 'default active columns include address fields, geocoding and only the first deliverable unit' do
     active = Preferences::Catalog::DestinationsList.default_active_for(@customer)
-    assert_includes active, 'name'
-    assert_includes active, 'street'
-    assert_includes active, 'postalcode'
-    assert_includes active, 'city'
-    assert_includes active, 'geocoding'
-    @customer.deliverable_units.each do |unit|
-      assert_includes active, Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+    units = @customer.deliverable_units.to_a
+    assert units.size > 1, 'fixture customer should have several deliverable units'
+
+    expected_static = %w[name street postalcode city geocoding]
+    assert_equal expected_static, active & expected_static
+    assert_not_includes active, 'ref'
+    assert_not_includes active, 'visit_ref'
+
+    first_unit_col = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(units.first)
+    assert_includes active, first_unit_col
+    units.drop(1).each do |unit|
+      assert_not_includes active, Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+    end
+    assert_operator active.size, :<=, Preferences::Catalog::DestinationsList::MAX_ACTIVE
+  end
+
+  test 'normalize_zone caps active columns at MAX_ACTIVE' do
+    allowed = Preferences::Catalog::DestinationsList.allowed_column_ids(@customer)
+    oversized = allowed.first(Preferences::Catalog::DestinationsList::MAX_ACTIVE + 3)
+    assert oversized.size > Preferences::Catalog::DestinationsList::MAX_ACTIVE
+
+    normalized = Preferences::Catalog::DestinationsList.normalize_zone(
+      { 'active' => oversized, 'hidden' => [] },
+      customer: @customer
+    )
+    assert_equal Preferences::Catalog::DestinationsList::MAX_ACTIVE, normalized['active'].size
+    assert_equal oversized.first(Preferences::Catalog::DestinationsList::MAX_ACTIVE), normalized['active']
+    oversized.drop(Preferences::Catalog::DestinationsList::MAX_ACTIVE).each do |col|
+      assert_includes normalized['hidden'], col
     end
   end
 
-  test 'normalize_zone keeps at least one active column' do
+  test 'normalize_zone keeps defaults when active and hidden are both empty' do
     normalized = Preferences::Catalog::DestinationsList.normalize_zone({ 'active' => [], 'hidden' => [] })
     assert normalized['active'].present?
+  end
+
+  test 'normalize_zone allows empty active when user hid every column' do
+    allowed = Preferences::Catalog::DestinationsList.allowed_column_ids(@customer)
+    normalized = Preferences::Catalog::DestinationsList.normalize_zone(
+      { 'active' => [], 'hidden' => allowed },
+      customer: @customer
+    )
+    assert_empty normalized['active']
+    assert_equal allowed.to_set, normalized['hidden'].to_set
   end
 
   test 'allowed column ids include visit_tags when customer is editable' do
@@ -46,14 +78,25 @@ class PreferencesCatalogDestinationsListTest < ActiveSupport::TestCase
     assert_includes normalized['active'], col_id
   end
 
-  test 'normalize_zone with customer auto-activates new deliverable unit columns' do
-    unit = @customer.deliverable_units.first
-    col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+  test 'normalize_zone with customer keeps new deliverable unit columns hidden until enabled' do
+    units = @customer.deliverable_units.to_a
+    first_col = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(units.first)
+    second_col = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(units.second)
     normalized = Preferences::Catalog::DestinationsList.normalize_zone(
-      { 'active' => ['name'], 'hidden' => [] },
+      { 'active' => %w[name street postalcode city] + [first_col], 'hidden' => [] },
       customer: @customer
     )
-    assert_includes normalized['active'], col_id
+    assert_includes normalized['active'], first_col
+    assert_includes normalized['hidden'], second_col
+    assert_not_includes normalized['active'], second_col
+  end
+
+  test 'normalize_zone falls back to limited default active when empty' do
+    normalized = Preferences::Catalog::DestinationsList.normalize_zone(
+      { 'active' => [], 'hidden' => [] },
+      customer: @customer
+    )
+    assert_equal Preferences::Catalog::DestinationsList.default_active_for(@customer), normalized['active']
   end
 
   test 'normalize_zone without customer strips deliverable unit columns' do

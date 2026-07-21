@@ -153,7 +153,8 @@ module DestinationsHelper
   end
 
   def destinations_list_sort_header(column_id, label, sort_state)
-    return label unless destinations_list_column_sortable?(column_id)
+    label_html = content_tag(:span, label, class: 'destinations-list-header-label')
+    return label_html unless destinations_list_column_sortable?(column_id)
 
     active = sort_state&.column_id == column_id.to_s
     direction = active ? sort_state.direction : nil
@@ -183,7 +184,7 @@ module DestinationsHelper
       data: { turbo_frame: 'destinations_list' },
       aria: { sort: (active ? (direction == 'desc' ? 'descending' : 'ascending') : 'none') }
     ) do
-      safe_join([label, content_tag(:i, nil, class: "fa #{icon_class} fa-fw destinations-list-sort-icon", 'aria-hidden': 'true')])
+      safe_join([label_html, content_tag(:i, nil, class: "fa #{icon_class} fa-fw destinations-list-sort-icon", 'aria-hidden': 'true')])
     end
   end
 

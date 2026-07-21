@@ -1,0 +1,18 @@
+// Copyright © Cartoway
+// Lookbook host: keep the open checklist menu fully visible for visual review.
+
+.lookbook-searchable-checklist-dropdown-host {
+  min-height: 28rem;
+  padding-bottom: 1rem;
+
+  .searchable-checklist-dropdown {
+    // Anchor the open menu in document flow for screenshots (avoid off-canvas Popper placement).
+    position: relative;
+  }
+
+  .searchable-checklist-dropdown-menu.show {
+    position: static;
+    float: none;
+    margin-top: 0.35rem;
+  }
+}

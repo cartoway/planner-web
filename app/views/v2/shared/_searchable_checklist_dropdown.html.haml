@@ -1,0 +1,68 @@
+-# Searchable checklist dropdown (design system v2).
+-# locals:
+-#   items: [{ id:, label:, checked: }]
+-#   max_active:, default_active_ids:, search_placeholder:
+-#   toggle_title:, toggle_icon_class: (optional), count_label:, sr_only_label: (optional)
+-#   global_action_label:, global_action_icon_class:, global_action_disabled:
+-#   checkbox_name: 'active[]', id_prefix: 'searchable-checklist'
+-#   wrapper_class:, menu_end: true, open: false (show menu on load, e.g. Lookbook)
+-#   form_url: (optional), form_method: :patch, form_data: {}
+-#   extra_controllers: (optional Stimulus controllers string)
+-#   block: optional extra fields inside the form (hidden params, etc.)
+- items = Array(local_assigns[:items])
+- max_active = local_assigns.fetch(:max_active, 8)
+- default_active_ids = Array(local_assigns[:default_active_ids])
+- search_placeholder = local_assigns.fetch(:search_placeholder, t('web.select2.search_placeholder'))
+- toggle_title = local_assigns[:toggle_title]
+- toggle_icon_class = local_assigns[:toggle_icon_class]
+- count_label = local_assigns.fetch(:count_label, "#{items.count { |i| i[:checked] }} / #{max_active}")
+- sr_only_label = local_assigns[:sr_only_label]
+- global_action_label = local_assigns[:global_action_label]
+- global_action_icon_class = local_assigns.fetch(:global_action_icon_class, 'fa fa-rotate-left')
+- global_action_disabled = !!local_assigns[:global_action_disabled]
+- checkbox_name = local_assigns.fetch(:checkbox_name, 'active[]')
+- id_prefix = local_assigns.fetch(:id_prefix, 'searchable-checklist')
+- wrapper_class = local_assigns[:wrapper_class]
+- menu_end = local_assigns.fetch(:menu_end, true)
+- open = !!local_assigns[:open]
+- form_url = local_assigns[:form_url]
+- form_method = local_assigns.fetch(:form_method, :patch)
+- form_data = local_assigns.fetch(:form_data, {})
+- extra_controllers = local_assigns[:extra_controllers].to_s.presence
+- controllers = ['v2--searchable-checklist-dropdown', extra_controllers].compact.join(' ')
+- menu_classes = ['dropdown-menu', 'shadow', 'searchable-checklist-dropdown-menu']
+- menu_classes << 'dropdown-menu-end' if menu_end
+- menu_classes << 'show' if open
+- toggle_data = { 'bs-toggle': 'dropdown', 'bs-auto-close': 'outside' }
+.dropdown.searchable-checklist-dropdown{class: wrapper_class, data: { controller: controllers, v2__searchable_checklist_dropdown_max_active_value: max_active, v2__searchable_checklist_dropdown_default_active_value: default_active_ids.to_json }}
+  %button.btn.btn-light.btn-sm.dropdown-toggle.searchable-checklist-dropdown-toggle{type: 'button', data: toggle_data, 'aria-expanded': open ? 'true' : 'false', title: toggle_title, class: ('show' if open)}
+    - if toggle_icon_class.present?
+      %i{class: toggle_icon_class}
+    %span{data: { v2__searchable_checklist_dropdown_target: 'count' }}= count_label
+    - if sr_only_label.present?
+      %span.visually-hidden= sr_only_label
+  %div{class: menu_classes}
+    - body = capture do
+      .searchable-checklist-dropdown-search
+        %input.form-control.form-control-sm{type: 'search', autocomplete: 'off', placeholder: search_placeholder, 'aria-label': search_placeholder, data: { action: 'input->v2--searchable-checklist-dropdown#filter', v2__searchable_checklist_dropdown_target: 'search' }}
+      %ul.searchable-checklist-dropdown-results{role: 'listbox'}
+        - if global_action_label.present?
+          %li.searchable-checklist-dropdown-option.searchable-checklist-dropdown-option--global
+            %button{type: 'button', disabled: global_action_disabled, data: { action: 'click->v2--searchable-checklist-dropdown#resetDefaults', v2__searchable_checklist_dropdown_target: 'resetDefaults' }}
+              %i{class: global_action_icon_class}
+              = global_action_label
+        - items.each do |item|
+          - item_id = item[:id].to_s
+          - input_id = "#{id_prefix}-#{item_id}"
+          %li.searchable-checklist-dropdown-option{data: { v2__searchable_checklist_dropdown_target: 'option', filter_label: item[:label].to_s.downcase }}
+            %label.searchable-checklist-dropdown-row{for: input_id}
+              %input.searchable-checklist-dropdown-checkbox{type: 'checkbox', name: checkbox_name, value: item_id, checked: !!item[:checked], id: input_id, data: { action: 'change->v2--searchable-checklist-dropdown#change' }}
+              %span.searchable-checklist-dropdown-label= item[:label]
+    - if form_url.present?
+      = form_tag form_url, method: form_method, class: 'searchable-checklist-dropdown-inner', data: form_data.merge(v2__searchable_checklist_dropdown_target: 'form') do
+        - if block_given?
+          = yield
+        = body
+    - else
+      .searchable-checklist-dropdown-inner{data: { v2__searchable_checklist_dropdown_target: 'form' }}
+        = body
