@@ -39,6 +39,17 @@ class ImporterDestinationsTest < ActionController::TestCase
     file
   end
 
+  def clear_customer_rest_configuration!(customer)
+    customer.vehicle_usage_sets.each do |vus|
+      vus.import_skip = true
+      vus.update!(rest_start: nil, rest_stop: nil, rest_duration: nil)
+      vus.vehicle_usages.each do |vu|
+        vu.import_skip = true
+        vu.update!(rest_start: nil, rest_stop: nil, rest_duration: nil)
+      end
+    end
+  end
+
   test 'should not import' do
     assert_no_difference('Destination.count') do
       assert_no_difference('Visit.count') do
@@ -898,6 +909,69 @@ class ImporterDestinationsTest < ActionController::TestCase
         assert route_1.stops.find { |stop| stop.is_a?(StopRest) }.active
       end
     end
+  end
+
+  test 'should import route with only a rest and configure vehicle usage rest window' do
+    Planning.all.each(&:destroy)
+    @customer.delete_all_destinations
+    clear_customer_rest_configuration!(@customer)
+    @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}
+    @customer.reload
+
+    assert_difference('Planning.count', 1) do
+      assert_difference('StopRest.count', 1) do
+        assert_no_difference('StopVisit.count') do
+          assert ImportCsv.new(
+            importer: ImporterDestinations.new(@customer),
+            replace: true,
+            file: tempfile('test/fixtures/files/import_destinations_single_plan_rest_only_with_window.csv', 'text.csv')
+          ).import(true)
+        end
+      end
+    end
+
+    @customer.reload
+    planning = @customer.plannings.last
+    route = planning.routes.find{ |r| r.ref == 't1' }
+    assert_not_nil route
+    assert_equal 1, route.stops.count { |stop| stop.is_a?(StopRest) }
+    assert_operator route.stops_size, :>=, 1
+    assert_operator route.size_active, :>=, 1
+    assert route.vehicle_usage.rest?
+    assert_equal 12 * 3600, route.vehicle_usage.rest_start
+    assert_equal 14 * 3600, route.vehicle_usage.rest_stop
+    assert_equal 45 * 60, route.vehicle_usage.rest_duration
+  end
+
+  test 'should reject import with more than one rest on the same route' do
+    Planning.all.each(&:destroy)
+    @customer.delete_all_destinations
+    @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}
+    @customer.reload
+
+    import = ImportCsv.new(
+      importer: ImporterDestinations.new(@customer),
+      replace: true,
+      file: tempfile('test/fixtures/files/import_destinations_single_plan_two_rests.csv', 'text.csv')
+    )
+    assert_not import.import
+    assert_match(/une seule pause/i, import.errors[:base].join(' '))
+  end
+
+  test 'should reject rest import when vehicle usage has no rest and window columns are missing' do
+    Planning.all.each(&:destroy)
+    @customer.delete_all_destinations
+    clear_customer_rest_configuration!(@customer)
+    @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}
+    @customer.reload
+
+    import = ImportCsv.new(
+      importer: ImporterDestinations.new(@customer),
+      replace: true,
+      file: tempfile('test/fixtures/files/import_destinations_single_plan_rest_without_window.csv', 'text.csv')
+    )
+    assert_not import.import
+    assert_match(/obligatoires|required/i, import.errors[:base].join(' '))
   end
 
   test 'should import new visits with existing tag to existing planning via JSON without stale update' do
