@@ -5,7 +5,7 @@
   - Customers index: users list dropdown per customer
   - Planning: extract inactive stops from vehicle routes to unassigned via a dedicated modal
   - Destination import:
-    - Place rest stops on routes from CSV
+    - Place rest stops on routes from CSV (a unique rest per route)
     - Choose the vehicle usage set for created plannings from the import form
     - Coerce and validate CSV column types (`type:` metadata) before bulk import
   - Persistent order for vehicle usages:

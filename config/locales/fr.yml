@@ -1772,6 +1772,10 @@ fr:
       invalid_lng: 'La longitude « %{value} » est invalide (attendu entre -180 et 180, vérifiez le séparateur décimal).'
       invalid_stop: Le type d'arrêt n'est pas valide
       invalid_force_position: Le type de position forcée est invalide
+      too_many_rests_per_route: Une seule pause est autorisée par tournée.
+      rest_window_and_duration_required: >-
+        Pour une pause, les colonnes « horaire début », « horaire fin » et « durée visite »
+        sont obligatoires lorsque la pause n’est pas configurée sur le véhicule.
       check_custom_columns: Vérifiez votre définition des colonnes à importer.
     reverse_geocoding:
       apply: Appliquer la nouvelle adresse
