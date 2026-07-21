@@ -31,6 +31,7 @@
     - Coordinate editing on the background map: crosshairs toggle, placement mode (hidden list, centred cancel button), sync with lat/lng fields
     - User preference to switch between classic (default) and v2 destinations list
   - Planning optimization dialog: show the current resolution phases (independent sub-problems, splitting, dichotomous, resolution)
+  - Vehicle usage visit/destination duration coefficients
 
   ### Changed
   - Sopac: migrate from api to message broker

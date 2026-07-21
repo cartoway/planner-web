@@ -38,6 +38,8 @@ class V01::Entities::VehicleUsageSet < Grape::Entity
   expose(:max_distance, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' })
   expose(:max_ride_distance, documentation: { type: Integer, desc: 'Maximum riding distance between two stops within a route in meters' })
   expose(:max_ride_duration, documentation: { type: DateTime, desc: 'Maximum riding time between two stops within a route' }) { |m| m.max_ride_duration_absolute_time_with_seconds }
+  expose(:visit_duration_coef, documentation: { type: Float, desc: 'Default coefficient applied to visit durations for vehicle usages in this set (default: 1)' })
+  expose(:destination_duration_coef, documentation: { type: Float, desc: 'Default coefficient applied to destination durations for vehicle usages in this set (default: 1)' })
 
   # Deprecated fields
   expose(:open, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `visit_duration` instead' }) { |m| m.time_window_start_absolute_time_with_seconds }

@@ -496,8 +496,6 @@ fr:
         router_id: Calculateur d'itinéraire
         router_dimension: Objectif du calculateur
         speed_multiplier: Ajustement de la vitesse
-        visit_duration_coef: Coefficient durée de visite
-        destination_duration_coef: Coefficient durée de destination
         customised_color: Couleur personnalisée
         ref: Référence
         contact_email: Email
@@ -515,8 +513,6 @@ fr:
         router_id: Calculateur d'itinéraire
         router_dimension: Objectif du calculateur
         speed_multiplier: Ajustement de la vitesse
-        visit_duration_coef: Coefficient durée de visite
-        destination_duration_coef: Coefficient durée de destination
         customised_color: Couleur personnalisée
         ref: Référence
         contact_email: Email
@@ -547,6 +543,8 @@ fr:
         cost_distance: Coût au kilomètre
         cost_fixed: Coût fixe
         cost_time: Coût horaire
+        visit_duration_coef: Coefficient durée de visite
+        destination_duration_coef: Coefficient durée de destination
       vehicle_usages:
         vehicle_id: Véhicule
         time_window_start: Horaire début
@@ -571,6 +569,8 @@ fr:
         cost_distance: Coût au kilomètre
         cost_fixed: Coût fixe
         cost_time: Coût horaire
+        visit_duration_coef: Coefficient durée de visite
+        destination_duration_coef: Coefficient durée de destination
       vehicle_usage_set:
         name: Nom
         time_window_start: Horaire début
@@ -593,6 +593,8 @@ fr:
         cost_distance: Coût au kilomètre
         cost_fixed: Coût fixe
         cost_time: Coût horaire
+        visit_duration_coef: Coefficient durée de visite
+        destination_duration_coef: Coefficient durée de destination
         created_at: Création
         updated_at: Mise à jour
       visit:
@@ -3089,18 +3091,6 @@ fr:
           Une valeur supérieure à 100% signifie une vitesse plus élevée.
           L'ajustement global au niveau du paramétrage est également utilisé
           lors des calculs.
-      visit_duration_coef:
-        default: '%{n} (valeur par défaut)'
-        help: >-
-          Coefficient appliqué à la durée de visite pour ce véhicule lors de
-          l'optimisation. Une valeur supérieure à 100% allonge les durées de
-          visite.
-      destination_duration_coef:
-        default: '%{n} (valeur par défaut)'
-        help: >-
-          Coefficient appliqué à la durée de destination pour ce véhicule lors
-          de l'optimisation. Une valeur supérieure à 100% allonge les durées
-          de destination.
       contact_email:
         help: Email du terminal du chauffeur. Il est possible de renseigner plusieurs emails séparés par des espaces, virgules ou points-virgules
       contact_phone:
@@ -3165,6 +3155,18 @@ fr:
           véhicule est utilisé. Ensuite, les coûts liés au temps et à la distance
           sont appliqués en fonction de la durée totale et de la distance totale
           de la tournée.
+      visit_duration_coef:
+        default: '%{n} (valeur par défaut)'
+        help: >-
+          Coefficient appliqué à la durée de visite pour ce véhicule lors des
+          calculs et de l'optimisation. Une valeur supérieure à 100% allonge
+          les durées de visite.
+      destination_duration_coef:
+        default: '%{n} (valeur par défaut)'
+        help: >-
+          Coefficient appliqué à la durée de destination pour ce véhicule lors
+          des calculs et de l'optimisation. Une valeur supérieure à 100%
+          allonge les durées de destination.
       driver:
         legend: Chauffeur
       vehicle_usage:
@@ -3368,6 +3370,18 @@ fr:
       stores_help: Sites de départ et d'arrivée
       store_reloads_help: Rechargements intermédiaires
       max_reload_help: Nombre maximum de rechargements par tournée.
+      visit_duration_coef:
+        default: '%{n} (valeur par défaut)'
+        help: >-
+          Coefficient par défaut appliqué à la durée de visite lors des calculs
+          et de l'optimisation. Une valeur supérieure à 100% allonge les durées
+          de visite.
+      destination_duration_coef:
+        default: '%{n} (valeur par défaut)'
+        help: >-
+          Coefficient par défaut appliqué à la durée de destination lors des
+          calculs et de l'optimisation. Une valeur supérieure à 100% allonge
+          les durées de destination.
       service_times: Durées de service
       service_time_start_addon: avant
       service_time_end_addon: après

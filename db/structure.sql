@@ -1538,7 +1538,9 @@ CREATE TABLE public.vehicle_usage_sets (
     cost_distance double precision,
     cost_fixed double precision,
     cost_time double precision,
-    max_reload integer
+    max_reload integer,
+    visit_duration_coef double precision,
+    destination_duration_coef double precision
 );
 
 
@@ -1587,7 +1589,9 @@ CREATE TABLE public.vehicle_usages (
     cost_fixed double precision,
     cost_time double precision,
     max_reload integer,
-    index integer DEFAULT 0 NOT NULL
+    index integer DEFAULT 0 NOT NULL,
+    visit_duration_coef double precision,
+    destination_duration_coef double precision
 );
 
 
@@ -1637,9 +1641,7 @@ CREATE TABLE public.vehicles (
     max_ride_duration integer,
     max_ride_distance integer,
     driver_token character varying,
-    capacities jsonb DEFAULT '{}'::jsonb,
-    visit_duration_coef double precision,
-    destination_duration_coef double precision
+    capacities jsonb DEFAULT '{}'::jsonb
 );
 
 
@@ -3949,6 +3951,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260625210008'),
 ('20260630143502'),
 ('20260717105805'),
-('20260720072020');
+('20260720072020'),
+('20260721141523');
 
 

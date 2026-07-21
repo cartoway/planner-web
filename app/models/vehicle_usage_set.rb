@@ -64,10 +64,20 @@ class VehicleUsageSet < ApplicationRecord
   validates :rest_duration, presence: {if: :rest_start?, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_duration') }}
   validates :max_distance, numericality: true, allow_nil: true
   validates :max_ride_distance, numericality: true, allow_nil: true
+  validates :visit_duration_coef, numericality: { greater_than: 0, less_than_or_equal_to: 5 }, if: :visit_duration_coef
+  validates :destination_duration_coef, numericality: { greater_than: 0, less_than_or_equal_to: 5 }, if: :destination_duration_coef
 
   after_initialize :assign_defaults, if: :new_record?
   before_create :check_max_vehicle_usage_set, unless: :import_skip
   before_update :update_outdated
+
+  def default_visit_duration_coef
+    visit_duration_coef || 1
+  end
+
+  def default_destination_duration_coef
+    destination_duration_coef || 1
+  end
 
   def reorder_vehicle_usages!(ordered_ids)
     ordered_ids = Array(ordered_ids).map(&:to_i)
@@ -142,7 +152,8 @@ class VehicleUsageSet < ApplicationRecord
        store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? ||
        store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? ||
        work_time_changed? || max_distance || max_ride_distance_changed? || max_ride_duration_changed? ||
-       cost_distance_changed? || cost_fixed_changed? || cost_time_changed?
+       cost_distance_changed? || cost_fixed_changed? || cost_time_changed? ||
+       visit_duration_coef_changed? || destination_duration_coef_changed?
       vehicle_usages.each{ |vehicle_usage|
         if (time_window_start_changed? && vehicle_usage.default_time_window_start == time_window_start) ||
           (time_window_end_changed? && vehicle_usage.default_time_window_end == time_window_end) ||
@@ -167,7 +178,9 @@ class VehicleUsageSet < ApplicationRecord
           (max_ride_duration_changed? && vehicle_usage.vehicle.max_ride_duration != max_ride_duration) ||
           (cost_distance_changed? && vehicle_usage.default_cost_distance == cost_distance) ||
           (cost_fixed_changed? && vehicle_usage.default_cost_fixed == cost_fixed) ||
-          (cost_time_changed? && vehicle_usage.default_cost_time == cost_time)
+          (cost_time_changed? && vehicle_usage.default_cost_time == cost_time) ||
+          (visit_duration_coef_changed? && vehicle_usage.visit_duration_coef.nil?) ||
+          (destination_duration_coef_changed? && vehicle_usage.destination_duration_coef.nil?)
 
           vehicle_usage.routes.each{ |route|
             route.outdated = true
