@@ -1712,6 +1712,10 @@ en:
       invalid_lng: 'Longitude "%{value}" is invalid (expected between -180 and 180, check the decimal separator).'
       invalid_stop: The stop type is invalid
       invalid_force_position: The forced position type is invalid
+      too_many_rests_per_route: Only one rest stop is allowed per route.
+      rest_window_and_duration_required: >-
+        For a rest stop, the "time window start", "time window end" and "duration" columns
+        are required when rest is not configured on the vehicle.
       check_custom_columns: Check your columns definition.
     reverse_geocoding:
       apply: Apply new address

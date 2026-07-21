@@ -141,10 +141,12 @@ class ImporterDestinations < ImporterBase
   # convert json with multi visits in several rows like in csv
   def json_to_rows(json)
     json.each_with_index.collect{ |dest, destination_row_index|
+      dest[:ref_vehicle] ||= dest[:vehicle] if dest[:vehicle].present?
       dest[:tags] ||= []
       dest[:tags] |= dest[:tag_ids].collect(&:to_i) if dest.key?(:tag_ids)
       if dest.key?(:visits) && !dest[:visits].empty?
         dest[:visits].collect{ |v|
+          v[:ref_vehicle] ||= v[:vehicle] if v[:vehicle].present?
           # Keep a stable key to group rows coming from the same JSON destination
           # when the destination has no ref and contains multiple visits.
           v[:_json_group_key] = destination_row_index
@@ -493,8 +495,9 @@ class ImporterDestinations < ImporterBase
       prepare_store_reload_in_planning(row, line, store_attributes, store_reload_attributes)
       store_attributes
     elsif is_rest?(row[:stop_type])
+      convert_deprecated_fields(row)
       prepare_rest_in_planning(row, line)
-      nil
+      :rest
     end
   end
 
@@ -1140,23 +1143,31 @@ class ImporterDestinations < ImporterBase
 
     return unless row.key?(:route)
 
+    route_entry = @plannings_routes[row[:planning_ref]][row[:route]]
+    if route_entry[:visits].any? { |type, *_| type == :rest }
+      raise ImportInvalidRow.new(I18n.t('destinations.import_file.too_many_rests_per_route'))
+    end
+
     if row[:route] && row[:ref_vehicle]
-      if @plannings_routes[row[:planning_ref]][row[:route]].key?(:ref_vehicle) &&
-         @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] != row[:ref_vehicle] ||
+      if route_entry.key?(:ref_vehicle) &&
+         route_entry[:ref_vehicle] != row[:ref_vehicle] ||
          @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] &&
          @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] != row[:route]
         raise ImportInvalidRow.new(I18n.t('destinations.import_file.refs_route_discordant'))
       end
-      @plannings_routes[row[:planning_ref]][row[:route]][:ref_vehicle] = row[:ref_vehicle]
+      route_entry[:ref_vehicle] = row[:ref_vehicle]
       @plannings_vehicles[row[:planning_ref]][row[:ref_vehicle]] = row[:route]
     end
-    @plannings_routes[row[:planning_ref]][row[:route]][:visits] << [
+    route_entry[:visits] << [
       :rest,
       {},
       {
         active: ValueToBoolean.value_to_boolean(row[:active], true),
         custom_attributes: row[:stop_custom_attributes],
-        index: normalize_route_order(row[:index])
+        index: normalize_route_order(row[:index]),
+        rest_start: row[:time_window_start_1],
+        rest_stop: row[:time_window_end_1],
+        rest_duration: row[:duration]
       }
     ]
   end

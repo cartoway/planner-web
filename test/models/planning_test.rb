@@ -172,6 +172,27 @@ class PlanningTest < ActiveSupport::TestCase
     assert vehicle_route.outdated, 'vehicle route should be outdated after receiving visit from import-like update'
   end
 
+  test 'update_routes assigns store reload to route matched by ref' do
+    planning = plannings(:planning_one)
+    planning.customer.update!(enable_store_stops: true)
+    store_reload = store_reloads(:store_reload_one)
+    vehicle_route = routes(:route_one_one)
+
+    StopStore.where(route_id: vehicle_route.id, store_reload_id: store_reload.id).delete_all
+
+    routes_hash = {
+      'route_one' => {
+        ref_vehicle: vehicles(:vehicle_one).ref,
+        visits: [[store_reload, { active: true, index: 1 }]]
+      }
+    }
+
+    assert planning.update_routes(routes_hash, false)
+
+    stop = vehicle_route.stops.reload.find { |s| s.is_a?(StopStore) && s.store_reload_id == store_reload.id }
+    assert_not_nil stop
+  end
+
   test 'should not set_routes for tags' do
     planning = plannings(:planning_one)
     planning.tags << tags(:tag_two)
