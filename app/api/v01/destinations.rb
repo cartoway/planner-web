@@ -121,6 +121,11 @@ class V01::Destinations < Grape::API
 
       quantities
     end
+
+    def normalize_destination_import_params!(dest_params)
+      dest_params[:ref_vehicle] ||= dest_params.delete(:vehicle) if dest_params[:vehicle].present?
+      dest_params[:visits]&.each { |visit| visit[:ref_vehicle] ||= visit.delete(:vehicle) if visit[:vehicle].present? }
+    end
   end
 
   resource :destinations do
@@ -201,10 +206,11 @@ class V01::Destinations < Grape::API
         use(:request_destination, skip_visit_id: true, json_import: true)
         use(:request_store)
         optional(:stop_type, type: String, default: nil, values: ['visit', 'store', 'reload'], desc: 'Type of the stop if the entry is associated to a planning')
-        optional(:route, type: String, default: nil, desc: 'Route name to add the destination to if associated to a planning')
-        optional(:ref_vehicle, type: String, desc: 'Vehicle reference to add the destination to if associated to a planning')
-        optional(:active, type: Boolean, desc: 'If the destination is active if associated to a planning')
-        optional(:stop_custom_attributes, type: Hash, desc: 'Custom attributes to add to the destination')
+        optional(:route, type: String, default: nil, desc: 'Legacy destination-level route. Prefer route on each visit.')
+        optional(:ref_vehicle, type: String, desc: 'Legacy destination-level vehicle reference. Prefer ref_vehicle on each visit.')
+        optional(:vehicle, type: String, desc: 'Legacy alias for ref_vehicle at destination level. Prefer ref_vehicle on each visit.')
+        optional(:active, type: Boolean, desc: 'Legacy destination-level active flag. Prefer active on each visit.')
+        optional(:stop_custom_attributes, type: Hash, desc: 'Custom attributes for the stop. Prefer stop_custom_attributes on each visit.')
       end
 
       exactly_one_of :file, :destinations, :remote
@@ -216,6 +222,7 @@ class V01::Destinations < Grape::API
       if params[:destinations]
         d_params = declared(params, include_missing: false) # Filter undeclared parameters
         import_destination_params = d_params[:destinations].each{ |dest_params|
+          normalize_destination_import_params!(dest_params)
           dest_params[:tag_ids] = filter_tag_ids_belong_to_customer(dest_params[:tag_ids], current_customer) if dest_params[:tag_ids]
           dest_params[:visits]&.each{ |hash|
             convert_timewindows(hash)

@@ -230,15 +230,15 @@ class Planning < ApplicationRecord
         tags_compatible?(visit.tags.to_a | visit.destination.tags.to_a)
       })
 
-      index_routes = (1..routes.size).to_a
-      routes_visits.each{ |_ref, r|
-        index = route_index_for_routes_visit(r)
+      index_routes = (1...routes.size).to_a
+      routes_visits.each{ |route_ref, r|
+        index = route_index_for_import(route_ref, r)
         index_routes.delete(index) if index
       }
       # Collect ref updates for batch processing
       ref_updates = []
       routes_visits.each{ |ref, r|
-        i = route_index_for_routes_visit(r) || index_routes.shift
+        i = route_index_for_import(ref, r) || index_routes.shift
         routes[i].ref = ref&.to_s
         ref_updates << { id: routes[i].id, ref: ref&.to_s }
         routes[i].add_objects(r[:visits], recompute, ignore_errors)
@@ -263,28 +263,34 @@ class Planning < ApplicationRecord
       reloaded_visits = visit_ids_from_routes.any? ? Visit.includes_destinations_and_stores.where(id: visit_ids_from_routes).index_by(&:id) : {}
       stop_visit_ids = reloaded_visits.values.each_with_object({}) { |visit, hash| hash[visit.id] = true }
 
-      existing_visit_ids = routes.select{ |route| route.vehicle_usage? && routes_visits.any?{ |k, _v| ParseIdsRefs.match_ref?(k, route.vehicle_usage.vehicle) } }.flat_map{ |route| route.stops.only_stop_visits.pluck(:visit_id) }.compact.uniq
-      existing_visits = existing_visit_ids.map{ |id| reloaded_visits[id] }.compact
       import_visits = routes_visits.flat_map{ |_ref, r| r[:visits] }
 
       import_visit_objects = import_visits.select{ |v| v[0].is_a?(Visit) }.map{ |v| v[0] }
-      compatible_existing_visits = (existing_visits - import_visit_objects).select{ |visit|
-        tags_compatible?(visit.tags.to_a | visit.destination.tags.to_a)
+      if import_visit_objects.any?
+        existing_visit_ids = routes.select{ |route|
+          routes_visits.any?{ |route_ref, routes_visit| route_matches_import?(route, route_ref, routes_visit) }
+        }.flat_map{ |route| route.stops.only_stop_visits.pluck(:visit_id) }.compact.uniq
+        existing_visits = existing_visit_ids.map{ |id| reloaded_visits[id] }.compact
+        compatible_existing_visits = (existing_visits - import_visit_objects).select{ |visit|
+          tags_compatible?(visit.tags.to_a | visit.destination.tags.to_a)
+        }
+
+        routes.find{ |route| !route.vehicle_usage? }.add_visits(compatible_existing_visits.map{ |v| [v, true] })
+      end
+
+      index_routes = (1...routes.size).to_a
+      routes_visits.each{ |route_ref, r|
+        index = route_index_for_import(route_ref, r)
+        index_routes.delete(index) if index
       }
 
-      routes.find{ |route| !route.vehicle_usage? }.add_visits(compatible_existing_visits.map{ |v| [v, true] })
-
-      index_routes = (1..routes.size).to_a
-      routes_visits.each{ |_ref, r|
-        index_routes.delete(routes.index{ |rr| rr.vehicle_usage? && ParseIdsRefs.match_ref?(r[:ref_vehicle], rr.vehicle_usage.vehicle) }) if r[:ref_vehicle]
-      }
-
+      modified_routes = []
       routes_visits.each{ |ref, r|
         next if r[:visits].empty?
 
         i =
           if ref
-            routes.index{ |rr| r[:ref_vehicle] && rr.vehicle_usage? && ParseIdsRefs.match_ref?(r[:ref_vehicle], rr.vehicle_usage.vehicle) } || index_routes.shift
+            route_index_for_import(ref, r) || index_routes.shift
           else
             routes.index{ |route| !route.vehicle_usage? }
           end
@@ -309,9 +315,22 @@ class Planning < ApplicationRecord
             routes[i].add_rest(stop_index, stop_attributes)
           end
         }
+        modified_routes << routes[i]
       }
       new_stops = routes.flat_map(&:stops).select(&:new_record?)
       Stop.import(new_stops, validate: false) if new_stops.any?
+
+      modified_route_ids = modified_routes.map(&:id).compact.uniq
+      modified_routes.uniq.each do |route|
+        route.persist_stop_indices!(route.stops.select(&:persisted?))
+        route.outdated = true
+        route.sync_route_data_stop_counters!
+      end
+      if modified_route_ids.any?
+        Route.where(id: modified_route_ids).update_all(outdated: true)
+        modified_routes.uniq.each(&:reload)
+      end
+
       true
     else
       false
@@ -1260,6 +1279,22 @@ class Planning < ApplicationRecord
       routes.index { |route| route.vehicle_usage_id == routes_visit[:vehicle_usage_id] }
     elsif routes_visit[:ref_vehicle]
       routes.index { |route| route.vehicle_usage? && ParseIdsRefs.match_ref?(routes_visit[:ref_vehicle], route.vehicle_usage.vehicle) }
+    end
+  end
+
+  def route_index_for_import(route_ref, routes_visit)
+    routes.index { |route| route_matches_import?(route, route_ref, routes_visit) }
+  end
+
+  def route_matches_import?(route, route_ref, routes_visit)
+    return false unless route.vehicle_usage?
+
+    if route_ref.present? && route.ref.present? && ParseIdsRefs.match_ref?(route_ref, route)
+      true
+    elsif routes_visit[:ref_vehicle].present?
+      ParseIdsRefs.match_ref?(routes_visit[:ref_vehicle], route.vehicle_usage.vehicle)
+    else
+      false
     end
   end
 
