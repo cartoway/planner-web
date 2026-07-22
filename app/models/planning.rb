@@ -251,6 +251,7 @@ class Planning < ApplicationRecord
         Route.where(id: ref_updates.map { |u| u[:id] })
              .update_all(["ref = CASE id #{fragments} END, outdated = true", *binds])
       end
+      routes.each(&:sync_route_data_stop_counters!)
       true
     else
       false
@@ -324,8 +325,8 @@ class Planning < ApplicationRecord
       modified_routes.uniq.each do |route|
         route.persist_stop_indices!(route.stops.select(&:persisted?))
         route.outdated = true
-        route.sync_route_data_stop_counters!
       end
+      routes.each(&:sync_route_data_stop_counters!)
       if modified_route_ids.any?
         Route.where(id: modified_route_ids).update_all(outdated: true)
         modified_routes.uniq.each(&:reload)
@@ -514,6 +515,7 @@ class Planning < ApplicationRecord
     self.routes = Route.where(planning_id: self.id).includes_vehicle_usages.ordered_for_planning
     self.routes.each { |route| route.ensure_route_geojson }
     self.routes.each{ |r| r.init_stops(false) }
+    self.routes.each(&:sync_route_data_stop_counters!)
     self
   end
 
