@@ -44,6 +44,7 @@
   - Route compute: `out_of_max_ride_distance` / `out_of_max_ride_duration` flags on `route_data` now reset correctly on recompute
   - Planning map: recenter on the stop when its popup overflows the visible map area (including under the sidebar)
   - Planning duplicate: reset the customer `plannings_count` counter after duplication
+  - Vehicle usage custom attributes description are now correctly displayed
 
 ## V109.0.2
   ### Added
