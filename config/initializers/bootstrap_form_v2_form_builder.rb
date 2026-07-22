@@ -20,11 +20,11 @@ module BootstrapForm
 
     # Copy of v1 defaults — v2 views often pass `label_col` / `control_col` explicitly; adjust here for v2-wide defaults.
     def default_label_col
-      'col-md-offset-1 col-md-10'
+      'col-md-10 offset-md-1 fw-bold'
     end
 
     def default_control_col
-      'col-md-offset-1 col-md-10 field'
+      'col-md-10 offset-md-1 field'
     end
 
     def default_layout

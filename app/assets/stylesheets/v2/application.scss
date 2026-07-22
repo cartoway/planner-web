@@ -4,6 +4,8 @@
 
 @import "variables";
 @import "font-awesome";
+// Shared app chrome (menu-left, #wrapper, .main shell, flash) — not the full v1 application.css bundle.
+@import "scaffolds";
 @import "v2/slide_panel";
 @import "v2/searchable_checklist_dropdown";
 @import "v2/destinations_index";
@@ -102,6 +104,52 @@
         color: darken(#fff, 18%) !important;
         text-decoration: none !important;
       }
+    }
+  }
+
+  // Ported from bootstrap_and_overrides (not in scaffolds): customer dropdown label
+  .dropdown .menu_label {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  // Collapse section labels live in a flex row (icon + .hidden-menu.menu_label); need min-width: 0 for ellipsis
+  &.open {
+    .menu-list-item > a {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .menu-list-item > a.menu-section .d-flex,
+    .menu-list-item > a[data-bs-toggle="collapse"] .d-flex {
+      flex: 1 1 auto;
+      justify-content: flex-start !important;
+      width: 100%;
+      min-width: 0;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    .menu-list-item > a .hidden-menu {
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .hidden-menu.menu_label,
+    .hidden-menu .menu_label {
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }
@@ -221,6 +269,8 @@
       min-width: 0;
     }
 
+    }
+
     // Tom Select inside `.input-group` + trailing `input-group-text` (bootstrap_form append / input_group).
     // Do not use width: 100% here: it would fill the whole row and push the addon to the next line.
     .form-sidebar-inner .input-group > .ts-wrapper {
@@ -270,30 +320,6 @@
       .visit-open-close-input .input-group > .form-control {
         min-width: 4.5rem;
         flex: 1 1 4rem;
-      }
-
-      .collapse .mb-3.row {
-        flex-direction: column;
-        align-items: stretch;
-        margin-left: 0;
-        margin-right: 0;
-
-        > label.col-form-label,
-        > label.form-label,
-        > .col-form-label {
-          width: 100%;
-          max-width: 100%;
-          flex: 0 0 auto;
-          padding-bottom: 0.125rem;
-          text-align: start;
-        }
-
-        > div[class*="col-md"],
-        > div[class*="col-lg"] {
-          width: 100%;
-          max-width: 100%;
-          flex: 0 0 auto;
-        }
       }
 
       .custom_field {
