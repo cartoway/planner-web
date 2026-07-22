@@ -154,11 +154,11 @@ class DestinationsController < ApplicationController
       @destination = current_user.customer.destinations.build(p)
 
       if @destination.save && current_user.customer.save
-        format.html { redirect_to link_back || edit_destination_path(@destination), notice: t('activerecord.successful.messages.created', model: @destination.class.model_name.human) }
+        format.html { redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.created', model: @destination.class.model_name.human) }
       else
         flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
         format.html do
-          if turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
+          if v2_destinations_sidebar_submit?
             render "new_sidebar", layout: false, status: :unprocessable_entity
           else
             render action: "new"
@@ -176,11 +176,11 @@ class DestinationsController < ApplicationController
         @destination.assign_attributes(p)
 
         if @destination.save && @destination.customer.save
-          format.html { redirect_to link_back || edit_destination_path(@destination), notice: t('activerecord.successful.messages.updated', model: @destination.class.model_name.human) }
+          format.html { redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.updated', model: @destination.class.model_name.human) }
         else
           flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
           format.html do
-            if turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
+            if v2_destinations_sidebar_submit?
               render "edit_sidebar", layout: false, status: :unprocessable_entity
             else
               render action: "edit"
@@ -474,5 +474,18 @@ class DestinationsController < ApplicationController
   # Never trust parameters from the scary internet, only allow the white list through.
   def import_tomtom_params
     params.require(:import_tomtom).permit(:replace)
+  end
+
+  def v2_destinations_sidebar_submit?
+    ActiveModel::Type::Boolean.new.cast(params[:v2_sidebar]) ||
+      (turbo_frame_request? && turbo_frame_request_id == 'form_sidebar')
+  end
+
+  def destination_save_redirect_path
+    if v2_destinations_sidebar_submit?
+      destinations_path(highlight_destination_id: @destination.id)
+    else
+      edit_destination_path(@destination)
+    end
   end
 end

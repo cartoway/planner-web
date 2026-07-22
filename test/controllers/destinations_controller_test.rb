@@ -226,6 +226,27 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '#geocoding_result_free.row label.col-form-label.fw-bold[for="displayed-geocoding-result"]', 1
   end
 
+  test 'v2 edit sidebar wires non-blocking geocoding prompt when form is mutable' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select '#destination-details[data-controller~="v2--destination-geocoding"]', 1
+    assert_select '#destination-geocode-prompt.d-none[data-v2--destination-geocoding-target="prompt"]', 1
+    assert_select 'button[data-v2--destination-geocoding-target="geocodeButton"][data-action*="v2--destination-geocoding#geocode"]', 1
+    assert_select '#destination-details[data-v2--destination-geocoding-confirm-overwrite-point-value]', 1
+    assert_select '#destination-geocode-apply.d-none[data-v2--destination-geocoding-target="geocodeApplyPanel"]', 1
+    assert_select 'button[data-v2--destination-geocoding-target="geocodeApplyButton"][data-action*="applyGeocodedAddress"]', 1
+    assert_select '#geocoding_result_free[data-v2--destination-geocoding-target="geocodingResultRow"]', 1
+  end
+
+  test 'v2 new sidebar wires geocoding prompt on mutable create form' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :new
+    assert_response :success
+    assert_select '#destination-details[data-controller~="v2--destination-geocoding"]', 1
+    assert_select '#destination-geocode-prompt', 1
+  end
+
   test 'v2 edit sidebar visits list wires visit-collapses controller on #visits' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     get :edit, params: { id: @destination.id }
@@ -291,7 +312,8 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar.form-horizontal[action*="destinations"]', 1
-    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="form_sidebar"]', 1
+    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="_top"]', 1
+    assert_select 'turbo-frame#form_sidebar input[name="v2_sidebar"][value="1"]', 1
     assert_select 'turbo-frame#form_sidebar .form-submit-bar.is-hidden', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar input[type="submit"]', 0
     assert_select 'turbo-frame#form_sidebar .form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
@@ -339,7 +361,7 @@ class DestinationsControllerTest < ActionController::TestCase
   test 'create with validation errors renders new_sidebar when requested via Turbo Frame' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     assert_no_difference('Destination.count') do
-      post :create, params: { destination: {
+      post :create, params: { v2_sidebar: '1', destination: {
         name: '',
         city: @destination.city,
         postalcode: @destination.postalcode,
@@ -348,7 +370,42 @@ class DestinationsControllerTest < ActionController::TestCase
     end
     assert_response :unprocessable_entity
     assert_select 'turbo-frame#form_sidebar', 1
-    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="form_sidebar"]', 1
+    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="_top"]', 1
+  end
+
+  test 'v2 create from sidebar redirects to destinations index' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    assert_difference('Destination.count', 1) do
+      post :create, params: { v2_sidebar: '1', destination: {
+        city: @destination.city,
+        lat: @destination.lat,
+        lng: @destination.lng,
+        name: 'v2 sidebar create',
+        postalcode: @destination.postalcode,
+        street: @destination.street,
+        state: @destination.state
+      } }
+    end
+    created = assigns(:destination)
+    assert_redirected_to destinations_path(highlight_destination_id: created.id)
+  end
+
+  test 'v2 update from sidebar redirects to destinations index' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    patch :update, params: {
+      id: @destination.id,
+      v2_sidebar: '1',
+      destination: {
+        city: @destination.city,
+        lat: @destination.lat,
+        lng: @destination.lng,
+        name: 'v2 sidebar update',
+        postalcode: @destination.postalcode,
+        street: @destination.street,
+        state: @destination.state
+      }
+    }
+    assert_redirected_to destinations_path(highlight_destination_id: @destination.id)
   end
 
   test 'v2 edit sidebar shows map position hint and no embedded Leaflet map' do
@@ -709,7 +766,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'should not update destination in form_sidebar turbo frame' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
-    patch :update, params: { id: @destination, destination: { name: '' } }
+    patch :update, params: { id: @destination, v2_sidebar: '1', destination: { name: '' } }
 
     assert_response :unprocessable_entity
     assert_select 'turbo-frame#form_sidebar', 1

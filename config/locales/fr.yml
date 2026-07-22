@@ -1449,6 +1449,8 @@ fr:
       v2_map_position_drag_disable: Arrêter le déplacement du marker
       geocoding_accuracy_none: Non applicable
       geocoding_fail: Le géocodage a échoué
+      geocode_prompt: Géocoder l'adresse
+      geocode_in_progress: Géocodage…
       geocoding_accuracy_help: Qualité de la conversion de l'adresse vers la position géographique
       country_default: '%{n} (valeur par défaut)'
       geocoding_level:

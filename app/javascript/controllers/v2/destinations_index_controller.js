@@ -155,10 +155,12 @@ export default class extends Controller {
     this._initSelectionAndDestroy(signal)
 
     this._onPositionDragToggleDocumentClick = this._onPositionDragToggleDocumentClick.bind(this)
+    this._onDestinationGeocoded = this._onDestinationGeocoded.bind(this)
     this._onPositionDragResize = () => {
       if (this._positionEdit?.active) this._syncPositionDragCancelButtonPosition()
     }
     document.addEventListener('click', this._onPositionDragToggleDocumentClick, { signal })
+    document.addEventListener('v2:destination-geocoded', this._onDestinationGeocoded, { signal })
     window.addEventListener('resize', this._onPositionDragResize, { signal })
 
     document.addEventListener('turbo:before-cache', this._beforeCache, { signal })
@@ -916,6 +918,35 @@ export default class extends Controller {
       this._removeDomMarker()
       this._syncHiddenGeojsonPins()
     }
+  }
+
+  _onDestinationGeocoded (event) {
+    if (!this._map) return
+    const detail = event.detail || {}
+    const destinationId = detail.destinationId != null ? String(detail.destinationId) : ''
+    if (!destinationId || destinationId === '0') return
+
+    const form = document.querySelector('#form_sidebar #destination-form-sidebar')
+    const formId = form?.getAttribute('data-destination_id')
+    if (!formId || String(formId) !== destinationId) return
+
+    const lat = typeof detail.lat === 'number' ? detail.lat : parseFloat(String(detail.lat))
+    const lng = typeof detail.lng === 'number' ? detail.lng : parseFloat(String(detail.lng))
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      if (this._domMarkerId === destinationId) {
+        this._removeDomMarker()
+        this._syncHiddenGeojsonPins()
+      }
+      return
+    }
+
+    if (this._mapLayers) this._mapLayers.updateDestinationCoords(destinationId, lng, lat)
+    this._showDomMarker(destinationId, { name: detail.name || '', lngLat: [lng, lat], active: true })
+
+    try {
+      const zoom = Math.max(this._map.getZoom(), 16)
+      this._map.flyTo({ center: [lng, lat], zoom, padding: this._mapFlyToPadding() })
+    } catch (e) { /* ignore */ }
   }
 
   /**
