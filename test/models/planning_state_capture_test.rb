@@ -36,6 +36,19 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
     assert state.statistics.key?('routes_visits_duration')
   end
 
+  test 'capture_state includes unassigned stops in stop counters' do
+    expected_stops_size = @planning.routes.sum { |route| route.stops_size.to_i }
+    expected_stops_size_active = @planning.routes.select(&:vehicle_usage).sum { |route| route.size_active.to_i }
+    out_of_route = @planning.routes.find { |route| route.vehicle_usage_id.nil? }
+    assert_operator out_of_route.stops_size.to_i, :>, 0
+
+    @planning.capture_state!(trigger: 'move')
+    statistics = @planning.planning_states.last.statistics
+
+    assert_equal expected_stops_size, statistics['stops_size']
+    assert_equal expected_stops_size_active, statistics['stops_size_active']
+  end
+
   test 'capture_state does not load stops on planning association' do
     planning = Planning.where(id: plannings(:planning_one).id).preload_routes_without_stops.first!
 
