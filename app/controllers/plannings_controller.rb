@@ -810,10 +810,24 @@ class PlanningsController < ApplicationController
             previous_route = @planning.routes.find { |r| r.id == previous_route_id }
             fast_path_used = move_stop(params[:stop_id], route, previous_route_id, previous_route)
           else
-            ids.each{ |id|
+            index = Integer(params[:index]) if params[:index] && !params[:index].empty?
+            if index && (index < -1 || index == 0 || index > route.stops.length + 1)
+              raise Exceptions::StopIndexError.new(route, "Invalid index #{index} provided")
+            end
+
+            stops_to_move = ids.map { |id|
               previous_route = @planning.routes.find { |r| r.id == id[:route_id] } || route
-              fast_path_used ||= move_stop(id[:stop_id], route, id[:route_id], previous_route)
-            }
+              previous_route.stops.find { |s| s.id == id[:stop_id] }
+            }.compact
+
+            if !route.vehicle_usage? && stops_to_move.all? { |stop|
+                 stop.is_a?(StopVisit) && !stop.active? && stop.route.vehicle_usage?
+               }
+              @planning.fast_move_inactive_stops_to_out_of_route!(route, stops_to_move, index)
+              fast_path_used = true
+            else
+              fast_path_used = stops_to_move.map { |stop| @planning.move_stop(route, stop, index) }.all?
+            end
           end
 
           if fast_path_used
