@@ -138,6 +138,45 @@ class PlanningTest < ActiveSupport::TestCase
     planning.save!
   end
 
+  test 'default_empty_routes syncs stop counters for routes created with rest only' do
+    planning = plannings(:planning_one)
+    planning.default_empty_routes
+
+    routes_with_rest = planning.routes.select { |route| route.vehicle_usage? && route.vehicle_usage.rest? }
+    assert routes_with_rest.any?, 'expected at least one vehicle route with rest configured'
+
+    routes_with_rest.each do |route|
+      assert_equal 1, route.stops.count { |stop| stop.is_a?(StopRest) }
+      assert_equal route.stops.size, route.route_data.reload.stops_size
+      assert_equal route.stops.count(&:active), route.route_data.size_active
+    end
+  end
+
+  test 'update_routes syncs stop counters for untouched routes with rest' do
+    planning = plannings(:planning_one)
+    planning.default_empty_routes
+
+    untouched = planning.routes.find { |route| route.vehicle_usage? && route.vehicle_usage.rest? }
+    imported = planning.routes.find { |route| route.vehicle_usage? && route != untouched }
+    assert_not_nil untouched
+    assert_not_nil imported
+
+    untouched.route_data.update_columns(stops_size: 0, size_active: 0)
+
+    routes_hash = {
+      'imported_route' => {
+        ref_vehicle: imported.vehicle_usage.vehicle.ref,
+        visits: [[visits(:visit_one), { active: true, custom_attributes: {}, index: 1 }]]
+      }
+    }
+
+    assert planning.update_routes(routes_hash, false)
+
+    untouched.reload
+    assert_equal untouched.stops.size, untouched.route_data.stops_size
+    assert_equal untouched.stops.count(&:active), untouched.route_data.size_active
+  end
+
   test 'update_routes marks vehicle routes outdated when moving visit from unplanned to vehicle' do
     planning = plannings(:planning_one)
     out_route = routes(:route_zero_one)
