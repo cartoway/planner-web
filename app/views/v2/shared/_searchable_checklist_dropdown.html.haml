@@ -35,7 +35,7 @@
 - menu_classes << 'show' if open
 - toggle_data = { 'bs-toggle': 'dropdown', 'bs-auto-close': 'outside' }
 .dropdown.searchable-checklist-dropdown{class: wrapper_class, data: { controller: controllers, v2__searchable_checklist_dropdown_max_active_value: max_active, v2__searchable_checklist_dropdown_default_active_value: default_active_ids.to_json }}
-  %button.btn.btn-light.btn-sm.dropdown-toggle.searchable-checklist-dropdown-toggle{type: 'button', data: toggle_data, 'aria-expanded': open ? 'true' : 'false', title: toggle_title, class: ('show' if open)}
+  %button.btn.btn-light.btn-xs.dropdown-toggle.searchable-checklist-dropdown-toggle{type: 'button', data: toggle_data, 'aria-expanded': open ? 'true' : 'false', title: toggle_title, class: ('show' if open)}
     - if toggle_icon_class.present?
       %i{class: toggle_icon_class}
     %span{data: { v2__searchable_checklist_dropdown_target: 'count' }}= count_label
