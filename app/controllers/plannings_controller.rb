@@ -228,7 +228,6 @@ class PlanningsController < ApplicationController
   def refresh_route
     @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.first!
     @with_stops = true
-    stops_count = @route.route_data.stops_size
     page = params[:out_page] || 1
     stops_for_sidebar =
       if @route.vehicle_usage_id
@@ -240,6 +239,13 @@ class PlanningsController < ApplicationController
         current_route = @route.dup
         current_route.stops = @out_stops
         @out_stops
+      end
+    # Vehicle routes: use loaded stops. Out-of-route is paginated so keep persisted counters.
+    stops_count =
+      if @route.vehicle_usage_id
+        stops_for_sidebar.size
+      else
+        @route.route_data.stops_size
       end
     planning_summary = planning_summary(@planning)
     route_data = RouteSidebarSerializer.new(
