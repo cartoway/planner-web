@@ -95,11 +95,11 @@ module PlanningStateCapture
 
     planning.routes.each do |route|
       distance_total += route.distance.to_f
+      stops_size += route.stops_size.to_i
       next unless route.vehicle_usage
 
       duration_total += route.total_duration.to_i
       work_duration_total += route.work_duration.to_i
-      stops_size += route.stops_size.to_i
       stops_size_active += route.size_active.to_i
     end
 
