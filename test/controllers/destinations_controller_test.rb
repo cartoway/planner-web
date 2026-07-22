@@ -210,6 +210,22 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar[data-tag-entity-create-allowed]', 1
   end
 
+  test 'v2 edit sidebar field labels are bold' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar #destination_city_input label.col-form-label.fw-bold', 1
+  end
+
+  test 'v2 edit sidebar geocoding result is display-only, not an editable input' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select 'input[name="destination[displayed_geocoding_result]"]', 0
+    assert_select 'input#displayed-geocoding-result.form-control[disabled][data-displayed-geocoding-result]', 1
+    assert_select '#geocoding_result_free.row label.col-form-label.fw-bold[for="displayed-geocoding-result"]', 1
+  end
+
   test 'v2 edit sidebar visits list wires visit-collapses controller on #visits' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     get :edit, params: { id: @destination.id }

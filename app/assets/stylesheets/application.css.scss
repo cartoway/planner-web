@@ -40,9 +40,31 @@
  *= require jquery-ui-overrides
  *= require select2-overrides
 
- * From local
+ * From local — v1 page styles only.
+ * v2/application, v2/layout_bootstrap_overrides and lookbook_preview are linked explicitly
+ * (see v2/layouts/_head.html.haml and layouts/lookbook_preview.html.haml); do not require_tree them here.
  *= require_self
- *= require_tree .
+ *= require_tree ./api_web
+ *= require active_inactive_drag_drop
+ *= require ajax
+ *= require customers
+ *= require deliverables_by_vehicles
+ *= require deliverable_units
+ *= require destinations
+ *= require index
+ *= require order_arrays
+ *= require plannings_by_destinations
+ *= require plannings
+ *= require routes_by_vehicles
+ *= require routes
+ *= require scaffolds
+ *= require stops
+ *= require stores
+ *= require tags
+ *= require vehicles
+ *= require vehicle_usages
+ *= require vehicle_usage_sets
+ *= require zonings
  */
 
  @import "font-awesome";

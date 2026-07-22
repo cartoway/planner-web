@@ -5,9 +5,10 @@
 - turbo_submit_target = @destination.persisted? ? "_top" : "form_sidebar"
 - form_html = { class: "form-horizontal", "data-destination_id" => (@destination.id or 0), id: "destination-form-sidebar", "data-turbo-frame" => turbo_submit_target, "data-position-editable" => (dest_form_mutable ? "true" : "false"), "data-tag-entity-create-allowed" => (current_user_form_create?(:tags) ? "true" : "false") }
 - form_html["data-v2--dirty-form-submit-target"] = "form" if dest_form_mutable
-- v2_label_col = 'col-md-offset-1 col-md-10'
-- v2_control_col = 'col-md-offset-1 col-md-10 field'
-= bootstrap_form_for(@destination, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col, html: form_html) do |f|
+- v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
+- v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
+- v2_control_col = 'col-md-10 offset-md-1 field'
+= bootstrap_form_for(@destination, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_bootstrap_label_col, control_col: v2_control_col, html: form_html) do |f|
   = render 'shared/error_messages', model: @destination
   %fieldset#destination-details
     - if @destination.customer.enable_references
@@ -19,10 +20,10 @@
     #destination_city_input.mb-3.row
       %label.sr-only{for: "destination_postalcode"}= t 'activerecord.attributes.destination.postalcode'
       %label.sr-only{for: "destination_city"}= t 'activerecord.attributes.destination.city'
-      %label.col-md-offset-1.col-md-10.field
+      %label{class: v2_label_col}
         = t 'activerecord.attributes.destination.postalcode'
         \/ #{t 'activerecord.attributes.destination.city'}
-      .col-md-offset-1.col-md-10.field
+      %div{class: v2_control_col}
         .input-group
           = text_field :destination, :postalcode, maxlength: 17, class: 'form-control'
           = text_field :destination, :city, class: 'form-control'
@@ -30,9 +31,9 @@
             %i.fa.fa-map.fa-fw
     - if !@destination.customer.with_state
       #destination_country_input.mb-3.row
-        %label.col-md-offset-1.col-md-10.field
+        %label{class: v2_label_col}
           = "#{t('activerecord.attributes.destination.state')}/#{t('activerecord.attributes.destination.country')}"
-        .col-md-offset-1.col-md-10.field
+        %div{class: v2_control_col}
           .input-group
             = text_field :destination, :state, class: 'form-control'
             = text_field :destination, :country, placeholder: df.call('country_default', n: @destination.customer.default_country), class: 'form-control'
@@ -41,8 +42,8 @@
     - else
       = f.text_field :country, {placeholder: df.call('country_default', n: @destination.customer.default_country)}
     .mb-3.row
-      %label.col-md-offset-1.col-md-10.field{for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
-      .col-md-offset-1.col-md-10.field
+      %label{class: v2_label_col, for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
+      %div{class: v2_control_col}
         #geocoding_accuracy{ class: ('d-none' unless @destination.geocoding_accuracy) }
           #geocoding-progress.progress
             %input{name: "destination[geocoding_accuracy]", type: "hidden", value: @destination.geocoding_accuracy}
@@ -70,23 +71,24 @@
             %span#geocoding-level-value
               - if @destination.geocoding_level
                 = t("destinations.form.geocoding_level.#{@destination.geocoding_level}")
-      #geocoding_result_free.col-md-offset-1.col-md-10.field{ class: ('d-none' if @destination.geocoding_result.empty?)}
-        %label= t 'activerecord.attributes.destination.geocoding_result'
-        %input.form-control{ name: "destination[displayed_geocoding_result]", value: @destination.geocoding_result['free'], readonly: 'readonly'}
-      .col-md-offset-1.col-md-10.field
+      #geocoding_result_free.row{ class: ('d-none' if @destination.geocoding_result.empty?) }
+        %label{class: v2_label_col, for: 'displayed-geocoding-result'}= t 'activerecord.attributes.destination.geocoding_result'
+        %div{class: v2_control_col}
+          %input.form-control#displayed-geocoding-result{type: 'text', value: @destination.geocoding_result['free'], disabled: true, tabindex: -1, aria: { readonly: true }, data: { displayed_geocoding_result: true }}
+      %div{class: v2_control_col}
         #reverse-geocode
-    .mb-3.row
-      .col-md-offset-1.col-md-offset-1.col-md-10.field
+    .row
+      %div{class: v2_control_col}
         .alert.alert-info.small.v2-destination-map-position-hint.mb-0{role: "status"}
           %i.fa.fa-map.fa-fw
           = df.call('v2_list_map_position_help')
     #destination_geoloc_input.mb-3.row
       %label.sr-only{for: "destination_lat"}= t 'activerecord.attributes.destination.lat'
       %label.sr-only{for: "destination_lnt"}= t 'activerecord.attributes.destination.lng'
-      %label.col-md-offset-1.col-md-10.field
+      %label{class: v2_label_col}
         = t 'activerecord.attributes.destination.lat'
         \/ #{t 'activerecord.attributes.destination.lng'}
-      .col-md-offset-1.col-md-10.field
+      %div{class: v2_control_col}
         .input-group
           = number_field :destination, :lat, step: 0.000001, class: 'form-control'
           = number_field :destination, :lng, step: 0.000001, class: 'form-control'
@@ -114,14 +116,14 @@
     - if @destination.visits.size > 1
       #visits-header.row
         .col-md-2
-        #visits-tools.col-xs-12.col-md-10
-          .pull-right
+        #visits-tools.col-12.col-md-10
+          .float-end
             %button#visits-expand.btn.btn-light.btn-sm{type: "button", title: "#{t('destinations.form.visit.collapse_all_help')}", data: {action: "v2--visit-collapses#toggleAll"}}
               %i.fa.fa-angle-double-down.fa-fw
               = t('destinations.form.visit.collapse_all')
         .col-md-2
     - @destination.visits.each_with_index do |visit, i|
-      = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_control_col: v2_control_col
+      = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
   - if @destination.persisted?
     - if dest_form_mutable
       = link_to append_visit_destination_path(@destination), class: 'btn btn-light btn-sm', id: 'visit-new', role: 'button', title: "#{t('destinations.form.visit.new_help')}", data: { turbo_method: :post, turbo_frame: 'form_sidebar', turbo_prefetch: false } do
