@@ -451,6 +451,7 @@ fr:
         balance_help: Solde du service d'envoi de SMS.
         title: Service d'envoi
         credentials_invalid: Identifiants invalides
+        service_unavailable: Service indisponible
         vonage:
           api_key: Clé API
           api_secret: Secret API

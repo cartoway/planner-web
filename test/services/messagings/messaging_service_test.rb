@@ -164,4 +164,28 @@ class MessagingServiceTest < ActiveSupport::TestCase
 
     assert_nil service.balance
   end
+
+  test 'should return service unavailable for sms_partner when balance request fails with network error' do
+    @reseller.update!(
+      messagings: {
+        sms_partner: { enable: true, api_key: 'key' }
+      }
+    )
+    service = SmsPartnerService.new(@customer.reseller, customer: @customer)
+    RestClient.stubs(:get).raises(OpenSSL::SSL::SSLError.new('certificate verify failed'))
+
+    assert_equal MessagingService::SERVICE_UNAVAILABLE, service.balance
+  end
+
+  test 'should return service unavailable for vonage when balance request fails with network error' do
+    @reseller.update!(
+      messagings: {
+        vonage: { enable: true, api_key: 'key', api_secret: 'secret' }
+      }
+    )
+    service = VonageService.new(@customer.reseller, customer: @customer)
+    Vonage::Client.any_instance.stubs(:account).raises(OpenSSL::SSL::SSLError.new('certificate verify failed'))
+
+    assert_equal MessagingService::SERVICE_UNAVAILABLE, service.balance
+  end
 end
