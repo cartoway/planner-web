@@ -444,6 +444,7 @@ en:
         balance_help: Balance of the SMS sending service.
         title: Messaging service
         credentials_invalid: Invalid credentials
+        service_unavailable: Service unavailable
         vonage:
           title: Vonage
           help: Allows sending SMS with Vonage.
