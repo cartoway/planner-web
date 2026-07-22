@@ -968,18 +968,37 @@ class Route < ApplicationRecord
     shift_index(from, by, to)
   end
 
-  def reindex_stops_after_extracting!(removed_stop_id:)
-    remaining_stops = stops.select { |s| s.id != removed_stop_id && s.route_id == id }
-    remaining_stops.sort_by(&:index).each_with_index { |s, i| s.index = i + 1 }
+  def reindex_stops_after_extracting!(removed_stop_id: nil, removed_stop_ids: nil)
+    removed_ids = Array(removed_stop_ids.presence || removed_stop_id).compact
+    remaining_stops = stops.select { |stop| !removed_ids.include?(stop.id) && stop.route_id == id }
+    remaining_stops.sort_by(&:index).each_with_index { |stop, i| stop.index = i + 1 }
     persist_stop_indices!(remaining_stops)
+  end
+
+  def after_inactive_stops_extracted!(removed_stop_ids)
+    reindex_stops_after_extracting!(removed_stop_ids: removed_stop_ids)
+    sync_route_data_stop_counters!
+    route_data.reload if route_data&.persisted?
+    patch_route_geojson_after_stop_visit_removed!(removed_stop_ids: removed_stop_ids)
+    if association(:stops).loaded?
+      association(:stops).target.reject! { |stop| removed_stop_ids.include?(stop.id) }
+    end
+    mark_computed_without_recompute!
+  end
+
+  def after_inactive_stops_received!(stops)
+    sync_out_of_route_metrics!
+    route_data.reload if route_data&.persisted?
+    Array(stops).each { |stop| append_stop_visit_to_geojson!(stop) }
+    association(:stops).target.concat(Array(stops)) if association(:stops).loaded?
+    mark_computed_without_recompute!
   end
 
   def persist_stop_indices!(stops_to_persist)
     return if stops_to_persist.empty?
 
     import_options = {
-      validate_with_context: :update,
-      raise_error: true,
+      validate: false,
       on_duplicate_key_update: { conflict_target: [:id], columns: [:index] }
     }
 
@@ -1047,10 +1066,11 @@ class Route < ApplicationRecord
     true
   end
 
-  def patch_route_geojson_after_stop_visit_removed!(removed_stop_id:)
+  def patch_route_geojson_after_stop_visit_removed!(removed_stop_id: nil, removed_stop_ids: nil)
     return unless route_geojson
     return if route_geojson.points.blank?
 
+    removed_ids = Array(removed_stop_ids.presence || removed_stop_id).map(&:to_i)
     new_points = []
     route_geojson.points.each do |feature_json|
       begin
@@ -1061,7 +1081,7 @@ class Route < ApplicationRecord
       end
 
       sid = feature.dig('properties', 'stop_id')
-      next if sid.present? && sid.to_i == removed_stop_id.to_i
+      next if sid.present? && removed_ids.include?(sid.to_i)
 
       new_points << feature.to_json
     end

@@ -67,8 +67,6 @@ export class ExtractInactiveStopsModal {
 
     $(document).off('extract-inactive-stops:content-updated').on('extract-inactive-stops:content-updated', () => {
       try {
-        $('[type="checkbox"][data-toggle="disable-multiple-actions"]').toggleMultipleActions();
-
         $(`${this.modalSelector} .move-stops-stop-id`)
           .off('change.extractInactivePermissions')
           .on('change.extractInactivePermissions', () => {

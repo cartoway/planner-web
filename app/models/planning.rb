@@ -660,7 +660,7 @@ class Planning < ApplicationRecord
 
     if stop.route != route
       if fast_move_inactive_stop_to_out_of_route?(stop, route)
-        fast_move_inactive_stop_to_out_of_route!(route, stop, index)
+        fast_move_inactive_stops_to_out_of_route!(route, [stop], index)
         true
       elsif stop.is_a?(StopVisit)
         visit, active = stop.visit, stop.active
@@ -691,6 +691,37 @@ class Planning < ApplicationRecord
       route.move_stop(stop, index || 1)
       false
     end
+  end
+
+  # Bulk-move inactive StopVisits to out-of-route with activerecord-import,
+  # then reindex each impacted source route once.
+  def fast_move_inactive_stops_to_out_of_route!(out_of_route, stops, index = -1)
+    stops = Array(stops).compact
+    return if stops.empty?
+    raise ArgumentError, 'target must be out-of-route' if out_of_route.vehicle_usage?
+
+    stops_by_source = stops.group_by(&:route_id)
+    next_index =
+      if index.nil? || index.to_i < 0
+        (Stop.where(route_id: out_of_route.id).maximum(:index) || 0) + 1
+      else
+        index.to_i
+      end
+
+    stops.each do |stop|
+      stop.assign_attributes(route_id: out_of_route.id, index: next_index, locked: false)
+      next_index += 1
+    end
+    StopVisit.import(
+      stops.map(&:import_attributes),
+      validate: false,
+      on_duplicate_key_update: { conflict_target: [:id], columns: [:route_id, :index, :locked] }
+    )
+
+    stops_by_source.each do |source_route_id, source_stops|
+      routes.find { |r| r.id == source_route_id }.after_inactive_stops_extracted!(source_stops.map(&:id))
+    end
+    out_of_route.after_inactive_stops_received!(stops)
   end
 
   # Available options:
@@ -1329,40 +1360,6 @@ class Planning < ApplicationRecord
   def fast_move_inactive_stop_to_out_of_route?(stop, target_route)
     stop.is_a?(StopVisit) && !stop.active? &&
       stop.route.vehicle_usage? && !target_route.vehicle_usage?
-  end
-
-  def fast_move_inactive_stop_to_out_of_route!(out_of_route, stop, index)
-    source_route = routes.find { |r| r.id == stop.route_id }
-    had_position = stop.position?
-    stop_id = stop.id
-
-    source_route.reindex_stops_after_extracting!(removed_stop_id: stop_id)
-    target_index =
-      if index.nil? || index.to_i < 0
-        (Stop.where(route_id: out_of_route.id).maximum(:index) || 0) + 1
-      else
-        index.to_i
-      end
-
-    stop.update!(route_id: out_of_route.id, index: target_index, locked: false)
-
-    source_route.sync_route_data_stops_size!
-    source_route.route_data.reload if source_route.route_data&.persisted?
-    source_route.patch_route_geojson_after_stop_visit_removed!(removed_stop_id: stop_id) if had_position
-
-    out_of_route.sync_out_of_route_metrics!
-    out_of_route.route_data.reload if out_of_route.route_data&.persisted?
-    out_of_route.append_stop_visit_to_geojson!(stop.reload) if had_position
-
-    if source_route.association(:stops).loaded?
-      source_route.association(:stops).target.reject! { |s| s.id == stop_id }
-    end
-    if out_of_route.association(:stops).loaded?
-      out_of_route.association(:stops).target << stop
-    end
-
-    source_route.mark_computed_without_recompute!
-    out_of_route.mark_computed_without_recompute!
   end
 
   def tags_compatible_given_plan_tags?(combined_tags, plan_tags)
