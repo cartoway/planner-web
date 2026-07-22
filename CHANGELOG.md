@@ -45,6 +45,7 @@
   - Planning map: recenter on the stop when its popup overflows the visible map area (including under the sidebar)
   - Planning duplicate: reset the customer `plannings_count` counter after duplication
   - Vehicle usage custom attributes description are now correctly displayed
+  - Planning edit: enable the route optimize button after moving stops onto a previously empty route
 
 ## V109.0.2
   ### Added
