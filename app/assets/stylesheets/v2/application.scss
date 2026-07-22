@@ -263,12 +263,18 @@
       overflow-y: auto;
     }
 
+    #destination-geocode-prompt {
+      margin-bottom: 0.75rem;
+    }
+
+    #destination-geocode-apply {
+      margin-bottom: 0.75rem;
+    }
+
     // Tom Select wrapper must shrink/grow inside narrow sidebar rows.
     .form-sidebar-inner .ts-wrapper {
       width: 100%;
       min-width: 0;
-    }
-
     }
 
     // Tom Select inside `.input-group` + trailing `input-group-text` (bootstrap_form append / input_group).
