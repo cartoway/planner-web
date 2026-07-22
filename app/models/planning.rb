@@ -340,9 +340,20 @@ class Planning < ApplicationRecord
 
   def vehicle_usage_add(vehicle_usage, ignore_errors = false)
     route = routes.build(vehicle_usage: vehicle_usage, outdated: false)
-    route.ensure_route_geojson
+    persist_built_route!(route) if persisted? && vehicle_usage.persisted?
     vehicle_usage.routes << route unless vehicle_usage.id
     route.init_stops(true, ignore_errors)
+  end
+
+  def persist_built_route!(route)
+    route.ensure_route_data
+    [route.route_data, route.start_route_data, route.stop_route_data].each do |route_data|
+      next unless route_data&.new_record?
+
+      route_data.save!
+    end
+    route.save! if route.new_record?
+    route.ensure_route_geojson
   end
 
   def vehicle_usage_remove(vehicle_usage)
@@ -1425,7 +1436,7 @@ class Planning < ApplicationRecord
 
     # Collect all segments from all routes that need routing
     all_segments = []
-    computed_routes = routes.select { |route| options[:bang] != false || route.outdated }
+    computed_routes = routes.select { |route| route.persisted? && (options[:bang] != false || route.outdated) }
     preload_routes_for_compute!(computed_routes)
 
     computed_routes.each do |route|
