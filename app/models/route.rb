@@ -769,7 +769,7 @@ class Route < ApplicationRecord
         elsif object.is_a?(StoreReload)
           stops.new(type: StopStore.name, store_reload: object, visit: nil, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         elsif object == :rest
-          apply_import_rest_configuration!(stop_attributes)
+          validate_import_rest!
           stops.new(type: StopRest.name, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         end
       }
@@ -838,7 +838,7 @@ class Route < ApplicationRecord
       return false
     end
 
-    apply_import_rest_configuration!(stop_attributes)
+    validate_import_rest!
 
     index = stops.size + 1 if !index || index < 0
     shift_index(index)
@@ -1956,30 +1956,10 @@ class Route < ApplicationRecord
     object == :rest
   end
 
-  def apply_import_rest_configuration!(attrs)
+  def validate_import_rest!
     return unless vehicle_usage?
-
-    rest_start = attrs.delete(:rest_start) || attrs.delete('rest_start')
-    rest_stop = attrs.delete(:rest_stop) || attrs.delete('rest_stop')
-    rest_duration = attrs.delete(:rest_duration) || attrs.delete('rest_duration')
-
     return if vehicle_usage.rest?
 
-    if rest_start.blank? || rest_stop.blank? || rest_duration.blank?
-      raise ImportInvalidRow.new(I18n.t('destinations.import_file.rest_window_and_duration_required'))
-    end
-
-    vu = vehicle_usage
-    vu.assign_attributes(rest_start: rest_start, rest_stop: rest_stop, rest_duration: rest_duration)
-    return unless vu.rest_start_changed? || vu.rest_stop_changed? || vu.rest_duration_changed?
-
-    # Persist without callbacks/autosave: VehicleUsage has routes autosave: true and
-    # before_update :update_outdated (update_rest), which must not run mid-import/recompute.
-    vu.update_columns(
-      rest_start: vu.rest_start,
-      rest_stop: vu.rest_stop,
-      rest_duration: vu.rest_duration,
-      updated_at: Time.current
-    )
+    raise ImportInvalidRow.new(I18n.t('destinations.import_file.rest_not_configured_on_vehicle'))
   end
 end
