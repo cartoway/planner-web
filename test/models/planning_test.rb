@@ -453,7 +453,7 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal source_size - 1, vehicle_route.route_data.stops_size
     assert_equal target_size + 1, unassigned.route_data.stops_size
   ensure
-    stop&.update!(active: true)
+    stop&.reload&.update!(active: true)
   end
 
   test 'should compute' do
@@ -919,6 +919,26 @@ class PlanningTest < ActiveSupport::TestCase
     end
 
     assert_operator vehicle_queries, :<, 5, "expected batched vehicle load, got #{vehicle_queries} queries"
+  end
+
+  test 'update vehicle usage set persists newly added routes before compute' do
+    planning = plannings(:planning_one)
+    planning.update!(vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_three))
+    planning.reload
+
+    assert_equal 1, planning.routes.count(&:vehicle_usage?), 'set_three has one active vehicle'
+
+    assert_nothing_raised do
+      planning.update!(vehicle_usage_set: vehicle_usage_sets(:vehicle_usage_set_one))
+    end
+
+    planning.reload
+    assert_equal 2, planning.routes.count(&:vehicle_usage?), 'set_one has two active vehicles'
+    planning.routes.select(&:vehicle_usage?).each do |route|
+      assert route.persisted?
+      assert_not_nil route.route_geojson
+      assert_equal route.stops.size, route.route_data.stops_size
+    end
   end
 
   test 'should set stops with a geoloc rest in unassigned' do
