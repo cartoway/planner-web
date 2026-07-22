@@ -1116,6 +1116,21 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert last_response.ok?, last_response.body
   end
 
+  test 'geocode exposes normalized address in geocoding_result while keeping submitted fields' do
+    patch api('geocode'), format: :json, destination: {
+      city: 'Bordeau',
+      name: @destination.name,
+      postalcode: '33200',
+      street: 'Rue des Lilas',
+      state: @destination.state
+    }
+    assert last_response.ok?, last_response.body
+    body = JSON.parse(last_response.body)
+    assert_equal 'Bordeau', body['city']
+    assert_equal 'Bordeaux', body.dig('geocoding_result', 'city')
+    assert body.dig('geocoding_result', 'free').present?
+  end
+
   test 'should geocode with error' do
     Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda{ |*a| raise GeocodeError.new }) do
       patch api('geocode'), format: :json, destination: { city: @destination.city, name: @destination.name, postalcode: @destination.postalcode, street: @destination.street, state: @destination.state }
