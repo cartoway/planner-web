@@ -1,6 +1,6 @@
 #extract-inactive-stops.row
   - if stops.empty?
-    %p= t('plannings.edit.dialog.extract_inactive_stops.empty')
+    %p.extract-inactive-stops-empty.text-muted.text-center= t('plannings.edit.dialog.extract_inactive_stops.empty')
   - else
     .row.extract-inactive-stops-toolbar.d-flex.justify-content-between.align-items-center
       .col-xs-8.extract-inactive-stops-selection
@@ -22,6 +22,6 @@
             = stops.count { |stop| stop[:checked] }
           = " #{t('plannings.edit.stops')}"
 
-    = render partial: 'stops/move_stops_list', locals: { stops: stops, show_route_name: true, hide_hover_tools: true, show_locked_indicator: true, scrollable_list: true }
+    = render partial: 'stops/move_stops_list', locals: { stops: stops, show_route_name: true, hide_hover_tools: true, show_locked_indicator: true, scrollable_list: true, skip_multiple_actions: true }
 
     %p.help-block.extract-inactive-stops-help= t('plannings.edit.dialog.extract_inactive_stops.help')
