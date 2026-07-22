@@ -22,4 +22,4 @@ Rails.application.config.assets.precompile << lambda do |_logical_path, filename
 end
 
 # V2: post-Bootstrap overrides (must bypass debug: split mode — otherwise AV falls back to /stylesheets/… 404 + wrong MIME).
-Rails.application.config.assets.precompile += %w[v2/layout_bootstrap_overrides.css lookbook_preview.css]
+Rails.application.config.assets.precompile += %w[v2/application.css v2/layout_bootstrap_overrides.css lookbook_preview.css]
