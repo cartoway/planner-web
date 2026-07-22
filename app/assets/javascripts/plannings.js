@@ -1002,7 +1002,10 @@ export const plannings_edit = function(params) {
             if (routeIndex !== -1) {
               routes[routeIndex] = $.extend({}, routes[routeIndex], route);
             }
-            $('ol.routes').find("li.route[data-route-id='" + entry.route_id + "']").html(entry.html);
+            $('ol.routes').find("li.route[data-route-id='" + entry.route_id + "']")
+              .attr('data-size', route.size)
+              .removeData('size')
+              .html(entry.html);
           });
           requestAnimationFrame(function() {
             requestAnimationFrame(function() {
@@ -2816,10 +2819,16 @@ export const plannings_edit = function(params) {
     $('.route[data-route-id]').each(function() {
       var $route = $(this);
       var isRouteLocked = $route.find('.lock i').hasClass('fa-lock');
-      var stopCount = $route.data('size');
-      if (stopCount == null) {
-        stopCount = $route.find('[data-size]').data('size');
+      // Prefer the refreshed stops counter inside the panel: li[data-size] is not
+      // updated by refresh.js (only inner HTML is replaced), and jQuery .data() caches.
+      var stopCount = Number($route.find('[data-size-active]').attr('data-size'));
+      if (isNaN(stopCount)) {
+        stopCount = Number($route.attr('data-size'));
       }
+      if (isNaN(stopCount)) {
+        stopCount = 0;
+      }
+      $route.attr('data-size', stopCount).removeData('size');
 
       if (!isRouteLocked && stopCount)
         maxUnlockedStops = Math.max(maxUnlockedStops, stopCount);
