@@ -30,6 +30,7 @@ class Admin::ResellersControllerTest < ActionController::TestCase
     get :edit, params: { id: @reseller }
     assert_response :success
     assert_valid response
+    assert_select '.label-warning', text: I18n.t('resellers.form.messagings.service_unavailable')
   end
 
   test 'should update reseller' do

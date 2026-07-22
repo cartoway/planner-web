@@ -6,7 +6,7 @@
     = render partial: 'v2/layouts/head'
   %body.cartoway-v2{"data-controller": "#{controller.controller_path.gsub('/', '_')} #{controller.controller_path.gsub('/', '-')}-v2", "data-action": "#{controller.action_name}"}
     #wrapper{data: { controller: 'menu-left' }}
-      .menu-left.hidden-print{style: "overflow: hidden;"}
+      .menu-left.d-print-none{style: "overflow: hidden;"}
         .top-menu
           %a#logo.logo{href: "/"}= image_tag @reseller.logo_small.url || "logo.svg", width: 150, height: 40, alt: @reseller.name
 
@@ -225,7 +225,7 @@
             - if @reseller.help_url
               %li#menu-help.help.menu-section.menu-list-item
                 = link_to @reseller.help_url.gsub('{LG}', I18n.locale.to_s), target: '_blank', data: { turbo: false } do
-                  .d-flex.align-items-center.justify-content-center.col-md-12.btn.btn-light
+                  .d-flex.align-items-center.justify-content-center.col-md-12.btn.btn-light.menu-list-doc
                     %i.fa.fa-book-open.fa-fw
                     .hidden-menu.menu_label
                       = t 'web.help'
@@ -285,7 +285,7 @@
         .main-primary
           = turbo_frame_tag "main" do
             = yield
-        %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--collapsed.slide-panel--collapsed.hidden-print{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria'), data: { controller: 'v2--form-sidebar' } }
+        %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--collapsed.slide-panel--collapsed.d-print-none{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria'), data: { controller: 'v2--form-sidebar' } }
           .form-sidebar-chrome.d-none{ data: { 'v2--form-sidebar-target': 'chrome' } }
             %button.btn-close{ type: 'button', title: t('v2.layout.form_sidebar_close'), 'aria-label': t('v2.layout.form_sidebar_close'), data: { action: 'v2--form-sidebar#close' } }
           .form-sidebar-inner
@@ -294,7 +294,7 @@
                 = yield :form_sidebar
         %template#form-sidebar-placeholder-template
           = render 'v2/layouts/form_sidebar_placeholder'
-      %footer.hidden-print
+      %footer.d-print-none
     #default-modal.modal.bootstrap-dialog.type-primary.fade.size-small.in{"aria-hidden": "false", "data-backdrop": "static", "data-bs-toggle": "modal", role: "dialog", style: "display:none;", tabindex: "-1"}
       .modal-dialog
         .modal-content
