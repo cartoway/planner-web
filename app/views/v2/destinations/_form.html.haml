@@ -1,16 +1,25 @@
 -# V2 sidebar-only: same fields as destinations/_form; relative i18n keys resolved via destinations.form scope
 - df = ->(key, **opts) { I18n.t(key, scope: 'destinations.form', **opts) }
 - dest_form_mutable = current_user_destination_form_submit_enabled?(@destination)
--# New records: keep POST in form_sidebar (validation + redirect after create). Persisted: full-page target like legacy edit flow.
-- turbo_submit_target = @destination.persisted? ? "_top" : "form_sidebar"
-- form_html = { class: "form-horizontal", "data-destination_id" => (@destination.id or 0), id: "destination-form-sidebar", "data-turbo-frame" => turbo_submit_target, "data-position-editable" => (dest_form_mutable ? "true" : "false"), "data-tag-entity-create-allowed" => (current_user_form_create?(:tags) ? "true" : "false") }
+-# Sidebar submit targets _top so successful save returns to the v2 index; Turbo pushes 422 responses back into form_sidebar.
+- form_html = { class: "form-horizontal", "data-destination_id" => (@destination.id or 0), id: "destination-form-sidebar", "data-turbo-frame" => "_top", "data-position-editable" => (dest_form_mutable ? "true" : "false"), "data-tag-entity-create-allowed" => (current_user_form_create?(:tags) ? "true" : "false") }
 - form_html["data-v2--dirty-form-submit-target"] = "form" if dest_form_mutable
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
 - v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
 - v2_control_col = 'col-md-10 offset-md-1 field'
+- geocoding_level_labels = Destination.geocoding_levels.keys.index_with { |level| t("destinations.form.geocoding_level.#{level}") }
+- destination_details_data = {}
+- if dest_form_mutable
+  - destination_details_data[:controller] = 'v2--destination-geocoding'
+  - destination_details_data[:v2__destination_geocoding_confirm_overwrite_point_value] = t('destinations.form.dialog.confirm_overwrite_point')
+  - destination_details_data[:v2__destination_geocoding_geocode_in_progress_value] = df.call('geocode_in_progress')
+  - destination_details_data[:v2__destination_geocoding_accuracy_success_value] = Planner::Application.config.geocoder.accuracy_success
+  - destination_details_data[:v2__destination_geocoding_accuracy_warning_value] = Planner::Application.config.geocoder.accuracy_warning
+  - destination_details_data[:v2__destination_geocoding_geocoding_level_labels_value] = geocoding_level_labels.to_json
 = bootstrap_form_for(@destination, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_bootstrap_label_col, control_col: v2_control_col, html: form_html) do |f|
+  = hidden_field_tag :v2_sidebar, '1'
   = render 'shared/error_messages', model: @destination
-  %fieldset#destination-details
+  %fieldset#destination-details{ data: destination_details_data }
     - if @destination.customer.enable_references
       = f.text_field :ref, help: df.call('ref_help')
     = hidden_field_tag "destination[geocoding_result]", @destination.geocoding_result.to_json
@@ -41,6 +50,12 @@
               %i.fa.fa-map.fa-fw
     - else
       = f.text_field :country, {placeholder: df.call('country_default', n: @destination.customer.default_country)}
+    - if dest_form_mutable
+      #destination-geocode-prompt.row.d-none{ data: { v2__destination_geocoding_target: 'prompt' } }
+        %div{class: v2_control_col}
+          %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeButton', action: 'click->v2--destination-geocoding#geocode' }}
+            %i.fa.fa-map-marker.fa-fw{"aria-hidden": "true"}
+            %span{ data: { v2__destination_geocoding_target: 'geocodeButtonLabel' } }= df.call('geocode_prompt')
     .mb-3.row
       %label{class: v2_label_col, for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
       %div{class: v2_control_col}
@@ -60,22 +75,26 @@
           = df.call('geocoding_accuracy_none')
         #geocoding_level{ class: ('d-none' unless @destination.geocoding_level)}
           %input{name: "destination[geocoding_level]", type: "hidden", value: @destination.geocoding_level}
-          %i#geocoding-level-point.fa.fa-map-marker.fa-fw.geocoding-level{ class: ('d-none' unless @destination.point?)}
-          %i#geocoding-level-house.fa.fa-store.fa-fw.geocoding-level{ class: ('d-none' unless @destination.house?)}
-          %i#geocoding-level-point.fa.fa-intersection.fa-fw.geocoding-level{ class: ('d-none' unless @destination.intersection?)}
-          %i#geocoding-level-house.fa.fa-street.fa-fw.geocoding-level{ class: ('d-none' unless @destination.street?)}
-          %i#geocoding-level-point.fa.fa-city.fa-fw.geocoding-level{ class: ('d-none' unless @destination.city?)}
+          %i.fa.fa-map-marker.fa-fw.geocoding-level{ class: ('d-none' unless @destination.point?), data: { geocoding_level: 'point' } }
+          %i.fa.fa-store.fa-fw.geocoding-level{ class: ('d-none' unless @destination.house?), data: { geocoding_level: 'house' } }
+          %i.fa.fa-intersection.fa-fw.geocoding-level{ class: ('d-none' unless @destination.intersection?), data: { geocoding_level: 'intersection' } }
+          %i.fa.fa-street.fa-fw.geocoding-level{ class: ('d-none' unless @destination.street?), data: { geocoding_level: 'street' } }
+          %i.fa.fa-city.fa-fw.geocoding-level{ class: ('d-none' unless @destination.city?), data: { geocoding_level: 'city' } }
           %span
             = t 'activerecord.attributes.destination.geocoding_level'
             \:
             %span#geocoding-level-value
               - if @destination.geocoding_level
                 = t("destinations.form.geocoding_level.#{@destination.geocoding_level}")
-      #geocoding_result_free.row{ class: ('d-none' if @destination.geocoding_result.empty?) }
+      #geocoding_result_free.row{ class: ('d-none' if @destination.geocoding_result.empty?), data: { v2__destination_geocoding_target: 'geocodingResultRow' } }
         %label{class: v2_label_col, for: 'displayed-geocoding-result'}= t 'activerecord.attributes.destination.geocoding_result'
         %div{class: v2_control_col}
           %input.form-control#displayed-geocoding-result{type: 'text', value: @destination.geocoding_result['free'], disabled: true, tabindex: -1, aria: { readonly: true }, data: { displayed_geocoding_result: true }}
       %div{class: v2_control_col}
+        #destination-geocode-apply.d-none{ data: { v2__destination_geocoding_target: 'geocodeApplyPanel' } }
+          %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeApplyButton', action: 'click->v2--destination-geocoding#applyGeocodedAddress' }}
+            %i.fa.fa-check.fa-fw{"aria-hidden": "true"}
+            = t('destinations.reverse_geocoding.apply')
         #reverse-geocode
     .row
       %div{class: v2_control_col}
