@@ -969,6 +969,41 @@ class PlanningsControllerTest < ActionController::TestCase
     stop&.update!(active: true, locked: false)
   end
 
+  test 'move extracts multiple inactive stops to out of route' do
+    vehicle_route = @planning.routes.find { |route| route.ref == 'route_one' }
+    out_of_route = @planning.routes.find { |route| route.vehicle_usage_id.nil? }
+    inactive_stops = vehicle_route.stops.select { |s| s.is_a?(StopVisit) }.first(2)
+    assert_operator inactive_stops.size, :>=, 2
+
+    inactive_stops.each { |stop| stop.update!(active: false) }
+    source_stops_size = vehicle_route.stops.size
+    target_stops_size = out_of_route.stops.size
+    stop_ids = inactive_stops.map(&:id)
+
+    patch :move, params: {
+      planning_id: @planning,
+      route_id: out_of_route.id,
+      stop_ids: stop_ids,
+      index: -1,
+      format: :json
+    }
+
+    assert_response :success
+    inactive_stops.each do |stop|
+      stop.reload
+      assert_equal out_of_route.id, stop.route_id, "expected stop #{stop.id} to be moved to out of route"
+      assert_not stop.active
+    end
+    assert_equal source_stops_size - stop_ids.size, vehicle_route.route_data.reload.stops_size
+    assert_equal target_stops_size + stop_ids.size, out_of_route.route_data.reload.stops_size
+    remaining_indices = vehicle_route.stops.reload.sort_by(&:index).map(&:index)
+    assert_equal (1..remaining_indices.size).to_a, remaining_indices
+    assert_not vehicle_route.reload.outdated
+    assert_not out_of_route.reload.outdated
+  ensure
+    inactive_stops&.each { |stop| stop.update!(active: true) }
+  end
+
   test 'extract_inactive_stops_modal is forbidden without move_stop operation permission' do
     u = users(:user_one)
     ops = Preferences::Catalog.default_operations.deep_dup
