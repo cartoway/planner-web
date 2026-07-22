@@ -18,14 +18,14 @@
 
 class StructuredLog < ActiveSupport::Logger
   def merge(message, **args)
-    if ENV['LOG_FORMAT'] == 'json'
-      if message[0] == '{' && message[-1] == '}' && args.empty?
-        message
-      elsif message[0] == '{' && message[-1] == '}'
-        JSON.parse(message).merge(args).to_json
+    if ENV.fetch('LOG_FORMAT', nil) == 'json'
+      text = message.is_a?(String) ? message : message.to_s
+      if text.start_with?('{') && text.end_with?('}') && args.empty?
+        text
+      elsif text.start_with?('{') && text.end_with?('}')
+        JSON.parse(text).merge(args).to_json
       else
-        args[:message] = message
-        args.to_json
+        args.merge(message: text).to_json
       end
     else
       [message.to_s, args&.to_json].compact.join(' ')
@@ -57,16 +57,17 @@ class JsonLogsFormatter < ActiveSupport::Logger::SimpleFormatter
   MAGIC = 'ncdjjfaherifjrefjl'.freeze
 
   def call(severity, timestamp, _progname, message)
+    text = message.is_a?(String) ? message : message.to_s
     json =
-      if message[0] == '{' && message[-1] == '}'
+      if text.start_with?('{') && text.end_with?('}')
         {
           type: severity,
           message: MAGIC
-        }.to_json.gsub("\"#{MAGIC}\"", message)
+        }.to_json.gsub("\"#{MAGIC}\"", text)
       else
         {
           type: severity,
-          message: message
+          message: text
         }.to_json
       end
 
@@ -74,7 +75,7 @@ class JsonLogsFormatter < ActiveSupport::Logger::SimpleFormatter
   rescue StandardError
     json = {
       type: severity,
-      message: message,
+      message: message.to_s,
     }.to_json
     "#{json}\n"
   end

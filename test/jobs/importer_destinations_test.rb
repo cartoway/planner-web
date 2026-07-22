@@ -911,36 +911,20 @@ class ImporterDestinationsTest < ActionController::TestCase
     end
   end
 
-  test 'should import route with only a rest and configure vehicle usage rest window' do
+  test 'should reject rest import when vehicle usage has no rest configured' do
     Planning.all.each(&:destroy)
     @customer.delete_all_destinations
     clear_customer_rest_configuration!(@customer)
     @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}
     @customer.reload
 
-    assert_difference('Planning.count', 1) do
-      assert_difference('StopRest.count', 1) do
-        assert_no_difference('StopVisit.count') do
-          assert ImportCsv.new(
-            importer: ImporterDestinations.new(@customer),
-            replace: true,
-            file: tempfile('test/fixtures/files/import_destinations_single_plan_rest_only_with_window.csv', 'text.csv')
-          ).import(true)
-        end
-      end
-    end
-
-    @customer.reload
-    planning = @customer.plannings.last
-    route = planning.routes.find{ |r| r.ref == 't1' }
-    assert_not_nil route
-    assert_equal 1, route.stops.count { |stop| stop.is_a?(StopRest) }
-    assert_operator route.stops_size, :>=, 1
-    assert_operator route.size_active, :>=, 1
-    assert route.vehicle_usage.rest?
-    assert_equal 12 * 3600, route.vehicle_usage.rest_start
-    assert_equal 14 * 3600, route.vehicle_usage.rest_stop
-    assert_equal 45 * 60, route.vehicle_usage.rest_duration
+    import = ImportCsv.new(
+      importer: ImporterDestinations.new(@customer),
+      replace: true,
+      file: tempfile('test/fixtures/files/import_destinations_single_plan_rest_only_with_window.csv', 'text.csv')
+    )
+    assert_not import.import
+    assert_match(/pas de pause configurée|no rest configured/i, import.errors[:base].join(' '))
   end
 
   test 'should reject import with more than one rest on the same route' do
@@ -958,7 +942,7 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_match(/une seule pause/i, import.errors[:base].join(' '))
   end
 
-  test 'should reject rest import when vehicle usage has no rest and window columns are missing' do
+  test 'should reject rest import without rest window columns when vehicle usage has no rest configured' do
     Planning.all.each(&:destroy)
     @customer.delete_all_destinations
     clear_customer_rest_configuration!(@customer)
@@ -971,7 +955,7 @@ class ImporterDestinationsTest < ActionController::TestCase
       file: tempfile('test/fixtures/files/import_destinations_single_plan_rest_without_window.csv', 'text.csv')
     )
     assert_not import.import
-    assert_match(/obligatoires|required/i, import.errors[:base].join(' '))
+    assert_match(/pas de pause configurée|no rest configured/i, import.errors[:base].join(' '))
   end
 
   test 'should import new visits with existing tag to existing planning via JSON without stale update' do
