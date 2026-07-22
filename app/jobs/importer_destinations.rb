@@ -1164,10 +1164,7 @@ class ImporterDestinations < ImporterBase
       {
         active: ValueToBoolean.value_to_boolean(row[:active], true),
         custom_attributes: row[:stop_custom_attributes],
-        index: normalize_route_order(row[:index]),
-        rest_start: row[:time_window_start_1],
-        rest_stop: row[:time_window_end_1],
-        rest_duration: row[:duration]
+        index: normalize_route_order(row[:index])
       }
     ]
   end
