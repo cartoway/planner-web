@@ -24,6 +24,10 @@ module ResellersHelper
   def balance_hash(service)
     balance = service.balance
 
+    if balance == MessagingService::SERVICE_UNAVAILABLE
+      return service_unavailable_balance
+    end
+
     if balance.is_a?(String)
       return {
         value: balance,
@@ -45,6 +49,16 @@ module ResellersHelper
     {
       value: balance&.round(2),
       color_class: color_class
+    }
+  rescue StandardError => e
+    Rails.logger.error("ResellersHelper#balance_hash: #{e.class}: #{e.message}")
+    service_unavailable_balance
+  end
+
+  def service_unavailable_balance
+    {
+      value: I18n.t('resellers.form.messagings.service_unavailable'),
+      color_class: 'warning'
     }
   end
 

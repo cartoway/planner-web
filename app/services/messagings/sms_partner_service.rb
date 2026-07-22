@@ -75,6 +75,9 @@ class SmsPartnerService < MessagingService
   rescue RestClient::Forbidden => e
     log_error("403 error received from RestClient", error: e.message)
     I18n.t('resellers.form.messagings.credentials_invalid')
+  rescue RestClient::Exception, OpenSSL::SSL::SSLError, SocketError, Timeout::Error => e
+    log_error("SMS balance fetching failed", error: e.message)
+    SERVICE_UNAVAILABLE
   end
 
   private
