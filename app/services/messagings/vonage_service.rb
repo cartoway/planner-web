@@ -22,6 +22,9 @@ class VonageService < MessagingService
   rescue Vonage::APIError => e
     log_error("SMS balance fetching failed", errors: e.message)
     I18n.t('resellers.form.messagings.credentials_invalid')
+  rescue OpenSSL::SSL::SSLError, SocketError, Timeout::Error => e
+    log_error("SMS balance fetching failed", errors: e.message)
+    SERVICE_UNAVAILABLE
   end
 
   def send_message(to, content, options = {})

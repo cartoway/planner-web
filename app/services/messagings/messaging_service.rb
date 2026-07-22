@@ -5,6 +5,8 @@ require 'application_helper'
 class MessagingService
   include ApplicationHelper
 
+  SERVICE_UNAVAILABLE = :service_unavailable
+
   def self.definition
     raise NotImplementedError
   end

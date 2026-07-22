@@ -21,6 +21,17 @@ class Admin::ResellersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'should get edit when messaging balance fetch fails' do
+    VonageService.any_instance.stubs(:balance).returns(42.0)
+    SmsPartnerService.any_instance.stubs(:balance).raises(OpenSSL::SSL::SSLError.new('certificate verify failed'))
+
+    Rails.application.config.url_shortener.stubs(:available?).returns(false)
+
+    get :edit, params: { id: @reseller }
+    assert_response :success
+    assert_valid response
+  end
+
   test 'should update reseller' do
     patch :update, params: { id: @reseller, reseller: { name: @reseller&.name }}
     assert_redirected_to edit_admin_reseller_path(@reseller)
