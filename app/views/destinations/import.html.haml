@@ -29,9 +29,9 @@
           %p.help-block= t('.replace_no_help')
           = f.radio_button :replace, 1, checked: @import_csv.replace, label: t('.replace_yes')
           %p.help-block= t('.replace_yes_help')
-        - if current_user.customer.vehicle_usage_sets.size > 1
-          = f.collection_select :vehicle_usage_set_id, current_user.customer.vehicle_usage_sets, :id, :name, { label: t('activerecord.models.vehicle_usage_set'), help: t('.vehicle_usage_set_help') }, { control_class: 'form-control', disabled: !can_import_destinations }
         = render partial: 'shared/check_box', locals: { form: f, field: :delete_plannings, label: t('.delete_plannings'), help: t('.delete_plannings_help') }
+        - if current_user.customer.vehicle_usage_sets.size > 1
+          = f.collection_select :vehicle_usage_set_id, current_user.customer.vehicle_usage_sets, :id, :name, { include_blank: true, label: t('activerecord.models.vehicle_usage_set'), help: t('.vehicle_usage_set_help') }, { control_class: 'form-control', disabled: !can_import_destinations }
         = f.submit message: t('all.verb.import'), icon: 'fa fa-upload', disabled: !can_import_destinations
         .row.form-group
           .col-md-offset-2.col-md-6

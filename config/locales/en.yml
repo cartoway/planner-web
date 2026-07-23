@@ -1450,7 +1450,9 @@ en:
         be created after import.
       delete_plannings_confirm: Delete all previously created plans of routes?
       vehicle_usage_set_help: >-
-        Vehicle configuration used for plans created during import.
+        Apply a vehicle configuration to the created or updated plan. With an
+        empty value, a new plan uses the account's first configuration; existing
+        plans keep their current configuration when updated.
       csv:
         title: CSV File
         help: >-

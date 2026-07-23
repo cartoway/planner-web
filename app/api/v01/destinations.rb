@@ -199,7 +199,7 @@ class V01::Destinations < Grape::API
         optional(:name, type: String)
         optional(:ref, type: String)
         optional(:date, type: String)
-        optional(:vehicle_usage_set_id, type: Integer)
+        optional(:vehicle_usage_set_id, type: Integer, desc: 'Vehicle usage set applied to created or updated plannings. When omitted, new plannings use the account first set and existing plannings keep their configuration.')
         optional(:zoning_ids, type: Array[Integer], desc: 'If a new zoning is specified before planning save, all visits will be affected to vehicles specified in zones.')
       end
       optional(:destinations, type: Array, documentation: { param_type: 'body' }, desc: 'In mutual exclusion with CSV file upload and remote. the destinations might be Destinations with Visits or Stores') do

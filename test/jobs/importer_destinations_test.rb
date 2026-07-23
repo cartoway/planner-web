@@ -1136,6 +1136,101 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_equal ['1063536101', '1063536210'].sort, destination.visits.pluck(:ref).sort
   end
 
+  test 'update existing planning without provided vehicle_usage_set keeps it and route refs without duplicating stops' do
+    planning = plannings(:planning_one)
+    original_vus_id = planning.vehicle_usage_set_id
+
+    route = routes(:route_one_one)
+    original_route_ref = route.ref
+    visit = visits(:visit_one)
+    destination = visit.destination
+
+    assert_equal 1, StopVisit.where(visit_id: visit.id).count
+
+    json = [
+      {
+        planning_ref: planning.ref,
+        planning_name: planning.name,
+        route: original_route_ref,
+        ref_vehicle: route.vehicle_usage.vehicle.ref,
+        ref: destination.ref,
+        name: destination.name,
+        street: destination.street,
+        postalcode: destination.postalcode,
+        city: destination.city,
+        lat: destination.lat,
+        lng: destination.lng,
+        visits: [
+          {
+            ref: visit.ref,
+            duration: '00:10:00'
+          }
+        ]
+      }
+    ]
+
+    import = ImportJson.new(
+      importer: ImporterDestinations.new(@customer),
+      replace: false,
+      json: json
+    )
+    assert import.import, "Import failed: #{import.errors.full_messages.join(', ')}"
+
+    planning.reload
+    route.reload
+    assert_equal original_vus_id, planning.vehicle_usage_set_id
+    assert_equal original_route_ref, route.ref
+    assert_equal 1, StopVisit.where(visit_id: visit.id).count
+    assert_equal route.id, StopVisit.find_by!(visit_id: visit.id).route_id
+  end
+
+  test 'update existing planning applies provided vehicle_usage_set' do
+    planning = plannings(:planning_one)
+    other_vus = vehicle_usage_sets(:vehicle_usage_set_three)
+    assert_not_equal planning.vehicle_usage_set_id, other_vus.id
+    other_vus.vehicle_usages.each{ |vu| vu.update!(active: true) }
+
+    visit = visits(:visit_one)
+    destination = visit.destination
+    route = routes(:route_one_one)
+
+    json = [
+      {
+        planning_ref: planning.ref,
+        planning_name: planning.name,
+        route: route.ref,
+        ref_vehicle: route.vehicle_usage.vehicle.ref,
+        ref: destination.ref,
+        name: destination.name,
+        street: destination.street,
+        postalcode: destination.postalcode,
+        city: destination.city,
+        lat: destination.lat,
+        lng: destination.lng,
+        visits: [
+          {
+            ref: visit.ref,
+            duration: '00:10:00'
+          }
+        ]
+      }
+    ]
+
+    import = ImportJson.new(
+      importer: ImporterDestinations.new(@customer, vehicle_usage_set: other_vus),
+      replace: false,
+      json: json
+    )
+    assert import.import, "Import failed: #{import.errors.full_messages.join(', ')}"
+    planning.reload
+    assert_equal other_vus.id, planning.vehicle_usage_set_id
+
+    routes_by_vehicle = planning.routes.select(&:vehicle_usage?).to_h { |r|
+      [r.vehicle_usage.vehicle.ref, r.ref]
+    }
+    assert_equal 'route_one', routes_by_vehicle['001']
+    assert_equal 'route_three', routes_by_vehicle['003']
+  end
   test 'should import new visits without tag but should not add them toplanning with tags' do
     # Use existing planning with ref
     existing_planning = plannings(:planning_one)

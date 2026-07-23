@@ -266,6 +266,7 @@ class Planning < ApplicationRecord
 
       import_visits = routes_visits.flat_map{ |_ref, r| r[:visits] }
 
+      modified_routes = []
       import_visit_objects = import_visits.select{ |v| v[0].is_a?(Visit) }.map{ |v| v[0] }
       if import_visit_objects.any?
         existing_visit_ids = routes.select{ |route|
@@ -276,7 +277,11 @@ class Planning < ApplicationRecord
           tags_compatible?(visit.tags.to_a | visit.destination.tags.to_a)
         }
 
-        routes.find{ |route| !route.vehicle_usage? }.add_visits(compatible_existing_visits.map{ |v| [v, true] })
+        out_of_route = routes.find{ |route| !route.vehicle_usage? }
+        compatible_existing_visits.each do |visit|
+          move_visit(out_of_route, visit, nil)
+        end
+        modified_routes << out_of_route if compatible_existing_visits.any?
       end
 
       index_routes = (1...routes.size).to_a
@@ -285,7 +290,7 @@ class Planning < ApplicationRecord
         index_routes.delete(index) if index
       }
 
-      modified_routes = []
+      ref_updates = []
       routes_visits.each{ |ref, r|
         next if r[:visits].empty?
 
@@ -295,9 +300,12 @@ class Planning < ApplicationRecord
           else
             routes.index{ |route| !route.vehicle_usage? }
           end
-        if ref && routes[i].ref != ref&.to_s
-          routes[i].reload
-          routes[i].assign_attributes(ref: ref&.to_s)
+        if ref.present?
+          new_ref = ref.to_s
+          if routes[i].ref != new_ref
+            routes[i].ref = new_ref
+            ref_updates << { id: routes[i].id, ref: new_ref } if routes[i].id
+          end
         end
         routes[i].remove_store_reloads
         routes[i].remove_rests if r[:visits].any? { |(obj, _stop_attributes)| obj == :rest }
@@ -327,6 +335,12 @@ class Planning < ApplicationRecord
         route.outdated = true
       end
       routes.each(&:sync_route_data_stop_counters!)
+      if ref_updates.any?
+        fragments = ref_updates.map { 'WHEN ? THEN ?' }.join(' ')
+        binds = ref_updates.flat_map { |u| [u[:id], u[:ref]] }
+        Route.where(id: ref_updates.map { |u| u[:id] })
+             .update_all(["ref = CASE id #{fragments} END, outdated = true", *binds])
+      end
       if modified_route_ids.any?
         Route.where(id: modified_route_ids).update_all(outdated: true)
         modified_routes.uniq.each(&:reload)
@@ -338,8 +352,8 @@ class Planning < ApplicationRecord
     end
   end
 
-  def vehicle_usage_add(vehicle_usage, ignore_errors = false)
-    route = routes.build(vehicle_usage: vehicle_usage, outdated: false)
+  def vehicle_usage_add(vehicle_usage, ignore_errors = false, ref: nil)
+    route = routes.build(vehicle_usage: vehicle_usage, outdated: false, ref: ref)
     persist_built_route!(route) if persisted? && vehicle_usage.persisted?
     vehicle_usage.routes << route unless vehicle_usage.id
     route.init_stops(true, ignore_errors)
@@ -1692,22 +1706,43 @@ class Planning < ApplicationRecord
     Route.no_touching do
       Preloaders::BatchAssociationPreload.preload!([vehicle_usage_set], VEHICLE_USAGE_SET_ASSOCIATIONS)
 
-      h = Hash[routes.select(&:vehicle_usage).collect{ |route| [route.vehicle_usage.vehicle, route] }]
+      routes_by_vehicle_id = {}
+      refs_by_vehicle_id = {}
+      routes.select(&:vehicle_usage).each do |route|
+        vehicle_id = route.vehicle_usage.vehicle_id
+        routes_by_vehicle_id[vehicle_id] = route
+        refs_by_vehicle_id[vehicle_id] = route.ref
+      end
+
       vehicle_usage_set.vehicle_usages.each{ |vehicle_usage|
-        if h[vehicle_usage.vehicle] && vehicle_usage.active
-          route = h[vehicle_usage.vehicle]
-          route.vehicle_usage = vehicle_usage
-          route.send(:update_vehicle_usage)
+        vehicle_id = vehicle_usage.vehicle_id
+        existing_route = routes_by_vehicle_id[vehicle_id]
+        if existing_route && vehicle_usage.active
+          existing_route.vehicle_usage = vehicle_usage
+          existing_route.send(:update_vehicle_usage)
         elsif vehicle_usage.active
-          vehicle_usage_add vehicle_usage
-        elsif h[vehicle_usage.vehicle]
-          vehicle_usage_remove h[vehicle_usage.vehicle].vehicle_usage
+          vehicle_usage_add vehicle_usage, false, ref: refs_by_vehicle_id[vehicle_id]
+        elsif existing_route
+          vehicle_usage_remove existing_route.vehicle_usage
         end
       }
       persist_destroyed_stops!
+      sync_routes_association_order!
       routes.each { |route| route.association(:planning).target = self; route.association(:planning).loaded! }
       compute_saved!(bang: true, skip_planning_save: true)
+      sync_routes_association_order!
     end
+  end
+
+  def sync_routes_association_order!
+    sorted = routes.target.reject(&:destroyed?).sort_by { |route|
+      if route.vehicle_usage_id || route.vehicle_usage
+        [1, route.vehicle_usage&.index || Float::INFINITY, route.id || 0]
+      else
+        [0, 0, route.id || 0]
+      end
+    }
+    association(:routes).target = sorted
   end
 
   def begin_after_end_date
