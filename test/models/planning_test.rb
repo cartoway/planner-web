@@ -443,6 +443,9 @@ class PlanningTest < ActiveSupport::TestCase
     stop.update!(active: false)
     source_size = vehicle_route.stops.size
     target_size = unassigned.stops.size
+    unassigned.ensure_route_geojson
+    points_before = (unassigned.route_geojson.points || []).size
+    expected_color = stop.visit.color.presence || unassigned.default_color
 
     planning.move_stop(unassigned, stop, -1)
 
@@ -452,6 +455,13 @@ class PlanningTest < ActiveSupport::TestCase
     assert_not stop.active?
     assert_equal source_size - 1, vehicle_route.route_data.stops_size
     assert_equal target_size + 1, unassigned.route_data.stops_size
+    assert_equal unassigned, stop.route
+    assert_equal expected_color, stop.default_color
+
+    feature = JSON.parse(unassigned.route_geojson.reload.points.last)
+    assert_equal points_before + 1, unassigned.route_geojson.points.size
+    assert_equal expected_color, feature.dig('properties', 'color')
+    refute_equal vehicle_route.default_color, feature.dig('properties', 'color') unless expected_color == vehicle_route.default_color
   ensure
     stop&.reload&.update!(active: true)
   end
