@@ -987,7 +987,11 @@ class Route < ApplicationRecord
   def after_inactive_stops_received!(stops)
     sync_out_of_route_metrics!
     route_data.reload if route_data&.persisted?
-    Array(stops).each { |stop| append_stop_visit_to_geojson!(stop) }
+    Array(stops).each do |stop|
+      # route_id was updated via import; keep in-memory association for color/icon helpers.
+      stop.association(:route).target = self
+      append_stop_visit_to_geojson!(stop)
+    end
     association(:stops).target.concat(Array(stops)) if association(:stops).loaded?
     mark_computed_without_recompute!
   end
@@ -1050,7 +1054,8 @@ class Route < ApplicationRecord
         index: stop.index,
         active: stop.active,
         number: nil,
-        color: stop.default_color,
+        # Use this route's color (not stop.route which may still point at the source vehicle route).
+        color: stop.visit&.color.presence || default_color,
         icon: stop.default_icon,
         icon_size: stop.default_icon_size,
         stop_id: stop.id,
