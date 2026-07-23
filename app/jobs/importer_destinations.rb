@@ -1169,6 +1169,50 @@ class ImporterDestinations < ImporterBase
     ]
   end
 
+  # Validate rest imports against the vehicle that will own the route.
+  def ensure_imported_rests_allowed!(planning, routes_hash)
+    available = planning.vehicle_usage_set.vehicle_usages.select(&:active).to_a
+
+    claimed = routes_hash.each_with_object({}) { |(route_ref, route_data), hash|
+      next if route_ref.blank?
+
+      vehicle_usage = vehicle_usage_from_ref(planning.vehicle_usage_set, route_data[:ref_vehicle])
+      vehicle_usage ||= vehicle_usage_from_existing_route(planning, route_ref)
+      next unless vehicle_usage
+
+      hash[route_ref] = vehicle_usage
+      available.delete(vehicle_usage)
+    }
+
+    routes_hash.each do |route_ref, route_data|
+      next if route_ref.blank?
+      next if route_data[:visits].blank?
+      next unless route_data[:visits].any? { |object, _attrs| object == :rest }
+
+      vehicle_usage = claimed[route_ref] || available.shift
+      next unless vehicle_usage
+      next if vehicle_usage.rest?
+
+      raise ImportInvalidRow.new(I18n.t('destinations.import_file.rest_not_configured_on_vehicle'))
+    end
+  end
+
+  def vehicle_usage_from_ref(vehicle_usage_set, ref_vehicle)
+    return nil if vehicle_usage_set.nil? || ref_vehicle.blank?
+
+    vehicle_usage_set.vehicle_usages.find { |vu|
+      vu.vehicle && ParseIdsRefs.match_ref?(ref_vehicle, vu.vehicle)
+    }
+  end
+
+  def vehicle_usage_from_existing_route(planning, route_ref)
+    return nil unless planning.persisted? && route_ref.present?
+
+    planning.routes.find { |route|
+      route.vehicle_usage? && route.ref.present? && ParseIdsRefs.match_ref?(route_ref, route)
+    }&.vehicle_usage
+  end
+
   def prepare_store_reload_in_planning(row, _line, _store_attributes, store_reload_attributes)
     if store_reload_attributes
       # Add store_reload to route if needed
@@ -1307,6 +1351,7 @@ class ImporterDestinations < ImporterBase
             [object, stop_attributes]
           }
         }
+        ensure_imported_rests_allowed!(planning, routes_hash)
         if !(planning_id ? planning.update_routes(routes_hash, recompute = true) : planning.set_routes(routes_hash, false, true))
           raise ImportTooManyRoutes.new(I18n.t('errors.planning.import_too_many_routes')) if routes_hash.keys.size > planning.routes.size || routes_hash.keys.compact.size > @customer.max_vehicles
         end

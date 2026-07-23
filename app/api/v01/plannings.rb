@@ -200,6 +200,7 @@ class V01::Plannings < Grape::API
         vehicle_usage = planning.vehicle_usage_set.vehicle_usages.find(params[:vehicle_usage_id])
         Planning.transaction do
           if route && vehicle_usage && planning.switch(route, vehicle_usage) && planning.save! && planning.compute && planning.save!
+            planning.capture_state!(trigger: 'switch')
             if params[:details] || params[:with_details]
               present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
             else

@@ -769,7 +769,6 @@ class Route < ApplicationRecord
         elsif object.is_a?(StoreReload)
           stops.new(type: StopStore.name, store_reload: object, visit: nil, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         elsif object == :rest
-          validate_import_rest!
           stops.new(type: StopRest.name, active: stop_attributes.fetch(:active, true), index: stop_index, custom_attributes: stop_attributes[:custom_attributes], id: stop_id)
         end
       }
@@ -837,8 +836,6 @@ class Route < ApplicationRecord
       errors.add(:base, I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage'))
       return false
     end
-
-    validate_import_rest!
 
     index = stops.size + 1 if !index || index < 0
     shift_index(index)
@@ -1979,12 +1976,5 @@ class Route < ApplicationRecord
       end
 
     object == :rest
-  end
-
-  def validate_import_rest!
-    return unless vehicle_usage?
-    return if vehicle_usage.rest?
-
-    raise ImportInvalidRow.new(I18n.t('destinations.import_file.rest_not_configured_on_vehicle'))
   end
 end

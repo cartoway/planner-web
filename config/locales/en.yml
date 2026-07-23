@@ -2525,6 +2525,7 @@ en:
         automatic_insert: Automatic insert
         update_stop: Stop update
         active: Stop activation
+        switch: Vehicle switch
         vehicle_usage_set: Vehicle configuration
         set_routes: Routes reassignment
         update_routes: Routes update

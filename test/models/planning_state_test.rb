@@ -30,6 +30,7 @@ class PlanningStateTest < ActiveSupport::TestCase
     assert_equal 'group', PlanningState.category_for('optimize_route')
     assert_equal 'group', PlanningState.category_for('reverse_order')
     assert_equal 'group', PlanningState.category_for('automatic_insert')
+    assert_equal 'group', PlanningState.category_for('switch')
     assert_equal 'individual', PlanningState.category_for('move')
     assert_equal 'individual', PlanningState.category_for('split_by_zones')
     assert_equal 'individual', PlanningState.category_for('vehicle_usage_add')
