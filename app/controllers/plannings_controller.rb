@@ -469,6 +469,7 @@ class PlanningsController < ApplicationController
           if route && vehicle_usage && @planning.switch(route, vehicle_usage) && @planning.save! && @planning.compute_saved
             @routes = [route]
             @routes << @planning.routes.find{ |r| r.vehicle_usage_id == vehicle_usage_id_was } if vehicle_usage_id_was != route.vehicle_usage.id
+            capture_planning_state_after_success!
             format.json { render action: 'show', location: @planning }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
