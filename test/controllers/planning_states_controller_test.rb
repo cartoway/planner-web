@@ -196,5 +196,22 @@ class PlanningStatesControllerTest < ActionController::TestCase
     assert body['routes'].present?
     assert_equal @planning.id, body['planning_id']
     assert body.key?('distance')
+    assert_equal @planning.vehicle_usage_set_id, body['vehicle_usage_set_id']
+  end
+
+  test 'reapply restores vehicle_usage_set_id and returns it in json' do
+    original_vus_id = @planning.vehicle_usage_set_id
+    assert_equal original_vus_id, @planning_state.payload['vehicle_usage_set_id']
+
+    other_vus = vehicle_usage_sets(:vehicle_usage_set_two)
+    assert_not_equal original_vus_id, other_vus.id
+    @planning.update_columns(vehicle_usage_set_id: other_vus.id)
+
+    patch :reapply, params: { planning_id: @planning.id, id: @planning_state.id, format: :json }
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal original_vus_id, body['vehicle_usage_set_id']
+    assert_equal original_vus_id, @planning.reload.vehicle_usage_set_id
   end
 end
