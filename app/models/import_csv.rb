@@ -101,7 +101,14 @@ class ImportCsv
       rescue StandardError => e
         raise e if Rails.env.test? && !e.is_a?(ImportBaseError) && !e.is_a?(ImportBulkError) && !e.is_a?(Exceptions::OverMaxLimitError)
 
-        message = e.is_a?(ImportInvalidRow) ? I18n.t('import.data_erroneous.csv', s: last_line) + ', ' : last_line && !e.is_a?(ImportBaseError) ? I18n.t('import.csv.line', s: last_line) + ', ' : ''
+        message =
+          if e.is_a?(ImportInvalidRow)
+            I18n.t('import.data_erroneous.csv', s: last_line) + ', '
+          elsif last_line && !e.is_a?(ImportBaseError) && !e.is_a?(ImportBulkError)
+            I18n.t('import.csv.line', s: last_line) + ', '
+          else
+            ''
+          end
         message += e.message
         message[0] = message[0].capitalize
         message += (message.end_with?('.') ? ' ' : '. ') + I18n.t('destinations.import_file.check_custom_columns') if column_def && !column_def.values.compact.empty?
