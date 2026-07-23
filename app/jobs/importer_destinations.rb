@@ -1322,6 +1322,7 @@ class ImporterDestinations < ImporterBase
             end
           planning.assign_attributes(attrs) if attrs.any?
         end
+        # Provided vehicle_usage_set applies to create and update; omit to keep existing / use default on create
         planning.assign_attributes(@provided_planning_attributes)
         unless planning.name
           planning.assign_attributes({

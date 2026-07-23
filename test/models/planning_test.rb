@@ -152,6 +152,105 @@ class PlanningTest < ActiveSupport::TestCase
     end
   end
 
+  test 'update_routes persists route ref from import hash' do
+    planning = plannings(:planning_one)
+    vehicle_route = routes(:route_one_one)
+    assert_equal 'route_one', vehicle_route.ref
+
+    routes_hash = {
+      'imported_ref' => {
+        ref_vehicle: vehicles(:vehicle_one).ref,
+        visits: [[visits(:visit_one), { active: true, custom_attributes: {}, index: 1 }]]
+      }
+    }
+
+    assert planning.update_routes(routes_hash, false)
+    assert_equal 'imported_ref', vehicle_route.reload.ref
+  end
+
+  test 'update vehicle_usage_set preserves route refs per vehicle and association order' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+    other_vus = vehicle_usage_sets(:vehicle_usage_set_three)
+    other_vus.vehicle_usages.each{ |vu| vu.update!(active: true) }
+
+    refs_before = planning.routes.select(&:vehicle_usage?).map{ |route|
+      [route.vehicle_usage.vehicle.ref, route.ref]
+    }.to_h
+
+    planning.update!(vehicle_usage_set: other_vus)
+
+    # In-memory order must follow the new vehicle_usage indexes (001 index 0, 003 index 1)
+    ordered_refs = planning.routes.select(&:vehicle_usage?).map{ |route|
+      [route.vehicle_usage.index, route.vehicle_usage.vehicle.ref, route.ref]
+    }
+    assert_equal [[0, '001', 'route_one'], [1, '003', 'route_three']], ordered_refs
+
+    refs_after = planning.routes.select(&:vehicle_usage?).map{ |route|
+      [route.vehicle_usage.vehicle.ref, route.ref]
+    }.to_h
+    assert_equal refs_before, refs_after
+  end
+
+  test 'update_routes after vehicle_usage_set change does not scramble refs on index fallback' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
+    other_vus = vehicle_usage_sets(:vehicle_usage_set_three)
+    other_vus.vehicle_usages.each{ |vu| vu.update!(active: true) }
+
+    planning.assign_attributes(vehicle_usage_set: other_vus)
+    Route.no_touching{ planning.save! }
+
+    # No route ref match and no ref_vehicle → positional fallback must use new index order
+    routes_hash = {
+      'csv_first' => {
+        visits: [[visits(:visit_one), { active: true, index: 1 }]]
+      },
+      'csv_second' => {
+        visits: [[visits(:visit_two), { active: true, index: 1 }]]
+      }
+    }
+
+    assert planning.update_routes(routes_hash, false)
+
+    by_vehicle = planning.routes.select(&:vehicle_usage?).map{ |route|
+      [route.vehicle_usage.vehicle.ref, route.ref]
+    }.to_h
+    assert_equal 'csv_first', by_vehicle['001']
+    assert_equal 'csv_second', by_vehicle['003']
+  end
+
+  test 'update_routes moves unmatched visits to out of route without duplicating stops' do
+    planning = plannings(:planning_one)
+    vehicle_route = routes(:route_one_one)
+    out_of_route = routes(:route_zero_one)
+    kept_visit = visits(:visit_one)
+    moved_visit = visits(:visit_two)
+
+    # Normalize fixture noise: one stop per visit on the vehicle route under test
+    StopVisit.joins(:route).where(routes: { planning_id: planning.id }, visit_id: [kept_visit.id, moved_visit.id]).delete_all
+    vehicle_route.reload
+    vehicle_route.add(kept_visit, 1, { active: true })
+    vehicle_route.add(moved_visit, 2, { active: true })
+    Stop.import(vehicle_route.stops.select(&:new_record?), validate: false)
+    planning.routes.each { |route| route.association(:stops).reset }
+
+    routes_hash = {
+      'route_one' => {
+        ref_vehicle: vehicles(:vehicle_one).ref,
+        visits: [[kept_visit, { active: true, custom_attributes: {}, index: 1 }]]
+      }
+    }
+
+    assert planning.update_routes(routes_hash, false)
+
+    planning_stops = ->(visit) {
+      StopVisit.joins(:route).where(visit_id: visit.id, routes: { planning_id: planning.id })
+    }
+    assert_equal 1, planning_stops.call(moved_visit).count
+    assert_equal out_of_route.id, planning_stops.call(moved_visit).pick(:route_id)
+    assert_equal 1, planning_stops.call(kept_visit).count
+    assert_equal vehicle_route.id, planning_stops.call(kept_visit).pick(:route_id)
+  end
+
   test 'update_routes syncs stop counters for untouched routes with rest' do
     planning = plannings(:planning_one)
     planning.default_empty_routes
