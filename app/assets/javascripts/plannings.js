@@ -3446,6 +3446,9 @@ export const plannings_edit = function(params) {
 
   $(document).off('planning:state:reapplied.planningsEdit').on('planning:state:reapplied.planningsEdit', function(_event, data) {
     updatePlanning(data, { partial: false });
+    if (data.vehicle_usage_set_id != null) {
+      $('#planning_vehicle_usage_set_id').val(String(data.vehicle_usage_set_id));
+    }
     notice(I18n.t('plannings.states.reapply_success'));
   });
 

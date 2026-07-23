@@ -36,7 +36,7 @@ else
   end
 
   json.prefered_unit current_user.prefered_unit
-  json.extract! @planning, :id, :ref
+  json.extract! @planning, :id, :ref, :vehicle_usage_set_id
   json.planning_id @planning.id
   json.customer_id @planning.customer.id
   json.customer_enable_sms @planning.customer.enable_sms if @planning.customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
