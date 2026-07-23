@@ -112,13 +112,13 @@ export class ExtractInactiveStopsModal {
   }
 
   updateStopsCount() {
-    const checkedStops = $(`${this.modalSelector} .move-stops-stop-id:checked:visible`).length;
+    const checkedStops = $(`${this.modalSelector} .move-stops-stop-id:checked`).length;
     $('#extract-inactive-stops_count').text(checkedStops);
   }
 
   applyConfirmButtonVisibility() {
     const $confirmBtn = $('#extract-inactive-stops-modal-confirm');
-    const hasSelectedStops = $(`${this.modalSelector} .move-stops-stop-id:checked:visible`).length > 0;
+    const hasSelectedStops = $(`${this.modalSelector} .move-stops-stop-id:checked`).length > 0;
     const enabled = this.stopMoveUsable && hasSelectedStops;
 
     if (this.stopMoveUsable) {
@@ -136,7 +136,7 @@ export class ExtractInactiveStopsModal {
     }
 
     const stopIds = $(this.modalSelector)
-      .find('form input[name="stop_ids"]:checked:visible')
+      .find('form input[name="stop_ids"]:checked')
       .map(function() { return $(this).val(); })
       .toArray();
 
@@ -157,7 +157,7 @@ export class ExtractInactiveStopsModal {
 
         const impactedRouteIds = new Set([outOfRouteId]);
         $(this.modalSelector)
-          .find('form input[name="stop_ids"]:checked:visible')
+          .find('form input[name="stop_ids"]:checked')
           .each(function() {
             const routeId = $(this).data('route-id');
             if (routeId) {
