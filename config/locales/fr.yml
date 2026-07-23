@@ -2644,6 +2644,7 @@ fr:
         automatic_insert: Insertion automatique
         update_stop: Modification d'arrêt
         active: Activation d'arrêt
+        switch: Changement de véhicule
         vehicle_usage_set: Configuration véhicules
         set_routes: Réaffectation des tournées
         update_routes: Mise à jour des tournées

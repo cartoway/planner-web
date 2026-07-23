@@ -31,7 +31,7 @@ class PlanningState < ApplicationRecord
       activate_stops
     ].freeze,
     'group' => %w[
-      active optimize_route reverse_order automatic_insert
+      active optimize_route reverse_order automatic_insert switch
     ].freeze,
     'individual' => %w[
       move update_stop
