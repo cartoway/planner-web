@@ -626,6 +626,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
     planning = Planning.last
     assert_not_nil planning.routes.load.last.stop_drive_time
+    assert_equal vehicle_usage_sets(:vehicle_usage_set_one).id, plannings(:planning_one).reload.vehicle_usage_set_id
   end
 
   test 'should create bulk from json with tag_id' do

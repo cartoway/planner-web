@@ -827,8 +827,9 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_operator customers(:customer_one).vehicle_usage_sets.count, :>, 1
     get :import
     assert_response :success
-    assert_match(/import_csv_vehicle_usage_set_id|vehicle_usage_set_id/, response.body)
-    assert_equal customers(:customer_one).vehicle_usage_sets.pick(:id), assigns(:import_csv).vehicle_usage_set_id
+    assert_select '#import_csv_vehicle_usage_set_id'
+    assert_select '#import_csv_vehicle_usage_set_id option[value=""]'
+    assert_nil assigns(:import_csv).vehicle_usage_set_id
   end
 
   test 'upload_csv uses vehicle usage set from form when csv has no column' do
@@ -850,6 +851,66 @@ class DestinationsControllerTest < ActionController::TestCase
     end
 
     assert_equal vehicle_usage_sets(:vehicle_usage_set_three), customer.plannings.last.vehicle_usage_set
+  end
+
+  test 'upload_csv without vehicle_usage_set_id creates planning with default vehicle usage set' do
+    customer = customers(:customer_one)
+    customer.update!(job_destination_geocoding_id: nil)
+    Planning.all.each(&:destroy)
+    customer.delete_all_destinations
+    customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| vu.update!(active: true) } }
+    file = fixture_file_upload('test/fixtures/files/import_destinations_single_plan_two_routes.csv')
+
+    assert_difference('Planning.count', 1) do
+      post :upload_csv, params: {
+        import_csv: {
+          replace: false,
+          file: file
+        }
+      }
+    end
+
+    assert_equal customer.vehicle_usage_sets.first, customer.plannings.last.vehicle_usage_set
+  end
+
+  test 'upload_csv without vehicle_usage_set_id keeps existing planning vehicle usage set' do
+    customer = customers(:customer_one)
+    customer.update!(job_destination_geocoding_id: nil)
+    planning = plannings(:planning_one)
+    original_vus_id = planning.vehicle_usage_set_id
+    assert_not_equal original_vus_id, vehicle_usage_sets(:vehicle_usage_set_three).id
+
+    file = fixture_file_upload('test/fixtures/files/import_destinations_update_planning_keep_vus.csv')
+
+    post :upload_csv, params: {
+      import_csv: {
+        replace: false,
+        file: file
+      }
+    }
+    assert_valid response
+    assert_equal original_vus_id, planning.reload.vehicle_usage_set_id
+  end
+
+  test 'upload_csv with vehicle_usage_set_id updates existing planning vehicle usage set' do
+    customer = customers(:customer_one)
+    customer.update!(job_destination_geocoding_id: nil)
+    planning = plannings(:planning_one)
+    other_vus = vehicle_usage_sets(:vehicle_usage_set_three)
+    assert_not_equal planning.vehicle_usage_set_id, other_vus.id
+    other_vus.vehicle_usages.each{ |vu| vu.update!(active: true) }
+
+    file = fixture_file_upload('test/fixtures/files/import_destinations_update_planning_keep_vus.csv')
+
+    post :upload_csv, params: {
+      import_csv: {
+        replace: false,
+        file: file,
+        vehicle_usage_set_id: other_vus.id
+      }
+    }
+    assert_valid response
+    assert_equal other_vus.id, planning.reload.vehicle_usage_set_id
   end
 
   test 'should not upload' do

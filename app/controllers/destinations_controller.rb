@@ -214,8 +214,7 @@ class DestinationsController < ApplicationController
     @columns_default = current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
 
     @import_csv = ImportCsv.new(
-      column_def: @columns_default,
-      vehicle_usage_set_id: default_import_vehicle_usage_set_id
+      column_def: @columns_default
     )
     @import_tomtom = ImportTomtom.new
   end
@@ -246,7 +245,7 @@ class DestinationsController < ApplicationController
       flash[:warning] = @import_tomtom.warnings.join(', ') if @import_tomtom.warnings.any?
       redirect_to destinations_path, notice: t('.success')
     else
-      @import_csv = ImportCsv.new(vehicle_usage_set_id: default_import_vehicle_usage_set_id)
+      @import_csv = ImportCsv.new
       render action: :import
     end
   rescue DeviceServiceError => e
@@ -459,16 +458,13 @@ class DestinationsController < ApplicationController
   end
 
   def import_planning_attributes_from_params
-    vehicle_usage_set_id = params.dig(:import_csv, :vehicle_usage_set_id).presence || default_import_vehicle_usage_set_id
+    # Blank = keep existing VUS on update; new plannings use customer first set.
+    vehicle_usage_set_id = params.dig(:import_csv, :vehicle_usage_set_id).presence
     return {} if vehicle_usage_set_id.blank?
 
     {
       vehicle_usage_set: current_user.customer.vehicle_usage_sets.find(vehicle_usage_set_id)
     }
-  end
-
-  def default_import_vehicle_usage_set_id
-    current_user.customer.vehicle_usage_sets.pick(:id)
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
