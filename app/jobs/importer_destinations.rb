@@ -1138,7 +1138,7 @@ class ImporterDestinations < ImporterBase
     @visits_attributes_without_ref << [[line], visit_attributes.merge(destination_index: destination_index)]
   end
 
-  def prepare_rest_in_planning(row, _line)
+  def prepare_rest_in_planning(row, line)
     planning_attributes_from_row(row)
 
     return unless row.key?(:route)
@@ -1164,7 +1164,8 @@ class ImporterDestinations < ImporterBase
       {
         active: ValueToBoolean.value_to_boolean(row[:active], true),
         custom_attributes: row[:stop_custom_attributes],
-        index: normalize_route_order(row[:index])
+        index: normalize_route_order(row[:index]),
+        import_line: line
       }
     ]
   end
@@ -1193,7 +1194,29 @@ class ImporterDestinations < ImporterBase
       next unless vehicle_usage
       next if vehicle_usage.rest?
 
-      raise ImportInvalidRow.new(I18n.t('destinations.import_file.rest_not_configured_on_vehicle'))
+      rest_lines = route_data[:visits].filter_map { |object, attrs|
+        next unless object == :rest
+
+        raw_line = attrs&.delete(:import_line) || attrs&.delete('import_line')
+        csv_line_number(raw_line) if raw_line
+      }
+      raise ImportBulkError.new(
+        I18n.t('import.data_erroneous.csv', s: rest_lines.join(',')) + ' - ' +
+          I18n.t('destinations.import_file.rest_not_configured_on_vehicle')
+      )
+    end
+
+    strip_rest_import_lines!(routes_hash)
+  end
+
+  def strip_rest_import_lines!(routes_hash)
+    routes_hash.each_value do |route_data|
+      Array(route_data[:visits]).each do |_object, attrs|
+        next unless attrs
+
+        attrs.delete(:import_line)
+        attrs.delete('import_line')
+      end
     end
   end
 

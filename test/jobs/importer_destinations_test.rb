@@ -924,7 +924,9 @@ class ImporterDestinationsTest < ActionController::TestCase
       file: tempfile('test/fixtures/files/import_destinations_single_plan_rest_only_with_window.csv', 'text.csv')
     )
     assert_not import.import
-    assert_match(/pas de pause configurée|no rest configured/i, import.errors[:base].join(' '))
+    error_message = import.errors[:base].join(' ')
+    assert_match(/pas de pause configurée|no rest configured/i, error_message)
+    assert_match(/lignes \[2\]|lines \[2\]/i, error_message)
   end
 
   test 'should reject import with more than one rest on the same route' do
@@ -939,7 +941,9 @@ class ImporterDestinationsTest < ActionController::TestCase
       file: tempfile('test/fixtures/files/import_destinations_single_plan_two_rests.csv', 'text.csv')
     )
     assert_not import.import
-    assert_match(/une seule pause/i, import.errors[:base].join(' '))
+    error_message = import.errors[:base].join(' ')
+    assert_match(/une seule pause/i, error_message)
+    assert_match(/lignes \[3\]|lines \[3\]/i, error_message)
   end
 
   test 'should reject rest import without rest window columns when vehicle usage has no rest configured' do
@@ -955,7 +959,9 @@ class ImporterDestinationsTest < ActionController::TestCase
       file: tempfile('test/fixtures/files/import_destinations_single_plan_rest_without_window.csv', 'text.csv')
     )
     assert_not import.import
-    assert_match(/pas de pause configurée|no rest configured/i, import.errors[:base].join(' '))
+    error_message = import.errors[:base].join(' ')
+    assert_match(/pas de pause configurée|no rest configured/i, error_message)
+    assert_match(/lignes \[2\]|lines \[2\]/i, error_message)
   end
 
   test 'should import new visits with existing tag to existing planning via JSON without stale update' do
