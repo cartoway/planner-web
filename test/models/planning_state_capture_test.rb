@@ -118,6 +118,20 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
     assert_equal snapshot_visit_ids.sort, current_visit_ids.sort
   end
 
+  test 'reapply_state restores vehicle_usage_set_id from snapshot' do
+    original_vus_id = @planning.vehicle_usage_set_id
+    @planning.capture_state!(trigger: 'vehicle_usage_set')
+    state = @planning.planning_states.first
+    assert_equal original_vus_id, state.payload['vehicle_usage_set_id']
+
+    other_vus = vehicle_usage_sets(:vehicle_usage_set_two)
+    assert_not_equal original_vus_id, other_vus.id
+    @planning.update_columns(vehicle_usage_set_id: other_vus.id)
+
+    assert @planning.reapply_state!(state)
+    assert_equal original_vus_id, @planning.reload.vehicle_usage_set_id
+  end
+
   test 'reapply_state restores visits when snapshot includes out of route route' do
     out_of_route = @planning.routes.find { |route| !route.vehicle_usage? }
     visit = visits(:visit_one)
