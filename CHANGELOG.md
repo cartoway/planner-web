@@ -1,5 +1,9 @@
 # Changelog
 
+## V109.0.3
+  ### Fixed
+  - Planning edit: hide/show a route via the eye icon no longer throws a sortable initialization error
+
 ## V109.0.2
   ### Added
   - Planning edit: mouse wheel scrolling while drag-and-dropping stops in the sidebar
