@@ -490,7 +490,8 @@ class PlanningsController < ApplicationController
           stops = @planning.routes.flat_map{ |r| r.stops.select{ |s| stop_ids.include? s.id } }
           route_ids = stops.collect(&:route_id).uniq
         else
-          stops = @planning.routes.detect{ |r| !r.vehicle_usage_id }.stops
+          # Dup: destroy_stop! mutates the preloaded association target while iterating
+          stops = @planning.routes.detect{ |r| !r.vehicle_usage_id }.stops.to_a.dup
           route_ids = stops.any? ? [stops[0].route_id] : []
         end
         raise ActiveRecord::RecordNotFound if stops.empty?
