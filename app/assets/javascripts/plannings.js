@@ -2501,21 +2501,22 @@ export const plannings_edit = function(params) {
         contentType: 'application/json',
         url: '/api/0.1/plannings/' + planning_id + '/routes/' + id + '.json',
         success: function(data) {
+          var $initializedSortables = li.filter('.ui-sortable');
           if (hidden) {
             i.removeClass("fa-eye").addClass("fa-eye-slash");
             routesLayer.hideRoutes([id]);
             li.closest(".route-stops").find("#div_out_list_next_link").hide();
             route_tools.find('.center_view').prop('disabled', true);
-            if (li.hasClass('ui-sortable')) {
-              li.sortable('disable');
+            if ($initializedSortables.length) {
+              $initializedSortables.sortable('disable');
             }
           } else {
             i.removeClass("fa-eye-slash").addClass("fa-eye");
             routesLayer.showRoutes([id], JSON.parse(data.geojson));
             li.closest(".route-stops").find("#div_out_list_next_link").show();
             route_tools.find('.center_view').removeAttr('disabled');
-            if (li.hasClass('ui-sortable') && params.manage_planning && params.manage_planning.planning_move_stops_usable) {
-              li.sortable('enable');
+            if ($initializedSortables.length && params.manage_planning && params.manage_planning.planning_move_stops_usable) {
+              $initializedSortables.sortable('enable');
             }
           }
           refreshPlanningRouteSortables();
