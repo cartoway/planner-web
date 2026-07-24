@@ -777,12 +777,72 @@ export const RoutesLayer = L.FeatureGroup.extend({
   },
 
   _showStopPopupAt: function(routeId, stopIndex, latlng) {
-    var marker = L.marker(latlng, { opacity: 0, interactive: false });
+    // No visible marker: keep popup tip on the trace (don't offset by default icon height).
+    var marker = L.marker(latlng, {
+      opacity: 0,
+      interactive: false,
+      icon: L.divIcon({
+        className: 'trace-popup-anchor',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+        popupAnchor: [0, 0]
+      })
+    });
     marker.properties = { route_id: routeId, index: parseInt(stopIndex, 10) };
     marker.addTo(this.map);
     this.tracePopupMarker = marker;
     popupModule.createPopupForLayer(marker, this.map);
     popupModule.activeClickMarker = marker;
+  },
+
+  // Point on the polyline at a given path-length ratio (stays on the road, unlike bounds center).
+  _latLngAlongPolyline: function(layer, ratio) {
+    ratio = ratio == null ? 0.5 : Math.max(0, Math.min(1, ratio));
+    var latlngs = layer.getLatLngs ? layer.getLatLngs() : null;
+    if (!latlngs || !latlngs.length) {
+      return layer.getBounds().getCenter();
+    }
+    // Flatten nested arrays (MultiPolyline / Leaflet internals)
+    if (latlngs[0] && !(latlngs[0] instanceof L.LatLng) && typeof latlngs[0].lat !== 'number') {
+      latlngs = [].concat.apply([], latlngs);
+    }
+    if (latlngs.length === 1) {
+      return latlngs[0];
+    }
+
+    var total = 0;
+    var segmentLengths = [];
+    for (var i = 1; i < latlngs.length; i++) {
+      var length = latlngs[i - 1].distanceTo(latlngs[i]);
+      segmentLengths.push(length);
+      total += length;
+    }
+    if (total === 0) {
+      return latlngs[0];
+    }
+
+    var target = total * ratio;
+    var walked = 0;
+    for (var j = 0; j < segmentLengths.length; j++) {
+      var segmentLength = segmentLengths[j];
+      if (walked + segmentLength >= target) {
+        var t = segmentLength === 0 ? 0 : (target - walked) / segmentLength;
+        return L.latLng(
+          latlngs[j].lat + (latlngs[j + 1].lat - latlngs[j].lat) * t,
+          latlngs[j].lng + (latlngs[j + 1].lng - latlngs[j].lng) * t
+        );
+      }
+      walked += segmentLength;
+    }
+    return latlngs[latlngs.length - 1];
+  },
+
+  _traceRatioForStop: function(layer, stopIndex) {
+    var ratios = layer.properties && layer.properties.stop_index_ratios;
+    if (!ratios) { return 0.5; }
+    var ratio = ratios[stopIndex];
+    if (ratio == null) { ratio = ratios[String(stopIndex)]; }
+    return ratio == null ? 0.5 : ratio;
   },
 
   _focusTraceForStop: function(routeId, stopIndex) {
@@ -791,7 +851,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
       this.map.closePopup();
       this._highlightTrace(routeId, layer);
       this._fitMapBounds(layer.getBounds(), [40, 40]);
-      this._showStopPopupAt(routeId, stopIndex, layer.getBounds().getCenter());
+      this._showStopPopupAt(routeId, stopIndex, this._latLngAlongPolyline(layer, this._traceRatioForStop(layer, stopIndex)));
       return true;
     }
 
