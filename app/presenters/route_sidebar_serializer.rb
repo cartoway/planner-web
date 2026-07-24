@@ -277,6 +277,7 @@ class RouteSidebarSerializer
       lng: stop.lng,
       drive_time: stop.drive_time,
       geocoded: stop.position?,
+      show_marker: @route.map_marker?(stop),
       active: stop.active,
       error: stop_error?(stop),
       status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),

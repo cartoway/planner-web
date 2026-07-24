@@ -704,6 +704,32 @@ export const RoutesLayer = L.FeatureGroup.extend({
     return null;
   },
 
+  _findAdjacentStopMarker: function(routeId, stopIndex) {
+    if (!this.clustersByRoute[routeId]) { return null; }
+    var idx = parseInt(stopIndex, 10);
+    var markers = this.clustersByRoute[routeId].getLayers();
+    var previous = null;
+    var next = null;
+    var previousIndex = -Infinity;
+    var nextIndex = Infinity;
+    for (var i = 0; i < markers.length; i++) {
+      var props = markers[i].properties;
+      if (!props || props.index == null) { continue; }
+      var markerIndex = parseInt(props.index, 10);
+      if (isNaN(markerIndex) || markerIndex === idx) { continue; }
+      if (markerIndex < idx && markerIndex > previousIndex) {
+        previous = markers[i];
+        previousIndex = markerIndex;
+      } else if (markerIndex > idx && markerIndex < nextIndex) {
+        next = markers[i];
+        nextIndex = markerIndex;
+      }
+    }
+    // Rest last without end store → previous; rest first without start store → next.
+    // Rest alone (no other stop) → null, nothing to display.
+    return previous || next;
+  },
+
   _getTraceLayerForStop: function(routeId, stopIndex) {
     var traces = this.tracesByStopIndex[routeId];
     if (!traces) { return null; }
@@ -761,12 +787,26 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
   _focusTraceForStop: function(routeId, stopIndex) {
     var layer = this._getTraceLayerForStop(routeId, stopIndex);
-    if (!layer) { return false; }
+    if (layer) {
+      this.map.closePopup();
+      this._highlightTrace(routeId, layer);
+      this._fitMapBounds(layer.getBounds(), [40, 40]);
+      this._showStopPopupAt(routeId, stopIndex, layer.getBounds().getCenter());
+      return true;
+    }
+
+    // No driving leg for an unpositioned rest at route extremities without stores:
+    // center on the previous/next stop position, but keep the rest popup (not the adjacent stop's).
+    var marker = this._findAdjacentStopMarker(routeId, stopIndex);
+    if (!marker) { return false; }
 
     this.map.closePopup();
-    this._highlightTrace(routeId, layer);
-    this._fitMapBounds(layer.getBounds(), [40, 40]);
-    this._showStopPopupAt(routeId, stopIndex, layer.getBounds().getCenter());
+    this._bringMarkerToFront(routeId, marker);
+    var latlng = marker.getLatLng();
+    if (!this.map.getBounds().contains(latlng)) {
+      this.map.setView(latlng, Math.max(this.map.getZoom(), 15), { animate: false });
+    }
+    this._showStopPopupAt(routeId, stopIndex, latlng);
     return true;
   },
 
