@@ -6,7 +6,7 @@
   - Planning: extract inactive stops from vehicle routes to unassigned via a dedicated modal
   - Destination import:
     - Place rest stops on routes from CSV (a unique rest per route)
-    - Choose the vehicle usage set for created plannings from the import form
+    - Optional vehicle usage set on the import form (blank by default: new plannings use the account first set, existing plannings keep theirs; a selected set is applied on create and update)
     - Coerce and validate CSV column types (`type:` metadata) before bulk import
   - Persistent order for vehicle usages:
     - Drag-and-drop reorder on the index page
@@ -18,6 +18,8 @@
     - History modal shows the same route-data statistics as the planning header, with deltas vs the current planning (lower is better, except active stops count)
     - Pin, two-step delete, and full planning reload on reapply
   - Planning: focus active rests without geolocation on their driving leg
+    - Popup placed along the leg using a time-based ratio (leave previous → rest start / drive to next), without marker-height offset
+    - At route extremities without start/end store: focus the previous/next stop instead; hide the map-marker button when the route has only a rest and no depot
   - Lookbook: design system preview UI on the Cartoway v2 shell
     - Component previews (foundation, buttons, forms, tables, layout chrome, overlays, navigation, planning sidebar)
     - Dual HAML/ERB scenario templates with inspector source panels
@@ -38,8 +40,10 @@
   - the stop-tools map marker button bring the associated marker to the front
   - Move stops modal: None / Reverse / All selection buttons and improved list padding
   - Destination import: on a new empty planning, place the automatic rest at the end of the route when no rest stop is provided in the import
+  - Planning sidebar: unified `map_marker?` flag to decide when the map-marker button is shown for any stop
 
   ### Fixed
+  - Planning edit: `automatic_insert` on all unassigned stops no longer skips every other stop
   - Route compute: place unlocated rests on the driving leg at the latest feasible time when starting at the next stop would fall outside the rest window
   - Route compute: `out_of_max_ride_distance` / `out_of_max_ride_duration` flags on `route_data` now reset correctly on recompute
   - Planning map: recenter on the stop when its popup overflows the visible map area (including under the sidebar)
