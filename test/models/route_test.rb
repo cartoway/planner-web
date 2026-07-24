@@ -706,6 +706,115 @@ class RouteTest < ActiveSupport::TestCase
     }, 'Rest without store must not create its own polyline leg'
   end
 
+  test 'unpositioned rest last without end store is not tagged on a polyline' do
+    route = routes(:route_one_one)
+    route.vehicle_usage.update!(store_rest_id: nil, store_stop_id: nil)
+    route.vehicle_usage.vehicle_usage_set.update!(store_stop_id: nil)
+    route = Route.find(route.id)
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    last_index = route.stops.map(&:index).max
+    route.move_stop(rest, last_index)
+    route.save!
+    route.reload
+
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    assert_nil route.vehicle_usage.default_store_stop
+    assert_equal route.stops.map(&:index).max, rest.index
+    assert_not rest.position?
+
+    route.outdated = true
+    route.compute_saved!
+    route.route_geojson.reload
+
+    tracks = route.geojson_tracks.map { |track_json| JSON.parse(track_json) }
+    linestrings = tracks.select { |track| track.dig('geometry', 'polylines').present? }
+    assert linestrings.any?, 'Visits should still produce driving legs'
+    tagged = linestrings.any? do |track|
+      indices = Array(track.dig('properties', 'stop_indices') || track.dig('properties', 'stop_index'))
+      indices.map(&:to_i).include?(rest.index)
+    end
+    assert_not tagged, 'Rest last without end store has no following leg; map focuses previous stop'
+  end
+
+  test 'unpositioned rest first without start store is not tagged on a later polyline' do
+    route = routes(:route_one_one)
+    route.vehicle_usage.update!(store_rest_id: nil, store_start_id: nil)
+    route.vehicle_usage.vehicle_usage_set.update!(store_start_id: nil)
+    route = Route.find(route.id)
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    route.move_stop(rest, 1)
+    route.save!
+    route.reload
+
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    assert_nil route.vehicle_usage.default_store_start
+    assert_equal 1, rest.index
+    assert_not rest.position?
+
+    route.outdated = true
+    route.compute_saved!
+    route.route_geojson.reload
+
+    tracks = route.geojson_tracks.map { |track_json| JSON.parse(track_json) }
+    linestrings = tracks.select { |track| track.dig('geometry', 'polylines').present? }
+    assert linestrings.any?, 'Later visits should still produce driving legs'
+    tagged = linestrings.any? do |track|
+      indices = Array(track.dig('properties', 'stop_indices') || track.dig('properties', 'stop_index'))
+      indices.map(&:to_i).include?(rest.index)
+    end
+    assert_not tagged, 'Rest first without start store must not reuse a later leg; map focuses next stop'
+  end
+
+  test 'unpositioned rest alone without stores produces no rest polyline tag' do
+    route = routes(:route_one_one)
+    route.vehicle_usage.update!(store_rest_id: nil, store_start_id: nil, store_stop_id: nil)
+    route.vehicle_usage.vehicle_usage_set.update!(store_start_id: nil, store_stop_id: nil, store_rest_id: nil)
+    StopVisit.where(route_id: route.id).delete_all
+    route = Route.find(route.id)
+
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    assert_not_nil rest
+    assert_equal 1, route.stops.size
+    assert_nil route.vehicle_usage.default_store_start
+    assert_nil route.vehicle_usage.default_store_stop
+    assert_not route.map_marker?(rest), 'Map marker button must be hidden for rest alone without depot'
+
+    route.outdated = true
+    route.compute_saved!
+    route.route_geojson.reload
+
+    tracks = Array(route.geojson_tracks).map { |track_json| JSON.parse(track_json) }
+    linestrings = tracks.select { |track| track.dig('geometry', 'polylines').present? }
+    tagged = linestrings.any? do |track|
+      indices = Array(track.dig('properties', 'stop_indices') || track.dig('properties', 'stop_index'))
+      indices.map(&:to_i).include?(rest.index)
+    end
+    assert_not tagged, 'Rest alone without stores must not display a rest trace'
+    assert_empty linestrings, 'Rest alone without stores must not display any driving leg'
+  end
+
+  test 'map_marker? is true when unpositioned rest has another positioned stop' do
+    route = routes(:route_one_one)
+    route.vehicle_usage.update!(store_rest_id: nil, store_start_id: nil, store_stop_id: nil)
+    route.vehicle_usage.vehicle_usage_set.update!(store_start_id: nil, store_stop_id: nil, store_rest_id: nil)
+    route = Route.find(route.id)
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    visit = route.stops.find { |stop| stop.is_a?(StopVisit) && stop.position? }
+
+    assert route.map_marker?(rest)
+    assert route.map_marker?(visit)
+  end
+
+  test 'map_marker? is false for unpositioned visit' do
+    route = routes(:route_one_one)
+    visit_stop = route.stops.find { |stop| stop.is_a?(StopVisit) }
+    visit_stop.visit.destination.update_columns(lat: nil, lng: nil)
+    visit_stop = Stop.includes(visit: :destination).find(visit_stop.id)
+
+    assert_not visit_stop.position?
+    assert_not route.map_marker?(visit_stop)
+  end
+
   test 'available excludes hidden and locked out of route' do
     planning = plannings(:planning_one)
     out_of_route = planning.routes.find { |route| route.vehicle_usage_id.nil? }

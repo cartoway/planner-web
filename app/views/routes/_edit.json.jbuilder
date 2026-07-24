@@ -205,6 +205,7 @@ if @with_stops
     (json.priority stop.priority) if stop.priority
     (json.wait_time '%i:%02i' % [stop.wait_time / 60 / 60, stop.wait_time / 60 % 60]) if stop.wait_time && stop.wait_time > 60
     (json.geocoded true) if stop.position?
+    (json.show_marker true) if route.map_marker?(stop)
     (json.time stop.time_time) if stop.time
     (json.time_day number_of_days(stop.time)) if stop.time
     if stop.active
