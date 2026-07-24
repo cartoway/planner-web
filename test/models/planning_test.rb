@@ -114,6 +114,16 @@ class PlanningTest < ActiveSupport::TestCase
     assert_not_equal planning.ref, planning_dup.ref
   end
 
+  test 'duplicate should keep customer plannings_count in sync' do
+    planning = plannings(:planning_one)
+    customer = planning.customer
+
+    planning_dup = planning.duplicate
+    planning_dup.save!
+
+    assert_equal customer.reload.plannings.count, customer.plannings_count
+  end
+
   test 'should set_routes' do
     planning = plannings(:planning_one)
 
