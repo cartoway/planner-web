@@ -704,6 +704,12 @@ class RouteTest < ActiveSupport::TestCase
       indices = Array(track.dig('properties', 'stop_indices') || track.dig('properties', 'stop_index'))
       indices.map(&:to_i).include?(rest_stop.index)
     }, 'Rest without store must not create its own polyline leg'
+
+    ratios = trace_for_rest.dig('properties', 'stop_index_ratios') || {}
+    ratio = ratios[rest_stop.index.to_s] || ratios[rest_stop.index]
+    assert_not_nil ratio, 'Expected a time-based ratio for the unpositioned rest on its leg'
+    assert_operator ratio, :>=, 0.0
+    assert_operator ratio, :<=, 1.0
   end
 
   test 'unpositioned rest last without end store is not tagged on a polyline' do
