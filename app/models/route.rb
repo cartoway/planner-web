@@ -313,12 +313,13 @@ class Route < ApplicationRecord
     return if options[:no_geojson]
 
     unless trace
-      @pending_unpositioned_rest_stop_index = nil
+      clear_pending_unpositioned_rest!
       return
     end
 
     stop_indices = [options[:stop_index], @pending_unpositioned_rest_stop_index].compact.map(&:to_i).uniq
-    @pending_unpositioned_rest_stop_index = nil
+    stop_index_ratios = pending_unpositioned_rest_ratios(options[:drive_time])
+    clear_pending_unpositioned_rest!
 
     properties = {
       route_id: self.id,
@@ -329,6 +330,7 @@ class Route < ApplicationRecord
       stop_index: stop_indices.first
     }
     properties[:stop_indices] = stop_indices if stop_indices.size > 1
+    properties[:stop_index_ratios] = stop_index_ratios if stop_index_ratios.present?
 
     @geojson_tracks_store << {
       type: 'Feature',
@@ -345,6 +347,8 @@ class Route < ApplicationRecord
 
     @geojson_tracks_store = []
     @pending_unpositioned_rest_stop_index = nil
+    @pending_unpositioned_rest_leave_time = nil
+    @pending_unpositioned_rest_start_time = nil
 
     route_attributes = init_route_data
     previous_route_data = self.start_route_data
@@ -398,6 +402,7 @@ class Route < ApplicationRecord
             store_traces(trace, options.merge(drive_time: stop_attributes[:drive_time], distance: stop_attributes[:distance], sub_tour_index: sub_tour_index, color: sub_tour_color, stop_index: stop.index))
           else
             @pending_unpositioned_rest_stop_index = stop.index
+            @pending_unpositioned_rest_leave_time = route_attributes[:end]
             stop_attributes[:distance] = nil
             stop_attributes[:drive_time] = nil
             stop_attributes[:no_path] = false
@@ -430,6 +435,10 @@ class Route < ApplicationRecord
               previous_route_data_attributes[:wait_time] = (previous_route_data_attributes[:wait_time] || 0) + stop_attributes[:wait_time]
             else
               stop_attributes[:wait_time] = nil
+            end
+
+            if stop.is_a?(StopRest) && !stop.position? && @pending_unpositioned_rest_stop_index == stop.index
+              @pending_unpositioned_rest_start_time = stop_attributes[:time]
             end
 
             stop_attributes[:out_of_window] = !!(late_wait && late_wait > 0)
@@ -520,7 +529,7 @@ class Route < ApplicationRecord
       route_attributes[:end] += service_time_end unless service_time_end.nil?
 
       store_traces(trace, options.merge(drive_time: drive_time, distance: distance, sub_tour_index: sub_tour_index, color: sub_tour_color))
-      @pending_unpositioned_rest_stop_index = nil
+      clear_pending_unpositioned_rest!
 
       route_attributes[:stop_out_of_drive_time] = route_attributes[:end] > vehicle_usage.default_time_window_end
       route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(
@@ -1949,6 +1958,32 @@ class Route < ApplicationRecord
       ((stop.time_window_start_1 && stop.time_window_end_1) ||
        (stop.time_window_start_2 && stop.time_window_end_2)) &&
       stop.duration
+  end
+
+  def clear_pending_unpositioned_rest!
+    @pending_unpositioned_rest_stop_index = nil
+    @pending_unpositioned_rest_leave_time = nil
+    @pending_unpositioned_rest_start_time = nil
+  end
+
+  # Approximate where an unpositioned rest falls on the following drive leg:
+  # (rest_start - leave_previous) / drive_time_to_next, clamped to [0, 1].
+  def pending_unpositioned_rest_ratios(drive_time)
+    return {} if @pending_unpositioned_rest_stop_index.nil?
+
+    {
+      @pending_unpositioned_rest_stop_index => rest_ratio_on_leg(
+        @pending_unpositioned_rest_leave_time,
+        @pending_unpositioned_rest_start_time,
+        drive_time
+      )
+    }
+  end
+
+  def rest_ratio_on_leg(leave_time, rest_start_time, drive_time)
+    return 0.0 if drive_time.nil? || drive_time <= 0 || leave_time.nil? || rest_start_time.nil?
+
+    ((rest_start_time - leave_time).to_f / drive_time).clamp(0.0, 1.0)
   end
 
   def adjust_unpositioned_stop_rest_times!(previous_route_data, stops_sort, stops_drive_time)
