@@ -130,7 +130,7 @@
               .btn-group.pull-right.stop-tools
                 %a.marker_edit.btn.btn-default.btn-xs.invisible{href: "/"}
                   %i.fa.fa-pencil
-                - if stop[:active]
+                - if stop[:active] && stop[:show_marker]
                   %a.marker.btn.btn-default.btn-xs{href: "#", title: stop[:geocoded] ? t("plannings.edit.marker_help") : t("plannings.edit.rest_trace_help")}
                     %i.fa.fa-map-marker
     - if stop[:destination] && stop[:visits]
@@ -211,7 +211,7 @@
                 - if route[:vehicle_usage_id] && @manage_planning[:manage_stop_lock]
                   %button.stop_locked_toggle.btn.btn-xs{type: 'button', title: t('plannings.edit.stop_locked_help'), class: (stop[:locked] ? 'btn-warning' : 'btn-default'), disabled: @manage_planning[:disable_stop_lock], data: { route_id: route[:route_id], stop_id: stop[:stop_id], locked: stop[:locked] ? 'true' : 'false' }}
                     %i.fa{class: "fa-#{'un' unless stop[:locked]}lock"}
-                - if stop[:geocoded]
+                - if stop[:show_marker]
                   %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                     %i.fa.fa-map-marker
   - if !route[:with_stops] && route[:size] > 0
