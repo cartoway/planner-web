@@ -1507,6 +1507,24 @@ class PlanningsControllerTest < ActionController::TestCase
     }
   end
 
+  test 'should automatic insert all out of route stops without skipping every other' do
+    out_of_route = routes(:route_zero_one)
+    stop_ids = routes(:route_one_one).stops.where(type: 'StopVisit').limit(3).pluck(:id)
+    assert_equal 3, stop_ids.size
+
+    # Move visits to out-of-route at DB level (avoids zoning reassignment from compute_saved)
+    max_index = out_of_route.stops.maximum(:index).to_i
+    stop_ids.each_with_index do |stop_id, i|
+      Stop.where(id: stop_id).update_all(route_id: out_of_route.id, index: max_index + i + 1, active: false)
+    end
+    initial_count = out_of_route.stops.reload.count
+    assert initial_count >= 4, "expected >= 4 out-of-route stops, got #{initial_count}"
+
+    patch :automatic_insert, params: { id: @planning.id, format: :json, stop_ids: [] }
+    assert_response :success
+    assert_equal 0, out_of_route.stops.reload.count
+  end
+
   test 'should automatic insert twice' do
     patch :automatic_insert, params: { id: @planning.id, format: :json }
     assert_response :success
