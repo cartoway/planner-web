@@ -277,6 +277,16 @@ class Route < ApplicationRecord
     vehicle_usage? && vehicle_usage.rest?
   end
 
+  def map_marker?(stop)
+    return true if stop.position?
+    return false unless stop.is_a?(StopRest)
+
+    stops.any? { |s| s.active? && s.position? } ||
+      vehicle_usage&.default_store_start&.position? ||
+      vehicle_usage&.default_store_stop&.position? ||
+      false
+  end
+
   # The route duration including service times unlike the route_data duration which does not include service times
   def total_duration
     return 0 unless route_data
@@ -300,7 +310,12 @@ class Route < ApplicationRecord
   end
 
   def store_traces(trace, options = {})
-    return unless trace && !options[:no_geojson]
+    return if options[:no_geojson]
+
+    unless trace
+      @pending_unpositioned_rest_stop_index = nil
+      return
+    end
 
     stop_indices = [options[:stop_index], @pending_unpositioned_rest_stop_index].compact.map(&:to_i).uniq
     @pending_unpositioned_rest_stop_index = nil
@@ -505,6 +520,7 @@ class Route < ApplicationRecord
       route_attributes[:end] += service_time_end unless service_time_end.nil?
 
       store_traces(trace, options.merge(drive_time: drive_time, distance: distance, sub_tour_index: sub_tour_index, color: sub_tour_color))
+      @pending_unpositioned_rest_stop_index = nil
 
       route_attributes[:stop_out_of_drive_time] = route_attributes[:end] > vehicle_usage.default_time_window_end
       route_attributes[:stop_out_of_work_time] = vehicle_usage.outside_default_work_time?(

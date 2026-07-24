@@ -185,9 +185,9 @@
             <span class="name" title="{{name}}"><i class="fa fa-coffee fa-fw"></i> {{name}}</span>
           </div>
           <div class="btn-group pull-right stop-tools">
-            {{#active}}
+            {{#active}}{{#show_marker}}
             <a href="#" class="marker btn btn-default btn-xs" title="{{#geocoded}}{{#i18n}}plannings.edit.marker_help{{/i18n}}{{/geocoded}}{{^geocoded}}{{#i18n}}plannings.edit.rest_trace_help{{/i18n}}{{/geocoded}}"><i class="fa fa-map-marker"></i></a>
-            {{/active}}
+            {{/show_marker}}{{/active}}
           </div>
           <div class="clearfix"></div>
         </li>
@@ -235,9 +235,9 @@
             {{#manage_destination}}
             <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
             {{/manage_destination}}
-            {{#geocoded}}
+            {{#show_marker}}
               <a href="#" class="marker btn btn-default btn-xs" title="{{#i18n}}plannings.edit.marker_help{{/i18n}}"><i class="fa fa-map-marker"></i></a>
-            {{/geocoded}}
+            {{/show_marker}}
           </div>
           <div class="clearfix"></div>
         </li>
