@@ -3,5 +3,5 @@
   %p.text-muted.small.mb-4= t('design_system.forms_preview.filtered_search.description_html').html_safe
   .row.g-4
     .col-lg-8
-      = render 'v2/destinations/filtered_search_field', input_id: 'lookbook-filtered-search', input_name: nil, input_value: '', active_filters: []
+      = render 'v2/destinations/filtered_search_field', input_id: 'lookbook-filtered-search', input_name: nil, input_value: '', active_filters: ['city:Bordeaux', 'Dupont']
       .form-text= t('design_system.forms_preview.filtered_search.hint')

@@ -284,8 +284,8 @@ class DestinationsController < ApplicationController
     @destinations = scope.offset((page - 1) * per_page).limit(per_page)
     @tags = current_user.customer.tags
     @pagination = { page: page, per_page: per_page, total: @total_count }
-    @search_query = params[:q].to_s.strip
     @active_filters = destinations_index_active_filters
+    @search_query = destinations_index_live_query
     @destinations_list_sort = DestinationsListSort.parse(params, customer: @customer)
     allowed = ::Preferences::Catalog.destinations_list_allowed_column_ids(@customer)
     active = current_user.destinations_list_active_column_ids(@customer)
@@ -297,12 +297,27 @@ class DestinationsController < ApplicationController
   end
 
   def destinations_index_active_filters
-    Array(params[:filters]).compact.map(&:strip).reject(&:blank?)
+    filters = Array(params[:filters]).compact.map(&:strip).reject(&:blank?)
+    q = params[:q].to_s.strip
+    # Plain text without a key is shown as a removable badge like key:value filters.
+    if q.present? && !q.include?(':')
+      filters = (filters + [q]).uniq
+    end
+    filters
+  end
+
+  # Live text still typed in the field (key:value drafts). Plain q is promoted to badges.
+  def destinations_index_live_query
+    q = params[:q].to_s.strip
+    return '' if q.blank? || !q.include?(':')
+
+    q
   end
 
   def destinations_index_search_conditions
     conditions = destinations_index_active_filters.flat_map { |f| DestinationSearchParser.parse(f) }
-    conditions += DestinationSearchParser.parse(params[:q]) if params[:q].to_s.strip.present?
+    live_q = destinations_index_live_query
+    conditions += DestinationSearchParser.parse(live_q) if live_q.present?
     conditions
   end
 

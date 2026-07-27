@@ -51,7 +51,10 @@ module DestinationsHelper
   # Params for URL when removing a filter badge (excludes the given filter, resets to page 1).
   def destinations_index_params_without_filter(filter_to_remove)
     remaining = Array(params[:filters]).compact.reject { |f| f.to_s == filter_to_remove.to_s }
-    destinations_index_params(filters: remaining, page: 1)
+    overrides = { filters: remaining, page: 1 }
+    # Plain-text filters may still be present as `q` (promoted to a badge on render).
+    overrides[:q] = nil if params[:q].to_s.strip == filter_to_remove.to_s
+    destinations_index_params(overrides)
   end
 
   # Column ids available for the destinations index table (customer-dependent).

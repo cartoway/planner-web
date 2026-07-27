@@ -1217,8 +1217,11 @@ export default class extends Controller {
       }
       const val = input.value.trim()
       const filters = parseKeyValueFilters(val)
-      if (filters.length) submitForm(filters.map((f) => f.raw))
-      else if (hasMinCharsForSearch(val)) submitForm()
+      if (filters.length) {
+        submitForm(filters.map((f) => f.raw))
+        return
+      }
+      if (hasMinCharsForSearch(val)) submitForm([val])
     }, { signal })
 
     const badgesHost = ensureBadgesHost()
