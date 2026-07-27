@@ -248,7 +248,7 @@ class DestinationsControllerTest < ActionController::TestCase
     get :new
     assert_response :success
     assert_select '#destination-details[data-controller~="v2--destination-geocoding"]', 1
-    assert_select '#destination-geocode-prompt.d-none[data-v2--destination-geocoding-target="prompt"]', 1
+    assert_select '#destination-geocode-prompt[data-v2--destination-geocoding-target="prompt"]:not(.d-none)', 1
   end
 
   test 'v2 edit sidebar visits list wires visit-collapses controller on #visits' do
@@ -267,20 +267,24 @@ class DestinationsControllerTest < ActionController::TestCase
     get :edit, params: { id: @destination.id }
     assert_response :success
     assert_operator @destination.reload.visits.size, :>, 1
-    assert_select '#visits-expand[data-action*="v2--visit-collapses#toggleAll"]', 1
+    # Live header only — another copy lives in template#visits-header-template.
+    assert_select '#visits > #visits-header #visits-expand[data-action*="v2--visit-collapses#toggleAll"]', 1
   end
 
   test 'v2 edit sidebar tags multi-selects use Tom Select Stimulus controller' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     get :edit, params: { id: @destination.id }
     assert_response :success
-    assert_select '.destination_visits_attributes_tag_ids_input', 2
+    # Destination tags + one persisted visit (+ template copy excluded below).
+    assert_select '#destination-details > .destination_visits_attributes_tag_ids_input', 1
+    assert_select '#visits > fieldset .destination_visits_attributes_tag_ids_input', 1
+    assert_select 'template#visit-fieldset-template .destination_visits_attributes_tag_ids_input', 1
     assert_select '.destination_visits_attributes_tag_ids_input select[data-controller~="v2--tom-select"][name="destination[tag_ids][]"][multiple]', 1
-    assert_select 'select[name^="destination[visits_attributes]"][name$="[tag_ids][]"][multiple][data-controller~="v2--tom-select"]', 1
+    assert_select '#visits > fieldset select[name^="destination[visits_attributes]"][name$="[tag_ids][]"][multiple][data-controller~="v2--tom-select"]', 1
     assert_select 'select#from_visit_tags[multiple][data-controller~="v2--tom-select"]', 1
     assert_select 'select#to_visit_tags[multiple][data-controller~="v2--tom-select"]', 1
-    # destination_one has one visit → 2 Tom hosts (destination + visit) + 2 bulk selects in modal
-    assert_select '[data-controller~="v2--tom-select"]', 4
+    # destination + visit + 2 bulk selects (+ template visit select is inside <template>)
+    assert_select '#destination-details [data-controller~="v2--tom-select"], #visits > fieldset [data-controller~="v2--tom-select"], #from_visit_tags[data-controller~="v2--tom-select"], #to_visit_tags[data-controller~="v2--tom-select"]', 4
   end
 
   test 'v2 edit sidebar destination and visit tag fields use input-group with trailing tags icon' do
@@ -289,8 +293,8 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select %(turbo-frame#form_sidebar #destination-details .destination_visits_attributes_tag_ids_input .input-group > select[name="destination[tag_ids][]"][multiple]), 1
     assert_select %(turbo-frame#form_sidebar #destination-details .destination_visits_attributes_tag_ids_input .input-group > span.input-group-text), 1
-    assert_select %(turbo-frame#form_sidebar #visits .destination_visits_attributes_tag_ids_input .input-group > select[multiple][name*="[tag_ids][]"]), 1
-    assert_select %(turbo-frame#form_sidebar #visits .destination_visits_attributes_tag_ids_input .input-group > span.input-group-text), 1
+    assert_select %(turbo-frame#form_sidebar #visits > fieldset .destination_visits_attributes_tag_ids_input .input-group > select[multiple][name*="[tag_ids][]"]), 1
+    assert_select %(turbo-frame#form_sidebar #visits > fieldset .destination_visits_attributes_tag_ids_input .input-group > span.input-group-text), 1
   end
 
   test 'v2 edit sidebar visit priority uses Bootstrap native range' do
@@ -298,7 +302,7 @@ class DestinationsControllerTest < ActionController::TestCase
     get :edit, params: { id: @destination.id }
     assert_response :success
     assert_select 'input#visit_priority_i1.form-range[type="range"][name="destination[visits_attributes][1][priority]"][min="-4"][max="4"][step="1"]', 1
-    assert_select '.v2-range-output-wrap[data-controller~="v2--range-output"]', 1
+    assert_select '#visits > fieldset .v2-range-output-wrap[data-controller~="v2--range-output"]', 1
   end
 
   test 'v2 edit sidebar offers direct delete for each persisted visit' do
@@ -307,8 +311,9 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     n = @destination.visits.select(&:persisted?).size
     assert_operator n, :>, 0
-    assert_select 'button[data-controller~="v2--visit-delete"][data-controller~="confirm-click"]', n
-    assert_select 'button[data-controller~="v2--visit-remove"]', 0
+    assert_select '#visits > fieldset button[data-controller~="v2--visit-delete"][data-controller~="confirm-click"]', n
+    assert_select '#visits > fieldset button[data-controller~="v2--visit-remove"]', 0
+    assert_select 'template#visit-fieldset-template button[data-controller~="v2--visit-remove"]', 1
   end
 
   test 'update nested visit _destroy deletes persisted visit' do
@@ -329,21 +334,11 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'v2 visit form renders remove control for unsaved nested visit' do
-    @visit_custom_attributes = @destination.customer.custom_attributes.for_visit.to_a
-    visit = @destination.visits.build(duration: @destination.customer.visit_duration)
-    html = render_to_string(
-      partial: 'v2/visits/form',
-      locals: {
-        visit: visit,
-        i: 2,
-        destination_form_mutable: true,
-        v2_label_col: 'col-form-label col-md-10 offset-md-1 fw-bold',
-        v2_bootstrap_label_col: 'col-md-10 offset-md-1 fw-bold',
-        v2_control_col: 'col-md-10 offset-md-1 field'
-      }
-    )
-    assert_match 'v2--visit-remove', html
-    assert_no_match 'v2--visit-delete', html
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select 'template#visit-fieldset-template button[data-controller~="v2--visit-remove"]', 1
+    assert_select 'template#visit-fieldset-template button[data-controller~="v2--visit-delete"]', 0
   end
 
   test 'new responds with form_sidebar fragment when requested via Turbo Frame' do
@@ -406,7 +401,7 @@ class DestinationsControllerTest < ActionController::TestCase
       post :append_visit, params: { id: @destination.id }, as: :turbo_stream
     end
     assert_response :success
-    assert_equal 'text/vnd.turbo-stream.html; charset=utf-8', response.media_type
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
     new_visit = @destination.reload.visits.order(:id).last
     assert_select "turbo-stream[action='append'][target='visits']", 1
     assert_match "visit-fieldset-#{new_visit.id}", response.body
