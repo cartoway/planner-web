@@ -156,11 +156,13 @@ export default class extends Controller {
 
     this._onPositionDragToggleDocumentClick = this._onPositionDragToggleDocumentClick.bind(this)
     this._onDestinationGeocoded = this._onDestinationGeocoded.bind(this)
+    this._onDestinationVisitsChanged = this._onDestinationVisitsChanged.bind(this)
     this._onPositionDragResize = () => {
       if (this._positionEdit?.active) this._syncPositionDragCancelButtonPosition()
     }
     document.addEventListener('click', this._onPositionDragToggleDocumentClick, { signal })
     document.addEventListener('v2:destination-geocoded', this._onDestinationGeocoded, { signal })
+    document.addEventListener('v2:destination-visits-changed', this._onDestinationVisitsChanged, { signal })
     window.addEventListener('resize', this._onPositionDragResize, { signal })
 
     document.addEventListener('turbo:before-cache', this._beforeCache, { signal })
@@ -947,6 +949,16 @@ export default class extends Controller {
       const zoom = Math.max(this._map.getZoom(), 16)
       this._map.flyTo({ center: [lng, lat], zoom, padding: this._mapFlyToPadding() })
     } catch (e) { /* ignore */ }
+  }
+
+  _onDestinationVisitsChanged (event) {
+    const destinationId = event.detail?.destinationId
+    if (!destinationId) return
+
+    const overrides = { highlight_destination_id: String(destinationId) }
+    const currentPage = new URL(window.location.href).searchParams.get('page')
+    if (currentPage) overrides.page = currentPage
+    visit(this._buildDestinationsIndexUrl(overrides), { frame: 'destinations_list', action: 'advance' })
   }
 
   /**

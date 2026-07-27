@@ -1,0 +1,13 @@
+- if @destination.visits.size == 2
+  = turbo_stream.prepend 'visits' do
+    = render 'v2/destinations/visits_header'
+
+= turbo_stream.append 'visits' do
+  = render 'v2/visits/form',
+    visit: @visit,
+    i: @visit_field_index,
+    destination_form_mutable: @dest_form_mutable,
+    v2_label_col: @v2_label_col,
+    v2_bootstrap_label_col: @v2_bootstrap_label_col,
+    v2_control_col: @v2_control_col,
+    scroll_into_view: true
