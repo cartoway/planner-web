@@ -152,6 +152,7 @@ class DestinationsController < ApplicationController
       p = destination_params
       time_with_day_params(params, p, [:time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2])
       @destination = current_user.customer.destinations.build(p)
+      apply_geocode_on_save!(@destination)
 
       if @destination.save && current_user.customer.save
         format.html { redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.created', model: @destination.class.model_name.human) }
@@ -174,6 +175,7 @@ class DestinationsController < ApplicationController
         p = destination_params
         time_with_day_params(params, p, [:time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2])
         @destination.assign_attributes(p)
+        apply_geocode_on_save!(@destination)
 
         if @destination.save && @destination.customer.save
           format.html { redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.updated', model: @destination.class.model_name.human) }
@@ -426,8 +428,6 @@ class DestinationsController < ApplicationController
       :comment,
       :geocoding_accuracy,
       :geocoding_level,
-      :geocoder_version,
-      :geocoded_at,
       tag_ids: [],
       visits_attributes: [
         :id,
@@ -459,6 +459,28 @@ class DestinationsController < ApplicationController
       end
     end
     o
+  end
+
+  # Re-geocode server-side when the client flagged a successful preview at submit time.
+  def apply_geocode_on_save!(destination)
+    dest_params = params[:destination]
+    return unless dest_params
+    return unless ActiveModel::Type::Boolean.new.cast(dest_params[:geocode_on_save])
+
+    fingerprint = dest_params[:geocode_on_save_fingerprint].to_s
+    return if fingerprint.blank?
+    return unless helpers.destination_form_address_geocodable?(destination)
+
+    expected = helpers.destination_form_address_fingerprint(
+      street: destination.street,
+      postalcode: destination.postalcode,
+      city: destination.city,
+      state: destination.state,
+      country: destination.country
+    )
+    return unless fingerprint == expected
+
+    destination.geocode
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
