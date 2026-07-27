@@ -520,6 +520,7 @@ export default class extends Controller {
       },
       onPointClick: (feature) => this._handleMapPointClick(feature),
       onFeaturesUpdated: () => this._applyPendingHighlight(),
+      getMovePadding: () => this._mapFlyToPadding(),
       signal
     })
     this._mapLayers.connect()
