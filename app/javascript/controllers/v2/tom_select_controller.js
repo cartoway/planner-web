@@ -154,19 +154,24 @@ export default class extends Controller {
   }
 
   renderTagRow (opt, text, escape) {
-    const label = escape(text || "")
-    const color = opt?.dataset?.color
-    const icon = opt?.dataset?.icon
-    if (icon && color) {
-      return `<span><i class="fa ${escapeAttr(icon)}" style="color:#${escapeAttr(color)}"></i>&nbsp;</span><span>${label}</span>`
+    const label = escape(text || '')
+    const color = (opt?.dataset?.color || '').trim()
+    const icon = (opt?.dataset?.icon || '').trim()
+    const defaultIcon = (opt?.dataset?.defaultIcon || '').trim()
+    const customized = !!(color || icon)
+
+    let iconHtml = ''
+    if (customized) {
+      const iconClass = escape(icon || defaultIcon)
+      let styleAttr = ''
+      if (color) {
+        const cssColor = color.startsWith('#') ? color : `#${color}`
+        styleAttr = ` style="color:${escapeAttr(cssColor)}"`
+      }
+      iconHtml = `<i class="fa fa-fw ${iconClass}"${styleAttr} aria-hidden="true"></i> `
     }
-    if (icon) {
-      return `<span><i class="fa ${escapeAttr(icon)}"></i>&nbsp;</span><span>${label}</span>`
-    }
-    if (color) {
-      return `<span><i class="fa fa-flag" style="color:#${escapeAttr(color)}"></i>&nbsp;</span><span>${label}</span>`
-    }
-    return `<span>${label}</span>`
+
+    return `<span class="badge destinations-list-tag-badge text-bg-light border">${iconHtml}${label}</span>`
   }
 
   async createTag (input, callback) {
