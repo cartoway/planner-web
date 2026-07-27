@@ -27,6 +27,25 @@ class DestinationsHelperTest < ActionView::TestCase
     assert_equal '12 rue Example, Paris', destinations_list_geocoding_result_free(@destination)
   end
 
+  test 'destination_form_address_geocodable? is true when street postalcode or city is present' do
+    @destination.assign_attributes(street: nil, postalcode: nil, city: nil)
+    assert_not destination_form_address_geocodable?(@destination)
+
+    @destination.city = 'Bordeaux'
+    assert destination_form_address_geocodable?(@destination)
+  end
+
+  test 'destination_form_address_fingerprint normalizes address fields' do
+    fingerprint = destination_form_address_fingerprint(
+      street: '  Rue des Lilas ',
+      postalcode: '33200',
+      city: 'Bordeau',
+      state: '',
+      country: 'France'
+    )
+    assert_equal 'rue des lilas|33200|bordeau||france', fingerprint
+  end
+
   test 'destinations_list_visit_tags_labels returns unique sorted visit category labels' do
     assert_equal ['tag1'], destinations_list_visit_tags_labels(@destination)
 
