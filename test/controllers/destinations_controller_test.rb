@@ -1,6 +1,8 @@
 require 'test_helper'
 
 class DestinationsControllerTest < ActionController::TestCase
+  include DestinationsHelper
+
   # data-config JSON is HTML-escaped in the v2 index (e.g. &quot;key&quot;:value).
   def assert_map_config_json_key(key, value = nil)
     if value.nil?
@@ -231,11 +233,13 @@ class DestinationsControllerTest < ActionController::TestCase
     get :edit, params: { id: @destination.id }
     assert_response :success
     assert_select '#destination-details[data-controller~="v2--destination-geocoding"]', 1
-    assert_select '#destination-geocode-prompt.d-none[data-v2--destination-geocoding-target="prompt"]', 1
+    assert_select '#destination-geocode-prompt[data-v2--destination-geocoding-target="prompt"]:not(.d-none)', 1
     assert_select 'button[data-v2--destination-geocoding-target="geocodeButton"][data-action*="v2--destination-geocoding#geocode"]', 1
     assert_select '#destination-details[data-v2--destination-geocoding-confirm-overwrite-point-value]', 1
     assert_select '#destination-geocode-apply.d-none[data-v2--destination-geocoding-target="geocodeApplyPanel"]', 1
     assert_select 'button[data-v2--destination-geocoding-target="geocodeApplyButton"][data-action*="applyGeocodedAddress"]', 1
+    assert_select 'input[name="destination[geocode_on_save]"][value=""]', 1
+    assert_select 'input[name="destination[geocode_on_save_fingerprint]"][value=""]', 1
     assert_select '#geocoding_result_free[data-v2--destination-geocoding-target="geocodingResultRow"]', 1
   end
 
@@ -244,7 +248,7 @@ class DestinationsControllerTest < ActionController::TestCase
     get :new
     assert_response :success
     assert_select '#destination-details[data-controller~="v2--destination-geocoding"]', 1
-    assert_select '#destination-geocode-prompt', 1
+    assert_select '#destination-geocode-prompt.d-none[data-v2--destination-geocoding-target="prompt"]', 1
   end
 
   test 'v2 edit sidebar visits list wires visit-collapses controller on #visits' do
@@ -749,6 +753,105 @@ class DestinationsControllerTest < ActionController::TestCase
   test 'should update destination' do
     patch :update, params: { id: @destination, destination: { city: @destination.city, lat: @destination.lat, lng: @destination.lng, name: @destination.name, postalcode: @destination.postalcode, street: @destination.street, state: @destination.state, detail: @destination.detail, comment: @destination.comment, phone_number: @destination.phone_number } }
     assert_redirected_to edit_destination_path(assigns(:destination))
+  end
+
+  test 'should geocode on save when geocode_on_save flag and fingerprint match' do
+    geocode_result = {
+      lat: 44.837789,
+      lng: -0.579180,
+      accuracy: 0.92,
+      quality: 'house',
+      free: '12 rue des Lilas, 33200 Bordeaux',
+      city: 'Bordeaux',
+      street: 'Rue des Lilas',
+      postcode: '33200',
+      geocoder_version: 'test-geocoder',
+      geocoded_at: Time.current
+    }
+
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda { |*_args| geocode_result }) do
+      fingerprint = destination_form_address_fingerprint(
+        street: @destination.street,
+        postalcode: @destination.postalcode,
+        city: @destination.city,
+        state: @destination.state,
+        country: @destination.country
+      )
+
+      patch :update, params: {
+        id: @destination,
+        v2_sidebar: '1',
+        destination: {
+          name: @destination.name,
+          street: @destination.street,
+          postalcode: @destination.postalcode,
+          city: @destination.city,
+          state: @destination.state,
+          geocode_on_save: '1',
+          geocode_on_save_fingerprint: fingerprint
+        }
+      }
+    end
+
+    assert_redirected_to destinations_path(highlight_destination_id: @destination.id)
+    @destination.reload
+    assert_equal '12 rue des Lilas, 33200 Bordeaux', @destination.geocoding_result['free']
+    assert_equal 'Bordeaux', @destination.geocoding_result['city']
+    assert_equal 'house', @destination.geocoding_level
+    assert_in_delta 0.92, @destination.geocoding_accuracy, 0.001
+    assert_in_delta 44.837789, @destination.lat, 0.000001
+  end
+
+  test 'should ignore client-submitted geocoding_result on save' do
+    @destination.update_columns(geocoding_result: { 'free' => 'Previous address' })
+
+    patch :update, params: {
+      id: @destination,
+      v2_sidebar: '1',
+      destination: {
+        name: @destination.name,
+        street: @destination.street,
+        postalcode: @destination.postalcode,
+        city: @destination.city,
+        lat: 44.837789,
+        lng: -0.579180,
+        geocoding_accuracy: 0.92,
+        geocoding_level: 'house',
+        geocoding_result: {
+          free: 'Spoofed address',
+          city: 'Nantes'
+        }.to_json
+      }
+    }
+
+    assert_redirected_to destinations_path(highlight_destination_id: @destination.id)
+    @destination.reload
+    assert_equal 'Previous address', @destination.geocoding_result['free']
+    assert_not_equal 'Nantes', @destination.geocoding_result['city']
+  end
+
+  test 'should ignore geocode_on_save when fingerprint does not match address' do
+    geocode_called = false
+    Planner::Application.config.geocoder.class.stub_any_instance(:code, lambda { |*_args|
+      geocode_called = true
+      { lat: 1, lng: 1, accuracy: 0.9, quality: 'street', free: 'wrong' }
+    }) do
+      patch :update, params: {
+        id: @destination,
+        v2_sidebar: '1',
+        destination: {
+          name: @destination.name,
+          street: @destination.street,
+          postalcode: @destination.postalcode,
+          city: @destination.city,
+          geocode_on_save: '1',
+          geocode_on_save_fingerprint: 'stale|fingerprint|mismatch||'
+        }
+      }
+    end
+
+    assert_redirected_to destinations_path(highlight_destination_id: @destination.id)
+    assert_not geocode_called
   end
 
   test 'should update destination and visit' do

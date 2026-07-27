@@ -16,6 +16,18 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 module DestinationsHelper
+  # True when the sidebar form has enough address text to run geocoding.
+  def destination_form_address_geocodable?(destination)
+    %i[street postalcode city].any? { |field| destination.public_send(field).present? }
+  end
+
+  # Fingerprint of address fields at geocode click (must match JS in destination_geocoding_controller).
+  def destination_form_address_fingerprint(attrs)
+    %i[street postalcode city state country].map { |field|
+      attrs[field].to_s.strip.downcase.gsub(/\s+/, ' ')
+    }.join('|')
+  end
+
   # Builds params hash for destinations index URL (search, filters, pagination).
   def destinations_index_params(overrides = {})
     base = {
@@ -258,7 +270,7 @@ module DestinationsHelper
     result = destination.geocoding_result
     return nil unless result.is_a?(Hash)
 
-    result['free'].presence
+    result['free'].presence || result['label'].presence
   end
 
   def destinations_list_geocoding_accuracy_percent(destination)

@@ -23,6 +23,9 @@
     - if @destination.customer.enable_references
       = f.text_field :ref, help: df.call('ref_help')
     = hidden_field_tag "destination[geocoding_result]", @destination.geocoding_result.to_json
+    - if dest_form_mutable
+      = hidden_field_tag "destination[geocode_on_save]", ""
+      = hidden_field_tag "destination[geocode_on_save_fingerprint]", ""
     = f.text_field :name, required: true
     = f.text_field :street, help: t('web.form.helpers.street')
     = f.text_field :detail, help: df.call('detail_help')
@@ -50,15 +53,14 @@
               %i.fa.fa-map.fa-fw
     - else
       = f.text_field :country, {placeholder: df.call('country_default', n: @destination.customer.default_country)}
-    - if dest_form_mutable
-      #destination-geocode-prompt.row.d-none{ data: { v2__destination_geocoding_target: 'prompt' } }
-        %div{class: v2_control_col}
-          %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeButton', action: 'click->v2--destination-geocoding#geocode' }}
-            %i.fa.fa-map-marker.fa-fw{"aria-hidden": "true"}
-            %span{ data: { v2__destination_geocoding_target: 'geocodeButtonLabel' } }= df.call('geocode_prompt')
     .mb-3.row
       %label{class: v2_label_col, for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
       %div{class: v2_control_col}
+        - if dest_form_mutable
+          #destination-geocode-prompt.mb-2{ class: ('d-none' unless destination_form_address_geocodable?(@destination)), data: { v2__destination_geocoding_target: 'prompt' } }
+            %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeButton', action: 'click->v2--destination-geocoding#geocode' }}
+              %i.fa.fa-map-marker.fa-fw{"aria-hidden": "true"}
+              %span{ data: { v2__destination_geocoding_target: 'geocodeButtonLabel' } }= df.call('geocode_prompt')
         #geocoding_accuracy{ class: ('d-none' unless @destination.geocoding_accuracy) }
           #geocoding-progress.progress
             %input{name: "destination[geocoding_accuracy]", type: "hidden", value: @destination.geocoding_accuracy}
@@ -89,7 +91,7 @@
       #geocoding_result_free.row{ class: ('d-none' if @destination.geocoding_result.empty?), data: { v2__destination_geocoding_target: 'geocodingResultRow' } }
         %label{class: v2_label_col, for: 'displayed-geocoding-result'}= t 'activerecord.attributes.destination.geocoding_result'
         %div{class: v2_control_col}
-          %input.form-control#displayed-geocoding-result{type: 'text', value: @destination.geocoding_result['free'], disabled: true, tabindex: -1, aria: { readonly: true }, data: { displayed_geocoding_result: true }}
+          %input.form-control#displayed-geocoding-result{type: 'text', value: destinations_list_geocoding_result_free(@destination), disabled: true, tabindex: -1, aria: { readonly: true }, data: { displayed_geocoding_result: true }}
       %div{class: v2_control_col}
         #destination-geocode-apply.d-none{ data: { v2__destination_geocoding_target: 'geocodeApplyPanel' } }
           %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeApplyButton', action: 'click->v2--destination-geocoding#applyGeocodedAddress' }}
