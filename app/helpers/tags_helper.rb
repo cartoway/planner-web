@@ -34,4 +34,12 @@ module TagsHelper
   def tag_list_badge_icon_style(tag)
     "color: #{tag.color}" if tag.color.present?
   end
+
+  # Option data attributes for Tom Select tag fields (mirrors tag_list_badge_* helpers).
+  def tag_select_option_attributes(tag)
+    attrs = { 'data-default-icon' => tag.default_icon }
+    attrs['data-color'] = tag.color if tag.color.present?
+    attrs['data-icon'] = tag.icon if tag.icon.present?
+    attrs
+  end
 end

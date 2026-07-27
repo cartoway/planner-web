@@ -1,0 +1,29 @@
+// Shared tag badge styling (destinations list + Tom Select tag fields in v2 forms).
+.destinations-list-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .fa {
+    flex-shrink: 0;
+  }
+}
+
+// Tom Select selected items: use list badges instead of default primary chips.
+.ts-wrapper .ts-control > .item.destinations-list-tag-badge {
+  margin: 0 2px 2px 0;
+}
+
+.ts-dropdown .option.destinations-list-tag-badge {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin: 2px
+}
