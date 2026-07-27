@@ -7,6 +7,9 @@
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
 - v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
 - v2_control_col = 'col-md-10 offset-md-1 field'
+- visits_list_data = { controller: 'v2--visit-collapses v2--visit-list' }
+- if defined?(@scroll_to_visit_id) && @scroll_to_visit_id.present?
+  - visits_list_data[:v2__visit_list_scroll_to_visit_id_value] = @scroll_to_visit_id
 - geocoding_level_labels = Destination.geocoding_levels.keys.index_with { |level| t("destinations.form.geocoding_level.#{level}") }
 - destination_details_data = {}
 - if dest_form_mutable
@@ -133,29 +136,27 @@
       placeholder: @destination.customer.destination_duration ? "#{@destination.customer.destination_duration_time_with_seconds} (#{df.call('duration_default')})" : t('all.unit.hour_minute_second'),
       append: content_tag('i', '', class: 'fa fa-map-marker fa-fw'),
       help: df.call('duration_help')
-  #visits{data: {controller: "v2--visit-collapses"}}
-    - if @destination.visits.size > 1
-      #visits-header.row
-        .col-md-2
-        #visits-tools.col-12.col-md-10
-          .float-end
-            %button#visits-expand.btn.btn-light.btn-sm{type: "button", title: "#{t('destinations.form.visit.collapse_all_help')}", data: {action: "v2--visit-collapses#toggleAll"}}
-              %i.fa.fa-angle-double-down.fa-fw
-              = t('destinations.form.visit.collapse_all')
-        .col-md-2
-    - @destination.visits.each_with_index do |visit, i|
-      = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
   - if @destination.persisted?
-    - if dest_form_mutable
-      = link_to append_visit_destination_path(@destination), class: 'btn btn-light btn-sm', id: 'visit-new', role: 'button', title: "#{t('destinations.form.visit.new_help')}", data: { turbo_method: :post, turbo_frame: 'form_sidebar', turbo_prefetch: false } do
-        %i.fa.fa-plus.fa-fw
-        = t('destinations.form.visit.new')
-    - else
-      %button#visit-new.btn.btn-light.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button", disabled: true}
-        %i.fa.fa-plus.fa-fw
-        = t('destinations.form.visit.new')
+    .destination-visits{data: {controller: 'v2--visit-new'}}
+      %template#visits-header-template{data: {v2__visit_new_target: 'headerTemplate'}}
+        = render 'v2/destinations/visits_header'
+      #visits{data: visits_list_data}
+        - if @destination.visits.size > 1
+          = render 'v2/destinations/visits_header'
+        - @destination.visits.each_with_index do |visit, i|
+          = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
+      - if dest_form_mutable
+        %button#visit-new.btn.btn-light.btn-sm{type: 'button', role: 'button', title: t('destinations.form.visit.new_help'), data: {action: 'click->v2--visit-new#add'}}
+          %i.fa.fa-plus.fa-fw
+          = t('destinations.form.visit.new')
+      - else
+        %button#visit-new.btn.btn-light.btn-sm{title: t('destinations.form.visit.new_help'), type: 'button', disabled: true}
+          %i.fa.fa-plus.fa-fw
+          = t('destinations.form.visit.new')
+      %template#visit-fieldset-template{data: {v2__visit_new_target: 'template'}}
+        = render 'v2/visits/form', visit: @destination.visits.build, i: 0, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
   - else
-    %button#visit-new.btn.btn-light.btn-sm{title: "#{t('destinations.form.visit.new_help')}", type: "button", disabled: true}
+    %button#visit-new.btn.btn-light.btn-sm{title: t('destinations.form.visit.new_help'), type: 'button', disabled: true}
       %i.fa.fa-plus.fa-fw
       = t('destinations.form.visit.new')
   = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version

@@ -97,6 +97,18 @@ module ApplicationHelper
     time.beginning_of_hour + rounded.minutes
   end
 
+  def confirm_click_data(group:, wait_message:, confirm_message:, base_class:, ready_label: nil)
+    {
+      controller: 'confirm-click',
+      confirm_click_group_value: group,
+      confirm_click_wait_message_value: wait_message,
+      confirm_click_confirm_message_value: confirm_message,
+      confirm_click_base_class_value: base_class
+    }.tap do |data|
+      data[:confirm_click_ready_label_value] = ready_label if ready_label.present?
+    end
+  end
+
   # StopVisit JSON: tags_present = destination tags, visit_tags_present = visit tags.
   def visit_stop_tags_present_json!(json, visit)
     dest = visit.destination.tags

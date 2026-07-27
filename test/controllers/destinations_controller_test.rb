@@ -307,7 +307,43 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     n = @destination.visits.select(&:persisted?).size
     assert_operator n, :>, 0
-    assert_select 'button[data-controller="v2--visit-delete"]', n
+    assert_select 'button[data-controller~="v2--visit-delete"][data-controller~="confirm-click"]', n
+    assert_select 'button[data-controller~="v2--visit-remove"]', 0
+  end
+
+  test 'update nested visit _destroy deletes persisted visit' do
+    visit = @destination.visits.first
+    assert visit.persisted?
+    assert_difference('Visit.count', -1) do
+      patch :update, params: {
+        id: @destination.id,
+        destination: {
+          visits_attributes: {
+            '0' => { id: visit.id, _destroy: '1' }
+          }
+        }
+      }
+    end
+    assert_redirected_to edit_destination_path(@destination)
+    assert_not Visit.exists?(visit.id)
+  end
+
+  test 'v2 visit form renders remove control for unsaved nested visit' do
+    @visit_custom_attributes = @destination.customer.custom_attributes.for_visit.to_a
+    visit = @destination.visits.build(duration: @destination.customer.visit_duration)
+    html = render_to_string(
+      partial: 'v2/visits/form',
+      locals: {
+        visit: visit,
+        i: 2,
+        destination_form_mutable: true,
+        v2_label_col: 'col-form-label col-md-10 offset-md-1 fw-bold',
+        v2_bootstrap_label_col: 'col-md-10 offset-md-1 fw-bold',
+        v2_control_col: 'col-md-10 offset-md-1 field'
+      }
+    )
+    assert_match 'v2--visit-remove', html
+    assert_no_match 'v2--visit-delete', html
   end
 
   test 'new responds with form_sidebar fragment when requested via Turbo Frame' do
@@ -341,7 +377,85 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_equal before + 1, @destination.reload.visits.count
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select '#visits fieldset.visit-fieldset', before + 1
-    assert_select %(a#visit-new[href="#{append_visit_destination_path(@destination)}"][data-turbo-method="post"]), 1
+    assert_select 'button#visit-new[data-action*="v2--visit-new#add"]', 1
+    assert_select 'template#visit-fieldset-template', 1
+  end
+
+  test 'v2 edit sidebar wires client-side empty visit template' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    first = @destination.visits.first
+    first.update!(ref: 'filled-ref', duration: '00:15:00', priority: 3)
+
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select '.destination-visits[data-controller~="v2--visit-new"]', 1
+    assert_select 'button#visit-new[data-action*="v2--visit-new#add"]', 1
+    assert_select 'template#visit-fieldset-template', 1
+    template_html = css_select('#visit-fieldset-template').first.to_s
+    assert_includes template_html, 'destination[visits_attributes][0]'
+    assert_not_includes template_html, 'filled-ref'
+    assert_not_includes template_html, '00:15:00'
+    assert_not_includes template_html, 'v2--visit-delete'
+    assert_includes template_html, 'v2--visit-remove'
+  end
+
+  test 'append_visit appends visit fieldset via turbo stream without replacing sidebar form' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    before = @destination.visits.count
+    assert_difference('Visit.count', 1) do
+      post :append_visit, params: { id: @destination.id }, as: :turbo_stream
+    end
+    assert_response :success
+    assert_equal 'text/vnd.turbo-stream.html; charset=utf-8', response.media_type
+    new_visit = @destination.reload.visits.order(:id).last
+    assert_select "turbo-stream[action='append'][target='visits']", 1
+    assert_match "visit-fieldset-#{new_visit.id}", response.body
+    assert_no_match(/turbo-frame/, response.body)
+    assert_equal before + 1, @destination.visits.count
+  end
+
+  test 'append_visit prepends visits header via turbo stream when second visit is added' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    assert_equal 1, @destination.visits.count
+    post :append_visit, params: { id: @destination.id }, as: :turbo_stream
+    assert_response :success
+    assert_select "turbo-stream[action='prepend'][target='visits']", 1
+    assert_match 'visits-header', response.body
+  end
+
+  test 'append_visit does not duplicate fields from the previous visit' do
+    first = @destination.visits.first
+    first.update!(
+      ref: 'visit-ref-a',
+      duration: '00:15:00',
+      time_window_start_1: '08:00:00',
+      time_window_end_1: '09:00:00',
+      time_window_start_2: '14:00:00',
+      time_window_end_2: '15:00:00',
+      priority: 3,
+      revenue: 42.5,
+      force_position: :always_first
+    )
+    first.tags = [tags(:tag_one), tags(:tag_two)]
+    first.save!
+
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    assert_difference('Visit.count', 1) do
+      post :append_visit, params: { id: @destination.id }, as: :turbo_stream
+    end
+
+    new_visit = @destination.reload.visits.order(:id).last
+    assert_not_equal first.id, new_visit.id
+    assert_nil new_visit.ref
+    assert_nil new_visit.duration
+    assert_nil new_visit.time_window_start_1
+    assert_nil new_visit.time_window_end_1
+    assert_nil new_visit.time_window_start_2
+    assert_nil new_visit.time_window_end_2
+    assert_nil new_visit.priority
+    assert_nil new_visit.revenue
+    assert_equal 'neutral', new_visit.force_position
+    assert_empty new_visit.tags
   end
 
   test 'append_visit creates first visit when destination has none' do

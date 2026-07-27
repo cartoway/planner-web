@@ -7,23 +7,25 @@
 - v2_control_col = local_assigns.fetch(:v2_control_col, 'col-md-10 offset-md-1 field')
 - v2_check_box_options = { help_label_class: 'col-md-7 offset-md-1', label_class: 'col-md-7 offset-md-1 d-none', label_col: 'col-md-6 offset-md-1', control_col: 'form-switch col-md-6 offset-md-1 d-none' }
 = fields_for 'destination[visits_attributes]', visit, index: i, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_bootstrap_label_col, control_col: v2_control_col do |f|
-  %fieldset.visit-fieldset
+  - fieldset_id = visit.persisted? ? "visit-fieldset-#{visit.id}" : nil
+  %fieldset.visit-fieldset{id: fieldset_id, data: (local_assigns[:scroll_into_view] ? { controller: 'v2--visit-scroll-in' } : nil)}
     %a{name: "visit_id=#{visit.id}"}
     %legend.scheduler-border
       %a.accordion-toggle.text-decoration-none{href: "#", role: "button", "data-bs-toggle": "collapse", "data-bs-target": "#collapseVisit#{visit.id || 0}", "aria-expanded": "true", "aria-controls": "collapseVisit#{visit.id || 0}"}
         %span= vf.call('legend', n: i)
       - if !current_page?(action: 'new')
+        - visit_delete_confirm_ready_label = %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{vf.call('delete_visit')})
         .mb-3.row.destroy-block
           .col-md-3
             - if visit.persisted?
               - vd = visit.destination
-              %button.btn.btn-outline-danger.btn-sm{type: "button", disabled: !destination_form_mutable, title: vf.call('delete_visit_help'), data: { controller: "v2--visit-delete", action: "click->v2--visit-delete#confirmAndDestroy", v2__visit_delete_visit_id_value: visit.id, v2__visit_delete_update_url_value: destination_path(vd), v2__visit_delete_frame_reload_url_value: edit_destination_path(vd), v2__visit_delete_confirm_message_value: vf.call('delete_visit_confirm'), v2__visit_delete_error_validation_message_value: vf.call('delete_visit_error_validation'), v2__visit_delete_error_request_message_value: vf.call('delete_visit_error_request'), v2__visit_delete_error_network_message_value: vf.call('delete_visit_error_network') }}
+              %button.btn.btn-outline-danger.btn-sm{type: "button", disabled: !destination_form_mutable, title: vf.call('delete_visit_help'), data: confirm_click_data(group: 'visits-destroy', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: vf.call('delete_visit_confirm'), ready_label: visit_delete_confirm_ready_label, base_class: 'btn-outline-danger').merge(controller: 'confirm-click v2--visit-delete', v2__visit_delete_visit_id_value: visit.id, v2__visit_delete_update_url_value: destination_path(vd), v2__visit_delete_frame_reload_url_value: edit_destination_path(vd), v2__visit_delete_error_validation_message_value: vf.call('delete_visit_error_validation'), v2__visit_delete_error_request_message_value: vf.call('delete_visit_error_request'), v2__visit_delete_error_network_message_value: vf.call('delete_visit_error_network'))}
                 %i.fa.fa-trash.fa-fw
                 = vf.call('delete_visit')
             - else
-              %button.btn.btn-light.btn-sm.flag-destroy{title: "#{vf.call('delete_help')}", type: "button", disabled: !destination_form_mutable}
+              %button.btn.btn-outline-danger.btn-sm{type: "button", disabled: !destination_form_mutable, title: vf.call('delete_visit_help'), data: confirm_click_data(group: 'visits-destroy', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: vf.call('delete_visit_confirm'), ready_label: visit_delete_confirm_ready_label, base_class: 'btn-outline-danger').merge(controller: 'confirm-click v2--visit-remove')}
                 %i.fa.fa-trash.fa-fw
-                = vf.call('delete')
+                = vf.call('delete_visit')
     .collapse.show{id: "collapseVisit#{visit.id || 0}"}
       = f.hidden_field :id
 
@@ -79,8 +81,6 @@
               placeholder: '0',                                                            |
               min: 0,                                                                      |
               value: number_of_days(visit.time_window_end_1)                               |
-            %span.input-group-text
-              %i.fa.fa-arrows-left-right.fa-fw
           %p.help-block= vf.call('close_help')
       .visit-open-close-input.row{class: "#{nested_has_error?(:time_window_end_2, visit.id)}"}
         %label.sr-only{for: "destination_visits_attributes_#{i}_time_window_start_2"}= t 'activerecord.attributes.visit.time_window_start_2'
@@ -105,8 +105,6 @@
               placeholder: '0',                                                            |
               min: 0,                                                                      |
               value: number_of_days(visit.time_window_end_2)                               |
-            %span.input-group-text
-              %i.fa.fa-arrows-left-right.fa-fw
           %p.help-block= vf.call('close_help')
       #visit_revenue_input.row
         %label{class: v2_label_col}
