@@ -545,6 +545,23 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_equal 'destination_one', assigns(:destinations).first.name
   end
 
+  test 'should show plain text query as removable filter badge' do
+    get :index, params: { q: 'Bordeau' }
+    assert_response :success
+    assert_equal '', assigns(:search_query)
+    assert_includes assigns(:active_filters), 'Bordeau'
+    assert_select '#search-filters-badges .search-filter-badge[data-filter=?]', 'Bordeau'
+    assert_select '#search-query[value=?]', ''
+  end
+
+  test 'should filter destinations by plain text filter badge' do
+    get :index, params: { filters: ['Bordeau'] }
+    assert_response :success
+    assert_equal 1, assigns(:destinations).size
+    assert_equal 'Bordeau', assigns(:destinations).first.city
+    assert_select '#search-filters-badges .search-filter-badge[data-filter=?]', 'Bordeau'
+  end
+
   test 'should filter destinations by filter badge with spaces in value' do
     destination = destinations(:destination_one)
     destination.update!(name: 'Jean Dupont')

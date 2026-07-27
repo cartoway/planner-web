@@ -26,4 +26,11 @@ class V2LayoutHeadTest < ActiveSupport::TestCase
     assert_includes styles, '.hidden-menu.menu_label'
     assert_includes styles, '.dropdown .menu_label'
   end
+
+  test 'v2 application imports v2 scaffolds instead of v1 scaffolds' do
+    styles = Rails.root.join('app/assets/stylesheets/v2/application.scss').read
+
+    refute_match(%r{@import\s+["']scaffolds["']}, styles)
+    assert_match(%r{@import\s+["']v2/scaffolds["']}, styles)
+  end
 end
