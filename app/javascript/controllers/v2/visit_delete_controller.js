@@ -1,7 +1,18 @@
 // Copyright © Cartoway
-// V2 destination sidebar: delete a persisted visit immediately (PATCH nested _destroy), then reload turbo-frame#form_sidebar.
+// V2 destination sidebar: delete a persisted visit immediately (PATCH nested _destroy), remove fieldset without full reload.
 import { Controller } from '@hotwired/stimulus'
-import { visit } from '@hotwired/turbo'
+
+function dispatchDestinationVisitsChanged (destinationId) {
+  if (!destinationId) return
+  document.dispatchEvent(new CustomEvent('v2:destination-visits-changed', {
+    bubbles: true,
+    detail: { destinationId: String(destinationId) }
+  }))
+}
+
+function destinationIdFromSidebarForm () {
+  return document.getElementById('destination-form-sidebar')?.getAttribute('data-destination_id') || null
+}
 
 export default class extends Controller {
   static values = {
@@ -14,11 +25,20 @@ export default class extends Controller {
     errorNetworkMessage: String
   }
 
-  async confirmAndDestroy (event) {
-    event.preventDefault()
-    const msg = this.confirmMessageValue || ''
-    if (!window.confirm(msg)) return
+  connect () {
+    this._onConfirmed = (event) => {
+      if (event.detail?.element !== this.element) return
+      this.destroy(event)
+    }
+    this.element.addEventListener('confirm-click:confirmed', this._onConfirmed)
+  }
 
+  disconnect () {
+    this.element.removeEventListener('confirm-click:confirmed', this._onConfirmed)
+  }
+
+  async destroy (event) {
+    event.preventDefault()
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     const body = new URLSearchParams()
     body.set('destination[visits_attributes][0][id]', String(this.visitIdValue))
@@ -39,21 +59,33 @@ export default class extends Controller {
         redirect: 'manual'
       })
 
-      const okish = res.ok || res.status === 302 || res.status === 303 || res.status === 204
+      const redirectedManually = res.type === 'opaqueredirect' || res.status === 0
+      const okish = res.ok || redirectedManually || res.status === 302 || res.status === 303 || res.status === 204
       if (res.status === 422) {
         window.alert(this.errorValidationMessageValue || this.errorRequestMessageValue)
-        visit(this.frameReloadUrlValue, { frame: 'form_sidebar' })
         return
       }
       if (!okish) {
         window.alert(this.errorRequestMessageValue)
         return
       }
-      visit(this.frameReloadUrlValue, { frame: 'form_sidebar' })
+      this._removeFieldset()
+      dispatchDestinationVisitsChanged(destinationIdFromSidebarForm())
     } catch (e) {
       window.alert(this.errorNetworkMessageValue || this.errorRequestMessageValue)
     } finally {
       el.disabled = false
+    }
+  }
+
+  _removeFieldset () {
+    const fieldset = this.element.closest('fieldset.visit-fieldset') ||
+      document.getElementById(`visit-fieldset-${this.visitIdValue}`)
+    fieldset?.remove()
+    const list = document.getElementById('visits')
+    if (list) {
+      const ctrl = this.application.getControllerForElementAndIdentifier(list, 'v2--visit-list')
+      ctrl?.syncHeader()
     }
   }
 }
