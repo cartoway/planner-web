@@ -51,11 +51,11 @@
         %div{class: v2_control_col}
           .input-group
             = text_field :destination, :state, class: 'form-control'
-            = text_field :destination, :country, placeholder: df.call('country_default', n: @destination.customer.default_country), class: 'form-control'
+            = text_field :destination, :country, placeholder: t('web.form.default_short', n: @destination.customer.default_country), class: 'form-control'
             %span.input-group-text
               %i.fa.fa-map.fa-fw
     - else
-      = f.text_field :country, {placeholder: df.call('country_default', n: @destination.customer.default_country)}
+      = f.text_field :country, {placeholder: t('web.form.default_short', n: @destination.customer.default_country)}
     .mb-3.row
       %label{class: v2_label_col, for: "destination_geocoding"}= t 'activerecord.attributes.destination.geocoding_accuracy'
       %div{class: v2_control_col}
