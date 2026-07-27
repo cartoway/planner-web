@@ -149,14 +149,14 @@
       margin-bottom: 0;
 
       .progress-bar span {
-        font-size: 0.7rem;
+        font-size: 14px;
         line-height: 1.25rem;
       }
     }
 
     .destinations-list-geocoding-result {
       flex: 1 1 100%;
-      font-size: 0.75rem;
+      font-size: 12px;
       line-height: 1.2;
       color: var(--bs-secondary-color);
       overflow: hidden;
@@ -168,7 +168,7 @@
     .no_position {
       color: var(--bs-danger);
       font-weight: 700;
-      font-size: 0.75rem;
+      font-size: 12px;
     }
   }
 
@@ -176,7 +176,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
-    font-size: 0.8125rem;
+    font-size: 12px;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
