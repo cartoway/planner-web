@@ -3543,6 +3543,7 @@ fr:
       meilleures performances.
     form:
       default: '%{n} (valeur par défaut)'
+      default_short: '%{n} (défaut)'
       empty_entry: '- Non renseigné -'
       from_time: de
       to_time: à
