@@ -46,8 +46,8 @@
           %div{class: v2_control_col}
             - visit.destination.customer.deliverable_units.each do |du|
               .input-group{"data-deliverable_unit_id" => "#{du.id}"}
-                = number_field "destination[visits_attributes][#{i}][pickups]", du.id, value: visit.pickups && visit.pickups[du.id], placeholder: du.default_pickup && t('web.form.default', n: du.localized_default_pickup), class: 'form-control', step: 'any'
-                = number_field "destination[visits_attributes][#{i}][deliveries]", du.id, value: visit.deliveries && visit.deliveries[du.id], placeholder: du.default_delivery && t('web.form.default', n: du.localized_default_delivery), class: 'form-control', step: 'any'
+                = number_field "destination[visits_attributes][#{i}][pickups]", du.id, value: visit.pickups && visit.pickups[du.id], placeholder: du.default_pickup && t('web.form.default_short', n: du.localized_default_pickup), class: 'form-control', step: 'any'
+                = number_field "destination[visits_attributes][#{i}][deliveries]", du.id, value: visit.deliveries && visit.deliveries[du.id], placeholder: du.default_delivery && t('web.form.default_short', n: du.localized_default_delivery), class: 'form-control', step: 'any'
                 = text_field "destination[visits_attributes][#{i}][quantities_unit]", du.id, value: du.label, class: 'form-control', placeholder: t('deliverable_units.form.label_placeholder'), disabled: true
                 %span.input-group-text
                   %i{class: "fa #{du.default_icon} fa-fw"}
