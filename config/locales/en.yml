@@ -3390,6 +3390,7 @@ en:
       browser free to download for better performances.
     form:
       default: '%{n} (default value)'
+      default_short: '%{n} (default)'
       empty_entry: '- N/A -'
       from_time: from
       to_time: to
