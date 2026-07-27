@@ -135,7 +135,7 @@
           %p.help-block= vf.call('priority_help')
       - tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_form_create?(:tags), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
       .destination_visits_attributes_tag_ids_input
-        = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: vf.call('tags_help'), append: content_tag('i', '', class: 'fa fa-tags fa-fw')}, {multiple: true, data: tom_select_data}
+        = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: vf.call('tags_help'), append: content_tag('i', '', class: 'fa fa-tags fa-fw')}, {multiple: true, data: tom_select_data}
 
       = f.select :force_position, options_for_select(visit_force_position_options_for_select, selected: visit_force_position_options_for_select_selected(visit)), {label: t('activerecord.attributes.visit.force_position'), help: vf.call('force_position_help')}, { control_class: 'form-control' }
 

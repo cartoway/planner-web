@@ -13,10 +13,6 @@ import { DestinationsMapLayers } from 'maplibre/destinations_map_layers'
 const DEFAULT_ZOOM = 12
 const MIN_CHARS = 3
 const DEBOUNCE_MS = 300
-/** CSS keyframes name in v2/application.scss (cells of row highlighted after map pin click). */
-const MAP_PIN_ROW_ANIMATION_SUBSTRING = 'destinationsRowPinHighlightTd'
-/** Fallback if `animationend` does not fire (matches animation duration + margin). */
-const MAP_PIN_ROW_FALLBACK_MS = 4500
 
 function roundCoord (value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return value
@@ -61,10 +57,6 @@ function createMarkerElement (label) {
   el.setAttribute('role', 'button')
   if (label) el.setAttribute('aria-label', label)
 
-  const pulse = document.createElement('span')
-  pulse.className = 'destinations-marker__pulse'
-  pulse.setAttribute('aria-hidden', 'true')
-
   const head = document.createElement('span')
   head.className = 'destinations-marker__head'
 
@@ -77,7 +69,6 @@ function createMarkerElement (label) {
   pin.className = 'destinations-marker__pin'
   pin.setAttribute('aria-hidden', 'true')
 
-  el.appendChild(pulse)
   el.appendChild(head)
   el.appendChild(pin)
   return el
@@ -132,8 +123,6 @@ export default class extends Controller {
     this._iconOverStack = []
     this._searchDebounce = null
     this._positionEdit = null
-    /** @type {{ cell: HTMLElement | null, onEnd: (e: AnimationEvent) => void, timer: number } | null} */
-    this._mapPinRowHighlightState = null
     this._onTurboFrameLoad = this._onTurboFrameLoad.bind(this)
     this._onDestroyConfirmed = (event) => this.destroyConfirmed(event)
     this._canDestroy = !!config.can_destroy
@@ -172,7 +161,6 @@ export default class extends Controller {
   }
 
   disconnect () {
-    this._cancelMapPinRowHighlight()
     if (this._abort) this._abort.abort()
     this._abort = null
     this._teardownMap()
@@ -266,7 +254,6 @@ export default class extends Controller {
 
   _clearDestinationHighlight () {
     if (!this.element) return
-    this._cancelMapPinRowHighlight()
     this.element.querySelectorAll('tr.destination').forEach((tr) => tr.classList.remove('highlight', 'highlight--map-pin'))
     this._iconOverStack = []
     const keepMarker =
@@ -338,11 +325,10 @@ export default class extends Controller {
 
   /**
    * Highlight table row + map pin; optionally fly map to pin. Used for list clicks, marker clicks, and ?highlight_destination_id=.
-   * @param {{ flyToMap?: boolean, fromMapPin?: boolean }} [options]
+   * @param {{ flyToMap?: boolean }} [options]
    */
   _focusDestinationInList (idStr, options = {}) {
     const flyToMap = !!options.flyToMap
-    const fromMapPin = !!options.fromMapPin
     this._clearDestinationHighlight()
     let rec = this._destinationRecord(idStr)
     const rows = Array.from(this.element.querySelectorAll('tr.destination')).filter(
@@ -370,57 +356,15 @@ export default class extends Controller {
     }
     if (rows.length) {
       rows.forEach((tr) => tr.classList.add('highlight'))
-      if (fromMapPin) {
-        rows.forEach((tr) => tr.classList.add('highlight--map-pin'))
-        this._scheduleMapPinRowHighlightFade(rows)
-      }
       this._scrollDestinationRowIntoView(row)
     }
-  }
-
-  _cancelMapPinRowHighlight () {
-    const s = this._mapPinRowHighlightState
-    if (!s) return
-    window.clearTimeout(s.timer)
-    if (s.cell) s.cell.removeEventListener('animationend', s.onEnd)
-    this._mapPinRowHighlightState = null
-  }
-
-  /**
-   * After a map pin click (or turbo jump to highlighted row), row is bold + tinted; then fades and classes clear.
-   * Pin marker can stay active until the user focuses another destination.
-   */
-  _scheduleMapPinRowHighlightFade (rows) {
-    this._cancelMapPinRowHighlight()
-    const rowList = Array.isArray(rows) ? rows : [rows]
-    const primaryRow = rowList[0]
-    if (!primaryRow) return
-    let finished = false
-    const done = () => {
-      if (finished || !primaryRow.isConnected) return
-      finished = true
-      rowList.forEach((row) => row.classList.remove('highlight', 'highlight--map-pin'))
-      this._cancelMapPinRowHighlight()
-    }
-    const onEnd = (e) => {
-      const name = e.animationName || ''
-      if (!name.includes(MAP_PIN_ROW_ANIMATION_SUBSTRING)) return
-      done()
-    }
-    const cell = primaryRow.querySelector('td')
-    if (cell) cell.addEventListener('animationend', onEnd)
-    const prefersReduced =
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const timer = window.setTimeout(done, prefersReduced ? 2800 : MAP_PIN_ROW_FALLBACK_MS)
-    this._mapPinRowHighlightState = { cell, onEnd, timer }
   }
 
   _applyPendingHighlight () {
     if (!this._pendingHighlightId) return
     const idStr = this._pendingHighlightId
     if (!this._destinationRecord(idStr)) return
-    this._focusDestinationInList(idStr, { flyToMap: true, fromMapPin: true })
+    this._focusDestinationInList(idStr, { flyToMap: true })
     this._pendingHighlightId = null
     this._stripHighlightParamFromUrl()
   }
@@ -450,7 +394,7 @@ export default class extends Controller {
     const idStr = String(props.id)
     const row = Array.from(this.element.querySelectorAll('tr.destination')).find((tr) => tr.getAttribute('data-destination-id') === idStr)
     if (row) {
-      this._focusDestinationInList(idStr, { flyToMap: false, fromMapPin: true })
+      this._focusDestinationInList(idStr, { flyToMap: false })
       this._navigateFormSidebarToRowIfOpen(row, idStr)
       return
     }
@@ -459,7 +403,7 @@ export default class extends Controller {
       const visitUrl = this._buildDestinationsIndexUrl({ page: destPage, highlight_destination_id: idStr })
       visit(visitUrl, { frame: 'destinations_list', action: 'advance' })
     } else {
-      this._focusDestinationInList(idStr, { flyToMap: false, fromMapPin: true })
+      this._focusDestinationInList(idStr, { flyToMap: false })
     }
   }
 
@@ -654,7 +598,7 @@ export default class extends Controller {
         const hid = url.searchParams.get('highlight_destination_id')
         if (hid) {
           this._normalizeDestinationsPageScroll()
-          this._focusDestinationInList(String(hid), { flyToMap: false, fromMapPin: true })
+          this._focusDestinationInList(String(hid), { flyToMap: false })
           const row = this.element.querySelector(`tr.destination[data-destination-id="${CSS.escape(String(hid))}"]`)
           if (row) this._navigateFormSidebarToRowIfOpen(row, String(hid))
           this._stripHighlightParamFromUrl()

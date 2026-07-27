@@ -128,7 +128,7 @@
                 %i.fa.fa-globe.fa-fw
     - tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_form_create?(:tags), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
     .destination_visits_attributes_tag_ids_input
-      = f.select :tag_ids, options_for_select(@destination.customer.tags.map{ |tag| [tag.label, tag.id, {'data-color' => tag.color && tag.color[1..-1], 'data-icon' => tag.icon}]}, @destination.tags.collect(&:id)), {label: t('activerecord.attributes.destination.tag_ids'), help: df.call('tags_help'), append: content_tag('i', '', class: 'fa fa-tags fa-fw')}, {multiple: true, data: tom_select_data}
+      = f.select :tag_ids, options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }, @destination.tags.collect(&:id)), {label: t('activerecord.attributes.destination.tag_ids'), help: df.call('tags_help'), append: content_tag('i', '', class: 'fa fa-tags fa-fw')}, {multiple: true, data: tom_select_data}
     = f.text_field :phone_number, {input_group: content_tag('i', '', class: 'fa fa-phone fa-fw')}
     = f.text_area :comment, help: df.call('comment_help')
     = f.text_field :duration,
@@ -175,9 +175,9 @@
             .col-md-10
               .form-inline
                 Remplacer
-                \#{select_tag 'from_visit_tags', options_for_select(@destination.customer.tags.map{ |t| [t.label, t.id] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder') }}}
+                \#{select_tag 'from_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder') }}}
                 par
-                \#{select_tag 'to_visit_tags', options_for_select(@destination.customer.tags.map{ |t| [t.label, t.id] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder') }}}
+                \#{select_tag 'to_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder') }}}
               %p.help-block
                 = t('destinations.form.dialog.attributes_change_bulk.tags_help')
       .modal-footer
