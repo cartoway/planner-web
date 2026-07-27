@@ -1,0 +1,8 @@
+#visits-header.row
+  .col-md-2
+  #visits-tools.col-12.col-md-10
+    .float-end
+      %button#visits-expand.btn.btn-light.btn-sm{type: "button", title: "#{t('destinations.form.visit.collapse_all_help')}", data: {action: "v2--visit-collapses#toggleAll"}}
+        %i.fa.fa-angle-double-down.fa-fw
+        = t('destinations.form.visit.collapse_all')
+  .col-md-2

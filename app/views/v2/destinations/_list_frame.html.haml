@@ -9,14 +9,13 @@
         type: "button",
         disabled: !current_user_form_destroy_enabled?(:destination),
         title: t('all.verb.destroy_selection'),
-        data: {
-          controller: 'confirm-click',
-          confirm_click_group_value: 'destinations-destroy',
-          confirm_click_wait_message_value: t('all.verb.destroy_confirm_wait'),
-          confirm_click_confirm_message_value: t('all.verb.destroy_confirm'),
-          confirm_click_ready_label_value: %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{t('all.verb.destroy_selection')}),
-          confirm_click_base_class_value: 'btn-danger'
-        }
+        data: confirm_click_data(
+          group: 'destinations-destroy',
+          wait_message: t('all.verb.destroy_confirm_wait'),
+          confirm_message: t('all.verb.destroy_confirm'),
+          ready_label: %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{t('all.verb.destroy_selection')}),
+          base_class: 'btn-danger'
+        )
       }
         %i.fa.fa-trash.fa-fw
         = t('all.verb.destroy_selection')

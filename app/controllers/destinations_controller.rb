@@ -121,7 +121,7 @@ class DestinationsController < ApplicationController
     end
   end
 
-  # V2 sidebar: persist a new visit server-side, then re-render the destination form in turbo-frame#form_sidebar.
+  # V2 sidebar: persist a new visit server-side, append its fieldset via Turbo Stream (keeps form scroll and edits).
   def append_visit
     unless turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
       respond_to do |format|
@@ -131,20 +131,38 @@ class DestinationsController < ApplicationController
     end
 
     respond_to do |format|
+      format.turbo_stream do
+        append_visit_and_assign!
+      rescue ActiveRecord::RecordInvalid => e
+        append_visit_render_invalid(e)
+      end
       format.html do
-        visit = build_visit_to_append
-        ActiveRecord::Base.transaction do
-          visit.save!
-          @destination.customer.save!
-        end
-        @destination.reload
+        visit = append_visit_and_assign!
+        @scroll_to_visit_id = visit.id
         render "edit_sidebar", layout: false
       rescue ActiveRecord::RecordInvalid => e
-        @destination.reload
-        flash.now[:error] = e.record.errors.full_messages.to_sentence
-        render "edit_sidebar", layout: false, status: :unprocessable_entity
+        append_visit_render_invalid(e)
       end
     end
+  end
+
+  def append_visit_and_assign!
+    visit = build_visit_to_append
+    ActiveRecord::Base.transaction do
+      visit.save!
+      @destination.customer.save!
+    end
+    @destination.reload
+    assign_v2_visit_form_layout!
+    @visit = visit
+    @visit_field_index = @destination.visits.index(visit) + 1
+    visit
+  end
+
+  def append_visit_render_invalid(error)
+    @destination.reload
+    flash.now[:error] = error.record.errors.full_messages.to_sentence
+    render "edit_sidebar", layout: false, status: :unprocessable_entity
   end
 
   def create
@@ -345,16 +363,15 @@ class DestinationsController < ApplicationController
     nil
   end
 
+  def assign_v2_visit_form_layout!
+    @dest_form_mutable = helpers.current_user_destination_form_submit_enabled?(@destination)
+    @v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
+    @v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
+    @v2_control_col = 'col-md-10 offset-md-1 field'
+  end
+
   def build_visit_to_append
-    last = @destination.visits.reorder(id: :desc).first
-    if last
-      visit = last.dup
-      visit.destination = @destination
-      visit.ref = nil
-      visit
-    else
-      @destination.visits.build(duration: @destination.customer.visit_duration)
-    end
+    @destination.visits.build
   end
 
   def assign_visit_custom_attributes

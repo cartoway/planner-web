@@ -18,14 +18,12 @@
           type: "button",
           disabled: !can_destroy_destinations,
           title: t('all.verb.destroy'),
-          data: {
-            controller: 'confirm-click',
-            confirm_click_group_value: 'destinations-destroy',
-            confirm_click_wait_message_value: t('all.verb.destroy_confirm_wait'),
-            confirm_click_confirm_message_value: t('all.verb.destroy_confirm'),
-            confirm_click_ready_label_value: '<i class="fa fa-check fa-fw" aria-hidden="true"></i>',
-            confirm_click_base_class_value: 'btn-danger',
-            destination_id: destination.id
-          }
+          data: confirm_click_data(
+            group: 'destinations-destroy',
+            wait_message: t('all.verb.destroy_confirm_wait'),
+            confirm_message: t('all.verb.destroy_confirm'),
+            ready_label: '<i class="fa fa-check fa-fw" aria-hidden="true"></i>',
+            base_class: 'btn-danger'
+          ).merge(destination_id: destination.id)
         }
           %i.fa.fa-trash.fa-fw
