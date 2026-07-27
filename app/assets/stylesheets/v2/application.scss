@@ -4,8 +4,7 @@
 
 @import "variables";
 @import "font-awesome";
-// Shared app chrome (menu-left, #wrapper, .main shell, flash) — not the full v1 application.css bundle.
-@import "scaffolds";
+@import "v2/scaffolds";
 @import "v2/slide_panel";
 @import "v2/searchable_checklist_dropdown";
 @import "v2/destinations_index";
