@@ -20,4 +20,11 @@ class TagsHelperTest < ActionView::TestCase
     assert_equal 'color: #FF0000', tag_list_badge_icon_style(tags(:tag_one))
     assert_nil tag_list_badge_icon_style(tags(:tag_two))
   end
+
+  test 'tag_select_option_attributes mirrors list badge data for Tom Select' do
+    tag = tags(:tag_one)
+    assert_equal({ 'data-default-icon' => tag.default_icon, 'data-color' => '#FF0000' }, tag_select_option_attributes(tag))
+    assert_equal({ 'data-default-icon' => tags(:tag_two).default_icon, 'data-icon' => 'fa-diamond' }, tag_select_option_attributes(tags(:tag_two)))
+    assert_equal({ 'data-default-icon' => tags(:tag_three).default_icon }, tag_select_option_attributes(tags(:tag_three)))
+  end
 end

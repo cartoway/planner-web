@@ -191,24 +191,6 @@
     min-width: 0;
     max-width: 100%;
   }
-
-  .destinations-list-tag-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    white-space: nowrap;
-    flex-shrink: 1;
-    min-width: 0;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    .fa {
-      flex-shrink: 0;
-    }
-  }
 }
 
 // Filter badges (active search tokens)
@@ -463,40 +445,11 @@
         overflow-y: visible;
       }
 
-      // Map pin (or ?highlight_destination_id=): row is bold + tinted, then fades (v2--destinations-index).
-      tr.destination.highlight--map-pin td {
-        font-weight: 700;
-        animation: destinationsRowPinHighlightTd 3.5s ease-out forwards;
-      }
-
-      tr.destination.highlight:not(.highlight--map-pin) td {
+      // List row highlight (list click, map pin, or ?highlight_destination_id=).
+      tr.destination.highlight td {
         font-weight: inherit;
         background-color: rgba(var(--bs-warning-rgb), 0.2);
         transition: background-color 0.15s ease;
-      }
-
-      @keyframes destinationsRowPinHighlightTd {
-        0% {
-          background-color: rgba(var(--bs-warning-rgb), 0.42);
-        }
-
-        55% {
-          background-color: rgba(var(--bs-warning-rgb), 0.14);
-          font-weight: 700;
-        }
-
-        100% {
-          background-color: transparent;
-          font-weight: 400;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        tr.destination.highlight--map-pin td {
-          animation: none;
-          background-color: rgba(var(--bs-warning-rgb), 0.32);
-          font-weight: 700;
-        }
       }
     }
 
@@ -602,45 +555,6 @@
     &:focus-visible {
       outline: 2px solid var(--bs-primary, #0d6efd);
       outline-offset: 3px;
-    }
-  }
-
-  .destinations-marker__pulse {
-    position: absolute;
-    left: 50%;
-    bottom: calc(var(--dm-pin-h) + var(--dm-head-size) * 0.5 - 3px);
-    width: calc(var(--dm-head-size) + 14px);
-    height: calc(var(--dm-head-size) + 14px);
-    margin-left: calc((var(--dm-head-size) + 14px) * -0.5);
-    border-radius: 50%;
-    border: 2px solid var(--dm-flat);
-    opacity: 0;
-    transform: scale(0.85);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .destinations-marker--active .destinations-marker__pulse {
-    border-color: var(--dm-flat-active);
-    animation: destinations-marker-pulse-flat 1.8s ease-out infinite;
-  }
-
-  @keyframes destinations-marker-pulse-flat {
-    0% {
-      opacity: 0.45;
-      transform: scale(0.88);
-    }
-    100% {
-      opacity: 0;
-      transform: scale(1.25);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .destinations-marker--active .destinations-marker__pulse {
-      animation: none;
-      opacity: 0.3;
-      transform: scale(1);
     }
   }
 
