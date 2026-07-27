@@ -38,12 +38,13 @@ function featureKey (feature) {
 }
 
 export class DestinationsMapLayers {
-  constructor (map, { buildUrl, onPointClick, onClusterClick, onFeaturesUpdated, signal }) {
+  constructor (map, { buildUrl, onPointClick, onClusterClick, onFeaturesUpdated, getMovePadding, signal }) {
     this.map = map
     this.buildUrl = buildUrl
     this.onPointClick = onPointClick
     this.onClusterClick = onClusterClick
     this.onFeaturesUpdated = onFeaturesUpdated
+    this.getMovePadding = getMovePadding
     this.signal = signal
     this._featureCache = new Map()
     this._hiddenIds = new Set()
@@ -458,9 +459,11 @@ export class DestinationsMapLayers {
     const feature = e.features && e.features[0]
     if (!feature) return
     if (e.originalEvent) e.originalEvent.stopPropagation()
+    const padding = typeof this.getMovePadding === 'function' ? this.getMovePadding() : undefined
     this.map.easeTo({
       center: feature.geometry.coordinates,
       zoom: this.map.getZoom() + 1,
+      ...(padding ? { padding } : {}),
       duration: 250
     })
     if (this.onClusterClick) this.onClusterClick(e)
