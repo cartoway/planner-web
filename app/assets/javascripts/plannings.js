@@ -3492,7 +3492,10 @@ export const plannings_edit = function(params) {
       beforeSend: beforeSendWaiting,
       complete: completeAjaxMap,
       error: ajaxError,
-      success: updatePlanning
+      success: function(data) {
+        updatePlanning(data, { updateHeader: true });
+        updateDataHeader(planning_id);
+      }
     }, options));
   }
 
@@ -3514,7 +3517,8 @@ export const plannings_edit = function(params) {
         completeAjaxMap();
       },
       success: function(data) {
-        updatePlanning(data);
+        updatePlanning(data, { updateHeader: true });
+        updateDataHeader(planning_id);
         enlightenStop({id: stop_id});
         map.closePopup();
       }
@@ -3541,6 +3545,7 @@ export const plannings_edit = function(params) {
           dialog.modal('hide');
           completeAjaxMap();
           map.closePopup();
+          updateDataHeader(planning_id);
         }
       });
     }
