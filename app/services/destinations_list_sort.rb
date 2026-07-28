@@ -59,7 +59,9 @@ class DestinationsListSort
     when 'geocoding' then "destinations.geocoding_accuracy #{dir} #{nulls}"
     when 'comment' then "destinations.comment #{dir} #{nulls}"
     when 'phone_number' then "destinations.phone_number #{dir} #{nulls}"
+    when 'destination_duration' then "destinations.duration #{dir} #{nulls}"
     when 'tags' then "#{destination_tags_sort_sql} #{dir} #{nulls}"
+    when 'visit_duration' then "#{first_visit_duration_sort_sql} #{dir} #{nulls}"
     when 'visit_ref' then "#{first_visit_ref_sort_sql} #{dir} #{nulls}"
     when 'visit_tags' then "#{first_visit_tags_sort_sql} #{dir} #{nulls}"
     else
@@ -91,6 +93,18 @@ class DestinationsListSort
     <<~SQL.squish
       (
         SELECT visits.ref
+        FROM visits
+        WHERE visits.destination_id = destinations.id
+        ORDER BY visits.id ASC
+        LIMIT 1
+      )
+    SQL
+  end
+
+  def first_visit_duration_sort_sql
+    <<~SQL.squish
+      (
+        SELECT visits.duration
         FROM visits
         WHERE visits.destination_id = destinations.id
         ORDER BY visits.id ASC

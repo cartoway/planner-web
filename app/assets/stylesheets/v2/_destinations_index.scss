@@ -42,6 +42,8 @@
   .destinations-list-col--geocoding { @include destinations-list-col-width(14rem); }
   .destinations-list-col--comment { @include destinations-list-col-width(9rem); }
   .destinations-list-col--phone-number { @include destinations-list-col-width(7.5rem); }
+  .destinations-list-col--destination-duration { @include destinations-list-col-width(8.5rem); }
+  .destinations-list-col--visit-duration { @include destinations-list-col-width(8.5rem); }
   .destinations-list-col--tags { @include destinations-list-col-width(7rem); }
   .destinations-list-col--visit-ref { @include destinations-list-col-width(9.5rem); }
   .destinations-list-col--visit-tags { @include destinations-list-col-width(11rem); }

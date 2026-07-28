@@ -3765,6 +3765,8 @@ fr:
       geocoding: Géocodage
       comment: Commentaire
       phone_number: Téléphone
+      destination_duration: Durée destination
+      visit_duration: Durée visite
       tags: Catégories
       visit_tags: Catégories visites
       visit_ref: Référence visite
