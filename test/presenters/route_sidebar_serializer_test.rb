@@ -40,12 +40,15 @@ class RouteSidebarSerializerTest < ActionController::TestCase
   test 'planning_stops_totals sums route_data from all routes' do
     rd1 = Struct.new(:stops_size, :size_active).new(3, 2)
     rd2 = Struct.new(:stops_size, :size_active).new(5, 1)
-    r_nil = Struct.new(:route_data).new(nil)
-    r1 = Struct.new(:route_data).new(rd1)
-    r2 = Struct.new(:route_data).new(rd2)
-    planning = Struct.new(:routes).new([r1, r2, r_nil])
+    rd_out = Struct.new(:stops_size, :size_active).new(4, 4)
+    route_stub = Struct.new(:route_data, :vehicle_usage_id)
+    r1 = route_stub.new(rd1, 1)
+    r2 = route_stub.new(rd2, 2)
+    r_out = route_stub.new(rd_out, nil) # unassigned: counted in size, not in size_active
+    r_nil = route_stub.new(nil, 3)
+    planning = Struct.new(:routes).new([r1, r2, r_out, r_nil])
     totals = RouteSidebarSerializer.planning_stops_totals(planning)
-    assert_equal 8, totals[:size]
+    assert_equal 12, totals[:size]
     assert_equal 3, totals[:size_active]
   end
 
@@ -53,7 +56,7 @@ class RouteSidebarSerializerTest < ActionController::TestCase
     planning = plannings(:planning_one)
     totals = RouteSidebarSerializer.planning_stops_totals(planning)
     expected_size = planning.routes.sum { |r| r.route_data&.stops_size.to_i }
-    expected_active = planning.routes.sum { |r| r.route_data&.size_active.to_i }
+    expected_active = planning.routes.sum { |r| r.vehicle_usage_id ? r.route_data&.size_active.to_i : 0 }
     assert_equal expected_size, totals[:size]
     assert_equal expected_active, totals[:size_active]
   end
