@@ -12,7 +12,7 @@ export default class extends Controller {
     if (!visits || !this.hasTemplateTarget) return
 
     const existing = visits.querySelectorAll('fieldset.visit-fieldset')
-    const nextIndex = existing.length + 1
+    const nextIndex = this._nextVisitIndex(existing)
     const html = this._reindexTemplate(this.templateTarget.innerHTML, nextIndex)
 
     if (existing.length === 1 && this.hasHeaderTemplateTarget && !visits.querySelector('#visits-header')) {
@@ -29,11 +29,23 @@ export default class extends Controller {
       ?.dispatchEvent(new Event('input', { bubbles: true }))
   }
 
+  // Max nested-attributes index already in the form + 1 (gaps after removals).
+  _nextVisitIndex (fieldsets) {
+    let max = 0
+    fieldsets.forEach((fieldset) => {
+      const name = fieldset.querySelector('[name*="[visits_attributes]"]')?.name
+      const match = name?.match(/\[visits_attributes\]\[(\d+)\]/)
+      if (match) max = Math.max(max, Number(match[1]))
+    })
+    return max + 1
+  }
+
   _reindexTemplate (html, index) {
     const collapseId = `collapseVisit_new_${index}`
     return html
       .replace(/#collapseVisit0/g, `#${collapseId}`)
       .replace(/collapseVisit0/g, collapseId)
+      .replace(/#0/g, `#${index}`)
       .replace(/isit0/g, `isit${index}`)
       .replace(/visit_priority_i0/g, `visit_priority_i${index}`)
       .replace(/visit_priority_i0_ticks/g, `visit_priority_i${index}_ticks`)
