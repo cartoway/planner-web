@@ -41,7 +41,7 @@ class RouteSidebarSerializer
     Array(routes).each_with_object({ size: 0, size_active: 0 }) do |route, acc|
       rd = route.route_data
       acc[:size] += rd&.stops_size.to_i
-      acc[:size_active] += rd&.size_active.to_i
+      acc[:size_active] += rd&.size_active.to_i if route.vehicle_usage_id
     end
   end
 
