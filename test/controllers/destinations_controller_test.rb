@@ -305,6 +305,13 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '#visits > fieldset .v2-range-output-wrap[data-controller~="v2--range-output"]', 1
   end
 
+  test 'v2 edit sidebar time window bound labels share alignment class' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select '.visit-open-close-input .input-group-text.time-window-bound-label', minimum: 4
+  end
+
   test 'v2 edit sidebar offers direct delete for each persisted visit' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     get :edit, params: { id: @destination.id }
