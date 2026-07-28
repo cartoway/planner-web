@@ -78,6 +78,15 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
     assert_equal rest.index, rest_snapshot['index']
   end
 
+  test 'capture_state stores route ref in snapshot' do
+    route = routes(:route_one_one)
+
+    @planning.capture_state!(trigger: 'move')
+    route_snapshot = @planning.planning_states.last.payload['routes'].find { |snapshot| snapshot['route_id'] == route.id }
+
+    assert_equal route.ref, route_snapshot['ref']
+  end
+
   test 'reapply_state restores stop rests from snapshot' do
     route = routes(:route_one_one)
     rest = stops(:stop_one_four)
@@ -116,6 +125,19 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
     current_visit_ids = @planning.routes.flat_map(&:stops).grep(StopVisit).map(&:visit_id)
 
     assert_equal snapshot_visit_ids.sort, current_visit_ids.sort
+  end
+
+  test 'reapply_state does not persist technical route key as route ref when snapshot route has no ref' do
+    route = @planning.routes.find(&:vehicle_usage?)
+    route.update_columns(ref: nil)
+
+    @planning.capture_state!(trigger: 'move')
+    state = @planning.planning_states.first
+
+    route.update_columns(ref: 'temporary-ref')
+
+    assert @planning.reapply_state!(state)
+    assert_nil @planning.reload.routes.find { |r| r.vehicle_usage_id == route.vehicle_usage_id }.ref
   end
 
   test 'reapply_state restores vehicle_usage_set_id from snapshot' do

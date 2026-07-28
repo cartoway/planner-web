@@ -303,6 +303,30 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal visits(:visit_two), route.stops.find{ |s| s.visit.destination.name == 'destination_two' }.visit
   end
 
+  test 'recompute ignores stale precomputed traces after stop count changes' do
+    route = routes(:route_one_one)
+    planning = route.planning
+    unassigned = planning.routes.find { |r| !r.vehicle_usage }
+    stop = unassigned.stops.first
+    visit = stop.visit
+    stop_id = stop.id
+
+    route.outdated = true
+    route.compute
+    stale_traces_size = route.instance_variable_get(:@traces)&.size
+    assert stale_traces_size, 'expected first compute to store precomputed traces'
+
+    unassigned.move_stop_out(stop)
+    route.add(visit, route.stops.size + 1, { active: true }, stop_id)
+    segments = route.collect_segments_for_routing(route.stops.sort_by(&:index))
+    assert_operator segments.size, :>, stale_traces_size
+
+    route.outdated = true
+    route.compute
+    inserted = route.stops.find { |s| s.id == stop_id }
+    refute inserted.no_path?, 'stale traces must not mark newly inserted stop as no_path'
+  end
+
   test 'should add without index' do
     route = routes(:route_one_one)
     route.add(visits(:visit_two))
