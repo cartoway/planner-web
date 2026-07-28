@@ -1797,13 +1797,42 @@ export const plannings_edit = function(params) {
         });
       } else if (!route.hasClass('out_route')) {
         var $planningScroll = planningSidebarScrollContainer();
-        if (target.offset().top < 0 || target.offset().top > $planningScroll.height()) {
+        var scrollEl = $planningScroll[0];
+        var targetEl = target[0];
+        if (!scrollEl || !targetEl) return;
+        var scrollRect = scrollEl.getBoundingClientRect();
+        var routeSelectorEl = $('#route_selector')[0];
+        var visibleTop = scrollRect.top;
+        if (routeSelectorEl) {
+          visibleTop = Math.max(visibleTop, routeSelectorEl.getBoundingClientRect().bottom);
+        }
+        var visibleBottom = scrollRect.bottom;
+        var targetRect = targetEl.getBoundingClientRect();
+        if (targetRect.top < visibleTop || targetRect.bottom > visibleBottom) {
           $planningScroll.animate({
-            scrollTop: target.offset().top + $planningScroll.scrollTop() - 100
+            scrollTop: $planningScroll.scrollTop() + (targetRect.top - visibleTop) - 12
           });
         }
       }
     }
+  };
+
+  var locateStopInPlanningData = function(data, stopId) {
+    if (!data || !data.routes || stopId == null) return null;
+    for (var i = 0; i < data.routes.length; i++) {
+      var route = data.routes[i];
+      var stops = route.stops || [];
+      for (var j = 0; j < stops.length; j++) {
+        if (String(stops[j].stop_id) === String(stopId)) {
+          return {
+            id: stopId,
+            routeId: route.route_id,
+            index: stops[j].stop_index
+          };
+        }
+      }
+    }
+    return { id: stopId };
   };
 
   layer_zoning = (new L.FeatureGroup()).addTo(map);
@@ -3519,7 +3548,7 @@ export const plannings_edit = function(params) {
       success: function(data) {
         updatePlanning(data, { updateHeader: true });
         updateDataHeader(planning_id);
-        enlightenStop({id: stop_id});
+        enlightenStop(locateStopInPlanningData(data, stop_id));
         map.closePopup();
       }
     });
