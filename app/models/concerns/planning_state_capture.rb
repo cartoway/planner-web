@@ -157,7 +157,9 @@ module PlanningStateCapture
 
   def apply_routes_from_state_payload(routes_payload, recompute: true, ignore_errors: false)
     routes_visits = build_routes_visits_from_payload(routes_payload)
-    out_of_route_objects = build_out_of_route_objects_from_payload(routes_payload)
+    out_of_route_objects =
+      build_out_of_route_objects_from_payload(routes_payload) +
+      build_missing_visits_out_of_route_objects(routes_payload)
 
     default_empty_routes(ignore_errors)
     return if routes_visits.size > routes.size - 1
@@ -210,6 +212,21 @@ module PlanningStateCapture
     route_snapshot.fetch('stops', []).sort_by { |stop| stop['index'].to_i }.filter_map do |stop_snapshot|
       build_visit_tuple_from_snapshot(stop_snapshot, visits_by_id, store_reloads_by_id)
     end
+  end
+
+  def build_missing_visits_out_of_route_objects(routes_payload)
+    snapshot_visit_ids =
+      routes_payload.flat_map { |route_snapshot|
+        route_snapshot.fetch('stops', []).filter_map { |stop_snapshot|
+          stop_snapshot['visit_id'] if stop_snapshot['type'] == 'visit'
+        }
+      }.uniq
+
+    routes.flat_map(&:stops)
+          .grep(StopVisit)
+          .reject { |stop| snapshot_visit_ids.include?(stop.visit_id) }
+          .sort_by { |stop| [stop.route.vehicle_usage? ? 0 : 1, stop.route_id.to_i, stop.index.to_i] }
+          .map { |stop| [stop.visit, { active: false }] }
   end
 
   def build_routes_visits_from_payload(routes_payload)

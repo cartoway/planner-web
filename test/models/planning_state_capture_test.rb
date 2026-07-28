@@ -178,6 +178,37 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
     assert_equal snapshot_visit_ids.sort, current_visit_ids.sort
   end
 
+  test 'reapply_state moves visits missing from snapshot to out of route' do
+    source_route = @planning.routes.find { |route| route.vehicle_usage? }
+    out_of_route = @planning.routes.find { |route| !route.vehicle_usage? }
+
+    @planning.capture_state!(trigger: 'move')
+    state = @planning.planning_states.first
+
+    added_destination = Destination.create!(
+      name: 'added_after_snapshot',
+      lat: 1.7,
+      lng: 1.7,
+      customer: @planning.customer
+    )
+    added_visit = Visit.create!(destination: added_destination, duration: 60, tags: [tags(:tag_one)])
+    source_route.add(added_visit, 1, { active: true })
+    @planning.save!
+
+    assert @planning.routes.flat_map(&:stops).grep(StopVisit).any? { |stop| stop.visit_id == added_visit.id }
+    refute state.visit_ids_from_payload.include?(added_visit.id)
+
+    assert @planning.reapply_state!(state)
+    @planning.reload
+
+    restored_out_of_route = @planning.routes.find { |route| !route.vehicle_usage? }
+    restored_stop = restored_out_of_route.stops.grep(StopVisit).find { |stop| stop.visit_id == added_visit.id }
+
+    assert restored_stop
+    assert_equal restored_out_of_route.id, restored_stop.route_id
+    assert_not restored_stop.active?
+  end
+
   test 'reapply_state does not capture a new state' do
     @planning.capture_state!(trigger: 'move')
     state = @planning.planning_states.first
