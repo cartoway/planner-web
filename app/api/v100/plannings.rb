@@ -42,24 +42,21 @@ class V100::Plannings < Grape::API
         stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
         begin
 
-          impacted_routes = []
           Planning.transaction do
-            stops.each do |stop|
-              impacted_routes << (planning.automatic_insert(
-                                   stop,
-                                   max_time: params[:max_time],
-                                   max_distance: params[:max_distance],
-                                   out_of_zone: params[:out_of_zone],
-                                   active_only: params[:active_only]
-                                 ) || raise(Exceptions::LoopError.new))
-            end
-            impacted_routes.compact!
-            impacted_routes.uniq!
+            impacted_routes = PlanningAutomaticInsertService.new(
+              planning,
+              stops,
+              max_time: params[:max_time],
+              max_distance: params[:max_distance],
+              out_of_zone: params[:out_of_zone],
+              active_only: params[:active_only]
+            ).call
+            impacted_routes.each { |route| route.outdated = true }
             planning.compute_saved
             present :routes, impacted_routes, with: V100::Entities::Route, geojson: params[:with_geojson]
             status 201
           end
-        rescue Exceptions::LoopError => e
+        rescue Exceptions::LoopError
           error! V100::Status.code_response(:code_400), 400
         end
       end

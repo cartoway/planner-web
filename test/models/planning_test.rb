@@ -565,6 +565,23 @@ class PlanningTest < ActiveSupport::TestCase
     stop&.reload&.update!(active: true)
   end
 
+  test 'moving inactive visit from vehicle route to unassigned accepts nil index' do
+    planning = plannings(:planning_one)
+    unassigned = planning.routes.find { |r| r == routes(:route_zero_one) }
+    vehicle_route = planning.routes.find { |r| r == routes(:route_one_one) }
+    stop = vehicle_route.stops.find { |s| s.is_a?(StopVisit) && s.position? }
+    stop.update!(active: false)
+
+    assert_nothing_raised do
+      planning.move_stop(unassigned, stop, nil)
+    end
+
+    assert_equal unassigned.id, stop.route_id
+    assert_not stop.active?
+  ensure
+    stop&.reload&.update!(active: true)
+  end
+
   test 'should compute' do
     o = plannings(:planning_one)
     assert_no_difference('Stop.count') do
@@ -626,6 +643,55 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal 3, planning.routes.size
     assert_equal 0, planning.routes.find{ |r| !r.vehicle_usage }.stops.size
     assert_equal stops_count, planning.routes.select{ |r| r.vehicle_usage }.collect{ |r| r.stops.size }.inject(:+)
+  end
+
+  test 'automatic insert of multiple unassigned stops onto same route updates geojson and avoids no_path' do
+    planning = plannings(:planning_one)
+    planning.zonings = []
+    unassigned = planning.routes.find { |r| !r.vehicle_usage }
+    customer = planning.customer
+    stops_to_insert = [planning.routes.flat_map(&:stops).find { |stop| stop == stops(:stop_unaffected) }]
+
+    2.times do |i|
+      destination = Destination.create!(
+        name: "auto_insert_multi_#{i}",
+        lat: 1.5 + i * 0.1,
+        lng: 1.5 + i * 0.1,
+        customer: customer
+      )
+      visit = Visit.create!(destination: destination, duration: 60, tags: [tags(:tag_one)])
+      stop = StopVisit.create!(
+        route: unassigned,
+        visit: visit,
+        index: unassigned.stops.size + 1,
+        active: false
+      )
+      stops_to_insert << stop
+    end
+
+    stop_ids = stops_to_insert.compact.map(&:id)
+    target_route = nil
+    Planning.transaction do
+      stops_to_insert.compact.each do |stop|
+        target_route = planning.automatic_insert(stop)
+        assert target_route, 'expected automatic_insert to assign a route'
+      end
+      assert planning.compute_saved
+    end
+
+    planning.reload
+    target_route.reload
+    inserted_visits = target_route.stops.select { |s| s.is_a?(StopVisit) && stop_ids.include?(s.id) }
+    assert_equal stop_ids.size, inserted_visits.size
+    assert inserted_visits.all?(&:active?), 'automatic insert should activate stops'
+    assert inserted_visits.all?(&:position?), 'inserted stops should be positioned'
+    refute inserted_visits.any?(&:no_path?), 'inserted stops should not be marked no_path after compute_saved'
+
+    geojson_stop_ids = (target_route.route_geojson.reload.points || []).map { |feature_json|
+      JSON.parse(feature_json).dig('properties', 'stop_id')
+    }.compact.map(&:to_i)
+    assert_equal inserted_visits.map(&:id).sort, (inserted_visits.map(&:id) & geojson_stop_ids).sort,
+                 'route_geojson should include every inserted stop'
   end
 
   test 'should return a candidate route' do
