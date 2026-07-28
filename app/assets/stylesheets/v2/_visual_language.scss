@@ -293,6 +293,12 @@ body[data-controller*='-v2'] {
     flex-wrap: wrap;
   }
 
+  // Same width for Start/End so time and day fields line up across rows.
+  .visit-open-close-input .input-group > .input-group-text.time-window-bound-label {
+    width: 4.25rem;
+    justify-content: center;
+  }
+
   // Destination and visit fieldsets: no chrome box (legend layout lives in `application.scss`)
   fieldset#destination-details,
   fieldset.visit-fieldset {
