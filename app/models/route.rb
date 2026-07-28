@@ -378,7 +378,12 @@ class Route < ApplicationRecord
       segments = collect_segments_for_routing(stops_sort)
 
       # Use pre-computed traces if available, otherwise compute them
-      traces = @traces.dup || process_traces(segments, router, router_dimension, speed_multiplier, departure, options = {})
+      traces =
+        if @traces&.size == segments.size
+          @traces.dup
+        else
+          process_traces(segments, router, router_dimension, speed_multiplier, departure, options = {})
+        end
       traces[0] = [0, 0, nil] unless vehicle_usage.default_store_start&.position?
 
       # Recompute Stops

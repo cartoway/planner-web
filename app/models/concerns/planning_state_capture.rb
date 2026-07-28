@@ -124,6 +124,7 @@ module PlanningStateCapture
   def serialize_route_for_state(route)
     {
       'route_id' => route.id,
+      'ref' => route.ref,
       'vehicle_usage_id' => route.vehicle_usage_id,
       'stops' => route.stops.sort_by(&:index).filter_map { |stop| serialize_stop_for_state(stop) }
     }
@@ -159,7 +160,6 @@ module PlanningStateCapture
     out_of_route_objects = build_out_of_route_objects_from_payload(routes_payload)
 
     default_empty_routes(ignore_errors)
-    routes_visits = routes_visits.select { |ref, _data| ref }
     return if routes_visits.size > routes.size - 1
 
     index_routes = (1..routes.size).to_a
@@ -169,10 +169,10 @@ module PlanningStateCapture
     }
 
     ref_updates = []
-    routes_visits.each{ |ref, routes_visit|
+    routes_visits.each_value{ |routes_visit|
       route_index = route_index_for_routes_visit(routes_visit) || index_routes.shift
-      routes[route_index].ref = ref&.to_s
-      ref_updates << { id: routes[route_index].id, ref: ref&.to_s }
+      routes[route_index].ref = routes_visit[:ref]
+      ref_updates << { id: routes[route_index].id, ref: routes_visit[:ref] }
       routes[route_index].stops.delete_all
       routes[route_index].add_objects(routes_visit[:visits], recompute, ignore_errors)
     }
@@ -235,6 +235,7 @@ module PlanningStateCapture
 
       stops = route_snapshot.fetch('stops', []).sort_by { |stop| stop['index'].to_i }
       hash["route_#{vehicle_usage_id}"] = {
+        ref: route_snapshot['ref'],
         vehicle_usage_id: vehicle_usage_id,
         visits: stops.filter_map { |stop_snapshot|
           build_visit_tuple_from_snapshot(stop_snapshot, visits_by_id, store_reloads_by_id)

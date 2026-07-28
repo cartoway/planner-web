@@ -497,15 +497,10 @@ class PlanningsController < ApplicationController
         raise ActiveRecord::RecordNotFound if stops.empty?
 
         Planning.transaction do
-          stops.each do |stop|
-            route = @planning.automatic_insert(stop)
-            if route
-              route_ids << route.id if route_ids.exclude?(route.id)
-            else
-              raise Exceptions::LoopError.new
-            end
-          end
+          impacted_routes = PlanningAutomaticInsertService.new(@planning, stops).call
+          impacted_routes.each { |route| route_ids << route.id if route_ids.exclude?(route.id) }
 
+          route_ids.uniq.each { |route_id| @planning.routes.find { |r| r.id == route_id }&.outdated = true }
           if @planning.compute_saved && @planning.reload
             @routes = @planning.routes.where(id: route_ids).includes_vehicle_usages.includes_destinations_and_stores
             capture_planning_state_after_success!
