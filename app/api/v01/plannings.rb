@@ -233,13 +233,16 @@ class V01::Plannings < Grape::API
       stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
       begin
         Planning.transaction do
-          stops.each do |stop|
-            planning.automatic_insert(stop,
-              max_time: params[:max_time],
-              max_distance: params[:max_distance],
-              out_of_zone: params[:out_of_zone],
-              active_only: params[:active_only]) || raise(Exceptions::LoopError.new)
-          end
+          impacted_routes = PlanningAutomaticInsertService.new(
+            planning,
+            stops,
+            max_time: params[:max_time],
+            max_distance: params[:max_distance],
+            out_of_zone: params[:out_of_zone],
+            active_only: params[:active_only]
+          ).call
+          impacted_route_ids = impacted_routes.map(&:id)
+          impacted_route_ids.uniq.each { |route_id| planning.routes.find { |r| r.id == route_id }&.outdated = true }
           planning.compute_saved
           status 204
         end

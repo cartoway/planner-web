@@ -670,13 +670,15 @@ class Planning < ApplicationRecord
   end
 
   def move_stop(route, stop, index, force = false)
+    if fast_move_inactive_stop_to_out_of_route?(stop, route)
+      fast_move_inactive_stops_to_out_of_route!(route, [stop], index)
+      return true
+    end
+
     route, index = prefered_route_and_index([route], stop) unless index || !route.vehicle_usage? || !stop.position?
 
     if stop.route != route
-      if fast_move_inactive_stop_to_out_of_route?(stop, route)
-        fast_move_inactive_stops_to_out_of_route!(route, [stop], index)
-        true
-      elsif stop.is_a?(StopVisit)
+      if stop.is_a?(StopVisit)
         visit, active = stop.visit, stop.active
         stop_id = stop.id
         source_route = routes.find{ |r| r.id == stop.route_id }
