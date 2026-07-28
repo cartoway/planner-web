@@ -2897,6 +2897,27 @@ export const plannings_edit = function(params) {
     updateColorsForRoutesAndStops(i, route);
   };
 
+  var buildRouteModel = function(i, route) {
+    var vehicle_usage = {};
+    $.each(vehicles_usages_map, function(_j, v) {
+      if (v.vehicle_usage_id == route.vehicle_usage_id) vehicle_usage = v;
+    });
+
+    var nextRoute = $.extend({}, route, {
+      color: route.color || vehicle_usage.color,
+      route_color: route.route_color || route.color || route.default_color || vehicle_usage.color,
+      devices: route.devices || params.devices
+    });
+    nextRoute.calendar_url = api_route_calendar_path(nextRoute);
+    nextRoute.calendar_url_api_key = api_route_calendar_path(nextRoute) + '?api_key=' + user_api_key;
+    if (nextRoute.vehicle_id) {
+      nextRoute.vehicle = vehicles_usages_map[nextRoute.vehicle_id];
+      nextRoute.path = '/vehicle_usages/' + nextRoute.vehicle_usage_id + '/edit?back=true';
+    }
+    updateColorsForRoutesAndStops(i, nextRoute);
+    return nextRoute;
+  };
+
   var syncRoutesLayerOptions = function() {
     if (routesLayer) {
       routesLayer.options.routes = routes;
@@ -3007,8 +3028,8 @@ export const plannings_edit = function(params) {
     // 1st case: the whole planning needs to be initialized and displayed
     if (typeof options !== 'object' || !options.partial) {
       if (data.routes) {
-        $.each(data.routes, function(i, route) {
-          updateRouteModel(i, route, routeIndexById);
+        routes = $.map(data.routes, function(route, i) {
+          return buildRouteModel(i, route);
         });
         syncRoutesLayerOptions();
       }
@@ -3320,7 +3341,7 @@ export const plannings_edit = function(params) {
       syncRoutesLayerOptions();
     }
     if (data && data.routes) {
-      planningPopoverSnapshot = data;
+      planningPopoverSnapshot = $.extend({}, data, { routes: routes });
     }
     var isBackgroundUpdate = !!(options && (options.skipCallbacks || options.background));
     var shouldBindRouteDelegates = !isBackgroundUpdate && !(options && options.skipCallbacks);
@@ -3445,6 +3466,14 @@ export const plannings_edit = function(params) {
   };
 
   $(document).off('planning:state:reapplied.planningsEdit').on('planning:state:reapplied.planningsEdit', function(_event, data) {
+    // Reapplying a planning state rebuilds stops, so any open popup may still point
+    // to a stale stop_id. Close it before refreshing the planning UI/routes.
+    if (routesLayer && typeof routesLayer.hideLastPopup === 'function') {
+      routesLayer.hideLastPopup()
+    }
+    if (map && typeof map.closePopup === 'function') {
+      map.closePopup()
+    }
     updatePlanning(data, { partial: false });
     if (data.vehicle_usage_set_id != null) {
       $('#planning_vehicle_usage_set_id').val(String(data.vehicle_usage_set_id));

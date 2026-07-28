@@ -77,6 +77,7 @@ class RouteSidebarSerializer
       vehicle_name: vehicle&.name,
       router_name: vehicle&.default_router&.translated_name,
       default_color: default_color,
+      route_color: effective_color,
       color: effective_color,
       color_fake: @route.color,
       distance: @view_helpers.locale_distance(@route.distance || 0, @view_helpers.current_user.prefered_unit),
