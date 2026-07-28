@@ -56,10 +56,27 @@ class DestinationsHelperDeliverableUnitColumnsTest < ActionView::TestCase
     assert_equal '–', destinations_list_visit_ref(nil)
   end
 
+  test 'destinations_list_duration helpers format times or dash' do
+    destination = destinations(:destination_one)
+    visit = visits(:visit_one)
+    destination.update!(duration: 90)
+    visit.update!(duration: 150)
+
+    assert_equal destination.duration_time_with_seconds, destinations_list_destination_duration(destination)
+    assert_equal visit.duration_time_with_seconds, destinations_list_visit_duration(visit)
+
+    destination.update!(duration: nil)
+    visit.update!(duration: nil)
+    assert_equal '–', destinations_list_destination_duration(destination)
+    assert_equal '–', destinations_list_visit_duration(visit)
+    assert_equal '–', destinations_list_visit_duration(nil)
+  end
+
   test 'destinations_list_visit_subrows_enabled? is true when a visit column is active' do
     col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(@unit)
     assert destinations_list_visit_subrows_enabled?(%w[name visit_ref])
+    assert destinations_list_visit_subrows_enabled?(%w[name visit_duration])
     assert destinations_list_visit_subrows_enabled?(%w[name] + [col_id])
-    assert_not destinations_list_visit_subrows_enabled?(%w[name street ref])
+    assert_not destinations_list_visit_subrows_enabled?(%w[name street ref destination_duration])
   end
 end

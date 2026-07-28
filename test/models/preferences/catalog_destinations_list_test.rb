@@ -111,8 +111,16 @@ class PreferencesCatalogDestinationsListTest < ActiveSupport::TestCase
     col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
     assert Preferences::Catalog::DestinationsList.visit_scoped_column?('visit_tags')
     assert Preferences::Catalog::DestinationsList.visit_scoped_column?('visit_ref')
+    assert Preferences::Catalog::DestinationsList.visit_scoped_column?('visit_duration')
     assert Preferences::Catalog::DestinationsList.visit_scoped_column?(col_id)
     assert_not Preferences::Catalog::DestinationsList.visit_scoped_column?('name')
+    assert_not Preferences::Catalog::DestinationsList.visit_scoped_column?('destination_duration')
+  end
+
+  test 'allowed columns include destination_duration and visit_duration' do
+    allowed = Preferences::Catalog::DestinationsList.allowed_column_ids(@customer)
+    assert_includes allowed, 'destination_duration'
+    assert_includes allowed, 'visit_duration'
   end
 
   test 'normalize_zone expands legacy address column into street postalcode city' do
