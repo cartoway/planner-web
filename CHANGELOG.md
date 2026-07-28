@@ -14,7 +14,7 @@
     - Vehicle usage sets import/export: optional `index` column
   - Customer-level default map markers per type
   - Planning states history: capture structural snapshots on mutations and reapply a previous state from the UI
-    - Grouped by category (bulk, route group, individual changes): up to 5 states per category, with up to 3 pin-able states per category that survive pruning
+    - Grouped by category (bulk, route group, individual changes), with up to 10 saved states per planning and up to 3 pinned states preserved across pruning
     - History modal shows the same route-data statistics as the planning header, with deltas vs the current planning (lower is better, except active stops count)
     - Pin, two-step delete, and full planning reload on reapply
   - Planning: focus active rests without geolocation on their driving leg
