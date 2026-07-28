@@ -64,7 +64,7 @@
         %label{class: v2_label_col}= vf.call('time_window_start_end_1')
         %div{class: v2_control_col}
           .input-group.mb-2
-            %span.input-group-text= t 'web.form.time_window_start_label'
+            %span.input-group-text.time-window-bound-label= t 'web.form.time_window_start_label'
             = text_field "destination[visits_attributes][#{i}]", :time_window_start_1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_1_time
             %span.input-group-text.input-group-borderless= t 'web.form.days'
             = number_field "destination[visits_attributes][#{i}]", :time_window_start_1_day, |
@@ -73,7 +73,7 @@
               min: 0,                                                                        |
               value: number_of_days(visit.time_window_start_1)                               |
           .input-group
-            %span.input-group-text= t 'web.form.time_window_end_label'
+            %span.input-group-text.time-window-bound-label= t 'web.form.time_window_end_label'
             = text_field "destination[visits_attributes][#{i}]", :time_window_end_1, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_end_1_time
             %span.input-group-text.input-group-borderless= t 'web.form.days'
             = number_field "destination[visits_attributes][#{i}]", :time_window_end_1_day, |
@@ -88,7 +88,7 @@
         %label{class: v2_label_col}= vf.call('time_window_start_end_2')
         %div{class: v2_control_col}
           .input-group.mb-2
-            %span.input-group-text= t 'web.form.time_window_start_label'
+            %span.input-group-text.time-window-bound-label= t 'web.form.time_window_start_label'
             = text_field "destination[visits_attributes][#{i}]", :time_window_start_2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_start_2_time
             %span.input-group-text.input-group-borderless= t 'web.form.days'
             = number_field "destination[visits_attributes][#{i}]", :time_window_start_2_day, |
@@ -97,7 +97,7 @@
               min: 0,                                                                        |
               value: number_of_days(visit.time_window_start_2)                               |
           .input-group
-            %span.input-group-text= t 'web.form.time_window_end_label'
+            %span.input-group-text.time-window-bound-label= t 'web.form.time_window_end_label'
             = text_field "destination[visits_attributes][#{i}]", :time_window_end_2, class: 'form-control', placeholder: t('all.unit.hour_minute'), value: visit.time_window_end_2_time
             %span.input-group-text.input-group-borderless= t 'web.form.days'
             = number_field "destination[visits_attributes][#{i}]", :time_window_end_2_day, |
