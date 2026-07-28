@@ -21,8 +21,11 @@ module Preferences
   module Catalog
     # User-level destinations index list columns (v2 sidebar table).
     module DestinationsList
-      COLUMN_IDS = %w[name street postalcode city ref geocoding comment phone_number tags visit_ref visit_tags].freeze
-      VISIT_SCOPED_COLUMN_IDS = %w[visit_ref visit_tags].freeze
+      COLUMN_IDS = %w[
+        name street postalcode city ref geocoding comment phone_number
+        destination_duration visit_duration tags visit_ref visit_tags
+      ].freeze
+      VISIT_SCOPED_COLUMN_IDS = %w[visit_duration visit_ref visit_tags].freeze
       DEFAULT_ACTIVE = %w[name street postalcode city geocoding].freeze
       # Cap simultaneous visible columns so the sidebar table stays usable with many deliverable units.
       MAX_ACTIVE = 8

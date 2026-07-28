@@ -3626,6 +3626,8 @@ en:
       geocoding: Geocoding
       comment: Comment
       phone_number: Phone
+      destination_duration: Destination duration
+      visit_duration: Visit duration
       tags: Tags
       visit_tags: Visit categories
       visit_ref: Visit reference
