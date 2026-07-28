@@ -26,14 +26,22 @@ class DestinationsListSortTest < ActiveSupport::TestCase
     assert_equal 'asc', sort.direction
   end
 
-  test 'apply orders destinations by name' do
+  test 'parse accepts duration columns' do
+    %w[destination_duration visit_duration].each do |column_id|
+      sort = DestinationsListSort.parse({ sort: column_id }, customer: @customer)
+      assert_equal column_id, sort.column_id
+      assert_equal 'asc', sort.direction
+    end
+  end
+
+  test 'apply orders destinations by destination_duration' do
     destination_a = destinations(:destination_unaffected_one)
     destination_b = destinations(:destination_one)
-    destination_a.update_columns(name: 'AAA sort test')
-    destination_b.update_columns(name: 'ZZZ sort test')
+    destination_a.update_columns(duration: 60)
+    destination_b.update_columns(duration: 600)
 
     scope = @customer.destinations.where(id: [destination_a.id, destination_b.id])
-    sorted = DestinationsListSort.new(column_id: 'name', direction: 'asc', customer: @customer).apply(scope)
+    sorted = DestinationsListSort.new(column_id: 'destination_duration', direction: 'asc', customer: @customer).apply(scope)
     assert_equal [destination_a.id, destination_b.id], sorted.pluck(:id)
   end
 

@@ -215,6 +215,16 @@ module DestinationsHelper
     visit.ref.presence || '–'
   end
 
+  def destinations_list_destination_duration(destination)
+    destination&.duration_time_with_seconds.presence || '–'
+  end
+
+  def destinations_list_visit_duration(visit)
+    return '–' unless visit
+
+    visit.duration_time_with_seconds.presence || '–'
+  end
+
   def destinations_list_deliverable_unit_for_visit(visit, column_id, customer = nil)
     return nil unless visit
 

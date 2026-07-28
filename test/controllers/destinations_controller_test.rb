@@ -388,6 +388,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'template#visit-fieldset-template', 1
     template_html = css_select('#visit-fieldset-template').first.to_s
     assert_includes template_html, 'destination[visits_attributes][0]'
+    assert_includes template_html, I18n.t('visits.form.legend', n: 0)
     assert_not_includes template_html, 'filled-ref'
     assert_not_includes template_html, '00:15:00'
     assert_not_includes template_html, 'v2--visit-delete'

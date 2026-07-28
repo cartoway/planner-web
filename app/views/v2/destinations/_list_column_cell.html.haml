@@ -6,6 +6,9 @@
   - when 'visit_ref'
     - visit_ref = destinations_list_visit_ref(visit)
     = destinations_list_column_td(column_id, tooltip: (visit_ref unless visit_ref == '–')) { visit_ref }
+  - when 'visit_duration'
+    - visit_duration = destinations_list_visit_duration(visit)
+    = destinations_list_column_td(column_id, tooltip: (visit_duration unless visit_duration == '–')) { visit_duration }
   - else
     - du_data = destinations_list_deliverable_unit_for_visit(visit, column_id, destination.customer)
     - if du_data
@@ -36,5 +39,8 @@
       = destinations_list_phone_link(destination) || '–'
   - when 'tags'
     = render 'v2/destinations/list_tag_badges', tags: destination.tags, column_id: column_id
+  - when 'destination_duration'
+    - destination_duration = destinations_list_destination_duration(destination)
+    = destinations_list_column_td(column_id, tooltip: (destination_duration unless destination_duration == '–')) { destination_duration }
   - else
     = destinations_list_column_td(column_id) { '–' }

@@ -27,8 +27,8 @@ module Lookbook
       end
     end
 
-    Visit = Struct.new(:ref, :tags, :pickups, :deliveries, keyword_init: true) do
-      def initialize(ref: nil, tags: [], pickups: {}, deliveries: {})
+    Visit = Struct.new(:ref, :tags, :pickups, :deliveries, :duration_time_with_seconds, keyword_init: true) do
+      def initialize(ref: nil, tags: [], pickups: {}, deliveries: {}, duration_time_with_seconds: nil)
         super
       end
 
@@ -56,6 +56,7 @@ module Lookbook
       :geocoding_level,
       :geocoding_accuracy,
       :geocoding_result,
+      :duration_time_with_seconds,
       :tags,
       :visits,
       keyword_init: true
@@ -104,10 +105,11 @@ module Lookbook
           geocoding_level: 'house',
           geocoding_accuracy: 0.92,
           geocoding_result: { 'free' => '12 rue des Lilas, 33000 Bordeaux' },
+          duration_time_with_seconds: '00:05:00',
           tags: [urgent, retail],
           visits: [
-            Visit.new(ref: 'V-001', tags: [visit_cat], deliveries: { 1 => 2.0 }),
-            Visit.new(ref: 'V-002', tags: [visit_cat], deliveries: { 1 => 1.5 })
+            Visit.new(ref: 'V-001', tags: [visit_cat], deliveries: { 1 => 2.0 }, duration_time_with_seconds: '00:10:00'),
+            Visit.new(ref: 'V-002', tags: [visit_cat], deliveries: { 1 => 1.5 }, duration_time_with_seconds: '00:07:00')
           ]
         ),
         Destination.new(
