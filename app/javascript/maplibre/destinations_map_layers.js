@@ -52,6 +52,8 @@ export class DestinationsMapLayers {
     this._fetchAbort = null
     this._loadedBounds = null
     this._layersReady = false
+    this._eventsBound = false
+    this._dataEpoch = 0
     this._declusterViewportActive = false
     this._boundHandlers = {
       moveend: () => this._onMoveEnd(),
@@ -63,6 +65,7 @@ export class DestinationsMapLayers {
   connect () {
     const run = () => {
       this._ensureLayers()
+      this._bindEvents()
       this._loadInitialViewport()
     }
     if (this.map.loaded()) run()
@@ -70,12 +73,15 @@ export class DestinationsMapLayers {
   }
 
   async _loadInitialViewport () {
-    await this._fetchBoundsOnly()
-    await this._fetchViewport({ force: true })
-    this._bindEvents()
+    // Use current epoch (may already have been bumped by an early filter reload).
+    const epoch = this._dataEpoch
+    await this._fetchBoundsOnly(epoch)
+    if (!this._isCurrentEpoch(epoch)) return
+    await this._fetchViewport({ force: true, epoch })
   }
 
   disconnect () {
+    this._dataEpoch += 1
     window.clearTimeout(this._fetchTimer)
     this._fetchTimer = null
     if (this._fetchAbort) this._fetchAbort.abort()
@@ -85,6 +91,15 @@ export class DestinationsMapLayers {
     this._featureCache.clear()
     this._hiddenIds.clear()
     this._declusterViewportActive = false
+  }
+
+  _isCurrentEpoch (epoch) {
+    return epoch === this._dataEpoch
+  }
+
+  _beginDataEpoch () {
+    this._dataEpoch += 1
+    return this._dataEpoch
   }
 
   getDestination (idStr) {
@@ -120,14 +135,27 @@ export class DestinationsMapLayers {
   }
 
   async reload (options = {}) {
+    const epoch = this._beginDataEpoch()
+    window.clearTimeout(this._fetchTimer)
+    this._fetchTimer = null
+    if (this._fetchAbort) {
+      this._fetchAbort.abort()
+      this._fetchAbort = null
+    }
+
     const fitBounds = options.fitBounds !== false
     this._loadedBounds = null
     this._declusterViewportActive = false
     this._featureCache.clear()
+
+    // Filter applied before the map finished loading: initial viewport will use this epoch + current filters.
+    if (!this._layersReady) return
+
     this._pushSourceData()
     this._setClusterLayersVisible(true)
-    if (fitBounds) await this._fetchBoundsOnly()
-    await this._fetchViewport({ force: true })
+    if (fitBounds) await this._fetchBoundsOnly(epoch)
+    if (!this._isCurrentEpoch(epoch)) return
+    await this._fetchViewport({ force: true, epoch })
   }
 
   declusterViewport () {
@@ -305,6 +333,7 @@ export class DestinationsMapLayers {
   }
 
   _bindEvents () {
+    if (this._eventsBound) return
     this.map.on('moveend', this._boundHandlers.moveend)
     this.map.on('click', CLUSTER_LAYER_ID, this._boundHandlers.clickCluster)
     this.map.on('click', CLUSTER_COUNT_LAYER_ID, this._boundHandlers.clickCluster)
@@ -318,15 +347,17 @@ export class DestinationsMapLayers {
     this.map.on('mouseleave', UNCLUSTERED_LAYER_ID, () => { this.map.getCanvas().style.cursor = '' })
     this.map.on('mouseenter', DECLUSTER_LAYER_ID, () => { this.map.getCanvas().style.cursor = 'pointer' })
     this.map.on('mouseleave', DECLUSTER_LAYER_ID, () => { this.map.getCanvas().style.cursor = '' })
+    this._eventsBound = true
   }
 
   _unbindEvents () {
-    if (!this.map) return
+    if (!this.map || !this._eventsBound) return
     this.map.off('moveend', this._boundHandlers.moveend)
     this.map.off('click', CLUSTER_LAYER_ID, this._boundHandlers.clickCluster)
     this.map.off('click', CLUSTER_COUNT_LAYER_ID, this._boundHandlers.clickCluster)
     this.map.off('click', UNCLUSTERED_LAYER_ID, this._boundHandlers.clickPoint)
     this.map.off('click', DECLUSTER_LAYER_ID, this._boundHandlers.clickPoint)
+    this._eventsBound = false
   }
 
   _removeLayers () {
@@ -351,17 +382,18 @@ export class DestinationsMapLayers {
     else this._fetchTimer = window.setTimeout(run, FETCH_DEBOUNCE_MS)
   }
 
-  async _fetchBoundsOnly () {
+  async _fetchBoundsOnly (epoch = this._dataEpoch) {
     const url = this.buildUrl({ bounds_only: '1' })
     try {
       const res = await fetch(url, { credentials: 'same-origin', signal: this.signal })
-      if (!res.ok) return
+      if (!res.ok || !this._isCurrentEpoch(epoch)) return
       const data = await res.json()
-      if (!data.bounds) return
+      if (!this._isCurrentEpoch(epoch) || !data.bounds) return
       const maplibregl = window.maplibregl
       if (!maplibregl) return
       const bounds = new maplibregl.LngLatBounds(data.bounds[0], data.bounds[1])
-      this.map.fitBounds(bounds, { padding: 48, maxZoom: 15, duration: 0 })
+      const padding = typeof this.getMovePadding === 'function' ? this.getMovePadding() : 48
+      this.map.fitBounds(bounds, { padding: padding || 48, maxZoom: 15, duration: 0 })
       this._loadedBounds = null
       await new Promise((resolve) => {
         if (this.map.isMoving()) this.map.once('idle', resolve)
@@ -374,31 +406,36 @@ export class DestinationsMapLayers {
 
   async _fetchViewport (options = {}) {
     const force = !!options.force
+    const epoch = options.epoch != null ? options.epoch : this._dataEpoch
     const bounds = paddedBounds(this.map)
     if (!force && this._loadedBounds && this._containsBounds(this._loadedBounds, bounds)) return
 
     const url = this.buildUrl({ bbox: boundsToParam(bounds) })
     if (this._fetchAbort) this._fetchAbort.abort()
     this._fetchAbort = new AbortController()
+    const fetchAbort = this._fetchAbort
 
     try {
-      const res = await fetch(url, { credentials: 'same-origin', signal: this._fetchAbort.signal })
-      if (!res.ok) return
+      const res = await fetch(url, { credentials: 'same-origin', signal: fetchAbort.signal })
+      if (!res.ok || !this._isCurrentEpoch(epoch)) return
       const data = await res.json()
+      if (!this._isCurrentEpoch(epoch)) return
       const features = data.features || []
       if (features.length === 0 && !force) {
         this._loadedBounds = null
         return
       }
+      // force (initial/reload): replace cache so a stale unfiltered response cannot linger via merge.
+      if (force) this._featureCache.clear()
       this._mergeFeatures(features)
-      this._pruneCache(bounds)
+      if (!force) this._pruneCache(bounds)
       this._pushSourceData()
       if (features.length > 0) this._loadedBounds = bounds
       if (this.onFeaturesUpdated) this.onFeaturesUpdated()
     } catch (e) {
       if (e.name === 'AbortError') return
     } finally {
-      this._fetchAbort = null
+      if (this._fetchAbort === fetchAbort) this._fetchAbort = null
     }
   }
 
