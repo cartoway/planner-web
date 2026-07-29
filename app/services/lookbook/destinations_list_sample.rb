@@ -3,94 +3,19 @@
 # In-memory destinations for the Lookbook tables/destinations_list preview when the DB has none.
 module Lookbook
   module DestinationsListSample
-    Customer = Struct.new(:id, keyword_init: true) do
-      def enable_references?
-        true
-      end
-
-      def is_editable? # rubocop:disable Naming/PredicatePrefix -- matches Customer#is_editable?
-        true
-      end
-
-      def deliverable_units
-        []
-      end
-    end
-
-    Tag = Struct.new(:id, :label, :color, :icon, keyword_init: true) do
-      def default_color
-        color.presence || Planner::Application.config.tag_color_default
-      end
-
-      def default_icon
-        icon.presence || Planner::Application.config.destination_icon_default
-      end
-    end
-
-    Visit = Struct.new(:ref, :tags, :pickups, :deliveries, :duration_time_with_seconds, keyword_init: true) do
-      def initialize(ref: nil, tags: [], pickups: {}, deliveries: {}, duration_time_with_seconds: nil)
-        super
-      end
-
-      def default_pickups
-        pickups
-      end
-
-      def default_deliveries
-        deliveries
-      end
-    end
-
-    Destination = Struct.new(
-      :id,
-      :name,
-      :ref,
-      :street,
-      :postalcode,
-      :city,
-      :country,
-      :lat,
-      :lng,
-      :comment,
-      :phone_number,
-      :geocoding_level,
-      :geocoding_accuracy,
-      :geocoding_result,
-      :duration_time_with_seconds,
-      :tags,
-      :visits,
-      keyword_init: true
-    ) do
-      def position?
-        !lat.nil? && !lng.nil?
-      end
-
-      def geocode_progress_bar_class
-        return unless geocoding_accuracy
-
-        if geocoding_accuracy > Planner::Application.config.geocoder.accuracy_success
-          'success'
-        elsif geocoding_accuracy > Planner::Application.config.geocoder.accuracy_warning
-          'warning'
-        else
-          'danger'
-        end
-      end
-    end
-
     module_function
 
     def customer
-      Customer.new(id: 0)
+      DestinationsListSampleModels::Customer.new(id: 0)
     end
 
     def destinations_for(_customer = nil)
-      urgent = Tag.new(id: 1, label: 'Urgent', color: '#c0392b', icon: nil)
-      retail = Tag.new(id: 2, label: 'Retail', color: nil, icon: 'fa-shopping-bag')
-      visit_cat = Tag.new(id: 3, label: 'Livraison', color: '#2980b9', icon: 'fa-truck')
+      urgent = DestinationsListSampleModels::Tag.new(id: 1, label: 'Urgent', color: '#c0392b', icon: nil)
+      retail = DestinationsListSampleModels::Tag.new(id: 2, label: 'Retail', color: nil, icon: 'fa-shopping-bag')
+      visit_cat = DestinationsListSampleModels::Tag.new(id: 3, label: 'Livraison', color: '#2980b9', icon: 'fa-truck')
 
       [
-        Destination.new(
+        DestinationsListSampleModels::Destination.new(
           id: 10_001,
           name: 'Boulangerie Dupont',
           ref: 'CLI-001',
@@ -108,11 +33,11 @@ module Lookbook
           duration_time_with_seconds: '00:05:00',
           tags: [urgent, retail],
           visits: [
-            Visit.new(ref: 'V-001', tags: [visit_cat], deliveries: { 1 => 2.0 }, duration_time_with_seconds: '00:10:00'),
-            Visit.new(ref: 'V-002', tags: [visit_cat], deliveries: { 1 => 1.5 }, duration_time_with_seconds: '00:07:00')
+            DestinationsListSampleModels::Visit.new(ref: 'V-001', tags: [visit_cat], deliveries: { 1 => 2.0 }, duration_time_with_seconds: '00:10:00'),
+            DestinationsListSampleModels::Visit.new(ref: 'V-002', tags: [visit_cat], deliveries: { 1 => 1.5 }, duration_time_with_seconds: '00:07:00')
           ]
         ),
-        Destination.new(
+        DestinationsListSampleModels::Destination.new(
           id: 10_002,
           name: 'Garage Martin',
           ref: 'CLI-002',
@@ -128,9 +53,9 @@ module Lookbook
           geocoding_accuracy: 0.55,
           geocoding_result: { 'free' => '5 avenue de la Gare, Bordeaux' },
           tags: [],
-          visits: [Visit.new(tags: [])]
+          visits: [DestinationsListSampleModels::Visit.new(tags: [])]
         ),
-        Destination.new(
+        DestinationsListSampleModels::Destination.new(
           id: 10_003,
           name: 'Adresse à géocoder',
           ref: 'CLI-003',
@@ -148,7 +73,7 @@ module Lookbook
           tags: [retail],
           visits: []
         ),
-        Destination.new(
+        DestinationsListSampleModels::Destination.new(
           id: 10_004,
           name: 'Point approximatif',
           ref: 'CLI-004',
@@ -164,7 +89,7 @@ module Lookbook
           geocoding_accuracy: 0.18,
           geocoding_result: { 'free' => 'Parc logistique Ouest, Mérignac' },
           tags: [],
-          visits: [Visit.new(tags: [])]
+          visits: [DestinationsListSampleModels::Visit.new(tags: [])]
         )
       ]
     end
