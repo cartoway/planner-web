@@ -2,7 +2,7 @@ class PlanningAutomaticInsertService
   def initialize(planning, stops, options = {})
     @planning = planning
     @stops = Array(stops).compact
-    @options = options
+    @options = { exclusion: :locked }.merge(options)
   end
 
   def call

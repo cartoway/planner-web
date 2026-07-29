@@ -3494,6 +3494,8 @@ en:
       cancel: Cancel
       filter: Filter
       apply: Apply
+    misc:
+      per_page: per page
     multiple-actions:
       none_selected_element: None selected element
     unit:
