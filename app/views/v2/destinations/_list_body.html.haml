@@ -35,21 +35,8 @@
     - if @pagination[:per_page].positive? && @pagination[:total] > @pagination[:per_page]
       - total_pages = (@pagination[:total].to_f / @pagination[:per_page]).ceil
       - pagination_params = destinations_index_params
-      %nav.text-center.mt-2
-        %ul.pagination.pagination-xs.justify-content-center
-          %li{class: ('disabled' if @pagination[:page] <= 1)}
-            - if @pagination[:page] > 1
-              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] - 1)), class: 'btn btn-light btn-xs', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
-                %i.fa.fa-chevron-left
-            - else
-              %span.btn.btn-light.btn-xs.disabled
-                %i.fa.fa-chevron-left
-          %li.disabled
-            %span.btn.btn-light.btn-xs= "#{@pagination[:page]} / #{total_pages}"
-          %li{class: ('disabled' if @pagination[:page] >= total_pages)}
-            - if @pagination[:page] < total_pages
-              = link_to destinations_path(pagination_params.merge(page: @pagination[:page] + 1)), class: 'btn btn-light btn-xs', data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
-                %i.fa.fa-chevron-right
-            - else
-              %span.btn.btn-light.btn-xs.disabled
-                %i.fa.fa-chevron-right
+      = render 'shared/pagination_controls',
+               page: @pagination[:page],
+               total_pages: total_pages,
+               url_for_page: ->(page_number) { destinations_path(pagination_params.merge(page: page_number)) },
+               link_data: { turbo_frame: 'destinations_list', turbo_action: 'advance' }
