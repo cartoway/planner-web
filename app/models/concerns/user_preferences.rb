@@ -104,19 +104,29 @@ module UserPreferences
     dl = hp['destinations_list'].presence
     base['destinations_list'] = dl if dl.present?
     if hp.key?('destinations_index')
-      # Checkbox + hidden fallback may submit both values; keep the last one.
-      base['destinations_index'] = Array(hp['destinations_index']).last
+      current = ::Preferences::Catalog::Headers.normalize_destinations_index_config(base['destinations_index'])
+      raw_destinations_index = hp['destinations_index']
+      base['destinations_index'] =
+        if raw_destinations_index.is_a?(Hash)
+          current.merge(raw_destinations_index.deep_stringify_keys.slice('version', 'per_page'))
+        else
+          current.merge('version' => Array(raw_destinations_index).last)
+        end
     end
     self.headers = ::Preferences::Catalog.normalize_headers(base, customer: customer)
   end
 
   # Destinations list UI version: "legacy" (default) or "v2".
   def destinations_index_version
-    ::Preferences::Catalog.normalize_destinations_index(read_headers_hash['destinations_index'])
+    ::Preferences::Catalog::Headers.normalize_destinations_index_config(read_headers_hash['destinations_index'])['version']
   end
 
   def destinations_index_v2?
     destinations_index_version == ::Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2
+  end
+
+  def destinations_index_per_page
+    ::Preferences::Catalog::Headers.normalize_destinations_index_config(read_headers_hash['destinations_index'])['per_page']
   end
 
   # Ordered field ids (e.g. name, ref) for the planning stop list primary line, max 3 after normalize.

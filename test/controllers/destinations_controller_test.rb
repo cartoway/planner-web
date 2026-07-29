@@ -89,6 +89,37 @@ class DestinationsControllerTest < ActionController::TestCase
     refute user.reload.destinations_index_v2?
   end
 
+  test 'v2 index uses saved per_page preference by default' do
+    user = users(:user_one)
+    user.apply_self_service_display_ui!(
+      headers_params: { destinations_index: { version: Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2, per_page: 1 } }
+    )
+    user.save!
+
+    @request.headers['Turbo-Frame'] = 'destinations_list'
+    get :index, params: { page: 1 }
+
+    assert_response :success
+    assert_equal 1, assigns(:pagination)[:per_page]
+    assert_select 'turbo-frame#destinations_list tbody tr.destination', 1
+  end
+
+  test 'v2 index persists per_page preference when changed from params' do
+    user = users(:user_one)
+    assert_not_equal 50, user.destinations_index_per_page
+
+    @request.headers['Turbo-Frame'] = 'destinations_list'
+    get :index, params: { page: 1, per_page: 50 }
+
+    assert_response :success
+    assert_equal 50, user.reload.destinations_index_per_page
+    assert_equal 50, assigns(:pagination)[:per_page]
+
+    get :index, params: { page: 1 }
+    assert_response :success
+    assert_equal 50, assigns(:pagination)[:per_page]
+  end
+
   test 'should get index' do
     get :index
     assert_response :success

@@ -32,13 +32,17 @@ module DestinationsHelper
   def destinations_index_params(overrides = {})
     base = {
       page: params[:page],
-      per_page: params[:per_page],
+      per_page: params[:per_page].presence || (user_signed_in? ? current_user.destinations_index_per_page : nil),
       q: params[:q],
       filters: Array(params[:filters]).compact.presence,
       sort: params[:sort].presence,
       direction: params[:direction].presence
     }.compact
     base.merge(overrides)
+  end
+
+  def destinations_index_per_page_options
+    [25, 50, 100]
   end
 
   # Placeholder example for search input (localized key names).
