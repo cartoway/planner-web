@@ -77,6 +77,7 @@ class Admin::ResellersController < ApplicationController
       :customer_audience_url,
       :customer_behavior_url,
       :customer_dashboard_url,
+      :extra_dashboard_url,
       :planning_dashboard_url,
       :default_role_id,
       :default_profile_id,

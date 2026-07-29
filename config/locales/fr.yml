@@ -376,6 +376,7 @@ fr:
         customer_audience_url: URL d'audience compte
         customer_behavior_url: URL de comportement compte
         customer_dashboard_url: URL du tableau de bord du compte
+        extra_dashboard_url: URL du tableau de bord extra du compte
         planning_dashboard_url: URL du tableau de bord de planification
         default_role_id: Rôle par défaut pour les nouveaux utilisateurs
         default_profile_id: Profil par défaut pour les nouveaux clients
@@ -968,6 +969,10 @@ fr:
           Adresse de la page web contenant le tableau de bord client. Vous
           pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de
           l'espace client (par ex: https://analytics.cartoway.com?id={ID}
+        extra_dashboard_url_help: >-
+          Adresse de la page web contenant le tableau de bord extra. Vous
+          pouvez utiliser « {ID} » qui sera remplacé par l'identifiant de
+          l'espace client (par ex: https://analytics.cartoway.com?id={ID}
         planning_dashboard_url_help: >-
           Adresse de la page web contenant votre tableau de bord de planification.
           Vous pouvez utiliser « {P_ID} » qui sera remplacé par l'identifiant du
@@ -1133,6 +1138,7 @@ fr:
       user_settings: Paramètres utilisateur
       customers: Espaces clients
       analytics: Statistiques
+      extra_analytics: Statistiques extra
     edit:
       title: Modifier paramétrage de l'espace client
       send_email: Envoyer email de confirmation
@@ -1353,6 +1359,7 @@ fr:
       audience_url_help: Se rendre sur le tableau de bord d'audience pour ce compte client
       behavior_url_help: Se rendre sur le tableau de bord comportemental pour ce espace client
       customer_dashboard_url_help: Se rendre sur le tableau de bord pour ce compte client
+      extra_dashboard_url_help: Se rendre sur le tableau de bord extra pour ce compte client
       planning_dashboard_url_help: Se rendre sur le tableau de bord de planification pour ce plan
       submit: Enregistrer paramétrage de l'espace client
       external_callback:
@@ -1373,6 +1380,7 @@ fr:
   analytics:
     menu:
       dashboard: Statistiques
+      extra_dashboard: Statistiques extra
     index:
       link: Accéder aux statistiques
   deliverable_units:
