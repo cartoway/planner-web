@@ -1,0 +1,28 @@
+- current_page = page.to_i
+- last_page = total_pages.to_i
+- button_class = local_assigns.fetch(:button_class, 'btn btn-light btn-xs')
+- pagination_class = local_assigns.fetch(:pagination_class, 'pagination pagination-xs justify-content-center')
+- link_data = local_assigns.fetch(:link_data, {})
+
+%nav.text-center.mt-2
+  %ul{ class: pagination_class }
+    - [[1, 'fa-angle-double-left'], [current_page - 1, 'fa-chevron-left']].each do |target_page, icon_class|
+      - enabled = current_page > 1
+      %li{ class: ('disabled' unless enabled) }
+        - if enabled
+          = link_to url_for_page.call(target_page), class: button_class, data: link_data do
+            %i.fa{ class: icon_class }
+        - else
+          %span{ class: "#{button_class} disabled" }
+            %i.fa{ class: icon_class }
+    %li.disabled
+      %span{ class: button_class }= "#{current_page} / #{last_page}"
+    - [[current_page + 1, 'fa-chevron-right'], [last_page, 'fa-angle-double-right']].each do |target_page, icon_class|
+      - enabled = current_page < last_page
+      %li{ class: ('disabled' unless enabled) }
+        - if enabled
+          = link_to url_for_page.call(target_page), class: button_class, data: link_data do
+            %i.fa{ class: icon_class }
+        - else
+          %span{ class: "#{button_class} disabled" }
+            %i.fa{ class: icon_class }
