@@ -3648,6 +3648,8 @@ fr:
       cancel: Annuler
       filter: Filtrer
       apply: Appliquer
+    misc:
+      per_page: par page
     multiple-actions:
       none_selected_element: Aucun élément sélectionné
     unit:
