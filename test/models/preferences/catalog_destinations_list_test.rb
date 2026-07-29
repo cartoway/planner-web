@@ -156,12 +156,12 @@ class PreferencesCatalogDestinationsListTest < ActiveSupport::TestCase
 
   test 'normalize_headers defaults destinations_index to legacy' do
     normalized = Preferences::Catalog.normalize_headers({})
-    assert_equal Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY, normalized['destinations_index']
+    assert_equal Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY, normalized['destinations_index']['version']
 
     normalized_v2 = Preferences::Catalog.normalize_headers({ 'destinations_index' => 'v2' })
-    assert_equal Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2, normalized_v2['destinations_index']
+    assert_equal Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2, normalized_v2['destinations_index']['version']
 
     normalized_invalid = Preferences::Catalog.normalize_headers({ 'destinations_index' => 'unknown' })
-    assert_equal Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY, normalized_invalid['destinations_index']
+    assert_equal Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY, normalized_invalid['destinations_index']['version']
   end
 end
