@@ -2950,6 +2950,9 @@ export const plannings_edit = function(params) {
   var syncRoutesLayerOptions = function() {
     if (routesLayer) {
       routesLayer.options.routes = routes;
+      // FIXME: use optional chaining and nullish coalescing operator
+      const outOfRoute = routes.find(route => !route.vehicle_usage_id);
+      routesLayer.options.outOfRouteId = outOfRoute ? outOfRoute.route_id : undefined;
     }
   };
 

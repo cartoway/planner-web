@@ -572,6 +572,9 @@ export const RoutesLayer = L.FeatureGroup.extend({
   refreshRoutes: function(routeIds, routes, geojson) {
     this._removeRoutesByIds(routeIds);
     this.options.routes = routes;
+    // FIXME: use optional chaining and nullish coalescing operator
+    const outOfRoute = routes.find(route => !route.vehicle_usage_id);
+    this.options.outOfRouteId = outOfRoute ? outOfRoute.route_id : undefined;
     // FIXME: callback could be used to avoid blink
     this.showRoutes(routeIds, geojson);
   },
