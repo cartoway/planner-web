@@ -27,4 +27,13 @@ class LookbookDestinationsListSampleTest < ActiveSupport::TestCase
     assert_equal '#c0392b', urgent.default_color
     assert_equal 'fa-shopping-bag', retail.default_icon
   end
+
+  test 'sample destinations cover geocoding progress states for lookbook' do
+    progress_classes = Lookbook::DestinationsListSample.destinations_for.map(&:geocode_progress_bar_class)
+
+    assert_includes progress_classes, 'success'
+    assert_includes progress_classes, 'warning'
+    assert_includes progress_classes, 'danger'
+    assert_includes progress_classes, nil
+  end
 end
