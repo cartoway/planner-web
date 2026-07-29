@@ -55,6 +55,10 @@ module IndexHelper
       statistics: {
         exists: @customer.reseller.customer_dashboard_url.present?,
         url: @customer.reseller.customer_dashboard_url&.gsub('{LG}', I18n.locale.to_s)&.gsub('{ID}', @customer.id.to_s)
+      },
+      extra_statistics: {
+        exists: @customer.reseller.extra_dashboard_url.present?,
+        url: @customer.reseller.extra_dashboard_url&.gsub('{LG}', I18n.locale.to_s)&.gsub('{ID}', @customer.id.to_s)
       }
     }
   end

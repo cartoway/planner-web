@@ -370,6 +370,7 @@ en:
         customer_audience_url: Customer's Audience URL
         customer_behavior_url: Customer's Behavior URL
         customer_dashboard_url: Customer's Dashboard URL
+        extra_dashboard_url: Extra Dashboard URL
         planning_dashboard_url: Planning's Dashboard URL
         default_role_id: Default role for new users
         default_profile_id: Default profile for new customers
@@ -942,6 +943,10 @@ en:
           Web page address that contains the customer Dashboard. It's possible
           to use "{ID}" which will be replaced by the customer ID (ie:
           https://analytics.cartoway.com?id={ID}
+        extra_dashboard_url_help: >-
+          Web page address that contains the extra Dashboard. It's possible to
+          use "{ID}" which will be replaced by the customer ID (ie:
+          https://analytics.cartoway.com?id={ID}
         planning_dashboard_url_help: >-
           Web page address that contains the planning Dashboard. It's possible
           to use "{P_ID}" which will be replaced by the planning ID (ie:
@@ -1107,6 +1112,7 @@ en:
       user_settings: User Settings
       customers: Accounts
       analytics: Analytics
+      extra_analytics: Extra Analytics
     edit:
       title: Editing customer account settings
       send_email: Send Confirmation E-Mail
@@ -1317,6 +1323,7 @@ en:
       audience_url_help: Go to the customer dashboard Audience page
       behavior_url_help: Go to the customer dashboard Behavior page
       customer_dashboard_url_help: Go to the customer dashboard page
+      extra_dashboard_url_help: Go to the extra dashboard page
       planning_dashboard_url_help: Go to the planning dashboard page
       submit: Update customer account settings
       external_callback:
@@ -1336,6 +1343,7 @@ en:
   analytics:
     menu:
       dashboard: Statistics
+      extra_dashboard: Extra Dashboard
     index:
       link: Access Statistics
   deliverable_units:

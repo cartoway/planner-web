@@ -736,6 +736,7 @@ CREATE TABLE public.resellers (
     customer_behavior_url character varying,
     authorized_fleet_administration boolean DEFAULT false,
     customer_dashboard_url character varying,
+    extra_dashboard_url character varying,
     messagings jsonb DEFAULT '{}'::jsonb NOT NULL,
     planning_dashboard_url character varying,
     default_role_id bigint,
@@ -3952,6 +3953,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260630143502'),
 ('20260717105805'),
 ('20260720072020'),
-('20260721141523');
+('20260721141523'),
+('20260729133352');
 
 

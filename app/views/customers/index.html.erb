@@ -70,6 +70,7 @@
     <% @customers.each_with_index do |customer, index| %>
       <%
         dashboard_url = analytic_url_for(customer, :customer_dashboard_url)
+        extra_dashboard_url = analytic_url_for(customer, :extra_dashboard_url)
         audience_url = analytic_url_for(customer, :customer_audience_url)
         behavior_url = analytic_url_for(customer, :customer_behavior_url)
         users_subrow = customer.users.any? &&
@@ -132,6 +133,11 @@
               <% if dashboard_url %>
                 <%= link_to dashboard_url, target: '_blank', class: 'btn btn-default btn-sm', title: t('customers.form.customer_dashboard_url_help') do %>
                   <i class="fa fa-chart-line fa-fw"></i>
+                <% end %>
+              <% end %>
+              <% if extra_dashboard_url %>
+                <%= link_to extra_dashboard_url, target: '_blank', class: 'btn btn-default btn-sm', title: t('customers.form.extra_dashboard_url_help') do %>
+                  <i class="fa fa-chart-column fa-fw"></i>
                 <% end %>
               <% end %>
               <% if audience_url %>
