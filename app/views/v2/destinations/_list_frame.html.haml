@@ -20,6 +20,16 @@
         %i.fa.fa-trash.fa-fw
         = t('all.verb.destroy_selection')
       = render 'v2/destinations/list_column_selector'
+      .dropdown
+        %button.btn.btn-light.btn-xs.dropdown-toggle{type: 'button', data: { 'bs-toggle': 'dropdown' }, 'aria-expanded': 'false'}
+          %i.fa.fa-list-ol.fa-fw
+          = "#{@pagination[:per_page]} #{t('all.per_page', default: 'par page')}"
+        %ul.dropdown-menu
+          - destinations_index_per_page_options.each do |option|
+            %li
+              = link_to destinations_path(destinations_index_params(page: 1, per_page: option)),
+                class: "dropdown-item#{' active' if @pagination[:per_page] == option}" do
+                = "#{option} #{t('all.per_page', default: 'par page')}"
     #count.primary.data-info{title: t('destinations.index.destinations_count_help')}
       %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
       = "#{@destinations.size} / #{@total_count}"
