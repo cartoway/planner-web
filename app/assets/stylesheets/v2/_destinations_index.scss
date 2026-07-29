@@ -150,6 +150,18 @@
       height: 1.25rem;
       margin-bottom: 0;
 
+      .progress-bar-success {
+        background-color: #5cb85c;
+      }
+
+      .progress-bar-warning {
+        background-color: #f0ad4e;
+      }
+
+      .progress-bar-danger {
+        background-color: #d9534f;
+      }
+
       .progress-bar span {
         font-size: 14px;
         line-height: 1.25rem;
