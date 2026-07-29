@@ -3,7 +3,8 @@
 // Vanilla DOM APIs only — no jQuery.
 
 import { Controller } from '@hotwired/stimulus'
-import { visit, navigator as turboNavigator } from '@hotwired/turbo'
+import { visit } from 'turbo/frame_promoted_visit'
+import { navigator as turboNavigator } from '@hotwired/turbo'
 import { buildRasterStyle, pickLayers } from 'maplibre/raster_layers'
 import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
