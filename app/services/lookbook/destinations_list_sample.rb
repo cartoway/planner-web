@@ -147,6 +147,24 @@ module Lookbook
           geocoding_result: nil,
           tags: [retail],
           visits: []
+        ),
+        Destination.new(
+          id: 10_004,
+          name: 'Point approximatif',
+          ref: 'CLI-004',
+          street: 'Parc logistique Ouest',
+          postalcode: '33700',
+          city: 'Mérignac',
+          country: 'France',
+          lat: 44.835,
+          lng: -0.69,
+          comment: 'Précision faible',
+          phone_number: '+33 5 56 00 00 04',
+          geocoding_level: 'city',
+          geocoding_accuracy: 0.18,
+          geocoding_result: { 'free' => 'Parc logistique Ouest, Mérignac' },
+          tags: [],
+          visits: [Visit.new(tags: [])]
         )
       ]
     end
