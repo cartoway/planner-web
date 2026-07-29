@@ -264,6 +264,17 @@ export default class extends Controller {
     }
   }
 
+  _collapseDestinationsSidebar (onCollapsed) {
+    const sidebar = this.element.querySelector('.destinations-sidebar')
+    if (!sidebar || sidebar.classList.contains('slide-panel--collapsed')) return false
+    sidebar.classList.add('slide-panel--collapsed')
+    afterSlideTransition(sidebar, () => {
+      if (this._map) this._map.resize()
+      if (onCollapsed) onCollapsed()
+    })
+    return true
+  }
+
   /**
    * Scroll only inside #destination_box. row.scrollIntoView() also scrolls outer layout
    * (.main-primary overflow-y: auto, window) which breaks the fixed map + list UX after Turbo frame updates.
@@ -699,16 +710,8 @@ export default class extends Controller {
 
     if (active) {
       layout.classList.add('destinations-map-layout--position-drag')
-      if (sidebar && !sidebar.classList.contains('slide-panel--collapsed')) {
-        sidebar.classList.add('slide-panel--collapsed')
-        if (state) state.listSidebarHiddenForDrag = true
-        afterSlideTransition(sidebar, () => {
-          if (this._map) this._map.resize()
-          this._syncPositionDragCancelButtonPosition()
-        })
-      } else if (state) {
-        state.listSidebarHiddenForDrag = false
-      }
+      const collapsed = this._collapseDestinationsSidebar(() => this._syncPositionDragCancelButtonPosition())
+      if (state) state.listSidebarHiddenForDrag = collapsed
       if (cancelBtn) cancelBtn.classList.remove('d-none')
       this._setMapPositionDragCursor(true)
       requestAnimationFrame(() => this._syncPositionDragCancelButtonPosition())
@@ -886,6 +889,8 @@ export default class extends Controller {
       }
       return
     }
+
+    this._collapseDestinationsSidebar()
 
     if (this._mapLayers) this._mapLayers.updateDestinationCoords(destinationId, lng, lat)
     this._showDomMarker(destinationId, { name: detail.name || '', lngLat: [lng, lat], active: true })
