@@ -677,8 +677,9 @@ class Planning < ApplicationRecord
 
     route, index = prefered_route_and_index([route], stop) unless index || !route.vehicle_usage? || !stop.position?
 
-    if stop.route != route
-      if stop.is_a?(StopVisit)
+    if stop.route == route
+      route.move_stop(stop, index || 1)
+    elsif stop.is_a?(StopVisit)
         visit, active = stop.visit, stop.active
         stop_id = stop.id
         source_route = routes.find{ |r| r.id == stop.route_id }
@@ -693,20 +694,14 @@ class Planning < ApplicationRecord
           planning: self
         )
         route.add(visit, index || 1, { active: active || source_route.vehicle_usage.nil? }, stop_id)
-        false
-      elsif stop.is_a?(StopRest)
+    elsif stop.is_a?(StopRest)
         active = stop.active
         stop_id = stop.id
         routes.find{ |r| r.id == stop.route_id }.move_stop_out(stop, true)
         route.add_rest(index, { active: active }, stop_id)
-        false
-      else
-        false
-      end
-    else
-      route.move_stop(stop, index || 1)
-      false
     end
+
+    false
   end
 
   # Bulk-move inactive StopVisits to out-of-route with activerecord-import,

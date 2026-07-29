@@ -22,6 +22,7 @@
 # otherwise catalog defaults (see ::Preferences::Catalog).
 module UserPreferences
   extend ActiveSupport::Concern
+  include UserPreferences::DestinationsIndex
 
   included do
     before_validation :normalize_user_preferences
@@ -87,7 +88,6 @@ module UserPreferences
     form_policy(resource)['update']
   end
 
-  # Self-service: header block order + stop list display fields (headers JSON on User).
   def apply_self_service_display_ui!(headers_params: nil)
     return if headers_params.blank?
 
@@ -116,34 +116,9 @@ module UserPreferences
     self.headers = ::Preferences::Catalog.normalize_headers(base, customer: customer)
   end
 
-  # Destinations list UI version: "legacy" (default) or "v2".
-  def destinations_index_version
-    ::Preferences::Catalog::Headers.normalize_destinations_index_config(read_headers_hash['destinations_index'])['version']
-  end
-
-  def destinations_index_v2?
-    destinations_index_version == ::Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2
-  end
-
-  def destinations_index_per_page
-    ::Preferences::Catalog::Headers.normalize_destinations_index_config(read_headers_hash['destinations_index'])['per_page']
-  end
-
-  # Ordered field ids (e.g. name, ref) for the planning stop list primary line, max 3 after normalize.
   def stop_list_active_field_ids
     z = read_headers_hash['stop_list'].presence || read_headers_hash['stop_display']
     ::Preferences::Catalog::StopList.normalize_zone(z)['active']
-  end
-
-  def destinations_list_columns_split(customer = nil)
-    customer ||= self.customer if respond_to?(:customer)
-    z = read_headers_hash['destinations_list']
-    h = ::Preferences::Catalog::DestinationsList.normalize_zone(z, customer: customer)
-    [h['active'], h['hidden']]
-  end
-
-  def destinations_list_active_column_ids(customer = nil)
-    destinations_list_columns_split(customer).first
   end
 
   private
@@ -160,7 +135,6 @@ module UserPreferences
     headers.is_a?(Hash) ? headers.stringify_keys : {}
   end
 
-  # Effective toolbar JSON (no users.operations column; role or catalog defaults).
   def read_operations_hash
     raw = if permissions_from_role?
             role.operations
@@ -170,7 +144,6 @@ module UserPreferences
     ::Preferences::Catalog.normalize_operations(raw.is_a?(Hash) ? raw : {}).deep_stringify_keys
   end
 
-  # Effective forms policy JSON (no users.forms column; role or catalog defaults).
   def read_forms_hash
     raw = if permissions_from_role?
             role.forms
