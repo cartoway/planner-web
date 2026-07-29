@@ -38,6 +38,7 @@ module Preferences
       DESTINATIONS_INDEX_V2 = 'v2'
       DESTINATIONS_INDEX_DEFAULT = DESTINATIONS_INDEX_LEGACY
       DESTINATIONS_INDEX_VALUES = [DESTINATIONS_INDEX_LEGACY, DESTINATIONS_INDEX_V2].freeze
+      DESTINATIONS_INDEX_PER_PAGE_DEFAULT = 25
 
       module_function
 
@@ -53,13 +54,41 @@ module Preferences
           },
           'stop_list' => StopList.default_zone,
           'destinations_list' => DestinationsList.default_zone,
-          'destinations_index' => DESTINATIONS_INDEX_DEFAULT
+          'destinations_index' => default_destinations_index_config
+        }
+      end
+
+      def default_destinations_index_config
+        {
+          'version' => DESTINATIONS_INDEX_DEFAULT,
+          'per_page' => DESTINATIONS_INDEX_PER_PAGE_DEFAULT
         }
       end
 
       def normalize_destinations_index(raw)
-        value = raw.to_s
+        value = raw.is_a?(Hash) ? raw.stringify_keys['version'] : raw
+        value = value.to_s
         DESTINATIONS_INDEX_VALUES.include?(value) ? value : DESTINATIONS_INDEX_DEFAULT
+      end
+
+      def normalize_destinations_index_per_page(raw)
+        value = raw.to_i
+        value = DESTINATIONS_INDEX_PER_PAGE_DEFAULT if value <= 0
+        value.clamp(1, 100)
+      end
+
+      def normalize_destinations_index_config(raw)
+        if raw.is_a?(Hash)
+          h = raw.stringify_keys
+          default_destinations_index_config.merge(
+            'version' => normalize_destinations_index(h['version']),
+            'per_page' => normalize_destinations_index_per_page(h['per_page'])
+          )
+        else
+          default_destinations_index_config.merge(
+            'version' => normalize_destinations_index(raw)
+          )
+        end
       end
 
       def header_zone_active_default(zone)
@@ -90,7 +119,7 @@ module Preferences
           'route' => normalize_header_zone(h['route'], HEADER_ROUTE),
           'stop_list' => StopList.normalize_zone(h['stop_list'].presence || h['stop_display']),
           'destinations_list' => DestinationsList.normalize_zone(h['destinations_list'], customer: customer),
-          'destinations_index' => normalize_destinations_index(h['destinations_index'])
+          'destinations_index' => normalize_destinations_index_config(h['destinations_index'])
         }
       end
     end

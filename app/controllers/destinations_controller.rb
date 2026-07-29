@@ -313,7 +313,20 @@ class DestinationsController < ApplicationController
   end
 
   def destinations_index_per_page
-    (params[:per_page] || 25).to_i.clamp(1, 100)
+    if params[:per_page].present?
+      per_page = ::Preferences::Catalog::Headers.normalize_destinations_index_per_page(params[:per_page])
+      persist_destinations_index_per_page_preference!(per_page) if current_user.destinations_index_per_page != per_page
+      per_page
+    else
+      current_user.destinations_index_per_page
+    end
+  end
+
+  def persist_destinations_index_per_page_preference!(per_page)
+    current_user.apply_self_service_display_ui!(
+      headers_params: { destinations_index: { per_page: per_page } }
+    )
+    current_user.update_columns(headers: current_user.headers)
   end
 
   def destinations_index_active_filters
