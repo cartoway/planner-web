@@ -32,7 +32,7 @@ module DestinationsHelper
   def destinations_index_params(overrides = {})
     base = {
       page: params[:page],
-      per_page: params[:per_page].presence || (user_signed_in? ? current_user.destinations_index_per_page : nil),
+      per_page: params[:per_page].presence || destinations_current_user&.destinations_index_per_page,
       q: params[:q],
       filters: Array(params[:filters]).compact.presence,
       sort: params[:sort].presence,
@@ -82,8 +82,8 @@ module DestinationsHelper
   def destinations_list_active_column_ids(customer)
     allowed = destinations_list_allowed_column_ids(customer)
     active =
-      if user_signed_in? && current_user.respond_to?(:destinations_list_active_column_ids) && !current_user.admin?
-        current_user.destinations_list_active_column_ids(customer)
+      if destinations_current_user&.respond_to?(:destinations_list_active_column_ids) && !destinations_current_user.admin?
+        destinations_current_user.destinations_list_active_column_ids(customer)
       else
         ::Preferences::Catalog::DestinationsList.default_active_for(customer)
       end
@@ -253,9 +253,10 @@ module DestinationsHelper
   def destinations_list_phone_link(destination)
     return nil if destination.phone_number.blank?
 
+    user = destinations_current_user
     href =
-      if current_user.url_click2call.present?
-        current_user.link_phone_number.sub('{TEL}', destination.phone_number.to_s)
+      if user&.url_click2call.present?
+        user.link_phone_number.sub('{TEL}', destination.phone_number.to_s)
       else
         "tel:#{destination.phone_number}"
       end
@@ -406,5 +407,14 @@ module DestinationsHelper
       csv << destination_columns + ['x']
     end
     csv
+  end
+
+  private
+
+  def destinations_current_user
+    return current_user if respond_to?(:current_user)
+    return unless respond_to?(:user_signed_in?)
+
+    user_signed_in? ? current_user : nil
   end
 end

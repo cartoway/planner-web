@@ -30,4 +30,14 @@ class PlanningAutomaticInsertServiceTest < ActiveSupport::TestCase
     assert_equal 1, impacted_routes.size
     assert_nil impacted_routes.first.instance_variable_get(:@traces)
   end
+
+  test 'call excludes locked routes by default' do
+    planning = plannings(:planning_one)
+    planning.routes.select(&:vehicle_usage?).each { |route| route.update!(locked: true) }
+    stop = planning.routes.find { |r| !r.vehicle_usage? }.stops.first
+
+    assert_raises(Exceptions::LoopError) do
+      PlanningAutomaticInsertService.new(planning, [stop]).call
+    end
+  end
 end
