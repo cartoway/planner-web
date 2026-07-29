@@ -1,5 +1,6 @@
 CSV.generate(**{col_sep: ';', row_sep: "\r\n"}) { |csv|
   csv << [
+    I18n.t('vehicle_usage_sets.import.index'),
     I18n.t('vehicles.import.ref_vehicle'),
     I18n.t('vehicles.import.name_vehicle'),
     I18n.t('vehicles.import.contact_email'),
@@ -56,6 +57,7 @@ CSV.generate(**{col_sep: ';', row_sep: "\r\n"}) { |csv|
 
   @vehicle_usage_set.vehicle_usages.each { |vehicle_usage|
     vehicle_columns = [
+      vehicle_usage.index,
       vehicle_usage.vehicle.ref,
       vehicle_usage.vehicle.name,
       vehicle_usage.vehicle.contact_email,
