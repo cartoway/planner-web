@@ -25,7 +25,7 @@ module DesignSystem
 
       @destinations = Lookbook::DestinationsListSample.destinations_for(@customer)
       @total_count = 42
-      @pagination = { page: 2, per_page: 25, total: [@total_count, 60].max }
+      @pagination = { page: 5, per_page: 25, total: 250 }
     end
 
     # Lookbook does not copy preview instance variables into the template — pass explicit assigns.
