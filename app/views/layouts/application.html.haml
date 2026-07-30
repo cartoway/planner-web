@@ -162,7 +162,7 @@
                       %i.fa.fa-plus.fa-fw
                       = t 'all.verb.new'
                   %li
-                    = link_to destinations_path do
+                    = link_to destinations_path, data: { turbolinks: false } do
                       %i.fa.fa-map-marker.fa-fw
                       = t 'all.verb.list'
                   %li.divider

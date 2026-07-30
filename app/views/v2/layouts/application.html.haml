@@ -8,7 +8,7 @@
     #wrapper{data: { controller: 'menu-left' }}
       .menu-left.d-print-none{style: "overflow: hidden;"}
         .top-menu
-          %a#logo.logo{href: "/"}= image_tag @reseller.logo_small.url || "logo.svg", width: 150, height: 40, alt: @reseller.name
+          %a#logo.logo{href: "/", data: { turbo: false }}= image_tag @reseller.logo_small.url || "logo.svg", width: 150, height: 40, alt: @reseller.name
 
         .divider.solid
         #accordion-menu.menu-content.panel-group
