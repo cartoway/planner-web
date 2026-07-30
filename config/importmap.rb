@@ -12,6 +12,7 @@ pin "@hotwired/turbo", to: "https://unpkg.com/@hotwired/turbo@8.0.13/dist/turbo.
 pin "@hotwired/stimulus", to: "https://unpkg.com/@hotwired/stimulus@3.2.2/dist/stimulus.js", preload: true
 pin "@hotwired/stimulus-loading", to: "stimulus_loading.js", preload: true
 pin "turbo/frame_promoted_visit", to: "turbo/frame_promoted_visit.js", preload: true
+pin "turbo/frame_tracking_store", to: "turbo/frame_tracking_store.js", preload: true
 pin_all_from "app/javascript/maplibre", under: "maplibre"
 pin_all_from "app/javascript/controllers", under: "controllers"
 # Tom Select ESM pulls @orchidjs/* bare specifiers; map them for the browser importmap (see tom-select dist/esm/tom-select.js).
