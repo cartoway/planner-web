@@ -1,0 +1,6 @@
+-# After a successful v2 sidebar create/update: replace the form with the placeholder so
+-# form_sidebar_controller can run the same collapse transition as the close (X) button.
+-# Put destinations-saved-id on an inner node: Turbo Frame only swaps frame children, not outer attributes.
+= turbo_frame_tag 'form_sidebar' do
+  .form-sidebar-after-save{ data: { destinations_saved_id: @destination.id } }
+    = render 'v2/layouts/form_sidebar_placeholder'

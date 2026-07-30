@@ -173,7 +173,13 @@ class DestinationsController < ApplicationController
       apply_geocode_on_save!(@destination)
 
       if @destination.save && current_user.customer.save
-        format.html { redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.created', model: @destination.class.model_name.human) }
+        format.html do
+          if v2_destinations_sidebar_submit?
+            render 'close_sidebar', layout: false
+          else
+            redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.created', model: @destination.class.model_name.human)
+          end
+        end
       else
         flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
         format.html do
@@ -196,7 +202,13 @@ class DestinationsController < ApplicationController
         apply_geocode_on_save!(@destination)
 
         if @destination.save && @destination.customer.save
-          format.html { redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.updated', model: @destination.class.model_name.human) }
+          format.html do
+            if v2_destinations_sidebar_submit?
+              render 'close_sidebar', layout: false
+            else
+              redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.updated', model: @destination.class.model_name.human)
+            end
+          end
         else
           flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
           format.html do

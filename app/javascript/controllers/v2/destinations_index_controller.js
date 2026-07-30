@@ -276,6 +276,14 @@ export default class extends Controller {
     return true
   }
 
+  _expandDestinationsSidebar () {
+    const sidebar = this.element.querySelector('.destinations-sidebar')
+    if (!sidebar || !sidebar.classList.contains('slide-panel--collapsed')) return false
+    sidebar.classList.remove('slide-panel--collapsed')
+    afterSlideTransition(sidebar, () => { if (this._map) this._map.resize() })
+    return true
+  }
+
   /**
    * Scroll only inside #destination_box. row.scrollIntoView() also scrolls outer layout
    * (.main-primary overflow-y: auto, window) which breaks the fixed map + list UX after Turbo frame updates.
@@ -596,7 +604,14 @@ export default class extends Controller {
     if (frame.id === 'form_sidebar') {
       const form = frame.querySelector('#destination-form-sidebar')
       if (!form) {
+        const savedMarker = frame.querySelector('[data-destinations-saved-id]')
+        const savedId = savedMarker?.getAttribute('data-destinations-saved-id')
+        if (savedMarker) savedMarker.removeAttribute('data-destinations-saved-id')
         this._onFormSidebarClosed()
+        if (savedId) {
+          this._expandDestinationsSidebar()
+          this._refreshListAfterSidebarSave(String(savedId))
+        }
         return
       }
       this._syncPositionEditFromFormSidebar(frame)
@@ -619,6 +634,14 @@ export default class extends Controller {
       })
       if (this._map) requestAnimationFrame(() => this._map.resize())
     }
+  }
+
+  _refreshListAfterSidebarSave (destinationId) {
+    const overrides = { highlight_destination_id: destinationId }
+    const currentPage = new URL(window.location.href).searchParams.get('page')
+    if (currentPage) overrides.page = currentPage
+    visit(this._buildDestinationsIndexUrl(overrides), { frame: 'destinations_list' })
+    if (this._mapLayers) this._mapLayers.reload({ fitBounds: false })
   }
 
   /**
