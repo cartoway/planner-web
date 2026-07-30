@@ -236,7 +236,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar.form-horizontal[action*="destination"]', 1
-    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="_top"]', 1
+    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="form_sidebar"]', 1
     assert_select 'turbo-frame#form_sidebar .form-submit-bar.is-hidden', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar input[type="submit"]', 0
     assert_select 'turbo-frame#form_sidebar .form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
@@ -385,7 +385,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar.form-horizontal[action*="destinations"]', 1
-    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="_top"]', 1
+    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="form_sidebar"]', 1
     assert_select 'turbo-frame#form_sidebar input[name="v2_sidebar"][value="1"]', 1
     assert_select 'turbo-frame#form_sidebar .form-submit-bar.is-hidden', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar input[type="submit"]', 0
@@ -522,10 +522,10 @@ class DestinationsControllerTest < ActionController::TestCase
     end
     assert_response :unprocessable_entity
     assert_select 'turbo-frame#form_sidebar', 1
-    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="_top"]', 1
+    assert_select 'turbo-frame#form_sidebar form[data-turbo-frame="form_sidebar"]', 1
   end
 
-  test 'v2 create from sidebar redirects to destinations index' do
+  test 'v2 create from sidebar closes form_sidebar with saved destination id' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     assert_difference('Destination.count', 1) do
       post :create, params: { v2_sidebar: '1', destination: {
@@ -539,10 +539,13 @@ class DestinationsControllerTest < ActionController::TestCase
       } }
     end
     created = assigns(:destination)
-    assert_redirected_to destinations_path(highlight_destination_id: created.id)
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar [data-destinations-saved-id=?]', created.id.to_s, 1
+    assert_select 'turbo-frame#form_sidebar #destination-form-sidebar', 0
+    assert_select 'turbo-frame#form_sidebar .form-sidebar-placeholder', 1
   end
 
-  test 'v2 update from sidebar redirects to destinations index' do
+  test 'v2 update from sidebar closes form_sidebar with saved destination id' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     patch :update, params: {
       id: @destination.id,
@@ -557,7 +560,10 @@ class DestinationsControllerTest < ActionController::TestCase
         state: @destination.state
       }
     }
-    assert_redirected_to destinations_path(highlight_destination_id: @destination.id)
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar [data-destinations-saved-id=?]', @destination.id.to_s, 1
+    assert_select 'turbo-frame#form_sidebar #destination-form-sidebar', 0
+    assert_select 'turbo-frame#form_sidebar .form-sidebar-placeholder', 1
   end
 
   test 'v2 edit sidebar shows map position hint and no embedded Leaflet map' do
@@ -941,7 +947,8 @@ class DestinationsControllerTest < ActionController::TestCase
       }
     end
 
-    assert_redirected_to destinations_path(highlight_destination_id: @destination.id)
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar [data-destinations-saved-id=?]', @destination.id.to_s, 1
     @destination.reload
     assert_equal '12 rue des Lilas, 33200 Bordeaux', @destination.geocoding_result['free']
     assert_equal 'Bordeaux', @destination.geocoding_result['city']
@@ -972,7 +979,8 @@ class DestinationsControllerTest < ActionController::TestCase
       }
     }
 
-    assert_redirected_to destinations_path(highlight_destination_id: @destination.id)
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar [data-destinations-saved-id=?]', @destination.id.to_s, 1
     @destination.reload
     assert_equal 'Previous address', @destination.geocoding_result['free']
     assert_not_equal 'Nantes', @destination.geocoding_result['city']
@@ -998,7 +1006,8 @@ class DestinationsControllerTest < ActionController::TestCase
       }
     end
 
-    assert_redirected_to destinations_path(highlight_destination_id: @destination.id)
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar [data-destinations-saved-id=?]', @destination.id.to_s, 1
     assert_not geocode_called
   end
 
