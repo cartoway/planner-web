@@ -1,4 +1,4 @@
-drop view if exists history_live_routes;
+drop view if exists history_live_routes cascade;
 create view history_live_routes as
 with
 routes_c as (
@@ -8,7 +8,7 @@ routes_c as (
         count(stops.id) filter (where stops.type = 'StopVisit') as stop_visit_count,
         count(stops.id) filter (where stops.type = 'StopStore') as stop_store_count,
         count(stops.id) filter (where stops.out_of_window) as out_of_window_count,
-        array_agg(stops.loads) as agg_loads
+        array_agg(stops.loads order by stops.index) as agg_loads
     from
         routes
         join stops on
@@ -17,6 +17,7 @@ routes_c as (
         routes.id
 ),
 routes_d as (
+    -- Recompute max_loads
     select
         routes.*,
         (
@@ -28,59 +29,6 @@ routes_d as (
         ) as max_loads
     from
         routes_c as routes
-),
-a as (
-    select
-        plannings.customer_id,
-        plannings.id as planning_id,
-        r.key::integer,
-        count(*) as count
-    from
-        plannings
-        JOIN routes on
-            routes.planning_id = plannings.id
-        JOIN route_data on
-            route_data.id = routes.route_data_id
-        join lateral jsonb_each_text(route_data.pickups::jsonb || route_data.deliveries::jsonb) as r(key, value) on true
-        join deliverable_units on
-            deliverable_units.id = r.key::integer
-    where
-        r.value::float != 0
-    group by
-        plannings.customer_id,
-        plannings.id,
-        r.key
-),
-b as (
-    select
-        a.customer_id,
-        planning_id,
-        key,
-        deliverable_units.label,
-        ROW_NUMBER() OVER (PARTITION BY planning_id ORDER BY count DESC) as rank
-    from
-        a
-        join deliverable_units on
-            deliverable_units.customer_id = a.customer_id and
-            deliverable_units.id = a.key
-),
-c as (
-    select
-        customer_id,
-        planning_id,
-        (array_agg(key))[1] as key1,
-        (array_agg(label))[1] as label1,
-        (array_agg(key))[2] as key2,
-        (array_agg(label))[2] as label2,
-        (array_agg(key))[3] as key3,
-        (array_agg(label))[3] as label3
-    from
-        b
-    where
-        rank <= 3
-    group by
-        customer_id,
-        planning_id
 ),
 routes_a as (
     select
@@ -99,14 +47,52 @@ routes_a as (
         route_data.end AS end,
         route_data.drive_time AS drive_time,
         route_data.wait_time AS wait_time,
+        route_data.rests_duration AS rests_duration,
         route_data.visits_duration AS visits_duration,
-        route_data.pickups AS pickups,
-        route_data.deliveries AS deliveries,
+        (select
+            jsonb_object_agg(deliverable_units.label, value::float)
+        from
+            jsonb_each_text(route_data.pickups) as r(key, value)
+            join deliverable_units on
+                deliverable_units.customer_id = plannings.customer_id and
+                deliverable_units.id = r.key::integer
+        where deliverable_units.label is not null
+        ) AS pickups,
+        (select
+            jsonb_object_agg(deliverable_units.label, value::float)
+        from
+            jsonb_each_text(route_data.deliveries) as r(key, value)
+            join deliverable_units on
+                deliverable_units.customer_id = plannings.customer_id and
+                deliverable_units.id = r.key::integer
+        where deliverable_units.label is not null
+        ) AS deliveries,
+        (select
+            jsonb_object_agg(deliverable_units.label, value::float)
+        from
+            -- Recompute max_loads
+            -- jsonb_each_text(route_data.max_loads) as r(key, value)
+            jsonb_each_text(routes.max_loads) as r(key, value)
+            join deliverable_units on
+                deliverable_units.customer_id = plannings.customer_id and
+                deliverable_units.id = r.key::integer
+        where deliverable_units.label is not null
+        ) AS max_loads_recomputed,
         vehicles.id as vehicle_id,
         vehicles.name as vehicle_name,
-        vehicles.capacities as vehicle_capacities
+        (select
+            jsonb_object_agg(deliverable_units.label, value::float)
+        from
+            jsonb_each_text(vehicles.capacities) as r(key, value)
+            join deliverable_units on
+                deliverable_units.customer_id = plannings.customer_id and
+                deliverable_units.id = r.key::integer
+        where deliverable_units.label is not null
+        ) AS vehicle_capacities
     from
         plannings
+        -- Recompute max_loads
+        -- join routes_c as routes on
         join routes_d as routes on
             routes.planning_id = plannings.id
         join route_data on
@@ -127,6 +113,7 @@ select
     routes.vehicle_usage_id,
     routes.vehicle_id,
     routes.vehicle_name,
+    routes.vehicle_capacities,
 
     routes.distance / 1000 as distance,
     routes.emission as emission,
@@ -135,28 +122,16 @@ select
     routes.drive_time::float * 1000 as drive_time,
     routes.wait_time::float * 1000 as wait_time,
     routes.visits_duration::float * 1000 as visits_duration,
+    routes.pickups,
+    routes.deliveries,
+    -- Recompute max_loads
+    -- routes.max_loads,
+    routes.max_loads_recomputed AS max_loads,
+    (routes.end - routes.start - coalesce(routes.rests_duration, 0))::float * 1000 as work_duration,
 
     routes.revenue as revenue,
     routes.cost_distance + routes.cost_fixed + routes.cost_time as cost,
     routes.revenue - routes.cost_distance - routes.cost_fixed - routes.cost_time as profit,
-
-    c.label1 as label_pickups1,
-    (routes.pickups-> (c.key1::text))::float as pickups1,
-    (routes.deliveries-> (c.key1::text))::float as deliveries1,
-    (routes.max_loads-> (c.key1::text))::float as max_loads1,
-    nullif(coalesce(routes.vehicle_capacities->> (c.key1::text), '0')::float, 0) as capa1,
-
-    c.label2 as label_pickups2,
-    (routes.pickups-> (c.key2::text))::float as pickups2,
-    (routes.deliveries-> (c.key2::text))::float as deliveries2,
-    (routes.max_loads-> (c.key2::text))::float as max_loads2,
-    nullif(coalesce(routes.vehicle_capacities->> (c.key2::text), '0')::float, 0) as capa2,
-
-    c.label3 as label_pickups3,
-    (routes.pickups-> (c.key3::text))::float as pickups3,
-    (routes.deliveries-> (c.key3::text))::float as deliveries3,
-    (routes.max_loads-> (c.key3::text))::float as max_loads3,
-    nullif(coalesce(routes.vehicle_capacities->> (c.key3::text), '0')::float, 0) as capa3,
 
     routes.stop_out_of_work_time,
     stop_count,
@@ -165,7 +140,22 @@ select
     out_of_window_count
 from
     routes_a as routes
-    left join c on
-        routes.customer_id = c.customer_id and
-        routes.planning_id = c.planning_id
+;
+
+
+drop view if exists history_live_routes_units cascade;
+create view history_live_routes_units as
+select
+    *,
+    (vehicle_capacities->>units_label)::float as vehicle_capacities_unit,
+    (pickups->>units_label)::float as pickups_unit,
+    (deliveries->>units_label)::float as deliveries_unit,
+    (max_loads->>units_label)::float as max_loads_unit
+from
+    history_live_routes
+    left join lateral (
+        select '[None]'
+        union all
+        select jsonb_object_keys(vehicle_capacities)
+    ) as units(units_label) on true
 ;
