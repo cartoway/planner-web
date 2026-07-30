@@ -1,8 +1,7 @@
 -# V2 sidebar-only: same fields as destinations/_form; relative i18n keys resolved via destinations.form scope
 - df = ->(key, **opts) { I18n.t(key, scope: 'destinations.form', **opts) }
 - dest_form_mutable = current_user_destination_form_submit_enabled?(@destination)
--# Sidebar submit targets _top so successful save returns to the v2 index; Turbo pushes 422 responses back into form_sidebar.
-- form_html = { class: "form-horizontal", "data-destination_id" => (@destination.id or 0), id: "destination-form-sidebar", "data-turbo-frame" => "_top", "data-position-editable" => (dest_form_mutable ? "true" : "false"), "data-tag-entity-create-allowed" => (current_user_form_create?(:tags) ? "true" : "false") }
+- form_html = { class: "form-horizontal", "data-destination_id" => (@destination.id or 0), id: "destination-form-sidebar", "data-turbo-frame" => "form_sidebar", "data-position-editable" => (dest_form_mutable ? "true" : "false"), "data-tag-entity-create-allowed" => (current_user_form_create?(:tags) ? "true" : "false") }
 - form_html["data-v2--dirty-form-submit-target"] = "form" if dest_form_mutable
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
 - v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
