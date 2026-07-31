@@ -1,7 +1,7 @@
 :ruby
   layers = (@user.admin? ? Layer.all : (@user.customer.profile.layers + [@user.layer]).uniq)
   .sort_by(&:id).collect{ |layer|
-    { id: layer.id, name: layer.translated_name, url: request.ssl? ? layer.urlssl : layer.url,
+    { id: layer.id, name: layer.translated_name, url: layer.url,
       attribution: layer.map_attribution, default: layer == @user.layer, overlay: layer.overlay
     }
   }

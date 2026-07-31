@@ -105,8 +105,11 @@ OverlayLayersToggleIControl.prototype.onAdd = function (map) {
     cb.id = inputId
     cb.checked = !!spec.initialVisible
     cb.addEventListener('change', () => {
-      if (!map.getLayer(spec.layerId)) return
-      map.setLayoutProperty(spec.layerId, 'visibility', cb.checked ? 'visible' : 'none')
+      const ids = (spec.layerIds && spec.layerIds.length) ? spec.layerIds : (spec.layerId ? [spec.layerId] : [])
+      ids.forEach((layerId) => {
+        if (!map.getLayer(layerId)) return
+        map.setLayoutProperty(layerId, 'visibility', cb.checked ? 'visible' : 'none')
+      })
     })
     const lbl = document.createElement('label')
     lbl.className = 'form-check-label'

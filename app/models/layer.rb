@@ -19,11 +19,10 @@ class Layer < ApplicationRecord
   default_scope { order(:name) }
 
   nilify_blanks
-  auto_strip_attributes :name, :url, :attribution, :urlssl, :vector_url, :source
+  auto_strip_attributes :name, :url, :attribution, :vector_style_url, :source
   validates :source, presence: true
   validates :name, presence: true
   validates :url, presence: true
-  validates :urlssl, presence: true
   validates :attribution, presence: true
 
   def map_attribution

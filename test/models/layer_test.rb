@@ -6,11 +6,11 @@ class LayerTest < ActiveSupport::TestCase
     assert_not layer.save, 'Saved without required fields'
   end
 
-  test 'vector_url is optional' do
+  test 'vector_style_url is optional' do
     layer = layers(:layer_one)
-    layer.vector_url = 'https://example.com/maps/streets/style.json'
+    layer.vector_style_url = 'https://example.com/maps/streets/style.json'
     assert layer.save
-    assert_equal 'https://example.com/maps/streets/style.json', layer.reload.vector_url
+    assert_equal 'https://example.com/maps/streets/style.json', layer.reload.vector_style_url
   end
 
   test 'should translate name' do
