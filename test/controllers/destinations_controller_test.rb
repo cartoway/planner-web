@@ -170,6 +170,16 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none', 1
   end
 
+  test 'v2 layout menu-left includes extra dashboard when configured' do
+    customer = users(:user_one).customer
+    @reseller.update!(extra_dashboard_url: 'https://extra.example.com/{LG}/{ID}')
+
+    get :index
+    assert_response :success
+    expected = "https://extra.example.com/#{I18n.locale}/#{customer.id}"
+    assert_select ".menu-left a[href='#{expected}'][target='_blank']", text: I18n.t('customers.menu.extra_analytics')
+  end
+
   test 'v2 index includes vector_style_url in map layers config as-is' do
     layer = users(:user_one).layer
     style_url = 'https://maps.example.com/styles/custom/style.json'
