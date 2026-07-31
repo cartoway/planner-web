@@ -165,7 +165,7 @@ function resolveStyleResourceUrl (styleUrl, resource) {
  * Skips background layers and layers authored with visibility:"none"
  * @returns {string[]} layer ids added for this overlay (toggle-controlled)
  */
-export function mergeVectorOverlayStyle (map, style, overlayIndex, visible, styleUrl = null) {
+export function mergeVectorOverlayStyle (map, style, overlayIndex, visible, styleUrl = null, beforeId = null) {
   const prefix = 'overlay-' + overlayIndex + '-'
   const layerIds = []
   const layers = (style.layers || []).filter((layer) => {
@@ -190,6 +190,7 @@ export function mergeVectorOverlayStyle (map, style, overlayIndex, visible, styl
     if (raw.url) raw.url = resolveStyleResourceUrl(styleUrl, raw.url)
     map.addSource(sid, raw)
   })
+  const insertBefore = beforeId && map.getLayer(beforeId) ? beforeId : undefined
   layers.forEach((layer) => {
     const lid = prefix + layer.id
     layerIds.push(lid)
@@ -205,7 +206,7 @@ export function mergeVectorOverlayStyle (map, style, overlayIndex, visible, styl
     next.layout.visibility = visible ? 'visible' : 'none'
     if (layer.source) next.source = prefix + layer.source
     try {
-      map.addLayer(next)
+      map.addLayer(next, insertBefore)
     } catch (e) {
       // Skip layers that the current map glyphs/sprite cannot render.
     }
@@ -213,7 +214,7 @@ export function mergeVectorOverlayStyle (map, style, overlayIndex, visible, styl
   return layerIds
 }
 
-function applySingleRasterOverlay (map, overlay, index, visible) {
+function applySingleRasterOverlay (map, overlay, index, visible, beforeId = null) {
   const sid = 'overlay-' + index
   const layerId = sid + '-layer'
   if (!map.getSource(sid)) {
@@ -224,6 +225,7 @@ function applySingleRasterOverlay (map, overlay, index, visible) {
       attribution: overlay.attribution || ''
     })
   }
+  const insertBefore = beforeId && map.getLayer(beforeId) ? beforeId : undefined
   if (!map.getLayer(layerId)) {
     map.addLayer({
       id: layerId,
@@ -231,7 +233,7 @@ function applySingleRasterOverlay (map, overlay, index, visible) {
       source: sid,
       layout: { visibility: visible ? 'visible' : 'none' },
       paint: { 'raster-opacity': 0.75 }
-    })
+    }, insertBefore)
   } else {
     map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none')
   }
@@ -246,11 +248,14 @@ function applySingleRasterOverlay (map, overlay, index, visible) {
  * @param {object[]} overlays from pickLayers
  * @param {Record<string, boolean>} visibilityByGroupId keyed by overlay-N
  * @param {object[]} [overlayToggles]
- * @param {{ includeRaster?: boolean }} [options] includeRaster=false skips raster overlays already baked in composite style
+ * @param {{ includeRaster?: boolean, beforeId?: string }} [options]
+ *   includeRaster=false skips raster overlays already baked in composite style
+ *   beforeId inserts overlay layers below an existing map layer (e.g. markers)
  */
 export async function applyOverlays (map, overlays, visibilityByGroupId = {}, overlayToggles = null, options = {}) {
   if (!map || !overlays || !overlays.length) return []
   const includeRaster = options.includeRaster !== false
+  const beforeId = options.beforeId || null
   const toggles = []
   for (let j = 0; j < overlays.length; j++) {
     const o = overlays[j]
@@ -262,13 +267,13 @@ export async function applyOverlays (map, overlays, visibilityByGroupId = {}, ov
     if (o.vectorStyleUrl) {
       try {
         const style = await fetchStyleJson(o.vectorStyleUrl)
-        layerIds = mergeVectorOverlayStyle(map, style, j, visible, o.vectorStyleUrl)
+        layerIds = mergeVectorOverlayStyle(map, style, j, visible, o.vectorStyleUrl, beforeId)
       } catch (e) {
         // Vector overlays are never baked into the composite style — always allow raster fallback.
-        if (o.url) layerIds = applySingleRasterOverlay(map, o, j, visible)
+        if (o.url) layerIds = applySingleRasterOverlay(map, o, j, visible, beforeId)
       }
     } else if (includeRaster && o.url) {
-      layerIds = applySingleRasterOverlay(map, o, j, visible)
+      layerIds = applySingleRasterOverlay(map, o, j, visible, beforeId)
     } else if (!o.vectorStyleUrl && o.url) {
       // Raster already in composite style — keep toggle metadata only.
       layerIds = [groupId + '-layer']
