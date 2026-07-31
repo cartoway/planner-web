@@ -5,7 +5,7 @@
 import { Controller } from '@hotwired/stimulus'
 import { visit } from 'turbo/frame_promoted_visit'
 import { navigator as turboNavigator } from '@hotwired/turbo'
-import { pickLayers, resolveMapStyle, styleForBaseLayer, basesNeedStyleSwitch, applyRasterOverlays } from 'maplibre/raster_layers'
+import { pickLayers, resolveMapStyle, styleForBaseLayer, basesNeedStyleSwitch, applyOverlays } from 'maplibre/raster_layers'
 import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
@@ -515,8 +515,9 @@ export default class extends Controller {
 
     const { bases: basesOnly, overlays: overlayLayers } = pickLayers(params.map_layers)
     this._mapOverlayLayers = overlayLayers
+    this._overlayToggles = overlayToggles || []
     this._overlayVisibility = {}
-    ;(overlayToggles || []).forEach((t) => {
+    this._overlayToggles.forEach((t) => {
       this._overlayVisibility[t.layerId] = !!t.initialVisible
     })
     const useStyleSwitch = resolved.mode === 'vector' || basesNeedStyleSwitch(basesOnly)
@@ -526,14 +527,14 @@ export default class extends Controller {
         name: b.name,
         key: b.key,
         url: b.url,
-        vectorUrl: b.vectorUrl,
+        vectorStyleUrl: b.vectorStyleUrl,
         attribution: b.attribution,
         selected: !!(b.default || (!basesOnly.some((x) => x.default) && i === 0))
       }))
       : []
-    if (baseSpecs.length > 0 || (overlayToggles && overlayToggles.length > 0)) {
+    if (baseSpecs.length > 0 || this._overlayToggles.length > 0) {
       const layersTitle = params.map_layers_title || params.map_overlay_title || 'Layers'
-      map.addControl(new OverlayLayersToggleIControl(overlayToggles || [], layersTitle, {
+      map.addControl(new OverlayLayersToggleIControl(this._overlayToggles, layersTitle, {
         bases: baseSpecs,
         baseSectionTitle: params.map_base_layers_title || '',
         overlaySectionTitle: params.map_overlay_title || '',
@@ -560,13 +561,21 @@ export default class extends Controller {
     this._mapLayers = new DestinationsMapLayers(map, this._destinationsMapLayersOptions)
     this._mapLayers.connect()
 
-    if (resolved.mode === 'vector' && overlayLayers.length) {
-      const applyOverlays = () => {
+    // Vector base: merge all overlays after style load.
+    // Raster base: raster overlays are already in the composite style; only merge vector_style_url overlays.
+    if (overlayLayers.length && (resolved.mode === 'vector' || overlayLayers.some((o) => o.vectorStyleUrl))) {
+      const runOverlays = () => {
         this._syncOverlayVisibilityFromControl()
-        applyRasterOverlays(map, overlayLayers, this._overlayVisibility)
+        applyOverlays(
+          map,
+          overlayLayers,
+          this._overlayVisibility,
+          this._overlayToggles,
+          { includeRaster: resolved.mode === 'vector' }
+        ).catch(() => { /* overlay style fetch failed */ })
       }
-      if (map.isStyleLoaded()) applyOverlays()
-      else map.once('load', applyOverlays)
+      if (map.isStyleLoaded()) runOverlays()
+      else map.once('load', runOverlays)
     }
 
     const tDecluster = (typeof I18n !== 'undefined' && I18n.t)
@@ -640,7 +649,14 @@ export default class extends Controller {
     const reattach = () => {
       if (switchId !== this._baseSwitchId || !this._map || !this._destinationsMapLayersOptions) return
       if (this._mapLayers) return
-      applyRasterOverlays(this._map, this._mapOverlayLayers || [], this._overlayVisibility)
+      // After setStyle the map is empty of overlays — re-merge all (vector_style_url preferred).
+      applyOverlays(
+        this._map,
+        this._mapOverlayLayers || [],
+        this._overlayVisibility,
+        this._overlayToggles,
+        { includeRaster: true }
+      ).catch(() => { /* overlay style fetch failed */ })
       this._mapLayers = new DestinationsMapLayers(this._map, this._destinationsMapLayersOptions)
       // Keep current camera; fitBounds on reconnect fights setStyle and can drop the viewport fetch.
       this._mapLayers.connect({ refitBounds: false, force: true })
@@ -666,7 +682,7 @@ export default class extends Controller {
     root.querySelectorAll('input[type="checkbox"][id^="maplibre-layer-overlay-"]').forEach((cb) => {
       const idx = cb.id.replace('maplibre-layer-overlay-', '')
       if (idx === '' || Number.isNaN(Number(idx))) return
-      this._overlayVisibility[`overlay-${idx}-layer`] = !!cb.checked
+      this._overlayVisibility[`overlay-${idx}`] = !!cb.checked
     })
   }
 

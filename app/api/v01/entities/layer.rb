@@ -24,8 +24,7 @@ class V01::Entities::Layer < Grape::Entity
   expose(:name, documentation: { type: String })
   expose(:url, documentation: { type: String })
   expose(:attribution, documentation: { type: String })
-  expose(:urlssl, documentation: { type: String })
-  expose(:vector_url, documentation: { type: String, desc: 'Optional MapLibre style JSON URL for vector basemap (MapLibre GL).' })
+  expose(:vector_style_url, documentation: { type: String, desc: 'Optional MapLibre style JSON URL for vector layers (MapLibre GL).' })
   expose(:source, documentation: { type: String })
   expose(:overlay, documentation: { type: 'Boolean', desc: 'False if it is a base layer, true if it is just an overlay.' })
 end

@@ -170,14 +170,32 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none', 1
   end
 
-  test 'v2 index includes vector_url in map layers config as-is' do
+  test 'v2 index includes vector_style_url in map layers config as-is' do
     layer = users(:user_one).layer
     style_url = 'https://maps.example.com/styles/custom/style.json'
-    layer.update!(vector_url: style_url)
+    layer.update!(vector_style_url: style_url)
 
     get :index
     assert_response :success
     assert_match(%r{maps\.example\.com/styles/custom/style\.json}, response.body)
+  end
+
+  test 'v2 index includes overlay vector_style_url in map layers config' do
+    customer = users(:user_one).customer
+    overlay = Layer.create!(
+      source: 'osm',
+      name: 'Truck restrictions',
+      url: 'https://example.com/truck/{z}/{x}/{y}.png',
+      attribution: 'Test',
+      overlay: true,
+      vector_style_url: 'https://maps.example.com/overlays/truck/style.json'
+    )
+    customer.profile.layers << overlay
+
+    get :index
+    assert_response :success
+    assert_match(%r{maps\.example\.com/overlays/truck/style\.json}, response.body)
+    assert_match(/&quot;overlay&quot;:true|"overlay":true/, response.body)
   end
 
   test 'v2 index exposes map geojson url in config instead of inline destinations' do

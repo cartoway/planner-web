@@ -8,8 +8,7 @@ layer_one:
     en: MyString (en)
   url: /favicon.ico
   attribution: MyString
-  urlssl: /favicon.ico
-  vector_url:
+  vector_style_url:
 
 layer_two:
   source: here
@@ -19,4 +18,3 @@ layer_two:
     en: MyString (en)
   url: /favicon.ico
   attribution: MyString
-  urlssl: /favicon.ico

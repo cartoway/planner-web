@@ -394,12 +394,11 @@ CREATE TABLE public.layers (
     attribution character varying NOT NULL,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    urlssl character varying NOT NULL,
     source character varying NOT NULL,
     "overlay" boolean DEFAULT false,
     print boolean DEFAULT false NOT NULL,
     name_locale public.hstore DEFAULT ''::public.hstore NOT NULL,
-    vector_url character varying
+    vector_style_url character varying
 );
 
 
@@ -3954,6 +3953,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260717105805'),
 ('20260720072020'),
 ('20260721141523'),
-('20260729133352');
+('20260729133352'),
+('20260731120833');
 
 
