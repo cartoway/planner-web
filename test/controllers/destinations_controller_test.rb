@@ -120,6 +120,33 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_equal 50, assigns(:pagination)[:per_page]
   end
 
+  test 'v2 index can change per_page preference more than once' do
+    user = users(:user_one)
+    user.apply_self_service_display_ui!(
+      headers_params: { destinations_index: { version: Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2, per_page: 25 } }
+    )
+    user.save!
+
+    @request.headers['Turbo-Frame'] = 'destinations_list'
+    get :index, params: { page: 1, per_page: 50 }
+    assert_response :success
+    assert_equal 50, user.reload.destinations_index_per_page
+    assert_equal 50, assigns(:pagination)[:per_page]
+    assert_select 'a.destinations-per-page-option.active[data-per-page="50"]', 1
+
+    get :index, params: { page: 1, per_page: 100 }
+    assert_response :success
+    assert_equal 100, user.reload.destinations_index_per_page
+    assert_equal 100, assigns(:pagination)[:per_page]
+    assert_select 'a.destinations-per-page-option.active[data-per-page="100"]', 1
+
+    get :index, params: { page: 1, per_page: 25 }
+    assert_response :success
+    assert_equal 25, user.reload.destinations_index_per_page
+    assert_equal 25, assigns(:pagination)[:per_page]
+    assert_select 'a.destinations-per-page-option.active[data-per-page="25"]', 1
+  end
+
   test 'should get index' do
     get :index
     assert_response :success
