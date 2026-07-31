@@ -67,7 +67,7 @@ function buildRasterStyle (mapLayers) {
   return { style: { version: 8, sources, layers }, overlayToggles }
 }
 
-function mergeVectorOverlayStyle (map, style, overlayIndex, visible) {
+function mergeVectorOverlayStyle (map, style, overlayIndex, visible, beforeId = null) {
   const prefix = 'overlay-' + overlayIndex + '-'
   const layerIds = []
   const layers = (style.layers || []).filter((layer) => {
@@ -84,6 +84,7 @@ function mergeVectorOverlayStyle (map, style, overlayIndex, visible) {
     const sid = prefix + id
     if (!map.getSource(sid)) map.addSource(sid, { ...style.sources[id] })
   })
+  const insertBefore = beforeId && map.getLayer(beforeId) ? beforeId : undefined
   layers.forEach((layer) => {
     const lid = prefix + layer.id
     layerIds.push(lid)
@@ -93,7 +94,7 @@ function mergeVectorOverlayStyle (map, style, overlayIndex, visible) {
         id: lid,
         source: layer.source ? prefix + layer.source : undefined,
         layout: { ...(layer.layout || {}), visibility: visible ? 'visible' : 'none' }
-      })
+      }, insertBefore)
     }
   })
   return layerIds
@@ -102,11 +103,17 @@ function mergeVectorOverlayStyle (map, style, overlayIndex, visible) {
 function fakeMap () {
   const sources = new Map()
   const layers = new Map()
+  const order = []
   return {
     getSource: (id) => sources.get(id),
     addSource: (id, src) => { sources.set(id, src) },
     getLayer: (id) => layers.get(id),
-    addLayer: (layer) => { layers.set(layer.id, layer) },
+    addLayer: (layer, beforeId) => {
+      layers.set(layer.id, layer)
+      const idx = beforeId ? order.indexOf(beforeId) : -1
+      if (idx >= 0) order.splice(idx, 0, layer.id)
+      else order.push(layer.id)
+    },
     setLayoutProperty: (id, key, value) => {
       const layer = layers.get(id)
       if (layer) {
@@ -115,7 +122,8 @@ function fakeMap () {
       }
     },
     _sources: sources,
-    _layers: layers
+    _layers: layers,
+    _order: order
   }
 }
 
@@ -232,6 +240,22 @@ describe('overlay layers prefer vector_style_url', () => {
     assert.equal(map.getSource('overlay-0-osm-carto-raster'), undefined)
     assert.equal(map.getLayer('overlay-0-osm'), undefined)
     assert.ok(map.getLayer('overlay-0-highway'))
+  })
+
+  it('inserts overlay layers before markers when beforeId exists', () => {
+    const map = fakeMap()
+    map.addLayer({ id: 'destinations-v2-clusters', type: 'circle' })
+    mergeVectorOverlayStyle(map, {
+      version: 8,
+      sources: {
+        restrictions: { type: 'vector', url: 'https://maps.example.com/tiles.json' }
+      },
+      layers: [
+        { id: 'highway', type: 'line', source: 'restrictions', 'source-layer': 'highway' }
+      ]
+    }, 0, true, 'destinations-v2-clusters')
+
+    assert.deepEqual(map._order, ['overlay-0-highway', 'destinations-v2-clusters'])
   })
 
   it('pickLayers exposes overlay vectorStyleUrl for applyOverlays', () => {
