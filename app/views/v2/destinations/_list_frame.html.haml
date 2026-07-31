@@ -1,5 +1,5 @@
 -# V2 destinations index list + pagination — wrapped for Turbo Frame partial updates (see destinations#index).
-= turbo_frame_tag "destinations_list" do
+= turbo_frame_tag "destinations_list", data: { per_page: @pagination[:per_page] } do
   .d-flex.justify-content-between.align-items-center.mb-2.p-3
     .d-flex.gap-2.align-items-center
       = link_to new_destination_path, class: 'btn btn-primary btn-xs', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
@@ -28,7 +28,8 @@
           - destinations_index_per_page_options.each do |option|
             %li
               = link_to destinations_path(destinations_index_params(page: 1, per_page: option)),
-                class: "dropdown-item#{' active' if @pagination[:per_page] == option}" do
+                class: "dropdown-item destinations-per-page-option#{' active' if @pagination[:per_page] == option}",
+                data: { turbo_frame: 'destinations_list', turbo_action: 'advance', per_page: option } do
                 = "#{option} #{t('all.misc.per_page')}"
     #count.primary.data-info{title: t('destinations.index.destinations_count_help')}
       %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
