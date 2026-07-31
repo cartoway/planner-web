@@ -198,7 +198,7 @@ layers = Layer.all.sort_by(&:id).uniq.collect{ |layer|
   {
     id: layer.id,
     name: layer.translated_name,
-    url: request.ssl? ? layer.urlssl : layer.url,
+    url: layer.url,
     attribution: layer.map_attribution,
     default: layer == current_user.layer,
     overlay: layer.overlay

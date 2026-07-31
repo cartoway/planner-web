@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class LayerVectorUrlInferrer
+class LayerVectorStyleUrlInferrer
   TILE_PATH_PATTERN = %r{/(?:\d+/)?\{z\}/\{x\}/\{y\}\.png\z}i
 
   def self.normalize_url(url)
@@ -11,7 +11,7 @@ class LayerVectorUrlInferrer
     normalized
   end
 
-  def self.infer_vector_url(raster_url)
+  def self.infer_vector_style_url(raster_url)
     normalized = normalize_url(raster_url)
     return normalized if normalized.blank?
 
@@ -24,10 +24,10 @@ class LayerVectorUrlInferrer
 
   def self.patch(attrs)
     result = attrs.stringify_keys
-    explicit = result['vector_url'].presence
-    return result.merge('vector_url' => explicit) if explicit
+    explicit = result['vector_style_url'].presence
+    return result.merge('vector_style_url' => explicit) if explicit
 
-    raster = result['urlssl'].presence
-    result.merge('vector_url' => (raster && infer_vector_url(raster)))
+    raster = result['url'].presence
+    result.merge('vector_style_url' => (raster && infer_vector_style_url(raster)))
   end
 end
