@@ -9,7 +9,7 @@ import { pickLayers, resolveMapStyle, styleForBaseLayer, basesNeedStyleSwitch, a
 import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
-import { DestinationsMapLayers } from 'maplibre/destinations_map_layers'
+import { DestinationsMapLayers, CLUSTER_LAYER_ID } from 'maplibre/destinations_map_layers'
 
 const DEFAULT_ZOOM = 12
 const MIN_CHARS = 3
@@ -571,7 +571,7 @@ export default class extends Controller {
           overlayLayers,
           this._overlayVisibility,
           this._overlayToggles,
-          { includeRaster: resolved.mode === 'vector' }
+          { includeRaster: resolved.mode === 'vector', beforeId: CLUSTER_LAYER_ID }
         ).catch(() => { /* overlay style fetch failed */ })
       }
       if (map.isStyleLoaded()) runOverlays()
@@ -655,7 +655,7 @@ export default class extends Controller {
         this._mapOverlayLayers || [],
         this._overlayVisibility,
         this._overlayToggles,
-        { includeRaster: true }
+        { includeRaster: true, beforeId: CLUSTER_LAYER_ID }
       ).catch(() => { /* overlay style fetch failed */ })
       this._mapLayers = new DestinationsMapLayers(this._map, this._destinationsMapLayersOptions)
       // Keep current camera; fitBounds on reconnect fights setStyle and can drop the viewport fetch.
