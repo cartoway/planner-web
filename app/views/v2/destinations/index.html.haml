@@ -4,7 +4,8 @@
   = render "v2/layouts/form_sidebar_placeholder"
 - content_for :title, t('destinations.index.title')
 -# MapLibre loads tiles via fetch; always use HTTPS tile URLs (HTTP OSM tiles 301 without CORS).
-- layers = (@customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: layer.urlssl, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
+-# Prefer vector_url when present; raster urlssl remains the fallback.
+- layers = (@customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: layer.urlssl, vector_url: layer.vector_url, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
 - v2_js_cfg = { map_lat: @customer.default_position[:lat], map_lng: @customer.default_position[:lng], map_zoom: 12, geocoder: true }
 - v2_js_cfg[:geocoder_placeholder] = t('web.geocoder.search')
 - v2_js_cfg[:geocoder_empty] = t('web.geocoder.empty_result')

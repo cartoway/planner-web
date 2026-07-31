@@ -18,11 +18,11 @@ class LayerVectorUrlInferrerTest < ActiveSupport::TestCase
     assert_equal 'https://maps.cartoway.com/styles/truck-restrictions/style.json', LayerVectorUrlInferrer.infer_vector_url(raster)
   end
 
-  test 'patch keeps explicit vector_url' do
+  test 'patch keeps explicit vector_url as-is' do
     patched = LayerVectorUrlInferrer.patch(
       'urlssl' => 'https://api.maptiler.com/maps/dataviz/256/{z}/{x}/{y}.png?key=abc',
-      'vector_url' => 'https://example.com/custom/style.json'
+      'vector_url' => 'https://maps.example.com/styles/custom/style.json'
     )
-    assert_equal 'https://example.com/custom/style.json', patched['vector_url']
+    assert_equal 'https://maps.example.com/styles/custom/style.json', patched['vector_url']
   end
 end
