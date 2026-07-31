@@ -26,6 +26,7 @@ export function OverlayLayersToggleIControl (overlaySpecs, summaryTitle, options
   this._summaryClass = options.summaryClass || 'maplibre-overlay-toggles-summary'
   this._bodyClass = options.bodyClass || 'maplibre-overlay-toggles-body'
   this._inputIdPrefix = options.inputIdPrefix || 'maplibre-layer-'
+  this._onBaseChange = options.onBaseChange || null
 }
 
 OverlayLayersToggleIControl.prototype.onAdd = function (map) {
@@ -56,6 +57,7 @@ OverlayLayersToggleIControl.prototype.onAdd = function (map) {
   }
 
   const radioName = prefix + 'base'
+  const onBaseChange = this._onBaseChange
   bases.forEach((spec, idx) => {
     const row = document.createElement('div')
     row.className = 'form-check mb-1'
@@ -68,7 +70,12 @@ OverlayLayersToggleIControl.prototype.onAdd = function (map) {
     radio.checked = !!spec.selected
     radio.addEventListener('change', () => {
       if (!radio.checked) return
+      if (typeof onBaseChange === 'function') {
+        onBaseChange(spec, bases)
+        return
+      }
       bases.forEach((b) => {
+        if (!b.layerId) return
         map.setLayoutProperty(b.layerId, 'visibility', b.layerId === spec.layerId ? 'visible' : 'none')
       })
     })
@@ -98,6 +105,7 @@ OverlayLayersToggleIControl.prototype.onAdd = function (map) {
     cb.id = inputId
     cb.checked = !!spec.initialVisible
     cb.addEventListener('change', () => {
+      if (!map.getLayer(spec.layerId)) return
       map.setLayoutProperty(spec.layerId, 'visibility', cb.checked ? 'visible' : 'none')
     })
     const lbl = document.createElement('label')

@@ -62,21 +62,39 @@ export class DestinationsMapLayers {
     }
   }
 
-  connect () {
+  connect (options = {}) {
+    const refitBounds = options.refitBounds !== false
+    const force = !!options.force
     const run = () => {
-      this._ensureLayers()
-      this._bindEvents()
-      this._loadInitialViewport()
+      try {
+        this._ensureLayers()
+        this._bindEvents()
+        this._loadInitialViewport({ refitBounds })
+      } catch (e) {
+        // Style switch can leave the map briefly unable to accept layers; retry once on idle.
+        if (!this._connectRetryScheduled) {
+          this._connectRetryScheduled = true
+          this.map.once('idle', () => {
+            this._connectRetryScheduled = false
+            run()
+          })
+        }
+      }
     }
-    if (this.map.loaded()) run()
-    else this.map.once('load', run)
+    // force: caller already waited for style.load (setStyle). Avoid racy map.loaded()/'load'.
+    if (force || this.map.isStyleLoaded()) {
+      run()
+    } else {
+      this.map.once('load', run)
+    }
   }
 
-  async _loadInitialViewport () {
-    // Use current epoch (may already have been bumped by an early filter reload).
+  async _loadInitialViewport ({ refitBounds = true } = {}) {
     const epoch = this._dataEpoch
-    await this._fetchBoundsOnly(epoch)
-    if (!this._isCurrentEpoch(epoch)) return
+    if (refitBounds) {
+      await this._fetchBoundsOnly(epoch)
+      if (!this._isCurrentEpoch(epoch)) return
+    }
     await this._fetchViewport({ force: true, epoch })
   }
 
@@ -268,56 +286,79 @@ export class DestinationsMapLayers {
 
   _ensureLayers () {
     if (this._layersReady) return
-    this.map.addSource(SOURCE_ID, {
-      type: 'geojson',
-      data: { type: 'FeatureCollection', features: [] },
-      cluster: true,
-      clusterMaxZoom: CLUSTER_MAX_ZOOM,
-      clusterRadius: CLUSTER_RADIUS
-    })
+    if (!this.map.getSource(SOURCE_ID)) {
+      this.map.addSource(SOURCE_ID, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+        cluster: true,
+        clusterMaxZoom: CLUSTER_MAX_ZOOM,
+        clusterRadius: CLUSTER_RADIUS
+      })
+    }
 
-    this.map.addLayer({
-      id: CLUSTER_LAYER_ID,
-      type: 'circle',
-      source: SOURCE_ID,
-      filter: ['has', 'point_count'],
-      paint: {
-        'circle-color': '#0d6efd',
-        'circle-radius': ['step', ['get', 'point_count'], 16, 25, 20, 100, 26],
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff'
-      }
-    })
+    if (!this.map.getLayer(CLUSTER_LAYER_ID)) {
+      this.map.addLayer({
+        id: CLUSTER_LAYER_ID,
+        type: 'circle',
+        source: SOURCE_ID,
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': '#0d6efd',
+          'circle-radius': ['step', ['get', 'point_count'], 16, 25, 20, 100, 26],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
+      })
+    }
 
-    this.map.addLayer({
-      id: CLUSTER_COUNT_LAYER_ID,
-      type: 'symbol',
-      source: SOURCE_ID,
-      filter: ['has', 'point_count'],
-      layout: {
-        'text-field': ['get', 'point_count_abbreviated'],
-        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-        'text-size': 12
-      },
-      paint: {
-        'text-color': '#ffffff'
+    if (!this.map.getLayer(CLUSTER_COUNT_LAYER_ID)) {
+      try {
+        this.map.addLayer({
+          id: CLUSTER_COUNT_LAYER_ID,
+          type: 'symbol',
+          source: SOURCE_ID,
+          filter: ['has', 'point_count'],
+          layout: {
+            'text-field': ['get', 'point_count_abbreviated'],
+            'text-size': 12
+          },
+          paint: {
+            'text-color': '#ffffff'
+          }
+        })
+      } catch (e) {
+        // Vector styles may not ship the default fonts; circles still show without counts.
       }
-    })
+    }
 
-    this.map.addLayer({
-      id: UNCLUSTERED_LAYER_ID,
-      type: 'circle',
-      source: SOURCE_ID,
-      filter: this._unclusteredFilter(),
-      paint: {
-        'circle-color': '#0d6efd',
-        'circle-radius': 7,
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff'
-      }
-    })
+    if (!this.map.getLayer(UNCLUSTERED_LAYER_ID)) {
+      this.map.addLayer({
+        id: UNCLUSTERED_LAYER_ID,
+        type: 'circle',
+        source: SOURCE_ID,
+        filter: this._unclusteredFilter(),
+        paint: {
+          'circle-color': '#0d6efd',
+          'circle-radius': 7,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
+      })
+    }
 
     this._layersReady = true
+  }
+
+  /** Prefer fonts already present in the active style (MapTiler, Cartoway, …). */
+  _clusterLabelFonts () {
+    try {
+      const layers = this.map.getStyle()?.layers || []
+      for (let i = 0; i < layers.length; i++) {
+        const fonts = layers[i].layout && layers[i].layout['text-font']
+        if (Array.isArray(fonts) && fonts.length) return fonts
+      }
+    } catch (e) { /* ignore */ }
+    return ['Open Sans Regular', 'Arial Unicode MS Regular']
   }
 
   _unclusteredFilter () {
