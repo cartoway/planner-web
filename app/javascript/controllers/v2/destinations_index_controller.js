@@ -5,7 +5,7 @@
 import { Controller } from '@hotwired/stimulus'
 import { visit } from 'turbo/frame_promoted_visit'
 import { navigator as turboNavigator } from '@hotwired/turbo'
-import { buildRasterStyle, pickLayers } from 'maplibre/raster_layers'
+import { pickLayers, resolveMapStyle, styleForBaseLayer, basesNeedStyleSwitch, applyRasterOverlays } from 'maplibre/raster_layers'
 import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
@@ -482,7 +482,8 @@ export default class extends Controller {
       container._v2MaplibreMap = null
     }
 
-    const { style, baseLayerIds, overlayToggles } = buildRasterStyle(params.map_layers)
+    const resolved = resolveMapStyle(params.map_layers)
+    const { style, baseLayerIds, overlayToggles } = resolved
     const centerLng = parseFloat(params.map_lng) || 0
     const centerLat = parseFloat(params.map_lat) || 0
     const zoom = params.map_zoom != null ? Number(params.map_zoom) : DEFAULT_ZOOM
@@ -512,11 +513,21 @@ export default class extends Controller {
       map.addControl(new GeocoderIControl(placeholder, emptyMsg, { tooltip, submitLabel }), 'top-right')
     }
 
-    const basesOnly = pickLayers(params.map_layers).bases
+    const { bases: basesOnly, overlays: overlayLayers } = pickLayers(params.map_layers)
+    this._mapOverlayLayers = overlayLayers
+    this._overlayVisibility = {}
+    ;(overlayToggles || []).forEach((t) => {
+      this._overlayVisibility[t.layerId] = !!t.initialVisible
+    })
+    const useStyleSwitch = resolved.mode === 'vector' || basesNeedStyleSwitch(basesOnly)
     const baseSpecs = basesOnly.length > 1
       ? basesOnly.map((b, i) => ({
         layerId: baseLayerIds[i],
         name: b.name,
+        key: b.key,
+        url: b.url,
+        vectorUrl: b.vectorUrl,
+        attribution: b.attribution,
         selected: !!(b.default || (!basesOnly.some((x) => x.default) && i === 0))
       }))
       : []
@@ -525,12 +536,15 @@ export default class extends Controller {
       map.addControl(new OverlayLayersToggleIControl(overlayToggles || [], layersTitle, {
         bases: baseSpecs,
         baseSectionTitle: params.map_base_layers_title || '',
-        overlaySectionTitle: params.map_overlay_title || ''
+        overlaySectionTitle: params.map_overlay_title || '',
+        onBaseChange: useStyleSwitch
+          ? (spec) => this._switchDestinationsBaseLayer(spec)
+          : null
       }), 'top-right')
     }
 
     const highlightId = params.highlight_destination_id
-    this._mapLayers = new DestinationsMapLayers(map, {
+    this._destinationsMapLayersOptions = {
       buildUrl: (overrides) => {
         const merged = { ...overrides }
         if (highlightId != null && String(highlightId) !== '' && String(highlightId) !== '0') {
@@ -542,8 +556,18 @@ export default class extends Controller {
       onFeaturesUpdated: () => this._applyPendingHighlight(),
       getMovePadding: () => this._mapFlyToPadding(),
       signal
-    })
+    }
+    this._mapLayers = new DestinationsMapLayers(map, this._destinationsMapLayersOptions)
     this._mapLayers.connect()
+
+    if (resolved.mode === 'vector' && overlayLayers.length) {
+      const applyOverlays = () => {
+        this._syncOverlayVisibilityFromControl()
+        applyRasterOverlays(map, overlayLayers, this._overlayVisibility)
+      }
+      if (map.isStyleLoaded()) applyOverlays()
+      else map.once('load', applyOverlays)
+    }
 
     const tDecluster = (typeof I18n !== 'undefined' && I18n.t)
       ? I18n.t('destinations.index.map_decluster_viewport', { defaultValue: 'Déclusteriser la vue' })
@@ -596,6 +620,54 @@ export default class extends Controller {
     // Sidebar form may already be open (e.g. reload); enable draggable pin when applicable.
     const sidebarFrame = document.getElementById('form_sidebar')
     if (sidebarFrame) this._syncPositionEditFromFormSidebar(sidebarFrame)
+  }
+
+  _switchDestinationsBaseLayer (spec) {
+    if (!this._map || !spec) return
+    const nextStyle = styleForBaseLayer(spec)
+    if (!nextStyle) return
+
+    this._syncOverlayVisibilityFromControl()
+
+    if (this._mapLayers) {
+      this._mapLayers.disconnect()
+      this._mapLayers = null
+    }
+    this._teardownPositionEdit()
+    this._removeDomMarker()
+
+    const switchId = (this._baseSwitchId = (this._baseSwitchId || 0) + 1)
+    const reattach = () => {
+      if (switchId !== this._baseSwitchId || !this._map || !this._destinationsMapLayersOptions) return
+      if (this._mapLayers) return
+      applyRasterOverlays(this._map, this._mapOverlayLayers || [], this._overlayVisibility)
+      this._mapLayers = new DestinationsMapLayers(this._map, this._destinationsMapLayersOptions)
+      // Keep current camera; fitBounds on reconnect fights setStyle and can drop the viewport fetch.
+      this._mapLayers.connect({ refitBounds: false, force: true })
+      if (this._declusterControl) this._declusterControl.syncUi?.()
+      const sidebarFrame = document.getElementById('form_sidebar')
+      if (sidebarFrame) this._syncPositionEditFromFormSidebar(sidebarFrame)
+    }
+
+    // Register BEFORE setStyle: inline raster styles can emit style.load synchronously.
+    this._map.once('style.load', reattach)
+    this._map.setStyle(nextStyle, { diff: false })
+    // Fallbacks if style.load was missed or the style is already usable.
+    requestAnimationFrame(() => {
+      if (this._map && this._map.isStyleLoaded()) reattach()
+    })
+    this._map.once('idle', reattach)
+  }
+
+  _syncOverlayVisibilityFromControl () {
+    if (!this._overlayVisibility) this._overlayVisibility = {}
+    const root = this.element.querySelector('.maplibre-overlay-toggles')
+    if (!root) return
+    root.querySelectorAll('input[type="checkbox"][id^="maplibre-layer-overlay-"]').forEach((cb) => {
+      const idx = cb.id.replace('maplibre-layer-overlay-', '')
+      if (idx === '' || Number.isNaN(Number(idx))) return
+      this._overlayVisibility[`overlay-${idx}-layer`] = !!cb.checked
+    })
   }
 
   _onTurboFrameLoad (event) {
