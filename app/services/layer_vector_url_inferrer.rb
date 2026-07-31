@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# Derives MapLibre vector style URLs from raster tile layer URLs (MapTiler, Cartoway, etc.).
 class LayerVectorUrlInferrer
   TILE_PATH_PATTERN = %r{/(?:\d+/)?\{z\}/\{x\}/\{y\}\.png\z}i
 

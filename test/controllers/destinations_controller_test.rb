@@ -170,6 +170,16 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none', 1
   end
 
+  test 'v2 index includes vector_url in map layers config as-is' do
+    layer = users(:user_one).layer
+    style_url = 'https://maps.example.com/styles/custom/style.json'
+    layer.update!(vector_url: style_url)
+
+    get :index
+    assert_response :success
+    assert_match(%r{maps\.example\.com/styles/custom/style\.json}, response.body)
+  end
+
   test 'v2 index exposes map geojson url in config instead of inline destinations' do
     get :index
     assert_response :success
