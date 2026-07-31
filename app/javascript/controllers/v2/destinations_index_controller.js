@@ -621,6 +621,7 @@ export default class extends Controller {
       return
     }
     if (frame.id === 'destinations_list' || frame.id === 'destinations_list_body') {
+      this._syncPerPageFromListFrame()
       requestAnimationFrame(() => {
         const url = new URL(window.location.href)
         const hid = url.searchParams.get('highlight_destination_id')
@@ -634,6 +635,20 @@ export default class extends Controller {
       })
       if (this._map) requestAnimationFrame(() => this._map.resize())
     }
+  }
+
+  _syncPerPageFromListFrame () {
+    const frame = document.getElementById('destinations_list')
+    const form = this.element.querySelector('#destinations-search-form')
+    const perInput = form && form.querySelector('input[name="per_page"]')
+    if (!frame || !perInput) return
+
+    const activeOption = frame.querySelector('.destinations-per-page-option.active')
+    const fromOption = activeOption && activeOption.getAttribute('data-per-page')
+    const fromFrame = frame.getAttribute('data-per-page')
+    const fromUrl = new URL(window.location.href).searchParams.get('per_page')
+    const next = (fromOption || fromFrame || fromUrl || '').toString().trim()
+    if (next) perInput.value = next
   }
 
   _refreshListAfterSidebarSave (destinationId) {
