@@ -93,6 +93,20 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     assert vehicle_usage_set.vehicle_usages[0].routes[-1].outdated
   end
 
+  test 'should update outdated when max_ride_distance is cleared and vehicle inherits nil' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    route = vehicle_usage_set.vehicle_usages.first.routes.first
+    vehicle = vehicle_usage_set.vehicle_usages.first.vehicle
+
+    vehicle_usage_set.update!(max_ride_distance: 50_000)
+    vehicle.update!(max_ride_distance: nil)
+    route.update!(outdated: false)
+
+    vehicle_usage_set.update!(max_ride_distance: nil)
+
+    assert route.reload.outdated
+  end
+
   test 'should delete in use' do
     assert_difference('VehicleUsageSet.count', -1) do
       customers(:customer_one).vehicle_usage_sets.delete(vehicle_usage_sets(:vehicle_usage_set_one))

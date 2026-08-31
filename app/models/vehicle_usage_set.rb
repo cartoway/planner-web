@@ -71,6 +71,18 @@ class VehicleUsageSet < ApplicationRecord
   before_create :check_max_vehicle_usage_set, unless: :import_skip
   before_update :update_outdated
 
+  RELATED_ATTRIBUTES = %i[
+    time_window_start time_window_end work_time
+    rest_start rest_stop rest_duration
+    service_time_start service_time_end
+    max_distance max_ride_distance max_ride_duration
+    cost_distance cost_fixed cost_time
+  ].freeze
+
+  RELATED_OBJECT_ATTRIBUTES = %i[store_start store_stop store_rest].freeze
+
+  RELATED_COEF_ATTRIBUTES = %i[visit_duration_coef destination_duration_coef].freeze
+
   def default_visit_duration_coef
     visit_duration_coef || 1
   end
@@ -120,6 +132,26 @@ class VehicleUsageSet < ApplicationRecord
     end
   end
 
+  def vehicle_uses_set_value?(vehicle_usage, attribute)
+    vehicle_usage.public_send("default_#{attribute}") == public_send(attribute)
+  end
+
+  def related_attribute_changed?
+    RELATED_ATTRIBUTES.any? { |attribute| public_send("#{attribute}_changed?") } ||
+      RELATED_OBJECT_ATTRIBUTES.any? { |attribute| public_send("#{attribute}_id_changed?") } ||
+      RELATED_COEF_ATTRIBUTES.any? { |attribute| public_send("#{attribute}_changed?") }
+  end
+
+  def routes_need_recompute?(vehicle_usage)
+    RELATED_ATTRIBUTES.any? { |attribute|
+      public_send("#{attribute}_changed?") && vehicle_uses_set_value?(vehicle_usage, attribute)
+    } || RELATED_OBJECT_ATTRIBUTES.any? { |attribute|
+      public_send("#{attribute}_id_changed?") && vehicle_uses_set_value?(vehicle_usage, attribute)
+    } || RELATED_COEF_ATTRIBUTES.any? { |attribute|
+      public_send("#{attribute}_changed?") && vehicle_usage.public_send(attribute).nil?
+    }
+  end
+
   def create_vehicle_usages
     if customer
       customer.vehicles.each { |vehicle|
@@ -148,44 +180,13 @@ class VehicleUsageSet < ApplicationRecord
       vehicle_usages.each(&:update_rest)
     end
 
-    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? ||
-       store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? ||
-       store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? ||
-       work_time_changed? || max_distance || max_ride_distance_changed? || max_ride_duration_changed? ||
-       cost_distance_changed? || cost_fixed_changed? || cost_time_changed? ||
-       visit_duration_coef_changed? || destination_duration_coef_changed?
-      vehicle_usages.each{ |vehicle_usage|
-        if (time_window_start_changed? && vehicle_usage.default_time_window_start == time_window_start) ||
-          (time_window_end_changed? && vehicle_usage.default_time_window_end == time_window_end) ||
+    if related_attribute_changed?
+      vehicle_usages.each { |vehicle_usage|
+        next unless routes_need_recompute?(vehicle_usage)
 
-          (store_start_id_changed? && vehicle_usage.default_store_start == store_start) ||
-          (store_stop_id_changed? && vehicle_usage.default_store_stop == store_stop) ||
-
-          (work_time_changed? && vehicle_usage.default_work_time == work_time) ||
-
-          (rest_start_changed? && vehicle_usage.default_rest_start == rest_start) ||
-          (rest_stop_changed? && vehicle_usage.default_rest_stop == rest_stop) ||
-
-          (rest_duration_changed? && vehicle_usage.default_rest_duration == rest_duration) ||
-
-          (store_rest_id_changed? && vehicle_usage.default_store_rest == store_rest) ||
-
-          (service_time_start_changed? && vehicle_usage.default_service_time_start == service_time_start) ||
-          (service_time_end_changed? && vehicle_usage.default_service_time_end == service_time_end) ||
-
-          (max_distance_changed? && vehicle_usage.vehicle.max_distance != max_distance) ||
-          (max_ride_distance_changed? && vehicle_usage.vehicle.max_ride_distance != max_ride_distance) ||
-          (max_ride_duration_changed? && vehicle_usage.vehicle.max_ride_duration != max_ride_duration) ||
-          (cost_distance_changed? && vehicle_usage.default_cost_distance == cost_distance) ||
-          (cost_fixed_changed? && vehicle_usage.default_cost_fixed == cost_fixed) ||
-          (cost_time_changed? && vehicle_usage.default_cost_time == cost_time) ||
-          (visit_duration_coef_changed? && vehicle_usage.visit_duration_coef.nil?) ||
-          (destination_duration_coef_changed? && vehicle_usage.destination_duration_coef.nil?)
-
-          vehicle_usage.routes.each{ |route|
-            route.outdated = true
-          }
-        end
+        vehicle_usage.routes.each { |route|
+          route.outdated = true
+        }
       }
     end
   end
