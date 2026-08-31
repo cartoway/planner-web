@@ -36,6 +36,7 @@ else
   end
 
   json.prefered_unit current_user.prefered_unit
+  json.prefered_currency current_user.prefered_currency
   json.extract! @planning, :id, :ref, :vehicle_usage_set_id
   json.planning_id @planning.id
   json.customer_id @planning.customer.id
