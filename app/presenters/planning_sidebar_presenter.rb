@@ -39,6 +39,7 @@ class PlanningSidebarPresenter
 
     sidebar_locals = {
       prefered_unit: @current_user.prefered_unit,
+      prefered_currency: @current_user.prefered_currency,
       id: @planning.id,
       ref: @planning.ref,
       planning_id: @planning.id,

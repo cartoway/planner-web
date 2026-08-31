@@ -6,5 +6,5 @@
     .primary.route-info
       %i.fa.fa-coins.fa-fw
       = averages[:total_cost]
-      = t("all.unit.currency_symbol.#{current_user.prefered_currency}")
+      = t("all.unit.currency_symbol.#{local_assigns[:prefered_currency]}")
       = render 'planning_states/stat_diff', diff: stat_diffs&.[]('total_cost')
