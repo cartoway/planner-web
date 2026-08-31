@@ -52,6 +52,7 @@ module PlanningStatesHelper
 
     {
       prefered_unit: prefered_unit,
+      prefered_currency: current_user.prefered_currency,
       distance: locale_distance(stats['distance_total'].to_f, prefered_unit),
       duration: time_over_day(stats['duration_total'].to_i),
       work_duration: time_over_day(stats['work_duration_total'].to_i),

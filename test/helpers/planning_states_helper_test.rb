@@ -63,6 +63,8 @@ class PlanningStatesHelperTest < ActionController::TestCase
 
     assert_includes html, 'route-info'
     assert_includes html, 'route-data'
+    assert_includes html, '42.5'
+    assert_includes html, I18n.t("all.unit.currency_symbol.#{users(:user_one).prefered_currency}")
     assert_not_includes html, 'fa-tachometer'
     refute_match(/quantities/, html)
   end
