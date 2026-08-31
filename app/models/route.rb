@@ -262,7 +262,7 @@ class Route < ApplicationRecord
   def init_load_route_data_attributes
     {
       unmanageable_capacity: false,
-      out_of_capacity: 0,
+      out_of_capacity: false,
       max_loads: {}
     }
   end
@@ -569,6 +569,8 @@ class Route < ApplicationRecord
           end
         }
       }
+      compacted_route_data_attributes[:out_of_capacity] ||= stops_sort.any?(&:out_of_capacity)
+      compacted_route_data_attributes[:unmanageable_capacity] ||= stops_sort.any?(&:unmanageable_capacity)
       route_data_attributes.merge!(compacted_route_data_attributes)
       merge_stop_leg_alerts_into_route_data!(route_data_attributes, route_attributes)
       route_data_attributes[:size_destinations] = stops_sort.select{ |stop| stop.is_a?(StopVisit) }.map{ |stop| stop.visit.destination_id }.compact.uniq.size
@@ -1209,6 +1211,7 @@ class Route < ApplicationRecord
 
     previous_route_data_attributes = init_load_route_data_attributes
     current_loads = self.start_route_data.deliveries.dup
+    previous_route_data = self.start_route_data
     (stops_sort || stops).each { |stop|
       case stop.class.name
       when StopVisit.name
@@ -1225,6 +1228,7 @@ class Route < ApplicationRecord
       stop_load_hash[stop.id] = current_loads
       current_loads = current_loads.dup
     }
+    previous_route_data.assign_attributes(previous_route_data_attributes)
     [stop_load_hash, pickups, deliveries]
   end
 

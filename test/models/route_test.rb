@@ -596,6 +596,7 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal true, stops_capacities[1]
     # Last stop must be false, it doesnt deliver "kg" so it's not affected
     assert_equal false, stops_capacities[2]
+    assert route.out_of_capacity
   end
 
   test 'should set stops as unmanageable capacity' do
