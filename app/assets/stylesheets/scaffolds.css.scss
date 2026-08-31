@@ -1086,6 +1086,11 @@ input.form-control.number-of-days {
     margin-bottom: 5px;
     padding-top: unset;
   }
+
+  .form-group {
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 .row.form-group input[type="checkbox"] {
