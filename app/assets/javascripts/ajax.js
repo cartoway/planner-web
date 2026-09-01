@@ -65,6 +65,47 @@ export const mustache_i18n = function() {
   };
 };
 
+const pendingActions = new Set();
+
+export const isPendingAction = function(key) {
+  return pendingActions.has(key);
+};
+
+/**
+ * Wraps $.ajax to ignore duplicate calls until the request completes.
+ * Returns null when the same key is already in flight.
+ */
+export const ajaxWithPendingAction = function(key, options, hooks = {}) {
+  if (pendingActions.has(key)) {
+    return null;
+  }
+
+  pendingActions.add(key);
+  if (hooks.onStart) {
+    hooks.onStart();
+  }
+
+  const release = function() {
+    if (!pendingActions.has(key)) {
+      return;
+    }
+    pendingActions.delete(key);
+    if (hooks.onEnd) {
+      hooks.onEnd();
+    }
+  };
+
+  const userComplete = options.complete;
+  options.complete = function(...args) {
+    release();
+    if (userComplete) {
+      userComplete.apply(this, args);
+    }
+  };
+
+  return $.ajax(options);
+};
+
 export const applyStopPopupManagePlanning = function(view, managePlanning) {
   var mp = managePlanning || {};
   view.manage_organize = mp.manage_organize !== false;
