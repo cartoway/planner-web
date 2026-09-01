@@ -46,4 +46,15 @@ class RouteData < ApplicationRecord
     # /!\ Duration without service times !
     self.visits_duration.to_i + self.wait_time.to_i + self.drive_time.to_i
   end
+
+  def import_attributes
+    super.tap do |attrs|
+      attrs.each do |key, value|
+        next unless value.nil?
+
+        default = self.class._default_attributes[key]
+        attrs[key] = default.value unless default.nil?
+      end
+    end
+  end
 end
