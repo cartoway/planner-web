@@ -450,7 +450,7 @@ class Planning < ApplicationRecord
     end
 
     import_result = RouteData.import(
-      route_data_to_import,
+      route_data_to_import.map(&:import_attributes),
       validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all}
     )
     # Map returned IDs to RouteData objects and routes
@@ -1339,9 +1339,9 @@ class Planning < ApplicationRecord
       }
     }
     stop_route_data_attributes = stop_route_data.map(&:import_attributes)
-    RouteData.import(computed_routes.map(&:route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    RouteData.import(computed_routes.map(&:start_route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
-    RouteData.import(computed_routes.map(&:stop_route_data), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    RouteData.import(computed_routes.map { |route| route.route_data.import_attributes }, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    RouteData.import(computed_routes.map { |route| route.start_route_data.import_attributes }, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
+    RouteData.import(computed_routes.map { |route| route.stop_route_data.import_attributes }, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     RouteData.import(stop_route_data_attributes, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     Route.import(computed_routes.map(&:import_attributes), validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all})
     RouteGeojson.import(geojson_data, validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:route_id], columns: :all})
