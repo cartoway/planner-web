@@ -474,10 +474,14 @@ class OptimizerWrapper
       vehicle = route.vehicle_usage.vehicle
       vehicle_skills = [route.vehicle_usage.tags, route.vehicle_usage.vehicle.tags].flatten.compact.uniq.map(&:label)
 
+      cost_distance_multiplier = planning.customer.enable_vehicle_costs ? (route.vehicle_usage.default_cost_distance || 0) : 0
+      cost_time_multiplier = planning.customer.enable_vehicle_costs ? (route.vehicle_usage.default_cost_time || 0) : 1
+      cost_time_multiplier = 1 if cost_distance_multiplier.to_f.zero? && cost_time_multiplier.to_f.zero?
+
       costs = {
         cost_fixed: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_fixed || options[:cost_fixed] || 0,
-        cost_distance_multiplier: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_distance || 0,
-        cost_time_multiplier: planning.customer.enable_vehicle_costs && route.vehicle_usage.default_cost_time || 1,
+        cost_distance_multiplier: cost_distance_multiplier,
+        cost_time_multiplier: cost_time_multiplier,
       }
       costs[:cost_waiting_time_multiplier] = costs[:cost_time_multiplier] * (planning.customer.optimization_cost_waiting_time || 1)
 
