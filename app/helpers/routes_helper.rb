@@ -18,6 +18,8 @@
 require 'barby/barcode/code_128'
 
 module RoutesHelper
+  include RouteExportHelper
+
   def display_start_time(route)
     route.start + route.service_time_start_value if route.start && route.service_time_start_value
   end

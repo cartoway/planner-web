@@ -635,6 +635,51 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal 'route_three,destination_one,Rue des Lilas,33200,Bordeau', response.body.split("\n")[1]
   end
 
+  test 'should export only active stop visits when additional stops are unchecked' do
+    visit_type = I18n.t('destinations.import_file.stop_type_visit')
+    store_type = I18n.t('destinations.import_file.stop_type_store')
+    rest_type = I18n.t('plannings.export_file.stop_type_rest')
+
+    get :show, params: { id: @planning, format: :csv, stops: '', columns: 'route|stop_type|ref_visit' }
+    assert_response :success
+
+    rows = CSV.parse(response.body, headers: true)
+    stop_types = rows.map { |row| row['type arrêt'] }.uniq
+    ref_visits = rows.map { |row| row['référence visite'] }.compact
+
+    assert_equal [visit_type], stop_types
+    assert_includes ref_visits, 'b'
+    assert_not_includes ref_visits, 'a'
+    assert_not_includes rows.map { |row| row['type arrêt'] }, store_type
+    assert_not_includes rows.map { |row| row['type arrêt'] }, rest_type
+  end
+
+  test 'should export start and end stores when store is checked' do
+    store_type = I18n.t('destinations.import_file.stop_type_store')
+    reload_type = I18n.t('destinations.import_file.stop_type_store_reload')
+    rest_type = I18n.t('plannings.export_file.stop_type_rest')
+
+    store = stores(:store_one)
+    store_reload = store.store_reloads.create!(ref: 'TEST_RELOAD_STORE', duration: 10.minutes.to_i)
+    route = @planning.routes.find { |r| r.vehicle_usage }
+    route.add_store_reload(store_reload, 1).save!
+    @planning.reload
+
+    get :show, params: { id: @planning, format: :csv, stops: 'store', columns: 'route|stop_type|name|ref_visit|index' }
+    assert_response :success
+
+    rows = CSV.parse(response.body, headers: true)
+    stop_types = rows.map { |row| row['type arrêt'] }
+
+    assert_operator stop_types.count(store_type), :>=, 2
+    assert_includes stop_types, reload_type
+    assert_not_includes stop_types, rest_type
+
+    route_one_rows = rows.select { |row| row['tournée'] == 'route_one' }
+    assert_equal store_type, route_one_rows.first['type arrêt']
+    assert_equal store_type, route_one_rows.last['type arrêt']
+  end
+
   test 'should export StopStore duration and destination_duration correctly in csv' do
     # Create a StopStore with a store_reload that has a duration
     store = stores(:store_one)
