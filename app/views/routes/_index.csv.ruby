@@ -1,5 +1,4 @@
   routes_relation = planning.routes
-  stops_filter = @params.key?(:stops) ? @params[:stops].split('|') : []
   pickup_delivery_defs = @customer.deliverable_units.map do |du|
     suffix = du.label ? "[#{du.label}]" : du.id.to_s
     {
@@ -29,7 +28,7 @@
 
     sorted_batch.each do |route|
       next unless route.stops_size > 0
-      next if !route.vehicle_usage_id && @params.key?(:stops) && !stops_filter.include?('out-of-route')
+      next if !route.vehicle_usage_id && !export_includes_stop_category?('out-of-route')
 
       if summary
         render partial: 'routes/summary',

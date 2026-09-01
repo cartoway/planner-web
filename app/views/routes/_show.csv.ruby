@@ -1,4 +1,3 @@
-stops_filter = @params.key?(:stops) ? @params[:stops].split('|') : []
 pickup_delivery_defs ||= @customer.deliverable_units.map do |du|
   suffix = du.label ? "[#{du.label}]" : du.id.to_s
   {
@@ -17,7 +16,7 @@ end
 # One column per name: stop_visit, stop_store and route attributes with the same name share a column
 @stop_custom_attributes ||= @customer.custom_attributes.for_export_stops_unique_by_name || []
 
-if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('store'))
+if route.vehicle_usage_id && export_includes_stop_category?('store')
   row = {
     planning_ref: route.planning.ref,
     planning_name: route.planning.name,
@@ -98,137 +97,120 @@ if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('stor
 end
 
 index = 0
-include_inactive = stops_filter.empty? || stops_filter.include?('inactive')
-include_out_of_route = stops_filter.empty? || stops_filter.include?('out-of-route')
-requested_types = stops_filter & %w[visit rest store]
 route.stops.sort_by(&:index).each { |stop|
-  type_allowed =
-    if requested_types.empty? || stop.is_a?(StopVisit)
-      true
-    elsif stop.is_a?(StopRest)
-      requested_types.include?('rest')
-    elsif stop.is_a?(StopStore)
-      requested_types.include?('store')
-    else
-      false
+  next unless export_include_stop?(stop)
+
+  type =
+    case stop.type
+    when StopVisit.name
+      I18n.t('destinations.import_file.stop_type_visit')
+    when StopStore.name
+      I18n.t('destinations.import_file.stop_type_store_reload')
+    when StopRest.name
+      I18n.t('plannings.export_file.stop_type_rest')
     end
+  row = {
+    planning_ref: route.planning.ref,
+    planning_name: route.planning.name,
+    planning_date: route.planning.date && I18n.l(route.planning.date, format: :date),
+    route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
+    ref_vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
+    index: (index+=1 if route.vehicle_usage_id),
+    stop_type: type,
+    active: ((stop.active ? '1' : '0') if route.vehicle_usage_id),
+    wait_time: ("%i:%02i" % [stop.wait_time/60/60, stop.wait_time/60%60] if route.vehicle_usage_id && stop.wait_time),
+    time: (stop.time_absolute_time if route.vehicle_usage_id && stop.time_absolute_time),
+    distance: (stop.distance if route.vehicle_usage_id),
+    drive_time: (stop.drive_time if route.vehicle_usage_id),
+    out_of_window: stop.out_of_window ? 'x' : '',
+    out_of_capacity: stop.out_of_capacity ? 'x' : '',
+    out_of_drive_time: stop.out_of_drive_time ? 'x' : '',
+    out_of_force_position: stop.out_of_force_position ? 'x' : '',
+    out_of_work_time: stop.out_of_work_time ? 'x' : '',
+    out_of_max_distance: stop.out_of_max_distance ? 'x' : '',
+    out_of_max_ride_distance: stop.out_of_max_ride_distance ? 'x' : '',
+    out_of_max_ride_duration: stop.out_of_max_ride_duration ? 'x' : '',
+    out_of_max_reload: stop.out_of_max_reload ? 'x' : '',
+    out_of_relation: stop.out_of_relation ? 'x' : '',
+    out_of_skill: stop.out_of_skill ? 'x' : '',
+    status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),
+    status_updated_at: stop.status_updated_at && I18n.l(stop.status_updated_at, format: :hour_minute),
+    eta: stop.eta && I18n.l(stop.eta, format: :hour_minute),
+    ref: stop.ref,
+    name: stop.name,
+    street: stop.street,
+    detail: stop.detail,
+    postalcode: stop.postalcode,
+    city: stop.city,
+    destination_duration: stop.is_a?(StopVisit) ? stop.visit.destination.duration_absolute_time_with_seconds : nil
+  }
 
-  active_allowed = stop.active || !stop.route.vehicle_usage_id || include_inactive
-  out_of_route_allowed = stop.route.vehicle_usage || include_out_of_route
+  row.merge!(state: stop.state) if @customer.with_state?
+  row.merge!({
+    country: stop.country,
+    lat: stop.lat&.round(6),
+    lng: stop.lng&.round(6),
+    comment: stop.comment,
+    phone_number: stop.phone_number,
+    tags: (stop.visit.destination.tags.collect(&:label).join(',') if stop.is_a?(StopVisit)),
 
-  if (stops_filter.empty? || type_allowed) && active_allowed && out_of_route_allowed
-    type =
-      case stop.type
-      when StopVisit.name
-        I18n.t('destinations.import_file.stop_type_visit')
-      when StopStore.name
-        I18n.t('destinations.import_file.stop_type_store_reload')
-      when StopRest.name
-        I18n.t('plannings.export_file.stop_type_rest')
-      end
-    row = {
-      planning_ref: route.planning.ref,
-      planning_name: route.planning.name,
-      planning_date: route.planning.date && I18n.l(route.planning.date, format: :date),
-      route: route.ref || (route.vehicle_usage_id && route.vehicle_usage.vehicle.name.gsub(%r{[\./\\\-*,!:?;]}, ' ')),
-      ref_vehicle: (route.vehicle_usage.vehicle.ref if route.vehicle_usage_id),
-      index: (index+=1 if route.vehicle_usage_id),
-      stop_type: type,
-      active: ((stop.active ? '1' : '0') if route.vehicle_usage_id),
-      wait_time: ("%i:%02i" % [stop.wait_time/60/60, stop.wait_time/60%60] if route.vehicle_usage_id && stop.wait_time),
-      time: (stop.time_absolute_time if route.vehicle_usage_id && stop.time_absolute_time),
-      distance: (stop.distance if route.vehicle_usage_id),
-      drive_time: (stop.drive_time if route.vehicle_usage_id),
-      out_of_window: stop.out_of_window ? 'x' : '',
-      out_of_capacity: stop.out_of_capacity ? 'x' : '',
-      out_of_drive_time: stop.out_of_drive_time ? 'x' : '',
-      out_of_force_position: stop.out_of_force_position ? 'x' : '',
-      out_of_work_time: stop.out_of_work_time ? 'x' : '',
-      out_of_max_distance: stop.out_of_max_distance ? 'x' : '',
-      out_of_max_ride_distance: stop.out_of_max_ride_distance ? 'x' : '',
-      out_of_max_ride_duration: stop.out_of_max_ride_duration ? 'x' : '',
-      out_of_max_reload: stop.out_of_max_reload ? 'x' : '',
-      out_of_relation: stop.out_of_relation ? 'x' : '',
-      out_of_skill: stop.out_of_skill ? 'x' : '',
-      status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),
-      status_updated_at: stop.status_updated_at && I18n.l(stop.status_updated_at, format: :hour_minute),
-      eta: stop.eta && I18n.l(stop.eta, format: :hour_minute),
-      ref: stop.ref,
-      name: stop.name,
-      street: stop.street,
-      detail: stop.detail,
-      postalcode: stop.postalcode,
-      city: stop.city,
-      destination_duration: stop.is_a?(StopVisit) ? stop.visit.destination.duration_absolute_time_with_seconds : nil
-    }
+    ref_visit: stop.ref_visit,
+    duration: case stop
+              when StopVisit
+                stop.visit.duration ? stop.visit.duration_absolute_time_with_seconds : nil
+              when StopStore
+                stop.store_reload.duration ? stop.store_reload.duration_time_with_seconds : nil
+              when StopRest
+                route.vehicle_usage.default_rest_duration ? route.vehicle_usage.default_rest_duration_time_with_seconds : nil
+              end,
+    time_window_start_1: (stop.time_window_start_1_absolute_time if stop.time_window_start_1),
+    time_window_end_1: (stop.time_window_end_1_absolute_time if stop.time_window_end_1),
+    time_window_start_2: (stop.time_window_start_2_absolute_time if stop.time_window_start_2),
+    time_window_end_2: (stop.time_window_end_2_absolute_time if stop.time_window_end_2),
+    force_position: (I18n.t("plannings.export_file.force_position_#{stop.force_position}") if stop.is_a?(StopVisit) && stop.force_position),
+    priority: (stop.priority if stop.priority),
+    revenue: (stop.visit.revenue if stop.is_a?(StopVisit)),
+    tag_visits: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
+  })
 
-    row.merge!(state: stop.state) if @customer.with_state?
-    row.merge!({
-      country: stop.country,
-      lat: stop.lat&.round(6),
-      lng: stop.lng&.round(6),
-      comment: stop.comment,
-      phone_number: stop.phone_number,
-      tags: (stop.visit.destination.tags.collect(&:label).join(',') if stop.is_a?(StopVisit)),
+  row.merge!(Hash[pickup_delivery_columns])
 
-      ref_visit: stop.ref_visit,
-      duration: case stop
-                when StopVisit
-                  stop.visit.duration ? stop.visit.duration_absolute_time_with_seconds : nil
-                when StopStore
-                  stop.store_reload.duration ? stop.store_reload.duration_time_with_seconds : nil
-                when StopRest
-                  route.vehicle_usage.default_rest_duration ? route.vehicle_usage.default_rest_duration_time_with_seconds : nil
-                end,
-      time_window_start_1: (stop.time_window_start_1_absolute_time if stop.time_window_start_1),
-      time_window_end_1: (stop.time_window_end_1_absolute_time if stop.time_window_end_1),
-      time_window_start_2: (stop.time_window_start_2_absolute_time if stop.time_window_start_2),
-      time_window_end_2: (stop.time_window_end_2_absolute_time if stop.time_window_end_2),
-      force_position: (I18n.t("plannings.export_file.force_position_#{stop.force_position}") if stop.is_a?(StopVisit) && stop.force_position),
-      priority: (stop.priority if stop.priority),
-      revenue: (stop.visit.revenue if stop.is_a?(StopVisit)),
-      tag_visits: (stop.visit.tags.collect(&:label).join(',') if stop.is_a?(StopVisit))
-    })
-
-    row.merge!(Hash[pickup_delivery_columns])
-
-    pickups = nil
-    deliveries = nil
-    if stop.is_a?(StopVisit)
-      visit = stop.visit
-      pickups = visit.pickups
-      deliveries = visit.deliveries
-    end
-
-    row.merge!(Hash[@customer.enable_orders ?
-      [[:orders, stop.is_a?(StopVisit) && stop.order && stop.order.products.length > 0 ? stop.order.products.collect(&:code).join('/') : nil]] :
-      pickup_delivery_defs.flat_map{ |definition|
-        du_id = definition[:du_id]
-        [
-          [definition[:pickup_header], pickups && pickups[du_id]],
-          [definition[:delivery_header], deliveries && deliveries[du_id]]
-        ]
-      }
-    ])
-    row.merge!(
-      Hash[@visit_custom_attributes.map{ |ca|
-        ["custom_attributes_visit[#{ca.name}]".to_sym, stop.visit && stop.visit.custom_attributes_typed_hash[ca.name]]
-      }
-    ])
-    row.merge!(
-      Hash[@stop_custom_attributes.map{ |ca|
-        ["custom_attributes_stop[#{ca.name}]".to_sym, stop.custom_attributes_typed_hash[ca.name]]
-      }
-    ])
-
-    csv << @columns.map{ |c|
-      value = row[c.to_sym]
-      value == '' ? nil : value
-    }
+  pickups = nil
+  deliveries = nil
+  if stop.is_a?(StopVisit)
+    visit = stop.visit
+    pickups = visit.pickups
+    deliveries = visit.deliveries
   end
+
+  row.merge!(Hash[@customer.enable_orders ?
+    [[:orders, stop.is_a?(StopVisit) && stop.order && stop.order.products.length > 0 ? stop.order.products.collect(&:code).join('/') : nil]] :
+    pickup_delivery_defs.flat_map{ |definition|
+      du_id = definition[:du_id]
+      [
+        [definition[:pickup_header], pickups && pickups[du_id]],
+        [definition[:delivery_header], deliveries && deliveries[du_id]]
+      ]
+    }
+  ])
+  row.merge!(
+    Hash[@visit_custom_attributes.map{ |ca|
+      ["custom_attributes_visit[#{ca.name}]".to_sym, stop.visit && stop.visit.custom_attributes_typed_hash[ca.name]]
+    }
+  ])
+  row.merge!(
+    Hash[@stop_custom_attributes.map{ |ca|
+      ["custom_attributes_stop[#{ca.name}]".to_sym, stop.custom_attributes_typed_hash[ca.name]]
+    }
+  ])
+
+  csv << @columns.map{ |c|
+    value = row[c.to_sym]
+    value == '' ? nil : value
+  }
 }
 
-if route.vehicle_usage_id && (stops_filter.empty? || stops_filter.include?('store'))
+if route.vehicle_usage_id && export_includes_stop_category?('store')
   row = {
     planning_ref: route.planning.ref,
     planning_name: route.planning.name,
