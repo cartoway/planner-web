@@ -20,6 +20,7 @@ import { RoutesLayer } from '../../assets/javascripts/routes_layers';
 import { selectTag } from '../../assets/javascripts/tags';
 import {
   applyStopPopupManagePlanning,
+  ajaxWithPendingAction,
   beforeSendWaiting,
   completeAjaxMap,
   ajaxError,
@@ -3635,11 +3636,14 @@ export const plannings_edit = function(params) {
   });
 
   $(".main").on("click", ".send_to_route", function() {
-    var route_id = $(this).closest("[data-route-id]").attr("data-route-id");
-    var stopId = $(this).closest("[data-stop-id]").attr("data-stop-id");
+    var $link = $(this);
+    var route_id = $link.closest("[data-route-id]").attr("data-route-id");
+    var stopId = $link.closest("[data-stop-id]").attr("data-stop-id");
     var url = this.href;
     var matches = url.match(new RegExp('([0-9]+)/([0-9]+)/move'));
-    $.ajax({
+    var pendingKey = `send-to-route:${stopId || url}`;
+
+    ajaxWithPendingAction(pendingKey, {
       type: 'PATCH',
       url: url,
       beforeSend: function() {
