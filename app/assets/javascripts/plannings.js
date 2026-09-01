@@ -237,7 +237,7 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
     $('[name=spreadsheet-route]').val('');
   });
 
-  if (export_settings && export_settings['stops']) {
+  if (export_settings && Array.isArray(export_settings['stops'])) {
     $.each($('.spreadsheet-stops'), function(i, cb) {
       $(cb).prop('checked', export_settings['stops'].indexOf($(cb).val()) >= 0);
     });
@@ -335,7 +335,11 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
     var spreadsheetFormat = $('[name=spreadsheet-format]:checked').val();
     var basePath = $('[name=spreadsheet-route]').val() ? ('/routes/' + $('[name=spreadsheet-route]').val()) : (planningId) ? '/plannings/' + planningId : '/plannings';
 
-    window.location.href = basePath + '.' + spreadsheetFormat + '?stops=' + spreadsheetStops + '&columns=' + spreadsheetColumnsExport + "&ids=" + planningsId + '&skips=' + spreadsheetColumnsSkip;
+    window.location.href = basePath + '.' + spreadsheetFormat +
+      '?stops=' + encodeURIComponent(spreadsheetStops) +
+      '&columns=' + encodeURIComponent(spreadsheetColumnsExport) +
+      '&ids=' + encodeURIComponent(planningsId) +
+      '&skips=' + encodeURIComponent(spreadsheetColumnsSkip);
 
     $('#planning-spreadsheet-modal').modal('toggle');
   });

@@ -1180,7 +1180,8 @@ class PlanningsController < ApplicationController
       @customer ||= @planning.customer
       @is_summary = ValueToBoolean.value_to_boolean(export_params[:summary])
       @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
-      current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), 'excel')
+      @export_stop_categories = params.key?(:stops) ? Array(params[:stops]).flat_map { |value| value.to_s.split('|') }.reject(&:blank?) : nil
+      current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), @export_stop_categories, 'excel')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
       type: 'text/csv',
@@ -1191,7 +1192,8 @@ class PlanningsController < ApplicationController
       @customer ||= @planning.customer
       @is_summary = ValueToBoolean.value_to_boolean(export_params[:summary])
       @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
-      current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), 'csv')
+      @export_stop_categories = params.key?(:stops) ? Array(params[:stops]).flat_map { |value| value.to_s.split('|') }.reject(&:blank?) : nil
+      current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), @export_stop_categories, 'csv')
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
     end
@@ -1210,7 +1212,9 @@ class PlanningsController < ApplicationController
     @customer ||= @plannings.first&.customer || current_user.customer
     @is_summary = ValueToBoolean.value_to_boolean(export_params[:summary])
     @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
-    current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), export_params[:stops]&.split('|'), kind)
+    # Capture before the streaming Enumerator: request params may be unreliable mid-stream.
+    @export_stop_categories = params.key?(:stops) ? Array(params[:stops]).flat_map { |value| value.to_s.split('|') }.reject(&:blank?) : nil
+    current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), @export_stop_categories, kind)
     @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
 
     headers['Content-Type'] = 'text/csv'
