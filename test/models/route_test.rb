@@ -531,19 +531,43 @@ class RouteTest < ActiveSupport::TestCase
     prev_stop = route.stops.sort_by(&:index).find { |stop| stop.index < rest.index && stop.active? }
     next_stop = route.stops.sort_by(&:index).find { |stop| stop.index > rest.index && stop.active? }
 
-    materialized_arrival = prev_stop.time + prev_stop.duration + (rest.drive_time || 0)
+    leg_drive_time = next_stop.drive_time
+    materialized_arrival = prev_stop.time + prev_stop.duration + (leg_drive_time || 0)
     strict = route.planning.customer.enable_strict_within_timewindows
     _open, close, = rest.best_open_close(materialized_arrival, strict_within_timewindows: strict)
     close_compare_time = strict ? materialized_arrival + rest.duration : materialized_arrival
     lateness = close && close_compare_time > close ? close_compare_time - close : 0
-    shift = [lateness, rest.drive_time].compact.min
+    shift = [lateness, leg_drive_time].compact.min
 
     assert_operator lateness, :>, 0
     assert_operator shift, :>, 0
     assert_equal materialized_arrival - shift, rest.time
-    assert_not rest.out_of_window
     assert_nil rest.wait_time
-    assert_equal materialized_arrival + rest.duration + next_stop.drive_time, next_stop.time
+    assert_equal rest.time + rest.duration + next_stop.drive_time, next_stop.time
+  end
+
+  test 'plan marks unpositioned stop_rest out_of_window when it cannot fit in rest window' do
+    route = routes(:route_one_one)
+    route.vehicle_usage.update_columns(store_rest_id: nil)
+    route.planning.customer.update_columns(enable_strict_within_timewindows: true)
+
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    route.move_stop(rest, 2)
+    route.save!
+    route.reload
+
+    route.route_data.update_columns(departure: 51_000)
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    prev_stop = route.stops.sort_by(&:index).find { |stop| stop.index < rest.index && stop.active? }
+    leg_start = prev_stop.time + prev_stop.duration
+
+    assert rest.out_of_window
+    assert_operator rest.time, :>=, leg_start
+    assert_nil rest.wait_time
   end
 
   test 'should return the drive time when compute' do

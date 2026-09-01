@@ -2004,21 +2004,36 @@ class Route < ApplicationRecord
       end
       next unless stop.is_a?(StopRest) && stop.active? && !stop.position? && stop.time
 
-      arrival_time = stop.wait_time ? stop.time - stop.wait_time : stop.time
-      _open, close, = stop.best_open_close(arrival_time, strict_within_timewindows: strict)
-      close_compare_time = strict ? arrival_time + stop.duration : arrival_time
+      leg_start = stop.wait_time ? stop.time - stop.wait_time : stop.time
+      leg_drive_time = drive_time_on_following_leg(stops_sort, stop, stops_drive_time)
+      materialized_arrival = leg_drive_time ? leg_start + leg_drive_time : leg_start
+
+      _open, close, = stop.best_open_close(materialized_arrival, strict_within_timewindows: strict)
+      close_compare_time = strict ? materialized_arrival + stop.duration : materialized_arrival
       lateness = close && close_compare_time > close ? close_compare_time - close : 0
       next unless lateness.positive?
 
-      shift = [lateness, stops_drive_time[stop]].compact.min
+      shift = [lateness, leg_drive_time].compact.min
       next unless shift.positive?
 
-      stop.time = arrival_time - shift
+      rest_start = [materialized_arrival - shift, leg_start].max
+      _open, _close, late_wait = stop.best_open_close(rest_start, strict_within_timewindows: strict)
+
+      stop.time = rest_start
       stop.wait_time = nil
-      _open, _close, late_wait = stop.best_open_close(stop.time, strict_within_timewindows: strict)
       stop.out_of_window = !!(late_wait && late_wait.positive?)
-      previous_route_data.out_of_window ||=  stop.out_of_window
+      previous_route_data.out_of_window ||= stop.out_of_window
     end
+  end
+
+  def drive_time_on_following_leg(stops_sort, rest, stops_drive_time)
+    rest_index = stops_sort.index(rest)
+    stops_sort[(rest_index + 1)..].each do |following_stop|
+      drive_time = stops_drive_time[following_stop]
+      return drive_time if drive_time
+    end
+
+    nil
   end
 
   def use_persisted_route_metrics?
