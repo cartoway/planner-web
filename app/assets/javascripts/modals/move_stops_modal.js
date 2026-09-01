@@ -18,7 +18,7 @@
 
 'use strict';
 
-import { ajaxError, beforeSendWaiting, completeAjaxMap } from '../ajax.js';
+import { ajaxError, ajaxWithPendingAction, beforeSendWaiting, completeAjaxMap } from '../ajax.js';
 import { panelLoading } from '../plannings.js';
 
 /**
@@ -377,6 +377,10 @@ export class MoveStopsModal {
    * Handle move stops action
    */
   handleMoveStops() {
+    if (!this.stopMoveUsable) {
+      return;
+    }
+
     const stopIds = $(this.modalSelector)
       .find('form input[name="stop_ids"]:checked:visible')
       .map(function() { return $(this).val(); })
@@ -395,7 +399,7 @@ export class MoveStopsModal {
    * @param {string} index - Insertion index
    */
   moveStops(stopIds, targetRouteId, index) {
-    $.ajax({
+    ajaxWithPendingAction(`move-stops:${this.planningId}`, {
       type: 'PATCH',
       url: `/plannings/${this.planningId}/${targetRouteId}/move.json`,
       data: {
