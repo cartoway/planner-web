@@ -253,7 +253,9 @@ class Route < ApplicationRecord
       out_of_max_ride_distance: false,
       out_of_max_ride_duration: false,
       out_of_relation: false,
-      out_of_skill: false
+      out_of_skill: false,
+      out_of_capacity: false,
+      unmanageable_capacity: false
     }
   end
 
@@ -1914,7 +1916,7 @@ class Route < ApplicationRecord
     default_deliveries = stop.visit.default_deliveries(@deliverable_units)
     # Is the vehicle in overload/underload arriving at the stop ?
     out_of_capacity = out_of_capacity?(current_loads)
-    unmanageable_capacity = nil
+    unmanageable_capacity = false
 
     @deliverable_units.each do |du|
       if vehicle_usage
