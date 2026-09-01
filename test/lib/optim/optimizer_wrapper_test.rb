@@ -500,6 +500,25 @@ class OptimizerWrapperTest < ActionController::TestCase
     end
   end
 
+  test 'should default cost_time_multiplier to 1 when both vehicle cost multipliers are blank' do
+    begin
+      planning = plannings(:planning_one)
+      planning.customer.update!(enable_vehicle_costs: true)
+      route = planning.routes.find(&:vehicle_usage?)
+      route.vehicle_usage.update!(cost_distance: nil, cost_time: nil)
+      route.vehicle_usage.vehicle_usage_set.update!(cost_distance: nil, cost_time: nil)
+
+      vrp = @optim.build_vrp(planning, planning.routes)
+      vehicle = vrp[:vehicles].first
+
+      assert_equal 0, vehicle[:cost_distance_multiplier]
+      assert_equal 1, vehicle[:cost_time_multiplier]
+    ensure
+      remove_request_stub(@stub_VrpJob)
+      remove_request_stub(@stub_VrpSubmit)
+    end
+  end
+
   test 'should not use vehicle costs when enable_vehicle_costs is false' do
     begin
       planning = plannings(:planning_one)
