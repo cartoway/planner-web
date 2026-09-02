@@ -22,10 +22,19 @@
   width: 0;
   max-width: none;
   margin-bottom: 0;
+  // separate + spacing 0 keeps sticky thead reliable across browsers
+  border-collapse: separate;
+  border-spacing: 0;
 
   th,
   td {
     vertical-align: middle;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
   }
 
   .destinations-list-col {
@@ -455,8 +464,7 @@
       .table-responsive {
         width: max-content;
         max-width: 100%;
-        overflow-x: auto;
-        overflow-y: visible;
+        overflow: visible;
       }
 
       // List row highlight (list click, map pin, or ?highlight_destination_id=).
