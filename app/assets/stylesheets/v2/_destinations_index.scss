@@ -512,8 +512,6 @@
     }
   }
 
-  @include maplibre-shared-controls;
-
   .destinations-marker {
     // Flat marker: solid disc + simple triangle, minimal shadow (aligns with flat app UI)
     --dm-head-size: 30px;
