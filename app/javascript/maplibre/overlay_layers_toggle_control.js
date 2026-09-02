@@ -3,6 +3,13 @@
 
 const DEFAULT_ROOT_CLASS = 'maplibregl-ctrl maplibregl-ctrl-group maplibre-overlay-toggles'
 
+export function shouldCollapseOverlayToggles (wrap, target, composedPath = []) {
+  if (!wrap || !target) return false
+  if (wrap.contains(target)) return false
+  if (composedPath.length && composedPath.includes(wrap)) return false
+  return true
+}
+
 /**
  * @param {{ layerId: string, name: string, initialVisible?: boolean }[]} overlaySpecs
  * @param {string} summaryTitle - native tooltip + aria-label on the summary control (no visible text)
@@ -123,11 +130,29 @@ OverlayLayersToggleIControl.prototype.onAdd = function (map) {
   details.appendChild(summary)
   details.appendChild(body)
   wrap.appendChild(details)
+  this._map = map
+  this._details = details
+
+  const collapse = () => {
+    if (details.open) details.open = false
+  }
+
+  this._outside = (e) => {
+    const path = typeof e.composedPath === 'function' ? e.composedPath() : []
+    if (shouldCollapseOverlayToggles(wrap, e.target, path) && details.open) collapse()
+  }
+  document.addEventListener('pointerdown', this._outside, true)
+
+  this._mapClick = () => collapse()
+  map.on('click', this._mapClick)
+
   this._container = wrap
   return wrap
 }
 
 OverlayLayersToggleIControl.prototype.onRemove = function () {
+  if (this._outside) document.removeEventListener('pointerdown', this._outside, true)
+  if (this._map && this._mapClick) this._map.off('click', this._mapClick)
   if (this._container && this._container.parentNode) {
     this._container.parentNode.removeChild(this._container)
   }
