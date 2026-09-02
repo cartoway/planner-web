@@ -10,6 +10,7 @@ import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { DestinationsMapLayers, CLUSTER_LAYER_ID } from 'maplibre/destinations_map_layers'
+import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 
 const DEFAULT_ZOOM = 12
 const MIN_CHARS = 3
@@ -493,8 +494,17 @@ export default class extends Controller {
       style,
       center: [centerLng, centerLat],
       zoom,
-      attributionControl: true
+      attributionControl: true,
+      dragRotate: false,
+      pitchWithRotate: false,
+      touchPitch: false,
+      maxPitch: 0,
+      minPitch: 0,
+      pitch: 0,
+      bearing: 0
     })
+    disableMapPitchAndRotation(map)
+    map.on('style.load', () => disableMapPitchAndRotation(map))
     container._v2MaplibreMap = map
     this._map = map
 
