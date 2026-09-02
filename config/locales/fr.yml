@@ -2971,8 +2971,8 @@ fr:
         destinations_list: Colonnes liste adresses
         destinations_list_help: Permet de personnaliser les colonnes affichées dans la liste des adresses. Faites glisser les colonnes entre les listes ; au plus %{max} colonnes peuvent être actives ; l’ordre dans « Actives » est respecté de gauche à droite.
         destinations_index: Liste adresses
-        destinations_index_v2: Nouvelle liste
-        destinations_index_help: Activez la nouvelle liste avec carte. Désactivez pour conserver la liste classique.
+        destinations_index_v2: Nouvelle liste d'adresses
+        destinations_index_help: Activez la nouvelle liste d'adresses. Désactivez pour conserver la liste classique.
         route_headers: Données tournées
         planning_toolbar: Outils planning
         route_toolbar: Outils tournées
