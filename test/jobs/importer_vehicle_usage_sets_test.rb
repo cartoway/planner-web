@@ -156,6 +156,32 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
     end
   end
 
+  test 'should reset vehicle router to customer default when calculateur column is blank on replace' do
+    vehicle = vehicles(:vehicle_one)
+    assert_equal routers(:router_one), vehicle.router
+
+    csv = <<~CSV
+      référence véhicule,nom véhicule,calculateur d'itinéraire,objectif du calculateur,horaire début,horaire fin,coût kilométrique,coût fixe,coût horaire
+      ,Véhicule 1,,,28800,57600,1,2,3
+    CSV
+
+    Tempfile.create(['import_vehicle_usage_sets_router_blank', '.csv']) do |file|
+      file.write(csv)
+      file.rewind
+      upload = Rack::Test::UploadedFile.new(file.path, 'text/csv')
+
+      imported_data = ImportCsv.new(
+        importer: ImporterVehicleUsageSets.new(@customer),
+        replace_vehicles: true,
+        file: upload
+      ).import
+
+      assert imported_data
+      assert_nil imported_data.first.router_id
+      assert_equal @customer.router, imported_data.first.default_router
+    end
+  end
+
   test 'should import vehicle usage set with tags' do
     assert_difference('VehicleUsageSet.count', 0) do
       imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_tags.csv', 'text.csv')).import

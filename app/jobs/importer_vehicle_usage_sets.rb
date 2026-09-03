@@ -199,7 +199,7 @@ class ImporterVehicleUsageSets < ImporterBase
       vehicle.ref = nil if ref_vehicle.empty?
       vehicle_attributes[:name] = vehicle_attributes.delete(:name_vehicle)
       vehicle_attributes[:color] = vehicle_attributes.delete(:color) || vehicle.color
-      vehicle_attributes[:router] = Router.where(mode: vehicle_attributes.delete(:router_mode)).first
+      assign_import_router!(vehicle_attributes)
       # TODO: use typed options to automatically convert to the correct format
       vehicle_attributes[:router_options] = vehicle_attributes[:router_options] ? ActiveSupport::JSON.decode(vehicle_attributes.delete(:router_options).gsub(/(\d),(\d)/, '\1.\2')) : {}
       vehicle_attributes[:tags] = vehicle_attributes.delete(:tags_vehicle) if vehicle_attributes.key?(:tags_vehicle)
@@ -442,5 +442,40 @@ class ImporterVehicleUsageSets < ImporterBase
     else
       row.all? { |cell| empty_value?(cell.is_a?(Array) ? cell[1] : cell) }
     end
+  end
+
+  def assign_import_router!(vehicle_attributes)
+    router_value = vehicle_attributes.delete(:router_mode)
+    if empty_value?(router_value)
+      vehicle_attributes[:router] = nil
+      vehicle_attributes[:router_id] = nil
+      return
+    end
+
+    router = resolve_import_router(router_value)
+    raise ImportInvalidRow.new(I18n.t('vehicles.import.unknown_router', value: router_value)) unless router
+
+    vehicle_attributes[:router] = router
+  end
+
+  def resolve_import_router(value)
+    normalized = value.to_s.strip
+    routers = @customer.profile.routers.to_a
+
+    if normalized.match?(/\A\d+\z/)
+      router = routers.find { |candidate| candidate.id == normalized.to_i }
+      return router if router
+    end
+
+    routers.find { |candidate|
+      candidate.mode.casecmp?(normalized) ||
+        candidate.name.casecmp?(normalized) ||
+        candidate.translated_name.casecmp?(normalized)
+    } || routers.find { |candidate|
+      label = normalized.sub(/\s+-\s+.+$/, '').strip
+      next if label == normalized
+
+      candidate.translated_name.casecmp?(label) || candidate.name.casecmp?(label)
+    }
   end
 end
