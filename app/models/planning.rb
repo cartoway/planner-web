@@ -1050,40 +1050,35 @@ class Planning < ApplicationRecord
 
           # Set route, active, index and reset route data
           i = 0
+          queued = []
           new_route_stops.compact.each{ |stop|
             if stop.is_a?(StopRest) && !route.vehicle_usage?
               flat_stop_ids.delete stop.id
-            else
-              if !options[:global] && !route.vehicle_usage? && route.id != stop.route_id
-                stop.active = false;
-                stop.index = i += 1
-                stop.save!
-                next
-              end
-              stop.active = true if route.vehicle_usage? && route.id != stop.route_id
+            elsif !options[:global] && !route.vehicle_usage? && route.id != stop.route_id
+              stop.active = false
               stop.index = i += 1
-              stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
-              if stop.route_id != route.id
-                updated_route_ids << stop.route_id
-                stop.route_id = route.id
-              end
               stop.save!
+            else
+              stop.active = true if route.vehicle_usage? && route.id != stop.route_id
+              queued << stop
             end
           }
-          deactivated_stops.each{ |stop|
-            stop.active = false if route.vehicle_usage?
+          deactivated_stops.each{ |stop| stop.active = false if route.vehicle_usage?; queued << stop }
+          inactive_stops.each{ |stop| stop.active = false if route.vehicle_usage?; queued << stop }
+          seen = queued.to_h{ |s| [s.id, true] }
+          # Omitted stops (e.g. unassigned rests) keep their old index and would collide.
+          queued.concat(route.stops.select{ |s| s.id && s.route_id == route.id && !seen[s.id] }.sort_by{ |s| [s.index.to_i, s.id] })
+
+          queued.each{ |stop|
             stop.index = i += 1
             stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
             if stop.route_id != route.id
               updated_route_ids << stop.route_id
+              if (previous_route = routes.find{ |r| r.id == stop.route_id })
+                previous_route.association(:stops).target&.reject!{ |s| s.id == stop.id }
+              end
               stop.route_id = route.id
             end
-            stop.save!
-          }
-          inactive_stops.each{ |stop|
-            stop.active = false if route.vehicle_usage?
-            stop.index = i += 1
-            stop.time = stop.distance = stop.drive_time = stop.out_of_window = stop.out_of_capacity = stop.out_of_drive_time = stop.out_of_work_time = stop.out_of_max_distance = stop.out_of_max_ride_distance = stop.out_of_max_ride_duration = nil
             stop.save!
           }
         }
@@ -1093,6 +1088,7 @@ class Planning < ApplicationRecord
           next unless optimum.key?(route.id)
 
           route.outdated = true
+          route.association(:stops).reset # avoid autosaving stops moved to another route
           (route.no_stop_index_validation = true) && route.save!
           route.stops.reload # Refresh route.stops collection if stops have been moved
         }
@@ -1100,6 +1096,7 @@ class Planning < ApplicationRecord
         outdate_drained_routes(updated_route_ids - self.routes.map(&:id)) if updated_route_ids.any?
         self.reload # Refresh route.stops collection if stops have been moved
         raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.reject{ |s| s.is_a?(StopStore) }.size }.reduce(&:+) == stops_count
+        self.routes.each { |route| route.ensure_unique_stop_indices! }
       end
     end
   end

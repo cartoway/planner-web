@@ -1064,6 +1064,51 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal optim, planning.routes.map{ |r| [r.id, r.stops.map{ |s| { id: s.id, type: s.optim_type }}] }.to_h
   end
 
+  test 'set_stops keeps unique consecutive indexes when a rest is omitted from the solution' do
+    planning = plannings(:planning_one)
+    route = routes(:route_one_one)
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    route.move_stop(rest, 1)
+    route.save!
+    route.reload
+
+    visit_activities = route.stops.select { |stop| stop.is_a?(StopVisit) }.sort_by(&:index).map { |stop|
+      { id: stop.id, type: stop.optim_type }
+    }
+
+    planning.set_stops({ route.id => visit_activities })
+    planning.reload
+    route = planning.routes.find { |candidate| candidate.id == route.id }
+    indexes = route.stops.map(&:index)
+
+    assert_equal indexes.size, indexes.uniq.size, "duplicate stop indexes: #{route.stops.map { |s| [s.id, s.index, s.type] }}"
+    assert_equal (1..indexes.size).to_a, indexes.sort
+    assert_includes route.stops.map(&:id), rest.id
+  end
+
+  test 'set_stops keeps unique indexes when moving visits between routes' do
+    planning = plannings(:planning_one)
+    route_one = routes(:route_one_one)
+    route_three = routes(:route_three_one)
+    route_one_visits = route_one.stops.select { |stop| stop.is_a?(StopVisit) }.map { |stop| { id: stop.id, type: stop.optim_type } }
+    route_three_visits = route_three.stops.select { |stop| stop.is_a?(StopVisit) }.map { |stop| { id: stop.id, type: stop.optim_type } }
+
+    planning.set_stops(
+      {
+        route_one.id => route_one_visits + route_three_visits,
+        route_three.id => route_three.stops.select { |stop| stop.is_a?(StopRest) }.map { |stop| { id: stop.id, type: stop.optim_type } }
+      }
+    )
+    planning.reload
+
+    [route_one.id, route_three.id].each do |route_id|
+      route = planning.routes.find { |candidate| candidate.id == route_id }
+      indexes = route.stops.map(&:index)
+      assert_equal indexes.size, indexes.uniq.size, "duplicate stop indexes on route #{route_id}: #{route.stops.map { |s| [s.id, s.index, s.type] }}"
+      assert_equal (1..indexes.size).to_a, indexes.sort
+    end
+  end
+
   test 'should destroy optimizer_job on planning destroy' do
     planning = plannings(:planning_one)
     customer = planning.customer
