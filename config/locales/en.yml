@@ -2939,6 +2939,7 @@ en:
       devices: devices
       devices_desc: reference or ID of devices associated to vehicle
       missing_name: '"name" of the vehicle missing'
+      unknown_router: 'unknown or unauthorized routing engine for this profile: "%{value}"'
       format:
         string: text
         json: json
