@@ -129,19 +129,24 @@
 }
 
 #customers {
-  .action-buttons {
-    width: 1%;
+  margin-bottom: 0;
+
+  .customers-count-col {
+    min-width: 1%;
     white-space: nowrap;
-    vertical-align: top;
-    overflow: visible;
+  }
+
+  .customers-actions-col,
+  .action-buttons {
+    min-width: 300px;
   }
 
   .customer-action-buttons-toolbar {
     display: inline-flex;
     flex-direction: row;
-    align-items: center;
     flex-wrap: nowrap;
-    float: right;
+    justify-content: flex-end;
+    align-items: center;
     gap: 4px;
 
     &::before,
