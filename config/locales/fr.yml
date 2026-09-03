@@ -3052,6 +3052,8 @@ fr:
       devices: appareils
       devices_desc: référence ou ID de votre GPS associé aux véhicules
       missing_name: « nom » du véhicule manquant
+      unknown_router: >-
+        calculateur d'itinéraire inconnu ou non autorisé pour ce profil : « %{value} »
       format:
         string: texte
         json: json
