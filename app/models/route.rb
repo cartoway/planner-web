@@ -1132,9 +1132,20 @@ class Route < ApplicationRecord
 
   def force_reindex
     # Force reindex after customers.destination.destroy_all
-    stops.sort_by(&:index).each_with_index{ |stop, index|
+    stops.sort_by { |stop| [stop.index.to_i, stop.id.to_i] }.each_with_index{ |stop, index|
       stop.index = index + 1
     }
+  end
+
+  def ensure_unique_stop_indices!
+    return unless vehicle_usage?
+
+    indexes = stops.map(&:index)
+    return if indexes.empty?
+    return if indexes.uniq.size == indexes.size && indexes.min == 1 && indexes.max == indexes.size
+
+    force_reindex
+    persist_stop_indices!(stops.to_a)
   end
 
   def sum_out_of_window
