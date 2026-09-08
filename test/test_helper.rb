@@ -79,6 +79,28 @@ class ActiveSupport::TestCase
   set_fixture_class route_data_start: RouteData
   set_fixture_class route_data_stop: RouteData
 
+  # Rest type is locked on the vehicle usage set. skip_callbacks keeps existing StopRests.
+  def enable_regulatory_rest!(vehicle_usage, duration: 45.minutes.to_i, lapse: 6.hours.to_i, skip_callbacks: false)
+    set = vehicle_usage.vehicle_usage_set
+    attrs = {
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: duration,
+      rest_lapse: lapse,
+      store_rest_id: nil
+    }
+    if skip_callbacks
+      set.update_columns(attrs)
+      vehicle_usage.update_columns(attrs)
+    else
+      set.vehicle_usages.each do |usage|
+        usage.update_columns(rest_start: nil, rest_stop: nil, rest_duration: nil, rest_lapse: nil, store_rest_id: nil)
+      end
+      set.update!(attrs)
+    end
+    vehicle_usage.reload
+  end
+
   # Sync counter cache columns when tests bypass ActiveRecord callbacks (delete_all, SQL).
   def sync_customer_counters!(customer = nil)
     scope = customer ? Customer.where(id: customer.id) : Customer.all

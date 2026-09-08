@@ -97,11 +97,28 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     get :edit, params: { id: @vehicle_usage_set }
     assert_response :success
     assert_valid response
+    assert_select '#vehicle_usage_set_rest_type_input .form-check', 2
+    assert_select 'input.form-check-input[name=?]', 'vehicle_usage_set[rest_mode]', 2
+    assert_select '#vehicle_usage_set_rest_duration:not([disabled])'
+    assert_select '#vehicle_usage_set_rest_lapse:not([disabled])'
+    assert_select '#vehicle_usage_set_rest_lapse' do |nodes|
+      assert nodes.first['value'].blank?
+    end
   end
 
   test 'should update vehicle_usage_set' do
     patch :update, params: { id: @vehicle_usage_set, vehicle_usage_set: { name: 'toto', time_window_start: @vehicle_usage_set.time_window_start } }
     assert_redirected_to vehicle_usage_sets_path
+  end
+
+  test 'should update vehicle_usage_set with regulatory rest' do
+    patch :update, params: { id: @vehicle_usage_set, vehicle_usage_set: { rest_mode: 'regulatory', rest_start: '', rest_stop: '', rest_duration: '00:45', rest_lapse: '06:00', store_rest_id: '' } }
+    assert_redirected_to vehicle_usage_sets_path
+    @vehicle_usage_set.reload
+    assert_equal 45.minutes.to_i, @vehicle_usage_set.rest_duration
+    assert_equal 6.hours.to_i, @vehicle_usage_set.rest_lapse
+    assert_nil @vehicle_usage_set.rest_start
+    assert_nil @vehicle_usage_set.rest_stop
   end
 
   test 'should update vehicle_usage_set with time exceeding one day' do
