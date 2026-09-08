@@ -21,13 +21,17 @@ class History
     ActiveRecord::Base.connection.execute("
 DELETE FROM history_stops
 WHERE
-  date_trunc('day', date) = date_trunc('day', now()) AND
+  date_trunc('day', date) =
+    date_trunc('day', COALESCE(
+      (SELECT date FROM plannings WHERE id = #{planning_id || 'NULL'}),
+      now()
+    )) AND
   (planning_id IS NULL OR planning_id = #{planning_id || 'NULL'})
 ;
 INSERT INTO history_stops
 SELECT
   (SELECT max(version) FROM schema_migrations) AS schema_version,
-  #{hourly ? 'date_trunc(\'hour\', now())' : 'now()'} AS date,
+  #{hourly ? 'date_trunc(\'hour\', now())' : 'COALESCE(plannings.date, now())'} AS date,
   customers.reseller_id AS reseller_id,
   customers.id AS customer_id,
   vehicle_usages.id AS vehicle_usage_id,
