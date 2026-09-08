@@ -1533,6 +1533,7 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
   end
 
   test 'should import sequential destinations in same planning' do
+    customers(:customer_one).update(job_optimizer_id: nil)
     Planning.all.each(&:destroy)
     @customer.delete_all_destinations
     @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}
@@ -1570,6 +1571,7 @@ class V01::DestinationsWithJobTest < ActiveSupport::TestCase
   end
 
   test 'should import sequential destinations in same planning in no route' do
+    customers(:customer_one).update(job_optimizer_id: nil)
     Planning.all.each(&:destroy)
     @customer.delete_all_destinations
     @customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| (vu.active = true) && vu.save }}

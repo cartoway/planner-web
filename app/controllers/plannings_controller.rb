@@ -39,7 +39,7 @@ class PlanningsController < ApplicationController
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
   before_action :set_device_definitions, only: [:edit, :update]
-  before_action :check_no_existing_job, only: [:refresh, :driver_move] + UPDATE_ACTIONS
+  before_action :check_no_existing_job, only: [:optimize, :optimize_route]
   around_action :over_max_limit, only: [:create, :duplicate]
 
   before_action -> { deny_unless_form_update!(:plannings) }, only: %i[destroy destroy_multiple duplicate]

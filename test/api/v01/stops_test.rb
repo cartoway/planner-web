@@ -30,7 +30,7 @@ class V01::StopsTest < ActiveSupport::TestCase
 
   test 'should update stop' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       put api(@stop.route.planning.id, @stop.route.id, @stop.id, active: false)
       if mode
         assert_equal 409, last_response.status, last_response.body
@@ -43,7 +43,7 @@ class V01::StopsTest < ActiveSupport::TestCase
 
   test 'should move stop position in routes' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       patch api(@stop.route.planning.id, @stop.route.id, "#{@stop.route.planning.routes[0].stops[0].id}/move/1")
       if mode
         assert_equal 409, last_response.status, last_response.body

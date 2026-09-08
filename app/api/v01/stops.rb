@@ -71,7 +71,6 @@ class V01::Stops < Grape::API
             put ':id' do
               deny_stop_locked_update_unless_permitted!
               planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!
-              raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, planning.id)
               route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) } || raise(ActiveRecord::RecordNotFound.new)
               stop = route.stops.find{ |stop| stop.id == Integer(params[:id]) } || raise(ActiveRecord::RecordNotFound.new)
               Planning.transaction do
@@ -93,7 +92,6 @@ class V01::Stops < Grape::API
             end
             patch ':id/move/:index' do
               planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).preload_routes_without_stops.first!
-              raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, planning.id)
 
               route_id = Integer(params[:route_id])
               stop_id = Integer(params[:id])

@@ -85,7 +85,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
 
   test 'should move stop position in same route' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       patch api(@route.planning.id, "#{@route.id}/stops/#{@route.stops[0].id}/move/3")
       if mode
         assert_equal 409, last_response.status, last_response.body
@@ -98,7 +98,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
 
   test 'should move stop position from a route in another' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       patch api(@route.planning.id, "#{@route.id}/stops/#{@route.planning.routes[0].stops[0].id}/move/1")
       assert_equal mode ? 409 : 204, last_response.status, last_response.body
     end
@@ -106,24 +106,24 @@ class V01::RoutesTest < V01::RoutesBaseTest
 
   test 'should not move stop with invalid position' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       patch api(@route.planning.id, "#{@route.id}/stops/#{@route.planning.routes[0].stops[0].id}/move/666")
-      assert_equal mode ? 409 : 400, last_response.status, last_response.body
+      assert_equal 400, last_response.status, last_response.body
     end
   end
 
   test 'should change stops activation' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       patch api(@route.planning.id, "#{@route.id}/active/reverse")
       assert_equal mode ? 409 : 200, last_response.status, last_response.body
     end
   end
 
   test 'should move visits in routes' do
+    @route.remove_visit(visits(:visit_one)) # routes 1_1 and 3_1 both have a stop belonging to visit_id: 1
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
-      @route.remove_visit(visits(:visit_one)) # routes 1_1 and 3_1 both have a stop belonging to visit_id: 1
+      apply_job_optimizer_mode!(mode)
       assert_no_difference('Stop.count') do
         r = routes(:route_three_one)
         patch api(@route.planning.id, "#{r.id}/visits/moves").gsub('.json', '.xml'), visit_ids: [visits(:visit_two).id, visits(:visit_one).id]
@@ -159,7 +159,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
 
   test 'should optimize route with details' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       patch api(@route.planning.id, "#{@route.id}/optimize", details: true, synchronous: true)
       if mode
         assert_equal 409, last_response.status, last_response.body
@@ -246,7 +246,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
 
   test 'should update stops order' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       planning = @route.planning
       stops_index = @route.stops.map{ |s| s[:index] + s[:id] }
       patch "/api/0.1/plannings/#{planning[:id]}/routes/#{@route[:id]}/reverse_order?api_key=testkey1"
@@ -262,7 +262,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
 
   test 'should provide the good stops order' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       planning = @route.planning
       stops_hash = @route.stops.each_with_object({}){ |stop, hash| hash[stop[:id]] = stop[:index] }
       patch "/api/0.1/plannings/#{planning[:id]}/routes/#{@route[:id]}/reverse_order?api_key=testkey1"

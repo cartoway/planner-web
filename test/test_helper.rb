@@ -129,6 +129,19 @@ class ActiveSupport::TestCase
     end
   end
 
+  # Attach or clear the customer's OptimizerJob for [:during_optimization, nil] loops.
+  def apply_job_optimizer_mode!(mode, planning = nil)
+    planning ||= @planning || @route&.planning || @stop&.route&.planning
+    customer = planning.customer
+    if mode.nil?
+      customer.update(job_optimizer_id: nil)
+    else
+      job = delayed_jobs(:job_optimizer)
+      job.update!(handler: "planning_id: #{planning.id}")
+      customer.update!(job_optimizer: job)
+    end
+  end
+
   def assert_valid(response)
     #    html_validation = PageValidations::HTMLValidation.new
     #    validation = html_validation.validation(response.body, response.to_s)

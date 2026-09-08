@@ -70,6 +70,8 @@ class Stop < ApplicationRecord
   scope :by_route_then_index, -> { reorder(:route_id, :index) }
 
   before_save :outdate_route
+  before_save :reject_writes_during_optimization
+  before_destroy :reject_writes_during_optimization
 
   # Return best fit time window, and late (positive) time or waiting time (negative).
   # When strict_within_timewindows is true, the close side compares service end (arrival + duration)
@@ -101,6 +103,10 @@ class Stop < ApplicationRecord
     if active_changed? && !new_record?
       route.outdated = true if route
     end
+  end
+
+  def reject_writes_during_optimization
+    route&.planning&.reject_writes_during_optimization!
   end
 
   def optim_type

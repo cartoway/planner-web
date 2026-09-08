@@ -84,8 +84,6 @@ class V01::Routes < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         put ':id' do
-          raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
-
           deny_route_color_update_unless_paint_usable!
           deny_route_departure_update_unless_usable!
           get_route.update! route_params
@@ -104,8 +102,6 @@ class V01::Routes < Grape::API
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
         end
         patch ':id/active/:active' do
-          raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
-
           Stop.includes_destinations_and_stores.scoping do
             get_route.active(params[:active].to_s.to_sym) && get_route.compute_saved
             present get_route, with: V01::Entities::Route, geojson: params[:with_geojson]
@@ -123,7 +119,6 @@ class V01::Routes < Grape::API
           optional :automatic_insert, type: Boolean, desc: 'If true, the best index in the route is automatically computed to have minimum impact on total route distance (without taking into account constraints like open/close, you have to start a new optimization if needed).'
         end
         patch ':id/visits/moves' do
-          raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
           visit_ids = params[:visit_ids].map{ |raw_id|
             id_hash = ParseIdsRefs.read(raw_id)
             id_hash[:ref] || id_hash[:id]
@@ -207,8 +202,6 @@ class V01::Routes < Grape::API
         end
         patch ':id/reverse_order' do
           Stop.includes_destinations_and_stores.scoping do
-            raise Exceptions::JobInProgressError if Job.on_planning(current_customer.job_optimizer, get_route.planning.id)
-
             get_route && get_route.reverse_order && get_route.compute_saved!
             present get_route, with: V01::Entities::Route
           end

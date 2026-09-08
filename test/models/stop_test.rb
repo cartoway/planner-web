@@ -73,4 +73,11 @@ class StopTest < ActiveSupport::TestCase
     assert_equal 'beef', stop.default_icon
     assert_equal 'small', stop.default_icon_size
   end
+
+  test 'should not update stop while optimization job is running on planning' do
+    stop = stops(:stop_one_one)
+    delayed_jobs(:job_optimizer).update!(handler: "planning_id: #{stop.route.planning_id}")
+
+    assert_raises(Exceptions::JobInProgressError) { stop.update!(active: !stop.active) }
+  end
 end

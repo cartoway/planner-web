@@ -30,7 +30,6 @@ class V100::Destinations < Grape::API
         end
         get ':id/candidate_insert' do
           planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).preload_route_details.first!
-          raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
           destination = current_customer.destinations.where(ParseIdsRefs.read(params[:id])).first!
           begin

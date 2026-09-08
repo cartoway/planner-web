@@ -38,7 +38,7 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should update stop active status' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       stop_visit = stops(:stop_one_one)
 
       put api(@planning.id, stop_visit.route_id, stop_visit.id), { active: false }
@@ -57,7 +57,7 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should update stop with custom attributes' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       stop_visit = stops(:stop_one_one)
 
       put api(@planning.id, stop_visit.route_id, stop_visit.id), {
@@ -84,7 +84,7 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should update stop with boolean custom attribute' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       stop_visit = stops(:stop_one_one)
 
       put api(@planning.id, stop_visit.route_id, stop_visit.id), {
@@ -107,7 +107,7 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should not update stop store active status' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
 
       put api(@planning.id, @route.id, @stop_store_reload.id), { active: false }
 
@@ -125,7 +125,7 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should return 404 for non-existent planning on update' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       stop_visit = stops(:stop_one_one)
 
       put api(99999, stop_visit.route_id, stop_visit.id), { active: false }
@@ -136,22 +136,18 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should return 404 for non-existent route on update' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       stop_visit = stops(:stop_one_one)
 
       put api(@planning.id, 99999, stop_visit.id), { active: false }
 
-      if mode
-        assert_equal 409, last_response.status, last_response.body
-      else
-        assert_equal 404, last_response.status, last_response.body
-      end
+      assert_equal 404, last_response.status, last_response.body
     end
   end
 
   test 'should return 404 for non-existent stop on update' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
 
       put api(@planning.id, @route_id, 99999), { active: false }
 
@@ -161,7 +157,7 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should update stop with empty custom attributes' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       stop_visit = stops(:stop_one_one)
 
       put api(@planning.id, stop_visit.route_id, stop_visit.id), {
@@ -182,7 +178,7 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should update stop with custom attributes using typed values' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       stop_visit = stops(:stop_one_one)
 
       put api(@planning.id, stop_visit.route_id, stop_visit.id), {
@@ -218,7 +214,7 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should delete stop store' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       delete api(@planning.id, @route.id, @stop_store_reload.id)
       if mode
         assert_equal 409, last_response.status, last_response.body
@@ -251,37 +247,29 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should not delete stop visit' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       stop_visit = stops(:stop_one_one)
       assert_no_difference('StopVisit.count') do
         delete api(@planning.id, @route.id, stop_visit.id)
-        if mode
-          assert_equal 409, last_response.status, last_response.body
-        else
-          assert_equal 404, last_response.status, last_response.body
-        end
+        assert_equal 404, last_response.status, last_response.body
       end
     end
   end
 
   test 'should not delete stop rest' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       stop_rest = stops(:stop_one_four)
       assert_no_difference('StopRest.count') do
         delete api(@planning.id, @route.id, stop_rest.id)
-        if mode
-          assert_equal 409, last_response.status, last_response.body
-        else
-          assert_equal 404, last_response.status, last_response.body
-        end
+        assert_equal 404, last_response.status, last_response.body
       end
     end
   end
 
   test 'should return 404 for non-existent planning' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       delete api(99999, @route.id, @stop_store_reload.id)
       assert_equal 404, last_response.status, last_response.body
     end
@@ -289,31 +277,23 @@ class V100::StopsTest < ActiveSupport::TestCase
 
   test 'should return 404 for non-existent route' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       delete api(@planning.id, 99999, @stop_store_reload.id)
-      if mode
-        assert_equal 409, last_response.status, last_response.body
-      else
-        assert_equal 404, last_response.status, last_response.body
-      end
+      assert_equal 404, last_response.status, last_response.body
     end
   end
 
   test 'should return 404 for non-existent stop' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       delete api(@planning.id, @route.id, 99999)
-      if mode
-        assert_equal 409, last_response.status, last_response.body
-      else
-        assert_equal 404, last_response.status, last_response.body
-      end
+      assert_equal 404, last_response.status, last_response.body
     end
   end
 
   test 'should compute route after deleting stop' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       delete api(@planning.id, @route.id, @stop_store_reload.id)
       if mode
         assert_equal 409, last_response.status, last_response.body

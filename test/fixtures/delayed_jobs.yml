@@ -9,5 +9,6 @@ job_destination_geocoding:
 job_optimizer:
   priority: 0
   attempts: 0
-  handler: "C:C D:D"
+  # Dummy planning_id so Job.on_planning is false unless a test retargets the handler.
+  handler: "planning_id: 0"
   progress: { progress: 0 }
