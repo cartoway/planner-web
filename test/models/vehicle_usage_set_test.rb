@@ -297,4 +297,113 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
 
     assert_equal ordered_indices, duplicate.vehicle_usages.sort_by(&:index).map(&:index)
   end
+
+  test 'switching rest type to regulatory marks associated routes outdated' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    route = vehicle_usage_set.vehicle_usages.first.routes.first
+    route.update!(outdated: false)
+
+    vehicle_usage_set.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+
+    assert route.reload.outdated
+  end
+
+  test 'switching inherited rest type to regulatory marks associated routes outdated' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    vehicle_usage_set.vehicle_usages.each do |usage|
+      usage.update_columns(rest_start: nil, rest_stop: nil, rest_duration: nil, rest_lapse: nil, store_rest_id: nil)
+    end
+    route = vehicle_usage_set.vehicle_usages.first.routes.first
+    route.update!(outdated: false)
+
+    vehicle_usage_set.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+
+    assert route.reload.outdated
+  end
+
+  test 'switching rest type to time window marks associated routes outdated' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    vehicle_usage_set.vehicle_usages.each do |usage|
+      usage.update_columns(rest_start: nil, rest_stop: nil, rest_duration: nil, rest_lapse: nil, store_rest_id: nil)
+    end
+    vehicle_usage_set.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    route = vehicle_usage_set.vehicle_usages.first.routes.first
+    route.update!(outdated: false)
+
+    vehicle_usage_set.update!(
+      rest_lapse: nil,
+      rest_start: 12.hours.to_i,
+      rest_stop: 14.hours.to_i,
+      rest_duration: 45.minutes.to_i
+    )
+
+    assert route.reload.outdated
+  end
+
+  test 'regulatory rest does not require a time window' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    vehicle_usage_set.vehicle_usages.each do |usage|
+      usage.update_columns(rest_start: nil, rest_stop: nil, rest_duration: nil, rest_lapse: nil, store_rest_id: nil)
+    end
+    vehicle_usage_set.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+
+    assert vehicle_usage_set.valid?
+    assert_equal 6.hours.to_i, vehicle_usage_set.rest_lapse
+    vehicle_usage_set.vehicle_usages.each do |usage|
+      assert usage.regulatory_rest?
+      usage.routes.each do |route|
+        assert_equal 0, route.stops.count{ |stop| stop.is_a?(StopRest) }
+      end
+    end
+  end
+
+  test 'switching to regulatory rest on the set clears leftover time window' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    vehicle_usage_set.assign_attributes(
+      rest_mode: 'regulatory',
+      rest_lapse: 6.hours.to_i,
+      rest_duration: 45.minutes.to_i
+    )
+
+    assert vehicle_usage_set.valid?, vehicle_usage_set.errors.full_messages.to_s
+    assert_nil vehicle_usage_set.rest_start
+    assert_nil vehicle_usage_set.rest_stop
+  end
+
+  test 'regulatory rest on the set requires duration and lapse' do
+    vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
+    vehicle_usage_set.assign_attributes(
+      rest_mode: 'regulatory',
+      rest_duration: nil,
+      rest_lapse: nil
+    )
+
+    assert_not vehicle_usage_set.valid?
+    assert_includes vehicle_usage_set.errors.attribute_names, :rest_lapse
+    assert_includes vehicle_usage_set.errors.attribute_names, :rest_duration
+  end
 end

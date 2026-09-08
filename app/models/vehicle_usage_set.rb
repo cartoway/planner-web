@@ -18,7 +18,7 @@
 class VehicleUsageSet < ApplicationRecord
   default_scope { order(:id) }
 
-  attr_accessor :import_skip
+  attr_accessor :import_skip, :rest_mode
 
   belongs_to :customer, inverse_of: :vehicle_usage_sets
   belongs_to :store_start, class_name: 'Store', inverse_of: :vehicle_usage_set_starts, optional: true
@@ -42,11 +42,12 @@ class VehicleUsageSet < ApplicationRecord
   attribute :rest_start, ScheduleType.new
   attribute :rest_stop, ScheduleType.new
   attribute :rest_duration, ScheduleType.new
+  attribute :rest_lapse, ScheduleType.new
   attribute :service_time_start, ScheduleType.new
   attribute :service_time_end, ScheduleType.new
   attribute :work_time, ScheduleType.new
   attribute :max_ride_duration, ScheduleType.new
-  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time, :max_ride_duration
+  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :rest_lapse, :service_time_start, :service_time_end, :work_time, :max_ride_duration
   attr_localized :cost_distance, :cost_fixed, :cost_time
 
   validates :customer, presence: true
@@ -59,21 +60,23 @@ class VehicleUsageSet < ApplicationRecord
   validate :time_window_end_after_end
   validate :rest_stop_after_rest_start
   validate :work_time_inside_window
-  validates :rest_start, presence: {if: :rest_duration?, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_window') }}
-  validates :rest_stop, presence: {if: :rest_duration?, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_window') }}
-  validates :rest_duration, presence: {if: :rest_start?, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_duration') }}
+  validates :rest_start, presence: {if: -> { rest_duration? && !rest_lapse.to_i.positive? && rest_mode.to_s != 'regulatory' }, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_window') }}
+  validates :rest_stop, presence: {if: -> { rest_duration? && !rest_lapse.to_i.positive? && rest_mode.to_s != 'regulatory' }, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_window') }}
+  validates :rest_duration, presence: {if: -> { rest_start? || rest_lapse.to_i.positive? }, message: ->(*_) { I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_duration') }}
+  validate :regulatory_rest_consistency
   validates :max_distance, numericality: true, allow_nil: true
   validates :max_ride_distance, numericality: true, allow_nil: true
   validates :visit_duration_coef, numericality: { greater_than: 0, less_than_or_equal_to: 5 }, if: :visit_duration_coef
   validates :destination_duration_coef, numericality: { greater_than: 0, less_than_or_equal_to: 5 }, if: :destination_duration_coef
 
   after_initialize :assign_defaults, if: :new_record?
+  before_validation :normalize_rest_type
   before_create :check_max_vehicle_usage_set, unless: :import_skip
   before_update :update_outdated
 
   RELATED_ATTRIBUTES = %i[
     time_window_start time_window_end work_time
-    rest_start rest_stop rest_duration
+    rest_start rest_stop rest_duration rest_lapse
     service_time_start service_time_end
     max_distance max_ride_distance max_ride_duration
     cost_distance cost_fixed cost_time
@@ -176,11 +179,17 @@ class VehicleUsageSet < ApplicationRecord
   def update_outdated
     return if import_skip
 
-    if rest_duration_changed?
+    if rest_configuration_changed?
       vehicle_usages.each(&:update_rest)
     end
 
-    if related_attribute_changed?
+    if rest_type_changed?
+      vehicle_usages.each { |vehicle_usage|
+        vehicle_usage.routes.each { |route|
+          route.outdated = true
+        }
+      }
+    elsif related_attribute_changed?
       vehicle_usages.each { |vehicle_usage|
         next unless routes_need_recompute?(vehicle_usage)
 
@@ -189,6 +198,15 @@ class VehicleUsageSet < ApplicationRecord
         }
       }
     end
+  end
+
+  def rest_configuration_changed?
+    rest_duration_changed? || rest_lapse_changed? || rest_start_changed? || rest_stop_changed? || store_rest_id_changed?
+  end
+
+  def rest_type_changed?
+    previous_regulatory = rest_duration_was.to_i.positive? && rest_lapse_was.to_i.positive?
+    previous_regulatory != (rest_duration.to_i.positive? && rest_lapse.to_i.positive?)
   end
 
   def destroy_vehicle_usage_set
@@ -206,6 +224,18 @@ class VehicleUsageSet < ApplicationRecord
     end
   end
 
+  def normalize_rest_type
+    self.rest_lapse = nil unless rest_lapse.to_i.positive?
+
+    if rest_mode.to_s == 'regulatory' || rest_lapse.to_i.positive?
+      self.rest_start = nil
+      self.rest_stop = nil
+      self.store_rest_id = nil
+    elsif rest_mode.to_s == 'window' || rest_start.present? || rest_stop.present?
+      self.rest_lapse = nil
+    end
+  end
+
   def time_window_end_after_end
     if self.time_window_start.present? && self.time_window_end.present? && self.time_window_end <= self.time_window_start
       errors.add(:time_window_end, I18n.t('activerecord.errors.models.vehicle_usage_set.attributes.time_window_end.after'))
@@ -215,6 +245,26 @@ class VehicleUsageSet < ApplicationRecord
   def rest_stop_after_rest_start
     if self.rest_start.present? && self.rest_stop.present? && self.rest_stop < self.rest_start
       errors.add(:rest_stop, I18n.t('activerecord.errors.models.vehicle_usage_set.attributes.rest_stop.after'))
+    end
+  end
+
+  def regulatory_rest_consistency
+    return unless rest_lapse.to_i.positive? || rest_mode.to_s == 'regulatory'
+
+    if rest_lapse.to_i <= 0
+      errors.add(:rest_lapse, I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_lapse'))
+    end
+    if rest_duration.to_i <= 0
+      errors.add(:rest_duration, I18n.t('activerecord.errors.models.vehicle_usage_set.missing_rest_duration_for_lapse'))
+    end
+    if rest_start.present? || rest_stop.present?
+      errors.add(:rest_lapse, I18n.t('activerecord.errors.models.vehicle_usage_set.mutually_exclusive_window'))
+    end
+    if rest_duration? && rest_lapse.to_i.positive? && rest_duration >= rest_lapse
+      errors.add(:rest_duration, I18n.t('activerecord.errors.models.vehicle_usage_set.duration_must_be_smaller_than_lapse'))
+    end
+    if store_rest_id.present?
+      errors.add(:store_rest_id, I18n.t('activerecord.errors.models.vehicle_usage_set.incompatible_with_lapse'))
     end
   end
 
