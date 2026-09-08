@@ -534,6 +534,7 @@ fr:
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
+        rest_lapse: Intervalle de travail
         store_rest: Lieu de repos
         store_rest_id: Lieu de repos
         service_time_start: Durée de service avant
@@ -559,6 +560,7 @@ fr:
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
+        rest_lapse: Intervalle de travail
         store_rest: Lieu de repos
         store_rest_id: Lieu de repos
         service_time_start: Durée de service avant
@@ -585,6 +587,7 @@ fr:
         rest_start: Début plage repos
         rest_stop: Fin plage repos
         rest_duration: Durée de repos
+        rest_lapse: Intervalle de travail
         store_rest: Lieu de repos
         store_rest_id: Lieu de repos
         service_time_start: Durée de service avant
@@ -697,6 +700,11 @@ fr:
           missing_rest_window: doit être remplie si la durée de repos ou un horaire est rempli
           missing_rest_duration: doit être remplie si une plage de repos est remplie
           rest_range: 'La plage de repos doit être comprise entre %{start} et %{end}'
+          mutually_exclusive_window: ne peut pas être combiné avec une plage de repos
+          duration_must_be_smaller_than_lapse: doit être strictement inférieure à l'intervalle de travail
+          missing_rest_duration_for_lapse: doit être remplie si l'intervalle de travail est renseigné
+          missing_rest_lapse: doit être renseigné pour une pause réglementaire
+          incompatible_with_lapse: ne peut pas être combiné avec une pause réglementaire
           service_range: ne peut pas être supérieure ou égale au temps de travail
           work_time_inside_window: doit être inférieure ou égal à la plage horaire de travail
         vehicle_usage_set:
@@ -706,8 +714,13 @@ fr:
             rest_stop:
               after: doit être après l'horaire de début
           at_least_one: Au moins une configuration de véhicules est requise
-          missing_rest_window: doit être remplie si la durée de repos est remplie
+          missing_rest_window: doit être remplie si la durée de repos est renseignée
           missing_rest_duration: doit être remplie si une plage de repos est remplie
+          mutually_exclusive_window: ne peut pas être combiné avec une plage de repos
+          duration_must_be_smaller_than_lapse: doit être strictement inférieure à l'intervalle de travail
+          missing_rest_lapse: doit être renseigné pour une pause réglementaire
+          missing_rest_duration_for_lapse: doit être renseignée pour une pause réglementaire
+          incompatible_with_lapse: ne peut pas être combiné avec une pause réglementaire
           work_time_inside_window: doit être inférieure ou égal à la plage horaire de travail
         visit:
           attributes:
@@ -883,6 +896,8 @@ fr:
       bad_barcode_char: Les données du code barre contiennent un caractère non pris en charge
       expired: La tournée a expiré
       enable_store_stops: Les arrêts intermédiaires doivent être activés
+    optimizer:
+      regulatory_rests_same_ratio: Les pauses réglementaires doivent partager le même ratio durée/intervalle
     zonings:
       geometry_error: La géométrie est invalide
   import:
@@ -2332,8 +2347,18 @@ fr:
           general: Erreur lors de l'ajout du site
           max_reload_reached: "Limite de rechargement maximale atteinte (%{max_reload} rechargements)"
         max_reload_reached: "Max rechargement : %{max_reload}"
+      create_regulatory_rest:
+        label: Pause réglementaire
+        help: Ajouter une pause réglementaire
+        success: Pause réglementaire ajoutée avec succès
+        error:
+          missing_context: Contexte manquant pour ajouter la pause
+          general: Erreur lors de l'ajout de la pause
+          not_enabled: La pause réglementaire n'est pas activée sur ce véhicule
       destroy_store_help: Supprimer le site de la tournée
       confirm_destroy_store: Êtes-vous sûr de vouloir supprimer ce site de la tournée ?
+      destroy_regulatory_rest_help: Supprimer la pause de la tournée
+      confirm_destroy_regulatory_rest: Êtes-vous sûr de vouloir supprimer cette pause de la tournée ?
       automatic_insert_help: >-
         Propose un endroit pour insérer ce client dans une tournée (le résultat
         peut ne plus être optimisé)
@@ -3212,6 +3237,21 @@ fr:
       rest_duration:
         default: '%{n} (valeur par défaut)'
         help: Requiers une plage de repos si renseigné
+      rest_lapse:
+        default: '%{n} (valeur par défaut)'
+      rest_type:
+        label: Type de pause
+        window: Créneau horaire
+        regulatory: Pause réglementaire
+        duration: Durée de pause
+        duration_placeholder: '0:45'
+        lapse: Toutes les
+        lapse_placeholder: '6:00'
+        lapse_suffix: heures de travail
+        waiting_help: Le temps d’attente chez le client n’est pas compté. Plusieurs pauses peuvent être insérées sur une même tournée.
+        duration_must_be_smaller: La durée de pause doit être inférieure à l'intervalle de travail
+        duration_must_be_filled: La durée de pause doit être renseignée
+        lapse_must_be_filled: L'intervalle de travail doit être renseigné
       store_rest:
         default: Défaut
         none: Aucun
@@ -3334,6 +3374,8 @@ fr:
       rest_stop_desc: heure de fin de la plage de repos
       rest_duration: durée de repos
       rest_duration_desc: durée du repos pris par le livreur
+      rest_lapse: intervalle de travail
+      rest_lapse_desc: intervalle de travail entre les pauses réglementaires
       store_rest_ref: référence site repos
       store_rest_desc: >-
         référence du site pour la pause du livreur / requise si plage de repos

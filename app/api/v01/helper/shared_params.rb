@@ -306,6 +306,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :rest_lapse, type: Integer, documentation: { type: 'string', desc: 'Work lapse between regulatory rests (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :visit_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient applied to visit durations for this vehicle usage (falls back to vehicle usage set, then 1)' }
     optional :destination_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient applied to destination durations for this vehicle usage (falls back to vehicle usage set, then 1)' }
     optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', param_type: 'form', example: '1,2,ref:vip' }
@@ -334,6 +335,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :rest_lapse, type: Integer, documentation: { type: 'string', desc: 'Work lapse between regulatory rests (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :store_rest_id, type: Integer, documentation: { type: Integer }
     optional :max_distance, type: Integer, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' }
     optional :max_reload, type: Integer, documentation: { type: Integer, desc: 'Maximum number of reloads per route' }

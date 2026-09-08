@@ -57,6 +57,54 @@ class StopsControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test 'should create regulatory rest stop' do
+    @planning.planning_states.delete_all
+    @route.vehicle_usage.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    @route.reload
+
+    assert_difference('StopRest.count', 1) do
+      assert_difference -> { @planning.planning_states.count }, 1 do
+        post :create_regulatory_rest, params: {
+          planning_id: @planning.id,
+          route_id: @route.id,
+          format: :json
+        }
+      end
+    end
+
+    assert_response :success
+    assert @route.reload.stops.any? { |stop| stop.is_a?(StopRest) }
+    state = @planning.planning_states.order(:id).last
+    assert_equal 'update_stop', state.trigger
+    assert_equal 'individual', state.category
+    captured_rests =
+      state.payload['routes'].flat_map { |route| route['stops'] }
+           .select { |stop| stop['type'] == 'rest' }
+    assert_operator captured_rests.size, :>=, 1
+  end
+
+  test 'should not create rest when regulatory rest is not enabled' do
+    assert_not @route.vehicle_usage.regulatory_rest?
+
+    assert_difference('StopRest.count', 0) do
+      post :create_regulatory_rest, params: {
+        planning_id: @planning.id,
+        route_id: @route.id,
+        format: :json
+      }
+    end
+
+    assert_response :unprocessable_entity
+    body = JSON.parse(response.body)
+    assert_equal I18n.t('plannings.edit.create_regulatory_rest.error.not_enabled'), body['error']
+  end
+
   test 'create_store_reload captures planning state after mutation' do
     @planning.planning_states.delete_all
     @stop_store_reload.destroy!
@@ -163,6 +211,56 @@ class StopsControllerTest < ActionController::TestCase
       }, xhr: true
     end
     assert_response :no_content
+  end
+
+  test 'should not destroy classic StopRest' do
+    rest = @route.stops.find { |stop| stop.is_a?(StopRest) }
+    assert rest
+    assert_not @route.vehicle_usage.regulatory_rest?
+
+    assert_difference('StopRest.count', 0) do
+      delete :destroy, params: {
+        planning_id: @planning.id,
+        route_id: @route.id,
+        stop_id: rest.id,
+        format: :js
+      }, xhr: true
+    end
+    assert_response :no_content
+  end
+
+  test 'should destroy regulatory StopRest' do
+    @planning.planning_states.delete_all
+    @route.vehicle_usage.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    @route.reload
+    rest = @route.add_rest
+    @route.save!
+
+    assert_difference('StopRest.count', -1) do
+      assert_difference -> { @planning.planning_states.count }, 1 do
+        delete :destroy, params: {
+          planning_id: @planning.id,
+          route_id: @route.id,
+          stop_id: rest.id,
+          format: :js
+        }, xhr: true
+      end
+    end
+    assert_response :success
+    assert_not @route.reload.stops.any? { |stop| stop.id == rest.id }
+    state = @planning.planning_states.order(:id).last
+    assert_equal 'update_stop', state.trigger
+    captured_rests =
+      state.payload['routes']
+           .find { |route| route['route_id'] == @route.id }['stops']
+           .select { |stop| stop['type'] == 'rest' }
+    assert_empty captured_rests
   end
 
   test 'should handle destroy with invalid stop_id' do

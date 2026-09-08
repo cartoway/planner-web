@@ -258,6 +258,49 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_match(/"routes":\[/, response.body)
   end
 
+  test 'sidebar depot dropdown includes regulatory rest when enabled' do
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_not_includes response.body, 'regulatory-rest-option'
+
+    route_one_for_planning.vehicle_usage.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_includes response.body, 'regulatory-rest-option'
+    assert_includes response.body, 'fa-circle-pause'
+    assert_includes response.body, I18n.t('plannings.edit.create_regulatory_rest.label')
+  end
+
+  test 'sidebar rest row includes destroy when regulatory rest is enabled' do
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_not_includes response.body, 'marker_destroy_rest'
+
+    route = route_one_for_planning
+    route.vehicle_usage.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    route.reload
+    route.add_rest
+    route.save!
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_includes response.body, 'marker_destroy_rest'
+    assert_includes response.body, 'fa-circle-pause'
+  end
+
   test 'should get index as csv' do
     get :index, params: { format: :csv, summary: true }
     assert_response :success

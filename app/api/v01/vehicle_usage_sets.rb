@@ -26,7 +26,7 @@ class V01::VehicleUsageSets < Grape::API
       p = p[:vehicle_usage_set] if p.key?(:vehicle_usage_set)
       p[:time_window_start] = p.delete(:open) if p[:open]
       p[:time_window_end] = p.delete(:close) if p[:close]
-      p = p.permit(:name, :cost_distance, :cost_fixed, :cost_time, :visit_duration_coef, :destination_duration_coef, :max_reload, :time_window_start, :time_window_end, :store_start_id, :store_stop_id, :service_time_start, :service_time_end, :work_time, :rest_start, :rest_stop, :rest_duration, :store_rest_id, :max_distance, :max_ride_distance, :max_ride_duration, store_reload_ids: [])
+      p = p.permit(:name, :cost_distance, :cost_fixed, :cost_time, :visit_duration_coef, :destination_duration_coef, :max_reload, :time_window_start, :time_window_end, :store_start_id, :store_stop_id, :service_time_start, :service_time_end, :work_time, :rest_start, :rest_stop, :rest_duration, :rest_lapse, :store_rest_id, :max_distance, :max_ride_distance, :max_ride_duration, store_reload_ids: [])
       p
     end
   end
@@ -78,6 +78,7 @@ class V01::VehicleUsageSets < Grape::API
           :rest_start,
           :rest_stop,
           :rest_duration,
+          :rest_lapse,
           :open,
           :close
       ).deep_merge(
@@ -94,6 +95,7 @@ class V01::VehicleUsageSets < Grape::API
       optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
       optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
       optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+      optional :rest_lapse, type: Integer, documentation: { type: 'string', desc: 'Work lapse between regulatory rests (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
       optional :max_distance, type: Integer, documentation: { type: 'integer', desc: 'Maximum achievable distance in meters' }
       optional :max_ride_distance, type: Integer, documentation: { desc: 'Maximum riding distance between two stops within a route in meters' }
       optional :max_ride_duration, type: Integer, documentation: { desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -122,6 +124,7 @@ class V01::VehicleUsageSets < Grape::API
           :rest_start,
           :rest_stop,
           :rest_duration,
+          :rest_lapse,
           :open,
           :close)
 
@@ -133,6 +136,7 @@ class V01::VehicleUsageSets < Grape::API
       optional :rest_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
       optional :rest_stop, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
       optional :rest_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+      optional :rest_lapse, type: Integer, documentation: { type: 'string', desc: 'Work lapse between regulatory rests (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
       optional :max_distance, type: Integer, documentation: { type: 'integer', desc: 'Maximum achievable distance in meters' }
       optional :max_ride_distance, type: Integer, documentation: { desc: 'Maximum riding distance between two stops within a route in meters' }
       optional :max_ride_duration, type: Integer, documentation: { desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }

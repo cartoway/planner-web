@@ -386,6 +386,7 @@ es:
         rest_start: Inicio franja descanso
         rest_stop: Fin franja descanso
         rest_duration: Duración de descanso
+        rest_lapse: Intervalo de trabajo
         store_rest: Lugar de descanso
         store_rest_id: Lugar de descanso
         service_time_start: Duración de servicio antes
@@ -402,6 +403,7 @@ es:
         rest_start: Inicio franja descanso
         rest_stop: Fin franja descanso
         rest_duration: Duración de descanso
+        rest_lapse: Intervalo de trabajo
         store_rest: Lugar de descanso
         store_rest_id: Lugar de descanso
         service_time_start: Duración de servicio antes
@@ -481,6 +483,11 @@ es:
           missing_rest_duration: >-
             debe ser cumplimentado(a) si una franja de descanso esta
             cuplimentada
+          mutually_exclusive_window: cannot be combined with a rest time window
+          duration_must_be_smaller_than_lapse: must be smaller than the work lapse
+          missing_rest_duration_for_lapse: can't be blank if rest lapse is filled
+          missing_rest_lapse: can't be blank for a regulatory rest
+          incompatible_with_lapse: cannot be combined with a regulatory rest
         vehicle_usage_set:
           at_least_one: Una configuración del vehículo por lo menos es necesaria
           missing_rest_window: >-
@@ -494,6 +501,10 @@ es:
           missing_rest_duration: >-
             debe ser cumplimentado(a) si una franja de descanso esta
             cuplimentada
+          mutually_exclusive_window: cannot be combined with a rest time window
+          duration_must_be_smaller_than_lapse: must be smaller than the work lapse
+          missing_rest_lapse: can't be blank for a regulatory rest
+          incompatible_with_lapse: cannot be combined with a regulatory rest
         visit:
           attributes:
             time_window_end_1:
@@ -1272,6 +1283,8 @@ es:
       rest_stop_desc: hora de fin de la franja de descanso
       rest_duration: duración de descanso
       rest_duration_desc: duración del descanso del repartidor
+      rest_lapse: intervalo de trabajo
+      rest_lapse_desc: intervalo de trabajo entre descansos reglamentarios
       store_rest_ref: referencia almacén descanso
       store_rest_desc: >-
         refrencia del almacén para la pausa del repartidor /  necesaria si

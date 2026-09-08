@@ -33,6 +33,7 @@ class V01::Entities::VehicleUsageSet < Grape::Entity
   expose(:rest_start, documentation: { type: DateTime }) { |m| m.rest_start_absolute_time_with_seconds }
   expose(:rest_stop, documentation: { type: DateTime }) { |m| m.rest_stop_absolute_time_with_seconds }
   expose(:rest_duration, documentation: { type: DateTime }) { |m| m.rest_duration_absolute_time_with_seconds }
+  expose(:rest_lapse, documentation: { type: DateTime }) { |m| m.rest_lapse_absolute_time_with_seconds }
   expose(:store_rest_id, documentation: { type: Integer })
   expose(:max_reload, documentation: { type: Integer, desc: 'Maximum number of reloads per route' })
   expose(:max_distance, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' })

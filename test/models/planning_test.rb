@@ -1261,6 +1261,74 @@ class PlanningTest < ActiveSupport::TestCase
 
     assert_equal [nil, second.id, first.id], route_ids
   end
+
+  test 'set_stops creates multiple regulatory rests from the same rest rule' do
+    planning = plannings(:planning_one)
+    route = routes(:route_one_one)
+    route.vehicle_usage.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    route.reload
+    assert_equal 0, route.stops.count{ |stop| stop.is_a?(StopRest) }
+
+    visits = route.stops.select{ |stop| stop.is_a?(StopVisit) }
+    assert_operator visits.size, :>=, 2
+
+    activities = []
+    visits.each_with_index do |visit, index|
+      activities << { type: 'service', id: visit.id }
+      activities << { type: 'regulatory_rest' } if index < 2
+    end
+
+    optimum = planning.routes.map{ |current_route|
+      if current_route.id == route.id
+        [current_route.id, activities]
+      else
+        [
+          current_route.id,
+          current_route.stops.reject{ |stop| stop.is_a?(StopStore) }.map{ |stop|
+            { type: stop.is_a?(StopRest) ? 'rest' : 'service', id: stop.id }
+          }
+        ]
+      end
+    }.to_h
+
+    planning.set_stops(optimum)
+    route.reload
+    rests = route.stops.select{ |stop| stop.is_a?(StopRest) }.sort_by(&:index)
+    assert_equal 2, rests.size
+    assert_not_equal rests.first.id, rests.last.id
+
+    types = route.stops.reject{ |stop| stop.is_a?(StopStore) }.sort_by(&:index).map{ |stop|
+      stop.is_a?(StopRest) ? 'rest' : 'service'
+    }
+    assert_equal 'rest', types[1]
+    assert_equal 'rest', types[3]
+
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+    types = route.stops.reject{ |stop| stop.is_a?(StopStore) }.sort_by(&:index).map{ |stop|
+      stop.is_a?(StopRest) ? 'rest' : 'service'
+    }
+    assert_equal 'rest', types[1]
+    assert_equal 'rest', types[3]
+
+    activities_one_rest = []
+    visits.each_with_index do |visit, index|
+      activities_one_rest << { type: 'service', id: visit.id }
+      activities_one_rest << { type: 'regulatory_rest' } if index.zero?
+    end
+    optimum[route.id] = activities_one_rest
+    planning.reload
+    planning.set_stops(optimum)
+    route.reload
+    assert_equal 1, route.stops.count{ |stop| stop.is_a?(StopRest) }
+  end
 end
 
 class PlanningTestError < ActiveSupport::TestCase

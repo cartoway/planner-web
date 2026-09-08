@@ -66,7 +66,7 @@ class OptimizerWrapper
 
     vrp_services, s_points = build_services(planning, routes, stops, **options.merge(use_skills: all_skills.any?, problem_skills: all_skills))
     vrp_reload_depots, d_points = build_reload_depots(planning.customer.store_reloads)
-    vrp_rests = build_rests(stops, **options)
+    vrp_rests = build_rests(routes, stops, **options)
     relations = collect_relations(planning, routes, stops, **options)
 
     vrp_routes = build_routes(routes, **options) if options[:insertion_only]
@@ -129,10 +129,7 @@ class OptimizerWrapper
             id: activity['reload_depot_id'][2..-1].to_i
           }
         when 'rest'
-          {
-            type: 'rest',
-            id: activity['rest_id'][1..-1].to_i
-          }
+          parse_rest_activity(activity)
         end
       }.compact
     }
@@ -299,8 +296,8 @@ class OptimizerWrapper
   end
 
   # A StopRest with a position is send as a service
-  def build_rests(stops, **options)
-    planning = stops.first&.route&.planning
+  def build_rests(routes, stops, **options)
+    planning = stops.first&.route&.planning || routes.first&.planning
     enable_upper_bound =
       if options.key?(:enable_optimization_soft_upper_bound)
         options[:enable_optimization_soft_upper_bound]
@@ -315,8 +312,9 @@ class OptimizerWrapper
         planning&.customer&.enable_strict_within_timewindows
       end
 
-    stops.map{ |stop|
+    classic_rests = stops.map{ |stop|
       next if !stop.is_a?(StopRest) || stop.position?
+      next if stop.route.vehicle_usage&.regulatory_rest?
 
       tw_start = stop.time_window_start_1.try(:to_f)
       tw_end =
@@ -332,6 +330,40 @@ class OptimizerWrapper
         duration: stop.duration
       }
     }.compact
+
+    classic_rests + build_regulatory_rests(routes)
+  end
+
+  def build_regulatory_rests(routes)
+    usages = routes.map(&:vehicle_usage).compact.select(&:regulatory_rest?)
+    pairs = usages.map{ |vu| [vu.default_rest_duration, vu.default_rest_lapse] }.uniq
+    ratios = pairs.map{ |duration, lapse| duration.to_f / lapse }.uniq
+    if ratios.size > 1
+      raise VRPUnprocessableError, I18n.t('errors.optimizer.regulatory_rests_same_ratio')
+    end
+
+    pairs.map{ |duration, lapse|
+      {
+        id: VehicleUsage.regulatory_rest_id(duration, lapse),
+        duration: duration,
+        lapse: lapse
+      }
+    }
+  end
+
+  def parse_rest_activity(activity)
+    rest_id = activity['rest_id'].to_s
+    if rest_id.match?(/\Ar\d+\z/)
+      {
+        type: 'rest',
+        id: rest_id[1..].to_i
+      }
+    else
+      {
+        type: 'regulatory_rest',
+        rest_id: rest_id
+      }
+    end
   end
 
   def build_routes(routes, **options)
@@ -521,7 +553,11 @@ class OptimizerWrapper
         reload_depot_ids: vehicle_store_reload_ids,
         **costs,
         shift_preference: (route.force_start || options[:force_start]) ? 'force_start' : nil,
-        rest_ids: vehicle_rests.map{ |r| "r#{r[:id]}" },
+        rest_ids: if route.vehicle_usage.regulatory_rest?
+          [route.vehicle_usage.regulatory_rest_id]
+        else
+          vehicle_rests.map{ |r| "r#{r[:id]}" }
+        end,
         capacities: capacities || [],
         skills: [vehicle_skills]
       }.merge(

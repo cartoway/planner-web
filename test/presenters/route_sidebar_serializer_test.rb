@@ -113,6 +113,36 @@ class RouteSidebarSerializerTest < ActionController::TestCase
     assert_operator hash[:status_all].size, :>, hash[:status_present].size
   end
 
+  test 'as_hash includes regulatory_rest when vehicle usage has a regulatory rest' do
+    route = routes(:route_one_one)
+    planning = route.planning
+
+    hash = RouteSidebarSerializer.new(
+      route: route,
+      planning: planning,
+      with_stops: false,
+      view_helpers: route_sidebar_view_helpers
+    ).as_hash
+    assert_equal false, hash[:regulatory_rest]
+
+    route.vehicle_usage.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    route = Route.find(route.id)
+
+    hash = RouteSidebarSerializer.new(
+      route: route,
+      planning: planning,
+      with_stops: false,
+      view_helpers: route_sidebar_view_helpers
+    ).as_hash
+    assert_equal true, hash[:regulatory_rest]
+  end
+
   test 'merge_planning_route_errors_from_models reads route attribute methods' do
     attrs = RouteSidebarSerializer::ROUTE_ERROR_HASH_KEYS.index_with { false }.merge(route_out_of_window: true)
     fake_route = Object.new

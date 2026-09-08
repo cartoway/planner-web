@@ -24,6 +24,8 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     get :edit, params: { id: @vehicle_usage }
     assert_response :success
     assert_valid response
+    assert_select '#vehicle_usage_rest_type_input .form-check', 2
+    assert_select 'input.form-check-input[name=?]', 'vehicle_usage[rest_mode]', 2
   end
 
   test 'should update vehicle_usage' do
@@ -102,6 +104,16 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_equal @vehicle_usage.time_window_end, 36 * 3_600
     assert_equal @vehicle_usage.rest_start, 34 * 3_600
     assert_equal @vehicle_usage.rest_stop, 35 * 3_600
+  end
+
+  test 'should update vehicle_usage with regulatory rest lapse' do
+    patch :update, params: { id: @vehicle_usage, vehicle_usage: { rest_start: '', rest_stop: '', rest_duration: '00:45', rest_lapse: '06:00', store_rest_id: '' }}
+    assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
+    @vehicle_usage.reload
+    assert_equal 45.minutes.to_i, @vehicle_usage.rest_duration
+    assert_equal 6.hours.to_i, @vehicle_usage.rest_lapse
+    assert_nil @vehicle_usage.rest_start
+    assert_nil @vehicle_usage.rest_stop
   end
 
   test 'should not update vehicle_usage' do

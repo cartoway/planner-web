@@ -34,6 +34,7 @@ class V01::Entities::VehicleUsage < Grape::Entity
   expose(:rest_start, documentation: { type: DateTime }) { |m| m.rest_start_absolute_time_with_seconds }
   expose(:rest_stop, documentation: { type: DateTime }) { |m| m.rest_stop_absolute_time_with_seconds }
   expose(:rest_duration, documentation: { type: DateTime }) { |m| m.rest_duration_absolute_time_with_seconds }
+  expose(:rest_lapse, documentation: { type: DateTime }) { |m| m.rest_lapse_absolute_time_with_seconds }
   expose(:store_rest_id, documentation: { type: Integer })
   expose(:active, documentation: { type: 'Boolean' })
   expose(:visit_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to visit durations (falls back to vehicle usage set, then 1)' })

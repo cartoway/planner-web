@@ -673,4 +673,87 @@ class OptimizerWrapperTest < ActionController::TestCase
   ensure
     remove_request_stub(stub_vrp_job) if stub_vrp_job
   end
+
+  test 'should build regulatory rests with lapse and rest_ids' do
+    begin
+      vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+      vehicle_usage.update!(
+        rest_start: nil,
+        rest_stop: nil,
+        rest_duration: 45.minutes.to_i,
+        rest_lapse: 6.hours.to_i,
+        store_rest_id: nil
+      )
+
+      vrp = @optim.build_vrp(@planning, @planning.routes)
+      regulatory = vrp[:rests].find{ |rest| rest[:lapse] }
+      assert regulatory
+      assert_equal 45.minutes.to_i, regulatory[:duration]
+      assert_equal 6.hours.to_i, regulatory[:lapse]
+      refute regulatory.key?(:timewindows)
+      refute regulatory.key?(:interval)
+      assert_equal VehicleUsage.regulatory_rest_id(45.minutes.to_i, 6.hours.to_i), regulatory[:id]
+
+      vehicle = vrp[:vehicles].find{ |v| v[:id] == "v#{vehicle_usage.routes.first.id}" }
+      assert_equal [regulatory[:id]], vehicle[:rest_ids]
+    end
+  ensure
+    remove_request_stub(@stub_VrpJob)
+    remove_request_stub(@stub_VrpSubmit)
+  end
+
+  test 'should parse repeated regulatory rest activities with the same rest_id' do
+    begin
+      remove_request_stub(@stub_VrpJob)
+      job = JSON.parse(File.read(Rails.root.join('test/fixtures/optimizer-wrapper/vrp-job.json')))
+      job['solutions'][0]['routes'][0]['activities'] = [
+        { 'type' => 'service', 'service_id' => 's1' },
+        { 'type' => 'rest', 'rest_id' => 'ri2700_21600' },
+        { 'type' => 'service', 'service_id' => 's2' },
+        { 'type' => 'rest', 'rest_id' => 'ri2700_21600' }
+      ]
+      @stub_VrpJob = stub_request(:get, Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')).to_return(
+        status: 200,
+        body: job.to_json
+      )
+
+      OptimizerWrapper.stub_any_instance(:build_vrp, JSON.parse(File.new(Rails.root.join('test/fixtures/optimizer-wrapper/submitted-vrp.json')).read, symbolize_names: true)) do
+        routes = @planning.routes.select(&:vehicle_usage?)
+        result = @optim.optimize(@planning, routes, **{ optimize_minimal_time: 3 })
+        rests = result[1].select{ |activity| activity[:type] == 'regulatory_rest' }
+        assert_equal 2, rests.size
+      end
+    end
+  ensure
+    remove_request_stub(@stub_VrpJob)
+    remove_request_stub(@stub_VrpSubmit)
+  end
+
+  test 'should reject regulatory rests with different duration lapse ratios' do
+    begin
+      vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+      other = vehicle_usages(:vehicle_usage_one_three)
+      vehicle_usage.update!(
+        rest_start: nil,
+        rest_stop: nil,
+        rest_duration: 45.minutes.to_i,
+        rest_lapse: 6.hours.to_i,
+        store_rest_id: nil
+      )
+      other.update!(
+        rest_start: nil,
+        rest_stop: nil,
+        rest_duration: 30.minutes.to_i,
+        rest_lapse: 6.hours.to_i,
+        store_rest_id: nil
+      )
+
+      assert_raises VRPUnprocessableError do
+        @optim.build_vrp(@planning, @planning.routes)
+      end
+    end
+  ensure
+    remove_request_stub(@stub_VrpJob)
+    remove_request_stub(@stub_VrpSubmit)
+  end
 end

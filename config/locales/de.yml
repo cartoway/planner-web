@@ -424,6 +424,7 @@ de:
         rest_start: Start des Pausenfensters
         rest_stop: Stopp des Pausenfensters
         rest_duration: Pausendauer
+        rest_lapse: Pausenintervall
         store_rest: Rastplatz
         store_rest_id: Rastplatz
         service_time_start: Servicezeit vor
@@ -442,6 +443,7 @@ de:
         rest_start: Start des Pausenfensters
         rest_stop: Stopp des Pausenfensters
         rest_duration: Pausendauer
+        rest_lapse: Pausenintervall
         store_rest: Rastplatz
         store_rest_id: Rastplatz
         service_time_start: Servicezeit vor
@@ -460,6 +462,7 @@ de:
         rest_start: Start des Pausenfensters
         rest_stop: Stopp des Pausenfensters
         rest_duration: Pausendauer
+        rest_lapse: Pausenintervall
         store_rest: Rastplatz
         store_rest_id: Rastplatz
         service_time_start: Servicezeit vor
@@ -549,6 +552,11 @@ de:
             sind
           missing_rest_duration: 'darf nicht leer sein, wenn das Pausenfenster ausgefüllt ist'
           rest_range: 'Pausenbereich muss zwischen %{start} und %{end} liegen'
+          mutually_exclusive_window: kann nicht mit einem Pausenfenster kombiniert werden
+          duration_must_be_smaller_than_lapse: muss kleiner als das Arbeitsintervall sein
+          missing_rest_duration_for_lapse: darf nicht leer sein, wenn das Pausenintervall ausgefüllt ist
+          missing_rest_lapse: darf nicht leer sein für eine gesetzliche Pause
+          incompatible_with_lapse: kann nicht mit einer gesetzlichen Pause kombiniert werden
           service_range: darf nicht größer als der Arbeitstagesbereich sein
           work_time_inside_window: muss kleiner oder gleich dem Arbeitszeitfenster sein
         vehicle_usage_set:
@@ -560,6 +568,10 @@ de:
           at_least_one: Mindestens eine Fahrzeugkonfiguration erforderlich
           missing_rest_window: 'darf nicht leer sein, wenn Pausendauer eingetragen ist'
           missing_rest_duration: 'darf nicht leer sein, wenn das Pausenfenster ausgefüllt ist'
+          mutually_exclusive_window: kann nicht mit einem Pausenfenster kombiniert werden
+          duration_must_be_smaller_than_lapse: muss kleiner als das Arbeitsintervall sein
+          missing_rest_lapse: darf nicht leer sein für eine gesetzliche Pause
+          incompatible_with_lapse: kann nicht mit einer gesetzlichen Pause kombiniert werden
           work_time_inside_window: muss kleiner oder gleich dem Arbeitszeitfenster sein
         visit:
           attributes:
@@ -2408,6 +2420,8 @@ de:
       rest_stop_desc: Ende des Pausenstartfensters
       rest_duration: Pausendauer
       rest_duration_desc: Pausendauer für Auslieferungsfahrer
+      rest_lapse: Pausenintervall
+      rest_lapse_desc: Arbeitsintervall zwischen gesetzlichen Pausen
       store_rest_ref: Pause der Filialreferenz
       store_rest_desc: Pausenreferenz der Filiale für den Auslieferungsfahrer
       service_time_start: Servicezeit vor

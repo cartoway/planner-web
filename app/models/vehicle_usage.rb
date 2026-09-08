@@ -20,7 +20,7 @@ class VehicleUsage < ApplicationRecord
 
   scope :ordered_by_index, -> { unscope(:order).order(:index) }
 
-  attr_accessor :import_skip
+  attr_accessor :import_skip, :rest_mode
 
   belongs_to :vehicle_usage_set
 
@@ -47,10 +47,11 @@ class VehicleUsage < ApplicationRecord
   attribute :rest_start, ScheduleType.new
   attribute :rest_stop, ScheduleType.new
   attribute :rest_duration, ScheduleType.new
+  attribute :rest_lapse, ScheduleType.new
   attribute :service_time_start, ScheduleType.new
   attribute :service_time_end, ScheduleType.new
   attribute :work_time, ScheduleType.new
-  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :service_time_start, :service_time_end, :work_time
+  time_attr :time_window_start, :time_window_end, :rest_start, :rest_stop, :rest_duration, :rest_lapse, :service_time_start, :service_time_end, :work_time
   attr_localized :cost_distance, :cost_fixed, :cost_time
 
   validates :index, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
@@ -64,6 +65,7 @@ class VehicleUsage < ApplicationRecord
   validate :rest_duration_range
   validate :work_time_inside_window
 
+  before_validation :normalize_rest_type
   before_validation :assign_index, on: :create
   before_create :assign_index
   before_update :update_outdated
@@ -151,6 +153,8 @@ class VehicleUsage < ApplicationRecord
   end
 
   def default_store_rest
+    return nil if regulatory_rest?
+
     store_rest || vehicle_usage_set.store_rest
   end
 
@@ -159,27 +163,27 @@ class VehicleUsage < ApplicationRecord
   end
 
   def default_rest_start
-    rest_start || vehicle_usage_set.rest_start
+    rest_start || (regulatory_rest_intent? ? nil : vehicle_usage_set.rest_start)
   end
 
   def default_rest_start_time
-    rest_start_time || vehicle_usage_set.rest_start_time
+    rest_start_time || (regulatory_rest_intent? ? nil : vehicle_usage_set.rest_start_time)
   end
 
   def default_rest_start_absolute_time
-    rest_start_absolute_time || vehicle_usage_set.rest_start_absolute_time
+    rest_start_absolute_time || (regulatory_rest_intent? ? nil : vehicle_usage_set.rest_start_absolute_time)
   end
 
   def default_rest_stop
-    rest_stop || vehicle_usage_set.rest_stop
+    rest_stop || (regulatory_rest_intent? ? nil : vehicle_usage_set.rest_stop)
   end
 
   def default_rest_stop_time
-    rest_stop_time || vehicle_usage_set.rest_stop_time
+    rest_stop_time || (regulatory_rest_intent? ? nil : vehicle_usage_set.rest_stop_time)
   end
 
   def default_rest_stop_absolute_time
-    rest_stop_absolute_time || vehicle_usage_set.rest_stop_absolute_time
+    rest_stop_absolute_time || (regulatory_rest_intent? ? nil : vehicle_usage_set.rest_stop_absolute_time)
   end
 
   def default_rest_duration
@@ -196,6 +200,31 @@ class VehicleUsage < ApplicationRecord
 
   def default_rest_duration?
     !default_rest_duration.nil?
+  end
+
+  def default_rest_lapse
+    return rest_lapse if rest_lapse.to_i.positive?
+    return if rest_start.present? || rest_stop.present? || rest_mode.to_s == 'window'
+
+    vehicle_usage_set.rest_lapse
+  end
+
+  def default_rest_lapse_time
+    return unless default_rest_lapse.to_i.positive?
+
+    rest_lapse.to_i.positive? ? rest_lapse_time : vehicle_usage_set.rest_lapse_time
+  end
+
+  def self.regulatory_rest_id(duration, lapse)
+    "ri#{duration}_#{lapse}"
+  end
+
+  def regulatory_rest_id
+    self.class.regulatory_rest_id(default_rest_duration, default_rest_lapse)
+  end
+
+  def regulatory_rest?
+    default_rest_lapse.to_i.positive? && default_rest_duration.to_i.positive?
   end
 
   def default_service_time_start
@@ -273,11 +302,10 @@ class VehicleUsage < ApplicationRecord
   end
 
   def update_rest
-    if default_rest_duration.nil?
-      # No more rest
+    if !rest? || regulatory_rest?
+      # No rest, or regulatory rests are created from the optimizer solution
       routes.each(&:remove_rests)
     else
-      # New or changed rest
       routes.each(&:add_or_update_rest)
     end
   end
@@ -370,12 +398,13 @@ class VehicleUsage < ApplicationRecord
   def update_outdated
     return if import_skip
 
-    if rest_duration_changed?
+    if rest_configuration_changed?
       update_rest
     end
 
-    if time_window_start_changed? || time_window_end_changed? || store_start_id_changed? ||
+    if rest_type_changed? || time_window_start_changed? || time_window_end_changed? || store_start_id_changed? ||
        store_stop_id_changed? || rest_start_changed? || rest_stop_changed? || rest_duration_changed? ||
+       rest_lapse_changed? ||
        store_rest_id_changed? || service_time_start_changed? || service_time_end_changed? || work_time_changed? ||
        cost_distance_changed? || cost_fixed_changed? || cost_time_changed? ||
        max_reload_changed? || visit_duration_coef_changed? || destination_duration_coef_changed?
@@ -383,6 +412,20 @@ class VehicleUsage < ApplicationRecord
         route.outdated = true
       }
     end
+  end
+
+  def rest_configuration_changed?
+    rest_duration_changed? || rest_lapse_changed? || rest_start_changed? || rest_stop_changed? || store_rest_id_changed?
+  end
+
+  def rest_type_changed?
+    previous_regulatory_rest? != regulatory_rest?
+  end
+
+  def previous_regulatory_rest?
+    previous_duration = rest_duration_was || vehicle_usage_set.rest_duration
+    previous_lapse = rest_lapse_was || (rest_start_was.present? || rest_stop_was.present? ? nil : vehicle_usage_set.rest_lapse)
+    previous_lapse.to_i.positive? && previous_duration.to_i.positive?
   end
 
   def update_stops
@@ -406,9 +449,13 @@ class VehicleUsage < ApplicationRecord
   end
 
   def rest_duration_range
-    errors.add(:rest_start, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_window')) if self.default_rest_duration && self.default_rest_start.nil?
-    errors.add(:rest_stop, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_window')) if self.default_rest_duration && self.default_rest_stop.nil?
-    errors.add(:rest_duration, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_duration')) if self.default_rest_duration.nil? && (self.default_rest_start || self.default_rest_stop)
+    if regulatory_rest_intent?
+      validate_regulatory_rest
+    else
+      errors.add(:rest_start, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_window')) if self.default_rest_duration && self.default_rest_start.nil?
+      errors.add(:rest_stop, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_window')) if self.default_rest_duration && self.default_rest_stop.nil?
+      errors.add(:rest_duration, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_duration')) if self.default_rest_duration.nil? && (self.default_rest_start || self.default_rest_stop)
+    end
 
     time_window_start_duration = self.default_time_window_start || 0
     service_time_start_duration = self.default_service_time_start || 0
@@ -430,6 +477,39 @@ class VehicleUsage < ApplicationRecord
         end_day = (working_day_end / 86400).to_i
         errors.add(:base, I18n.t('activerecord.errors.models.vehicle_usage.rest_range', start: Time.at(working_day_start).utc.strftime('%H:%M') + (begin_day > 0 ? " (+#{begin_day})" : ''), end: Time.at(working_day_end).utc.strftime('%H:%M') + (end_day > 0 ? " (+#{end_day})" : '')))
       end
+    end
+  end
+
+  def normalize_rest_type
+    self.rest_lapse = nil unless rest_lapse.to_i.positive?
+
+    if regulatory_rest_intent?
+      self.rest_start = nil
+      self.rest_stop = nil
+      self.store_rest_id = nil
+    elsif rest_mode.to_s == 'window' || rest_start.present? || rest_stop.present?
+      self.rest_lapse = nil
+    end
+  end
+
+  def regulatory_rest_intent?
+    rest_mode.to_s == 'regulatory' || rest_lapse.to_i.positive? || regulatory_rest?
+  end
+
+  def validate_regulatory_rest
+    if default_rest_lapse.to_i <= 0
+      errors.add(:rest_lapse, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_lapse'))
+    end
+    if default_rest_start.present? || default_rest_stop.present?
+      errors.add(:rest_lapse, I18n.t('activerecord.errors.models.vehicle_usage.mutually_exclusive_window'))
+    end
+    if default_rest_duration.to_i <= 0
+      errors.add(:rest_duration, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_duration_for_lapse'))
+    elsif default_rest_lapse.to_i.positive? && default_rest_duration.to_i >= default_rest_lapse.to_i
+      errors.add(:rest_duration, I18n.t('activerecord.errors.models.vehicle_usage.duration_must_be_smaller_than_lapse'))
+    end
+    if store_rest_id.present?
+      errors.add(:store_rest_id, I18n.t('activerecord.errors.models.vehicle_usage.incompatible_with_lapse'))
     end
   end
 

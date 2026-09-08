@@ -528,6 +528,7 @@ en:
         rest_start: Rest window start
         rest_stop: Rest window stop
         rest_duration: Rest duration
+        rest_lapse: Rest lapse
         store_rest: Rest place
         store_rest_id: Rest place
         service_time_start: Service Time Before
@@ -553,6 +554,7 @@ en:
         rest_start: Rest window start
         rest_stop: Rest window stop
         rest_duration: Rest duration
+        rest_lapse: Rest lapse
         store_rest: Rest place
         store_rest_id: Rest place
         service_time_start: Service Time Before
@@ -579,6 +581,7 @@ en:
         rest_start: Rest window start
         rest_stop: Rest window stop
         rest_duration: Rest duration
+        rest_lapse: Rest lapse
         store_rest: Rest place
         store_rest_id: Rest place
         service_time_start: Service Time Before
@@ -689,6 +692,11 @@ en:
           missing_rest_window: can't be blank if rest duration or a time is filled
           missing_rest_duration: can't be blank if rest time window is filled
           rest_range: 'Rest range must be between %{start} and %{end}'
+          mutually_exclusive_window: cannot be combined with a rest time window
+          duration_must_be_smaller_than_lapse: must be smaller than the work lapse
+          missing_rest_duration_for_lapse: can't be blank if rest lapse is filled
+          missing_rest_lapse: can't be blank for a regulatory rest
+          incompatible_with_lapse: cannot be combined with a regulatory rest
           service_range: can't be greater than working day range
           work_time_inside_window: must be less or equal than working time window
         vehicle_usage_set:
@@ -700,6 +708,11 @@ en:
           at_least_one: At least one vehicle configuration needed
           missing_rest_window: can't be blank if rest duration is filled
           missing_rest_duration: can't be blank if rest time window is filled
+          mutually_exclusive_window: cannot be combined with a rest time window
+          duration_must_be_smaller_than_lapse: must be smaller than the work lapse
+          missing_rest_lapse: can't be blank for a regulatory rest
+          missing_rest_duration_for_lapse: can't be blank for a regulatory rest
+          incompatible_with_lapse: cannot be combined with a regulatory rest
           work_time_inside_window: must be less or equal than working time window
         visit:
           attributes:
@@ -865,6 +878,8 @@ en:
       bad_barcode_char: Barcode data content unsupported character
       expired: The tour has expired
       enable_store_stops: Intermediate stops must be enabled
+    optimizer:
+      regulatory_rests_same_ratio: Regulatory rests must share the same duration/lapse ratio
     zonings:
       geometry_error: The geometry is invalid
   import:
@@ -2231,8 +2246,18 @@ en:
           general: Error adding store
           max_reload_reached: "Maximum reload limit reached for (%{max_reload} reloads)"
         max_reload_reached: "Max reload: %{max_reload}"
+      create_regulatory_rest:
+        label: Regulatory rest
+        help: Add a regulatory rest
+        success: Regulatory rest added successfully
+        error:
+          missing_context: Missing context to add rest
+          general: Error adding rest
+          not_enabled: Regulatory rest is not enabled on this vehicle
       destroy_store_help: Remove store from route
       confirm_destroy_store: Are you sure you want to remove this store from the route?
+      destroy_regulatory_rest_help: Remove rest from route
+      confirm_destroy_regulatory_rest: Are you sure you want to remove this rest from the route?
       automatic_insert_help: >-
         Find best place in a route to insert this stop (results could not be
         optimized anymore)
@@ -3089,6 +3114,21 @@ en:
       rest_duration:
         default: '%{n} (default value)'
         help: Requires rest time window if filled
+      rest_lapse:
+        default: '%{n} (default value)'
+      rest_type:
+        label: Rest type
+        window: Time window
+        regulatory: Regulatory rest
+        duration: Rest duration
+        duration_placeholder: '0:45'
+        lapse: 'Every'
+        lapse_placeholder: '6:00'
+        lapse_suffix: hours of work
+        waiting_help: Waiting time at the customer is not counted. Several rests can be inserted on the same route.
+        duration_must_be_smaller: Rest duration must be smaller than the work lapse
+        duration_must_be_filled: Rest duration must be filled
+        lapse_must_be_filled: Work lapse must be filled
       store_rest:
         default: Default
         none: None
@@ -3203,6 +3243,8 @@ en:
       rest_stop_desc: end of the rest start window
       rest_duration: rest duration
       rest_duration_desc: rest duration time for delivery man
+      rest_lapse: rest lapse
+      rest_lapse_desc: work lapse between regulatory rests
       store_rest_ref: rest store reference
       store_rest_desc: store rest reference for delivery man
       service_time_start: service time before

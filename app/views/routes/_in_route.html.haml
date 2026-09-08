@@ -119,7 +119,6 @@
                   .btn-group.pull-right.stop-tools
                     - route_depot_view_disabled = @manage_planning[:disable_route_view]
                     - route_depot_paint_disabled = @manage_planning[:disable_route_paint]
-                    - route_depot_stops_disabled = @manage_planning[:disable_route_stops]
                     - if current_user.customer.enable_store_stops && @manage_planning[:manage_route_view]
                       .btn-group
                         %button.btn.btn-default.btn-xs.sub-tour-toggle.sub-tour-visible{type: "button", "aria-pressed": "true", title: t('plannings.edit.sub_tour.toggle'), disabled: (true if route_depot_view_disabled), data: { route_id: route[:route_id], sub_tour_index: 0, route_data_id: route[:store_start][:route_data]&.[](:id) }}
@@ -142,19 +141,7 @@
                       .btn-group
                         %button.btn.btn-default.btn-xs.route-data-toggle{type: "button", title: t("plannings.edit.toggle_route_data_help"), data: { route_data_id: route[:store_start][:route_data]&.[](:id) }.compact}
                           %i.fa.fa-chart-simple
-                    - if current_user.customer.enable_store_stops && @manage_planning[:manage_route_stops] && @available_store_reloads.any?
-                      .dropdown.btn-group
-                        %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", disabled: (true if route_depot_stops_disabled), title: t("plannings.edit.create_store_help")}
-                          %i.fa.fa-plus
-                        %ul.dropdown-menu.pull-right.store-dropdown{role: "menu"}
-                          - @available_store_reloads.each do |store_reload|
-                            %li
-                              %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-reload-id": store_reload[:id], "data-store-reload-name": store_reload[:name], class: "store-reload-option #{('disabled' if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}", disabled: (store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}
-                                %i.fa.fa-fw{class: "#{store_reload[:icon] || 'fa-store'}", style: "color: #{store_reload[:color] || 'black'};"}
-                                = [[store_reload[:name], store_reload[:index]].compact.join(' #'), store_reload[:ref]].compact.join(' - ')
-                                - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
-                                  %small.text-muted
-                                    = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"
+                    = render partial: 'routes/depot_add_dropdown', locals: { route: route }
           - if route[:store_start] && current_user.customer.enable_store_stops
             %li.li-store.d-fake-flex.align-items-center.list-group-item.route-data-container{data: { store_id: route[:store_start]&.[](:id), type: 'start', route_data_id: route[:store_start][:route_data]&.[](:id), origin_route_id: route[:route_id], sub_tour_index: 0 }.compact, style: "box-shadow: inset 4px 0px 0px 0px var(--box-shadow-color); --box-shadow-color: #{current_color || color};"}
               = render partial: 'shared/store_route_data', locals: { route_data: route[:store_start][:route_data], used_reloads: route[:used_reloads], status_code: route[:store_start][:status_code] }
@@ -192,7 +179,6 @@
               .col-xs-2.col-md-2.d-flex.justify-content-end.align-items-center
                 - eta_statement = " - #{t('plannings.edit.popup.eta')} #{route[:store_stop][:eta_formated]}" if route[:store_stop][:eta_formated]
                 .btn-group.pull-right.stop-tools
-                  - route_depot_stops_disabled = @manage_planning[:disable_route_stops]
                   - if @manage_planning[:manage_store]
                     .btn-group
                       %a.marker_edit.btn.btn-default.btn-xs{href: "/stores/#{route[:store_stop][:id]}/edit?back=true", title: t("plannings.edit.edit_store_help")}
@@ -200,16 +186,4 @@
                   .btn-group
                     %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                       %i.fa.fa-map-marker
-                  - if current_user.customer.enable_store_stops && @manage_planning[:manage_route_stops] && @available_store_reloads.any?
-                    .dropdown.btn-group
-                      %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", disabled: (true if route_depot_stops_disabled), title: t("plannings.edit.create_store_help")}
-                        %i.fa.fa-plus
-                      %ul.dropdown-menu.pull-right.store-dropdown{role: "menu"}
-                        - @available_store_reloads.each do |store_reload|
-                          %li
-                            %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-reload-id": store_reload[:id], "data-store-reload-name": store_reload[:name], class: "store-reload-option #{('disabled' if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}", disabled: (store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}
-                              %i.fa.fa-fw{class: "#{store_reload[:icon] || 'fa-store'}", style: "color: #{store_reload[:color] || 'black'};"}
-                              = [[store_reload[:name], store_reload[:index]].compact.join(' #'), store_reload[:ref]].compact.join(' - ')
-                              - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
-                                %small.text-muted
-                                  = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"
+                  = render partial: 'routes/depot_add_dropdown', locals: { route: route }

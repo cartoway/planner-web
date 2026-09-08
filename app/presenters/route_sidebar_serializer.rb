@@ -102,6 +102,7 @@ class RouteSidebarSerializer
       store_start: serialize_store_start(vehicle_usage, vehicle, route_data),
       store_stop: serialize_store_stop(vehicle_usage, vehicle, route_data),
       used_reloads: route_data&.size_store_reloads.to_i,
+      regulatory_rest: vehicle_usage&.regulatory_rest? || false,
       emission: @route.emission ? @view_helpers.number_to_human(@route.emission, precision: 4) : '-',
       total_cost: total_cost,
       total_revenue: @route.revenue&.round(2),

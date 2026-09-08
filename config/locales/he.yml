@@ -383,6 +383,7 @@ he:
         rest_start: להתחיל את החלון
         rest_stop: לעצור את החלון
         rest_duration: משך מנוחה
+        rest_lapse: מרווח עבודה
         store_rest: מקום מנוחה
         store_rest_id: מקום מנוחה
         service_time_start: זמן שירות לפני
@@ -399,6 +400,7 @@ he:
         rest_start: להתחיל את החלון
         rest_stop: לעצור את החלון
         rest_duration: משך מנוחהon
+        rest_lapse: מרווח עבודה
         store_rest: מקום מנוחה
         store_rest_id: מקום מנוחה
         service_time_start: זמן שירות לפני
@@ -456,6 +458,11 @@ he:
           missing_rest_window: לא יכול להיות ריק אם משך המנוחה מלא
           missing_rest_duration: לא יכול להיות ריק אם חלון הזמן מנוחה מלא
           rest_range: 'טווח המנוחה חייב להיות בין %{start} עד %{end}'
+          mutually_exclusive_window: cannot be combined with a rest time window
+          duration_must_be_smaller_than_lapse: must be smaller than the work lapse
+          missing_rest_duration_for_lapse: can't be blank if rest lapse is filled
+          missing_rest_lapse: can't be blank for a regulatory rest
+          incompatible_with_lapse: cannot be combined with a regulatory rest
           service_range: לא יכול להיות גדול יותר מאשר טווח עבודה
         vehicle_usage_set:
           attributes:
@@ -466,6 +473,10 @@ he:
           at_least_one: צריך לפחות תוצרת רכב אחת
           missing_rest_window: לא יכול להיות ריק אם משך המנוחה מלא
           missing_rest_duration: לא יכול להיות ריק אם חלון הזמן מנוחה מלא
+          mutually_exclusive_window: cannot be combined with a rest time window
+          duration_must_be_smaller_than_lapse: must be smaller than the work lapse
+          missing_rest_lapse: can't be blank for a regulatory rest
+          incompatible_with_lapse: cannot be combined with a regulatory rest
         visit:
           attributes:
             time_window_end_1:
