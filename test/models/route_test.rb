@@ -623,6 +623,44 @@ class RouteTest < ActiveSupport::TestCase
     assert route.out_of_capacity
   end
 
+  test 'should flag route out_of_skill from stops' do
+    route = routes(:route_one_one)
+    another_route = routes(:route_three_one)
+    skill = Tag.create!(label: 'skill tag', customer: route.planning.customer)
+    another_route.vehicle_usage.tags << skill
+    another_route.vehicle_usage.save!
+
+    stop = route.stops.find { |s| s.is_a?(StopVisit) }
+    stop.visit.tags << skill
+    stop.visit.save!
+
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+
+    assert route.stops.any?(&:out_of_skill)
+    assert route.out_of_skill
+    assert route.route_data.out_of_skill
+  end
+
+  test 'should flag route out_of_max_reload from stops' do
+    route = routes(:route_one_one)
+    route.planning.customer.update!(enable_store_stops: true)
+    route.vehicle_usage.update!(max_reload: 1)
+
+    store = stores(:store_one)
+    route.add_store_reload(store.store_reloads.create!(ref: 'SR001'))
+    route.add_store_reload(store.store_reloads.create!(ref: 'SR002'))
+
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+
+    assert route.stops.any?(&:out_of_max_reload)
+    assert route.out_of_max_reload
+    assert route.route_data.out_of_max_reload
+  end
+
   test 'should set stops as unmanageable capacity' do
     route = routes(:route_one_one)
     route.vehicle_usage.vehicle.capacities[1] = 0.0
@@ -658,15 +696,18 @@ class RouteTest < ActiveSupport::TestCase
 
     route.compute_out_of_force_position
     assert route.stops.one?(&:out_of_force_position)
+    assert route.out_of_force_position
 
     route.outdated = true
     route.compute
     assert route.stops.one?(&:out_of_force_position)
+    assert route.out_of_force_position
 
     always_first_visit.force_position = :neutral
     route.outdated = true
     route.compute_saved
     assert route.stops.none?(&:out_of_force_position)
+    assert_not route.out_of_force_position
   end
 
   test 'should add sub_tour_index to polylines when route has StopStore' do
