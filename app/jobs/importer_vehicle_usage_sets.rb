@@ -68,6 +68,7 @@ class ImporterVehicleUsageSets < ImporterBase
       rest_start: { title: I18n.t('vehicle_usage_sets.import.rest_start'), desc: I18n.t('vehicle_usage_sets.import.rest_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
       rest_stop: { title: I18n.t('vehicle_usage_sets.import.rest_stop'), desc: I18n.t('vehicle_usage_sets.import.rest_stop_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
       rest_duration: { title: I18n.t('vehicle_usage_sets.import.rest_duration'), desc: I18n.t('vehicle_usage_sets.import.rest_duration_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
+      rest_lapse: { title: I18n.t('vehicle_usage_sets.import.rest_lapse'), desc: I18n.t('vehicle_usage_sets.import.rest_lapse_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
       store_rest_ref: { title: I18n.t('vehicle_usage_sets.import.store_rest_ref'), desc: I18n.t('vehicle_usage_sets.import.store_rest_desc'), format: I18n.t('vehicle_usage_sets.import.format.string'), type: :string },
       service_time_start: { title: I18n.t('vehicle_usage_sets.import.service_time_start'), desc: I18n.t('vehicle_usage_sets.import.service_time_start_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
       service_time_end: { title: I18n.t('vehicle_usage_sets.import.service_time_end'), desc: I18n.t('vehicle_usage_sets.import.service_time_end_desc'), format: I18n.t('vehicle_usage_sets.import.format.hour'), type: :hour },
@@ -259,8 +260,12 @@ class ImporterVehicleUsageSets < ImporterBase
     unless @common_configuration[:time_window_start] && @common_configuration[:time_window_end]
       @common_configuration[:time_window_start] = @common_configuration[:time_window_end] = nil
     end
-    unless @common_configuration[:rest_start] && @common_configuration[:rest_stop] && @common_configuration[:rest_duration]
-      @common_configuration[:rest_start] = @common_configuration[:rest_stop] = @common_configuration[:rest_duration] = nil
+    if @common_configuration[:rest_duration] && @common_configuration[:rest_lapse] && !@common_configuration[:rest_start] && !@common_configuration[:rest_stop]
+      # Keep a shared regulatory rest (duration + lapse, no time window)
+    elsif @common_configuration[:rest_start] && @common_configuration[:rest_stop] && @common_configuration[:rest_duration]
+      @common_configuration[:rest_lapse] = nil
+    else
+      @common_configuration[:rest_start] = @common_configuration[:rest_stop] = @common_configuration[:rest_duration] = @common_configuration[:rest_lapse] = nil
     end
     unless @common_configuration[:service_time_start] && @common_configuration[:service_time_end]
       @common_configuration[:service_time_start] = @common_configuration[:service_time_end] = nil

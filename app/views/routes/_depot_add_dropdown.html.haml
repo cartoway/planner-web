@@ -1,0 +1,24 @@
+- show_store_reloads = current_user.customer.enable_store_stops && @available_store_reloads.any?
+- show_regulatory_rest = route[:regulatory_rest]
+- if @manage_planning[:manage_route_stops] && (show_store_reloads || show_regulatory_rest)
+  - route_depot_stops_disabled = @manage_planning[:disable_route_stops]
+  .dropdown.btn-group
+    %button.btn.btn-default.btn-xs.dropdown-toggle{type: "button", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false", disabled: (true if route_depot_stops_disabled), title: t(show_store_reloads ? 'plannings.edit.create_store_help' : 'plannings.edit.create_regulatory_rest.help')}
+      %i.fa.fa-plus
+    %ul.dropdown-menu.pull-right.store-dropdown{role: "menu"}
+      - if show_regulatory_rest
+        %li
+          %a.dropdown-item.regulatory-rest-option{href: "#", "data-route-id": route[:route_id]}
+            %i.fa.fa-fw.fa-circle-pause
+            = t('plannings.edit.create_regulatory_rest.label')
+      - if show_regulatory_rest && show_store_reloads
+        %li.divider
+      - if show_store_reloads
+        - @available_store_reloads.each do |store_reload|
+          %li
+            %a.dropdown-item{href: "#", "data-route-id": route[:route_id], "data-store-reload-id": store_reload[:id], "data-store-reload-name": store_reload[:name], class: "store-reload-option #{('disabled' if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}", disabled: (store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload])}
+              %i.fa.fa-fw{class: "#{store_reload[:icon] || 'fa-store'}", style: "color: #{store_reload[:color] || 'black'};"}
+              = [[store_reload[:name], store_reload[:index]].compact.join(' #'), store_reload[:ref]].compact.join(' - ')
+              - if store_reload[:max_reload] && store_reload[:used_reloads] >= store_reload[:max_reload]
+                %small.text-muted
+                  = " (#{t('plannings.edit.create_store.max_reload_reached', max_reload: store_reload[:max_reload])})"

@@ -34,6 +34,7 @@ class V01::Entities::VehicleUsage < Grape::Entity
   expose(:rest_start, documentation: { type: DateTime, desc: 'Earliest rest start (HH:MM on input).' }) { |m| m.rest_start_absolute_time_with_seconds }
   expose(:rest_stop, documentation: { type: DateTime, desc: 'Latest rest end (HH:MM on input).' }) { |m| m.rest_stop_absolute_time_with_seconds }
   expose(:rest_duration, documentation: { type: DateTime, desc: 'Rest duration (HH:MM on input).' }) { |m| m.rest_duration_absolute_time_with_seconds }
+  expose(:rest_lapse, documentation: { type: DateTime, desc: 'Work lapse between cumulative rests (HH:MM on input).' }) { |m| m.rest_lapse_absolute_time_with_seconds }
   expose(:store_rest_id, documentation: { type: Integer, desc: 'Store used as rest location when set.' })
   expose(:active, documentation: { type: 'Boolean', desc: 'When false, no route is built for this usage in new plannings.', example: true })
   expose(:visit_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to visit durations (falls back to vehicle usage set, then 1)' })

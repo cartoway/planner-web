@@ -19,6 +19,7 @@
 
 import { bootstrap_dialog, modal_options } from '../../assets/javascripts/scaffolds';
 import { beforeSendWaiting, completeWaiting, ajaxError } from './ajax';
+import { initRestTypeFields } from './rest_type_fields';
 
 const persistVehicleUsageOrder = function($tbody) {
   var vehicleUsageSetId = $tbody.attr('data-vehicle-usage-set-id');
@@ -206,11 +207,13 @@ const vehicle_usage_sets_edit = function(params) {
     return true;
   });
 
-  $('#vehicle_usage_set_open, #vehicle_usage_set_close, #vehicle_usage_set_rest_start, #vehicle_usage_set_rest_stop, #vehicle_usage_set_rest_duration, #vehicle_usage_set_service_time_start, #vehicle_usage_set_service_time_end, #vehicle_usage_set_work_time, #vehicle_usage_set_max_ride_duration').timeEntry({
+  $('#vehicle_usage_set_open, #vehicle_usage_set_close, #vehicle_usage_set_rest_start, #vehicle_usage_set_rest_stop, #vehicle_usage_set_rest_duration, #vehicle_usage_set_rest_lapse, #vehicle_usage_set_service_time_start, #vehicle_usage_set_service_time_end, #vehicle_usage_set_work_time, #vehicle_usage_set_max_ride_duration').timeEntry({
     show24Hours: true,
     spinnerImage: '',
     defaultTime: '00:00'
   });
+
+  initRestTypeFields('vehicle_usage_set');
 };
 
 const vehicle_usage_sets_import = function(params) {
