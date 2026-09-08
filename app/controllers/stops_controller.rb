@@ -21,7 +21,7 @@ class StopsController < ApplicationController
   include PlanningToolbarPermissions
 
   before_action :authenticate_user!, except: [:edit, :update]
-  before_action :set_route_context, only: [:create_store_reload, :destroy]
+  before_action :set_route_context, only: [:create_store_reload, :create_regulatory_rest, :destroy]
   before_action :authenticate_driver!, only: [:edit, :update]
   before_action :set_stop, only: [:show, :edit, :update] # Before load_and_authorize_resource
 
@@ -42,12 +42,38 @@ class StopsController < ApplicationController
     end
   end
 
+  def create_regulatory_rest
+    unless @route&.vehicle_usage&.regulatory_rest?
+      respond_to do |format|
+        format.json {
+          render json: {
+            status: :unprocessable_entity,
+            error: I18n.t('plannings.edit.create_regulatory_rest.error.not_enabled')
+          }, status: :unprocessable_entity
+        }
+      end
+      return
+    end
+
+    respond_to do |format|
+      if @route.add_rest && @route.save && load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
+        @planning.capture_state!(trigger: 'update_stop')
+        format.json { render json: { status: :ok } }
+      else
+        errors = (@route.errors&.full_messages || []) + (@planning&.errors&.full_messages || [])
+        format.json { render json: { status: :unprocessable_entity, error: errors }, status: :unprocessable_entity }
+      end
+    end
+  end
+
   def destroy
     if @route && params[:stop_id]
       stop = @route.stops.find(params[:stop_id])
       respond_to do |format|
         if stop.is_a?(StopStore)
           @route.remove_store_reload(stop) && @route.save!
+        elsif stop.is_a?(StopRest) && @route.vehicle_usage&.regulatory_rest?
+          @route.remove_rest(stop) && @route.save!
         else
           format.js {
             head :no_content
