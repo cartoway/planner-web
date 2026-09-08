@@ -2165,6 +2165,42 @@ export const plannings_edit = function(params) {
       });
       $(this).closest(".dropdown-menu").prev().dropdown("toggle");
     });
+
+    $(document).off('click.planningRegulatoryRest', '.regulatory-rest-option').on('click.planningRegulatoryRest', '.regulatory-rest-option', function(e) {
+      e.preventDefault();
+
+      var route_id = $(this).data('route-id');
+
+      if (!route_id || !planning_id) {
+        stickyError(I18n.t('plannings.edit.create_regulatory_rest.error.missing_context'));
+        return;
+      }
+
+      $.ajax({
+        url: '/plannings/' + planning_id + '/' + route_id + '/create_regulatory_rest.json',
+        type: 'POST',
+        beforeSend: function() {
+          beforeSendWaiting();
+        },
+        success: function() {
+          panelLoading(route_id);
+          refreshSidebarRoute(planning_id, route_id);
+          routesLayer.refreshRoutes([route_id], routes);
+          notice(I18n.t('plannings.edit.create_regulatory_rest.success'));
+        },
+        error: function(xhr) {
+          if (xhr.responseJSON && xhr.responseJSON.error) {
+            stickyError(xhr.responseJSON.error);
+          } else {
+            stickyError(I18n.t('plannings.edit.create_regulatory_rest.error.general'));
+          }
+        },
+        complete: function() {
+          completeWaiting();
+        }
+      });
+      $(this).closest(".dropdown-menu").prev().dropdown("toggle");
+    });
   };
 
   $('input[name="enable_optimization_soft_upper_bound"]').change(function() {
@@ -2721,6 +2757,14 @@ export const plannings_edit = function(params) {
 
     $p.on('click.planningRouteDelegate', '.route .marker_destroy_store', function() {
       if (confirm(I18n.t('plannings.edit.confirm_destroy_store'))) {
+        var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
+        var stopId = $(this).closest("[data-stop-id]").attr("data-stop-id");
+        destroyStore(planning_id, routeId, stopId);
+      }
+    });
+
+    $p.on('click.planningRouteDelegate', '.route .marker_destroy_rest', function() {
+      if (confirm(I18n.t('plannings.edit.confirm_destroy_regulatory_rest'))) {
         var routeId = $(this).closest("[data-route-id]").attr("data-route-id");
         var stopId = $(this).closest("[data-stop-id]").attr("data-stop-id");
         destroyStore(planning_id, routeId, stopId);

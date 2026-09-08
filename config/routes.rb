@@ -161,6 +161,7 @@ Rails.application.routes.draw do
     patch ':route_id/move/' => 'plannings#move'
     delete ':route_id/:stop_id/destroy' => 'stops#destroy'
     post ':route_id/:store_reload_id/create_store_reload' => 'stops#create_store_reload'
+    post ':route_id/create_regulatory_rest' => 'stops#create_regulatory_rest'
     get 'data_header'
     patch 'filter_routes'
     get 'refresh'

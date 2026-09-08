@@ -24,6 +24,11 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     get :edit, params: { id: @vehicle_usage }
     assert_response :success
     assert_valid response
+    assert_select '#vehicle_usage_rest_type_input .form-check', 0
+    assert_select 'input.form-check-input[name=?]', 'vehicle_usage[rest_mode]', 0
+    assert_select 'input[type=hidden][name=?][value=window]', 'vehicle_usage[rest_mode]', 1
+    assert_select '#vehicle_usage_rest_type_input', text: /#{Regexp.escape(I18n.t('vehicle_usages.form.rest_type.window'))}/
+    assert_select '#vehicle_usage_rest_type_input', text: /#{Regexp.escape(I18n.t('vehicle_usages.form.rest_type.locked_to_set'))}/
   end
 
   test 'vehicle form should show updated customer router option defaults' do
@@ -113,6 +118,30 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_equal @vehicle_usage.time_window_end, 36 * 3_600
     assert_equal @vehicle_usage.rest_start, 34 * 3_600
     assert_equal @vehicle_usage.rest_stop, 35 * 3_600
+  end
+
+  test 'should ignore rest type switch on vehicle_usage' do
+    original_start = @vehicle_usage.rest_start
+
+    patch :update, params: { id: @vehicle_usage, vehicle_usage: { rest_mode: 'regulatory', rest_lapse: '06:00' }}
+
+    assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
+    @vehicle_usage.reload
+    assert_nil @vehicle_usage.rest_lapse
+    assert_equal original_start, @vehicle_usage.rest_start
+    assert_not @vehicle_usage.regulatory_rest?
+  end
+
+  test 'should update vehicle_usage with regulatory rest lapse' do
+    enable_regulatory_rest!(@vehicle_usage, duration: 30.minutes.to_i, lapse: 8.hours.to_i)
+
+    patch :update, params: { id: @vehicle_usage, vehicle_usage: { rest_duration: '00:45', rest_lapse: '06:00' }}
+    assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
+    @vehicle_usage.reload
+    assert_equal 45.minutes.to_i, @vehicle_usage.rest_duration
+    assert_equal 6.hours.to_i, @vehicle_usage.rest_lapse
+    assert_nil @vehicle_usage.rest_start
+    assert_nil @vehicle_usage.rest_stop
   end
 
   test 'should not update vehicle_usage' do
