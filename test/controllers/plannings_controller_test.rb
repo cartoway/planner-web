@@ -277,6 +277,37 @@ class PlanningsControllerTest < ActionController::TestCase
     hidden_locked&.update_columns(hidden: original_hidden, locked: original_locked)
   end
 
+  test 'sidebar depot dropdown includes regulatory rest when enabled' do
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_not_includes response.body, 'regulatory-rest-option'
+
+    enable_regulatory_rest!(route_one_for_planning.vehicle_usage)
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_includes response.body, 'regulatory-rest-option'
+    assert_includes response.body, 'fa-circle-pause'
+    assert_includes response.body, I18n.t('plannings.edit.create_regulatory_rest.label')
+  end
+
+  test 'sidebar rest row includes destroy when regulatory rest is enabled' do
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_not_includes response.body, 'marker_destroy_rest'
+
+    route = route_one_for_planning
+    enable_regulatory_rest!(route.vehicle_usage)
+    route.reload
+    route.add_rest
+    route.save!
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    assert_includes response.body, 'marker_destroy_rest'
+    assert_includes response.body, 'fa-circle-pause'
+  end
+
   test 'should get index as csv' do
     get :index, params: { format: :csv, summary: true }
     assert_response :success
