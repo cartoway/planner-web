@@ -31,7 +31,7 @@ class V100::PlanningsTest < V100::PlanningsBaseTest
 
   test 'should automatic insert stop with ID from unassigned' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
       patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], out_of_zone: true }.to_json, CONTENT_TYPE: 'application/json'
       if mode
@@ -48,10 +48,10 @@ class V100::PlanningsTest < V100::PlanningsBaseTest
   end
 
   test 'should automatic insert stop with Ref from existing route with vehicle' do
+    last_stop = routes(:route_one_one).stops.select(&:position?).last
+    last_stop.update! active: false
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
-      last_stop = routes(:route_one_one).stops.select(&:position?).last
-      last_stop.update! active: false
+      apply_job_optimizer_mode!(mode)
 
       patch api("ref:#{@planning.ref}/automatic_insert"), nil, input: { stop_ids: [last_stop.id], out_of_zone: true }.to_json, CONTENT_TYPE: 'application/json'
       if mode

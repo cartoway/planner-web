@@ -170,7 +170,6 @@ class V01::Plannings < Grape::API
     patch ':id/refresh' do
       Route.includes_destinations_and_stores.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
         planning.compute_saved
         present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
@@ -194,7 +193,6 @@ class V01::Plannings < Grape::API
     patch ':id/switch' do
       Stop.includes_destinations_and_stores.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
         route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
         vehicle_usage = planning.vehicle_usage_set.vehicle_usages.find(params[:vehicle_usage_id])
@@ -228,7 +226,6 @@ class V01::Plannings < Grape::API
     end
     patch ':id/automatic_insert' do
       planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).preload_route_details.first!
-      raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
       stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
       begin
@@ -275,7 +272,6 @@ class V01::Plannings < Grape::API
 
         planning_with_associations = Planning.where(id: planning.id).preload_route_details.first!
 
-        raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
         planning_with_associations.zoning_outdated = true
         planning_with_associations.split_by_zones(nil)
         planning_with_associations.compute_saved!
@@ -361,7 +357,6 @@ class V01::Plannings < Grape::API
     patch ':id/order_array' do
       Route.includes_destinations_and_stores.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
         order_array = current_customer.order_arrays.find(params[:order_array_id])
         shift = Integer(params[:shift])
@@ -383,7 +378,6 @@ class V01::Plannings < Grape::API
     end
     patch ':id/update_routes' do
       planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-      raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
 
       if params[:action].to_sym == :active
         planning = current_customer.plannings.where(id: planning.id).preload_route_details.first!

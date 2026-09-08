@@ -220,6 +220,13 @@ class Planning < ApplicationRecord
     self.class.optimizer_context
   end
 
+  # One-for-all write lock while OptimizerJob runs on this planning.
+  # OptimizerJob sets optimizer_context so it can still persist the solution.
+  def reject_writes_during_optimization!
+    return if in_optimization_context?
+    raise Exceptions::JobInProgressError if Job.on_planning(customer.job_optimizer, id)
+  end
+
   def set_routes(routes_visits, recompute = true, ignore_errors = false)
     default_empty_routes(ignore_errors)
     routes_visits = routes_visits.select{ |ref, _d| ref } # Remove out_of_route
@@ -567,6 +574,7 @@ class Planning < ApplicationRecord
   end
 
   def compute_saved!(options = {})
+    reject_writes_during_optimization!
     routes_to_enqueue = []
 
     result =
@@ -670,6 +678,7 @@ class Planning < ApplicationRecord
   end
 
   def move_stop(route, stop, index, force = false)
+    reject_writes_during_optimization!
     if fast_move_inactive_stop_to_out_of_route?(stop, route)
       fast_move_inactive_stops_to_out_of_route!(route, [stop], index)
       return true
@@ -707,6 +716,7 @@ class Planning < ApplicationRecord
   # Bulk-move inactive StopVisits to out-of-route with activerecord-import,
   # then reindex each impacted source route once.
   def fast_move_inactive_stops_to_out_of_route!(out_of_route, stops, index = -1)
+    reject_writes_during_optimization!
     stops = Array(stops).compact
     return if stops.empty?
     raise ArgumentError, 'target must be out-of-route' if out_of_route.vehicle_usage?

@@ -907,6 +907,17 @@ class PlanningsControllerTest < ActionController::TestCase
     }
   end
 
+  test 'should not move stop while optimization job is running on planning' do
+    job = delayed_jobs(:job_optimizer)
+    job.update!(handler: "planning_id: #{@planning.id}")
+    customers(:customer_one).update!(job_optimizer: job)
+    sign_in users(:user_one)
+
+    patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
+    assert_response :unprocessable_entity
+    assert_equal 'job_in_progress', JSON.parse(response.body)['type']
+  end
+
   test 'move returns not found when target route does not exist' do
     invalid_route_id = -1
     assert_not @planning.routes.exists?(invalid_route_id)
@@ -1494,7 +1505,9 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should not optimize when an optimization job is already running' do
-    customers(:customer_one).update(job_optimizer: delayed_jobs(:job_optimizer))
+    job = delayed_jobs(:job_optimizer)
+    job.update!(handler: "planning_id: #{@planning.id}")
+    customers(:customer_one).update(job_optimizer: job)
 
     get :optimize, params: { planning_id: @planning, format: :json, global: true }
     assert_valid response

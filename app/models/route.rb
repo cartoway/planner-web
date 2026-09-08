@@ -74,6 +74,8 @@ class Route < ApplicationRecord
   after_save { @computed = false }
 
   before_save :outdated_if_changed
+  before_save :reject_writes_during_optimization, unless: :migration_skip
+  before_destroy :reject_writes_during_optimization, unless: :migration_skip
 
   after_save :invalidate_route_cache, :invalidate_planning_cache
   after_destroy :invalidate_route_cache, :invalidate_planning_cache
@@ -733,6 +735,7 @@ class Route < ApplicationRecord
   end
 
   def compute_saved!(options = {})
+    reject_writes_during_optimization
     compute!(options)
 
     group_stop_visits = stops.select{ |s| s.is_a?(StopVisit) }.map(&:import_attributes)
@@ -1787,11 +1790,16 @@ class Route < ApplicationRecord
     planning&.in_optimization_context?
   end
 
+  def reject_writes_during_optimization
+    planning&.reject_writes_during_optimization!
+  end
+
   def remove_stop(stop)
     destroy_stop!(stop)
   end
 
   def destroy_stop!(stop)
+    reject_writes_during_optimization
     return if stop.nil?
 
     persisted_id = stop.id if stop.persisted?

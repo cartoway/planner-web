@@ -36,7 +36,7 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
 
   test 'should move stop to route' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
       first_route_with_vehicle = @planning.routes.find{ |route| route.vehicle_usage }
 
@@ -56,7 +56,7 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
 
   test 'should move visits to route' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
       first_route_with_vehicle = @planning.routes.find{ |route| route.vehicle_usage }
 
@@ -76,7 +76,7 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
 
   test 'should add store to route' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       route = @planning.routes.find{ |r| r.vehicle_usage }
       store_reload = store_reloads(:store_reload_one)
       post api(@planning.id, "/#{route.id}/store_reloads/#{store_reload.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
@@ -112,19 +112,15 @@ class V100::PlanningsRoutesTest < ActiveSupport::TestCase
 
   test 'should not add store to out_route' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       route = @planning.routes.find{ |r| !r.vehicle_usage }
       store_reload = store_reloads(:store_reload_one)
       post api(@planning.id, "/#{route.id}/store_reloads/#{store_reload.id}"), nil, input: { index: 0 }.to_json, CONTENT_TYPE: 'application/json'
-      if mode
-        assert_equal 409, last_response.status, last_response.body
-      else
-        assert_equal 400, last_response.status, last_response.body
-        assert_includes(
-          JSON.parse(last_response.body)['message'],
-          I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage')
-        )
-      end
+      assert_equal 400, last_response.status, last_response.body
+      assert_includes(
+        JSON.parse(last_response.body)['message'],
+        I18n.t('activerecord.errors.models.route.attributes.stops.store.must_be_associated_to_vehicle_usage')
+      )
     end
   end
 

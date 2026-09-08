@@ -103,8 +103,6 @@ class V100::Routes < Grape::API
 
           Route.includes_destinations_and_stores.scoping do
             planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
-            raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
-
             route = planning.routes.includes_destinations_and_stores.where(ParseIdsRefs.read(params[:route_id])).first!
             store_reload = current_customer.store_reloads.where(ParseIdsRefs.read(params[:id])).first!
 

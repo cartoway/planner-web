@@ -12,6 +12,7 @@ class PlanningsTest < ActiveSupport::TestCase
   end
 
   test 'should return json for planning during optim' do
+    apply_job_optimizer_mode!(:during_optimization, @planning)
     get "/plannings/#{@planning.id}.json?api_key=testkey1"
     assert last_response.ok?, last_response.body
     json = JSON.parse(last_response.body)

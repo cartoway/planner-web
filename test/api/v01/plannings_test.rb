@@ -217,7 +217,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should force recompute the planning after parameter update' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       patch api("#{@planning.id}/refresh")
       if mode
         assert_equal 409, last_response.status, last_response.body
@@ -230,7 +230,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   test 'should switch two vehicles' do
     routes = @planning.routes.load.select{ |route| route.vehicle_usage_id }
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       patch api("#{@planning.id}/switch"), {id: @planning.id, route_id: routes.first.id, vehicle_usage_id: routes.second.vehicle_usage_id}
       if mode
         assert_equal 409, last_response.status, last_response.body
@@ -258,7 +258,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should change stops activation' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       patch api("#{@planning.id}/routes/#{@planning.routes[1].id}/active/all")
       assert_equal mode ? 409 : 200, last_response.status, last_response.body
       patch api("#{@planning.id}/routes/#{@planning.routes[1].id}/active/reverse")
@@ -275,7 +275,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should automatic insert stop with ID from unassigned' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       unassigned_stop = @planning.routes.detect{ |route| !route.vehicle_usage }.stops.select(&:position?).first
       patch api("#{@planning.id}/automatic_insert"), nil, input: { stop_ids: [unassigned_stop.id], out_of_zone: true }.to_json, CONTENT_TYPE: 'application/json'
       if mode
@@ -292,10 +292,10 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should automatic insert stop with Ref from existing route with vehicle' do
     @planning.compute_saved!
+    last_stop = routes(:route_one_one).stops.select(&:position?).last
+    last_stop.update! active: false
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
-      last_stop = routes(:route_one_one).stops.select(&:position?).last
-      last_stop.update! active: false
+      apply_job_optimizer_mode!(mode)
 
       patch api("ref:#{@planning.ref}/automatic_insert"), nil, input: { stop_ids: [last_stop.id], out_of_zone: true }.to_json, CONTENT_TYPE: 'application/json'
       if mode
@@ -390,7 +390,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should apply order array to planning' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       order_array = order_arrays :order_array_one
       planning = plannings :planning_one
       assert !planning.order_array
@@ -425,9 +425,9 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
   end
 
   test 'should raise exceptions if job already in progress' do
-    customers(:customer_one).update job_optimizer_id: nil
     planning = plannings(:planning_one)
-    Job.expects(:on_planning).with(planning.customer.job_optimizer, planning.id).returns(true)
+    delayed_jobs(:job_optimizer).update!(handler: "planning_id: #{planning.id}")
+    customers(:customer_one).update!(job_optimizer: delayed_jobs(:job_optimizer))
     route = routes(:route_one_one)
 
     without_loading Stop do
@@ -438,7 +438,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should apply zonings' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       get api("/#{@planning.id}/apply_zonings", { details: true })
       assert_equal mode ? 409 : 200, last_response.status, last_response.body
     end
@@ -446,7 +446,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should optimize each route' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       [false, true].each do |sync|
         get api("/#{@planning.id}/optimize", { details: true, synchronous: sync })
         assert_equal mode ? 409 : sync ? 200 : 204, last_response.status, last_response.body
@@ -456,7 +456,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should perform a global optimization' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       [false, true].each do |sync|
         get api("/#{@planning.id}/optimize", { global: true, details: true, synchronous: sync })
         assert_equal mode ? 409 : sync ? 200 : 204, last_response.status, last_response.body
@@ -466,7 +466,7 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
 
   test 'should optimize all stops in routes' do
     [:during_optimization, nil].each do |mode|
-      customers(:customer_one).update(job_optimizer_id: nil) if mode.nil?
+      apply_job_optimizer_mode!(mode)
       [false, true].each do |all|
         get api("/#{@planning.id}/optimize", {details: true, active_only: all })
         assert_equal mode ? 409 : 204, last_response.status, last_response.body
@@ -621,15 +621,4 @@ class V01::PlanningsErrorTest < V01::PlanningsBaseTest
       assert_equal 304, last_response.status, last_response.body
     end
   end
-end
-
-class V01::PlanningTestException < V01::PlanningsBaseTest
-
-  test 'should not apply zonings because of router exception' do
-    assert_no_difference('Stop.count') do
-      get api("/#{plannings(:planning_one).id}/apply_zonings", details: true)
-      assert_equal 409, last_response.status
-    end
-  end
-
 end

@@ -44,8 +44,6 @@ class StopsController < ApplicationController
 
   def destroy
     if @route && params[:stop_id]
-      raise Exceptions::JobInProgressError if Job.on_planning(current_user.customer.job_optimizer, @route.planning_id)
-
       stop = @route.stops.find(params[:stop_id])
       respond_to do |format|
         if stop.is_a?(StopStore)
@@ -68,9 +66,6 @@ class StopsController < ApplicationController
         end
       end
     end
-  rescue Exceptions::JobInProgressError
-    status 409
-    present @planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
   end
 
   def show

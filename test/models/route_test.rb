@@ -926,4 +926,30 @@ class RouteTest < ActiveSupport::TestCase
 
     assert_includes planning.routes.available, out_of_route
   end
+
+  test 'should not update route while optimization job is running on planning' do
+    route = routes(:route_one_one)
+    delayed_jobs(:job_optimizer).update!(handler: "planning_id: #{route.planning_id}")
+
+    assert_raises(Exceptions::JobInProgressError) { route.update!(ref: 'blocked') }
+  end
+
+  test 'should update route while optimization job runs in optimizer context' do
+    route = routes(:route_one_one)
+    delayed_jobs(:job_optimizer).update!(handler: "planning_id: #{route.planning_id}")
+
+    Planning.optimizer_context = true
+    begin
+      assert route.update!(ref: 'from-optimizer')
+    ensure
+      Planning.optimizer_context = false
+    end
+  end
+
+  test 'should update route when optimization job targets another planning' do
+    route = routes(:route_one_one)
+    delayed_jobs(:job_optimizer).update!(handler: "planning_id: #{plannings(:planning_two).id}")
+
+    assert route.update!(ref: 'other-planning-ok')
+  end
 end
