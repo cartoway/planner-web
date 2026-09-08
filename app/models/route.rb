@@ -571,6 +571,9 @@ class Route < ApplicationRecord
       }
       compacted_route_data_attributes[:out_of_capacity] ||= stops_sort.any?(&:out_of_capacity)
       compacted_route_data_attributes[:unmanageable_capacity] ||= stops_sort.any?(&:unmanageable_capacity)
+      compacted_route_data_attributes[:out_of_skill] ||= stops_sort.any?(&:out_of_skill)
+      compacted_route_data_attributes[:out_of_max_reload] ||= stops_sort.any?(&:out_of_max_reload)
+      compacted_route_data_attributes[:out_of_force_position] ||= stops_sort.any?(&:out_of_force_position)
       route_data_attributes.merge!(compacted_route_data_attributes)
       merge_stop_leg_alerts_into_route_data!(route_data_attributes, route_attributes)
       route_data_attributes[:size_destinations] = stops_sort.select{ |stop| stop.is_a?(StopVisit) }.map{ |stop| stop.visit.destination_id }.compact.uniq.size
@@ -1613,6 +1616,7 @@ class Route < ApplicationRecord
         stop.out_of_force_position = true
       end
     }
+    route_data.out_of_force_position = stops.any?(&:out_of_force_position) if route_data
   end
 
   def route_skills
@@ -1633,6 +1637,7 @@ class Route < ApplicationRecord
         stop.out_of_max_reload = true
       end
     end
+    route_data.out_of_max_reload = stops.any?(&:out_of_max_reload) if route_data
   end
 
   def compute_out_of_skill(source_planning = nil, planning_skills_ids = nil)
@@ -1642,6 +1647,7 @@ class Route < ApplicationRecord
       stops.each{ |stop|
         stop.out_of_skill = nil
       }
+      route_data.out_of_skill = false if route_data
       return
     end
 
@@ -1655,6 +1661,7 @@ class Route < ApplicationRecord
 
       stop.out_of_skill = stop_skills.any? && (stop_skills & r_skills).size < stop_skills.size
     }
+    route_data.out_of_skill = stops.any?(&:out_of_skill) if route_data
   end
 
   def compute_out_of_relations

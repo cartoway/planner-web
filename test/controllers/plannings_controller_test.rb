@@ -1618,6 +1618,7 @@ class PlanningsControllerTest < ActionController::TestCase
     @planning.compute_saved
     first_route_stop.reload
     assert_equal true, first_route_stop.out_of_skill
+    assert_equal true, first_route_stop.route.out_of_skill
   end
 
   test 'should not automatic insert with none available routes' do
