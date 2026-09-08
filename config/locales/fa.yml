@@ -387,6 +387,7 @@ fa:
         rest_start: ''
         rest_stop: ''
         rest_duration: ''
+        rest_lapse: ''
         store_rest: ''
         store_rest_id: ''
         service_time_start: ''
@@ -403,6 +404,7 @@ fa:
         rest_start: ''
         rest_stop: ''
         rest_duration: ''
+        rest_lapse: ''
         store_rest: ''
         store_rest_id: ''
         service_time_start: ''
@@ -485,6 +487,11 @@ fa:
           missing_rest_window: ''
           missing_rest_duration: ''
           rest_range: ''
+          mutually_exclusive_window: ''
+          duration_must_be_smaller_than_lapse: ''
+          missing_rest_duration_for_lapse: ''
+          missing_rest_lapse: ''
+          incompatible_with_lapse: ''
           service_range: ''
         vehicle_usage_set:
           attributes:
@@ -495,6 +502,10 @@ fa:
           at_least_one: ''
           missing_rest_window: ''
           missing_rest_duration: ''
+          mutually_exclusive_window: ''
+          duration_must_be_smaller_than_lapse: ''
+          missing_rest_lapse: ''
+          incompatible_with_lapse: ''
         visit:
           attributes:
             time_window_end_1:
@@ -1658,6 +1669,8 @@ fa:
       rest_stop_desc: ''
       rest_duration: ''
       rest_duration_desc: ''
+      rest_lapse: ''
+      rest_lapse_desc: ''
       store_rest_ref: ''
       store_rest_desc: ''
       service_time_start: ''
