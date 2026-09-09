@@ -92,4 +92,21 @@ class V01::VehicleUsagesTest < ActiveSupport::TestCase
     assert_equal @vehicle_usage.rest_stop_absolute_time_with_seconds, JSON.parse(last_response.body)['rest_stop']
     assert_equal @vehicle_usage.time_window_end_absolute_time_with_seconds, JSON.parse(last_response.body)['time_window_end']
   end
+
+  test 'should update a vehicle_usage with regulatory rest lapse' do
+    @vehicle_usage.rest_start = nil
+    @vehicle_usage.rest_stop = nil
+    @vehicle_usage.rest_duration = '00:45:00'
+    @vehicle_usage.rest_lapse = '06:00:00'
+    @vehicle_usage.store_rest_id = nil
+    put api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id), @vehicle_usage.attributes
+    assert last_response.ok?, last_response.body
+
+    json = JSON.parse(last_response.body)
+    assert_equal '00:45:00', json['rest_duration']
+    assert_equal '06:00:00', json['rest_lapse']
+    @vehicle_usage.reload
+    assert_equal 45.minutes.to_i, @vehicle_usage.rest_duration
+    assert_equal 6.hours.to_i, @vehicle_usage.rest_lapse
+  end
 end

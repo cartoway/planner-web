@@ -372,4 +372,152 @@ class VehicleUsageTest < ActiveSupport::TestCase
       assert_equal next_index, usage.index
     end
   end
+
+  test 'switching rest type to regulatory marks associated routes outdated' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    route = vehicle_usage.routes.take
+    route.update!(outdated: false)
+
+    vehicle_usage.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+
+    assert route.reload.outdated
+  end
+
+  test 'switching rest type to time window marks associated routes outdated' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    route = vehicle_usage.routes.take
+    route.update!(outdated: false)
+
+    vehicle_usage.update!(
+      rest_lapse: nil,
+      rest_start: 12.hours.to_i,
+      rest_stop: 14.hours.to_i,
+      rest_duration: 45.minutes.to_i
+    )
+
+    assert route.reload.outdated
+  end
+
+  test 'switching inherited rest type to time window marks routes outdated and creates a rest stop' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_three)
+    vehicle_usage.update!(rest_start: nil, rest_stop: nil, rest_duration: nil, rest_lapse: nil, store_rest_id: nil)
+    vehicle_usage.vehicle_usage_set.vehicle_usages.each do |usage|
+      usage.update_columns(rest_start: nil, rest_stop: nil, rest_duration: nil, rest_lapse: nil, store_rest_id: nil)
+    end
+    vehicle_usage.vehicle_usage_set.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    vehicle_usage.reload
+    route = vehicle_usage.routes.take
+    route.update!(outdated: false)
+
+    vehicle_usage.update!(
+      rest_start: 12.hours.to_i,
+      rest_stop: 14.hours.to_i,
+      rest_duration: 45.minutes.to_i
+    )
+
+    assert route.reload.outdated
+    assert route.stops.any? { |stop| stop.is_a?(StopRest) }
+  end
+
+  test 'regulatory rest does not require a time window' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+
+    assert vehicle_usage.valid?
+    assert vehicle_usage.regulatory_rest?
+    assert_equal 6.hours.to_i, vehicle_usage.default_rest_lapse
+    assert_equal 0, vehicle_usage.routes.sum{ |route| route.stops.count{ |stop| stop.is_a?(StopRest) } }
+  end
+
+  test 'regulatory rest inherits lapse from the vehicle usage set' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_three)
+    vehicle_usage.update!(rest_start: nil, rest_stop: nil, rest_duration: nil, rest_lapse: nil, store_rest_id: nil)
+    vehicle_usage.vehicle_usage_set.vehicle_usages.each do |usage|
+      usage.update_columns(rest_start: nil, rest_stop: nil, rest_duration: nil, rest_lapse: nil, store_rest_id: nil)
+    end
+    vehicle_usage.vehicle_usage_set.update!(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+
+    vehicle_usage.reload
+    assert vehicle_usage.regulatory_rest?
+    assert_equal 45.minutes.to_i, vehicle_usage.default_rest_duration
+    assert_equal 6.hours.to_i, vehicle_usage.default_rest_lapse
+    assert_equal vehicle_usage.vehicle_usage_set.rest_lapse_time, vehicle_usage.default_rest_lapse_time
+    assert_nil vehicle_usage.rest_lapse
+  end
+
+  test 'switching to regulatory rest clears leftover time window and store' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.assign_attributes(
+      rest_mode: 'regulatory',
+      rest_lapse: 6.hours.to_i,
+      rest_duration: 45.minutes.to_i
+    )
+
+    assert vehicle_usage.valid?, vehicle_usage.errors.full_messages.to_s
+    assert_nil vehicle_usage.rest_start
+    assert_nil vehicle_usage.rest_stop
+    assert_nil vehicle_usage.store_rest_id
+    assert vehicle_usage.regulatory_rest?
+  end
+
+  test 'regulatory rest duration must be smaller than lapse' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.assign_attributes(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 6.hours.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    assert_not vehicle_usage.valid?
+    assert_includes vehicle_usage.errors.attribute_names, :rest_duration
+  end
+
+  test 'regulatory rest mode without lapse does not require a time window' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    vehicle_usage.assign_attributes(
+      rest_mode: 'regulatory',
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 45.minutes.to_i,
+      rest_lapse: nil,
+      store_rest_id: nil
+    )
+
+    assert_not vehicle_usage.valid?
+    assert_includes vehicle_usage.errors.attribute_names, :rest_lapse
+    assert_not_includes vehicle_usage.errors.attribute_names, :rest_start
+    assert_not_includes vehicle_usage.errors.attribute_names, :rest_stop
+  end
 end

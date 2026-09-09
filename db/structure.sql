@@ -1529,6 +1529,7 @@ CREATE TABLE public.vehicle_usage_sets (
     rest_start integer,
     rest_stop integer,
     rest_duration integer,
+    rest_lapse integer,
     service_time_start integer,
     service_time_end integer,
     work_time integer,
@@ -1582,6 +1583,7 @@ CREATE TABLE public.vehicle_usages (
     rest_start integer,
     rest_stop integer,
     rest_duration integer,
+    rest_lapse integer,
     service_time_start integer,
     service_time_end integer,
     work_time integer,
@@ -3954,6 +3956,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260717105805'),
 ('20260720072020'),
 ('20260721141523'),
-('20260731120833');
+('20260731120833'),
+('20260904135351');
 
 

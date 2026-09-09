@@ -122,14 +122,18 @@
               - if stop[:eta_formated]
                 - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
               %span.name{title: title}
-                %i.fa.fa-coffee.fa-fw
+                %i.fa.fa-fw{class: (route[:regulatory_rest] ? 'fa-circle-pause' : 'fa-coffee')}
                 = sd_line
           .stop-row-hover-tools.hover-tools
             .stop-row-hover-tools__inner.d-flex.justify-content-end.align-items-center
               %i.fa.fa-reorder.fa-fw{title: t("plannings.edit.drag_help")}
               .btn-group.pull-right.stop-tools
-                %a.marker_edit.btn.btn-default.btn-xs.invisible{href: "/"}
-                  %i.fa.fa-pencil
+                - if !route[:regulatory_rest]
+                  %a.marker_edit.btn.btn-default.btn-xs.invisible{href: "/"}
+                    %i.fa.fa-pencil
+                - if route[:regulatory_rest] && @manage_planning[:manage_route_stops]
+                  %a.marker_destroy_rest.btn.btn-default.btn-xs{class: ('disabled' if @manage_planning[:disable_route_stops]), title: t("plannings.edit.destroy_regulatory_rest_help")}
+                    %i.fa.fa-trash
                 - if stop[:active] && stop[:show_marker]
                   %a.marker.btn.btn-default.btn-xs{href: "#", title: stop[:geocoded] ? t("plannings.edit.marker_help") : t("plannings.edit.rest_trace_help")}
                     %i.fa.fa-map-marker

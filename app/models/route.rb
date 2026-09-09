@@ -25,7 +25,7 @@ class Route < ApplicationRecord
            :size_destinations, :size_store_reloads, :size_active_destinations, :no_geolocalization, :no_path,
            :unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time,
            :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_reload,
-           :out_of_relation, :out_of_skill, :out_of_window, :out_of_max_ride_distance,
+           :out_of_relation, :out_of_skill, :out_of_max_ride_distance,
            :out_of_max_ride_duration, :max_loads, to: :route_data
 
   RELATION_ORDER_KEYS = %i[pickup_delivery order sequence].freeze
@@ -167,7 +167,7 @@ class Route < ApplicationRecord
 
   def init_stops(compute = true, ignore_errors = false)
     stops.clear if stops.any?
-    if vehicle_usage? && vehicle_usage.default_rest_duration
+    if vehicle_usage? && vehicle_usage.rest? && !vehicle_usage.regulatory_rest?
       if self.id
         stops.create!(type: StopRest.name, active: true, index: 1, route_id: self.id)
       else
@@ -184,7 +184,7 @@ class Route < ApplicationRecord
       planning.visits_compatibles.map { |visit|
         { type: StopVisit.name, visit_id: visit.id, active: true, index: i += 1, route_id: self.id }
       }
-    if rest?
+    if rest? && !vehicle_usage.regulatory_rest?
       stops << { type: StopRest.name, visit_id: nil, active: true, index: i += 1, route_id: self.id }
     end
     Stop.import(stops, validate: false)
@@ -351,6 +351,7 @@ class Route < ApplicationRecord
     @pending_unpositioned_rest_stop_index = nil
     @pending_unpositioned_rest_leave_time = nil
     @pending_unpositioned_rest_start_time = nil
+    @pending_unpositioned_rest = nil
 
     route_attributes = init_route_data
     previous_route_data = self.start_route_data
@@ -375,6 +376,10 @@ class Route < ApplicationRecord
 
       # default scope is sorted by index but in case of a move preloaded order might be invalid
       stops_sort = stops.sort_by(&:index)
+      if vehicle_usage.regulatory_rest?
+        @plan_stops_sort = stops_sort
+        @plan_route_start = route_attributes[:start]
+      end
 
       # Collect route legs
       segments = collect_segments_for_routing(stops_sort)
@@ -400,7 +405,7 @@ class Route < ApplicationRecord
         previous_route_data_attributes[:no_geolocalization] = true if !stop.is_a?(StopRest) && !stop.position?
 
         stop_attributes = {}
-        if stop.active && (stop.position? || scheduled_stop_rest?(stop))
+        if stop.active && (stop.position? || scheduled_stop_rest?(stop) || scheduled_regulatory_rest?(stop))
           if stop.position?
             stop_attributes[:distance], stop_attributes[:drive_time], trace = traces.shift
             stop_attributes[:no_path] = previous_with_pos && stop.position? && trace.nil?
@@ -410,6 +415,7 @@ class Route < ApplicationRecord
           else
             @pending_unpositioned_rest_stop_index = stop.index
             @pending_unpositioned_rest_leave_time = route_attributes[:end]
+            @pending_unpositioned_rest = stop if vehicle_usage.regulatory_rest?
             stop_attributes[:distance] = nil
             stop_attributes[:drive_time] = nil
             stop_attributes[:no_path] = false
@@ -448,9 +454,9 @@ class Route < ApplicationRecord
               @pending_unpositioned_rest_start_time = stop_attributes[:time]
             end
 
-            stop_attributes[:out_of_window] = !!(late_wait && late_wait > 0)
-
             # rest lateness is handled in adjust_unpositioned_stop_rest_times!
+            stop_attributes[:out_of_window] = !scheduled_regulatory_rest?(stop) && !!(late_wait && late_wait > 0)
+
             previous_route_data_attributes[:out_of_window] ||= stop_attributes[:out_of_window] if !stop.is_a?(StopRest) || stop.position?
             route_attributes[:revenue] = route_attributes[:revenue].nil? ? stop.visit&.revenue : route_attributes[:revenue] + (stop.visit&.revenue || 0)
             previous_route_data_attributes[:revenue] = (previous_route_data_attributes[:revenue] || 0) + (stop.visit&.revenue || 0)
@@ -903,6 +909,12 @@ class Route < ApplicationRecord
     stops.each{ |stop|
       remove_stop(stop) if stop.is_a?(StopRest)
     }
+  end
+
+  def remove_rest(stop)
+    return unless stop.is_a?(StopRest)
+
+    remove_stop(stop)
   end
 
   def remove_store_reload(stop)
@@ -1995,16 +2007,31 @@ class Route < ApplicationRecord
       stop.duration
   end
 
+  def scheduled_regulatory_rest?(stop)
+    stop.is_a?(StopRest) && vehicle_usage&.regulatory_rest? && stop.duration.to_i.positive?
+  end
+
   def clear_pending_unpositioned_rest!
     @pending_unpositioned_rest_stop_index = nil
     @pending_unpositioned_rest_leave_time = nil
     @pending_unpositioned_rest_start_time = nil
+    @pending_unpositioned_rest = nil
   end
 
   # Approximate where an unpositioned rest falls on the following drive leg:
   # (rest_start - leave_previous) / drive_time_to_next, clamped to [0, 1].
   def pending_unpositioned_rest_ratios(drive_time)
     return {} if @pending_unpositioned_rest_stop_index.nil?
+
+    if vehicle_usage&.regulatory_rest? && @pending_unpositioned_rest
+      @pending_unpositioned_rest_start_time = @pending_unpositioned_rest_leave_time + regulatory_rest_delay_on_leg(
+        @pending_unpositioned_rest_leave_time,
+        drive_time,
+        @plan_stops_sort,
+        @pending_unpositioned_rest,
+        @plan_route_start
+      )
+    end
 
     {
       @pending_unpositioned_rest_stop_index => rest_ratio_on_leg(
@@ -2022,6 +2049,12 @@ class Route < ApplicationRecord
   end
 
   def adjust_unpositioned_stop_rest_times!(previous_route_data, stops_sort, stops_drive_time)
+    if vehicle_usage&.regulatory_rest?
+      adjust_unpositioned_regulatory_rest_times!(previous_route_data, stops_sort, stops_drive_time)
+      flag_regulatory_rest_lapse_alerts!(stops_sort, previous_route_data)
+      return
+    end
+
     strict = planning.customer.enable_strict_within_timewindows
 
     stops_sort.each do |stop|
@@ -2052,8 +2085,111 @@ class Route < ApplicationRecord
     end
   end
 
+  def adjust_unpositioned_regulatory_rest_times!(previous_route_data, stops_sort, stops_drive_time)
+    route_start = @plan_route_start || previous_route_data.start
+    rest_clock_starts = {}
+
+    stops_sort.each do |stop|
+      next unless stop.is_a?(StopRest) && stop.active? && !stop.position? && stop.time
+
+      rest_clock_starts[stop] = stop.wait_time ? stop.time - stop.wait_time : stop.time
+      last_rest = previous_active_rest(stops_sort, stop)
+      last_rest_end = last_rest && rest_clock_starts[last_rest] ? rest_clock_starts[last_rest] + last_rest.duration : nil
+      rest_index = stops_sort.index(stop)
+      drive = drive_time_on_following_leg(stops_sort, stop, stops_drive_time)
+      following = rest_index && stops_sort[(rest_index + 1)..]
+      drive ||= stops_drive_time[:stop] if following&.none? { |s| s.active? && s.position? }
+      stop.time = rest_clock_starts[stop] + regulatory_rest_delay_on_leg(
+        rest_clock_starts[stop],
+        drive,
+        stops_sort,
+        stop,
+        route_start,
+        last_rest_end: last_rest_end
+      )
+      stop.wait_time = nil
+    end
+  end
+
+  # Shift an unpositioned regulatory rest along the following drive so it starts
+  # as close as possible to `lapse` of work since the previous rest (or route start).
+  def regulatory_rest_delay_on_leg(leg_start, drive_time, stops_sort, rest, route_start, last_rest_end: nil)
+    lapse = vehicle_usage.default_rest_lapse.to_i
+    return 0 unless lapse.positive? && drive_time&.positive?
+
+    last_rest = previous_active_rest(stops_sort, rest)
+    last_rest_end ||= last_rest&.time && last_rest.time + last_rest.duration
+    rest_index = stops_sort.index(rest)
+    from = last_rest ? stops_sort.index(last_rest).to_i + 1 : 0
+    waits = rest_index ? stops_sort[from...rest_index].sum { |stop| stop.wait_time.to_i } : 0
+    work_before = [leg_start.to_i - (last_rest_end || route_start).to_i - waits, 0].max
+    delay = [lapse - work_before, 0].max
+    [delay, drive_time].min
+  end
+
+  def previous_active_rest(stops_sort, rest)
+    rest_index = stops_sort&.index(rest)
+    return if rest_index.nil? || rest_index.zero?
+
+    stops_sort[0...rest_index].reverse_each.find { |stop| stop.is_a?(StopRest) && stop.active? && stop.time }
+  end
+
+  def flag_regulatory_rest_lapse_alerts!(stops_sort, previous_route_data)
+    lapse = vehicle_usage.default_rest_lapse.to_i
+    return unless lapse.positive?
+
+    rests = stops_sort.select { |stop| stop.is_a?(StopRest) && stop.active? && !stop.position? && stop.time }
+    rests.each_with_index do |rest, index|
+      rest.out_of_window = late_drive_before_regulatory_rest(stops_sort, rest, (index + 1) * lapse).positive?
+      previous_route_data.out_of_window ||= rest.out_of_window if previous_route_data
+    end
+    self.route_data.out_of_window ||= rests.any?(&:out_of_window) if route_data
+  end
+
+  # Drive after `threshold` of work and before this rest starts. Visit overshoot is not travel.
+  def late_drive_before_regulatory_rest(stops_sort, rest, threshold)
+    rest_index = stops_sort.index(rest)
+    return 0 unless rest_index && rest.time
+
+    work = vehicle_usage.default_service_time_start.to_i
+    late = 0
+    leave_time = @plan_route_start || route_data&.start
+
+    stops_sort[0...rest_index].each do |stop|
+      next unless stop.active?
+
+      if stop.is_a?(StopRest)
+        leave_time = stop.time && (stop.time + stop.duration)
+        next
+      end
+      next unless stop.position?
+
+      late, work = add_late_drive(late, work, stop.drive_time.to_i, threshold)
+      work += stop.duration.to_i
+      work += stop.destination_duration.to_i if stop.is_a?(StopVisit)
+      leave_time = stop.time && (stop.time + stop.duration + (stop.is_a?(StopVisit) ? stop.destination_duration.to_i : 0))
+    end
+
+    late, _work = add_late_drive(late, work, [rest.time.to_i - leave_time.to_i, 0].max, threshold)
+    late
+  end
+
+  def add_late_drive(late, work, drive, threshold)
+    drive = drive.to_i
+    return [late, work] unless drive.positive?
+
+    if work >= threshold
+      late += drive
+    elsif work + drive > threshold
+      late += work + drive - threshold
+    end
+    [late, work + drive]
+  end
+
   def drive_time_on_following_leg(stops_sort, rest, stops_drive_time)
     rest_index = stops_sort.index(rest)
+    return if rest_index.nil?
+
     stops_sort[(rest_index + 1)..].each do |following_stop|
       drive_time = stops_drive_time[following_stop]
       return drive_time if drive_time

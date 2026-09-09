@@ -1013,7 +1013,16 @@ class Planning < ApplicationRecord
         # Count and collect stops except store reloads
         stops_count = self.routes.collect{ |r| r.stops.reject{ |s| s.is_a?(StopStore) }.size }.reduce(&:+)
         existing_stops_hash = self.routes.flat_map{ |r| r.stops.reject{ |s| s.is_a?(StopStore) }.map{ |stop| [stop.id, stop] } }.to_h
-        flat_stop_ids = optimum.values.flatten.reject{ |activity| activity[:type] == 'reload_depot' }.map{ |activity| activity[:id] }.flatten.compact
+        flat_stop_ids = optimum.values.flatten.reject{ |activity| %w[reload_depot regulatory_rest].include?(activity[:type]) }.map{ |activity| activity[:id] }.flatten.compact
+        regulatory_rest_pools = Hash.new{ |h, k| h[k] = [] }
+        regulatory_rest_delta = 0
+        self.routes.each{ |route|
+          next unless route.vehicle_usage&.regulatory_rest?
+
+          pool = route.stops.select{ |s| s.is_a?(StopRest) }
+          pool.each{ |stop| existing_stops_hash.delete(stop.id) }
+          regulatory_rest_pools[route.id] = pool
+        }
 
         store_reloads_by_routes = Hash[self.routes.map{ |route| [route.id, Hash.new{ |k, v| k[v] = []}]}]
         self.routes.each{ |route|
@@ -1040,10 +1049,25 @@ class Planning < ApplicationRecord
               case activity[:type]
               when 'service', 'rest'
                 existing_stops_hash[activity[:id]]
+              when 'regulatory_rest'
+                existing_rest = regulatory_rest_pools[route.id].shift
+                if existing_rest
+                  existing_rest
+                else
+                  regulatory_rest_delta += 1
+                  StopRest.new(active: true, route_id: route.id)
+                end
               when 'reload_depot'
                 store_reloads_by_routes[route.id][activity[:id]].pop || StopStore.new(store_reload: store_reloads_hash[activity[:id]])
               end
             }
+          leftover_regulatory_rests = regulatory_rest_pools[route.id]
+          leftover_ids = leftover_regulatory_rests.map(&:id)
+          if leftover_ids.any?
+            regulatory_rest_delta -= leftover_regulatory_rests.size
+            leftover_regulatory_rests.each(&:destroy)
+            leftover_regulatory_rests.clear
+          end
           store_reloads_by_routes[route.id].each_value.each{ |stops|
             stops.each{ |stop|
               route.remove_store_reload(stop) if stop.is_a?(StopStore)
@@ -1056,7 +1080,7 @@ class Planning < ApplicationRecord
               route.stops.select{ |s| out_stop_ids.include? s.id }
             end || []
           # Retrieve inactive stops unused in optimization
-          inactive_stops = stops_[false]&.reject{ |stop| flat_stop_ids.include?(stop.id) }&.sort_by(&:index) || []
+          inactive_stops = stops_[false]&.reject{ |stop| flat_stop_ids.include?(stop.id) || leftover_ids.include?(stop.id) }&.sort_by(&:index) || []
 
           # Set route, active, index and reset route data
           i = 0
@@ -1077,7 +1101,7 @@ class Planning < ApplicationRecord
           inactive_stops.each{ |stop| stop.active = false if route.vehicle_usage?; queued << stop }
           seen = queued.to_h{ |s| [s.id, true] }
           # Omitted stops (e.g. unassigned rests) keep their old index and would collide.
-          queued.concat(route.stops.select{ |s| s.id && s.route_id == route.id && !seen[s.id] }.sort_by{ |s| [s.index.to_i, s.id] })
+          queued.concat(route.stops.select{ |s| s.id && s.route_id == route.id && !seen[s.id] && !leftover_ids.include?(s.id) }.sort_by{ |s| [s.index.to_i, s.id] })
 
           queued.each{ |stop|
             stop.index = i += 1
@@ -1105,7 +1129,7 @@ class Planning < ApplicationRecord
         updated_route_ids.uniq!
         outdate_drained_routes(updated_route_ids - self.routes.map(&:id)) if updated_route_ids.any?
         self.reload # Refresh route.stops collection if stops have been moved
-        raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.reject{ |s| s.is_a?(StopStore) }.size }.reduce(&:+) == stops_count
+        raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.reject{ |s| s.is_a?(StopStore) }.size }.reduce(&:+) == stops_count + regulatory_rest_delta
         self.routes.each { |route| route.ensure_unique_stop_indices! }
       end
     end

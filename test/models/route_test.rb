@@ -889,6 +889,137 @@ class RouteTest < ActiveSupport::TestCase
     assert_empty linestrings, 'Rest alone without stores must not display any driving leg'
   end
 
+  test 'plan assigns times to unpositioned regulatory rests using the work lapse' do
+    route = routes(:route_one_one)
+    vehicle_usage = route.vehicle_usage
+    vehicle_usage.update_columns(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 10.minutes.to_i,
+      rest_lapse: 6.hours.to_i,
+      store_rest_id: nil
+    )
+    route = Route.find(route.id)
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    previous = route.stops.sort_by(&:index).reverse.find { |stop| stop.index < rest.index && stop.active? }
+
+    assert route.vehicle_usage.regulatory_rest?
+    assert_not rest.position?
+
+    route.outdated = true
+    route.compute_saved!
+    rest.reload
+    previous.reload
+
+    assert_not_nil rest.time
+    assert_operator rest.time, :>=, previous.time
+    waits_before = route.stops.select { |stop| stop.index < rest.index }.sum { |stop| stop.wait_time.to_i }
+    work_since_start = rest.time - route.start - waits_before
+    assert_operator work_since_start, :<=, route.vehicle_usage.default_rest_lapse
+    assert_equal 10.minutes.to_i, route.rests_duration
+  end
+
+  test 'plan keeps a regulatory rest at its index through compute and move' do
+    route = routes(:route_one_one)
+    vehicle_usage = route.vehicle_usage
+    vehicle_usage.update_columns(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 10.minutes.to_i,
+      rest_lapse: 20.minutes.to_i,
+      store_rest_id: nil
+    )
+    route = Route.find(route.id)
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    original_index = rest.index
+    rest.time = nil
+
+    route.outdated = true
+    route.compute_saved!
+    rest.reload
+    assert_equal original_index, rest.index
+    assert_not_nil rest.time
+
+    route.move_stop(rest, 1)
+    route.compute_saved!
+    rest.reload
+    assert_equal 1, rest.index
+  end
+
+  test 'regulatory rest glued after a visit that overshoots the lapse is not out of window' do
+    route = routes(:route_one_one)
+    lapse = 15.minutes.to_i
+    vehicle_usage = route.vehicle_usage
+    vehicle_usage.update_columns(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 10.minutes.to_i,
+      rest_lapse: lapse,
+      store_rest_id: nil
+    )
+    route = Route.find(route.id)
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+    first_visit = route.stops.sort_by(&:index).find { |stop| stop.is_a?(StopVisit) && stop.active? }
+    route.move_stop(rest, first_visit.index + 1)
+    route.compute_saved!
+    rest.reload
+    first_visit.reload
+
+    visit_end = first_visit.time + first_visit.duration + first_visit.destination_duration.to_i
+    assert_equal first_visit.index + 1, rest.index
+    assert_in_delta visit_end, rest.time, 1
+    assert_operator visit_end - route.start, :>, lapse
+    assert_not rest.out_of_window
+  end
+
+  test 'plan flags a regulatory rest when travel continues after the lapse' do
+    route = routes(:route_one_one)
+    lapse = 5.minutes.to_i
+    vehicle_usage = route.vehicle_usage
+    vehicle_usage.update_columns(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 10.minutes.to_i,
+      rest_lapse: lapse,
+      store_rest_id: nil
+    )
+    route = Route.find(route.id)
+    rest = route.stops.find { |stop| stop.is_a?(StopRest) }
+
+    route.outdated = true
+    route.compute_saved!
+    rest.reload
+    route.reload
+
+    assert rest.out_of_window
+    assert route.out_of_window
+  end
+
+  test 'plan flags the second regulatory rest when travel continues after twice the lapse' do
+    route = routes(:route_one_one)
+    lapse = 1.minute.to_i
+    vehicle_usage = route.vehicle_usage
+    vehicle_usage.update_columns(
+      rest_start: nil,
+      rest_stop: nil,
+      rest_duration: 10.minutes.to_i,
+      rest_lapse: lapse,
+      store_rest_id: nil
+    )
+    route = Route.find(route.id)
+    route.add_rest
+    route.save!
+
+    route.outdated = true
+    route.compute_saved!
+    rests = route.stops.select { |stop| stop.is_a?(StopRest) }.sort_by(&:index)
+    route.reload
+
+    assert_equal 2, rests.size
+    assert rests.last.out_of_window
+    assert route.out_of_window
+  end
+
   test 'map_marker? is true when unpositioned rest has another positioned stop' do
     route = routes(:route_one_one)
     route.vehicle_usage.update!(store_rest_id: nil, store_start_id: nil, store_stop_id: nil)

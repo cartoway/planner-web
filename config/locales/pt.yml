@@ -413,6 +413,7 @@ pt:
         rest_start: Início de período para repouso
         rest_stop: Fim do período para repouso
         rest_duration: Duração do repouso
+        rest_lapse: Intervalo de trabalho
         store_rest: Local de repouso
         store_rest_id: Local de repouso
         service_time_start: Duração do serviço anterior
@@ -431,6 +432,7 @@ pt:
         rest_start: Início do período para repouso
         rest_stop: Fim do período para repouso
         rest_duration: Duração do repouso
+        rest_lapse: Intervalo de trabalho
         store_rest: Local de repouso
         store_rest_id: Local de repouso
         service_time_start: Duração de serviço anterior
@@ -510,6 +512,7 @@ pt:
         rest_start: Janela temporal para pausa
         rest_stop: Janela temporal para pausa
         rest_duration: Duração da pausa
+        rest_lapse: Intervalo de trabalho
         store_rest: Lugar da pausa
         store_rest_id: Lugar da pausa
         service_time_start: Tempo de serviço anterior
@@ -552,6 +555,11 @@ pt:
           rest_range: >-
             O período para repouso deve estar compreendido entre %{start} e
             %{end}
+          mutually_exclusive_window: cannot be combined with a rest time window
+          duration_must_be_smaller_than_lapse: must be smaller than the work lapse
+          missing_rest_duration_for_lapse: can't be blank if rest lapse is filled
+          missing_rest_lapse: can't be blank for a regulatory rest
+          incompatible_with_lapse: cannot be combined with a regulatory rest
           service_range: não pode ser igual ou superior ao tempo de trabalho
           work_time_inside_window: deve ser menor ou igual à janela temporal de trabalho
         vehicle_usage_set:
@@ -563,6 +571,10 @@ pt:
           at_least_one: 'É obrigatória, no mínimo, uma configuração de veículo'
           missing_rest_window: deve ser preenchido se a duração do repouso for preenchida
           missing_rest_duration: deve ser preenchido se um período para repouso for especificado
+          mutually_exclusive_window: cannot be combined with a rest time window
+          duration_must_be_smaller_than_lapse: must be smaller than the work lapse
+          missing_rest_lapse: can't be blank for a regulatory rest
+          incompatible_with_lapse: cannot be combined with a regulatory rest
           work_time_inside_window: deve ser menor ou igual à janela temporal de trabalho
         visit:
           attributes:
@@ -1115,6 +1127,8 @@ pt:
       rest_stop_desc: hora de fim do período para repouso
       rest_duration: duração do repouso
       rest_duration_desc: duração do repouso para o estafeta
+      rest_lapse: intervalo de trabalho
+      rest_lapse_desc: intervalo de trabalho entre pausas regulamentares
       store_rest_ref: referência do armazém de repouso
       store_rest_desc: referencia do armazém de repouso para o estafeta
       service_time_start: duração de serviço anterior

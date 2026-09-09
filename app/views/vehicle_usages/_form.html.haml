@@ -486,22 +486,46 @@
             %i.fa.fa-repeat.fa-fw
         %p.help-block
           = t '.work_time_help'
+    - set_regulatory_rest = @vehicle_usage.vehicle_usage_set.rest_lapse.to_i.positive?
+    #vehicle_usage_rest_type_input.row
+      %label.col-md-offset-2.col-md-8.field= t '.rest_type.label'
+      .col-md-offset-2.col-md-8.field
+        = f.radio_button :rest_mode, 'window', checked: @vehicle_usage.default_rest_lapse.to_i <= 0, label: t('.rest_type.window')
+        = f.radio_button :rest_mode, 'regulatory', checked: @vehicle_usage.default_rest_lapse.to_i > 0, label: t('.rest_type.regulatory')
     #vehicle_usage_rest_input.row
       %label.sr-only{for: "vehicle_usage_rest_duration"}= t 'activerecord.attributes.vehicle_usage.rest_duration'
       %label.sr-only{for: "vehicle_usage_store_rest"}= t 'activerecord.attributes.vehicle_usage.store_rest'
-      %label.col-md-offset-2.col-md-8.field= t '.rest_duration_store'
+      %label.col-md-offset-2.col-md-8.field.rest-duration-label-window= t '.rest_duration_store'
+      %label.col-md-offset-2.col-md-8.field.rest-duration-label-regulatory{style: 'display: none;'}= t '.rest_type.duration'
       .col-md-offset-2.col-md-8.field
         .input-group
           = text_field :vehicle_usage, :rest_duration,
             value: @vehicle_usage.rest_duration_time,
             placeholder: !@vehicle_usage.vehicle_usage_set.rest_duration.nil? ? t('vehicle_usages.form.rest_duration.default', n: @vehicle_usage.vehicle_usage_set.rest_duration_time) : t('all.unit.hour_minute'),
-            class: 'form-control width_1_2'
-          = collection_select :vehicle_usage, :store_rest_id, @vehicle_usage.vehicle.customer.stores, :id, :name,
-          { include_blank: t('vehicle_usages.form.store.default') + ' (' + (@vehicle_usage.vehicle_usage_set.store_rest ? @vehicle_usage.vehicle_usage_set.store_rest.name : t('vehicle_usages.form.store.none')) + ')'},
-          { class: 'form-control width_1_2' }
+            class: ['form-control', ('width_1_2' unless @vehicle_usage.default_rest_lapse.to_i.positive?)],
+            data: { inherited_seconds: (set_regulatory_rest ? @vehicle_usage.vehicle_usage_set.rest_duration : nil) }
+          .rest-store-select
+            = collection_select :vehicle_usage, :store_rest_id, @vehicle_usage.vehicle.customer.stores, :id, :name,
+            { include_blank: t('vehicle_usages.form.store.default') + ' (' + (@vehicle_usage.vehicle_usage_set.store_rest ? @vehicle_usage.vehicle_usage_set.store_rest.name : t('vehicle_usages.form.store.none')) + ')'},
+            { class: 'form-control width_1_2' }
           %span.input-group-addon= content_tag('i', '', class: 'fa fa-coffee fa-fw')
-        %p.help-block
+        %p.help-block.rest-duration-help-window
           = t '.rest_duration.help'
+    #vehicle_usage_rest_lapse_input.row{style: 'display: none;'}
+      %label.sr-only{for: "vehicle_usage_rest_lapse"}= t 'activerecord.attributes.vehicle_usage.rest_lapse'
+      %label.col-md-offset-2.col-md-8.field= t '.rest_type.lapse'
+      .col-md-offset-2.col-md-8.field
+        .input-group
+          = text_field :vehicle_usage, :rest_lapse,
+            value: @vehicle_usage.rest_lapse_time,
+            placeholder: !@vehicle_usage.vehicle_usage_set.rest_lapse.nil? ? t('vehicle_usages.form.rest_lapse.default', n: @vehicle_usage.vehicle_usage_set.rest_lapse_time) : t('all.unit.hour_minute'),
+            class: 'form-control',
+            data: { inherited_seconds: (set_regulatory_rest ? @vehicle_usage.vehicle_usage_set.rest_lapse : nil) }
+          %span.input-group-addon= t '.rest_type.lapse_suffix'
+          %span.input-group-addon
+            %i.fa.fa-repeat.fa-fw
+        %p.help-block
+          = t '.rest_type.waiting_help'
     #vehicle_usage_rest_start_stop_input.row
       %label.sr-only{for: "vehicle_usage_rest_start"}
         = t 'activerecord.attributes.vehicle_usage.rest_start'
