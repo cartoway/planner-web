@@ -9,4 +9,5 @@ class V01::Entities::CustomAttribute < Grape::Entity
   expose(:object_class, documentation: { type: String, values: ['vehicle', 'visit', 'stop_visit', 'stop_store', 'route'] })
   expose(:default_value)
   expose(:description, documentation: { type: String })
+  expose(:mobile_visible, documentation: { type: 'boolean' })
 end

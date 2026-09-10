@@ -7,6 +7,16 @@ custom_attribute_one:
   description: 'description one'
   customer: customer_one
   default_value: 5
+  mobile_visible: true
+
+custom_attribute_vehicle_hidden:
+  name: 'vehicle_info_hidden'
+  object_type: 1 # string
+  object_class: 0 # vehicle
+  description: 'Vehicle info hidden on mobile'
+  customer: customer_one
+  default_value: 'hidden vehicle info'
+  mobile_visible: false
 
 custom_attribute_two_two:
   name: 'custom_attribute_two'
@@ -56,6 +66,7 @@ custom_attribute_stop_two:
   description: 'Priority level for stops'
   customer: customer_one
   default_value: 1
+  mobile_visible: false
 
 custom_attribute_stop_three:
   name: 'stop_urgent'
@@ -64,3 +75,39 @@ custom_attribute_stop_three:
   description: 'Whether the stop is urgent'
   customer: customer_one
   default_value: false
+
+custom_attribute_visit_visible:
+  name: 'visit_info_visible'
+  object_type: 1 # string
+  object_class: 1 # visit
+  description: 'Visit info visible on mobile'
+  customer: customer_one
+  default_value: 'visible on mobile'
+  mobile_visible: true
+
+custom_attribute_visit_hidden:
+  name: 'visit_info_hidden'
+  object_type: 1 # string
+  object_class: 1 # visit
+  description: 'Visit info hidden on mobile'
+  customer: customer_one
+  default_value: 'hidden on mobile'
+  mobile_visible: false
+
+custom_attribute_route_visible:
+  name: 'route_info_visible'
+  object_type: 1 # string
+  object_class: 4 # route
+  description: 'Route info visible on mobile'
+  customer: customer_one
+  default_value: 'visible route info'
+  mobile_visible: true
+
+custom_attribute_route_hidden:
+  name: 'route_info_hidden'
+  object_type: 1 # string
+  object_class: 4 # route
+  description: 'Route info hidden on mobile'
+  customer: customer_one
+  default_value: 'hidden route info'
+  mobile_visible: false

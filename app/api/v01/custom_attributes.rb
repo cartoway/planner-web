@@ -8,7 +8,13 @@ class V01::CustomAttributes < Grape::API
     end
 
     def custom_attribute_params
-      declared(params, include_missing: false).except(:id)
+      permitted = declared(params, include_missing: false).except(:id)
+      object_class = permitted[:object_class]
+      if object_class.blank? && params[:id].present?
+        object_class = current_customer.custom_attributes.find_by(id: params[:id])&.object_class
+      end
+      permitted.delete(:mobile_visible) unless CustomAttribute.mobile_eligible?(object_class)
+      permitted
     end
   end
 

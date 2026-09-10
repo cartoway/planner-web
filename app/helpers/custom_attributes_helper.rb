@@ -1,4 +1,54 @@
 module CustomAttributesHelper
+  def cartoway_deliver_enabled?(customer)
+    customer.device.enableds.key?(:deliver)
+  end
+
+  def custom_attribute_mobile_visible_configurable?(customer, object_class)
+    cartoway_deliver_enabled?(customer) && CustomAttribute.mobile_eligible?(object_class)
+  end
+
+  def mobile_custom_attributes_for(customer, stop)
+    case stop
+    when StopVisit
+      customer.custom_attributes.for_stop_visit
+    when StopStore
+      customer.custom_attributes.for_stop_store
+    else
+      CustomAttribute.none
+    end
+  end
+
+  def mobile_visit_custom_attributes_for(customer)
+    customer.custom_attributes.for_visit.visible_on_mobile
+  end
+
+  def mobile_vehicle_custom_attributes_for(customer)
+    customer.custom_attributes.for_vehicle.visible_on_mobile
+  end
+
+  def mobile_route_custom_attributes_for(customer)
+    customer.custom_attributes.for_route.without_related_field.visible_on_mobile
+  end
+
+  def mobile_custom_attribute_value(custom_attribute, object, related_field: nil)
+    storage_key = CustomAttribute.storage_key_for(custom_attribute.name, related_field: related_field)
+    raw_custom_attributes = object.custom_attributes || {}
+    has_value = raw_custom_attributes.key?(storage_key)
+    value =
+      if has_value
+        object.custom_attributes_typed_hash(related_field: related_field)[custom_attribute.name]
+      else
+        custom_attribute.typed_default_value
+      end
+
+    case custom_attribute.object_type
+    when 'boolean'
+      value ? t('all.value._yes') : t('all.value._no')
+    else
+      value
+    end
+  end
+
   def custom_attribute_default_value_form_field(object_type, typed_default_value)
     case object_type
     when 'boolean'

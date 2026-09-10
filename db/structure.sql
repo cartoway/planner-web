@@ -67,7 +67,8 @@ CREATE TABLE public.custom_attributes (
     customer_id integer,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    related_field character varying
+    related_field character varying,
+    mobile_visible boolean DEFAULT true NOT NULL
 );
 
 
@@ -3954,6 +3955,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260717105805'),
 ('20260720072020'),
 ('20260721141523'),
-('20260731120833');
+('20260731120833'),
+('20260909160239');
 
 

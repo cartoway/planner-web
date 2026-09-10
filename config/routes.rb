@@ -194,8 +194,10 @@ Rails.application.routes.draw do
 
   resources :custom_attributes do
     patch 'update_default_value_partial' => 'custom_attributes#update_default_value_partial'
+    patch 'update_mobile_visible_partial' => 'custom_attributes#update_mobile_visible_partial'
   end
   post 'reset_default_value_partial' => 'custom_attributes#reset_default_value_partial'
+  post 'reset_mobile_visible_partial' => 'custom_attributes#reset_mobile_visible_partial'
   delete 'custom_attributes' => 'custom_attributes#destroy_multiple'
 
   resources :deliverable_units

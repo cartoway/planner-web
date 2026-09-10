@@ -86,6 +86,41 @@ class V01::CustomAttributesTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should default mobile_visible to false for mobile eligible custom_attribute created via api' do
+    post api(), { name: 'visit api attr', object_type: 'string', object_class: 'visit', default_value: 'x' }
+    assert last_response.created?, last_response.body
+
+    body = JSON.parse(last_response.body)
+    refute body['mobile_visible']
+    refute CustomAttribute.find(body['id']).mobile_visible
+  end
+
+  test 'should allow setting mobile_visible on create for mobile eligible custom_attribute' do
+    post api(), { name: 'visit visible api', object_type: 'string', object_class: 'visit', default_value: 'x', mobile_visible: true }
+    assert last_response.created?, last_response.body
+
+    body = JSON.parse(last_response.body)
+    assert body['mobile_visible']
+    assert CustomAttribute.find(body['id']).mobile_visible
+  end
+
+  test 'should update mobile_visible for mobile eligible custom_attribute via api' do
+    custom_attribute = custom_attributes(:custom_attribute_visit_hidden)
+
+    put api(custom_attribute.id), nil, input: { mobile_visible: true }.to_json, CONTENT_TYPE: 'application/json'
+    assert last_response.ok?, last_response.body
+    assert JSON.parse(last_response.body)['mobile_visible']
+    assert custom_attribute.reload.mobile_visible
+  end
+
+  test 'should ignore mobile_visible for non mobile eligible custom_attribute created via api' do
+    post api(), { name: 'stop api attr', object_type: 'string', object_class: 'stop_visit', default_value: 'x', mobile_visible: true }
+    assert last_response.created?, last_response.body
+
+    custom_attribute = CustomAttribute.find(JSON.parse(last_response.body)['id'])
+    assert custom_attribute.mobile_visible
+  end
+
   test 'should reject name containing colon on create' do
     post api(), {name: 'invalid:name', default_value: 1.1, object_type: 'float', object_class: 'vehicle'}
     assert last_response.client_error?, last_response.body

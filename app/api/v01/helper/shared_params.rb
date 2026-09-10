@@ -57,6 +57,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     end
     optional :default_value, types: [Array[String], String, Integer, Float, Boolean]
     optional :description, type: String
+    optional :mobile_visible, type: Boolean, documentation: { desc: 'Whether the attribute is visible on mobile (visit, vehicle and route only currently).' }
   end
 
   params :request_customer do |options|

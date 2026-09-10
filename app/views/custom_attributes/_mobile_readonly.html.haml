@@ -1,0 +1,7 @@
+- Array(custom_attributes).each do |custom_attribute|
+  .d-flex.align-items-start.justify-items-center.mb-1
+    .label.label-default.p-3.mr-2
+      %i.fa.fa-file-lines
+    %div
+      %strong.d-block= custom_attribute.name
+      .wrapped-text= mobile_custom_attribute_value(custom_attribute, object, related_field: local_assigns[:related_field])
