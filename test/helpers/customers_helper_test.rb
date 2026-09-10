@@ -34,6 +34,17 @@ class CustomersHelperTest < ActionView::TestCase
                  customer_router_selected_value(customer, admin: false)
   end
 
+  test 'non admin router select options are limited to customer profile routers' do
+    customer = customers(:customer_one)
+    profile_router_ids = customer.profile.routers.select(&:time?).map(&:id)
+
+    options = customer_router_select_options(customer, admin: false)
+    option_router_ids = options.map { |entry| entry[1].split('_').first.to_i }
+
+    assert_equal profile_router_ids.sort, option_router_ids.sort
+    refute_equal Router.select(&:time?).map(&:id).sort, option_router_ids.sort if Router.count > profile_router_ids.count
+  end
+
   test 'profile router grouped options for admin groups by profile' do
     profile = profiles(:profile_one)
     router = routers(:router_one)

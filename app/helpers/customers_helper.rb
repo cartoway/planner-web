@@ -73,7 +73,8 @@ module CustomersHelper
     if admin
       profile_router_grouped_options_for_admin(customer, reseller: reseller)
     else
-      router_options_for_dimension(Router.all, ROUTER_SELECT_DIMENSION, reseller: reseller)
+      routers = customer.profile&.routers || Router.none
+      router_options_for_dimension(routers, ROUTER_SELECT_DIMENSION, reseller: reseller)
     end
   end
 
