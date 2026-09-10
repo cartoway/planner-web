@@ -147,7 +147,7 @@
   </div>
 
 <%
-  routers = current_user.admin? ? Router.all : (@customer.id ? @customer.profile.routers : Router.all)
+  routers = current_user.admin? ? Router.all : (@customer.profile&.routers || Router.none)
 
   controller.js(
     customer_id: @customer.id,
