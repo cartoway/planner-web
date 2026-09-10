@@ -667,6 +667,71 @@ class CustomAttributeTest < ActiveSupport::TestCase
   end
 
   # Tests for scopes
+  test 'visible_on_mobile scope should filter by mobile_visible' do
+    visible = CustomAttribute.create!(
+      name: 'visible_mobile_attr',
+      object_type: 'string',
+      object_class: 'stop_visit',
+      customer: @customer,
+      mobile_visible: true
+    )
+    hidden = CustomAttribute.create!(
+      name: 'hidden_mobile_attr',
+      object_type: 'string',
+      object_class: 'stop_visit',
+      customer: @customer,
+      mobile_visible: false
+    )
+
+    result = CustomAttribute.for_stop_visit.visible_on_mobile
+    assert_includes result, visible
+    refute_includes result, hidden
+  end
+
+  test 'mobile_eligible? should identify configurable mobile object classes' do
+    assert CustomAttribute.mobile_eligible?('visit')
+    assert CustomAttribute.mobile_eligible?('vehicle')
+    assert CustomAttribute.mobile_eligible?('route')
+    refute CustomAttribute.mobile_eligible?('stop_visit')
+    refute CustomAttribute.mobile_eligible?('stop_store')
+  end
+
+  test 'form_mobile_visible should default to false for new mobile eligible records' do
+    custom_attribute = CustomAttribute.new(object_class: :visit, customer: @customer)
+    refute custom_attribute.form_mobile_visible
+  end
+
+  test 'mobile_visible defaults to false on create for mobile eligible records' do
+    custom_attribute = CustomAttribute.create!(
+      name: 'visit default hidden',
+      object_type: 'string',
+      object_class: 'visit',
+      customer: @customer,
+      default_value: 'x'
+    )
+    refute custom_attribute.mobile_visible
+  end
+
+  test 'mobile_visible can be set to true on create for mobile eligible records' do
+    custom_attribute = CustomAttribute.create!(
+      name: 'visit default visible',
+      object_type: 'string',
+      object_class: 'visit',
+      customer: @customer,
+      default_value: 'x',
+      mobile_visible: true
+    )
+    assert custom_attribute.mobile_visible
+  end
+
+  test 'form_mobile_visible should use stored value for persisted records' do
+    custom_attribute = custom_attributes(:custom_attribute_visit_visible)
+    assert custom_attribute.form_mobile_visible
+
+    custom_attribute = custom_attributes(:custom_attribute_visit_hidden)
+    refute custom_attribute.form_mobile_visible
+  end
+
   test 'for_related_field scope should filter by related_field' do
     ca1 = CustomAttribute.create!(
       name: 'attr1',

@@ -231,7 +231,7 @@ class V01::VehiclesTest < ActiveSupport::TestCase
             vehicle = JSON.parse last_response.body
             assert_equal '#bebeef', vehicle['color']
             assert_equal 30, vehicle['capacities'][0]['quantity']
-            assert_equal({ "custom_attribute_three"=>"1", "custom_attribute_one"=>1, "custom_attribute_two"=>true }, vehicle['custom_attributes'])
+            assert_equal({ "custom_attribute_three"=>"1", "custom_attribute_one"=>1, "vehicle_info_hidden"=>"1", "custom_attribute_two"=>true }, vehicle['custom_attributes'])
           end
         end
       end

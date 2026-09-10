@@ -5,16 +5,17 @@
         %i.fa.fa-circle-info
       = destination.detail
   - if destination.comment
-    .d-flex.align-items-center.justify-items-center.mb-1
+    .d-flex.align-items-start.justify-items-center.mb-1
       .label.label-default.p-3.mr-2
         %i.fa.fa-comment-dots
-      = destination.comment
+      .wrapped-text= destination.comment
   - if destination.phone_number
     .d-flex.align-items-center.justify-items-center.mb-1
       .label.label-default.p-3.mr-2
         %i.fa.fa-phone
       %a{ href: "tel:#{destination.phone_number}" }
         = destination.phone_number
+  = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: visit_custom_attributes, object: visit }
 
   - if visit&.time_window_start_1
     .d-flex.align-items-center.justify-items-center.mb-1

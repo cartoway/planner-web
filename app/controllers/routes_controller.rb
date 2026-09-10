@@ -45,11 +45,15 @@ class RoutesController < ApplicationController
           enable_driver_move: ValueToBoolean.value_to_boolean(current_vehicle.customer.devices.dig(:deliver, :driver_move)),
           date: @route.planning.date,
           is_expired: @route.is_expired?,
+          visit_custom_attributes: current_vehicle.customer.custom_attributes.for_visit.visible_on_mobile,
+          vehicle_custom_attributes: current_vehicle.customer.custom_attributes.for_vehicle.visible_on_mobile,
+          route_custom_attributes: current_vehicle.customer.custom_attributes.for_route.without_related_field.visible_on_mobile,
           stop_visit_custom_attributes: current_vehicle.customer.custom_attributes.for_stop_visit,
           stop_store_custom_attributes: current_vehicle.customer.custom_attributes.for_stop_store,
-          start_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('start_route_data'),
-          stop_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('stop_route_data'),
-          customer: current_vehicle.customer
+          start_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('start_route_data').visible_on_mobile,
+          stop_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('stop_route_data').visible_on_mobile,
+          customer: current_vehicle.customer,
+          vehicle: current_vehicle
         },
         layout: 'mobile'
       }

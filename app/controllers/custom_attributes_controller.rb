@@ -1,6 +1,6 @@
 class CustomAttributesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_custom_attribute, only: [:edit, :update, :destroy, :update_default_value_partial]
+  before_action :set_custom_attribute, only: [:edit, :update, :destroy, :update_default_value_partial, :update_mobile_visible_partial]
 
   include PreferencesAuthorization
   before_action -> { deny_unless_form_create!(:custom_attributes) }, only: [:create]
@@ -67,6 +67,14 @@ class CustomAttributesController < ApplicationController
     end
   end
 
+  def update_mobile_visible_partial
+    assign_mobile_visible_partial_locals
+    respond_to do |format|
+      format.js { render partial: 'update_mobile_visible' }
+    end
+  end
+  alias reset_mobile_visible_partial update_mobile_visible_partial
+
   def destroy
     @custom_attribute && current_user.customer.custom_attributes.delete(@custom_attribute) && current_user.customer.save
     respond_to do |format|
@@ -96,6 +104,22 @@ class CustomAttributesController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def custom_attribute_params
-    params.require(:custom_attribute).permit(:name, :object_type, :object_class, :object_class_with_related_field, :default_value, :description, :customer_id, :related_field, default_value: [])
+    permitted = params.require(:custom_attribute).permit(:name, :object_type, :object_class, :object_class_with_related_field, :default_value, :description, :customer_id, :related_field, :mobile_visible, default_value: [])
+    object_class = permitted[:object_class].presence
+    if object_class.blank? && permitted[:object_class_with_related_field].present?
+      object_class, = CustomAttribute.parse_object_class_value(permitted[:object_class_with_related_field])
+    end
+    permitted.delete(:mobile_visible) unless helpers.custom_attribute_mobile_visible_configurable?(current_user.customer, object_class)
+    permitted
+  end
+
+  def assign_mobile_visible_partial_locals
+    object_class, = CustomAttribute.parse_object_class_value(
+      params.dig(:custom_attribute, :object_class_with_related_field).presence ||
+      params.dig(:custom_attribute, :object_class)
+    )
+    @object_class = object_class
+    @mobile_visible = ActiveModel::Type::Boolean.new.cast(params.dig(:custom_attribute, :mobile_visible))
+    @mobile_visible = false if @mobile_visible.nil? && CustomAttribute.mobile_eligible?(@object_class)
   end
 end

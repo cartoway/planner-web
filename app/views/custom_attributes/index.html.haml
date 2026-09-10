@@ -26,6 +26,8 @@
         %th= t 'activerecord.attributes.custom_attribute.related_field'
         %th= t "activerecord.attributes.custom_attribute.default_value"
         %th= t 'activerecord.attributes.custom_attribute.description'
+        - if cartoway_deliver_enabled?(current_user.customer)
+          %th= t 'activerecord.attributes.custom_attribute.mobile_visible'
         %th
     %tbody
       - @custom_attributes.each do |custom_attribute|
@@ -37,6 +39,12 @@
           %td= custom_attribute.related_field ? t("custom_attributes.related_fields.#{custom_attribute.object_class}.#{custom_attribute.related_field}", default: custom_attribute.related_field.humanize) : '-'
           %td= custom_attribute.display_default_value
           %td= custom_attribute.description
+          - if cartoway_deliver_enabled?(current_user.customer)
+            %td
+              - if CustomAttribute.mobile_eligible?(custom_attribute.object_class)
+                = custom_attribute.mobile_visible ? t('all.value._yes') : t('all.value._no')
+              - else
+                \-
           %td.text-right
             = link_to edit_custom_attribute_path(custom_attribute), :class => 'btn btn-primary btn-sm' do
               %i.fa.fa-edit.fa-fw

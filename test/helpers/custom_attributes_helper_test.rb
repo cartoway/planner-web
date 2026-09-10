@@ -50,4 +50,52 @@ class CustomAttributesHelperTest < ActionView::TestCase
     object_type = 'float'
     assert_equal 0.0, object_type_cast(object_type, raw_default_value)
   end
+
+  test 'mobile_custom_attributes_for returns all stop visit custom attributes' do
+    customer = customers(:customer_one)
+    stop = stops(:stop_one_one)
+
+    result = mobile_custom_attributes_for(customer, stop)
+
+    assert_includes result, custom_attributes(:custom_attribute_stop_one)
+    assert_includes result, custom_attributes(:custom_attribute_stop_two)
+  end
+
+  test 'mobile_visit_custom_attributes_for returns only visible visit custom attributes' do
+    customer = customers(:customer_one)
+
+    result = mobile_visit_custom_attributes_for(customer)
+
+    assert_includes result, custom_attributes(:custom_attribute_visit_visible)
+    refute_includes result, custom_attributes(:custom_attribute_visit_hidden)
+  end
+
+  test 'mobile_vehicle_custom_attributes_for returns only visible vehicle custom attributes' do
+    customer = customers(:customer_one)
+
+    result = mobile_vehicle_custom_attributes_for(customer)
+
+    assert_includes result, custom_attributes(:custom_attribute_one)
+    refute_includes result, custom_attributes(:custom_attribute_vehicle_hidden)
+  end
+
+  test 'mobile_route_custom_attributes_for returns only visible route custom attributes without related field' do
+    customer = customers(:customer_one)
+
+    result = mobile_route_custom_attributes_for(customer)
+
+    assert_includes result, custom_attributes(:custom_attribute_route_visible)
+    refute_includes result, custom_attributes(:custom_attribute_route_hidden)
+  end
+
+  test 'custom_attribute_mobile_visible_configurable? requires cartoway deliver and mobile eligible object class' do
+    customer = customers(:customer_one)
+    customer.update!(devices: { deliver: { enable: true } })
+
+    assert custom_attribute_mobile_visible_configurable?(customer, 'visit')
+    refute custom_attribute_mobile_visible_configurable?(customer, 'stop_visit')
+
+    customer.update!(devices: {})
+    refute custom_attribute_mobile_visible_configurable?(customer, 'visit')
+  end
 end

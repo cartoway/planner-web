@@ -62,5 +62,5 @@
       .fa.fa-caret-down.fa-fw
   .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
     .panel-body
-      = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit, enable_driver_move: enable_driver_move, custom_attributes: custom_attributes, customer: customer, sms_content: in_route_data[:content], phone_number: in_route_data[:phone_number] }
+      = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit, enable_driver_move: enable_driver_move, custom_attributes: custom_attributes, visit_custom_attributes: visit_custom_attributes, customer: customer, sms_content: in_route_data[:content], phone_number: in_route_data[:phone_number] }
 

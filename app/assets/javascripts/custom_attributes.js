@@ -37,19 +37,24 @@ window.CustomAttributes = {
   }
 }
 
+const refreshCustomAttributePartial = function(editPath, createPath) {
+  var form_id = $('.edit_custom_attribute').attr('id');
+  var formData = $('.edit_custom_attribute, .new_custom_attribute').serialize();
+  var url = form_id ?
+    '/custom_attributes/' + form_id.split('_').pop() + editPath :
+    createPath;
+
+  $.ajax({
+    url: url,
+    type: form_id ? 'PATCH' : 'POST',
+    data: formData,
+    dataType: 'script'
+  });
+};
+
 const update_default_value = function() {
   $('#custom_attribute_object_type').on('change', function() {
-    var form_id = $('.edit_custom_attribute').attr('id');
-    var formData = $('.edit_custom_attribute, .new_custom_attribute').serialize();
-    var url = form_id ?
-      '/custom_attributes/' + form_id.split('_').pop() + '/update_default_value_partial' :
-      '/reset_default_value_partial'
-    $.ajax({
-      url: url,
-      type: form_id ? 'PATCH' : 'POST',
-      data: formData,
-      dataType: 'script'
-    });
+    refreshCustomAttributePartial('/update_default_value_partial', '/reset_default_value_partial');
   });
 }
 
@@ -82,6 +87,8 @@ const update_object_class_fields = function() {
       objectClassField.val(combinedValue || '');
       relatedFieldField.val('');
     }
+
+    refreshCustomAttributePartial('/update_mobile_visible_partial', '/reset_mobile_visible_partial');
   });
 }
 

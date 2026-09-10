@@ -1,0 +1,9 @@
+- if custom_attribute_mobile_visible_configurable?(current_user.customer, object_class)
+  .form-group.row.mb-3
+    %label.col-form-label.col-md-offset-2.col-md-7{ for: 'custom_attribute_mobile_visible' }
+      = t('activerecord.attributes.custom_attribute.mobile_visible')
+    .col-md-offset-2.col-md-8.field.form-switch.mb-0
+      = hidden_field_tag 'custom_attribute[mobile_visible]', '0', id: nil
+      = check_box_tag 'custom_attribute[mobile_visible]', '1', mobile_visible, id: 'custom_attribute_mobile_visible', class: 'form-check-input'
+    %small.form-text.text-muted.help-block.col-md-offset-2.col-md-7
+      = t('custom_attributes.form.mobile_visible_help')

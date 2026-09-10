@@ -4,11 +4,14 @@ class CustomAttribute < ApplicationRecord
   validates :name, uniqueness: { scope: [:object_class, :customer_id, :related_field] }
   validates :related_field, inclusion: { in: ->(ca) { ca.valid_related_fields }, allow_nil: true }
   before_validation :default_value_to_type
+  before_validation :set_mobile_visible_default, on: :create
 
   belongs_to :customer
 
   # Virtual attribute for the combined object_class and related_field select
   attr_accessor :object_class_with_related_field
+
+  after_initialize :reset_mobile_visible_assignment_tracking, if: :new_record?
 
   before_validation :parse_object_class_with_related_field
 
@@ -32,6 +35,8 @@ class CustomAttribute < ApplicationRecord
     route: [:start_route_data, :stop_route_data]
   }.freeze
 
+  MOBILE_OBJECT_CLASSES = %w[visit vehicle route].freeze
+
   scope :for_vehicle, -> { where(object_class: :vehicle) }
   scope :for_visit, -> { where(object_class: :visit) }
   scope :for_stop_visit, -> { where(object_class: :stop_visit) }
@@ -43,6 +48,7 @@ class CustomAttribute < ApplicationRecord
   scope :for_route, -> { where(object_class: :route) }
   scope :for_related_field, ->(field) { where(related_field: field) }
   scope :without_related_field, -> { where(related_field: nil) }
+  scope :visible_on_mobile, -> { where(mobile_visible: true) }
 
   auto_strip_attributes :name
   validates :name, presence: true
@@ -126,7 +132,26 @@ class CustomAttribute < ApplicationRecord
     valid_related_fields.any?
   end
 
+  def self.mobile_eligible?(object_class)
+    MOBILE_OBJECT_CLASSES.include?(object_class.to_s)
+  end
+
+  def form_mobile_visible
+    return mobile_visible unless new_record? && self.class.mobile_eligible?(object_class)
+
+    false
+  end
+
+  def mobile_visible=(value)
+    @mobile_visible_explicitly_assigned = true
+    super
+  end
+
   private
+
+  def reset_mobile_visible_assignment_tracking
+    @mobile_visible_explicitly_assigned = false unless instance_variable_defined?(:@mobile_visible_explicitly_assigned)
+  end
 
   def parse_object_class_with_related_field
     return unless object_class_with_related_field.present?
@@ -134,6 +159,13 @@ class CustomAttribute < ApplicationRecord
     object_class, related_field = self.class.parse_object_class_value(object_class_with_related_field)
     self.object_class = object_class if object_class.present?
     self.related_field = related_field
+  end
+
+  def set_mobile_visible_default
+    return unless self.class.mobile_eligible?(object_class)
+    return if @mobile_visible_explicitly_assigned
+
+    self.mobile_visible = false
   end
 
   def default_value_to_type

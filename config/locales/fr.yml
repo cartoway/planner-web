@@ -175,6 +175,7 @@ fr:
         default_value: Valeur par défaut
         description: Description
         related_field: Entité liée
+        mobile_visible: Visible sur mobile
         route: Tournée
         stop_store: Rechargement - Cartoway Deliver
         stop_visit: Visite - Cartoway Deliver
@@ -1116,6 +1117,8 @@ fr:
       related_field_help: >-
         Permet de distinguer les propriétés selon le contexte.
         Par exemple pour les tournées, distinguer dépôt de départ et d'arrivée
+      mobile_visible_help: >-
+        Afficher ce champ dans l'application mobile Cartoway Deliver.
     menu:
       custom_attributes: Propriétés additionnelles
     types:

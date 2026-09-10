@@ -11,6 +11,8 @@
         .label.label-default.p-3.mr-2
           %i.fa.fa-truck-field.fa-fw
         = @route.vehicle_usage.vehicle.name
+    = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: vehicle_custom_attributes, object: vehicle }
+    = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: route_custom_attributes, object: @route }
     - if date
       %h4.d-flex.align-items-center.justify-items-center
         .label.label-default.p-3.mr-2
@@ -100,7 +102,7 @@
           - next if !stop.active || stop.is_a?(StopRest)
 
           - if stop.is_a?(StopVisit)
-            = render partial: 'stops/mobile_stop_visit', locals: { stop: stop, previous: previous, agent: agent, customer: customer, enable_driver_move: enable_driver_move, custom_attributes: stop_visit_custom_attributes }
+            = render partial: 'stops/mobile_stop_visit', locals: { stop: stop, previous: previous, agent: agent, customer: customer, enable_driver_move: enable_driver_move, custom_attributes: stop_visit_custom_attributes, visit_custom_attributes: visit_custom_attributes }
           - elsif stop.is_a?(StopStore)
             = render partial: 'stops/mobile_stop_store', locals: { stop: stop, previous: previous, agent: agent, customer: customer, custom_attributes: stop_store_custom_attributes }
           - previous = stop
