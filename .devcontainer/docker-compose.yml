@@ -32,6 +32,7 @@ x-web: &web
     - ../config/database.yml.docker:/srv/app/config/database.yml
     - ../.devcontainer/production.rb:/srv/app/config/environments/production.rb
     - ../docker/uploads:/srv/app/public/uploads
+    - ../docker/storage:/srv/app/storage
     - ../public/lookbook-visual-regression:/srv/app/public/lookbook-visual-regression
     - ../visual-regression:/srv/app/visual-regression
     # Host snapshots + Playwright test-results + report PNGs (live sync for Accept baseline in Lookbook).
@@ -114,6 +115,7 @@ services:
       - ../config/database.yml.docker:/srv/app/config/database.yml
       - ../.devcontainer/production.rb:/srv/app/config/environments/production.rb
       - ../docker/uploads:/srv/app/public/uploads
+      - ../docker/storage:/srv/app/storage
       - ../public/lookbook-visual-regression:/srv/app/public/lookbook-visual-regression
       - ../visual-regression:/srv/app/visual-regression
     # Host snapshots + Playwright test-results + report PNGs (live sync for Accept baseline in Lookbook).
