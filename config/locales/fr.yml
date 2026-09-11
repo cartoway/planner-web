@@ -1573,6 +1573,7 @@ fr:
       delivery: Livraison
       remove_filter: Retirer ce filtre
       destinations_count_help: Nombre de destinations
+      center_view_help: Centre la carte sur l'adresse
       search_keys:
         ref: ref
         name: nom

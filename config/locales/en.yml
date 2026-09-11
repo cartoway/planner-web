@@ -1523,6 +1523,7 @@ en:
       delivery: Delivery
       remove_filter: Remove this filter
       destinations_count_help: Number of destinations
+      center_view_help: Center the map on the destination
       search_keys:
         ref: ref
         name: name
