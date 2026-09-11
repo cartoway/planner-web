@@ -29,6 +29,7 @@ x-web: &web
     - ./docker/production.rb:/srv/app/config/environments/production.rb
     - ./docker/production.rb:/srv/app/config/environments/development.rb
     - ./docker/uploads:/srv/app/public/uploads
+    - ./docker/storage:/srv/app/storage
   depends_on:
     - db
     - redis-cache

@@ -12,6 +12,8 @@ capybara-*.html
 /public/system/*
 /public/api-web
 /public/uploads
+/storage
+docker/storage/
 /coverage/
 /spec/tmp/*
 **.orig
