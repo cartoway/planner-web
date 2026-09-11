@@ -348,6 +348,127 @@
       .custom_field {
         margin-left: 0 !important;
       }
+
+      .visit-planning-stops {
+        margin: 0.75rem 1rem 0.5rem;
+      }
+
+      .visit-planning-stops-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .visit-planning-stop {
+        padding: 0.5rem 0;
+        border-top: 1px solid var(--bs-border-color, #dee2e6);
+      }
+
+      .visit-planning-stop-name {
+        font-weight: 600;
+        word-break: break-word;
+      }
+
+      .visit-planning-stop-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.15rem 0.25rem;
+        margin-top: 0.15rem;
+      }
+
+      .visit-planning-stop-color {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.35rem;
+        height: 1.2rem;
+        padding: 0 0.25rem;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 2px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.75rem;
+        line-height: 1;
+        flex: 0 0 auto;
+
+        &.is-unassigned {
+          color: #333;
+        }
+      }
+
+      .visit-planning-stop-attrs {
+        list-style: none;
+        margin: 0.35rem 0 0;
+        padding: 0;
+        font-size: 0.8125rem;
+
+        li {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.15rem 0.5rem;
+          word-break: break-word;
+        }
+      }
+
+      .visit-planning-stop-attr-name {
+        color: var(--bs-secondary-color, #6c757d);
+      }
+
+      .visit-planning-stop-status {
+        font-weight: 600;
+
+        &.stop-status-planned,
+        &.stop-status-intransit {
+          background-color: $primary-color;
+          color: #fff;
+        }
+
+        &.stop-status-started,
+        &.stop-status-exception {
+          background-color: var(--warning);
+          color: #333;
+        }
+
+        &.stop-status-finished,
+        &.stop-status-delivered {
+          background-color: var(--success);
+          color: #fff;
+        }
+
+        &.stop-status-rejected,
+        &.stop-status-undelivered {
+          background-color: var(--danger);
+          color: #fff;
+        }
+
+        &.stop-status-atstore,
+        &.stop-status-inprocessing {
+          background-color: var(--info);
+          color: #333;
+        }
+      }
+
+      .visit-planning-photos-toggle {
+        margin-top: 0.5rem;
+      }
+
+      .visit-planning-photos {
+        margin-top: 0.5rem;
+      }
+
+      .visit-planning-photos-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.35rem;
+      }
+
+      .visit-planning-photo img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 0.35rem;
+      }
     }
 
     // Submit bar: full width of sidebar inner, flush to bottom; primary control spans full row.

@@ -3461,6 +3461,9 @@ fr:
       delete_visit_error_validation: La visite n'a pas pu être supprimée (contraintes ou erreurs de validation).
       delete_visit_error_request: La demande a échoué. Veuillez réessayer.
       delete_visit_error_network: Erreur réseau. Veuillez réessayer.
+      plannings: Plans
+      open_in_planning: Voir l'arrêt dans le plan
+      photos: Photos
     priority_level:
       high: Haute
       medium: Normale

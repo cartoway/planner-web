@@ -3792,6 +3792,8 @@ export const plannings_edit = function(params) {
       error: ajaxError,
       success: function() {
         updateSuccess(locals.summary, map, locals.routes);
+        var stopIdMatch = window.location.search.match(/[?&]stop_id=(\d+)/);
+        if (stopIdMatch) enlightenStop({ id: stopIdMatch[1] });
       },
       complete: completeAjaxMap
     });

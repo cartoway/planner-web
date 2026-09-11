@@ -3324,6 +3324,9 @@ en:
       delete_visit_error_validation: This visit could not be deleted (constraints or validation errors).
       delete_visit_error_request: The request failed. Please try again.
       delete_visit_error_network: Network error. Please try again.
+      plannings: Plans
+      open_in_planning: Open stop in the plan
+      photos: Photos
     priority_level:
       high: High
       medium: Normal
