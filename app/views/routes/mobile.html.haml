@@ -11,8 +11,6 @@
         .label.label-default.p-3.mr-2
           %i.fa.fa-truck-field.fa-fw
         = @route.vehicle_usage.vehicle.name
-    = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: vehicle_custom_attributes, object: vehicle }
-    = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: route_custom_attributes, object: @route }
     - if date
       %h4.d-flex.align-items-center.justify-items-center
         .label.label-default.p-3.mr-2
@@ -44,6 +42,8 @@
             = unit[sym]
             = unit[:label]
             = t("routes.mobile.route_data.#{sym}")
+    = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: vehicle_custom_attributes, object: vehicle }
+    = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: route_custom_attributes, object: @route }
   .panel-body
     - previous_route_data_quantities = nil
     - current_route_data_quantities = route_data_quantities(@route.start_route_data, @route.vehicle_usage&.vehicle)

@@ -15,7 +15,6 @@
         %i.fa.fa-phone
       %a{ href: "tel:#{destination.phone_number}" }
         = destination.phone_number
-  = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: visit_custom_attributes, object: visit }
 
   - if visit&.time_window_start_1
     .d-flex.align-items-center.justify-items-center.mb-1
@@ -40,6 +39,7 @@
         .quantity
           = unit[:quantity]
           = unit[:label]
+  = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: visit_custom_attributes, object: visit }
   .form-group.mb-1
     =  bootstrap_form_for stop, url: stop_path, method: :patch, remote: true do |f|
       %label{ for: 'active_status' }
