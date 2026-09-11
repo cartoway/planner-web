@@ -14,8 +14,8 @@ class VisitPlanningStopsPartialTest < ActionView::TestCase
     assert_includes rendered, plannings(:planning_one).name
     assert_select '.visit-planning-stop-color', text: stops(:stop_one_one).index.to_s
     refute_includes rendered, 'n°'
-    assert_select %(a[href*="#{edit_planning_path(plannings(:planning_one), stop_id: stops(:stop_one_one).id)}"])
-    assert_select 'a[data-turbo-frame="_top"]', minimum: 1
+    stop = stops(:stop_one_one)
+    assert_select %(a[href*="stop_id=#{stop.id}"][href*="route_id=#{stop.route_id}"][target="_blank"][rel="noopener noreferrer"])
   end
 
   test 'shows stop status as a colored badge' do
