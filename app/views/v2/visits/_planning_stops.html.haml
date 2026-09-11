@@ -40,11 +40,12 @@
                   %li
                     %span.visit-planning-stop-attr-name= custom_attribute.name
                     %span.visit-planning-stop-attr-value= mobile_custom_attribute_value(custom_attribute, stop)
-          = link_to edit_planning_path(planning, stop_id: stop.id),
+          = link_to edit_planning_path(planning, stop_id: stop.id, route_id: stop.route_id),
             class: 'btn btn-light btn-xs flex-shrink-0',
+            target: '_blank',
+            rel: 'noopener noreferrer',
             title: t('visits.form.open_in_planning'),
-            'aria-label': t('visits.form.open_in_planning'),
-            data: { turbo_frame: '_top' } do
+            'aria-label': t('visits.form.open_in_planning') do
             %i.fa.fa-calendar.fa-fw
         - if stop.photos.attached?
           - photos_id = "visit-#{visit.id}-stop-#{stop.id}-photos"
