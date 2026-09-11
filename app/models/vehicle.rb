@@ -130,14 +130,20 @@ class Vehicle < ApplicationRecord
   end
 
   def default_router_options
-    default_router.options.each do |key, value|
+    cache_key = [customer.updated_at, customer.router_id, updated_at, router_id]
+    if defined?(@default_router_options_cache_key) && @default_router_options_cache_key != cache_key
+      @current_router_options = nil
+    end
+    @default_router_options_cache_key = cache_key
+
+    default_router.options.each do |key, _value|
       @current_router_options ||= {}
       @current_router_options[key.to_s] = if router_options[key.to_s].nil?
         customer.router_options[key.to_s]
       else
         router_options[key.to_s]
       end
-    end if !@current_router_options
+    end unless @current_router_options
 
     @current_router_options ||= {}
   end
