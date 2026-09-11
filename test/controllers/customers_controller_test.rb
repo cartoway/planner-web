@@ -136,6 +136,7 @@ class CustomersControllerTest < ActionController::TestCase
       sign_in users(:user_admin)
       assert_difference('Customer.count', 1) do
         patch :duplicate, params: { id: @customer.id }
+        assert_redirected_to customers_path, response.body.to_s.truncate(500)
       end
     ensure
       Planner::Application.config.validate_during_duplication = orig_validate_during_duplication
