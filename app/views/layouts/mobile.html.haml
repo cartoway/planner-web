@@ -24,5 +24,16 @@
     .mobile
       = yield
 
+    #stop-photo-modal.stop-photo-modal.d-none{ role: 'dialog', 'aria-modal': 'true' }
+      %button.stop-photo-modal-delete.btn.btn-xs.btn-default.d-none{ type: 'button', 'aria-label': t('stops.mobile.photo_delete') }
+        %i.fa.fa-trash
+      %button.stop-photo-modal-close.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.photo_close') }
+        %i.fa.fa-times
+      %button.stop-photo-modal-nav.stop-photo-modal-prev.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.previous') }
+        %i.fa.fa-chevron-left
+      %img.stop-photo-modal-img{ alt: '' }
+      %button.stop-photo-modal-nav.stop-photo-modal-next.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.next') }
+        %i.fa.fa-chevron-right
+
     = render partial: 'shared/flash_messages'
     = render 'layouts/javascript'
