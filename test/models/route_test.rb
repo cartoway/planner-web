@@ -952,4 +952,30 @@ class RouteTest < ActiveSupport::TestCase
 
     assert route.update!(ref: 'other-planning-ok')
   end
+
+  test 'compute_saved repairs duplicate stop indexes that pass triangular-sum validation' do
+    route = routes(:route_one_one)
+    kept = route.stops.sort_by(&:id).first(3)
+    Stop.where(route_id: route.id).where.not(id: kept.map(&:id)).delete_all
+
+    # [1, 1, 4] sums to 6 == 3*(3+1)/2 so stop_index_validation would miss it
+    Stop.where(id: kept[0].id).update_all(index: 1)
+    Stop.where(id: kept[1].id).update_all(index: 1)
+    Stop.where(id: kept[2].id).update_all(index: 4)
+    route.stops.reset
+
+    expected_ids = route.stops.sort_by { |stop| [stop.index.to_i, stop.id.to_i] }.map(&:id)
+    indexes = route.stops.map(&:index)
+    assert_equal 6, indexes.sum
+    assert_not_equal indexes.size, indexes.uniq.size
+
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+
+    indexes = route.stops.map(&:index)
+    assert_equal expected_ids, route.stops.map(&:id)
+    assert_equal indexes.size, indexes.uniq.size
+    assert_equal (1..indexes.size).to_a, indexes.sort
+  end
 end
