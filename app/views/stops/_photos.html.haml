@@ -1,0 +1,31 @@
+- photos = stop.serialized_photos
+.stop-photos{ data: { url: stop_photos_path(stop) } }
+  %label= t('stops.mobile.photos')
+  .stop-photos-actions
+    %label.btn.btn-default.stop-photos-pick.mb-0
+      .d-flex.align-items-center.justify-content-center
+        %i.fa.fa-camera.mr-2
+        = t('stops.mobile.take_photo')
+      %input.stop-photos-input.stop-photos-camera-input{ type: 'file', accept: 'image/*', capture: 'environment', name: 'photos[]' }
+    %label.btn.btn-default.stop-photos-pick.mb-0
+      .d-flex.align-items-center.justify-content-center
+        %i.fa.fa-folder-open.mr-2
+        = t('stops.mobile.from_storage')
+      %input.stop-photos-input.stop-photos-gallery-input{ type: 'file', accept: 'image/*', multiple: true, name: 'photos[]' }
+  .stop-photos-accordion{ class: ('d-none' if photos.empty?) }
+    %button.stop-photos-toggle.btn.btn-default{ type: 'button' }
+      .d-flex.align-items-center.justify-content-between
+        %span
+          = t('stops.mobile.photos_loaded')
+          %span.stop-photos-badge= photos.size
+        %i.fa.fa-caret-down.fa-fw
+    .stop-photos-panel{ id: "photos-panel-#{stop.id}" }
+      .stop-photos-body
+        .stop-photos-list
+          - photos.each do |photo|
+            .stop-photo
+              - if photo[:deletable]
+                %button.stop-photo-remove.btn.btn-xs.btn-default{ type: 'button', data: { url: stop_photo_path(stop, photo[:id]) } }
+                  %i.fa.fa-trash
+              %button.stop-photo-open{ type: 'button', data: { url: photo[:url] } }
+                %img{ src: photo[:url], alt: photo[:filename] }

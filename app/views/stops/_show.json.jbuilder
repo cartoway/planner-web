@@ -128,3 +128,5 @@ if !stop.is_a?(StopRest)
 end
 json.duration duration if duration
 json.destination_duration destination_duration if destination_duration
+json.photos stop.serialized_photos
+json.photos_present stop.photos.attached?

@@ -97,3 +97,4 @@
                     %a.send_to_route{ href: "/plannings/#{@route.planning_id}/#{route_data[:route_id]}/#{stop.id}/driver_move.json", data: { stop_id: stop.id } }
                       %div.color_small{ style: "background: #{route_data[:color]};" }
                       = route_data[:name]
+  = render partial: 'stops/photos', locals: { stop: stop }
