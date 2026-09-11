@@ -597,6 +597,7 @@ class Route < ApplicationRecord
   # no_geojson
   # no_quantities
   def compute!(options = {})
+    ensure_unique_stop_indices!
     @geojson_points_store = []
     @deliverable_units = options[:deliverable_units]
     if self.vehicle_usage?
