@@ -105,6 +105,7 @@ class Route < ApplicationRecord
     includes(
       stops: [
         :route_data,
+        { photos_attachments: :blob },
         {
           visit: [
             :relation_currents,

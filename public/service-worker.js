@@ -17,6 +17,9 @@ self.addEventListener('sync', event => {
               case 'sync-routes':
                 resolve(syncRoutes());
                 break;
+              case 'sync-photos':
+                resolve(syncPhotos());
+                break;
             }
           } else if (attempts >= 5) {
             clearInterval(checkToken);
@@ -29,6 +32,9 @@ self.addEventListener('sync', event => {
                 break;
               case 'sync-routes':
                 notifyClients('STORE_ROUTES', Array.from(pendingRequests.routes));
+                break;
+              case 'sync-photos':
+                notifyClients('STORE_PHOTOS', Array.from(pendingRequests.photos));
                 break;
             }
             resolve();
@@ -49,14 +55,25 @@ self.addEventListener('sync', event => {
     case 'sync-routes':
       event.waitUntil(syncRoutes());
       break;
+    case 'sync-photos':
+      event.waitUntil(syncPhotos());
+      break;
   }
 });
 
 const pendingRequests = {
   positions: new Set(),
   stops: new Set(),
-  routes: new Set()
+  routes: new Set(),
+  photos: new Set()
 };
+
+function addPendingPhoto(item) {
+  Array.from(pendingRequests.photos).forEach(function(existing) {
+    if (existing.id === item.id) pendingRequests.photos.delete(existing);
+  });
+  pendingRequests.photos.add(item);
+}
 
 let csrfToken;
 
@@ -64,7 +81,7 @@ function getAllPendingData() {
   return new Promise((resolve) => {
     self.clients.matchAll().then(clients => {
       if (!clients.length) {
-        resolve({ positions: [], stops: [], routes: [] });
+        resolve({ positions: [], stops: [], routes: [], photos: [] });
         return;
       }
 
@@ -84,6 +101,9 @@ function getAllPendingData() {
               pendingRequests.routes.add(routeUpdate);
             });
           }
+          if (event.data.data.photos) {
+            event.data.data.photos.forEach(photo => addPendingPhoto(photo));
+          }
           resolve(event.data.data);
         }
       };
@@ -93,7 +113,7 @@ function getAllPendingData() {
 
       setTimeout(() => {
         self.removeEventListener('message', messageHandler);
-        resolve({ positions: [], stops: [] });
+        resolve({ positions: [], stops: [], photos: [] });
       }, 3000);
     });
   });
@@ -129,6 +149,9 @@ self.addEventListener('message', event => {
     case 'STORE_ROUTE':
       pendingRequests.routes.add(event.data.payload);
       break;
+    case 'STORE_PHOTO':
+      addPendingPhoto(event.data.payload);
+      break;
     case 'SET_CSRF_TOKEN':
       csrfToken = event.data.token;
       break;
@@ -139,7 +162,8 @@ function syncPendingData() {
   return Promise.all([
     syncPositions(),
     syncStops(),
-    syncRoutes()
+    syncRoutes(),
+    syncPhotos()
   ]);
 }
 
@@ -325,4 +349,95 @@ function syncRoutes() {
     storeEvent: 'STORE_ROUTES',
     syncErrorType: 'route'
   });
+}
+
+function syncPhotos() {
+  if (!csrfToken) {
+    notifyClients('STORE_PHOTOS', Array.from(pendingRequests.photos));
+    return Promise.reject(new Error('No CSRF token available'));
+  }
+
+  return Promise.all(Array.from(pendingRequests.photos).map(item => {
+    if (item.retryAfter && item.retryAfter > Date.now()) {
+      pendingRequests.photos.delete(item);
+      notifyClients('STORE_PHOTOS', Array.from([item]));
+      return Promise.resolve();
+    }
+
+    const headers = {
+      'X-CSRF-Token': csrfToken,
+      'X-Requested-With': 'XMLHttpRequest'
+    };
+    let request;
+    if (item.method === 'DELETE') {
+      request = fetch(item.url, { method: 'DELETE', headers: headers });
+    } else {
+      const formData = new FormData();
+      (item.files || []).forEach(file => formData.append('photos[]', file));
+      formData.append('authenticity_token', csrfToken);
+      request = fetch(item.url, { method: 'POST', body: formData, headers: headers });
+    }
+
+    return request
+      .then(response => {
+        pendingRequests.photos.delete(item);
+        if (response.ok) {
+          return response.json().then(data => {
+            notifyClients('PHOTO_SYNCED', {
+              id: item.id,
+              url: item.url,
+              panelUrl: item.panelUrl || item.url,
+              photos: data.photos
+            });
+          });
+        }
+        if (item.method === 'DELETE' && response.status === 404) {
+          notifyClients('PHOTO_SYNCED', {
+            id: item.id,
+            url: item.url,
+            panelUrl: item.panelUrl || item.url
+          });
+          return;
+        }
+
+        return response.json().then(data => {
+          const errorType = (data && data.type) || '';
+          switch (response.status) {
+            case 404:
+            case 408:
+            case 502:
+            case 503:
+            case 504:
+              notifyClients('STORE_PHOTOS', Array.from([item]));
+              break;
+            case 409:
+              break;
+            case 403:
+              notifyClients('PHOTO_SYNCED', {
+                id: item.id,
+                url: item.url,
+                panelUrl: item.panelUrl || item.url,
+                photos: data.photos
+              });
+              break;
+            case 422:
+              if (errorType.includes('deadlock')) {
+                item.retryAfter = Date.now() + 500;
+                notifyClients('STORE_PHOTOS', Array.from([item]));
+              }
+              break;
+            default:
+              throw new Error('Failed to sync photo: ' + response.status);
+          }
+        });
+      })
+      .catch(error => {
+        notifyClients('SYNC_ERROR', {
+          type: 'photo',
+          url: item.url,
+          error: error.message
+        });
+        notifyClients('STORE_PHOTOS', Array.from([item]));
+      });
+  }));
 }

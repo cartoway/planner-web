@@ -55,4 +55,7 @@ class V100::Entities::Stop < V100::Entities::StopStatus
   expose(:out_of_relation, documentation: { type: 'Boolean' })
   expose(:unmanageable_capacity, documentation: { type: 'Boolean', desc: 'Capacity units used by the stop are not configured on the vehicle.' })
   expose(:custom_attributes_typed_hash, documentation: {type: Hash, desc: 'Additional properties'}, as: :custom_attributes)
+  expose(:photos, documentation: { type: Hash, is_array: true, desc: 'Stop photos with temporary signed URLs (expire after 15 minutes).' }) { |stop, options|
+    stop.serialized_photos(host: Stop.photo_host_from_env(options[:env]))
+  }
 end

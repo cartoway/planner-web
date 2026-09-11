@@ -82,6 +82,7 @@ class Ability
       # Mobile routes
       can [:mobile, :update_position, :driver_update], Route
       can [:edit, :update], Stop
+      can [:create, :destroy], :stop_photos
     end
   end
 end
