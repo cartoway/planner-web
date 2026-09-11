@@ -221,7 +221,9 @@ Rails.application.routes.draw do
     member do
       post :create_store_reload
     end
+    resources :photos, only: [:create, :destroy], controller: 'stop_photos'
   end
+  get 'stop_photos/*signed_id', to: 'stop_photos#show', as: :signed_stop_photo, format: false
 
   get 'routes_by_vehicles/:vehicle_id' => 'routes_by_vehicles#show'
   get 'plannings_by_destinations/:destination_id' => 'plannings_by_destinations#show'

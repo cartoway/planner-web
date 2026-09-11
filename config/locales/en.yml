@@ -668,6 +668,13 @@ en:
           attributes:
             name:
               cannot_contain_colon: cannot contain the character ":"
+        stop:
+          attributes:
+            photos:
+              blank: must be attached
+              invalid_type: must be an image
+              too_large: is too large (10 MB max)
+              too_many: exceeds the maximum of 10 photos
         location:
           missing_address_or_latlng: Postalcode and city cannot be empty if lat/lng are empty
           lat_outside_range: must be inside range -90..90
@@ -2638,6 +2645,14 @@ en:
       status: Status
       tracking: Position sharing
       transfer: Transfer
+      photos: Photos
+      take_photo: Photo
+      from_storage: Files
+      photos_loaded: Loaded photos
+      photos_empty: No photos
+      photos_delete_expired: Deletion time has expired
+      photo_close: Close
+      photo_delete: Delete
   stores:
     default:
       name: Depot number 1

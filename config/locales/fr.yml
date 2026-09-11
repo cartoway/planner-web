@@ -674,6 +674,13 @@ fr:
           attributes:
             name:
               cannot_contain_colon: ne peut pas contenir le caractère « : »
+        stop:
+          attributes:
+            photos:
+              blank: doit être jointe
+              invalid_type: doit être une image
+              too_large: est trop volumineuse (10 Mo max)
+              too_many: dépasse la limite de 10 photos
         location:
           missing_address_or_latlng: >-
             Le code postal et la ville ne peuvent pas être vides si lat/lng sont
@@ -2754,6 +2761,14 @@ fr:
       status: Status
       tracking: Partage de position
       transfer: Transférer
+      photos: Photos
+      take_photo: Photo
+      from_storage: Données
+      photos_loaded: Photos chargées
+      photos_empty: Aucune photo
+      photos_delete_expired: Délai de suppression dépassé
+      photo_close: Fermer
+      photo_delete: Supprimer
   stores:
     default:
       name: Site numéro 1

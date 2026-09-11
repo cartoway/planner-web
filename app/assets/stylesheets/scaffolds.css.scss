@@ -300,6 +300,18 @@ span.color[data-color=''][data-selected]:after {
     margin: 0px;
     padding: 5px 10px;
   }
+  .stop-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 5px 10px;
+  }
+  .stop-photo img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
 }
 
 .overflow-500 {
