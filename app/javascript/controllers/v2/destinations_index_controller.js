@@ -612,6 +612,7 @@ export default class extends Controller {
       const tr = e.target.closest && e.target.closest('tr.destination[data-destination-id]')
       if (tr) {
         if (e.target.closest && e.target.closest('input[type=checkbox], .destinations-row-delete, a[data-turbo-frame]')) return
+        if (e.target.closest && e.target.closest('.destinations-row-center:disabled')) return
         const id = tr.getAttribute('data-destination-id')
         if (!id) return
         // Any click on the list row: highlight + center map on pin (when coordinates exist).

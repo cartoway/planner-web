@@ -667,8 +667,17 @@ class DestinationsControllerTest < ActionController::TestCase
                   assigns(:destinations).size
     assert_select 'turbo-frame#destinations_list button.destinations-row-delete',
                   assigns(:destinations).size
+    assert_select 'turbo-frame#destinations_list button.destinations-row-center',
+                  assigns(:destinations).size
     assert_select 'turbo-frame#destinations_list button.destinations-row-delete[data-confirm-click-ready-label-value*="fa-check"]',
                   assigns(:destinations).size
+  end
+
+  test 'v2 index list disables center view when destination has no position' do
+    @destination.update_columns(lat: nil, lng: nil)
+    get :index
+    assert_response :success
+    assert_select "turbo-frame#destinations_list tr.destination[data-destination-id=\"#{@destination.id}\"] button.destinations-row-center[disabled]", 1
   end
 
   test 'v2 index list renders sortable column headers' do

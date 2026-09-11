@@ -74,7 +74,7 @@
   }
 
   .destinations-list-actions-col {
-    @include destinations-list-col-width(8rem);
+    @include destinations-list-col-width(10rem);
     padding-left: 0.25rem;
     padding-right: 1.5rem;
     text-align: left;
