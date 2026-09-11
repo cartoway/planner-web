@@ -65,4 +65,7 @@ class V01::Entities::Stop < V01::Entities::StopStatus
   expose(:out_of_relation, documentation: { type: 'Boolean', desc: 'True when a visit relation involving this stop is not respected.' })
   expose(:unmanageable_capacity, documentation: { type: 'Boolean', desc: 'Capacity units used by the stop are not configured on the vehicle.' })
   expose(:custom_attributes_typed_hash, documentation: { type: Hash, desc: 'Additional typed properties defined on CustomAttribute for stops/visits.' }, as: :custom_attributes)
+  expose(:photos, documentation: { type: Hash, is_array: true, desc: 'Stop photos with temporary signed URLs (expire after 15 minutes).' }) { |stop, options|
+    stop.serialized_photos(host: Stop.photo_host_from_env(options[:env]))
+  }
 end
