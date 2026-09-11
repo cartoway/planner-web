@@ -333,7 +333,10 @@ class PlanningsController < ApplicationController
   def sidebar
     assign_stops_preload_from_planning!(@planning)
     # Routes + vehicle_usages already loaded by set_planning_without_stops; only add stops.
-    @routes = @planning.routes.reject { |route| route.locked && route.hidden }
+    focus_route_id = Integer(params[:route_id], exception: false) if params[:route_id].present?
+    @routes = @planning.routes.reject { |route|
+      route.locked && route.hidden && route.id != focus_route_id
+    }
     Preloaders::RouteBatchPreload.preload!(@routes, summary: false) if @with_stops
     external_callback_locals =
       if planning_external_callback_json_partial?
