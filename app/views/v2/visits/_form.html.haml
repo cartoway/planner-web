@@ -147,3 +147,6 @@
             = custom_attribute_form_field(f, visit, custom_attribute, "destination[visits_attributes][#{i}]")
             %p.help-block
               = custom_attribute.description
+
+      - if visit.persisted?
+        = render 'v2/visits/planning_stops', visit: visit
