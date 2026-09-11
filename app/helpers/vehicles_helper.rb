@@ -23,4 +23,14 @@ module VehiclesHelper
     end
     return router_options
   end
+
+  def customer_router_boolean_default_label(customer, key)
+    value = customer.router_options[key.to_s]
+    yes = if key.to_s == 'traffic'
+            ValueToBoolean.value_to_boolean(value)
+          else
+            ValueToBoolean.value_to_boolean(value, true)
+          end
+    yes ? t("customers.form.router_options_#{key}_yes") : t("customers.form.router_options_#{key}_no")
+  end
 end

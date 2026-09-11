@@ -26,6 +26,17 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'vehicle form should show updated customer router option defaults' do
+    customer = @vehicle_usage.vehicle.customer
+    @vehicle_usage.vehicle.update!(router_id: nil, router_options: {})
+    customer.update!(router_options: customer.router_options.merge('weight' => 42))
+
+    get :edit, params: { id: @vehicle_usage }
+
+    assert_response :success
+    assert_includes response.body, t('customers.form.router_options_default', n: 42)
+  end
+
   test 'should update vehicle_usage' do
     patch :update, params: { id: @vehicle_usage, vehicle_usage: {vehicle: {capacities: {'1' => 123, '2' => 456}, color: @vehicle_usage.vehicle.color, consumption: @vehicle_usage.vehicle.consumption, emission: @vehicle_usage.vehicle.emission, name: @vehicle_usage.vehicle.name, max_distance: 200, router_options: {motorway: 'true', trailers: 2, weight: 10, width: '3,55', hazardous_goods: 'gas', low_emission_zone: 'false'}}, time_window_start: @vehicle_usage.time_window_start}}
     assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)

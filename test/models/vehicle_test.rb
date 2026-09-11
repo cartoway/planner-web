@@ -122,6 +122,16 @@ class VehicleTest < ActiveSupport::TestCase
     assert_equal 200, vehicle.default_router_options['max_walk_distance']
   end
 
+  test 'default_router_options should reflect customer router option updates' do
+    vehicle = vehicles(:vehicle_three)
+    vehicle.update!(router_options: {})
+
+    vehicle.customer.update!(router_options: vehicle.customer.router_options.merge('weight' => 99))
+    vehicle.association(:customer).reload
+
+    assert_equal '99', vehicle.default_router_options['weight']
+  end
+
   test 'should return error if capacity is invalid' do
     vehicle = vehicles(:vehicle_one)
 
