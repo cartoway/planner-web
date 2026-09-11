@@ -92,4 +92,10 @@ class StopTest < ActiveSupport::TestCase
 
     assert stop.update!(active: !stop.active)
   end
+
+  test 'attach_photos rejects empty files' do
+    stop = stops(:stop_one_one)
+    assert_nil stop.attach_photos([])
+    assert stop.errors[:photos].present?
+  end
 end

@@ -11,6 +11,10 @@ class V01::StopsTest < ActiveSupport::TestCase
     @stop = stops(:stop_one_one)
   end
 
+  teardown do
+    @stop&.photos&.purge
+  end
+
   def around
     Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 60, '_ibE_seK_seK_seK'] } } ) do
       yield
@@ -26,6 +30,25 @@ class V01::StopsTest < ActiveSupport::TestCase
     get api(@stop.route.planning.id, @stop.route.id, @stop.id)
     assert last_response.ok?, last_response.body
     assert_equal @stop.id, JSON.parse(last_response.body)['id']
+  end
+
+  test 'should fetch stop with temporary photo url' do
+    @stop.photos.attach(
+      io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),
+      filename: 'stop_photo.jpg',
+      content_type: 'image/jpeg'
+    )
+
+    get api(@stop.route.planning.id, @stop.route.id, @stop.id)
+    assert last_response.ok?, last_response.body
+    photos = JSON.parse(last_response.body)['photos']
+    assert_equal 1, photos.size
+    assert photos.first['url'].present?
+
+    uri = URI.parse(photos.first['url'])
+    get uri.request_uri
+    assert last_response.ok?, last_response.body
+    assert_includes last_response.content_type, 'image/jpeg'
   end
 
   test 'should update stop' do
