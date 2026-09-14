@@ -23,13 +23,13 @@ class V01::Entities::VehicleStore < V01::Entities::Store
   expose(:emission, documentation: { type: Integer })
   expose(:consumption, documentation: { type: Integer })
   expose(:fuel_type, documentation: { type: String })
-  expose(:capacity, documentation: { type: Integer, desc: 'Deprecated, use capacities instead.' }) { |m|
+  expose(:capacity, documentation: { hidden: true, deprecated: true, type: Integer, desc: 'Deprecated, use capacities instead.' }) { |m|
     if m.capacities && m.customer.deliverable_units.size == 1
       capacities = m.capacities.values
       capacities[0] if capacities.size == 1
     end
   }
-  expose(:capacity_unit, documentation: { type: String, desc: 'Deprecated, use capacities and deliverable_unit entity instead.' }) { |m|
+  expose(:capacity_unit, documentation: { hidden: true, deprecated: true, type: String, desc: 'Deprecated, use capacities and deliverable_unit entity instead.' }) { |m|
     if m.capacities && m.customer.deliverable_units.size == 1
       deliverable_unit_ids = m.capacities.keys
       m.customer.deliverable_units[0].label if deliverable_unit_ids.size == 1
@@ -40,6 +40,6 @@ class V01::Entities::VehicleStore < V01::Entities::Store
   }
   expose(:router_id, documentation: { type: Integer })
   expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys })
-  expose(:speed_multiplicator, documentation: { type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
+  expose(:speed_multiplicator, documentation: { hidden: true, deprecated: true, type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
   expose(:speed_multiplier, documentation: { type: Float })
 end

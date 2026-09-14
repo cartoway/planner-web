@@ -24,13 +24,13 @@ class V01::Entities::Visit < Grape::Entity
 
   expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 101 })
   expose(:destination_id, documentation: { type: Integer, desc: 'Parent destination id.', example: 42 })
-  expose(:quantity, documentation: { type: Integer, desc: 'Deprecated, use quantities instead.' }) { |m|
+  expose(:quantity, documentation: { hidden: true, deprecated: true, type: Integer, desc: 'Deprecated, use quantities instead.' }) { |m|
     quantities = convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
     if quantities.size == 1 && m.destination.customer.deliverable_units.size == 1
       quantities[0]
     end
   }
-  expose(:quantity_default, documentation: { type: Integer, desc: 'Deprecated, use quantities instead.' }) { |m|
+  expose(:quantity_default, documentation: { hidden: true, deprecated: true, type: Integer, desc: 'Deprecated, use quantities instead.' }) { |m|
     quantities = convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
     if quantities.size == 1 && m.destination.customer.deliverable_units.size == 1
       quantities[0]

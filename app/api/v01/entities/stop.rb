@@ -46,7 +46,7 @@ class V01::Entities::Stop < V01::Entities::StopStatus
     stop.route.planning_id
   }
   # Deprecated
-  expose(:destination_id, documentation: { type: Integer, desc: 'DEPRECATED. Destination id when stop_type is visit.' }) { |m| m.is_a?(StopVisit) ? m.visit.destination.id : nil }
+  expose(:destination_id, documentation: { hidden: true, deprecated: true, type: Integer, desc: 'DEPRECATED. Destination id when stop_type is visit.' }) { |m| m.is_a?(StopVisit) ? m.visit.destination.id : nil }
   expose(:wait_time, documentation: { type: DateTime, desc: 'Waiting time before service (HH:MM:SS) when arriving early for the time window.' }) { |m| m.wait_time && ('%i:%02i:%02i' % [m.wait_time / 60 / 60, m.wait_time / 60 % 60, m.wait_time % 60]) }
   expose(:time, documentation: { type: DateTime, desc: 'Planned arrival datetime.' }) { |m|
     (m.route.planning.date || Time.zone.today).beginning_of_day + m.time if m.time
