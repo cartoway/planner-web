@@ -132,7 +132,7 @@ Postman / Insomnia (happy path): [collection](' + Planner::Application.config.sw
 You can import destinations/visits and create a planning at the same time if you already know the route for each visit (`importDestinations`). Creating a planning materializes routes and stops. Move stops between routes, or use zoning (automatic clustering) to assign many unassigned stops at once.
 
 ### OpenAPI
-Codegen, Postman and Insomnia should import OpenAPI 3.0 at `GET /api/0.1/openapi.json`. `GET /api/0.1/swagger_doc` remains the Swagger 2.0 descriptor (grape-swagger source of truth).
+Codegen, Postman and Insomnia should import OpenAPI 3.0 at `GET /api/0.1/openapi.json?scope=core` (integration operations, tagged `core`). Omit `scope` for the full catalog (`core` / `admin` / `devices`). `GET /api/0.1/swagger_doc` remains the Swagger 2.0 descriptor (grape-swagger source of truth).
 '})
 
   include OpenapiJson
