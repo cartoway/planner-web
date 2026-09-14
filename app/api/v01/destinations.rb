@@ -178,7 +178,7 @@ class V01::Destinations < Grape::API
     end
     post do
       authorize!(:create, Destination)
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
       destination = current_customer.destinations.build(destination_params)
@@ -221,7 +221,7 @@ class V01::Destinations < Grape::API
     end
     put do
       authorize!(:create, Destination)
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       if params[:destinations]
         d_params = declared(params, include_missing: false) # Filter undeclared parameters
@@ -278,7 +278,7 @@ class V01::Destinations < Grape::API
     end
     put ':id' do
       authorize!(:update, Destination)
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
       destination = current_customer.destinations.where(ParseIdsRefs.where_clause([params[:id]])).first!
@@ -296,7 +296,7 @@ class V01::Destinations < Grape::API
       requires :tag_ids, type: Array[Integer], desc: 'Tag ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { param_type: 'form', example: '1,2,ref:vip' }
     end
     delete 'by_tags' do
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
       authorize!(:destroy, Destination)
 
       Destination.transaction do
@@ -343,7 +343,7 @@ class V01::Destinations < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     delete ':id' do
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
       authorize!(:destroy, Destination)
 
       current_customer.destinations.where(ParseIdsRefs.where_clause([params[:id]])).first!.destroy

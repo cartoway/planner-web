@@ -1,6 +1,9 @@
 if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
   json.optimizer do
-    json.extract! @planning.customer.job_optimizer, :id, :progress, :attempts
+    json.extract! @planning.customer.job_optimizer, :id, :attempts
+    progress = @planning.customer.job_optimizer.progress
+    progress = (JSON.parse(progress) rescue nil) if progress.is_a?(String)
+    json.progress progress
     json.error !!@planning.customer.job_optimizer.failed_at
     json.customer_id @planning.customer.id
     json.dispatch_params_delayed_job do
@@ -61,4 +64,18 @@ else
 
   json.planning_route_errors RouteSidebarSerializer.merge_planning_route_errors_from_sidebar_routes(routes_data)
   json.routes routes_data
+  if (failed = @planning.customer.last_failed_optimizer_job(@planning.id))
+    no_solution = failed['error'].to_s.include?('VRPNoSolution')
+    json.optimizer do
+      json.id failed['id']
+      json.error true
+      json.attempts 1
+      json.progress(no_solution ? { 'failed' => true } : nil)
+      json.customer_id @planning.customer.id
+      json.dispatch_params_delayed_job do
+        json.nb_route nil
+        json.with_stops @with_stops
+      end
+    end
+  end
 end

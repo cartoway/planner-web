@@ -19,6 +19,7 @@ require 'rest_client'
 
 class VRPNoSolutionError < StandardError; end
 class VRPUnprocessableError < StandardError; end
+class OptimizerCancelled < StandardError; end
 
 PROGRESSION_KEYS = ['split independent process', 'solution', 'repetition', 'split partition process', 'max split process', 'dichotomous process']
 RESOLUTION_STEP_ORDER = [
@@ -177,6 +178,8 @@ class OptimizerWrapper
       if result.dig('job', 'status') == 'completed'
         @cache.write(key, json.body)
         break
+      elsif %w[killed cancelled canceled].include?(result.dig('job', 'status'))
+        raise OptimizerCancelled, 'Optimization cancelled'
       elsif ['queued', 'working'].include?(result.dig('job', 'status'))
         begin
           if progress && job_details
@@ -190,6 +193,8 @@ class OptimizerWrapper
           retry if retry_counter < 3
 
           raise e
+        rescue RestClient::NotFound, RestClient::Gone
+          raise OptimizerCancelled, 'Optimization cancelled'
         rescue Delayed::WorkerTimeout
           kill_solve(job_id)
           raise JobTimeout.new("Optimizer Job #{job_id} has reached max_run_time: #{ScheduleType.new.cast(Delayed::Worker.max_run_time)}")

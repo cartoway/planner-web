@@ -38,11 +38,12 @@ class Optimizer
       # Nothing to optimize
       route.compute_saved
     else
-      if planning.customer.job_optimizer
+      if planning.customer.optimizer_running?
         # Customer already run an optimization
         planning.errors.add(:base, I18n.t('errors.planning.already_optimizing'))
         false
       else
+        planning.customer.job_optimizer.destroy if planning.customer.job_optimizer
         job = OptimizerJob.new(planning.customer.id, planning.id, route&.id, **options)
         if !options[:synchronous] && Planner::Application.config.delayed_job_use
           planning.customer.job_optimizer = Delayed::Job.enqueue(job)

@@ -89,6 +89,31 @@
     border-top: none;
   }
 
+  .last-async-jobs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    vertical-align: middle;
+
+    &__item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    &__kind {
+      padding: 0;
+      background: none;
+      color: inherit;
+    }
+
+    &__time {
+      color: #777;
+    }
+  }
+
   #customers .customer-users-dropdown-menu {
     min-width: 18rem;
     max-width: 28rem;
