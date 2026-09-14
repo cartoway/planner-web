@@ -1,6 +1,6 @@
 # REST API 0.1 — Getting started
 
-Machine-readable reference: `GET /api/0.1/swagger_doc` (Swagger 2.0).
+Machine-readable reference: `GET /api/0.1/openapi.json` (OpenAPI 3.0; import this in codegen, Postman or Insomnia). Swagger 2.0 remains at `GET /api/0.1/swagger_doc` (grape-swagger source of truth).
 Simplified domain model: [Model-simpel.svg](./Model-simpel.svg).
 
 This guide covers conventions, a copy-paste happy path, pitfalls, and the core resources used to integrate a third-party system. It does not cover the iframe Web API (`/api-web`) or telematics device endpoints.
@@ -405,4 +405,4 @@ Curated happy-path collection (not a dump of every Swagger operation):
 
 **Insomnia:** Import → From File → the collection (v2.1). Then set `api_key` (and `base` if it is not the default). Insomnia understands this format; there is no second file to maintain.
 
-Full endpoint catalog: import `GET /api/0.1/swagger_doc` (Swagger 2.0) in either tool.
+Full endpoint catalog: import `GET /api/0.1/openapi.json` (OpenAPI 3.0) in either tool. `GET /api/0.1/swagger_doc` is Swagger 2.0 for compatibility.
