@@ -79,4 +79,18 @@ class PlanningsHelperTest < ActionView::TestCase
     got = planning_statistics_routes(planning, sidebar, user)
     assert_equal planning.routes.map(&:id).sort, got.map(&:id).sort
   end
+
+  test 'planning_statistics_routes reuses already loaded planning routes' do
+    planning = plannings(:planning_one)
+    planning.routes.load
+    first = planning.routes.first
+    sidebar = planning.routes.available.to_a
+    user = users(:user_two)
+    user.update!(filter_planning_route_data: false)
+
+    got = planning_statistics_routes(planning, sidebar, user)
+
+    assert_equal planning.routes.map(&:id).sort, got.map(&:id).sort
+    assert_same first, got.find { |route| route.id == first.id }
+  end
 end
