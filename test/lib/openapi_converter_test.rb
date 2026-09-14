@@ -55,7 +55,10 @@ class OpenapiConverterTest < ActiveSupport::TestCase
     refute doc.dig('components', 'schemas', 'V01_Destination', 'properties', 'ref').key?('x-nullable')
     assert_equal 'apiKey', doc.dig('components', 'securitySchemes', 'api_key_header_param', 'type')
     assert_includes doc.dig('paths', '/0.1/destinations.json', 'post', 'tags'), 'core'
-    assert_equal 'core', doc['tags'].first['name']
+    assert_includes doc.dig('paths', '/0.1/destinations.json', 'post', 'tags'), 'happy_path'
+    names = doc['tags'].map { |t| t['name'] }
+    assert_includes names, 'core'
+    assert_includes names, 'happy_path'
   end
 
   test 'tags admin and devices, scope core drops them and prunes unused schemas' do
@@ -105,6 +108,50 @@ class OpenapiConverterTest < ActiveSupport::TestCase
     assert_includes names, 'core'
     refute_includes names, 'admin'
     refute_includes names, 'devices'
+  end
+
+  test 'happy_path tag and scope keep only the getting-started operations' do
+    swagger = {
+      'swagger' => '2.0',
+      'info' => { 'title' => 'API' },
+      'paths' => {
+        '/0.1/destinations.json' => {
+          'get' => {
+            'operationId' => 'getDestinations',
+            'responses' => { '200' => { 'description' => 'ok', 'schema' => { '$ref' => '#/definitions/V01_Destination' } } }
+          },
+          'delete' => {
+            'operationId' => 'deleteDestinations',
+            'responses' => { '204' => { 'description' => 'ok' } }
+          }
+        },
+        '/0.1/zonings.json' => {
+          'get' => {
+            'operationId' => 'getZonings',
+            'responses' => { '200' => { 'description' => 'ok', 'schema' => { '$ref' => '#/definitions/V01_Zoning' } } }
+          }
+        }
+      },
+      'definitions' => {
+        'V01_Destination' => { 'type' => 'object' },
+        'V01_Zoning' => { 'type' => 'object' }
+      }
+    }
+
+    full = OpenapiConverter.convert(swagger)
+    assert_includes full.dig('paths', '/0.1/destinations.json', 'get', 'tags'), 'happy_path'
+    refute_includes Array(full.dig('paths', '/0.1/destinations.json', 'delete', 'tags')), 'happy_path'
+    refute_includes Array(full.dig('paths', '/0.1/zonings.json', 'get', 'tags')), 'happy_path'
+
+    happy = OpenapiConverter.convert(swagger, scope: 'happy_path')
+    assert happy['paths'].key?('/0.1/destinations.json')
+    assert happy.dig('paths', '/0.1/destinations.json').key?('get')
+    refute happy.dig('paths', '/0.1/destinations.json').key?('delete')
+    refute happy['paths'].key?('/0.1/zonings.json')
+    refute happy.dig('components', 'schemas').key?('V01_Zoning')
+    names = happy['tags'].map { |t| t['name'] }
+    assert_includes names, 'happy_path'
+    refute_includes names, 'admin'
   end
 
   test 'marks leftover schema properties deprecated from their description' do
