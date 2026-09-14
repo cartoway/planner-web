@@ -130,7 +130,7 @@ class V01::Destinations < Grape::API
 
   resource :destinations do
     desc 'Fetch customer\'s destinations.',
-      detail: 'Returns all destinations of the customer, or a subset when ids is set (numeric ids or ref:VALUE). Use .geojson for a FeatureCollection of points; quantities adds pickup/delivery on features. No pagination: the whole customer scope is returned.',
+      detail: 'Returns all destinations of the customer, or a subset when ids is set (numeric ids or ref:VALUE). Use .geojson for a FeatureCollection of points; quantities adds pickup/delivery on features. Without page, returns a bare array. With page, returns { items, page, per_page, total }.',
       nickname: 'getDestinations',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Destination),
@@ -138,6 +138,7 @@ class V01::Destinations < Grape::API
     params do
       optional :ids, type: Array[String], desc: 'Select returned destinations by id separated with comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
       optional :quantities, type: Boolean, default: false, desc: 'Include the quantities when using geojson output.'
+      use :optional_pagination
     end
     get do
       if env['api.format'] == :geojson
@@ -149,9 +150,9 @@ class V01::Destinations < Grape::API
               params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
             }
           else
-            current_customer.destinations.includes_visits.load
+            current_customer.destinations.includes_visits
           end
-        present destinations, with: V01::Entities::Destination
+        present_paginated destinations, V01::Entities::Destination
       end
     end
 

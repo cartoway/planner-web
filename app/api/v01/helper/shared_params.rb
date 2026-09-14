@@ -446,6 +446,37 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     }
   end
 
+  params :optional_pagination do
+    optional :page, type: Integer, values: ->(v) { v.nil? || v >= 1 }, desc: '1-based page. When set, wrap the list as { items, page, per_page, total }. Without page, returns a bare array.'
+    optional :per_page, type: Integer, default: 100, values: 1..500, desc: 'Page size when page is set. Default 100, max 500.'
+  end
+
+  def paginate_collection(collection, page:, per_page:)
+    if collection.respond_to?(:offset)
+      total = collection.except(:includes).count
+      items = collection.offset((page - 1) * per_page).limit(per_page).load
+    else
+      total = collection.size
+      items = collection.slice((page - 1) * per_page, per_page) || []
+    end
+    [items, total]
+  end
+
+  def present_paginated(collection, entity)
+    if params[:page]
+      items, total = paginate_collection(collection, page: params[:page], per_page: params[:per_page])
+      {
+        items: entity.represent(items, serializable: true),
+        page: params[:page],
+        per_page: params[:per_page],
+        total: total
+      }
+    else
+      collection = collection.load if collection.respond_to?(:load)
+      present collection, with: entity
+    end
+  end
+
   ID_DESC = 'Numeric id or external reference prefixed with "ref:". Examples: 42 or ref:CLIENT-12. References must not contain commas.'.freeze
   DATE_DESC = "Local format depends of the locale sent in http header. Default local send is english (:en)\n
   ex:\n
