@@ -1243,7 +1243,10 @@ class PlanningTest < ActiveSupport::TestCase
 
     target_route.reload
     target_route.stops.order(:index).select{ |s| s.is_a?(StopVisit) }.first.update!(active: true)
-    planning.routes.each(&:reload)
+    planning.routes.each do |route|
+      route.reload
+      route.stops.load
+    end
 
     averages = planning.averages('km')
     assert averages
