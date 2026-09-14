@@ -48,7 +48,7 @@
   - the stop-tools map marker button bring the associated marker to the front
   - Move stops modal: None / Reverse / All selection buttons and improved list padding
   - Destination import: on a new empty planning, place the automatic rest at the end of the route when no rest stop is provided in the import
-  - Planning sidebar: unified `map_marker?` flag to decide when the map-marker button is shown for any stop
+  - REST API 0.1: unify error bodies: `{ message, status }` (import HTTP 422 may add `errors`)
 
   ### Fixed
   - Planning edit: `automatic_insert` on all unassigned stops no longer skips every other stop
