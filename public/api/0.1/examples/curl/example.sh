@@ -59,7 +59,7 @@ curl -sS -X POST -H "$AUTH" -H "$JSON" "${URL}/api/0.1/plannings.json" -d '{
   "date": "2026-09-14"
 }'
 
-# EXAMPLE 5 — start global optimization, then poll until HTTP 404 (success) or failed_at
+# EXAMPLE 5 — start global optimization, then poll until status succeeded or failed
 # JOB=$(curl -sS -H "$AUTH" "${URL}/api/0.1/plannings/ref:PLAN-MON/optimize.json?global=true" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
 # curl -sS -H "$AUTH" "${URL}/api/0.1/jobs/${JOB}.json"
 # curl -sS -H "$AUTH" "${URL}/api/0.1/plannings/ref:PLAN-MON/routes.json"

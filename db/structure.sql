@@ -174,7 +174,8 @@ CREATE TABLE public.customers (
     store_icon character varying,
     store_icon_size character varying,
     rest_icon character varying,
-    rest_icon_size character varying
+    rest_icon_size character varying,
+    last_async_jobs jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -3956,6 +3957,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260720072020'),
 ('20260721141523'),
 ('20260731120833'),
-('20260909160239');
+('20260909160239'),
+('20260914115500');
 
 
