@@ -926,6 +926,44 @@ class PlanningsControllerTest < ActionController::TestCase
     }
   end
 
+  test 'show json includes last failed optimizer without blocking the planning' do
+    @planning.customer.update_column(:last_async_jobs, {
+      'optimizer' => {
+        'id' => 42,
+        'type' => 'optimizer',
+        'status' => 'failed',
+        'planning_id' => @planning.id,
+        'finished_at' => '2026-09-14T10:00:00Z'
+      }
+    })
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['routes'].present?
+    assert_equal true, body.dig('optimizer', 'error')
+    assert_equal 42, body.dig('optimizer', 'id')
+  end
+
+  test 'show json omits dismissed last failed optimizer' do
+    @planning.customer.update_column(:last_async_jobs, {
+      'optimizer' => {
+        'id' => 42,
+        'type' => 'optimizer',
+        'status' => 'failed',
+        'dismissed' => true,
+        'planning_id' => @planning.id,
+        'finished_at' => '2026-09-14T10:00:00Z'
+      }
+    })
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['routes'].present?
+    assert_nil body['optimizer']
+  end
+
   test 'should not move stop while optimization job is running on planning' do
     job = delayed_jobs(:job_optimizer)
     job.update!(handler: "planning_id: #{@planning.id}")

@@ -436,6 +436,24 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
   end
 
+  test 'should update routes when optimizer job has failed' do
+    planning = plannings(:planning_one)
+    job = delayed_jobs(:job_optimizer)
+    job.update!(handler: "planning_id: #{planning.id}", failed_at: Time.now.utc)
+    customers(:customer_one).update!(
+      job_optimizer: job,
+      last_async_jobs: {
+        'optimizer' => { 'id' => job.id, 'type' => 'optimizer', 'status' => 'failed', 'planning_id' => planning.id }
+      }
+    )
+    route = routes(:route_one_one)
+
+    without_loading Stop do
+      patch api("#{planning.id}/update_routes"), { route_ids: [route.id], selection: 'none', action: 'toggle' }
+      assert last_response.ok?, last_response.body
+    end
+  end
+
   test 'should apply zonings' do
     [:during_optimization, nil].each do |mode|
       apply_job_optimizer_mode!(mode)
