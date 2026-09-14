@@ -23,7 +23,7 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_includes description, 'ref:'
     assert_includes description, '/jobs/'
     assert_includes description, 'getting-started.md'
-    assert_includes description, '404'
+    assert_includes description, 'succeeded'
     assert_includes description, 'openapi.json'
 
     destination = swagger_definition(content, 'V01_Destination')
@@ -49,11 +49,12 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     body = response.body.force_encoding('UTF-8')
     assert_includes body, '## Happy path'
     assert_includes body, '## Pitfalls'
-    assert_includes body, 'Job not found'
+    assert_includes body, 'status: "succeeded"'
     assert_includes body, 'Accept-Language: en'
     assert_includes body, 'horaire début 1'
     assert_includes body, 'GET /plannings/:id/routes.json'
     assert_includes body, 'openapi.json'
+    assert_includes body, '/api/100'
 
     php = Rails.root.join('public/api/0.1/examples/php/example.php').read
     refute_match(/"quantity"\s*:/, php)
