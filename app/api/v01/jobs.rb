@@ -33,40 +33,25 @@ class V01::Jobs < Grape::API
 
   resource :jobs do
     desc 'Fetch customer\'s jobs.',
-         detail: 'Returns the customer\'s running asynchronous jobs (optimizer, destination geocoding, store geocoding). At most one of each. An empty list means no job is running.',
+         detail: 'Live optimizer/geocoding jobs plus the last succeeded job of each kind (recorded when Delayed::Job is destroyed on success).',
          nickname: 'getJobs',
          is_array: true,
          success: V01::Entities::Job
-    params do
-    end
     get do
-      # with_completed_jobs
-      # From woop : To display only finished jobs (suceeded or failed) from the past 24 hours.
-      # Default value : false
-      jobs = [
-        current_customer.job_optimizer,
-        current_customer.job_destination_geocoding,
-        current_customer.job_store_geocoding
-      ].compact # .select{ |job| job.failed_at.nil? }
-      present jobs, with: V01::Entities::Job
+      live = current_customer.live_async_jobs
+      remembered = current_customer.remembered_async_jobs.reject { |job| live.any? { |live_job| live_job.id == job.id } }
+      present live + remembered, with: V01::Entities::Job
     end
 
     desc 'Return a job.',
-      detail: 'Poll until the job disappears (success: it is deleted) or failed_at is set. HTTP 404 when the id is not the current optimizer/geocoding job.',
+      detail: 'HTTP 200 with status running or failed while the job exists, succeeded after successful completion. HTTP 404 if this id was never a job of this customer.',
       nickname: 'getJob',
       success: V01::Entities::Job
     params do
       requires :id, type: Integer, desc: ID_DESC
     end
     get ':id' do
-      customer = current_customer
-      job = if customer.job_optimizer && customer.job_optimizer_id == params[:id]
-        customer.job_optimizer
-      elsif customer.job_destination_geocoding && customer.job_destination_geocoding_id == params[:id]
-        customer.job_destination_geocoding
-      elsif customer.job_store_geocoding && customer.job_store_geocoding_id == params[:id]
-        customer.job_store_geocoding
-      end
+      job = current_customer.find_async_job(params[:id])
       if job
         present job, with: V01::Entities::Job
       else
