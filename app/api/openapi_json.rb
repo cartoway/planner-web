@@ -8,11 +8,14 @@ module OpenapiJson
           swagger_path = "/#{version}/swagger_doc"
           response = Rack::MockRequest.new(ApiRootDef).get(swagger_path)
           error!({ message: 'Failed to build Swagger 2.0 document', status: 500 }, 500) unless response.status == 200
-          OpenapiConverter.convert(JSON.parse(response.body))
+          OpenapiConverter.convert(JSON.parse(response.body), scope: params[:scope])
         end
       end
 
-      desc 'OpenAPI 3.0.3 descriptor converted from Swagger 2.0 (grape-swagger). Import this in codegen, Postman or Insomnia. GET swagger_doc remains the Swagger 2.0 source.'
+      desc 'OpenAPI 3.0.3 descriptor converted from Swagger 2.0 (grape-swagger). Import this in codegen, Postman or Insomnia. GET swagger_doc remains the Swagger 2.0 source. Operations are tagged core, admin and devices. Pass scope=core to drop admin and devices.'
+      params do
+        optional :scope, type: String, values: ->(v) { v.nil? || v == 'core' }, desc: 'core keeps integration operations only (drops admin and devices). Omit for the full catalog.'
+      end
       get :openapi do
         openapi_from_swagger
       end
