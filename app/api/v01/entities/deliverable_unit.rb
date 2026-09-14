@@ -24,7 +24,7 @@ class V01::Entities::DeliverableUnit < Grape::Entity
   expose(:label, documentation: { type: String, desc: 'Display name of the unit (pallets, kg, …).', example: 'Pallet' })
   expose(:ref, documentation: { type: String, desc: 'External unique reference.', example: 'PAL' })
   expose(:icon, documentation: { type: String, desc: "Icon name from font-awesome. Default: #{::DeliverableUnit::ICON_DEFAULT}." })
-  expose(:default_quantity, documentation: { type: Float, desc: 'Deprecated signed quantity (delivery minus pickup) when a single unit is used.' }) { |m| (m.default_delivery || 0) - (m.default_pickup || 0) }
+  expose(:default_quantity, documentation: { hidden: true, deprecated: true, type: Float, desc: 'Deprecated signed quantity (delivery minus pickup) when a single unit is used.' }) { |m| (m.default_delivery || 0) - (m.default_pickup || 0) }
   expose(:default_pickup, documentation: { type: Float, desc: 'Default pickup quantity applied to visits that omit quantities for this unit.', example: 0.0 })
   expose(:default_delivery, documentation: { type: Float, desc: 'Default delivery quantity applied to visits that omit quantities for this unit.', example: 1.0 })
   expose(:default_capacity, documentation: { type: Float, desc: 'Default vehicle capacity for this unit when the vehicle has no override.', example: 48.0 })
