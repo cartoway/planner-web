@@ -56,7 +56,7 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_includes body, 'horaire début 1'
     assert_includes body, 'GET /plannings/:id/routes.json'
     assert_includes body, 'openapi.json'
-    assert_includes body, 'scope=core'
+    assert_includes body, 'scope=happy_path'
     assert_includes body, '/api/100'
 
     php = Rails.root.join('public/api/0.1/examples/php/example.php').read
@@ -124,7 +124,9 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     destination_op = content[:paths].values.find { |item| item[:get] && item[:get][:operationId].to_s.include?('getDestinations') }
     assert destination_op, 'getDestinations missing from OpenAPI 3'
     assert_includes destination_op[:get][:tags], 'core'
+    assert_includes destination_op[:get][:tags], 'happy_path'
     tag_names = Array(content[:tags]).map { |t| t[:name] }
+    assert_includes tag_names, 'happy_path'
     assert_includes tag_names, 'core'
     assert_includes tag_names, 'admin'
     assert_includes tag_names, 'devices'
@@ -141,6 +143,27 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     refute paths.any? { |path| path.match?(%r{/customers(\.json|/|\z)}) }
     tag_names = Array(content[:tags]).map { |t| t[:name] }
     assert_includes tag_names, 'core'
+    refute_includes tag_names, 'admin'
+    refute_includes tag_names, 'devices'
+  end
+
+  test 'OpenAPI 3 scope happy_path keeps the getting-started operations' do
+    get '/api/0.1/openapi.json?scope=happy_path'
+    assert_response :success
+
+    content = JSON.parse(response.body, symbolize_names: true)
+    operation_ids = content[:paths].values.flat_map { |item|
+      item.each_value.filter_map { |op| op[:operationId] if op.is_a?(Hash) }
+    }
+    %w[getDeliverableUnits getVehicles getDestinations createDestination createPlanning optimizeRoutes getJob getRoutes].each do |id|
+      assert_includes operation_ids, id
+    end
+    refute_includes operation_ids, 'getZonings'
+    refute_includes operation_ids, 'createTag'
+    paths = content[:paths].keys.map(&:to_s)
+    refute paths.any? { |path| path.include?('/devices/') }
+    tag_names = Array(content[:tags]).map { |t| t[:name] }
+    assert_includes tag_names, 'happy_path'
     refute_includes tag_names, 'admin'
     refute_includes tag_names, 'devices'
   end
