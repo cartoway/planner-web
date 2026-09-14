@@ -3,7 +3,7 @@
 Machine-readable reference: `GET /api/0.1/swagger_doc` (Swagger 2.0).
 Simplified domain model: [Model-simpel.svg](./Model-simpel.svg).
 
-This guide covers conventions, typical workflows, and the core resources used to integrate a third-party system. It does not cover the iframe Web API (`/api-web`) or telematics device endpoints.
+This guide covers conventions, a copy-paste happy path, pitfalls, and the core resources used to integrate a third-party system. It does not cover the iframe Web API (`/api-web`) or telematics device endpoints.
 
 ## Versions
 
@@ -18,7 +18,9 @@ Replace `{base}` below with your planner host, for example `https://planner.cart
 
 Every request is scoped to the `Customer` of the authenticated `User`.
 
-Send the user API key **either** as a query parameter **or** as a header (not both required):
+The `api_key` is on the **user** form in the web UI (read-only key field). Each user has their own key.
+
+Send it **either** as a query parameter **or** as a header (not both required):
 
 ```
 GET {base}/api/0.1/destinations.json?api_key=YOUR_API_KEY
@@ -31,6 +33,160 @@ curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/destinations.json"
 - Admin keys unlock extra operations on `Customer`, `User`, `Vehicle` (depending on config) and `Profile`.
 - HTTP **402** means the customer subscription has expired.
 - HTTP **403** means the user is authenticated but not allowed to perform the action (CanCan).
+
+---
+
+## Happy path
+
+Replace `YOUR_API_KEY`. A customer already has a default store, deliverable unit, vehicles and a vehicle usage set — fetch those ids before creating visits.
+
+There is **no** create-route or create-stop endpoint. Creating a planning materializes them.
+
+### 1. Read units and vehicles
+
+```sh
+curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/deliverable_units.json"
+curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/vehicles.json"
+```
+
+Typical excerpts (fields omitted):
+
+```json
+[{ "id": 1, "label": "Pallet", "ref": "PAL" }]
+```
+
+```json
+[{ "id": 2, "ref": "VEH-1", "name": "Truck 1", "capacities": [{ "deliverable_unit_id": 1, "quantity": 48 }] }]
+```
+
+Use `deliverable_unit_id` in visit `quantities`. Use vehicle `ref` as `visit.route` on import (it is **not** a route id).
+
+### 2. Create a destination with a nested visit
+
+```sh
+curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/destinations.json" \
+  -d '{
+    "ref": "CLIENT-12",
+    "name": "Acme",
+    "street": "12 avenue Thiers",
+    "postalcode": "33100",
+    "city": "Bordeaux",
+    "country": "France",
+    "visits": [{
+      "ref": "V1",
+      "duration": "00:10:00",
+      "time_window_start_1": "08:00",
+      "time_window_end_1": "12:00",
+      "quantities": [{"deliverable_unit_id": 1, "delivery": 1.0}]
+    }]
+  }'
+```
+
+Response excerpt:
+
+```json
+{
+  "id": 42,
+  "ref": "CLIENT-12",
+  "lat": 44.8378,
+  "lng": -0.5792,
+  "visits": [{ "id": 11, "ref": "V1", "duration": "00:10:00" }]
+}
+```
+
+Same `ref` on a later `PUT /destinations` **updates** the destination (upsert). Address is geocoded when `lat` / `lng` are omitted.
+
+### 3. Create a planning
+
+```sh
+curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/plannings.json" \
+  -d '{"name": "Monday", "ref": "PLAN-MON", "date": "2026-09-14"}'
+```
+
+Response excerpt — `GET /plannings/:id` returns metadata and `route_ids`, **not** nested stops:
+
+```json
+{ "id": 7, "ref": "PLAN-MON", "date": "2026-09-14", "route_ids": [20, 21], "outdated": true }
+```
+
+This created one unassigned route plus one route per vehicle of the default `vehicle_usage_set`, and one stop per matching visit.
+
+### 4. Optimize, then poll the job
+
+```sh
+curl -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON/optimize.json?global=true"
+```
+
+`global=true` allows moving visits between routes. HTTP **200** with a job:
+
+```json
+{ "id": 88, "type": "optimizer", "failed_at": null, "progress": {} }
+```
+
+Poll until **success or failure**:
+
+```sh
+curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/jobs/88.json"
+```
+
+| Poll result | Meaning |
+|-------------|---------|
+| HTTP **200**, `failed_at` null | Still running. Wait and poll again. |
+| HTTP **200**, `failed_at` set | Failed. Read `progress` / message; do not treat as success. |
+| HTTP **404** (`{"error":"Job not found"}`) | **Success.** The job row is deleted when it finishes. |
+| HTTP **409** | Another optimizer job is already running. |
+| HTTP **304** on optimize | Solver found no solution. |
+
+Then reload routes (not only the planning):
+
+```sh
+curl -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON/routes.json"
+```
+
+Response excerpt:
+
+```json
+[{
+  "id": 21,
+  "vehicle_usage_id": 3,
+  "vehicle_ref": "VEH-1",
+  "outdated": false,
+  "stops": [{
+    "id": 55,
+    "index": 1,
+    "stop_type": "visit",
+    "visit_id": 11,
+    "time": "2026-09-14T08:12:00",
+    "out_of_window": false,
+    "active": true
+  }]
+}]
+```
+
+The unassigned route has `vehicle_usage_id: null`. Check stop flags (`out_of_window`, `out_of_capacity`, …) after optimize.
+
+Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python/example.py), [Ruby](./examples/ruby/example.rb), [PHP](./examples/php/example.php).
+
+---
+
+## Pitfalls
+
+- **Job HTTP 404 means success** (the job is deleted). Do not retry optimize on 404. Failure is `failed_at` set on HTTP 200.
+- **No create-stop / create-route.** `POST /plannings` (or import with `planning` / `visit.route`) materializes them. Then move, lock, or activate stops.
+- **`GET /plannings/:id` has no stops.** Use `GET /plannings/:id/routes.json`.
+- **`visit.route` on import is a vehicle `ref` (or route index/name), not a route id.** Prefer `ref_vehicle` if you want to be explicit.
+- **Bulk `DELETE` with omitted or empty `ids` deletes all** destinations or visits of the customer. Always pass `ids`.
+- **Error bodies are not uniform.** Auth/status helpers return `{ "message": "Unauthorized.", "status": 401 }`. Import validation is `{ "error": ["…"] }` (HTTP 422). Job miss is `{ "error": "Job not found" }` (HTTP 404).
+- **Date filters follow `Accept-Language`**, not ISO: `en` is `mm-dd-yyyy`, `fr` is `dd-mm-yyyy`. CSV headers follow the same header.
+- **`automatic_insert` is distance-only** (ignores time windows). Fine for a few stops; use zoning or optimize for batches.
+- **No pagination.** Lists return the whole customer scope. Filter with `ids`, dates, tags, or `active`.
+- **Deprecated field names still appear in some payloads:** `open`/`close` → `time_window_*`; `quantity` → `pickup`/`delivery`; `out_of_date` → `outdated`; `capacity` → `capacities`.
+
+---
 
 ## Identifiers
 
@@ -60,30 +216,34 @@ Pick the format with the URL extension (default: JSON):
 
 Request bodies: `application/json; charset=UTF-8` or `application/xml`. CSV imports use `multipart/form-data`.
 
-There is **no pagination**. Lists return the whole customer scope. Narrow payloads with `ids`, `begin_date` / `end_date`, `tags`, or `active`.
-
 ## Times and locales
 
 - Input schedule fields (`duration`, `time_window_start_1`, vehicle open/close, …): `HH:MM` or `HH:MM:SS`.
 - Output times are DateTime (ISO-like), often computed from the planning date.
 - `Accept-Language` translates functional messages and selects CSV column headers (`en` vs `fr`). HTTP status codes are not translated.
-- Date filters follow the locale (`en`: `mm-dd-yyyy`, `fr`: `dd-mm-yyyy`).
 
 ## Errors
 
-JSON error body:
+Typical auth/status body:
 
 ```json
 { "message": "Unauthorized.", "status": 401 }
 ```
 
+Import validation (HTTP 422):
+
+```json
+{ "error": ["\"name\" missing."] }
+```
+
 | Status | Meaning |
 |--------|---------|
+| 304 | Not modified / optimizer found no solution |
 | 400 | Bad request / invalid index / loop |
 | 401 | Missing or invalid API key |
 | 402 | Subscription expired |
 | 403 | Authenticated but forbidden |
-| 404 | Resource not found |
+| 404 | Resource not found — **except** `GET /jobs/:id` where 404 means the job finished successfully |
 | 409 | Conflict (optimizer already running, job in transmission) |
 | 422 | Validation error |
 | 500 | Server error |
@@ -94,48 +254,24 @@ If `lat` / `lng` are omitted on create or update, the address is geocoded automa
 
 `PATCH /destinations/geocode` and `PATCH /destinations/reverse` compute a result **without saving**. Persist with a subsequent update.
 
+Heavy geocoding during import may return HTTP **202** and a job; poll like optimize.
+
 ## Asynchronous jobs
-
-Heavy operations (planning/route optimization, bulk geocoding) return a `Job` and run in the background.
-
-1. Call the operation (for example `GET /plannings/:id/optimize`).
-2. HTTP **200** with a `Job` object means work started. HTTP **409** means another optimizer job is already running.
-3. Poll `GET /jobs/:id` until the job disappears (success) or `failed_at` is set.
-4. Cancel with `DELETE /jobs/:id` (HTTP **409** if the job is already in transmission).
 
 A customer has at most one optimizer job, one destination-geocoding job and one store-geocoding job at a time.
 
+1. Call the operation (for example `GET /plannings/:id/optimize`).
+2. HTTP **200** with a `Job` object means work started.
+3. Poll `GET /jobs/:id` until HTTP **404** (success) or `failed_at` is set.
+4. Cancel with `DELETE /jobs/:id` (HTTP **409** if the job is already in transmission).
+
 ---
 
-## Workflows
+## More workflows
 
-Replace `YOUR_API_KEY` and ids. Header auth is used throughout.
+### Import JSON (upsert + optional planning)
 
-### 1. Create or import destinations and visits
-
-Create one destination with a nested visit:
-
-```sh
-curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
-  "{base}/api/0.1/destinations.json" \
-  -d '{
-    "ref": "CLIENT-12",
-    "name": "Acme",
-    "street": "12 avenue Thiers",
-    "postalcode": "33100",
-    "city": "Bordeaux",
-    "country": "France",
-    "visits": [{
-      "ref": "V1",
-      "duration": "00:10:00",
-      "time_window_start_1": "08:00",
-      "time_window_end_1": "12:00",
-      "quantities": [{"deliverable_unit_id": 1, "delivery": 1.0}]
-    }]
-  }'
-```
-
-Bulk upsert (JSON). Same `ref` updates the existing destination. If every visit has a `route` (or `ref_vehicle`) **or** you send a `planning` object, a planning is created in the same call:
+If every visit has a `route` (or `ref_vehicle`) **or** you send a `planning` object, a planning is created in the same call:
 
 ```sh
 curl -X PUT -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
@@ -160,36 +296,37 @@ curl -X PUT -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
   }'
 ```
 
-CSV upload uses `multipart/form-data` and localized headers (`Accept-Language`). See `importDestinations` in Swagger.
+### Import CSV
 
-### 2. Create a planning
+`PUT /destinations` with `multipart/form-data` field `file`. Headers must match `Accept-Language`. See `importDestinations` in Swagger for the full column list.
 
-There is **no** “create route” or “create stop” endpoint. `POST /plannings` creates:
+English (`Accept-Language: en`). `vehicle` is the vehicle ref; `plan` creates/updates a planning:
 
-- one unassigned (out-of-route) route
-- one route per vehicle of the chosen `vehicle_usage_set`
-- one stop per matching visit (filtered by `tag_ids` / `tag_operation` when set)
-
-```sh
-curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
-  "{base}/api/0.1/plannings.json" \
-  -d '{"name": "Monday", "ref": "PLAN-MON", "date": "2026-09-14"}'
+```
+reference,name,street,postalcode,city,country,visit duration,open 1,close 1,delivery,vehicle,plan
+CLIENT-12,Acme,12 avenue Thiers,33100,Bordeaux,France,00:10:00,08:00,12:00,1,VEH-1,Monday
 ```
 
-### 3. Optimize then poll the job
-
 ```sh
-# Start (global=true allows moving visits between routes)
-curl -H "Api-Key: YOUR_API_KEY" \
-  "{base}/api/0.1/plannings/ref:PLAN-MON/optimize.json?global=true"
-
-# Poll until the job is gone or failed_at is set
-curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/jobs/{job_id}.json"
+curl -X PUT -H "Api-Key: YOUR_API_KEY" -H "Accept-Language: en" \
+  "{base}/api/0.1/destinations.json" \
+  -F "file=@destinations.csv"
 ```
 
-Then fetch the planning again (`GET /plannings/:id`) to read updated routes and stops.
+French (`Accept-Language: fr`):
 
-### 4. Move stops / automatic insert
+```
+référence,nom,voie,code postal,ville,pays,durée visite,horaire début 1,horaire fin 1,livraison,véhicule,plan
+CLIENT-12,Acme,12 avenue Thiers,33100,Bordeaux,France,00:10:00,08:00,12:00,1,VEH-1,Lundi
+```
+
+```sh
+curl -X PUT -H "Api-Key: YOUR_API_KEY" -H "Accept-Language: fr" \
+  "{base}/api/0.1/destinations.json" \
+  -F "file=@destinations.csv"
+```
+
+### Move stops / automatic insert
 
 Move one stop to another index (same route or another). Index `-1` appends at the end:
 
@@ -212,7 +349,7 @@ curl -X PATCH -H "Api-Key: YOUR_API_KEY" \
   "{base}/api/0.1/plannings/1/automatic_insert.json?stop_ids=10,11"
 ```
 
-### 5. Zoning then apply
+### Zoning then apply
 
 ```sh
 # Empty zoning
@@ -246,7 +383,7 @@ curl -H "Api-Key: YOUR_API_KEY" \
 | **Stops** | Occurrence of a visit, store reload or rest on a route. Created with the planning; activate, lock, or move them. | `/plannings/:id/routes/:id/stops/:id` |
 | **Tags** | Labels to subset visits when creating a planning (`tag_operation`: `and` / `or`). | `/tags` |
 | **Zonings / Zones** | Polygons linked to vehicles; apply to a planning to assign stops. | `/zonings`, `.../automatic/:planning_id`, `/plannings/:id/apply_zonings` |
-| **Jobs** | Async optimizer / geocoding. | `GET /jobs`, `GET/DELETE /jobs/:id` |
+| **Jobs** | Async optimizer / geocoding. Poll until HTTP 404 (success) or `failed_at`. | `GET /jobs`, `GET/DELETE /jobs/:id` |
 | **Geocoder** | Address search (not persisted). | `GET /geocoder/search?q=` |
 
 ## Code samples
