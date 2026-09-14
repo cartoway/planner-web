@@ -35,6 +35,26 @@ class Job < Struct
     end
   end
 
+  # Delayed::Job calls this before destroying a successful job. Do not record cancelled destroys.
+  ASYNC_KINDS = {
+    'OptimizerJob' => 'optimizer',
+    'GeocoderJob' => 'destination_geocoding',
+    'GeocoderDestinationsJob' => 'destination_geocoding',
+    'GeocoderStoresJob' => 'store_geocoding'
+  }.freeze
+
+  def success(delayed_job)
+    kind = ASYNC_KINDS[self.class.name]
+    return unless kind && respond_to?(:customer_id)
+
+    Customer.record_last_async_job!(
+      customer_id,
+      id: delayed_job.id,
+      type: self.class.name.underscore.parameterize(separator: '_').gsub(/_job$/, ''),
+      kind: kind
+    )
+  end
+
   def self.nb_routes(job)
     if job && job.handler
       match = job.handler.match(/nb_route: ([0-9]+)/)
