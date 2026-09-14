@@ -1,0 +1,55 @@
+{
+  "id": "a1b2c3d4-e5f6-4a70-8b9c-0d1e2f3a4b5c",
+  "name": "Planner API 0.1",
+  "values": [
+    {
+      "key": "base",
+      "value": "http://localhost:8080",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "planning_id",
+      "value": "ref:PLAN-MON",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "job_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "route_id",
+      "value": "2",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "stop_id",
+      "value": "10",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "visit_ids",
+      "value": "11,12",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "zoning_id",
+      "value": "5",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}
