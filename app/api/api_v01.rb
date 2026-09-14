@@ -95,7 +95,7 @@ All data is scoped to the user\'s `Customer`. HTTP **402** means the subscriptio
 Path and filter ids accept a numeric id (`42`) or an external reference (`ref:CLIENT-12`). References must not contain commas. `ref` is the upsert key on destination/visit/store import.
 ### Formats
 URL extension selects the response: `.json` (default), `.xml`, `.geojson` (destinations, visits, plannings, routes), `.ics` (plannings, routes).
-There is no pagination: filter lists with `ids`, dates or tags.
+`GET /destinations` without `page` returns a bare array. With `page` (and `per_page`, default 100, max 500) it returns `{ items, page, per_page, total }`.
 ### Times
 Input schedule fields use `HH:MM` or `HH:MM:SS`. Output times are DateTime values, often based on the planning date.
 ### I18n
