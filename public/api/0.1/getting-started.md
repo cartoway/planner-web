@@ -9,8 +9,8 @@ This guide covers conventions, a copy-paste happy path, pitfalls, and the core r
 
 | Version | Base path | Role |
 |---------|-----------|------|
-| **0.1** | `/api/0.1` | Stable REST API. Use this for integrations. |
-| **100** | `/api/100` | Small additive surface (relations, optimized insertion, store reloads). Combine with 0.1; it does not replace it. |
+| **0.1** | `/api/0.1` | Stable full REST surface. Poll `GET /jobs/:id` until `status` is `succeeded` or `failed`. `GET /destinations` without `page` is a bare array; with `page` it returns `{ items, page, per_page, total }`. Use this for integrations. |
+| **100** | `/api/100` | Extra endpoints whose contracts would be breaking on 0.1 (relations, candidate insert, planning insert, …). |
 
 Replace `{base}` below with your planner host, for example `https://planner.cartoway.com`.
 
@@ -123,7 +123,7 @@ curl -H "Api-Key: YOUR_API_KEY" \
 `global=true` allows moving visits between routes. HTTP **200** with a job:
 
 ```json
-{ "id": 88, "type": "optimizer", "failed_at": null, "progress": {} }
+{ "id": 88, "type": "optimizer", "status": "running", "failed_at": null, "progress": {} }
 ```
 
 Poll until **success or failure**:
@@ -134,9 +134,10 @@ curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/jobs/88.json"
 
 | Poll result | Meaning |
 |-------------|---------|
-| HTTP **200**, `failed_at` null | Still running. Wait and poll again. |
-| HTTP **200**, `failed_at` set | Failed. Read `progress` / message; do not treat as success. |
-| HTTP **404** (`{"error":"Job not found"}`) | **Success.** The job row is deleted when it finishes. |
+| HTTP **200**, `status: "running"` | Still running. Wait and poll again. |
+| HTTP **200**, `status: "failed"` (`failed_at` set) | Failed. Read `progress` / message; do not treat as success. |
+| HTTP **200**, `status: "succeeded"` | **Success.** The Delayed::Job row is gone; the last result is remembered. |
+| HTTP **404** (`{"error":"Job not found"}`) | This id was never a job of this customer. |
 | HTTP **409** | Another optimizer job is already running. |
 | HTTP **304** on optimize | Solver found no solution. |
 
@@ -175,15 +176,15 @@ Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python
 
 ## Pitfalls
 
-- **Job HTTP 404 means success** (the job is deleted). Do not retry optimize on 404. Failure is `failed_at` set on HTTP 200.
+- **Job `status: succeeded` means success.** Poll until that (or `failed`). HTTP **404** means this id was never a job of this customer — do not treat 404 as success.
 - **No create-stop / create-route.** `POST /plannings` (or import with `planning` / `visit.route`) materializes them. Then move, lock, or activate stops.
 - **`GET /plannings/:id` has no stops.** Use `GET /plannings/:id/routes.json`.
 - **`visit.route` on import is a vehicle `ref` (or route index/name), not a route id.** Prefer `ref_vehicle` if you want to be explicit.
 - **Bulk `DELETE` with omitted or empty `ids` deletes all** destinations or visits of the customer. Always pass `ids`.
-- **Error bodies are not uniform.** Auth/status helpers return `{ "message": "Unauthorized.", "status": 401 }`. Import validation is `{ "error": ["…"] }` (HTTP 422). Job miss is `{ "error": "Job not found" }` (HTTP 404).
+- **Error bodies are not uniform.** Auth/status helpers return `{ "message": "Unauthorized.", "status": 401 }`. Import validation is `{ "error": ["…"] }` (HTTP 422). Unknown job is `{ "error": "Job not found" }` (HTTP 404).
 - **Date filters follow `Accept-Language`**, not ISO: `en` is `mm-dd-yyyy`, `fr` is `dd-mm-yyyy`. CSV headers follow the same header.
 - **`automatic_insert` is distance-only** (ignores time windows). Fine for a few stops; use zoning or optimize for batches.
-- **No pagination.** Lists return the whole customer scope. Filter with `ids`, dates, tags, or `active`.
+- **Pagination is opt-in.** Without `page`, lists return the whole customer scope. `GET /destinations?page=1` wraps `{ items, page, per_page, total }` (`per_page` default 100, max 500). Filter with `ids`, dates, tags, or `active`.
 - **Deprecated field names still appear in some payloads:** `open`/`close` → `time_window_*`; `quantity` → `pickup`/`delivery`; `out_of_date` → `outdated`; `capacity` → `capacities`.
 
 ---
@@ -243,7 +244,7 @@ Import validation (HTTP 422):
 | 401 | Missing or invalid API key |
 | 402 | Subscription expired |
 | 403 | Authenticated but forbidden |
-| 404 | Resource not found — **except** `GET /jobs/:id` where 404 means the job finished successfully |
+| 404 | Resource not found (including `GET /jobs/:id` when this id was never a job of this customer) |
 | 409 | Conflict (optimizer already running, job in transmission) |
 | 422 | Validation error |
 | 500 | Server error |
@@ -262,7 +263,7 @@ A customer has at most one optimizer job, one destination-geocoding job and one 
 
 1. Call the operation (for example `GET /plannings/:id/optimize`).
 2. HTTP **200** with a `Job` object means work started.
-3. Poll `GET /jobs/:id` until HTTP **404** (success) or `failed_at` is set.
+3. Poll `GET /jobs/:id` until `status` is `succeeded` or `failed`.
 4. Cancel with `DELETE /jobs/:id` (HTTP **409** if the job is already in transmission).
 
 ---
@@ -383,7 +384,7 @@ curl -H "Api-Key: YOUR_API_KEY" \
 | **Stops** | Occurrence of a visit, store reload or rest on a route. Created with the planning; activate, lock, or move them. | `/plannings/:id/routes/:id/stops/:id` |
 | **Tags** | Labels to subset visits when creating a planning (`tag_operation`: `and` / `or`). | `/tags` |
 | **Zonings / Zones** | Polygons linked to vehicles; apply to a planning to assign stops. | `/zonings`, `.../automatic/:planning_id`, `/plannings/:id/apply_zonings` |
-| **Jobs** | Async optimizer / geocoding. Poll until HTTP 404 (success) or `failed_at`. | `GET /jobs`, `GET/DELETE /jobs/:id` |
+| **Jobs** | Async optimizer / geocoding. Poll until `status` is `succeeded` or `failed`. | `GET /jobs`, `GET/DELETE /jobs/:id` |
 | **Geocoder** | Address search (not persisted). | `GET /geocoder/search?q=` |
 
 ## Code samples
