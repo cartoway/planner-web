@@ -20,11 +20,11 @@ class V01::Entities::RouteProperties < Grape::Entity
     'V01_RouteProperties'
   end
 
-  expose(:id, documentation: { type: Integer })
-  expose(:vehicle_usage_id, documentation: { type: Integer })
-  expose(:hidden, documentation: { type: 'Boolean' })
-  expose(:locked, documentation: { type: 'Boolean' })
-  expose(:color, documentation: { type: String, desc: 'Color code with #. For instance: #FF0000.' })
+  expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 20 })
+  expose(:vehicle_usage_id, documentation: { type: Integer, desc: 'Vehicle usage driving this route. Null on the unassigned route.' })
+  expose(:hidden, documentation: { type: 'Boolean', desc: 'When true the route is hidden on the map and excluded from geojson unless respect_hidden is false.', example: false })
+  expose(:locked, documentation: { type: 'Boolean', desc: 'When true, optimization does not change this route (visits stay on it).', example: false })
+  expose(:color, documentation: { type: String, desc: 'Color code with #. For instance: #FF0000.', example: '#FF0000' })
   expose(:geojson, documentation: { type: String, desc: 'Geojson string of track and stops of the route. Default empty, set parameter geojson=true|point|polyline to get this extra content.' }) { |m, options|
     if options[:geojson] && options[:geojson] != :false
       m.to_geojson(true, true,
