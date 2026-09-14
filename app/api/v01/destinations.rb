@@ -263,7 +263,7 @@ class V01::Destinations < Grape::API
         else present destinations, with: V01::Entities::Destination
         end
       else
-        error!({error: import && import.errors.full_messages}, 422)
+        error! V01::Status.code_response(:code_422, message: Array(import&.errors&.full_messages).join(', ').presence, errors: import&.errors&.full_messages), 422
       end
     end
 
@@ -470,7 +470,7 @@ class V01::Destinations < Grape::API
     position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
     vehicle_usage = VehicleUsage.joins(:vehicle_usage_set).where(vehicle_usage_sets: {customer_id: current_customer.id}, id: params[:vehicle_usage_id]).first
     if params.key?(:vehicle_usage_id) && vehicle_usage.nil?
-      error! 'VehicleUsage not found', 404
+      error! V01::Status.code_response(:code_404, before: 'VehicleUsage'), 404
     else
       destinations = current_customer.destinations_inside_time_distance(position, params[:distance], params[:time], vehicle_usage) || []
       present destinations, with: V01::Entities::DestinationId
