@@ -34,6 +34,7 @@ class V01::DeliverableUnits < Grape::API
 
   resource :deliverable_units do
     desc 'Fetch customer\'s deliverable units. At least one deliverable unit exists per customer. The deliverable unit purposes is to link pickup and delivery quantities associated to visits to vehicle capacities.',
+      detail: 'Returns quantity units (pallets, kg, …). A default unit is created with the customer. Visit quantities and vehicle capacities refer to these ids.',
       nickname: 'getDeliverableUnits',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::DeliverableUnit),
@@ -52,6 +53,7 @@ class V01::DeliverableUnits < Grape::API
     end
 
     desc 'Fetch deliverable unit.',
+      detail: 'Returns one quantity unit by id. Visit quantities and vehicle capacities refer to this id.',
       nickname: 'getDeliverableUnit',
       success: V01::Status.success(:code_200, V01::Entities::DeliverableUnit),
       failure: V01::Status.failures

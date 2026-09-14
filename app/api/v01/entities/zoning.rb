@@ -20,7 +20,7 @@ class V01::Entities::Zoning < Grape::Entity
     'V01_Zoning'
   end
 
-  expose(:id, documentation: { type: Integer })
-  expose(:name, documentation: { type: String })
-  expose(:zones, using: V01::Entities::Zone, documentation: { type: V01::Entities::Zone, is_array: true })
+  expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 5 })
+  expose(:name, documentation: { type: String, desc: 'Display name.', example: 'City sectors' })
+  expose(:zones, using: V01::Entities::Zone, documentation: { type: V01::Entities::Zone, is_array: true, desc: 'Zones (polygons) in this zoning, each optionally linked to a vehicle.' })
 end

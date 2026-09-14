@@ -20,25 +20,25 @@ class V01::Entities::VehicleUsage < Grape::Entity
     'V01_VehicleUsage'
   end
 
-  expose(:id, documentation: { type: Integer })
-  expose(:vehicle_usage_set_id, documentation: { type: Integer })
-  expose(:time_window_start, documentation: { type: DateTime }) { |m| m.time_window_start_absolute_time_with_seconds }
-  expose(:time_window_end, documentation: { type: DateTime }) { |m| m.time_window_end_absolute_time_with_seconds }
-  expose(:max_reload, documentation: { type: Integer })
-  expose(:store_start_id, documentation: { type: Integer })
-  expose(:store_stop_id, documentation: { type: Integer })
-  expose(:store_reload_ids, documentation: { type: Integer, is_array: true }) { |m| m.store_reloads.map(&:id) }
-  expose(:service_time_start, documentation: { type: DateTime }) { |m| m.service_time_start_absolute_time_with_seconds }
-  expose(:service_time_end, documentation: { type: DateTime }) { |m| m.service_time_end_absolute_time_with_seconds }
-  expose(:work_time, documentation: { type: DateTime }) { |m| m.work_time_absolute_time_with_seconds }
-  expose(:rest_start, documentation: { type: DateTime }) { |m| m.rest_start_absolute_time_with_seconds }
-  expose(:rest_stop, documentation: { type: DateTime }) { |m| m.rest_stop_absolute_time_with_seconds }
-  expose(:rest_duration, documentation: { type: DateTime }) { |m| m.rest_duration_absolute_time_with_seconds }
-  expose(:store_rest_id, documentation: { type: Integer })
-  expose(:active, documentation: { type: 'Boolean' })
+  expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 8 })
+  expose(:vehicle_usage_set_id, documentation: { type: Integer, desc: 'Parent usage set (context: morning, evening, …).', example: 1 })
+  expose(:time_window_start, documentation: { type: DateTime, desc: 'Shift start (HH:MM on input). Falls back to the set default when unset.' }) { |m| m.time_window_start_absolute_time_with_seconds }
+  expose(:time_window_end, documentation: { type: DateTime, desc: 'Shift end (HH:MM on input). Falls back to the set default when unset.' }) { |m| m.time_window_end_absolute_time_with_seconds }
+  expose(:max_reload, documentation: { type: Integer, desc: 'Maximum number of reloads per route. Falls back to the set default.' })
+  expose(:store_start_id, documentation: { type: Integer, desc: 'Start depot store id. Falls back to the set default.' })
+  expose(:store_stop_id, documentation: { type: Integer, desc: 'End depot store id. Falls back to the set default.' })
+  expose(:store_reload_ids, documentation: { type: Integer, is_array: true, desc: 'Reload store ids allowed on this usage. Falls back to the set default.' }) { |m| m.store_reloads.map(&:id) }
+  expose(:service_time_start, documentation: { type: DateTime, desc: 'Service time at the start store (HH:MM on input).' }) { |m| m.service_time_start_absolute_time_with_seconds }
+  expose(:service_time_end, documentation: { type: DateTime, desc: 'Service time at the stop store (HH:MM on input).' }) { |m| m.service_time_end_absolute_time_with_seconds }
+  expose(:work_time, documentation: { type: DateTime, desc: 'Maximum working duration (HH:MM on input).' }) { |m| m.work_time_absolute_time_with_seconds }
+  expose(:rest_start, documentation: { type: DateTime, desc: 'Earliest rest start (HH:MM on input).' }) { |m| m.rest_start_absolute_time_with_seconds }
+  expose(:rest_stop, documentation: { type: DateTime, desc: 'Latest rest end (HH:MM on input).' }) { |m| m.rest_stop_absolute_time_with_seconds }
+  expose(:rest_duration, documentation: { type: DateTime, desc: 'Rest duration (HH:MM on input).' }) { |m| m.rest_duration_absolute_time_with_seconds }
+  expose(:store_rest_id, documentation: { type: Integer, desc: 'Store used as rest location when set.' })
+  expose(:active, documentation: { type: 'Boolean', desc: 'When false, no route is built for this usage in new plannings.', example: true })
   expose(:visit_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to visit durations (falls back to vehicle usage set, then 1)' })
   expose(:destination_duration_coef, documentation: { type: Float, desc: 'Coefficient applied to destination durations (falls back to vehicle usage set, then 1)' })
-  expose(:tag_ids, documentation: { type: Integer, is_array: true })
+  expose(:tag_ids, documentation: { type: Integer, is_array: true, desc: 'Extra skills for this usage, in addition to the vehicle tags.' })
 
   # Deprecated fields
   expose(:open, documentation: { hidden: true, type: DateTime, desc: 'Deprecated, use `visit_duration` instead' }) { |m| m.time_window_start_absolute_time_with_seconds }

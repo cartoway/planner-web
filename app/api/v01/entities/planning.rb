@@ -68,23 +68,23 @@ class V01::Entities::Planning < Grape::Entity
     documentation.except(:id, :route_ids, :outdated, :tag_ids, *Route::ROUTE_DATA_METRICS_FIELDS)
   end
 
-  expose(:id, documentation: { type: Integer })
-  expose(:name, documentation: { type: String })
-  expose(:ref, documentation: { type: String })
-  expose(:date, documentation: { type: Date })
-  expose(:begin_date, documentation: { type: Date, desc: 'Begin validity period' })
-  expose(:end_date, documentation: { type: Date, desc: 'End validity period' })
-  expose(:active, documentation: { type: 'Boolean', default: true })
-  expose(:vehicle_usage_set_id, documentation: { type: Integer })
+  expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 7 })
+  expose(:name, documentation: { type: String, desc: 'Display name.', example: 'Monday' })
+  expose(:ref, documentation: { type: String, desc: 'External unique reference. Use ref:VALUE in path/ids filters.', example: 'PLAN-MON' })
+  expose(:date, documentation: { type: Date, desc: 'Planning date used as the day origin for stop times.', example: '2026-09-14' })
+  expose(:begin_date, documentation: { type: Date, desc: 'Begin of validity period.', example: '2026-09-14' })
+  expose(:end_date, documentation: { type: Date, desc: 'End of validity period.', example: '2026-09-14' })
+  expose(:active, documentation: { type: 'Boolean', default: true, desc: 'When false, the planning is archived/inactive and excluded from default lists unless filtered.', example: true })
+  expose(:vehicle_usage_set_id, documentation: { type: Integer, desc: 'Vehicle usage set (context) used to build routes. Defaults to the customer first set.', example: 1 })
   expose(:zoning_id, documentation: { type: Integer, desc: 'DEPRECATED. Use zoning_ids instead.' }) { |p|
     p.zonings.first.id if p.zonings.size == 1
   }
   expose(:zoning_ids, documentation: { type: Integer, desc: 'If a new zoning is specified before planning save, all visits will be affected to vehicles specified in zones.', is_array: true })
   expose(:zoning_outdated, as: :zoning_out_of_date, documentation: { type: 'Boolean', desc: 'DEPRECATED. Use zoning_outdated instead.' })
-  expose(:zoning_outdated, documentation: { type: 'Boolean' })
+  expose(:zoning_outdated, documentation: { type: 'Boolean', desc: 'True when zones no longer match current stop positions; re-apply zonings.' })
   expose(:outdated, as: :out_of_date, documentation: { type: 'Boolean', desc: 'DEPRECATED. Use outdated instead.' })
-  expose(:outdated, documentation: { type: 'Boolean' })
-  expose(:route_ids, documentation: { type: Integer, is_array: true }) { |m| m.routes.collect(&:id) } # Workaround bug with fetch join stops
+  expose(:outdated, documentation: { type: 'Boolean', desc: 'True when route times/distances must be recomputed (inputs changed). Call refresh or compute happens on save of related objects.' })
+  expose(:route_ids, documentation: { type: Integer, is_array: true, desc: 'Ids of routes in this planning (including the unassigned route).' }) { |m| m.routes.collect(&:id) } # Workaround bug with fetch join stops
   expose(:tag_ids, documentation: { type: Integer, desc: 'Restrict visits/destinations in the plan (visits/destinations should have all of these tags to be present in the plan).', is_array: true })
   expose(:tag_operation, documentation: { type: String, values: ['and', 'or'], desc: 'Choose how to use selected tags: and (for visits with all tags, by default) / or (for visits with at least one tag).', default: 'and' }) { |m|
     m.tag_operation.delete_prefix('_')

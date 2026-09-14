@@ -31,6 +31,7 @@ class V01::Tags < Grape::API
 
   resource :tags do
     desc 'Fetch customer\'s tags.',
+      detail: 'Returns labels used to subset visits when creating a planning (tag_ids / tag_operation). Filter with ids (numeric or ref:VALUE).',
       nickname: 'getTags',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Tag),
@@ -65,6 +66,7 @@ class V01::Tags < Grape::API
     end
 
     desc 'Fetch tag.',
+      detail: 'Returns one tag by numeric id or ref:VALUE.',
       nickname: 'getTag',
       success: V01::Status.success(:code_200, V01::Entities::Tag),
       failure: V01::Status.failures
