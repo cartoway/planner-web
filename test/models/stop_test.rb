@@ -80,4 +80,16 @@ class StopTest < ActiveSupport::TestCase
 
     assert_raises(Exceptions::JobInProgressError) { stop.update!(active: !stop.active) }
   end
+
+  test 'should update stop when optimizer job has failed' do
+    stop = stops(:stop_one_one)
+    job = delayed_jobs(:job_optimizer)
+    job.update!(handler: "planning_id: #{stop.route.planning_id}", failed_at: Time.now.utc)
+    stop.route.planning.customer.update!(
+      job_optimizer: job,
+      last_async_jobs: { 'optimizer' => { 'id' => job.id, 'type' => 'optimizer', 'status' => 'failed' } }
+    )
+
+    assert stop.update!(active: !stop.active)
+  end
 end
